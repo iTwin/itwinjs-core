@@ -16,7 +16,7 @@ import {
 } from "@bentley/imodeljs-common";
 import { Entity } from "./Entity";
 import { IModelCloneContext } from "./IModelCloneContext";
-import { IModelDb, BriefcaseIModelDb } from "./IModelDb";
+import { IModelDb, BriefcaseDb } from "./IModelDb";
 import { DrawingModel } from "./Model";
 import { SubjectOwnsSubjects } from "./NavigationRelationship";
 import { ConcurrencyControl } from "./ConcurrencyControl";
@@ -78,8 +78,8 @@ export class Element extends Entity implements ElementProps {
    * @beta
    */
   public static populateRequest(req: ConcurrencyControl.Request, props: ElementProps, iModel: IModelDb, opcode: DbOpcode, original: ElementProps | undefined) {
-    assert(iModel instanceof BriefcaseIModelDb);
-    if (!(iModel instanceof BriefcaseIModelDb)) {
+    assert(iModel instanceof BriefcaseDb);
+    if (!(iModel instanceof BriefcaseDb)) {
       return;
     }
     switch (opcode) {
@@ -116,7 +116,7 @@ export class Element extends Entity implements ElementProps {
    * @beta
    */
   protected static onInsert(props: ElementProps, iModel: IModelDb): void {
-    if (iModel instanceof BriefcaseIModelDb) { iModel.concurrencyControl.onElementWrite(this, props, DbOpcode.Insert); }
+    if (iModel instanceof BriefcaseDb) { iModel.concurrencyControl.onElementWrite(this, props, DbOpcode.Insert); }
   }
   /** Called before an Element is updated.
    * @throws [[IModelError]] if there is a problem
@@ -124,7 +124,7 @@ export class Element extends Entity implements ElementProps {
    * @beta
    */
   protected static onUpdate(props: ElementProps, iModel: IModelDb): void {
-    if (iModel instanceof BriefcaseIModelDb) { iModel.concurrencyControl.onElementWrite(this, props, DbOpcode.Update); }
+    if (iModel instanceof BriefcaseDb) { iModel.concurrencyControl.onElementWrite(this, props, DbOpcode.Update); }
   }
   /** Called before an Element is deleted.
    * @throws [[IModelError]] if there is a problem
@@ -132,7 +132,7 @@ export class Element extends Entity implements ElementProps {
    * @beta
    */
   protected static onDelete(props: ElementProps, iModel: IModelDb): void {
-    if (iModel instanceof BriefcaseIModelDb) { iModel.concurrencyControl.onElementWrite(this, props, DbOpcode.Delete); }
+    if (iModel instanceof BriefcaseDb) { iModel.concurrencyControl.onElementWrite(this, props, DbOpcode.Delete); }
   }
   /** Called after a new Element was inserted.
    * @throws [[IModelError]] if there is a problem
@@ -140,7 +140,7 @@ export class Element extends Entity implements ElementProps {
    * @beta
    */
   protected static onInserted(props: ElementProps, iModel: IModelDb): void {
-    if (iModel instanceof BriefcaseIModelDb) { iModel.concurrencyControl.onElementWritten(this, props.id!, DbOpcode.Insert); }
+    if (iModel instanceof BriefcaseDb) { iModel.concurrencyControl.onElementWritten(this, props.id!, DbOpcode.Insert); }
   }
   /** Called after an Element was updated.
    * @throws [[IModelError]] if there is a problem
@@ -148,7 +148,7 @@ export class Element extends Entity implements ElementProps {
    * @beta
    */
   protected static onUpdated(props: ElementProps, iModel: IModelDb): void {
-    if (iModel instanceof BriefcaseIModelDb) { iModel.concurrencyControl.onElementWritten(this, props.id!, DbOpcode.Update); }
+    if (iModel instanceof BriefcaseDb) { iModel.concurrencyControl.onElementWritten(this, props.id!, DbOpcode.Update); }
   }
   /** Called after an Element was deleted.
    * @throws [[IModelError]] if there is a problem
@@ -264,7 +264,7 @@ export class Element extends Entity implements ElementProps {
    * @param opcode The operation that will be performed on the element.
    */
   public buildConcurrencyControlRequest(opcode: DbOpcode): void {
-    if (this.iModel instanceof BriefcaseIModelDb) {
+    if (this.iModel instanceof BriefcaseDb) {
       this.iModel.concurrencyControl.buildRequestForElement(this, opcode);
     }
   }

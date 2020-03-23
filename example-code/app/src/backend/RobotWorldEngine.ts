@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { RpcInterfaceDefinition, RpcManager, IModelReadRpcInterface, IModelWriteRpcInterface, Code, TestRpcManager, FeatureGates } from "@bentley/imodeljs-common";
-import { BriefcaseIModelDb, IModelDb, IModelHost, Element, ECSqlStatement, IModelHostConfiguration, KnownLocations, Platform } from "@bentley/imodeljs-backend";
+import { BriefcaseDb, IModelDb, IModelHost, Element, ECSqlStatement, IModelHostConfiguration, KnownLocations, Platform } from "@bentley/imodeljs-backend";
 import { DbResult, Id64String, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { Point3d, Angle, YawPitchRollAngles } from "@bentley/geometry-core";
 import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
@@ -140,7 +140,7 @@ export class RobotWorldEngine {
 
     // __PUBLISH_EXTRACT_START__ Schema.importSchema
     // Make sure the RobotWorld schema is in the iModel.
-    BriefcaseIModelDb.onOpened.addListener((requestContext: AuthorizedClientRequestContext, iModel: IModelDb) => {
+    BriefcaseDb.onOpened.addListener((requestContext: AuthorizedClientRequestContext, iModel: IModelDb) => {
       RobotWorld.importSchema(requestContext, iModel); // tslint:disable-line:no-floating-promises
     });
     // __PUBLISH_EXTRACT_END__

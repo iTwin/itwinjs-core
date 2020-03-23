@@ -40,7 +40,7 @@ import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { KeepBriefcase } from "../BriefcaseManager";
 import { SpatialCategory } from "../Category";
 import { generateGeometrySummaries } from "../GeometrySummary";
-import { BriefcaseIModelDb, IModelDb, OpenParams } from "../IModelDb";
+import { BriefcaseDb, IModelDb, OpenParams } from "../IModelDb";
 import { DictionaryModel } from "../Model";
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
@@ -58,7 +58,7 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     const openParams: OpenParams = OpenParams.fixedVersion();
     openParams.timeout = 1000; // 1 second
     const iModelVersion = IModelVersion.asOfChangeSet(iModelToken.changeSetId!);
-    const db = await BriefcaseIModelDb.open(requestContext, iModelToken.contextId!, iModelToken.iModelId!, openParams, iModelVersion);
+    const db = await BriefcaseDb.open(requestContext, iModelToken.contextId!, iModelToken.iModelId!, openParams, iModelVersion);
     return db.toJSON();
   }
 
@@ -68,7 +68,7 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     if (iModelToken.openMode === OpenMode.Readonly)
       return Promise.resolve(true); // Close is a no-op for ReadOnly connections.
 
-    await BriefcaseIModelDb.findByToken(iModelToken).close(requestContext, KeepBriefcase.No);
+    await BriefcaseDb.findByToken(iModelToken).close(requestContext, KeepBriefcase.No);
     return Promise.resolve(true);
   }
 

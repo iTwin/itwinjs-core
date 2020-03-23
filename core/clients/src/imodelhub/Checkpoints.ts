@@ -104,7 +104,7 @@ export class CheckpointQuery extends WsgQuery {
 
 /**
  * Handler for managing [[Checkpoint]]s. Use [[IModelClient.checkpoints]] to get an instance of this class.
- * In most cases, you should use [BriefcaseIModelDb]($backend) methods instead.
+ * In most cases, you should use [BriefcaseDb]($backend) methods instead.
  * @alpha
  */
 export class CheckpointHandler {

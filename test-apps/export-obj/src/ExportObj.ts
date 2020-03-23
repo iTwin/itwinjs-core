@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { DbResult, Id64Array, Id64String, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { Angle } from "@bentley/geometry-core";
-import { ECSqlStatement, ExportGraphicsInfo, IModelHost, SnapshotIModelDb, Texture } from "@bentley/imodeljs-backend";
+import { ECSqlStatement, ExportGraphicsInfo, IModelHost, SnapshotDb, Texture } from "@bentley/imodeljs-backend";
 import { ColorDef, ImageSourceFormat } from "@bentley/imodeljs-common";
 import * as fs from "fs";
 import * as path from "path";
@@ -15,7 +15,7 @@ function doExport(iModelName: string, objName: string, mtlName: string) {
   Logger.initializeToConsole();
   Logger.setLevelDefault(LogLevel.Error);
 
-  const iModel = SnapshotIModelDb.open(iModelName);
+  const iModel = SnapshotDb.open(iModelName);
   process.stdout.write(`Opened ${iModelName} successfully.\n`);
 
   const objFile = fs.openSync(objName, "w");

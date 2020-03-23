@@ -12,7 +12,7 @@ import { ChangeData, ChangedElements, ChangedModels, IModelError, IModelStatus }
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import * as path from "path";
 import { IModelHost } from "./IModelHost";
-import { BriefcaseIModelDb, BriefcaseManager, ChangeSetToken, ChangeSummaryExtractContext, ChangeSummaryManager, ECDbOpenMode, IModelDb } from "./imodeljs-backend";
+import { BriefcaseDb, BriefcaseManager, ChangeSetToken, ChangeSummaryExtractContext, ChangeSummaryManager, ECDbOpenMode, IModelDb } from "./imodeljs-backend";
 
 /** An ChangedElementsDb file
  * @internal
@@ -96,7 +96,7 @@ export class ChangedElementsDb implements IDisposable {
    * @param rulesetDir [optional] Directories string for ruleset directory locater
    * @param tempDir [optional] Directory to use to store temporary Db used to do processing. This Db is cleaned up automatically unless the process crashes.
    */
-  public async processChangesets(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseIModelDb, rulesetId: string, startChangesetId: GuidString, endChangesetId: GuidString, filterSpatial?: boolean, rulesetDir?: string, tempDir?: string): Promise<DbResult> {
+  public async processChangesets(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseDb, rulesetId: string, startChangesetId: GuidString, endChangesetId: GuidString, filterSpatial?: boolean, rulesetDir?: string, tempDir?: string): Promise<DbResult> {
     requestContext.enter();
     const changeSummaryContext = new ChangeSummaryExtractContext(briefcase);
     const changesets = await ChangeSummaryManager.downloadChangeSets(requestContext, changeSummaryContext, startChangesetId, endChangesetId);

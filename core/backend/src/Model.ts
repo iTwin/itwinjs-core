@@ -13,7 +13,7 @@ import { AxisAlignedBox3d, GeometricModel2dProps, GeometricModel3dProps, Geometr
 import { ConcurrencyControl } from "./ConcurrencyControl";
 import { DefinitionPartition, DocumentPartition, InformationRecordPartition, PhysicalPartition, SpatialLocationPartition } from "./Element";
 import { Entity } from "./Entity";
-import { BriefcaseIModelDb, IModelDb } from "./IModelDb";
+import { BriefcaseDb, IModelDb } from "./IModelDb";
 import { SubjectOwnsPartitionElements } from "./NavigationRelationship";
 
 /** A Model is a container for persisting a collection of related elements within an iModel.
@@ -58,8 +58,8 @@ export class Model extends Entity implements ModelProps {
    * @beta
    */
   public static populateRequest(req: ConcurrencyControl.Request, props: ModelProps, iModel: IModelDb, opcode: DbOpcode): void {
-    assert(iModel instanceof BriefcaseIModelDb);
-    if (!(iModel instanceof BriefcaseIModelDb)) {
+    assert(iModel instanceof BriefcaseDb);
+    if (!(iModel instanceof BriefcaseDb)) {
       return;
     }
     switch (opcode) {
@@ -92,35 +92,35 @@ export class Model extends Entity implements ModelProps {
    * @beta
    */
   protected static onInsert(props: ModelProps, iModel: IModelDb): void {
-    if (iModel instanceof BriefcaseIModelDb) { iModel.concurrencyControl.onModelWrite(this, props, DbOpcode.Insert); }
+    if (iModel instanceof BriefcaseDb) { iModel.concurrencyControl.onModelWrite(this, props, DbOpcode.Insert); }
   }
   /** Called after a new model is inserted.
    * @throws [[IModelError]] if there is a problem
    * @beta
    */
   protected static onInserted(id: string, iModel: IModelDb): void {
-    if (iModel instanceof BriefcaseIModelDb) { iModel.concurrencyControl.onModelWritten(this, id, DbOpcode.Insert); }
+    if (iModel instanceof BriefcaseDb) { iModel.concurrencyControl.onModelWritten(this, id, DbOpcode.Insert); }
   }
   /** Called before a model is updated.
    * @throws [[IModelError]] if there is a problem
    * @beta
    */
   protected static onUpdate(props: ModelProps, iModel: IModelDb): void {
-    if (iModel instanceof BriefcaseIModelDb) { iModel.concurrencyControl.onModelWrite(this, props, DbOpcode.Update); }
+    if (iModel instanceof BriefcaseDb) { iModel.concurrencyControl.onModelWrite(this, props, DbOpcode.Update); }
   }
   /** Called after a model is updated.
    * @throws [[IModelError]] if there is a problem
    * @beta
    */
   protected static onUpdated(props: ModelProps, iModel: IModelDb): void {
-    if (iModel instanceof BriefcaseIModelDb) { iModel.concurrencyControl.onModelWritten(this, props.id!, DbOpcode.Update); }
+    if (iModel instanceof BriefcaseDb) { iModel.concurrencyControl.onModelWritten(this, props.id!, DbOpcode.Update); }
   }
   /** Called before a model is deleted.
    * @throws [[IModelError]] if there is a problem
    * @beta
    */
   protected static onDelete(props: ModelProps, iModel: IModelDb): void {
-    if (iModel instanceof BriefcaseIModelDb) { iModel.concurrencyControl.onModelWrite(this, props, DbOpcode.Delete); }
+    if (iModel instanceof BriefcaseDb) { iModel.concurrencyControl.onModelWrite(this, props, DbOpcode.Delete); }
   }
   /** Called after a model is deleted.
    * @throws [[IModelError]] if there is a problem
@@ -146,7 +146,7 @@ export class Model extends Entity implements ModelProps {
    * @param opcode The operation that will be performed on the element.
    */
   public buildConcurrencyControlRequest(opcode: DbOpcode): void {
-    if (this.iModel instanceof BriefcaseIModelDb) {
+    if (this.iModel instanceof BriefcaseDb) {
       this.iModel.concurrencyControl.buildRequestForModel(this, opcode);
     }
   }

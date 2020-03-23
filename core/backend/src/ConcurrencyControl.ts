@@ -15,7 +15,7 @@ import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { ECDb, ECDbOpenMode } from "./ECDb";
 import { Element } from "./Element";
-import { BriefcaseIModelDb } from "./IModelDb";
+import { BriefcaseDb } from "./IModelDb";
 import { IModelJsFs } from "./IModelJsFs";
 import { Model } from "./Model";
 import { RelationshipProps } from "./Relationship";
@@ -33,13 +33,13 @@ export class ConcurrencyControl {
   private _cache: ConcurrencyControl.StateCache;
   private _modelsAffectedByWrites = new Set<Id64String>(); // TODO: Remove this when we get tile healing
 
-  constructor(private _iModel: BriefcaseIModelDb) {
+  constructor(private _iModel: BriefcaseDb) {
     this._cache = new ConcurrencyControl.StateCache(this);
     this._policy = ConcurrencyControl.PessimisticPolicy;
   }
 
   /** @internal */
-  public get iModel(): BriefcaseIModelDb { return this._iModel; }
+  public get iModel(): BriefcaseDb { return this._iModel; }
 
   /** @internal */
   public get modelsAffectedByWrites(): Id64String[] { return Array.from(this._modelsAffectedByWrites); }
@@ -415,7 +415,7 @@ export class ConcurrencyControl {
     if (this._iModel.isReadonly)
       return;
 
-    assert(!this._iModel.concurrencyControl._cache.isOpen, "BriefcaseIModelDb.onOpened should be raised only once");
+    assert(!this._iModel.concurrencyControl._cache.isOpen, "BriefcaseDb.onOpened should be raised only once");
 
     this._iModel.txns.onCommitted.addListener(this.emitOnSavedChangesEvent, this);
 
@@ -921,7 +921,7 @@ export namespace ConcurrencyControl {
 
   /** Code manager */
   export class Codes {
-    constructor(private _iModel: BriefcaseIModelDb) { }
+    constructor(private _iModel: BriefcaseDb) { }
 
     /**
      * Reserve Codes.

@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { DbResult, Id64Set, Id64String } from "@bentley/bentleyjs-core";
-import { ECSqlStatement, Element, IModelDb, PhysicalPartition, SnapshotIModelDb, Subject } from "@bentley/imodeljs-backend";
+import { ECSqlStatement, Element, IModelDb, PhysicalPartition, SnapshotDb, Subject } from "@bentley/imodeljs-backend";
 import { assert } from "chai";
 import { IModelTestUtils } from "./IModelTestUtils";
 
 /** Useful ECSQL queries organized as tests to make sure that they build and run successfully. */
 describe("Useful ECSQL queries", () => {
-  let iModel: SnapshotIModelDb;
+  let iModel: SnapshotDb;
 
   before(async () => {
     iModel = IModelTestUtils.openSnapshotFromSeed("test.bim", { copyFilename: "ecsql-queries.bim" });

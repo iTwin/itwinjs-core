@@ -29,7 +29,7 @@ import {
   PhysicalModel,
   PhysicalObject,
   PhysicalPartition,
-  SnapshotIModelDb,
+  SnapshotDb,
   SpatialCategory,
   SubjectOwnsPartitionElements,
 } from "../../imodeljs-backend";
@@ -95,7 +95,7 @@ function scaleProjectExtents(db: IModelDb, scale: number): Range3d {
 }
 
 describe("tile tree", () => {
-  let db: SnapshotIModelDb;
+  let db: SnapshotDb;
   let modelId: string;
 
   before(() => {
@@ -108,7 +108,7 @@ describe("tile tree", () => {
     };
 
     const name = "Test_" + (++uniqueId) + ".bim";
-    db = SnapshotIModelDb.createEmpty(IModelTestUtils.prepareOutputFile("TileTree", name), props);
+    db = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("TileTree", name), props);
     modelId = insertPhysicalModel(db);
 
     // NB: The model needs to contain at least one element with a range - otherwise tile tree will have null range.

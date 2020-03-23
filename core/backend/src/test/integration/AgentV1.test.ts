@@ -7,7 +7,7 @@ import { AccessToken, Config } from "@bentley/imodeljs-clients";
 import { OidcAgentClientConfigurationV1, OidcAgentClientV1 } from "@bentley/imodeljs-clients-backend";
 import { IModelVersion, MobileRpcConfiguration } from "@bentley/imodeljs-common";
 import { assert } from "chai";
-import { AuthorizedBackendRequestContext, BriefcaseIModelDb, OpenParams } from "../../imodeljs-backend";
+import { AuthorizedBackendRequestContext, BriefcaseDb, OpenParams } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
 
@@ -49,12 +49,12 @@ describe.skip("AgentV1 (#integration)", () => {
     });
 
     it("Agent should be able to open an iModel Readonly", async () => {
-      const iModelDb = await BriefcaseIModelDb.open(requestContext, testProjectId, testReadIModelId, OpenParams.fixedVersion(), IModelVersion.latest());
+      const iModelDb = await BriefcaseDb.open(requestContext, testProjectId, testReadIModelId, OpenParams.fixedVersion(), IModelVersion.latest());
       assert.isDefined(iModelDb);
     });
 
     it("Agent should be able to open an iModel ReadWrite", async () => {
-      const iModelDb = await BriefcaseIModelDb.open(requestContext, testProjectId, testWriteIModelId, OpenParams.pullAndPush(), IModelVersion.latest());
+      const iModelDb = await BriefcaseDb.open(requestContext, testProjectId, testWriteIModelId, OpenParams.pullAndPush(), IModelVersion.latest());
       assert.isDefined(iModelDb);
     });
   } else {

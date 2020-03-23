@@ -7,7 +7,7 @@ import { Arc3d, Cone, Point2d, Point3d } from "@bentley/geometry-core";
 import { IModelJson as GeomJson } from "@bentley/geometry-core/lib/serialization/IModelJsonSchema";
 import { Code, ColorDef, ElementAspectProps, GeometricElementProps, GeometryStreamProps, IModel, SubCategoryAppearance } from "@bentley/imodeljs-common";
 import { assert, expect } from "chai";
-import { BackendRequestContext, ECSqlStatement, IModelDb, IModelJsFs, SnapshotIModelDb, SpatialCategory } from "../../imodeljs-backend";
+import { BackendRequestContext, ECSqlStatement, IModelDb, IModelJsFs, SnapshotDb, SpatialCategory } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
 interface IPrimitiveBase {
@@ -408,7 +408,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     const testSchemaPath = IModelTestUtils.prepareOutputFile(subDirName, schemaFileName);
     IModelJsFs.writeFileSync(testSchemaPath, testSchema);
 
-    const imodel = SnapshotIModelDb.createEmpty(iModelPath, { rootSubject: { name: "RoundTripTest" } });
+    const imodel = SnapshotDb.createEmpty(iModelPath, { rootSubject: { name: "RoundTripTest" } });
     await imodel.importSchemas(new BackendRequestContext(), [testSchemaPath]);
     const result: DbResult = imodel.nativeDb.setAsMaster();
     assert.equal(DbResult.BE_SQLITE_OK, result);

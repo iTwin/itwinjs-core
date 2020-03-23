@@ -1,6 +1,6 @@
 # iModel creation
 
-To start working with iModelHub an iModel for a [Project]($clients) has to be created. End users should usually create the iModel for a Project through iModelHub website. It's possible to use [BriefcaseIModelDb.create]($backend) to create an empty iModel and upload it to iModelHub. It's also possible to upload an existing standalone iModel file through [IModelHandler.create]($clients).
+To start working with iModelHub an iModel for a [Project]($clients) has to be created. End users should usually create the iModel for a Project through iModelHub website. It's possible to use [BriefcaseDb.create]($backend) to create an empty iModel and upload it to iModelHub. It's also possible to upload an existing standalone iModel file through [IModelHandler.create]($clients).
 
 ## iModel initialization
 

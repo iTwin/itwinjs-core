@@ -5,7 +5,7 @@
 
 import { Id64 } from "@bentley/bentleyjs-core";
 import { Angle, AngleSweep, Arc3d, LineString3d, Point3d, YawPitchRollAngles } from "@bentley/geometry-core";
-import { SnapshotIModelDb } from "@bentley/imodeljs-backend";
+import { SnapshotDb } from "@bentley/imodeljs-backend";
 import { Code, ElementProps, GeometricElement3dProps, GeometryStreamBuilder, IModel, ModelProps, Placement3dProps } from "@bentley/imodeljs-common";
 import { assert, expect } from "chai";
 import { IModelTestUtils } from "./IModelTestUtils";
@@ -14,7 +14,7 @@ import { IModelTestUtils } from "./IModelTestUtils";
  * > Note: these snippets get included by `docs/learning/WireFormat.md`
  */
 describe("Wire Format Snippets", () => {
-  let iModel: SnapshotIModelDb;
+  let iModel: SnapshotDb;
 
   before(() => {
     iModel = IModelTestUtils.openSnapshotFromSeed("test.bim", { copyFilename: "wire-format.bim" });

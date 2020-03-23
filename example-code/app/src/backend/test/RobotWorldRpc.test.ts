@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { IModelApp, IModelConnection, NoRenderApp } from "@bentley/imodeljs-frontend";
-import { IModelJsFs, PhysicalModel, StandaloneIModelDb } from "@bentley/imodeljs-backend";
+import { IModelJsFs, PhysicalModel, StandaloneDb } from "@bentley/imodeljs-backend";
 import { SnapshotIModelRpcInterface, IModel, IModelReadRpcInterface, IModelWriteRpcInterface, TestRpcManager, IModelTokenProps, GeometricElement3dProps } from "@bentley/imodeljs-common";
 import { RobotWorldReadRpcInterface, RobotWorldWriteRpcInterface } from "../../common/RobotWorldRpcInterface";
 import { RobotWorldEngine } from "../RobotWorldEngine";
@@ -29,7 +29,7 @@ async function setUpTest() {
   const iModelFile = IModelTestUtils.prepareOutputFile("RobotWorldRpc.bim");
   const seedFile = IModelTestUtils.resolveAssetFile("empty.bim");
   IModelJsFs.copySync(seedFile, iModelFile);
-  const iModel = StandaloneIModelDb.open(iModelFile, OpenMode.ReadWrite);
+  const iModel = StandaloneDb.open(iModelFile, OpenMode.ReadWrite);
   await RobotWorld.importSchema(requestContext, iModel);
   iModel.saveChanges();
   PhysicalModel.insert(iModel, IModel.rootSubjectId, "test");

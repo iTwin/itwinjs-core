@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { ClientRequestContext, Id64 } from "@bentley/bentleyjs-core";
-import { SnapshotIModelDb } from "@bentley/imodeljs-backend";
+import { SnapshotDb } from "@bentley/imodeljs-backend";
 import { DuplicateRulesetHandlingStrategy, Presentation, PresentationManagerMode, RulesetEmbedder } from "@bentley/presentation-backend";
 import { createDefaultNativePlatform, NativePlatformDefinition } from "@bentley/presentation-backend/lib/presentation-backend/NativePlatform";
 import { ChildNodeSpecificationTypes, Ruleset, RuleTypes } from "@bentley/presentation-common";
@@ -39,7 +39,7 @@ const RULESET_2: Ruleset = {
 };
 
 describe("RulesEmbedding", () => {
-  let imodel: SnapshotIModelDb;
+  let imodel: SnapshotDb;
   let embedder: RulesetEmbedder;
   let ruleset: Ruleset;
   let nativePlatform: NativePlatformDefinition;
@@ -55,9 +55,9 @@ describe("RulesEmbedding", () => {
     expect(expected).to.not.deep.equal(actual);
   }
 
-  function createSnapshotFromSeed(testFileName: string, seedFileName: string): SnapshotIModelDb {
-    const seedDb = SnapshotIModelDb.open(seedFileName);
-    const testDb = SnapshotIModelDb.createFrom(seedDb, testFileName);
+  function createSnapshotFromSeed(testFileName: string, seedFileName: string): SnapshotDb {
+    const seedDb = SnapshotDb.open(seedFileName);
+    const testDb = SnapshotDb.createFrom(seedDb, testFileName);
     seedDb.close();
     return testDb;
   }

@@ -4,17 +4,17 @@
 *--------------------------------------------------------------------------------------------*/
 import { Id64, Id64Array, Id64String } from "@bentley/bentleyjs-core";
 import { Angle, AuxChannel, AuxChannelData, AuxChannelDataType, IModelJson, Point3d, Polyface, PolyfaceAuxData, PolyfaceBuilder, StrokeOptions } from "@bentley/geometry-core";
-import { CategorySelector, DefinitionModel, DisplayStyle3d, IModelDb, ModelSelector, OrthographicViewDefinition, PhysicalModel, SnapshotIModelDb, SpatialCategory } from "@bentley/imodeljs-backend";
+import { CategorySelector, DefinitionModel, DisplayStyle3d, IModelDb, ModelSelector, OrthographicViewDefinition, PhysicalModel, SnapshotDb, SpatialCategory } from "@bentley/imodeljs-backend";
 import { AnalysisStyleProps, Code, ColorDef, GeometricElement3dProps, GeometryStreamBuilder, GeometryStreamProps, Gradient, RenderMode, ViewFlags } from "@bentley/imodeljs-common";
 import { readFileSync } from "fs";
 import * as path from "path";
 
 export class AnalysisImporter {
-  public iModelDb: SnapshotIModelDb;
+  public iModelDb: SnapshotDb;
   public definitionModelId: Id64String = Id64.invalid;
 
   public constructor(iModelFileName: string) {
-    this.iModelDb = SnapshotIModelDb.createEmpty(iModelFileName, { rootSubject: { name: "Analysis Example" } });
+    this.iModelDb = SnapshotDb.createEmpty(iModelFileName, { rootSubject: { name: "Analysis Example" } });
   }
   /** Create a geometry stream from a Polyface. */
   private generateGeometryStreamFromPolyface(polyface: Polyface): GeometryStreamProps {

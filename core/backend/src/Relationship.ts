@@ -10,7 +10,7 @@ import { DbOpcode, DbResult, Id64, Id64String, Logger } from "@bentley/bentleyjs
 import { EntityProps, IModelError, IModelStatus } from "@bentley/imodeljs-common";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { Entity } from "./Entity";
-import { IModelDb, BriefcaseIModelDb } from "./IModelDb";
+import { IModelDb, BriefcaseDb } from "./IModelDb";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 
 const loggerCategory = BackendLoggerCategory.Relationship;
@@ -70,7 +70,7 @@ export class Relationship extends Entity implements RelationshipProps {
    * @param opcode The operation that will be performed on the Relationship instance.
    */
   public buildConcurrencyControlRequest(opcode: DbOpcode): void {
-    if (this.iModel instanceof BriefcaseIModelDb) {
+    if (this.iModel instanceof BriefcaseDb) {
       this.iModel.concurrencyControl.buildRequestForRelationship(this, opcode);
     }
   }

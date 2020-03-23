@@ -9,7 +9,7 @@ import { Code, CodeScopeSpec, ColorDef, GeometricElement3dProps, IModel, IModelV
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import * as fs from "fs";
 import * as path from "path";
-import { AuthorizedBackendRequestContext, BriefcaseIModelDb, BriefcaseManager, CategorySelector, ConcurrencyControl, DisplayStyle3d, GeometricElement, IModelDb, ModelSelector, OpenParams, OrthographicViewDefinition, PhysicalModel, SnapshotIModelDb, SpatialCategory } from "../../imodeljs-backend";
+import { AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseManager, CategorySelector, ConcurrencyControl, DisplayStyle3d, GeometricElement, IModelDb, ModelSelector, OpenParams, OrthographicViewDefinition, PhysicalModel, SnapshotDb, SpatialCategory } from "../../imodeljs-backend";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { HubUtility } from "./HubUtility";
 import { IModelWriter } from "./IModelWriter";
@@ -45,8 +45,8 @@ export class TestPushUtility {
 
   /** Pushes new change sets to the Hub periodically and sets up named versions */
   public async pushTestChangeSetsAndVersions(count: number) {
-    this._iModelDb = await BriefcaseIModelDb.open(this._requestContext!, this._projectId!, this._iModelId!.toString(), OpenParams.pullAndPush(), IModelVersion.latest());
-    if (this._iModelDb instanceof BriefcaseIModelDb) {
+    this._iModelDb = await BriefcaseDb.open(this._requestContext!, this._projectId!, this._iModelId!.toString(), OpenParams.pullAndPush(), IModelVersion.latest());
+    if (this._iModelDb instanceof BriefcaseDb) {
       this._iModelDb.concurrencyControl.setPolicy(ConcurrencyControl.OptimisticPolicy); // don't want to bother with locks.
     }
     const lastLevel = this._currentLevel + count;
@@ -64,7 +64,7 @@ export class TestPushUtility {
     if (fs.existsSync(pathname))
       fs.unlinkSync(pathname);
 
-    this._iModelDb = SnapshotIModelDb.createEmpty(pathname, { rootSubject: { name: this.iModelName! } });
+    this._iModelDb = SnapshotDb.createEmpty(pathname, { rootSubject: { name: this.iModelName! } });
 
     const definitionModelId: Id64String = IModel.dictionaryId;
     this._physicalModelId = PhysicalModel.insert(this._iModelDb, IModel.rootSubjectId, "TestModel");
@@ -170,7 +170,7 @@ export class TestPushUtility {
   private async createTestChangeSet() {
     this.insertTestElement(this._currentLevel, 0);
     this.insertTestElement(this._currentLevel, 1);
-    if (this._iModelDb instanceof BriefcaseIModelDb) {
+    if (this._iModelDb instanceof BriefcaseDb) {
       await this._iModelDb!.concurrencyControl.request(this._requestContext!);
       this._iModelDb!.saveChanges(`Inserted elements into level ${this._currentLevel}`);
       this.updateTestElement(this._currentLevel - 1, 0);
@@ -188,7 +188,7 @@ export class TestPushUtility {
 
   private async pushTestChangeSet() {
     const description = TestPushUtility.getChangeSetDescription(this._currentLevel);
-    if (this._iModelDb instanceof BriefcaseIModelDb) {
+    if (this._iModelDb instanceof BriefcaseDb) {
       await this._iModelDb!.pushChanges(this._requestContext!, description);
     }
   }

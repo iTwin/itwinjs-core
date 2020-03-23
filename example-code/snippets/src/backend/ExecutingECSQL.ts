@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { DbResult, Id64String } from "@bentley/bentleyjs-core";
-import { ECSqlStatement, ECSqlValue, IModelDb, SnapshotIModelDb } from "@bentley/imodeljs-backend";
+import { ECSqlStatement, ECSqlValue, IModelDb, SnapshotDb } from "@bentley/imodeljs-backend";
 import { NavigationValue } from "@bentley/imodeljs-common";
 
 // tslint:disable:no-console
@@ -197,6 +197,6 @@ function executeECSql_QueryResult(iModel: IModelDb) {
   // __PUBLISH_EXTRACT_END__
 }
 
-const dummyIModel = SnapshotIModelDb.open("");
+const dummyIModel = SnapshotDb.open("");
 executeECSql_Binding(dummyIModel);
 executeECSql_QueryResult(dummyIModel);

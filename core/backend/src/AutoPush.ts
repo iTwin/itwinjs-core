@@ -11,7 +11,7 @@ import { AccessToken } from "@bentley/imodeljs-clients";
 import { IModelError, RpcRequest } from "@bentley/imodeljs-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { AuthorizedBackendRequestContext } from "./BackendRequestContext";
-import { BriefcaseIModelDb } from "./IModelDb";
+import { BriefcaseDb } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
@@ -78,13 +78,13 @@ export enum AutoPushEventType {
 export type AutoPushEventHandler = (etype: AutoPushEventType, autoPush: AutoPush) => void;
 
 /** Use AutoPush to automatically push local changes to a specified IModel. To do this,
- * create an AutoPush object, specifying the BriefcaseIModelDb that should be monitored.
+ * create an AutoPush object, specifying the BriefcaseDb that should be monitored.
  * The instance registers itself to react to events and timers. Often, backend will start
- * auto-pushing when a BriefcaseIModelDb is opened for read-write.
+ * auto-pushing when a BriefcaseDb is opened for read-write.
  *
  * *Example:*
  * ``` ts
- * [[include:BriefcaseIModelDb.onOpened]]
+ * [[include:BriefcaseDb.onOpened]]
  * ```
  * A service or agent would normally get its [[AutoPushParams]] parameters from data provided
  * at deployment time. For example, a service might read configuration data from a .json file
@@ -111,7 +111,7 @@ export type AutoPushEventHandler = (etype: AutoPushEventType, autoPush: AutoPush
  * @beta
  */
 export class AutoPush {
-  private _iModel: BriefcaseIModelDb;
+  private _iModel: BriefcaseDb;
   private _autoSchedule: boolean;
   private _pushIntervalMillisMin: number;
   private _pushIntervalMillisMax: number;
@@ -128,7 +128,7 @@ export class AutoPush {
    * @param params  Auto-push configuration parameters
    * @param activityMonitor The activity monitor that will tell me when the app is idle. Defaults to BackendActivityMonitor with a 1 second idle period.
    */
-  constructor(iModel: BriefcaseIModelDb, params: AutoPushParams, activityMonitor?: AppActivityMonitor) {
+  constructor(iModel: BriefcaseDb, params: AutoPushParams, activityMonitor?: AppActivityMonitor) {
     AutoPush.validateAutoPushParams(params);
     iModel.onBeforeClose.addListener(() => this.cancel());
     this._iModel = iModel;
@@ -179,7 +179,7 @@ export class AutoPush {
   }
 
   /** The IModelDb that this is auto-pushing. */
-  public get iModel(): BriefcaseIModelDb { return this._iModel; }
+  public get iModel(): BriefcaseDb { return this._iModel; }
 
   /** The time that the last push finished in unix milliseconds. Returns 0 if no push has yet been done. */
   public get endOfLastPushMillis() { return (this._startOfPushMillis <= this._endOfPushMillis) ? this._endOfPushMillis : 0; }

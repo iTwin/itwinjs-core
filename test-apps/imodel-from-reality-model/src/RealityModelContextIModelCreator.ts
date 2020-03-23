@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import { Matrix3d, Point3d, Range3d, StandardViewIndex, Transform, Vector3d } from "@bentley/geometry-core";
-import { CategorySelector, DefinitionModel, DisplayStyle3d, IModelDb, ModelSelector, OrthographicViewDefinition, PhysicalModel, SnapshotIModelDb } from "@bentley/imodeljs-backend";
+import { CategorySelector, DefinitionModel, DisplayStyle3d, IModelDb, ModelSelector, OrthographicViewDefinition, PhysicalModel, SnapshotDb } from "@bentley/imodeljs-backend";
 import { AxisAlignedBox3d, Cartographic, ContextRealityModelProps, EcefLocation, RenderMode, ViewFlags } from "@bentley/imodeljs-common";
 import * as fs from "fs";
 import * as requestPromise from "request-promise-native";
@@ -60,7 +60,7 @@ export class RealityModelContextIModelCreator {
    */
   public constructor(iModelFileName: string, url: string, private _name: string) {
     fs.unlink(iModelFileName, ((_err) => { }));
-    this.iModelDb = SnapshotIModelDb.createEmpty(iModelFileName, { rootSubject: { name: "Reality Model Context" } });
+    this.iModelDb = SnapshotDb.createEmpty(iModelFileName, { rootSubject: { name: "Reality Model Context" } });
     this.url = url;
   }
   private realityModelFromJson(json: any, worldRange: AxisAlignedBox3d): { realityModel: ContextRealityModelProps | undefined, geoLocated: boolean } {

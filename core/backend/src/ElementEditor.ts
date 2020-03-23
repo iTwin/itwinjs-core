@@ -13,7 +13,7 @@ import { GeometricElement3dProps, GeometryStreamBuilder, Placement3d } from "@be
 import * as deepAssign from "deep-assign";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { GeometricElement3d } from "./Element";
-import { IModelDb, BriefcaseIModelDb } from "./IModelDb";
+import { IModelDb, BriefcaseDb } from "./IModelDb";
 
 const loggingCategory = BackendLoggerCategory.Editing;
 
@@ -82,7 +82,7 @@ export class GeometricElement3dEditor implements IElementEditor {
   public async startModifyingElements(ctx: AuthorizedClientRequestContext, elementIds: Id64Array): Promise<void> {
     ctx.enter();
     const elements = elementIds.map((id: string) => ({ element: this.iModel.elements.getElement<GeometricElement3d>(id), opcode: DbOpcode.Update }));
-    if (this.iModel instanceof BriefcaseIModelDb) {
+    if (this.iModel instanceof BriefcaseDb) {
       await this.iModel.concurrencyControl.requestResources(ctx, elements); // don't allow the tool to start editing this element until we have locked them and their models.
       ctx.enter();
     }

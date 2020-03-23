@@ -5,12 +5,12 @@
 import { Code, EntityMetaData } from "@bentley/imodeljs-common";
 import { assert } from "chai";
 import * as path from "path";
-import { BackendRequestContext, DefinitionElement, IModelDb, RepositoryLink, SnapshotIModelDb, SpatialViewDefinition, UrlLink, ViewDefinition3d } from "../../imodeljs-backend";
+import { BackendRequestContext, DefinitionElement, IModelDb, RepositoryLink, SnapshotDb, SpatialViewDefinition, UrlLink, ViewDefinition3d } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 
 describe("Class Registry", () => {
-  let imodel: SnapshotIModelDb;
+  let imodel: SnapshotDb;
   const requestContext = new BackendRequestContext();
 
   before(() => {

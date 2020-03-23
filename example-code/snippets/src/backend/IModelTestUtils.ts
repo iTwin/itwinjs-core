@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { OpenMode } from "@bentley/bentleyjs-core";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
-import { IModelHost, IModelHostConfiguration, KnownLocations, SnapshotIModelDb, StandaloneIModelDb } from "@bentley/imodeljs-backend";
+import { IModelHost, IModelHostConfiguration, KnownLocations, SnapshotDb, StandaloneDb } from "@bentley/imodeljs-backend";
 import { IModelJsFs, IModelJsFsStats } from "@bentley/imodeljs-backend/lib/IModelJsFs";
 import { Config, ConnectClient } from "@bentley/imodeljs-clients";
 import { IModelReadRpcInterface, RpcManager } from "@bentley/imodeljs-common";
@@ -68,17 +68,17 @@ export class IModelTestUtils {
     return dbName;
   }
 
-  public static openSnapshotFromSeed(filename: string, opts?: IModelTestUtilsOpenOptions): SnapshotIModelDb {
+  public static openSnapshotFromSeed(filename: string, opts?: IModelTestUtilsOpenOptions): SnapshotDb {
     const dbName = IModelTestUtils.copyIModelForOpen(filename, opts || {});
-    const iModel = SnapshotIModelDb.open(dbName); // could throw Error
+    const iModel = SnapshotDb.open(dbName); // could throw Error
     assert.exists(iModel);
     return iModel!;
   }
 
-  public static openIModelForWrite(filename: string, opts?: IModelTestUtilsOpenOptions): StandaloneIModelDb {
+  public static openIModelForWrite(filename: string, opts?: IModelTestUtilsOpenOptions): StandaloneDb {
     opts = opts || {};
     const dbName = IModelTestUtils.copyIModelForOpen(filename, opts);
-    const iModel = StandaloneIModelDb.open(dbName, OpenMode.ReadWrite);
+    const iModel = StandaloneDb.open(dbName, OpenMode.ReadWrite);
     assert.exists(iModel);
     return iModel;
   }

@@ -9,7 +9,7 @@ import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { Reporter } from "@bentley/perf-tools/lib/Reporter";
 import { assert } from "chai";
 import * as path from "path";
-import { BriefcaseIModelDb, BriefcaseManager, ConcurrencyControl, DictionaryModel, Element, IModelDb, IModelJsFs, KeepBriefcase, OpenParams, SpatialCategory } from "../imodeljs-backend";
+import { BriefcaseDb, BriefcaseManager, ConcurrencyControl, DictionaryModel, Element, IModelDb, IModelJsFs, KeepBriefcase, OpenParams, SpatialCategory } from "../imodeljs-backend";
 import { IModelTestUtils, TestIModelInfo } from "../test/IModelTestUtils";
 import { KnownTestLocations } from "../test/KnownTestLocations";
 
@@ -20,7 +20,7 @@ async function getIModelAfterApplyingCS(requestContext: AuthorizedClientRequestC
 
   // open imodel first time from imodel-hub with first revision
   const startTime = new Date().getTime();
-  const iModelDb = await BriefcaseIModelDb.open(requestContext, projectId, imodelId, OpenParams.fixedVersion(), IModelVersion.asOfChangeSet(firstChangeSetId));
+  const iModelDb = await BriefcaseDb.open(requestContext, projectId, imodelId, OpenParams.fixedVersion(), IModelVersion.asOfChangeSet(firstChangeSetId));
   const endTime = new Date().getTime();
   assert.exists(iModelDb);
   const elapsedTime = (endTime - startTime) / 1000.0;
@@ -30,7 +30,7 @@ async function getIModelAfterApplyingCS(requestContext: AuthorizedClientRequestC
 
   // open imodel from local cache with second revision
   const startTime1 = new Date().getTime();
-  const iModelDb1 = await BriefcaseIModelDb.open(requestContext, projectId, imodelId, OpenParams.fixedVersion(), IModelVersion.asOfChangeSet(secondChangeSetId));
+  const iModelDb1 = await BriefcaseDb.open(requestContext, projectId, imodelId, OpenParams.fixedVersion(), IModelVersion.asOfChangeSet(secondChangeSetId));
   const endTime1 = new Date().getTime();
   assert.exists(iModelDb1);
   const elapsedTime1 = (endTime1 - startTime1) / 1000.0;
@@ -40,7 +40,7 @@ async function getIModelAfterApplyingCS(requestContext: AuthorizedClientRequestC
 
   // open imodel from local cache with first revision
   const startTime2 = new Date().getTime();
-  const iModelDb2 = await BriefcaseIModelDb.open(requestContext, projectId, imodelId, OpenParams.fixedVersion(), IModelVersion.first());
+  const iModelDb2 = await BriefcaseDb.open(requestContext, projectId, imodelId, OpenParams.fixedVersion(), IModelVersion.first());
   const endTime2 = new Date().getTime();
   assert.exists(iModelDb2);
   const elapsedTime2 = (endTime2 - startTime2) / 1000.0;
@@ -49,7 +49,7 @@ async function getIModelAfterApplyingCS(requestContext: AuthorizedClientRequestC
 
   // open imodel from local cache with latest revision
   const startTime3 = new Date().getTime();
-  const iModelDb3 = await BriefcaseIModelDb.open(requestContext, projectId, imodelId, OpenParams.fixedVersion(), IModelVersion.named("latest"));
+  const iModelDb3 = await BriefcaseDb.open(requestContext, projectId, imodelId, OpenParams.fixedVersion(), IModelVersion.named("latest"));
   const endTime3 = new Date().getTime();
   assert.exists(iModelDb3);
   const elapsedTime3 = (endTime3 - startTime3) / 1000.0;
@@ -58,7 +58,7 @@ async function getIModelAfterApplyingCS(requestContext: AuthorizedClientRequestC
 }
 
 async function pushIModelAfterMetaChanges(requestContext: AuthorizedClientRequestContext, reporter: Reporter, projectId: string, imodelPushId: string) {
-  const iModelPullAndPush = await BriefcaseIModelDb.open(requestContext, projectId, imodelPushId, OpenParams.pullAndPush(), IModelVersion.latest());
+  const iModelPullAndPush = await BriefcaseDb.open(requestContext, projectId, imodelPushId, OpenParams.pullAndPush(), IModelVersion.latest());
   assert.exists(iModelPullAndPush);
   iModelPullAndPush.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
 
@@ -95,7 +95,7 @@ async function createNewModelAndCategory(requestContext: AuthorizedClientRequest
 
   // Reserve all of the codes that are required by the new model and category.
   try {
-    if (rwIModel instanceof BriefcaseIModelDb) {
+    if (rwIModel instanceof BriefcaseDb) {
       await rwIModel.concurrencyControl.request(requestContext);
       requestContext.enter();
     }
@@ -116,7 +116,7 @@ async function pushIModelAfterDataChanges(requestContext: AuthorizedClientReques
     await BriefcaseManager.imodelClient.iModels.delete(requestContext, projectId, iModelTemp.id!);
   }
   // create new imodel with given name
-  const rwIModel = await BriefcaseIModelDb.create(requestContext, projectId, iModelName, { rootSubject: { name: "TestSubject" } });
+  const rwIModel = await BriefcaseDb.create(requestContext, projectId, iModelName, { rootSubject: { name: "TestSubject" } });
   const rwIModelId = rwIModel.iModelToken.iModelId;
   assert.isNotEmpty(rwIModelId);
 
@@ -143,7 +143,7 @@ async function pushIModelAfterSchemaChanges(requestContext: AuthorizedClientRequ
     await BriefcaseManager.imodelClient.iModels.delete(requestContext, projectId, iModelTemp.id!);
   }
   // create new imodel with given name
-  const rwIModel = await BriefcaseIModelDb.create(requestContext, projectId, iModelName, { rootSubject: { name: "TestSubject" } });
+  const rwIModel = await BriefcaseDb.create(requestContext, projectId, iModelName, { rootSubject: { name: "TestSubject" } });
   const rwIModelId = rwIModel.iModelToken.iModelId;
   assert.isNotEmpty(rwIModelId);
   // import schema and push change to hub
@@ -169,7 +169,7 @@ const getElementCount = (iModel: IModelDb): number => {
 };
 
 async function executeQueryTime(requestContext: AuthorizedClientRequestContext, reporter: Reporter, projectId: string, imodelId: string) {
-  const iModelDb = await BriefcaseIModelDb.open(requestContext, projectId, imodelId, OpenParams.fixedVersion(), IModelVersion.named("latest"));
+  const iModelDb = await BriefcaseDb.open(requestContext, projectId, imodelId, OpenParams.fixedVersion(), IModelVersion.named("latest"));
   assert.exists(iModelDb);
   const startTime = new Date().getTime();
   const stat = IModelTestUtils.executeQuery(iModelDb, "SELECT * FROM BisCore.LineStyle");
@@ -188,7 +188,7 @@ async function reverseChanges(requestContext: AuthorizedClientRequestContext, re
     await BriefcaseManager.imodelClient.iModels.delete(requestContext, projectId, iModelTemp.id!);
 
   // create new imodel with given name
-  const rwIModel = await BriefcaseIModelDb.create(requestContext, projectId, iModelName, { rootSubject: { name: "TestSubject" } });
+  const rwIModel = await BriefcaseDb.create(requestContext, projectId, iModelName, { rootSubject: { name: "TestSubject" } });
   const rwIModelId = rwIModel.iModelToken.iModelId;
   assert.isNotEmpty(rwIModelId);
 
@@ -233,7 +233,7 @@ async function reinstateChanges(requestContext: AuthorizedClientRequestContext, 
     await BriefcaseManager.imodelClient.iModels.delete(requestContext, projectId, iModelTemp.id!);
 
   // create new imodel with given name
-  const rwIModel = await BriefcaseIModelDb.create(requestContext, projectId, iModelName, { rootSubject: { name: "TestSubject" } });
+  const rwIModel = await BriefcaseDb.create(requestContext, projectId, iModelName, { rootSubject: { name: "TestSubject" } });
   const rwIModelId = rwIModel.iModelToken.iModelId;
   assert.isNotEmpty(rwIModelId);
 

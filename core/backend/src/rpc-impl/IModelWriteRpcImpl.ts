@@ -8,7 +8,7 @@
 import { Id64, ClientRequestContext, Id64String, DbOpcode, assert, Id64Array, GuidString } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext, LockLevel, LockType } from "@bentley/imodeljs-clients";
 import { RpcInterface, RpcManager, IModelProps, IModelToken, IModelTokenProps, IModelWriteRpcInterface, ThumbnailProps, ImageSourceFormat, AxisAlignedBox3dProps, CodeProps, ElementProps, IModel, RelatedElement, SubCategoryAppearance, Code } from "@bentley/imodeljs-common";
-import { BriefcaseIModelDb, IModelDb, OpenParams } from "../IModelDb";
+import { BriefcaseDb, IModelDb, OpenParams } from "../IModelDb";
 import { Range3d } from "@bentley/geometry-core";
 import { ConcurrencyControl, AuthorizedBackendRequestContext, PhysicalPartition, SubjectOwnsPartitionElements, PhysicalModel, SpatialCategory, Element } from "../imodeljs-backend";
 
@@ -22,7 +22,7 @@ class EditingFunctions {
       code: newModelCode,
     };
     const modeledElement: Element = iModelDb.elements.createElement(modeledElementProps);
-    if (iModelDb instanceof BriefcaseIModelDb) {
+    if (iModelDb instanceof BriefcaseDb) {
       await iModelDb.concurrencyControl.requestResources(rqctx, [{ element: modeledElement, opcode: DbOpcode.Insert }]);
       rqctx.enter();
     }
@@ -31,7 +31,7 @@ class EditingFunctions {
 
   public static async createAndInsertPhysicalModel(rqctx: AuthorizedBackendRequestContext, iModelDb: IModelDb, modeledElementRef: RelatedElement, privateModel: boolean = false): Promise<Id64String> {
     const newModel = iModelDb.models.createModel({ modeledElement: modeledElementRef, classFullName: PhysicalModel.classFullName, isPrivate: privateModel });
-    if (iModelDb instanceof BriefcaseIModelDb) {
+    if (iModelDb instanceof BriefcaseDb) {
       await iModelDb.concurrencyControl.requestResources(rqctx, [], [{ model: newModel, opcode: DbOpcode.Insert }]);
       rqctx.enter();
     }
@@ -50,7 +50,7 @@ class EditingFunctions {
 
   public static async createAndInsertSpatialCategory(rqctx: AuthorizedBackendRequestContext, iModelDb: IModelDb, scopeModelId: Id64String, categoryName: string, appearance: SubCategoryAppearance.Props): Promise<Id64String> {
     const category = SpatialCategory.create(iModelDb, scopeModelId, categoryName);
-    if (iModelDb instanceof BriefcaseIModelDb) {
+    if (iModelDb instanceof BriefcaseDb) {
       await iModelDb.concurrencyControl.requestResources(rqctx, [{ element: category, opcode: DbOpcode.Insert }]);
       rqctx.enter();
     }
@@ -72,7 +72,7 @@ export class IModelWriteRpcImpl extends RpcInterface implements IModelWriteRpcIn
     const iModelToken = IModelToken.fromJSON(tokenProps);
     const openParams: OpenParams = OpenParams.pullAndPush();
     openParams.timeout = 1000;
-    const db = await BriefcaseIModelDb.open(requestContext, iModelToken.contextId!, iModelToken.iModelId!, openParams);
+    const db = await BriefcaseDb.open(requestContext, iModelToken.contextId!, iModelToken.iModelId!, openParams);
     return db.toJSON();
   }
 
@@ -93,7 +93,7 @@ export class IModelWriteRpcImpl extends RpcInterface implements IModelWriteRpcIn
 
   public async getParentChangeset(tokenProps: IModelTokenProps): Promise<string> {
     const iModelToken = IModelToken.fromJSON(tokenProps);
-    return BriefcaseIModelDb.findByToken(iModelToken).briefcase.parentChangeSetId;
+    return BriefcaseDb.findByToken(iModelToken).briefcase.parentChangeSetId;
   }
 
   public async updateProjectExtents(tokenProps: IModelTokenProps, newExtents: AxisAlignedBox3dProps): Promise<void> {
@@ -116,7 +116,7 @@ export class IModelWriteRpcImpl extends RpcInterface implements IModelWriteRpcIn
   }
 
   public async lockModel(tokenProps: IModelTokenProps, modelId: Id64String, level: LockLevel): Promise<void> {
-    const iModelDb = BriefcaseIModelDb.findByToken(IModelToken.fromJSON(tokenProps));
+    const iModelDb = BriefcaseDb.findByToken(IModelToken.fromJSON(tokenProps));
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
     const request = new ConcurrencyControl.Request();
     request.addLocks([{ type: LockType.Model, objectId: modelId, level }]);
@@ -124,13 +124,13 @@ export class IModelWriteRpcImpl extends RpcInterface implements IModelWriteRpcIn
   }
 
   public async synchConcurrencyControlResourcesCache(tokenProps: IModelTokenProps): Promise<void> {
-    const iModelDb = BriefcaseIModelDb.findByToken(IModelToken.fromJSON(tokenProps));
+    const iModelDb = BriefcaseDb.findByToken(IModelToken.fromJSON(tokenProps));
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
     return iModelDb.concurrencyControl.syncCache(requestContext);
   }
 
   public async pullMergePush(tokenProps: IModelTokenProps, comment: string, doPush: boolean): Promise<GuidString> {
-    const iModelDb = BriefcaseIModelDb.findByToken(IModelToken.fromJSON(tokenProps));
+    const iModelDb = BriefcaseDb.findByToken(IModelToken.fromJSON(tokenProps));
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
     await iModelDb.pullAndMergeChanges(requestContext);
     requestContext.enter();
@@ -142,13 +142,13 @@ export class IModelWriteRpcImpl extends RpcInterface implements IModelWriteRpcIn
 
   public async doConcurrencyControlRequest(tokenProps: IModelTokenProps): Promise<void> {
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
-    const iModelDb = BriefcaseIModelDb.findByToken(IModelToken.fromJSON(tokenProps));
+    const iModelDb = BriefcaseDb.findByToken(IModelToken.fromJSON(tokenProps));
     const rqctx = new AuthorizedBackendRequestContext(requestContext.accessToken);
     return iModelDb.concurrencyControl.request(rqctx);
   }
 
   public async getModelsAffectedByWrites(tokenProps: IModelTokenProps): Promise<Id64String[]> {
-    const iModelDb = BriefcaseIModelDb.findByToken(IModelToken.fromJSON(tokenProps));
+    const iModelDb = BriefcaseDb.findByToken(IModelToken.fromJSON(tokenProps));
     return iModelDb.concurrencyControl.modelsAffectedByWrites;
   }
 
@@ -159,7 +159,7 @@ export class IModelWriteRpcImpl extends RpcInterface implements IModelWriteRpcIn
 
   public async requestResources(tokenProps: IModelTokenProps, elementIds: Id64Array, modelIds: Id64Array, opcode: DbOpcode): Promise<void> {
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
-    const iModelDb = BriefcaseIModelDb.findByToken(IModelToken.fromJSON(tokenProps));
+    const iModelDb = BriefcaseDb.findByToken(IModelToken.fromJSON(tokenProps));
     const elements = elementIds.map((id: string) => ({ element: iModelDb.elements.getElement(id), opcode }));
     const models = modelIds.map((id: string) => ({ model: iModelDb.models.getModel(id), opcode }));
     return iModelDb.concurrencyControl.requestResources(requestContext, elements, models);

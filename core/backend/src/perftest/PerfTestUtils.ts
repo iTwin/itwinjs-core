@@ -5,11 +5,11 @@
 import { Code, ColorDef, DbResult, IModel, SubCategoryAppearance } from "@bentley/imodeljs-common";
 import { assert } from "chai";
 import * as path from "path";
-import { BackendRequestContext, IModelJsFs, SnapshotIModelDb, SpatialCategory } from "../imodeljs-backend";
+import { BackendRequestContext, IModelJsFs, SnapshotDb, SpatialCategory } from "../imodeljs-backend";
 import { IModelTestUtils } from "../test/IModelTestUtils";
 
 export class PerfTestDataMgr {
-  public db: SnapshotIModelDb | undefined;
+  public db: SnapshotDb | undefined;
   public modelId: any;
   public catId: any;
 
@@ -20,7 +20,7 @@ export class PerfTestDataMgr {
     }
     const fName = path.basename(imodelPath);
     const dirName = path.basename(path.dirname(imodelPath));
-    this.db = SnapshotIModelDb.createEmpty(IModelTestUtils.prepareOutputFile(dirName, fName), { rootSubject: { name: "PerfTest" } });
+    this.db = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile(dirName, fName), { rootSubject: { name: "PerfTest" } });
   }
   public async importSchema(scehamPath: string, testCName: string = "") {
     assert(IModelJsFs.existsSync(scehamPath));

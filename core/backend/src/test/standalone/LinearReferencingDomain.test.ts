@@ -11,7 +11,7 @@ import {
 } from "@bentley/imodeljs-common";
 import {
   BackendRequestContext, LinearReferencingSchema,
-  PhysicalModel, IModelDb, SpatialCategory, PhysicalPartition, SubjectOwnsPartitionElements, LinearlyReferencedFromToLocation, Schema, Schemas, ClassRegistry, SnapshotIModelDb,
+  PhysicalModel, IModelDb, SpatialCategory, PhysicalPartition, SubjectOwnsPartitionElements, LinearlyReferencedFromToLocation, Schema, Schemas, ClassRegistry, SnapshotDb,
 } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { LinearElement, LinearlyLocated, LinearlyLocatedAttribution, LinearlyLocatedSingleFromTo } from "../../domains/LinearReferencingElements";
@@ -66,7 +66,7 @@ describe("LinearReferencing Domain", () => {
   const requestContext = new BackendRequestContext();
 
   it("should create elements exercising the LinearReferencing domain", async () => {
-    const iModelDb = SnapshotIModelDb.createEmpty(IModelTestUtils.prepareOutputFile("LinearReferencingDomain", "LinearReferencingTest.bim"), {
+    const iModelDb = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("LinearReferencingDomain", "LinearReferencingTest.bim"), {
       rootSubject: { name: "LinearReferencingTest", description: "Test of the LinearReferencing domain schema." },
       client: "LinearReferencing",
       globalOrigin: { x: 0, y: 0 },

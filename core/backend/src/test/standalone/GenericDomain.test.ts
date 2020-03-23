@@ -5,7 +5,7 @@
 import { Guid, Id64, Id64String } from "@bentley/bentleyjs-core";
 import { CategoryProps, Code, ElementProps, GeometricElement3dProps, IModel, InformationPartitionElementProps } from "@bentley/imodeljs-common";
 import { assert } from "chai";
-import { GenericSchema, Group, GroupInformationPartition, GroupModel, IModelJsFs, PhysicalModel, PhysicalObject, PhysicalPartition, SnapshotIModelDb, SpatialCategory, SubjectOwnsPartitionElements } from "../../imodeljs-backend";
+import { GenericSchema, Group, GroupInformationPartition, GroupModel, IModelJsFs, PhysicalModel, PhysicalObject, PhysicalPartition, SnapshotDb, SpatialCategory, SubjectOwnsPartitionElements } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
 describe("Generic Domain", () => {
@@ -16,7 +16,7 @@ describe("Generic Domain", () => {
     assert.equal(GenericSchema.schemaName, "Generic");
     assert.isTrue(PhysicalObject.classFullName.startsWith(GenericSchema.schemaName));
 
-    const iModelDb = SnapshotIModelDb.createEmpty(IModelTestUtils.prepareOutputFile("GenericDomain", "GenericTest.bim"), {
+    const iModelDb = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("GenericDomain", "GenericTest.bim"), {
       rootSubject: { name: "GenericTest", description: "Test of the Generic domain schema." },
       client: "Generic",
       globalOrigin: { x: 0, y: 0 },

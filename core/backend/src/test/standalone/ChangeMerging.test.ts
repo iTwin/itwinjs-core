@@ -6,7 +6,7 @@ import { ChangeSetApplyOption, ChangeSetStatus, Id64String, OpenMode } from "@be
 import { IModel, IModelError, SubCategoryAppearance } from "@bentley/imodeljs-common";
 import { assert } from "chai";
 import * as path from "path";
-import { ChangeSetToken, ConcurrencyControl, DictionaryModel, Element, IModelDb, IModelHost, IModelJsFs, IModelJsNative, ReservedBriefcaseId, SpatialCategory, StandaloneIModelDb } from "../../imodeljs-backend";
+import { ChangeSetToken, ConcurrencyControl, DictionaryModel, Element, IModelDb, IModelHost, IModelJsFs, IModelJsNative, ReservedBriefcaseId, SpatialCategory, StandaloneDb } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 
@@ -52,7 +52,7 @@ describe("ChangeMerging", () => {
     const testFileName = IModelTestUtils.prepareOutputFile("ChangeMerging", "upgraded.bim");
     const seedFileName = IModelTestUtils.resolveAssetFile("testImodel.bim");
     IModelJsFs.copySync(seedFileName, testFileName);
-    const upgradedDb = StandaloneIModelDb.open(testFileName, OpenMode.ReadWrite);
+    const upgradedDb = StandaloneDb.open(testFileName, OpenMode.ReadWrite);
     upgradedDb.nativeDb.enableTxnTesting();
     upgradedDb.saveChanges();
     createChangeSet(upgradedDb);
@@ -64,9 +64,9 @@ describe("ChangeMerging", () => {
     IModelJsFs.copySync(testFileName, firstFileName);
     IModelJsFs.copySync(testFileName, secondFileName);
     IModelJsFs.copySync(testFileName, neutralFileName);
-    const firstDb = StandaloneIModelDb.open(firstFileName, OpenMode.ReadWrite);
-    const secondDb = StandaloneIModelDb.open(secondFileName, OpenMode.ReadWrite);
-    const neutralDb = StandaloneIModelDb.open(neutralFileName, OpenMode.ReadWrite);
+    const firstDb = StandaloneDb.open(firstFileName, OpenMode.ReadWrite);
+    const secondDb = StandaloneDb.open(secondFileName, OpenMode.ReadWrite);
+    const neutralDb = StandaloneDb.open(neutralFileName, OpenMode.ReadWrite);
     assert.isTrue(firstDb !== secondDb);
     firstDb.nativeDb.setBriefcaseId(ReservedBriefcaseId.FutureStandalone);
     secondDb.nativeDb.setBriefcaseId(ReservedBriefcaseId.FutureStandalone);

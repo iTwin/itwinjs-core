@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { EnvMacroSubst, OpenMode } from "@bentley/bentleyjs-core";
-import { BriefcaseIModelDb, ConcurrencyControl, OpenParams } from "@bentley/imodeljs-backend";
+import { BriefcaseDb, ConcurrencyControl, OpenParams } from "@bentley/imodeljs-backend";
 import { AccessToken, AuthorizedClientRequestContext, Config } from "@bentley/imodeljs-clients";
 import { IModelError, IModelStatus, IModelVersion } from "@bentley/imodeljs-common";
 import { TestUserCredentials, TestUtility } from "@bentley/oidc-signin-tool";
@@ -30,16 +30,16 @@ export function readConfigParams(): any {
 // __PUBLISH_EXTRACT_END__
 
 function configureIModel() {
-  // __PUBLISH_EXTRACT_START__ BriefcaseIModelDb.onOpen
-  BriefcaseIModelDb.onOpen.addListener((_requestContext: AuthorizedClientRequestContext, _contextId: string, _iModelId: string, openParams: OpenParams, _version: IModelVersion) => {
+  // __PUBLISH_EXTRACT_START__ BriefcaseDb.onOpen
+  BriefcaseDb.onOpen.addListener((_requestContext: AuthorizedClientRequestContext, _contextId: string, _iModelId: string, openParams: OpenParams, _version: IModelVersion) => {
     // A read-only service might want to reject all requests to open an iModel for writing. It can do this in the onOpen event.
     if (openParams.openMode !== OpenMode.Readonly)
       throw new IModelError(IModelStatus.BadRequest, "Navigator is readonly");
   });
   // __PUBLISH_EXTRACT_END__
 
-  // __PUBLISH_EXTRACT_START__ BriefcaseIModelDb.onOpened
-  BriefcaseIModelDb.onOpened.addListener((_requestContext: AuthorizedClientRequestContext, iModel: BriefcaseIModelDb) => {
+  // __PUBLISH_EXTRACT_START__ BriefcaseDb.onOpened
+  BriefcaseDb.onOpened.addListener((_requestContext: AuthorizedClientRequestContext, iModel: BriefcaseDb) => {
     if (iModel.openParams.openMode !== OpenMode.ReadWrite)
       return;
 

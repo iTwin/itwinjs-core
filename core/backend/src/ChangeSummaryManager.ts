@@ -15,7 +15,7 @@ import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { ECDb, ECDbOpenMode } from "./ECDb";
 import { ECSqlStatement } from "./ECSqlStatement";
-import { BriefcaseIModelDb, IModelDb } from "./IModelDb";
+import { BriefcaseDb, IModelDb } from "./IModelDb";
 import { KnownLocations } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 
@@ -66,7 +66,7 @@ export interface ChangeSummaryExtractOptions {
 
 /** @beta */
 export class ChangeSummaryExtractContext {
-  public constructor(public readonly iModel: BriefcaseIModelDb) { }
+  public constructor(public readonly iModel: BriefcaseDb) { }
 
   public get iModelId(): GuidString { assert(!!this.iModel.briefcase); return this.iModel.briefcase!.iModelId; }
 }
@@ -84,7 +84,7 @@ export class ChangeSummaryManager {
    * @param iModel iModel to check whether a *Change Cache file* is attached
    * @returns Returns true if the *Change Cache file* is attached to the iModel. false otherwise
    */
-  public static isChangeCacheAttached(iModel: BriefcaseIModelDb): boolean {
+  public static isChangeCacheAttached(iModel: BriefcaseDb): boolean {
     if (!iModel || !iModel.briefcase || !iModel.briefcase.isOpen || iModel.openParams.isSnapshot)
       throw new IModelError(IModelStatus.BadRequest, "Invalid iModel object. iModel must be open and not a snapshot iModel.");
 
@@ -96,7 +96,7 @@ export class ChangeSummaryManager {
    * @param iModel iModel to attach the *Change Cache file* file to
    * @throws [IModelError]($common)
    */
-  public static attachChangeCache(iModel: BriefcaseIModelDb): void {
+  public static attachChangeCache(iModel: BriefcaseDb): void {
     if (!iModel || !iModel.briefcase || !iModel.briefcase.isOpen || iModel.openParams.isSnapshot)
       throw new IModelError(IModelStatus.BadRequest, "Invalid iModel object. iModel must be open and not a snapshot iModel.");
 
@@ -120,7 +120,7 @@ export class ChangeSummaryManager {
    * @param iModel iModel to detach the *Change Cache file* to
    * @throws [IModelError]($common) in case of errors, e.g. if no *Change Cache file* was attached before.
    */
-  public static detachChangeCache(iModel: BriefcaseIModelDb): void {
+  public static detachChangeCache(iModel: BriefcaseDb): void {
     if (!iModel || !iModel.briefcase || !iModel.briefcase.isOpen || iModel.openParams.isSnapshot)
       throw new IModelError(IModelStatus.BadRequest, "Invalid iModel object. iModel must be open and not a snapshot iModel.");
 
@@ -142,7 +142,7 @@ export class ChangeSummaryManager {
    * @return the Ids of the extracted change summaries.
    * @throws [IModelError]($common) if the iModel is standalone
    */
-  public static async extractChangeSummaries(requestContext: AuthorizedClientRequestContext, iModel: BriefcaseIModelDb, options?: ChangeSummaryExtractOptions): Promise<Id64String[]> {
+  public static async extractChangeSummaries(requestContext: AuthorizedClientRequestContext, iModel: BriefcaseDb, options?: ChangeSummaryExtractOptions): Promise<Id64String[]> {
     requestContext.enter();
     if (!iModel || !iModel.briefcase || !iModel.briefcase.isOpen || iModel.openParams.isSnapshot)
       throw new IModelError(IModelStatus.BadArg, "iModel to extract change summaries for must be open and must not be a snapshot iModel.");
@@ -285,7 +285,7 @@ export class ChangeSummaryManager {
     return changeSetInfos;
   }
 
-  private static openOrCreateChangesFile(iModel: BriefcaseIModelDb): ECDb {
+  private static openOrCreateChangesFile(iModel: BriefcaseDb): ECDb {
     if (!iModel || !iModel.briefcase || !iModel.briefcase.isOpen)
       throw new IModelError(IModelStatus.BadArg, "Invalid iModel handle. iModel must be open.");
 
@@ -308,7 +308,7 @@ export class ChangeSummaryManager {
     }
   }
 
-  private static createChangeCacheFile(iModel: BriefcaseIModelDb, changesFile: ECDb, changeCacheFilePath: string): void {
+  private static createChangeCacheFile(iModel: BriefcaseDb, changesFile: ECDb, changeCacheFilePath: string): void {
     if (!iModel || !iModel.briefcase || !iModel.briefcase.isOpen)
       throw new IModelError(IModelStatus.BadArg, "Invalid iModel object. iModel must be open.");
 
@@ -386,7 +386,7 @@ export class ChangeSummaryManager {
    * @throws [IModelError]($common) If change summary does not exist for the specified id, or if the
    * change cache file hasn't been attached, or in case of other errors.
    */
-  public static queryChangeSummary(iModel: BriefcaseIModelDb, changeSummaryId: Id64String): ChangeSummary {
+  public static queryChangeSummary(iModel: BriefcaseDb, changeSummaryId: Id64String): ChangeSummary {
     if (!ChangeSummaryManager.isChangeCacheAttached(iModel))
       throw new IModelError(IModelStatus.BadArg, "Change Cache file must be attached to iModel.");
 
@@ -412,7 +412,7 @@ export class ChangeSummaryManager {
    * @throws [IModelError]($common) if instance change does not exist for the specified id, or if the
    * change cache file hasn't been attached, or in case of other errors.
    */
-  public static queryInstanceChange(iModel: BriefcaseIModelDb, instanceChangeId: Id64String): InstanceChange {
+  public static queryInstanceChange(iModel: BriefcaseDb, instanceChangeId: Id64String): InstanceChange {
     if (!ChangeSummaryManager.isChangeCacheAttached(iModel))
       throw new IModelError(IModelStatus.BadArg, "Change Cache file must be attached to iModel.");
 

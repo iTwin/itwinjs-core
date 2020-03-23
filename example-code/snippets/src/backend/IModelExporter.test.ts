@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 // __PUBLISH_EXTRACT_START__ IModelExporter_CodeExporter.code
 import { CodeSpec } from "@bentley/imodeljs-common";
-import { Element, IModelDb, IModelExporter, IModelExportHandler, IModelJsFs as fs, SnapshotIModelDb } from "@bentley/imodeljs-backend";
+import { Element, IModelDb, IModelExporter, IModelExportHandler, IModelJsFs as fs, SnapshotDb } from "@bentley/imodeljs-backend";
 
 /** CodeExporter creates a CSV output file containing all Codes from the specified iModel. */
 class CodeExporter extends IModelExportHandler {
@@ -39,7 +39,7 @@ import * as path from "path";
 import { IModelTestUtils } from "./IModelTestUtils";
 
 describe("IModelExporter", () => {
-  let iModelDb: SnapshotIModelDb;
+  let iModelDb: SnapshotDb;
   before(() => { iModelDb = IModelTestUtils.openSnapshotFromSeed("test.bim"); });
   after(() => { iModelDb.close(); });
 

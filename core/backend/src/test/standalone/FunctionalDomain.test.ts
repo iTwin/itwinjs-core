@@ -6,14 +6,14 @@ import { DbResult, Guid, Id64, Id64String, Logger } from "@bentley/bentleyjs-cor
 import { Code, CodeScopeSpec, CodeSpec, FunctionalElementProps, IModel } from "@bentley/imodeljs-common";
 import { assert } from "chai";
 import * as path from "path";
-import { BackendRequestContext, BriefcaseManager, ECSqlStatement, FunctionalModel, FunctionalSchema, SqliteStatement, StandaloneIModelDb } from "../../imodeljs-backend";
+import { BackendRequestContext, BriefcaseManager, ECSqlStatement, FunctionalModel, FunctionalSchema, SqliteStatement, StandaloneDb } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
 describe("Functional Domain", () => {
   const requestContext = new BackendRequestContext();
 
   it("should populate FunctionalModel", async () => {
-    const iModelDb = StandaloneIModelDb.createEmpty(IModelTestUtils.prepareOutputFile("FunctionalDomain", "FunctionalTest.bim"), {
+    const iModelDb = StandaloneDb.createEmpty(IModelTestUtils.prepareOutputFile("FunctionalDomain", "FunctionalTest.bim"), {
       rootSubject: { name: "FunctionalTest", description: "Test of the Functional domain schema." },
       client: "Functional",
       globalOrigin: { x: 0, y: 0 },

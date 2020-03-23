@@ -6,7 +6,7 @@ import { DbResult, Guid, GuidString, Id64, Id64String, using } from "@bentley/be
 import { Point2d, Point3d, Range3d, XAndY, XYAndZ } from "@bentley/geometry-core";
 import { NavigationValue, QueryResponseStatus } from "@bentley/imodeljs-common";
 import { assert } from "chai";
-import { ECDb, ECEnumValue, ECSqlInsertResult, ECSqlStatement, ECSqlValue, SnapshotIModelDb } from "../../imodeljs-backend";
+import { ECDb, ECEnumValue, ECSqlInsertResult, ECSqlStatement, ECSqlValue, SnapshotDb } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { ECDbTestHelper } from "./ECDbTestHelper";
@@ -1631,7 +1631,7 @@ describe("ECSqlStatement", () => {
   });
 
   it("BindRange3d for parameter in spatial SQL function", async () => {
-    const iModel = SnapshotIModelDb.createEmpty(IModelTestUtils.prepareOutputFile("ECSqlStatement", "BindRange3d.bim"), { rootSubject: { name: "BindRange3d" } });
+    const iModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("ECSqlStatement", "BindRange3d.bim"), { rootSubject: { name: "BindRange3d" } });
     try {
       iModel.withPreparedStatement("SELECT e.ECInstanceId FROM bis.Element e, bis.SpatialIndex rt WHERE rt.ECInstanceId MATCH DGN_spatial_overlap_aabb(?) AND e.ECInstanceId=rt.ECInstanceId",
         (stmt: ECSqlStatement) => {

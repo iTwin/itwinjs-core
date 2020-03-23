@@ -9,7 +9,7 @@ import { Code, ColorDef, GeometricElementProps, GeometryStreamProps, IModel, Sub
 import { Reporter } from "@bentley/perf-tools/lib/Reporter";
 import { assert } from "chai";
 import * as path from "path";
-import { BackendRequestContext, ECSqlStatement, IModelDb, IModelJsFs, SnapshotIModelDb, SpatialCategory } from "../imodeljs-backend";
+import { BackendRequestContext, ECSqlStatement, IModelDb, IModelJsFs, SnapshotDb, SpatialCategory } from "../imodeljs-backend";
 import { IModelTestUtils } from "../test/IModelTestUtils";
 import { KnownTestLocations } from "../test/KnownTestLocations";
 
@@ -93,7 +93,7 @@ describe("SchemaDesignPerf Impact of Properties", () => {
       assert(IModelJsFs.existsSync(st));
       const seedName = path.join(outDir, "props_" + pCount + ".bim");
       if (!IModelJsFs.existsSync(seedName)) {
-        const seedIModel = SnapshotIModelDb.createEmpty(IModelTestUtils.prepareOutputFile("PropPerformance", "props_" + pCount + ".bim"), { rootSubject: { name: "PerfTest" } });
+        const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("PropPerformance", "props_" + pCount + ".bim"), { rootSubject: { name: "PerfTest" } });
         await seedIModel.importSchemas(new BackendRequestContext(), [st]);
         const result: DbResult = seedIModel.nativeDb.setAsMaster();
         assert.equal(DbResult.BE_SQLITE_OK, result);
@@ -346,7 +346,7 @@ describe("SchemaDesignPerf Number of Indices", () => {
       assert(IModelJsFs.existsSync(st));
       const seedName = path.join(outDir, "index_" + iCount + ".bim");
       if (!IModelJsFs.existsSync(seedName)) {
-        const seedIModel = SnapshotIModelDb.createEmpty(IModelTestUtils.prepareOutputFile("IndexPerformance", "index_" + iCount + ".bim"), { rootSubject: { name: "PerfTest" } });
+        const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("IndexPerformance", "index_" + iCount + ".bim"), { rootSubject: { name: "PerfTest" } });
         await seedIModel.importSchemas(new BackendRequestContext(), [st]);
         const result: DbResult = seedIModel.nativeDb.setAsMaster();
         assert.equal(DbResult.BE_SQLITE_OK, result);
@@ -374,7 +374,7 @@ describe("SchemaDesignPerf Number of Indices", () => {
       assert(IModelJsFs.existsSync(st));
       const seedName = path.join(outDir, "index_perclass_" + iCount + ".bim");
       if (!IModelJsFs.existsSync(seedName)) {
-        const seedIModel = SnapshotIModelDb.createEmpty(IModelTestUtils.prepareOutputFile("IndexPerformance", "index_perclass_" + iCount + ".bim"), { rootSubject: { name: "PerfTest" } });
+        const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("IndexPerformance", "index_perclass_" + iCount + ".bim"), { rootSubject: { name: "PerfTest" } });
         await seedIModel.importSchemas(new BackendRequestContext(), [st]);
         const result: DbResult = seedIModel.nativeDb.setAsMaster();
         assert.equal(DbResult.BE_SQLITE_OK, result);

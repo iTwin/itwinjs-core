@@ -8,7 +8,7 @@ import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
 import { ColorDef, IModel, IModelVersion, SubCategoryAppearance } from "@bentley/imodeljs-common";
 import { SpatialCategory } from "../../Category";
 import { ConcurrencyControl } from "../../ConcurrencyControl";
-import { BriefcaseIModelDb, BriefcaseManager, KeepBriefcase, OpenParams } from "../../imodeljs-backend";
+import { BriefcaseDb, BriefcaseManager, KeepBriefcase, OpenParams } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
 
@@ -19,7 +19,7 @@ export class TestChangeSetUtility {
 
   public projectId!: GuidString;
   public iModelId!: GuidString;
-  private _iModel!: BriefcaseIModelDb;
+  private _iModel!: BriefcaseDb;
   private _requestContext: AuthorizedClientRequestContext;
 
   private _modelId!: string;
@@ -37,7 +37,7 @@ export class TestChangeSetUtility {
   }
 
   private async addTestModel(): Promise<void> {
-    this._iModel = await BriefcaseIModelDb.open(this._requestContext, this.projectId, this.iModelId, OpenParams.pullAndPush(), IModelVersion.latest());
+    this._iModel = await BriefcaseDb.open(this._requestContext, this.projectId, this.iModelId, OpenParams.pullAndPush(), IModelVersion.latest());
     this._iModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
     [, this._modelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(this._iModel, IModelTestUtils.getUniqueModelCode(this._iModel, "TestPhysicalModel"), true);
     await this._iModel.concurrencyControl.request(this._requestContext);
@@ -57,7 +57,7 @@ export class TestChangeSetUtility {
     this._iModel.saveChanges("Added test elements");
   }
 
-  public async createTestIModel(): Promise<BriefcaseIModelDb> {
+  public async createTestIModel(): Promise<BriefcaseDb> {
     await this.initialize();
 
     // Re-create iModel on iModelHub

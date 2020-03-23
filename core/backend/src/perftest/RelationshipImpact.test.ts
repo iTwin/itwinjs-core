@@ -9,7 +9,7 @@ import { Code, ColorDef, GeometricElementProps, GeometryStreamProps, IModel, Rel
 import { Reporter } from "@bentley/perf-tools/lib/Reporter";
 import { assert } from "chai";
 import * as path from "path";
-import { BackendRequestContext, ECSqlStatement, IModelDb, IModelJsFs, RelationshipProps, SnapshotIModelDb, SpatialCategory } from "../imodeljs-backend";
+import { BackendRequestContext, ECSqlStatement, IModelDb, IModelJsFs, RelationshipProps, SnapshotDb, SpatialCategory } from "../imodeljs-backend";
 import { IModelTestUtils } from "../test/IModelTestUtils";
 import { KnownTestLocations } from "../test/KnownTestLocations";
 
@@ -147,7 +147,7 @@ describe("SchemaDesignPerf Relationship Comparison", () => {
     assert(IModelJsFs.existsSync(st));
     const seedName = path.join(outDir, "relationship.bim");
     if (!IModelJsFs.existsSync(seedName)) {
-      const seedIModel = SnapshotIModelDb.createEmpty(IModelTestUtils.prepareOutputFile("RelationshipPerformance", "relationship.bim"), { rootSubject: { name: "PerfTest" } });
+      const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("RelationshipPerformance", "relationship.bim"), { rootSubject: { name: "PerfTest" } });
       await seedIModel.importSchemas(new BackendRequestContext(), [st]);
       const result: DbResult = seedIModel.nativeDb.setAsMaster();
       assert.equal(DbResult.BE_SQLITE_OK, result);

@@ -7,11 +7,11 @@ import { CodeState, HubCode, HubIModel, IModelHubError, IModelQuery, Lock, LockL
 import { CodeScopeSpec, CodeSpec, IModel, IModelError, IModelVersion, SubCategoryAppearance } from "@bentley/imodeljs-common";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { assert, expect } from "chai";
-import { AuthorizedBackendRequestContext, BriefcaseEntry, BriefcaseIModelDb, BriefcaseManager, ConcurrencyControl, DictionaryModel, Element, IModelJsFs, KeepBriefcase, OpenParams, SpatialCategory, SqliteStatement, SqliteValue, SqliteValueType } from "../../imodeljs-backend";
+import { AuthorizedBackendRequestContext, BriefcaseEntry, BriefcaseDb, BriefcaseManager, ConcurrencyControl, DictionaryModel, Element, IModelJsFs, KeepBriefcase, OpenParams, SpatialCategory, SqliteStatement, SqliteValue, SqliteValueType } from "../../imodeljs-backend";
 import { IModelTestUtils, TestIModelInfo, Timer } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
 
-export async function createNewModelAndCategory(requestContext: AuthorizedBackendRequestContext, rwIModel: BriefcaseIModelDb) {
+export async function createNewModelAndCategory(requestContext: AuthorizedBackendRequestContext, rwIModel: BriefcaseDb) {
   // Create a new physical model.
   let modelId: Id64String;
   [, modelId] = await IModelTestUtils.createAndInsertPhysicalPartitionAndModelAsync(requestContext, rwIModel, IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel"), true);
@@ -97,7 +97,7 @@ describe("IModelWriteTest (#integration)", () => {
   });
 
   it("acquire codespec lock", async () => {
-    const iModel = await BriefcaseIModelDb.open(superRequestContext, testProjectId, readWriteTestIModel.id, OpenParams.pullAndPush());
+    const iModel = await BriefcaseDb.open(superRequestContext, testProjectId, readWriteTestIModel.id, OpenParams.pullAndPush());
     const codeSpec1 = CodeSpec.create(iModel, "MyCodeSpec", CodeScopeSpec.Type.Model);
     iModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
     const locks = await iModel.concurrencyControl.lockCodeSpecs(superRequestContext);
@@ -109,7 +109,7 @@ describe("IModelWriteTest (#integration)", () => {
   });
 
   it("acquire codespec lock - example", async () => {
-    const model = await BriefcaseIModelDb.open(superRequestContext, testProjectId, readWriteTestIModel.id, OpenParams.pullAndPush());
+    const model = await BriefcaseDb.open(superRequestContext, testProjectId, readWriteTestIModel.id, OpenParams.pullAndPush());
     const codeSpec1 = CodeSpec.create(model, "MyCodeSpec", CodeScopeSpec.Type.Model);
 
     model.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());  // needed for writing to iModels
@@ -167,9 +167,9 @@ describe("IModelWriteTest (#integration)", () => {
     const secondUserRequestContext: AuthorizedBackendRequestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.superManager);
     const neutralObserverUserRequestContext: AuthorizedBackendRequestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.manager);
 
-    const firstIModel = await BriefcaseIModelDb.open(firstUserRequestContext, testProjectId, readWriteTestIModel.id, OpenParams.pullAndPush());
-    const secondIModel = await BriefcaseIModelDb.open(secondUserRequestContext, testProjectId, readWriteTestIModel.id, OpenParams.pullAndPush());
-    const neutralObserverIModel = await BriefcaseIModelDb.open(neutralObserverUserRequestContext, testProjectId, readWriteTestIModel.id, OpenParams.pullAndPush());
+    const firstIModel = await BriefcaseDb.open(firstUserRequestContext, testProjectId, readWriteTestIModel.id, OpenParams.pullAndPush());
+    const secondIModel = await BriefcaseDb.open(secondUserRequestContext, testProjectId, readWriteTestIModel.id, OpenParams.pullAndPush());
+    const neutralObserverIModel = await BriefcaseDb.open(neutralObserverUserRequestContext, testProjectId, readWriteTestIModel.id, OpenParams.pullAndPush());
     assert.notEqual(firstIModel, secondIModel);
     assert.equal(firstIModel.briefcase.nativeDb.getBriefcaseId(), firstIModel.briefcase.briefcaseId);
     assert.isAbove(firstIModel.briefcase.briefcaseId, 0);
@@ -317,7 +317,7 @@ describe("IModelWriteTest (#integration)", () => {
 
   // Does not work with mocks
   it.skip("should build concurrency control request", async () => {
-    const iModel = await BriefcaseIModelDb.open(managerRequestContext, testProjectId, readWriteTestIModel.id, OpenParams.pullAndPush());
+    const iModel = await BriefcaseDb.open(managerRequestContext, testProjectId, readWriteTestIModel.id, OpenParams.pullAndPush());
 
     const el: Element = iModel.elements.getRootSubject();
     el.buildConcurrencyControlRequest(DbOpcode.Update);    // make a list of the locks, etc. that will be needed to update this element
@@ -344,7 +344,7 @@ describe("IModelWriteTest (#integration)", () => {
 
     // Create a new empty iModel on the Hub & obtain a briefcase
     timer = new Timer("create iModel");
-    const rwIModel = await BriefcaseIModelDb.create(adminRequestContext, writeTestProjectId, iModelName, { rootSubject: { name: "TestSubject" } });
+    const rwIModel = await BriefcaseDb.create(adminRequestContext, writeTestProjectId, iModelName, { rootSubject: { name: "TestSubject" } });
     const rwIModelId = rwIModel.iModelToken.iModelId;
     assert.isNotEmpty(rwIModelId);
     timer.end();
@@ -389,7 +389,7 @@ describe("IModelWriteTest (#integration)", () => {
     }
 
     // Create a new empty iModel on the Hub & obtain a briefcase
-    const rwIModel = await BriefcaseIModelDb.create(adminRequestContext, writeTestProjectId, iModelName, { rootSubject: { name: "TestSubject" } });
+    const rwIModel = await BriefcaseDb.create(adminRequestContext, writeTestProjectId, iModelName, { rootSubject: { name: "TestSubject" } });
     const rwIModelId = rwIModel.iModelToken.iModelId;
     assert.isNotEmpty(rwIModelId);
 
@@ -441,7 +441,7 @@ describe("IModelWriteTest (#integration)", () => {
 
     // Create a new empty iModel on the Hub & obtain a briefcase
     timer = new Timer("create iModel");
-    const rwIModel = await BriefcaseIModelDb.create(adminRequestContext, writeTestProjectId, iModelName, { rootSubject: { name: "TestSubject" } });
+    const rwIModel = await BriefcaseDb.create(adminRequestContext, writeTestProjectId, iModelName, { rootSubject: { name: "TestSubject" } });
     const rwIModelId = rwIModel.iModelToken.iModelId;
     assert.isNotEmpty(rwIModelId);
     timer.end();
@@ -510,7 +510,7 @@ describe("IModelWriteTest (#integration)", () => {
 
     // Create a new empty iModel on the Hub & obtain a briefcase
     timer = new Timer("create iModel");
-    const rwIModel = await BriefcaseIModelDb.create(adminRequestContext, writeTestProjectId, iModelName, { rootSubject: { name: "TestSubject" } });
+    const rwIModel = await BriefcaseDb.create(adminRequestContext, writeTestProjectId, iModelName, { rootSubject: { name: "TestSubject" } });
     const rwIModelId = rwIModel.iModelToken.iModelId;
     assert.isNotEmpty(rwIModelId);
     timer.end();
@@ -576,7 +576,7 @@ describe("IModelWriteTest (#integration)", () => {
 
     // Create a new empty iModel on the Hub & obtain a briefcase
     timer = new Timer("create iModel");
-    const rwIModel = await BriefcaseIModelDb.create(adminRequestContext, writeTestProjectId, iModelName, { rootSubject: { name: "TestSubject" } });
+    const rwIModel = await BriefcaseDb.create(adminRequestContext, writeTestProjectId, iModelName, { rootSubject: { name: "TestSubject" } });
     const rwIModelId = rwIModel.iModelToken.iModelId;
     assert.isNotEmpty(rwIModelId);
     timer.end();
@@ -674,7 +674,7 @@ describe("IModelWriteTest (#integration)", () => {
     timer.end();
 
     // Open a readonly copy of the iModel
-    const roIModel = await BriefcaseIModelDb.open(adminRequestContext, writeTestProjectId, rwIModelId!, OpenParams.fixedVersion(), IModelVersion.latest());
+    const roIModel = await BriefcaseDb.open(adminRequestContext, writeTestProjectId, rwIModelId!, OpenParams.fixedVersion(), IModelVersion.latest());
     assert.exists(roIModel);
 
     await rwIModel.close(adminRequestContext, KeepBriefcase.No);
@@ -682,7 +682,7 @@ describe("IModelWriteTest (#integration)", () => {
   });
 
   it("Run plain SQL against fixed version connection", async () => {
-    const iModel = await BriefcaseIModelDb.open(managerRequestContext, testProjectId, readOnlyTestIModel.id, OpenParams.pullAndPush());
+    const iModel = await BriefcaseDb.open(managerRequestContext, testProjectId, readOnlyTestIModel.id, OpenParams.pullAndPush());
     try {
       iModel.withPreparedSqliteStatement("CREATE TABLE Test(Id INTEGER PRIMARY KEY, Name TEXT NOT NULL, Code INTEGER)", (stmt: SqliteStatement) => {
         assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
@@ -754,7 +754,7 @@ describe("IModelWriteTest (#integration)", () => {
   });
 
   it("Run plain SQL against readonly connection", async () => {
-    const iModel = await BriefcaseIModelDb.open(managerRequestContext, testProjectId, readOnlyTestIModel.id, OpenParams.fixedVersion());
+    const iModel = await BriefcaseDb.open(managerRequestContext, testProjectId, readOnlyTestIModel.id, OpenParams.fixedVersion());
 
     iModel.withPreparedSqliteStatement("SELECT Name,StrData FROM be_Prop WHERE Namespace='ec_Db'", (stmt: SqliteStatement) => {
       let rowCount: number = 0;

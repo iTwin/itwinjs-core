@@ -6,7 +6,7 @@ import { DbResult, Id64String, Logger, LogLevel } from "@bentley/bentleyjs-core"
 import { BisCodeSpec, ColorDef, DisplayStyleProps, DisplayStyleSettingsProps, IModel, RenderMode, ViewFlags } from "@bentley/imodeljs-common";
 import { expect } from "chai";
 import * as path from "path";
-import { BackendRequestContext, DictionaryModel, DisplayStyle3d, ECSqlStatement, Element, NativeLoggerCategory, SnapshotIModelDb, StandaloneIModelDb } from "../../imodeljs-backend";
+import { BackendRequestContext, DictionaryModel, DisplayStyle3d, ECSqlStatement, Element, NativeLoggerCategory, SnapshotDb, StandaloneDb } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { HubUtility } from "../integration/HubUtility";
 import { KnownTestLocations } from "../KnownTestLocations";
@@ -14,10 +14,10 @@ import { KnownTestLocations } from "../KnownTestLocations";
 // spell-checker: disable
 
 describe("ExcludedElements", () => {
-  let imodel1: SnapshotIModelDb;
-  let imodel2: SnapshotIModelDb;
-  let imodel4: SnapshotIModelDb;
-  let imodel5: SnapshotIModelDb;
+  let imodel1: SnapshotDb;
+  let imodel2: SnapshotDb;
+  let imodel4: SnapshotDb;
+  let imodel5: SnapshotDb;
   const requestContext = new BackendRequestContext();
 
   before(async () => {
@@ -41,7 +41,7 @@ describe("ExcludedElements", () => {
   it.skip("dump cs file", () => {
     Logger.setLevel(NativeLoggerCategory.DgnCore, LogLevel.Trace);
     Logger.setLevel(NativeLoggerCategory.Changeset, LogLevel.Trace);
-    const db = StandaloneIModelDb.open("D:\\dgn\\problem\\83927\\EAP_TT_001\\seed\\EAP_TT_001.bim");
+    const db = StandaloneDb.open("D:\\dgn\\problem\\83927\\EAP_TT_001\\seed\\EAP_TT_001.bim");
     HubUtility.dumpChangeSetFile(db, "D:\\dgn\\problem\\83927\\EAP_TT_001", "9fd0e30f88e93bec72532f6f1e05688e2c2408cd");
   });
 

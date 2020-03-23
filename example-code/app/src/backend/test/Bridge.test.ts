@@ -12,7 +12,7 @@ import { HubIModel, Project, IModelHubClient, IModelQuery, AuthorizedClientReque
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 // __PUBLISH_EXTRACT_START__ Bridge.imports.example-code
 import { Id64String } from "@bentley/bentleyjs-core";
-import { BriefcaseIModelDb, BriefcaseManager, CategorySelector, ConcurrencyControl, DefinitionModel, DisplayStyle3d, IModelDb, IModelHost, ModelSelector, OpenParams, OrthographicViewDefinition, PhysicalModel, SpatialCategory, Subject } from "@bentley/imodeljs-backend";
+import { BriefcaseDb, BriefcaseManager, CategorySelector, ConcurrencyControl, DefinitionModel, DisplayStyle3d, IModelDb, IModelHost, ModelSelector, OpenParams, OrthographicViewDefinition, PhysicalModel, SpatialCategory, Subject } from "@bentley/imodeljs-backend";
 import { ColorByName, ColorDef, IModel } from "@bentley/imodeljs-common";
 // __PUBLISH_EXTRACT_END__
 
@@ -81,7 +81,7 @@ async function runBridgeFirstTime(requestContext: AuthorizedClientRequestContext
   // Start the IModelHost
   IModelHost.startup();
 
-  const briefcase = await BriefcaseIModelDb.open(requestContext, projectId, iModelId, OpenParams.pullAndPush());
+  const briefcase = await BriefcaseDb.open(requestContext, projectId, iModelId, OpenParams.pullAndPush());
   briefcase.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
 
   // I. Import the schema.

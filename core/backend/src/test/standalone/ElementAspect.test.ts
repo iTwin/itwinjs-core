@@ -5,12 +5,12 @@
 import { Id64, Id64String } from "@bentley/bentleyjs-core";
 import { ElementAspectProps, ExternalSourceAspectProps, IModel, IModelError, SubCategoryAppearance } from "@bentley/imodeljs-common";
 import { assert } from "chai";
-import { Element, ElementAspect, ElementMultiAspect, ElementUniqueAspect, ExternalSourceAspect, PhysicalElement, SnapshotIModelDb, SpatialCategory } from "../../imodeljs-backend";
+import { Element, ElementAspect, ElementMultiAspect, ElementUniqueAspect, ExternalSourceAspect, PhysicalElement, SnapshotDb, SpatialCategory } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
 describe("ElementAspect", () => {
 
-  let iModel: SnapshotIModelDb;
+  let iModel: SnapshotDb;
 
   before(() => {
     // NOTE: see ElementAspectTests.PresentationRuleScenarios in DgnPlatform\Tests\DgnProject\NonPublished\ElementAspect_Test.cpp for how ElementAspectTest.bim was created
@@ -196,7 +196,7 @@ describe("ElementAspect", () => {
   });
 
   it("should be able to insert ExternalSourceAspects", () => {
-    const iModelDb = SnapshotIModelDb.createEmpty(IModelTestUtils.prepareOutputFile("ElementAspect", "ExternalSourceAspect.bim"), { rootSubject: { name: "ExternalSourceAspect" } });
+    const iModelDb = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("ElementAspect", "ExternalSourceAspect.bim"), { rootSubject: { name: "ExternalSourceAspect" } });
     const elementId: Id64String = SpatialCategory.insert(iModelDb, IModel.dictionaryId, "Category", new SubCategoryAppearance());
     assert.isTrue(Id64.isValidId64(elementId));
 

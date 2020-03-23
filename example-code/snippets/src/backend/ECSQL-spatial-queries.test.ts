@@ -4,13 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 import { DbResult, Id64, Id64String } from "@bentley/bentleyjs-core";
 import { Range3d, Range3dProps } from "@bentley/geometry-core";
-import { ECSqlStatement, Element, GeometricElement3d, PhysicalPartition, SnapshotIModelDb } from "@bentley/imodeljs-backend";
+import { ECSqlStatement, Element, GeometricElement3d, PhysicalPartition, SnapshotDb } from "@bentley/imodeljs-backend";
 import { assert } from "chai";
 import { IModelTestUtils } from "./IModelTestUtils";
 
 /** Example code organized as tests to make sure that it builds and runs successfully. */
 describe("Useful ECSQL spatial queries", () => {
-  let iModel: SnapshotIModelDb;
+  let iModel: SnapshotDb;
 
   before(async () => {
     iModel = IModelTestUtils.openSnapshotFromSeed("test.bim");

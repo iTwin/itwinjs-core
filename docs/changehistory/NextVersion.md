@@ -70,26 +70,26 @@ With a new major version of the iModel.js library come breaking API changes. The
 
 ### Briefcase iModels
 
-The methods for working with Briefcase iModels (those that are synchronized with iModelHub) have been moved into a new [BriefcaseIModelDb]($backend) class, which is a breaking change.
+The methods for working with Briefcase iModels (those that are synchronized with iModelHub) have been moved into a new [BriefcaseDb]($backend) class, which is a breaking change.
 The following methods have been moved from (the now abstract) [IModelDb]($backend) class:
 
-* `IModelDb.open` --> [BriefcaseIModelDb.open]($backend)
-* `IModelDb.create` --> [BriefcaseIModelDb.create]($backend)
-* `IModelDb.pullAndMergeChanges` --> [BriefcaseIModelDb.pullAndMergeChanges]($backend)
-* `IModelDb.pushChanges` --> [BriefcaseIModelDb.pushChanges]($backend)
-* `IModelDb.reverseChanges` --> [BriefcaseIModelDb.reverseChanges]($backend)
-* `IModelDb.reinstateChanges` --> [BriefcaseIModelDb.reinstateChanges]($backend)
-* `IModelDb.concurrencyControl` --> [BriefcaseIModelDb.concurrencyControl]($backend)
+* `IModelDb.open` --> [BriefcaseDb.open]($backend)
+* `IModelDb.create` --> [BriefcaseDb.create]($backend)
+* `IModelDb.pullAndMergeChanges` --> [BriefcaseDb.pullAndMergeChanges]($backend)
+* `IModelDb.pushChanges` --> [BriefcaseDb.pushChanges]($backend)
+* `IModelDb.reverseChanges` --> [BriefcaseDb.reverseChanges]($backend)
+* `IModelDb.reinstateChanges` --> [BriefcaseDb.reinstateChanges]($backend)
+* `IModelDb.concurrencyControl` --> [BriefcaseDb.concurrencyControl]($backend)
 
 ### Snapshot iModels
 
-The methods for working with snapshot iModels have been moved into a new [SnapshotIModelDb]($backend) class, which is a breaking change.
+The methods for working with snapshot iModels have been moved into a new [SnapshotDb]($backend) class, which is a breaking change.
 The following renames are required:
 
-* `IModelDb.createSnapshot` (static) --> [SnapshotIModelDb.createEmpty]($backend)
-* `IModelDb.createSnapshot` --> [SnapshotIModelDb.createFrom]($backend)
-* `IModelDb.openSnapshot` --> [SnapshotIModelDb.open]($backend)
-* `IModelDb.closeSnapshot` --> [SnapshotIModelDb.close]($backend)
+* `IModelDb.createSnapshot` (static) --> [SnapshotDb.createEmpty]($backend)
+* `IModelDb.createSnapshot` --> [SnapshotDb.createFrom]($backend)
+* `IModelDb.openSnapshot` --> [SnapshotDb.open]($backend)
+* `IModelDb.closeSnapshot` --> [SnapshotDb.close]($backend)
 
 ### BriefcaseId / ReservedBriefcaseId
 

@@ -2,15 +2,15 @@
 
 ## Opening a local *briefcase* of an iModel managed my iModelHub
 
-The [BriefcaseIModelDb]($backend) class provides methods for opening, closing, and accessing a [briefcase](../Glossary.md#briefcase) (i.e. a local copy of an iModel.) An instance of BriefcaseIModelDb in memory holds a briefcase file open.
+The [BriefcaseDb]($backend) class provides methods for opening, closing, and accessing a [briefcase](../Glossary.md#briefcase) (i.e. a local copy of an iModel.) An instance of BriefcaseDb in memory holds a briefcase file open.
 
 An IModelDb is used by a service or by the backend of an iModel.js app.
 
-Use [BriefcaseIModelDb.open]($backend) to obtain and open an IModelDb from iModelHub.
+Use [BriefcaseDb.open]($backend) to obtain and open an IModelDb from iModelHub.
 
 > When acquiring a briefcase this way ([SyncMode.PullAndPush]($backend) should be specified when possible. See [briefcase id](../imodelhub/briefcases.md#briefcase-id).
 
-Use [BriefcaseIModelDb.close]($backend) to close the local briefcase.
+Use [BriefcaseDb.close]($backend) to close the local briefcase.
 
 Note that an [AccessToken](../common/AccessToken.md) is an argument to IModelDb.open.
 
@@ -18,11 +18,11 @@ Note that an [AccessToken](../common/AccessToken.md) is an argument to IModelDb.
 
 ## Opening a *snapshot* iModel
 
-The [SnapshotIModelDb]($backend) class also provides methods for opening, closing, and accessing a *snapshot* iModel.
+The [SnapshotDb]($backend) class also provides methods for opening, closing, and accessing a *snapshot* iModel.
 A *snapshot* iModel is a file that is disconnected from iModelHub and therefore does not have a change timeline.
 Once created, a *snapshot* iModel is read-only and cannot be changed.
 This makes *snapshot* iModels ideal for archival or data transfer purposes.
 
-Use [SnapshotIModelDb.open]($backend) to open an existing *snapshot* iModel.
+Use [SnapshotDb.open]($backend) to open an existing *snapshot* iModel.
 
-Use [SnapshotIModelDb.close]($backend) to close the *snapshot* iModel.
+Use [SnapshotDb.close]($backend) to close the *snapshot* iModel.

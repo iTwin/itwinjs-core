@@ -159,7 +159,7 @@ export class BriefcaseQuery extends WsgQuery {
 
 /**
  * Handler for managing [[Briefcase]]s. Use [[IModelClient.Briefcases]] to get an instance of this class.
- * In most cases, you should use [BriefcaseIModelDb]($backend) methods instead.
+ * In most cases, you should use [BriefcaseDb]($backend) methods instead.
  * @internal
  */
 export class BriefcaseHandler {
@@ -186,7 +186,7 @@ export class BriefcaseHandler {
   }
 
   /** Acquire a [[Briefcase]] for the specified iModel. This assigns you a new briefcaseId and returns you a download link.
-   * A briefcase is automatically acquired when calling [BriefcaseIModelDb.open]($backend) or [BriefcaseIModelDb.create]($backend). You should use this method only when you want to acquire the briefcaseId without downloading the file. If you need just the download link, you can call [[BriefcaseHandler.get]] with [[BriefcaseQuery.selectDownloadUrl]].
+   * A briefcase is automatically acquired when calling [BriefcaseDb.open]($backend) or [BriefcaseDb.create]($backend). You should use this method only when you want to acquire the briefcaseId without downloading the file. If you need just the download link, you can call [[BriefcaseHandler.get]] with [[BriefcaseQuery.selectDownloadUrl]].
    * @param requestContext The client request context
    * @param iModelId Id of the iModel. See [[HubIModel]].
    * @returns The acquired Briefcase instance.

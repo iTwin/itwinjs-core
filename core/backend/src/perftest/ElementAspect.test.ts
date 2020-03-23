@@ -9,7 +9,7 @@ import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { Reporter } from "@bentley/perf-tools/lib/Reporter";
 import { assert } from "chai";
 import * as path from "path";
-import { BriefcaseIModelDb, DictionaryModel, ElementAspect, IModelDb, IModelJsFs, OpenParams, SnapshotIModelDb, SpatialCategory } from "../imodeljs-backend";
+import { BriefcaseDb, DictionaryModel, ElementAspect, IModelDb, IModelJsFs, OpenParams, SnapshotDb, SpatialCategory } from "../imodeljs-backend";
 import { IModelTestUtils } from "../test/IModelTestUtils";
 import { KnownTestLocations } from "../test/KnownTestLocations";
 
@@ -22,7 +22,7 @@ async function createNewModelAndCategory(requestContext: AuthorizedClientRequest
   const spatialCategoryId: Id64String = SpatialCategory.insert(rwIModel, IModel.dictionaryId, newCategoryCode.value!, new SubCategoryAppearance({ color: 0xff0000 }));
   // Reserve all of the codes that are required by the new model and category.
   try {
-    if (rwIModel instanceof BriefcaseIModelDb) {
+    if (rwIModel instanceof BriefcaseDb) {
       await rwIModel.concurrencyControl.request(requestContext);
       requestContext.enter();
     }
@@ -37,7 +37,7 @@ async function createNewModelAndCategory(requestContext: AuthorizedClientRequest
 describe("ElementAspectPerformance", () => {
   const reporter = new Reporter();
   let requestContext: AuthorizedClientRequestContext;
-  let iModelDbHub: BriefcaseIModelDb;
+  let iModelDbHub: BriefcaseDb;
 
   before(async () => {
     if (!IModelJsFs.existsSync(KnownTestLocations.outputDir))
@@ -47,7 +47,7 @@ describe("ElementAspectPerformance", () => {
     const imodelId = configData.aspectIModelId;
 
     requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
-    iModelDbHub = await BriefcaseIModelDb.open(requestContext, projectId, imodelId, OpenParams.fixedVersion(), IModelVersion.latest());
+    iModelDbHub = await BriefcaseDb.open(requestContext, projectId, imodelId, OpenParams.fixedVersion(), IModelVersion.latest());
     assert.exists(iModelDbHub);
   });
 
@@ -61,7 +61,7 @@ describe("ElementAspectPerformance", () => {
   it("SimpleElement-Insert-Update-Delete-Read", async () => {
     const snapshotPath = path.join(KnownTestLocations.outputDir, "SimpleELe.bim");
     assert.exists(iModelDbHub);
-    const iModelDb = SnapshotIModelDb.createFrom(iModelDbHub, snapshotPath);
+    const iModelDb = SnapshotDb.createFrom(iModelDbHub, snapshotPath);
     assert.exists(iModelDb);
 
     let eleId: Id64String;
@@ -116,7 +116,7 @@ describe("ElementAspectPerformance", () => {
   it("UniqueAspectElement-Insert-Update-Delete-Read", async () => {
     const snapshotPath = path.join(KnownTestLocations.outputDir, "UniqueAspectELe.bim");
     assert.exists(iModelDbHub);
-    const iModelDb = SnapshotIModelDb.createFrom(iModelDbHub, snapshotPath);
+    const iModelDb = SnapshotDb.createFrom(iModelDbHub, snapshotPath);
     assert.exists(iModelDb);
 
     interface TestAspectProps extends ElementAspectProps { testUniqueAspectProperty: string; }
@@ -189,7 +189,7 @@ describe("ElementAspectPerformance", () => {
   it("MultiAspectElement-Insert-Update-Delete-Read", async () => {
     const snapshotPath = path.join(KnownTestLocations.outputDir, "MultiApectELe.bim");
     assert.exists(iModelDbHub);
-    const iModelDb = SnapshotIModelDb.createFrom(iModelDbHub, snapshotPath);
+    const iModelDb = SnapshotDb.createFrom(iModelDbHub, snapshotPath);
     assert.exists(iModelDb);
 
     const count1 = 10000;

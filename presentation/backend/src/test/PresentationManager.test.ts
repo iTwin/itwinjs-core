@@ -20,7 +20,7 @@ import "@bentley/presentation-common/lib/test/_helpers/Promises";
 import "./IModelHostSetup";
 import { using, ClientRequestContext, Id64, Id64String, DbResult } from "@bentley/bentleyjs-core";
 import { EntityMetaData, ElementProps, ModelProps, IModelError } from "@bentley/imodeljs-common";
-import { IModelHost, IModelDb, DrawingGraphic, Element, ECSqlStatement, ECSqlValue, BriefcaseIModelDb } from "@bentley/imodeljs-backend";
+import { IModelHost, IModelDb, DrawingGraphic, Element, ECSqlStatement, ECSqlValue, BriefcaseDb } from "@bentley/imodeljs-backend";
 import {
   PageOptions, SelectionInfo, KeySet, PresentationError,
   HierarchyRequestOptions, Paged, ContentRequestOptions, ContentFlags,
@@ -167,12 +167,12 @@ describe("PresentationManager", () => {
         });
       });
 
-      it("subscribes for `BriefcaseIModelDb.onOpened` event if `enableSchemasPreload` is set", () => {
+      it("subscribes for `BriefcaseDb.onOpened` event if `enableSchemasPreload` is set", () => {
         using(new PresentationManager({ addon: addon.object, enableSchemasPreload: false }), (_) => {
-          expect(BriefcaseIModelDb.onOpened.numberOfListeners).to.eq(0);
+          expect(BriefcaseDb.onOpened.numberOfListeners).to.eq(0);
         });
         using(new PresentationManager({ addon: addon.object, enableSchemasPreload: true }), (_) => {
-          expect(BriefcaseIModelDb.onOpened.numberOfListeners).to.eq(1);
+          expect(BriefcaseDb.onOpened.numberOfListeners).to.eq(1);
         });
       });
 
@@ -278,9 +278,9 @@ describe("PresentationManager", () => {
     it("unsubscribes from `IModelDb.onOpened` event if `enableSchemasPreload` is set", () => {
       const nativePlatformMock = moq.Mock.ofType<NativePlatformDefinition>();
       const manager = new PresentationManager({ addon: nativePlatformMock.object, enableSchemasPreload: true });
-      expect(BriefcaseIModelDb.onOpened.numberOfListeners).to.eq(1);
+      expect(BriefcaseDb.onOpened.numberOfListeners).to.eq(1);
       manager.dispose();
-      expect(BriefcaseIModelDb.onOpened.numberOfListeners).to.eq(0);
+      expect(BriefcaseDb.onOpened.numberOfListeners).to.eq(0);
     });
 
     it("throws when attempting to use native platform after disposal", () => {
@@ -323,12 +323,12 @@ describe("PresentationManager", () => {
   describe("preloading schemas", () => {
 
     it("calls addon's `forceLoadSchemas` on `IModelDb.onOpened` events", () => {
-      const imodelMock = moq.Mock.ofType<BriefcaseIModelDb>();
+      const imodelMock = moq.Mock.ofType<BriefcaseDb>();
       const nativePlatformMock = moq.Mock.ofType<NativePlatformDefinition>();
       nativePlatformMock.setup((x) => x.getImodelAddon(imodelMock.object)).verifiable(moq.Times.atLeastOnce());
       using(new PresentationManager({ addon: nativePlatformMock.object, enableSchemasPreload: true }), (_) => {
         const context = new ClientRequestContext();
-        BriefcaseIModelDb.onOpened.raiseEvent(context, imodelMock.object);
+        BriefcaseDb.onOpened.raiseEvent(context, imodelMock.object);
         nativePlatformMock.verify((x) => x.forceLoadSchemas(context, moq.It.isAny()), moq.Times.once());
       });
     });

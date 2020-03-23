@@ -6,7 +6,7 @@ import { assert, ChangeSetApplyOption, ChangeSetStatus, GuidString, Logger, Open
 import { AuthorizedClientRequestContext, Briefcase as HubBriefcase, BriefcaseQuery, ChangeSet, ChangeSetQuery, ChangesType, HubIModel, IModelHubClient, IModelQuery, Project, Version, VersionQuery } from "@bentley/imodeljs-clients";
 import * as os from "os";
 import * as path from "path";
-import { BriefcaseEntry, BriefcaseManager, ChangeSetToken, IModelDb, IModelJsFs, ReservedBriefcaseId, StandaloneIModelDb } from "../../imodeljs-backend";
+import { BriefcaseEntry, BriefcaseManager, ChangeSetToken, IModelDb, IModelJsFs, ReservedBriefcaseId, StandaloneDb } from "../../imodeljs-backend";
 
 /** Utility to work with the iModel Hub */
 export class HubUtility {
@@ -218,7 +218,7 @@ export class HubUtility {
 
     Logger.logInfo(HubUtility.logCategory, "Creating standalone iModel");
     HubUtility.createStandaloneIModel(briefcasePathname, iModelDir);
-    const iModel = StandaloneIModelDb.open(briefcasePathname, OpenMode.ReadWrite);
+    const iModel = StandaloneDb.open(briefcasePathname, OpenMode.ReadWrite);
 
     const changeSets: ChangeSetToken[] = HubUtility.readChangeSets(iModelDir);
 
@@ -390,7 +390,7 @@ export class HubUtility {
       IModelJsFs.unlinkSync(iModelPathname);
     IModelJsFs.copySync(seedPathname, iModelPathname);
 
-    const iModel = StandaloneIModelDb.open(iModelPathname, OpenMode.ReadWrite);
+    const iModel = StandaloneDb.open(iModelPathname, OpenMode.ReadWrite);
     iModel.nativeDb.setBriefcaseId(ReservedBriefcaseId.LegacyStandalone);
     iModel.close();
 

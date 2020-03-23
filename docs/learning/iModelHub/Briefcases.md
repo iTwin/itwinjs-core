@@ -24,7 +24,7 @@ Each Briefcase has a unique 24bit integer id. Briefcase id is written into the i
 
 ## Working with briefcases
 
-To work with Briefcases, [BriefcaseIModelDb]($backend) methods should be used instead of calling iModelHub API directly:
+To work with Briefcases, [BriefcaseDb]($backend) methods should be used instead of calling iModelHub API directly:
 
 * [Acquiring and opening a briefcase](../backend/IModelDb.md)
 * [Pulling changes](../backend/IModelDbSync.md)

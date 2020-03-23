@@ -39,10 +39,10 @@ See:
 
 * [Importing a schema and bootstrapping definitions](./backend/SchemasAndElementsInTypeScript.md#importing-the-schema)
 * [AccessToken](./common/AccessToken.md)
-* [BriefcaseIModelDb.create]($backend)
+* [BriefcaseDb.create]($backend)
 * [IModelDb.saveChanges]($backend)
-* [BriefcaseIModelDb.pullAndMergeChanges]($backend)
-* [BriefcaseIModelDb.pushChanges]($backend)
+* [BriefcaseDb.pullAndMergeChanges]($backend)
+* [BriefcaseDb.pushChanges]($backend)
 * [ConcurrencyControl](./backend/ConcurrencyControl.md)
 * [DefinitionModel.insert]($backend)
 * [PhysicalModel.insert]($backend)

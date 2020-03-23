@@ -9,7 +9,7 @@
 import { DbOpcode, Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import { BisCodeSpec, CategoryProps, Code, CodeScopeProps, CodeSpec, ElementProps, Rank, SubCategoryAppearance, SubCategoryProps } from "@bentley/imodeljs-common";
 import { DefinitionElement } from "./Element";
-import { BriefcaseIModelDb, IModelDb } from "./IModelDb";
+import { BriefcaseDb, IModelDb } from "./IModelDb";
 import { CategoryOwnsSubCategories } from "./NavigationRelationship";
 
 /** Defines the appearance for graphics in Geometric elements
@@ -145,7 +145,7 @@ export class DrawingCategory extends Category {
   /** Tell monitors about the automatic insertion of my default sub-category */
   protected static onInserted(props: ElementProps, iModel: IModelDb): void {
     super.onInserted(props, iModel);
-    if (iModel instanceof BriefcaseIModelDb) {
+    if (iModel instanceof BriefcaseDb) {
       iModel.concurrencyControl.onElementWritten(this, IModelDb.getDefaultSubCategoryId(props.id!), DbOpcode.Insert);
     }
   }
@@ -220,7 +220,7 @@ export class SpatialCategory extends Category {
   /** Tell monitors about the sneaky insertion of my default sub-category */
   protected static onInserted(props: ElementProps, iModel: IModelDb): void {
     super.onInserted(props, iModel);
-    if (iModel instanceof BriefcaseIModelDb) {
+    if (iModel instanceof BriefcaseDb) {
       iModel.concurrencyControl.onElementWritten(this, IModelDb.getDefaultSubCategoryId(props.id!), DbOpcode.Insert);
     }
   }

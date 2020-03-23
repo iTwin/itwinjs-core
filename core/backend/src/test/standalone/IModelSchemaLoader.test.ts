@@ -5,13 +5,13 @@
 import { IModelError } from "@bentley/imodeljs-common";
 import { assert } from "chai";
 import * as path from "path";
-import { BackendRequestContext, SnapshotIModelDb } from "../../imodeljs-backend";
+import { BackendRequestContext, SnapshotDb } from "../../imodeljs-backend";
 import { IModelSchemaLoader } from "../../IModelSchemaLoader";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 
 describe("IModelSchemaLoader", () => {
-  let imodel: SnapshotIModelDb;
+  let imodel: SnapshotDb;
   const requestContext = new BackendRequestContext();
 
   before(async () => {

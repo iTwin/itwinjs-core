@@ -11,7 +11,7 @@ tableRowAnchors: true
 |**Backend**|The part of an iModel.js app that is concerned with accessing data in a briefcase. See [frontends and backends](https://en.wikipedia.org/wiki/Front_and_back_ends). See [learning about backend code](./backend/index.md).
 |**BIS**|Base Infrastructure Schema. Defines the hierarchy and organization of information about an infrastructure asset. BIS is relevant outside of iModels, but all information stored in an iModel conforms to BIS.
 |**BisCore**|The *base* BIS Domain for iModels. All ECClasses stored in an iModel must derive from a BisCore class.
-|**Briefcase**|A file holding a *copy of* an iModel. It contains data from [ChangeSets](#changeset) as well as local changes. See [BriefcaseIModelDb](./backend/IModelDb.md).
+|**Briefcase**|A file holding a *copy of* an iModel. It contains data from [ChangeSets](#changeset) as well as local changes. See [BriefcaseDb](./backend/IModelDb.md).
 |**Cartographic Coordinates**| A [geographic coordinate system](https://en.wikipedia.org/wiki/Geographic_coordinate_system) based on lat/long/height. If an iModel is geo-located via an EefLocation, Spatial Coordinates may be converted to Cartographic coordinates.
 |**Category**|A property of a GeometricElement that "categorizes" its geometry. That is, every GeometricElement is "in" one and only one Category. The visibility (on/off) of a category may be controlled per-view. Categories are similar to *levels* in DGN, *layers* in DWG, and *categories* in RVT. Note that Categories are not relevant for Elements that are not GeometricElements. Category is a subclass of DefinitionElement.
 |**CategorySelector**|A named group of Categories displayed in a View. Many ViewDefinitions may refer to the same CategorySelector.

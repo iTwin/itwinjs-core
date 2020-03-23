@@ -26,9 +26,9 @@ beta;BackendActivityMonitor
 public;BackendLoggerCategory
 public;BackendRequestContext 
 public;BisCoreSchema 
+public;BriefcaseDb 
 internal;BriefcaseEntry
 public;BriefcaseId = number
-public;BriefcaseIModelDb 
 internal;BriefcaseManager
 public;CachedECSqlStatement
 internal;CachedSqliteStatement
@@ -263,7 +263,7 @@ public;SheetBorderTemplate
 public;SheetModel 
 public;SheetTemplate 
 public;SheetViewDefinition 
-beta;SnapshotIModelDb 
+beta;SnapshotDb 
 public;SourceAndTarget
 public;SpatialCategory 
 public;class SpatialElement 
@@ -279,7 +279,7 @@ internal;SqliteStatement
 internal;SqliteStatementCache
 internal;SqliteValue
 internal;SqliteValueType
-internal;StandaloneIModelDb 
+internal;StandaloneDb 
 internal;StringParam
 public;SubCategory 
 public;Subject 

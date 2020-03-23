@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { Id64, Id64String, OpenMode } from "@bentley/bentleyjs-core";
 import { Angle, Arc3d, GeometryQuery, LineString3d, Loop, Range3d, StandardViewIndex } from "@bentley/geometry-core";
-import { CategorySelector, DefinitionModel, DisplayStyle3d, IModelDb, ModelSelector, OrthographicViewDefinition, PhysicalModel, SnapshotIModelDb, SpatialCategory, SpatialModel, StandaloneIModelDb, ViewDefinition } from "@bentley/imodeljs-backend";
+import { CategorySelector, DefinitionModel, DisplayStyle3d, IModelDb, ModelSelector, OrthographicViewDefinition, PhysicalModel, SnapshotDb, SpatialCategory, SpatialModel, StandaloneDb, ViewDefinition } from "@bentley/imodeljs-backend";
 import { AxisAlignedBox3d, BackgroundMapProps, BackgroundMapType, Cartographic, Code, ColorByName, ColorDef, EcefLocation, GeometricElement3dProps, GeometryParams, GeometryStreamBuilder, GeometryStreamProps, IModel, RenderMode, ViewFlags } from "@bentley/imodeljs-common";
 import { insertClassifiedRealityModel } from "./ClassifyRealityModel";
 import { GeoJson } from "./GeoJson";
@@ -32,7 +32,7 @@ export class GeoJsonImporter {
    */
   public constructor(iModelFileName: string, geoJson: GeoJson, appendToExisting: boolean, modelName?: string, labelProperty?: string, pointRadius?: number, pseudoColor?: boolean, mapType?: string, mapGroundBias?: number,
     private _classifiedURL?: string, private _classifiedName?: string, private _classifiedOutside?: string, private _classifiedInside?: string) {
-    this.iModelDb = appendToExisting ? StandaloneIModelDb.open(iModelFileName, OpenMode.ReadWrite) : SnapshotIModelDb.createEmpty(iModelFileName, { rootSubject: { name: geoJson.title } });
+    this.iModelDb = appendToExisting ? StandaloneDb.open(iModelFileName, OpenMode.ReadWrite) : SnapshotDb.createEmpty(iModelFileName, { rootSubject: { name: geoJson.title } });
     this._geoJson = geoJson;
     this._appendToExisting = appendToExisting;
     this._modelName = modelName;

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { DbResult, Id64Array, Id64String, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { Angle, Geometry, Matrix3d } from "@bentley/geometry-core";
-import { ECSqlStatement, ExportGraphics, ExportGraphicsInfo, ExportGraphicsLines, ExportGraphicsMesh, ExportLinesInfo, ExportPartInfo, ExportPartInstanceInfo, ExportPartLinesInfo, IModelHost, SnapshotIModelDb, Texture } from "@bentley/imodeljs-backend";
+import { ECSqlStatement, ExportGraphics, ExportGraphicsInfo, ExportGraphicsLines, ExportGraphicsMesh, ExportLinesInfo, ExportPartInfo, ExportPartInstanceInfo, ExportPartLinesInfo, IModelHost, SnapshotDb, Texture } from "@bentley/imodeljs-backend";
 import { ColorDef, ImageSourceFormat } from "@bentley/imodeljs-common";
 import * as fs from "fs";
 import * as path from "path";
@@ -15,7 +15,7 @@ const ANGLE_TOL = Angle.degreesToRadians(45);
 const MIN_BREP_SIZE = 0.01;
 
 class GltfGlobals {
-  public static iModel: SnapshotIModelDb;
+  public static iModel: SnapshotDb;
   public static gltf: Gltf;
   public static binFile: number;
   public static texturesDir: string;
@@ -24,7 +24,7 @@ class GltfGlobals {
   public static textureToMaterialMap: Map<Id64String, number>;
 
   public static initialize(iModelName: string, gltfName: string) {
-    GltfGlobals.iModel = SnapshotIModelDb.open(iModelName);
+    GltfGlobals.iModel = SnapshotDb.open(iModelName);
     process.stdout.write(`Opened ${iModelName} successfully...\n`);
 
     const gltfPathParts = path.parse(gltfName);

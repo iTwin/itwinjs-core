@@ -9,7 +9,7 @@ import { IModelError, Code, ElementProps, RpcManager, GeometricElement3dProps, I
 import {
   IModelHostConfiguration, IModelHost, BriefcaseManager, IModelDb, Model, Element,
   InformationPartitionElement, SpatialCategory, IModelJsFs, PhysicalPartition, PhysicalModel, SubjectOwnsPartitionElements,
-  IModelJsNative, NativeLoggerCategory, SnapshotIModelDb,
+  IModelJsNative, NativeLoggerCategory, SnapshotDb,
 } from "../imodeljs-backend";
 import { BackendLoggerCategory as BackendLoggerCategory } from "../BackendLoggerCategory";
 import { KnownTestLocations } from "./KnownTestLocations";
@@ -20,7 +20,7 @@ import { ElementDrivesElement, RelationshipProps } from "../Relationship";
 import { PhysicalElement } from "../Element";
 import { ClassRegistry } from "../ClassRegistry";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
-import { BriefcaseIModelDb } from "../IModelDb";
+import { BriefcaseDb } from "../IModelDb";
 
 /** Class for simple test timing */
 export class Timer {
@@ -172,9 +172,9 @@ export class IModelTestUtils {
   }
 
   /** Orchestrates the steps necessary to create a new snapshot iModel from a seed file. */
-  public static createSnapshotFromSeed(testFileName: string, seedFileName: string): SnapshotIModelDb {
-    const seedDb: SnapshotIModelDb = SnapshotIModelDb.open(seedFileName);
-    const testDb: SnapshotIModelDb = SnapshotIModelDb.createFrom(seedDb, testFileName);
+  public static createSnapshotFromSeed(testFileName: string, seedFileName: string): SnapshotDb {
+    const seedDb: SnapshotDb = SnapshotDb.open(seedFileName);
+    const testDb: SnapshotDb = SnapshotDb.createFrom(seedDb, testFileName);
     seedDb.close();
     return testDb;
   }
@@ -213,7 +213,7 @@ export class IModelTestUtils {
       code: newModelCode,
     };
     const modeledElement: Element = testDb.elements.createElement(modeledElementProps);
-    if (testDb instanceof BriefcaseIModelDb) {
+    if (testDb instanceof BriefcaseDb) {
       await testDb.concurrencyControl.requestResourcesForInsert(rqctx, [modeledElement]);
       rqctx.enter();
     }
@@ -233,7 +233,7 @@ export class IModelTestUtils {
   // Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel.
   public static async createAndInsertPhysicalModelAsync(rqctx: AuthorizedClientRequestContext, testDb: IModelDb, modeledElementRef: RelatedElement, privateModel: boolean = false): Promise<Id64String> {
     const newModel = testDb.models.createModel({ modeledElement: modeledElementRef, classFullName: PhysicalModel.classFullName, isPrivate: privateModel });
-    if (testDb instanceof BriefcaseIModelDb) {
+    if (testDb instanceof BriefcaseDb) {
       await testDb.concurrencyControl.requestResourcesForInsert(rqctx, [], [newModel]);
       rqctx.enter();
     }

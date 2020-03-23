@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { BentleyError, BentleyStatus, ClientRequestContext, ClientRequestContextProps, GuidString } from "@bentley/bentleyjs-core";
-import { BriefcaseIModelDb, BriefcaseManager, ChangeSummaryExtractOptions, ChangeSummaryManager, EventSinkManager, IModelDb, IModelHost, IModelJsFs } from "@bentley/imodeljs-backend";
+import { BriefcaseDb, BriefcaseManager, ChangeSummaryExtractOptions, ChangeSummaryManager, EventSinkManager, IModelDb, IModelHost, IModelJsFs } from "@bentley/imodeljs-backend";
 import { AuthorizedClientRequestContext, AuthorizedClientRequestContextProps, Config, IModelBankClient, IModelQuery } from "@bentley/imodeljs-clients";
 import { IModelToken, IModelTokenProps, RpcInterface, RpcManager } from "@bentley/imodeljs-common";
 import { CloudEnvProps, EventsTestRpcInterface, TestRpcInterface } from "../common/RpcInterfaces";
@@ -22,7 +22,7 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
   public async extractChangeSummaries(tokenProps: IModelTokenProps, options: any): Promise<void> {
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
     const iModelToken = IModelToken.fromJSON(tokenProps);
-    await ChangeSummaryManager.extractChangeSummaries(requestContext, BriefcaseIModelDb.findByToken(iModelToken), options as ChangeSummaryExtractOptions);
+    await ChangeSummaryManager.extractChangeSummaries(requestContext, BriefcaseDb.findByToken(iModelToken), options as ChangeSummaryExtractOptions);
   }
 
   public async deleteChangeCache(tokenProps: IModelTokenProps): Promise<void> {
@@ -94,7 +94,7 @@ export class EventsTestRpcImpl extends RpcInterface implements EventsTestRpcInte
     } else {
       const iModelToken = IModelToken.fromJSON(tokenProps);
       const iModelDb = IModelDb.find(iModelToken);
-      if (iModelDb instanceof BriefcaseIModelDb) {
+      if (iModelDb instanceof BriefcaseDb) {
         iModelDb.eventSink!.emit(EventsTestRpcInterface.name, "echo", { id, message });
       }
     }

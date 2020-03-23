@@ -10,7 +10,7 @@ import { ChangedElements, IModelToken, IModelTokenProps, RpcInterface, RpcManage
 import { WipRpcInterface } from "@bentley/imodeljs-common/lib/rpc/WipRpcInterface"; // not part of the "barrel"
 import { ChangedElementsManager } from "../ChangedElementsManager";
 import { ChangeSummaryManager } from "../ChangeSummaryManager";
-import { BriefcaseIModelDb } from "../IModelDb";
+import { BriefcaseDb } from "../IModelDb";
 
 /** The backend implementation of WipRpcInterface.
  * @internal
@@ -22,17 +22,17 @@ export class WipRpcImpl extends RpcInterface implements WipRpcInterface {
 
   public async isChangeCacheAttached(tokenProps: IModelTokenProps): Promise<boolean> {
     const iModelToken = IModelToken.fromJSON(tokenProps);
-    return ChangeSummaryManager.isChangeCacheAttached(BriefcaseIModelDb.findByToken(iModelToken));
+    return ChangeSummaryManager.isChangeCacheAttached(BriefcaseDb.findByToken(iModelToken));
   }
 
   public async attachChangeCache(tokenProps: IModelTokenProps): Promise<void> {
     const iModelToken = IModelToken.fromJSON(tokenProps);
-    ChangeSummaryManager.attachChangeCache(BriefcaseIModelDb.findByToken(iModelToken));
+    ChangeSummaryManager.attachChangeCache(BriefcaseDb.findByToken(iModelToken));
   }
 
   public async detachChangeCache(tokenProps: IModelTokenProps): Promise<void> {
     const iModelToken = IModelToken.fromJSON(tokenProps);
-    const iModel: BriefcaseIModelDb = BriefcaseIModelDb.findByToken(iModelToken);
+    const iModel: BriefcaseDb = BriefcaseDb.findByToken(iModelToken);
     if (ChangeSummaryManager.isChangeCacheAttached(iModel))
       ChangeSummaryManager.detachChangeCache(iModel);
   }

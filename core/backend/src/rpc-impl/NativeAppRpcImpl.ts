@@ -28,7 +28,7 @@ import { cancelTileContentRequests } from "./IModelTileRpcImpl";
 import { NativeAppBackend } from "../NativeAppBackend";
 import { Config, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
 import { Logger, LogLevel, ClientRequestContext, DbResult, assert } from "@bentley/bentleyjs-core";
-import { BriefcaseIModelDb, OpenParams } from "../IModelDb";
+import { BriefcaseDb, OpenParams } from "../IModelDb";
 import { BriefcaseManager, KeepBriefcase } from "../BriefcaseManager";
 import { NativeAppStorage } from "../NativeAppStorage";
 
@@ -109,7 +109,7 @@ export class NativeAppRpcImpl extends RpcInterface implements NativeAppRpcInterf
     const iModelToken = IModelToken.fromJSON(tokenProps);
     const openParams: OpenParams = OpenParams.pullOnly();
     const iModelVersion = IModelVersion.asOfChangeSet(iModelToken.changeSetId!);
-    const db = await BriefcaseIModelDb.downloadBriefcase(requestContext, iModelToken.contextId!, iModelToken.iModelId!, openParams, iModelVersion);
+    const db = await BriefcaseDb.downloadBriefcase(requestContext, iModelToken.contextId!, iModelToken.iModelId!, openParams, iModelVersion);
     return db.toJSON();
   }
 
@@ -127,7 +127,7 @@ export class NativeAppRpcImpl extends RpcInterface implements NativeAppRpcInterf
     const iModelToken = IModelToken.fromJSON(tokenProps);
     const openParams: OpenParams = OpenParams.pullOnly();
     const iModelVersion = IModelVersion.asOfChangeSet(iModelToken.changeSetId!);
-    const db = await BriefcaseIModelDb.startDownloadBriefcase(requestContext, iModelToken.contextId!, iModelToken.iModelId!, openParams, iModelVersion);
+    const db = await BriefcaseDb.startDownloadBriefcase(requestContext, iModelToken.contextId!, iModelToken.iModelId!, openParams, iModelVersion);
     return db.toJSON();
   }
 
@@ -138,7 +138,7 @@ export class NativeAppRpcImpl extends RpcInterface implements NativeAppRpcInterf
   public async finishDownloadBriefcase(tokenProps: IModelTokenProps): Promise<void> {
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
     const iModelToken = IModelToken.fromJSON(tokenProps);
-    await BriefcaseIModelDb.finishDownloadBriefcase(requestContext, iModelToken);
+    await BriefcaseDb.finishDownloadBriefcase(requestContext, iModelToken);
   }
 
   /**
@@ -147,7 +147,7 @@ export class NativeAppRpcImpl extends RpcInterface implements NativeAppRpcInterf
    */
   public async cancelDownloadBriefcase(tokenProps: IModelTokenProps): Promise<boolean> {
     const iModelToken = IModelToken.fromJSON(tokenProps);
-    const status = BriefcaseIModelDb.cancelDownloadBriefcase(iModelToken);
+    const status = BriefcaseDb.cancelDownloadBriefcase(iModelToken);
     return status;
   }
 
@@ -174,7 +174,7 @@ export class NativeAppRpcImpl extends RpcInterface implements NativeAppRpcInterf
       assert(briefcases.length === 1);
       Object.assign(iModelToken, { key: briefcases[0].key });
     }
-    const db = await BriefcaseIModelDb.openBriefcase(requestContext, iModelToken);
+    const db = await BriefcaseDb.openBriefcase(requestContext, iModelToken);
     return db.toJSON();
   }
 
@@ -185,7 +185,7 @@ export class NativeAppRpcImpl extends RpcInterface implements NativeAppRpcInterf
   public async closeBriefcase(tokenProps: IModelTokenProps): Promise<boolean> {
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
     const iModelToken = IModelToken.fromJSON(tokenProps);
-    await BriefcaseIModelDb.findByToken(iModelToken).close(requestContext, KeepBriefcase.Yes);
+    await BriefcaseDb.findByToken(iModelToken).close(requestContext, KeepBriefcase.Yes);
     return Promise.resolve(true);
   }
 
@@ -195,7 +195,7 @@ export class NativeAppRpcImpl extends RpcInterface implements NativeAppRpcInterf
   public async deleteBriefcase(tokenProps: IModelTokenProps): Promise<void> {
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
     const iModelToken = IModelToken.fromJSON(tokenProps);
-    await BriefcaseIModelDb.deleteBriefcase(requestContext, iModelToken);
+    await BriefcaseDb.deleteBriefcase(requestContext, iModelToken);
   }
 
   /**

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { DbResult, Id64String } from "@bentley/bentleyjs-core";
-import { ECSqlStatement, Element, IModelDb, Model, SnapshotIModelDb } from "@bentley/imodeljs-backend";
+import { ECSqlStatement, Element, IModelDb, Model, SnapshotDb } from "@bentley/imodeljs-backend";
 import { IModelJsFs as fs } from "@bentley/imodeljs-backend/lib/IModelJsFs";
 import { assert } from "chai";
 import * as path from "path";
@@ -61,7 +61,7 @@ class DumpIModel {
 // __PUBLISH_EXTRACT_END__
 
 describe("DumpIModel", () => {
-  let iModel: SnapshotIModelDb;
+  let iModel: SnapshotDb;
 
   before(async () => {
     iModel = IModelTestUtils.openSnapshotFromSeed("test.bim", { copyFilename: "dump.bim" });

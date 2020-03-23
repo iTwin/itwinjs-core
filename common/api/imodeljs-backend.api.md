@@ -274,14 +274,14 @@ export class AuthorizedBackendRequestContext extends AuthorizedClientRequestCont
 
 // @beta
 export class AutoPush {
-    constructor(iModel: BriefcaseIModelDb, params: AutoPushParams, activityMonitor?: AppActivityMonitor);
+    constructor(iModel: BriefcaseDb, params: AutoPushParams, activityMonitor?: AppActivityMonitor);
     get autoSchedule(): boolean;
     set autoSchedule(v: boolean);
     cancel(): void;
     get durationOfLastPushMillis(): number;
     get endOfLastPushMillis(): number;
     event: BeEvent<AutoPushEventHandler>;
-    get iModel(): BriefcaseIModelDb;
+    get iModel(): BriefcaseDb;
     get lastError(): any | undefined;
     // (undocumented)
     reserveCodes(): Promise<void>;
@@ -437,6 +437,48 @@ export class BisCoreSchema extends Schema {
     static get schemaName(): string;
 }
 
+// @public
+export class BriefcaseDb extends IModelDb {
+    // @internal (undocumented)
+    get briefcase(): BriefcaseEntry;
+    // @internal
+    static cancelDownloadBriefcase(iModelToken: IModelToken): boolean;
+    close(requestContext: AuthorizedClientRequestContext, keepBriefcase?: KeepBriefcase): Promise<void>;
+    // @beta
+    get concurrencyControl(): ConcurrencyControl;
+    static create(requestContext: AuthorizedClientRequestContext, contextId: string, iModelName: string, args: CreateIModelProps): Promise<BriefcaseDb>;
+    // @internal
+    static deleteBriefcase(requestContext: AuthorizedClientRequestContext, iModelToken: IModelToken): Promise<void>;
+    // @internal
+    static downloadBriefcase(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: string, openParams?: OpenParams, version?: IModelVersion): Promise<IModelToken>;
+    // @internal
+    get eventSink(): EventSink | undefined;
+    // @internal
+    static findByToken(iModelToken: IModelToken): BriefcaseDb;
+    static finishDownloadBriefcase(requestContext: AuthorizedClientRequestContext, iModelToken: IModelToken): Promise<void>;
+    readonly onBeforeClose: BeEvent<() => void>;
+    readonly onChangesetApplied: BeEvent<() => void>;
+    static readonly onCreate: BeEvent<(_requestContext: AuthorizedClientRequestContext, _contextId: string, _args: CreateIModelProps) => void>;
+    static readonly onCreated: BeEvent<(_imodelDb: BriefcaseDb) => void>;
+    static readonly onOpen: BeEvent<(_requestContext: AuthorizedClientRequestContext, _contextId: string, _iModelId: string, _openParams: OpenParams, _version: IModelVersion) => void>;
+    static readonly onOpened: BeEvent<(_requestContext: AuthorizedClientRequestContext, _imodelDb: BriefcaseDb) => void>;
+    static open(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: string, openParams?: OpenParams, version?: IModelVersion): Promise<BriefcaseDb>;
+    // @internal
+    static openBriefcase(requestContext: AuthorizedClientRequestContext, iModelToken: IModelToken): Promise<BriefcaseDb>;
+    // @beta
+    pullAndMergeChanges(requestContext: AuthorizedClientRequestContext, version?: IModelVersion): Promise<void>;
+    // @beta
+    pushChanges(requestContext: AuthorizedClientRequestContext, description: string): Promise<void>;
+    // @beta
+    reinstateChanges(requestContext: AuthorizedClientRequestContext, version?: IModelVersion): Promise<void>;
+    // @beta
+    reverseChanges(requestContext: AuthorizedClientRequestContext, version?: IModelVersion): Promise<void>;
+    // @internal
+    static startDownloadBriefcase(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: string, openParams?: OpenParams, version?: IModelVersion): Promise<IModelToken>;
+    // @internal
+    static tryFindByToken(iModelToken: IModelToken): BriefcaseDb | undefined;
+}
+
 // @internal
 export class BriefcaseEntry {
     constructor(contextId: GuidString, iModelId: GuidString, targetChangeSetId: GuidString, pathname: string, openParams: OpenParams, briefcaseId: BriefcaseId);
@@ -478,48 +520,6 @@ export class BriefcaseEntry {
 
 // @public
 export type BriefcaseId = number;
-
-// @public
-export class BriefcaseIModelDb extends IModelDb {
-    // @internal (undocumented)
-    get briefcase(): BriefcaseEntry;
-    // @internal
-    static cancelDownloadBriefcase(iModelToken: IModelToken): boolean;
-    close(requestContext: AuthorizedClientRequestContext, keepBriefcase?: KeepBriefcase): Promise<void>;
-    // @beta
-    get concurrencyControl(): ConcurrencyControl;
-    static create(requestContext: AuthorizedClientRequestContext, contextId: string, iModelName: string, args: CreateIModelProps): Promise<BriefcaseIModelDb>;
-    // @internal
-    static deleteBriefcase(requestContext: AuthorizedClientRequestContext, iModelToken: IModelToken): Promise<void>;
-    // @internal
-    static downloadBriefcase(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: string, openParams?: OpenParams, version?: IModelVersion): Promise<IModelToken>;
-    // @internal
-    get eventSink(): EventSink | undefined;
-    // @internal
-    static findByToken(iModelToken: IModelToken): BriefcaseIModelDb;
-    static finishDownloadBriefcase(requestContext: AuthorizedClientRequestContext, iModelToken: IModelToken): Promise<void>;
-    readonly onBeforeClose: BeEvent<() => void>;
-    readonly onChangesetApplied: BeEvent<() => void>;
-    static readonly onCreate: BeEvent<(_requestContext: AuthorizedClientRequestContext, _contextId: string, _args: CreateIModelProps) => void>;
-    static readonly onCreated: BeEvent<(_imodelDb: BriefcaseIModelDb) => void>;
-    static readonly onOpen: BeEvent<(_requestContext: AuthorizedClientRequestContext, _contextId: string, _iModelId: string, _openParams: OpenParams, _version: IModelVersion) => void>;
-    static readonly onOpened: BeEvent<(_requestContext: AuthorizedClientRequestContext, _imodelDb: BriefcaseIModelDb) => void>;
-    static open(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: string, openParams?: OpenParams, version?: IModelVersion): Promise<BriefcaseIModelDb>;
-    // @internal
-    static openBriefcase(requestContext: AuthorizedClientRequestContext, iModelToken: IModelToken): Promise<BriefcaseIModelDb>;
-    // @beta
-    pullAndMergeChanges(requestContext: AuthorizedClientRequestContext, version?: IModelVersion): Promise<void>;
-    // @beta
-    pushChanges(requestContext: AuthorizedClientRequestContext, description: string): Promise<void>;
-    // @beta
-    reinstateChanges(requestContext: AuthorizedClientRequestContext, version?: IModelVersion): Promise<void>;
-    // @beta
-    reverseChanges(requestContext: AuthorizedClientRequestContext, version?: IModelVersion): Promise<void>;
-    // @internal
-    static startDownloadBriefcase(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: string, openParams?: OpenParams, version?: IModelVersion): Promise<IModelToken>;
-    // @internal
-    static tryFindByToken(iModelToken: IModelToken): BriefcaseIModelDb | undefined;
-}
 
 // @internal
 export class BriefcaseManager {
@@ -637,7 +637,7 @@ export class ChangedElementsDb implements IDisposable {
     // (undocumented)
     get nativeDb(): IModelJsNative.ChangedElementsECDb;
     static openDb(pathName: string, openMode?: ECDbOpenMode): ChangedElementsDb;
-    processChangesets(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseIModelDb, rulesetId: string, startChangesetId: GuidString, endChangesetId: GuidString, filterSpatial?: boolean, rulesetDir?: string, tempDir?: string): Promise<DbResult>;
+    processChangesets(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseDb, rulesetId: string, startChangesetId: GuidString, endChangesetId: GuidString, filterSpatial?: boolean, rulesetDir?: string, tempDir?: string): Promise<DbResult>;
 }
 
 // @internal
@@ -673,9 +673,9 @@ export interface ChangeSummary {
 
 // @beta (undocumented)
 export class ChangeSummaryExtractContext {
-    constructor(iModel: BriefcaseIModelDb);
+    constructor(iModel: BriefcaseDb);
     // (undocumented)
-    readonly iModel: BriefcaseIModelDb;
+    readonly iModel: BriefcaseDb;
     // (undocumented)
     get iModelId(): GuidString;
 }
@@ -688,7 +688,7 @@ export interface ChangeSummaryExtractOptions {
 
 // @beta
 export class ChangeSummaryManager {
-    static attachChangeCache(iModel: BriefcaseIModelDb): void;
+    static attachChangeCache(iModel: BriefcaseDb): void;
     static buildPropertyValueChangesECSql(iModel: IModelDb, instanceChangeInfo: {
         id: Id64String;
         summaryId: Id64String;
@@ -697,14 +697,14 @@ export class ChangeSummaryManager {
             className: string;
         };
     }, changedValueState: ChangedValueState, changedPropertyNames?: string[]): string;
-    static detachChangeCache(iModel: BriefcaseIModelDb): void;
+    static detachChangeCache(iModel: BriefcaseDb): void;
     // (undocumented)
     static downloadChangeSets(requestContext: AuthorizedClientRequestContext, ctx: ChangeSummaryExtractContext, startChangeSetId: GuidString, endChangeSetId: GuidString): Promise<ChangeSet[]>;
-    static extractChangeSummaries(requestContext: AuthorizedClientRequestContext, iModel: BriefcaseIModelDb, options?: ChangeSummaryExtractOptions): Promise<Id64String[]>;
+    static extractChangeSummaries(requestContext: AuthorizedClientRequestContext, iModel: BriefcaseDb, options?: ChangeSummaryExtractOptions): Promise<Id64String[]>;
     static getChangedPropertyValueNames(iModel: IModelDb, instanceChangeId: Id64String): string[];
-    static isChangeCacheAttached(iModel: BriefcaseIModelDb): boolean;
-    static queryChangeSummary(iModel: BriefcaseIModelDb, changeSummaryId: Id64String): ChangeSummary;
-    static queryInstanceChange(iModel: BriefcaseIModelDb, instanceChangeId: Id64String): InstanceChange;
+    static isChangeCacheAttached(iModel: BriefcaseDb): boolean;
+    static queryChangeSummary(iModel: BriefcaseDb, changeSummaryId: Id64String): ChangeSummary;
+    static queryInstanceChange(iModel: BriefcaseDb, instanceChangeId: Id64String): InstanceChange;
 }
 
 // @public
@@ -788,7 +788,7 @@ export class CodeSpecs {
 
 // @beta
 export class ConcurrencyControl {
-    constructor(_iModel: BriefcaseIModelDb);
+    constructor(_iModel: BriefcaseDb);
     abandonRequest(): void;
     areAvailable(requestContext: AuthorizedClientRequestContext, req?: ConcurrencyControl.Request): Promise<boolean>;
     areCodesAvailable(requestContext: AuthorizedClientRequestContext, req?: ConcurrencyControl.Request): Promise<boolean>;
@@ -820,7 +820,7 @@ export class ConcurrencyControl {
     // @alpha
     get hasSchemaLock(): boolean;
     // @internal (undocumented)
-    get iModel(): BriefcaseIModelDb;
+    get iModel(): BriefcaseDb;
     // @internal (undocumented)
     get isBulkMode(): boolean;
     lockCodeSpecs(requestContext: AuthorizedClientRequestContext): Promise<Lock[]>;
@@ -882,7 +882,7 @@ export class ConcurrencyControl {
 // @beta (undocumented)
 export namespace ConcurrencyControl {
     export class Codes {
-        constructor(_iModel: BriefcaseIModelDb);
+        constructor(_iModel: BriefcaseDb);
         query(requestContext: AuthorizedClientRequestContext, specId: Id64String, scopeId: string, value?: string): Promise<HubCode[]>;
         reserve(requestContext: AuthorizedClientRequestContext, codes?: CodeProps[]): Promise<void>;
     }
@@ -3626,14 +3626,14 @@ export class SheetViewDefinition extends ViewDefinition2d {
 }
 
 // @beta
-export class SnapshotIModelDb extends IModelDb {
+export class SnapshotDb extends IModelDb {
     close(): void;
-    static createEmpty(filePath: string, options: CreateEmptySnapshotIModelProps): SnapshotIModelDb;
-    static createFrom(iModelDb: IModelDb, snapshotFile: string, options?: CreateSnapshotIModelProps): SnapshotIModelDb;
+    static createEmpty(filePath: string, options: CreateEmptySnapshotIModelProps): SnapshotDb;
+    static createFrom(iModelDb: IModelDb, snapshotFile: string, options?: CreateSnapshotIModelProps): SnapshotDb;
     get filePath(): string;
-    static open(filePath: string, encryptionProps?: IModelEncryptionProps): SnapshotIModelDb;
+    static open(filePath: string, encryptionProps?: IModelEncryptionProps): SnapshotDb;
     // @internal
-    static tryFindByPath(filePath: string): SnapshotIModelDb | undefined;
+    static tryFindByPath(filePath: string): SnapshotDb | undefined;
 }
 
 // @public
@@ -3803,12 +3803,12 @@ export enum SqliteValueType {
 }
 
 // @internal
-export class StandaloneIModelDb extends IModelDb {
+export class StandaloneDb extends IModelDb {
     close(): void;
-    static createEmpty(filePath: string, args: CreateIModelProps): StandaloneIModelDb;
+    static createEmpty(filePath: string, args: CreateIModelProps): StandaloneDb;
     get filePath(): string;
-    static open(filePath: string, openMode?: OpenMode): StandaloneIModelDb;
-    static tryFindByPath(filePath: string): StandaloneIModelDb | undefined;
+    static open(filePath: string, openMode?: OpenMode): StandaloneDb;
+    static tryFindByPath(filePath: string): StandaloneDb | undefined;
 }
 
 // @internal

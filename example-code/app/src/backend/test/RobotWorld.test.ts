@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { ClientRequestContext, Id64String, OpenMode } from "@bentley/bentleyjs-core";
 import { Angle, Point3d } from "@bentley/geometry-core";
-import { IModelJsFs, PhysicalModel, StandaloneIModelDb } from "@bentley/imodeljs-backend";
+import { IModelJsFs, PhysicalModel, StandaloneDb } from "@bentley/imodeljs-backend";
 import { IModel } from "@bentley/imodeljs-common";
 import { assert } from "chai";
 import { Barrier } from "../BarrierElement";
@@ -22,7 +22,7 @@ describe("RobotWorld", () => {
     const iModelFile = IModelTestUtils.prepareOutputFile("should-run-robotworld.bim");
     const seedFile = IModelTestUtils.resolveAssetFile("empty.bim");
     IModelJsFs.copySync(seedFile, iModelFile);
-    const iModel = StandaloneIModelDb.open(iModelFile, OpenMode.ReadWrite);
+    const iModel = StandaloneDb.open(iModelFile, OpenMode.ReadWrite);
     assert.isTrue(iModel !== undefined);
 
     try {

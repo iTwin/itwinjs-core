@@ -8,7 +8,7 @@ Concurrency control is a way to coordinate simultaneous transactions (briefcases
 
 An iModel has a concurrency control policy that specifies how multiple briefcases may modify models and elements. The policy may stipulate that locks must be used, forcing transactions to be sequential (pessimistic), or it may specify change-merging with conflict-resolution to combine the results of simultaneous transactions (optimistic).
 
-An app uses [BriefcaseIModelDb]($backend) and [ConcurrencyControl]($backend) to follow concurrency control rules.
+An app uses [BriefcaseDb]($backend) and [ConcurrencyControl]($backend) to follow concurrency control rules.
 
 Locks and code reservations are associated with a briefcase while it is making changes and are released when it pushes.
 
@@ -17,7 +17,7 @@ Locks and code reservations are associated with a briefcase while it is making c
 This article assumes that you already know that:
 
 * An iModel is a multi-user database
-* An app works with a [briefcase](../Glossary.md#Briefcase) using the [BriefcaseIModelDb]($backend) class.
+* An app works with a [briefcase](../Glossary.md#Briefcase) using the [BriefcaseDb]($backend) class.
 * A briefcase has a unique identity that is issued and tracked by [iModelHub]($docs/learning/IModelHub/index.md).
 * Changes are captured and distributed in the form of [ChangeSets]($docs/learning/IModelHub/briefcases.md).
 * ChangeSets are ordered in a sequence that is called the [timeline]($docs/learning/IModelHub/index.md#the-timeline-of-changes-to-an-imodel) of the iModel.
@@ -112,7 +112,7 @@ Locks are normally released when the briefcase pushes its changes, or they may b
 
  Working without locks also opens up the possibility that local changes may overlap with in-coming ChangeSets. When ChangeSets are merged into the briefcase, the change-merging algorithm checks for conflicts. The algorithm merges changes and checks for conflicts at the level of individual element properties. In the example above, the two briefcases changed different properties of the same element. That is not a conflict. Likewise, it is not a conflict for two briefcases both to set a property to the same value, or for two briefcases both to delete an element. Conflicts arise if the two briefcases set the same property to different values, or if one briefcase modifies a property and the other deletes the element.
 
- If conflicts are found, the change-merging algorithm applies the iModel's conflict-resolution policy. This can be accessed using the [BriefcaseIModelDb.concurrencyControl]($backend) property. The policy object includes a [ConcurrencyControl.ConflictResolutionPolicy]($backend) that specifies a conflict-handling policy for each combination of changes that could conflict. The handling operations are defined by [ConcurrencyControl.OnConflict]($backend). The default conflict-resolution policies are:
+ If conflicts are found, the change-merging algorithm applies the iModel's conflict-resolution policy. This can be accessed using the [BriefcaseDb.concurrencyControl]($backend) property. The policy object includes a [ConcurrencyControl.ConflictResolutionPolicy]($backend) that specifies a conflict-handling policy for each combination of changes that could conflict. The handling operations are defined by [ConcurrencyControl.OnConflict]($backend). The default conflict-resolution policies are:
 
  |Local Change|RemoteChange|Resolution|
  |------------|------------|--------|

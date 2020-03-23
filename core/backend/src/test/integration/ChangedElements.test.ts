@@ -8,7 +8,7 @@ import { ChangedElements, IModelVersion } from "@bentley/imodeljs-common";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { assert } from "chai";
 import { ChangedElementsManager } from "../../ChangedElementsManager";
-import { AuthorizedBackendRequestContext, BriefcaseIModelDb, BriefcaseManager, ChangedElementsDb, IModelJsFs, OpenParams } from "../../imodeljs-backend";
+import { AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseManager, ChangedElementsDb, IModelJsFs, OpenParams } from "../../imodeljs-backend";
 import { IModelTestUtils, TestIModelInfo } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
 
@@ -37,7 +37,7 @@ describe("ChangedElements (#integration)", () => {
   it("Create ChangedElements Cache and process changesets", async () => {
     setupTest(testIModel.id);
 
-    const iModel = await BriefcaseIModelDb.open(requestContext, testProjectId, testIModel.id, OpenParams.fixedVersion(), IModelVersion.latest());
+    const iModel = await BriefcaseDb.open(requestContext, testProjectId, testIModel.id, OpenParams.fixedVersion(), IModelVersion.latest());
     const changeSets: ChangeSet[] = await BriefcaseManager.imodelClient.changeSets.get(requestContext, testIModel.id);
     assert.exists(iModel);
 

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { Id64 } from "@bentley/bentleyjs-core";
 import { assert } from "chai";
-import { IModelDb, SnapshotIModelDb } from "../../imodeljs-backend";
+import { IModelDb, SnapshotDb } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
 async function executeQuery(iModel: IModelDb, ecsql: string, bindings?: any[] | object): Promise<any[]> {
@@ -16,18 +16,18 @@ async function executeQuery(iModel: IModelDb, ecsql: string, bindings?: any[] | 
 }
 
 describe("ECSql Query", () => {
-  let imodel1: SnapshotIModelDb;
-  let imodel2: SnapshotIModelDb;
-  let imodel3: SnapshotIModelDb;
-  let imodel4: SnapshotIModelDb;
-  let imodel5: SnapshotIModelDb;
+  let imodel1: SnapshotDb;
+  let imodel2: SnapshotDb;
+  let imodel3: SnapshotDb;
+  let imodel4: SnapshotDb;
+  let imodel5: SnapshotDb;
 
   before(async () => {
-    imodel1 = SnapshotIModelDb.open(IModelTestUtils.resolveAssetFile("test.bim"));
-    imodel2 = SnapshotIModelDb.open(IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim"));
-    imodel3 = SnapshotIModelDb.open(IModelTestUtils.resolveAssetFile("GetSetAutoHandledStructProperties.bim"));
-    imodel4 = SnapshotIModelDb.open(IModelTestUtils.resolveAssetFile("GetSetAutoHandledArrayProperties.bim"));
-    imodel5 = SnapshotIModelDb.open(IModelTestUtils.resolveAssetFile("mirukuru.ibim"));
+    imodel1 = SnapshotDb.open(IModelTestUtils.resolveAssetFile("test.bim"));
+    imodel2 = SnapshotDb.open(IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim"));
+    imodel3 = SnapshotDb.open(IModelTestUtils.resolveAssetFile("GetSetAutoHandledStructProperties.bim"));
+    imodel4 = SnapshotDb.open(IModelTestUtils.resolveAssetFile("GetSetAutoHandledArrayProperties.bim"));
+    imodel5 = SnapshotDb.open(IModelTestUtils.resolveAssetFile("mirukuru.ibim"));
   });
 
   after(async () => {

@@ -9,7 +9,7 @@
 import { Logger } from "@bentley/bentleyjs-core";
 import { IModelNotFoundResponse, IModelProps, IModelToken, IModelTokenProps, RpcInterface, RpcManager, SnapshotIModelRpcInterface } from "@bentley/imodeljs-common";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
-import { SnapshotIModelDb } from "../IModelDb";
+import { SnapshotDb } from "../IModelDb";
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
@@ -21,9 +21,9 @@ export class SnapshotIModelRpcImpl extends RpcInterface implements SnapshotIMode
 
   /** Ask the backend to open a snapshot iModel (not managed by iModelHub) from a file name that is resolved by the backend. */
   public async openSnapshot(filePath: string): Promise<IModelProps> {
-    let snapshotDb: SnapshotIModelDb | undefined = SnapshotIModelDb.tryFindByPath(filePath);
+    let snapshotDb: SnapshotDb | undefined = SnapshotDb.tryFindByPath(filePath);
     if (undefined === snapshotDb) {
-      snapshotDb = SnapshotIModelDb.open(filePath);
+      snapshotDb = SnapshotDb.open(filePath);
     }
     return snapshotDb.toJSON();
   }
@@ -32,9 +32,9 @@ export class SnapshotIModelRpcImpl extends RpcInterface implements SnapshotIMode
   public async closeSnapshot(tokenProps: IModelTokenProps): Promise<boolean> {
     const iModelToken = IModelToken.fromJSON(tokenProps);
     const snapshotFilePath = iModelToken.key!;
-    const snapshotDb = SnapshotIModelDb.tryFindByPath(snapshotFilePath);
+    const snapshotDb = SnapshotDb.tryFindByPath(snapshotFilePath);
     if (undefined === snapshotDb) {
-      Logger.logError(loggerCategory, "SnapshotIModelDb not found in the in-memory cache", () => snapshotFilePath);
+      Logger.logError(loggerCategory, "SnapshotDb not found in the in-memory cache", () => snapshotFilePath);
       throw new IModelNotFoundResponse();
     }
     snapshotDb.close();

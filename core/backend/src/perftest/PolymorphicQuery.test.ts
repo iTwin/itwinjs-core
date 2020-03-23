@@ -9,7 +9,7 @@ import { Code, ColorDef, GeometricElementProps, GeometryStreamProps, IModel, Sub
 import { Reporter } from "@bentley/perf-tools/lib/Reporter";
 import { assert } from "chai";
 import * as path from "path";
-import { BackendRequestContext, ECSqlStatement, IModelDb, IModelJsFs, SnapshotIModelDb, SpatialCategory } from "../imodeljs-backend";
+import { BackendRequestContext, ECSqlStatement, IModelDb, IModelJsFs, SnapshotDb, SpatialCategory } from "../imodeljs-backend";
 import { IModelTestUtils } from "../test/IModelTestUtils";
 import { KnownTestLocations } from "../test/KnownTestLocations";
 
@@ -129,7 +129,7 @@ describe("SchemaDesignPerf Polymorphic query", () => {
       assert(IModelJsFs.existsSync(st));
       const seedName = path.join(outDir, "poly_flat_" + hCount + ".bim");
       if (!IModelJsFs.existsSync(seedName)) {
-        const seedIModel = SnapshotIModelDb.createEmpty(IModelTestUtils.prepareOutputFile("PolymorphicPerformance", "poly_flat_" + hCount + ".bim"), { rootSubject: { name: "PerfTest" } });
+        const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("PolymorphicPerformance", "poly_flat_" + hCount + ".bim"), { rootSubject: { name: "PerfTest" } });
         await seedIModel.importSchemas(new BackendRequestContext(), [st]);
         // first create Elements and then Relationship
         const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(seedIModel, Code.createEmpty(), true);
@@ -167,7 +167,7 @@ describe("SchemaDesignPerf Polymorphic query", () => {
     assert(IModelJsFs.existsSync(st2));
     const seedName2 = path.join(outDir, "poly_multi_" + multiHierarchyCount.toString() + ".bim");
     if (!IModelJsFs.existsSync(seedName2)) {
-      const seedIModel2 = SnapshotIModelDb.createEmpty(IModelTestUtils.prepareOutputFile("PolymorphicPerformance", "poly_multi_" + multiHierarchyCount.toString() + ".bim"), { rootSubject: { name: "PerfTest" } });
+      const seedIModel2 = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("PolymorphicPerformance", "poly_multi_" + multiHierarchyCount.toString() + ".bim"), { rootSubject: { name: "PerfTest" } });
       await seedIModel2.importSchemas(new BackendRequestContext(), [st2]);
       // first create Elements and then Relationship
       const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(seedIModel2, Code.createEmpty(), true);

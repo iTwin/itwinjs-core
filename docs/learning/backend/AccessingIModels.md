@@ -22,14 +22,14 @@ When you create a Snapshot iModel, you implicitly *opt-out of enforcement* of an
 
 ### Creating Snapshot iModels
 
-The iModel.js api has two ways to create a Snapshot iModel. Both are methods on the [SnapshotIModelDb]($backend) class:
+The iModel.js api has two ways to create a Snapshot iModel. Both are methods on the [SnapshotDb]($backend) class:
 
-1. [SnapshotIModelDb.createFrom]($backend)
-2. [SnapshotIModelDb.createEmpty]($backend)
+1. [SnapshotDb.createFrom]($backend)
+2. [SnapshotDb.createEmpty]($backend)
 
-The first method creates a SnapShot iModel from an existing iModel into the supplied filename.  This requires permission from the owner of the original iModel (which obviously must have been previously obtained to open the source iModel.) The `SnapshotIModelDb` may be used to modify and/or extend the copy of the original iModel, but once closed it becomes immutable.
+The first method creates a SnapShot iModel from an existing iModel into the supplied filename.  This requires permission from the owner of the original iModel (which obviously must have been previously obtained to open the source iModel.) The `SnapshotDb` may be used to modify and/or extend the copy of the original iModel, but once closed it becomes immutable.
 
-The second method creates an *empty* Snapshot iModel given a filename. This is useful for applications that wish to create static iModels from external data sources. The `SnapshotIModelDb` may be used to populate the Snapshot, but once closed it becomes immutable.
+The second method creates an *empty* Snapshot iModel given a filename. This is useful for applications that wish to create static iModels from external data sources. The `SnapshotDb` may be used to populate the Snapshot, but once closed it becomes immutable.
 
 ### Important properties of Snapshot iModels
 

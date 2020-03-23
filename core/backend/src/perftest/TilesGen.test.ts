@@ -11,7 +11,7 @@ import * as path from "path";
 import * as readline from "readline";
 import { ECDb, ECDbOpenMode } from "../ECDb";
 import { IModelHost } from "../IModelHost";
-import { IModelDb, SnapshotIModelDb } from "../imodeljs-backend";
+import { IModelDb, SnapshotDb } from "../imodeljs-backend";
 import { IModelJsFs } from "../IModelJsFs";
 import { GeometricModel3d } from "../Model";
 
@@ -231,7 +231,7 @@ async function generateTileFromSnapshot(iModelPath: string, useTileCache: boolea
       IModelJsFs.removeSync(tileCacheJournalFile);
   }
   const sp = new StopWatch();
-  const conn = SnapshotIModelDb.open(iModelPath);
+  const conn = SnapshotDb.open(iModelPath);
   const clientReqCtx = new ClientRequestContext();
   const tileStats: TileStats[] = [];
   const models = await getGeometric3dModels(conn);

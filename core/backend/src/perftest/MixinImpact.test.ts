@@ -9,7 +9,7 @@ import { Code, ColorDef, GeometricElementProps, GeometryStreamProps, IModel, Sub
 import { Reporter } from "@bentley/perf-tools/lib/Reporter";
 import { assert } from "chai";
 import * as path from "path";
-import { BackendRequestContext, ECSqlStatement, IModelDb, IModelJsFs, SnapshotIModelDb, SpatialCategory } from "../imodeljs-backend";
+import { BackendRequestContext, ECSqlStatement, IModelDb, IModelJsFs, SnapshotDb, SpatialCategory } from "../imodeljs-backend";
 import { IModelTestUtils } from "../test/IModelTestUtils";
 import { KnownTestLocations } from "../test/KnownTestLocations";
 
@@ -126,7 +126,7 @@ describe("SchemaDesignPerf Impact of Mixins", () => {
       assert(IModelJsFs.existsSync(st));
       const seedName = path.join(outDir, "mixin_" + hCount + ".bim");
       if (!IModelJsFs.existsSync(seedName)) {
-        const seedIModel = SnapshotIModelDb.createEmpty(IModelTestUtils.prepareOutputFile("MixinPerformance", "mixin_" + hCount + ".bim"), { rootSubject: { name: "PerfTest" } });
+        const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("MixinPerformance", "mixin_" + hCount + ".bim"), { rootSubject: { name: "PerfTest" } });
         await seedIModel.importSchemas(new BackendRequestContext(), [st]);
         const result: DbResult = seedIModel.nativeDb.setAsMaster();
         assert.equal(DbResult.BE_SQLITE_OK, result);
