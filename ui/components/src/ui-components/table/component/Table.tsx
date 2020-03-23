@@ -74,7 +74,7 @@ enum SCROLL_DIRECTION {
   NONE = "none",
 }
 
-/** Scroll ScrollState  */
+/** Scroll State  */
 interface ScrollState {
   height: number;
   scrollTop: number;
@@ -282,7 +282,7 @@ const enum UpdateStatus {
 }
 
 /**
- * Table React component
+ * Table React component that displays rows and columns in a grid along with a header
  * @public
  */
 export class Table extends React.Component<TableProps, TableState> {

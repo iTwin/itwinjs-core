@@ -31,6 +31,7 @@ import "./configurableui.scss";
  * @public
  */
 export interface ConfigurableUiContentProps extends CommonProps {
+  /** React node of the Backstage */
   appBackstage?: React.ReactNode;
 }
 

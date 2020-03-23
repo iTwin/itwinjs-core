@@ -21,6 +21,7 @@ import { useFrameworkVersion } from "../hooks/useFrameworkVersion";
  * @beta
  */
 export interface BackstageAppButtonProps {
+  /** Icon specification for the App button */
   icon?: string;
 }
 

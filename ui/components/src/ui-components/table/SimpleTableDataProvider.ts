@@ -27,7 +27,9 @@ export class SimpleTableDataProvider implements MutableTableDataProvider {
   private _sortColumnIndex: number = -1;
   private _filterDescriptors?: CompositeFilterDescriptorCollection;
 
+  /** Event emitted by the data provider when column data changes */
   public onColumnsChanged = new TableDataChangeEvent();
+  /** Event emitted by the data provider when row data changes */
   public onRowsChanged = new TableDataChangeEvent();
 
   constructor(columns: ColumnDescription[]) {
@@ -37,6 +39,7 @@ export class SimpleTableDataProvider implements MutableTableDataProvider {
     this._secondarySortColumnStack = [];
   }
 
+  /** Sets the row items based on an array */
   public setItems(items: RowItem[]): void {
     this._items = items;
     this._rowItemIndices = [];
@@ -52,14 +55,17 @@ export class SimpleTableDataProvider implements MutableTableDataProvider {
     }
   }
 
+  /** Retrieves the column descriptions */
   public async getColumns(): Promise<ColumnDescription[]> {
     return Promise.resolve(this._columns);
   }
 
+  /** Retrieves the row count */
   public async getRowsCount(): Promise<number> {
     return Promise.resolve(this._rowItemIndices.length);
   }
 
+  /** Retrieves a specific row by index */
   public async getRow(rowIndex: number, unfiltered?: boolean): Promise<RowItem> {
     let realRowIndex: number = -1;
 
@@ -90,6 +96,7 @@ export class SimpleTableDataProvider implements MutableTableDataProvider {
     return this._rowItemIndices[filteredRowIndex];
   }
 
+  /** Sorts the rows based on the value in a specific column */
   public async sort(columnIndex: number, sortDirection: SortDirection): Promise<void> {
     // istanbul ignore next
     if (columnIndex < 0 || columnIndex >= this._columns.length)
@@ -244,10 +251,12 @@ export class SimpleTableDataProvider implements MutableTableDataProvider {
     }
   }
 
+  /** Adds a row to the end */
   public addRow(rowItem: RowItem): number {
     return this.insertRow(rowItem, -1);
   }
 
+  /** Inserts a row at a given row index */
   public insertRow(rowItem: RowItem, index: number): number {
     let newIdx = index;
 
@@ -262,6 +271,7 @@ export class SimpleTableDataProvider implements MutableTableDataProvider {
     return newIdx;
   }
 
+  /** Deletes a row */
   public deleteRow(rowItem: RowItem, raiseRowsChangedEvent: boolean = true): void {
     const rowIndex = this.findRowIndex(rowItem);
     if (rowIndex >= 0) {
@@ -273,6 +283,7 @@ export class SimpleTableDataProvider implements MutableTableDataProvider {
       this.onRowsChanged.raiseEvent();
   }
 
+  /** Moves a row to a new row index */
   public moveRow(rowItem: RowItem, newIndex: number): number {
     const oldIndex = this.findRowIndex(rowItem);
     if (oldIndex >= 0) {

@@ -835,13 +835,13 @@ export function Headline(props: TextProps): JSX.Element;
 // @public
 export enum HorizontalAlignment {
     // (undocumented)
-    Center = 2,
+    Center = "center",
     // (undocumented)
-    Justify = 4,
+    Justify = "justify",
     // (undocumented)
-    Left = 1,
+    Left = "left",
     // (undocumented)
-    Right = 3
+    Right = "right"
 }
 
 // @beta
@@ -1288,26 +1288,6 @@ export interface PopupProps extends CommonProps {
     showShadow: boolean;
     target?: HTMLElement | null;
     top: number;
-}
-
-// @beta @deprecated
-export enum Position {
-    // (undocumented)
-    Bottom = 3,
-    // (undocumented)
-    BottomLeft = 6,
-    // (undocumented)
-    BottomRight = 7,
-    // (undocumented)
-    Left = 0,
-    // (undocumented)
-    Right = 2,
-    // (undocumented)
-    Top = 1,
-    // (undocumented)
-    TopLeft = 4,
-    // (undocumented)
-    TopRight = 5
 }
 
 // @beta

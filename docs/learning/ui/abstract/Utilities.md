@@ -1,6 +1,7 @@
 # Utilities
 
-The ui-abstract package contains various utility classes for working with a UI.
+The [Utilities]($ui-abstract:Utilities) category in the `@bentley/ui-abstract` package includes
+various utility classes for working with a UI.
 
 ## IconSpecUtilities
 

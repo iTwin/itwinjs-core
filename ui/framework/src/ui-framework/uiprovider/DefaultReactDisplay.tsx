@@ -33,9 +33,7 @@ export interface DefaultDisplayProps {
   readonly itemsManager: DialogItemsManager;
 }
 /** State extracted from DialogItemsManager in DefaultReactDisplay
- * @beta
  */
-
 interface DefaultDisplayState {
   readonly valueMap: Map<string, PropertyRecord>;
 }

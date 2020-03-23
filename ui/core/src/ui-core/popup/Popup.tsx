@@ -24,21 +24,6 @@ interface PopupPoint {
   y: number;
 }
 
-/** Relative Position for popups
- * @beta
- * @deprecated Use RelativePosition in bentley/ui-abstract instead
- */
-export enum Position {
-  Left = 0,
-  Top = 1,
-  Right = 2,
-  Bottom = 3,
-  TopLeft = 4,
-  TopRight = 5,
-  BottomLeft = 6,
-  BottomRight = 7,
-}
-
 /** Properties for the [[Popup]] component
  * @beta
  */

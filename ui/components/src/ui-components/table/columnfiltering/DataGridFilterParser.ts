@@ -14,7 +14,7 @@ import { Logger } from "@bentley/bentleyjs-core";
 import { Timer } from "@bentley/ui-core";
 
 import { TableColumn } from "../component/TableColumn";
-import { ColumnFilterDescriptor, FilterOperator, FilterCompositionLogicalOperator, NumericRangeData } from "./ColumnFiltering";
+import { ColumnFilterDescriptor, FilterOperator, FilterCompositionLogicalOperator } from "./ColumnFiltering";
 import { ColumnDescription, FilterRenderer, TableDistinctValue } from "../TableDataProvider";
 import { UiComponents } from "../../UiComponents";
 
@@ -46,6 +46,15 @@ export interface NumericFilterData {
 export interface NumericExactMatchData {
   type: NumericFilterType.ExactMatch;
   value: number;
+}
+
+/** Numeric Range data
+ * @internal
+ */
+export interface NumericRangeData {
+  type: NumericFilterType.Range;
+  begin: number;
+  end: number;
 }
 
 /** Numeric Greater Than data

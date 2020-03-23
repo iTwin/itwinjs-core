@@ -20,6 +20,7 @@ import { FilterableColumnBase } from "../columnfiltering/FilterableColumnBase";
  * @public
  */
 export interface ReactDataGridColumn extends ReactDataGrid.Column<any> {
+  /** Indicates whether the display value for the cell is treated as an icon spec. */
   icon?: boolean;
 }
 

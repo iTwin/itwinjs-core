@@ -99,8 +99,11 @@ export const useGroupedItems = (items: ReadonlyArray<BackstageItem>): GroupedIte
  * @beta
  */
 export interface BackstageComposerProps extends CommonProps {
+  /** React node for an optional header item */
   readonly header?: React.ReactNode;
+  /** Indicates whether to place an overlay over the frontstage when the backstage is displayed */
   readonly showOverlay?: boolean;
+  /** List of backstage items to show */
   readonly items: BackstageItem[];
 }
 

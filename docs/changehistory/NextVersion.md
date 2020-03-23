@@ -186,6 +186,8 @@ import { DEPRECATED_Tree as Tree } from "@bentley/ui-components";
   };
   ```
 
+* Removed `HorizontalAlignment`. Use the `HorizontalAlignment` in @bentley/ui-core instead.
+
 ### API changes in `ui-framework` package
 
 #### Renames
@@ -197,7 +199,7 @@ A couple of types were renamed to better match their intention:
 
 #### Removal of deprecated APIs
 
-The following items that were marked as @deprecated in the 1.x timeframe have been removed:
+The following items that were marked as @deprecated in the 1.x time frame have been removed:
 
 * FrontstageDef.inheritZoneStates (never implemented in iModel.js)
 * FrontstageDef.hubEnabled (never implemented in iModel.js)

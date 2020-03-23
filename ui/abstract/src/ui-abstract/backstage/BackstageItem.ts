@@ -29,7 +29,7 @@ export interface CommonBackstageItem extends ProvidedItem {
   applicationData?: any;
   /** Describes badge. Renders no badge if not specified. */
   readonly badgeType?: BadgeType;
-  /** GroupPriority specifies the group an item is in (recommend using values 1 through 100). Items are sorted by group and then item priority. When
+  /** The group an item is in (recommend using values 1 through 100). Items are sorted by group and then item priority. When
    * group priority changes a separator is inserted.
    */
   readonly groupPriority: number;
@@ -37,7 +37,7 @@ export interface CommonBackstageItem extends ProvidedItem {
   readonly icon?: string | ConditionalStringValue;
   /** Required unique id of the item. To ensure uniqueness it is suggested that a namespace prefix of the plugin name be used. */
   readonly id: string;
-  /** optional data to used by item implementor. */
+  /** optional data to be used by item implementor. */
   readonly internalData?: Map<string, any>;
   /** Describes if the item is visible or hidden. The default is for the item to be visible. */
   readonly isHidden?: boolean | ConditionalBooleanValue;

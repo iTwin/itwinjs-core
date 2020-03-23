@@ -155,15 +155,6 @@ export interface DistinctValuesFilterDescriptor extends FilterDescriptor {
   distinctValuesComparisonOperator: FilterOperator;
 }
 
-/** Numeric Range data
- * @beta
- */
-export interface NumericRangeData {
-  type: number;
-  begin: number;
-  end: number;
-}
-
 /** Represents the field filter descriptor of a column filter descriptor.
  * @beta
  */

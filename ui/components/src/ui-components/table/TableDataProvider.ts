@@ -8,14 +8,9 @@
 
 import { BeEvent } from "@bentley/bentleyjs-core";
 import { PropertyRecord, PropertyDescription, Primitives } from "@bentley/ui-abstract";
-import { SortDirection } from "@bentley/ui-core";
+import { SortDirection, HorizontalAlignment } from "@bentley/ui-core";
 import { ItemColorOverrides, ItemStyle } from "../properties/ItemStyle";
 import { DistinctValueCollection, CompositeFilterDescriptorCollection } from "./columnfiltering/ColumnFiltering";
-
-/** Type for Horizontal Alignment
- * @public
- */
-export type HorizontalAlignment = "left" | "center" | "right" | "justify";
 
 /** Filter Renderer for a Table column
  * @beta
@@ -32,34 +27,40 @@ export enum FilterRenderer {
  * @public
  */
 export interface ColumnDescription {
+  /** A unique key for this column. */
   key: string;
 
+  /** Column header label */
   label: string;
+  /** Property description for all cells in the column */
   propertyDescription?: PropertyDescription;
 
+  /** Preferred initial width of the column */
   width?: number;
 
-  editable?: boolean;                   /* Defaults to false */
-  resizable?: boolean;                  /* Defaults to false */
-  icon?: boolean;                       /* Defaults to false */
+  /** Indicates whether the cells in the column are editable. Defaults to false. */
+  editable?: boolean;
+  /** Indicates whether the column is resizable. Defaults to false. */
+  resizable?: boolean;
+  /** Indicates whether the display value for the cell is treated as an icon spec. Defaults to false. */
+  icon?: boolean;
 
-  sortable?: boolean;                   /* Defaults to false */
+  /** Indicates whether the column is sortable. Defaults to false. */
+  sortable?: boolean;
+  /** Specifies a secondary sort column to use when cell values are the same. */
   secondarySortColumn?: number;
-  sortIgnoreCase?: boolean;             /* Defaults to false */
+  /** Indicates whether the column sorting ignores case. Defaults to false. */
+  sortIgnoreCase?: boolean;
 
-  filterable?: boolean;                 /* Defaults to false */
-  /** @beta */
+  /** Indicates whether the column is filterable. Defaults to false. */
+  filterable?: boolean;
+  /** Specifies the filter renderer for the column. @beta */
   filterRenderer?: FilterRenderer;
 
-  // Not implemented yet
-  alignment?: HorizontalAlignment;
-  titleAlignment?: HorizontalAlignment;
-  groupable?: boolean;                   /* Defaults to false */
+  // For filtering dialog - not implemented yet
   showFieldFilters?: boolean;            /* Defaults to true */
   showDistinctValueFilters?: boolean;    /* Defaults to true */
   filterCaseSensitive?: boolean;         /* Defaults to false */
-  editorAlwaysOn?: boolean;              /* Defaults to false */
-  pressSelectsRow?: boolean;             /* Defaults to true */
 }
 
 /**
@@ -67,12 +68,17 @@ export interface ColumnDescription {
  * @public
  */
 export interface CellItem {
+  /** Key for the column containing the cell */
   key: string;
+  /** Property record for the cell */
   record?: PropertyRecord;
 
+  /** Indicates whether the cell is disabled */
   isDisabled?: boolean;
+  /** Specifies the horizontal alignment of the contents of the cell */
   alignment?: HorizontalAlignment;
 
+  /** Style properties for the contents of the cell */
   style?: ItemStyle;
 }
 
@@ -81,12 +87,13 @@ export interface CellItem {
  * @public
  */
 export interface RowItem {
-  /**
-   * **Must be unique.**
-   */
+  /** A unique key for this row */
   key: string;
+  /** Array of cells in the row */
   cells: CellItem[];
+  /** Indicates whether the row is disabled */
   isDisabled?: boolean;
+  /** Color overrides for all cells in the row */
   colorOverrides?: ItemColorOverrides;
 
   /**
@@ -109,7 +116,7 @@ export declare type TableDataChangesListener = () => void;
  */
 export class TableDataChangeEvent extends BeEvent<TableDataChangesListener> { }
 
-/** Table Distinct Value for Table filtering purposes
+/** Distinct Value for Table filtering purposes
  * @beta
  */
 export interface TableDistinctValue {
@@ -123,13 +130,19 @@ export interface TableDistinctValue {
  * @public
  */
 export interface TableDataProvider {
+  /** Event emitted by the data provider when column data changes */
   onColumnsChanged: TableDataChangeEvent;
+  /** Event emitted by the data provider when row data changes */
   onRowsChanged: TableDataChangeEvent;
 
+  /** Retrieves the column descriptions */
   getColumns(): Promise<ColumnDescription[]>;
+  /** Retrieves the row count */
   getRowsCount(): Promise<number>;
+  /** Retrieves a specific row by index */
   getRow(rowIndex: number, unfiltered?: boolean): Promise<RowItem>;
 
+  /** Sorts the rows based on the value in a specific column */
   sort(columnIndex: number, sortDirection: SortDirection): Promise<void>;
 
   // Column Filtering methods
@@ -148,13 +161,6 @@ export interface TableDataProvider {
    * @alpha
    */
   getPropertyDisplayValueExpression?: (property: string) => string;
-
-  // Column Grouping methods
-
-  // IsGrouped: boolean;
-  // GetGroupCount(): Promise<number>;
-  // GetRootGroups(): Promise<Array<IGroup>>;
-  // ApplyGroupDescriptor(groupDescriptor: IGroupDescriptor): void;
 }
 
 /**
@@ -163,8 +169,12 @@ export interface TableDataProvider {
  * @beta
  */
 export interface MutableTableDataProvider extends TableDataProvider {
+  /** Adds a row to the end */
   addRow(rowItem: RowItem): number;
+  /** Inserts a row at a given row index */
   insertRow(rowItem: RowItem, index: number): number;
+  /** Deletes a row */
   deleteRow(rowItem: RowItem): void;
+  /** Moves a row to a new row index */
   moveRow(rowItem: RowItem, newIndex: number): number;
 }

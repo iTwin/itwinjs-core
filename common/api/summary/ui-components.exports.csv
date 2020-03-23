@@ -153,7 +153,6 @@ beta;HighlightingEngine
 internal;HitBoxX
 internal;HitBoxY
 internal;HitBoxZ
-public;HorizontalAlignment = "left" | "center" | "right" | "justify"
 beta;HueSlider 
 beta;HueSliderProps 
 alpha;IconEditor 
@@ -220,7 +219,6 @@ public;NonPrimitivePropertyLabelRendererProps
 public;NonPrimitivePropertyRenderer 
 public;NonPrimitivePropertyRendererProps 
 public;NullableOperatorProcessor
-beta;NumericRangeData
 public;class NumericTypeConverterBase 
 public;Observable
 public;Observer

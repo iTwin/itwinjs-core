@@ -8,7 +8,7 @@
 
 import { Logger } from "@bentley/bentleyjs-core";
 
-import { OperatorValueFilterDescriptor, FilterableTable, FilterOperator, NumericRangeData } from "./ColumnFiltering";
+import { OperatorValueFilterDescriptor, FilterableTable, FilterOperator } from "./ColumnFiltering";
 import { ColumnFilteringUtilities } from "./ColumnFilteringUtilities";
 import { RowItem } from "../TableDataProvider";
 import { StandardTypeConverterTypeNames, LessGreaterOperatorProcessor, NullableOperatorProcessor } from "../../converters/TypeConverter";
@@ -16,6 +16,7 @@ import { BooleanTypeConverter } from "../../converters/BooleanTypeConverter";
 import { TypeConverterManager } from "../../converters/TypeConverterManager";
 import { StringOperatorProcessor } from "../../../ui-components";
 import { UiComponents } from "../../UiComponents";
+import { NumericRangeData } from "./DataGridFilterParser";
 
 /** Represents a filtering descriptor.
  * @internal

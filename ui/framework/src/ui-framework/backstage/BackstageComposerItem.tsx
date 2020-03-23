@@ -79,6 +79,7 @@ export function BackstageComposerStageLauncher({ item }: BackstageComposerStageL
  * @beta
  */
 export interface BackstageComposerItemProps {
+  /** Backstage item to render */
   readonly item: BackstageItem;
 }
 

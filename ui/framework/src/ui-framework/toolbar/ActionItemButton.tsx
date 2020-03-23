@@ -18,12 +18,15 @@ import { SyncUiEventDispatcher, SyncUiEventArgs, SyncUiEventId } from "../syncui
 import { PropsHelper } from "../utils/PropsHelper";
 import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
 
-/** Properties that must be specified for a ActionItemButton component
+/** Properties that must be specified for an [[ActionItemButton]] component
  * @public
  */
 export interface ActionItemButtonProps extends CommonProps {
+  /** Action Button item definition containing the action information */
   actionItem: ActionButtonItemDef;
+  /** Indicates whether the button is enabled or disabled */
   isEnabled?: boolean;
+  /** Called when the button is initialized and the size is known */
   onSizeKnown?: (size: SizeProps) => void;
 }
 
@@ -103,10 +106,12 @@ export class ActionItemButton extends React.Component<ActionItemButtonProps, Bas
     return null;
   }
 
+  /** @internal */
   public componentDidMount() {
     SyncUiEventDispatcher.onSyncUiEvent.addListener(this._handleSyncUiEvent);
   }
 
+  /** @internal */
   public componentWillUnmount() {
     this._componentUnmounting = true;
     SyncUiEventDispatcher.onSyncUiEvent.removeListener(this._handleSyncUiEvent);
@@ -126,6 +131,7 @@ export class ActionItemButton extends React.Component<ActionItemButtonProps, Bas
     }
   }
 
+  /** @internal */
   public render(): React.ReactNode {
     if (!this.state.isVisible)
       return null;

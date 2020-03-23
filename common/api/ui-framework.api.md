@@ -192,23 +192,16 @@ export function ActionButtonItem(props: ActionButtonProps): JSX.Element;
 // @public
 export abstract class ActionButtonItemDef extends ItemDefBase {
     constructor(itemProps: ItemProps, onItemExecuted?: OnItemExecutedFunc);
-    // (undocumented)
     protected _commandHandler?: CommandHandler;
-    // (undocumented)
     static defaultButtonSize: number;
-    // (undocumented)
     execute(): void;
-    // (undocumented)
     getDimension(orientation: Orientation): number;
     // @internal (undocumented)
     getKey: (index?: number | undefined) => string;
     // @internal (undocumented)
     static getRandomId(): string;
-    // (undocumented)
     handleSizeKnown: (size: SizeProps) => void;
-    // (undocumented)
     parameters?: any;
-    // (undocumented)
     size?: SizeProps;
     // @internal (undocumented)
     toolbarReactNode(index?: number): React.ReactNode;
@@ -222,13 +215,13 @@ export type ActionCreatorsObject = {
 // @public
 export class ActionItemButton extends React.Component<ActionItemButtonProps, BaseItemState> {
     constructor(props: ActionItemButtonProps);
-    // (undocumented)
+    // @internal (undocumented)
     componentDidMount(): void;
-    // (undocumented)
+    // @internal (undocumented)
     componentWillUnmount(): void;
     // @internal (undocumented)
     static getDerivedStateFromProps(props: ActionItemButtonProps, state: BaseItemState): BaseItemState | null;
-    // (undocumented)
+    // @internal (undocumented)
     render(): React.ReactNode;
     // @internal (undocumented)
     readonly state: Readonly<BaseItemState>;
@@ -236,11 +229,8 @@ export class ActionItemButton extends React.Component<ActionItemButtonProps, Bas
 
 // @public
 export interface ActionItemButtonProps extends CommonProps {
-    // (undocumented)
     actionItem: ActionButtonItemDef;
-    // (undocumented)
     isEnabled?: boolean;
-    // (undocumented)
     onSizeKnown?: (size: SizeProps) => void;
 }
 
@@ -262,9 +252,7 @@ export class ActiveContentChangedEvent extends UiEvent<ActiveContentChangedEvent
 
 // @public
 export interface ActiveContentChangedEventArgs {
-    // (undocumented)
     activeContent?: React.ReactNode;
-    // (undocumented)
     oldContent?: React.ReactNode;
 }
 
@@ -285,13 +273,9 @@ export class ActivityMessageCancelledEvent extends UiEvent<{}> {
 
 // @public
 export interface ActivityMessageEventArgs {
-    // (undocumented)
     details?: ActivityMessageDetails;
-    // (undocumented)
     message: HTMLElement | string;
-    // (undocumented)
     percentage: number;
-    // (undocumented)
     restored?: boolean;
 }
 
@@ -376,7 +360,6 @@ export function BackstageAppButton(props: BackstageAppButtonProps): JSX.Element;
 
 // @beta
 export interface BackstageAppButtonProps {
-    // (undocumented)
     icon?: string;
 }
 
@@ -397,17 +380,13 @@ export function BackstageComposerItem({ item }: BackstageComposerItemProps): JSX
 
 // @beta
 export interface BackstageComposerItemProps {
-    // (undocumented)
     readonly item: BackstageItem;
 }
 
 // @beta
 export interface BackstageComposerProps extends CommonProps {
-    // (undocumented)
     readonly header?: React.ReactNode;
-    // (undocumented)
     readonly items: BackstageItem[];
-    // (undocumented)
     readonly showOverlay?: boolean;
 }
 
@@ -876,7 +855,6 @@ export function ConfigurableUiContent(props: ConfigurableUiContentProps): JSX.El
 
 // @public
 export interface ConfigurableUiContentProps extends CommonProps {
-    // (undocumented)
     appBackstage?: React.ReactNode;
 }
 
@@ -2543,13 +2521,9 @@ export class InputFieldMessageAddedEvent extends UiEvent<InputFieldMessageEventA
 
 // @public
 export interface InputFieldMessageEventArgs {
-    // (undocumented)
     detailedMessage: HTMLElement | string;
-    // (undocumented)
     messageText: HTMLElement | string;
-    // (undocumented)
     priority: OutputMessagePriority;
-    // (undocumented)
     target: Element;
 }
 
@@ -3022,7 +2996,6 @@ export class MessageAddedEvent extends UiEvent<MessageAddedEventArgs> {
 
 // @public
 export interface MessageAddedEventArgs {
-    // (undocumented)
     message: NotifyMessageDetails;
 }
 
@@ -3242,7 +3215,6 @@ export class MouseDownChangedEvent extends UiEvent<MouseDownChangedEventArgs> {
 
 // @public
 export interface MouseDownChangedEventArgs {
-    // (undocumented)
     mouseDown: boolean;
 }
 
@@ -4584,7 +4556,6 @@ export class ToolAssistanceChangedEvent extends UiEvent<ToolAssistanceChangedEve
 
 // @beta
 export interface ToolAssistanceChangedEventArgs {
-    // (undocumented)
     instructions: ToolAssistanceInstructions | undefined;
 }
 
@@ -5023,27 +4994,21 @@ export class UiFramework {
 
 // @beta
 export class UiShowHideManager {
-    // (undocumented)
     static get autoHideUi(): boolean;
     static set autoHideUi(autoHide: boolean);
-    // (undocumented)
     static handleContentMouseMove(_event?: React_2.MouseEvent<HTMLElement, MouseEvent>): void;
-    // (undocumented)
     static handleFrontstageReady(): void;
-    // (undocumented)
     static handleWidgetMouseEnter(_event?: React_2.MouseEvent<HTMLElement, MouseEvent>): void;
-    // (undocumented)
     static get inactivityTime(): number;
     static set inactivityTime(time: number);
-    // (undocumented)
     static get isUiVisible(): boolean;
     static set isUiVisible(visible: boolean);
-    // (undocumented)
     static get showHideFooter(): boolean;
     static set showHideFooter(showHide: boolean);
-    // (undocumented)
     static get showHidePanels(): boolean;
     static set showHidePanels(showHide: boolean);
+    static showUiAndCancelTimer(): void;
+    static showUiAndResetTimer(): void;
     }
 
 // @beta

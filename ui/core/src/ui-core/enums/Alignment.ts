@@ -11,10 +11,10 @@
  * @public
  */
 export enum HorizontalAlignment {
-  Left = 1,
-  Center = 2,
-  Right = 3,
-  Justify = 4,
+  Left = "left",
+  Center = "center",
+  Right = "right",
+  Justify = "justify",
 }
 
 /**

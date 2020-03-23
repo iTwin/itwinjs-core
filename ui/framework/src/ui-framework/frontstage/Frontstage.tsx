@@ -130,7 +130,6 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
   }
 
   /** React lifecycle method.
-   * Added listener for UiFramework.onUiVisibilityChanged.
    * @internal
    */
   public async componentDidMount() {
@@ -147,7 +146,6 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
   }
 
   /** React lifecycle method.
-   * Removed listener for UiFramework.onUiVisibilityChanged.
    * @internal
    */
   public componentWillUnmount() {

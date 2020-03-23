@@ -43,6 +43,7 @@ class MessageBoxCallbacks {
  * @public
  */
 export interface MessageAddedEventArgs {
+  /** Message details for the message added */
   message: NotifyMessageDetails;
 }
 
@@ -50,9 +51,13 @@ export interface MessageAddedEventArgs {
  * @public
  */
 export interface ActivityMessageEventArgs {
+  /** Current message for the activity */
   message: HTMLElement | string;
+  /** Current percentage for the activity */
   percentage: number;
+  /** Message details set by calling NotificationManager.setupActivityMessage */
   details?: ActivityMessageDetails;
+  /** Indicates whether the activity message popup is being restored */
   restored?: boolean;
 }
 
@@ -60,9 +65,13 @@ export interface ActivityMessageEventArgs {
  * @public
  */
 export interface InputFieldMessageEventArgs {
+  /** Target HTML element for the Input Field message */
   target: Element;
+  /** Message to be displayed near the input field */
   messageText: HTMLElement | string;
+  /** Detailed message to be displayed near the input field */
   detailedMessage: HTMLElement | string;
+  /** Priority of the input field message */
   priority: OutputMessagePriority;
 }
 
@@ -70,6 +79,7 @@ export interface InputFieldMessageEventArgs {
  * @beta
  */
 export interface ToolAssistanceChangedEventArgs {
+  /** Tool Assistance instructions for the active tool */
   instructions: ToolAssistanceInstructions | undefined;
 }
 

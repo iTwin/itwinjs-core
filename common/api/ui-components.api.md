@@ -25,6 +25,7 @@ import { Face } from '@bentley/ui-core';
 import { GlobalContextMenuProps } from '@bentley/ui-core';
 import { GlobalDialogProps } from '@bentley/ui-core';
 import { GroupButton } from '@bentley/ui-abstract';
+import { HorizontalAlignment } from '@bentley/ui-core';
 import { HSVColor } from '@bentley/imodeljs-common';
 import { I18N } from '@bentley/imodeljs-i18n';
 import { Id64String } from '@bentley/bentleyjs-core';
@@ -740,15 +741,10 @@ export class CellEditingEngine {
 
 // @public
 export interface CellItem {
-    // (undocumented)
     alignment?: HorizontalAlignment;
-    // (undocumented)
     isDisabled?: boolean;
-    // (undocumented)
     key: string;
-    // (undocumented)
     record?: PropertyRecord;
-    // (undocumented)
     style?: ItemStyle;
 }
 
@@ -845,45 +841,24 @@ export interface ColorSwatchProps extends React.ButtonHTMLAttributes<HTMLButtonE
 
 // @public
 export interface ColumnDescription {
-    // (undocumented)
-    alignment?: HorizontalAlignment;
-    // (undocumented)
     editable?: boolean;
-    // (undocumented)
-    editorAlwaysOn?: boolean;
-    // (undocumented)
     filterable?: boolean;
     // (undocumented)
     filterCaseSensitive?: boolean;
-    // @beta (undocumented)
+    // @beta
     filterRenderer?: FilterRenderer;
-    // (undocumented)
-    groupable?: boolean;
-    // (undocumented)
     icon?: boolean;
-    // (undocumented)
     key: string;
-    // (undocumented)
     label: string;
-    // (undocumented)
-    pressSelectsRow?: boolean;
-    // (undocumented)
     propertyDescription?: PropertyDescription;
-    // (undocumented)
     resizable?: boolean;
-    // (undocumented)
     secondarySortColumn?: number;
     // (undocumented)
     showDistinctValueFilters?: boolean;
     // (undocumented)
     showFieldFilters?: boolean;
-    // (undocumented)
     sortable?: boolean;
-    // (undocumented)
     sortIgnoreCase?: boolean;
-    // (undocumented)
-    titleAlignment?: HorizontalAlignment;
-    // (undocumented)
     width?: number;
 }
 
@@ -1783,9 +1758,6 @@ export enum HitBoxZ {
     Top = 1
 }
 
-// @public
-export type HorizontalAlignment = "left" | "center" | "right" | "justify";
-
 // @beta
 export class HueSlider extends React.PureComponent<HueSliderProps> {
     // @internal
@@ -2144,13 +2116,9 @@ export interface MutableCheckBoxInfo extends CheckBoxInfo {
 
 // @beta
 export interface MutableTableDataProvider extends TableDataProvider {
-    // (undocumented)
     addRow(rowItem: RowItem): number;
-    // (undocumented)
     deleteRow(rowItem: RowItem): void;
-    // (undocumented)
     insertRow(rowItem: RowItem, index: number): number;
-    // (undocumented)
     moveRow(rowItem: RowItem, newIndex: number): number;
 }
 
@@ -2307,16 +2275,6 @@ export interface NullableOperatorProcessor {
     isNotNull(value: Primitives.Value): boolean;
     // (undocumented)
     isNull(value: Primitives.Value): boolean;
-}
-
-// @beta
-export interface NumericRangeData {
-    // (undocumented)
-    begin: number;
-    // (undocumented)
-    end: number;
-    // (undocumented)
-    type: number;
 }
 
 // @public
@@ -2757,7 +2715,6 @@ export interface PropertyViewProps extends SharedRendererProps {
 
 // @public
 export interface ReactDataGridColumn extends ReactDataGrid.Column<any> {
-    // (undocumented)
     icon?: boolean;
 }
 
@@ -2781,15 +2738,12 @@ export interface ResultSelectorProps extends CommonProps {
 
 // @public
 export interface RowItem {
-    // (undocumented)
     cells: CellItem[];
-    // (undocumented)
     colorOverrides?: ItemColorOverrides;
     extendedData?: {
         [key: string]: any;
     };
     getValueFromCell?: (columnKey: string) => any;
-    // (undocumented)
     isDisabled?: boolean;
     key: string;
 }
@@ -3047,29 +3001,18 @@ export class SimplePropertyDataProvider implements IPropertyDataProvider, Proper
 // @beta
 export class SimpleTableDataProvider implements MutableTableDataProvider {
     constructor(columns: ColumnDescription[]);
-    // (undocumented)
     addRow(rowItem: RowItem): number;
     applyFilterDescriptors(filterDescriptors: CompositeFilterDescriptorCollection): Promise<void>;
-    // (undocumented)
     deleteRow(rowItem: RowItem, raiseRowsChangedEvent?: boolean): void;
-    // (undocumented)
     getColumns(): Promise<ColumnDescription[]>;
     getDistinctValues(columnKey: string, maximumValueCount?: number): Promise<DistinctValueCollection>;
-    // (undocumented)
     getRow(rowIndex: number, unfiltered?: boolean): Promise<RowItem>;
-    // (undocumented)
     getRowsCount(): Promise<number>;
-    // (undocumented)
     insertRow(rowItem: RowItem, index: number): number;
-    // (undocumented)
     moveRow(rowItem: RowItem, newIndex: number): number;
-    // (undocumented)
     onColumnsChanged: TableDataChangeEvent;
-    // (undocumented)
     onRowsChanged: TableDataChangeEvent;
-    // (undocumented)
     setItems(items: RowItem[]): void;
-    // (undocumented)
     sort(columnIndex: number, sortDirection: SortDirection): Promise<void>;
     }
 
@@ -3347,21 +3290,15 @@ export type TableDataChangesListener = () => void;
 export interface TableDataProvider {
     // @beta
     applyFilterDescriptors?: (filterDescriptors: CompositeFilterDescriptorCollection) => Promise<void>;
-    // (undocumented)
     getColumns(): Promise<ColumnDescription[]>;
     // @beta
     getDistinctValues?: (columnKey: string, maximumValueCount?: number) => Promise<DistinctValueCollection>;
     // @alpha
     getPropertyDisplayValueExpression?: (property: string) => string;
-    // (undocumented)
     getRow(rowIndex: number, unfiltered?: boolean): Promise<RowItem>;
-    // (undocumented)
     getRowsCount(): Promise<number>;
-    // (undocumented)
     onColumnsChanged: TableDataChangeEvent;
-    // (undocumented)
     onRowsChanged: TableDataChangeEvent;
-    // (undocumented)
     sort(columnIndex: number, sortDirection: SortDirection): Promise<void>;
 }
 

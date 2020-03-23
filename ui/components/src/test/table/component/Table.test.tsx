@@ -12,7 +12,7 @@ import TestBackend from "react-dnd-test-backend";
 import { DragDropContext } from "react-dnd";
 
 import { BeDuration } from "@bentley/bentleyjs-core";
-import { LocalUiSettings } from "@bentley/ui-core";
+import { LocalUiSettings, HorizontalAlignment } from "@bentley/ui-core";
 import {
   PropertyRecord, PropertyValue, PropertyValueFormat, PropertyDescription, PrimitiveValue,
 } from "@bentley/ui-abstract";
@@ -221,7 +221,7 @@ describe("Table", () => {
           cells: [{
             key: "1",
             record: testRecord(),
-            alignment: "right",
+            alignment: HorizontalAlignment.Right,
             style: {
               isBold: true,
               isItalic: true,
@@ -238,7 +238,7 @@ describe("Table", () => {
           cells: [{
             key: "1",
             record: testRecord(),
-            alignment: "justify",
+            alignment: HorizontalAlignment.Justify,
             style: {
               isBold: true,
               isItalic: true,

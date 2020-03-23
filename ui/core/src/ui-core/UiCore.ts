@@ -14,8 +14,7 @@ import "./colorthemes.scss";
 import "./classes.scss";
 
 /**
- * Entry point for static initialization required by various
- * components used in the package.
+ * Manages the I18N service for the ui-core package.
  * @public
  */
 export class UiCore {

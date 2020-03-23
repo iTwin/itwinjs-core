@@ -17,6 +17,7 @@ import { ContentLayoutManager } from "./ContentLayoutManager";
  * @public
  */
 export interface MouseDownChangedEventArgs {
+  /** Indicates whether the mouse is down */
   mouseDown: boolean;
 }
 
@@ -29,7 +30,9 @@ export class MouseDownChangedEvent extends UiEvent<MouseDownChangedEventArgs> { 
  * @public
  */
 export interface ActiveContentChangedEventArgs {
+  /** React node of the old content */
   oldContent?: React.ReactNode;
+  /** React node of the newly active content */
   activeContent?: React.ReactNode;
 }
 
