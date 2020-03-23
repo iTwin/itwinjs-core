@@ -4574,7 +4574,7 @@ export class MapTileTree extends RealityTileTree {
     // (undocumented)
     pointAboveEllipsoid(point: Point3d): boolean;
     // (undocumented)
-    reprojectTileCorners(tile: MapTile, columnCount: number, rowCount: number): Promise<void>;
+    reprojectTileChildCorners(tile: MapTile, columnCount: number, rowCount: number, children: Tile[]): Promise<void>;
     // (undocumented)
     selectCartoDrapeTiles(tileToDrape: MapTile, args: TileDrawArgs): MapTile[];
     // (undocumented)

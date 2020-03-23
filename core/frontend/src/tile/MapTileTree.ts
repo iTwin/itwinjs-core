@@ -253,7 +253,7 @@ export abstract class MapTile extends RealityTile {
         return;
       }
 
-      mapTree.reprojectTileCorners(this, columnCount, rowCount).then(() => {
+      mapTree.reprojectTileChildCorners(this, columnCount, rowCount, kids).then(() => {
         resolveChildren(kids);
       }).catch((err) => {
         reject(err);
@@ -531,7 +531,7 @@ class GlobeMapTile extends MapTile {
     const skirtFraction = delta / 2.0;
 
     for (let iRow = 0, index = 0; iRow < MapTile.globeMeshDimension; iRow++) {
-      for (let iColumn = 0; iColumn < MapTile.globeMeshDimension; iColumn++ , index++) {
+      for (let iColumn = 0; iColumn < MapTile.globeMeshDimension; iColumn++, index++) {
         let x = (iColumn ? (Math.min(dimensionM2, iColumn) - 1) : 0) * delta;
         let y = (iRow ? (Math.min(dimensionM2, iRow) - 1) : 0) * delta;
         const thisPoint = GlobeMapTile._scratchMeshPoints[index];
@@ -742,7 +742,7 @@ export class MapTileTree extends RealityTileTree {
     }
     return childCorners;
   }
-  public async reprojectTileCorners(tile: MapTile, columnCount: number, rowCount: number): Promise<void> {
+  public async reprojectTileChildCorners(tile: MapTile, columnCount: number, rowCount: number, children: Tile[]): Promise<void> {
     const gridPoints = this.getMercatorFractionChildGridPoints(tile, columnCount, rowCount);
     const requestProps = [];
     for (const gridPoint of gridPoints)
@@ -761,13 +761,10 @@ export class MapTileTree extends RealityTileTree {
     for (let i = 0; i < gridPoints.length; i++)
       gridPoints[i] = Point3d.fromJSON(iModelCoordinates.result[i]!.p);
 
-    if (undefined === tile.children)
-      return;
-
-    assert(rowCount * columnCount === tile.children.length);
+    assert(rowCount * columnCount === children.length);
     for (let row = 0; row < rowCount; row++) {
       for (let column = 0; column < columnCount; column++) {
-        const child = tile.children![row * columnCount + column] as PlanarMapTile;
+        const child = children![row * columnCount + column] as PlanarMapTile;
         const index0 = column + row * (columnCount + 1);
         const index1 = index0 + (columnCount + 1);
         child.setReprojectedCorners([gridPoints[index0], gridPoints[index0 + 1], gridPoints[index1], gridPoints[index1 + 1]]);
