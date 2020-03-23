@@ -76,7 +76,6 @@ interface PopupState {
  */
 export class Popup extends React.Component<PopupProps, PopupState> {
   private _popup: HTMLElement | null = null;
-  private _isAnimating = true;
 
   constructor(props: PopupProps) {
     super(props);
@@ -214,7 +213,6 @@ export class Popup extends React.Component<PopupProps, PopupState> {
     this._unBindWindowEvents();
 
     this.setState({ isOpen: false }, () => {
-      this._isAnimating = true;
       if (this.props.onClose)
         this.props.onClose();
     });
@@ -250,34 +248,17 @@ export class Popup extends React.Component<PopupProps, PopupState> {
   }
 
   private _getPopupDimensions(): { popupWidth: number, popupHeight: number } {
-
     let popupWidth = 0;
     let popupHeight = 0;
     // istanbul ignore else
     if (this._popup) {
-      const popupRect = this._popup.getBoundingClientRect();
-      switch (this.props.position) {
-        case RelativePosition.Top:
-        case RelativePosition.Bottom:
-          popupWidth = popupRect.width;
-          popupHeight = this._isAnimating ? popupRect.height * 2 : popupRect.height;
-          break;
-        case RelativePosition.TopLeft:
-        case RelativePosition.BottomLeft:
-          popupWidth = this._isAnimating ? popupRect.width * 2 : popupRect.width;
-          popupHeight = this._isAnimating ? popupRect.height * 2 : popupRect.height;
-          break;
-        case RelativePosition.TopRight:
-        case RelativePosition.BottomRight:
-          popupWidth = this._isAnimating ? popupRect.width * 2 : popupRect.width;
-          popupHeight = this._isAnimating ? popupRect.height * 2 : popupRect.height;
-          break;
-        case RelativePosition.Left:
-        case RelativePosition.Right:
-          popupWidth = this._isAnimating ? popupRect.width * 2 : popupRect.width;
-          popupHeight = this._isAnimating ? popupRect.height : popupRect.height;
-          break;
-      }
+      const style = window.getComputedStyle(this._popup);
+      const borderLeftWidth = parsePxString(style.borderLeftWidth);
+      const borderRightWidth = parsePxString(style.borderRightWidth);
+      const borderTopWidth = parsePxString(style.borderTopWidth);
+      const borderBottomWidth = parsePxString(style.borderBottomWidth);
+      popupWidth = this._popup.clientWidth + borderLeftWidth + borderRightWidth;
+      popupHeight = this._popup.clientHeight + borderTopWidth + borderBottomWidth;
     }
 
     return { popupWidth, popupHeight };
@@ -450,10 +431,6 @@ export class Popup extends React.Component<PopupProps, PopupState> {
     return fittedPoint;
   }
 
-  private _handleAnimationEnd = () => {
-    this._isAnimating = false;
-  }
-
   public render() {
     const className = classnames(
       "core-popup",
@@ -479,7 +456,6 @@ export class Popup extends React.Component<PopupProps, PopupState> {
       (
         <div
           className={className} data-testid="core-popup"
-          onAnimationEnd={this._handleAnimationEnd}
           ref={(element) => { this._popup = element; }}
           style={style}
           role={role}
@@ -493,4 +469,9 @@ export class Popup extends React.Component<PopupProps, PopupState> {
         </div>
       ), document.body);
   }
+}
+
+function parsePxString(pxStr: string): number {
+  const parsed = parseInt(pxStr, 10);
+  return parsed || 0;
 }
