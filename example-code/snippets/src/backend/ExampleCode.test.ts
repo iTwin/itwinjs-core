@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { ClientRequestContext, Id64, Id64String, Logger } from "@bentley/bentleyjs-core";
 import { Range3d } from "@bentley/geometry-core";
-import { BisCoreSchema, ClassRegistry, ConcurrencyControl, Element, ElementAspect, PhysicalModel, StandaloneDb, BriefcaseDb } from "@bentley/imodeljs-backend";
+import { BisCoreSchema, ClassRegistry, ConcurrencyControl, Element, ElementAspect, PhysicalModel, StandaloneDb } from "@bentley/imodeljs-backend";
 import { AccessToken, AuthorizedClientRequestContext, IModelHubError } from "@bentley/imodeljs-clients";
 import { CodeScopeSpec, CodeSpec, IModel } from "@bentley/imodeljs-common";
 import { assert } from "chai";
@@ -118,14 +118,14 @@ describe("Example Code", () => {
     // Later, when the app downloads and merges changeSets from iModelHub,
     // IModelDb's ConcurrencyControl will merge changes and handle conflicts,
     // as specified by this policy.
-    if (iModel instanceof BriefcaseDb) {
+    if (iModel.isBriefcaseDb()) {
       iModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
     }
     // __PUBLISH_EXTRACT_END__
 
     // __PUBLISH_EXTRACT_START__ ConcurrencyControl_Codes.reserve
     try {
-      if (iModel instanceof BriefcaseDb) {
+      if (iModel.isBriefcaseDb()) {
         await iModel.concurrencyControl.codes.reserve(authorizedRequestContext);
         authorizedRequestContext.enter();
       }
@@ -143,7 +143,7 @@ describe("Example Code", () => {
     // Now acquire all locks and reserve all codes needed.
     // This is a *perquisite* to saving local changes.
     try {
-      if (iModel instanceof BriefcaseDb) {
+      if (iModel.isBriefcaseDb()) {
         await iModel.concurrencyControl.request(authorizedRequestContext);
         authorizedRequestContext.enter();
       }

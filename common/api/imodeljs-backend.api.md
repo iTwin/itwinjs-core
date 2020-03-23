@@ -2292,12 +2292,18 @@ export abstract class IModelDb extends IModel {
     // @internal (undocumented)
     insertCodeSpec(codeSpec: CodeSpec): Id64String;
     get isBriefcase(): boolean;
+    isBriefcaseDb(): this is BriefcaseDb;
     // @internal
     get isOpen(): boolean;
     get isReadonly(): boolean;
+    // @beta
     get isSnapshot(): boolean;
+    // @beta
+    isSnapshotDb(): this is SnapshotDb;
     // @internal
     get isStandalone(): boolean;
+    // @internal
+    isStandaloneDb(): this is StandaloneDb;
     // @internal
     protected static logUsage(requestContext: AuthorizedClientRequestContext, contextId: string, iModelDb: IModelDb): Promise<void>;
     // (undocumented)

@@ -22,7 +22,7 @@ async function createNewModelAndCategory(requestContext: AuthorizedClientRequest
   const spatialCategoryId: Id64String = SpatialCategory.insert(rwIModel, IModel.dictionaryId, newCategoryCode.value!, new SubCategoryAppearance({ color: 0xff0000 }));
   // Reserve all of the codes that are required by the new model and category.
   try {
-    if (rwIModel instanceof BriefcaseDb) {
+    if (rwIModel.isBriefcaseDb()) {
       await rwIModel.concurrencyControl.request(requestContext);
       requestContext.enter();
     }

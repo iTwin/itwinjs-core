@@ -12,7 +12,7 @@ import { IModelError } from "@bentley/imodeljs-common";
 import * as path from "path";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { ClassRegistry } from "../ClassRegistry";
-import { BriefcaseDb, IModelDb } from "../IModelDb";
+import { IModelDb } from "../IModelDb";
 import { KnownLocations } from "../IModelHost";
 import { Schema, Schemas } from "../Schema";
 import * as elementsModule from "./FunctionalElements";
@@ -35,7 +35,7 @@ export class FunctionalSchema extends Schema {
   public static async importSchema(requestContext: AuthorizedClientRequestContext | ClientRequestContext, iModelDb: IModelDb) {
     // NOTE: this concurrencyControl logic was copied from IModelDb.importSchema
     requestContext.enter();
-    if (iModelDb instanceof BriefcaseDb) {
+    if (iModelDb.isBriefcaseDb()) {
       if (!(requestContext instanceof AuthorizedClientRequestContext)) {
         throw new IModelError(AuthStatus.Error, "Importing the schema requires an AuthorizedClientRequestContext");
       }

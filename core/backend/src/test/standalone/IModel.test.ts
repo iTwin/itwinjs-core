@@ -1800,7 +1800,7 @@ describe("iModel", () => {
     const standaloneRootSubjectName = "Standalone";
     const standaloneFile1: string = IModelTestUtils.prepareOutputFile("IModel", "Standalone1.bim");
     let standaloneDb1 = StandaloneDb.createEmpty(standaloneFile1, { rootSubject: { name: standaloneRootSubjectName } });
-    assert.isTrue(standaloneDb1 instanceof StandaloneDb);
+    assert.isTrue(standaloneDb1.isStandaloneDb());
     assert.isTrue(standaloneDb1.isStandalone);
     assert.isFalse(standaloneDb1.isReadonly, "Expect standalone iModels to be read-write during create");
     assert.equal(standaloneDb1.getBriefcaseId(), ReservedBriefcaseId.FutureStandalone);
@@ -1829,9 +1829,9 @@ describe("iModel", () => {
     let snapshotDb1 = SnapshotDb.createEmpty(snapshotFile1, { rootSubject: { name: snapshotRootSubjectName }, createClassViews: true });
     let snapshotDb2 = SnapshotDb.createFrom(snapshotDb1, snapshotFile2);
     let snapshotDb3 = SnapshotDb.createFrom(imodel1, snapshotFile3, { createClassViews: true });
-    assert.isTrue(snapshotDb1 instanceof SnapshotDb);
-    assert.isTrue(snapshotDb2 instanceof SnapshotDb);
-    assert.isTrue(snapshotDb3 instanceof SnapshotDb);
+    assert.isTrue(snapshotDb1.isSnapshotDb());
+    assert.isTrue(snapshotDb2.isSnapshotDb());
+    assert.isTrue(snapshotDb3.isSnapshotDb());
     assert.isTrue(snapshotDb1.isSnapshot);
     assert.isTrue(snapshotDb2.isSnapshot);
     assert.isTrue(snapshotDb3.isSnapshot);
@@ -1914,7 +1914,7 @@ describe("iModel", () => {
     assert.equal(snapshotDb1.getBriefcaseId(), ReservedBriefcaseId.Snapshot);
     snapshotDb1.close();
     snapshotDb1 = SnapshotDb.open(snapshotFile1, { password: "unnecessaryPassword" });
-    assert.isTrue(snapshotDb1 instanceof SnapshotDb);
+    assert.isTrue(snapshotDb1.isSnapshotDb());
     assert.isTrue(snapshotDb1.isSnapshot);
     assert.isTrue(snapshotDb1.isReadonly, "Expect snapshots to be read-only after open");
     assert.isFalse(snapshotDb1.nativeDb.isEncrypted());
@@ -1928,7 +1928,7 @@ describe("iModel", () => {
     assert.isTrue(Id64.isValidId64(subjectId2));
     snapshotDb2.close();
     snapshotDb2 = SnapshotDb.open(snapshotFile2, { password: "password" });
-    assert.isTrue(snapshotDb2 instanceof SnapshotDb);
+    assert.isTrue(snapshotDb2.isSnapshotDb());
     assert.isTrue(snapshotDb2.isSnapshot);
     assert.isTrue(snapshotDb2.isReadonly, "Expect snapshots to be read-only after open");
     assert.isTrue(snapshotDb2.nativeDb.isEncrypted());
@@ -1940,7 +1940,7 @@ describe("iModel", () => {
     assert.equal(snapshotDb3.getBriefcaseId(), ReservedBriefcaseId.Snapshot);
     snapshotDb3.close();
     snapshotDb3 = SnapshotDb.open(snapshotFile3, { password: "password" });
-    assert.isTrue(snapshotDb3 instanceof SnapshotDb);
+    assert.isTrue(snapshotDb3.isSnapshotDb());
     assert.isTrue(snapshotDb3.isSnapshot);
     assert.isTrue(snapshotDb3.isReadonly, "Expect snapshots to be read-only after open");
     assert.isTrue(snapshotDb3.nativeDb.isEncrypted());

@@ -10,7 +10,7 @@ import { DbResult, Id64, Id64String, Logger } from "@bentley/bentleyjs-core";
 import { CodeScopeSpec, CodeSpec, IModelError, IModelStatus } from "@bentley/imodeljs-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { ECSqlStatement } from "./ECSqlStatement";
-import { BriefcaseDb, IModelDb } from "./IModelDb";
+import { IModelDb } from "./IModelDb";
 
 const loggerCategory = BackendLoggerCategory.CodeSpecs;
 
@@ -23,7 +23,7 @@ export class CodeSpecs {
 
   constructor(imodel: IModelDb) {
     this._imodel = imodel;
-    if (imodel instanceof BriefcaseDb) {
+    if (imodel.isBriefcaseDb()) {
       imodel.onChangesetApplied.addListener(() => this._loadedCodeSpecs.length = 0);
     }
   }

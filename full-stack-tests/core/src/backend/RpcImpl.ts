@@ -94,7 +94,7 @@ export class EventsTestRpcImpl extends RpcInterface implements EventsTestRpcInte
     } else {
       const iModelToken = IModelToken.fromJSON(tokenProps);
       const iModelDb = IModelDb.find(iModelToken);
-      if (iModelDb instanceof BriefcaseDb) {
+      if (iModelDb.isBriefcaseDb()) {
         iModelDb.eventSink!.emit(EventsTestRpcInterface.name, "echo", { id, message });
       }
     }

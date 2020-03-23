@@ -3821,12 +3821,17 @@ export class IModelConnection extends IModel {
     // @beta
     readonly hilited: HiliteSet;
     // @beta
-    readonly isBlank: boolean;
+    get isBlank(): boolean;
+    // @beta
+    isBlankConnection(): this is BlankConnection;
     // @beta
     get isClosed(): boolean;
     // @beta
     get isOpen(): boolean;
     get isReadonly(): boolean;
+    get isSnapshot(): boolean;
+    // @beta
+    isSnapshotConnection(): this is SnapshotConnection;
     loadFontMap(): Promise<FontMap>;
     readonly models: IModelConnection.Models;
     // @internal

@@ -3029,6 +3029,7 @@ export abstract class IModel implements IModelProps {
     // @internal (undocumented)
     protected initialize(name: string, props: IModelProps): void;
     get isGeoLocated(): boolean;
+    abstract get isSnapshot(): boolean;
     name: string;
     get projectExtents(): AxisAlignedBox3d;
     set projectExtents(extents: AxisAlignedBox3d);

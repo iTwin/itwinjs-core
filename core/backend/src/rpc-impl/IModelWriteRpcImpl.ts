@@ -22,7 +22,7 @@ class EditingFunctions {
       code: newModelCode,
     };
     const modeledElement: Element = iModelDb.elements.createElement(modeledElementProps);
-    if (iModelDb instanceof BriefcaseDb) {
+    if (iModelDb.isBriefcaseDb()) {
       await iModelDb.concurrencyControl.requestResources(rqctx, [{ element: modeledElement, opcode: DbOpcode.Insert }]);
       rqctx.enter();
     }
@@ -31,7 +31,7 @@ class EditingFunctions {
 
   public static async createAndInsertPhysicalModel(rqctx: AuthorizedBackendRequestContext, iModelDb: IModelDb, modeledElementRef: RelatedElement, privateModel: boolean = false): Promise<Id64String> {
     const newModel = iModelDb.models.createModel({ modeledElement: modeledElementRef, classFullName: PhysicalModel.classFullName, isPrivate: privateModel });
-    if (iModelDb instanceof BriefcaseDb) {
+    if (iModelDb.isBriefcaseDb()) {
       await iModelDb.concurrencyControl.requestResources(rqctx, [], [{ model: newModel, opcode: DbOpcode.Insert }]);
       rqctx.enter();
     }
@@ -50,7 +50,7 @@ class EditingFunctions {
 
   public static async createAndInsertSpatialCategory(rqctx: AuthorizedBackendRequestContext, iModelDb: IModelDb, scopeModelId: Id64String, categoryName: string, appearance: SubCategoryAppearance.Props): Promise<Id64String> {
     const category = SpatialCategory.create(iModelDb, scopeModelId, categoryName);
-    if (iModelDb instanceof BriefcaseDb) {
+    if (iModelDb.isBriefcaseDb()) {
       await iModelDb.concurrencyControl.requestResources(rqctx, [{ element: category, opcode: DbOpcode.Insert }]);
       rqctx.enter();
     }

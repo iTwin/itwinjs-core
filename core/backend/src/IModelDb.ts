@@ -201,21 +201,32 @@ export abstract class IModelDb extends IModel {
     }
   }
 
+  /** Type guard for instanceof [[BriefcaseDb]] */
+  public isBriefcaseDb(): this is BriefcaseDb { return this instanceof BriefcaseDb; }
   /** Returns true if this is an iModel from iModelHub (briefcase)
    * @see [[BriefcaseDb.open]]
    */
-  public get isBriefcase(): boolean { return this instanceof BriefcaseDb; }
+  public get isBriefcase(): boolean { return this.isBriefcaseDb(); }
 
+  /** Type guard for instanceof [[SnapshotDb]]
+   * @beta
+   */
+  public isSnapshotDb(): this is SnapshotDb { return this instanceof SnapshotDb; }
   /** Returns true if this is a *snapshot* iModel
    * @see [[SnapshotDb.open]]
+   * @beta
    */
-  public get isSnapshot(): boolean { return this instanceof SnapshotDb; }
+  public get isSnapshot(): boolean { return this.isSnapshotDb(); }
 
+  /** Type guard for instanceof [[StandaloneDb]]
+   * @internal
+   */
+  public isStandaloneDb(): this is StandaloneDb { return this instanceof StandaloneDb; }
   /** Returns true if this is a *standalone* iModel
    * @see [[StandaloneDb.open]]
    * @internal
    */
-  public get isStandalone(): boolean { return this instanceof StandaloneDb; }
+  public get isStandalone(): boolean { return this.isStandaloneDb(); }
 
   /** Return `true` if the underlying nativeDb is open and valid.
    * @internal
@@ -575,21 +586,21 @@ export abstract class IModelDb extends IModel {
       throw new IModelError(IModelStatus.ReadOnly, "IModelDb was opened read-only", Logger.logError, loggerCategory);
     }
     // TODO: this.Txns.onSaveChanges => validation, rules, indirect changes, etc.
-    if (this instanceof BriefcaseDb) {
+    if (this.isBriefcaseDb()) {
       this.concurrencyControl.onSaveChanges();
     }
     const stat = this.nativeDb.saveChanges(description);
     if (DbResult.BE_SQLITE_OK !== stat) {
       throw new IModelError(stat, "Problem saving changes", Logger.logError, loggerCategory);
     }
-    if (this instanceof BriefcaseDb) {
+    if (this.isBriefcaseDb()) {
       this.concurrencyControl.onSavedChanges();
     }
   }
 
   /** Abandon pending changes in this iModel */
   public abandonChanges(): void {
-    if (this instanceof BriefcaseDb) {
+    if (this.isBriefcaseDb()) {
       this.concurrencyControl.abandonRequest();
     }
     this.nativeDb.abandonChanges();
@@ -619,7 +630,7 @@ export abstract class IModelDb extends IModel {
     if (!(requestContext instanceof AuthorizedClientRequestContext)) {
       throw new IModelError(AuthStatus.Error, "Importing the schema requires an AuthorizedClientRequestContext");
     }
-    if (this instanceof BriefcaseDb) {
+    if (this.isBriefcaseDb()) {
       await this.concurrencyControl.lockSchema(requestContext);
       requestContext.enter();
     }
@@ -635,7 +646,7 @@ export abstract class IModelDb extends IModel {
     try {
       // The schema import logic and/or imported Domains may have created new elements and models.
       // Make sure we have the supporting locks and codes.
-      if (this instanceof BriefcaseDb) {
+      if (this.isBriefcaseDb()) {
         await this.concurrencyControl.request(requestContext);
         requestContext.enter();
       }
@@ -1810,7 +1821,7 @@ export class TxnManager {
    */
   public reverseTxns(numOperations: number, allowCrossSessions?: boolean): IModelStatus {
     const status = this._nativeDb.reverseTxns(numOperations, allowCrossSessions);
-    if (this._iModel instanceof BriefcaseDb) {
+    if (this._iModel.isBriefcaseDb()) {
       this._iModel.concurrencyControl.onUndoRedo();
     }
     return status;
@@ -2179,7 +2190,7 @@ export class BriefcaseDb extends IModelDb {
     if (!briefcaseEntry || !briefcaseEntry.iModelDb || !briefcaseEntry.isOpen) {
       return undefined;
     }
-    return (briefcaseEntry.iModelDb instanceof BriefcaseDb) ? briefcaseEntry.iModelDb : undefined;
+    return (briefcaseEntry.iModelDb.isBriefcaseDb()) ? briefcaseEntry.iModelDb : undefined;
   }
 
   /** Pull and Merge changes from iModelHub

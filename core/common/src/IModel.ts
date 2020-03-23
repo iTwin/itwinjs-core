@@ -213,6 +213,9 @@ export abstract class IModel implements IModelProps {
   /** The name and description of the root subject of this iModel */
   public rootSubject!: RootSubjectProps;
 
+  /** Returns `true` if this is a snapshot iModel. */
+  public abstract get isSnapshot(): boolean;
+
   private _projectExtents!: AxisAlignedBox3d;
   /**
    * The volume, in spatial coordinates, inside which the entire project is contained.

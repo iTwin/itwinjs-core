@@ -202,7 +202,7 @@ export class IModelExporter {
    */
   public async exportChanges(requestContext: AuthorizedClientRequestContext, startChangeSetId?: GuidString): Promise<void> {
     requestContext.enter();
-    if (!(this.sourceDb instanceof BriefcaseDb)) {
+    if (!this.sourceDb.isBriefcaseDb()) {
       return Promise.reject(new IModelError(IModelStatus.BadRequest, "Must be a briefcase to export changes", Logger.logError, loggerCategory));
     }
     if ((undefined === this.sourceDb.briefcase.parentChangeSetId) || ("" === this.sourceDb.briefcase.parentChangeSetId)) {

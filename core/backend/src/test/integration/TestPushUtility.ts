@@ -46,7 +46,7 @@ export class TestPushUtility {
   /** Pushes new change sets to the Hub periodically and sets up named versions */
   public async pushTestChangeSetsAndVersions(count: number) {
     this._iModelDb = await BriefcaseDb.open(this._requestContext!, this._projectId!, this._iModelId!.toString(), OpenParams.pullAndPush(), IModelVersion.latest());
-    if (this._iModelDb instanceof BriefcaseDb) {
+    if (this._iModelDb.isBriefcaseDb()) {
       this._iModelDb.concurrencyControl.setPolicy(ConcurrencyControl.OptimisticPolicy); // don't want to bother with locks.
     }
     const lastLevel = this._currentLevel + count;

@@ -104,8 +104,7 @@ export class IModelConnection extends IModel { // WIP: make abstract
 
   private _isNativeAppBriefcase: boolean; // Set to true if it's a connection over a briefcase in a native application
 
-  /**
-   * General editing functions
+  /** General editing functions
    * @alpha
    */
   public get editing(): IModelConnection.EditingFunctions {
@@ -114,10 +113,24 @@ export class IModelConnection extends IModel { // WIP: make abstract
     return this._editing;
   }
 
+  /** Type guard for instanceof [[SnapshotConnection]]
+   * @beta
+   */
+  public isSnapshotConnection(): this is SnapshotConnection { return this instanceof SnapshotConnection; }
+  /** Type guard for instanceof [[BlankConnection]]
+   * @beta
+   */
+  public isBlankConnection(): this is BlankConnection { return this instanceof BlankConnection; }
+
+  /** Returns true if this is a *snapshot* iModel.
+   * @see [[SnapshotConnection.openSnapshot]]
+   */
+  public get isSnapshot(): boolean { return this.isSnapshotConnection(); }
+
   /** True if this is a [Blank Connection]($docs/learning/frontend/BlankConnection).
    * @beta
    */
-  public readonly isBlank: boolean; // WIP: change to instanceof BlankConnection
+  public get isBlank(): boolean { return this.isBlankConnection(); }
 
   /** Check the [[openMode]] of this IModelConnection to see if it was opened read-only. */
   public get isReadonly(): boolean { return this.openMode === OpenMode.Readonly; }
@@ -204,7 +217,6 @@ export class IModelConnection extends IModel { // WIP: make abstract
   protected constructor(iModel: IModelProps, openMode: OpenMode, isNativeAppBriefcase: boolean) {
     super(iModel.iModelToken ? IModelToken.fromJSON(iModel.iModelToken) : undefined);
     super.initialize(iModel.name!, iModel);
-    this.isBlank = undefined === iModel.iModelToken; // to differentiate between previously-open-but-now-closed vs. blank
     this.openMode = openMode;
     this._isNativeAppBriefcase = isNativeAppBriefcase;
     this.models = new IModelConnection.Models(this);
@@ -222,8 +234,7 @@ export class IModelConnection extends IModel { // WIP: make abstract
     }
   }
 
-  /**
-   * Creates iModel Connection over a local briefcase for a native application
+  /** Creates iModel Connection over a local briefcase for a native application
    * @internal
    */
   public static createForNativeAppBriefcase(iModel: IModelProps, openMode: OpenMode): IModelConnection {
@@ -667,7 +678,7 @@ export class IModelConnection extends IModel { // WIP: make abstract
   }
 }
 
-/** A connection to the backend that does specify an actual iModel.
+/** A connection without a specific backend and without an iModel. Useful for connecting to Reality Data services.
  * @beta
  */
 export class BlankConnection extends IModelConnection {
@@ -676,7 +687,8 @@ export class BlankConnection extends IModelConnection {
   }
 
   /** Create a new [Blank IModelConnection]($docs/learning/frontend/BlankConnection).
-   * @param props The properties of the new blank IModelConnection.
+   * @param props The properties to use for the new BlankConnection.
+   * @note A BlankConnection does not have to be closed.
    * @beta
    */
   public static create(props: BlankConnectionProps): BlankConnection {

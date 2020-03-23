@@ -20,7 +20,6 @@ import { ElementDrivesElement, RelationshipProps } from "../Relationship";
 import { PhysicalElement } from "../Element";
 import { ClassRegistry } from "../ClassRegistry";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
-import { BriefcaseDb } from "../IModelDb";
 
 /** Class for simple test timing */
 export class Timer {
@@ -213,7 +212,7 @@ export class IModelTestUtils {
       code: newModelCode,
     };
     const modeledElement: Element = testDb.elements.createElement(modeledElementProps);
-    if (testDb instanceof BriefcaseDb) {
+    if (testDb.isBriefcaseDb()) {
       await testDb.concurrencyControl.requestResourcesForInsert(rqctx, [modeledElement]);
       rqctx.enter();
     }
@@ -233,7 +232,7 @@ export class IModelTestUtils {
   // Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel.
   public static async createAndInsertPhysicalModelAsync(rqctx: AuthorizedClientRequestContext, testDb: IModelDb, modeledElementRef: RelatedElement, privateModel: boolean = false): Promise<Id64String> {
     const newModel = testDb.models.createModel({ modeledElement: modeledElementRef, classFullName: PhysicalModel.classFullName, isPrivate: privateModel });
-    if (testDb instanceof BriefcaseDb) {
+    if (testDb.isBriefcaseDb()) {
       await testDb.concurrencyControl.requestResourcesForInsert(rqctx, [], [newModel]);
       rqctx.enter();
     }
