@@ -7,7 +7,7 @@ import * as sinon from "sinon";
 import { initialize, terminate } from "../../IntegrationTests";
 import { Id64 } from "@bentley/bentleyjs-core";
 import { ModelProps } from "@bentley/imodeljs-common";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
 import { KeySet, InstanceKey, ContentSpecificationTypes, Ruleset, RuleTypes } from "@bentley/presentation-common";
 import { PresentationTableDataProvider } from "@bentley/presentation-components";
 import { Presentation } from "@bentley/presentation-frontend";
@@ -38,14 +38,14 @@ const createMeaningfulInstances = async (imodel: IModelConnection): Promise<Mean
 
 describe("TableDataProvider", async () => {
 
-  let imodel: IModelConnection;
+  let imodel: SnapshotConnection;
   let instances: MeaningfulInstances;
   let provider: PresentationTableDataProvider;
 
   before(async () => {
     await initialize();
     const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
-    imodel = await IModelConnection.openSnapshot(testIModelName);
+    imodel = await SnapshotConnection.openSnapshot(testIModelName);
     instances = await createMeaningfulInstances(imodel);
   });
 

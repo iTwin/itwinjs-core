@@ -11,7 +11,7 @@ import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { createRandomId } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { using, BeEvent, Id64String, Id64 } from "@bentley/bentleyjs-core";
 import { PropertyRecord } from "@bentley/ui-abstract";
-import { IModelConnection, ViewState, PerModelCategoryVisibility, Viewport, ViewState3d, SpatialViewState } from "@bentley/imodeljs-frontend";
+import { IModelConnection, ViewState, PerModelCategoryVisibility, Viewport, ViewState3d, SpatialViewState, SnapshotConnection } from "@bentley/imodeljs-frontend";
 import { isPromiseLike } from "@bentley/ui-core";
 import { TreeNodeItem, TreeDataChangesListener, SelectionMode } from "@bentley/ui-components";
 import { IPresentationTreeDataProvider } from "@bentley/presentation-components";
@@ -1534,7 +1534,7 @@ describe("ModelsTree", () => {
 
   describe("#integration", () => {
 
-    let imodel: IModelConnection;
+    let imodel: SnapshotConnection;
     const testIModelPath = "src/test/test-data/JoesHouse.bim";
 
     before(async () => {
@@ -1546,7 +1546,7 @@ describe("ModelsTree", () => {
     });
 
     beforeEach(async () => {
-      imodel = await IModelConnection.openSnapshot(testIModelPath);
+      imodel = await SnapshotConnection.openSnapshot(testIModelPath);
     });
 
     afterEach(async () => {

@@ -2,23 +2,21 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-import { expect } from "chai";
-import { render, cleanup } from "@testing-library/react";
-
-import { HierarchyBuilder, initialize, terminate } from "@bentley/presentation-testing";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { SnapshotConnection } from "@bentley/imodeljs-frontend";
 import { Ruleset } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
-
-import TestUtils from "../TestUtils";
-import { ModelSelectorWidget, ModelSelectorWidgetControl, WidgetProps, WidgetDef, ConfigurableUiControlType } from "../../ui-framework";
+import { HierarchyBuilder, initialize, terminate } from "@bentley/presentation-testing";
+import { cleanup, render } from "@testing-library/react";
+import { expect } from "chai";
+import * as React from "react";
+import { ConfigurableUiControlType, ModelSelectorWidget, ModelSelectorWidgetControl, WidgetDef, WidgetProps } from "../../ui-framework";
 import { ModelSelectorDataProvider } from "../../ui-framework/pickers/ModelSelector/ModelSelectorDefinitions";
+import TestUtils from "../TestUtils";
 
 describe("ModelSelector", () => {
 
   const testIModelPath = "src/test/test-data/Properties_60InstancesWithUrl2.ibim";
-  let imodel: IModelConnection;
+  let imodel: SnapshotConnection;
   let hierarchyBuilder: HierarchyBuilder;
 
   before(async () => {
@@ -32,7 +30,7 @@ describe("ModelSelector", () => {
   });
 
   beforeEach(async () => {
-    imodel = await IModelConnection.openSnapshot(testIModelPath);
+    imodel = await SnapshotConnection.openSnapshot(testIModelPath);
     hierarchyBuilder = new HierarchyBuilder({ imodel });
   });
 

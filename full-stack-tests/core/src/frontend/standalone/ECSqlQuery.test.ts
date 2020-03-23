@@ -2,26 +2,26 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { IModelApp, SnapshotConnection } from "@bentley/imodeljs-frontend";
 import { assert } from "chai";
 import * as path from "path";
-import { IModelConnection, IModelApp } from "@bentley/imodeljs-frontend";
 
 const iModelLocation = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/");
 
 describe("ECSql Query", () => {
-  let imodel1: IModelConnection;
-  let imodel2: IModelConnection;
-  let imodel3: IModelConnection;
-  let imodel4: IModelConnection;
-  let imodel5: IModelConnection;
+  let imodel1: SnapshotConnection;
+  let imodel2: SnapshotConnection;
+  let imodel3: SnapshotConnection;
+  let imodel4: SnapshotConnection;
+  let imodel5: SnapshotConnection;
 
   before(async () => {
     IModelApp.startup();
-    imodel1 = await IModelConnection.openSnapshot(iModelLocation + "test.bim");
-    imodel2 = await IModelConnection.openSnapshot(iModelLocation + "CompatibilityTestSeed.bim");
-    imodel3 = await IModelConnection.openSnapshot(iModelLocation + "GetSetAutoHandledStructProperties.bim");
-    imodel4 = await IModelConnection.openSnapshot(iModelLocation + "GetSetAutoHandledArrayProperties.bim");
-    imodel5 = await IModelConnection.openSnapshot(iModelLocation + "mirukuru.ibim");
+    imodel1 = await SnapshotConnection.openSnapshot(iModelLocation + "test.bim");
+    imodel2 = await SnapshotConnection.openSnapshot(iModelLocation + "CompatibilityTestSeed.bim");
+    imodel3 = await SnapshotConnection.openSnapshot(iModelLocation + "GetSetAutoHandledStructProperties.bim");
+    imodel4 = await SnapshotConnection.openSnapshot(iModelLocation + "GetSetAutoHandledArrayProperties.bim");
+    imodel5 = await SnapshotConnection.openSnapshot(iModelLocation + "mirukuru.ibim");
   });
 
   after(async () => {

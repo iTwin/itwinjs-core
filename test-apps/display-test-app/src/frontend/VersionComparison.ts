@@ -24,6 +24,7 @@ import {
   TileTreeReference,
   Tool,
   Viewport,
+  SnapshotConnection,
 } from "@bentley/imodeljs-frontend";
 
 interface ChangedElems {
@@ -92,13 +93,13 @@ class Trees extends SpatialModelTileTrees {
 /** Added to a Viewport to supply graphics from the secondary IModelConnection. */
 class Provider implements TiledGraphicsProvider, FeatureOverrideProvider {
   private readonly _trees: SpatialModelTileTrees;
-  public readonly iModel: IModelConnection;
+  public readonly iModel: SnapshotConnection;
   public overrides: FeatureSymbology.Overrides;
   public readonly changedElems: ChangedElems;
   public readonly viewport: Viewport;
   private readonly _removals: Array<() => void> = [];
 
-  private constructor(vp: Viewport, iModel: IModelConnection, elems: ChangedElems) {
+  private constructor(vp: Viewport, iModel: SnapshotConnection, elems: ChangedElems) {
     this.iModel = iModel;
     this.changedElems = elems;
     this.viewport = vp;
@@ -136,7 +137,7 @@ class Provider implements TiledGraphicsProvider, FeatureOverrideProvider {
 
       // Open the "revision" iModel.
       const filename = vp.iModel.iModelToken.key! + ".rev";
-      const iModel = await IModelConnection.openSnapshot(filename);
+      const iModel = await SnapshotConnection.openSnapshot(filename);
 
       // ###TODO determine which model(s) contain the deleted elements - don't need tiles for any others.
       await iModel.models.load(view.modelSelector.models);

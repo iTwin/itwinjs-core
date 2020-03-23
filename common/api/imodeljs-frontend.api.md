@@ -1473,6 +1473,11 @@ export class BingElevationProvider {
     }
 
 // @beta
+export class BlankConnection extends IModelConnection {
+    static create(props: BlankConnectionProps): BlankConnection;
+}
+
+// @beta
 export interface BlankConnectionProps {
     extents: Range3dProps;
     globalOrigin?: XYZProps;
@@ -3779,18 +3784,18 @@ export interface IModelAppOptions {
 // @public
 export class IModelConnection extends IModel {
     // @internal
+    protected constructor(iModel: IModelProps, openMode: OpenMode, isNativeAppBriefcase: boolean);
+    // @internal
     attachChangeCache(): Promise<void>;
+    // @internal (undocumented)
+    protected beforeClose(): void;
     cartographicToSpatial(cartographic: Cartographic, result?: Point3d): Promise<Point3d>;
     cartographicToSpatialFromGcs(cartographic: Cartographic, result?: Point3d): Promise<Point3d>;
     // @internal
     changeCacheAttached(): Promise<boolean>;
     close(): Promise<void>;
-    // @beta
-    closeSnapshot(): Promise<void>;
     readonly codeSpecs: IModelConnection.CodeSpecs;
     static connectionTimeout: number;
-    // @beta
-    static createBlank(props: BlankConnectionProps): IModelConnection;
     // @internal
     static createForNativeAppBriefcase(iModel: IModelProps, openMode: OpenMode): IModelConnection;
     // @internal
@@ -3834,8 +3839,6 @@ export class IModelConnection extends IModel {
     static readonly onOpen: BeEvent<(_imodel: IModelConnection) => void>;
     static open(contextId: string, iModelId: string, openMode?: OpenMode, version?: IModelVersion): Promise<IModelConnection>;
     readonly openMode: OpenMode;
-    // @beta
-    static openSnapshot(fileName: string): Promise<IModelConnection>;
     // @beta
     query(ecsql: string, bindings?: any[] | object, limitRows?: number, quota?: QueryQuota, priority?: QueryPriority): AsyncIterableIterator<any>;
     queryEntityIds(params: EntityQueryParams): Promise<Id64Set>;
@@ -7511,6 +7514,12 @@ export enum SnapMode {
     NearestKeypoint = 2,
     // (undocumented)
     Origin = 16
+}
+
+// @beta
+export class SnapshotConnection extends IModelConnection {
+    closeSnapshot(): Promise<void>;
+    static openSnapshot(fileName: string): Promise<SnapshotConnection>;
 }
 
 // @public (undocumented)

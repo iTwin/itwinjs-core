@@ -2,19 +2,19 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
-import sinon = require("sinon");
 import { Id64 } from "@bentley/bentleyjs-core";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { KeySet, InstanceKey, Ruleset, PresentationError, PresentationStatus, RuleTypes, ContentSpecificationTypes } from "@bentley/presentation-common";
+import { SnapshotConnection } from "@bentley/imodeljs-frontend";
+import { ContentSpecificationTypes, InstanceKey, KeySet, PresentationError, PresentationStatus, Ruleset, RuleTypes } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
+import { expect } from "chai";
 import { initialize, terminate } from "../IntegrationTests";
+import sinon = require("sinon");
 
 describe("Content", () => {
 
-  let imodel: IModelConnection;
+  let imodel: SnapshotConnection;
   const openIModel = async () => {
-    imodel = await IModelConnection.openSnapshot("assets/datasets/Properties_60InstancesWithUrl2.ibim");
+    imodel = await SnapshotConnection.openSnapshot("assets/datasets/Properties_60InstancesWithUrl2.ibim");
     expect(imodel).is.not.null;
   };
 

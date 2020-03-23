@@ -184,7 +184,7 @@ export interface CreateSnapshotIModelProps extends IModelEncryptionProps {
 }
 
 /** The options that can be specified when creating an *empty* snapshot iModel.
- * @see [[SnapshotDb.createEmpty]]
+ * @see [SnapshotDb.createEmpty]($backend)
  * @beta
  */
 export type CreateEmptySnapshotIModelProps = CreateIModelProps & CreateSnapshotIModelProps;

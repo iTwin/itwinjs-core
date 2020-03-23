@@ -2,13 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { SnapshotConnection } from "@bentley/imodeljs-frontend";
+import { ChildNodeSpecificationTypes, ContentSpecificationTypes, RelationshipDirection, Ruleset, RuleTypes } from "@bentley/presentation-common";
+import { ContentBuilder, ContentBuilderResult, HierarchyBuilder } from "@bentley/presentation-testing";
 import { expect } from "chai";
-import { HierarchyBuilder, ContentBuilder, ContentBuilderResult } from "@bentley/presentation-testing";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { initialize, terminate } from "../IntegrationTests";
 import * as ChaiJestSnapshot from "chai-jest-snapshot";
 import path from "path";
-import { Ruleset, RuleTypes, ContentSpecificationTypes, ChildNodeSpecificationTypes, RelationshipDirection } from "@bentley/presentation-common";
+import { initialize, terminate } from "../IntegrationTests";
 
 function configureSnapshotLocation(test: Mocha.Runnable, subdirectory: string, instance: ContentBuilderResult) {
   let fileName = path.join(
@@ -23,7 +23,7 @@ function configureSnapshotLocation(test: Mocha.Runnable, subdirectory: string, i
 
 // __PUBLISH_EXTRACT_START__ Presentation.Testing.Rulesets
 describe("RulesetTesting", () => {
-  let imodel: IModelConnection;
+  let imodel: SnapshotConnection;
   const imodelPath = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
 
   before(async () => {
@@ -38,7 +38,7 @@ describe("RulesetTesting", () => {
 
   beforeEach(async () => {
     // set up for testing imodel presentation data
-    imodel = await IModelConnection.openSnapshot(imodelPath);
+    imodel = await SnapshotConnection.openSnapshot(imodelPath);
   });
 
   afterEach(async () => {

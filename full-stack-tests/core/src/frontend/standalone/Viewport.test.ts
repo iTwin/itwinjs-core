@@ -6,8 +6,8 @@ import { BeDuration, Id64, Id64Arg, Id64String, using } from "@bentley/bentleyjs
 import { Angle, Point3d } from "@bentley/geometry-core";
 import { BackgroundMapProps, BackgroundMapSettings, BackgroundMapType, Cartographic, ColorDef, Feature, FontMap, FontType, SubCategoryOverride, ViewFlags } from "@bentley/imodeljs-common";
 import {
-  ChangeFlag, ChangeFlags, CompassMode, FeatureSymbology, IModelApp, IModelConnection, MockRender, PanViewTool,
-  PerModelCategoryVisibility, ScreenViewport, SpatialViewState, StandardViewId, TwoWayViewportSync, Viewport, RenderPlan,
+  ChangeFlag, ChangeFlags, CompassMode, FeatureSymbology, IModelApp, MockRender, PanViewTool,
+  PerModelCategoryVisibility, ScreenViewport, SpatialViewState, StandardViewId, TwoWayViewportSync, Viewport, RenderPlan, SnapshotConnection,
 } from "@bentley/imodeljs-frontend";
 import { assert, expect } from "chai";
 import * as path from "path";
@@ -25,8 +25,8 @@ function createViewDiv() {
 }
 
 describe("Viewport", () => {
-  let imodel: IModelConnection;
-  let imodel2: IModelConnection;
+  let imodel: SnapshotConnection;
+  let imodel2: SnapshotConnection;
   let spatialView: SpatialViewState;
 
   const viewDiv = createViewDiv();
@@ -34,8 +34,8 @@ describe("Viewport", () => {
 
   before(async () => {   // Create a ViewState to load into a Viewport
     MockRender.App.startup();
-    imodel = await IModelConnection.openSnapshot(path.join(iModelDir, "test.bim"));
-    imodel2 = await IModelConnection.openSnapshot(path.join(iModelDir, "test2.bim"));
+    imodel = await SnapshotConnection.openSnapshot(path.join(iModelDir, "test.bim"));
+    imodel2 = await SnapshotConnection.openSnapshot(path.join(iModelDir, "test2.bim"));
     spatialView = await imodel.views.load("0x34") as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
   });
@@ -386,7 +386,7 @@ describe("Viewport changed events", async () => {
   //    models: 1c 1f 22 23 24 (all spatial models in file)
   //    spatial categories: 17, 2d, 2f (subcats: 30, 33)), 31
   //    drawing category: 19
-  let testBim: IModelConnection;
+  let testBim: SnapshotConnection;
 
   // testImodel.bim: All Ids have briefcase Id=1
   //  2d views:
@@ -400,7 +400,7 @@ describe("Viewport changed events", async () => {
   //    display style:      10 10 10 10 11    12
   //  category selector 0x0e: 07 1a 1c
   //  category selector 0x0f: 01 03 05 07
-  let testImodel: IModelConnection;
+  let testImodel: SnapshotConnection;
 
   const viewDiv = document.createElement("div") as HTMLDivElement;
   viewDiv.style.width = viewDiv.style.height = "1000px";
@@ -408,8 +408,8 @@ describe("Viewport changed events", async () => {
 
   before(async () => {
     MockRender.App.startup();
-    testBim = await IModelConnection.openSnapshot(path.join(iModelDir, "test.bim"));
-    testImodel = await IModelConnection.openSnapshot(path.join(iModelDir, "testImodel.bim"));
+    testBim = await SnapshotConnection.openSnapshot(path.join(iModelDir, "test.bim"));
+    testImodel = await SnapshotConnection.openSnapshot(path.join(iModelDir, "testImodel.bim"));
   });
 
   after(async () => {
@@ -915,7 +915,7 @@ class Overrides extends FeatureSymbology.Overrides {
 }
 
 describe("Per-model category visibility overrides", () => {
-  let imodel: IModelConnection;
+  let imodel: SnapshotConnection;
   let spatialView: SpatialViewState;
 
   const viewDiv = createViewDiv();
@@ -925,7 +925,7 @@ describe("Per-model category visibility overrides", () => {
 
   before(async () => {
     MockRender.App.startup();
-    imodel = await IModelConnection.openSnapshot(path.join(iModelDir, "test.bim"));
+    imodel = await SnapshotConnection.openSnapshot(path.join(iModelDir, "test.bim"));
     spatialView = await imodel.views.load("0x34") as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
 

@@ -3,25 +3,25 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 // tslint:disable:no-direct-imports
+import { Id64, Id64String } from "@bentley/bentleyjs-core";
+import { SnapshotConnection } from "@bentley/imodeljs-frontend";
+import { KeySet } from "@bentley/presentation-common";
+import { waitForAllAsyncs } from "@bentley/presentation-common/lib/test/_helpers/PendingAsyncsHelper";
+import { createRandomId, createRandomTransientId } from "@bentley/presentation-common/lib/test/_helpers/random";
+import { ViewportSelectionHandler } from "@bentley/presentation-components/lib/presentation-components/viewport/WithUnifiedSelection";
+import { Presentation } from "@bentley/presentation-frontend";
+import { TRANSIENT_ELEMENT_CLASSNAME } from "@bentley/presentation-frontend/lib/presentation-frontend/selection/SelectionManager";
 import { expect } from "chai";
 import { initialize, terminate } from "../IntegrationTests";
-import { Id64, Id64String } from "@bentley/bentleyjs-core";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { KeySet } from "@bentley/presentation-common";
-import { Presentation } from "@bentley/presentation-frontend";
-import { createRandomTransientId, createRandomId } from "@bentley/presentation-common/lib/test/_helpers/random";
-import { waitForAllAsyncs } from "@bentley/presentation-common/lib/test/_helpers/PendingAsyncsHelper";
-import { TRANSIENT_ELEMENT_CLASSNAME } from "@bentley/presentation-frontend/lib/presentation-frontend/selection/SelectionManager";
-import { ViewportSelectionHandler } from "@bentley/presentation-components/lib/presentation-components/viewport/WithUnifiedSelection";
 
 describe("Unified Selection", () => {
 
-  let imodel: IModelConnection;
+  let imodel: SnapshotConnection;
 
   before(async () => {
     await initialize();
     const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
-    imodel = await IModelConnection.openSnapshot(testIModelName);
+    imodel = await SnapshotConnection.openSnapshot(testIModelName);
     expect(imodel).is.not.null;
   });
 

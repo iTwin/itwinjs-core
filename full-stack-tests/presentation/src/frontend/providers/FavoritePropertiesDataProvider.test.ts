@@ -2,25 +2,25 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { SnapshotConnection } from "@bentley/imodeljs-frontend";
+import { KeySet } from "@bentley/presentation-common";
+import { FavoritePropertiesDataProvider, PresentationPropertyDataProvider } from "@bentley/presentation-components";
+import { DEFAULT_PROPERTY_GRID_RULESET } from "@bentley/presentation-components/lib/presentation-components/propertygrid/DataProvider"; // tslint:disable-line: no-direct-imports
+import { Presentation } from "@bentley/presentation-frontend";
+import { PropertyRecord } from "@bentley/ui-abstract";
+import { PropertyData } from "@bentley/ui-components";
 import { expect } from "chai";
 import { initialize, terminate } from "../../IntegrationTests";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { PropertyRecord } from "@bentley/ui-abstract";
-import { FavoritePropertiesDataProvider, PresentationPropertyDataProvider } from "@bentley/presentation-components";
-import { KeySet } from "@bentley/presentation-common";
-import { Presentation } from "@bentley/presentation-frontend";
-import { PropertyData } from "@bentley/ui-components";
-import { DEFAULT_PROPERTY_GRID_RULESET } from "@bentley/presentation-components/lib/presentation-components/propertygrid/DataProvider"; // tslint:disable-line: no-direct-imports
 
 describe("FavoritePropertiesDataProvider", async () => {
 
-  let imodel: IModelConnection;
+  let imodel: SnapshotConnection;
   let provider: FavoritePropertiesDataProvider;
 
   before(async () => {
     await initialize();
     const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
-    imodel = await IModelConnection.openSnapshot(testIModelName);
+    imodel = await SnapshotConnection.openSnapshot(testIModelName);
   });
 
   beforeEach(() => {

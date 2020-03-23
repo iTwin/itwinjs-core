@@ -2,22 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as path from "path";
-import { expect } from "chai";
 import { Vector3d } from "@bentley/geometry-core";
-import {
-  DisplayStyle3dProps,
-} from "@bentley/imodeljs-common";
-import {
-  DisplayStyle3dState,
-  IModelConnection,
-  MockRender,
-} from "@bentley/imodeljs-frontend";
+import { DisplayStyle3dProps } from "@bentley/imodeljs-common";
+import { DisplayStyle3dState, MockRender, SnapshotConnection } from "@bentley/imodeljs-frontend";
+import { expect } from "chai";
+import * as path from "path";
 
 const iModelLocation = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/test.bim");
 
 describe("DisplayStyle", () => {
-  let imodel: IModelConnection;
+  let imodel: SnapshotConnection;
   const styleProps: DisplayStyle3dProps = {
     classFullName: "bis.DisplayStyle3d",
     model: "0",
@@ -30,7 +24,7 @@ describe("DisplayStyle", () => {
 
   before(async () => {
     MockRender.App.startup();
-    imodel = await IModelConnection.openSnapshot(iModelLocation);
+    imodel = await SnapshotConnection.openSnapshot(iModelLocation);
   });
 
   after(async () => {
@@ -45,7 +39,7 @@ describe("DisplayStyle", () => {
     const style2 = style1.clone(imodel);
     expect(JSON.stringify(style1)).to.equal(JSON.stringify(style2));
 
-      // ###TODO More substantial tests (change style properties)
+    // ###TODO More substantial tests (change style properties)
   });
 
   it("should preserve sun direction", () => {

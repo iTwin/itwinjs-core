@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
-import { initialize, terminate, resetBackend } from "../IntegrationTests";
 import { using } from "@bentley/bentleyjs-core";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { SnapshotConnection } from "@bentley/imodeljs-frontend";
+import { ChildNodeSpecificationTypes, RegisteredRuleset, Ruleset, RuleTypes } from "@bentley/presentation-common";
 import { Presentation, PresentationManager } from "@bentley/presentation-frontend";
-import { Ruleset, RegisteredRuleset, RuleTypes, ChildNodeSpecificationTypes } from "@bentley/presentation-common";
+import { expect } from "chai";
+import { initialize, resetBackend, terminate } from "../IntegrationTests";
 
 const RULESET_1: Ruleset = {
   id: "ruleset_1",
@@ -35,12 +35,12 @@ const RULESET_2: Ruleset = {
 
 describe("Rulesets", async () => {
 
-  let imodel: IModelConnection;
+  let imodel: SnapshotConnection;
 
   before(async () => {
     await initialize();
     const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
-    imodel = await IModelConnection.openSnapshot(testIModelName);
+    imodel = await SnapshotConnection.openSnapshot(testIModelName);
   });
 
   after(async () => {

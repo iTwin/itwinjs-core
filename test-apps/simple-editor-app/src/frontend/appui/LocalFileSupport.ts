@@ -2,9 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-
-import { testAppConfiguration, SampleAppIModelApp } from "../index";
+import { IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
+import { SampleAppIModelApp, testAppConfiguration } from "../index";
 
 // cSpell:ignore TESTAPP FILEPATH
 
@@ -27,7 +26,7 @@ export class LocalFileSupport {
 
     try {
       const filePath = testAppConfiguration.snapshotPath + "/" + fileName;
-      iModelConnection = await IModelConnection.openSnapshot(filePath);
+      iModelConnection = await SnapshotConnection.openSnapshot(filePath);
     } catch (e) {
       alert(e.message);
       iModelConnection = undefined;

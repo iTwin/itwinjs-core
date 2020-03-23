@@ -3,18 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { BisCodeSpec, CodeScopeSpec, CodeSpec } from "@bentley/imodeljs-common";
-import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
+import { IModelApp, SnapshotConnection } from "@bentley/imodeljs-frontend";
 import { assert } from "chai";
 import * as path from "path";
 
 const iModelFileName = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/test.bim");
 
 describe("CodeSpecs", async () => {
-  let iModel: IModelConnection;
+  let iModel: SnapshotConnection;
 
   before(async () => {
     IModelApp.startup();
-    iModel = await IModelConnection.openSnapshot(iModelFileName);
+    iModel = await SnapshotConnection.openSnapshot(iModelFileName);
   });
 
   after(async () => {

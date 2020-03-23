@@ -3,25 +3,25 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 // tslint:disable: no-direct-imports
-import { expect } from "chai";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { PropertyRecord } from "@bentley/ui-abstract";
+import { SnapshotConnection } from "@bentley/imodeljs-frontend";
+import { Field, KeySet } from "@bentley/presentation-common";
 import { PresentationPropertyDataProvider } from "@bentley/presentation-components";
-import { KeySet, Field } from "@bentley/presentation-common";
-import { Presentation, FavoritePropertiesScope, PropertyFullName } from "@bentley/presentation-frontend";
-import { IModelAppFavoritePropertiesStorage } from "@bentley/presentation-frontend/lib/presentation-frontend/favorite-properties/FavoritePropertiesStorage";
-import { PropertyData } from "@bentley/ui-components";
-import { initialize, initializeWithClientServices, terminate } from "../IntegrationTests";
 import { DEFAULT_PROPERTY_GRID_RULESET } from "@bentley/presentation-components/lib/presentation-components/propertygrid/DataProvider";
+import { FavoritePropertiesScope, Presentation, PropertyFullName } from "@bentley/presentation-frontend";
+import { IModelAppFavoritePropertiesStorage } from "@bentley/presentation-frontend/lib/presentation-frontend/favorite-properties/FavoritePropertiesStorage";
+import { PropertyRecord } from "@bentley/ui-abstract";
+import { PropertyData } from "@bentley/ui-components";
+import { expect } from "chai";
+import { initialize, initializeWithClientServices, terminate } from "../IntegrationTests";
 
 const favoritesCategoryName = "Favorite";
 describe("Favorite properties", () => {
 
-  let imodel: IModelConnection;
+  let imodel: SnapshotConnection;
 
   before(async () => {
     await initialize();
-    imodel = await IModelConnection.openSnapshot("assets/datasets/Properties_60InstancesWithUrl2.ibim");
+    imodel = await SnapshotConnection.openSnapshot("assets/datasets/Properties_60InstancesWithUrl2.ibim");
     expect(imodel).is.not.null;
   });
 
@@ -137,7 +137,7 @@ describe("Favorite properties", () => {
     before(async () => {
       terminate();
       await initializeWithClientServices();
-      imodel = await IModelConnection.openSnapshot("assets/datasets/Properties_60InstancesWithUrl2.ibim");
+      imodel = await SnapshotConnection.openSnapshot("assets/datasets/Properties_60InstancesWithUrl2.ibim");
       expect(imodel).is.not.null;
     });
 

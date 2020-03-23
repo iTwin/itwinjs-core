@@ -2,20 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { BeDuration, Id64, Id64Arg, Id64Set, Id64String } from "@bentley/bentleyjs-core";
+import { IModelConnection, MockRender, SnapshotConnection, SubCategoriesCache } from "@bentley/imodeljs-frontend";
 import { expect } from "chai";
 import * as path from "path";
-import {
-  BeDuration,
-  Id64,
-  Id64Arg,
-  Id64Set,
-  Id64String,
-} from "@bentley/bentleyjs-core";
-import {
-  IModelConnection,
-  MockRender,
-  SubCategoriesCache,
-} from "@bentley/imodeljs-frontend";
 
 describe("SubCategoriesCache", () => {
   // test.bim:
@@ -30,11 +20,11 @@ describe("SubCategoriesCache", () => {
   //    2f: 2 subcategories: 30, 33
   //    31
   //  1 drawing category: 19
-  let imodel: IModelConnection;
+  let imodel: SnapshotConnection;
 
   before(async () => {
     MockRender.App.startup();
-    imodel = await IModelConnection.openSnapshot(path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/test.bim"));
+    imodel = await SnapshotConnection.openSnapshot(path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/test.bim"));
   });
 
   after(async () => {

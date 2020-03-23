@@ -2,18 +2,18 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { IModelConnection, GeoConverter, IModelApp } from "@bentley/imodeljs-frontend";
+import { Point3d, XYZProps } from "@bentley/geometry-core";
+import { GeoCoordinatesResponseProps, GeoCoordStatus, IModelCoordinatesResponseProps } from "@bentley/imodeljs-common";
+import { GeoConverter, IModelApp, SnapshotConnection } from "@bentley/imodeljs-frontend";
 import { expect } from "chai";
 import * as path from "path";
-import { XYZProps, Point3d } from "@bentley/geometry-core";
-import { GeoCoordStatus, IModelCoordinatesResponseProps, GeoCoordinatesResponseProps } from "@bentley/imodeljs-common";
 
 const iModelLocation = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/mirukuru.ibim");
 
 // spell-checker: disable
 
 describe("GeoCoord", () => {
-  let iModel: IModelConnection;
+  let iModel: SnapshotConnection;
   const geoPointList: XYZProps[] = [];
   let wgs84Converter: GeoConverter;
   let nad27Converter: GeoConverter;
@@ -23,7 +23,7 @@ describe("GeoCoord", () => {
 
   before(async () => {
     IModelApp.startup();
-    iModel = await IModelConnection.openSnapshot(iModelLocation);
+    iModel = await SnapshotConnection.openSnapshot(iModelLocation);
     // make an array of 10x10 geoPoints in geoPointList.
     for (let iLatitude: number = 0; iLatitude < 10; iLatitude++) {
       for (let iLongitude: number = 0; iLongitude < 10; iLongitude++) {

@@ -49,10 +49,10 @@ export interface BlankConnectionProps {
   globalOrigin?: XYZProps;
 }
 
-/** A connection to an iModel database hosted on the backend.
+/** A connection to a [IModelDb]($backend) hosted on the backend.
  * @public
  */
-export class IModelConnection extends IModel {
+export class IModelConnection extends IModel { // WIP: make abstract
   /** The [[OpenMode]] used for this IModelConnection. */
   public readonly openMode: OpenMode;
   /** The [[ModelState]]s in this IModelConnection. */
@@ -117,7 +117,7 @@ export class IModelConnection extends IModel {
   /** True if this is a [Blank Connection]($docs/learning/frontend/BlankConnection).
    * @beta
    */
-  public readonly isBlank: boolean;
+  public readonly isBlank: boolean; // WIP: change to instanceof BlankConnection
 
   /** Check the [[openMode]] of this IModelConnection to see if it was opened read-only. */
   public get isReadonly(): boolean { return this.openMode === OpenMode.Readonly; }
@@ -200,7 +200,8 @@ export class IModelConnection extends IModel {
     return ctor; // either the baseClass handler or defaultClass if we didn't find a registered baseClass
   }
 
-  private constructor(iModel: IModelProps, openMode: OpenMode, isNativeAppBriefcase: boolean) {
+  /** @internal */
+  protected constructor(iModel: IModelProps, openMode: OpenMode, isNativeAppBriefcase: boolean) {
     super(iModel.iModelToken ? IModelToken.fromJSON(iModel.iModelToken) : undefined);
     super.initialize(iModel.name!, iModel);
     this.isBlank = undefined === iModel.iModelToken; // to differentiate between previously-open-but-now-closed vs. blank
@@ -227,19 +228,6 @@ export class IModelConnection extends IModel {
    */
   public static createForNativeAppBriefcase(iModel: IModelProps, openMode: OpenMode): IModelConnection {
     return new this(iModel, openMode, true);
-  }
-
-  /** Create a new [Blank IModelConnection]($docs/learning/frontend/BlankConnection).
-   * @param props The properties of the new blank IModelConnection.
-   * @beta
-   */
-  public static createBlank(props: BlankConnectionProps): IModelConnection {
-    return new this({
-      rootSubject: { name: props.name },
-      projectExtents: props.extents,
-      globalOrigin: props.globalOrigin,
-      ecefLocation: props.location instanceof Cartographic ? EcefLocation.createFromCartographicOrigin(props.location) : props.location,
-    }, OpenMode.Readonly, false);
   }
 
   /** Open an IModelConnection to an iModel. It's recommended that every open call be matched with a corresponding call to close. */
@@ -362,7 +350,8 @@ export class IModelConnection extends IModel {
 
   // called prior to connection closing. Raises close events and calls tiles.dispose.
   // NOTE: this is called for blank connections too!
-  private beforeClose() {
+  /** @internal */
+  protected beforeClose() {
     this.onClose.raiseEvent(this); // event for this connection
     IModelConnection.onClose.raiseEvent(this); // event for all connections
     this.tiles.dispose();
@@ -394,34 +383,6 @@ export class IModelConnection extends IModel {
     }
     try {
       await closePromise;
-    } finally {
-      this._token = undefined; // prevent closed connection from being reused
-      this.subcategories.onIModelConnectionClose();
-    }
-  }
-
-  /** Open an IModelConnection to a read-only iModel *snapshot* (not managed by iModelHub) from a file name that is resolved by the backend.
-   * This method is intended for desktop or mobile applications and should not be used for web applications.
-   * @beta
-   */
-  public static async openSnapshot(fileName: string): Promise<IModelConnection> {
-    const openResponse: IModelProps = await SnapshotIModelRpcInterface.getClient().openSnapshot(fileName);
-    Logger.logTrace(loggerCategory, "IModelConnection.openSnapshot", () => ({ fileName }));
-    const connection = new IModelConnection(openResponse, OpenMode.Readonly, false);
-    IModelConnection.onOpen.raiseEvent(connection);
-    return connection;
-  }
-
-  /** Close this IModelConnection to a read-only iModel *snapshot*.
-   * @beta
-   */
-  public async closeSnapshot(): Promise<void> {
-    this.beforeClose();
-    if (!this.isOpen)
-      return;
-
-    try {
-      await SnapshotIModelRpcInterface.getClient().closeSnapshot(this.iModelToken.toJSON());
     } finally {
       this._token = undefined; // prevent closed connection from being reused
       this.subcategories.onIModelConnectionClose();
@@ -703,6 +664,65 @@ export class IModelConnection extends IModel {
       if (vp.view.isSpatialView() && vp.iModel === this)
         vp.invalidateController();
     });
+  }
+}
+
+/** A connection to the backend that does specify an actual iModel.
+ * @beta
+ */
+export class BlankConnection extends IModelConnection {
+  private constructor(iModelProps: IModelProps, openMode: OpenMode) {
+    super(iModelProps, openMode, false);
+  }
+
+  /** Create a new [Blank IModelConnection]($docs/learning/frontend/BlankConnection).
+   * @param props The properties of the new blank IModelConnection.
+   * @beta
+   */
+  public static create(props: BlankConnectionProps): BlankConnection {
+    return new this({
+      rootSubject: { name: props.name },
+      projectExtents: props.extents,
+      globalOrigin: props.globalOrigin,
+      ecefLocation: props.location instanceof Cartographic ? EcefLocation.createFromCartographicOrigin(props.location) : props.location,
+    }, OpenMode.Readonly);
+  }
+}
+
+/** A connection to a [SnapshotDb]($backend) hosted on the backend.
+ * @beta
+ */
+export class SnapshotConnection extends IModelConnection {
+  private constructor(iModelProps: IModelProps, openMode: OpenMode) {
+    super(iModelProps, openMode, false);
+  }
+
+  /** Open an IModelConnection to a read-only iModel *snapshot* (not managed by iModelHub) from a file name that is resolved by the backend.
+   * This method is intended for desktop or mobile applications and should not be used for web applications.
+   * @beta
+   */
+  public static async openSnapshot(fileName: string): Promise<SnapshotConnection> {
+    const openResponse: IModelProps = await SnapshotIModelRpcInterface.getClient().openSnapshot(fileName);
+    Logger.logTrace(loggerCategory, "SnapshotConnection.openSnapshot", () => ({ fileName }));
+    const connection = new SnapshotConnection(openResponse, OpenMode.Readonly);
+    IModelConnection.onOpen.raiseEvent(connection);
+    return connection;
+  }
+
+  /** Close this IModelConnection to a read-only iModel *snapshot*.
+   * @beta
+   */
+  public async closeSnapshot(): Promise<void> {
+    this.beforeClose();
+    if (!this.isOpen) {
+      return;
+    }
+    try {
+      await SnapshotIModelRpcInterface.getClient().closeSnapshot(this.iModelToken.toJSON());
+    } finally {
+      this._token = undefined; // prevent closed connection from being reused
+      this.subcategories.onIModelConnectionClose();
+    }
   }
 }
 

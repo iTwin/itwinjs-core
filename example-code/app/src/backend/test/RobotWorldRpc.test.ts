@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { IModelApp, IModelConnection, NoRenderApp } from "@bentley/imodeljs-frontend";
+import { IModelApp, NoRenderApp, SnapshotConnection } from "@bentley/imodeljs-frontend";
 import { IModelJsFs, PhysicalModel, StandaloneDb } from "@bentley/imodeljs-backend";
 import { SnapshotIModelRpcInterface, IModel, IModelReadRpcInterface, IModelWriteRpcInterface, TestRpcManager, IModelTokenProps, GeometricElement3dProps } from "@bentley/imodeljs-common";
 import { RobotWorldReadRpcInterface, RobotWorldWriteRpcInterface } from "../../common/RobotWorldRpcInterface";
@@ -56,7 +56,7 @@ describe("RobotWorldRpc", () => {
     const roWrite = RobotWorldWriteRpcInterface.getClient();
     const roRead = RobotWorldReadRpcInterface.getClient();
 
-    const iModel: IModelConnection = await IModelConnection.openSnapshot(KnownTestLocations.outputDir + "/" + "RobotWorldRpc.bim");
+    const iModel: SnapshotConnection = await SnapshotConnection.openSnapshot(KnownTestLocations.outputDir + "/" + "RobotWorldRpc.bim");
     assert.isTrue(iModel !== undefined);
     const iToken: IModelTokenProps = iModel.iModelToken.toJSON();
 

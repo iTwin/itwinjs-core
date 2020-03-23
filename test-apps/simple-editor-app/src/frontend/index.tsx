@@ -14,7 +14,7 @@ import {
 } from "@bentley/imodeljs-common";
 import {
   IModelApp, IModelConnection, SnapMode, AccuSnap, ViewClipByPlaneTool, RenderSystem,
-  IModelAppOptions, SelectionTool, ViewState, FrontendLoggerCategory,
+  IModelAppOptions, SelectionTool, ViewState, FrontendLoggerCategory, SnapshotConnection,
 } from "@bentley/imodeljs-frontend";
 import { MarkupApp } from "@bentley/imodeljs-markup";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
@@ -275,7 +275,7 @@ export class SampleAppIModelApp {
     if (currentIModelConnection) {
       SyncUiEventDispatcher.clearConnectionEvents(currentIModelConnection);
 
-      if (SampleAppIModelApp.isIModelLocal)
+      if (currentIModelConnection instanceof SnapshotConnection)
         await currentIModelConnection.closeSnapshot();
       else
         await currentIModelConnection.close();

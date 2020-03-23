@@ -2,29 +2,19 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-
-import {
-  IModelApp,
-  IModelConnection,
-  Tool,
-} from "@bentley/imodeljs-frontend";
-import {
-  KeyinField,
-} from "@bentley/frontend-devtools";
-import {
-  createToolButton,
-  ToolBar,
-} from "./ToolBar";
+import { KeyinField } from "@bentley/frontend-devtools";
+import { Range3d } from "@bentley/geometry-core";
+import { Cartographic } from "@bentley/imodeljs-common";
+import { BlankConnection, IModelApp, SnapshotConnection, Tool } from "@bentley/imodeljs-frontend";
 import { DisplayTestApp } from "./App";
-import { Dock, NamedWindow, NamedWindowProps, Window, WindowProps } from "./Window";
-import { Viewer, ViewerProps } from "./Viewer";
+import { BrowserFileSelector, selectFileName } from "./FileOpen";
+import { FpsMonitor } from "./FpsMonitor";
+import { NotificationsWindow } from "./Notifications";
 import { addSnapModes } from "./SnapModes";
 import { TileLoadIndicator } from "./TileLoadIndicator";
-import { NotificationsWindow } from "./Notifications";
-import { FpsMonitor } from "./FpsMonitor";
-import { selectFileName, BrowserFileSelector } from "./FileOpen";
-import { Cartographic } from "@bentley/imodeljs-common";
-import { Range3d } from "@bentley/geometry-core";
+import { createToolButton, ToolBar } from "./ToolBar";
+import { Viewer, ViewerProps } from "./Viewer";
+import { Dock, NamedWindow, NamedWindowProps, Window, WindowProps } from "./Window";
 
 export class Surface {
   public readonly element: HTMLElement;
@@ -142,7 +132,7 @@ export class Surface {
 
   // create a new blank connection for testing backgroundMap and reality models.
   private async openBlankConnection() {
-    const iModel = IModelConnection.createBlank({
+    const iModel = BlankConnection.create({
       location: Cartographic.fromDegrees(-75.686694, 40.065757, 0), // near Exton pa
       extents: new Range3d(-1000, -1000, -100, 1000, 1000, 100),
       name: "blank connection test",
@@ -160,7 +150,7 @@ export class Surface {
     }
 
     try {
-      const iModel = await IModelConnection.openSnapshot(filename);
+      const iModel = await SnapshotConnection.openSnapshot(filename);
       const viewer = await this.createViewer({ iModel });
       viewer.dock(Dock.Full);
     } catch (err) {

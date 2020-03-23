@@ -2,13 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { SnapshotConnection } from "@bentley/imodeljs-frontend";
+import { ChildNodeSpecificationTypes, Ruleset, RuleTypes } from "@bentley/presentation-common";
+import { PresentationTreeDataProvider } from "@bentley/presentation-components";
+import { Presentation } from "@bentley/presentation-frontend";
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { initialize, terminate } from "../../IntegrationTests";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { PresentationTreeDataProvider } from "@bentley/presentation-components";
-import { Presentation } from "@bentley/presentation-frontend";
-import { Ruleset, RuleTypes, ChildNodeSpecificationTypes } from "@bentley/presentation-common";
 
 const RULESET: Ruleset = {
   id: "SimpleHierarchy",
@@ -47,13 +47,13 @@ const RULESET: Ruleset = {
 
 describe("TreeDataProvider", async () => {
 
-  let imodel: IModelConnection;
+  let imodel: SnapshotConnection;
   let provider: PresentationTreeDataProvider;
 
   before(async () => {
     await initialize();
     const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
-    imodel = await IModelConnection.openSnapshot(testIModelName);
+    imodel = await SnapshotConnection.openSnapshot(testIModelName);
     expect(imodel).is.not.null;
     provider = new PresentationTreeDataProvider({ imodel, ruleset: RULESET });
   });

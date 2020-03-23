@@ -2,25 +2,22 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { Id64, using } from "@bentley/bentleyjs-core";
+import { SnapshotConnection } from "@bentley/imodeljs-frontend";
+import { ChildNodeSpecificationTypes, ECInstancesNodeKey, getInstancesCount, InstanceKey, KeySet, RegisteredRuleset, RelationshipDirection, Ruleset, RuleTypes } from "@bentley/presentation-common";
+import { Presentation, PresentationManager } from "@bentley/presentation-frontend";
 import { expect } from "chai";
 import * as faker from "faker";
-import { initialize, terminate, resetBackend } from "../IntegrationTests";
-import { Id64, using } from "@bentley/bentleyjs-core";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import {
-  InstanceKey, Ruleset, RuleTypes, ChildNodeSpecificationTypes,
-  KeySet, ECInstancesNodeKey, getInstancesCount, RegisteredRuleset, RelationshipDirection,
-} from "@bentley/presentation-common";
-import { Presentation, PresentationManager } from "@bentley/presentation-frontend";
+import { initialize, resetBackend, terminate } from "../IntegrationTests";
 
 describe("Hierarchies", () => {
 
-  let imodel: IModelConnection;
+  let imodel: SnapshotConnection;
 
   before(async () => {
     await initialize();
     const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
-    imodel = await IModelConnection.openSnapshot(testIModelName);
+    imodel = await SnapshotConnection.openSnapshot(testIModelName);
     expect(imodel).is.not.null;
   });
 

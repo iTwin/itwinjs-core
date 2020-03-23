@@ -3,14 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 // tslint:disable:no-direct-imports
+import { Id64 } from "@bentley/bentleyjs-core";
+import { SnapshotConnection } from "@bentley/imodeljs-frontend";
+import { ChildNodeSpecificationTypes, Ruleset, RuleTypes } from "@bentley/presentation-common";
+import { createRandomId } from "@bentley/presentation-common/lib/test/_helpers/random";
+import { Presentation, PresentationManager, RulesetVariablesManager } from "@bentley/presentation-frontend";
 import { expect } from "chai";
 import * as faker from "faker";
-import { initialize, terminate, resetBackend } from "../IntegrationTests";
-import { createRandomId } from "@bentley/presentation-common/lib/test/_helpers/random";
-import { Id64 } from "@bentley/bentleyjs-core";
-import { Ruleset, RuleTypes, ChildNodeSpecificationTypes } from "@bentley/presentation-common";
-import { Presentation, RulesetVariablesManager, PresentationManager } from "@bentley/presentation-frontend";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { initialize, resetBackend, terminate } from "../IntegrationTests";
 
 const RULESET: Ruleset = {
   id: "ruleset vars test",
@@ -260,12 +260,12 @@ describe("Ruleset Variables", async () => {
 
   describe("Multiple frontends for one backend", async () => {
 
-    let imodel: IModelConnection;
+    let imodel: SnapshotConnection;
     let frontends: PresentationManager[];
 
     beforeEach(async () => {
       const testIModelName = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
-      imodel = await IModelConnection.openSnapshot(testIModelName);
+      imodel = await SnapshotConnection.openSnapshot(testIModelName);
       frontends = [0, 1].map(() => PresentationManager.create());
     });
 
@@ -288,12 +288,12 @@ describe("Ruleset Variables", async () => {
 
   describe("Multiple backends for one frontend", async () => {
 
-    let imodel: IModelConnection;
+    let imodel: SnapshotConnection;
     let frontend: PresentationManager;
 
     beforeEach(async () => {
       const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
-      imodel = await IModelConnection.openSnapshot(testIModelName);
+      imodel = await SnapshotConnection.openSnapshot(testIModelName);
       expect(imodel).is.not.null;
       frontend = PresentationManager.create();
     });

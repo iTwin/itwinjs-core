@@ -13,7 +13,7 @@ import {
 import {
   AuthorizedFrontendRequestContext, FrontendRequestContext, DisplayStyleState, DisplayStyle3dState, IModelApp, IModelConnection, EntityState,
   OidcBrowserClient, PerformanceMetrics, Pixel, RenderSystem, ScreenViewport, Target, TileAdmin, Viewport, ViewRect, ViewState, IModelAppOptions,
-  FeatureOverrideProvider, FeatureSymbology, GLTimerResult, OidcDesktopClientRenderer,
+  FeatureOverrideProvider, FeatureSymbology, GLTimerResult, OidcDesktopClientRenderer, SnapshotConnection,
 } from "@bentley/imodeljs-frontend";
 import { System } from "@bentley/imodeljs-frontend/lib/webgl";
 import { I18NOptions } from "@bentley/imodeljs-i18n";
@@ -873,7 +873,7 @@ async function loadIModel(testConfig: DefaultConfigs): Promise<boolean> {
   let openLocalIModel = (testConfig.iModelLocation !== undefined) || MobileRpcConfiguration.isMobileFrontend;
   if (openLocalIModel) {
     try {
-      activeViewState.iModelConnection = await IModelConnection.openSnapshot(testConfig.iModelFile!);
+      activeViewState.iModelConnection = await SnapshotConnection.openSnapshot(testConfig.iModelFile!);
     } catch (err) {
       alert("openSnapshot failed: " + err.toString());
       openLocalIModel = false;
@@ -1000,10 +1000,10 @@ async function loadIModel(testConfig: DefaultConfigs): Promise<boolean> {
   return true;
 }
 
-async function closeIModel(isSnapshot: boolean) {
+async function closeIModel() {
   debugPrint("start closeIModel" + activeViewState.iModelConnection);
   if (activeViewState.iModelConnection) {
-    if (isSnapshot)
+    if (activeViewState.iModelConnection instanceof SnapshotConnection)
       await activeViewState.iModelConnection.closeSnapshot();
     else
       await activeViewState.iModelConnection!.close();
@@ -1213,7 +1213,7 @@ async function runTest(testConfig: DefaultConfigs) {
   // Open and finish loading model
   const loaded = await loadIModel(testConfig);
   if (!loaded) {
-    await closeIModel(testConfig.iModelLocation !== undefined || MobileRpcConfiguration.isMobileFrontend);
+    await closeIModel();
     return; // could not properly open the given model or saved view so skip test
   }
 
@@ -1222,7 +1222,7 @@ async function runTest(testConfig: DefaultConfigs) {
     await savePng(getImageString(testConfig));
     if (testConfig.testType === "image") {
       // Close the imodel & exit if nothing else needs to happen
-      await closeIModel(testConfig.iModelLocation !== undefined || MobileRpcConfiguration.isMobileFrontend);
+      await closeIModel();
       return;
     }
   }
@@ -1290,12 +1290,12 @@ async function runTest(testConfig: DefaultConfigs) {
     await testReadPix(Pixel.Selector.Feature, "+feature");
     await testReadPix(Pixel.Selector.GeometryAndDistance, "+geom+dist");
     await testReadPix(Pixel.Selector.All, "+feature+geom+dist");
-    await closeIModel(testConfig.iModelLocation !== undefined || MobileRpcConfiguration.isMobileFrontend);
+    await closeIModel();
   } else {
     (theViewport!.target as Target).performanceMetrics = new PerformanceMetrics(true, false, gpuResultsCallback);
     await renderAsync(theViewport!, testConfig.numRendersToTime!, timingsForActualFPS, gpuResultsCallback);
     // Close model & save csv file
-    await closeIModel(testConfig.iModelLocation !== undefined || MobileRpcConfiguration.isMobileFrontend);
+    await closeIModel();
     const rowData = getRowData(timingsForActualFPS, finalGPUFrameTimings, timingsForActualFPS, testConfig);
     await saveCsv(testConfig.outputPath!, testConfig.outputName!, rowData, csvFormat);
 

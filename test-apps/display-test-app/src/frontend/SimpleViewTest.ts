@@ -31,6 +31,7 @@ import {
   RenderDiagnostics,
   RenderSystem,
   OidcDesktopClientRenderer,
+  SnapshotConnection,
 } from "@bentley/imodeljs-frontend";
 import { WebGLExtensionName } from "@bentley/webgl-compatibility";
 import { showStatus } from "./Utils";
@@ -73,7 +74,7 @@ async function retrieveConfiguration(): Promise<void> {
 // opens the configured iModel from disk
 async function openSnapshotIModel(filename: string): Promise<IModelConnection> {
   configuration.standalone = true;
-  const iModelConnection = await IModelConnection.openSnapshot(filename);
+  const iModelConnection = await SnapshotConnection.openSnapshot(filename);
   configuration.iModelName = iModelConnection.name;
   return iModelConnection;
 }

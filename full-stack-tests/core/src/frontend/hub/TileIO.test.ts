@@ -38,6 +38,7 @@ import {
   IModelTileTree,
   iModelTileTreeParamsFromJSON,
   ViewState,
+  SnapshotConnection,
 } from "@bentley/imodeljs-frontend";
 import { TileTestCase, TileTestData } from "./TileIO.data";
 import { TILE_DATA_1_1 } from "./TileIO.data.1.1";
@@ -265,11 +266,11 @@ async function processEachCylinder(imodel: IModelConnection, processGraphic: Pro
 
 // These tests require the real (webgl-based) RenderSystem.
 describe("TileIO (WebGL)", () => {
-  let imodel: IModelConnection;
+  let imodel: SnapshotConnection;
 
   before(async () => {
     IModelApp.startup();
-    imodel = await IModelConnection.openSnapshot(iModelLocation);
+    imodel = await SnapshotConnection.openSnapshot(iModelLocation);
   });
 
   after(async () => {
@@ -435,11 +436,11 @@ describe("TileIO (WebGL)", () => {
 
 // These tests use the mock RenderSystem (do not require WebGL) so will execute in Windows CI job.
 describe("TileIO (mock render)", () => {
-  let imodel: IModelConnection;
+  let imodel: SnapshotConnection;
 
   before(async () => {
     MockRender.App.startup();
-    imodel = await IModelConnection.openSnapshot(iModelLocation);
+    imodel = await SnapshotConnection.openSnapshot(iModelLocation);
   });
 
   after(async () => {
@@ -582,7 +583,7 @@ async function getPrimaryTileTree(model: GeometricModelState, edgesRequired = tr
 }
 
 describe("mirukuru TileTree", () => {
-  let imodel: IModelConnection;
+  let imodel: SnapshotConnection;
 
   class TestTarget extends MockRender.OnScreenTarget {
     public setRenderToScreen(toScreen: boolean): HTMLCanvasElement | undefined {
@@ -597,7 +598,7 @@ describe("mirukuru TileTree", () => {
   before(async () => {
     MockRender.App.systemFactory = () => new TestSystem();
     MockRender.App.startup();
-    imodel = await IModelConnection.openSnapshot(path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/mirukuru.ibim"));
+    imodel = await SnapshotConnection.openSnapshot(path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/mirukuru.ibim"));
   });
 
   afterEach(() => {
@@ -767,7 +768,7 @@ describe("mirukuru TileTree", () => {
 
     let edgesRequired = false;
     const viewState = {
-      iModel: imodel,
+      iModel: imodel as IModelConnection,
       viewFlags: { edgesRequired: () => edgesRequired },
       is3d: () => true,
     };
@@ -830,7 +831,7 @@ describe("mirukuru TileTree", () => {
 });
 
 describe("TileAdmin", () => {
-  let theIModel: IModelConnection | undefined;
+  let theIModel: SnapshotConnection | undefined;
 
   const cleanup = async () => {
     if (theIModel) {
@@ -854,7 +855,7 @@ describe("TileAdmin", () => {
         tileAdmin: TileAdmin.create(props),
       });
 
-      theIModel = await IModelConnection.openSnapshot(path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/mirukuru.ibim"));
+      theIModel = await SnapshotConnection.openSnapshot(path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/mirukuru.ibim"));
       return theIModel;
     }
 

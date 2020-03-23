@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Logger, Guid } from "@bentley/bentleyjs-core";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
 import SampleRpcInterface from "../../common/SampleRpcInterface";
 
 export class MyAppFrontend {
-  public static iModel: IModelConnection | undefined;
+  public static iModel: SnapshotConnection | undefined;
 
   public static async getSampleImodels(): Promise<string[]> {
     return SampleRpcInterface.getClient().getSampleImodels();
@@ -18,7 +18,7 @@ export class MyAppFrontend {
   }
 
   public static async openIModel(path: string): Promise<IModelConnection> {
-    this.iModel = await IModelConnection.openSnapshot(path);
+    this.iModel = await SnapshotConnection.openSnapshot(path);
     Logger.logInfo("presentation", "Opened: " + this.iModel.name);
     return this.iModel;
   }

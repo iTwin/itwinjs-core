@@ -11,6 +11,7 @@ import {
   TiledGraphicsProvider,
   TileTreeReference,
   Viewport,
+  SnapshotConnection,
 } from "@bentley/imodeljs-frontend";
 import { DisplayTestApp } from "./App";
 
@@ -111,7 +112,9 @@ export async function toggleExternalTiledGraphicsProvider(vp: Viewport): Promise
   if (undefined !== existing) {
     vp.dropTiledGraphicsProvider(existing);
     providersByViewport.delete(vp);
-    await existing.iModel.closeSnapshot();
+    if (existing.iModel instanceof SnapshotConnection) {
+      await existing.iModel.closeSnapshot();
+    }
     return;
   }
 
@@ -121,7 +124,7 @@ export async function toggleExternalTiledGraphicsProvider(vp: Viewport): Promise
 
   let iModel;
   try {
-    iModel = await IModelConnection.openSnapshot(filename);
+    iModel = await SnapshotConnection.openSnapshot(filename);
     const provider = await Provider.create(vp, iModel);
     providersByViewport.set(vp, provider);
     vp.addTiledGraphicsProvider(provider);

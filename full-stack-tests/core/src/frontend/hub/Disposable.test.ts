@@ -10,7 +10,6 @@ import {
   GraphicType,
   ImdlReader,
   IModelApp,
-  IModelConnection,
   PlanarClassifierMap,
   RenderMemory,
   RenderPlanarClassifier,
@@ -19,7 +18,8 @@ import {
   ScreenViewport,
   TextureDrapeMap,
   TileTreeReference,
-  } from "@bentley/imodeljs-frontend";
+  SnapshotConnection,
+} from "@bentley/imodeljs-frontend";
 import { ColorDef, ImageBuffer, ImageBufferFormat, RenderTexture, QPoint3dList, QParams3d, ColorByName } from "@bentley/imodeljs-common";
 import * as path from "path";
 import { MeshArgs } from "@bentley/imodeljs-frontend/lib/render-primitives";
@@ -31,8 +31,8 @@ import { TILE_DATA_1_1 } from "./TileIO.data.1.1";
 const iModelDir = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/");
 const iModelLocation = path.join(iModelDir, "test.bim");
 
-let imodel0: IModelConnection;
-let imodel1: IModelConnection;
+let imodel0: SnapshotConnection;
+let imodel1: SnapshotConnection;
 const itemsChecked: object[] = [];  // Private helper array for storing what objects have already been checked for disposal in isDisposed()
 
 /**
@@ -123,8 +123,8 @@ function disposedCheck(disposable: any, ignoredAttribs?: string[]): boolean {
         return false;
 
   } else if (disposable.dispose !== undefined) { // Low-level WebGL resource disposable
-    expect(typeof(disposable.dispose)).to.equal("function");
-    expect(typeof(disposable.isDisposed)).to.equal("boolean");
+    expect(typeof (disposable.dispose)).to.equal("function");
+    expect(typeof (disposable.isDisposed)).to.equal("boolean");
     return disposable.isDisposed;
   } else if (typeof disposable === "object") {  // High-level rendering object disposable
     for (const prop in disposable) {
@@ -144,7 +144,7 @@ function disposedCheck(disposable: any, ignoredAttribs?: string[]): boolean {
 describe("Disposal of System", () => {
   before(async () => {
     IModelApp.startup();
-    imodel0 = await IModelConnection.openSnapshot(iModelLocation);
+    imodel0 = await SnapshotConnection.openSnapshot(iModelLocation);
   });
 
   after(async () => {
@@ -190,8 +190,8 @@ describe("Disposal of WebGL Resources", () => {
   before(async () => {
     IModelApp.startup();
 
-    imodel0 = await IModelConnection.openSnapshot(iModelLocation);
-    imodel1 = await IModelConnection.openSnapshot(path.join(iModelDir, "testImodel.bim"));
+    imodel0 = await SnapshotConnection.openSnapshot(iModelLocation);
+    imodel1 = await SnapshotConnection.openSnapshot(path.join(iModelDir, "testImodel.bim"));
   });
 
   after(async () => {

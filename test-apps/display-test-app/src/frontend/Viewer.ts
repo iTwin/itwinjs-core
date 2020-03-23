@@ -15,6 +15,7 @@ import {
   Tool,
   Viewport,
   ViewState,
+  SnapshotConnection,
 } from "@bentley/imodeljs-frontend";
 import { MarkupApp } from "@bentley/imodeljs-markup";
 import { AnimationPanel } from "./AnimationPanel";
@@ -355,7 +356,9 @@ export class Viewer extends Window {
   }
 
   private async clearViews(): Promise<void> {
-    await this._imodel.closeSnapshot();
+    if (this._imodel instanceof SnapshotConnection) {
+      await this._imodel.closeSnapshot();
+    }
     this.views.clear();
   }
 
@@ -365,11 +368,11 @@ export class Viewer extends Window {
   }
 
   private async resetIModel(filename: string): Promise<void> {
-    let newIModel: IModelConnection;
+    let newIModel: SnapshotConnection;
     const sameFile = filename === this._imodel.iModelToken.key;
     if (!sameFile) {
       try {
-        newIModel = await IModelConnection.openSnapshot(filename);
+        newIModel = await SnapshotConnection.openSnapshot(filename);
       } catch (err) {
         alert(err.toString());
         return;
@@ -382,7 +385,7 @@ export class Viewer extends Window {
     await this.clearViews();
 
     if (sameFile)
-      newIModel = await IModelConnection.openSnapshot(filename);
+      newIModel = await SnapshotConnection.openSnapshot(filename);
 
     this._imodel = newIModel!;
     await this.buildViewList();
@@ -438,7 +441,9 @@ export class Viewer extends Window {
   public onClosed(): void {
     if (undefined === IModelApp.viewManager.selectedView) {
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Closing iModel..."));
-      this._imodel.closeSnapshot().then(() => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "iModel closed."))); // tslint:disable-line:no-floating-promises
+      if (this._imodel instanceof SnapshotConnection) {
+        this._imodel.closeSnapshot().then(() => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "iModel closed."))); // tslint:disable-line:no-floating-promises
+      }
     }
   }
 }

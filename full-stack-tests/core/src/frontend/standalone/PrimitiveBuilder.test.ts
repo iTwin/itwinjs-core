@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect, assert } from "chai";
-import { GraphicType, IModelApp, IModelConnection, SpatialViewState, StandardViewId, ScreenViewport } from "@bentley/imodeljs-frontend";
+import { GraphicType, IModelApp, SpatialViewState, StandardViewId, ScreenViewport, SnapshotConnection } from "@bentley/imodeljs-frontend";
 import * as path from "path";
 import {
   DisplayParams,
@@ -22,7 +22,7 @@ import { ColorDef, GraphicParams } from "@bentley/imodeljs-common";
 const iModelLocation = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/test.bim");
 
 describe("PrimitiveBuilder tests", () => {
-  let imodel: IModelConnection;
+  let imodel: SnapshotConnection;
   let spatialView: SpatialViewState;
 
   const viewDiv = document.createElement("div") as HTMLDivElement;
@@ -32,7 +32,7 @@ describe("PrimitiveBuilder tests", () => {
 
   before(async () => {   // Create a ViewState to load into a Viewport
     IModelApp.startup();
-    imodel = await IModelConnection.openSnapshot(iModelLocation);
+    imodel = await SnapshotConnection.openSnapshot(iModelLocation);
     spatialView = await imodel.views.load("0x34") as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
   });

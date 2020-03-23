@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { SnapshotConnection } from "@bentley/imodeljs-frontend";
+import { ChildNodeSpecificationTypes, Ruleset, RuleTypes } from "@bentley/presentation-common";
+import { Presentation, PresentationManager } from "@bentley/presentation-frontend";
 import { expect } from "chai";
 import { initialize, terminate } from "../IntegrationTests";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { Ruleset, RuleTypes, ChildNodeSpecificationTypes } from "@bentley/presentation-common";
-import { Presentation, PresentationManager } from "@bentley/presentation-frontend";
 
 const RULESET: Ruleset = {
   id: "localization test",
@@ -23,12 +23,12 @@ const RULESET: Ruleset = {
 
 describe("Localization", async () => {
 
-  let imodel: IModelConnection;
+  let imodel: SnapshotConnection;
 
   before(async () => {
     await initialize();
     const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
-    imodel = await IModelConnection.openSnapshot(testIModelName);
+    imodel = await SnapshotConnection.openSnapshot(testIModelName);
     expect(imodel).is.not.null;
   });
 

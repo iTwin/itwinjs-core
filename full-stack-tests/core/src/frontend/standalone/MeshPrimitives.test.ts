@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect, assert } from "chai";
-import { MockRender, IModelConnection, SpatialViewState, StandardViewId } from "@bentley/imodeljs-frontend";
-import { Range3d, Point3d, Point2d } from "@bentley/geometry-core";
-import * as path from "path";
+import { Point2d, Point3d, Range3d } from "@bentley/geometry-core";
+import { ColorDef, MeshPolyline, OctEncodedNormal, QPoint3d } from "@bentley/imodeljs-common";
+import { MockRender, SnapshotConnection, SpatialViewState, StandardViewId } from "@bentley/imodeljs-frontend";
 import { DisplayParams, Mesh, Triangle } from "@bentley/imodeljs-frontend/lib/render-primitives";
-import { MeshPolyline, QPoint3d, ColorDef, OctEncodedNormal } from "@bentley/imodeljs-common";
+import { assert, expect } from "chai";
+import * as path from "path";
 
 const iModelLocation = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/test.bim");
 
@@ -20,7 +20,7 @@ export class FakeDisplayParams extends DisplayParams {
  * tests all paths for each public method
  */
 describe("MeshPrimitive Tests", () => {
-  let imodel: IModelConnection;
+  let imodel: SnapshotConnection;
   let spatialView: SpatialViewState;
 
   const canvas = document.createElement("canvas") as HTMLCanvasElement;
@@ -30,7 +30,7 @@ describe("MeshPrimitive Tests", () => {
 
   before(async () => {   // Create a ViewState to load into a Viewport
     MockRender.App.startup();
-    imodel = await IModelConnection.openSnapshot(iModelLocation);
+    imodel = await SnapshotConnection.openSnapshot(iModelLocation);
     spatialView = await imodel.views.load("0x34") as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
   });

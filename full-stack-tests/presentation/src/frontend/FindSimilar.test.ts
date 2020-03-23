@@ -2,27 +2,24 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
 import { Id64String, using } from "@bentley/bentleyjs-core";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { PropertyRecord } from "@bentley/ui-abstract";
-import { KeySet, InstanceKey } from "@bentley/presentation-common";
-import {
-  PresentationPropertyDataProvider, IPresentationPropertyDataProvider,
-  DataProvidersFactory, IPresentationTableDataProvider,
-} from "@bentley/presentation-components";
-import { PropertyData, RowItem } from "@bentley/ui-components";
-import { initialize, terminate } from "../IntegrationTests";
+import { SnapshotConnection } from "@bentley/imodeljs-frontend";
+import { InstanceKey, KeySet } from "@bentley/presentation-common";
+import { DataProvidersFactory, IPresentationPropertyDataProvider, IPresentationTableDataProvider, PresentationPropertyDataProvider } from "@bentley/presentation-components";
 import { DEFAULT_PROPERTY_GRID_RULESET } from "@bentley/presentation-components/lib/presentation-components/propertygrid/DataProvider"; // tslint:disable-line: no-direct-imports
+import { PropertyRecord } from "@bentley/ui-abstract";
+import { PropertyData, RowItem } from "@bentley/ui-components";
+import { expect } from "chai";
+import { initialize, terminate } from "../IntegrationTests";
 
 describe("Find Similar", () => {
 
-  let imodel: IModelConnection;
+  let imodel: SnapshotConnection;
 
   before(async () => {
     await initialize();
     const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
-    imodel = await IModelConnection.openSnapshot(testIModelName);
+    imodel = await SnapshotConnection.openSnapshot(testIModelName);
     expect(imodel).is.not.null;
   });
 

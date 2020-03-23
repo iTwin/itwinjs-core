@@ -2,27 +2,19 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as path from "path";
-import { assert, expect } from "chai";
-import {
-  ElementAgenda,
-  HiliteSet,
-  IModelConnection,
-  MockRender,
-  ModifyElementSource,
-  SelectionSet,
-  SelectionSetEventType,
-} from "@bentley/imodeljs-frontend";
 import { Id64, Id64Arg } from "@bentley/bentleyjs-core";
+import { ElementAgenda, HiliteSet, MockRender, ModifyElementSource, SelectionSet, SelectionSetEventType, SnapshotConnection } from "@bentley/imodeljs-frontend";
+import { assert, expect } from "chai";
+import * as path from "path";
 
 const iModelLocation = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/test.bim");
 
 describe("Tools", () => {
-  let imodel: IModelConnection;
+  let imodel: SnapshotConnection;
 
   before(async () => {
     MockRender.App.startup();
-    imodel = await IModelConnection.openSnapshot(iModelLocation);
+    imodel = await SnapshotConnection.openSnapshot(iModelLocation);
   });
   after(async () => {
     if (imodel) await imodel.closeSnapshot();
@@ -164,13 +156,13 @@ describe("Tools", () => {
 });
 
 describe("HiliteSet", () => {
-  let imodel: IModelConnection;
+  let imodel: SnapshotConnection;
   let selected: SelectionSet;
   let hilited: HiliteSet;
 
   before(async () => {
     MockRender.App.startup();
-    imodel = await IModelConnection.openSnapshot(iModelLocation);
+    imodel = await SnapshotConnection.openSnapshot(iModelLocation);
     selected = imodel.selectionSet;
     hilited = imodel.hilited;
   });

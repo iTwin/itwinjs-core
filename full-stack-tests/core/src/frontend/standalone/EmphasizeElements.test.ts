@@ -2,15 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { IModelConnection, MockRender, ScreenViewport, SpatialViewState, StandardViewId, EmphasizeElements, FeatureOverrideType, FeatureSymbology } from "@bentley/imodeljs-frontend";
+import { ColorDef, Feature, LinePixels, RgbColor } from "@bentley/imodeljs-common";
+import { EmphasizeElements, FeatureOverrideType, FeatureSymbology, MockRender, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId } from "@bentley/imodeljs-frontend";
 import { assert, expect } from "chai";
 import * as path from "path";
-import { ColorDef, Feature, LinePixels, RgbColor } from "@bentley/imodeljs-common";
 
 const iModelDir = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets");
 
 describe("EmphasizeElements tests", () => {
-  let imodel: IModelConnection;
+  let imodel: SnapshotConnection;
   let spatialView: SpatialViewState;
 
   const viewDiv = document.createElement("div") as HTMLDivElement;
@@ -20,7 +20,7 @@ describe("EmphasizeElements tests", () => {
 
   before(async () => {
     MockRender.App.startup();
-    imodel = await IModelConnection.openSnapshot(path.join(iModelDir, "test.bim"));
+    imodel = await SnapshotConnection.openSnapshot(path.join(iModelDir, "test.bim"));
     spatialView = await imodel.views.load("0x34") as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
   });

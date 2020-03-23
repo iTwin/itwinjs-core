@@ -2,13 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-
-import { expect, assert } from "chai";
-import { FeatureOverrides, Target } from "@bentley/imodeljs-frontend/lib/webgl";
-import { HiliteSet, IModelApp, ScreenViewport, IModelConnection, SpatialViewState, StandardViewId } from "@bentley/imodeljs-frontend";
-import * as path from "path";
-import { GeometryClass, Feature, FeatureTable, PackedFeatureTable } from "@bentley/imodeljs-common";
 import { Id64 } from "@bentley/bentleyjs-core";
+import { Feature, FeatureTable, GeometryClass, PackedFeatureTable } from "@bentley/imodeljs-common";
+import { HiliteSet, IModelApp, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId } from "@bentley/imodeljs-frontend";
+import { FeatureOverrides, Target } from "@bentley/imodeljs-frontend/lib/webgl";
+import { assert, expect } from "chai";
+import * as path from "path";
 
 const iModelLocation = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/test.bim");
 
@@ -21,7 +20,7 @@ function waitUntilTimeHasPassed() {
 }
 
 describe("FeatureOverrides tests", () => {
-  let imodel: IModelConnection;
+  let imodel: SnapshotConnection;
   let spatialView: SpatialViewState;
   let vp: ScreenViewport;
 
@@ -32,7 +31,7 @@ describe("FeatureOverrides tests", () => {
 
   before(async () => {   // Create a ViewState to load into a Viewport
     IModelApp.startup();
-    imodel = await IModelConnection.openSnapshot(iModelLocation);
+    imodel = await SnapshotConnection.openSnapshot(iModelLocation);
     spatialView = await imodel.views.load("0x34") as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
   });

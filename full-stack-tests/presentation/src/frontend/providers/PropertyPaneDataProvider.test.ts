@@ -2,17 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
 import { ModelProps } from "@bentley/imodeljs-common";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { SnapshotConnection } from "@bentley/imodeljs-frontend";
 import { KeySet } from "@bentley/presentation-common";
 import { PresentationPropertyDataProvider } from "@bentley/presentation-components";
-import { initialize, terminate } from "../../IntegrationTests";
 import { DEFAULT_PROPERTY_GRID_RULESET } from "@bentley/presentation-components/lib/presentation-components/propertygrid/DataProvider"; // tslint:disable-line: no-direct-imports
+import { expect } from "chai";
+import { initialize, terminate } from "../../IntegrationTests";
 
 describe("PropertyDataProvider", async () => {
 
-  let imodel: IModelConnection;
+  let imodel: SnapshotConnection;
   let provider: PresentationPropertyDataProvider;
   let physicalModelProps: ModelProps;
 
@@ -20,7 +20,7 @@ describe("PropertyDataProvider", async () => {
     await initialize();
 
     const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
-    imodel = await IModelConnection.openSnapshot(testIModelName);
+    imodel = await SnapshotConnection.openSnapshot(testIModelName);
     physicalModelProps = (await imodel.models.queryProps({ from: "bis.PhysicalModel" }))[0];
     provider = new PresentationPropertyDataProvider({ imodel, ruleset: DEFAULT_PROPERTY_GRID_RULESET });
   });

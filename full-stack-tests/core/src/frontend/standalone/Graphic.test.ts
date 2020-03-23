@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
-import * as path from "path";
 import { Point3d, Range3d } from "@bentley/geometry-core";
 import { ColorByName, QParams3d, QPoint3dList } from "@bentley/imodeljs-common";
-import { IModelConnection, IModelApp, RenderGraphic, RenderMemory } from "@bentley/imodeljs-frontend";
+import { IModelApp, RenderGraphic, RenderMemory, SnapshotConnection } from "@bentley/imodeljs-frontend";
 import { MeshArgs } from "@bentley/imodeljs-frontend/lib/render-primitives";
+import { expect } from "chai";
+import * as path from "path";
 
 export class FakeGraphic extends RenderGraphic {
   public dispose(): void { }
@@ -17,10 +17,10 @@ export class FakeGraphic extends RenderGraphic {
 const iModelLocation = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/test.bim");
 
 describe("createTriMesh", () => {
-  let imodel: IModelConnection;
+  let imodel: SnapshotConnection;
   before(async () => {
     IModelApp.startup();
-    imodel = await IModelConnection.openSnapshot(iModelLocation);
+    imodel = await SnapshotConnection.openSnapshot(iModelLocation);
   });
 
   after(async () => {

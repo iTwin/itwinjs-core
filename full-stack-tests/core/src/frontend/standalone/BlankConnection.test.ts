@@ -2,12 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import {
-  IModelConnection, MockRender, SpatialViewState, ScreenViewport,
-} from "@bentley/imodeljs-frontend";
-import { assert } from "chai";
+import { Point3d, Range3d, Vector3d } from "@bentley/geometry-core";
 import { Cartographic } from "@bentley/imodeljs-common";
-import { Range3d, Point3d, Vector3d } from "@bentley/geometry-core";
+import { BlankConnection, MockRender, ScreenViewport, SpatialViewState } from "@bentley/imodeljs-frontend";
+import { assert } from "chai";
 
 function createViewDiv() {
   const div = document.createElement("div");
@@ -18,13 +16,13 @@ function createViewDiv() {
 }
 
 describe("Blank Connection", () => {
-  let connection: IModelConnection;
+  let connection: BlankConnection;
   const viewDiv = createViewDiv();
 
   before(async () => {
     MockRender.App.startup();
     const exton = Cartographic.fromDegrees(-75.686694, 40.065757, 0);
-    connection = IModelConnection.createBlank({
+    connection = BlankConnection.create({
       name: "test",
       location: exton,
       extents: new Range3d(-1000, -1000, -100, 1000, 1000, 100),

@@ -4,7 +4,7 @@ A *Blank* IModelConnection is an [IModelConnection]($frontend) that is **not** c
 
 ## Background
 
-Much of the iModel.js frontend package is designed to communicate with a backend serving an iModel through an [IModelConnection]($frontend) via various RPC interfaces (e.g. [IModelReadRpcInterface]($common)). However, there are some cases where it is useful create Viewports *without* an iModel. The [IModelConnection.createBlank]($frontend) method can be used to create a valid `IModelConnection` that is *not* connected to a backend.
+Much of the iModel.js frontend package is designed to communicate with a backend serving an iModel through an [IModelConnection]($frontend) via various RPC interfaces (e.g. [IModelReadRpcInterface]($common)). However, there are some cases where it is useful create Viewports *without* an iModel. The [BlankConnection.create]($frontend) method can be used to create a valid `IModelConnection` that is *not* actually associated with an iModel.
 
 ## Uses
 

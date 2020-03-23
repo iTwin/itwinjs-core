@@ -20,7 +20,6 @@ import {
   CategorySelectorState,
   DisplayStyle3dState,
   DrawingModelState,
-  IModelConnection,
   MarginPercent,
   MockRender,
   ModelSelectorState,
@@ -31,6 +30,7 @@ import {
   StandardViewId,
   ViewState3d,
   ViewStatus,
+  SnapshotConnection,
 } from "@bentley/imodeljs-frontend";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
 
@@ -38,19 +38,19 @@ const iModelLocation = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backe
 const iModelLocation2 = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/CompatibilityTestSeed.bim");
 
 describe("ViewState", () => {
-  let imodel: IModelConnection;
-  let imodel2: IModelConnection;
+  let imodel: SnapshotConnection;
+  let imodel2: SnapshotConnection;
   let viewState: SpatialViewState;
   let unitTestRpcImp: TestRpcInterface;
 
   before(async () => {
     MockRender.App.startup();
-    imodel = await IModelConnection.openSnapshot(iModelLocation);
+    imodel = await SnapshotConnection.openSnapshot(iModelLocation);
     const viewRows: ViewDefinitionProps[] = await imodel.views.queryProps({ from: SpatialViewState.classFullName });
     assert.exists(viewRows, "Should find some views");
     viewState = await imodel.views.load(viewRows[0].id!) as SpatialViewState;
 
-    imodel2 = await IModelConnection.openSnapshot(iModelLocation2);
+    imodel2 = await SnapshotConnection.openSnapshot(iModelLocation2);
 
     unitTestRpcImp = TestRpcInterface.getClient();
   });

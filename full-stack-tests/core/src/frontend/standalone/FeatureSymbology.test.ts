@@ -2,13 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
-// import { Point3d, Vector3d, YawPitchRollAngles, Range3d, Angle, Matrix3d } from "@bentley/geometry-core";
-import { ViewDefinitionProps, GeometryClass, Feature, RgbColor, LinePixels, ViewFlags } from "@bentley/imodeljs-common";
-import * as path from "path";
-// import { DeepCompare } from "@bentley/geometry-core";
 import { Id64 } from "@bentley/bentleyjs-core";
-import { ViewState, SpatialViewState, IModelConnection, FeatureSymbology, IModelApp } from "@bentley/imodeljs-frontend";
+import { Feature, GeometryClass, LinePixels, RgbColor, ViewDefinitionProps, ViewFlags } from "@bentley/imodeljs-common";
+import { FeatureSymbology, IModelApp, SnapshotConnection, SpatialViewState, ViewState } from "@bentley/imodeljs-frontend";
+import { assert, expect } from "chai";
+import * as path from "path";
 
 const iModelLocation = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/test.bim");
 
@@ -24,12 +22,12 @@ class Overrides extends FeatureSymbology.Overrides {
 }
 
 describe("FeatureSymbology.Overrides", () => {
-  let imodel: IModelConnection,
+  let imodel: SnapshotConnection,
     viewState: SpatialViewState;
 
   before(async () => {
     IModelApp.startup();
-    imodel = await IModelConnection.openSnapshot(iModelLocation);
+    imodel = await SnapshotConnection.openSnapshot(iModelLocation);
     const viewRows: ViewDefinitionProps[] = await imodel.views.queryProps({ from: SpatialViewState.classFullName });
     assert.exists(viewRows, "Should find some views");
     viewState = await imodel.views.load(viewRows[0].id!) as SpatialViewState;
