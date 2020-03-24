@@ -33,6 +33,7 @@ export namespace Events {
   export namespace NativeApp {
     export const namespace = "NativeApp";
     export const onMemoryWarning = "onMemoryWarning";
+    export const onBriefcaseDownloadProgress = "download-progress";
     export const onInternetConnectivityChanged = "onInternetConnectivityChanged";
   }
 }
@@ -42,8 +43,6 @@ export namespace Events {
  * @internal
  */
 export interface BriefcaseProps extends IModelTokenProps {
-  downloading?: boolean;
-  isOpen?: boolean;
   fileSize?: number;
 }
 
@@ -127,9 +126,10 @@ export abstract class NativeAppRpcInterface extends RpcInterface {
   /**
    * Starts download of a briefcase. The call require internet connection and must have valid token.
    * @param _iModelToken IModel context information.
+   * @param _reportProgress Report progress to frontend
    * @returns IModelTokenProps which allow to create IModelConnection.
    */
-  public async startDownloadBriefcase(_iModelToken: IModelTokenProps): Promise<IModelTokenProps> { return this.forward(arguments); }
+  public async startDownloadBriefcase(_iModelToken: IModelTokenProps, _reportProgress: boolean): Promise<IModelTokenProps> { return this.forward(arguments); }
 
   /**
    * Finishes download of a briefcase. The call require internet connection and must have valid token.

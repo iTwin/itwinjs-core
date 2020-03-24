@@ -11,6 +11,7 @@ import { EventSinkManager, EmitStrategy } from "./EventSink";
 import * as path from "path";
 import * as os from "os";
 import { IModelJsFs } from "./IModelJsFs";
+import { RequestGlobalOptions } from "@bentley/imodeljs-clients";
 
 /**
  * Used by desktop/mobile native application
@@ -106,6 +107,7 @@ export class NativeAppBackend {
   public static overrideInternetConnectivity(_overridenBy: OverriddenBy, status?: InternetConnectivityStatus): void {
     if (this._reachability !== status) {
       this._reachability = status;
+      RequestGlobalOptions.online = this._reachability === InternetConnectivityStatus.Online;
       this.onInternetConnectivityChanged.raiseEvent();
     }
   }

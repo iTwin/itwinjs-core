@@ -686,7 +686,6 @@ export class BriefcaseManager {
         iModelId: briefcase.iModelId,
         changeSetId: briefcase.currentChangeSetId,
         openMode: briefcase.openParams.openMode,
-        isOpen: briefcase.isOpen,
         fileSize: fz,
       });
     }

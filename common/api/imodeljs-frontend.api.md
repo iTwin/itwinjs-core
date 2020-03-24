@@ -166,6 +166,7 @@ import { PolylineData } from '@bentley/imodeljs-common';
 import { PolylineEdgeArgs } from '@bentley/imodeljs-common';
 import { PolylineFlags } from '@bentley/imodeljs-common';
 import { PolylineTypeFlags } from '@bentley/imodeljs-common';
+import { ProgressCallback } from '@bentley/imodeljs-clients';
 import { PropertyDescription } from '@bentley/ui-abstract';
 import { QParams2d } from '@bentley/imodeljs-common';
 import { QParams3d } from '@bentley/imodeljs-common';
@@ -2098,6 +2099,15 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     set viewFlags(flags: ViewFlags);
     // @internal (undocumented)
     get wantShadows(): boolean;
+}
+
+// @internal
+export class DownloadBriefcaseToken {
+    constructor(iModelToken: IModelToken, stopProgressEvents: () => void);
+    // (undocumented)
+    iModelToken: IModelToken;
+    // (undocumented)
+    stopProgressEvents: () => void;
 }
 
 // @alpha
@@ -5308,7 +5318,7 @@ export enum ModifyElementSource {
 // @internal
 export class NativeApp {
     // (undocumented)
-    static cancelDownloadBriefcase(requestContext: AuthorizedClientRequestContext, iModelToken: IModelTokenProps): Promise<boolean>;
+    static cancelDownloadBriefcase(requestContext: AuthorizedClientRequestContext, downloadBriefcaseToken: DownloadBriefcaseToken): Promise<boolean>;
     // (undocumented)
     static checkInternetConnectivity(): Promise<InternetConnectivityStatus>;
     static closeStorage(storage: Storage, deleteId: boolean): Promise<void>;
@@ -5317,7 +5327,7 @@ export class NativeApp {
     // (undocumented)
     static downloadBriefcase(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: string, version?: IModelVersion): Promise<IModelTokenProps>;
     // (undocumented)
-    static finishDownloadBriefcase(requestContext: AuthorizedClientRequestContext, iModelToken: IModelTokenProps): Promise<void>;
+    static finishDownloadBriefcase(requestContext: AuthorizedClientRequestContext, downloadBriefcaseToken: DownloadBriefcaseToken): Promise<void>;
     static getBriefcases(): Promise<BriefcaseProps[]>;
     static getStorageNames(): Promise<string[]>;
     // (undocumented)
@@ -5328,11 +5338,11 @@ export class NativeApp {
     static openBriefcase(requestContext: AuthorizedClientRequestContext, iModelToken: IModelTokenProps): Promise<IModelConnection>;
     static openStorage(name: string): Promise<Storage>;
     // (undocumented)
-    static overrideInternetConnectivity(status?: InternetConnectivityStatus): Promise<void>;
+    static overrideInternetConnectivity(status: InternetConnectivityStatus): Promise<void>;
     // (undocumented)
     static shutdown(): Promise<void>;
     // (undocumented)
-    static startDownloadBriefcase(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: string, version?: IModelVersion): Promise<IModelTokenProps>;
+    static startDownloadBriefcase(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: string, version?: IModelVersion, progress?: ProgressCallback): Promise<DownloadBriefcaseToken>;
     // (undocumented)
     static startup(opts?: IModelAppOptions): Promise<void>;
     }

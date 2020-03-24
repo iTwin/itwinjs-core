@@ -49,7 +49,7 @@ export class MobileRpcProtocol extends RpcProtocol {
   public socket: WebSocket = (undefined as any);
   public requests: Map<string, MobileRpcRequest> = new Map();
   private _pending: MobileRpcChunks[] = [];
-  private _capacity: number = 1;
+  private _capacity: number = Number.MAX_SAFE_INTEGER;
   private _sendInterval: number | undefined = undefined;
   private _sendIntervalHandler = () => this.trySend();
   public readonly requestType = MobileRpcRequest;

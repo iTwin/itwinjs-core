@@ -22,12 +22,13 @@ import {
   BriefcaseProps,
   StorageValue,
   IModelError,
+  Events,
 } from "@bentley/imodeljs-common";
-import { EventSinkManager } from "../EventSink";
+import { EventSinkManager, EmitStrategy } from "../EventSink";
 import { cancelTileContentRequests } from "./IModelTileRpcImpl";
 import { NativeAppBackend } from "../NativeAppBackend";
-import { Config, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
-import { Logger, LogLevel, ClientRequestContext, DbResult, assert } from "@bentley/bentleyjs-core";
+import { Config, AuthorizedClientRequestContext, ProgressInfo } from "@bentley/imodeljs-clients";
+import { Logger, LogLevel, ClientRequestContext, DbResult } from "@bentley/bentleyjs-core";
 import { BriefcaseDb, OpenParams } from "../IModelDb";
 import { BriefcaseManager, KeepBriefcase } from "../BriefcaseManager";
 import { NativeAppStorage } from "../NativeAppStorage";
@@ -119,13 +120,20 @@ export class NativeAppRpcImpl extends RpcInterface implements NativeAppRpcInterf
    * @returns briefcase id of the briefcase that is downloaded.
    * @note this api can be call only in connected mode where internet is available.
    */
-  public async startDownloadBriefcase(tokenProps: IModelTokenProps): Promise<IModelTokenProps> {
+  public async startDownloadBriefcase(tokenProps: IModelTokenProps, reportProgress: boolean): Promise<IModelTokenProps> {
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
 
     BriefcaseManager.initializeBriefcaseCacheFromDisk();
-
     const iModelToken = IModelToken.fromJSON(tokenProps);
     const openParams: OpenParams = OpenParams.pullOnly();
+    if (reportProgress) {
+      openParams.downloadProgress = (progress: ProgressInfo) => {
+        EventSinkManager.global.emit(
+          Events.NativeApp.namespace,
+          Events.NativeApp.onBriefcaseDownloadProgress + "-" + tokenProps.iModelId,
+          { progress }, { strategy: EmitStrategy.PurgeOlderEvents });
+      };
+    }
     const iModelVersion = IModelVersion.asOfChangeSet(iModelToken.changeSetId!);
     const db = await BriefcaseDb.startDownloadBriefcase(requestContext, iModelToken.contextId!, iModelToken.iModelId!, openParams, iModelVersion);
     return db.toJSON();
@@ -171,7 +179,7 @@ export class NativeAppRpcImpl extends RpcInterface implements NativeAppRpcInterf
       if (briefcases.length === 0) {
         throw new IModelError(DbResult.BE_SQLITE_ERROR_FileNotFound, "Briefcase not found with requested iModelId/changesetId/openMode");
       }
-      assert(briefcases.length === 1);
+
       Object.assign(iModelToken, { key: briefcases[0].key });
     }
     const db = await BriefcaseDb.openBriefcase(requestContext, iModelToken);

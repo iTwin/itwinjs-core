@@ -55,7 +55,7 @@ export class IOSAzureFileHandler implements FileHandler {
     // (undocumented)
     agent: any;
     basename(filePath: string): string;
-    downloadFile(requestContext: AuthorizedClientRequestContext, downloadUrl: string, downloadToPathname: string): Promise<void>;
+    downloadFile(requestContext: AuthorizedClientRequestContext, downloadUrl: string, downloadToPathname: string, _fileSize?: number, progressCallback?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void>;
     exists(filePath: string): boolean;
     getFileSize(filePath: string): number;
     isDirectory(filePath: string): boolean;

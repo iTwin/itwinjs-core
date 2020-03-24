@@ -139,6 +139,8 @@ export class RequestGlobalOptions {
     deadline: 25000,
     response: 10000,
   };
+  // Assume application is online or offline. This hint skip retry/timeout
+  public static online: boolean = true;
 }
 
 /** Error object that's thrown/rejected if the Request fails due to a network error, or if the status is *not* in the range of 200-299 (inclusive)
@@ -277,8 +279,14 @@ export async function request(requestContext: ClientRequestContext, url: string,
   } else {
     proxyUrl = url;
   }
+
+  if (!RequestGlobalOptions.online) {
+    throw new ResponseError(503, "Service unavailable");
+  }
+
+  let sareq: sarequest.SuperAgentRequest = sarequest(options.method, proxyUrl);
   const retries = typeof options.retries === "undefined" ? RequestGlobalOptions.maxRetries : options.retries;
-  let sareq: sarequest.SuperAgentRequest = sarequest(options.method, proxyUrl).retry(retries, options.retryCallback);
+  sareq = sareq.retry(retries, options.retryCallback);
 
   if (Logger.isEnabled(loggerCategory, LogLevel.Trace))
     sareq = sareq.use(logRequest);

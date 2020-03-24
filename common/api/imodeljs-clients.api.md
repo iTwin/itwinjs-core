@@ -1611,6 +1611,8 @@ export class RequestGlobalOptions {
     // (undocumented)
     static maxRetries: number;
     // (undocumented)
+    static online: boolean;
+    // (undocumented)
     static timeout: RequestTimeoutOptions;
 }
 

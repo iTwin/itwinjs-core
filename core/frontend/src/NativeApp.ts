@@ -6,10 +6,18 @@
 import { BeEvent, IModelStatus, BentleyStatus, OpenMode } from "@bentley/bentleyjs-core";
 import { NativeAppRpcInterface, InternetConnectivityStatus, OverriddenBy, Events, RpcRegistry, IModelError, IModelVersion, IModelToken, IModelTokenProps, BriefcaseProps, StorageValue } from "@bentley/imodeljs-common";
 import { EventSourceManager } from "./EventSource";
-import { Config, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { Config, ProgressInfo, ProgressCallback, AuthorizedClientRequestContext, RequestGlobalOptions } from "@bentley/imodeljs-clients";
 import { IModelApp, IModelAppOptions } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { NativeAppLogger } from "./NativeAppLogger";
+/**
+ * Return by startDownloadBriefcase() and can be use with finishDownloadBriefcase() or cancelDownloadBriefcase().
+ * @internal
+ */
+export class DownloadBriefcaseToken {
+  constructor(public iModelToken: IModelToken, public stopProgressEvents: () => void) {
+  }
+}
 /**
  * This should be called instead of IModelApp.startup() for native apps.
  * @internal
@@ -17,10 +25,14 @@ import { NativeAppLogger } from "./NativeAppLogger";
 export class NativeApp {
   private static _storages = new Map<string, Storage>();
   private static _onOnline = async () => {
-    await NativeAppRpcInterface.getClient().overrideInternetConnectivity(OverriddenBy.Browser, InternetConnectivityStatus.Online);
+    await NativeApp.setConnectivity(OverriddenBy.Browser, InternetConnectivityStatus.Online);
   }
   private static _onOffline = async () => {
-    await NativeAppRpcInterface.getClient().overrideInternetConnectivity(OverriddenBy.Browser, InternetConnectivityStatus.Offline);
+    await NativeApp.setConnectivity(OverriddenBy.Browser, InternetConnectivityStatus.Offline);
+  }
+  private static async setConnectivity(by: OverriddenBy, status: InternetConnectivityStatus) {
+    RequestGlobalOptions.online = (status === InternetConnectivityStatus.Online);
+    await NativeAppRpcInterface.getClient().overrideInternetConnectivity(by, status);
   }
   private constructor() {
     EventSourceManager.global.on(Events.NativeApp.namespace, Events.NativeApp.onMemoryWarning, () => { NativeApp.onMemoryWarning.raiseEvent(); });
@@ -40,15 +52,12 @@ export class NativeApp {
   }
   public static onInternetConnectivityChanged: BeEvent<(status: InternetConnectivityStatus) => void> = new BeEvent<(status: InternetConnectivityStatus) => void>();
   public static onMemoryWarning: BeEvent<() => void> = new BeEvent<() => void>();
-
   public static async checkInternetConnectivity(): Promise<InternetConnectivityStatus> {
     return NativeAppRpcInterface.getClient().checkInternetConnectivity();
   }
-
-  public static async overrideInternetConnectivity(status?: InternetConnectivityStatus): Promise<void> {
-    return NativeAppRpcInterface.getClient().overrideInternetConnectivity(OverriddenBy.User, status);
+  public static async overrideInternetConnectivity(status: InternetConnectivityStatus): Promise<void> {
+    return NativeApp.setConnectivity(OverriddenBy.User, status);
   }
-
   public static async startup(opts?: IModelAppOptions) {
     if (!RpcRegistry.instance.isRpcInterfaceInitialized(NativeAppRpcInterface)) {
       throw new IModelError(IModelStatus.BadArg, "NativeAppRpcInterface must be registered");
@@ -60,7 +69,8 @@ export class NativeApp {
     NativeApp.hookBrowserConnectivityEvents();
     // initialize current state.
     if (typeof window === "object" && typeof window.navigator === "object" && window.navigator.onLine) {
-      await NativeAppRpcInterface.getClient().overrideInternetConnectivity(OverriddenBy.Browser, window.navigator.onLine ? InternetConnectivityStatus.Online : InternetConnectivityStatus.Offline);
+      RequestGlobalOptions.online = window.navigator.onLine;
+      await NativeApp.setConnectivity(OverriddenBy.Browser, window.navigator.onLine ? InternetConnectivityStatus.Online : InternetConnectivityStatus.Offline);
     }
   }
 
@@ -86,7 +96,7 @@ export class NativeApp {
     return retIModelToken;
   }
 
-  public static async startDownloadBriefcase(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: string, version: IModelVersion = IModelVersion.latest()): Promise<IModelTokenProps> {
+  public static async startDownloadBriefcase(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: string, version: IModelVersion = IModelVersion.latest(), progress?: ProgressCallback): Promise<DownloadBriefcaseToken> {
     requestContext.enter();
     if (!IModelApp.initialized)
       throw new IModelError(BentleyStatus.ERROR, "Call NativeApp.startup() before calling startDownloadBriefcase");
@@ -96,25 +106,40 @@ export class NativeApp {
 
     const iModelToken = new IModelToken(undefined, contextId, iModelId, changeSetId);
     requestContext.useContextForRpc = true;
-    const retIModelToken = await NativeAppRpcInterface.getClient().startDownloadBriefcase(iModelToken.toJSON());
-    return retIModelToken;
+    let stopProgressEvents = () => { };
+    const reportProgress = typeof progress !== undefined;
+    if (reportProgress) {
+      stopProgressEvents = EventSourceManager.global.on(
+        Events.NativeApp.namespace,
+        Events.NativeApp.onBriefcaseDownloadProgress + "-" + iModelId, (data: any) => {
+          progress!(data.progress as ProgressInfo);
+        }).off;
+    }
+    const iModelTokenProps = await NativeAppRpcInterface.getClient().startDownloadBriefcase(iModelToken.toJSON(), reportProgress);
+    return new DownloadBriefcaseToken(IModelToken.fromJSON(iModelTokenProps), stopProgressEvents);
   }
-
-  public static async finishDownloadBriefcase(requestContext: AuthorizedClientRequestContext, iModelToken: IModelTokenProps): Promise<void> {
+  public static async finishDownloadBriefcase(requestContext: AuthorizedClientRequestContext, downloadBriefcaseToken: DownloadBriefcaseToken): Promise<void> {
     requestContext.enter();
     if (!IModelApp.initialized)
       throw new IModelError(BentleyStatus.ERROR, "Call NativeApp.startDownloadBriefcase first");
-    requestContext.useContextForRpc = true;
-    await NativeAppRpcInterface.getClient().finishDownloadBriefcase(iModelToken);
+    try {
+      requestContext.useContextForRpc = true;
+      await NativeAppRpcInterface.getClient().finishDownloadBriefcase(downloadBriefcaseToken.iModelToken.toJSON());
+    } finally {
+      downloadBriefcaseToken.stopProgressEvents();
+    }
   }
 
-  public static async cancelDownloadBriefcase(requestContext: AuthorizedClientRequestContext, iModelToken: IModelTokenProps): Promise<boolean> {
+  public static async cancelDownloadBriefcase(requestContext: AuthorizedClientRequestContext, downloadBriefcaseToken: DownloadBriefcaseToken): Promise<boolean> {
     requestContext.enter();
     if (!IModelApp.initialized)
       throw new IModelError(BentleyStatus.ERROR, "Call NativeApp.startDownloadBriefcase first");
-    requestContext.useContextForRpc = true;
-    const status = await NativeAppRpcInterface.getClient().cancelDownloadBriefcase(iModelToken);
-    return status;
+    try {
+      requestContext.useContextForRpc = true;
+      return await NativeAppRpcInterface.getClient().cancelDownloadBriefcase(downloadBriefcaseToken.iModelToken.toJSON());
+    } finally {
+      downloadBriefcaseToken.stopProgressEvents();
+    }
   }
 
   public static async deleteBriefcase(requestContext: AuthorizedClientRequestContext, iModelToken: IModelTokenProps): Promise<void> {

@@ -519,11 +519,7 @@ export interface BRepPrimitive {
 // @internal
 export interface BriefcaseProps extends IModelTokenProps {
     // (undocumented)
-    downloading?: boolean;
-    // (undocumented)
     fileSize?: number;
-    // (undocumented)
-    isOpen?: boolean;
 }
 
 export { BriefcaseStatus }
@@ -1838,6 +1834,8 @@ export namespace Events {
         namespace = "NativeApp";
         const // (undocumented)
         onMemoryWarning = "onMemoryWarning";
+        const // (undocumented)
+        onBriefcaseDownloadProgress = "download-progress";
         const // (undocumented)
         onInternetConnectivityChanged = "onInternetConnectivityChanged";
     }
@@ -3724,7 +3722,7 @@ export abstract class NativeAppRpcInterface extends RpcInterface {
     log(_timestamp: number, _level: LogLevel, _category: string, _message: string, _metaData?: any): Promise<void>;
     openBriefcase(_iModelToken: IModelTokenProps): Promise<IModelProps>;
     overrideInternetConnectivity(_overriddenBy: OverriddenBy, _status?: InternetConnectivityStatus): Promise<void>;
-    startDownloadBriefcase(_iModelToken: IModelTokenProps): Promise<IModelTokenProps>;
+    startDownloadBriefcase(_iModelToken: IModelTokenProps, _reportProgress: boolean): Promise<IModelTokenProps>;
     // (undocumented)
     storageGet(_storageId: string, _key: string): Promise<StorageValue | undefined>;
     // (undocumented)
