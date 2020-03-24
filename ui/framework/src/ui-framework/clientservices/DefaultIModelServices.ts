@@ -6,20 +6,14 @@
  * @module ClientServices
  */
 
-import {
-  IModelHubClient, HubIModel, Version,
-  HubUserInfo, ChangeSet, UserInfoQuery, IModelQuery,
-  ChangeSetQuery, VersionQuery,
-} from "@bentley/imodeljs-clients";
-import { OpenMode, GuidString, Logger } from "@bentley/bentleyjs-core";
-import { IModelConnection, AuthorizedFrontendRequestContext } from "@bentley/imodeljs-frontend";
-
+import { GuidString, Logger, OpenMode } from "@bentley/bentleyjs-core";
+import { ChangeSet, ChangeSetQuery, HubIModel, HubUserInfo, IModelHubClient, IModelQuery, UserInfoQuery, Version, VersionQuery } from "@bentley/imodeljs-clients";
 // import GatewayProxyApi from "./gatewayProxy";
 import { IModelVersion } from "@bentley/imodeljs-common";
-
-import { ProjectInfo } from "./ProjectServices";
-import { IModelInfo, IModelServices, VersionInfo, ChangeSetInfo, IModelUserInfo } from "./IModelServices";
+import { AuthorizedFrontendRequestContext, BriefcaseConnection, IModelConnection } from "@bentley/imodeljs-frontend";
 import { UiFramework } from "../UiFramework";
+import { ChangeSetInfo, IModelInfo, IModelServices, IModelUserInfo, VersionInfo } from "./IModelServices";
+import { ProjectInfo } from "./ProjectServices";
 
 // istanbul ignore next
 class IModelInfoImpl implements IModelInfo {
@@ -88,7 +82,7 @@ export class DefaultIModelServices implements IModelServices {
   public async openIModel(contextId: string, iModelId: GuidString, openMode?: OpenMode, changeSetId?: string): Promise<IModelConnection> {
     try {
       // GatewayProxyApi.setAccessToken(accessToken);
-      const iModelConnection: IModelConnection = await IModelConnection.open(contextId, iModelId, openMode ? openMode : OpenMode.Readonly, changeSetId ? IModelVersion.asOfChangeSet(changeSetId) : IModelVersion.latest());
+      const iModelConnection: IModelConnection = await BriefcaseConnection.open(contextId, iModelId, openMode ? openMode : OpenMode.Readonly, changeSetId ? IModelVersion.asOfChangeSet(changeSetId) : IModelVersion.latest());
       return iModelConnection;
     } catch (e) {
       alert(JSON.stringify(e));

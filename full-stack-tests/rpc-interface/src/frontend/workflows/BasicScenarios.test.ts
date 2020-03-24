@@ -3,17 +3,16 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
+import { OpenMode } from "@bentley/bentleyjs-core";
+import { BriefcaseConnection, IModelApp } from "@bentley/imodeljs-frontend";
 import * as chai from "chai";
+import * as chaiAsPromised from "chai-as-promised";
+import { AuthorizationClient } from "../setup/AuthorizationClient";
+import { TestContext } from "../setup/TestContext";
+
 const expect = chai.expect;
 
-import * as chaiAsPromised from "chai-as-promised";
 chai.use(chaiAsPromised);
-
-import { OpenMode } from "@bentley/bentleyjs-core";
-import { IModelConnection, IModelApp } from "@bentley/imodeljs-frontend";
-
-import { TestContext } from "../setup/TestContext";
-import { AuthorizationClient } from "../setup/AuthorizationClient";
 
 describe("Basic Scenarios", async () => {
   let testContext: TestContext;
@@ -24,8 +23,8 @@ describe("Basic Scenarios", async () => {
     (IModelApp.authorizationClient as AuthorizationClient).setAccessToken(accessToken);
   });
 
-  async function openIModelAndqueryPage(contextId: string, iModelId: string, openMode: OpenMode) {
-    const iModel = await IModelConnection.open(contextId, iModelId, openMode);
+  async function openIModelAndQueryPage(contextId: string, iModelId: string, openMode: OpenMode) {
+    const iModel = await BriefcaseConnection.open(contextId, iModelId, openMode);
     expect(iModel).to.exist;
     expect(iModel.elements).to.exist;
 
@@ -40,7 +39,7 @@ describe("Basic Scenarios", async () => {
     const openMode = OpenMode.Readonly;
 
     const iModelId = testContext.iModelWithChangesets!.iModelId;
-    await openIModelAndqueryPage(contextId!, iModelId, openMode);
+    await openIModelAndQueryPage(contextId!, iModelId, openMode);
   });
 
   // imodeljs does not allow this -- changesetid must be non-empty for routing purposes.
@@ -49,7 +48,7 @@ describe("Basic Scenarios", async () => {
     const openMode = OpenMode.Readonly;
 
     const iModelId = testContext.iModelWithChangesets!.iModelId;
-    await openIModelAndqueryPage(contextId!, iModelId, openMode);
+    await openIModelAndQueryPage(contextId!, iModelId, openMode);
   });
 
   it("should open iModel and Execute Query TestCase:819343", async () => {

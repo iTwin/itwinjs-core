@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { Id64 } from "@bentley/bentleyjs-core";
 import { Feature, GeometryClass, LinePixels, RgbColor, ViewDefinitionProps, ViewFlags } from "@bentley/imodeljs-common";
-import { FeatureSymbology, IModelApp, SnapshotConnection, SpatialViewState, ViewState } from "@bentley/imodeljs-frontend";
+import { FeatureSymbology, IModelApp, IModelConnection, SnapshotConnection, SpatialViewState, ViewState } from "@bentley/imodeljs-frontend";
 import { assert, expect } from "chai";
 import * as path from "path";
 
@@ -22,12 +22,12 @@ class Overrides extends FeatureSymbology.Overrides {
 }
 
 describe("FeatureSymbology.Overrides", () => {
-  let imodel: SnapshotConnection,
+  let imodel: IModelConnection,
     viewState: SpatialViewState;
 
   before(async () => {
     IModelApp.startup();
-    imodel = await SnapshotConnection.openSnapshot(iModelLocation);
+    imodel = await SnapshotConnection.open(iModelLocation);
     const viewRows: ViewDefinitionProps[] = await imodel.views.queryProps({ from: SpatialViewState.classFullName });
     assert.exists(viewRows, "Should find some views");
     viewState = await imodel.views.load(viewRows[0].id!) as SpatialViewState;
@@ -35,7 +35,7 @@ describe("FeatureSymbology.Overrides", () => {
 
   after(async () => {
     if (imodel)
-      await imodel.closeSnapshot();
+      await imodel.close();
     IModelApp.shutdown();
   });
 

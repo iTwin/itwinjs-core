@@ -2,13 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { IModelConnection, MockRender, ScreenViewport, SpatialViewState, StandardViewId, ViewClipDecorationProvider, ViewClipSettingsProvider, SavedClipEntry, IModelApp, ViewClipTool, Viewport, ClipEventType, ActiveClipStatus, EditManipulator } from "@bentley/imodeljs-frontend";
-import { assert } from "chai";
+import { GuidString, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { ClipPlane, ClipPrimitive, ClipVector, ConvexClipPlaneSet, Plane3dByOriginAndUnitNormal, Point3d } from "@bentley/geometry-core";
 import { SettingsStatus } from "@bentley/imodeljs-clients";
-import { LogLevel, Logger, GuidString } from "@bentley/bentleyjs-core";
+import { ActiveClipStatus, BriefcaseConnection, ClipEventType, EditManipulator, IModelApp, IModelConnection, MockRender, SavedClipEntry, ScreenViewport, SpatialViewState, StandardViewId, ViewClipDecorationProvider, ViewClipSettingsProvider, ViewClipTool, Viewport } from "@bentley/imodeljs-frontend";
 import { TestAuthorizationClient, TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
+import { assert } from "chai";
 import { TestUtility } from "./TestUtility";
-import { Point3d, Plane3dByOriginAndUnitNormal, ConvexClipPlaneSet, ClipPlane, ClipPrimitive, ClipVector } from "@bentley/geometry-core";
 
 export class NamedClipTestUtils {
   public static async cleanExistingSettings(imodel: IModelConnection, shared: boolean, provider: ViewClipSettingsProvider): Promise<void> {
@@ -65,7 +65,7 @@ describe("ViewClipDecorationProvider (#integration)", () => {
 
     const testProjectId = await TestUtility.getTestProjectId("iModelJsIntegrationTest");
     const testIModelId = await TestUtility.getTestIModelId(testProjectId, "ConnectionReadTest");
-    imodel = await IModelConnection.open(testProjectId, testIModelId);
+    imodel = await BriefcaseConnection.open(testProjectId, testIModelId);
 
     const viewDefinitions = await imodel.views.getViewList({ from: "BisCore.OrthographicViewDefinition" });
     assert.isAtLeast(viewDefinitions.length, 1, "found a view definition");

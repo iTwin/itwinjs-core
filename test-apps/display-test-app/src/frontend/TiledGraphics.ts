@@ -112,9 +112,7 @@ export async function toggleExternalTiledGraphicsProvider(vp: Viewport): Promise
   if (undefined !== existing) {
     vp.dropTiledGraphicsProvider(existing);
     providersByViewport.delete(vp);
-    if (existing.iModel instanceof SnapshotConnection) {
-      await existing.iModel.closeSnapshot();
-    }
+    await existing.iModel.close();
     return;
   }
 
@@ -124,7 +122,7 @@ export async function toggleExternalTiledGraphicsProvider(vp: Viewport): Promise
 
   let iModel;
   try {
-    iModel = await SnapshotConnection.openSnapshot(filename);
+    iModel = await SnapshotConnection.open(filename);
     const provider = await Provider.create(vp, iModel);
     providersByViewport.set(vp, provider);
     vp.addTiledGraphicsProvider(provider);

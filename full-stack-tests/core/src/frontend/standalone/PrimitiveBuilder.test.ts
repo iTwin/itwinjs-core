@@ -2,27 +2,18 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-
-import { expect, assert } from "chai";
-import { GraphicType, IModelApp, SpatialViewState, StandardViewId, ScreenViewport, SnapshotConnection } from "@bentley/imodeljs-frontend";
-import * as path from "path";
-import {
-  DisplayParams,
-  Geometry,
-  GeometryAccumulator,
-  PrimitiveBuilder,
-  StrokesPrimitiveList,
-  StrokesPrimitivePointList,
-  StrokesPrimitivePointLists,
-} from "@bentley/imodeljs-frontend/lib/render-primitives";
-import { Branch } from "@bentley/imodeljs-frontend/lib/webgl";
-import { Arc3d, Point3d, LineString3d, Loop, Path, Transform, Range3d, Polyface, IndexedPolyface, Point2d } from "@bentley/geometry-core";
+import { Arc3d, IndexedPolyface, LineString3d, Loop, Path, Point2d, Point3d, Polyface, Range3d, Transform } from "@bentley/geometry-core";
 import { ColorDef, GraphicParams } from "@bentley/imodeljs-common";
+import { GraphicType, IModelApp, IModelConnection, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId } from "@bentley/imodeljs-frontend";
+import { DisplayParams, Geometry, GeometryAccumulator, PrimitiveBuilder, StrokesPrimitiveList, StrokesPrimitivePointList, StrokesPrimitivePointLists } from "@bentley/imodeljs-frontend/lib/render-primitives";
+import { Branch } from "@bentley/imodeljs-frontend/lib/webgl";
+import { assert, expect } from "chai";
+import * as path from "path";
 
 const iModelLocation = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/test.bim");
 
 describe("PrimitiveBuilder tests", () => {
-  let imodel: SnapshotConnection;
+  let imodel: IModelConnection;
   let spatialView: SpatialViewState;
 
   const viewDiv = document.createElement("div") as HTMLDivElement;
@@ -32,13 +23,13 @@ describe("PrimitiveBuilder tests", () => {
 
   before(async () => {   // Create a ViewState to load into a Viewport
     IModelApp.startup();
-    imodel = await SnapshotConnection.openSnapshot(iModelLocation);
+    imodel = await SnapshotConnection.open(iModelLocation);
     spatialView = await imodel.views.load("0x34") as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
   });
 
   after(async () => {
-    if (imodel) await imodel.closeSnapshot();
+    if (imodel) await imodel.close();
     IModelApp.shutdown();
   });
 

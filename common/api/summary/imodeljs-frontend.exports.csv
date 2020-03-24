@@ -59,6 +59,7 @@ public;BeWheelEventProps
 internal;BingElevationProvider
 beta;BlankConnection 
 beta;BlankConnectionProps
+public;BriefcaseConnection 
 internal;CachedIModelCoordinatesResponseProps
 internal;calculateEcefToDb(iModel: IModelConnection, bimElevationBias: number): Promise
 beta;calculateSolarAngles(date: Date, location: Cartographic):
@@ -208,7 +209,7 @@ internal;ImdlReader
 internal;ImdlReaderResult 
 public;IModelApp
 public;IModelAppOptions
-public;IModelConnection 
+public;class IModelConnection 
 public;IModelConnection
 alpha;EditingFunctions
 alpha;EditingFunctions

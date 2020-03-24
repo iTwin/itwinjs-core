@@ -2,14 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
-import { OpenMode, Logger, GuidString, BeDuration } from "@bentley/bentleyjs-core";
-
-import { ChangeSetQuery, IModelHubClient, ChangeSet } from "@bentley/imodeljs-clients";
+import { BeDuration, GuidString, Logger, OpenMode } from "@bentley/bentleyjs-core";
+import { ChangeSet, ChangeSetQuery, IModelHubClient } from "@bentley/imodeljs-clients";
 import { IModelVersion } from "@bentley/imodeljs-common";
-import { TestUtility } from "./TestUtility";
+import { AuthorizedFrontendRequestContext, BriefcaseConnection, IModelApp, IModelConnection, MockRender } from "@bentley/imodeljs-frontend";
 import { TestAuthorizationClient, TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
-import { IModelConnection, MockRender, IModelApp, AuthorizedFrontendRequestContext } from "@bentley/imodeljs-frontend";
+import { assert } from "chai";
+import { TestUtility } from "./TestUtility";
 
 describe("Opening IModelConnection (#integration)", () => {
   let testProjectId: GuidString;
@@ -50,7 +49,7 @@ describe("Opening IModelConnection (#integration)", () => {
     let promiseChainWithFullWaits: Promise<void> = Promise.resolve();
     let n = 0;
     while (++n < 10) {
-      const openPromise = IModelConnection.open(testProjectId, testIModelId, openMode, IModelVersion.asOfChangeSet(testChangeSetId));
+      const openPromise = BriefcaseConnection.open(testProjectId, testIModelId, openMode, IModelVersion.asOfChangeSet(testChangeSetId));
       const waitPromise = BeDuration.wait(5000); // 5 seconds
       const racePromise = Promise.race([openPromise, waitPromise]).then(() => Promise.resolve());
 

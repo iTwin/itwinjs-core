@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { SnapshotConnection } from "@bentley/imodeljs-frontend";
+import { IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
 import { ChildNodeSpecificationTypes, ContentSpecificationTypes, RelationshipDirection, Ruleset, RuleTypes } from "@bentley/presentation-common";
 import { ContentBuilder, ContentBuilderResult, HierarchyBuilder } from "@bentley/presentation-testing";
 import { expect } from "chai";
@@ -23,7 +23,7 @@ function configureSnapshotLocation(test: Mocha.Runnable, subdirectory: string, i
 
 // __PUBLISH_EXTRACT_START__ Presentation.Testing.Rulesets
 describe("RulesetTesting", () => {
-  let imodel: SnapshotConnection;
+  let imodel: IModelConnection;
   const imodelPath = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
 
   before(async () => {
@@ -38,11 +38,11 @@ describe("RulesetTesting", () => {
 
   beforeEach(async () => {
     // set up for testing imodel presentation data
-    imodel = await SnapshotConnection.openSnapshot(imodelPath);
+    imodel = await SnapshotConnection.open(imodelPath);
   });
 
   afterEach(async () => {
-    await imodel.closeSnapshot();
+    await imodel.close();
   });
 
   it("generates correct hierarchy", async () => {

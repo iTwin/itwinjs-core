@@ -2,22 +2,18 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-
-import { expect } from "chai";
-
-import { Ruleset, RegisteredRuleset, InstanceKey, KeySet, Descriptor, PresentationRpcInterface } from "@bentley/presentation-common";
-import { IModelConnection, IModelApp } from "@bentley/imodeljs-frontend";
+import { Id64, using } from "@bentley/bentleyjs-core";
 import { RpcManager } from "@bentley/imodeljs-common";
-
+import { BriefcaseConnection, IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
+import { Descriptor, InstanceKey, KeySet, PresentationRpcInterface, RegisteredRuleset, Ruleset } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
-import { using, Id64 } from "@bentley/bentleyjs-core";
-
-import { TestContext } from "./setup/TestContext";
-import { AuthorizationClient } from "./setup/AuthorizationClient";
+import { expect } from "chai";
 import * as defaultRuleset from "./rulesets/default.json";
-import * as getNodePaths from "./rulesets/NodePaths/getNodePaths.json";
-import * as getFilteredNodePaths from "./rulesets/NodePaths/getFilteredNodePaths.json";
 import * as getRelatedDistinctValues from "./rulesets/DistinctValues/getRelatedDistinctValues.json";
+import * as getFilteredNodePaths from "./rulesets/NodePaths/getFilteredNodePaths.json";
+import * as getNodePaths from "./rulesets/NodePaths/getNodePaths.json";
+import { AuthorizationClient } from "./setup/AuthorizationClient";
+import { TestContext } from "./setup/TestContext";
 
 describe("PresentationRpcInterface tests", () => {
   let iModel: IModelConnection;
@@ -37,7 +33,7 @@ describe("PresentationRpcInterface tests", () => {
     const contextId = testContext.iModelWithChangesets!.contextId;
     const accessToken = testContext.adminUserAccessToken;
     (IModelApp.authorizationClient as AuthorizationClient).setAccessToken(accessToken);
-    iModel = await IModelConnection.open(contextId, iModelId);
+    iModel = await BriefcaseConnection.open(contextId, iModelId);
   });
 
   it("getNodes works as expected", async () => {

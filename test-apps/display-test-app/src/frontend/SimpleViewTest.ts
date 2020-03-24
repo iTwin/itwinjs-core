@@ -74,7 +74,7 @@ async function retrieveConfiguration(): Promise<void> {
 // opens the configured iModel from disk
 async function openSnapshotIModel(filename: string): Promise<IModelConnection> {
   configuration.standalone = true;
-  const iModelConnection = await SnapshotConnection.openSnapshot(filename);
+  const iModelConnection = await SnapshotConnection.open(filename);
   configuration.iModelName = iModelConnection.name;
   return iModelConnection;
 }

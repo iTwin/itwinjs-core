@@ -89,7 +89,7 @@ async function testViewportsWithDpr(imodel: IModelConnection, rect: ViewRect, te
 }
 
 describe("Render mirukuru with VAOs disabled", () => {
-  let imodel: SnapshotConnection;
+  let imodel: IModelConnection;
 
   before(async () => {
     const renderSysOpts: RenderSystem.Options = {};
@@ -97,11 +97,11 @@ describe("Render mirukuru with VAOs disabled", () => {
 
     IModelApp.startup({ renderSys: renderSysOpts });
     const imodelLocation = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/mirukuru.ibim");
-    imodel = await SnapshotConnection.openSnapshot(imodelLocation);
+    imodel = await SnapshotConnection.open(imodelLocation);
   });
 
   after(async () => {
-    if (imodel) await imodel.closeSnapshot();
+    if (imodel) await imodel.close();
     IModelApp.shutdown();
   });
 
@@ -158,16 +158,16 @@ describe("Render mirukuru with VAOs disabled", () => {
 });
 
 describe("Properly render on- or off-screen", () => {
-  let imodel: SnapshotConnection;
+  let imodel: IModelConnection;
 
   before(async () => {
     IModelApp.startup();
     const imodelLocation = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/mirukuru.ibim");
-    imodel = await SnapshotConnection.openSnapshot(imodelLocation);
+    imodel = await SnapshotConnection.open(imodelLocation);
   });
 
   after(async () => {
-    if (imodel) await imodel.closeSnapshot();
+    if (imodel) await imodel.close();
     IModelApp.shutdown();
   });
 
@@ -189,16 +189,16 @@ describe("Properly render on- or off-screen", () => {
 });
 
 describe("Render mirukuru with single clip plane", () => {
-  let imodel: SnapshotConnection;
+  let imodel: IModelConnection;
 
   before(async () => {
     IModelApp.startup();
     const imodelLocation = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/mirukuru.ibim");
-    imodel = await SnapshotConnection.openSnapshot(imodelLocation);
+    imodel = await SnapshotConnection.open(imodelLocation);
   });
 
   after(async () => {
-    if (imodel) await imodel.closeSnapshot();
+    if (imodel) await imodel.close();
     IModelApp.shutdown();
   });
 
@@ -254,16 +254,16 @@ describe("Render mirukuru with single clip plane", () => {
 // The initial view is in top orientation, centered on the top of the rectangle, but not fitted to its extents (empty space on all sides of rectangle).
 // Background color is black; ACS triad on; render mode smooth with lighting enabled and visible edges enabled.
 describe("Render mirukuru", () => {
-  let imodel: SnapshotConnection;
+  let imodel: IModelConnection;
 
   before(async () => {
     IModelApp.startup();
     const imodelLocation = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/mirukuru.ibim");
-    imodel = await SnapshotConnection.openSnapshot(imodelLocation);
+    imodel = await SnapshotConnection.open(imodelLocation);
   });
 
   after(async () => {
-    if (imodel) await imodel.closeSnapshot();
+    if (imodel) await imodel.close();
     IModelApp.shutdown();
   });
 
@@ -710,7 +710,7 @@ describe("Render mirukuru", () => {
 });
 
 describe("Tile unloading", async () => {
-  let imodel: SnapshotConnection;
+  let imodel: IModelConnection;
   const expirationSeconds = 0.1;
   const waitSeconds = 4 * expirationSeconds;
   const tileOpts = {
@@ -726,12 +726,12 @@ describe("Tile unloading", async () => {
     IModelApp.startup({ tileAdmin: TileAdmin.create(tileOpts) });
 
     const imodelLocation = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/CompatibilityTestSeed.bim");
-    imodel = await SnapshotConnection.openSnapshot(imodelLocation);
+    imodel = await SnapshotConnection.open(imodelLocation);
   });
 
   after(async () => {
     if (imodel)
-      await imodel.closeSnapshot();
+      await imodel.close();
 
     IModelApp.shutdown();
   });
@@ -937,16 +937,16 @@ describe("Tile unloading", async () => {
 });
 
 describe("White-on-white reversal", async () => {
-  let imodel: SnapshotConnection;
+  let imodel: IModelConnection;
 
   before(async () => {
     IModelApp.startup();
     const imodelLocation = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/mirukuru.ibim");
-    imodel = await SnapshotConnection.openSnapshot(imodelLocation);
+    imodel = await SnapshotConnection.open(imodelLocation);
   });
 
   after(async () => {
-    if (imodel) await imodel.closeSnapshot();
+    if (imodel) await imodel.close();
     IModelApp.shutdown();
   });
 

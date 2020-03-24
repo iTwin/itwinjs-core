@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { ModelProps } from "@bentley/imodeljs-common";
-import { SnapshotConnection } from "@bentley/imodeljs-frontend";
+import { IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
 import { KeySet } from "@bentley/presentation-common";
 import { PresentationPropertyDataProvider } from "@bentley/presentation-components";
 import { DEFAULT_PROPERTY_GRID_RULESET } from "@bentley/presentation-components/lib/presentation-components/propertygrid/DataProvider"; // tslint:disable-line: no-direct-imports
@@ -12,7 +12,7 @@ import { initialize, terminate } from "../../IntegrationTests";
 
 describe("PropertyDataProvider", async () => {
 
-  let imodel: SnapshotConnection;
+  let imodel: IModelConnection;
   let provider: PresentationPropertyDataProvider;
   let physicalModelProps: ModelProps;
 
@@ -20,13 +20,13 @@ describe("PropertyDataProvider", async () => {
     await initialize();
 
     const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
-    imodel = await SnapshotConnection.openSnapshot(testIModelName);
+    imodel = await SnapshotConnection.open(testIModelName);
     physicalModelProps = (await imodel.models.queryProps({ from: "bis.PhysicalModel" }))[0];
     provider = new PresentationPropertyDataProvider({ imodel, ruleset: DEFAULT_PROPERTY_GRID_RULESET });
   });
 
   after(async () => {
-    await imodel.closeSnapshot();
+    await imodel.close();
     terminate();
   });
 

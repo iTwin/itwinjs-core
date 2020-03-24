@@ -20,16 +20,16 @@ describe("SubCategoriesCache", () => {
   //    2f: 2 subcategories: 30, 33
   //    31
   //  1 drawing category: 19
-  let imodel: SnapshotConnection;
+  let imodel: IModelConnection;
 
   before(async () => {
     MockRender.App.startup();
-    imodel = await SnapshotConnection.openSnapshot(path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/test.bim"));
+    imodel = await SnapshotConnection.open(path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/test.bim"));
   });
 
   after(async () => {
     if (undefined !== imodel)
-      await imodel.closeSnapshot();
+      await imodel.close();
 
     MockRender.App.shutdown();
   });

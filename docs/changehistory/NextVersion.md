@@ -81,6 +81,10 @@ The following methods have been moved from (the now abstract) [IModelDb]($backen
 * `IModelDb.reinstateChanges` --> [BriefcaseDb.reinstateChanges]($backend)
 * `IModelDb.concurrencyControl` --> [BriefcaseDb.concurrencyControl]($backend)
 
+Corresponding changes have been made to the frontend. The following methods have been moved from (the now abstract) [IModelConnection]($frontend) class:
+
+* `IModelConnection.open` --> [BriefcaseConnection.open]($frontend)
+
 ### Snapshot iModels
 
 The methods for working with snapshot iModels have been moved into a new [SnapshotDb]($backend) class, which is a breaking change.
@@ -90,6 +94,18 @@ The following renames are required:
 * `IModelDb.createSnapshot` --> [SnapshotDb.createFrom]($backend)
 * `IModelDb.openSnapshot` --> [SnapshotDb.open]($backend)
 * `IModelDb.closeSnapshot` --> [SnapshotDb.close]($backend)
+
+Corresponding changes have been made to the frontend. The following methods have been moved from (the now abstract) [IModelConnection]($frontend) class:
+
+* `IModelConnection.openSnapshot` --> [SnapshotConnection.open]($frontend)
+* `IModelConnection.closeSnapshot` --> [IModelConnection.close]($frontend) (abstract) and [SnapshotConnection.close]($frontend) (concrete)
+
+### BlankConnection
+
+A new [BlankConnection]($frontend) subclass of of [IModelConnection]($frontend) has been introduced for working with reality data services without requiring an iModel.
+The following renames are required:
+
+* `IModelConnection.createBlank` --> [BlankConnection.create]($frontend)
 
 ### BriefcaseId / ReservedBriefcaseId
 

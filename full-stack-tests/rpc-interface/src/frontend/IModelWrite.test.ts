@@ -2,16 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-
-import { expect, assert } from "chai";
-
+import { OpenMode } from "@bentley/bentleyjs-core";
+import { Range3d } from "@bentley/geometry-core";
+import { AccessToken } from "@bentley/imodeljs-clients";
+import { BriefcaseConnection, IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
+import { assert, expect } from "chai";
 import { AuthorizationClient } from "./setup/AuthorizationClient";
 import { TestContext } from "./setup/TestContext";
-
-import { AccessToken } from "@bentley/imodeljs-clients";
-import { OpenMode } from "@bentley/bentleyjs-core";
-import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
-import { Range3d } from "@bentley/geometry-core";
 
 describe("IModel Read/Write Connection", () => {
   let accessToken: AccessToken;
@@ -32,7 +29,7 @@ describe("IModel Read/Write Connection", () => {
     const openMode = OpenMode.ReadWrite;
     const iModelId = testContext.settings.writeIModel.id;
 
-    const iModel: IModelConnection = await IModelConnection.open(contextId, iModelId, openMode);
+    const iModel: IModelConnection = await BriefcaseConnection.open(contextId, iModelId, openMode);
 
     expect(iModel).to.exist.and.be.not.empty;
 
@@ -43,7 +40,7 @@ describe("IModel Read/Write Connection", () => {
     const contextId = testContext.settings.writeIModel.projectId;
     const openMode = OpenMode.ReadWrite;
     const iModelId = testContext.settings.writeIModel.id;
-    const iModel: IModelConnection = await IModelConnection.open(contextId, iModelId, openMode);
+    const iModel: IModelConnection = await BriefcaseConnection.open(contextId, iModelId, openMode);
 
     expect(iModel).to.exist;
     return expect(iModel.close()).to.eventually.be.fulfilled;
@@ -53,7 +50,7 @@ describe("IModel Read/Write Connection", () => {
     const contextId = testContext.settings.writeIModel.projectId;
     const iModelId = testContext.settings.writeIModel.id;
 
-    const iModel: IModelConnection = await IModelConnection.open(contextId, iModelId, OpenMode.ReadWrite);
+    const iModel: IModelConnection = await BriefcaseConnection.open(contextId, iModelId, OpenMode.ReadWrite);
 
     const originalExtents = iModel.projectExtents;
     const newExtents = Range3d.create(originalExtents.low, originalExtents.high);
@@ -63,7 +60,7 @@ describe("IModel Read/Write Connection", () => {
 
     await iModel.saveChanges();
 
-    const updatediModel: IModelConnection = await IModelConnection.open(contextId, iModelId, OpenMode.ReadWrite);
+    const updatediModel: IModelConnection = await BriefcaseConnection.open(contextId, iModelId, OpenMode.ReadWrite);
 
     const updatedExtents = Range3d.fromJSON(updatediModel.projectExtents);
     assert.isTrue(newExtents.isAlmostEqual(updatedExtents), "Project extents successfully updated in database");
@@ -73,7 +70,7 @@ describe("IModel Read/Write Connection", () => {
     const contextId = testContext.settings.writeIModel.projectId;
     const iModelId = testContext.settings.writeIModel.id;
 
-    const iModel: IModelConnection = await IModelConnection.open(contextId, iModelId, OpenMode.ReadWrite);
+    const iModel: IModelConnection = await BriefcaseConnection.open(contextId, iModelId, OpenMode.ReadWrite);
 
     const viewList = await iModel.views.getViewList({});
     assert.isAtLeast(viewList.length, 1);

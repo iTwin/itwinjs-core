@@ -215,6 +215,8 @@ export abstract class IModel implements IModelProps {
 
   /** Returns `true` if this is a snapshot iModel. */
   public abstract get isSnapshot(): boolean;
+  /** Returns `true` if this is a briefcase copy of an iModel that is synchronized with iModelHub. */
+  public abstract get isBriefcase(): boolean;
 
   private _projectExtents!: AxisAlignedBox3d;
   /**

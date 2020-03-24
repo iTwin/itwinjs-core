@@ -14,7 +14,6 @@ export class LocalFileSupport {
       alert("TESTAPP_SNAPSHOT_FILEPATH must be set on the backend and point to a folder containing local snapshot files.");
       return false;
     }
-
     return true;
   }
 
@@ -26,13 +25,11 @@ export class LocalFileSupport {
 
     try {
       const filePath = testAppConfiguration.snapshotPath + "/" + fileName;
-      iModelConnection = await SnapshotConnection.openSnapshot(filePath);
+      iModelConnection = await SnapshotConnection.open(filePath);
     } catch (e) {
       alert(e.message);
       iModelConnection = undefined;
     }
-
     return iModelConnection;
   }
-
 }

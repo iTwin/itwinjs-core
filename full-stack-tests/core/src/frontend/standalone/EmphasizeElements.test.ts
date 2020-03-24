@@ -3,14 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { ColorDef, Feature, LinePixels, RgbColor } from "@bentley/imodeljs-common";
-import { EmphasizeElements, FeatureOverrideType, FeatureSymbology, MockRender, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId } from "@bentley/imodeljs-frontend";
+import { EmphasizeElements, FeatureOverrideType, FeatureSymbology, IModelConnection, MockRender, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId } from "@bentley/imodeljs-frontend";
 import { assert, expect } from "chai";
 import * as path from "path";
 
 const iModelDir = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets");
 
 describe("EmphasizeElements tests", () => {
-  let imodel: SnapshotConnection;
+  let imodel: IModelConnection;
   let spatialView: SpatialViewState;
 
   const viewDiv = document.createElement("div") as HTMLDivElement;
@@ -20,13 +20,13 @@ describe("EmphasizeElements tests", () => {
 
   before(async () => {
     MockRender.App.startup();
-    imodel = await SnapshotConnection.openSnapshot(path.join(iModelDir, "test.bim"));
+    imodel = await SnapshotConnection.open(path.join(iModelDir, "test.bim"));
     spatialView = await imodel.views.load("0x34") as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
   });
 
   after(async () => {
-    if (imodel) await imodel.closeSnapshot();
+    if (imodel) await imodel.close();
     MockRender.App.shutdown();
   });
 

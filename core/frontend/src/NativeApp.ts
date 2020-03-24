@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @module NativeApp */
-import { BeEvent, IModelStatus, BentleyStatus, OpenMode } from "@bentley/bentleyjs-core";
-import { NativeAppRpcInterface, InternetConnectivityStatus, OverriddenBy, Events, RpcRegistry, IModelError, IModelVersion, IModelToken, IModelTokenProps, BriefcaseProps, StorageValue } from "@bentley/imodeljs-common";
+import { BeEvent, BentleyStatus, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
+import { AuthorizedClientRequestContext, Config, ProgressCallback, ProgressInfo, RequestGlobalOptions } from "@bentley/imodeljs-clients";
+import { BriefcaseProps, Events, IModelError, IModelToken, IModelTokenProps, IModelVersion, InternetConnectivityStatus, NativeAppRpcInterface, OverriddenBy, RpcRegistry, StorageValue } from "@bentley/imodeljs-common";
 import { EventSourceManager } from "./EventSource";
-import { Config, ProgressInfo, ProgressCallback, AuthorizedClientRequestContext, RequestGlobalOptions } from "@bentley/imodeljs-clients";
 import { IModelApp, IModelAppOptions } from "./IModelApp";
-import { IModelConnection } from "./IModelConnection";
+import { BriefcaseConnection } from "./IModelConnection";
 import { NativeAppLogger } from "./NativeAppLogger";
 /**
  * Return by startDownloadBriefcase() and can be use with finishDownloadBriefcase() or cancelDownloadBriefcase().
@@ -150,13 +150,13 @@ export class NativeApp {
     await NativeAppRpcInterface.getClient().deleteBriefcase(iModelToken);
   }
 
-  public static async openBriefcase(requestContext: AuthorizedClientRequestContext, iModelToken: IModelTokenProps): Promise<IModelConnection> {
+  public static async openBriefcase(requestContext: AuthorizedClientRequestContext, iModelToken: IModelTokenProps): Promise<BriefcaseConnection> {
     requestContext.enter();
     if (!IModelApp.initialized)
       throw new IModelError(BentleyStatus.ERROR, "Call NativeApp.startup() before calling downloadBriefcase");
     const token = await NativeAppRpcInterface.getClient().openBriefcase(iModelToken);
     requestContext.useContextForRpc = true;
-    return IModelConnection.createForNativeAppBriefcase(token, OpenMode.ReadWrite);
+    return BriefcaseConnection.createForNativeAppBriefcase(token, OpenMode.ReadWrite);
   }
 
   /**

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Id64 } from "@bentley/bentleyjs-core";
-import { SnapshotConnection } from "@bentley/imodeljs-frontend";
+import { IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
 import { ContentSpecificationTypes, InstanceKey, KeySet, PresentationError, PresentationStatus, Ruleset, RuleTypes } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
 import { expect } from "chai";
@@ -12,9 +12,9 @@ import sinon = require("sinon");
 
 describe("Content", () => {
 
-  let imodel: SnapshotConnection;
+  let imodel: IModelConnection;
   const openIModel = async () => {
-    imodel = await SnapshotConnection.openSnapshot("assets/datasets/Properties_60InstancesWithUrl2.ibim");
+    imodel = await SnapshotConnection.open("assets/datasets/Properties_60InstancesWithUrl2.ibim");
     expect(imodel).is.not.null;
   };
 

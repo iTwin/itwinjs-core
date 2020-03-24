@@ -10,6 +10,7 @@ import {
   GraphicType,
   ImdlReader,
   IModelApp,
+  IModelConnection,
   PlanarClassifierMap,
   RenderMemory,
   RenderPlanarClassifier,
@@ -31,8 +32,8 @@ import { TILE_DATA_1_1 } from "./TileIO.data.1.1";
 const iModelDir = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/");
 const iModelLocation = path.join(iModelDir, "test.bim");
 
-let imodel0: SnapshotConnection;
-let imodel1: SnapshotConnection;
+let imodel0: IModelConnection;
+let imodel1: IModelConnection;
 const itemsChecked: object[] = [];  // Private helper array for storing what objects have already been checked for disposal in isDisposed()
 
 /**
@@ -144,11 +145,11 @@ function disposedCheck(disposable: any, ignoredAttribs?: string[]): boolean {
 describe("Disposal of System", () => {
   before(async () => {
     IModelApp.startup();
-    imodel0 = await SnapshotConnection.openSnapshot(iModelLocation);
+    imodel0 = await SnapshotConnection.open(iModelLocation);
   });
 
   after(async () => {
-    await imodel0.closeSnapshot();
+    await imodel0.close();
     IModelApp.shutdown();
   });
 
@@ -190,13 +191,13 @@ describe("Disposal of WebGL Resources", () => {
   before(async () => {
     IModelApp.startup();
 
-    imodel0 = await SnapshotConnection.openSnapshot(iModelLocation);
-    imodel1 = await SnapshotConnection.openSnapshot(path.join(iModelDir, "testImodel.bim"));
+    imodel0 = await SnapshotConnection.open(iModelLocation);
+    imodel1 = await SnapshotConnection.open(path.join(iModelDir, "testImodel.bim"));
   });
 
   after(async () => {
-    await imodel0.closeSnapshot();
-    await imodel1.closeSnapshot();
+    await imodel0.close();
+    await imodel1.close();
     IModelApp.shutdown();
   });
 

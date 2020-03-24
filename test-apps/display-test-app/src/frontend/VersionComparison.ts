@@ -93,13 +93,13 @@ class Trees extends SpatialModelTileTrees {
 /** Added to a Viewport to supply graphics from the secondary IModelConnection. */
 class Provider implements TiledGraphicsProvider, FeatureOverrideProvider {
   private readonly _trees: SpatialModelTileTrees;
-  public readonly iModel: SnapshotConnection;
+  public readonly iModel: IModelConnection;
   public overrides: FeatureSymbology.Overrides;
   public readonly changedElems: ChangedElems;
   public readonly viewport: Viewport;
   private readonly _removals: Array<() => void> = [];
 
-  private constructor(vp: Viewport, iModel: SnapshotConnection, elems: ChangedElems) {
+  private constructor(vp: Viewport, iModel: IModelConnection, elems: ChangedElems) {
     this.iModel = iModel;
     this.changedElems = elems;
     this.viewport = vp;
@@ -127,7 +127,7 @@ class Provider implements TiledGraphicsProvider, FeatureOverrideProvider {
     // closing the iModel will do this - but let's not wait.
     this.iModel.tiles.purge(BeTimePoint.now());
 
-    this.iModel.closeSnapshot(); // tslint:disable-line no-floating-promises
+    this.iModel.close(); // tslint:disable-line no-floating-promises
   }
 
   public static async create(vp: Viewport): Promise<Provider | undefined> {
@@ -137,7 +137,7 @@ class Provider implements TiledGraphicsProvider, FeatureOverrideProvider {
 
       // Open the "revision" iModel.
       const filename = vp.iModel.iModelToken.key! + ".rev";
-      const iModel = await SnapshotConnection.openSnapshot(filename);
+      const iModel = await SnapshotConnection.open(filename);
 
       // ###TODO determine which model(s) contain the deleted elements - don't need tiles for any others.
       await iModel.models.load(view.modelSelector.models);
@@ -278,7 +278,7 @@ export async function disableVersionComparison(vp: Viewport): Promise<void> {
   const existing = vp.featureOverrideProvider;
   if (undefined !== existing && existing instanceof Provider) {
     existing.dispose();
-    await existing.iModel.closeSnapshot();
+    await existing.iModel.close();
   }
 }
 

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 // tslint:disable: no-direct-imports
-import { SnapshotConnection } from "@bentley/imodeljs-frontend";
+import { IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
 import { Field, KeySet } from "@bentley/presentation-common";
 import { PresentationPropertyDataProvider } from "@bentley/presentation-components";
 import { DEFAULT_PROPERTY_GRID_RULESET } from "@bentley/presentation-components/lib/presentation-components/propertygrid/DataProvider";
@@ -17,11 +17,11 @@ import { initialize, initializeWithClientServices, terminate } from "../Integrat
 const favoritesCategoryName = "Favorite";
 describe("Favorite properties", () => {
 
-  let imodel: SnapshotConnection;
+  let imodel: IModelConnection;
 
   before(async () => {
     await initialize();
-    imodel = await SnapshotConnection.openSnapshot("assets/datasets/Properties_60InstancesWithUrl2.ibim");
+    imodel = await SnapshotConnection.open("assets/datasets/Properties_60InstancesWithUrl2.ibim");
     expect(imodel).is.not.null;
   });
 
@@ -137,7 +137,7 @@ describe("Favorite properties", () => {
     before(async () => {
       terminate();
       await initializeWithClientServices();
-      imodel = await SnapshotConnection.openSnapshot("assets/datasets/Properties_60InstancesWithUrl2.ibim");
+      imodel = await SnapshotConnection.open("assets/datasets/Properties_60InstancesWithUrl2.ibim");
       expect(imodel).is.not.null;
     });
 

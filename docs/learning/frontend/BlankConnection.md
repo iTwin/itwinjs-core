@@ -1,6 +1,6 @@
 # Blank IModelConnection
 
-A *Blank* IModelConnection is an [IModelConnection]($frontend) that is **not** connected to an [IModelDb]($backend) backend.
+A [BlankConnection]($frontend) is an [IModelConnection]($frontend) that is **not** connected to an [IModelDb]($backend) backend.
 
 ## Background
 
@@ -21,7 +21,7 @@ Many services in the iModel.js frontend package display information from sources
 
 A blank IModelConnection can be used for creating Viewports that show graphics from sources other than an iModel, but remember that they *do not* have a backend. Therefore, it is not legal to attempt RPC requests against a blank IModelConnection. Most such operations will simply return nothing, but some will throw an exception. For example, all of the various forms of ECSQL queries will throw errors if attempted with a blank IModelConnection.
 
-You can test whether an IModelConnection is blank, by using either [IModelConnection.isOpen]($frontend) or [IModelConnection.isBlank]($frontend). `isOpen` will be false for a blank connection, and `isBlank` will be true [N.B. The distinction is that isOpen will also return false for an IModelConnection that was originally opened against a backend but subsequently closed.]
+You can test whether an IModelConnection is blank, by using [IModelConnection.isBlank]($frontend). Note that `isOpen` will always be false for a `BlankConnection`, and `isBlank` will be true [N.B. The distinction is that isOpen will also return false for an IModelConnection that was originally opened against a backend but subsequently closed.]
 
 ## Example
 

@@ -52,7 +52,7 @@ export interface BlankConnectionProps {
 /** A connection to a [IModelDb]($backend) hosted on the backend.
  * @public
  */
-export class IModelConnection extends IModel { // WIP: make abstract
+export abstract class IModelConnection extends IModel {
   /** The [[OpenMode]] used for this IModelConnection. */
   public readonly openMode: OpenMode;
   /** The [[ModelState]]s in this IModelConnection. */
@@ -102,8 +102,6 @@ export class IModelConnection extends IModel { // WIP: make abstract
 
   private _editing: IModelConnection.EditingFunctions | undefined;
 
-  private _isNativeAppBriefcase: boolean; // Set to true if it's a connection over a briefcase in a native application
-
   /** General editing functions
    * @alpha
    */
@@ -113,6 +111,8 @@ export class IModelConnection extends IModel { // WIP: make abstract
     return this._editing;
   }
 
+  /** Type guard for instanceof [[BriefcaseConnection]] */
+  public isBriefcaseConnection(): this is BriefcaseConnection { return this instanceof BriefcaseConnection; }
   /** Type guard for instanceof [[SnapshotConnection]]
    * @beta
    */
@@ -122,11 +122,12 @@ export class IModelConnection extends IModel { // WIP: make abstract
    */
   public isBlankConnection(): this is BlankConnection { return this instanceof BlankConnection; }
 
-  /** Returns true if this is a *snapshot* iModel.
+  /** Returns `true` if this is a briefcase copy of an iModel that is synchronized with iModelHub. */
+  public get isBriefcase(): boolean { return this.isBriefcaseConnection(); }
+  /** Returns `true` if this is a *snapshot* iModel.
    * @see [[SnapshotConnection.openSnapshot]]
    */
   public get isSnapshot(): boolean { return this.isSnapshotConnection(); }
-
   /** True if this is a [Blank Connection]($docs/learning/frontend/BlankConnection).
    * @beta
    */
@@ -214,11 +215,10 @@ export class IModelConnection extends IModel { // WIP: make abstract
   }
 
   /** @internal */
-  protected constructor(iModel: IModelProps, openMode: OpenMode, isNativeAppBriefcase: boolean) {
+  protected constructor(iModel: IModelProps, openMode: OpenMode) {
     super(iModel.iModelToken ? IModelToken.fromJSON(iModel.iModelToken) : undefined);
     super.initialize(iModel.name!, iModel);
     this.openMode = openMode;
-    this._isNativeAppBriefcase = isNativeAppBriefcase;
     this.models = new IModelConnection.Models(this);
     this.elements = new IModelConnection.Elements(this);
     this.codeSpecs = new IModelConnection.CodeSpecs(this);
@@ -234,171 +234,17 @@ export class IModelConnection extends IModel { // WIP: make abstract
     }
   }
 
-  /** Creates iModel Connection over a local briefcase for a native application
+  /** Called prior to connection closing. Raises close events and calls tiles.dispose.
    * @internal
    */
-  public static createForNativeAppBriefcase(iModel: IModelProps, openMode: OpenMode): IModelConnection {
-    return new this(iModel, openMode, true);
-  }
-
-  /** Open an IModelConnection to an iModel. It's recommended that every open call be matched with a corresponding call to close. */
-  public static async open(contextId: string, iModelId: string, openMode: OpenMode = OpenMode.Readonly, version: IModelVersion = IModelVersion.latest()): Promise<IModelConnection> {
-    if (!IModelApp.initialized)
-      throw new IModelError(BentleyStatus.ERROR, "Call IModelApp.startup() before calling open");
-
-    const requestContext = await AuthorizedFrontendRequestContext.create();
-    requestContext.enter();
-
-    const changeSetId: string = await version.evaluateChangeSet(requestContext, iModelId, IModelApp.iModelClient);
-    requestContext.enter();
-
-    const iModelToken = new IModelToken(undefined, contextId, iModelId, changeSetId, openMode);
-
-    const openResponse: IModelProps = await IModelConnection.callOpen(requestContext, iModelToken, openMode);
-    requestContext.enter();
-
-    const connection = new IModelConnection(openResponse, openMode, false);
-    RpcRequest.notFoundHandlers.addListener(connection._reopenConnectionHandler);
-
-    IModelConnection.onOpen.raiseEvent(connection);
-    return connection;
-  }
-
-  private static async callOpen(requestContext: AuthorizedFrontendRequestContext, iModelToken: IModelToken, openMode: OpenMode): Promise<IModelProps> {
-    requestContext.enter();
-
-    // Try opening the iModel repeatedly accommodating any pending responses from the backend.
-    // Waits for an increasing amount of time (but within a range) before checking on the pending request again.
-    const connectionRetryIntervalRange = { min: 100, max: 5000 }; // in milliseconds
-    let connectionRetryInterval = Math.min(connectionRetryIntervalRange.min, IModelConnection.connectionTimeout);
-
-    let openForReadOperation: RpcOperation | undefined;
-    let openForWriteOperation: RpcOperation | undefined;
-    if (openMode === OpenMode.Readonly) {
-      openForReadOperation = RpcOperation.lookup(IModelReadRpcInterface, "openForRead");
-      if (!openForReadOperation)
-        throw new IModelError(BentleyStatus.ERROR, "IModelReadRpcInterface.openForRead() is not available");
-      openForReadOperation.policy.retryInterval = () => connectionRetryInterval;
-    } else {
-      openForWriteOperation = RpcOperation.lookup(IModelWriteRpcInterface, "openForWrite");
-      if (!openForWriteOperation)
-        throw new IModelError(BentleyStatus.ERROR, "IModelWriteRpcInterface.openForWrite() is not available");
-      openForWriteOperation.policy.retryInterval = () => connectionRetryInterval;
-    }
-
-    Logger.logTrace(loggerCategory, `Received open request in IModelConnection.open`, () => iModelToken);
-    Logger.logTrace(loggerCategory, `Setting retry interval in IModelConnection.open`, () => ({ ...iModelToken, connectionRetryInterval }));
-
-    const startTime = Date.now();
-
-    const removeListener = RpcRequest.events.addListener((type: RpcRequestEvent, request: RpcRequest) => {
-      if (type !== RpcRequestEvent.PendingUpdateReceived)
-        return;
-      if (!(openForReadOperation && request.operation === openForReadOperation) && !(openForWriteOperation && request.operation === openForWriteOperation))
-        return;
-
-      requestContext.enter();
-      Logger.logTrace(loggerCategory, "Received pending open notification in IModelConnection.open", () => iModelToken);
-
-      const connectionTimeElapsed = Date.now() - startTime;
-      if (connectionTimeElapsed > IModelConnection.connectionTimeout) {
-        Logger.logError(loggerCategory, `Timed out opening connection in IModelConnection.open (took longer than ${IModelConnection.connectionTimeout} milliseconds)`, () => iModelToken);
-        throw new IModelError(BentleyStatus.ERROR, "Opening a connection was timed out"); // NEEDS_WORK: More specific error status
-      }
-
-      connectionRetryInterval = Math.min(connectionRetryIntervalRange.max, connectionRetryInterval * 2, IModelConnection.connectionTimeout - connectionTimeElapsed);
-      if (request.retryInterval !== connectionRetryInterval) {
-        request.retryInterval = connectionRetryInterval;
-        Logger.logTrace(loggerCategory, `Adjusted open connection retry interval to ${request.retryInterval} milliseconds in IModelConnection.open`, () => iModelToken);
-      }
-    });
-
-    let openPromise: Promise<IModelProps>;
-    requestContext.useContextForRpc = true;
-    if (openMode === OpenMode.ReadWrite)
-      openPromise = IModelWriteRpcInterface.getClient().openForWrite(iModelToken.toJSON());
-    else
-      openPromise = IModelReadRpcInterface.getClient().openForRead(iModelToken.toJSON());
-
-    let openResponse: IModelProps;
-    try {
-      openResponse = await openPromise;
-    } finally {
-      requestContext.enter();
-      Logger.logTrace(loggerCategory, "Completed open request in IModelConnection.open", () => iModelToken);
-      removeListener();
-    }
-
-    return openResponse;
-  }
-
-  private _reopenConnectionHandler = async (request: RpcRequest<RpcNotFoundResponse>, response: any, resubmit: () => void, reject: (reason: any) => void) => {
-    if (!response.hasOwnProperty("isIModelNotFoundResponse"))
-      return;
-
-    const iModelToken: IModelToken = IModelToken.fromJSON(request.parameters[0]);
-    if (this.iModelToken.key !== iModelToken.key)
-      return; // The handler is called for a different connection than this
-
-    const requestContext: AuthorizedFrontendRequestContext = await AuthorizedFrontendRequestContext.create(request.id); // Reuse activityId
-    requestContext.enter();
-
-    Logger.logTrace(loggerCategory, "Attempting to reopen connection", () => iModelToken);
-
-    try {
-      const openResponse: IModelProps = await IModelConnection.callOpen(requestContext, iModelToken, this.openMode);
-      this._token = IModelToken.fromJSON(openResponse.iModelToken!);
-    } catch (error) {
-      reject(error.message);
-    } finally {
-      requestContext.enter();
-    }
-
-    Logger.logTrace(loggerCategory, "Resubmitting original request after reopening connection", () => iModelToken);
-    request.parameters[0] = this.iModelToken; // Modify the token of the original request before resubmitting it.
-    resubmit();
-  }
-
-  // called prior to connection closing. Raises close events and calls tiles.dispose.
-  // NOTE: this is called for blank connections too!
-  /** @internal */
   protected beforeClose() {
     this.onClose.raiseEvent(this); // event for this connection
     IModelConnection.onClose.raiseEvent(this); // event for all connections
     this.tiles.dispose();
   }
 
-  /** Close this IModelConnection
-   * In the case of ReadWrite connections ensure all changes are pushed to the iModelHub before making this call -
-   * any un-pushed changes are lost after the close.
-   */
-  public async close(): Promise<void> {
-    this.beforeClose();
-    if (!this.isOpen)
-      return;
-
-    const requestContext = await AuthorizedFrontendRequestContext.create();
-    requestContext.enter();
-
-    RpcRequest.notFoundHandlers.removeListener(this._reopenConnectionHandler);
-    requestContext.useContextForRpc = true;
-
-    let closePromise;
-    if (this._isNativeAppBriefcase)
-      closePromise = NativeAppRpcInterface.getClient().closeBriefcase(this.iModelToken.toJSON());
-    else
-      closePromise = IModelReadRpcInterface.getClient().close(this.iModelToken.toJSON()); // Ensure the method isn't awaited right away.
-
-    if (this.eventSource) {
-      EventSourceManager.delete(this.iModelToken.key!);
-    }
-    try {
-      await closePromise;
-    } finally {
-      this._token = undefined; // prevent closed connection from being reused
-      this.subcategories.onIModelConnectionClose();
-    }
-  }
+  /** Close this IModelConnection. */
+  public abstract async close(): Promise<void>;
 
   /** Compute number of rows that would be returned by the ECSQL.
    *
@@ -528,29 +374,6 @@ export class IModelConnection extends IModel { // WIP: make abstract
     return this.editing.saveChanges(description);
   }
 
-  /** WIP - Determines whether the *Change Cache file* is attached to this iModel or not.
-   * See also [Change Summary Overview]($docs/learning/ChangeSummaries)
-   * @returns Returns true if the *Change Cache file* is attached to the iModel. false otherwise
-   * @internal
-   */
-  public async changeCacheAttached(): Promise<boolean> { return WipRpcInterface.getClient().isChangeCacheAttached(this.iModelToken.toJSON()); }
-
-  /** WIP - Attaches the *Change Cache file* to this iModel if it hasn't been attached yet.
-   * A new *Change Cache file* will be created for the iModel if it hasn't existed before.
-   * See also [Change Summary Overview]($docs/learning/ChangeSummaries)
-   * @throws [IModelError]($common) if a Change Cache file has already been attached before.
-   * @internal
-   */
-  public async attachChangeCache(): Promise<void> { return WipRpcInterface.getClient().attachChangeCache(this.iModelToken.toJSON()); }
-
-  /** WIP - Detaches the *Change Cache file* to this iModel if it had been attached before.
-   * > You do not have to check whether a Change Cache file had been attached before. The
-   * > method does not do anything, if no Change Cache is attached.
-   * See also [Change Summary Overview]($docs/learning/ChangeSummaries)
-   * @internal
-   */
-  public async detachChangeCache(): Promise<void> { return WipRpcInterface.getClient().detachChangeCache(this.iModelToken.toJSON()); }
-
   private _snapRpc = new OneAtATimeAction<SnapResponseProps>((props: SnapRequestProps) => IModelReadRpcInterface.getClient().requestSnap(this.iModelToken.toJSON(), IModelApp.sessionId, props));
   /** Request a snap from the backend.
    * @note callers must gracefully handle Promise rejected with AbandonedError
@@ -678,18 +501,208 @@ export class IModelConnection extends IModel { // WIP: make abstract
   }
 }
 
+/** A connection to a [BriefcaseDb]($backend) hosted on the backend. A briefcase is a copy of an iModel that is synchronized with iModelHub.
+ * @public
+ */
+export class BriefcaseConnection extends IModelConnection {
+  private _isNativeAppBriefcase: boolean; // Set to true if it's a connection over a briefcase in a native application
+
+  private constructor(iModelProps: IModelProps, openMode: OpenMode, isNativeAppBriefcase: boolean) {
+    super(iModelProps, openMode);
+    this._isNativeAppBriefcase = isNativeAppBriefcase;
+  }
+
+  /** Creates iModel Connection over a local briefcase for a native application
+   * @internal
+   */
+  public static createForNativeAppBriefcase(iModelProps: IModelProps, openMode: OpenMode): BriefcaseConnection {
+    return new this(iModelProps, openMode, true);
+  }
+  /** Open an IModelConnection to an iModel. It's recommended that every open call be matched with a corresponding call to close. */
+  public static async open(contextId: string, iModelId: string, openMode: OpenMode = OpenMode.Readonly, version: IModelVersion = IModelVersion.latest()): Promise<BriefcaseConnection> {
+    if (!IModelApp.initialized)
+      throw new IModelError(BentleyStatus.ERROR, "Call IModelApp.startup() before calling open");
+
+    const requestContext = await AuthorizedFrontendRequestContext.create();
+    requestContext.enter();
+
+    const changeSetId: string = await version.evaluateChangeSet(requestContext, iModelId, IModelApp.iModelClient);
+    requestContext.enter();
+
+    const iModelToken = new IModelToken(undefined, contextId, iModelId, changeSetId, openMode);
+
+    const openResponse: IModelProps = await BriefcaseConnection.callOpen(requestContext, iModelToken, openMode);
+    requestContext.enter();
+
+    const connection = new BriefcaseConnection(openResponse, openMode, false);
+    RpcRequest.notFoundHandlers.addListener(connection._reopenConnectionHandler);
+
+    IModelConnection.onOpen.raiseEvent(connection);
+    return connection;
+  }
+
+  private static async callOpen(requestContext: AuthorizedFrontendRequestContext, iModelToken: IModelToken, openMode: OpenMode): Promise<IModelProps> {
+    requestContext.enter();
+
+    // Try opening the iModel repeatedly accommodating any pending responses from the backend.
+    // Waits for an increasing amount of time (but within a range) before checking on the pending request again.
+    const connectionRetryIntervalRange = { min: 100, max: 5000 }; // in milliseconds
+    let connectionRetryInterval = Math.min(connectionRetryIntervalRange.min, IModelConnection.connectionTimeout);
+
+    let openForReadOperation: RpcOperation | undefined;
+    let openForWriteOperation: RpcOperation | undefined;
+    if (openMode === OpenMode.Readonly) {
+      openForReadOperation = RpcOperation.lookup(IModelReadRpcInterface, "openForRead");
+      if (!openForReadOperation)
+        throw new IModelError(BentleyStatus.ERROR, "IModelReadRpcInterface.openForRead() is not available");
+      openForReadOperation.policy.retryInterval = () => connectionRetryInterval;
+    } else {
+      openForWriteOperation = RpcOperation.lookup(IModelWriteRpcInterface, "openForWrite");
+      if (!openForWriteOperation)
+        throw new IModelError(BentleyStatus.ERROR, "IModelWriteRpcInterface.openForWrite() is not available");
+      openForWriteOperation.policy.retryInterval = () => connectionRetryInterval;
+    }
+
+    Logger.logTrace(loggerCategory, `Received open request in IModelConnection.open`, () => iModelToken);
+    Logger.logTrace(loggerCategory, `Setting retry interval in IModelConnection.open`, () => ({ ...iModelToken, connectionRetryInterval }));
+
+    const startTime = Date.now();
+
+    const removeListener = RpcRequest.events.addListener((type: RpcRequestEvent, request: RpcRequest) => {
+      if (type !== RpcRequestEvent.PendingUpdateReceived)
+        return;
+      if (!(openForReadOperation && request.operation === openForReadOperation) && !(openForWriteOperation && request.operation === openForWriteOperation))
+        return;
+
+      requestContext.enter();
+      Logger.logTrace(loggerCategory, "Received pending open notification in IModelConnection.open", () => iModelToken);
+
+      const connectionTimeElapsed = Date.now() - startTime;
+      if (connectionTimeElapsed > IModelConnection.connectionTimeout) {
+        Logger.logError(loggerCategory, `Timed out opening connection in IModelConnection.open (took longer than ${IModelConnection.connectionTimeout} milliseconds)`, () => iModelToken);
+        throw new IModelError(BentleyStatus.ERROR, "Opening a connection was timed out"); // NEEDS_WORK: More specific error status
+      }
+
+      connectionRetryInterval = Math.min(connectionRetryIntervalRange.max, connectionRetryInterval * 2, IModelConnection.connectionTimeout - connectionTimeElapsed);
+      if (request.retryInterval !== connectionRetryInterval) {
+        request.retryInterval = connectionRetryInterval;
+        Logger.logTrace(loggerCategory, `Adjusted open connection retry interval to ${request.retryInterval} milliseconds in IModelConnection.open`, () => iModelToken);
+      }
+    });
+
+    let openPromise: Promise<IModelProps>;
+    requestContext.useContextForRpc = true;
+    if (openMode === OpenMode.ReadWrite)
+      openPromise = IModelWriteRpcInterface.getClient().openForWrite(iModelToken.toJSON());
+    else
+      openPromise = IModelReadRpcInterface.getClient().openForRead(iModelToken.toJSON());
+
+    let openResponse: IModelProps;
+    try {
+      openResponse = await openPromise;
+    } finally {
+      requestContext.enter();
+      Logger.logTrace(loggerCategory, "Completed open request in IModelConnection.open", () => iModelToken);
+      removeListener();
+    }
+
+    return openResponse;
+  }
+
+  private _reopenConnectionHandler = async (request: RpcRequest<RpcNotFoundResponse>, response: any, resubmit: () => void, reject: (reason: any) => void) => {
+    if (!response.hasOwnProperty("isIModelNotFoundResponse"))
+      return;
+
+    const iModelToken: IModelToken = IModelToken.fromJSON(request.parameters[0]);
+    if (this.iModelToken.key !== iModelToken.key)
+      return; // The handler is called for a different connection than this
+
+    const requestContext: AuthorizedFrontendRequestContext = await AuthorizedFrontendRequestContext.create(request.id); // Reuse activityId
+    requestContext.enter();
+
+    Logger.logTrace(loggerCategory, "Attempting to reopen connection", () => iModelToken);
+
+    try {
+      const openResponse: IModelProps = await BriefcaseConnection.callOpen(requestContext, iModelToken, this.openMode);
+      this._token = IModelToken.fromJSON(openResponse.iModelToken!);
+    } catch (error) {
+      reject(error.message);
+    } finally {
+      requestContext.enter();
+    }
+
+    Logger.logTrace(loggerCategory, "Resubmitting original request after reopening connection", () => iModelToken);
+    request.parameters[0] = this.iModelToken; // Modify the token of the original request before resubmitting it.
+    resubmit();
+  }
+
+  /** Close this IModelConnection
+   * In the case of ReadWrite connections ensure all changes are pushed to the iModelHub before making this call -
+   * any un-pushed changes are lost after the close.
+   */
+  public async close(): Promise<void> {
+    this.beforeClose();
+    if (!this.isOpen)
+      return;
+
+    const requestContext = await AuthorizedFrontendRequestContext.create();
+    requestContext.enter();
+
+    RpcRequest.notFoundHandlers.removeListener(this._reopenConnectionHandler);
+    requestContext.useContextForRpc = true;
+
+    let closePromise;
+    if (this._isNativeAppBriefcase)
+      closePromise = NativeAppRpcInterface.getClient().closeBriefcase(this.iModelToken.toJSON());
+    else
+      closePromise = IModelReadRpcInterface.getClient().close(this.iModelToken.toJSON()); // Ensure the method isn't awaited right away.
+
+    if (this.eventSource) {
+      EventSourceManager.delete(this.iModelToken.key!);
+    }
+    try {
+      await closePromise;
+    } finally {
+      this._token = undefined; // prevent closed connection from being reused
+      this.subcategories.onIModelConnectionClose();
+    }
+  }
+
+  /** WIP - Determines whether the *Change Cache file* is attached to this iModel or not.
+   * See also [Change Summary Overview]($docs/learning/ChangeSummaries)
+   * @returns Returns true if the *Change Cache file* is attached to the iModel. false otherwise
+   * @internal
+   */
+  public async changeCacheAttached(): Promise<boolean> { return WipRpcInterface.getClient().isChangeCacheAttached(this.iModelToken.toJSON()); }
+
+  /** WIP - Attaches the *Change Cache file* to this iModel if it hasn't been attached yet.
+   * A new *Change Cache file* will be created for the iModel if it hasn't existed before.
+   * See also [Change Summary Overview]($docs/learning/ChangeSummaries)
+   * @throws [IModelError]($common) if a Change Cache file has already been attached before.
+   * @internal
+   */
+  public async attachChangeCache(): Promise<void> { return WipRpcInterface.getClient().attachChangeCache(this.iModelToken.toJSON()); }
+
+  /** WIP - Detaches the *Change Cache file* to this iModel if it had been attached before.
+   * > You do not have to check whether a Change Cache file had been attached before. The
+   * > method does not do anything, if no Change Cache is attached.
+   * See also [Change Summary Overview]($docs/learning/ChangeSummaries)
+   * @internal
+   */
+  public async detachChangeCache(): Promise<void> { return WipRpcInterface.getClient().detachChangeCache(this.iModelToken.toJSON()); }
+}
+
 /** A connection that exists without an iModel. Useful for connecting to Reality Data services.
+ * @note This class exists because our display system requires an IModelConnection type even if only reality data is drawn.
  * @beta
  */
 export class BlankConnection extends IModelConnection {
   private constructor(iModelProps: IModelProps, openMode: OpenMode) {
-    super(iModelProps, openMode, false);
+    super(iModelProps, openMode);
   }
 
   /** Create a new [Blank IModelConnection]($docs/learning/frontend/BlankConnection).
    * @param props The properties to use for the new BlankConnection.
-   * @note A BlankConnection does not have to be closed.
-   * @beta
    */
   public static create(props: BlankConnectionProps): BlankConnection {
     return new this({
@@ -699,6 +712,19 @@ export class BlankConnection extends IModelConnection {
       ecefLocation: props.location instanceof Cartographic ? EcefLocation.createFromCartographicOrigin(props.location) : props.location,
     }, OpenMode.Readonly);
   }
+
+  /** A BlankConnection does not have a specific backend nor it is associated with a particular iModel, so `false` is always returned.
+   * @returns `false` is always returned since RPC operations and iModel queries are not valid without a backend iModel.
+   */
+  public get isOpen(): boolean { return false; }
+
+  /** There are no connections to the backend to close in the case of a BlankConnection.
+   * However, there are frontend resources (like the tile cache) that can be disposed.
+   * @note A BlankConnection should not be used after calling `close`.
+   */
+  public async close(): Promise<void> {
+    this.beforeClose(); // raise events and clean up the tile cache
+  }
 }
 
 /** A connection to a [SnapshotDb]($backend) hosted on the backend.
@@ -706,14 +732,14 @@ export class BlankConnection extends IModelConnection {
  */
 export class SnapshotConnection extends IModelConnection {
   private constructor(iModelProps: IModelProps, openMode: OpenMode) {
-    super(iModelProps, openMode, false);
+    super(iModelProps, openMode);
   }
 
   /** Open an IModelConnection to a read-only iModel *snapshot* (not managed by iModelHub) from a file name that is resolved by the backend.
    * This method is intended for desktop or mobile applications and should not be used for web applications.
    * @beta
    */
-  public static async openSnapshot(fileName: string): Promise<SnapshotConnection> {
+  public static async open(fileName: string): Promise<SnapshotConnection> {
     const openResponse: IModelProps = await SnapshotIModelRpcInterface.getClient().openSnapshot(fileName);
     Logger.logTrace(loggerCategory, "SnapshotConnection.openSnapshot", () => ({ fileName }));
     const connection = new SnapshotConnection(openResponse, OpenMode.Readonly);
@@ -724,7 +750,7 @@ export class SnapshotConnection extends IModelConnection {
   /** Close this IModelConnection to a read-only iModel *snapshot*.
    * @beta
    */
-  public async closeSnapshot(): Promise<void> {
+  public async close(): Promise<void> {
     this.beforeClose();
     if (!this.isOpen) {
       return;

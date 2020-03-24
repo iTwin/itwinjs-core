@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { IModelApp, SnapshotConnection, StandardViewId, StandardViewTool, WindowAreaTool } from "@bentley/imodeljs-frontend";
+import { IModelApp, IModelConnection, SnapshotConnection, StandardViewId, StandardViewTool, WindowAreaTool } from "@bentley/imodeljs-frontend";
 import { EditTextTool, LineTool, MarkupApp, SelectTool } from "@bentley/imodeljs-markup";
 import { Element, G, LinkedHTMLElement } from "@svgdotjs/svg.js";
 import { assert } from "chai";
@@ -12,12 +12,12 @@ import { createOnScreenTestViewport, ScreenTestViewport } from "../TestViewport"
 const testIModelName = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/mirukuru.ibim");
 
 describe("Markup tests", async () => {
-  let imodel: SnapshotConnection;
+  let imodel: IModelConnection;
   let vp: ScreenTestViewport;
 
   before(async () => {
     IModelApp.startup();
-    imodel = await SnapshotConnection.openSnapshot(testIModelName);
+    imodel = await SnapshotConnection.open(testIModelName);
     await MarkupApp.initialize();
     vp = await createOnScreenTestViewport("0x24", imodel, 500, 500);
     await MarkupApp.start(vp);
@@ -25,7 +25,7 @@ describe("Markup tests", async () => {
 
   after(async () => {
     vp.dispose();
-    if (imodel) await imodel.closeSnapshot();
+    if (imodel) await imodel.close();
     IModelApp.shutdown();
   });
 

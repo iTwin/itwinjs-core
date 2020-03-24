@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { using } from "@bentley/bentleyjs-core";
-import { SnapshotConnection } from "@bentley/imodeljs-frontend";
+import { IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
 import { ChildNodeSpecificationTypes, RegisteredRuleset, Ruleset, RuleTypes } from "@bentley/presentation-common";
 import { Presentation, PresentationManager } from "@bentley/presentation-frontend";
 import { expect } from "chai";
@@ -35,16 +35,16 @@ const RULESET_2: Ruleset = {
 
 describe("Rulesets", async () => {
 
-  let imodel: SnapshotConnection;
+  let imodel: IModelConnection;
 
   before(async () => {
     await initialize();
     const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
-    imodel = await SnapshotConnection.openSnapshot(testIModelName);
+    imodel = await SnapshotConnection.open(testIModelName);
   });
 
   after(async () => {
-    await imodel.closeSnapshot();
+    await imodel.close();
     terminate();
   });
 

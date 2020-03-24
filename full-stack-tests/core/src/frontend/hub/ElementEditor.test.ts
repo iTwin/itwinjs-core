@@ -2,15 +2,15 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
-import { IModelConnection, ElementEditor3d, IModelApp, IModelAppOptions, BeButtonEvent, Viewport } from "@bentley/imodeljs-frontend";
-import { Code } from "@bentley/imodeljs-common";
-import { Point3d, LineSegment3d, IModelJson, YawPitchRollAngles } from "@bentley/geometry-core";
-import { OpenMode, Id64String } from "@bentley/bentleyjs-core";
-import { TestUtility } from "./TestUtility";
-import { TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
-import { PlacementTestTool } from "./TestPrimitiveTools";
+import { Id64String, OpenMode } from "@bentley/bentleyjs-core";
+import { IModelJson, LineSegment3d, Point3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import { LockLevel } from "@bentley/imodeljs-clients";
+import { Code } from "@bentley/imodeljs-common";
+import { BeButtonEvent, BriefcaseConnection, ElementEditor3d, IModelApp, IModelAppOptions, IModelConnection, Viewport } from "@bentley/imodeljs-frontend";
+import { TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
+import { assert } from "chai";
+import { PlacementTestTool } from "./TestPrimitiveTools";
+import { TestUtility } from "./TestUtility";
 
 const testProjectName = "iModelJsIntegrationTest";
 const testIModelName = "elementEditorTest";
@@ -48,7 +48,7 @@ describe("Element editor tests (#integration)", async () => {
     assert.isTrue(imodelId !== undefined);
     assert.isTrue(imodelId !== "");
 
-    iModel = await IModelConnection.open(contextId, imodelId, OpenMode.ReadWrite);
+    iModel = await BriefcaseConnection.open(contextId, imodelId, OpenMode.ReadWrite);
   });
 
   after(async () => {

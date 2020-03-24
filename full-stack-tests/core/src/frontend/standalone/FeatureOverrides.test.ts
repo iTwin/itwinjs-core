@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { Id64 } from "@bentley/bentleyjs-core";
 import { Feature, FeatureTable, GeometryClass, PackedFeatureTable } from "@bentley/imodeljs-common";
-import { HiliteSet, IModelApp, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId } from "@bentley/imodeljs-frontend";
+import { HiliteSet, IModelApp, IModelConnection, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId } from "@bentley/imodeljs-frontend";
 import { FeatureOverrides, Target } from "@bentley/imodeljs-frontend/lib/webgl";
 import { assert, expect } from "chai";
 import * as path from "path";
@@ -20,7 +20,7 @@ function waitUntilTimeHasPassed() {
 }
 
 describe("FeatureOverrides tests", () => {
-  let imodel: SnapshotConnection;
+  let imodel: IModelConnection;
   let spatialView: SpatialViewState;
   let vp: ScreenViewport;
 
@@ -31,13 +31,13 @@ describe("FeatureOverrides tests", () => {
 
   before(async () => {   // Create a ViewState to load into a Viewport
     IModelApp.startup();
-    imodel = await SnapshotConnection.openSnapshot(iModelLocation);
+    imodel = await SnapshotConnection.open(iModelLocation);
     spatialView = await imodel.views.load("0x34") as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
   });
 
   after(async () => {
-    if (imodel) await imodel.closeSnapshot();
+    if (imodel) await imodel.close();
     IModelApp.shutdown();
   });
 

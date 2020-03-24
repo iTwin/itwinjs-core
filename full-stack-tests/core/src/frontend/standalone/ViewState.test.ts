@@ -20,6 +20,7 @@ import {
   CategorySelectorState,
   DisplayStyle3dState,
   DrawingModelState,
+  IModelConnection,
   MarginPercent,
   MockRender,
   ModelSelectorState,
@@ -38,26 +39,26 @@ const iModelLocation = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backe
 const iModelLocation2 = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/CompatibilityTestSeed.bim");
 
 describe("ViewState", () => {
-  let imodel: SnapshotConnection;
-  let imodel2: SnapshotConnection;
+  let imodel: IModelConnection;
+  let imodel2: IModelConnection;
   let viewState: SpatialViewState;
   let unitTestRpcImp: TestRpcInterface;
 
   before(async () => {
     MockRender.App.startup();
-    imodel = await SnapshotConnection.openSnapshot(iModelLocation);
+    imodel = await SnapshotConnection.open(iModelLocation);
     const viewRows: ViewDefinitionProps[] = await imodel.views.queryProps({ from: SpatialViewState.classFullName });
     assert.exists(viewRows, "Should find some views");
     viewState = await imodel.views.load(viewRows[0].id!) as SpatialViewState;
 
-    imodel2 = await SnapshotConnection.openSnapshot(iModelLocation2);
+    imodel2 = await SnapshotConnection.open(iModelLocation2);
 
     unitTestRpcImp = TestRpcInterface.getClient();
   });
 
   after(async () => {
-    if (imodel) await imodel.closeSnapshot();
-    if (imodel2) await imodel2.closeSnapshot();
+    if (imodel) await imodel.close();
+    if (imodel2) await imodel2.close();
     MockRender.App.shutdown();
   });
 

@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
-import { OpenMode, Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { TestUtility } from "./TestUtility";
+import { Logger, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
+import { BriefcaseConnection, IModelApp, IModelAppOptions, IModelConnection, MockRender } from "@bentley/imodeljs-frontend";
 import { TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
+import { assert } from "chai";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
-import { IModelConnection, MockRender, IModelApp, IModelAppOptions } from "@bentley/imodeljs-frontend";
+import { TestUtility } from "./TestUtility";
 
 const testProjectName = "iModelJsIntegrationTest";
 const testIModelName = "ReadWriteTest";
@@ -21,7 +21,7 @@ async function executeQuery(iModel: IModelConnection, ecsql: string, bindings?: 
 }
 
 describe("ChangeSummary (#integration)", () => {
-  let iModel: IModelConnection;
+  let iModel: BriefcaseConnection;
   let testProjectId: string;
   let testIModelId: string;
 
@@ -42,7 +42,7 @@ describe("ChangeSummary (#integration)", () => {
     testProjectId = await TestUtility.getTestProjectId(testProjectName);
     testIModelId = await TestUtility.getTestIModelId(testProjectId, testIModelName);
 
-    iModel = await IModelConnection.open(testProjectId, testIModelId);
+    iModel = await BriefcaseConnection.open(testProjectId, testIModelId);
   });
 
   after(async () => {
@@ -67,12 +67,11 @@ describe("ChangeSummary (#integration)", () => {
   // FIXME: This test has apparently been failing for a while now...
   it.skip("Change cache file generation during change summary extraction", async () => {
     assert.exists(iModel);
-    // for now, imodel must be open readwrite for changesummary extraction
+    // for now, imodel must be open read/write for changesummary extraction
     await iModel.close();
 
-    const testIModel: IModelConnection = await IModelConnection.open(testProjectId, testIModelId, OpenMode.ReadWrite);
+    const testIModel: BriefcaseConnection = await BriefcaseConnection.open(testProjectId, testIModelId, OpenMode.ReadWrite);
     try {
-
       await TestRpcInterface.getClient().deleteChangeCache(testIModel.iModelToken.toJSON());
       await TestRpcInterface.getClient().extractChangeSummaries(testIModel.iModelToken.toJSON(), { currentChangeSetOnly: true });
       await testIModel.attachChangeCache();

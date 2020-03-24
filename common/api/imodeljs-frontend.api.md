@@ -1475,7 +1475,9 @@ export class BingElevationProvider {
 
 // @beta
 export class BlankConnection extends IModelConnection {
+    close(): Promise<void>;
     static create(props: BlankConnectionProps): BlankConnection;
+    get isOpen(): boolean;
 }
 
 // @beta
@@ -1485,6 +1487,20 @@ export interface BlankConnectionProps {
     location: Cartographic | EcefLocationProps;
     name: string;
 }
+
+// @public
+export class BriefcaseConnection extends IModelConnection {
+    // @internal
+    attachChangeCache(): Promise<void>;
+    // @internal
+    changeCacheAttached(): Promise<boolean>;
+    close(): Promise<void>;
+    // @internal
+    static createForNativeAppBriefcase(iModelProps: IModelProps, openMode: OpenMode): BriefcaseConnection;
+    // @internal
+    detachChangeCache(): Promise<void>;
+    static open(contextId: string, iModelId: string, openMode?: OpenMode, version?: IModelVersion): Promise<BriefcaseConnection>;
+    }
 
 // @internal
 export interface CachedIModelCoordinatesResponseProps {
@@ -3791,24 +3807,16 @@ export interface IModelAppOptions {
 }
 
 // @public
-export class IModelConnection extends IModel {
+export abstract class IModelConnection extends IModel {
     // @internal
-    protected constructor(iModel: IModelProps, openMode: OpenMode, isNativeAppBriefcase: boolean);
+    protected constructor(iModel: IModelProps, openMode: OpenMode);
     // @internal
-    attachChangeCache(): Promise<void>;
-    // @internal (undocumented)
     protected beforeClose(): void;
     cartographicToSpatial(cartographic: Cartographic, result?: Point3d): Promise<Point3d>;
     cartographicToSpatialFromGcs(cartographic: Cartographic, result?: Point3d): Promise<Point3d>;
-    // @internal
-    changeCacheAttached(): Promise<boolean>;
-    close(): Promise<void>;
+    abstract close(): Promise<void>;
     readonly codeSpecs: IModelConnection.CodeSpecs;
     static connectionTimeout: number;
-    // @internal
-    static createForNativeAppBriefcase(iModel: IModelProps, openMode: OpenMode): IModelConnection;
-    // @internal
-    detachChangeCache(): Promise<void>;
     // @internal (undocumented)
     disableGCS(disable: boolean): void;
     // @internal
@@ -3833,6 +3841,8 @@ export class IModelConnection extends IModel {
     get isBlank(): boolean;
     // @beta
     isBlankConnection(): this is BlankConnection;
+    get isBriefcase(): boolean;
+    isBriefcaseConnection(): this is BriefcaseConnection;
     // @beta
     get isClosed(): boolean;
     // @beta
@@ -3851,7 +3861,6 @@ export class IModelConnection extends IModel {
     // @beta
     readonly onClose: BeEvent<(_imodel: IModelConnection) => void>;
     static readonly onOpen: BeEvent<(_imodel: IModelConnection) => void>;
-    static open(contextId: string, iModelId: string, openMode?: OpenMode, version?: IModelVersion): Promise<IModelConnection>;
     readonly openMode: OpenMode;
     // @beta
     query(ecsql: string, bindings?: any[] | object, limitRows?: number, quota?: QueryQuota, priority?: QueryPriority): AsyncIterableIterator<any>;
@@ -5334,7 +5343,7 @@ export class NativeApp {
     // (undocumented)
     static onMemoryWarning: BeEvent<() => void>;
     // (undocumented)
-    static openBriefcase(requestContext: AuthorizedClientRequestContext, iModelToken: IModelTokenProps): Promise<IModelConnection>;
+    static openBriefcase(requestContext: AuthorizedClientRequestContext, iModelToken: IModelTokenProps): Promise<BriefcaseConnection>;
     static openStorage(name: string): Promise<Storage>;
     // (undocumented)
     static overrideInternetConnectivity(status: InternetConnectivityStatus): Promise<void>;
@@ -7532,8 +7541,8 @@ export enum SnapMode {
 
 // @beta
 export class SnapshotConnection extends IModelConnection {
-    closeSnapshot(): Promise<void>;
-    static openSnapshot(fileName: string): Promise<SnapshotConnection>;
+    close(): Promise<void>;
+    static open(fileName: string): Promise<SnapshotConnection>;
 }
 
 // @public (undocumented)

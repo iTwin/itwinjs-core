@@ -2,21 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+import { Id64, Id64Set, OpenMode } from "@bentley/bentleyjs-core";
+import { Matrix4d, Point3d, Transform, XYZProps, YawPitchRollAngles } from "@bentley/geometry-core";
+import { AccessToken } from "@bentley/imodeljs-clients";
+import { EcefLocation, GeoCoordStatus, IModelCoordinatesResponseProps, IModelReadRpcInterface, IModelTileRpcInterface, MassPropertiesOperation, MassPropertiesRequestProps, ModelQueryParams, SnapResponseProps } from "@bentley/imodeljs-common";
+import { BriefcaseConnection, IModelApp, IModelConnection, SpatialModelState, ViewState } from "@bentley/imodeljs-frontend";
+import { AuthorizationClient } from "./setup/AuthorizationClient";
+import { TestContext } from "./setup/TestContext";
 
 import * as chai from "chai";
 const expect = chai.expect;
-
-import { Id64, Id64Set, OpenMode } from "@bentley/bentleyjs-core";
-import { Matrix4d, Point3d, Transform, YawPitchRollAngles, XYZProps } from "@bentley/geometry-core";
-import { AccessToken } from "@bentley/imodeljs-clients";
-import {
-  IModelTileRpcInterface, MassPropertiesOperation, EcefLocation, IModelReadRpcInterface,
-  ModelQueryParams, SnapResponseProps, IModelCoordinatesResponseProps, GeoCoordStatus, MassPropertiesRequestProps,
-} from "@bentley/imodeljs-common";
-import { IModelApp, IModelConnection, SpatialModelState, ViewState } from "@bentley/imodeljs-frontend";
-
-import { AuthorizationClient } from "./setup/AuthorizationClient";
-import { TestContext } from "./setup/TestContext";
 
 // tslint:disable-next-line:no-var-requires
 (global as any).btoa = (str: string) => {
@@ -43,7 +38,7 @@ describe("IModel Connection", () => {
     const openMode = OpenMode.Readonly;
     const iModelId = testContext.iModelWithChangesets!.iModelId;
 
-    const iModel: IModelConnection = await IModelConnection.open(contextId, iModelId, openMode);
+    const iModel: IModelConnection = await BriefcaseConnection.open(contextId, iModelId, openMode);
 
     expect(iModel).to.exist.and.be.not.empty;
 
@@ -54,7 +49,7 @@ describe("IModel Connection", () => {
   it("should successfully close an open an IModelConnection", async () => {
     const iModelId = testContext.iModelWithChangesets!.iModelId;
     const contextId = testContext.iModelWithChangesets!.contextId;
-    const iModel: IModelConnection = await IModelConnection.open(contextId, iModelId);
+    const iModel: IModelConnection = await BriefcaseConnection.open(contextId, iModelId);
 
     expect(iModel).to.exist;
     return expect(iModel.close()).to.eventually.be.fulfilled;
@@ -78,7 +73,7 @@ describe("IModelConnection Tiles", () => {
     contextId = testContext.iModelWithChangesets!.contextId;
     accessToken = testContext.adminUserAccessToken;
     (IModelApp.authorizationClient as AuthorizationClient).setAccessToken(accessToken);
-    iModel = await IModelConnection.open(contextId, iModelId);
+    iModel = await BriefcaseConnection.open(contextId, iModelId);
   });
 
   it("IModelTileRpcInterface method getTileCacheContainerUrl should work as expected", async () => {
@@ -208,7 +203,7 @@ describe("IModelReadRpcInterface Methods requestable from an IModelConnection", 
     contextId = testContext.iModelWithChangesets!.contextId;
     accessToken = testContext.adminUserAccessToken;
     (IModelApp.authorizationClient as AuthorizationClient).setAccessToken(accessToken);
-    iModel = await IModelConnection.open(contextId, iModelId);
+    iModel = await BriefcaseConnection.open(contextId, iModelId);
   });
 
   it("IModelReadRpcInterface method queryEntityIds should work as expected", async () => {
@@ -408,7 +403,7 @@ describe("Snapping", () => {
     contextId = testContext.iModelWithChangesets!.contextId;
     accessToken = testContext.adminUserAccessToken;
     (IModelApp.authorizationClient as AuthorizationClient).setAccessToken(accessToken);
-    iModel = await IModelConnection.open(contextId, iModelId);
+    iModel = await BriefcaseConnection.open(contextId, iModelId);
   });
 
   it("should be able to request a snap", async () => {

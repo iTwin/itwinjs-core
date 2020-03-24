@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { SnapshotConnection } from "@bentley/imodeljs-frontend";
+import { IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
 import { Ruleset } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
 import { HierarchyBuilder, initialize, terminate } from "@bentley/presentation-testing";
@@ -16,7 +16,7 @@ import TestUtils from "../TestUtils";
 describe("ModelSelector", () => {
 
   const testIModelPath = "src/test/test-data/Properties_60InstancesWithUrl2.ibim";
-  let imodel: SnapshotConnection;
+  let imodel: IModelConnection;
   let hierarchyBuilder: HierarchyBuilder;
 
   before(async () => {
@@ -30,12 +30,12 @@ describe("ModelSelector", () => {
   });
 
   beforeEach(async () => {
-    imodel = await SnapshotConnection.openSnapshot(testIModelPath);
+    imodel = await SnapshotConnection.open(testIModelPath);
     hierarchyBuilder = new HierarchyBuilder({ imodel });
   });
 
   afterEach(async () => {
-    await imodel.closeSnapshot();
+    await imodel.close();
   });
 
   describe("Model", () => {

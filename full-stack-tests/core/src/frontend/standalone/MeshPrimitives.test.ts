@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { Point2d, Point3d, Range3d } from "@bentley/geometry-core";
 import { ColorDef, MeshPolyline, OctEncodedNormal, QPoint3d } from "@bentley/imodeljs-common";
-import { MockRender, SnapshotConnection, SpatialViewState, StandardViewId } from "@bentley/imodeljs-frontend";
+import { IModelConnection, MockRender, SnapshotConnection, SpatialViewState, StandardViewId } from "@bentley/imodeljs-frontend";
 import { DisplayParams, Mesh, Triangle } from "@bentley/imodeljs-frontend/lib/render-primitives";
 import { assert, expect } from "chai";
 import * as path from "path";
@@ -20,7 +20,7 @@ export class FakeDisplayParams extends DisplayParams {
  * tests all paths for each public method
  */
 describe("MeshPrimitive Tests", () => {
-  let imodel: SnapshotConnection;
+  let imodel: IModelConnection;
   let spatialView: SpatialViewState;
 
   const canvas = document.createElement("canvas") as HTMLCanvasElement;
@@ -30,13 +30,13 @@ describe("MeshPrimitive Tests", () => {
 
   before(async () => {   // Create a ViewState to load into a Viewport
     MockRender.App.startup();
-    imodel = await SnapshotConnection.openSnapshot(iModelLocation);
+    imodel = await SnapshotConnection.open(iModelLocation);
     spatialView = await imodel.views.load("0x34") as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
   });
 
   after(async () => {
-    if (imodel) await imodel.closeSnapshot();
+    if (imodel) await imodel.close();
     MockRender.App.shutdown();
   });
 

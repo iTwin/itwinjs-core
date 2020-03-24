@@ -266,15 +266,15 @@ async function processEachCylinder(imodel: IModelConnection, processGraphic: Pro
 
 // These tests require the real (webgl-based) RenderSystem.
 describe("TileIO (WebGL)", () => {
-  let imodel: SnapshotConnection;
+  let imodel: IModelConnection;
 
   before(async () => {
     IModelApp.startup();
-    imodel = await SnapshotConnection.openSnapshot(iModelLocation);
+    imodel = await SnapshotConnection.open(iModelLocation);
   });
 
   after(async () => {
-    if (imodel) await imodel.closeSnapshot();
+    if (imodel) await imodel.close();
     IModelApp.shutdown();
   });
 
@@ -436,15 +436,15 @@ describe("TileIO (WebGL)", () => {
 
 // These tests use the mock RenderSystem (do not require WebGL) so will execute in Windows CI job.
 describe("TileIO (mock render)", () => {
-  let imodel: SnapshotConnection;
+  let imodel: IModelConnection;
 
   before(async () => {
     MockRender.App.startup();
-    imodel = await SnapshotConnection.openSnapshot(iModelLocation);
+    imodel = await SnapshotConnection.open(iModelLocation);
   });
 
   after(async () => {
-    if (imodel) await imodel.closeSnapshot();
+    if (imodel) await imodel.close();
     MockRender.App.shutdown();
   });
 
@@ -583,7 +583,7 @@ async function getPrimaryTileTree(model: GeometricModelState, edgesRequired = tr
 }
 
 describe("mirukuru TileTree", () => {
-  let imodel: SnapshotConnection;
+  let imodel: IModelConnection;
 
   class TestTarget extends MockRender.OnScreenTarget {
     public setRenderToScreen(toScreen: boolean): HTMLCanvasElement | undefined {
@@ -598,7 +598,7 @@ describe("mirukuru TileTree", () => {
   before(async () => {
     MockRender.App.systemFactory = () => new TestSystem();
     MockRender.App.startup();
-    imodel = await SnapshotConnection.openSnapshot(path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/mirukuru.ibim"));
+    imodel = await SnapshotConnection.open(path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/mirukuru.ibim"));
   });
 
   afterEach(() => {
@@ -615,7 +615,7 @@ describe("mirukuru TileTree", () => {
   });
 
   after(async () => {
-    if (imodel) await imodel.closeSnapshot();
+    if (imodel) await imodel.close();
     MockRender.App.shutdown();
   });
 
@@ -831,11 +831,11 @@ describe("mirukuru TileTree", () => {
 });
 
 describe("TileAdmin", () => {
-  let theIModel: SnapshotConnection | undefined;
+  let theIModel: IModelConnection | undefined;
 
   const cleanup = async () => {
     if (theIModel) {
-      await theIModel.closeSnapshot();
+      await theIModel.close();
       theIModel = undefined;
     }
 
@@ -855,7 +855,7 @@ describe("TileAdmin", () => {
         tileAdmin: TileAdmin.create(props),
       });
 
-      theIModel = await SnapshotConnection.openSnapshot(path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/mirukuru.ibim"));
+      theIModel = await SnapshotConnection.open(path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/mirukuru.ibim"));
       return theIModel;
     }
 
@@ -866,7 +866,7 @@ describe("TileAdmin", () => {
 
     public static async stop() {
       if (undefined !== theIModel) {
-        await theIModel.closeSnapshot();
+        await theIModel.close();
         theIModel = undefined;
       }
 

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 // tslint:disable:no-direct-imports
 import { Id64, Id64String } from "@bentley/bentleyjs-core";
-import { SnapshotConnection } from "@bentley/imodeljs-frontend";
+import { IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
 import { KeySet } from "@bentley/presentation-common";
 import { waitForAllAsyncs } from "@bentley/presentation-common/lib/test/_helpers/PendingAsyncsHelper";
 import { createRandomId, createRandomTransientId } from "@bentley/presentation-common/lib/test/_helpers/random";
@@ -16,17 +16,17 @@ import { initialize, terminate } from "../IntegrationTests";
 
 describe("Unified Selection", () => {
 
-  let imodel: SnapshotConnection;
+  let imodel: IModelConnection;
 
   before(async () => {
     await initialize();
     const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
-    imodel = await SnapshotConnection.openSnapshot(testIModelName);
+    imodel = await SnapshotConnection.open(testIModelName);
     expect(imodel).is.not.null;
   });
 
   after(async () => {
-    await imodel.closeSnapshot();
+    await imodel.close();
     terminate();
   });
 

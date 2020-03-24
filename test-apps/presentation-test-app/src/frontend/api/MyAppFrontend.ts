@@ -7,7 +7,7 @@ import { IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend
 import SampleRpcInterface from "../../common/SampleRpcInterface";
 
 export class MyAppFrontend {
-  public static iModel: SnapshotConnection | undefined;
+  public static iModel: IModelConnection | undefined;
 
   public static async getSampleImodels(): Promise<string[]> {
     return SampleRpcInterface.getClient().getSampleImodels();
@@ -18,7 +18,7 @@ export class MyAppFrontend {
   }
 
   public static async openIModel(path: string): Promise<IModelConnection> {
-    this.iModel = await SnapshotConnection.openSnapshot(path);
+    this.iModel = await SnapshotConnection.open(path);
     Logger.logInfo("presentation", "Opened: " + this.iModel.name);
     return this.iModel;
   }

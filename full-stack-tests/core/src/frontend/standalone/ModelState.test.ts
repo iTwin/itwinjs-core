@@ -4,27 +4,27 @@
 *--------------------------------------------------------------------------------------------*/
 import { Id64 } from "@bentley/bentleyjs-core";
 import { Code, IModel, ModelSelectorProps } from "@bentley/imodeljs-common";
-import { DrawingModelState, GeometricModelState, MockRender, ModelSelectorState, SheetModelState, SnapshotConnection, SpatialModelState } from "@bentley/imodeljs-frontend";
+import { DrawingModelState, GeometricModelState, IModelConnection, MockRender, ModelSelectorState, SheetModelState, SnapshotConnection, SpatialModelState } from "@bentley/imodeljs-frontend";
 import { assert, expect } from "chai";
 import * as path from "path";
 
 const iModelLocation = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/");
 
 describe("ModelState", () => {
-  let imodel: SnapshotConnection;
-  let imodel2: SnapshotConnection;
-  let imodel3: SnapshotConnection;
+  let imodel: IModelConnection;
+  let imodel2: IModelConnection;
+  let imodel3: IModelConnection;
   before(async () => {
     MockRender.App.startup();
-    imodel2 = await SnapshotConnection.openSnapshot(iModelLocation + "mirukuru.ibim");
-    imodel = await SnapshotConnection.openSnapshot(iModelLocation + "CompatibilityTestSeed.bim");
-    imodel3 = await SnapshotConnection.openSnapshot(iModelLocation + "test.bim");
+    imodel2 = await SnapshotConnection.open(iModelLocation + "mirukuru.ibim");
+    imodel = await SnapshotConnection.open(iModelLocation + "CompatibilityTestSeed.bim");
+    imodel3 = await SnapshotConnection.open(iModelLocation + "test.bim");
   });
 
   after(async () => {
-    if (imodel) await imodel.closeSnapshot();
-    if (imodel2) await imodel2.closeSnapshot();
-    if (imodel3) await imodel3.closeSnapshot();
+    if (imodel) await imodel.close();
+    if (imodel2) await imodel2.close();
+    if (imodel3) await imodel3.close();
     MockRender.App.shutdown();
   });
 

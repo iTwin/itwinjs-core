@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { Arc3d, LineString3d, Loop, Point3d, Range3d, Transform } from "@bentley/geometry-core";
 import { ColorDef, GraphicParams } from "@bentley/imodeljs-common";
-import { GraphicType, MockRender, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId } from "@bentley/imodeljs-frontend";
+import { GraphicType, IModelConnection, MockRender, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId } from "@bentley/imodeljs-frontend";
 import { DisplayParams, Geometry, Mesh, MeshBuilder, PolyfacePrimitive, PolyfacePrimitiveList, PrimitiveBuilder, StrokesPrimitiveList, StrokesPrimitivePointLists, ToleranceRatio, Triangle } from "@bentley/imodeljs-frontend/lib/render-primitives";
 import { System } from "@bentley/imodeljs-frontend/lib/webgl";
 import { assert, expect } from "chai";
@@ -21,7 +21,7 @@ export class FakeDisplayParams extends DisplayParams {
  * tests all paths for each public method
  */
 describe("Mesh Builder Tests", () => {
-  let imodel: SnapshotConnection;
+  let imodel: IModelConnection;
   let spatialView: SpatialViewState;
 
   const viewDiv = document.createElement("div") as HTMLDivElement;
@@ -31,13 +31,13 @@ describe("Mesh Builder Tests", () => {
 
   before(async () => {   // Create a ViewState to load into a Viewport
     MockRender.App.startup();
-    imodel = await SnapshotConnection.openSnapshot(iModelLocation);
+    imodel = await SnapshotConnection.open(iModelLocation);
     spatialView = await imodel.views.load("0x34") as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
   });
 
   after(async () => {
-    if (imodel) await imodel.closeSnapshot();
+    if (imodel) await imodel.close();
     MockRender.App.shutdown();
   });
 

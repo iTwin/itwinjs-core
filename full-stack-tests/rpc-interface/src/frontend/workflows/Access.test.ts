@@ -2,20 +2,18 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+import { OpenMode } from "@bentley/bentleyjs-core";
+import { Range3d } from "@bentley/geometry-core";
+import { IModelError } from "@bentley/imodeljs-common";
+import { BriefcaseConnection, IModelApp } from "@bentley/imodeljs-frontend";
+import { AuthorizationClient } from "../setup/AuthorizationClient";
+import { TestContext } from "../setup/TestContext";
 
 import * as chai from "chai";
 const expect = chai.expect;
 
 import chaiAsPromised = require("chai-as-promised");
 chai.use(chaiAsPromised);
-
-import { OpenMode } from "@bentley/bentleyjs-core";
-import { IModelConnection, IModelApp } from "@bentley/imodeljs-frontend";
-import { Range3d } from "@bentley/geometry-core";
-import { IModelError } from "@bentley/imodeljs-common";
-
-import { TestContext } from "../setup/TestContext";
-import { AuthorizationClient } from "../setup/AuthorizationClient";
 
 describe("Access", () => {
   let testContext: TestContext;
@@ -31,7 +29,7 @@ describe("Access", () => {
 
     const accessToken = testContext.adminUserAccessToken;
     (IModelApp.authorizationClient as AuthorizationClient).setAccessToken(accessToken);
-    const iModel = await IModelConnection.open(contextId, iModelId, openMode);
+    const iModel = await BriefcaseConnection.open(contextId, iModelId, openMode);
 
     await expect(iModel.saveChanges(), "Expected writing to iModel in read mode to fail").to.be.rejectedWith(IModelError);
   });
@@ -44,7 +42,7 @@ describe("Access", () => {
     const openMode = OpenMode.ReadWrite;
     const accessToken = testContext.adminUserAccessToken;
     (IModelApp.authorizationClient as AuthorizationClient).setAccessToken(accessToken);
-    await expect(IModelConnection.open(contextId, iModelId, openMode), "Expected opening iModel for write to fail").to.be.rejectedWith(IModelError);
+    await expect(BriefcaseConnection.open(contextId, iModelId, openMode), "Expected opening iModel for write to fail").to.be.rejectedWith(IModelError);
   });
 
   it("should fail to update project extents TestCase:878417", async () => {

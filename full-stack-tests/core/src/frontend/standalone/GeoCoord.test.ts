@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { Point3d, XYZProps } from "@bentley/geometry-core";
 import { GeoCoordinatesResponseProps, GeoCoordStatus, IModelCoordinatesResponseProps } from "@bentley/imodeljs-common";
-import { GeoConverter, IModelApp, SnapshotConnection } from "@bentley/imodeljs-frontend";
+import { GeoConverter, IModelApp, IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
 import { expect } from "chai";
 import * as path from "path";
 
@@ -13,7 +13,7 @@ const iModelLocation = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backe
 // spell-checker: disable
 
 describe("GeoCoord", () => {
-  let iModel: SnapshotConnection;
+  let iModel: IModelConnection;
   const geoPointList: XYZProps[] = [];
   let wgs84Converter: GeoConverter;
   let nad27Converter: GeoConverter;
@@ -23,7 +23,7 @@ describe("GeoCoord", () => {
 
   before(async () => {
     IModelApp.startup();
-    iModel = await SnapshotConnection.openSnapshot(iModelLocation);
+    iModel = await SnapshotConnection.open(iModelLocation);
     // make an array of 10x10 geoPoints in geoPointList.
     for (let iLatitude: number = 0; iLatitude < 10; iLatitude++) {
       for (let iLongitude: number = 0; iLongitude < 10; iLongitude++) {
@@ -36,7 +36,7 @@ describe("GeoCoord", () => {
   });
 
   after(async () => {
-    if (iModel) await iModel.closeSnapshot();
+    if (iModel) await iModel.close();
     IModelApp.shutdown();
   });
 

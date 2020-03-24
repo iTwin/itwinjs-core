@@ -3026,6 +3026,7 @@ export abstract class IModel implements IModelProps {
     get iModelToken(): IModelToken;
     // @internal (undocumented)
     protected initialize(name: string, props: IModelProps): void;
+    abstract get isBriefcase(): boolean;
     get isGeoLocated(): boolean;
     abstract get isSnapshot(): boolean;
     name: string;

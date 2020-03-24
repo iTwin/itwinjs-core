@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 // tslint:disable:no-direct-imports
 import { Id64 } from "@bentley/bentleyjs-core";
-import { SnapshotConnection } from "@bentley/imodeljs-frontend";
+import { IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
 import { ChildNodeSpecificationTypes, Ruleset, RuleTypes } from "@bentley/presentation-common";
 import { createRandomId } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { Presentation, PresentationManager, RulesetVariablesManager } from "@bentley/presentation-frontend";
@@ -260,17 +260,17 @@ describe("Ruleset Variables", async () => {
 
   describe("Multiple frontends for one backend", async () => {
 
-    let imodel: SnapshotConnection;
+    let imodel: IModelConnection;
     let frontends: PresentationManager[];
 
     beforeEach(async () => {
       const testIModelName = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
-      imodel = await SnapshotConnection.openSnapshot(testIModelName);
+      imodel = await SnapshotConnection.open(testIModelName);
       frontends = [0, 1].map(() => PresentationManager.create());
     });
 
     afterEach(async () => {
-      await imodel.closeSnapshot();
+      await imodel.close();
       frontends.forEach((f) => f.dispose());
     });
 
@@ -288,18 +288,18 @@ describe("Ruleset Variables", async () => {
 
   describe("Multiple backends for one frontend", async () => {
 
-    let imodel: SnapshotConnection;
+    let imodel: IModelConnection;
     let frontend: PresentationManager;
 
     beforeEach(async () => {
       const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
-      imodel = await SnapshotConnection.openSnapshot(testIModelName);
+      imodel = await SnapshotConnection.open(testIModelName);
       expect(imodel).is.not.null;
       frontend = PresentationManager.create();
     });
 
     afterEach(async () => {
-      await imodel.closeSnapshot();
+      await imodel.close();
       frontend.dispose();
     });
 

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { LineString3d, Loop, Path, Point3d, Range3d, StrokeOptions, Transform } from "@bentley/geometry-core";
 import { ColorDef, GraphicParams } from "@bentley/imodeljs-common";
-import { IModelApp, RenderGraphic, SnapshotConnection, SpatialViewState, StandardViewId } from "@bentley/imodeljs-frontend";
+import { IModelApp, IModelConnection, RenderGraphic, SnapshotConnection, SpatialViewState, StandardViewId } from "@bentley/imodeljs-frontend";
 import { DisplayParams, Geometry, GeometryAccumulator, GeometryOptions, PolyfacePrimitive, PolyfacePrimitiveList, StrokesPrimitiveList } from "@bentley/imodeljs-frontend/lib/render-primitives";
 import { Branch, System } from "@bentley/imodeljs-frontend/lib/webgl";
 import { assert, expect } from "chai";
@@ -27,7 +27,7 @@ export class FakeGeometry extends Geometry {
  * tests all paths for each public method
  */
 describe("GeometryAccumulator tests", () => {
-  let iModel: SnapshotConnection;
+  let iModel: IModelConnection;
   let spatialView: SpatialViewState;
   let accum: GeometryAccumulator;
 
@@ -38,13 +38,13 @@ describe("GeometryAccumulator tests", () => {
 
   before(async () => {   // Create a ViewState to load into a Viewport
     IModelApp.startup();
-    iModel = await SnapshotConnection.openSnapshot(iModelLocation);
+    iModel = await SnapshotConnection.open(iModelLocation);
     spatialView = await iModel.views.load("0x34") as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
   });
 
   after(async () => {
-    if (iModel) await iModel.closeSnapshot();
+    if (iModel) await iModel.close();
     IModelApp.shutdown();
   });
 

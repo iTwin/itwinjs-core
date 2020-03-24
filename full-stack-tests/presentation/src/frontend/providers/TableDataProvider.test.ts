@@ -38,14 +38,14 @@ const createMeaningfulInstances = async (imodel: IModelConnection): Promise<Mean
 
 describe("TableDataProvider", async () => {
 
-  let imodel: SnapshotConnection;
+  let imodel: IModelConnection;
   let instances: MeaningfulInstances;
   let provider: PresentationTableDataProvider;
 
   before(async () => {
     await initialize();
     const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
-    imodel = await SnapshotConnection.openSnapshot(testIModelName);
+    imodel = await SnapshotConnection.open(testIModelName);
     instances = await createMeaningfulInstances(imodel);
   });
 
@@ -54,7 +54,7 @@ describe("TableDataProvider", async () => {
   });
 
   after(async () => {
-    await imodel.closeSnapshot();
+    await imodel.close();
     terminate();
   });
 

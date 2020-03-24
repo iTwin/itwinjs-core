@@ -2,15 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as chai from "chai";
 import { GuidString, OpenMode, StopWatch } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext, HubIModel, ProjectShareClient } from "@bentley/imodeljs-clients";
 import { IModelVersion } from "@bentley/imodeljs-common";
-import { IModelConnection, IModelApp } from "@bentley/imodeljs-frontend";
+import { BriefcaseConnection, IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
 import { TestAuthorizationClient } from "@bentley/oidc-signin-tool/lib/TestUsers";
-
-import { ProjectShareHandler, PSPhotoFile } from "../../ProjectSharePhotoTree";
+import * as chai from "chai";
 import { PhotoFile, PhotoFolder, PhotoTree } from "../../PhotoTree";
+import { ProjectShareHandler, PSPhotoFile } from "../../ProjectSharePhotoTree";
 import { TestConfig } from "../TestConfig";
 
 chai.should();
@@ -132,7 +131,7 @@ describe("GeoPhoto (#integration)", () => {
     projectId = project.wsgId;
 
     const hubIModel: HubIModel = await TestConfig.queryIModel(requestContext, projectId, "PhotoTest");
-    iModel = await IModelConnection.open(projectId, hubIModel.wsgId, OpenMode.Readonly, IModelVersion.latest());
+    iModel = await BriefcaseConnection.open(projectId, hubIModel.wsgId, OpenMode.Readonly, IModelVersion.latest());
 
     const treeHandler = new ProjectShareHandler(requestContext, undefined as any, iModel, undefined);
     geoPhotoTest = new GeoPhotoTest(requestContext, iModel, treeHandler);

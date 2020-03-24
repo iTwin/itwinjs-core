@@ -1534,7 +1534,7 @@ describe("ModelsTree", () => {
 
   describe("#integration", () => {
 
-    let imodel: SnapshotConnection;
+    let imodel: IModelConnection;
     const testIModelPath = "src/test/test-data/JoesHouse.bim";
 
     before(async () => {
@@ -1546,11 +1546,11 @@ describe("ModelsTree", () => {
     });
 
     beforeEach(async () => {
-      imodel = await SnapshotConnection.openSnapshot(testIModelPath);
+      imodel = await SnapshotConnection.open(testIModelPath);
     });
 
     afterEach(async () => {
-      await imodel.closeSnapshot();
+      await imodel.close();
     });
 
     it("shows correct hierarchy", async () => {

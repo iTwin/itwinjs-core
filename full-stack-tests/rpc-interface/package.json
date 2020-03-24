@@ -23,7 +23,7 @@
     "copy:files": "cpx \"./rulesets/**/*\" ./lib/rulesets/",
     "cover": "",
     "docs": "",
-    "lint": "tslint --project .",
+    "lint": "tslint --project . 1>&2",
     "optest": "node ./node_modules/@bentley/certa/bin/certa.js -r chrome --fgrep \"Operational: \"",
     "start:backend": "node ./lib/test/backend.js",
     "test": "",

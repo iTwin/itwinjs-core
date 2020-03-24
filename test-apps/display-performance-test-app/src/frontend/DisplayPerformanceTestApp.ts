@@ -873,7 +873,7 @@ async function loadIModel(testConfig: DefaultConfigs): Promise<boolean> {
   let openLocalIModel = (testConfig.iModelLocation !== undefined) || MobileRpcConfiguration.isMobileFrontend;
   if (openLocalIModel) {
     try {
-      activeViewState.iModelConnection = await SnapshotConnection.openSnapshot(testConfig.iModelFile!);
+      activeViewState.iModelConnection = await SnapshotConnection.open(testConfig.iModelFile!);
     } catch (err) {
       alert("openSnapshot failed: " + err.toString());
       openLocalIModel = false;
@@ -1003,10 +1003,7 @@ async function loadIModel(testConfig: DefaultConfigs): Promise<boolean> {
 async function closeIModel() {
   debugPrint("start closeIModel" + activeViewState.iModelConnection);
   if (activeViewState.iModelConnection) {
-    if (activeViewState.iModelConnection instanceof SnapshotConnection)
-      await activeViewState.iModelConnection.closeSnapshot();
-    else
-      await activeViewState.iModelConnection!.close();
+    await activeViewState.iModelConnection.close();
   }
   debugPrint("end closeIModel");
 }

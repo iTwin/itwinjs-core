@@ -2,25 +2,25 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { SnapshotConnection } from "@bentley/imodeljs-frontend";
+import { IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
 import { PresentationLabelsProvider } from "@bentley/presentation-components";
 import { expect } from "chai";
 import { initialize, terminate } from "../../IntegrationTests";
 
 describe("LabelsProvider", async () => {
 
-  let imodel: SnapshotConnection;
+  let imodel: IModelConnection;
   let provider: PresentationLabelsProvider;
 
   before(async () => {
     await initialize();
     const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
-    imodel = await SnapshotConnection.openSnapshot(testIModelName);
+    imodel = await SnapshotConnection.open(testIModelName);
     provider = new PresentationLabelsProvider({ imodel });
   });
 
   after(async () => {
-    await imodel.closeSnapshot();
+    await imodel.close();
     terminate();
   });
 

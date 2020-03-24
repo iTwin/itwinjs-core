@@ -356,9 +356,7 @@ export class Viewer extends Window {
   }
 
   private async clearViews(): Promise<void> {
-    if (this._imodel instanceof SnapshotConnection) {
-      await this._imodel.closeSnapshot();
-    }
+    await this._imodel.close();
     this.views.clear();
   }
 
@@ -372,7 +370,7 @@ export class Viewer extends Window {
     const sameFile = filename === this._imodel.iModelToken.key;
     if (!sameFile) {
       try {
-        newIModel = await SnapshotConnection.openSnapshot(filename);
+        newIModel = await SnapshotConnection.open(filename);
       } catch (err) {
         alert(err.toString());
         return;
@@ -385,7 +383,7 @@ export class Viewer extends Window {
     await this.clearViews();
 
     if (sameFile)
-      newIModel = await SnapshotConnection.openSnapshot(filename);
+      newIModel = await SnapshotConnection.open(filename);
 
     this._imodel = newIModel!;
     await this.buildViewList();
@@ -441,9 +439,7 @@ export class Viewer extends Window {
   public onClosed(): void {
     if (undefined === IModelApp.viewManager.selectedView) {
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Closing iModel..."));
-      if (this._imodel instanceof SnapshotConnection) {
-        this._imodel.closeSnapshot().then(() => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "iModel closed."))); // tslint:disable-line:no-floating-promises
-      }
+      this._imodel.close().then(() => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "iModel closed."))); // tslint:disable-line:no-floating-promises
     }
   }
 }
