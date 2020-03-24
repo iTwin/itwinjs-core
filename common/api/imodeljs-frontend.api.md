@@ -1885,7 +1885,6 @@ export class DecorateContext extends RenderContext {
     addDecorationFromBuilder(builder: GraphicBuilder): void;
     addHtmlDecoration(decoration: HTMLElement): void;
     createGraphicBuilder(type: GraphicType, transform?: Transform, id?: Id64String): GraphicBuilder;
-    decorationDiv: HTMLDivElement;
     // @internal (undocumented)
     drawStandardGrid(gridOrigin: Point3d, rMatrix: Matrix3d, spacing: XAndY, gridsPerRef: number, _isoGrid?: boolean, _fixedRepetitions?: Point2d): void;
     get screenViewport(): ScreenViewport;

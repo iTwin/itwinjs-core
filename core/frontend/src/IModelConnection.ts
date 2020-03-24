@@ -678,7 +678,7 @@ export class IModelConnection extends IModel { // WIP: make abstract
   }
 }
 
-/** A connection without a specific backend and without an iModel. Useful for connecting to Reality Data services.
+/** A connection that exists without an iModel. Useful for connecting to Reality Data services.
  * @beta
  */
 export class BlankConnection extends IModelConnection {

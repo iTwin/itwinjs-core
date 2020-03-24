@@ -57,22 +57,30 @@ export class RenderContext {
   }
 
   /** Given a point in world coordinates, determine approximately how many pixels it occupies on screen based on this context's frustum. */
-  public getPixelSizeAtPoint(inPoint?: Point3d): number { return this.viewport.viewingSpace.getPixelSizeAtPoint(inPoint); }
+  public getPixelSizeAtPoint(inPoint?: Point3d): number {
+    return this.viewport.viewingSpace.getPixelSizeAtPoint(inPoint);
+  }
 
   /** @internal */
   public get target(): RenderTarget { return this.viewport.target; }
 
   /** @internal */
-  protected _createGraphicBuilder(type: GraphicType, transform?: Transform, id?: Id64String): GraphicBuilder { return this.target.createGraphicBuilder(type, this.viewport, transform, id); }
+  protected _createGraphicBuilder(type: GraphicType, transform?: Transform, id?: Id64String): GraphicBuilder {
+    return this.target.createGraphicBuilder(type, this.viewport, transform, id);
+  }
 
   /** Create a builder for creating a [[GraphicType.Scene]] [[RenderGraphic]] for rendering within this context's [[Viewport]].
    * @param transform the local-to-world transform in which the builder's geometry is to be defined.
    * @returns A builder for creating a [[GraphicType.Scene]] [[RenderGraphic]] for rendering within this context's [[Viewport]].
    */
-  public createSceneGraphicBuilder(transform?: Transform): GraphicBuilder { return this._createGraphicBuilder(GraphicType.Scene, transform); }
+  public createSceneGraphicBuilder(transform?: Transform): GraphicBuilder {
+    return this._createGraphicBuilder(GraphicType.Scene, transform);
+  }
 
   /** @internal */
-  public createGraphicBranch(branch: GraphicBranch, location: Transform, opts?: GraphicBranchOptions): RenderGraphic { return this.target.renderSystem.createGraphicBranch(branch, location, opts); }
+  public createGraphicBranch(branch: GraphicBranch, location: Transform, opts?: GraphicBranchOptions): RenderGraphic {
+    return this.target.renderSystem.createGraphicBranch(branch, location, opts);
+  }
 
   /** Create a [[RenderGraphic]] which groups a set of graphics into a node in a scene graph, applying to each a transform and optional clip volume and symbology overrides.
    * @param branch Contains the group of graphics and the symbology overrides.
@@ -98,21 +106,20 @@ export class DynamicsContext extends RenderContext {
   }
 
   /** @internal */
-  public changeDynamics(): void { this.viewport!.changeDynamics(this._dynamics); }
+  public changeDynamics(): void {
+    this.viewport!.changeDynamics(this._dynamics);
+  }
 }
 
 /** Provides context for a [[Decorator]] to add [[Decorations]] to be rendered within a [[Viewport]].
  * @public
  */
 export class DecorateContext extends RenderContext {
-  /** The HTMLDivElement which overlays the [[Viewport]]'s HTMLCanvasElement, to which HTML decorations are added. */
-  public decorationDiv: HTMLDivElement;
   /** The [[ScreenViewport]] in which this context's [[Decorations]] will be drawn. */
   public get screenViewport(): ScreenViewport { return this.viewport as ScreenViewport; }
   /** @internal */
   constructor(vp: ScreenViewport, private readonly _decorations: Decorations) {
     super(vp);
-    this.decorationDiv = vp.decorationDiv;
   }
 
   /** Create a builder for creating a [[RenderGraphic]] of the specified type appropriate for rendering within this context's [[Viewport]].
@@ -122,16 +129,20 @@ export class DecorateContext extends RenderContext {
    * @returns A builder for creating a [[RenderGraphic]] of the specified type appropriate for rendering within this context's [[Viewport]].
    * @see [[IModelConnection.transientIds]] for obtaining an ID for a pickable decoration.
    */
-  public createGraphicBuilder(type: GraphicType, transform?: Transform, id?: Id64String): GraphicBuilder { return this._createGraphicBuilder(type, transform, id); }
+  public createGraphicBuilder(type: GraphicType, transform?: Transform, id?: Id64String): GraphicBuilder {
+    return this._createGraphicBuilder(type, transform, id);
+  }
 
   /** Calls [[GraphicBuilder.finish]] on the supplied builder to obtain a [[RenderGraphic]], then adds the graphic to the appropriate list of
    * [[Decorations]].
    * @param builder The builder from which to extract the graphic.
    * @note The builder should not be used after calling this method.
    */
-  public addDecorationFromBuilder(builder: GraphicBuilder) { this.addDecoration(builder.type, builder.finish()); }
+  public addDecorationFromBuilder(builder: GraphicBuilder) {
+    this.addDecoration(builder.type, builder.finish());
+  }
 
-  /** Adds a graphic to the set of [[Decorations]] to be drawn in this context's [[Viewport]].
+  /** Adds a graphic to the set of [[Decorations]] to be drawn in this context's [[ScreenViewport]].
    * @param The type of the graphic, which determines to which list of decorations it is added.
    * @param decoration The decoration graphic to add.
    * @note The type must match the type with which the [[RenderGraphic]]'s [[GraphicBuilder]] was constructed.
@@ -169,7 +180,7 @@ export class DecorateContext extends RenderContext {
     }
   }
 
-  /** Add a [[CanvasDecoration]] to be drawn in this context's [[Viewport]]. */
+  /** Add a [[CanvasDecoration]] to be drawn in this context's [[ScreenViewport]]. */
   public addCanvasDecoration(decoration: CanvasDecoration, atFront = false) {
     if (undefined === this._decorations.canvasDecorations)
       this._decorations.canvasDecorations = [];
@@ -181,8 +192,10 @@ export class DecorateContext extends RenderContext {
       list.unshift(decoration);
   }
 
-  /** Add an HTMLElement to be drawn as a decoration in this context's [[Viewport]]. */
-  public addHtmlDecoration(decoration: HTMLElement) { this.decorationDiv.appendChild(decoration); }
+  /** Add an HTMLElement to be drawn as a decoration in this context's [[ScreenViewport]]. */
+  public addHtmlDecoration(decoration: HTMLElement) {
+    this.screenViewport.decorationDiv.appendChild(decoration);
+  }
 
   private getClippedGridPlanePoints(vp: Viewport, plane: Plane3dByOriginAndUnitNormal, loopPt: Point3d): Point3d[] | undefined {
     const frust = vp.getFrustum();
@@ -432,10 +445,14 @@ export class DecorateContext extends RenderContext {
   /** Display skyBox graphic that encompasses entire scene and rotates with camera.
    * @see [[RenderSystem.createSkyBox]].
    */
-  public setSkyBox(graphic: RenderGraphic) { this._decorations.skyBox = graphic; }
+  public setSkyBox(graphic: RenderGraphic) {
+    this._decorations.skyBox = graphic;
+  }
 
-  /** Set the graphic to be displayed behind all other geometry as the background of this context's [[Viewport]]. */
-  public setViewBackground(graphic: RenderGraphic) { this._decorations.viewBackground = graphic; }
+  /** Set the graphic to be displayed behind all other geometry as the background of this context's [[ScreenViewport]]. */
+  public setViewBackground(graphic: RenderGraphic) {
+    this._decorations.viewBackground = graphic;
+  }
 }
 
 /** Context used to create the scene for a [[Viewport]]. The scene consists of a set of [[RenderGraphic]]s produced by the
