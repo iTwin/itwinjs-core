@@ -20,18 +20,26 @@ export default function ToolSettings(props: ToolSettingsProps) {
     <DockedToolSettings
       panelContainer={PanelContainer}
     >
-      <ToolSetting
-        id="Custom"
-        type="checkbox"
-      />
+      <ToolSettingWrapper>
+        <ToolSetting
+          id="Custom"
+          type="checkbox"
+        />
+      </ToolSettingWrapper>
       {props.settings.map((setting) => {
         return (
-          <ToolSetting
-            key={setting.id}
-            {...setting}
-          />
+          <ToolSettingWrapper>
+            <ToolSetting
+              key={setting.id}
+              {...setting}
+            />
+          </ToolSettingWrapper>
         );
       })}
     </DockedToolSettings>
   );
+}
+
+function ToolSettingWrapper(props: { children?: React.ReactNode }) {
+  return <>{props.children}</>;
 }

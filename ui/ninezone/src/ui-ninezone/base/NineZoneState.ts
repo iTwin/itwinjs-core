@@ -44,7 +44,10 @@ export interface DraggedTabState {
 export interface WidgetsState { readonly [id: string]: WidgetState; }
 
 /** @internal future */
-export interface FloatingWidgetsState { readonly [id: string]: FloatingWidgetState | undefined; }
+export interface FloatingWidgetsState {
+  readonly byId: { readonly [id: string]: FloatingWidgetState };
+  readonly allIds: ReadonlyArray<FloatingWidgetState["id"]>;
+}
 
 /** @internal future */
 export interface TabTargetTabState {
@@ -133,6 +136,8 @@ export const PANEL_INITIALIZE = "PANEL_INITIALIZE";
 /** @internal future */
 export const FLOATING_WIDGET_RESIZE = "FLOATING_WIDGET_RESIZE";
 /** @internal future */
+export const FLOATING_WIDGET_BRING_TO_FRONT = "FLOATING_WIDGET_BRING_TO_FRONT";
+/** @internal future */
 export const PANEL_WIDGET_DRAG_START = "PANEL_WIDGET_DRAG_START";
 /** @internal future */
 export const WIDGET_DRAG = "WIDGET_DRAG";
@@ -186,6 +191,12 @@ export interface FloatingWidgetResizeAction {
   readonly type: typeof FLOATING_WIDGET_RESIZE;
   readonly id: FloatingWidgetState["id"];
   readonly resizeBy: RectangleProps;
+}
+
+/** @internal future */
+export interface FloatingWidgetBringToFrontAction {
+  readonly type: typeof FLOATING_WIDGET_BRING_TO_FRONT;
+  readonly id: FloatingWidgetState["id"];
 }
 
 /** @internal future */
@@ -259,6 +270,7 @@ export type NineZoneActionTypes =
   PanelResizeAction |
   PanelInitializeAction |
   FloatingWidgetResizeAction |
+  FloatingWidgetBringToFrontAction |
   PanelWidgetDragStartAction |
   WidgetDragAction |
   WidgetDragEndAction |
@@ -321,7 +333,8 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
       return;
     }
     case PANEL_WIDGET_DRAG_START: {
-      state.floatingWidgets[action.newFloatingWidgetId] = {
+      state.floatingWidgets.allIds.push(action.newFloatingWidgetId);
+      state.floatingWidgets.byId[action.newFloatingWidgetId] = {
         bounds: action.bounds,
         id: action.newFloatingWidgetId,
       };
@@ -343,7 +356,7 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
       return;
     }
     case WIDGET_DRAG: {
-      const floatingWidget = state.floatingWidgets[action.floatingWidgetId];
+      const floatingWidget = state.floatingWidgets.byId[action.floatingWidgetId];
       assert(floatingWidget);
       const newBounds = Rectangle.create(floatingWidget.bounds).offset(action.dragBy);
       setRectangleProps(floatingWidget.bounds, newBounds);
@@ -371,16 +384,24 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
         };
       }
       delete state.widgets[action.floatingWidgetId];
-      delete state.floatingWidgets[action.floatingWidgetId];
+      delete state.floatingWidgets.byId[action.floatingWidgetId];
+      const idIndex = state.floatingWidgets.allIds.indexOf(action.floatingWidgetId);
+      state.floatingWidgets.allIds.splice(idIndex, 1);
       return;
     }
     case FLOATING_WIDGET_RESIZE: {
       const { resizeBy } = action;
-      const floatingWidget = state.floatingWidgets[action.id];
+      const floatingWidget = state.floatingWidgets.byId[action.id];
       assert(floatingWidget);
       const bounds = Rectangle.create(floatingWidget.bounds);
       const newBounds = bounds.inset(-resizeBy.left, -resizeBy.top, -resizeBy.right, -resizeBy.bottom);
       setRectangleProps(floatingWidget.bounds, newBounds);
+      return;
+    }
+    case FLOATING_WIDGET_BRING_TO_FRONT: {
+      const idIndex = state.floatingWidgets.allIds.indexOf(action.id);
+      const spliced = state.floatingWidgets.allIds.splice(idIndex, 1);
+      state.floatingWidgets.allIds.push(spliced[0]);
       return;
     }
     case WIDGET_TAB_CLICK: {
@@ -448,7 +469,9 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
 
       if (tabs.length === 0) {
         if (action.floatingWidgetId !== undefined) {
-          delete state.floatingWidgets[action.floatingWidgetId];
+          delete state.floatingWidgets.byId[action.floatingWidgetId];
+          const idIndex = state.floatingWidgets.allIds.indexOf(action.floatingWidgetId);
+          state.floatingWidgets.allIds.splice(idIndex, 1);
         }
         if (action.side) {
           const widgets = state.panels[action.side].widgets;
@@ -495,10 +518,11 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
           tabs: [action.id],
         };
       } else {
-        state.floatingWidgets[target.newFloatingWidgetId] = {
+        state.floatingWidgets.byId[target.newFloatingWidgetId] = {
           bounds: Rectangle.createFromSize({ height: 200, width: 200 }).offset(state.draggedTab.position).toProps(),
           id: target.newFloatingWidgetId,
         };
+        state.floatingWidgets.allIds.push(target.newFloatingWidgetId);
         state.widgets[target.newFloatingWidgetId] = {
           activeTabId: action.id,
           id: target.newFloatingWidgetId,
@@ -526,7 +550,10 @@ export function createPanelsState(): PanelsState {
 export function createNineZoneState(): NineZoneState {
   return {
     draggedTab: undefined,
-    floatingWidgets: {},
+    floatingWidgets: {
+      byId: {},
+      allIds: [],
+    },
     panels: createPanelsState(),
     widgets: {},
     tabs: {},

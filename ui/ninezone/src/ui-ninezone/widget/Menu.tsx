@@ -23,14 +23,18 @@ export const WidgetMenu = React.forwardRef<HTMLDivElement, WidgetMenuProps>((pro
   const divRef = React.useRef<HTMLDivElement>(null);
   const refs = useRefs<HTMLDivElement>(ref, divRef);
   const [direction, setDirection] = React.useState<"left" | "right">("right");
+  const [verticalDirection, setVerticalDirection] = React.useState<"top" | "bottom">("bottom");
   React.useLayoutEffect(() => {
     const rect = divRef.current!.getBoundingClientRect();
     const newDirection = rect.left < document.body.clientWidth / 2 ? "right" : "left";
+    const newVerticalDirection = rect.top < document.body.clientHeight / 2 ? "bottom" : "top";
     setDirection(newDirection);
+    setVerticalDirection(newVerticalDirection);
   }, []);
   const className = classnames(
     "nz-widget-menu",
     `nz-${direction}`,
+    `nz-${verticalDirection}`,
     props.className,
   );
   return (

@@ -482,6 +482,9 @@ export interface ExpandableItemProps extends CommonProps {
 }
 
 // @internal
+export const FLOATING_WIDGET_BRING_TO_FRONT = "FLOATING_WIDGET_BRING_TO_FRONT";
+
+// @internal
 export const FLOATING_WIDGET_RESIZE = "FLOATING_WIDGET_RESIZE";
 
 // @internal
@@ -489,6 +492,14 @@ export function FloatingTab(): JSX.Element;
 
 // @internal (undocumented)
 export const FloatingWidget: React.NamedExoticComponent<FloatingWidgetProps>;
+
+// @internal
+export interface FloatingWidgetBringToFrontAction {
+    // (undocumented)
+    readonly id: FloatingWidgetState["id"];
+    // (undocumented)
+    readonly type: typeof FLOATING_WIDGET_BRING_TO_FRONT;
+}
 
 // @internal (undocumented)
 export const FloatingWidgetIdContext: React.Context<string | undefined>;
@@ -520,7 +531,11 @@ export const FloatingWidgets: React.NamedExoticComponent<object>;
 // @internal
 export interface FloatingWidgetsState {
     // (undocumented)
-    readonly [id: string]: FloatingWidgetState | undefined;
+    readonly allIds: ReadonlyArray<FloatingWidgetState["id"]>;
+    // (undocumented)
+    readonly byId: {
+        readonly [id: string]: FloatingWidgetState;
+    };
 }
 
 // @internal (undocumented)
@@ -1018,7 +1033,7 @@ export interface NestedToolSettingsProps extends CommonProps {
 }
 
 // @internal
-export type NineZoneActionTypes = PanelToggleCollapsedAction | PanelToggleSpanAction | PanelTogglePinnedAction | PanelResizeAction | PanelInitializeAction | FloatingWidgetResizeAction | PanelWidgetDragStartAction | WidgetDragAction | WidgetDragEndAction | WidgetTabClickAction | WidgetTabDoubleClickAction | WidgetTabDragStartAction | WidgetTabDragAction | WidgetTabDragEndAction;
+export type NineZoneActionTypes = PanelToggleCollapsedAction | PanelToggleSpanAction | PanelTogglePinnedAction | PanelResizeAction | PanelInitializeAction | FloatingWidgetResizeAction | FloatingWidgetBringToFrontAction | PanelWidgetDragStartAction | WidgetDragAction | WidgetDragEndAction | WidgetTabClickAction | WidgetTabDoubleClickAction | WidgetTabDragStartAction | WidgetTabDragAction | WidgetTabDragEndAction;
 
 // @internal (undocumented)
 export const NineZoneContext: React.Context<NineZoneState>;

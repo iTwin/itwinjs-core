@@ -68,6 +68,19 @@ export const Widget = React.memo<WidgetProps>(function Widget(props) { // tslint
     widgetId,
     onDragStart,
   });
+  React.useEffect(() => {
+    const onPointerDown = () => {
+      floatingWidgetId && dispatch({
+        type: "FLOATING_WIDGET_BRING_TO_FRONT",
+        id: floatingWidgetId,
+      });
+    };
+    const element = ref.current!;
+    element.addEventListener("pointerdown", onPointerDown, true);
+    return () => {
+      element.removeEventListener("pointerdown", onPointerDown, true);
+    };
+  }, [dispatch, floatingWidgetId]);
   const className = classnames(
     "nz-widget-widget",
     props.className,

@@ -8,7 +8,10 @@ exports[`WidgetPanelsFrontstage should render 1`] = `
   state={
     Object {
       "draggedTab": undefined,
-      "floatingWidgets": Object {},
+      "floatingWidgets": Object {
+        "allIds": Array [],
+        "byId": Object {},
+      },
       "panels": Object {
         "bottom": Object {
           "collapseOffset": 100,
@@ -68,7 +71,10 @@ exports[`WidgetPanelsFrontstage should render modal stage content 1`] = `
   state={
     Object {
       "draggedTab": undefined,
-      "floatingWidgets": Object {},
+      "floatingWidgets": Object {
+        "allIds": Array [],
+        "byId": Object {},
+      },
       "panels": Object {
         "bottom": Object {
           "collapseOffset": 100,
@@ -125,7 +131,10 @@ exports[`WidgetPanelsFrontstage should render modal stage content 1`] = `
 exports[`initializeNineZoneState should initialize widgets 1`] = `
 Object {
   "draggedTab": undefined,
-  "floatingWidgets": Object {},
+  "floatingWidgets": Object {
+    "allIds": Array [],
+    "byId": Object {},
+  },
   "panels": Object {
     "bottom": Object {
       "collapseOffset": 100,

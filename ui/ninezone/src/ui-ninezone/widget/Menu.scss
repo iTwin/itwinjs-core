@@ -20,4 +20,13 @@
   &.nz-right {
     left: 0;
   }
+
+  &.nz-top {
+    top: 0;
+    transform: translateY(-100%);
+  }
+
+  &.nz-bottom {
+    top: 100%;
+  }
 }

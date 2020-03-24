@@ -2,7 +2,20 @@
 
 exports[`WidgetPanelWidgetMenu  should render 1`] = `
 <div
-  class="nz-widget-menu nz-left"
+  class="nz-widget-menu nz-left nz-top"
+>
+  <div>
+    A
+  </div>
+  <div>
+    B
+  </div>
+</div>
+`;
+
+exports[`WidgetPanelWidgetMenu  should render to bottom 1`] = `
+<div
+  class="nz-widget-menu nz-left nz-bottom"
 >
   <div>
     A
@@ -15,7 +28,7 @@ exports[`WidgetPanelWidgetMenu  should render 1`] = `
 
 exports[`WidgetPanelWidgetMenu  should render to right 1`] = `
 <div
-  class="nz-widget-menu nz-right"
+  class="nz-widget-menu nz-right nz-top"
 >
   <div>
     A

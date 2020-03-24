@@ -3,13 +3,13 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { produce, castDraft } from "immer";
+import { Rectangle, Point } from "@bentley/ui-core";
 import {
   createNineZoneState, NineZoneStateReducer, PANEL_TOGGLE_COLLAPSED, PANEL_TOGGLE_SPAN, PANEL_TOGGLE_PINNED, PANEL_RESIZE,
   PANEL_INITIALIZE, WIDGET_TAB_CLICK, addPanelWidget, addTab, WIDGET_TAB_DOUBLE_CLICK, isHorizontalPanelState, createVerticalPanelState,
   createHorizontalPanelState, PANEL_WIDGET_DRAG_START, WIDGET_DRAG, WIDGET_DRAG_END, FloatingWidgetState, NineZoneState,
+  createWidgetState, FLOATING_WIDGET_RESIZE, WIDGET_TAB_DRAG_START, WIDGET_TAB_DRAG, WIDGET_TAB_DRAG_END, WidgetState, FLOATING_WIDGET_BRING_TO_FRONT,
 } from "../../ui-ninezone";
-import { Rectangle, Point } from "@bentley/ui-core";
-import { createWidgetState, FLOATING_WIDGET_RESIZE, WIDGET_TAB_DRAG_START, WIDGET_TAB_DRAG, WIDGET_TAB_DRAG_END, WidgetState } from "../../ui-ninezone/base/NineZoneState";
 
 /** @internal */
 export function addFloatingWidget(state: NineZoneState, id: FloatingWidgetState["id"], floatingWidgetArgs?: Partial<FloatingWidgetState>,
@@ -25,7 +25,8 @@ export function addFloatingWidget(state: NineZoneState, id: FloatingWidgetState[
     ...widgetArgs,
   };
   return produce(state, (stateDraft) => {
-    stateDraft.floatingWidgets[id] = floatingWidget;
+    stateDraft.floatingWidgets.byId[id] = floatingWidget;
+    stateDraft.floatingWidgets.allIds.push(id);
     stateDraft.widgets[id] = castDraft(widget);
   });
 }
@@ -341,7 +342,7 @@ describe("NineZoneStateReducer", () => {
         newFloatingWidgetId: "newId",
         side: "left",
       });
-      (!!newState.floatingWidgets.newId).should.true;
+      (!!newState.floatingWidgets.byId.newId).should.true;
       newState.panels.left.widgets.length.should.eq(0);
     });
 
@@ -364,7 +365,7 @@ describe("NineZoneStateReducer", () => {
     it("should move floating widget", () => {
       let state = createNineZoneState();
       state = produce(state, (draft) => {
-        draft.floatingWidgets.fw1 = {
+        draft.floatingWidgets.byId.fw1 = {
           bounds: new Rectangle(0, 100, 200, 400).toProps(),
           id: "fw1",
         };
@@ -374,7 +375,7 @@ describe("NineZoneStateReducer", () => {
         dragBy: new Point(10, 20).toProps(),
         floatingWidgetId: "fw1",
       });
-      newState.floatingWidgets.fw1!.bounds.should.eql({
+      newState.floatingWidgets.byId.fw1!.bounds.should.eql({
         left: 10,
         top: 120,
         right: 210,
@@ -393,7 +394,7 @@ describe("NineZoneStateReducer", () => {
           floatingWidgetId: "fw1",
           target: undefined,
         });
-        (!!newState.floatingWidgets.fw1).should.true;
+        (!!newState.floatingWidgets.byId.fw1).should.true;
       });
     });
 
@@ -469,12 +470,25 @@ describe("NineZoneStateReducer", () => {
         id: "fw1",
         resizeBy: new Rectangle(0, 10, 20, 40).toProps(),
       });
-      newState.floatingWidgets.fw1!.bounds.should.eql({
+      newState.floatingWidgets.byId.fw1!.bounds.should.eql({
         left: 0,
         top: 90,
         right: 220,
         bottom: 440,
       });
+    });
+  });
+
+  describe("FLOATING_WIDGET_BRING_TO_FRONT", () => {
+    it("should bring widget to front", () => {
+      let state = createNineZoneState();
+      state = addFloatingWidget(state, "fw1");
+      state = addFloatingWidget(state, "fw2");
+      const newState = NineZoneStateReducer(state, {
+        type: FLOATING_WIDGET_BRING_TO_FRONT,
+        id: "fw1",
+      });
+      newState.floatingWidgets.allIds.should.eql(["fw2", "fw1"]);
     });
   });
 
@@ -536,7 +550,7 @@ describe("NineZoneStateReducer", () => {
         side: undefined,
         widgetId: "fw1",
       });
-      (!!newState.floatingWidgets.fw1).should.false;
+      (!!newState.floatingWidgets.byId.fw1).should.false;
     });
 
     it("should keep active tab", () => {
@@ -685,7 +699,7 @@ describe("NineZoneStateReducer", () => {
             newFloatingWidgetId: "newId",
           },
         });
-        (!!newState.floatingWidgets.newId).should.true;
+        (!!newState.floatingWidgets.byId.newId).should.true;
       });
     });
   });

@@ -9,7 +9,6 @@
 import * as React from "react";
 import { FloatingWidgetsStateContext, WidgetsStateContext } from "../base/NineZone";
 import { FloatingWidget } from "./FloatingWidget";
-import { assert } from "../base/assert";
 
 /** This component renders all floating widgets.
  * @internal
@@ -17,15 +16,14 @@ import { assert } from "../base/assert";
 export const FloatingWidgets = React.memo(function FloatingWidgets() { // tslint:disable-line: variable-name no-shadowed-variable
   const floatingWidgets = React.useContext(FloatingWidgetsStateContext);
   const widgets = React.useContext(WidgetsStateContext);
-  const floatingWidgetsValues = Object.values(floatingWidgets);
   return (
     <>
-      {floatingWidgetsValues.map((floatingWidget) => {
-        assert(floatingWidget);
-        const widget = widgets[floatingWidget.id];
+      {floatingWidgets.allIds.map((floatingWidgetId) => {
+        const widget = widgets[floatingWidgetId];
+        const floatingWidget = floatingWidgets.byId[floatingWidgetId];
         return <FloatingWidget
           floatingWidget={floatingWidget}
-          key={floatingWidget.id}
+          key={floatingWidgetId}
           widget={widget}
         />;
       })}

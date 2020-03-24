@@ -26,7 +26,7 @@ describe("WidgetTitleBar", () => {
     nineZone = addPanelWidget(nineZone, "left", "w1");
     nineZone = produce(nineZone, (stateDraft) => {
       stateDraft.panels.left.widgets = [];
-      stateDraft.floatingWidgets.w1 = {
+      stateDraft.floatingWidgets.byId.w1 = {
         bounds: new Rectangle(0, 100, 200, 400).toProps(),
         id: "w1",
       };
@@ -37,7 +37,7 @@ describe("WidgetTitleBar", () => {
         dispatch={dispatch}
       >
         <FloatingWidget
-          floatingWidget={nineZone.floatingWidgets.w1!}
+          floatingWidget={nineZone.floatingWidgets.byId.w1!}
           widget={nineZone.widgets.w1}
         />
       </NineZoneProvider>,
@@ -64,7 +64,7 @@ describe("WidgetTitleBar", () => {
     nineZone = addPanelWidget(nineZone, "left", "w2");
     nineZone = produce(nineZone, (stateDraft) => {
       stateDraft.panels.left.widgets = [];
-      stateDraft.floatingWidgets.w1 = {
+      stateDraft.floatingWidgets.byId.w1 = {
         bounds: new Rectangle(0, 100, 200, 400).toProps(),
         id: "w1",
       };
@@ -75,7 +75,7 @@ describe("WidgetTitleBar", () => {
         dispatch={dispatch}
       >
         <FloatingWidget
-          floatingWidget={nineZone.floatingWidgets.w1!}
+          floatingWidget={nineZone.floatingWidgets.byId.w1!}
           widget={nineZone.widgets.w1}
         />
         <WidgetIdContext.Provider value="w2">
@@ -110,7 +110,7 @@ describe("WidgetTitleBar", () => {
     nineZone = addPanelWidget(nineZone, "left", "w1");
     nineZone = produce(nineZone, (stateDraft) => {
       stateDraft.panels.left.widgets = [];
-      stateDraft.floatingWidgets.w1 = {
+      stateDraft.floatingWidgets.byId.w1 = {
         bounds: new Rectangle(0, 100, 200, 400).toProps(),
         id: "w1",
       };
@@ -121,7 +121,7 @@ describe("WidgetTitleBar", () => {
         dispatch={dispatch}
       >
         <FloatingWidget
-          floatingWidget={nineZone.floatingWidgets.w1!}
+          floatingWidget={nineZone.floatingWidgets.byId.w1!}
           widget={nineZone.widgets.w1}
         />
         <PanelStateContext.Provider value={nineZone.panels.right}>

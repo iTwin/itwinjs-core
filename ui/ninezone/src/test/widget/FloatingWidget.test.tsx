@@ -4,29 +4,21 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as sinon from "sinon";
-import produce from "immer";
 import { act, render, fireEvent } from "@testing-library/react";
-import { createNineZoneState, NineZoneProvider, addPanelWidget, NineZoneDispatch, FloatingWidget, FLOATING_WIDGET_RESIZE, getResizeBy } from "../../ui-ninezone";
-import { Rectangle } from "@bentley/ui-core";
+import { createNineZoneState, NineZoneProvider, NineZoneDispatch, FloatingWidget, FLOATING_WIDGET_RESIZE, getResizeBy } from "../../ui-ninezone";
+import { addFloatingWidget } from "../base/NineZoneState.test";
 
 describe("FloatingWidget", () => {
   it("should render", () => {
     let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1");
-    nineZone = produce(nineZone, (stateDraft) => {
-      stateDraft.panels.left.widgets = [];
-      stateDraft.floatingWidgets.w1 = {
-        bounds: new Rectangle(0, 100, 200, 400).toProps(),
-        id: "w1",
-      };
-    });
+    nineZone = addFloatingWidget(nineZone, "w1");
     const { container } = render(
       <NineZoneProvider
         state={nineZone}
         dispatch={sinon.spy()}
       >
         <FloatingWidget
-          floatingWidget={nineZone.floatingWidgets.w1!}
+          floatingWidget={nineZone.floatingWidgets.byId.w1!}
           widget={nineZone.widgets.w1}
         />
       </NineZoneProvider>,
@@ -36,21 +28,14 @@ describe("FloatingWidget", () => {
 
   it("should render minimized", () => {
     let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1", { minimized: true });
-    nineZone = produce(nineZone, (stateDraft) => {
-      stateDraft.panels.left.widgets = [];
-      stateDraft.floatingWidgets.w1 = {
-        bounds: new Rectangle(0, 100, 200, 400).toProps(),
-        id: "w1",
-      };
-    });
+    nineZone = addFloatingWidget(nineZone, "w1", undefined, { minimized: true });
     const { container } = render(
       <NineZoneProvider
         state={nineZone}
         dispatch={sinon.spy()}
       >
         <FloatingWidget
-          floatingWidget={nineZone.floatingWidgets.w1!}
+          floatingWidget={nineZone.floatingWidgets.byId.w1!}
           widget={nineZone.widgets.w1}
         />
       </NineZoneProvider>,
@@ -60,21 +45,14 @@ describe("FloatingWidget", () => {
 
   it("should render dragged", () => {
     let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1", { minimized: true });
-    nineZone = produce(nineZone, (stateDraft) => {
-      stateDraft.panels.left.widgets = [];
-      stateDraft.floatingWidgets.w1 = {
-        bounds: new Rectangle(0, 100, 200, 400).toProps(),
-        id: "w1",
-      };
-    });
+    nineZone = addFloatingWidget(nineZone, "w1", undefined, { minimized: true });
     const { container } = render(
       <NineZoneProvider
         state={nineZone}
         dispatch={sinon.spy()}
       >
         <FloatingWidget
-          floatingWidget={nineZone.floatingWidgets.w1!}
+          floatingWidget={nineZone.floatingWidgets.byId.w1!}
           widget={nineZone.widgets.w1}
         />
       </NineZoneProvider>,
@@ -91,21 +69,14 @@ describe("FloatingWidget", () => {
   it("should dispatch FLOATING_WIDGET_RESIZE", () => {
     const dispatch = sinon.stub<NineZoneDispatch>();
     let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1", { minimized: true });
-    nineZone = produce(nineZone, (stateDraft) => {
-      stateDraft.panels.left.widgets = [];
-      stateDraft.floatingWidgets.w1 = {
-        bounds: new Rectangle(0, 100, 200, 400).toProps(),
-        id: "w1",
-      };
-    });
+    nineZone = addFloatingWidget(nineZone, "w1", undefined, { minimized: true });
     const { container } = render(
       <NineZoneProvider
         state={nineZone}
         dispatch={dispatch}
       >
         <FloatingWidget
-          floatingWidget={nineZone.floatingWidgets.w1!}
+          floatingWidget={nineZone.floatingWidgets.byId.w1!}
           widget={nineZone.widgets.w1}
         />
       </NineZoneProvider>,
@@ -113,6 +84,7 @@ describe("FloatingWidget", () => {
     const handle = container.getElementsByClassName("nz-widget-floatingWidget_handle")[0];
     act(() => {
       fireEvent.pointerDown(handle);
+      dispatch.reset();
       fireEvent.pointerMove(handle);
     });
     dispatch.calledOnceWithExactly(sinon.match({

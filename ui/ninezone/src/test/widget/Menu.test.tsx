@@ -39,4 +39,19 @@ describe("WidgetPanelWidgetMenu ", () => {
     );
     container.firstChild!.should.matchSnapshot();
   });
+
+  it("should render to bottom", () => {
+    sandbox.stub(Element.prototype, "getBoundingClientRect").returns({
+      ...createDOMRect(),
+      top: 49,
+    });
+    sandbox.stub(document.body, "clientHeight").get(() => 100);
+    const { container } = render(
+      <WidgetMenu>
+        <div>A</div>
+        <div>B</div>
+      </WidgetMenu>,
+    );
+    container.firstChild!.should.matchSnapshot();
+  });
 });

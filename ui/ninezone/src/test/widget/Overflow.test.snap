@@ -12,7 +12,7 @@ exports[`WidgetOverflow should open panel 1`] = `
     />
   </div>
   <div
-    class="nz-widget-menu nz-left"
+    class="nz-widget-menu nz-left nz-top"
   >
     <div>
       A
