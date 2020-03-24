@@ -106,6 +106,7 @@ internal;DevTools
 public;DisplayStyle2dState 
 public;DisplayStyle3dState 
 public;class DisplayStyleState 
+internal;DownloadBriefcaseToken
 alpha;DrawClipOptions
 public;DrawingModelState 
 public;DrawingViewState 
