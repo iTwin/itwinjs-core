@@ -10,6 +10,7 @@ import { IModelHubClientError } from "../imodelhub/Errors";
 import { ClientsLoggerCategory } from "../ClientsLoggerCategory";
 import { request, RequestOptions, Response } from "../Request";
 import { WsgError } from "../WsgClient";
+import { WsgInstance } from "../imodeljs-clients";
 
 const loggerCategory: string = ClientsLoggerCategory.IModelBank;
 
@@ -29,7 +30,7 @@ export class IModelBankFileSystemContextClient implements ContextManagerClient {
 
   private async queryContextProps(requestContext: AuthorizedClientRequestContext, projectName: string): Promise<IModelFileSystemContextProps[]> {
     requestContext.enter();
-    const url: string = this.baseUri + "/sv1.0/Repositories/IModelBankFileSystem--main/IModelBankFileSystem/Context";
+    const url: string = this.baseUri + "/sv1.0/Repositories/Global--main/GlobalScope/Context";
     requestContext.enter();
     Logger.logInfo(loggerCategory, `Sending GET request to ${url}`);
 
@@ -47,11 +48,11 @@ export class IModelBankFileSystemContextClient implements ContextManagerClient {
 
     const res: Response = await request(requestContext, url, options);
     requestContext.enter();
-    if (!res.body) {
+    if (!res.body || !res.body.instances) {
       return Promise.reject(new Error(`Query to URL ${url} executed successfully, but did NOT return anything.`));
     }
 
-    const props = res.body as IModelFileSystemContextProps[];
+    const props = res.body.instances as WsgInstance[];
     if (props.length === 0)
       return Promise.reject(new WsgError(WSStatus.InstanceNotFound));
 
@@ -60,7 +61,7 @@ export class IModelBankFileSystemContextClient implements ContextManagerClient {
 
     Logger.logTrace(loggerCategory, `Successful GET request to ${url}`);
 
-    return props;
+    return props.map((value) => value.properties as IModelFileSystemContextProps);
   }
 
   public async queryAssetByName(requestContext: AuthorizedClientRequestContext, assetName: string): Promise<Asset> {
@@ -85,11 +86,11 @@ export class IModelBankFileSystemContextClient implements ContextManagerClient {
 
   public async createContext(requestContext: AuthorizedClientRequestContext, name: string): Promise<void> {
     requestContext.enter();
-    const url: string = this.baseUri + "/sv1.0/Repositories/IModelBankFileSystem--main/IModelBankFileSystem/Context";
+    const url: string = this.baseUri + "/sv1.0/Repositories/Global--main/GlobalScope/Context";
 
     Logger.logInfo(loggerCategory, `Sending POST request to ${url}`);
 
-    const body: IModelFileSystemContextProps = { name, id: "", description: "" };
+    const body = { instance: { className: "Context", schemaName: "GlobalScope", properties: { name, id: "", description: "" } } };
 
     const options: RequestOptions = {
       method: "POST",
@@ -102,7 +103,7 @@ export class IModelBankFileSystemContextClient implements ContextManagerClient {
 
   public async deleteContext(requestContext: AuthorizedClientRequestContext, contextId: string): Promise<void> {
     requestContext.enter();
-    const url: string = this.baseUri + "/sv1.0/Repositories/IModelBankFileSystem--main/IModelBankFileSystem/Context/" + contextId;
+    const url: string = this.baseUri + "/sv1.0/Repositories/Global--main/GlobalScope/Context/" + contextId;
     requestContext.enter();
     Logger.logInfo(loggerCategory, `Sending DELETE request to ${url}`);
 

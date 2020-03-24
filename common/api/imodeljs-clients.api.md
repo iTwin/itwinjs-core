@@ -906,6 +906,7 @@ export abstract class IModelClient {
     // @alpha
     get codes(): CodeHandler;
     get events(): EventHandler;
+    get fileHandler(): FileHandler | undefined;
     // @internal
     get globalEvents(): GlobalEventHandler;
     // (undocumented)

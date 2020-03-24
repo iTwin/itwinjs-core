@@ -48,6 +48,14 @@ export abstract class IModelClient {
   }
 
   /**
+   * Gets file handler for file upload/download.
+   * @returns File handler to handle file upload/download and file system operations.
+   */
+  public get fileHandler() {
+    return this._fileHandler;
+  }
+
+  /**
    * Get the handler for [[HubIModel]] instances.
    * @note Use [[IModelHubClient.IModel]] for the preferred single iModel per [[Project]] workflow.
    */

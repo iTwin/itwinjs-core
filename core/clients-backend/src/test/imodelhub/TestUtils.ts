@@ -745,7 +745,7 @@ export async function createIModel(requestContext: AuthorizedClientRequestContex
     }
   }
 
-  const pathName = fromSeedFile ? getMockSeedFilePath() : undefined;
+  const pathName = fromSeedFile && !TestConfig.enableIModelBank ? getMockSeedFilePath() : undefined;
   return client.iModels.create(requestContext, contextId, name, { path: pathName, timeOutInMilliseconds: 240000 });
 }
 
