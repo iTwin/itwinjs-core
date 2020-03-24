@@ -47,8 +47,8 @@
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/webpack-tools": "2.0.0-dev.42",
-    "@bentley/build-tools": "2.0.0-dev.42",
+    "@bentley/webpack-tools": "2.0.0-dev.43",
+    "@bentley/build-tools": "2.0.0-dev.43",
     "rimraf": "^3.0.2",
     "tsconfig-paths": "^3.3.2",
     "tslint": "^5.11.0",
@@ -56,8 +56,8 @@
     "typescript": "~3.7.4"
   },
   "dependencies": {
-    "@bentley/bentleyjs-core": "2.0.0-dev.42",
-    "@bentley/geometry-core": "2.0.0-dev.42",
-    "@bentley/imodeljs-frontend": "2.0.0-dev.42"
+    "@bentley/bentleyjs-core": "2.0.0-dev.43",
+    "@bentley/geometry-core": "2.0.0-dev.43",
+    "@bentley/imodeljs-frontend": "2.0.0-dev.43"
   }
 }
