@@ -18,7 +18,6 @@ import {
   CurrentImdlVersion,
   getMaximumMajorTileFormatVersion,
   IModelTileRpcInterface,
-  IModelToken,
   NativeAppRpcInterface,
   RpcOperation,
   RpcRegistry,
@@ -497,7 +496,7 @@ class Admin extends TileAdmin {
   private readonly _treeExpirationTime?: BeDuration;
   private readonly _contextPreloadParentDepth: number;
   private readonly _contextPreloadParentSkip: number;
-  private _canceledRequests?: Map<IModelToken, Map<string, Set<string>>>;
+  private _canceledRequests?: Map<IModelConnection, Map<string, Set<string>>>;
   private _cancelBackendTileRequests: boolean;
 
   public get emptyViewportSet(): ReadonlyViewportSet { return UniqueViewportSets.emptySet; }
@@ -520,8 +519,8 @@ class Admin extends TileAdmin {
 
   public resetStatistics(): void {
     this._totalCompleted = this._totalFailed = this._totalTimedOut =
-    this._totalEmpty = this._totalUndisplayable = this._totalElided =
-    this._totalCacheMisses = this._totalDispatchedRequests = this._totalAbortedRequests = 0;
+      this._totalEmpty = this._totalUndisplayable = this._totalElided =
+      this._totalCacheMisses = this._totalDispatchedRequests = this._totalAbortedRequests = 0;
   }
 
   public constructor(options?: TileAdmin.Props) {
@@ -654,7 +653,7 @@ class Admin extends TileAdmin {
 
     // If the backend is servicing a single client, ask it to immediately stop processing requests for content we no longer want.
     if (undefined !== this._canceledRequests && this._canceledRequests.size > 0) {
-      for (const [iModelToken, entries] of this._canceledRequests) {
+      for (const [iModelConnection, entries] of this._canceledRequests) {
         const treeContentIds: TileTreeContentIds[] = [];
         for (const [treeId, tileIds] of entries) {
           const contentIds = Array.from(tileIds);
@@ -662,7 +661,7 @@ class Admin extends TileAdmin {
           this._totalAbortedRequests += contentIds.length;
         }
 
-        NativeAppRpcInterface.getClient().cancelTileContentRequests(iModelToken.toJSON(), treeContentIds);
+        NativeAppRpcInterface.getClient().cancelTileContentRequests(iModelConnection.iModelToken.toJSON(), treeContentIds);
       }
 
       this._canceledRequests.clear();
@@ -913,7 +912,7 @@ class Admin extends TileAdmin {
       if (!RpcRegistry.instance.isRpcInterfaceInitialized(NativeAppRpcInterface))
         this._cancelBackendTileRequests = false;
       else
-        this._canceledRequests = new Map<IModelToken, Map<string, Set<string>>>();
+        this._canceledRequests = new Map<IModelConnection, Map<string, Set<string>>>();
     }
   }
 
@@ -933,10 +932,10 @@ class Admin extends TileAdmin {
     if (undefined === this._canceledRequests)
       return;
 
-    let iModelEntry = this._canceledRequests.get(tile.tree.iModel.iModelToken);
+    let iModelEntry = this._canceledRequests.get(tile.tree.iModel);
     if (undefined === iModelEntry) {
       iModelEntry = new Map<string, Set<string>>();
-      this._canceledRequests.set(tile.tree.iModel.iModelToken, iModelEntry);
+      this._canceledRequests.set(tile.tree.iModel, iModelEntry);
     }
 
     let contentIds = iModelEntry.get(tile.tree.id);
