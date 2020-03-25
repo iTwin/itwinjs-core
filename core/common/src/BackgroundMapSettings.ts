@@ -106,6 +106,7 @@ export class BackgroundMapSettings {
     this.useDepthBuffer = useDepthBuffer;
     this.transparency = false !== transparency ? Math.min(1, Math.max(0, transparency)) : false;
     this.applyTerrain = applyTerrain;
+
     switch (mapType) {
       case BackgroundMapType.Street:
       case BackgroundMapType.Aerial:
@@ -114,8 +115,10 @@ export class BackgroundMapSettings {
       default:
         this.mapType = BackgroundMapType.Hybrid;
     }
+
+    this.globeMode = GlobeMode.Plane === globeMode ? globeMode : GlobeMode.Ellipsoid;
+
     this.terrainSettings = TerrainSettings.fromJSON(terrainSettings);
-    this.globeMode = globeMode;
   }
 
   /** Construct from JSON, performing validation and applying default values for undefined fields. */
@@ -130,14 +133,27 @@ export class BackgroundMapSettings {
   }
 
   public toJSON(): BackgroundMapProps {
+    let terrainSettings: TerrainProps | undefined = this.terrainSettings.toJSON();
+    let haveTerrainSettings = false;
+    for (const prop of Object.values(terrainSettings)) {
+      if (undefined !== prop) {
+        haveTerrainSettings = true;
+        break;
+      }
+    }
+
+    if (!haveTerrainSettings)
+      terrainSettings = undefined;
+
     return {
-      groundBias: this.groundBias,
-      providerName: this.providerName,
-      applyTerrain: this.applyTerrain,
-      providerData: { mapType: this.mapType },
-      transparency: this.transparency,
-      terrainSettings: this.terrainSettings.toJSON(),
-      globeMode: this.globeMode,
+      groundBias: 0 !== this.groundBias ? this.groundBias : undefined,
+      providerName: "BingProvider" !== this.providerName ? this.providerName : undefined,
+      applyTerrain: this.applyTerrain ? true : undefined,
+      providerData: BackgroundMapType.Hybrid !== this.mapType ? { mapType: this.mapType } : undefined,
+      transparency: false !== this.transparency ? this.transparency : undefined,
+      terrainSettings,
+      globeMode: GlobeMode.Ellipsoid !== this.globeMode ? this.globeMode : undefined,
+      useDepthBuffer: this.useDepthBuffer ? true : undefined,
     };
   }
 

@@ -27,6 +27,20 @@
     {
       "type": "node",
       "request": "launch",
+      "name": "Run Common Tests",
+      "program": "${workspaceFolder}/core/common/node_modules/@bentley/build-tools/scripts/test.js",
+      "cwd": "${workspaceFolder}/core/common",
+      "args": [
+        "--testDir=${workspaceFolder}/core/common/lib/test",
+        "--inspect"
+      ],
+      "port": 9229,
+      "protocol": "inspector",
+      "outputCapture": "std"
+    },
+    {
+      "type": "node",
+      "request": "launch",
       "name": "Run Backend Tests (Integration)",
       "program": "${workspaceFolder}/core/backend/node_modules/@bentley/build-tools/scripts/test",
       "cwd": "${workspaceFolder}/core/backend",

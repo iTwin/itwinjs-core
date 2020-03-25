@@ -65,8 +65,17 @@ export class TerrainSettings {
     this.exaggeration = Math.min(100, Math.max(0.1, exaggeration));
     this.applyLighting = applyLighting;
     this.heightOrigin = heightOrigin;
-    this.heightOriginMode = heightOriginMode;
+    switch (heightOriginMode) {
+      case TerrainHeightOriginMode.Geodetic:
+      case TerrainHeightOriginMode.Geoid:
+        this.heightOriginMode = heightOriginMode;
+        break;
+      default:
+        this.heightOriginMode = TerrainHeightOriginMode.Ground;
+        break;
+    }
   }
+
   public static fromJSON(json?: TerrainProps) {
     if (undefined === json)
       return new TerrainSettings();
@@ -74,22 +83,26 @@ export class TerrainSettings {
     const providerName = "CesiumWorldTerrain";    // This is only terrain provider currently supported.
     return new TerrainSettings(providerName, json.exaggeration, json.applyLighting, json.heightOrigin, json.heightOriginMode);
   }
+
   public toJSON(): TerrainProps {
     return {
-      providerName: this.providerName,
-      exaggeration: this.exaggeration,
-      applyLighting: this.applyLighting,
-      heightOrigin: this.heightOrigin,
-      heightOriginMode: this.heightOriginMode,
+      providerName: this.providerName !== "CesiumWorldTerrain" ? this.providerName : undefined,
+      exaggeration: 1 !== this.exaggeration ? this.exaggeration : undefined,
+      applyLighting: this.applyLighting ? true : undefined,
+      heightOrigin: 0 !== this.heightOrigin ? this.heightOrigin : undefined,
+      heightOriginMode: TerrainHeightOriginMode.Ground !== this.heightOriginMode ? this.heightOriginMode : undefined,
     };
   }
+
   public equals(other: TerrainSettings): boolean {
     return this.providerName === other.providerName && this.exaggeration === other.exaggeration && this.applyLighting === other.applyLighting && this.heightOrigin === other.heightOrigin && this.heightOriginMode === other.heightOriginMode;
   }
+
   /** Returns true if these settings are equivalent to the supplied JSON settings. */
   public equalsJSON(json?: BackgroundMapProps): boolean {
     return this.equals(TerrainSettings.fromJSON(json));
   }
+
   /** Create a copy of this TerrainSettings, optionally modifying some of its properties.
    * @param changedProps JSON representation of the properties to change.
    * @returns A TerrainSettings with all of its properties set to match those of`this`, except those explicitly defined in `changedProps`.
