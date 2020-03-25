@@ -288,8 +288,8 @@ function loadHierarchy(rootItems: TreeNodeItemData[], dataSource: TreeDataSource
   return from(rootItems)
     .pipe(
       concatMap((item) => {
-        if (!item.autoExpand) {
-          return of({ item });
+        if (!item.autoExpand || item.children) {
+          return of(convertToLoadedNodeHierarchyItem(item));
         }
 
         return dataSource.requestItems(item, 0, take, true)
@@ -303,6 +303,14 @@ function loadHierarchy(rootItems: TreeNodeItemData[], dataSource: TreeDataSource
       }),
       toArray(),
     );
+}
+
+function convertToLoadedNodeHierarchyItem(item: TreeNodeItemData): LoadedNodeHierarchyItem {
+  return {
+    item,
+    children: item.children ? item.children.map((child) => convertToLoadedNodeHierarchyItem(child)) : undefined,
+    numChildren: item.children ? item.children.length : undefined,
+  };
 }
 
 function collectTreeNodeItems(hierarchyItems: LoadedNodeHierarchyItem[], result: TreeNodeItem[] = []) {

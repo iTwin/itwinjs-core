@@ -10,7 +10,7 @@ import { Observable as RxjsObservable } from "rxjs/internal/Observable";
 import { from as rxjsFrom } from "rxjs/internal/observable/from";
 import { BeEvent } from "@bentley/bentleyjs-core";
 import { PropertyRecord } from "@bentley/ui-abstract";
-import { ITreeDataProvider, TreeNodeItem, TreeDataProviderRaw, TreeDataChangesListener } from "../../../ui-components/tree/TreeDataProvider";
+import { ITreeDataProvider, TreeNodeItem, TreeDataProviderRaw, TreeDataChangesListener, ImmediatelyLoadedTreeNodeItem, TreeDataProvider } from "../../../ui-components/tree/TreeDataProvider";
 import { PagedTreeNodeLoader, TreeDataSource, TreeNodeLoader, TreeNodeLoadResult, LoadedNodeHierarchy, handleLoadedNodeHierarchy } from "../../../ui-components/tree/controlled/TreeNodeLoader";
 import { MutableTreeModelNode, TreeNodeItemData, TreeModelRootNode, TreeModelNodeInput } from "../../../ui-components/tree/controlled/TreeModel";
 import { createRandomMutableTreeModelNode, createRandomTreeNodeItems, createRandomTreeNodeItem } from "./RandomTreeNodesHelpers";
@@ -22,12 +22,12 @@ const mockDataProvider = (dataProviderMock: moq.IMock<ITreeDataProvider>, pageSi
   const rootWithChildren = createRandomMutableTreeModelNode();
   rootWithChildren.item.autoExpand = false;
 
-  const rootNodeItems: TreeNodeItemData[] = [rootWithChildren.item, ...createRandomTreeNodeItems(pageSize * 2 - 1)];
+  const rootNodeItems: TreeNodeItemData[] = [rootWithChildren.item, ...createRandomTreeNodeItems(pageSize * 2 - 1, undefined, false)];
   const firstRootPage = rootNodeItems.slice(0, pageSize);
   const secondRootPage = rootNodeItems.slice(pageSize, pageSize);
 
   // disable children autoExpand to avoid mocking grandchildren load
-  const childItems = createRandomTreeNodeItems(pageSize);
+  const childItems = createRandomTreeNodeItems(pageSize, rootWithChildren.id, false);
   childItems.forEach((item) => item.autoExpand = false);
 
   // mock tree hierarchy
@@ -69,7 +69,7 @@ const itemIds = (items: TreeNodeItem[]) => items.map((item) => item.id);
 describe("TreeNodeLoader", () => {
   const dataProviderMock = moq.Mock.ofType<ITreeDataProvider>();
   const modelSourceMock = moq.Mock.ofType<TreeModelSource>();
-  let treeNodeLoader: TreeNodeLoader<ITreeDataProvider>;
+  let treeNodeLoader: TreeNodeLoader<TreeDataProvider>;
 
   beforeEach(() => {
     dataProviderMock.reset();
@@ -134,6 +134,26 @@ describe("TreeNodeLoader", () => {
       expect(loadedIds2).to.be.empty;
     });
 
+    describe("using raw data provider", () => {
+      const nodesProvider: ImmediatelyLoadedTreeNodeItem[] = [
+        {
+          id: "1", label: PropertyRecord.fromString("1"), children: [
+            { id: "1-1", label: PropertyRecord.fromString("1-1") },
+            { id: "1-2", label: PropertyRecord.fromString("1-2") },
+          ],
+        },
+        { id: "2", label: PropertyRecord.fromString("2"), children: [] },
+      ];
+
+      it("loads all immediately loaded nodes", async () => {
+        treeNodeLoader = new TreeNodeLoader(nodesProvider, modelSourceMock.object);
+        const loadObs = treeNodeLoader.loadNode(treeRootNode, 0);
+        const loadedIds = await extractLoadedNodeIds(loadObs);
+        expect(loadedIds).to.be.deep.eq(["1", "1-1", "1-2", "2"]);
+      });
+
+    });
+
   });
 
 });
@@ -142,7 +162,7 @@ describe("PagedTreeNodeLoader", () => {
   const dataProviderMock = moq.Mock.ofType<ITreeDataProvider>();
   const modelSourceMock = moq.Mock.ofType<TreeModelSource>();
 
-  let pagedTreeNodeLoader: PagedTreeNodeLoader<ITreeDataProvider>;
+  let pagedTreeNodeLoader: PagedTreeNodeLoader<TreeDataProvider>;
 
   const pageSize = 2;
 
@@ -242,6 +262,26 @@ describe("PagedTreeNodeLoader", () => {
       const pageTwoLoadedIds = await extractLoadedNodeIds(pageTwo);
       expect(pageOneLoadedIds).to.be.deep.eq(itemIds(firstRootPage));
       expect(pageTwoLoadedIds).to.be.deep.eq(itemIds(secondRootPage));
+    });
+
+    describe("using raw data provider", () => {
+      const nodesProvider: ImmediatelyLoadedTreeNodeItem[] = [
+        {
+          id: "1", label: PropertyRecord.fromString("1"), children: [
+            { id: "1-1", label: PropertyRecord.fromString("1-1") },
+            { id: "1-2", label: PropertyRecord.fromString("1-2") },
+          ],
+        },
+        { id: "2", label: PropertyRecord.fromString("2"), children: [] },
+      ];
+
+      it("loads all immediately loaded nodes", async () => {
+        pagedTreeNodeLoader = new PagedTreeNodeLoader(nodesProvider, modelSourceMock.object, pageSize);
+        const loadObs = pagedTreeNodeLoader.loadNode(treeRootNode, 0);
+        const loadedIds = await extractLoadedNodeIds(loadObs);
+        expect(loadedIds).to.be.deep.eq(["1", "1-1", "1-2", "2"]);
+      });
+
     });
 
   });
