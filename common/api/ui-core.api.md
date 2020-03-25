@@ -755,18 +755,8 @@ export const flattenChildren: (children: React.ReactNode) => React.ReactNode;
 // @public
 export function FlexWrapContainer(props: CommonDivProps): JSX.Element;
 
-// @beta
-export class FocusTrap extends React.Component<Props, State> {
-    constructor(props: Props);
-    // (undocumented)
-    componentDidUpdate(prevProps: Props, prevState: State): void;
-    // (undocumented)
-    componentWillUnmount(): void;
-    // (undocumented)
-    isFocusable(element: HTMLElement): boolean;
-    // (undocumented)
-    render(): JSX.Element | null;
-    }
+// @internal
+export function FocusTrap(props: Props): JSX.Element | null;
 
 // @beta
 export class Form extends React.Component<FormProps, FormState> {

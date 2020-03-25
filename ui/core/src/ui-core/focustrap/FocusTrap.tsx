@@ -8,14 +8,106 @@
 
 import * as React from "react";
 import { Logger } from "@bentley/bentleyjs-core";
-import { UiCore } from "../UiCore";
 
 // cSpell:ignore focusable
 
+function isFocusable(element: HTMLElement): boolean {
+  // istanbul ignore next
+  if (!element)
+    return false;
+
+  // istanbul ignore next
+  if (element.tabIndex > 0 || (element.tabIndex === 0 && element.getAttribute("tabIndex") !== null)) {
+    return true;
+  }
+
+  // istanbul ignore next
+  if (element.getAttribute && (typeof element.getAttribute === "function") && element.getAttribute("disabled") !== null)
+    return false;
+
+  switch (element.nodeName) {
+    case "A":
+      const anchorElement = element as HTMLAnchorElement;
+      return !!anchorElement.href && anchorElement.rel !== "ignore";
+    case "INPUT":
+      const inputElement = element as HTMLInputElement;
+      return inputElement.type !== "hidden" && inputElement.type !== "file";
+    case "BUTTON":
+    case "SELECT":
+    case "TEXTAREA":
+      return true;
+    default:
+      return false;
+  }
+}
+
+function processFindFocusableDescendant(element: HTMLElement | null): HTMLElement | null {
+  // istanbul ignore next
+  if (!element)
+    return null;
+
+  for (const child of element.childNodes) {
+    // istanbul ignore else
+    if (isFocusable(child as HTMLElement))
+      return child as HTMLElement;
+
+    const focusable = processFindFocusableDescendant(child as HTMLElement);
+    if (focusable)
+      return focusable;
+  }
+  return null;
+}
+
+function findFirstFocusableDescendant(focusContainer: HTMLDivElement | null): HTMLElement | null {
+  return processFindFocusableDescendant(focusContainer);
+}
+
+function processFindLastFocusableDescendant(element: HTMLElement): HTMLElement | null {
+  for (let i = element.childNodes.length - 1; i >= 0; i--) {
+    const child = element.childNodes[i] as HTMLElement;
+
+    const focusable = processFindLastFocusableDescendant(child as HTMLElement);
+    // istanbul ignore else
+    if (focusable)
+      return focusable;
+
+    // istanbul ignore else
+    if (isFocusable(child as HTMLElement))
+      return child as HTMLElement;
+  }
+  return null;
+}
+
+function findLastFocusableDescendant(focusContainer: HTMLDivElement): HTMLElement | null {
+  return processFindLastFocusableDescendant(focusContainer);
+}
+
+function getInitialFocusElement(focusContainer: HTMLDivElement | null, initialFocusSpec: React.RefObject<HTMLElement> | string | undefined): HTMLElement | null {
+  if (!focusContainer)
+    return null;
+
+  // istanbul ignore else
+  if (initialFocusSpec) {
+    if (typeof initialFocusSpec === "string") {
+      const node = focusContainer.querySelector(initialFocusSpec as string);
+      if (node) {
+        return node as HTMLElement;
+      } else {
+        Logger.logError("FocusTrap", `Unable to locate element via selector ${initialFocusSpec}`);
+      }
+    } else {
+      return initialFocusSpec.current;
+    }
+  }
+  return findFirstFocusableDescendant(focusContainer);
+}
+
 /** Properties supported by FocusTrap component.
- * @beta
+ * @internal
  */
 interface Props extends React.AllHTMLAttributes<any> {
+  /** child components */
+  children: React.ReactNode;
   /** if active is not true then no trapping of focus is attempted. */
   active?: boolean;
   /** restore focus to element that had focus before trap was activated */
@@ -27,217 +119,90 @@ interface Props extends React.AllHTMLAttributes<any> {
   initialFocusElement?: React.RefObject<HTMLElement> | string;
 }
 
-/** Internal state of FocusTrap component.
- * @beta
- */
-interface State {
-  /** if active is not true then no trapping of focus is attempted. */
-  active: boolean;
-  initialFocusElement?: HTMLElement;
-}
+function attemptFocus(element: HTMLElement, preventScroll: boolean): boolean {
+  if (!isFocusable(element)) {
+    return false;
+  }
+
+  try {
+    if (document.activeElement !== element)
+      element.focus({ preventScroll: preventScroll ? true : false });
+  } catch (e) {
+    // istanbul ignore next
+    return false;
+  }
+  return (document.activeElement === element);
+} // end attemptFocus
 
 /** Trap Focus in container while trap is active.
- * @beta
+ * @internal
  */
-export class FocusTrap extends React.Component<Props, State> {
-  private _restoreFocusElement: HTMLElement | null = null;
-  private _focusContainer: HTMLDivElement | null = null;
-  private _initialFocusElementProcessed = false;
+export function FocusTrap(props: Props) {
+  const restoreFocusElement = React.useRef<Element | null>(null);
+  const initialFocusElement = React.useRef<Element | null>(null);
+  const focusContainer = React.useRef<HTMLDivElement | null>(null);
+  const isInitialMount = React.useRef(true);
 
-  constructor(props: Props) {
-    super(props);
-    this.state = {
-      active: !!props.active,
-    };
-  }
-
-  private getInitialFocusElement(): HTMLElement | null {
-    // istanbul ignore else
-    if (this.props.initialFocusElement && this._focusContainer) {
-      if (typeof this.props.initialFocusElement === "string") {
-        const node = this._focusContainer.querySelector(this.props.initialFocusElement as string);
-        // istanbul ignore else
-        if (node) {
-          return node as HTMLElement;
-        } else {
-          Logger.logError(UiCore.loggerCategory(this), `Unable to locate element via selector ${this.props.initialFocusElement}`);
+  React.useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      if (props.active) {
+        if (props.returnFocusOnDeactivate) {
+          restoreFocusElement.current = document.activeElement;
         }
-      } else {
-        return this.props.initialFocusElement.current;
+
+        initialFocusElement.current = getInitialFocusElement(focusContainer.current, props.initialFocusElement);
+        if (initialFocusElement.current) {
+          // delay setting focus immediately because in some browsers other focus events happen when popup is initially opened.
+          setTimeout(() => {
+            attemptFocus((initialFocusElement.current as HTMLElement), true);
+          }, 60);
+        }
       }
     }
-    return this.findFirstFocusableDescendant();
-  }
-
-  private focusSpecifiedOrFirst(): void {
-    if (this.state.initialFocusElement)
-      this.attemptFocus(this.state.initialFocusElement);
-  }
-
-  public componentWillUnmount() {
-    if (this.props.returnFocusOnDeactivate && this._restoreFocusElement)
-      this._restoreFocusElement.focus();
-  }
-
-  // We must wait until we have the HTMLElementRefs populate before we can attempt to set focus
-  public componentDidUpdate(prevProps: Props, prevState: State): void {
-    let newActiveState = !!this.props.active;
-    let initialFocusElement: HTMLElement | null;
-
-    // istanbul ignore else
-    if ((newActiveState !== prevState.active) || (this.props.initialFocusElement !== prevProps.initialFocusElement) || !this._initialFocusElementProcessed) {
-      this._initialFocusElementProcessed = false;
-      initialFocusElement = this.getInitialFocusElement();
-      this._initialFocusElementProcessed = true;
-      newActiveState = initialFocusElement ? true : false;
-      // istanbul ignore else
-      if (initialFocusElement !== prevState.initialFocusElement || newActiveState !== prevState.active) {
-        this.setState({ active: newActiveState, initialFocusElement: initialFocusElement ? initialFocusElement : undefined }, () => {
-          // istanbul ignore else
-          if (this.state.active) {
-            // istanbul ignore else
-            if (this.props.returnFocusOnDeactivate) // && (!this._restoreFocusElement || (this.props.initialFocusElement !== prevProps.initialFocusElement)))
-              this._restoreFocusElement = document.activeElement as HTMLElement;
-
-            // delay setting focus immediately because in some browsers other focus events happen when popup is initially opened.
-            setTimeout(() => {
-              this.focusSpecifiedOrFirst();
-            }, 60);
-          }
-        });
-      }
-    }
-  }
-
-  public isFocusable(element: HTMLElement): boolean {
-    // istanbul ignore next
-    if (!element)
-      return false;
-
-    // istanbul ignore next
-    if (element.tabIndex > 0 || (element.tabIndex === 0 && element.getAttribute("tabIndex") !== null)) {
-      return true;
-    }
-
-    // istanbul ignore next
-    if (element.getAttribute && (typeof element.getAttribute === "function") && element.getAttribute("disabled") !== null)
-      return false;
-
-    switch (element.nodeName) {
-      case "A":
-        const anchorElement = element as HTMLAnchorElement;
-        return !!anchorElement.href && anchorElement.rel !== "ignore";
-      case "INPUT":
-        const inputElement = element as HTMLInputElement;
-        return inputElement.type !== "hidden" && inputElement.type !== "file";
-      case "BUTTON":
-      case "SELECT":
-      case "TEXTAREA":
-        return true;
-      default:
-        return false;
-    }
-  }
-
-  private attemptFocus(element: HTMLElement): boolean {
-    if (!this.isFocusable(element)) {
-      return false;
-    }
-
-    try {
-      element.focus();
-    } catch (e) {
-      // istanbul ignore next
-      return false;
-    }
-    return (document.activeElement === element);
-  } // end attemptFocus
-
-  private processFindFocusableDescendant(element: HTMLElement | null): HTMLElement | null {
-    // istanbul ignore next
-    if (!element)
-      return null;
-
-    for (const child of element.childNodes) {
-      // istanbul ignore else
-      if (this.isFocusable(child as HTMLElement))
-        return child as HTMLElement;
-
-      const focusable = this.processFindFocusableDescendant(child as HTMLElement);
-      if (focusable)
-        return focusable;
-    }
-    return null;
-  }
-
-  private findFirstFocusableDescendant(): HTMLElement | null {
-    return this.processFindFocusableDescendant(this._focusContainer);
-  }
-
-  private processFindLastFocusableDescendant(element: HTMLElement | null): HTMLElement | null {
-    // istanbul ignore next
-    if (!element)
-      return null;
-
-    for (let i = element.childNodes.length - 1; i >= 0; i--) {
-      const child = element.childNodes[i] as HTMLElement;
-
-      const focusable = this.processFindLastFocusableDescendant(child as HTMLElement);
-      // istanbul ignore else
-      if (focusable)
-        return focusable;
-
-      // istanbul ignore else
-      if (this.isFocusable(child as HTMLElement))
-        return child as HTMLElement;
-    }
-    return null;
-  }
-
-  private findLastFocusableDescendant(): HTMLElement | null {
-    return this.processFindLastFocusableDescendant(this._focusContainer);
-  }
+    return () => {
+      if (restoreFocusElement.current && props.active)
+        (restoreFocusElement.current as HTMLElement).focus({ preventScroll: true });
+    };
+  }, [props.children, props.initialFocusElement, props.active, props.returnFocusOnDeactivate]);
 
   // this is hit if Shift tab is used.
-  private _cycleFocusToEnd = (event: React.FocusEvent<HTMLDivElement>) => {
-    // istanbul ignore else
-    if (this.state.active) {
-      if (event.target === this._focusContainer) {
-        event.stopPropagation();
-        event.preventDefault();
-        const focusable = this.findLastFocusableDescendant();
-        if (focusable)
-          focusable.focus();
-      }
-    }
-  }
+  const cycleFocusToEnd = React.useCallback((event: React.FocusEvent<HTMLDivElement>) => {
+    if (!props.active)
+      return;
 
-  // this is hit if tab is used on last item it child container.
-  private _cycleFocusToStart = (event: React.FocusEvent<HTMLDivElement>) => {
-    // istanbul ignore else
-    if (this.state.active) {
+    if (focusContainer.current && event.target === focusContainer.current) {
       event.stopPropagation();
-      const focusable = this.findFirstFocusableDescendant();
-      if (focusable)
+      event.preventDefault();
+      const focusable = findLastFocusableDescendant(focusContainer.current);
+      if (focusable) {
         focusable.focus();
-    }
-  }
 
-  public render() {
-    if (this.props.children) {
-      const children = React.Children.only(this.props.children);
-      // istanbul ignore else
-      if (children) {
-        return (
-          <>
-            <div data-testid="focus-trap-div" onFocus={this._cycleFocusToEnd} ref={(element: HTMLDivElement) => { this._focusContainer = element; }} tabIndex={0}>
-              {children}
-            </div>
-            <div data-testid="focus-trap-limit-div" onFocus={this._cycleFocusToStart} tabIndex={0} />
-          </>
-        );
+      } else {
+        if (initialFocusElement.current && initialFocusElement.current !== document.activeElement)
+          attemptFocus((initialFocusElement.current as HTMLElement), true);
       }
     }
+  }, [props.active]);
+
+  // this is hit if tab is used on last focusable item in child container.
+  const cycleFocusToStart = React.useCallback((event: React.FocusEvent<HTMLDivElement>) => {
+    if (!props.active)
+      return;
+
+    event.stopPropagation();
+    if (initialFocusElement.current && initialFocusElement.current !== document.activeElement)
+      (initialFocusElement.current as HTMLElement).focus();
+  }, [props.active]);
+
+  if (!props.children)
     return null;
-  }
+  return (
+    <>
+      <div data-testid="focus-trap-div" onFocus={cycleFocusToEnd} ref={focusContainer} tabIndex={0}>
+        {props.children}
+      </div>
+      <div data-testid="focus-trap-limit-div" onFocus={cycleFocusToStart} tabIndex={0} />
+    </>
+  );
 }

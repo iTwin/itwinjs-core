@@ -73,7 +73,7 @@ beta;FieldValues
 public;FillCentered(props: CommonDivProps): JSX.Element
 internal;flattenChildren: (children: React.ReactNode) => React.ReactNode
 public;FlexWrapContainer(props: CommonDivProps): JSX.Element
-beta;FocusTrap 
+internal;FocusTrap(props: Props): JSX.Element | null
 beta;Form 
 beta;FormContext: React.Context
 beta;FormContextState 

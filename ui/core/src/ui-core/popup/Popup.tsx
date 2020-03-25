@@ -463,7 +463,7 @@ export class Popup extends React.Component<PopupProps, PopupState> {
           tabIndex={-1}
           aria-label={this.props.ariaLabel}
         >
-          <FocusTrap active={!!this.props.moveFocus && this.state.isOpen} initialFocusElement={this.state.focusTarget} returnFocusOnDeactivate={true}>
+          <FocusTrap active={!!this.props.moveFocus} initialFocusElement={this.state.focusTarget} returnFocusOnDeactivate={true}>
             {this.props.children}
           </FocusTrap>
         </div>
