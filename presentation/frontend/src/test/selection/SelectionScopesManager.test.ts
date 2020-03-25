@@ -17,7 +17,7 @@ import { SelectionScopesManager, SelectionScopesManagerProps } from "../../prese
 
 describe("SelectionScopesManager", () => {
 
-  const imodelToken = new IModelToken();
+  const imodelToken = new IModelToken("");
   const imodelMock = moq.Mock.ofType<IModelConnection>();
   const rpcRequestsHandlerMock = moq.Mock.ofType<RpcRequestsHandler>();
   let manager: SelectionScopesManager | undefined;

@@ -18,7 +18,7 @@ import { ThumbnailProps } from "./Thumbnail";
  */
 export interface IModelTokenProps {
   /** Key used for identifying the iModel on the backend */
-  readonly key?: string;
+  readonly key: string;
   /** Context (Project, Asset, or other infrastructure) in which the iModel exists - must be defined if the iModel exists in the Hub or in a non-Connect infrastructure. */
   readonly contextId?: string;
   /** Guid of the iModel - must be defined if the iModel exists in the Hub */
@@ -38,7 +38,7 @@ export class IModelToken implements IModelTokenProps {
     return new IModelToken(props.key, props.contextId, props.iModelId, props.changeSetId, props.openMode);
   }
   /** Key used for identifying the iModel on the backend */
-  public readonly key?: string;
+  public readonly key: string;
   /** Context (Project, Asset, or other infrastructure) in which the iModel exists - must be defined if the iModel exists in the Hub or in a non-Connect infrastructure. */
   public readonly contextId?: string;
   /** Guid of the iModel - must be defined if the iModel exists in the Hub */
@@ -49,7 +49,7 @@ export class IModelToken implements IModelTokenProps {
   public openMode?: OpenMode;
 
   /** Constructor */
-  public constructor(key?: string, contextId?: string, iModelid?: string, changesetId?: string, openMode?: OpenMode) {
+  public constructor(key: string, contextId?: string, iModelid?: string, changesetId?: string, openMode?: OpenMode) {
     this.key = key;
     this.contextId = contextId;
     this.iModelId = iModelid;

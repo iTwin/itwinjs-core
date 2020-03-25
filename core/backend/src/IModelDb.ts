@@ -661,10 +661,10 @@ export abstract class IModelDb extends IModel {
    * @note This method is intended for use by RPC implementations.
    * @throws [[IModelNotFoundResponse]] if an open IModelDb matching the token is not found.
    */
-  public static find(iModelToken: IModelToken): IModelDb {
-    const iModelDb: IModelDb | undefined = IModelDb.tryFind(iModelToken);
+  public static findByKey(key: string): IModelDb {
+    const iModelDb: IModelDb | undefined = IModelDb.tryFindByKey(key);
     if (undefined === iModelDb) {
-      Logger.logError(loggerCategory, "IModelDb not found in the in-memory cache", () => iModelToken);
+      Logger.logError(loggerCategory, "IModelDb not found in the in-memory cache", () => key);
       throw new IModelNotFoundResponse(); // a very specific status for the RpcManager
     }
     return iModelDb;
@@ -673,15 +673,13 @@ export abstract class IModelDb extends IModel {
   /** Find an already open IModelDb (considers all subclasses).
    * @returns The matching IModelDb or `undefined`.
    */
-  public static tryFind(iModelToken: IModelToken): IModelDb | undefined {
-    const briefcaseDb: BriefcaseDb | undefined = BriefcaseDb.tryFindByToken(iModelToken);
+  public static tryFindByKey(key: string): IModelDb | undefined {
+    const briefcaseDb: BriefcaseDb | undefined = BriefcaseDb.tryFindByKey(key);
     if (briefcaseDb) {
       return briefcaseDb;
-    } else if (!iModelToken.key) {
-      return undefined;
     }
-    const snapshotDb: SnapshotDb | undefined = SnapshotDb.tryFindByPath(iModelToken.key);
-    return snapshotDb ? snapshotDb : StandaloneDb.tryFindByPath(iModelToken.key);
+    const snapshotDb: SnapshotDb | undefined = SnapshotDb.tryFindByKey(key);
+    return snapshotDb ? snapshotDb : StandaloneDb.tryFindByKey(key);
   }
 
   /** Get the ClassMetaDataRegistry for this iModel.
@@ -2042,7 +2040,7 @@ export class BriefcaseDb extends IModelDb {
    * @internal
    */
   public static cancelDownloadBriefcase(iModelToken: IModelToken): boolean {
-    const briefcaseEntry = BriefcaseManager.findBriefcaseByToken(iModelToken);
+    const briefcaseEntry = BriefcaseManager.findBriefcaseByKey(iModelToken.key);
     if (briefcaseEntry === undefined)
       throw new IModelError(IModelStatus.BadRequest, "Cannot cancel download for a briefcase that not started to download", Logger.logError, loggerCategory, () => iModelToken);
 
@@ -2059,7 +2057,7 @@ export class BriefcaseDb extends IModelDb {
    * @internal
    */
   public static async deleteBriefcase(requestContext: AuthorizedClientRequestContext, iModelToken: IModelToken): Promise<void> {
-    const briefcaseEntry = BriefcaseManager.findBriefcaseByToken(iModelToken);
+    const briefcaseEntry = BriefcaseManager.findBriefcaseByKey(iModelToken.key);
     if (briefcaseEntry === undefined)
       throw new IModelError(IModelStatus.BadRequest, "Cannot delete a briefcase that not been downloaded", Logger.logError, loggerCategory, () => iModelToken);
     if (briefcaseEntry.isPending)
@@ -2077,7 +2075,7 @@ export class BriefcaseDb extends IModelDb {
   public static async finishDownloadBriefcase(requestContext: AuthorizedClientRequestContext, iModelToken: IModelToken): Promise<void> {
     requestContext.enter();
 
-    const briefcaseEntry = BriefcaseManager.findBriefcaseByToken(iModelToken);
+    const briefcaseEntry = BriefcaseManager.findBriefcaseByKey(iModelToken.key);
     if (briefcaseEntry === undefined)
       throw new IModelError(IModelStatus.BadRequest, "Cannot finish download for a briefcase that not started to download", Logger.logError, loggerCategory, () => iModelToken);
 
@@ -2111,7 +2109,7 @@ export class BriefcaseDb extends IModelDb {
    * @internal
    */
   public static async openBriefcase(requestContext: AuthorizedClientRequestContext, iModelToken: IModelToken): Promise<BriefcaseDb> {
-    const briefcaseEntry = BriefcaseManager.findBriefcaseByToken(iModelToken);
+    const briefcaseEntry = BriefcaseManager.findBriefcaseByKey(iModelToken.key);
     if (briefcaseEntry === undefined)
       throw new IModelError(IModelStatus.BadRequest, "Cannot open a briefcase that has not been downloaded", Logger.logError, loggerCategory, () => iModelToken);
     if (briefcaseEntry.isPending !== undefined)
@@ -2172,10 +2170,10 @@ export class BriefcaseDb extends IModelDb {
    * @throws [[IModelNotFoundResponse]] if an open BriefcaseDb matching the token is not found.
    * @internal
    */
-  public static findByToken(iModelToken: IModelToken): BriefcaseDb {
-    const briefcaseDb: BriefcaseDb | undefined = BriefcaseDb.tryFindByToken(iModelToken);
+  public static findByKey(key: string): BriefcaseDb {
+    const briefcaseDb: BriefcaseDb | undefined = BriefcaseDb.tryFindByKey(key);
     if (undefined === briefcaseDb) {
-      Logger.logError(loggerCategory, "BriefcaseDb not found in the in-memory cache", () => iModelToken);
+      Logger.logError(loggerCategory, "BriefcaseDb not found in the in-memory cache", () => key);
       throw new IModelNotFoundResponse(); // a very specific status for the RpcManager
     }
     return briefcaseDb;
@@ -2185,8 +2183,8 @@ export class BriefcaseDb extends IModelDb {
    * @returns The matching BriefcaseDb or `undefined`.
    * @internal
    */
-  public static tryFindByToken(iModelToken: IModelToken): BriefcaseDb | undefined {
-    const briefcaseEntry = BriefcaseManager.findBriefcaseByToken(iModelToken);
+  public static tryFindByKey(key: string): BriefcaseDb | undefined {
+    const briefcaseEntry = BriefcaseManager.findBriefcaseByKey(key);
     if (!briefcaseEntry || !briefcaseEntry.iModelDb || !briefcaseEntry.isOpen) {
       return undefined;
     }
@@ -2340,7 +2338,9 @@ export class BriefcaseDb extends IModelDb {
  * @beta
  */
 export class SnapshotDb extends IModelDb {
-  /** Keep track of open snapshots to support `tryFind` for RPC purposes */
+  /** Keep track of open snapshots to support `tryFind` for RPC purposes
+   * @note The key for this map is the full path of the snapshot iModel file.
+   */
   private static readonly _openDbs = new Map<string, SnapshotDb>();
   /** The full path to the snapshot iModel file. */
   public get filePath(): string { return this.nativeDb.getFilePath(); }
@@ -2444,7 +2444,7 @@ export class SnapshotDb extends IModelDb {
    * @beta
    */
   public static open(filePath: string, encryptionProps?: IModelEncryptionProps): SnapshotDb {
-    if (SnapshotDb.tryFindByPath(filePath)) {
+    if (SnapshotDb.tryFindByKey(filePath)) {
       throw new IModelError(DbResult.BE_SQLITE_CANTOPEN, `Cannot open snapshot iModel at ${filePath} again - it has already been opened once`, Logger.logError, loggerCategory);
     }
     const encryptionPropsString: string | undefined = encryptionProps ? JSON.stringify(encryptionProps) : undefined;
@@ -2478,11 +2478,12 @@ export class SnapshotDb extends IModelDb {
   }
 
   /** Used to find open snapshot iModels.
+   * @param key The full path to the snapshot iModel file.
    * @returns The matching StandaloneDb or `undefined`.
    * @internal
    */
-  public static tryFindByPath(filePath: string): SnapshotDb | undefined {
-    return SnapshotDb._openDbs.get(filePath);
+  public static tryFindByKey(key: string): SnapshotDb | undefined {
+    return SnapshotDb._openDbs.get(key);
   }
 }
 
@@ -2501,7 +2502,9 @@ export class SnapshotDb extends IModelDb {
  * @internal
  */
 export class StandaloneDb extends IModelDb {
-  /** Keep track of open standalone iModels to support `tryFind` for RPC purposes */
+  /** Keep track of open standalone iModels to support `tryFind` for RPC purposes
+   * @note The key for this map is the full path of the standalone iModel file.
+   */
   private static readonly _openDbs = new Map<string, StandaloneDb>();
   /** The full path to the snapshot iModel file. */
   public get filePath(): string { return this.nativeDb.getFilePath(); }
@@ -2547,7 +2550,7 @@ export class StandaloneDb extends IModelDb {
    * @throws [[IModelError]]
    */
   public static open(filePath: string, openMode: OpenMode = OpenMode.ReadWrite): StandaloneDb {
-    if (StandaloneDb.tryFindByPath(filePath)) {
+    if (StandaloneDb.tryFindByKey(filePath)) {
       throw new IModelError(DbResult.BE_SQLITE_CANTOPEN, `Cannot open snapshot iModel at ${filePath} again - it has already been opened once`, Logger.logError, loggerCategory);
     }
     const nativeDb = new IModelHost.platform.DgnDb();
@@ -2573,10 +2576,11 @@ export class StandaloneDb extends IModelDb {
   }
 
   /** Used to find open standalone iModels.
+   * @param key The full path to the standalone iModel file.
    * @returns The matching StandaloneDb or `undefined`.
    * @internal
    */
-  public static tryFindByPath(filePath: string): StandaloneDb | undefined {
-    return StandaloneDb._openDbs.get(filePath);
+  public static tryFindByKey(key: string): StandaloneDb | undefined {
+    return StandaloneDb._openDbs.get(key);
   }
 }

@@ -64,24 +64,21 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
 
   public async close(tokenProps: IModelTokenProps): Promise<boolean> {
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
-    const iModelToken = IModelToken.fromJSON(tokenProps);
-    if (iModelToken.openMode === OpenMode.Readonly)
+    if (OpenMode.Readonly === tokenProps.openMode) {
       return Promise.resolve(true); // Close is a no-op for ReadOnly connections.
-
-    await BriefcaseDb.findByToken(iModelToken).close(requestContext, KeepBriefcase.No);
+    }
+    await BriefcaseDb.findByKey(tokenProps.key).close(requestContext, KeepBriefcase.No);
     return Promise.resolve(true);
   }
 
   public async queryRows(tokenProps: IModelTokenProps, ecsql: string, bindings?: any[] | object, limit?: QueryLimit, quota?: QueryQuota, priority?: QueryPriority): Promise<QueryResponse> {
-    const iModelToken = IModelToken.fromJSON(tokenProps);
-    const iModelDb: IModelDb = IModelDb.find(iModelToken);
+    const iModelDb: IModelDb = IModelDb.findByKey(tokenProps.key);
     return iModelDb.queryRows(ecsql, bindings, limit, quota, priority);
   }
 
   public async queryModelRanges(tokenProps: IModelTokenProps, modelIdsList: Id64String[]): Promise<Range3dProps[]> {
-    const iModelToken = IModelToken.fromJSON(tokenProps);
     const modelIds = new Set(modelIdsList);
-    const iModelDb: IModelDb = IModelDb.find(iModelToken);
+    const iModelDb: IModelDb = IModelDb.findByKey(tokenProps.key);
     const ranges: Range3dProps[] = [];
     for (const id of modelIds) {
       const val = iModelDb.nativeDb.queryModelExtents(JSON.stringify({ id: id.toString() }));
@@ -103,9 +100,8 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
   }
 
   public async getModelProps(tokenProps: IModelTokenProps, modelIdsList: Id64String[]): Promise<ModelProps[]> {
-    const iModelToken = IModelToken.fromJSON(tokenProps);
     const modelIds = new Set(modelIdsList);
-    const iModelDb: IModelDb = IModelDb.find(iModelToken);
+    const iModelDb: IModelDb = IModelDb.findByKey(tokenProps.key);
     const modelJsonArray: ModelProps[] = [];
     for (const id of modelIds) {
       try {
@@ -127,9 +123,8 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
   }
 
   public async getElementProps(tokenProps: IModelTokenProps, elementIdsList: Id64String[]): Promise<ElementProps[]> {
-    const iModelToken = IModelToken.fromJSON(tokenProps);
     const elementIds = new Set(elementIdsList);
-    const iModelDb: IModelDb = IModelDb.find(iModelToken);
+    const iModelDb: IModelDb = IModelDb.findByKey(tokenProps.key);
     const elementProps: ElementProps[] = [];
     for (const id of elementIds) {
       try {
@@ -143,8 +138,7 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
   }
 
   public async getGeometrySummary(tokenProps: IModelTokenProps, request: GeometrySummaryRequestProps): Promise<string> {
-    const iModelToken = IModelToken.fromJSON(tokenProps);
-    const iModel = IModelDb.find(iModelToken);
+    const iModel = IModelDb.findByKey(tokenProps.key);
     return generateGeometrySummaries(request, iModel);
   }
 
@@ -155,14 +149,12 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
   }
 
   public async queryEntityIds(tokenProps: IModelTokenProps, params: EntityQueryParams): Promise<Id64String[]> {
-    const iModelToken = IModelToken.fromJSON(tokenProps);
-    const res = IModelDb.find(iModelToken).queryEntityIds(params);
+    const res = IModelDb.findByKey(tokenProps.key).queryEntityIds(params);
     return [...res];
   }
 
   public async getClassHierarchy(tokenProps: IModelTokenProps, classFullName: string): Promise<string[]> {
-    const iModelToken = IModelToken.fromJSON(tokenProps);
-    const iModelDb: IModelDb = IModelDb.find(iModelToken);
+    const iModelDb: IModelDb = IModelDb.findByKey(tokenProps.key);
     const classArray: string[] = [];
     while (true) {
       const classMetaData: EntityMetaData = iModelDb.getMetaData(classFullName);
@@ -176,9 +168,8 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
   }
 
   public async getAllCodeSpecs(tokenProps: IModelTokenProps): Promise<any[]> {
-    const iModelToken = IModelToken.fromJSON(tokenProps);
     const codeSpecs: any[] = [];
-    IModelDb.find(iModelToken).withPreparedStatement("SELECT ECInstanceId AS id, name, jsonProperties FROM BisCore.CodeSpec", (statement) => {
+    IModelDb.findByKey(tokenProps.key).withPreparedStatement("SELECT ECInstanceId AS id, name, jsonProperties FROM BisCore.CodeSpec", (statement) => {
       for (const row of statement)
         codeSpecs.push({ id: row.id, name: row.name, jsonProperties: JSON.parse(row.jsonProperties) });
     });
@@ -187,42 +178,35 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
   }
 
   public async getViewStateData(tokenProps: IModelTokenProps, viewDefinitionId: string): Promise<ViewStateProps> {
-    const iModelToken = IModelToken.fromJSON(tokenProps);
-    return IModelDb.find(iModelToken).views.getViewStateData(viewDefinitionId);
+    return IModelDb.findByKey(tokenProps.key).views.getViewStateData(viewDefinitionId);
   }
 
   public async readFontJson(tokenProps: IModelTokenProps): Promise<any> {
-    const iModelToken = IModelToken.fromJSON(tokenProps);
-    return IModelDb.find(iModelToken).readFontJson();
+    return IModelDb.findByKey(tokenProps.key).readFontJson();
   }
 
   public async requestSnap(tokenProps: IModelTokenProps, sessionId: string, props: SnapRequestProps): Promise<SnapResponseProps> {
-    const iModelToken = IModelToken.fromJSON(tokenProps);
     const requestContext = ClientRequestContext.current;
-    return IModelDb.find(iModelToken).requestSnap(requestContext, sessionId, props);
+    return IModelDb.findByKey(tokenProps.key).requestSnap(requestContext, sessionId, props);
   }
 
   public async cancelSnap(tokenProps: IModelTokenProps, sessionId: string): Promise<void> {
-    const iModelToken = IModelToken.fromJSON(tokenProps);
-    return IModelDb.find(iModelToken).cancelSnap(sessionId);
+    return IModelDb.findByKey(tokenProps.key).cancelSnap(sessionId);
   }
 
   public async getMassProperties(tokenProps: IModelTokenProps, props: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps> {
-    const iModelToken = IModelToken.fromJSON(tokenProps);
     const requestContext = ClientRequestContext.current;
-    return IModelDb.find(iModelToken).getMassProperties(requestContext, props);
+    return IModelDb.findByKey(tokenProps.key).getMassProperties(requestContext, props);
   }
 
   public async getToolTipMessage(tokenProps: IModelTokenProps, id: string): Promise<string[]> {
-    const iModelToken = IModelToken.fromJSON(tokenProps);
-    const el = IModelDb.find(iModelToken).elements.getElement(id);
+    const el = IModelDb.findByKey(tokenProps.key).elements.getElement(id);
     return (el === undefined) ? [] : el.getToolTipMessage();
   }
 
   /** Send a view thumbnail to the frontend. This is a binary transfer with the metadata in a 16-byte prefix header. */
   public async getViewThumbnail(tokenProps: IModelTokenProps, viewId: string): Promise<Uint8Array> {
-    const iModelToken = IModelToken.fromJSON(tokenProps);
-    const thumbnail = IModelDb.find(iModelToken).views.getThumbnail(viewId);
+    const thumbnail = IModelDb.findByKey(tokenProps.key).views.getThumbnail(viewId);
     if (undefined === thumbnail || 0 === thumbnail.image.length)
       return Promise.reject(new Error("no thumbnail"));
 
@@ -233,9 +217,8 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
   }
 
   public async getDefaultViewId(tokenProps: IModelTokenProps): Promise<Id64String> {
-    const iModelToken = IModelToken.fromJSON(tokenProps);
     const spec = { namespace: "dgn_View", name: "DefaultView" };
-    const blob = IModelDb.find(iModelToken).queryFilePropertyBlob(spec);
+    const blob = IModelDb.findByKey(tokenProps.key).queryFilePropertyBlob(spec);
     if (undefined === blob || 8 !== blob.length)
       return Id64.invalid;
 
@@ -243,22 +226,19 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     return Id64.fromUint32Pair(view[0], view[1]);
   }
   public async getSpatialCategoryId(tokenProps: IModelTokenProps, categoryName: string): Promise<Id64String | undefined> {
-    const iModelToken = IModelToken.fromJSON(tokenProps);
-    const iModelDb = IModelDb.find(iModelToken);
+    const iModelDb = IModelDb.findByKey(tokenProps.key);
     const dictionary: DictionaryModel = iModelDb.models.getModel(IModel.dictionaryId) as DictionaryModel;
     return SpatialCategory.queryCategoryIdByName(iModelDb, dictionary.id, categoryName);
   }
 
   public async getIModelCoordinatesFromGeoCoordinates(tokenProps: IModelTokenProps, props: string): Promise<IModelCoordinatesResponseProps> {
-    const iModelToken = IModelToken.fromJSON(tokenProps);
-    const iModelDb = IModelDb.find(iModelToken);
+    const iModelDb = IModelDb.findByKey(tokenProps.key);
     const requestContext = ClientRequestContext.current;
     return iModelDb.getIModelCoordinatesFromGeoCoordinates(requestContext, props);
   }
 
   public async getGeoCoordinatesFromIModelCoordinates(tokenProps: IModelTokenProps, props: string): Promise<GeoCoordinatesResponseProps> {
-    const iModelToken = IModelToken.fromJSON(tokenProps);
-    const iModelDb = IModelDb.find(iModelToken);
+    const iModelDb = IModelDb.findByKey(tokenProps.key);
     const requestContext = ClientRequestContext.current;
     return iModelDb.getGeoCoordinatesFromIModelCoordinates(requestContext, props);
   }

@@ -21,7 +21,7 @@ export class SnapshotIModelRpcImpl extends RpcInterface implements SnapshotIMode
 
   /** Ask the backend to open a snapshot iModel (not managed by iModelHub) from a file name that is resolved by the backend. */
   public async openSnapshot(filePath: string): Promise<IModelProps> {
-    let snapshotDb: SnapshotDb | undefined = SnapshotDb.tryFindByPath(filePath);
+    let snapshotDb: SnapshotDb | undefined = SnapshotDb.tryFindByKey(filePath);
     if (undefined === snapshotDb) {
       snapshotDb = SnapshotDb.open(filePath);
     }
@@ -32,7 +32,7 @@ export class SnapshotIModelRpcImpl extends RpcInterface implements SnapshotIMode
   public async closeSnapshot(tokenProps: IModelTokenProps): Promise<boolean> {
     const iModelToken = IModelToken.fromJSON(tokenProps);
     const snapshotFilePath = iModelToken.key!;
-    const snapshotDb = SnapshotDb.tryFindByPath(snapshotFilePath);
+    const snapshotDb = SnapshotDb.tryFindByKey(snapshotFilePath);
     if (undefined === snapshotDb) {
       Logger.logError(loggerCategory, "SnapshotDb not found in the in-memory cache", () => snapshotFilePath);
       throw new IModelNotFoundResponse();

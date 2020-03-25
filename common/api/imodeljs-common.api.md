@@ -3163,12 +3163,12 @@ export function iModelTileTreeIdToString(modelId: Id64String, treeId: IModelTile
 
 // @public
 export class IModelToken implements IModelTokenProps {
-    constructor(key?: string, contextId?: string, iModelid?: string, changesetId?: string, openMode?: OpenMode);
+    constructor(key: string, contextId?: string, iModelid?: string, changesetId?: string, openMode?: OpenMode);
     changeSetId?: string;
     readonly contextId?: string;
     static fromJSON(props: IModelTokenProps): IModelToken;
     readonly iModelId?: string;
-    readonly key?: string;
+    readonly key: string;
     openMode?: OpenMode;
     toJSON(): IModelTokenProps;
 }
@@ -3178,7 +3178,7 @@ export interface IModelTokenProps {
     changeSetId?: string;
     readonly contextId?: string;
     readonly iModelId?: string;
-    readonly key?: string;
+    readonly key: string;
     openMode?: OpenMode;
 }
 

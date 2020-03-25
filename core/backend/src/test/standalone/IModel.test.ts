@@ -1805,20 +1805,20 @@ describe("iModel", () => {
     assert.isFalse(standaloneDb1.isReadonly, "Expect standalone iModels to be read-write during create");
     assert.equal(standaloneDb1.getBriefcaseId(), ReservedBriefcaseId.FutureStandalone);
     assert.equal(standaloneDb1.filePath, standaloneFile1);
-    assert.equal(standaloneDb1, StandaloneDb.tryFindByPath(standaloneFile1), "Should be in the list of open StandaloneDbs");
-    assert.isUndefined(SnapshotDb.tryFindByPath(standaloneFile1), "Should not be in the list of open SnapshotDbs");
+    assert.equal(standaloneDb1, StandaloneDb.tryFindByKey(standaloneFile1), "Should be in the list of open StandaloneDbs");
+    assert.isUndefined(SnapshotDb.tryFindByKey(standaloneFile1), "Should not be in the list of open SnapshotDbs");
     assert.isFalse(standaloneDb1.nativeDb.isEncrypted());
     assert.equal(standaloneDb1.elements.getRootSubject().code.getValue(), standaloneRootSubjectName);
     assert.isTrue(standaloneDb1.isOpen);
     standaloneDb1.close();
     assert.isFalse(standaloneDb1.isOpen);
     standaloneDb1.close(); // calling `close()` a second time is a no-op
-    assert.isUndefined(StandaloneDb.tryFindByPath(standaloneFile1));
+    assert.isUndefined(StandaloneDb.tryFindByKey(standaloneFile1));
     standaloneDb1 = StandaloneDb.open(standaloneFile1);
-    assert.equal(standaloneDb1, StandaloneDb.tryFindByPath(standaloneFile1));
+    assert.equal(standaloneDb1, StandaloneDb.tryFindByKey(standaloneFile1));
     assert.isFalse(standaloneDb1.isReadonly, "By default, StandaloneDbs are opened read/write");
     standaloneDb1.close();
-    assert.isUndefined(StandaloneDb.tryFindByPath(standaloneFile1));
+    assert.isUndefined(StandaloneDb.tryFindByKey(standaloneFile1));
   });
 
   it("Snapshot iModel properties", () => {
@@ -1845,10 +1845,10 @@ describe("iModel", () => {
     assert.equal(snapshotDb1.filePath, snapshotFile1);
     assert.equal(snapshotDb2.filePath, snapshotFile2);
     assert.equal(snapshotDb3.filePath, snapshotFile3);
-    assert.equal(snapshotDb1, SnapshotDb.tryFindByPath(snapshotFile1));
-    assert.equal(snapshotDb2, SnapshotDb.tryFindByPath(snapshotFile2));
-    assert.equal(snapshotDb3, SnapshotDb.tryFindByPath(snapshotFile3));
-    assert.isUndefined(StandaloneDb.tryFindByPath(snapshotFile1), "Should not be in the list of open StandaloneDbs");
+    assert.equal(snapshotDb1, SnapshotDb.tryFindByKey(snapshotFile1));
+    assert.equal(snapshotDb2, SnapshotDb.tryFindByKey(snapshotFile2));
+    assert.equal(snapshotDb3, SnapshotDb.tryFindByKey(snapshotFile3));
+    assert.isUndefined(StandaloneDb.tryFindByKey(snapshotFile1), "Should not be in the list of open StandaloneDbs");
     assert.isFalse(snapshotDb1.nativeDb.isEncrypted());
     assert.isFalse(snapshotDb2.nativeDb.isEncrypted());
     assert.isFalse(snapshotDb3.nativeDb.isEncrypted());
@@ -1877,15 +1877,15 @@ describe("iModel", () => {
     snapshotDb1.close(); // calling `close()` a second time is a no-op
     snapshotDb2.close(); // calling `close()` a second time is a no-op
     snapshotDb3.close(); // calling `close()` a second time is a no-op
-    assert.isUndefined(SnapshotDb.tryFindByPath(snapshotFile1));
-    assert.isUndefined(SnapshotDb.tryFindByPath(snapshotFile2));
-    assert.isUndefined(SnapshotDb.tryFindByPath(snapshotFile3));
+    assert.isUndefined(SnapshotDb.tryFindByKey(snapshotFile1));
+    assert.isUndefined(SnapshotDb.tryFindByKey(snapshotFile2));
+    assert.isUndefined(SnapshotDb.tryFindByKey(snapshotFile3));
     snapshotDb1 = SnapshotDb.open(snapshotFile1);
     snapshotDb2 = SnapshotDb.open(snapshotFile2);
     snapshotDb3 = SnapshotDb.open(snapshotFile3);
-    assert.equal(snapshotDb1, SnapshotDb.tryFindByPath(snapshotFile1));
-    assert.equal(snapshotDb2, SnapshotDb.tryFindByPath(snapshotFile2));
-    assert.equal(snapshotDb3, SnapshotDb.tryFindByPath(snapshotFile3));
+    assert.equal(snapshotDb1, SnapshotDb.tryFindByKey(snapshotFile1));
+    assert.equal(snapshotDb2, SnapshotDb.tryFindByKey(snapshotFile2));
+    assert.equal(snapshotDb3, SnapshotDb.tryFindByKey(snapshotFile3));
     assert.isTrue(snapshotDb1.isReadonly, "Expect snapshots to be read-only after open");
     assert.isTrue(snapshotDb2.isReadonly, "Expect snapshots to be read-only after open");
     assert.isTrue(snapshotDb3.isReadonly, "Expect snapshots to be read-only after open");
@@ -1898,9 +1898,9 @@ describe("iModel", () => {
     snapshotDb1.close();
     snapshotDb2.close();
     snapshotDb3.close();
-    assert.isUndefined(SnapshotDb.tryFindByPath(snapshotFile1));
-    assert.isUndefined(SnapshotDb.tryFindByPath(snapshotFile2));
-    assert.isUndefined(SnapshotDb.tryFindByPath(snapshotFile3));
+    assert.isUndefined(SnapshotDb.tryFindByKey(snapshotFile1));
+    assert.isUndefined(SnapshotDb.tryFindByKey(snapshotFile2));
+    assert.isUndefined(SnapshotDb.tryFindByKey(snapshotFile3));
   });
 
   it("Password-protected Snapshot iModels", () => {

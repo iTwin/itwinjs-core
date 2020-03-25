@@ -478,7 +478,7 @@ describe("RpcInterface", () => {
   it("should transport imodel tokens correctly", async () => {
     RpcOperation.lookup(TestRpcInterface, "op16").policy.token = new RpcOperationPolicy().token;
 
-    async function check(k?: string, c?: string, i?: string, s?: string, o?: OpenMode) {
+    async function check(k: string, c?: string, i?: string, s?: string, o?: OpenMode) {
       const token = new IModelToken(k, c, i, s, o);
       const values: TokenValues = { key: k, contextId: c, iModelId: i, changeSetId: s, openMode: o };
       assert.isTrue(await TestRpcInterface.getClient().op16(token.toJSON(), values));
@@ -488,12 +488,10 @@ describe("RpcInterface", () => {
     await check("key1", "context1", "imodel1", "", OpenMode.ReadWrite);
     await check("key1", "context1", "imodel1", undefined, OpenMode.ReadWrite);
     await check("", "context1", "imodel1", "change1", OpenMode.ReadWrite);
-    await check(undefined, "context1", "imodel1", "change1", OpenMode.ReadWrite);
 
     await check("key1", "context1", "imodel1", "change1", OpenMode.Readonly);
     await check("key1", "context1", "imodel1", "", OpenMode.Readonly);
     await check("", "context1", "imodel1", "change1", OpenMode.Readonly);
-    await check(undefined, "context1", "imodel1", "change1", OpenMode.Readonly);
   });
 
   it("should recover when the underlying transport is replaced, resend all active requests, and disregard any zombie responses", async () => {

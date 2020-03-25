@@ -24,7 +24,7 @@ describe("PresentationRpcInterface", () => {
   }
 
   it("finds imodel tokens in RPC requests", () => {
-    const token: IModelTokenProps = { iModelId: "test", contextId: "test" };
+    const token: IModelTokenProps = { key: "test", iModelId: "test", contextId: "test" };
     const parameters = [
       token,
       { rulesetOrId: faker.random.word() },
@@ -52,7 +52,7 @@ describe("PresentationRpcInterface", () => {
 
     let rpcInterface: PresentationRpcInterface;
     let mock: moq.IMock<(<T>(parameters: IArguments) => Promise<T>)>;
-    const token: IModelTokenProps = { iModelId: "test", contextId: "test" };
+    const token: IModelTokenProps = { key: "test", iModelId: "test", contextId: "test" };
     const defaultRpcOptions: PresentationRpcRequestOptions = {};
 
     beforeEach(() => {

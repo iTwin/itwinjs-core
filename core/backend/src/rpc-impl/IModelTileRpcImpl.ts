@@ -98,7 +98,7 @@ abstract class TileRequestMemoizer<Result, Props extends TileRequestProps> exten
 }
 
 async function getTileTreeProps(props: TileRequestProps): Promise<TileTreeProps> {
-  const db = IModelDb.find(props.iModelToken);
+  const db = IModelDb.findByKey(props.iModelToken.key);
   return db.tiles.requestTileTreeProps(props.requestContext, props.treeId);
 }
 
@@ -129,7 +129,7 @@ interface TileContentRequestProps extends TileRequestProps {
 }
 
 async function getTileContent(props: TileContentRequestProps): Promise<Uint8Array> {
-  const db = IModelDb.find(props.iModelToken);
+  const db = IModelDb.findByKey(props.iModelToken.key);
   return db.tiles.requestTileContent(props.requestContext, props.treeId, props.contentId);
 }
 
@@ -179,8 +179,7 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
     if (null === modelIds)
       modelIds = undefined;
 
-    const token = IModelToken.fromJSON(tokenProps);
-    const db = IModelDb.find(token);
+    const db = IModelDb.findByKey(tokenProps.key);
     return db.nativeDb.purgeTileTrees(modelIds);
   }
 
@@ -212,11 +211,11 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
 /** @internal */
 export function cancelTileContentRequests(tokenProps: IModelTokenProps, contentIds: TileTreeContentIds[]): void {
   const iModelToken = IModelToken.fromJSON(tokenProps);
-  const iModel = IModelDb.find(iModelToken);
+  const iModel = IModelDb.findByKey(tokenProps.key);
 
   const props: TileContentRequestProps = {
     requestContext: ClientRequestContext.current,
-    iModelToken,
+    iModelToken, // WIP: does this really need an iModelToken?
     treeId: "",
     contentId: "",
   };

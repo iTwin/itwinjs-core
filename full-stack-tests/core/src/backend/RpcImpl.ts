@@ -21,8 +21,7 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
 
   public async extractChangeSummaries(tokenProps: IModelTokenProps, options: any): Promise<void> {
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
-    const iModelToken = IModelToken.fromJSON(tokenProps);
-    await ChangeSummaryManager.extractChangeSummaries(requestContext, BriefcaseDb.findByToken(iModelToken), options as ChangeSummaryExtractOptions);
+    await ChangeSummaryManager.extractChangeSummaries(requestContext, BriefcaseDb.findByKey(tokenProps.key), options as ChangeSummaryExtractOptions);
   }
 
   public async deleteChangeCache(tokenProps: IModelTokenProps): Promise<void> {
@@ -36,8 +35,7 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
   }
 
   public async executeTest(tokenProps: IModelTokenProps, testName: string, params: any): Promise<any> {
-    const iModelToken = IModelToken.fromJSON(tokenProps);
-    return JSON.parse(IModelDb.find(iModelToken).nativeDb.executeTest(testName, JSON.stringify(params)));
+    return JSON.parse(IModelDb.findByKey(tokenProps.key).nativeDb.executeTest(testName, JSON.stringify(params)));
   }
 
   public async reportRequestContext(): Promise<ClientRequestContextProps> {
@@ -92,8 +90,7 @@ export class EventsTestRpcImpl extends RpcInterface implements EventsTestRpcInte
     if (EventSinkManager.GLOBAL === tokenProps.key) {
       EventSinkManager.global.emit(EventsTestRpcInterface.name, "echo", { id, message });
     } else {
-      const iModelToken = IModelToken.fromJSON(tokenProps);
-      const iModelDb = IModelDb.find(iModelToken);
+      const iModelDb = IModelDb.findByKey(tokenProps.key);
       if (iModelDb.isBriefcaseDb()) {
         iModelDb.eventSink!.emit(EventsTestRpcInterface.name, "echo", { id, message });
       }

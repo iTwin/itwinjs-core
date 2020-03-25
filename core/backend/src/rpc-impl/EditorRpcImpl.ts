@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module RpcInterface */
-import { RpcInterface, RpcManager, IModelToken, IModelTokenProps, Editor3dRpcInterface, BentleyError, IModelStatus, GeometricElement3dProps } from "@bentley/imodeljs-common";
+import { RpcInterface, RpcManager, IModelTokenProps, Editor3dRpcInterface, BentleyError, IModelStatus, GeometricElement3dProps } from "@bentley/imodeljs-common";
 import { IModelHost } from "../IModelHost";
 import { GeometricElement3dEditor } from "../ElementEditor";
 import { IModelDb } from "../IModelDb";
@@ -23,7 +23,7 @@ export class Editor3dRpcImpl extends RpcInterface implements Editor3dRpcInterfac
   public static register() { RpcManager.registerImpl(Editor3dRpcInterface, Editor3dRpcImpl); }
 
   public async start(tokenProps: IModelTokenProps, editorId: GuidString): Promise<void> {
-    const iModelDb = IModelDb.find(IModelToken.fromJSON(tokenProps));
+    const iModelDb = IModelDb.findByKey(tokenProps.key);
     IModelHost.elementEditors.set(editorId, new GeometricElement3dEditor(iModelDb));
   }
 

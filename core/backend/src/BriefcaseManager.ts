@@ -18,7 +18,7 @@ import {
   ChangeSetApplyOption, BeEvent, DbResult, OpenMode, assert, Logger, ChangeSetStatus,
   BentleyStatus, IModelHubStatus, PerfLogger, GuidString, Id64, IModelStatus, AsyncMutex, BeDuration,
 } from "@bentley/bentleyjs-core";
-import { BriefcaseProps, BriefcaseStatus, CreateIModelProps, IModelError, IModelToken, IModelVersion, MobileRpcConfiguration } from "@bentley/imodeljs-common";
+import { BriefcaseProps, BriefcaseStatus, CreateIModelProps, IModelError, IModelVersion, MobileRpcConfiguration } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { IModelDb, OpenParams, SyncMode } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
@@ -309,12 +309,6 @@ export class BriefcaseEntry {
  */
 class BriefcaseCache {
   private readonly _briefcases = new Map<string, BriefcaseEntry>();
-
-  /** Find a briefcase in the cache by token */
-  public findBriefcaseByToken({ key }: IModelToken): BriefcaseEntry | undefined {
-    assert(!!key);
-    return this.findBriefcaseByKey(key!);
-  }
 
   /** Find a briefcase in the cache by key */
   public findBriefcaseByKey(key: string): BriefcaseEntry | undefined {
@@ -1437,8 +1431,8 @@ export class BriefcaseManager {
   }
 
   /** Find the existing briefcase */
-  public static findBriefcaseByToken(iModelToken: IModelToken): BriefcaseEntry | undefined {
-    return this._cache.findBriefcaseByToken(iModelToken);
+  public static findBriefcaseByKey(key: string): BriefcaseEntry | undefined {
+    return this._cache.findBriefcaseByKey(key);
   }
 
   private static closeBriefcase(briefcase: BriefcaseEntry, raiseOnCloseEvent: boolean) {

@@ -31,7 +31,7 @@ describe("PresentationManager", () => {
   let manager: PresentationManager;
   const i18nMock = moq.Mock.ofType<I18N>();
   const testData = {
-    imodelToken: new IModelToken(),
+    imodelToken: new IModelToken(""),
     imodelMock: moq.Mock.ofType<IModelConnection>(),
     pageOptions: { start: 0, size: 0 },
     rulesetId: "",

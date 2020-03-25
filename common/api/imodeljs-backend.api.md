@@ -454,7 +454,7 @@ export class BriefcaseDb extends IModelDb {
     // @internal
     get eventSink(): EventSink | undefined;
     // @internal
-    static findByToken(iModelToken: IModelToken): BriefcaseDb;
+    static findByKey(key: string): BriefcaseDb;
     static finishDownloadBriefcase(requestContext: AuthorizedClientRequestContext, iModelToken: IModelToken): Promise<void>;
     readonly onBeforeClose: BeEvent<() => void>;
     readonly onChangesetApplied: BeEvent<() => void>;
@@ -476,7 +476,7 @@ export class BriefcaseDb extends IModelDb {
     // @internal
     static startDownloadBriefcase(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: string, openParams?: OpenParams, version?: IModelVersion): Promise<IModelToken>;
     // @internal
-    static tryFindByToken(iModelToken: IModelToken): BriefcaseDb | undefined;
+    static tryFindByKey(key: string): BriefcaseDb | undefined;
 }
 
 // @internal
@@ -536,7 +536,7 @@ export class BriefcaseManager {
     static download(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelId: GuidString, openParams: OpenParams, changeSetId: GuidString): Promise<BriefcaseEntry>;
     static downloadChangeSets(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, fromChangeSetId: string, toChangeSetId: string): Promise<ChangeSet[]>;
     static dumpChangeSet(nativeDb: IModelJsNative.DgnDb, changeSetToken: ChangeSetToken): void;
-    static findBriefcaseByToken(iModelToken: IModelToken): BriefcaseEntry | undefined;
+    static findBriefcaseByKey(key: string): BriefcaseEntry | undefined;
     static getBriefcasesFromDisk(): Promise<BriefcaseProps[]>;
     // (undocumented)
     static getChangeCachePathName(iModelId: GuidString): string;
@@ -2272,7 +2272,7 @@ export abstract class IModelDb extends IModel {
     embedFont(prop: FontProps): FontProps;
     exportGraphics(exportProps: ExportGraphicsOptions): DbResult;
     exportPartGraphics(exportProps: ExportPartGraphicsOptions): DbResult;
-    static find(iModelToken: IModelToken): IModelDb;
+    static findByKey(key: string): IModelDb;
     // (undocumented)
     get fontMap(): FontMap;
     // (undocumented)
@@ -2335,7 +2335,7 @@ export abstract class IModelDb extends IModel {
     setGuid(guid: GuidString): DbResult;
     // (undocumented)
     readonly tiles: IModelDb.Tiles;
-    static tryFind(iModelToken: IModelToken): IModelDb | undefined;
+    static tryFindByKey(key: string): IModelDb | undefined;
     // @beta (undocumented)
     readonly txns: TxnManager;
     updateEcefLocation(ecef: EcefLocation): void;
@@ -3639,7 +3639,7 @@ export class SnapshotDb extends IModelDb {
     get filePath(): string;
     static open(filePath: string, encryptionProps?: IModelEncryptionProps): SnapshotDb;
     // @internal
-    static tryFindByPath(filePath: string): SnapshotDb | undefined;
+    static tryFindByKey(key: string): SnapshotDb | undefined;
 }
 
 // @public
@@ -3814,7 +3814,7 @@ export class StandaloneDb extends IModelDb {
     static createEmpty(filePath: string, args: CreateIModelProps): StandaloneDb;
     get filePath(): string;
     static open(filePath: string, openMode?: OpenMode): StandaloneDb;
-    static tryFindByPath(filePath: string): StandaloneDb | undefined;
+    static tryFindByKey(key: string): StandaloneDb | undefined;
 }
 
 // @internal

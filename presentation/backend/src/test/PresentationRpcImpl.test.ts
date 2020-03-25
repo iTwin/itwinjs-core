@@ -76,7 +76,7 @@ describe("PresentationRpcImpl", () => {
         clientManagerFactory: () => presentationManagerMock.object,
       });
       testData = {
-        imodelToken: new IModelToken(),
+        imodelToken: new IModelToken(""),
         imodelMock: moq.Mock.ofType<IModelDb>(),
         rulesetOrId: faker.random.word(),
         pageOptions: { start: 123, size: 456 } as PageOptions,
@@ -85,14 +85,14 @@ describe("PresentationRpcImpl", () => {
       };
       defaultRpcParams = { clientId: faker.random.uuid() };
       testData.imodelMock.setup((x: IModelDb) => x.iModelToken).returns(() => testData.imodelToken);
-      IModelDb.find = () => testData.imodelMock.object;
+      IModelDb.findByKey = () => testData.imodelMock.object;
       impl = new PresentationRpcImpl();
       const requestContext = new ClientRequestContext();
       requestContext.enter();
     });
 
     it("returns invalid argument status code when using invalid imodel token", async () => {
-      IModelDb.find = () => undefined as any;
+      IModelDb.findByKey = () => undefined as any;
       const options: Paged<HierarchyRpcRequestOptions> = {
         ...defaultRpcParams,
         rulesetOrId: testData.rulesetId,

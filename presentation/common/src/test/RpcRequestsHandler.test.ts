@@ -29,7 +29,7 @@ describe("RpcRequestsHandler", () => {
 
   let clientId: string;
   let defaultRpcOptions: PresentationRpcRequestOptions & { imodel: IModelToken };
-  const token: IModelTokenPropsForTest = { iModelId: "test", contextId: "test", toJSON() { return this; } };
+  const token: IModelTokenPropsForTest = { key: "test", iModelId: "test", contextId: "test", toJSON() { return this; } };
   const successResponse = async <TResult>(result: TResult): PresentationRpcResponse<TResult> => ({ statusCode: PresentationStatus.Success, result });
   const errorResponse = async (statusCode: PresentationStatus, errorMessage?: string): PresentationRpcResponse => ({ statusCode, errorMessage, result: undefined });
 

@@ -81,7 +81,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface {
   }
 
   private getIModel(token: IModelToken): IModelDb {
-    const imodel = IModelDb.find(token);
+    const imodel = IModelDb.findByKey(token.key);
     if (!imodel)
       throw new PresentationError(PresentationStatus.InvalidArgument, "IModelToken doesn't point to any iModel");
     return imodel;

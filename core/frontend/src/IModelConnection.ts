@@ -529,7 +529,7 @@ export class BriefcaseConnection extends IModelConnection {
     const changeSetId: string = await version.evaluateChangeSet(requestContext, iModelId, IModelApp.iModelClient);
     requestContext.enter();
 
-    const iModelToken = new IModelToken(undefined, contextId, iModelId, changeSetId, openMode);
+    const iModelToken = new IModelToken("", contextId, iModelId, changeSetId, openMode); // WIP: what is the right value for key?
 
     const openResponse: IModelProps = await BriefcaseConnection.callOpen(requestContext, iModelToken, openMode);
     requestContext.enter();

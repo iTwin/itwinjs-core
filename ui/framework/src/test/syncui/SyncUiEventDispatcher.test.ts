@@ -235,7 +235,7 @@ describe("SyncUiEventDispatcher", () => {
 
   describe("ConnectionEvents", () => {
 
-    const imodelToken = new IModelToken();
+    const imodelToken = new IModelToken("");
     const imodelMock = moq.Mock.ofType<IModelConnection>();
     const rpcRequestsHandlerMock = moq.Mock.ofType<RpcRequestsHandler>();
     const source: string = "test";

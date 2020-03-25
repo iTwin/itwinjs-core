@@ -192,8 +192,7 @@ export class NativeAppRpcImpl extends RpcInterface implements NativeAppRpcInterf
    */
   public async closeBriefcase(tokenProps: IModelTokenProps): Promise<boolean> {
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
-    const iModelToken = IModelToken.fromJSON(tokenProps);
-    await BriefcaseDb.findByToken(iModelToken).close(requestContext, KeepBriefcase.Yes);
+    await BriefcaseDb.findByKey(tokenProps.key).close(requestContext, KeepBriefcase.Yes);
     return Promise.resolve(true);
   }
 
