@@ -5,8 +5,8 @@
 /** @packageDocumentation
  * @module EventSource
  */
-import { QueuedEvent, NativeAppRpcInterface, IModelToken, RpcRegistry } from "@bentley/imodeljs-common";
 import { Logger } from "@bentley/bentleyjs-core";
+import { IModelTokenProps, NativeAppRpcInterface, QueuedEvent, RpcRegistry } from "@bentley/imodeljs-common";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { IModelApp } from "./IModelApp";
 
@@ -21,12 +21,12 @@ export type EventListener = (data: any) => void;
 export class EventSource {
   private _timeoutHandle: any;
   private _namespaces = new Map<string, Map<string, EventListener[]>>();
-  constructor(public readonly iModelToken: IModelToken) {
+  constructor(public readonly tokenProps: IModelTokenProps) {
   }
   private scheduleNextPoll() {
     const onPoll = async () => {
       try {
-        const queuedEvents = await NativeAppRpcInterface.getClient().fetchEvents(this.iModelToken.toJSON(), IModelApp.eventSourceOptions.prefetchLimit);
+        const queuedEvents = await NativeAppRpcInterface.getClient().fetchEvents(this.tokenProps, IModelApp.eventSourceOptions.prefetchLimit);
         // dispatch events
         queuedEvents.forEach((event: QueuedEvent) => {
           this.dispatchEvent(event);
@@ -125,7 +125,7 @@ export class EventSource {
     }
     this.onListenerChanged();
   }
-  /** remove all events and event listners
+  /** remove all events and event listeners
    * @internal
    */
   public clear() {
@@ -147,12 +147,11 @@ export abstract class EventSourceManager {
     if (!EventSourceManager._global) {
       EventSourceManager._global = this.create(EventSourceManager.GLOBAL, {
         key: EventSourceManager.GLOBAL,
-        toJSON() { return this; },
       });
     }
     return EventSourceManager._global;
   }
-  public static get(id: string, tokenProps?: IModelToken): EventSource {
+  public static get(id: string, tokenProps?: IModelTokenProps): EventSource {
     if (EventSourceManager._sources.has(id)) {
       return EventSourceManager._sources.get(id)!;
     }
@@ -163,9 +162,10 @@ export abstract class EventSourceManager {
       if (!EventSourceManager._sources.has(id)) {
         return this.create(id, tokenProps);
       } else {
-        if (tokenProps.toJSON() !== EventSourceManager.get(id).iModelToken.toJSON()) {
+        if (tokenProps.key !== EventSourceManager.get(id).tokenProps.key) {
           throw new Error(`EventSource with id='${id}' has different iModelToken`);
         }
+        // WIP: not sure why the above checks exists since it will fall through and throw anyway...
       }
     }
     throw new Error(`EventSource with id='${id}' not found`);
@@ -178,7 +178,7 @@ export abstract class EventSourceManager {
   public static has(id: string): boolean {
     return EventSourceManager._sources.has(id);
   }
-  public static create(id: string, tokenProps: IModelToken): EventSource {
+  public static create(id: string, tokenProps: IModelTokenProps): EventSource {
     if (EventSourceManager._sources.has(id)) {
       throw new Error(`EventSource with key='${id}' already exist`);
     }

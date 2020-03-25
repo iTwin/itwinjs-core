@@ -1,21 +1,21 @@
-import { IModelToken } from "@bentley/imodeljs-common";
-import { GuidString, BeEvent, Guid } from "@bentley/bentleyjs-core";
-import { EventSourceManager } from "@bentley/imodeljs-frontend/lib/EventSource";
-import { IModelApp } from "@bentley/imodeljs-frontend";
-import { assert } from "chai";
-import { EventsTestRpcInterface } from "../../common/RpcInterfaces";
-
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { BeEvent, Guid, GuidString } from "@bentley/bentleyjs-core";
+import { IModelTokenProps } from "@bentley/imodeljs-common";
+import { IModelApp } from "@bentley/imodeljs-frontend";
+import { EventSourceManager } from "@bentley/imodeljs-frontend/lib/EventSource";
+import { assert } from "chai";
+import { EventsTestRpcInterface } from "../../common/RpcInterfaces";
+
 /**
  * Internal diagnostic utility for backends
  * @internal
  */
 export class EventTest {
-  public static connectToBackendInstance(iModelToken: IModelToken): EventTest {
-    return new EventTest(iModelToken);
+  public static connectToBackendInstance(tokenProps: IModelTokenProps): EventTest {
+    return new EventTest(tokenProps);
   }
   /**
    * Backend event handler.
@@ -24,10 +24,10 @@ export class EventTest {
 
   /** Constructor */
   private constructor(
-    private readonly _iModelToken: IModelToken) {
+    private readonly _tokenProps: IModelTokenProps) {
     // setup backend event handler.
-    const eventSourceId = this._iModelToken.key!;
-    EventSourceManager.get(eventSourceId, this._iModelToken)
+    const eventSourceId = this._tokenProps.key!;
+    EventSourceManager.get(eventSourceId, this._tokenProps)
       .on(EventsTestRpcInterface.name, "echo", (data: any) => {
         this.onEcho.raiseEvent(data.id, data.message);
       });
@@ -43,7 +43,7 @@ export class EventTest {
           resolve(message);
         }
       });
-      await EventsTestRpcInterface.getClient().echo(this._iModelToken.toJSON(), id, message);
+      await EventsTestRpcInterface.getClient().echo(this._tokenProps, id, message);
       this.onEcho.removeListener(listener);
     });
   }
@@ -54,13 +54,12 @@ describe("Events", () => {
 
   before(async () => {
     IModelApp.startup();
-    const iModelToken: IModelToken = {
+    const tokenProps: IModelTokenProps = {
+      key: EventSourceManager.GLOBAL,
       iModelId: "test",
       changeSetId: "test",
-      key: EventSourceManager.GLOBAL,
-      toJSON() { return this; },
     }; // Supply a real token in an integration test
-    eventTool = EventTest.connectToBackendInstance(iModelToken);
+    eventTool = EventTest.connectToBackendInstance(tokenProps);
   });
 
   after(async () => {
@@ -68,16 +67,16 @@ describe("Events", () => {
   });
 
   it("echo - roundtrip", async () => {
-    let eventRecieved = 0;
+    let eventReceived = 0;
     const eventSent = 100;
     eventTool.onEcho.addListener((_message: string) => {
-      ++eventRecieved;
+      ++eventReceived;
     });
     const ready = [];
     for (let i = 0; i < eventSent; i++) {
       ready.push(eventTool.echo(Guid.createValue(), "Hello, world!"));
     }
     await Promise.all(ready);
-    assert.equal(eventSent, eventRecieved);
+    assert.equal(eventSent, eventReceived);
   });
 });

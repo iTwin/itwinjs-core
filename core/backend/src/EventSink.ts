@@ -16,7 +16,7 @@ import { IModelHost } from "./IModelHost";
  */
 export enum EmitStrategy {
   None,
-  PurgeOlderEvents, // this cocmpare namespace and eventName
+  PurgeOlderEvents, // this compare namespace and eventName
   NoDuplicateEvents, // this compare namespace, eventName and its args
 }
 /** EmitOptions provided when emitting a event.
@@ -99,8 +99,8 @@ export class EventSink {
   }
 
   public fetch(limit: number): QueuedEvent[] {
-    const resovledLimit = limit <= 0 || limit > this._eventQueues.length ? this._eventQueues.length : limit;
-    const result = this._eventQueues.splice(0, resovledLimit);
+    const resolvedLimit = limit <= 0 || limit > this._eventQueues.length ? this._eventQueues.length : limit;
+    const result = this._eventQueues.splice(0, resolvedLimit);
     return result;
   }
 }

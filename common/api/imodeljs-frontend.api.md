@@ -2545,26 +2545,26 @@ export type EventListener = (data: any) => void;
 
 // @internal
 export class EventSource {
-    constructor(iModelToken: IModelToken);
+    constructor(tokenProps: IModelTokenProps);
     clear(): void;
     // (undocumented)
     get fetching(): boolean;
-    // (undocumented)
-    readonly iModelToken: IModelToken;
     off(namespace: string, eventName: string, listener: EventListener): void;
     on(namespace: string, eventName: string, listener: EventListener): {
         off: () => void;
     };
-    }
+    // (undocumented)
+    readonly tokenProps: IModelTokenProps;
+}
 
 // @internal
 export abstract class EventSourceManager {
     // (undocumented)
-    static create(id: string, tokenProps: IModelToken): EventSource;
+    static create(id: string, tokenProps: IModelTokenProps): EventSource;
     // (undocumented)
     static delete(id: string): void;
     // (undocumented)
-    static get(id: string, tokenProps?: IModelToken): EventSource;
+    static get(id: string, tokenProps?: IModelTokenProps): EventSource;
     // (undocumented)
     static readonly GLOBAL = "__globalEvents__";
     // (undocumented)
