@@ -53,6 +53,7 @@ export abstract class ToolBarDropDown {
 
   protected abstract _open(): void;
   protected abstract _close(): void;
+  public dispose(): void { }
 
   public abstract get isOpen(): boolean;
 
@@ -105,6 +106,13 @@ class DropDown {
     this.element.appendChild(icon);
   }
 
+  public dispose(): void {
+    if (this.dropDown) {
+      this.dropDown.dispose();
+      this.dropDown = undefined;
+    }
+  }
+
   public async createDropDown(): Promise<ToolBarDropDown> {
     return this._createDropDown(this.element);
   }
@@ -117,6 +125,14 @@ export class ToolBar {
 
   public constructor(container: HTMLElement) {
     this.element = container;
+  }
+
+  public dispose(): void {
+    for (const dd of this._dropDowns)
+      dd.dispose();
+
+    this._dropDowns.length = 0;
+    this._currentlyOpen.clear();
   }
 
   public addDropDown(props: ToolBarDropDownProps): void {

@@ -255,7 +255,7 @@ export class Surface {
     IModelApp.viewManager.addViewport(viewer.viewport);
   }
 
-  private addWindow(window: Window): void {
+  public addWindow(window: Window): void {
     this._windows.push(window);
     window.ensureInSurface();
     this.updateWindowsUi();

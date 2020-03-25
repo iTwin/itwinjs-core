@@ -20,7 +20,6 @@ import {
 import { MarkupApp } from "@bentley/imodeljs-markup";
 import { AnimationPanel } from "./AnimationPanel";
 import { CategoryPicker, ModelPicker } from "./IdPicker";
-import { DebugPanel } from "./DebugPanel";
 import { FeatureOverridesPanel } from "./FeatureOverrides";
 import { StandardRotations } from "./StandardRotations";
 import { createImageButton, createToolButton, ToolBar } from "./ToolBar";
@@ -32,6 +31,7 @@ import { ClassificationsPanel } from "./ClassificationsPanel";
 import { setTitle } from "./Title";
 import { Window } from "./Window";
 import { Surface } from "./Surface";
+import { DebugWindow } from "./DebugWindow";
 
 function saveImage(vp: Viewport) {
   const buffer = vp.readImage(undefined, new Point2d(768, 768), true); // flip vertically...
@@ -121,6 +121,7 @@ export class Viewer extends Window {
   private readonly _viewPicker: ViewPicker;
   private readonly _3dOnly: HTMLElement[] = [];
   private _isSavedView = false;
+  private _debugWindow?: DebugWindow;
 
   public static async create(surface: Surface, props: ViewerProps): Promise<Viewer> {
     const views = await ViewList.create(props.iModel, props.defaultViewName);
@@ -173,11 +174,11 @@ export class Viewer extends Window {
 
     this.toolBar = new ToolBar(IModelApp.makeHTMLElement("div", { className: "topdiv" }));
 
-    this.toolBar.addDropDown({
+    this.toolBar.addItem(createToolButton({
       iconUnicode: "\ue90c", // properties
       tooltip: "Debug info",
-      createDropDown: async (container: HTMLElement) => Promise.resolve(new DebugPanel(this.viewport, container)),
-    });
+      click: () => this.toggleDebugWindow(),
+    }));
 
     this.toolBar.addItem(createToolButton({
       iconUnicode: "\ue9cc",
@@ -433,6 +434,12 @@ export class Viewer extends Window {
   public get windowId(): string { return this.viewport.viewportId.toString(); }
 
   public onClosing(): void {
+    this.toolBar.dispose();
+    if (this._debugWindow) {
+      this._debugWindow.dispose();
+      this._debugWindow = undefined;
+    }
+
     IModelApp.viewManager.dropViewport(this.viewport, true);
   }
 
@@ -441,5 +448,12 @@ export class Viewer extends Window {
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Closing iModel..."));
       this._imodel.close().then(() => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "iModel closed."))); // tslint:disable-line:no-floating-promises
     }
+  }
+
+  public toggleDebugWindow(): void {
+    if (!this._debugWindow)
+      this._debugWindow = new DebugWindow(this.viewport);
+
+    this._debugWindow.toggle();
   }
 }
