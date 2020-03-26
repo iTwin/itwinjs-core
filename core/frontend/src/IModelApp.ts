@@ -39,7 +39,7 @@ import { TileAdmin } from "./tile/internal";
 import { EntityState } from "./EntityState";
 import { TerrainProvider } from "./TerrainProvider";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
-import { ExtensionAdmin } from "./extension/Extension";
+import { ExtensionAdmin } from "./extension/ExtensionAdmin";
 import { UiAdmin } from "@bentley/ui-abstract";
 import { FeatureTrackingManager } from "./FeatureTrackingManager";
 import { FeatureToggleClient } from "./FeatureToggleClient";
@@ -374,7 +374,7 @@ export class IModelApp {
     this._accuSnap = (opts.accuSnap !== undefined) ? opts.accuSnap : new AccuSnap();
     this._locateManager = (opts.locateManager !== undefined) ? opts.locateManager : new ElementLocateManager();
     this._tentativePoint = (opts.tentativePoint !== undefined) ? opts.tentativePoint : new TentativePoint();
-    this._extensionAdmin = (opts.extensionAdmin !== undefined) ? opts.extensionAdmin : new ExtensionAdmin();
+    this._extensionAdmin = (opts.extensionAdmin !== undefined) ? opts.extensionAdmin : new ExtensionAdmin({});
     this._quantityFormatter = (opts.quantityFormatter !== undefined) ? opts.quantityFormatter : new QuantityFormatter();
     this._terrainProvider = opts.terrainProvider;
     this._uiAdmin = (opts.uiAdmin !== undefined) ? opts.uiAdmin : new UiAdmin();

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { IModelApp, Extension, Tool } from "@bentley/imodeljs-frontend";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
-import { AuthorizedClientRequestContext, AccessToken } from "@bentley/imodeljs-clients";
+import { AccessToken } from "@bentley/imodeljs-clients";
 
 /** An Immediate Tool that adds the specified extension to the list to be started at runtime. */
 class ExtensionSave extends Tool {
@@ -19,24 +19,24 @@ class ExtensionSave extends Tool {
     if (args.length < 1) {
       return false;
     }
-    const extensionName: string = args[0];
+    // const extensionName: string = args[0];
 
-    let allUsers: boolean = false;
-    let argsStart = 1;
-    if (args.length > 1) {
-      const userOrApp = args[1].toLowerCase();
-      if (userOrApp.startsWith("alluser")) {
-        allUsers = true;
-        argsStart = 2;
-      }
-    }
-    let extensionArgs: string[] | undefined;
-    if (args.length > argsStart)
-      extensionArgs = args.slice(argsStart);
+    // let allUsers: boolean = false;
+    // let argsStart = 1;
+    // if (args.length > 1) {
+    //   const userOrApp = args[1].toLowerCase();
+    //   if (userOrApp.startsWith("alluser")) {
+    //     allUsers = true;
+    //     argsStart = 2;
+    //   }
+    // }
+    // let extensionArgs: string[] | undefined;
+    // if (args.length > argsStart)
+    //   extensionArgs = args.slice(argsStart);
 
-    IModelApp.authorizationClient!.getAccessToken().then((accessToken: AccessToken) => {
-      const requestContext = new AuthorizedClientRequestContext(accessToken, "saveStartupExtensions");
-      IModelApp.extensionAdmin.addSavedExtensions(requestContext, extensionName, extensionArgs, allUsers, "StartViewExtensions").catch((_err) => { });
+    IModelApp.authorizationClient!.getAccessToken().then((_accessToken: AccessToken) => {
+      // const requestContext = new AuthorizedClientRequestContext(accessToken, "saveStartupExtensions");
+      // SavedExtensionClient.addSavedExtensions(requestContext, extensionName, extensionArgs, allUsers, "StartViewExtensions").catch((_err) => { });
     }).catch((_err: any) => { });
     return true;
   }
@@ -55,19 +55,19 @@ class ExtensionRemove extends Tool {
     if (args.length < 1) {
       return false;
     }
-    const extensionName: string = args[0];
+    // const extensionName: string = args[0];
 
-    let allUsers: boolean = false;
-    if (args.length > 1) {
-      const userOrApp = args[1].toLowerCase();
-      if (userOrApp.startsWith("alluser")) {
-        allUsers = true;
-      }
-    }
+    // let allUsers: boolean = false;
+    // if (args.length > 1) {
+    //   const userOrApp = args[1].toLowerCase();
+    //   if (userOrApp.startsWith("alluser")) {
+    //     allUsers = true;
+    //   }
+    // }
 
-    IModelApp.authorizationClient!.getAccessToken().then((accessToken: AccessToken) => {
-      const requestContext = new AuthorizedClientRequestContext(accessToken, "removeStartupExtensions");
-      IModelApp.extensionAdmin.removeSavedExtensions(requestContext, extensionName, allUsers, "StartViewExtensions").catch((_err) => { });
+    IModelApp.authorizationClient!.getAccessToken().then((_accessToken: AccessToken) => {
+      // const requestContext = new AuthorizedClientRequestContext(accessToken, "removeStartupExtensions");
+      // SavedExtensionClient.removeSavedExtensions(requestContext, extensionName, allUsers, "StartViewExtensions").catch((_err) => { });
     }).catch((_err: any) => { });
     return true;
   }

@@ -18,6 +18,7 @@ import {
   TileAdmin,
   Tool,
   ToolTipOptions,
+  ExternalServerExtensionLoader,
 } from "@bentley/imodeljs-frontend";
 import { FrontendDevTools, parseToggle } from "@bentley/frontend-devtools";
 import ToolTip from "tooltip.js";
@@ -242,6 +243,9 @@ export class DisplayTestApp {
     opts.notifications = new Notifications();
     opts.tileAdmin = TileAdmin.create(DisplayTestApp.tileAdminProps);
     IModelApp.startup(opts);
+
+    // for testing local extensions. Shouldn't be used in prod apps.
+    IModelApp.extensionAdmin.addExtensionLoader(new ExternalServerExtensionLoader("http://localhost:3000"), 50);
 
     IModelApp.applicationLogoCard =
       () => IModelApp.makeLogoCard({ iconSrc: "DTA.png", iconWidth: 100, heading: "Display Test App", notice: "For internal testing<br>" + BUILD_SEMVER });

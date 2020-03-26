@@ -84,6 +84,7 @@
     "@bentley/bentleyjs-core": "2.0.0-dev.46",
     "@bentley/build-tools": "2.0.0-dev.46",
     "@bentley/certa": "2.0.0-dev.46",
+    "@bentley/extension-client": "2.0.0-dev.46",
     "@bentley/geometry-core": "2.0.0-dev.46",
     "@bentley/imodeljs-clients": "2.0.0-dev.46",
     "@bentley/imodeljs-common": "2.0.0-dev.46",

@@ -44,7 +44,7 @@
     },
     {
       "name": "@bentley/extension-client",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [ "frontend", "tools" ]
     },
     {
       "name": "@bentley/frontend-devtools",

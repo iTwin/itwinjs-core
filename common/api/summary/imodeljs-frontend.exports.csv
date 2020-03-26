@@ -133,9 +133,10 @@ internal;EventSource
 internal;class EventSourceManager
 internal;EventSourceOptions
 beta;class Extension
-beta;ExtensionAdmin
-beta;ExtensionLoadResults = Extension | undefined | string | string[]
+beta;ExtensionLoader
+beta;ExtensionServiceExtensionLoader 
 public;ExtentLimits
+beta;ExternalServerExtensionLoader 
 public;extractImageSourceDimensions(source: ImageSource): Promise
 alpha;FeatureLogBatchClient
 alpha;FeatureLogBatchOptions
@@ -232,13 +233,12 @@ alpha;ItemField
 internal;KeyinStatus
 beta;LengthDescription 
 internal;linePlaneIntersect(outP: Point3d, linePt: Point3d, lineNormal: Vector3d | undefined, planePt: Point3d, planeNormal: Vector3d, perpendicular: boolean): void
-internal;LoadSavedExtensionsResult
-internal;LoadSavedExtensionsStatus
 public;LocateAction
 public;LocateFilterStatus
 public;LocateOptions
 public;LocateResponse
 internal;LockedStates
+internal;loggerCategory = "imodeljs-frontend.Extension"
 beta;LookAndMoveTool 
 public;LookViewTool 
 alpha;ManipulatorToolEvent
@@ -295,6 +295,7 @@ public;OutputMessageType
 public;PanViewTool 
 alpha;ParseAndRunResult
 alpha;ParsedKeyin
+beta;PendingExtension
 internal;PerformanceMetrics
 beta;PerModelCategoryVisibility
 public;PhysicalModelState 

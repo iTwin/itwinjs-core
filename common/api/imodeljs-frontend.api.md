@@ -2582,6 +2582,8 @@ export interface EventSourceOptions {
 // @beta
 export abstract class Extension {
     constructor(name: string);
+    // (undocumented)
+    protected getManifest(): Promise<Manifest>;
     get i18n(): I18N;
     // @internal (undocumented)
     get loader(): ExtensionLoader | undefined;
@@ -2596,36 +2598,43 @@ export abstract class Extension {
 }
 
 // @beta
-export class ExtensionAdmin {
-    constructor();
-    // @internal (undocumented)
-    addPendingExtension(extensionRootName: string, pendingExtension: PendingExtension): void;
-    addSavedExtensions(requestContext: AuthorizedClientRequestContext, extensionName: string, args: string[] | undefined, allUsers: boolean, settingName: string): Promise<void>;
-    // @internal (undocumented)
-    static detailsFromExtensionLoadResults(extensionName: string, results: ExtensionLoadResults, reportSuccess: boolean): {
-        detailHTML: HTMLElement | undefined;
-        detailStrings: string[] | undefined;
-    };
-    // @internal (undocumented)
-    getRegisteredExtension(extensionName: string): Promise<ExtensionLoadResults> | undefined;
-    loadExtension(extensionRoot: string, args?: string[]): Promise<ExtensionLoadResults>;
-    // @internal
-    loadSavedExtensions(requestContext: AuthorizedClientRequestContext, settingName: string, userSettings?: boolean, appSettings?: boolean, configuration?: boolean): Promise<LoadSavedExtensionsResult>;
-    // @internal (undocumented)
-    loadViewStartupExtensions(): Promise<void>;
+export interface ExtensionLoader {
     // (undocumented)
-    onInitialized(): void;
-    register(extension: Extension): string[] | undefined;
-    removeSavedExtensions(requestContext: AuthorizedClientRequestContext, extensionName: string, allUsers: boolean, settingName: string): Promise<void>;
-    }
+    getExtensionName(extensionRoot: string): string;
+    // (undocumented)
+    loadExtension(extensionName: string, buildType: string, extensionVersion?: string, args?: string[]): Promise<PendingExtension | undefined>;
+    // (undocumented)
+    resolveResourceUrl(extensionName: string, relativeFileName: string): string;
+}
 
 // @beta
-export type ExtensionLoadResults = Extension | undefined | string | string[];
+export class ExtensionServiceExtensionLoader implements ExtensionLoader {
+    constructor(_contextId: string);
+    // (undocumented)
+    getExtensionName(extensionRoot: string): string;
+    // (undocumented)
+    loadExtension(extensionName: string, buildType: string, extensionVersion?: string, args?: string[] | undefined): Promise<PendingExtension | undefined>;
+    // (undocumented)
+    resolveResourceUrl(extensionName: string, relativeFileName: string): string;
+}
 
 // @public
 export interface ExtentLimits {
     max: number;
     min: number;
+}
+
+// @beta
+export class ExternalServerExtensionLoader implements ExtensionLoader {
+    constructor(serverName: string);
+    // (undocumented)
+    getExtensionName(extensionRoot: string): string;
+    // (undocumented)
+    loadExtension(extensionName: string, buildType: string, _extensionVersion?: string, args?: string[]): Promise<PendingExtension | undefined>;
+    // (undocumented)
+    resolveResourceUrl(extensionName: string, relativeUrl: string): string;
+    // (undocumented)
+    serverName: string;
 }
 
 // @public
@@ -4247,37 +4256,6 @@ export class LengthDescription extends FormattedQuantityDescription {
 // @internal (undocumented)
 export function linePlaneIntersect(outP: Point3d, linePt: Point3d, lineNormal: Vector3d | undefined, planePt: Point3d, planeNormal: Vector3d, perpendicular: boolean): void;
 
-// @internal (undocumented)
-export class LoadSavedExtensionsResult {
-    constructor(status: LoadSavedExtensionsStatus, i18nkey?: string | undefined, extensionResults?: Map<string, ExtensionLoadResults> | undefined);
-    // (undocumented)
-    extensionResults?: Map<string, ExtensionLoadResults> | undefined;
-    // (undocumented)
-    i18nkey?: string | undefined;
-    // (undocumented)
-    report(): void;
-    // (undocumented)
-    status: LoadSavedExtensionsStatus;
-}
-
-// @internal (undocumented)
-export enum LoadSavedExtensionsStatus {
-    // (undocumented)
-    AllExtensionsFailedToLoad = 5,
-    // (undocumented)
-    LoadError = 6,
-    // (undocumented)
-    NoSavedExtensions = 2,
-    // (undocumented)
-    NotLoggedIn = 1,
-    // (undocumented)
-    SettingsInvalid = 3,
-    // (undocumented)
-    SomeExtensionsFailedToLoad = 4,
-    // (undocumented)
-    Success = 0
-}
-
 // @public
 export enum LocateAction {
     // (undocumented)
@@ -4340,6 +4318,9 @@ export enum LockedStates {
     // (undocumented)
     Y_BM = 2
 }
+
+// @internal (undocumented)
+export const loggerCategory = "imodeljs-frontend.Extension";
 
 // @beta
 export class LookAndMoveTool extends ViewManip {
@@ -5679,6 +5660,23 @@ export interface ParsedKeyin {
     args: string[];
     tool?: ToolType;
 }
+
+// @beta
+export class PendingExtension {
+    constructor(_tarFileUrl: string, loader: ExtensionLoader, args?: string[] | undefined);
+    // (undocumented)
+    args?: string[] | undefined;
+    // (undocumented)
+    executor(resolve: resolveFunc, reject: rejectFunc): void;
+    // (undocumented)
+    loader: ExtensionLoader;
+    // (undocumented)
+    promise: Promise<ExtensionLoadResults>;
+    // (undocumented)
+    reject: rejectFunc | undefined;
+    // (undocumented)
+    resolve: resolveFunc | undefined;
+    }
 
 // @internal (undocumented)
 export class PerformanceMetrics {

@@ -8,9 +8,10 @@
 
 import { Logger } from "@bentley/bentleyjs-core";
 import { Tool } from "./Tool";
-import { ExtensionAdmin, ExtensionLoadResults, Extension } from "../extension/Extension";
+import { Extension } from "../extension/Extension";
 import { NotifyMessageDetails, OutputMessageAlert, OutputMessagePriority, OutputMessageType } from "../NotificationManager";
 import { IModelApp } from "../IModelApp";
+import { ExtensionLoadResults, detailsFromExtensionLoadResults } from "../extension/ExtensionResults";
 
 const loggerCategory = "imodeljs-frontend.Extension";
 
@@ -25,7 +26,7 @@ export class ExtensionTool extends Tool {
 
   public run(args: any[]): boolean {
     if (args && args.length > 0 && args[0]) {
-      IModelApp.extensionAdmin.loadExtension(args[0], args.slice(1))
+      IModelApp.extensionAdmin.loadExtension(args[0], undefined, args.slice(1))
         .then(ExtensionTool.showLoadProblems.bind(null, args[0]))
         .catch((_err: any) => {
           // this should happen only on completely unexpected errors.
@@ -45,7 +46,7 @@ export class ExtensionTool extends Tool {
         Logger.logInfo(loggerCategory, briefMessage);
       }
     } else {
-      const returnVal = ExtensionAdmin.detailsFromExtensionLoadResults(extensionName, extensionResults, false);
+      const returnVal = detailsFromExtensionLoadResults(extensionName, extensionResults, false);
       const briefMessage = IModelApp.i18n.translate("iModelJs:ExtensionErrors.CantLoad", { extensionName });
       const errorDetails = new NotifyMessageDetails(OutputMessagePriority.Warning, briefMessage, returnVal.detailHTML, OutputMessageType.Alert, OutputMessageAlert.Balloon);
       IModelApp.notifications.outputMessage(errorDetails);

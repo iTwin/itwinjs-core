@@ -14,7 +14,7 @@ import {
 } from "@bentley/imodeljs-common";
 import {
   IModelApp, IModelConnection, SnapMode, AccuSnap, ViewClipByPlaneTool, RenderSystem,
-  IModelAppOptions, SelectionTool, ViewState, FrontendLoggerCategory,
+  IModelAppOptions, SelectionTool, ViewState, FrontendLoggerCategory, ExternalServerExtensionLoader,
 } from "@bentley/imodeljs-frontend";
 import { MarkupApp } from "@bentley/imodeljs-markup";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
@@ -170,6 +170,9 @@ export class SampleAppIModelApp {
     opts.notifications = new AppNotificationManager();
     opts.uiAdmin = new FrameworkUiAdmin();
     IModelApp.startup(opts);
+
+    // for testing local extensions. Shouldn't be used in prod apps.
+    IModelApp.extensionAdmin.addExtensionLoader(new ExternalServerExtensionLoader("http://localhost:4000"), 50);
 
     this.sampleAppNamespace = IModelApp.i18n.registerNamespace("SampleApp");
 
