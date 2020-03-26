@@ -2139,7 +2139,7 @@ export interface MutableTreeDataProvider extends ITreeDataProvider {
 // @beta
 export class MutableTreeModel implements TreeModel {
     // (undocumented)
-    static [immerable]: boolean;
+    [immerable]: boolean;
     clearChildren(parentId: string | undefined): void;
     computeVisibleNodes(): VisibleTreeNodes;
     getChildOffset(parentId: string | undefined, childId: string): number | undefined;

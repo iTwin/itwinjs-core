@@ -21,7 +21,7 @@ export interface Node {
  * @internal
  */
 export class SparseTree<T extends Node> {
-  public static [immerable] = true;
+  public [immerable] = true;
 
   private _rootNodes = new SparseArray<string>();
   private _parentToChildren: Record<string, SparseArray<string>> = {};
@@ -101,7 +101,7 @@ export class SparseTree<T extends Node> {
     }
 
     if (parentId === undefined) {
-      this._rootNodes = new SparseArray<string>();
+      this._rootNodes.setLength(0);
       return;
     }
     if (deleteParent) {
@@ -119,7 +119,7 @@ export class SparseTree<T extends Node> {
  * @public
  */
 export class SparseArray<T> implements Iterable<T | undefined> {
-  public static [immerable] = true;
+  public [immerable] = true;
 
   private _length = 0;
   private _array: Array<[T, number]> = [];

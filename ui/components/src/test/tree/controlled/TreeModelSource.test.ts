@@ -123,6 +123,25 @@ describe("TreeModelSource", () => {
       expect(modelSource.getVisibleNodes().getNumNodes()).to.be.eq(1);
     });
 
+    it("overrides existing children multiple times", () => {
+      const newInput: TreeModelNodeInput = {
+        id: faker.random.uuid(),
+        isExpanded: faker.random.boolean(),
+        item: { id: faker.random.uuid(), label: PropertyRecord.fromString(faker.random.word(), "label") },
+        label: PropertyRecord.fromString(faker.random.word(), "label"),
+        isLoading: faker.random.boolean(),
+        isSelected: faker.random.boolean(),
+      };
+      modelSource.modifyModel((model) => {
+        model.setNumChildren(undefined, 1);
+        model.setChildren(undefined, [newInput], 0);
+      });
+      modelSource.modifyModel((model) => {
+        model.setNumChildren(undefined, 1);
+        model.setChildren(undefined, [inputNode], 0);
+      });
+    });
+
   });
 
   describe("getModel", () => {

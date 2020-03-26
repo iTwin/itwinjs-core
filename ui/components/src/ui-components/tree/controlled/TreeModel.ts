@@ -192,7 +192,7 @@ export interface TreeModel {
  * @beta
  */
 export class MutableTreeModel implements TreeModel {
-  public static [immerable] = true;
+  public [immerable] = true;
 
   private _tree = new SparseTree<MutableTreeModelNode>();
   private _rootNode: TreeModelRootNode = { depth: -1, id: undefined, numChildren: undefined };

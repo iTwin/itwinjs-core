@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-components",
+      "comment": "Fix SparseArray, SparseTree and MutableTreeModel to be properly modified by immer",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "Saulius.Skliutas@bentley.com"
+}
