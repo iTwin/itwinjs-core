@@ -91,8 +91,8 @@ export class FavoritePropertiesManager implements IDisposable {
    * Initialize favorite properties for the provided IModelConnection.
    */
   public initializeConnection = async (imodel: IModelConnection) => {
-    const imodelId = imodel.iModelToken.iModelId!;
-    const projectId = imodel.iModelToken.contextId!;
+    const imodelId = imodel.iModelId!;
+    const projectId = imodel.contextId!;
 
     if (this._globalProperties === undefined)
       this._globalProperties = await this._storage.loadProperties() || new Set<PropertyFullName>();
@@ -152,8 +152,8 @@ export class FavoritePropertiesManager implements IDisposable {
   }
 
   private validateInitialization(imodel: IModelConnection) {
-    const projectId = imodel.iModelToken.contextId!;
-    const imodelId = imodel.iModelToken.iModelId!;
+    const projectId = imodel.contextId!;
+    const imodelId = imodel.iModelId!;
     if (!this._imodelProperties.has(getiModelInfo(projectId, imodelId)))
       throw Error(`Favorite properties are not initialized for iModel: '${imodelId}', in project: '${projectId}'. Call initializeConnection() with an IModelConnection to initialize.`);
   }
@@ -185,8 +185,8 @@ export class FavoritePropertiesManager implements IDisposable {
 
   private async addWithOrder(field: Field, imodel: IModelConnection, scope: FavoritePropertiesScope): Promise<void> {
     this.validateInitialization(imodel);
-    const projectId = imodel.iModelToken.contextId!;
-    const imodelId = imodel.iModelToken.iModelId!;
+    const projectId = imodel.contextId!;
+    const imodelId = imodel.iModelId!;
 
     let favoriteProperties: Set<PropertyFullName>;
     let saveProperties: (properties: Set<PropertyFullName>) => Promise<void>;
@@ -264,8 +264,8 @@ export class FavoritePropertiesManager implements IDisposable {
 
   private async removeWithOrdering(field: Field, imodel: IModelConnection, scope: FavoritePropertiesScope): Promise<void> {
     this.validateInitialization(imodel);
-    const projectId = imodel.iModelToken.contextId!;
-    const imodelId = imodel.iModelToken.iModelId!;
+    const projectId = imodel.contextId!;
+    const imodelId = imodel.iModelId!;
 
     const fieldInfos = getFieldInfos(field);
     const workingScopes: Array<{ properties: Set<PropertyFullName>, save: (properties: Set<PropertyFullName>) => Promise<void> }> = [];
@@ -369,8 +369,8 @@ export class FavoritePropertiesManager implements IDisposable {
 
   private async clearWithOrdering(imodel: IModelConnection, scope: FavoritePropertiesScope): Promise<void> {
     this.validateInitialization(imodel);
-    const projectId = imodel.iModelToken.contextId!;
-    const imodelId = imodel.iModelToken.iModelId!;
+    const projectId = imodel.contextId!;
+    const imodelId = imodel.iModelId!;
 
     let favoriteProperties: Set<PropertyFullName>;
     let saveProperties: () => Promise<void>;
@@ -440,8 +440,8 @@ export class FavoritePropertiesManager implements IDisposable {
 
   private hasWithScope(field: Field, imodel: IModelConnection, scope: FavoritePropertiesScope): boolean {
     this.validateInitialization(imodel);
-    const projectId = imodel.iModelToken.contextId!;
-    const imodelId = imodel.iModelToken.iModelId!;
+    const projectId = imodel.contextId!;
+    const imodelId = imodel.iModelId!;
 
     const fieldInfos = getFieldInfos(field);
     return setHasAny(this._globalProperties!, fieldInfos) ||
@@ -467,8 +467,8 @@ export class FavoritePropertiesManager implements IDisposable {
    */
   public sortFields = (imodel: IModelConnection, fields: Field[]): Field[] => {
     this.validateInitialization(imodel);
-    const projectId = imodel.iModelToken.contextId!;
-    const imodelId = imodel.iModelToken.iModelId!;
+    const projectId = imodel.contextId!;
+    const imodelId = imodel.iModelId!;
 
     const fieldPriority = new Map<Field, number>();
     fields.forEach((field) => fieldPriority.set(field, this.getFieldPriority(field, projectId, imodelId)));
@@ -496,8 +496,8 @@ export class FavoritePropertiesManager implements IDisposable {
   }
 
   private _getBaseClassesByClass = async (imodel: IModelConnection, neededClasses: Set<string>): Promise<{ [className: string]: string[] }> => {
-    const projectId = imodel.iModelToken.contextId!;
-    const imodelId = imodel.iModelToken.iModelId!;
+    const projectId = imodel.contextId!;
+    const imodelId = imodel.iModelId!;
 
     const imodelInfo = getiModelInfo(projectId, imodelId);
     let baseClasses: { [className: string]: string[] };
@@ -551,8 +551,8 @@ export class FavoritePropertiesManager implements IDisposable {
      * 5. All `field` orderInfo's get moved after `afterOrderInfo`
      */
     this.validateInitialization(imodel);
-    const projectId = imodel.iModelToken.contextId!;
-    const imodelId = imodel.iModelToken.iModelId!;
+    const projectId = imodel.contextId!;
+    const imodelId = imodel.iModelId!;
 
     if (field === afterField)
       throw Error("`field` can not be the same as `afterField`.");

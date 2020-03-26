@@ -27,7 +27,6 @@ import {
   RegisteredRuleset,
 } from "@bentley/presentation-common";
 import { Presentation, PresentationManager, FavoritePropertiesManager, RulesetManager, FavoritePropertiesScope } from "@bentley/presentation-frontend";
-import { IModelToken } from "@bentley/imodeljs-common";
 import { PresentationPropertyDataProvider } from "../../presentation-components/propertygrid/DataProvider";
 import { CacheInvalidationProps } from "../../presentation-components/common/ContentDataProvider";
 import { applyOptionalPrefix } from "../../presentation-components/common/ContentBuilder";
@@ -198,10 +197,8 @@ describe("PropertyDataProvider", () => {
     before(() => {
       projectId = "project-id";
       imodelId = "imodel-id";
-      const imodelTokenMock = moq.Mock.ofType<IModelToken>();
-      imodelTokenMock.setup((x) => x.iModelId).returns(() => imodelId);
-      imodelTokenMock.setup((x) => x.contextId).returns(() => projectId);
-      imodelMock.setup((x) => x.iModelToken).returns(() => imodelTokenMock.object);
+      imodelMock.setup((x) => x.iModelId).returns(() => imodelId);
+      imodelMock.setup((x) => x.contextId).returns(() => projectId);
 
       favoritePropertiesManagerMock.setup((x) => x.has(moq.It.isAny(), imodelMock.object, moq.It.isAny())).returns(() => false);
     });

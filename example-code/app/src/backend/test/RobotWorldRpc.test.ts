@@ -58,7 +58,7 @@ describe("RobotWorldRpc", () => {
 
     const iModel: IModelConnection = await SnapshotConnection.open(KnownTestLocations.outputDir + "/" + "RobotWorldRpc.bim");
     assert.isTrue(iModel !== undefined);
-    const iToken: IModelTokenProps = iModel.iModelToken.toJSON();
+    const iToken: IModelTokenProps = iModel.getRpcTokenProps();
 
     let modelId!: Id64String;
     for (const modelStr of await iModel.queryEntityIds({ from: "bis:element", where: "CodeValue='test'" }))

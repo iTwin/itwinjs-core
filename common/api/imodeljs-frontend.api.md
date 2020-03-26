@@ -1478,12 +1478,16 @@ export class BingElevationProvider {
 // @beta
 export class BlankConnection extends IModelConnection {
     close(): Promise<void>;
+    get contextId(): GuidString | undefined;
     static create(props: BlankConnectionProps): BlankConnection;
+    get iModelId(): undefined;
+    get isClosed(): boolean;
     get isOpen(): boolean;
 }
 
 // @beta
 export interface BlankConnectionProps {
+    contextId?: GuidString;
     extents: Range3dProps;
     globalOrigin?: XYZProps;
     location: Cartographic | EcefLocationProps;
@@ -1497,10 +1501,12 @@ export class BriefcaseConnection extends IModelConnection {
     // @internal
     changeCacheAttached(): Promise<boolean>;
     close(): Promise<void>;
+    get contextId(): GuidString;
     // @internal
     static createForNativeAppBriefcase(iModelProps: IModelProps, openMode: OpenMode): BriefcaseConnection;
     // @internal
     detachChangeCache(): Promise<void>;
+    get iModelId(): GuidString;
     static open(contextId: string, iModelId: string, openMode?: OpenMode, version?: IModelVersion): Promise<BriefcaseConnection>;
     }
 
@@ -2021,7 +2027,7 @@ export interface DepthRangeNpc {
 
 // @internal
 export class DevTools {
-    static connectToBackendInstance(iModelToken: IModelToken): DevTools;
+    static connectToBackendInstance(tokenProps: IModelTokenProps): DevTools;
     ping(count: number): Promise<PingTestResult>;
     setLogLevel(inLoggerCategory: string, newLevel: LogLevel): Promise<LogLevel | undefined>;
     stats(options?: DevToolsStatsOptions): Promise<any>;
@@ -3818,7 +3824,7 @@ export interface IModelAppOptions {
 // @public
 export abstract class IModelConnection extends IModel {
     // @internal
-    protected constructor(iModel: IModelProps, openMode: OpenMode);
+    protected constructor(iModelProps: IModelProps, openMode: OpenMode);
     // @internal
     protected beforeClose(): void;
     cartographicToSpatial(cartographic: Cartographic, result?: Point3d): Promise<Point3d>;
@@ -3852,7 +3858,6 @@ export abstract class IModelConnection extends IModel {
     isBlankConnection(): this is BlankConnection;
     get isBriefcase(): boolean;
     isBriefcaseConnection(): this is BriefcaseConnection;
-    // @beta
     get isClosed(): boolean;
     // @beta
     get isOpen(): boolean;
@@ -3870,7 +3875,6 @@ export abstract class IModelConnection extends IModel {
     // @beta
     readonly onClose: BeEvent<(_imodel: IModelConnection) => void>;
     static readonly onOpen: BeEvent<(_imodel: IModelConnection) => void>;
-    readonly openMode: OpenMode;
     // @beta
     query(ecsql: string, bindings?: any[] | object, limitRows?: number, quota?: QueryQuota, priority?: QueryPriority): AsyncIterableIterator<any>;
     queryEntityIds(params: EntityQueryParams): Promise<Id64Set>;
@@ -7556,6 +7560,7 @@ export enum SnapMode {
 // @beta
 export class SnapshotConnection extends IModelConnection {
     close(): Promise<void>;
+    get iModelId(): GuidString;
     static open(fileName: string): Promise<SnapshotConnection>;
 }
 

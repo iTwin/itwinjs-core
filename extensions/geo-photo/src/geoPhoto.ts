@@ -186,7 +186,7 @@ export class GeoPhotoExtension extends Extension {
     let geoPhotos: GeoPhotos = (iModel as any).geoPhotos;
     if (undefined === geoPhotos) {
       const requestContext = await AuthorizedFrontendRequestContext.create();
-      const settingsPromise = IModelApp.settings.getUserSetting(requestContext, "GeoPhotoExtension", "Settings", false, iModel.iModelToken.contextId, iModel.iModelToken.iModelId);
+      const settingsPromise = IModelApp.settings.getUserSetting(requestContext, "GeoPhotoExtension", "Settings", false, iModel.contextId, iModel.iModelId);
 
       /* ------------- Not needed now that we have the dialog box to show progress
       let message: string = this.i18n.translate("geoPhoto:messages.GatheringPhotos");
@@ -327,7 +327,7 @@ export class GeoPhotoExtension extends Extension {
       const fullSettings = Object.assign(newSettings, this.settings);
       fullSettings.getPathList(geoPhotos.photoTree);
       const requestContext = await AuthorizedFrontendRequestContext.create();
-      IModelApp.settings.saveUserSetting(requestContext, fullSettings, "GeoPhotoExtension", "Settings", false, view.iModel.iModelToken.contextId, view.iModel.iModelToken.iModelId).catch((_err) => { });
+      IModelApp.settings.saveUserSetting(requestContext, fullSettings, "GeoPhotoExtension", "Settings", false, view.iModel.contextId, view.iModel.iModelId).catch((_err) => { });
     }
   }
 

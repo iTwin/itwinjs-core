@@ -8,7 +8,7 @@
 
 // cspell:ignore ulas postrc pollrc
 import {
-  BeDuration, BeEvent, BentleyStatus, ChangeSetStatus, ClientRequestContext, DbResult, Guid, GuidString,
+  assert, BeDuration, BeEvent, BentleyStatus, ChangeSetStatus, ClientRequestContext, DbResult, Guid, GuidString,
   Id64, Id64Arg, Id64Set, Id64String, JsonUtils, Logger, OpenMode, PerfLogger,
 } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext, UlasClient, UsageLogEntry, UsageType, ProgressCallback } from "@bentley/imodeljs-clients";
@@ -161,6 +161,15 @@ export abstract class IModelDb extends IModel {
   /** Check if this iModel has been opened read-only or not. */
   public get isReadonly(): boolean { return this.openParams.openMode === OpenMode.Readonly; }
 
+  /** The Guid that identifies this iModel. */
+  public get iModelId(): GuidString { return super.iModelId!; } // GuidString | undefined for the IModel superclass, but required for all IModelDb subclasses
+
+  /** An IModelDb will always have a key. */
+  public get key(): string {
+    assert(undefined !== super.key);
+    return super.key!;
+  }
+
   /** Get the in-memory handle of the native Db
    * @internal
    */
@@ -169,7 +178,7 @@ export abstract class IModelDb extends IModel {
 
   /** @internal */
   protected constructor(nativeDb: IModelJsNative.DgnDb, iModelToken: IModelToken, openParams: OpenParams) {
-    super(iModelToken);
+    super(iModelToken, openParams.openMode);
     this._nativeDb = nativeDb;
     this.nativeDb.setIModelDb(this);
     this.openParams = openParams;
@@ -197,7 +206,7 @@ export abstract class IModelDb extends IModel {
     } catch (error) {
       // Note: We do not treat usage logging
       requestContext.enter();
-      Logger.logError(loggerCategory, "Could not log usage information", () => ({ errorStatus: error.status, errorMessage: error.message, iModelToken: iModelDb.iModelToken }));
+      Logger.logError(loggerCategory, "Could not log usage information", () => ({ errorStatus: error.status, errorMessage: error.message, iModelToken: iModelDb.getRpcTokenProps() }));
     }
   }
 
@@ -1671,11 +1680,7 @@ export namespace IModelDb {
         reject(new IModelError(ret.error.status, `TreeId=${treeId} TileId=${tileId}`));
       } else if (typeof ret.result !== "number") { // if type is not a number, it's the TileContent interface
         const res = ret.result as IModelJsNative.TileContent;
-        let iModelId = this._iModel.iModelToken.iModelId;
-        if (undefined === iModelId) {
-          // iModel not in hub - therefore we're almost certainly not logging to SEQ so don't much care...
-          iModelId = "";
-        }
+        const iModelId = this._iModel.iModelId;
 
         const tileSizeThreshold = IModelHost.logTileSizeThreshold;
         const tileSize = res.content.length;
@@ -1892,11 +1897,20 @@ export class BriefcaseDb extends IModelDb {
   /** @internal */
   public get briefcase(): BriefcaseEntry {
     if (undefined === this._briefcase)
-      throw new IModelError(IModelStatus.NotOpen, "IModelDb not open", Logger.logError, loggerCategory, () => ({ name: this.name, ...this.iModelToken }));
+      throw new IModelError(IModelStatus.NotOpen, "IModelDb not open", Logger.logError, loggerCategory, () => ({ name: this.name, ...this.getRpcTokenProps() }));
 
     return this._briefcase;
   }
   private _briefcase?: BriefcaseEntry;
+
+  /** The Guid that identifies the *context* that owns this iModel. */
+  public get contextId(): GuidString { return super.contextId!; } // GuidString | undefined for the superclass, but required for BriefcaseDb
+
+  /** Id of the last ChangeSet that was applied to this iModel.
+   * @note An empty string indicates the first version.
+   */
+  public get changeSetId(): string { return super.changeSetId!; } // string | undefined for the superclass, but required for BriefcaseDb
+  public set changeSetId(csId: string) { this._token!.changeSetId = csId; } // WIP: should be stored separately from _token
 
   /** Get the ConcurrencyControl for this IModel.
    * @beta
@@ -1911,7 +1925,7 @@ export class BriefcaseDb extends IModelDb {
   private _eventSink?: EventSink;
 
   private clearEventSink() { if (this._eventSink) { EventSinkManager.delete(this._eventSink.id); } }
-  private initializeEventSink() { if (this.iModelToken.key) { this._eventSink = EventSinkManager.get(this.iModelToken.key); } }
+  private initializeEventSink() { if (this.key) { this._eventSink = EventSinkManager.get(this.key!); } }
 
   private constructor(briefcaseEntry: BriefcaseEntry, iModelToken: IModelToken, openParams: OpenParams) {
     super(briefcaseEntry.nativeDb, iModelToken, openParams);
@@ -2210,7 +2224,7 @@ export class BriefcaseDb extends IModelDb {
     await BriefcaseManager.pullAndMergeChanges(requestContext, this.briefcase, version);
     requestContext.enter();
     this.concurrencyControl.onMergedChanges();
-    this.iModelToken.changeSetId = this.briefcase.currentChangeSetId;
+    this.changeSetId = this.briefcase.currentChangeSetId;
     this.initializeIModelDb();
   }
 
@@ -2224,9 +2238,9 @@ export class BriefcaseDb extends IModelDb {
   public async pushChanges(requestContext: AuthorizedClientRequestContext, description: string): Promise<void> {
     requestContext.enter();
     if (this.nativeDb.hasUnsavedChanges())
-      return Promise.reject(new IModelError(ChangeSetStatus.HasUncommittedChanges, "Cannot push changeset with unsaved changes", Logger.logError, loggerCategory, () => this.iModelToken));
+      return Promise.reject(new IModelError(ChangeSetStatus.HasUncommittedChanges, "Cannot push changeset with unsaved changes", Logger.logError, loggerCategory, () => this.getRpcTokenProps()));
     if (this.openParams.syncMode !== SyncMode.PullAndPush)
-      throw new IModelError(BentleyStatus.ERROR, "IModel was not opened with SyncMode = PullAndPush", Logger.logError, loggerCategory, () => this.iModelToken);
+      throw new IModelError(BentleyStatus.ERROR, "IModel was not opened with SyncMode = PullAndPush", Logger.logError, loggerCategory, () => this.getRpcTokenProps());
     if (!this.nativeDb.hasSavedChanges())
       return Promise.resolve(); // nothing to push
 
@@ -2234,7 +2248,7 @@ export class BriefcaseDb extends IModelDb {
 
     await BriefcaseManager.pushChanges(requestContext, this.briefcase, description);
     requestContext.enter();
-    this.iModelToken.changeSetId = this.briefcase.currentChangeSetId;
+    this.changeSetId = this.briefcase.currentChangeSetId;
     this.initializeIModelDb();
 
     return this.concurrencyControl.onPushedChanges(requestContext);
@@ -2313,7 +2327,7 @@ export class BriefcaseDb extends IModelDb {
     }
   }
 
-  private onBriefcaseVersionUpdatedHandler() { this.iModelToken.changeSetId = this.briefcase.currentChangeSetId; }
+  private onBriefcaseVersionUpdatedHandler() { this.changeSetId = this.briefcase.currentChangeSetId; }
   private forwardChangesetApplied() { this.onChangesetApplied.raiseEvent(); }
 
   private setupBriefcaseEntry(briefcaseEntry: BriefcaseEntry) {

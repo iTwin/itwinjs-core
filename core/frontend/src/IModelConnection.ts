@@ -47,14 +47,14 @@ export interface BlankConnectionProps {
   extents: Range3dProps;
   /** An offset to be applied to all spatial coordinates. */
   globalOrigin?: XYZProps;
+  /** The optional Guid that identifies the *context* associated with the [[BlankConnection]]. */
+  contextId?: GuidString;
 }
 
 /** A connection to a [IModelDb]($backend) hosted on the backend.
  * @public
  */
 export abstract class IModelConnection extends IModel {
-  /** The [[OpenMode]] used for this IModelConnection. */
-  public readonly openMode: OpenMode;
   /** The [[ModelState]]s in this IModelConnection. */
   public readonly models: IModelConnection.Models;
   /** The [[ElementState]]s in this IModelConnection. */
@@ -137,16 +137,15 @@ export abstract class IModelConnection extends IModel {
   public get isReadonly(): boolean { return this.openMode === OpenMode.Readonly; }
 
   /** Check if the IModelConnection is open (i.e. it has a *connection* to a backend server).
-   * Returns false for blank connections and after [[IModelConnection.close]] has been called.
+   * Returns false for [[BlankConnection]] instances and after [[IModelConnection.close]] has been called.
    * @note no RPC operations are valid on this IModelConnection if this method returns false.
    * @beta
    */
   public get isOpen(): boolean { return undefined !== this._token; }
 
   /** Check if the IModelConnection is closed (i.e. it has no *connection* to a backend server).
-   * Returns true for blank connections and after [[IModelConnection.close]] has been called.
+   * Returns true for [[BlankConnection]] instances and after [[IModelConnection.close]] has been called.
    * @note no RPC operations are valid on this IModelConnection if this method returns true.
-   * @beta
    */
   public get isClosed(): boolean { return undefined === this._token; }
 
@@ -177,7 +176,7 @@ export abstract class IModelConnection extends IModel {
     if (undefined === this.fontMap) {
       this.fontMap = new FontMap();
       if (this.isOpen) {
-        const fontProps = JSON.parse(await IModelReadRpcInterface.getClient().readFontJson(this.iModelToken.toJSON())) as FontMapProps;
+        const fontProps = JSON.parse(await IModelReadRpcInterface.getClient().readFontJson(this.getRpcTokenProps())) as FontMapProps;
         this.fontMap.addFonts(fontProps.fonts);
       }
     }
@@ -199,7 +198,7 @@ export abstract class IModelConnection extends IModel {
 
     // wait until we get the full list of base classes from backend
     if (this.isOpen) {
-      const baseClasses = await IModelReadRpcInterface.getClient().getClassHierarchy(this.iModelToken.toJSON(), className);
+      const baseClasses = await IModelReadRpcInterface.getClient().getClassHierarchy(this.getRpcTokenProps(), className);
       // walk through the list until we find a registered base class
       baseClasses.some((baseClass: string) => {
         const test = IModelApp.lookupEntityClass(baseClass) as T | undefined;
@@ -215,10 +214,9 @@ export abstract class IModelConnection extends IModel {
   }
 
   /** @internal */
-  protected constructor(iModel: IModelProps, openMode: OpenMode) {
-    super(iModel.iModelToken ? IModelToken.fromJSON(iModel.iModelToken) : undefined);
-    super.initialize(iModel.name!, iModel);
-    this.openMode = openMode;
+  protected constructor(iModelProps: IModelProps, openMode: OpenMode) {
+    super(iModelProps.iModelToken ? IModelToken.fromJSON(iModelProps.iModelToken) : undefined, openMode);
+    super.initialize(iModelProps.name!, iModelProps);
     this.models = new IModelConnection.Models(this);
     this.elements = new IModelConnection.Elements(this);
     this.codeSpecs = new IModelConnection.CodeSpecs(this);
@@ -229,8 +227,8 @@ export abstract class IModelConnection extends IModel {
     this.subcategories = new SubCategoriesCache(this);
     this.geoServices = new GeoServices(this);
     this.displayedExtents = Range3d.fromJSON(this.projectExtents);
-    if (iModel.iModelToken && iModel.iModelToken.key) {
-      this.eventSource = EventSourceManager.get(iModel.iModelToken.key, this.iModelToken);
+    if (this.key) {
+      this.eventSource = EventSourceManager.get(this.key, this.getRpcTokenProps());
     }
   }
 
@@ -265,7 +263,7 @@ export abstract class IModelConnection extends IModel {
     for await (const row of this.query(`select count(*) nRows from (${ecsql})`, bindings)) {
       return row.nRows;
     }
-    Logger.logError(loggerCategory, "IModelConnection.queryRowCount", () => ({ ...this.iModelToken, ecsql, bindings }));
+    Logger.logError(loggerCategory, "IModelConnection.queryRowCount", () => ({ ...this.getRpcTokenProps(), ecsql, bindings }));
     throw new IModelError(DbResult.BE_SQLITE_ERROR, "Failed to get row count");
   }
 
@@ -294,7 +292,7 @@ export abstract class IModelConnection extends IModel {
    */
   public async queryRows(ecsql: string, bindings?: any[] | object, limit?: QueryLimit, quota?: QueryQuota, priority?: QueryPriority): Promise<QueryResponse> {
 
-    return IModelReadRpcInterface.getClient().queryRows(this.iModelToken.toJSON(), ecsql, bindings, limit, quota, priority);
+    return IModelReadRpcInterface.getClient().queryRows(this.getRpcTokenProps(), ecsql, bindings, limit, quota, priority);
   }
 
   /** Execute a query and stream its results
@@ -355,7 +353,7 @@ export abstract class IModelConnection extends IModel {
    * @throws [IModelError]($common) If the generated statement is invalid or would return too many rows.
    */
   public async queryEntityIds(params: EntityQueryParams): Promise<Id64Set> {
-    return new Set(this.isOpen ? await IModelReadRpcInterface.getClient().queryEntityIds(this.iModelToken.toJSON(), params) : undefined);
+    return new Set(this.isOpen ? await IModelReadRpcInterface.getClient().queryEntityIds(this.getRpcTokenProps(), params) : undefined);
   }
 
   /** Update the project extents of this iModel.
@@ -374,7 +372,7 @@ export abstract class IModelConnection extends IModel {
     return this.editing.saveChanges(description);
   }
 
-  private _snapRpc = new OneAtATimeAction<SnapResponseProps>((props: SnapRequestProps) => IModelReadRpcInterface.getClient().requestSnap(this.iModelToken.toJSON(), IModelApp.sessionId, props));
+  private _snapRpc = new OneAtATimeAction<SnapResponseProps>((props: SnapRequestProps) => IModelReadRpcInterface.getClient().requestSnap(this.getRpcTokenProps(), IModelApp.sessionId, props));
   /** Request a snap from the backend.
    * @note callers must gracefully handle Promise rejected with AbandonedError
    */
@@ -382,7 +380,7 @@ export abstract class IModelConnection extends IModel {
     return this.isOpen ? this._snapRpc.request(props) : { status: 2 };
   }
 
-  private _toolTipRpc = new OneAtATimeAction<string[]>((id: string) => IModelReadRpcInterface.getClient().getToolTipMessage(this.iModelToken.toJSON(), id));
+  private _toolTipRpc = new OneAtATimeAction<string[]>((id: string) => IModelReadRpcInterface.getClient().getToolTipMessage(this.getRpcTokenProps(), id));
   /** Request a tooltip from the backend.
    * @note callers must gracefully handle Promise rejected with AbandonedError
    */
@@ -393,7 +391,7 @@ export abstract class IModelConnection extends IModel {
   /** Request element mass properties from the backend.
    * @beta
    */
-  public async getMassProperties(requestProps: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps> { return IModelReadRpcInterface.getClient().getMassProperties(this.iModelToken.toJSON(), requestProps); }
+  public async getMassProperties(requestProps: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps> { return IModelReadRpcInterface.getClient().getMassProperties(this.getRpcTokenProps(), requestProps); }
 
   /** Convert a point in this iModel's Spatial coordinates to a [[Cartographic]] using the Geographic location services for this IModelConnection.
    * @param spatial A point in the iModel's spatial coordinates
@@ -507,6 +505,11 @@ export abstract class IModelConnection extends IModel {
 export class BriefcaseConnection extends IModelConnection {
   private _isNativeAppBriefcase: boolean; // Set to true if it's a connection over a briefcase in a native application
 
+  /** The Guid that identifies the *context* that owns this iModel. */
+  public get contextId(): GuidString { return super.contextId!; } // GuidString | undefined for the superclass, but required for BriefcaseConnection
+  /** The Guid that identifies this iModel. */
+  public get iModelId(): GuidString { return super.iModelId!; } // GuidString | undefined for the superclass, but required for BriefcaseConnection
+
   private constructor(iModelProps: IModelProps, openMode: OpenMode, isNativeAppBriefcase: boolean) {
     super(iModelProps, openMode);
     this._isNativeAppBriefcase = isNativeAppBriefcase;
@@ -614,7 +617,7 @@ export class BriefcaseConnection extends IModelConnection {
       return;
 
     const iModelToken: IModelToken = IModelToken.fromJSON(request.parameters[0]);
-    if (this.iModelToken.key !== iModelToken.key)
+    if (this.key !== iModelToken.key)
       return; // The handler is called for a different connection than this
 
     const requestContext: AuthorizedFrontendRequestContext = await AuthorizedFrontendRequestContext.create(request.id); // Reuse activityId
@@ -632,7 +635,7 @@ export class BriefcaseConnection extends IModelConnection {
     }
 
     Logger.logTrace(loggerCategory, "Resubmitting original request after reopening connection", () => iModelToken);
-    request.parameters[0] = this.iModelToken; // Modify the token of the original request before resubmitting it.
+    request.parameters[0] = this.getRpcTokenProps(); // Modify the token of the original request before resubmitting it.
     resubmit();
   }
 
@@ -653,12 +656,12 @@ export class BriefcaseConnection extends IModelConnection {
 
     let closePromise;
     if (this._isNativeAppBriefcase)
-      closePromise = NativeAppRpcInterface.getClient().closeBriefcase(this.iModelToken.toJSON());
+      closePromise = NativeAppRpcInterface.getClient().closeBriefcase(this.getRpcTokenProps());
     else
-      closePromise = IModelReadRpcInterface.getClient().close(this.iModelToken.toJSON()); // Ensure the method isn't awaited right away.
+      closePromise = IModelReadRpcInterface.getClient().close(this.getRpcTokenProps()); // Ensure the method isn't awaited right away.
 
     if (this.eventSource) {
-      EventSourceManager.delete(this.iModelToken.key!);
+      EventSourceManager.delete(this.key!);
     }
     try {
       await closePromise;
@@ -673,7 +676,7 @@ export class BriefcaseConnection extends IModelConnection {
    * @returns Returns true if the *Change Cache file* is attached to the iModel. false otherwise
    * @internal
    */
-  public async changeCacheAttached(): Promise<boolean> { return WipRpcInterface.getClient().isChangeCacheAttached(this.iModelToken.toJSON()); }
+  public async changeCacheAttached(): Promise<boolean> { return WipRpcInterface.getClient().isChangeCacheAttached(this.getRpcTokenProps()); }
 
   /** WIP - Attaches the *Change Cache file* to this iModel if it hasn't been attached yet.
    * A new *Change Cache file* will be created for the iModel if it hasn't existed before.
@@ -681,7 +684,7 @@ export class BriefcaseConnection extends IModelConnection {
    * @throws [IModelError]($common) if a Change Cache file has already been attached before.
    * @internal
    */
-  public async attachChangeCache(): Promise<void> { return WipRpcInterface.getClient().attachChangeCache(this.iModelToken.toJSON()); }
+  public async attachChangeCache(): Promise<void> { return WipRpcInterface.getClient().attachChangeCache(this.getRpcTokenProps()); }
 
   /** WIP - Detaches the *Change Cache file* to this iModel if it had been attached before.
    * > You do not have to check whether a Change Cache file had been attached before. The
@@ -689,7 +692,7 @@ export class BriefcaseConnection extends IModelConnection {
    * See also [Change Summary Overview]($docs/learning/ChangeSummaries)
    * @internal
    */
-  public async detachChangeCache(): Promise<void> { return WipRpcInterface.getClient().detachChangeCache(this.iModelToken.toJSON()); }
+  public async detachChangeCache(): Promise<void> { return WipRpcInterface.getClient().detachChangeCache(this.getRpcTokenProps()); }
 }
 
 /** A connection that exists without an iModel. Useful for connecting to Reality Data services.
@@ -697,26 +700,38 @@ export class BriefcaseConnection extends IModelConnection {
  * @beta
  */
 export class BlankConnection extends IModelConnection {
-  private constructor(iModelProps: IModelProps, openMode: OpenMode) {
-    super(iModelProps, openMode);
-  }
+  private constructor(iModelProps: IModelProps, openMode: OpenMode) { super(iModelProps, openMode); }
+
+  /** The Guid that identifies the *context* associated with this BlankConnection. */
+  public get contextId(): GuidString | undefined { return this._contextId; }
+  private _contextId?: GuidString; // WIP: move _contextId down to IModel once IModelToken refactor is complete
+  /** A BlankConnection does not have an associated iModel, so its `iModelId` is alway `undefined`. */
+  public get iModelId(): undefined { return undefined; } // GuidString | undefined for the superclass, but always undefined for BlankConnection
+
+  /** A BlankConnection does not have a specific backend nor it is associated with a particular iModel, so `false` is always returned.
+   * @returns `false` is always returned since RPC operations and iModel queries are not valid.
+   */
+  public get isOpen(): boolean { return false; }
+
+  /** A BlankConnection is always considered closed because it does not have a specific backend nor associated iModel.
+   * @returns `true` is always returned since RPC operations and iModel queries are not valid.
+   * @note Even though true is always returned, it is still valid to call [[close]] to dispose frontend resources.
+   */
+  public get isClosed(): boolean { return true; }
 
   /** Create a new [Blank IModelConnection]($docs/learning/frontend/BlankConnection).
    * @param props The properties to use for the new BlankConnection.
    */
   public static create(props: BlankConnectionProps): BlankConnection {
-    return new this({
+    const blankConnection = new this({
       rootSubject: { name: props.name },
       projectExtents: props.extents,
       globalOrigin: props.globalOrigin,
       ecefLocation: props.location instanceof Cartographic ? EcefLocation.createFromCartographicOrigin(props.location) : props.location,
     }, OpenMode.Readonly);
+    blankConnection._contextId = props.contextId; // WIP: move _contextId down to IModel once IModelToken refactor is complete
+    return blankConnection;
   }
-
-  /** A BlankConnection does not have a specific backend nor it is associated with a particular iModel, so `false` is always returned.
-   * @returns `false` is always returned since RPC operations and iModel queries are not valid without a backend iModel.
-   */
-  public get isOpen(): boolean { return false; }
 
   /** There are no connections to the backend to close in the case of a BlankConnection.
    * However, there are frontend resources (like the tile cache) that can be disposed.
@@ -731,6 +746,9 @@ export class BlankConnection extends IModelConnection {
  * @beta
  */
 export class SnapshotConnection extends IModelConnection {
+  /** The Guid that identifies this iModel. */
+  public get iModelId(): GuidString { return super.iModelId!; } // GuidString | undefined for the superclass, but required for SnapshotConnection
+
   private constructor(iModelProps: IModelProps, openMode: OpenMode) {
     super(iModelProps, openMode);
   }
@@ -756,7 +774,7 @@ export class SnapshotConnection extends IModelConnection {
       return;
     }
     try {
-      await SnapshotIModelRpcInterface.getClient().closeSnapshot(this.iModelToken.toJSON());
+      await SnapshotIModelRpcInterface.getClient().closeSnapshot(this.getRpcTokenProps());
     } finally {
       this._token = undefined; // prevent closed connection from being reused
       this.subcategories.onIModelConnectionClose();
@@ -799,7 +817,7 @@ export namespace IModelConnection {
     /** Get a batch of [[ModelProps]] given a list of Model ids. */
     public async getProps(modelIds: Id64Arg): Promise<ModelProps[]> {
       const iModel = this._iModel;
-      return iModel.isOpen ? IModelReadRpcInterface.getClient().getModelProps(iModel.iModelToken.toJSON(), [...Id64.toIdSet(modelIds)]) : [];
+      return iModel.isOpen ? IModelReadRpcInterface.getClient().getModelProps(iModel.getRpcTokenProps(), [...Id64.toIdSet(modelIds)]) : [];
     }
 
     /** Find a ModelState in the set of loaded Models by ModelId. */
@@ -845,7 +863,7 @@ export namespace IModelConnection {
     /** Query for a set of model ranges by ModelIds. */
     public async queryModelRanges(modelIds: Id64Arg): Promise<Range3dProps[]> {
       const iModel = this._iModel;
-      return iModel.isOpen ? IModelReadRpcInterface.getClient().queryModelRanges(iModel.iModelToken.toJSON(), [...Id64.toIdSet(modelIds)]) : [];
+      return iModel.isOpen ? IModelReadRpcInterface.getClient().queryModelRanges(iModel.getRpcTokenProps(), [...Id64.toIdSet(modelIds)]) : [];
     }
 
     /** Query for a set of ModelProps of the specified ModelQueryParams.
@@ -867,7 +885,7 @@ export namespace IModelConnection {
         if (params.where.length > 0) params.where += " AND ";
         params.where += "IsTemplate=FALSE ";
       }
-      return IModelReadRpcInterface.getClient().queryModelProps(iModel.iModelToken.toJSON(), params);
+      return IModelReadRpcInterface.getClient().queryModelProps(iModel.getRpcTokenProps(), params);
     }
 
     /** Asynchronously stream ModelProps using the specified ModelQueryParams. */
@@ -894,7 +912,7 @@ export namespace IModelConnection {
     /** Get an array of [[ElementProps]] given one or more element ids. */
     public async getProps(arg: Id64Arg): Promise<ElementProps[]> {
       const iModel = this._iModel;
-      return iModel.isOpen ? IModelReadRpcInterface.getClient().getElementProps(this._iModel.iModelToken.toJSON(), [...Id64.toIdSet(arg)]) : [];
+      return iModel.isOpen ? IModelReadRpcInterface.getClient().getElementProps(this._iModel.getRpcTokenProps(), [...Id64.toIdSet(arg)]) : [];
     }
 
     /** Get an array  of [[ElementProps]] that satisfy a query
@@ -903,7 +921,7 @@ export namespace IModelConnection {
      */
     public async queryProps(params: EntityQueryParams): Promise<ElementProps[]> {
       const iModel = this._iModel;
-      return iModel.isOpen ? IModelReadRpcInterface.getClient().queryElementProps(iModel.iModelToken.toJSON(), params) : [];
+      return iModel.isOpen ? IModelReadRpcInterface.getClient().queryElementProps(iModel.getRpcTokenProps(), params) : [];
     }
   }
 
@@ -920,7 +938,7 @@ export namespace IModelConnection {
         return;
 
       this._loaded = [];
-      const codeSpecArray: any[] = await IModelReadRpcInterface.getClient().getAllCodeSpecs(this._iModel.iModelToken.toJSON());
+      const codeSpecArray: any[] = await IModelReadRpcInterface.getClient().getAllCodeSpecs(this._iModel.getRpcTokenProps());
       for (const codeSpec of codeSpecArray) {
         this._loaded.push(CodeSpec.createFromJson(this._iModel, Id64.fromString(codeSpec.id), codeSpec.name, codeSpec.jsonProperties));
       }
@@ -979,7 +997,7 @@ export namespace IModelConnection {
         if (params.where.length > 0) params.where += " AND ";
         params.where += "IsPrivate=FALSE ";
       }
-      const viewProps = await IModelReadRpcInterface.getClient().queryElementProps(iModel.iModelToken.toJSON(), params);
+      const viewProps = await IModelReadRpcInterface.getClient().queryElementProps(iModel.getRpcTokenProps(), params);
       assert((viewProps.length === 0) || ("categorySelectorId" in viewProps[0]), "invalid view definition");  // spot check that the first returned element is-a ViewDefinitionProps
       return viewProps as ViewDefinitionProps[];
     }
@@ -1008,12 +1026,12 @@ export namespace IModelConnection {
      */
     public async queryDefaultViewId(): Promise<Id64String> {
       const iModel = this._iModel;
-      return iModel.isOpen ? IModelReadRpcInterface.getClient().getDefaultViewId(iModel.iModelToken.toJSON()) : Id64.invalid;
+      return iModel.isOpen ? IModelReadRpcInterface.getClient().getDefaultViewId(iModel.getRpcTokenProps()) : Id64.invalid;
     }
 
     /** Load a [[ViewState]] object from the specified [[ViewDefinition]] id. */
     public async load(viewDefinitionId: Id64String): Promise<ViewState> {
-      const viewProps = await IModelReadRpcInterface.getClient().getViewStateData(this._iModel.iModelToken.toJSON(), viewDefinitionId);
+      const viewProps = await IModelReadRpcInterface.getClient().getViewStateData(this._iModel.getRpcTokenProps(), viewDefinitionId);
       const className = viewProps.viewDefinitionProps.classFullName;
       const ctor = await this._iModel.findClassFor<typeof EntityState>(className, undefined) as typeof ViewState | undefined;
       if (undefined === ctor)
@@ -1030,7 +1048,7 @@ export namespace IModelConnection {
      * @throws Error if invalid thumbnail.
      */
     public async getThumbnail(viewId: Id64String): Promise<ThumbnailProps> {
-      const val = await IModelReadRpcInterface.getClient().getViewThumbnail(this._iModel.iModelToken.toJSON(), viewId.toString());
+      const val = await IModelReadRpcInterface.getClient().getViewThumbnail(this._iModel.getRpcTokenProps(), viewId.toString());
       const intValues = new Uint32Array(val.buffer, 0, 4);
 
       if (intValues[1] !== ImageSourceFormat.Jpeg && intValues[1] !== ImageSourceFormat.Png)
@@ -1052,7 +1070,7 @@ export namespace IModelConnection {
       const high32 = Id64.getUpperUint32(viewId);
       new Uint32Array(val.buffer, 16, 2).set([low32, high32]); // viewId is 8 bytes starting at offset 16
       val.set(thumbnail.image, 24); // image data at offset 24
-      return IModelWriteRpcInterface.getClient().saveThumbnail(this._iModel.iModelToken.toJSON(), val);
+      return IModelWriteRpcInterface.getClient().saveThumbnail(this._iModel.getRpcTokenProps(), val);
     }
 
   }
@@ -1213,8 +1231,8 @@ export namespace IModelConnection {
      * @alpha
      */
     public async deleteElements(ids: Id64Array) {
-      await IModelWriteRpcInterface.getClient().requestResources(this._connection.iModelToken, ids, [], DbOpcode.Delete);
-      return IModelWriteRpcInterface.getClient().deleteElements(this._connection.iModelToken, ids);
+      await IModelWriteRpcInterface.getClient().requestResources(this._connection.getRpcTokenProps(), ids, [], DbOpcode.Delete);
+      return IModelWriteRpcInterface.getClient().deleteElements(this._connection.getRpcTokenProps(), ids);
     }
 
     /** Update the project extents of this iModel.
@@ -1225,7 +1243,7 @@ export namespace IModelConnection {
     public async updateProjectExtents(newExtents: AxisAlignedBox3d): Promise<void> {
       if (OpenMode.ReadWrite !== this._connection.openMode)
         return Promise.reject(new IModelError(IModelStatus.ReadOnly, "IModelConnection was opened read-only", Logger.logError));
-      return IModelWriteRpcInterface.getClient().updateProjectExtents(this._connection.iModelToken.toJSON(), newExtents.toJSON());
+      return IModelWriteRpcInterface.getClient().updateProjectExtents(this._connection.getRpcTokenProps(), newExtents.toJSON());
     }
 
     /** Commit pending changes to this iModel
@@ -1237,9 +1255,9 @@ export namespace IModelConnection {
       if (OpenMode.ReadWrite !== this._connection.openMode)
         return Promise.reject(new IModelError(IModelStatus.ReadOnly, "IModelConnection was opened read-only", Logger.logError));
 
-      const affectedModels = await IModelWriteRpcInterface.getClient().getModelsAffectedByWrites(this._connection.iModelToken.toJSON()); // TODO: Remove this when we get tile healing
+      const affectedModels = await IModelWriteRpcInterface.getClient().getModelsAffectedByWrites(this._connection.getRpcTokenProps()); // TODO: Remove this when we get tile healing
 
-      await IModelWriteRpcInterface.getClient().saveChanges(this._connection.iModelToken.toJSON(), description);
+      await IModelWriteRpcInterface.getClient().saveChanges(this._connection.getRpcTokenProps(), description);
 
       IModelApp.viewManager.refreshForModifiedModels(affectedModels); // TODO: Remove this when we get tile healing
     }
@@ -1250,7 +1268,7 @@ export namespace IModelConnection {
      */
     // tslint:disable-next-line:prefer-get
     public async hasPendingTxns(): Promise<boolean> {
-      return IModelWriteRpcInterface.getClient().hasPendingTxns(this._connection.iModelToken.toJSON());
+      return IModelWriteRpcInterface.getClient().hasPendingTxns(this._connection.getRpcTokenProps());
     }
 
     /**
@@ -1259,7 +1277,7 @@ export namespace IModelConnection {
      */
     // tslint:disable-next-line:prefer-get
     public async hasUnsavedChanges(): Promise<boolean> {
-      return IModelWriteRpcInterface.getClient().hasUnsavedChanges(this._connection.iModelToken.toJSON());
+      return IModelWriteRpcInterface.getClient().hasUnsavedChanges(this._connection.getRpcTokenProps());
     }
 
     /**
@@ -1267,7 +1285,7 @@ export namespace IModelConnection {
      * @alpha
      */
     public async getParentChangeset(): Promise<string> {
-      return IModelWriteRpcInterface.getClient().getParentChangeset(this._connection.iModelToken.toJSON());
+      return IModelWriteRpcInterface.getClient().getParentChangeset(this._connection.getRpcTokenProps());
     }
   }
 
@@ -1311,8 +1329,7 @@ export namespace IModelConnection {
       }
     }
 
-    /**
-     * Helper class for creating SpatialCategories.
+    /** Helper class for creating SpatialCategories.
      * @alpha
      */
     export class CategoryEditor {
@@ -1325,19 +1342,15 @@ export namespace IModelConnection {
         this._rpc = IModelWriteRpcInterface.getClient();
       }
 
-      private get iModelToken(): IModelToken { return this._connection.iModelToken; }
-
-      /**
-       * Create and insert a new SpatialCategory. This first obtains the necessary locks and reserves the Code. This method is not suitable for creating many Categories.
+      /** Create and insert a new SpatialCategory. This first obtains the necessary locks and reserves the Code. This method is not suitable for creating many Categories.
        * @alpha
        */
       public async createAndInsertSpatialCategory(scopeModelId: Id64String, categoryName: string, appearance: SubCategoryAppearance.Props): Promise<Id64String> {
-        return this._rpc.createAndInsertSpatialCategory(this.iModelToken, scopeModelId, categoryName, appearance);
+        return this._rpc.createAndInsertSpatialCategory(this._connection.getRpcTokenProps(), scopeModelId, categoryName, appearance);
       }
     }
 
-    /**
-     * Helper class for creating and editing models.
+    /** Helper class for creating and editing models.
      * @alpha
      */
     export class ModelEditor {
@@ -1350,20 +1363,16 @@ export namespace IModelConnection {
         this._rpc = IModelWriteRpcInterface.getClient();
       }
 
-      private get iModelToken(): IModelToken { return this._connection.iModelToken; }
-
-      /**
-       * Create and insert a new PhysicalParition element and a SpatialModel. This first obtains the necessary locks and reserves the Code. This method is not suitable for creating many models.
+      /** Create and insert a new PhysicalPartition element and a SpatialModel. This first obtains the necessary locks and reserves the Code. This method is not suitable for creating many models.
        * @alpha
        */
       public async createAndInsertPhysicalModel(newModelCode: CodeProps, privateModel?: boolean): Promise<Id64String> {
-        return this._rpc.createAndInsertPhysicalModel(this.iModelToken, newModelCode, !!privateModel);
+        return this._rpc.createAndInsertPhysicalModel(this._connection.getRpcTokenProps(), newModelCode, !!privateModel);
       }
 
     }
 
-    /**
-     * Concurrency control functions.
+    /** Concurrency control functions.
      * @alpha
      */
     export class ConcurrencyControl {
@@ -1376,33 +1385,27 @@ export namespace IModelConnection {
         this._rpc = IModelWriteRpcInterface.getClient();
       }
 
-      private get iModelToken(): IModelToken { return this._connection.iModelToken; }
-
-      /**
-       * Send all pending requests for locks and codes to the server.
-       */
+      /** Send all pending requests for locks and codes to the server. */
       public async request(): Promise<void> {
-        return this._rpc.doConcurrencyControlRequest(this.iModelToken);
+        return this._rpc.doConcurrencyControlRequest(this._connection.getRpcTokenProps());
       }
 
-      /**
-       * Lock a model.
+      /** Lock a model.
        * @param modelId The model
        * @param level The lock level
        * @alpha
        */
       public async lockModel(modelId: Id64String, level: LockLevel = LockLevel.Shared): Promise<void> {
-        return this._rpc.lockModel(this.iModelToken, modelId, level);
+        return this._rpc.lockModel(this._connection.getRpcTokenProps(), modelId, level);
       }
 
-      /**
-       * Pull and merge new server changes and then (optionally) push local changes.
+      /** Pull and merge new server changes and then (optionally) push local changes.
        * @param comment description of new changeset
        * @param doPush Pass false if you only want to pull and merge. Pass true to pull, merge, and push. The default is true (do the push).
        * @alpha
        */
       public async pullMergePush(comment: string, doPush: boolean = true): Promise<GuidString> {
-        return this._rpc.pullMergePush(this.iModelToken, comment, doPush);
+        return this._rpc.pullMergePush(this._connection.getRpcTokenProps(), comment, doPush);
       }
     }
   }

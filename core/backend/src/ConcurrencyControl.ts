@@ -444,7 +444,7 @@ export class ConcurrencyControl {
     requestContext.enter();
 
     Logger.logTrace(loggerCategory, `lockSchema`);
-    const res = await BriefcaseManager.imodelClient.locks.update(requestContext, this._iModel.iModelToken.iModelId!, locks);
+    const res = await BriefcaseManager.imodelClient.locks.update(requestContext, this._iModel.iModelId, locks);
     if (res.length !== 1 || res[0].lockLevel !== LockLevel.Exclusive) {
       Logger.logError(loggerCategory, `lockSchema failed`);
       assert(false, "update should have thrown if it could not satisfy the request.");
@@ -480,7 +480,7 @@ export class ConcurrencyControl {
 
     requestContext.enter();
     Logger.logTrace(loggerCategory, `lockCodeSpecs`);
-    const res = await BriefcaseManager.imodelClient.locks.update(requestContext, this._iModel.iModelToken.iModelId!, locks);
+    const res = await BriefcaseManager.imodelClient.locks.update(requestContext, this._iModel.iModelId, locks);
     if (res.length !== 1 || res[0].lockLevel !== LockLevel.Exclusive) {
       Logger.logError(loggerCategory, `lockCodeSpecs failed`);
       assert(false, "update should have thrown if it could not satisfy the request.");
@@ -515,7 +515,7 @@ export class ConcurrencyControl {
     const hubLocks = ConcurrencyControl.Request.toHubLocks(this, locks);
 
     Logger.logTrace(loggerCategory, `acquireLocksFromRequest ${JSON.stringify(locks)}`);
-    const lockStates = await BriefcaseManager.imodelClient.locks.update(requestContext, this._iModel.iModelToken.iModelId!, hubLocks);
+    const lockStates = await BriefcaseManager.imodelClient.locks.update(requestContext, this._iModel.iModelId, hubLocks);
     requestContext.enter();
     Logger.logTrace(loggerCategory, `result = ${JSON.stringify(lockStates)}`);
 
@@ -1150,7 +1150,7 @@ export namespace ConcurrencyControl {
       this.clear();
 
       const bcId = this.concurrencyControl.iModel.briefcase.briefcaseId;
-      const iModelId = this.concurrencyControl.iModel.iModelToken.iModelId!;
+      const iModelId = this.concurrencyControl.iModel.iModelId;
 
       const heldLocks = await BriefcaseManager.imodelClient.locks.get(requestContext, iModelId, new LockQuery().byBriefcaseId(bcId));
       const lockProps: LockProps[] = heldLocks.map((lock) => ({ type: lock.lockType!, objectId: lock.objectId!, level: lock.lockLevel! }));

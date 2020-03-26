@@ -38,7 +38,7 @@ describe("IModelConnection (#integration)", () => {
   });
 
   after(async () => {
-    await TestUtility.purgeAcquiredBriefcases(iModel.iModelToken.iModelId!);
+    await TestUtility.purgeAcquiredBriefcases(iModel.iModelId!);
     if (iModel)
       await iModel.close();
     MockRender.App.shutdown();
@@ -152,7 +152,7 @@ describe("IModelConnection (#integration)", () => {
       const promise = BriefcaseConnection.open(projectId, iModelId, OpenMode.Readonly, IModelVersion.latest())
         .then((readOnlyTest2: IModelConnection) => {
           assert.isNotNull(readOnlyTest2);
-          assert.isTrue(readOnlyTest.iModelToken.key === readOnlyTest2.iModelToken.key);
+          assert.isTrue(readOnlyTest.key === readOnlyTest2.key);
         });
       promises.push(promise);
     }
@@ -174,7 +174,7 @@ describe("IModelConnection (#integration)", () => {
       while (++n < 5) {
         const iModel2 = await BriefcaseConnection.open(testProjectId, testIModelId, openMode, IModelVersion.latest());
         assert.isNotNull(iModel2);
-        assert.equal(iModel2.iModelToken.key, iModel1.iModelToken.key);
+        assert.equal(iModel2.key, iModel1.key);
       }
       await iModel1.close();
     }

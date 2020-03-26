@@ -117,7 +117,7 @@ async function pushIModelAfterDataChanges(requestContext: AuthorizedClientReques
   }
   // create new imodel with given name
   const rwIModel = await BriefcaseDb.create(requestContext, projectId, iModelName, { rootSubject: { name: "TestSubject" } });
-  const rwIModelId = rwIModel.iModelToken.iModelId;
+  const rwIModelId = rwIModel.iModelId;
   assert.isNotEmpty(rwIModelId);
 
   // create new model, category and physical element, and insert in imodel
@@ -144,7 +144,7 @@ async function pushIModelAfterSchemaChanges(requestContext: AuthorizedClientRequ
   }
   // create new imodel with given name
   const rwIModel = await BriefcaseDb.create(requestContext, projectId, iModelName, { rootSubject: { name: "TestSubject" } });
-  const rwIModelId = rwIModel.iModelToken.iModelId;
+  const rwIModelId = rwIModel.iModelId;
   assert.isNotEmpty(rwIModelId);
   // import schema and push change to hub
   const schemaPathname = path.join(KnownTestLocations.assetsDir, "PerfTestDomain.ecschema.xml");
@@ -189,7 +189,7 @@ async function reverseChanges(requestContext: AuthorizedClientRequestContext, re
 
   // create new imodel with given name
   const rwIModel = await BriefcaseDb.create(requestContext, projectId, iModelName, { rootSubject: { name: "TestSubject" } });
-  const rwIModelId = rwIModel.iModelToken.iModelId;
+  const rwIModelId = rwIModel.iModelId;
   assert.isNotEmpty(rwIModelId);
 
   // create new model, category and physical element, and insert in imodel, and push these changes
@@ -234,7 +234,7 @@ async function reinstateChanges(requestContext: AuthorizedClientRequestContext, 
 
   // create new imodel with given name
   const rwIModel = await BriefcaseDb.create(requestContext, projectId, iModelName, { rootSubject: { name: "TestSubject" } });
-  const rwIModelId = rwIModel.iModelToken.iModelId;
+  const rwIModelId = rwIModel.iModelId;
   assert.isNotEmpty(rwIModelId);
 
   // create new model, category and physical element, and insert in imodel, and push these changes

@@ -20,7 +20,7 @@ describe("DevTools", () => {
       this.skip();
 
     iModel = await testContext.iModelWithChangesets!.getConnection();
-    devTools = DevTools.connectToBackendInstance(iModel.iModelToken);
+    devTools = DevTools.connectToBackendInstance(iModel.getRpcTokenProps());
   });
 
   it("can fetch stats from backend", async () => {

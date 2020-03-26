@@ -295,7 +295,7 @@ export class SyncUiEventDispatcher {
   public static initializeConnectionEvents(iModelConnection: IModelConnection) {
     iModelConnection.selectionSet.onChanged.removeListener(SyncUiEventDispatcher.selectionChangedHandler);
     iModelConnection.selectionSet.onChanged.addListener(SyncUiEventDispatcher.selectionChangedHandler);
-    (iModelConnection.iModelToken && iModelConnection.iModelToken.iModelId) ? UiFramework.setActiveIModelId(iModelConnection.iModelToken.iModelId) : "";
+    (iModelConnection.iModelId) ? UiFramework.setActiveIModelId(iModelConnection.iModelId) : "";
     if (SyncUiEventDispatcher._unregisterListenerFunc)
       SyncUiEventDispatcher._unregisterListenerFunc();
 

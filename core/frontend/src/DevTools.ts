@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { LogLevel } from "@bentley/bentleyjs-core";
-import { DevToolsRpcInterface, IModelToken, DevToolsStatsOptions } from "@bentley/imodeljs-common";
+import { DevToolsRpcInterface, DevToolsStatsOptions, IModelTokenProps } from "@bentley/imodeljs-common";
 
 /**
  * Results of the ping test
@@ -25,16 +25,16 @@ export interface PingTestResult {
 export class DevTools {
 
   /** Create a new connection with a specific backend instance.
-   * @param iModelToken The iModelToken that identifies that backend instance.
+   * @param tokenProps The iModelToken that identifies that backend instance.
    * Supply a dummy token if contacting the backend without the Orchestrator.
    */
-  public static connectToBackendInstance(iModelToken: IModelToken): DevTools {
-    return new DevTools(iModelToken);
+  public static connectToBackendInstance(tokenProps: IModelTokenProps): DevTools {
+    return new DevTools(tokenProps);
   }
 
   /** Constructor */
   private constructor(
-    private readonly _iModelToken: IModelToken) {
+    private readonly _tokenProps: IModelTokenProps) {
   }
 
   /** Measures the round trip times for one or more pings to the backend
@@ -46,7 +46,7 @@ export class DevTools {
 
     const pingFn = async (): Promise<number> => {
       const start = Date.now();
-      await DevToolsRpcInterface.getClient().ping(this._iModelToken.toJSON());
+      await DevToolsRpcInterface.getClient().ping(this._tokenProps);
       return Promise.resolve(Date.now() - start);
     };
 
@@ -79,16 +79,16 @@ export class DevTools {
 
   /** Returns JSON object with backend statistics */
   public async stats(options: DevToolsStatsOptions = DevToolsStatsOptions.FormatUnits): Promise<any> {
-    return DevToolsRpcInterface.getClient().stats(this._iModelToken.toJSON(), options);
+    return DevToolsRpcInterface.getClient().stats(this._tokenProps, options);
   }
 
   // Returns JSON object with backend versions (application and iModelJs)
   public async versions(): Promise<any> {
-    return DevToolsRpcInterface.getClient().versions(this._iModelToken.toJSON());
+    return DevToolsRpcInterface.getClient().versions(this._tokenProps);
   }
 
   /** Sets up a log level at the backend and returns the old log level */
   public async setLogLevel(inLoggerCategory: string, newLevel: LogLevel): Promise<LogLevel | undefined> {
-    return DevToolsRpcInterface.getClient().setLogLevel(this._iModelToken.toJSON(), inLoggerCategory, newLevel);
+    return DevToolsRpcInterface.getClient().setLogLevel(this._tokenProps, inLoggerCategory, newLevel);
   }
 }

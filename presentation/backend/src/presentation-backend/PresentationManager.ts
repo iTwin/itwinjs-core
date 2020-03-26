@@ -360,7 +360,7 @@ export class PresentationManager {
     const start = new Date();
     await this.request<void>(requestContext, requestOptions.imodel, params);
     Logger.logInfo("ECPresentation.Node", `Loading full hierarchy for `
-      + `iModel "${requestOptions.imodel.iModelToken.iModelId}" and ruleset "${options.rulesetId}" `
+      + `iModel "${requestOptions.imodel.iModelId}" and ruleset "${options.rulesetId}" `
       + `completed in ${((new Date()).getTime() - start.getTime()) / 1000} s.`);
   }
 

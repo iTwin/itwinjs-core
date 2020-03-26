@@ -74,6 +74,18 @@ Previously, shader programs used by the [RenderSystem]($frontend) were never com
 
 With a new major version of the iModel.js library come breaking API changes. The majority of those changes result from the removal of previously deprecated APIs. In addition, the following APis have changed in ways that may require calling code to be adjusted:
 
+### IModel, IModelConnection, IModelDb
+
+The properties formerly under `IModel.iModelToken` have been promoted to [IModel]($common). These renames affect [IModelConnection]($frontend) and [IModelDb]($backend):
+
+* `IModel.iModelToken.contextId` --> [IModel.contextId]($common)
+* `IModel.iModelToken.iModelId` --> [IModel.iModelId]($common)
+* `IModel.iModelToken.changeSetId` --> [IModel.changeSetId]($common)
+
+And for RPC implementations, the following method has been added to replace other uses of `IModel.iModelToken`:
+
+* [IModel.getRpcTokenProps]($common)
+
 ### Briefcase iModels
 
 The methods for working with Briefcase iModels (those that are synchronized with iModelHub) have been moved into a new [BriefcaseDb]($backend) class, which is a breaking change.

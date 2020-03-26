@@ -174,7 +174,7 @@ describe("PushRetry", () => {
     }
 
     const pushRetryIModel = await BriefcaseDb.create(requestContext, testProjectId, iModelName, { rootSubject: { name: "TestSubject" } });
-    const pushRetryIModelId = pushRetryIModel.iModelToken.iModelId;
+    const pushRetryIModelId = pushRetryIModel.iModelId;
     assert.isNotEmpty(pushRetryIModelId);
 
     pushRetryIModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
@@ -215,7 +215,7 @@ describe("PushRetry", () => {
     }
 
     const pushRetryIModel = await BriefcaseDb.create(requestContext, testProjectId, iModelName, { rootSubject: { name: "TestSubject" } });
-    const pushRetryIModelId = pushRetryIModel.iModelToken.iModelId;
+    const pushRetryIModelId = pushRetryIModel.iModelId;
     assert.isNotEmpty(pushRetryIModelId);
 
     const r: { modelId: Id64String, spatialCategoryId: Id64String } = await createNewModelAndCategory(requestContext, pushRetryIModel);

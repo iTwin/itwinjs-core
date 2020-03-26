@@ -40,7 +40,7 @@ class SyncManager {
       return;
     this.changesetListenerInitialized = true;
 
-    const iModelId = this.iModelConnection.iModelToken.iModelId!;
+    const iModelId = this.iModelConnection.iModelId!;
     try {
       const requestContext = await AuthorizedFrontendRequestContext.create();
 
@@ -82,7 +82,7 @@ class SyncManager {
 
     // Once the initial state of the briefcase is known, register for events announcing new txns and pushes that clear local txns.
 
-    EventSourceManager.get(this.iModelConnection.iModelToken.key!).on(IModelWriteRpcInterface.name, "onSavedChanges", (data: any) => {
+    EventSourceManager.get(this.iModelConnection.key!).on(IModelWriteRpcInterface.name, "onSavedChanges", (data: any) => {
       if (data.time > this.state.timeOfLastSaveEvent) { // work around out-of-order events
         this.state.timeOfLastSaveEvent = data.time;
         this.state.mustPush = data.hasPendingTxns;
@@ -90,7 +90,7 @@ class SyncManager {
       }
     });
 
-    EventSourceManager.get(this.iModelConnection.iModelToken.key!).on(IModelWriteRpcInterface.name, "onPushedChanges", (data: any) => {
+    EventSourceManager.get(this.iModelConnection.key!).on(IModelWriteRpcInterface.name, "onPushedChanges", (data: any) => {
       // In case I got the changeSetSubscription event first, remove the changeset that I pushed from the list of server changes waiting to be merged.
       const allChangesOnServer = this.state.changesOnServer.filter((cs) => cs !== data.parentChangeSetId);
       this.state.mustPush = false;
@@ -99,7 +99,7 @@ class SyncManager {
       this.onStateChange.raiseEvent();
     });
 
-    EventSourceManager.get(this.iModelConnection.iModelToken.key!).on(IModelWriteRpcInterface.name, "onPulledChanges", (data: any) => {
+    EventSourceManager.get(this.iModelConnection.key!).on(IModelWriteRpcInterface.name, "onPulledChanges", (data: any) => {
       this.updateParentChangesetId(data.parentChangeSetId);
       this.onStateChange.raiseEvent();
 

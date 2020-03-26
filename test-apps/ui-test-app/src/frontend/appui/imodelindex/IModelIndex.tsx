@@ -64,8 +64,8 @@ export class IModelIndex extends React.Component<IModelIndexProps, IModelIndexSt
 
   /* retrieve imodel thumbnail and version information on mount */
   public async componentDidMount() {
-    const projectId = this.props.iModelConnection.iModelToken.contextId!;
-    const iModelId = this.props.iModelConnection.iModelToken.iModelId!;
+    const projectId = this.props.iModelConnection.contextId!;
+    const iModelId = this.props.iModelConnection.iModelId!;
 
     await this.startRetrieveThumbnail(projectId, iModelId);
     await this.startRetrieveIModelInfo();
@@ -99,8 +99,8 @@ export class IModelIndex extends React.Component<IModelIndexProps, IModelIndexSt
   private async startRetrieveIModelInfo() {
     const hubClient: IModelClient = new IModelHubClient();
     const requestContext: AuthorizedFrontendRequestContext = await AuthorizedFrontendRequestContext.create();
-    const contextId = this.props.iModelConnection.iModelToken.contextId!;
-    const iModelId = this.props.iModelConnection.iModelToken.iModelId!;
+    const contextId = this.props.iModelConnection.contextId!;
+    const iModelId = this.props.iModelConnection.iModelId!;
 
     /* get the iModel name */
     const imodels = await hubClient.iModels.get(requestContext, contextId, new IModelQuery().byId(iModelId));
@@ -109,7 +109,7 @@ export class IModelIndex extends React.Component<IModelIndexProps, IModelIndexSt
     const _versions: Version[] = await hubClient.versions.get(requestContext, iModelId, new VersionQuery().top(1));
 
     /* determine if the version is up-to-date */
-    const changeSetId = this.props.iModelConnection.iModelToken.changeSetId!;
+    const changeSetId = this.props.iModelConnection.changeSetId!;
     const _upToDate = (_versions.length > 0 && _versions[0].changeSetId === changeSetId);
 
     /* get the version name */

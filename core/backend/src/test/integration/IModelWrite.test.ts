@@ -221,18 +221,18 @@ describe("IModelWriteTest (#integration)", () => {
     }
 
     // secondUser: modify el1.userLabel
-    let expectedValueofEl1UserLabel: string;
+    let expectedValueOfEl1UserLabel: string;
     if (true) {
       const el1before: Element = (secondIModel.elements.getElement(el1));
-      expectedValueofEl1UserLabel = el1before.userLabel + " -> changed by secondUser";
-      el1before.userLabel = expectedValueofEl1UserLabel;
+      expectedValueOfEl1UserLabel = el1before.userLabel + " -> changed by secondUser";
+      el1before.userLabel = expectedValueOfEl1UserLabel;
       secondIModel.elements.updateElement(el1before);
       secondIModel.saveChanges("secondUser modified el1.userLabel");
 
       // pull + merge => take secondUser's change (RejectIncomingChange). That's because the default updateVsUpdate settting is RejectIncomingChange
       await secondIModel.pullAndMergeChanges(secondUserRequestContext);
       const el1after = secondIModel.elements.getElement(el1);
-      assert.equal(el1after.userLabel, expectedValueofEl1UserLabel);
+      assert.equal(el1after.userLabel, expectedValueOfEl1UserLabel);
 
       await secondIModel.pushChanges(secondUserRequestContext, "test");
     }
@@ -241,14 +241,14 @@ describe("IModelWriteTest (#integration)", () => {
     if (true) {
       await neutralObserverIModel.pullAndMergeChanges(neutralObserverUserRequestContext);
       const elobj = neutralObserverIModel.elements.getElement(el1);
-      assert.equal(elobj.userLabel, expectedValueofEl1UserLabel);
+      assert.equal(elobj.userLabel, expectedValueOfEl1UserLabel);
     }
 
     // firstUser: pull and see that secondUser has overridden my change
     if (true) {
       await firstIModel.pullAndMergeChanges(firstUserRequestContext);
       const elobj = firstIModel.elements.getElement(el1);
-      assert.equal(elobj.userLabel, expectedValueofEl1UserLabel);
+      assert.equal(elobj.userLabel, expectedValueOfEl1UserLabel);
     }
 
     // --- Test 2: Overlapping changes that are not conflicts  ---
@@ -345,7 +345,7 @@ describe("IModelWriteTest (#integration)", () => {
     // Create a new empty iModel on the Hub & obtain a briefcase
     timer = new Timer("create iModel");
     const rwIModel = await BriefcaseDb.create(adminRequestContext, writeTestProjectId, iModelName, { rootSubject: { name: "TestSubject" } });
-    const rwIModelId = rwIModel.iModelToken.iModelId;
+    const rwIModelId = rwIModel.iModelId;
     assert.isNotEmpty(rwIModelId);
     timer.end();
 
@@ -365,9 +365,9 @@ describe("IModelWriteTest (#integration)", () => {
     timer = new Timer("push changes");
 
     // Push the changes to the hub
-    const prePushChangeSetId = rwIModel.iModelToken.changeSetId;
+    const prePushChangeSetId = rwIModel.changeSetId;
     await rwIModel.pushChanges(adminRequestContext, "test");
-    const postPushChangeSetId = rwIModel.iModelToken.changeSetId;
+    const postPushChangeSetId = rwIModel.changeSetId;
     assert(!!postPushChangeSetId);
     expect(prePushChangeSetId !== postPushChangeSetId);
 
@@ -390,7 +390,7 @@ describe("IModelWriteTest (#integration)", () => {
 
     // Create a new empty iModel on the Hub & obtain a briefcase
     const rwIModel = await BriefcaseDb.create(adminRequestContext, writeTestProjectId, iModelName, { rootSubject: { name: "TestSubject" } });
-    const rwIModelId = rwIModel.iModelToken.iModelId;
+    const rwIModelId = rwIModel.iModelId;
     assert.isNotEmpty(rwIModelId);
 
     const dictionary: DictionaryModel = rwIModel.models.getModel(IModel.dictionaryId) as DictionaryModel;
@@ -442,7 +442,7 @@ describe("IModelWriteTest (#integration)", () => {
     // Create a new empty iModel on the Hub & obtain a briefcase
     timer = new Timer("create iModel");
     const rwIModel = await BriefcaseDb.create(adminRequestContext, writeTestProjectId, iModelName, { rootSubject: { name: "TestSubject" } });
-    const rwIModelId = rwIModel.iModelToken.iModelId;
+    const rwIModelId = rwIModel.iModelId;
     assert.isNotEmpty(rwIModelId);
     timer.end();
 
@@ -481,9 +481,9 @@ describe("IModelWriteTest (#integration)", () => {
     timer = new Timer("push changes");
 
     // Push the changes to the hub
-    const prePushChangeSetId = rwIModel.iModelToken.changeSetId;
+    const prePushChangeSetId = rwIModel.changeSetId;
     await rwIModel.pushChanges(adminRequestContext, "test");
-    const postPushChangeSetId = rwIModel.iModelToken.changeSetId;
+    const postPushChangeSetId = rwIModel.changeSetId;
     assert(!!postPushChangeSetId);
     expect(prePushChangeSetId !== postPushChangeSetId);
 
@@ -511,7 +511,7 @@ describe("IModelWriteTest (#integration)", () => {
     // Create a new empty iModel on the Hub & obtain a briefcase
     timer = new Timer("create iModel");
     const rwIModel = await BriefcaseDb.create(adminRequestContext, writeTestProjectId, iModelName, { rootSubject: { name: "TestSubject" } });
-    const rwIModelId = rwIModel.iModelToken.iModelId;
+    const rwIModelId = rwIModel.iModelId;
     assert.isNotEmpty(rwIModelId);
     timer.end();
 
@@ -577,7 +577,7 @@ describe("IModelWriteTest (#integration)", () => {
     // Create a new empty iModel on the Hub & obtain a briefcase
     timer = new Timer("create iModel");
     const rwIModel = await BriefcaseDb.create(adminRequestContext, writeTestProjectId, iModelName, { rootSubject: { name: "TestSubject" } });
-    const rwIModelId = rwIModel.iModelToken.iModelId;
+    const rwIModelId = rwIModel.iModelId;
     assert.isNotEmpty(rwIModelId);
     timer.end();
 
@@ -665,9 +665,9 @@ describe("IModelWriteTest (#integration)", () => {
     timer = new Timer("pullmergepush");
 
     // Push the changes to the hub
-    const prePushChangeSetId = rwIModel.iModelToken.changeSetId;
+    const prePushChangeSetId = rwIModel.changeSetId;
     await rwIModel.pushChanges(adminRequestContext, "test");
-    const postPushChangeSetId = rwIModel.iModelToken.changeSetId;
+    const postPushChangeSetId = rwIModel.changeSetId;
     assert(!!postPushChangeSetId);
     expect(prePushChangeSetId !== postPushChangeSetId);
 

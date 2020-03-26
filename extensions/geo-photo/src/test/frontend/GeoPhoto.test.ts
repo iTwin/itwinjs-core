@@ -28,7 +28,7 @@ export class GeoPhotoTest {
     this._currentCount++;
 
     const psFile = file as PSPhotoFile;
-    await this._treeHandler.deleteCustomInfo(this._requestContext, this._iModel.iModelToken.contextId!, psFile);
+    await this._treeHandler.deleteCustomInfo(this._requestContext, this._iModel.contextId!, psFile);
   }
 
   public async deleteTags(folder: PhotoFolder, subFolders: boolean): Promise<void> {
@@ -77,7 +77,7 @@ export class GeoPhotoTest {
     this._currentCount++;
 
     const psFile = file as PSPhotoFile;
-    await this._treeHandler.updateCustomInfo(this._requestContext, this._iModel.iModelToken.contextId!, psFile);
+    await this._treeHandler.updateCustomInfo(this._requestContext, this._iModel.contextId!, psFile);
   }
 
   public async updateTags(folder: PhotoFolder, subFolders: boolean): Promise<void> {
@@ -104,7 +104,7 @@ export class GeoPhotoTest {
     const deleteProps = (psFile.psFile.customProperties as any[]).map((entry: any) => entry.Name);
     if (deleteProps.length === 0)
       return;
-    await this._projectShareClient.updateCustomProperties(this._requestContext, this._iModel.iModelToken.contextId!, psFile.psFile, undefined, deleteProps);
+    await this._projectShareClient.updateCustomProperties(this._requestContext, this._iModel.contextId!, psFile.psFile, undefined, deleteProps);
   }
 
   public async deleteCustomProperties(folder: PhotoFolder, subFolders: boolean): Promise<void> {

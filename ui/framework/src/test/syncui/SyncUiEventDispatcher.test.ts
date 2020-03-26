@@ -260,7 +260,7 @@ describe("SyncUiEventDispatcher", () => {
 
     beforeEach(() => {
       imodelMock.reset();
-      imodelMock.setup((x) => x.iModelToken).returns(() => imodelToken);
+      imodelMock.setup((x) => x.getRpcToken()).returns(() => imodelToken);
 
       ss = new SelectionSet(imodelMock.object);
       imodelMock.setup((x) => x.selectionSet).returns(() => ss);

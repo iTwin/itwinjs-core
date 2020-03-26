@@ -11,7 +11,6 @@ import {
   createRandomNestedContentField, createRandomPropertiesField, createRandomPrimitiveField, createRandomRelatedClassInfo,
 } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { Field, PropertiesField, NestedContentField, PropertyInfo } from "@bentley/presentation-common";
-import { IModelToken } from "@bentley/imodeljs-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import {
   FavoritePropertiesManager, IFavoritePropertiesStorage, FavoritePropertiesOrderInfo,
@@ -33,7 +32,6 @@ describe("FavoritePropertiesManager", () => {
   let projectId: string;
   let imodelId: string;
   const imodelMock = moq.Mock.ofType<IModelConnection>();
-  const imodelTokenMock = moq.Mock.ofType<IModelToken>();
 
   before(() => {
     projectId = "project-id";
@@ -46,15 +44,13 @@ describe("FavoritePropertiesManager", () => {
 
   beforeEach(async () => {
     manager = new FavoritePropertiesManager({ storage: storageMock.object });
-    imodelTokenMock.setup((x) => x.iModelId).returns(() => imodelId);
-    imodelTokenMock.setup((x) => x.contextId).returns(() => projectId);
-    imodelMock.setup((x) => x.iModelToken).returns(() => imodelTokenMock.object);
+    imodelMock.setup((x) => x.iModelId).returns(() => imodelId);
+    imodelMock.setup((x) => x.contextId).returns(() => projectId);
   });
 
   afterEach(() => {
     manager.dispose();
     storageMock.reset();
-    imodelTokenMock.reset();
     imodelMock.reset();
   });
 
@@ -71,11 +67,9 @@ describe("FavoritePropertiesManager", () => {
       await manager.initializeConnection(imodelMock.object);
 
       const imodelId2 = "imodel-id-2";
-      imodelTokenMock.reset();
-      imodelTokenMock.setup((x) => x.iModelId).returns(() => imodelId2);
-      imodelTokenMock.setup((x) => x.contextId).returns(() => projectId);
       imodelMock.reset();
-      imodelMock.setup((x) => x.iModelToken).returns(() => imodelTokenMock.object);
+      imodelMock.setup((x) => x.iModelId).returns(() => imodelId2);
+      imodelMock.setup((x) => x.contextId).returns(() => projectId);
       await manager.initializeConnection(imodelMock.object);
 
       storageMock.verify((x) => x.loadProperties(undefined, undefined), moq.Times.once());
@@ -133,7 +127,7 @@ describe("FavoritePropertiesManager", () => {
 
   });
 
-  describe("deprected has", () => {
+  describe("deprecated has", () => {
 
     it("throws if not initialized", () => {
       expect(() => manager.has(propertyField1, projectId, imodelId)).to.throw("Favorite properties are not initialized. Call initializeConnection() with an IModelConnection to initialize.");

@@ -1736,8 +1736,8 @@ export class ViewClipSettingsProvider {
   constructor(protected _clipEventHandler?: ViewClipEventHandler) { }
 
   protected async getRequestContext() { return AuthorizedFrontendRequestContext.create(); }
-  protected getProjectId(iModel: IModelConnection): string | undefined { return iModel.iModelToken.contextId; }
-  protected getiModelId(iModel: IModelConnection): string | undefined { return iModel.iModelToken.iModelId; }
+  protected getProjectId(iModel: IModelConnection): string | undefined { return iModel.contextId; }
+  protected getiModelId(iModel: IModelConnection): string | undefined { return iModel.iModelId; }
 
   /** @internal */
   protected async getAllSettings(iModel: IModelConnection, shared: boolean): Promise<SettingsMapResult> {

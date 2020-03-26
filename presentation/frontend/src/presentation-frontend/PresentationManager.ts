@@ -124,7 +124,7 @@ export class PresentationManager implements IDisposable {
     // 2. put all `options` members (if `locale` is set, it'll override the default put at #1)
     // 3. put `imodel` of type `IModelToken` which overwrites the `imodel` from `options` put at #2
     return Object.assign({}, { locale: this.activeLocale }, options, {
-      imodel: options.imodel.iModelToken,
+      imodel: options.imodel.getRpcToken(),
     });
   }
 

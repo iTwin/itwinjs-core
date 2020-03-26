@@ -94,7 +94,7 @@ export class ViewsList extends React.Component<ViewsListProps, ViewsListState> {
 
   public async componentDidUpdate(nextProps: ViewsListProps) {
     // if no incoming imodel exists or either the incoming imodel's id or changeset id is different from the current imodel then clear cache
-    if (!nextProps.iModelConnection || (this.props.iModelConnection && (this.props.iModelConnection.iModelToken.iModelId !== nextProps.iModelConnection.iModelToken.iModelId || this.props.iModelConnection.iModelToken.changeSetId !== nextProps.iModelConnection.iModelToken.changeSetId))) {
+    if (!nextProps.iModelConnection || (this.props.iModelConnection && (this.props.iModelConnection.iModelId !== nextProps.iModelConnection.iModelId || this.props.iModelConnection.changeSetId !== nextProps.iModelConnection.changeSetId))) {
       // Clear cache
       this._viewDefCache = undefined;
       // if incoming imodel exists then load new views
@@ -122,10 +122,10 @@ export class ViewsList extends React.Component<ViewsListProps, ViewsListState> {
 
   /**
    * Check if a view classname is sheet
-   * @param classname Classname of the view to check
+   * @param classFullName Classname of the view to check
    */
-  public static isSheet(classname: string): boolean {
-    return classname === "BisCore:SheetViewDefinition";
+  public static isSheet(classFullName: string): boolean {
+    return classFullName === "BisCore:SheetViewDefinition";
   }
 
   /**
@@ -138,7 +138,7 @@ export class ViewsList extends React.Component<ViewsListProps, ViewsListState> {
       const params: ViewQueryParams = {};
       params.from = ViewState.classFullName; // use "BisCore.ViewDefinition" as default class name
       params.where = "";
-      const viewProps = await IModelReadRpcInterface.getClient().queryElementProps(imodel.iModelToken.toJSON(), params);
+      const viewProps = await IModelReadRpcInterface.getClient().queryElementProps(imodel.getRpcTokenProps(), params);
       this._viewDefCache = viewProps as ViewDefinitionProps[];
     }
 

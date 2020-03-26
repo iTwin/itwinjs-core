@@ -412,7 +412,7 @@ export namespace RealityModelTileTree {
     if (!url)
       throw new IModelError(BentleyStatus.ERROR, "Unable to read reality data");
     const accessToken = await getAccessToken();
-    const tileClient = new RealityModelTileClient(url, accessToken, iModel.iModelToken.contextId);
+    const tileClient = new RealityModelTileClient(url, accessToken, iModel.contextId);
     const json = await tileClient.getRootDocument(url);
     const ecefLocation = iModel.ecefLocation;
     let rootTransform = ecefLocation ? ecefLocation.getTransform().inverse()! : Transform.createIdentity();

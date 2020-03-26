@@ -64,7 +64,7 @@ export class TestUtility {
 
   public static async getModelLockLevel(iModel: IModelConnection, modelId: Id64String): Promise<LockLevel> {
     const req = new AuthorizedClientRequestContext(await IModelApp.authorizationClient!.getAccessToken());
-    const lockedModels = await IModelApp.iModelClient.locks.get(req, iModel.iModelToken.iModelId!, new LockQuery().byObjectId(modelId));
+    const lockedModels = await IModelApp.iModelClient.locks.get(req, iModel.iModelId!, new LockQuery().byObjectId(modelId));
     if (lockedModels.length === 0 || lockedModels[0].lockLevel === undefined)
       return LockLevel.None;
     return lockedModels[0].lockLevel;

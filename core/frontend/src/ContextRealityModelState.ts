@@ -75,7 +75,7 @@ export class ContextRealityModelState {
     if (!accessToken)
       return false;
 
-    const client = new RealityModelTileClient(this.url, accessToken, this.iModel.iModelToken.contextId);
+    const client = new RealityModelTileClient(this.url, accessToken, this.iModel.contextId);
     const json = await client.getRootDocument(this.url);
     let tileTreeRange, tileTreeTransform;
     if (json === undefined ||

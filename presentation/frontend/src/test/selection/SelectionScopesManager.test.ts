@@ -31,7 +31,7 @@ describe("SelectionScopesManager", () => {
 
   beforeEach(() => {
     imodelMock.reset();
-    imodelMock.setup((x) => x.iModelToken).returns(() => imodelToken);
+    imodelMock.setup((x) => x.getRpcToken()).returns(() => imodelToken);
     rpcRequestsHandlerMock.reset();
     manager = undefined;
     managerProps = {

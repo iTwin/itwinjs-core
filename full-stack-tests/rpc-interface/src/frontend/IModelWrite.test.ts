@@ -32,9 +32,7 @@ describe("IModel Read/Write Connection", () => {
     const iModel: IModelConnection = await BriefcaseConnection.open(contextId, iModelId, openMode);
 
     expect(iModel).to.exist.and.be.not.empty;
-
-    const iModelToken = iModel.iModelToken;
-    expect(iModelToken).to.exist.and.be.not.empty;
+    expect(iModel.getRpcTokenProps()).to.exist.and.be.not.empty;
   });
   it("should successfully close an open read/write IModelConnection", async () => {
     const contextId = testContext.settings.writeIModel.projectId;

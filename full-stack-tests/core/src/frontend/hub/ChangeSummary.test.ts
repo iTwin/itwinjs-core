@@ -54,7 +54,7 @@ describe("ChangeSummary (#integration)", () => {
   // ###TODO AFFAN ???
   it.skip("Change cache file generation when attaching change cache", async () => {
     assert.exists(iModel);
-    await TestRpcInterface.getClient().deleteChangeCache(iModel.iModelToken.toJSON());
+    await TestRpcInterface.getClient().deleteChangeCache(iModel.getRpcTokenProps());
     await iModel.attachChangeCache();
     const changeSummaryRows: any[] = await executeQuery(iModel, "SELECT count(*) cnt FROM change.ChangeSummary");
     assert.equal(changeSummaryRows.length, 1);
@@ -72,8 +72,8 @@ describe("ChangeSummary (#integration)", () => {
 
     const testIModel: BriefcaseConnection = await BriefcaseConnection.open(testProjectId, testIModelId, OpenMode.ReadWrite);
     try {
-      await TestRpcInterface.getClient().deleteChangeCache(testIModel.iModelToken.toJSON());
-      await TestRpcInterface.getClient().extractChangeSummaries(testIModel.iModelToken.toJSON(), { currentChangeSetOnly: true });
+      await TestRpcInterface.getClient().deleteChangeCache(testIModel.getRpcTokenProps());
+      await TestRpcInterface.getClient().extractChangeSummaries(testIModel.getRpcTokenProps(), { currentChangeSetOnly: true });
       await testIModel.attachChangeCache();
 
       const changeSummaryRows: any[] = await executeQuery(testIModel, "SELECT count(*) cnt FROM change.ChangeSummary");

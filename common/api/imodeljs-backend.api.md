@@ -441,9 +441,12 @@ export class BriefcaseDb extends IModelDb {
     get briefcase(): BriefcaseEntry;
     // @internal
     static cancelDownloadBriefcase(iModelToken: IModelToken): boolean;
+    get changeSetId(): string;
+    set changeSetId(csId: string);
     close(requestContext: AuthorizedClientRequestContext, keepBriefcase?: KeepBriefcase): Promise<void>;
     // @beta
     get concurrencyControl(): ConcurrencyControl;
+    get contextId(): GuidString;
     static create(requestContext: AuthorizedClientRequestContext, contextId: string, iModelName: string, args: CreateIModelProps): Promise<BriefcaseDb>;
     // @internal
     static deleteBriefcase(requestContext: AuthorizedClientRequestContext, iModelToken: IModelToken): Promise<void>;
@@ -2282,6 +2285,7 @@ export abstract class IModelDb extends IModel {
     // @beta
     getMassProperties(requestContext: ClientRequestContext, props: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps>;
     getMetaData(classFullName: string): EntityMetaData;
+    get iModelId(): GuidString;
     importSchemas(requestContext: ClientRequestContext | AuthorizedClientRequestContext, schemaFileNames: string[]): Promise<void>;
     // @internal (undocumented)
     protected initializeIModelDb(): void;
@@ -2300,6 +2304,7 @@ export abstract class IModelDb extends IModel {
     get isStandalone(): boolean;
     // @internal
     isStandaloneDb(): this is StandaloneDb;
+    get key(): string;
     // @internal
     protected static logUsage(requestContext: AuthorizedClientRequestContext, contextId: string, iModelDb: IModelDb): Promise<void>;
     // (undocumented)

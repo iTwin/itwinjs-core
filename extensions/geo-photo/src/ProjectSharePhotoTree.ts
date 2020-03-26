@@ -76,7 +76,7 @@ export class PSPhotoFile extends PhotoFile {
     if (!this.geoLocation)
       return;
 
-    const auxFileInfo: GeoPhotoInfo = new GeoPhotoInfo (PhotoTree.PHOTOINFO_VERSION, this.geoLocation, this.gpsTrack ? this.gpsTrack : 0.0, this.takenTime ? this.takenTime : 0, (undefined === this.isPano) ? false : this.isPano,
+    const auxFileInfo: GeoPhotoInfo = new GeoPhotoInfo(PhotoTree.PHOTOINFO_VERSION, this.geoLocation, this.gpsTrack ? this.gpsTrack : 0.0, this.takenTime ? this.takenTime : 0, (undefined === this.isPano) ? false : this.isPano,
       this.thumbnail, this.correctionYaw, this.correctionPitch, this.correctionRoll, this.correctionDir);
     return this._treeHandler.saveFileInfo(this, auxFileInfo);
   }
@@ -141,8 +141,8 @@ export class ProjectShareHandler extends BasePhotoTreeHandler implements PhotoTr
    * Saves information regarding Photo as custom properties in Project Share for the specified file
    * @returns Updated ProjectShareFile
    */
-  public async saveFileInfo (file: PSPhotoFile, auxInfo: GeoPhotoInfo): Promise<void> {
-    return this.saveCustomInfo (this._context, this._iModel.iModelToken.contextId!, file, auxInfo);
+  public async saveFileInfo(file: PSPhotoFile, auxInfo: GeoPhotoInfo): Promise<void> {
+    return this.saveCustomInfo(this._context, this._iModel.contextId!, file, auxInfo);
   }
 
   /**
@@ -232,7 +232,7 @@ export class ProjectShareHandler extends BasePhotoTreeHandler implements PhotoTr
     let auxInfo = this.readCustomInfo(psFile);
     await BeDuration.wait(5);
     if (auxInfo === undefined || !this.validateCustomInfo(psFile, auxInfo))
-      auxInfo = await this.updateCustomInfo(this._context, this._iModel.iModelToken.contextId!, psFile);
+      auxInfo = await this.updateCustomInfo(this._context, this._iModel.contextId!, psFile);
 
     if (!auxInfo) {
       // tslint:disable-next-line:no-console
@@ -278,7 +278,7 @@ export class ProjectShareHandler extends BasePhotoTreeHandler implements PhotoTr
   /** Reads the contents (both folders and files) in specified folder */
   public async readFolderContents(folder: PhotoFolder, subFolders: boolean): Promise<FolderEntry[]> {
     const entries: FolderEntry[] = [];
-    const projectId = this._iModel.iModelToken.contextId;
+    const projectId = this._iModel.contextId;
     if (!projectId)
       return entries;
 
@@ -298,7 +298,7 @@ export class ProjectShareHandler extends BasePhotoTreeHandler implements PhotoTr
     let stopWatch: StopWatch | undefined;
     let nextET: number = 0;
     if (this._loadTracker) {
-      stopWatch = new StopWatch (undefined, true);
+      stopWatch = new StopWatch(undefined, true);
     }
     const files: ProjectShareFile[] = await this._projectShareClient.getFiles(this._context, projectId, new ProjectShareFileQuery().inFolder(folderId!));
     for (const thisFile of files) {

@@ -84,7 +84,7 @@ describe("PresentationRpcImpl", () => {
         keys: new KeySet([createRandomECInstanceKey(), createRandomECInstanceKey(), createRandomECInstanceKey()]),
       };
       defaultRpcParams = { clientId: faker.random.uuid() };
-      testData.imodelMock.setup((x: IModelDb) => x.iModelToken).returns(() => testData.imodelToken);
+      // testData.imodelMock.setup((x: IModelDb) => x.iModelToken).returns(() => testData.imodelToken); // WIP: not sure what to do here?
       IModelDb.findByKey = () => testData.imodelMock.object;
       impl = new PresentationRpcImpl();
       const requestContext = new ClientRequestContext();

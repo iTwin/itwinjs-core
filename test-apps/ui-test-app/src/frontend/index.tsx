@@ -356,7 +356,7 @@ export class SampleAppIModelApp {
 
   public static async showIModelIndex(contextId: string, iModelId: string) {
     const currentConnection = UiFramework.getIModelConnection();
-    if (!currentConnection || (currentConnection.iModelToken.iModelId !== iModelId)) {
+    if (!currentConnection || (currentConnection.iModelId !== iModelId)) {
       // Close the current iModelConnection
       await SampleAppIModelApp.closeCurrentIModel();
 

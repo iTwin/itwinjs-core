@@ -39,7 +39,7 @@ describe("PresentationManager", () => {
 
   beforeEach(() => {
     mockI18N();
-    testData.imodelMock.setup((x) => x.iModelToken).returns(() => testData.imodelToken);
+    testData.imodelMock.setup((x) => x.getRpcToken()).returns(() => testData.imodelToken);
     testData.pageOptions = { start: faker.random.number(), size: faker.random.number() };
     testData.rulesetId = faker.random.uuid();
     rpcRequestsHandlerMock = moq.Mock.ofType<RpcRequestsHandler>();

@@ -3031,22 +3031,35 @@ export class ImdlHeader extends TileHeader {
 // @public
 export abstract class IModel implements IModelProps {
     // @internal
-    protected constructor(iModelToken?: IModelToken);
+    protected constructor(iModelToken: IModelToken | undefined, openMode: OpenMode);
     cartographicToSpatialFromEcef(cartographic: Cartographic, result?: Point3d): Point3d;
+    // (undocumented)
+    get changeSetId(): string | undefined;
+    // (undocumented)
+    get contextId(): GuidString | undefined;
     static readonly dictionaryId: Id64String;
     get ecefLocation(): EcefLocation | undefined;
     ecefToSpatial(ecef: XYAndZ, result?: Point3d): Point3d;
     static getDefaultSubCategoryId(categoryId: Id64String): Id64String;
     getEcefTransform(): Transform;
+    // @internal @deprecated (undocumented)
+    getRpcToken(): IModelToken;
+    getRpcTokenProps(): IModelTokenProps;
     get globalOrigin(): Point3d;
     set globalOrigin(org: Point3d);
-    get iModelToken(): IModelToken;
+    // (undocumented)
+    get iModelId(): GuidString | undefined;
     // @internal (undocumented)
     protected initialize(name: string, props: IModelProps): void;
     abstract get isBriefcase(): boolean;
     get isGeoLocated(): boolean;
+    // (undocumented)
+    abstract get isOpen(): boolean;
     abstract get isSnapshot(): boolean;
+    // (undocumented)
+    get key(): string | undefined;
     name: string;
+    readonly openMode: OpenMode;
     get projectExtents(): AxisAlignedBox3d;
     set projectExtents(extents: AxisAlignedBox3d);
     static readonly repositoryModelId: Id64String;
@@ -3182,9 +3195,9 @@ export function iModelTileTreeIdToString(modelId: Id64String, treeId: IModelTile
 export class IModelToken implements IModelTokenProps {
     constructor(key: string, contextId?: string, iModelid?: string, changesetId?: string, openMode?: OpenMode);
     changeSetId?: string;
-    readonly contextId?: string;
+    readonly contextId?: GuidString;
     static fromJSON(props: IModelTokenProps): IModelToken;
-    readonly iModelId?: string;
+    readonly iModelId?: GuidString;
     readonly key: string;
     openMode?: OpenMode;
     toJSON(): IModelTokenProps;
@@ -3193,8 +3206,8 @@ export class IModelToken implements IModelTokenProps {
 // @public
 export interface IModelTokenProps {
     changeSetId?: string;
-    readonly contextId?: string;
-    readonly iModelId?: string;
+    readonly contextId?: GuidString;
+    readonly iModelId?: GuidString;
     readonly key: string;
     openMode?: OpenMode;
 }

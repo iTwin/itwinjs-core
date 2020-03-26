@@ -6,30 +6,30 @@
  * @module iModels
  */
 
-import { GuidString, Id64, Id64String, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
+import { GuidString, Id64, Id64String, IModelStatus, OpenMode, Logger } from "@bentley/bentleyjs-core";
 import { AxisOrder, Matrix3d, Point3d, Range3dProps, Transform, Vector3d, XYAndZ, XYZProps, YawPitchRollAngles, YawPitchRollProps, Range3d, Angle, AxisIndex } from "@bentley/geometry-core";
 import { Cartographic } from "./geometry/Cartographic";
 import { AxisAlignedBox3d } from "./geometry/Placement";
 import { IModelError } from "./IModelError";
 import { ThumbnailProps } from "./Thumbnail";
 
-/** The properties of IModelToken.
+/** The properties that identify a specific instance of an iModel for RPC operations.
  * @public
  */
 export interface IModelTokenProps {
   /** Key used for identifying the iModel on the backend */
   readonly key: string;
   /** Context (Project, Asset, or other infrastructure) in which the iModel exists - must be defined if the iModel exists in the Hub or in a non-Connect infrastructure. */
-  readonly contextId?: string;
+  readonly contextId?: GuidString;
   /** Guid of the iModel - must be defined if the iModel exists in the Hub */
-  readonly iModelId?: string;
+  readonly iModelId?: GuidString;
   /** Id of the last ChangeSet that was applied to the iModel - must be defined if the iModel exists in the Hub. An empty string indicates the first version */
   changeSetId?: string;
   /** Mode used to open the iModel */
   openMode?: OpenMode;
 }
 
-/** A token that identifies a specific instance of an iModel to be operated on
+/** A token that identifies a specific instance of an iModel for RPC operations.
  * @public
  */
 export class IModelToken implements IModelTokenProps {
@@ -40,9 +40,9 @@ export class IModelToken implements IModelTokenProps {
   /** Key used for identifying the iModel on the backend */
   public readonly key: string;
   /** Context (Project, Asset, or other infrastructure) in which the iModel exists - must be defined if the iModel exists in the Hub or in a non-Connect infrastructure. */
-  public readonly contextId?: string;
+  public readonly contextId?: GuidString;
   /** Guid of the iModel - must be defined if the iModel exists in the Hub */
-  public readonly iModelId?: string;
+  public readonly iModelId?: GuidString;
   /** Id of the last ChangeSet that was applied to the iModel - must be defined if the iModel exists in the Hub. An empty string indicates the first version */
   public changeSetId?: string;
   /** Mode used to open the iModel */
@@ -218,6 +218,8 @@ export abstract class IModel implements IModelProps {
   /** Returns `true` if this is a briefcase copy of an iModel that is synchronized with iModelHub. */
   public abstract get isBriefcase(): boolean;
 
+  public abstract get isOpen(): boolean;
+
   private _projectExtents!: AxisAlignedBox3d;
   /**
    * The volume, in spatial coordinates, inside which the entire project is contained.
@@ -255,18 +257,52 @@ export abstract class IModel implements IModelProps {
     out.projectExtents = this.projectExtents.toJSON();
     out.globalOrigin = this.globalOrigin.toJSON();
     out.ecefLocation = this.ecefLocation;
-    out.iModelToken = this.iModelToken;
+    // WIP - add contextId, iModelId, changeSetId?
+    out.iModelToken = this.getRpcTokenProps();
     return out;
   }
+
+  public get key(): string | undefined { return this._token?.key; } // WIP: should not return `undefined`
+  public get contextId(): GuidString | undefined { return this._token?.contextId; }
+  public get iModelId(): GuidString | undefined { return this._token?.iModelId; }
+  public get changeSetId(): string | undefined { return this._token?.changeSetId; }
+
+  /** The [[OpenMode]] used for this IModelConnection. */
+  public readonly openMode: OpenMode;
 
   /** @internal */
   protected _token?: IModelToken;
 
-  /** The token that can be used to find this iModel instance. */
-  public get iModelToken(): IModelToken { return this._token!; }
+  /** Return a token that can be used to identify this iModel for RPC operations. */
+  public getRpcTokenProps(): IModelTokenProps {
+    if ((undefined === this._token) || !this.isOpen) {
+      throw new IModelError(IModelStatus.BadRequest, "Could not generate valid IModelTokenProps", Logger.logError);
+    }
+    return {
+      key: this.key!, // WIP: should not need the !
+      contextId: this.contextId,
+      iModelId: this.iModelId,
+      changeSetId: this.changeSetId,
+      openMode: this.openMode,
+    };
+  }
+
+  /**
+   * @deprecated use [[getRpcTokenProps]] instead
+   * @internal
+   */
+  public getRpcToken(): IModelToken {
+    if ((undefined === this._token) || !this.isOpen) {
+      throw new IModelError(IModelStatus.BadRequest, "Could not get IModelToken", Logger.logError);
+    }
+    return this._token;
+  }
 
   /** @internal */
-  protected constructor(iModelToken?: IModelToken) { this._token = iModelToken; }
+  protected constructor(iModelToken: IModelToken | undefined, openMode: OpenMode) {
+    this._token = iModelToken;
+    this.openMode = openMode;
+  }
 
   /** @internal */
   protected initialize(name: string, props: IModelProps) {
@@ -301,8 +337,7 @@ export abstract class IModel implements IModelProps {
     return this._ecefTrans;
   }
 
-  /**
-   * Convert a point in this iModel's Spatial coordinates to an ECEF point using its [[IModel.ecefLocation]].
+  /** Convert a point in this iModel's Spatial coordinates to an ECEF point using its [[IModel.ecefLocation]].
    * @param spatial A point in the iModel's spatial coordinates
    * @param result If defined, use this for output
    * @returns A Point3d in ECEF coordinates
@@ -310,8 +345,7 @@ export abstract class IModel implements IModelProps {
    */
   public spatialToEcef(spatial: XYAndZ, result?: Point3d): Point3d { return this.getEcefTransform().multiplyPoint3d(spatial, result)!; }
 
-  /**
-   * Convert a point in ECEF coordinates to a point in this iModel's Spatial coordinates using its [[ecefLocation]].
+  /** Convert a point in ECEF coordinates to a point in this iModel's Spatial coordinates using its [[ecefLocation]].
    * @param ecef A point in ECEF coordinates
    * @param result If defined, use this for output
    * @returns A Point3d in this iModel's spatial coordinates
@@ -320,8 +354,7 @@ export abstract class IModel implements IModelProps {
    */
   public ecefToSpatial(ecef: XYAndZ, result?: Point3d): Point3d { return this.getEcefTransform().multiplyInversePoint3d(ecef, result)!; }
 
-  /**
-   * Convert a point in this iModel's Spatial coordinates to a [[Cartographic]] using its [[IModel.ecefLocation]].
+  /** Convert a point in this iModel's Spatial coordinates to a [[Cartographic]] using its [[IModel.ecefLocation]].
    * @param spatial A point in the iModel's spatial coordinates
    * @param result If defined, use this for output
    * @returns A Cartographic location
@@ -329,8 +362,7 @@ export abstract class IModel implements IModelProps {
    */
   public spatialToCartographicFromEcef(spatial: XYAndZ, result?: Cartographic): Cartographic { return Cartographic.fromEcef(this.spatialToEcef(spatial), result)!; }
 
-  /**
-   * Convert a [[Cartographic]] to a point in this iModel's Spatial coordinates using its [[IModel.ecefLocation]].
+  /** Convert a [[Cartographic]] to a point in this iModel's Spatial coordinates using its [[IModel.ecefLocation]].
    * @param cartographic A cartographic location
    * @param result If defined, use this for output
    * @returns A point in this iModel's spatial coordinates

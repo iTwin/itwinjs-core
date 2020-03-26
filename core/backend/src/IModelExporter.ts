@@ -590,7 +590,7 @@ class ChangedInstanceIds {
     requestContext.enter();
     const changedInstanceIds = new ChangedInstanceIds();
     changeSets.forEach((changeSet: ChangeSet): void => {
-      const changeSetPath: string = path.join(BriefcaseManager.getChangeSetsPath(iModelDb.iModelToken.iModelId!), changeSet.fileName!);
+      const changeSetPath: string = path.join(BriefcaseManager.getChangeSetsPath(iModelDb.iModelId), changeSet.fileName!);
       const statusOrResult: IModelJsNative.ErrorStatusOrResult<IModelStatus, any> = iModelDb.nativeDb.extractChangedInstanceIdsFromChangeSet(changeSetPath);
       if (undefined !== statusOrResult.error) {
         throw new IModelError(statusOrResult.error.status, "Error processing changeSet", Logger.logError, loggerCategory);
