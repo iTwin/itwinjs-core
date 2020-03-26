@@ -112,8 +112,8 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
 
   public abstract get wantInvertBlackBackground(): boolean;
 
-  public abstract get animationFraction(): number;
-  public abstract set animationFraction(fraction: number);
+  public abstract get analysisFraction(): number;
+  public abstract set analysisFraction(fraction: number);
 
   public get animationBranches(): AnimationBranchStates | undefined { return undefined; }
   public set animationBranches(_transforms: AnimationBranchStates | undefined) { }

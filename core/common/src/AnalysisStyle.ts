@@ -11,7 +11,6 @@ import {
   Range1dProps,
 } from "@bentley/geometry-core";
 import { Gradient } from "./Gradient";
-import { RenderTexture } from "./RenderTexture";
 
 /** Properties for display of analysis data
  * @alpha
@@ -37,7 +36,6 @@ export class AnalysisStyle implements AnalysisStyleProps {
   public scalarRange?: Range1d;
   public scalarThematicSettings?: Gradient.ThematicSettings;
   public inputRange?: Range1d;
-  public scalarThematicTexture?: RenderTexture;
 
   public static fromJSON(json?: AnalysisStyleProps) {
     const result = new AnalysisStyle();
@@ -53,6 +51,19 @@ export class AnalysisStyle implements AnalysisStyleProps {
     result.scalarThematicSettings = json.scalarThematicSettings ? Gradient.ThematicSettings.fromJSON(json.scalarThematicSettings) : undefined;
     result.inputRange = json.inputRange ? Range1d.fromJSON(json.inputRange) : undefined;
     return result;
+  }
+
+  public toJSON(): AnalysisStyleProps {
+    return {
+      inputName: this.inputName,
+      displacementChannelName: this.displacementChannelName,
+      scalarChannelName: this.scalarChannelName,
+      normalChannelName: this.normalChannelName,
+      displacementScale: this.displacementScale,
+      scalarRange: this.scalarRange?.toJSON(),
+      scalarThematicSettings: this.scalarThematicSettings?.toJSON(),
+      inputRange: this.inputRange?.toJSON(),
+    };
   }
 
   public copyFrom(source: AnalysisStyle) {

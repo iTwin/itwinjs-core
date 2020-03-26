@@ -130,7 +130,7 @@ export class AnalysisStyle implements AnalysisStyleProps {
     // (undocumented)
     scalarThematicSettings?: Gradient.ThematicSettings;
     // (undocumented)
-    scalarThematicTexture?: RenderTexture;
+    toJSON(): AnalysisStyleProps;
 }
 
 // @alpha
@@ -1441,6 +1441,12 @@ export class DisplayStyleSettings {
         styles?: DisplayStyleSettingsProps;
     });
     addExcludedElements(id: Id64String): void;
+    // @alpha (undocumented)
+    get analysisFraction(): number;
+    set analysisFraction(fraction: number);
+    // @alpha
+    get analysisStyle(): AnalysisStyle | undefined;
+    set analysisStyle(style: AnalysisStyle | undefined);
     get backgroundColor(): ColorDef;
     set backgroundColor(color: ColorDef);
     get backgroundMap(): BackgroundMapSettings;
@@ -1457,7 +1463,12 @@ export class DisplayStyleSettings {
     get monochromeColor(): ColorDef;
     set monochromeColor(color: ColorDef);
     overrideSubCategory(id: Id64String, ovr: SubCategoryOverride): void;
+    // @internal (undocumented)
+    get scheduleScriptProps(): RenderSchedule.ModelTimelineProps[] | undefined;
+    set scheduleScriptProps(props: RenderSchedule.ModelTimelineProps[] | undefined);
     get subCategoryOverrides(): Map<Id64String, SubCategoryOverride>;
+    get timePoint(): number | undefined;
+    set timePoint(timePoint: number | undefined);
     // @internal (undocumented)
     toJSON(): DisplayStyleSettingsProps;
     get viewFlags(): ViewFlags;
@@ -1466,6 +1477,8 @@ export class DisplayStyleSettings {
 
 // @public
 export interface DisplayStyleSettingsProps {
+    // @alpha
+    analysisFraction?: number;
     // @alpha
     analysisStyle?: AnalysisStyleProps;
     backgroundColor?: ColorDefProps;
@@ -1476,6 +1489,8 @@ export interface DisplayStyleSettingsProps {
     // @beta
     scheduleScript?: RenderSchedule.ModelTimelineProps[];
     subCategoryOvr?: DisplayStyleSubCategoryProps[];
+    // @beta
+    timePoint?: number;
     // (undocumented)
     viewflags?: ViewFlagProps;
 }
@@ -2544,7 +2559,7 @@ export namespace Gradient {
         thematicSettings?: ThematicSettingsProps;
         tint?: number;
     }
-    // @internal (undocumented)
+    // (undocumented)
     export enum ThematicColorScheme {
         // (undocumented)
         BlueRed = 0,
@@ -2574,7 +2589,7 @@ export namespace Gradient {
         // (undocumented)
         clone(out?: ThematicSettings): ThematicSettings;
         // (undocumented)
-        colorScheme: number;
+        colorScheme: ThematicColorScheme;
         // (undocumented)
         static get contentMax(): number;
         // (undocumented)
@@ -2600,11 +2615,13 @@ export namespace Gradient {
         rangeLow: number;
         // (undocumented)
         stepCount: number;
+        // (undocumented)
+        toJSON(): ThematicSettingsProps;
     }
     // (undocumented)
     export interface ThematicSettingsProps {
         // (undocumented)
-        colorScheme: number;
+        colorScheme: ThematicColorScheme;
         // (undocumented)
         marginColor: ColorDefProps;
         // (undocumented)

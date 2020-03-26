@@ -14,8 +14,8 @@ import { ViewRect } from "./ViewRect";
  * @internal
  */
 export class NullTarget extends RenderTarget {
-  public get animationFraction(): number { return 0; }
-  public set animationFraction(_fraction: number) { }
+  public get analysisFraction(): number { return 0; }
+  public set analysisFraction(_fraction: number) { }
   public get renderSystem() { return undefined as any; }
   public get viewRect(): ViewRect { return new ViewRect(); }
   public get wantInvertBlackBackground(): boolean { return false; }

@@ -32,7 +32,10 @@ import {
   ColorDef,
   ColorDefProps,
 } from "./ColorDef";
-import { AnalysisStyleProps } from "./AnalysisStyle";
+import {
+  AnalysisStyle,
+  AnalysisStyleProps,
+} from "./AnalysisStyle";
 import { RenderSchedule } from "./RenderSchedule";
 import {
   BackgroundMapProps,
@@ -85,10 +88,19 @@ export interface DisplayStyleSettingsProps {
    * @alpha
    */
   analysisStyle?: AnalysisStyleProps;
+  /** A floating point value in [0..1] representing the animation state of this style's [[analysisStyle]]. Default: 0.0.
+   * @alpha
+   */
+  analysisFraction?: number;
   /** Schedule script
    * @beta
    */
   scheduleScript?: RenderSchedule.ModelTimelineProps[];
+  /** The point in time reflected by the view, in UNIX milliseconds.
+   * This identifies a point on the timeline of the [[scheduleScript]], if any; it may also affect display of four-dimensional reality models.
+   * @beta
+   */
+  timePoint?: number;
   /** Overrides applied to the appearances of subcategories in the view. */
   subCategoryOvr?: DisplayStyleSubCategoryProps[];
   /** Settings controlling display of map imagery within views of geolocated models. */
@@ -167,6 +179,7 @@ export class DisplayStyleSettings {
   private readonly _subCategoryOverrides: Map<Id64String, SubCategoryOverride> = new Map<Id64String, SubCategoryOverride>();
   private readonly _excludedElements: Set<Id64String> = new Set<Id64String>();
   private _backgroundMap: BackgroundMapSettings;
+  private _analysisStyle?: AnalysisStyle;
 
   /** Construct a new DisplayStyleSettings from an [[ElementProps.jsonProperties]].
    * @param jsonProperties An object with an optional `styles` property containing a display style's settings.
@@ -183,6 +196,9 @@ export class DisplayStyleSettings {
     this._background = ColorDef.fromJSON(this._json.backgroundColor);
     this._monochrome = undefined !== this._json.monochromeColor ? ColorDef.fromJSON(this._json.monochromeColor) : ColorDef.white.clone();
     this._backgroundMap = BackgroundMapSettings.fromJSON(this._json.backgroundMap);
+
+    if (this._json.analysisStyle)
+      this._analysisStyle = AnalysisStyle.fromJSON(this._json.analysisStyle);
 
     const ovrsArray = JsonUtils.asArray(this._json.subCategoryOvr);
     if (undefined !== ovrsArray) {
@@ -245,6 +261,49 @@ export class DisplayStyleSettings {
       this._backgroundMap = map; // it's an immutable type.
       this._json.backgroundMap = map.toJSON();
     }
+  }
+
+  /** @internal */
+  public get scheduleScriptProps(): RenderSchedule.ModelTimelineProps[] | undefined {
+    return this._json.scheduleScript;
+  }
+  public set scheduleScriptProps(props: RenderSchedule.ModelTimelineProps[] | undefined) {
+    this._json.scheduleScript = props;
+  }
+
+  /** The point in time reflected by the view, in UNIX milliseconds.
+   * This identifies a point on the timeline of the [[scheduleScript]], if any; it may also affect display of four-dimensional reality models.
+   * @beta
+   */
+  public get timePoint(): number | undefined {
+    return this._json.timePoint;
+  }
+  public set timePoint(timePoint: number | undefined) {
+    this._json.timePoint = timePoint;
+  }
+
+  /** Settings controlling the display of analytical models.
+   * @note Do not modify this object directly. Instead, create a clone and pass it to the setter.
+   * @alpha
+   */
+  public get analysisStyle(): AnalysisStyle | undefined { return this._analysisStyle; }
+  public set analysisStyle(style: AnalysisStyle | undefined) {
+    if (!style) {
+      this._json.analysisStyle = undefined;
+      this._analysisStyle = undefined;
+      return;
+    }
+    this._analysisStyle = style.clone(this._analysisStyle);
+    this._json.analysisStyle = style.toJSON();
+  }
+
+  /** @alpha */
+  public get analysisFraction(): number {
+    const fraction = this._json.analysisFraction ?? 0;
+    return Math.max(0, Math.min(1, fraction));
+  }
+  public set analysisFraction(fraction: number) {
+    this._json.analysisFraction = Math.max(0, Math.min(1, fraction));
   }
 
   /** Customize the way geometry belonging to a [[SubCategory]] is drawn by this display style.

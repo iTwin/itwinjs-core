@@ -1010,6 +1010,8 @@ export class AnimationBranchState {
     // (undocumented)
     readonly clip?: RenderClipVolume;
     // (undocumented)
+    dispose(): void;
+    // (undocumented)
     readonly omit?: boolean;
     // (undocumented)
     readonly transform?: Transform;
@@ -2058,8 +2060,6 @@ export class DisplayStyle3dState extends DisplayStyleState {
 // @public
 export abstract class DisplayStyleState extends ElementState implements DisplayStyleProps {
     constructor(props: DisplayStyleProps, iModel: IModelConnection);
-    get analysisStyle(): AnalysisStyle | undefined;
-    set analysisStyle(style: AnalysisStyle | undefined);
     // @internal (undocumented)
     attachRealityModel(props: ContextRealityModelProps): void;
     get backgroundColor(): ColorDef;
@@ -5234,8 +5234,8 @@ export namespace MockRender {
     export abstract class Target extends RenderTarget {
         protected constructor(_system: System);
         // (undocumented)
-        get animationFraction(): number;
-        set animationFraction(_fraction: number);
+        get analysisFraction(): number;
+        set analysisFraction(_fraction: number);
         // (undocumented)
         changeDecorations(_decs: Decorations): void;
         // (undocumented)
@@ -5453,11 +5453,11 @@ export class NullRenderSystem extends RenderSystem {
 // @internal
 export class NullTarget extends RenderTarget {
     // (undocumented)
+    get analysisFraction(): number;
+    set analysisFraction(_fraction: number);
+    // (undocumented)
     get animationBranches(): AnimationBranchStates | undefined;
     set animationBranches(_branches: AnimationBranchStates | undefined);
-    // (undocumented)
-    get animationFraction(): number;
-    set animationFraction(_fraction: number);
     // (undocumented)
     changeDecorations(): void;
     // (undocumented)
@@ -6465,6 +6465,8 @@ export namespace RenderScheduleState {
     export class ColorEntry extends TimelineEntry implements RenderSchedule.ColorEntryProps {
         constructor(props: RenderSchedule.ColorEntryProps);
         // (undocumented)
+        toJSON(): RenderSchedule.ColorEntryProps;
+        // (undocumented)
         value: {
             red: number;
             green: number;
@@ -6474,6 +6476,8 @@ export namespace RenderScheduleState {
     // (undocumented)
     export class CuttingPlaneEntry extends TimelineEntry implements RenderSchedule.CuttingPlaneEntryProps {
         constructor(props: RenderSchedule.CuttingPlaneEntryProps);
+        // (undocumented)
+        toJSON(): RenderSchedule.CuttingPlaneEntryProps;
         // (undocumented)
         value: RenderSchedule.CuttingPlaneProps;
     }
@@ -6493,6 +6497,8 @@ export namespace RenderScheduleState {
         getSymbologyOverrides(overrides: FeatureSymbology.Overrides, time: number, interval: Interval, batchId: number, elementIds: Id64String[]): void;
         // (undocumented)
         get isValid(): boolean;
+        // (undocumented)
+        toJSON(): RenderSchedule.ElementTimelineProps;
     }
     // (undocumented)
     export class Interval {
@@ -6509,13 +6515,13 @@ export namespace RenderScheduleState {
     // (undocumented)
     export class ModelTimeline extends Timeline implements RenderSchedule.ModelTimelineProps {
         // (undocumented)
+        computeDuration(): Range1d;
+        // (undocumented)
         containsElementAnimation: boolean;
         // (undocumented)
         containsFeatureOverrides: boolean;
         // (undocumented)
         containsModelAnimation: boolean;
-        // (undocumented)
-        get duration(): Range1d;
         // (undocumented)
         elementTimelines: ElementTimeline[];
         // (undocumented)
@@ -6526,10 +6532,16 @@ export namespace RenderScheduleState {
         getSymbologyOverrides(overrides: FeatureSymbology.Overrides, time: number): void;
         // (undocumented)
         modelId: Id64String;
+        // (undocumented)
+        realityModelUrl?: string;
+        // (undocumented)
+        toJSON(): RenderSchedule.ModelTimelineProps;
     }
     // (undocumented)
     export class Script {
-        constructor(displayStyleId: Id64String, iModel: IModelConnection);
+        constructor(displayStyleId: Id64String);
+        // (undocumented)
+        computeDuration(): Range1d;
         // (undocumented)
         containsElementAnimation: boolean;
         // (undocumented)
@@ -6539,9 +6551,7 @@ export namespace RenderScheduleState {
         // (undocumented)
         displayStyleId: Id64String;
         // (undocumented)
-        get duration(): Range1d;
-        // (undocumented)
-        static fromJSON(displayStyleId: Id64String, iModel: IModelConnection, modelTimelines: RenderSchedule.ModelTimelineProps[]): Script | undefined;
+        static fromJSON(displayStyleId: Id64String, modelTimelines: RenderSchedule.ModelTimelineProps[]): Script | undefined;
         // (undocumented)
         getAnimationBranches(scheduleTime: number): AnimationBranchStates | undefined;
         // (undocumented)
@@ -6549,20 +6559,18 @@ export namespace RenderScheduleState {
         // (undocumented)
         getSymbologyOverrides(overrides: FeatureSymbology.Overrides, time: number): void;
         // (undocumented)
-        iModel: IModelConnection;
-        // (undocumented)
         modelTimelines: ModelTimeline[];
+        // (undocumented)
+        toJSON(): RenderSchedule.ModelTimelineProps[];
     }
     // (undocumented)
     export class Timeline implements RenderSchedule.TimelineProps {
         // (undocumented)
         colorTimeline?: ColorEntry[];
         // (undocumented)
-        currentClip?: RenderClipVolume;
+        computeDuration(): Range1d;
         // (undocumented)
         cuttingPlaneTimeline?: CuttingPlaneEntry[];
-        // (undocumented)
-        get duration(): Range1d;
         // (undocumented)
         extractTimelinesFromJSON(json: RenderSchedule.TimelineProps): void;
         // (undocumented)
@@ -6576,6 +6584,8 @@ export namespace RenderScheduleState {
         // (undocumented)
         getVisibilityOverride(time: number, interval: Interval): number;
         // (undocumented)
+        toJSON(): RenderSchedule.TimelineProps;
+        // (undocumented)
         transformTimeline?: TransformEntry[];
         // (undocumented)
         visibilityTimeline?: VisibilityEntry[];
@@ -6587,16 +6597,22 @@ export namespace RenderScheduleState {
         interpolation: number;
         // (undocumented)
         time: number;
+        // (undocumented)
+        toJSON(): RenderSchedule.TimelineEntryProps;
     }
     // (undocumented)
     export class TransformEntry extends TimelineEntry implements RenderSchedule.TransformEntryProps {
         constructor(props: RenderSchedule.TransformEntryProps);
+        // (undocumented)
+        toJSON(): RenderSchedule.TransformEntryProps;
         // (undocumented)
         value: RenderSchedule.TransformProps;
     }
     // (undocumented)
     export class VisibilityEntry extends TimelineEntry implements RenderSchedule.VisibilityEntryProps {
         constructor(props: RenderSchedule.VisibilityEntryProps);
+        // (undocumented)
+        toJSON(): RenderSchedule.VisibilityEntryProps;
         // (undocumented)
         value: number;
     }
@@ -6726,11 +6742,11 @@ export interface RenderSystemDebugControl {
 // @internal
 export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer {
     // (undocumented)
+    abstract get analysisFraction(): number;
+    abstract set analysisFraction(fraction: number);
+    // (undocumented)
     get animationBranches(): AnimationBranchStates | undefined;
     set animationBranches(_transforms: AnimationBranchStates | undefined);
-    // (undocumented)
-    abstract get animationFraction(): number;
-    abstract set animationFraction(fraction: number);
     // (undocumented)
     abstract changeDecorations(decorations: Decorations): void;
     // (undocumented)
@@ -7866,15 +7882,15 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     ambientOcclusionSettings: AmbientOcclusion.Settings;
     // (undocumented)
+    get analysisFraction(): number;
+    set analysisFraction(fraction: number);
+    // (undocumented)
     analysisStyle?: AnalysisStyle;
     // (undocumented)
     analysisTexture?: RenderTexture;
     // (undocumented)
     get animationBranches(): AnimationBranchStates | undefined;
     set animationBranches(branches: AnimationBranchStates | undefined);
-    // (undocumented)
-    get animationFraction(): number;
-    set animationFraction(fraction: number);
     // (undocumented)
     protected abstract _assignDC(): boolean;
     // (undocumented)
@@ -10224,6 +10240,9 @@ export abstract class Viewport implements IDisposable {
     addTiledGraphicsProvider(provider: TiledGraphicsProvider): void;
     addViewedModels(models: Id64Arg): Promise<void>;
     get alwaysDrawn(): Id64Set | undefined;
+    // @alpha (undocumented)
+    get analysisFraction(): number;
+    set analysisFraction(fraction: number);
     // @internal (undocumented)
     get analysisStyle(): AnalysisStyle | undefined;
     // @internal
@@ -10404,13 +10423,6 @@ export abstract class Viewport implements IDisposable {
     get rotation(): Matrix3d;
     // @internal (undocumented)
     protected _sceneValid: boolean;
-    // @internal (undocumented)
-    get scheduleScriptFraction(): number;
-    set scheduleScriptFraction(fraction: number);
-    // @internal (undocumented)
-    protected _scheduleScriptFractionValid: boolean;
-    // @internal (undocumented)
-    get scheduleTime(): number;
     scroll(screenDist: XAndY, options?: ViewChangeOptions): void;
     setAlwaysDrawn(ids: Id64Set, exclusive?: boolean): void;
     // @beta
@@ -10439,6 +10451,9 @@ export abstract class Viewport implements IDisposable {
     get target(): RenderTarget;
     // @alpha
     get tileSizeModifier(): number;
+    // @beta
+    get timePoint(): number | undefined;
+    set timePoint(time: number | undefined);
     // @internal (undocumented)
     toViewOrientation(from: XYZ, to?: XYZ): void;
     turnCameraOn(lensAngle?: Angle): ViewStatus;

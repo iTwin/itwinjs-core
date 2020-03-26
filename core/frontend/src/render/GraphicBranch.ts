@@ -91,7 +91,16 @@ export class AnimationBranchState {
   public readonly omit?: boolean;
   public readonly transform?: Transform;
   public readonly clip?: RenderClipVolume;
-  constructor(transform?: Transform, clip?: RenderClipVolume, omit?: boolean) { this.transform = transform; this.clip = clip; this.omit = omit; }
+  constructor(transform?: Transform, clip?: RenderClipVolume, omit?: boolean) {
+    this.transform = transform;
+    this.clip = clip;
+    this.omit = omit;
+  }
+
+  public dispose(): void {
+    if (this.clip)
+      this.clip.dispose();
+  }
 }
 
 /** Mapping from node/branch IDs to animation branch state

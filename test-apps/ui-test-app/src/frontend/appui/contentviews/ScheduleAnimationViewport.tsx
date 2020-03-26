@@ -60,10 +60,6 @@ class ScheduleAnimationViewport extends React.Component<ScheduleAnimationViewpor
   }
 
   public componentWillUnmount() {
-    const activeContentControl = ContentViewManager.getActiveContentControl();
-    if (activeContentControl && activeContentControl.viewport) {
-      activeContentControl.viewport.scheduleScriptFraction = 0;
-    }
   }
 
   private async _getView() {

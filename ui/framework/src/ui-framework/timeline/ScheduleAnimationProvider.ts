@@ -27,17 +27,15 @@ export class ScheduleAnimationTimelineDataProvider extends BaseTimelineDataProvi
   }
 
   public async loadTimelineData(): Promise<boolean> {
-    if (this._viewport)
-      this.animationFraction = this._viewport.scheduleScriptFraction;
-
-    if (this.supportsTimelineAnimation && this._viewState.scheduleScript) {
+    const script = this._viewState.scheduleScript;
+    if (this.supportsTimelineAnimation && script) {
       // for now just initial settings
       this.updateSettings({
         duration: 20 * 1000,      // this is playback duration
         loop: true,
       });
 
-      const timeRange = this._viewState.scheduleScript!.duration;
+      const timeRange = script.computeDuration();
       this.start = new Date(timeRange.low * 1000);
       this.end = new Date(timeRange.high * 1000);
 
@@ -47,6 +45,13 @@ export class ScheduleAnimationTimelineDataProvider extends BaseTimelineDataProvi
       milestones.push({ id: "2", label: "2nd Floor Concrete", date: new Date(this.end.getTime() - quarter), readonly: true });
       this._milestones = milestones;
 
+      if (this._viewport) {
+        if (this._viewport.timePoint)
+          this.animationFraction = (this._viewport.timePoint - timeRange.low) / timeRange.length();
+        else
+          this.animationFraction = 0;
+      }
+
       return Promise.resolve(true);
     }
 
@@ -55,8 +60,11 @@ export class ScheduleAnimationTimelineDataProvider extends BaseTimelineDataProvi
 
   public onAnimationFractionChanged = (animationFraction: number) => {
     this.animationFraction = animationFraction;
-    if (this._viewport)
-      this._viewport.scheduleScriptFraction = animationFraction;
+    if (this._viewport) {
+      const script = this._viewport.displayStyle.scheduleScript;
+      if (script)
+        this._viewport.timePoint = script.computeDuration().fractionToPoint(animationFraction);
+    }
   }
 
   public onPlaybackSettingChanged = (settings: PlaybackSettings) => {

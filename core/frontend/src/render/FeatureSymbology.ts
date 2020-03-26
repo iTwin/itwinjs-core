@@ -514,9 +514,6 @@ export namespace FeatureSymbology {
       if (undefined !== viewport.alwaysDrawn)
         this.setAlwaysDrawnSet(viewport.alwaysDrawn, viewport.isAlwaysDrawnExclusive);
 
-      if (undefined !== view.scheduleScript)
-        view.scheduleScript.getSymbologyOverrides(this, viewport.scheduleTime);
-
       if (undefined !== viewport.featureOverrideProvider)
         viewport.featureOverrideProvider.addFeatureOverrides(this, viewport);
 
@@ -560,6 +557,11 @@ export namespace FeatureSymbology {
           }
         }
       }
+
+      const style = view.displayStyle;
+      const script = style.scheduleScript;
+      if (script)
+        script.getSymbologyOverrides(this, style.settings.timePoint ?? 0);
 
       if (!view.is3d())
         return;

@@ -20,7 +20,6 @@ import {
   DisplayStyle3dSettings,
   BackgroundMapProps,
   BackgroundMapSettings,
-  AnalysisStyle,
   ContextRealityModelProps,
   Cartographic,
   GlobeMode,
@@ -53,7 +52,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   private _backgroundMap: BackgroundMapOrTerrainTileTreeReference;
   private readonly _backgroundDrapeMap: BackgroundMapTileTreeReference;
   private readonly _contextRealityModels: ContextRealityModelState[] = [];
-  private _analysisStyle?: AnalysisStyle;
   private _scheduleScript?: RenderScheduleState.Script;
 
   /** The container for this display style's settings. */
@@ -76,10 +74,8 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
         for (const contextRealityModel of styles.contextRealityModels)
           this._contextRealityModels.push(new ContextRealityModelState(contextRealityModel, this.iModel, this));
 
-      if (styles.analysisStyle)
-        this._analysisStyle = AnalysisStyle.fromJSON(styles.analysisStyle);
       if (styles.scheduleScript)
-        this._scheduleScript = RenderScheduleState.Script.fromJSON(this.id, this.iModel, styles.scheduleScript);
+        this._scheduleScript = RenderScheduleState.Script.fromJSON(this.id, styles.scheduleScript);
     }
   }
 
@@ -158,32 +154,18 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   /** The name of this DisplayStyle */
   public get name(): string { return this.code.getValue(); }
 
-  /** Settings controlling display of analytical models.
-   * @note Do not modify the style in place. Clone it and pass the clone to the setter.
-   */
-  public get analysisStyle(): AnalysisStyle | undefined { return this._analysisStyle; }
-  public set analysisStyle(style: AnalysisStyle | undefined) {
-    if (undefined === style) {
-      this._analysisStyle = undefined;
-    } else {
-      if (undefined === this._analysisStyle)
-        this._analysisStyle = AnalysisStyle.fromJSON(style);
-      else
-        this._analysisStyle.copyFrom(style);
-    }
-
-    this.jsonProperties.analysisStyle = this._analysisStyle;
-  }
-
   /** @internal */
   public get scheduleScript(): RenderScheduleState.Script | undefined { return this._scheduleScript; }
   public set scheduleScript(script: RenderScheduleState.Script | undefined) {
-    if (undefined === script) {
-      this._scheduleScript = undefined;
-    } else {
-      this._scheduleScript = RenderScheduleState.Script.fromJSON(this.id, this.iModel, script.modelTimelines);
+    let json;
+    let newScript;
+    if (script) {
+      json = script.toJSON();
+      newScript = RenderScheduleState.Script.fromJSON(this.id, json);
     }
-    this.jsonProperties.scheduleScript = this._scheduleScript;
+
+    this.settings.scheduleScriptProps = json;
+    this._scheduleScript = newScript;
   }
 
   /** @internal */
@@ -741,6 +723,5 @@ export class DisplayStyle3dState extends DisplayStyleState {
     }
 
     this.settings.sunDir = calculateSolarDirection(new Date(time), cartoCenter);
-
   }
 }

@@ -11,19 +11,19 @@ import { Range1d, Transform, Point3d, Vector3d, Matrix3d, Plane3dByOriginAndUnit
 import { Id64String, Id64 } from "@bentley/bentleyjs-core";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { IModelApp } from "./IModelApp";
-import { IModelConnection } from "./IModelConnection";
 import { DisplayStyleState } from "./DisplayStyleState";
 import { RenderClipVolume } from "./render/RenderClipVolume";
 import { AnimationBranchStates, AnimationBranchState } from "./render/GraphicBranch";
+
+function interpolate(value0: number, value1: number, fraction: number) {
+  return value0 + fraction * (value1 - value0);
+}
 
 /** @internal */
 export namespace RenderScheduleState {
   class Interval {
     constructor(public index0: number = 0, public index1: number = 0, public fraction: number = 0.0) { }
     public init(index0: number, index1: number, fraction: number) { this.index0 = index0; this.index1 = index1; this.fraction = fraction; }
-  }
-  function interpolate(value0: number, value1: number, fraction: number) {
-    return value0 + fraction * (value1 - value0);
   }
   export class TimelineEntry implements RenderSchedule.TimelineEntryProps {
     public time: number;
@@ -32,19 +32,42 @@ export namespace RenderScheduleState {
       this.time = props.time;
       this.interpolation = props.interpolation;
     }
+
+    public toJSON(): RenderSchedule.TimelineEntryProps {
+      return {
+        time: this.time,
+        interpolation: this.interpolation,
+      };
+    }
   }
+
   export class VisibilityEntry extends TimelineEntry implements RenderSchedule.VisibilityEntryProps {
     public value: number = 100.0;
     constructor(props: RenderSchedule.VisibilityEntryProps) {
       super(props);
       this.value = props.value;
     }
+
+    public toJSON(): RenderSchedule.VisibilityEntryProps {
+      return {
+        ...super.toJSON(),
+        value: this.value,
+      };
+    }
   }
+
   export class ColorEntry extends TimelineEntry implements RenderSchedule.ColorEntryProps {
     public value: { red: number, green: number, blue: number };
     constructor(props: RenderSchedule.ColorEntryProps) {
       super(props);
       this.value = props.value;
+    }
+
+    public toJSON(): RenderSchedule.ColorEntryProps {
+      return {
+        ...super.toJSON(),
+        value: this.value,
+      };
     }
   }
 
@@ -54,20 +77,35 @@ export namespace RenderScheduleState {
       super(props);
       this.value = props.value;
     }
+
+    public toJSON(): RenderSchedule.TransformEntryProps {
+      return {
+        ...super.toJSON(),
+        value: this.value,
+      };
+    }
   }
+
   export class CuttingPlaneEntry extends TimelineEntry implements RenderSchedule.CuttingPlaneEntryProps {
     public value: RenderSchedule.CuttingPlaneProps;
     constructor(props: RenderSchedule.CuttingPlaneEntryProps) {
       super(props);
       this.value = props.value;
     }
+
+    public toJSON(): RenderSchedule.CuttingPlaneEntryProps {
+      return {
+        ...super.toJSON(),
+        value: this.value,
+      };
+    }
   }
+
   export class Timeline implements RenderSchedule.TimelineProps {
     public visibilityTimeline?: VisibilityEntry[];
     public colorTimeline?: ColorEntry[];
     public transformTimeline?: TransformEntry[];
     public cuttingPlaneTimeline?: CuttingPlaneEntry[];
-    public currentClip?: RenderClipVolume;
 
     public extractTimelinesFromJSON(json: RenderSchedule.TimelineProps) {
       if (json.visibilityTimeline) {
@@ -87,8 +125,23 @@ export namespace RenderScheduleState {
         json.cuttingPlaneTimeline.forEach((entry) => this.cuttingPlaneTimeline!.push(new CuttingPlaneEntry(entry)));
       }
     }
-    public get duration() {
+
+    public toJSON(): RenderSchedule.TimelineProps {
+      const visibilityTimeline = this.visibilityTimeline?.map((x) => x.toJSON());
+      const colorTimeline = this.colorTimeline?.map((x) => x.toJSON());
+      const transformTimeline = this.transformTimeline?.map((x) => x.toJSON());
+      const cuttingPlaneTimeline = this.cuttingPlaneTimeline?.map((x) => x.toJSON());
+      return {
+        visibilityTimeline,
+        colorTimeline,
+        transformTimeline,
+        cuttingPlaneTimeline,
+      };
+    }
+
+    public computeDuration(): Range1d {
       const duration = Range1d.createNull();
+
       if (this.visibilityTimeline) this.visibilityTimeline.forEach((entry) => duration.extendX(entry.time));
       if (this.colorTimeline) this.colorTimeline.forEach((entry) => duration.extendX(entry.time));
       if (this.transformTimeline) this.transformTimeline.forEach((entry) => duration.extendX(entry.time));
@@ -133,6 +186,7 @@ export namespace RenderScheduleState {
 
       return visibility;
     }
+
     public getColorOverride(time: number, interval: Interval): RgbColor | undefined {
       let colorOverride;
       if (undefined !== this.colorTimeline && Timeline.findTimelineInterval(interval, time, this.colorTimeline) && this.colorTimeline![interval.index0].value !== null) {
@@ -182,10 +236,6 @@ export namespace RenderScheduleState {
     }
 
     public getAnimationClip(time: number, interval: Interval): RenderClipVolume | undefined {
-      if (this.currentClip) {
-        this.currentClip.dispose();
-        this.currentClip = undefined;
-      }
       if (!ElementTimeline.findTimelineInterval(interval, time, this.cuttingPlaneTimeline) || this.cuttingPlaneTimeline![interval.index0].value === null)
         return undefined;
 
@@ -212,8 +262,7 @@ export namespace RenderScheduleState {
       const clipPlaneSet = UnionOfConvexClipPlaneSets.createConvexSets([ConvexClipPlaneSet.createPlanes([clipPlane])]);
       const clipPrimitive = ClipPrimitive.createCapture(clipPlaneSet);
       const clipVector = ClipVector.createCapture([clipPrimitive]);
-      this.currentClip = IModelApp.renderSystem.createClipVolume(clipVector);
-      return this.currentClip;
+      return IModelApp.renderSystem.createClipVolume(clipVector);
     }
   }
 
@@ -235,8 +284,17 @@ export namespace RenderScheduleState {
       return val;
     }
 
+    public toJSON(): RenderSchedule.ElementTimelineProps {
+      return {
+        ...super.toJSON(),
+        batchId: this.batchId,
+        elementIds: this.elementIds,
+      };
+    }
+
     public get containsFeatureOverrides() { return undefined !== this.visibilityTimeline || undefined !== this.colorTimeline; }
     public get containsAnimation() { return undefined !== this.transformTimeline || undefined !== this.cuttingPlaneTimeline || (undefined !== this.colorTimeline && 0 !== this.batchId) || (undefined !== this.visibilityTimeline && 0 !== this.batchId); }
+
     public getSymbologyOverrides(overrides: FeatureSymbology.Overrides, time: number, interval: Interval, batchId: number, elementIds: Id64String[]) {
       let transparencyOverride;
 
@@ -263,17 +321,20 @@ export namespace RenderScheduleState {
 
   export class ModelTimeline extends Timeline implements RenderSchedule.ModelTimelineProps {
     public modelId: Id64String;
+    public realityModelUrl?: string;
     public elementTimelines: ElementTimeline[] = [];
     public containsFeatureOverrides: boolean = false;
     public containsModelAnimation: boolean = false;
     public containsElementAnimation: boolean = false;
+
     private constructor(modelId: Id64String) {
       super();
       this.modelId = modelId;
     }
-    public get duration() {
-      const duration = super.duration;
-      this.elementTimelines.forEach((element) => duration.extendRange(element.duration));
+
+    public computeDuration(): Range1d {
+      const duration = super.computeDuration();
+      this.elementTimelines.forEach((element) => duration.extendRange(element.computeDuration()));
       return duration;
     }
 
@@ -292,9 +353,12 @@ export namespace RenderScheduleState {
       }
 
       const value = new ModelTimeline(modelId);
+      value.realityModelUrl = json.realityModelUrl;
+
       value.extractTimelinesFromJSON(json);
       value.containsFeatureOverrides = undefined !== value.visibilityTimeline || undefined !== value.colorTimeline;
       value.containsModelAnimation = undefined !== value.transformTimeline || undefined !== value.cuttingPlaneTimeline;
+
       if (json.elementTimelines)
         json.elementTimelines.forEach((element) => {
           const elementTimeline = ElementTimeline.fromJSON(element);
@@ -306,6 +370,15 @@ export namespace RenderScheduleState {
         });
 
       return value;
+    }
+
+    public toJSON(): RenderSchedule.ModelTimelineProps {
+      return {
+        ...super.toJSON(),
+        modelId: this.modelId,
+        realityModelUrl: this.realityModelUrl,
+        elementTimelines: this.elementTimelines.map((x) => x.toJSON()),
+      };
     }
 
     public getSymbologyOverrides(overrides: FeatureSymbology.Overrides, time: number) {
@@ -326,6 +399,7 @@ export namespace RenderScheduleState {
 
       this.elementTimelines.forEach((entry) => entry.getSymbologyOverrides(overrides, time, interval, entry.batchId, entry.elementIds));
     }
+
     private getAnimationBranch(timeline: Timeline, branchId: number, branches: AnimationBranchStates, scheduleTime: number, interval: Interval) {
       const transform = timeline.getAnimationTransform(scheduleTime, interval);
       const clip = timeline.getAnimationClip(scheduleTime, interval);
@@ -350,21 +424,28 @@ export namespace RenderScheduleState {
 
   export class Script {
     public modelTimelines: ModelTimeline[] = [];
-    public iModel: IModelConnection;
     public displayStyleId: Id64String;
     public containsElementAnimation = false;
     public containsModelAnimation = false;
 
-    constructor(displayStyleId: Id64String, iModel: IModelConnection) { this.displayStyleId = displayStyleId; this.iModel = iModel; }
-    public static fromJSON(displayStyleId: Id64String, iModel: IModelConnection, modelTimelines: RenderSchedule.ModelTimelineProps[]): Script | undefined {
-      const value = new Script(displayStyleId, iModel);
+    constructor(displayStyleId: Id64String) {
+      this.displayStyleId = displayStyleId;
+    }
+
+    public static fromJSON(displayStyleId: Id64String, modelTimelines: RenderSchedule.ModelTimelineProps[]): Script | undefined {
+      const value = new Script(displayStyleId);
       modelTimelines.forEach((entry) => value.modelTimelines.push(ModelTimeline.fromJSON(entry)));
 
       for (const modelTimeline of value.modelTimelines) {
         if (modelTimeline.containsModelAnimation) value.containsModelAnimation = true;
         if (modelTimeline.containsElementAnimation) value.containsElementAnimation = true;
       }
+
       return value;
+    }
+
+    public toJSON(): RenderSchedule.ModelTimelineProps[] {
+      return this.modelTimelines.map((x) => x.toJSON());
     }
 
     public getAnimationBranches(scheduleTime: number): AnimationBranchStates | undefined {
@@ -376,9 +457,9 @@ export namespace RenderScheduleState {
       return animationBranches;
     }
 
-    public get duration() {
+    public computeDuration(): Range1d {
       const duration = Range1d.createNull();
-      this.modelTimelines.forEach((model) => duration.extendRange(model.duration));
+      this.modelTimelines.forEach((model) => duration.extendRange(model.computeDuration()));
       return duration;
     }
 
@@ -391,6 +472,7 @@ export namespace RenderScheduleState {
     public getSymbologyOverrides(overrides: FeatureSymbology.Overrides, time: number) {
       this.modelTimelines.forEach((entry) => entry.getSymbologyOverrides(overrides, time));
     }
+
     public getModelAnimationId(modelId: Id64String): Id64String | undefined {
       // Only if the animation contains animation (transform or cutting plane) of individual elements do we require separate tilesets for animations.
       if (Id64.isTransient(modelId))

@@ -18,7 +18,7 @@ import {
   SnapshotConnection,
 } from "@bentley/imodeljs-frontend";
 import { MarkupApp } from "@bentley/imodeljs-markup";
-import { AnimationPanel } from "./AnimationPanel";
+import { createTimeline } from "./Timeline";
 import { CategoryPicker, ModelPicker } from "./IdPicker";
 import { FeatureOverridesPanel } from "./FeatureOverrides";
 import { StandardRotations } from "./StandardRotations";
@@ -292,7 +292,7 @@ export class Viewer extends Window {
 
     this.toolBar.addDropDown({
       iconUnicode: "\ue931", // "animation"
-      createDropDown: async (container: HTMLElement) => new AnimationPanel(this.viewport, container),
+      createDropDown: async (container: HTMLElement) => createTimeline(this.viewport, container, 10),
       tooltip: "Animation / solar time",
     });
 

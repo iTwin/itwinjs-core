@@ -203,7 +203,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   private _readPixelsSelector = Pixel.Selector.None;
   private _drawNonLocatable = true;
   private _currentlyDrawingClassifier?: PlanarClassifier;
-  private _animationFraction: number = 0;
+  private _analysisFraction: number = 0;
   public isFadeOutActive = false;
   public activeVolumeClassifierTexture?: WebGLTexture;
   public activeVolumeClassifierProps?: SpatialClassificationProps.Classifier;
@@ -262,11 +262,25 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public get scene(): GraphicList { return this._scene; }
   public get dynamics(): GraphicList | undefined { return this._dynamics; }
 
-  public get animationFraction(): number { return this._animationFraction; }
-  public set animationFraction(fraction: number) { this._animationFraction = fraction; }
+  public get analysisFraction(): number { return this._analysisFraction; }
+  public set analysisFraction(fraction: number) { this._analysisFraction = fraction; }
 
-  public get animationBranches(): AnimationBranchStates | undefined { return this._animationBranches; }
-  public set animationBranches(branches: AnimationBranchStates | undefined) { this._animationBranches = branches; }
+  public get animationBranches(): AnimationBranchStates | undefined {
+    return this._animationBranches;
+  }
+  public set animationBranches(branches: AnimationBranchStates | undefined) {
+    this.disposeAnimationBranches();
+    this._animationBranches = branches;
+  }
+
+  private disposeAnimationBranches(): void {
+    if (this._animationBranches)
+      for (const branch of this._animationBranches.values())
+        branch.dispose();
+
+    this._animationBranches = undefined;
+  }
+
   public get solarShadowMap(): SolarShadowMap { return this.compositor.solarShadowMap; }
   public get isDrawingShadowMap(): boolean { return this.solarShadowMap.isEnabled && this.solarShadowMap.isDrawing; }
   public getPlanarClassifier(id: Id64String): RenderPlanarClassifier | undefined {
@@ -689,7 +703,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     this.changePlanarClassifiers(undefined);
     this.changeTextureDrapes(undefined);
 
-    // Clear render commands
     this._renderCommands.clear();
 
     // Clear FeatureOverrides for this Target.
@@ -699,8 +712,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       batch.onTargetDisposed(this);
 
     this._batches = [];
-
     this._activeClipVolume = dispose(this._activeClipVolume);
+    this.disposeAnimationBranches();
 
     freeDrawParams();
     ShaderProgramExecutor.freeParams();

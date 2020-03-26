@@ -53,7 +53,7 @@ export namespace Gradient {
     IsoLines = 3,
   }
 
-  /** @internal */
+  /** @beta */
   export enum ThematicColorScheme {
     BlueRed = 0,
     RedBlue = 1,
@@ -68,7 +68,7 @@ export namespace Gradient {
     mode: ThematicMode;
     stepCount: number;
     marginColor: ColorDefProps;
-    colorScheme: number;
+    colorScheme: ThematicColorScheme;
     rangeLow: number;
     rangeHigh: number;
   }
@@ -80,7 +80,7 @@ export namespace Gradient {
     public mode: ThematicMode = ThematicMode.Smooth;
     public stepCount: number = 10;
     public marginColor: ColorDef = ColorDef.from(0x3f, 0x3f, 0x3f);
-    public colorScheme: number = ThematicColorScheme.BlueRed;
+    public colorScheme: ThematicColorScheme = ThematicColorScheme.BlueRed;
     public rangeLow: number = 1.0E200;
     public rangeHigh: number = -1.0E200;
     public get range() { return (this.rangeLow > this.rangeHigh) ? Range1d.createNull() : Range1d.createXX(this.rangeLow, this.rangeHigh); }
@@ -100,6 +100,18 @@ export namespace Gradient {
       result.rangeHigh = json.rangeHigh;
       return result;
     }
+
+    public toJSON(): ThematicSettingsProps {
+      return {
+        mode: this.mode,
+        stepCount: this.stepCount,
+        marginColor: this.marginColor.toJSON(),
+        colorScheme: this.colorScheme,
+        rangeLow: this.rangeLow,
+        rangeHigh: this.rangeHigh,
+      };
+    }
+
     public clone(out?: ThematicSettings): ThematicSettings {
       const result = undefined !== out ? out : new ThematicSettings();
       result.copyFrom(this);

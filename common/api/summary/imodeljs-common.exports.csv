@@ -170,7 +170,6 @@ internal;enum GltfMeshMode
 internal;enum GltfV2ChunkTypes
 internal;enum GltfVersions
 beta;Gradient
-internal;ThematicColorScheme
 beta;GraphicParams
 public;GridOrientationType
 public;GroundPlane 

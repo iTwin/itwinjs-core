@@ -81,7 +81,7 @@ export abstract class IoTAnimation {
 
   private _showAnimationSchedule(schedule: any) {
     const displayStyleState = this._selectedView.displayStyle;
-    const renderSchedule: RenderScheduleState.Script = RenderScheduleState.Script.fromJSON(displayStyleState.id, this._selectedView.iModel, schedule)!;
+    const renderSchedule: RenderScheduleState.Script = RenderScheduleState.Script.fromJSON(displayStyleState.id, schedule)!;
     displayStyleState.scheduleScript = renderSchedule;
     this._selectedView.displayStyle = displayStyleState;
   }
@@ -225,7 +225,13 @@ export abstract class IoTAnimation {
       return undefined;
 
     // here we have a scheduleScript.
-    const animationFraction = this._selectedView.scheduleScriptFraction;
+    let animationFraction = 0;
+    const script = this._selectedView.displayStyle.scheduleScript;
+    if (script && undefined !== this._selectedView.timePoint) {
+      const timeRange = script.computeDuration();
+      animationFraction = (this._selectedView.timePoint - timeRange.low) / timeRange.length();
+    }
+
     const scheduleMap: Map<Id64String, ColorTime[]> = this.scheduleMap;
     const elementTimeList = scheduleMap.get(hit.sourceId);
     if (undefined === elementTimeList)

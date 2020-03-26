@@ -82,7 +82,7 @@ export class RenderPlan {
       this.activeClipSettings = createViewClipSettings(view.getViewClip(), vp.outsideClipColor, vp.insideClipColor);
       this.hline = style.is3d() ? style.settings.hiddenLineSettings : undefined;
       this.ao = style.is3d() ? style.settings.ambientOcclusionSettings : undefined;
-      this.analysisStyle = style.analysisStyle;
+      this.analysisStyle = style.settings.analysisStyle;
       this.isGlobeMode3D = (GlobeMode.Ellipsoid === view.globeMode);
       if (this.isGlobeMode3D) {
         const lb = this.frustum.getCorner(Npc.LeftBottomRear).interpolate(0.5, this.frustum.getCorner(Npc.LeftBottomFront), scratchPoint3a);

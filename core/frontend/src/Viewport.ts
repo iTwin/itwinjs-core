@@ -824,7 +824,6 @@ export abstract class Viewport implements IDisposable {
 
   private _view!: ViewState;
   private readonly _viewportId: number;
-  private _scheduleScriptFraction = 0.0;
   private _doContinuousRendering = false;
   /** @internal */
   protected _inViewChangedEvent = false;
@@ -842,9 +841,9 @@ export abstract class Viewport implements IDisposable {
   protected _controllerValid = false;
   /** @internal */
   public get controllerValid() { return this._controllerValid; }
-  /** @internal */
-  protected _scheduleScriptFractionValid = false;
   private _redrawPending = false;
+  private _analysisFractionValid = false;
+  private _timePointValid = false;
 
   /** Mark the current set of decorations invalid, so that they will be recreated on the next render frame.
    * This can be useful, for example, if an external event causes one or more current decorations to become invalid and you wish to force
@@ -859,7 +858,7 @@ export abstract class Viewport implements IDisposable {
   /** @internal */
   public invalidateScene(): void {
     this._sceneValid = false;
-    this._scheduleScriptFractionValid = false;
+    this._timePointValid = false;
     this.invalidateDecorations();
   }
   /** @internal */
@@ -869,7 +868,7 @@ export abstract class Viewport implements IDisposable {
   }
   /** @internal */
   public invalidateController(): void {
-    this._controllerValid = false;
+    this._controllerValid = this._analysisFractionValid = this._timePointValid = false;
     this.invalidateRenderPlan();
   }
 
@@ -885,16 +884,12 @@ export abstract class Viewport implements IDisposable {
   private _animator?: Animator;
   /** @internal */
   protected _changeFlags = new ChangeFlags();
-  private _scheduleTime = 0.0;
   private _selectionSetDirty = true;
   private readonly _perModelCategoryVisibility = new PerModelCategoryVisibilityOverrides(this);
   private _tileSizeModifier?: number;
 
   /** @internal */
   public readonly subcategories = new SubCategoriesCache.Queue();
-
-  /** @internal */
-  public get scheduleTime() { return this._scheduleTime; }
 
   /** Time the current flash started.
    * @internal
@@ -945,11 +940,29 @@ export abstract class Viewport implements IDisposable {
   /** @internal */
   public get frustFraction(): number { return this._viewingSpace.frustFraction; }
 
-  /** @internal */
-  public get scheduleScriptFraction(): number { return this._scheduleScriptFraction; }
-  public set scheduleScriptFraction(fraction: number) {
-    this._scheduleScriptFraction = fraction;
-    this._scheduleScriptFractionValid = false;
+  /** @alpha */
+  public get analysisFraction(): number {
+    return this.displayStyle.settings.analysisFraction;
+  }
+  public set analysisFraction(fraction: number) {
+    this.displayStyle.settings.analysisFraction = fraction;
+    this._analysisFractionValid = false;
+    IModelApp.requestNextAnimation();
+  }
+
+  /** The point in time reflected by the view, in UNIX milliseconds.
+   * This identifies a point on the timeline of the [[scheduleScript]], if any; it may also affect display of four-dimensional point clouds and reality meshes.
+   * @beta
+   */
+  public get timePoint(): number | undefined {
+    return this.displayStyle.settings.timePoint;
+  }
+  public set timePoint(time: number | undefined) {
+    if (time === this.timePoint)
+      return;
+
+    this.displayStyle.settings.timePoint = time;
+    this._timePointValid = false;
     IModelApp.requestNextAnimation();
   }
 
@@ -1651,7 +1664,6 @@ export abstract class Viewport implements IDisposable {
 
     this.updateChangeFlags(view);
     this.doSetupFromView(view);
-    this.invalidateScene();
     this.invalidateController();
     this.target.reset();
 
@@ -2303,19 +2315,19 @@ export abstract class Viewport implements IDisposable {
 
     let overridesNeeded = changeFlags.areFeatureOverridesDirty;
 
-    if (!this._scheduleScriptFractionValid) {
-      target.animationFraction = this.scheduleScriptFraction;
+    if (!this._analysisFractionValid) {
+      this._analysisFractionValid = isRedrawNeeded = true;
+      target.analysisFraction = this.analysisFraction;
+    }
+
+    if (!this._timePointValid) {
       isRedrawNeeded = true;
-      this._scheduleScriptFractionValid = true;
+      this._timePointValid = true;
       const scheduleScript = view.displayStyle.scheduleScript;
       if (scheduleScript) {
-        const scheduleTime = scheduleScript.duration.fractionToPoint(target.animationFraction);
-        if (scheduleTime !== this._scheduleTime) {
-          this._scheduleTime = scheduleTime;
-          target.animationBranches = scheduleScript.getAnimationBranches(scheduleTime);
-          if (scheduleScript.containsFeatureOverrides)
-            overridesNeeded = true;
-        }
+        target.animationBranches = scheduleScript.getAnimationBranches(this.timePoint ?? scheduleScript.computeDuration().low);
+        if (scheduleScript.containsFeatureOverrides)
+          overridesNeeded = true;
       }
     }
 

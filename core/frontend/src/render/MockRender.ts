@@ -48,8 +48,8 @@ export namespace MockRender {
 
     public get renderSystem(): RenderSystem { return this._system; }
     public get wantInvertBlackBackground() { return false; }
-    public get animationFraction() { return 0; }
-    public set animationFraction(_fraction: number) { }
+    public get analysisFraction() { return 0; }
+    public set analysisFraction(_fraction: number) { }
     public changeScene(_scene: Scene) { }
     public changeDynamics(_dynamics?: GraphicList) { }
     public changeDecorations(_decs: Decorations) { }

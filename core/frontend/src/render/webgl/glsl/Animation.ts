@@ -219,7 +219,7 @@ export function addAnimation(vert: VertexShaderBuilder, isSurface: boolean): voi
       const animParams = getAnimParams(3, 0.0);
       const disp = getDisplacementChannel(params);
       if (undefined !== disp)
-        computeAnimParams(animParams, disp.channel, params.target.animationFraction);
+        computeAnimParams(animParams, disp.channel, params.target.analysisFraction);
 
       uniform.setUniform3fv(animParams);
     });
@@ -265,7 +265,7 @@ export function addAnimation(vert: VertexShaderBuilder, isSurface: boolean): voi
         const animParams = getAnimParams(3, -1.0);
         const channel = getNormalChannel(params);
         if (undefined !== channel)
-          computeAnimParams(animParams, channel, params.target.animationFraction);
+          computeAnimParams(animParams, channel, params.target.analysisFraction);
 
         uniform.setUniform3fv(animParams);
       });
@@ -276,7 +276,7 @@ export function addAnimation(vert: VertexShaderBuilder, isSurface: boolean): voi
         const scalars = getScalarChannel(params);
         const animParams = getAnimParams(3, -1.0);
         if (undefined !== scalars)
-          computeAnimParams(animParams, scalars.channel, params.target.animationFraction);
+          computeAnimParams(animParams, scalars.channel, params.target.analysisFraction);
 
         uniform.setUniform3fv(animParams);
       });

@@ -245,7 +245,7 @@ export abstract class ViewState extends ElementState {
    */
   public get viewFlags(): ViewFlags { return this.displayStyle.viewFlags; }
   /** Get the AnalysisDisplayProperties from the displayStyle of this ViewState. */
-  public get analysisStyle(): AnalysisStyle | undefined { return this.displayStyle.analysisStyle; }
+  public get analysisStyle(): AnalysisStyle | undefined { return this.displayStyle.settings.analysisStyle; }
 
   /**
    * Get the RenderSchedule.Script from the displayStyle of this viewState

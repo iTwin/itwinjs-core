@@ -30,7 +30,7 @@ export class RealityTransitionTool extends Tool {
 
     const displayStyle = vp.displayStyle;
     const view = vp.view;
-    const script = new RenderScheduleState.Script(displayStyle.id, displayStyle.iModel);
+    const script = new RenderScheduleState.Script(displayStyle.id);
     const timeNow = Date.now(), timeEnd = timeNow + 1000.0 * 60.0 * 60.0;
     const range = vp.iModel.projectExtents;
     const directions = [Vector3d.create(1, 0, 0), Vector3d.create(0, 1, 0), Vector3d.create(0, 0, 1)];
@@ -77,7 +77,7 @@ export class RealityTransitionTool extends Tool {
     });
 
     displayStyle.scheduleScript = script;
-    vp.scheduleScriptFraction = 0.0;
+    vp.timePoint = script.computeDuration().low;
     return true;
   }
   public parseAndRun(...args: string[]): boolean {
