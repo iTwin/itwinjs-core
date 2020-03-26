@@ -67,7 +67,6 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
   protected _extentsWidthValid = true;
   protected _extentsHeightValid = true;
   protected _ecefLocation?: EcefLocation;
-  protected _origin?: Cartographic; // ### TODO Make cartographic origin part of EcefLocation and persist...
   protected _allowEcefLocationChange = false;
   protected _hasGCSDefined?: boolean;
   protected _controlIds: string[] = [];
@@ -400,7 +399,10 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
   protected updateDecorationListener(_add: boolean): void { super.updateDecorationListener(undefined !== this._clipId); } // Decorator isn't just for resize controls...
 
   public getMonumentPoint(): Point3d {
-    const origin = this.iModel.projectExtents.low.clone();
+    const origin = Point3d.createZero();
+    if (this.iModel.ecefLocation && this.iModel.ecefLocation.cartographicOrigin)
+      return this.iModel.cartographicToSpatialFromEcef(this.iModel.ecefLocation.cartographicOrigin, origin);
+    origin.setFrom(this.iModel.projectExtents.low);
     if (0.0 > this.iModel.projectExtents.low.z && 0.0 < this.iModel.projectExtents.high.z)
       origin.z = 0.0;
     return origin;
@@ -677,7 +679,6 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
     if (this._hasGCSDefined)
       this.iModel.disableGCS(false);
 
-    this._origin = undefined;
     this._monumentPoint = this.getMonumentPoint();
     this._northDirection = this.getNorthDirection();
 
@@ -698,8 +699,7 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
     if (this._hasGCSDefined)
       this.iModel.disableGCS(true); // Map display will ignore change to ecef location when GCS is present...
 
-    this._origin = origin.clone();
-    this._monumentPoint = this.iModel.cartographicToSpatialFromEcef(origin);
+    this._monumentPoint = this.getMonumentPoint();
     this._northDirection = this.getNorthDirection(undefined !== this._northDirection ? this._northDirection.origin : undefined); // Preserve modified north reference point...
 
     updateMapDisplay(this.viewport, true);

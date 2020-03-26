@@ -1578,6 +1578,7 @@ export type EasingFunction = (k: number) => number;
 // @public
 export class EcefLocation implements EcefLocationProps {
     constructor(props: EcefLocationProps);
+    readonly cartographicOrigin?: Cartographic;
     static createFromCartographicOrigin(origin: Cartographic, point?: Point3d, angle?: Angle): EcefLocation;
     get earthCenter(): Point3d;
     getTransform(): Transform;
@@ -1587,6 +1588,7 @@ export class EcefLocation implements EcefLocationProps {
 
 // @public
 export interface EcefLocationProps {
+    cartographicOrigin?: LatLongAndHeight;
     orientation: YawPitchRollProps;
     origin: XYZProps;
 }

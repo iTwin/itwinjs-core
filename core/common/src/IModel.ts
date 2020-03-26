@@ -8,7 +8,7 @@
 
 import { GuidString, Id64, Id64String, IModelStatus, OpenMode, Logger } from "@bentley/bentleyjs-core";
 import { AxisOrder, Matrix3d, Point3d, Range3dProps, Transform, Vector3d, XYAndZ, XYZProps, YawPitchRollAngles, YawPitchRollProps, Range3d, Angle, AxisIndex } from "@bentley/geometry-core";
-import { Cartographic } from "./geometry/Cartographic";
+import { Cartographic, LatLongAndHeight } from "./geometry/Cartographic";
 import { AxisAlignedBox3d } from "./geometry/Placement";
 import { IModelError } from "./IModelError";
 import { ThumbnailProps } from "./Thumbnail";
@@ -77,6 +77,8 @@ export interface EcefLocationProps {
   origin: XYZProps;
   /** The [orientation](https://en.wikipedia.org/wiki/Geographic_coordinate_conversion) of an iModel on the earth. */
   orientation: YawPitchRollProps;
+  /** Optional position on the earth used to establish the ECEF coordinates. */
+  cartographicOrigin?: LatLongAndHeight;
 }
 
 /** The position and orientation of an iModel on the earth in [ECEF](https://en.wikipedia.org/wiki/ECEF) (Earth Centered Earth Fixed) coordinates
@@ -88,6 +90,8 @@ export class EcefLocation implements EcefLocationProps {
   public readonly origin: Point3d;
   /** The orientation of the ECEF transform */
   public readonly orientation: YawPitchRollAngles;
+  /** Optional position on the earth used to establish the ECEF origin and orientation. */
+  public readonly cartographicOrigin?: Cartographic;
   /** Get the transform from iModel Spatial coordinates to ECEF from this EcefLocation */
   public getTransform(): Transform { return Transform.createOriginAndMatrix(this.origin, this.orientation.toMatrix3d()); }
 
@@ -97,6 +101,10 @@ export class EcefLocation implements EcefLocationProps {
     this.orientation = YawPitchRollAngles.fromJSON(props.orientation);
     this.origin.freeze(); // may not be modified
     this.orientation.freeze(); // may not be modified
+    if (props.cartographicOrigin) {
+      this.cartographicOrigin = Cartographic.fromRadians(props.cartographicOrigin.longitude, props.cartographicOrigin.latitude, props.cartographicOrigin.height);
+      Object.freeze(this.cartographicOrigin); // may not be modified
+    }
   }
 
   /** Construct ECEF Location from cartographic origin with optional known point and angle.   */
@@ -114,7 +122,7 @@ export class EcefLocation implements EcefLocationProps {
       ecefOrigin.addInPlace(delta);
     }
 
-    return new EcefLocation({ origin: ecefOrigin, orientation: YawPitchRollAngles.createFromMatrix3d(matrix)! });
+    return new EcefLocation({ origin: ecefOrigin, orientation: YawPitchRollAngles.createFromMatrix3d(matrix)!, cartographicOrigin: origin });
   }
   /** Get the location center of the earth in the iModel coordinate system. */
   public get earthCenter(): Point3d {

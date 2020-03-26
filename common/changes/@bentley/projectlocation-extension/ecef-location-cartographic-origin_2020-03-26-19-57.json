@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/projectlocation-extension",
+      "comment": "EcefLocation can now optionally preserve a meaningful cartographic origin.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/projectlocation-extension",
+  "email": "Brien.Bastings@bentley.com"
+}
