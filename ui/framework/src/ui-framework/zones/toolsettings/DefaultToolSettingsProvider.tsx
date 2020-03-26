@@ -11,17 +11,18 @@ import * as React from "react";
 // cSpell:Ignore configurableui
 
 import {
-  DialogItem, DialogPropertySyncItem, DialogItemsManager,
+  DialogItem, DialogPropertySyncItem, DialogItemsManager, SyncPropertiesChangeEventArgs,
 } from "@bentley/ui-abstract";
 import { IModelApp } from "@bentley/imodeljs-frontend";
 import { ConfigurableCreateInfo } from "../../configurableui/ConfigurableUiControl";
 import { ToolUiProvider } from "./ToolUiProvider";
 import { ConfigurableUiManager } from "../../configurableui/ConfigurableUiManager";
-import { ToolUiManager } from "../toolsettings/ToolUiManager";
+import { ToolUiManager, SyncToolSettingsPropertiesEventArgs } from "../toolsettings/ToolUiManager";
 
 import { FrameworkVersionSwitch } from "../../hooks/useFrameworkVersion";
 import { WidgetPanelsDefaultToolSettings } from "../../widget-panels/DefaultToolSettings";
 import { DefaultReactDisplay } from "../../uiprovider/DefaultReactDisplay";
+import { ReactGenerator } from "../../uiprovider/ReactGenerator";
 
 /** Responsive Layout Mode */
 
@@ -29,48 +30,37 @@ import { DefaultReactDisplay } from "../../uiprovider/DefaultReactDisplay";
 
 /** DataProvider that keep underlying data in sync with UI display */
 class ToolSettingsDataProvider extends DialogItemsManager {
+  private static _thisInstance?: ToolSettingsDataProvider;
 
-  private _toolSettingsNode?: DefaultReactDisplay;
   constructor() {
     super();
+
+    if (!ToolSettingsDataProvider._thisInstance) {
+      ToolSettingsDataProvider._thisInstance = this;
+    }
   }
-  // istanbul ignore next
-  public get toolSettingsNode(): DefaultReactDisplay | undefined { return this._toolSettingsNode; }
-  // istanbul ignore next
-  public set toolSettingsNode(r: DefaultReactDisplay | undefined) { this._toolSettingsNode = r; }
+
+  // pass on SyncToolSettingsPropertiesEvent from ToolAdmin so they are treated as DialogItemSync events
+  private static _handleSyncToolSettingsPropertiesEvent = (args: SyncToolSettingsPropertiesEventArgs): void => {
+    const syncArgs: SyncPropertiesChangeEventArgs = { properties: args.syncProperties };
+
+    if (ToolSettingsDataProvider._thisInstance)
+      ToolSettingsDataProvider._thisInstance.onSyncPropertiesChangeEvent.emit(syncArgs);
+  }
+
+  public static get instance() {
+    if (!ToolSettingsDataProvider._thisInstance) {
+      ToolSettingsDataProvider._thisInstance = new ToolSettingsDataProvider();
+      ToolUiManager.onSyncToolSettingsProperties.addListener(ToolSettingsDataProvider._handleSyncToolSettingsPropertiesEvent);
+    }
+    return ToolSettingsDataProvider._thisInstance;
+  }
 
   public isToolSettingsManager = (): boolean => {
     return true;
   }
-}
-/** ToolUiProvider class that informs ConfigurableUi that Tool Settings are provided for the specified tool.
- * @internal
- */
-export class DefaultToolSettingsProvider extends ToolUiProvider {
-  public valueMap = new Map<string, DialogItem>();  // allows easy lookup of record given the property name
-  public toolSettingsDP: ToolSettingsDataProvider;
 
-  constructor(info: ConfigurableCreateInfo, options: any) {
-    super(info, options);
-
-    this.toolSettingsDP = new ToolSettingsDataProvider();
-    this.toolSettingsDP.applyUiPropertyChange = this.applyUiPropertyChange;
-    this.toolSettingsDP.items = ToolUiManager.toolSettingsProperties;
-
-    // istanbul ignore else
-    if ((this.toolSettingsDP as DialogItemsManager).layoutDialogRows())
-      this.toolSettingsNode = (
-        <FrameworkVersionSwitch
-          v1={<DefaultReactDisplay itemsManager={this.toolSettingsDP} key={Date.now()} />}
-          v2={<WidgetPanelsDefaultToolSettings itemsManager={this.toolSettingsDP} />}
-        />
-      );
-    else
-      this.toolSettingsNode = null;
-    this.toolSettingsDP.toolSettingsNode = this.toolSettingsNode as DefaultReactDisplay;
-  }
-
-  public applyUiPropertyChange(syncItem: DialogPropertySyncItem): void {
+  public applyUiPropertyChange = (syncItem: DialogPropertySyncItem) => {
     const activeTool = IModelApp.toolAdmin.activeTool;
     // istanbul ignore else
     if (!activeTool)
@@ -78,18 +68,45 @@ export class DefaultToolSettingsProvider extends ToolUiProvider {
 
     activeTool.applyToolSettingPropertyChange(syncItem);
   }
-  public onInitialize(): void {
+}
+
+/** ToolUiProvider class that informs ConfigurableUi that Tool Settings are provided for the specified tool.
+ * @internal
+ */
+export class DefaultToolSettingsProvider extends ToolUiProvider {
+  public valueMap = new Map<string, DialogItem>();  // allows easy lookup of record given the property name
+  public toolSettingsDP = ToolSettingsDataProvider.instance;
+  private _reactGenerator = new ReactGenerator(this.toolSettingsDP);
+
+  constructor(info: ConfigurableCreateInfo, options: any) {
+    super(info, options);
+
+    this.toolSettingsDP.items = ToolUiManager.toolSettingsProperties;
+  }
+
+  public applyUiPropertyChange(syncItem: DialogPropertySyncItem) {
+    this.toolSettingsDP.applyUiPropertyChange(syncItem);
+  }
+
+  public updateToolSettingsNodes(): void {
     // istanbul ignore else
-    if ((this.toolSettingsDP as DialogItemsManager).layoutDialogRows())
-      // the date is used as a key to ensure that React sees the node as "new" and in need of rendering every time it's updated
+    if ((this.toolSettingsDP as DialogItemsManager).layoutDialogRows()) {
       this.toolSettingsNode = (
         <FrameworkVersionSwitch
           v1={<DefaultReactDisplay itemsManager={this.toolSettingsDP} key={Date.now()} />}
           v2={<WidgetPanelsDefaultToolSettings itemsManager={this.toolSettingsDP} />}
         />
       );
-    else
+      this.horizontalToolSettingNodes = this._reactGenerator.getToolSettingsEntries();
+    } else {
       this.toolSettingsNode = null;
+      this.horizontalToolSettingNodes = [];
+    }
+  }
+  public onInitialize(): void {
+    // update the items to be from the active tool
+    this.toolSettingsDP.items = ToolUiManager.toolSettingsProperties;
+    this.updateToolSettingsNodes();
   }
 }
 

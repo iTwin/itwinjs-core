@@ -241,6 +241,10 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
 
   /** @internal */
   public render(): React.ReactNode {
+    const minSize = this.state.size ? this.state.size : 8;
+    const minWidthStyle: React.CSSProperties = {
+      minWidth: `${minSize * 0.75}em`,
+    };
     const record = this.props.propertyRecord as PropertyRecord;
     if (!record || !this._formatParams)
       return null;
@@ -253,7 +257,7 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
     const inputProps: InputProps = {
       type: "text",
       className,
-      style: this.props.style,
+      style: this.props.style ? this.props.style : minWidthStyle,
       readOnly,
       disabled,
       size: this.state.size,

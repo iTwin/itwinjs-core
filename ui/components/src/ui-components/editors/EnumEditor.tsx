@@ -134,11 +134,16 @@ export class EnumEditor extends React.PureComponent<PropertyEditorProps, EnumEdi
       });
     }
 
+    // set min-width to show about 4 characters + down arrow
+    const minWidthStyle: React.CSSProperties = {
+      minWidth: `${6 * 0.75}em`,
+    };
+
     return (
       <Select
         onBlur={this.props.onBlur}
         className={className}
-        style={this.props.style}
+        style={this.props.style ? this.props.style : minWidthStyle}
         value={selectValue}
         onChange={this._updateSelectValue}
         data-testid="components-select-editor"

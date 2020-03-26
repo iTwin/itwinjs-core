@@ -45,6 +45,7 @@ div.uifw-default-inline-editor-group {
 
 div.uifw-default-inline-editor-group .uifw-default-label {
   margin-right: 4px;
+  margin-left: 4px;
   width: auto;
 }
 
@@ -64,7 +65,7 @@ div.uifw-default-lock-and-label {
 }
 
 .uifw-default-inline-label-and-editor {
-  align-items: baseline;
+  align-items: center;
   display: flex;
   flex-direction: row;
   width: auto;

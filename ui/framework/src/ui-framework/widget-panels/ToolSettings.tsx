@@ -23,6 +23,7 @@ export interface ToolSettingsEntry {
 }
 
 /** @internal */
+// istanbul ignore next - need to work on overflow unit testing
 function TsLabel({ children }: { children: React.ReactNode }) {
   return <div className="uif-toolsetting-label-docked-horizontal">{children}</div>;
 }
@@ -48,7 +49,8 @@ export function useToolSettings() {
 
   React.useEffect(() => {
     const handleToolActivatedEvent = () => {
-      setSettings(FrontstageManager.activeToolSettingsProvider?.horizontalToolSettingNodes);
+      const nodes = FrontstageManager.activeToolSettingsProvider?.horizontalToolSettingNodes;
+      setSettings(nodes);
     };
     FrontstageManager.onToolActivatedEvent.addListener(handleToolActivatedEvent);
     return () => {

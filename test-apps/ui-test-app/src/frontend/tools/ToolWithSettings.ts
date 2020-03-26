@@ -404,12 +404,12 @@ export class ToolWithSettings extends PrimitiveTool {
   private syncCoordinateValue(coordinate: string, station: string, distance: number): void {
     const coordinateValue: DialogItemValue = { value: coordinate };
     // clone coordinateValue if storing value within tool - in this case we are not
-    const syncItem: DialogPropertySyncItem = { value: coordinateValue, propertyName: ToolWithSettings._coordinateName };
+    const syncItem: DialogPropertySyncItem = { value: coordinateValue, propertyName: ToolWithSettings._coordinateName, isDisabled: true };
     const stationValue: DialogItemValue = { value: station };
-    const stationSyncItem: DialogPropertySyncItem = { value: stationValue, propertyName: ToolWithSettings._stationName };
+    const stationSyncItem: DialogPropertySyncItem = { value: stationValue, propertyName: ToolWithSettings._stationName, isDisabled: true };
 
     const surveyLengthValue: DialogItemValue = { value: distance, displayValue: this._surveyLengthDescription.format(distance) };
-    const surveySyncItem: DialogPropertySyncItem = { value: surveyLengthValue, propertyName: ToolWithSettings._surveyLengthName };
+    const surveySyncItem: DialogPropertySyncItem = { value: surveyLengthValue, propertyName: ToolWithSettings._surveyLengthName, isDisabled: true };
     this.syncToolSettingsProperties([syncItem, stationSyncItem, surveySyncItem]);
   }
 

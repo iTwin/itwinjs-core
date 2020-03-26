@@ -2,17 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as sinon from "sinon";
 import { expect } from "chai";
 
 import {
   ButtonGroupEditorParams,
   DialogItemsManager,
   DialogItem,
-  DialogItemSyncArgs,
   DialogItemValue,
   DialogRow,
-  DialogPropertySyncItem,
   PropertyEditorParamTypes,
   PropertyDescription,
   SuppressLabelEditorParams } from "../../ui-abstract";
@@ -91,29 +88,9 @@ describe("DialogItemsManager", () => {
     });
   });
   describe("items", () => {
-    it("should raise onItemsChanged event when new items are set", () => {
-      const sut = new DialogItemsManager();
-      const spy = sinon.spy();
-      sut.onItemsChanged.addListener(spy);
-
-      sut.items = [];
-
-      spy.calledOnce.should.true;
-    });
-    it("should not raise onItemsChanged event if items did not change", () => {
-      const sut = new DialogItemsManager();
-      const spy = sinon.spy();
-
-      const items: DialogItemsManager["items"] = [];
-      sut.items = items;
-
-      sut.onItemsChanged.addListener(spy);
-      sut.items = items;
-
-      spy.notCalled.should.true;
-    });
     it("should layout rows if items have changed", () => {
-      const sut = new DialogItemsManager(dialogItems);
+      const sut = new DialogItemsManager();
+      sut.items = dialogItems;
 
       sut.rows.should.not.be.empty;
     });
@@ -122,37 +99,6 @@ describe("DialogItemsManager", () => {
       const items = sut.items;
 
       expect(items.length).to.eq(3);
-    });
-    it("should raise onPropertiesChanged event when new items are set", () => {
-      const sut = new DialogItemsManager();
-      const spy = sinon.spy();
-      sut.onPropertiesChanged.addListener(spy);
-
-      const syncItem: DialogPropertySyncItem = { value: {value: 10}, propertyName: "myname", isDisabled: false};
-      const syncEventArgs: DialogItemSyncArgs = {items: [syncItem]};
-      sut.onPropertiesChanged.emit(syncEventArgs);
-      spy.calledOnce.should.true;
-    });
-    it("should update disabled state of DialogItem", () => {
-      const sut = new DialogItemsManager(dialogItems);
-
-      const itemToUpdate = sut.items[1];
-      const syncItem: DialogPropertySyncItem = { value: itemToUpdate.value, propertyName: itemToUpdate.property.name, isDisabled: true };
-      const syncEventArgs: DialogItemSyncArgs = {items: [syncItem]};
-      sut.updateItemProperties(syncEventArgs);
-      const itemDisabled = sut.items[1].isDisabled;
-      expect (itemDisabled).to.be.true;
-    });
-    it("should update value of DialogItem", () => {
-      const sut = new DialogItemsManager(dialogItems);
-
-      const itemToUpdate = sut.items[1];
-      const updateItemValue = { value: 50 };
-      const syncItem: DialogPropertySyncItem = { value: updateItemValue as DialogItemValue, propertyName: itemToUpdate.property.name};
-      const syncEventArgs: DialogItemSyncArgs = {items: [syncItem]};
-      sut.updateItemProperties(syncEventArgs);
-      const itemValue = sut.items[1].value.value;
-      expect (itemValue).to.be.eq(50);
     });
   });
   describe ("dialogItem", () => {
@@ -166,7 +112,11 @@ describe("DialogItemsManager", () => {
     });
     it("has lock property", () => {
       const hasLockProperty = DialogItemsManager.hasAssociatedLockProperty(item1);
-      expect (hasLockProperty).to.be.true;
+      expect(hasLockProperty).to.be.true;
+    });
+    it("item is not disabled", () => {
+      const item1Disabled = DialogItemsManager.getItemDisabledState(item1);
+      expect(item1Disabled).to.be.false;
     });
     it("has no lock property", () => {
       const hasLockProperty = DialogItemsManager.hasAssociatedLockProperty(item2);

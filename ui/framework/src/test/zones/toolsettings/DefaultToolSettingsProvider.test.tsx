@@ -210,7 +210,7 @@ describe("DefaultToolUiSettingsProvider", () => {
       toolSettingsProperties.push({ value: enumValue, property: enumDescription, editorPosition: { rowPriority: 1, columnIndex: 3 } });
       toolSettingsProperties.push({ value: methodsValue, property: methodsDescription, editorPosition: { rowPriority: 2, columnIndex: 1 } });
       toolSettingsProperties.push({ value: groupOneValue, property: testEnumDescription1, editorPosition: { rowPriority: 3, columnIndex: 1 } });
-      toolSettingsProperties.push({ value: groupTwoValue, property: testEnumDescription2, editorPosition: { rowPriority: 3, columnIndex: 2 } });
+      toolSettingsProperties.push({ value: groupTwoValue, property: testEnumDescription2, editorPosition: { rowPriority: 3, columnIndex: 2 }, isDisabled: true });
       ToolUiManager.initializeToolSettingsData(toolSettingsProperties, testToolId, "testToolLabel", "testToolDescription");
 
       // override the property getter to return the properties needed for the test
@@ -319,11 +319,15 @@ describe("DefaultToolUiSettingsProvider", () => {
         if (toolUiProvider) {
           expect(toolUiProvider.toolSettingsNode).to.not.be.undefined;
           // simulate property update
-          const newlengthValue: DialogItemValue = {value: 7.5};
-          const lengthSyncItem: DialogPropertySyncItem = {value: newlengthValue, propertyName: lengthDescription.name};
+          const newlengthValue: DialogItemValue = { value: 7.5 };
+          const lengthSyncItem: DialogPropertySyncItem = { value: newlengthValue, propertyName: lengthDescription.name };
+          const newUselengthValue: DialogItemValue = { value: false };
+          const useLengthSyncItem: DialogPropertySyncItem = { value: newUselengthValue, propertyName: useLengthDescription.name };
           const defaultProvider = toolUiProvider as DefaultToolSettingsProvider;
-          if (defaultProvider)
+          if (defaultProvider) {
             defaultProvider.applyUiPropertyChange(lengthSyncItem);
+            defaultProvider.applyUiPropertyChange(useLengthSyncItem);
+          }
         }
       }
 

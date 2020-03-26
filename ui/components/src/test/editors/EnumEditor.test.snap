@@ -6,5 +6,10 @@ exports[`<EnumEditor /> renders correctly 1`] = `
   data-testid="components-select-editor"
   onChange={[Function]}
   options={Object {}}
+  style={
+    Object {
+      "minWidth": "4.5em",
+    }
+  }
 />
 `;

@@ -344,6 +344,10 @@ export class FrontstageManager {
   /** Sets the active tool id */
   public static setActiveToolId(toolId: string): void {
     FrontstageManager._activeToolId = toolId;
+    const toolSettingsProvider = FrontstageManager.activeToolSettingsProvider;
+    // ensure the toolSettingsProvider is initialized before emitting onToolActivatedEvent
+    if (toolSettingsProvider)
+      toolSettingsProvider.initialize();
     FrontstageManager.onToolActivatedEvent.emit({ toolId });
   }
 

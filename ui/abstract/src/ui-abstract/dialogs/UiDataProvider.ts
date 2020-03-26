@@ -42,6 +42,7 @@ export abstract class UiDataProvider {
     return;
   }
 }
+
 /** Sync UI Control Properties Event Args interface.
  * @beta
  */

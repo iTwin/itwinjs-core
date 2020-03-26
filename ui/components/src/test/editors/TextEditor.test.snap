@@ -7,6 +7,11 @@ exports[`<TextEditor /> renders correctly 1`] = `
   defaultValue=""
   onChange={[Function]}
   readOnly={false}
+  style={
+    Object {
+      "minWidth": "6em",
+    }
+  }
   type="text"
 />
 `;

@@ -6,7 +6,7 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { renderHook, act } from "@testing-library/react-hooks";
 import { shallow } from "enzyme";
-import { WidgetPanelsToolSettings, useToolSettings, FrontstageManager, FrontstageDef, ZoneDef, ToolSettingsEntry, ToolUiProvider, ConfigurableCreateInfo } from "../../ui-framework";
+import { WidgetPanelsToolSettings, useToolSettings, FrontstageManager, FrontstageDef, ZoneDef, ToolSettingsEntry, ToolUiProvider, ConfigurableCreateInfo, ToolSettingsGrid } from "../../ui-framework";
 
 describe("WidgetPanelsToolSettings", () => {
   const sandbox = sinon.createSandbox();
@@ -76,4 +76,12 @@ describe("useToolSettings", () => {
 
     sut.result.current!.should.eq(entries);
   });
+
+  it("ToolSettingsGrid should render", () => {
+    const entries: ToolSettingsEntry[] = [{ labelNode: "Date", editorNode: <input type="date" /> }];
+
+    const sut = shallow(<ToolSettingsGrid settings={entries} />);
+    sut.should.matchSnapshot();
+  });
+
 });

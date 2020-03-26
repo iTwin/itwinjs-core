@@ -358,21 +358,12 @@ export class DialogItemsManager extends UiDataProvider {
     // (undocumented)
     get items(): ReadonlyArray<DialogItem>;
     set items(items: ReadonlyArray<DialogItem>);
-    // (undocumented)
-    layoutDialogRows(): boolean;
-    // (undocumented)
-    readonly onDataChanged: BeUiEvent<DialogPropertySyncItem>;
-    readonly onItemsChanged: BeUiEvent<(args: DialogItemsChangedArgs) => void>;
+    // @internal (undocumented)
+    layoutDialogRows(): DialogRow[];
     // (undocumented)
     static onlyContainButtonGroupEditors(row: DialogRow): boolean;
     // (undocumented)
-    readonly onPropertiesChanged: BeUiEvent<DialogItemSyncArgs>;
-    // (undocumented)
     rows: DialogRow[];
-    // (undocumented)
-    updateItemProperties: (syncItems: DialogItemSyncArgs) => void;
-    // (undocumented)
-    valueMap: Map<string, PropertyRecord>;
 }
 
 // @beta

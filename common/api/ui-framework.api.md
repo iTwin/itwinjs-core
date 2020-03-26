@@ -1429,14 +1429,8 @@ export class DefaultNavigationWidget extends React.Component<DefaultNavigationPr
     }
 
 // @beta
-export class DefaultReactDisplay extends React.Component<DefaultDisplayProps, DefaultDisplayState> {
+export class DefaultReactDisplay extends React.Component<DefaultDisplayProps, {}> {
     constructor(props: DefaultDisplayProps);
-    // (undocumented)
-    componentDidMount(): void;
-    // (undocumented)
-    componentWillUnmount(): void;
-    // (undocumented)
-    static hasAssociatedLockProperty(item: DialogItem): boolean;
     get itemsManager(): DialogItemsManager;
     set itemsManager(itemsManager: DialogItemsManager);
     // (undocumented)
@@ -1452,6 +1446,8 @@ export class DefaultToolSettingsProvider extends ToolUiProvider {
     onInitialize(): void;
     // (undocumented)
     toolSettingsDP: ToolSettingsDataProvider;
+    // (undocumented)
+    updateToolSettingsNodes(): void;
     // (undocumented)
     valueMap: Map<string, DialogItem>;
 }

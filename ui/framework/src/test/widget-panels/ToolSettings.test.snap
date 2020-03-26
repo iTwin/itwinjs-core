@@ -3,3 +3,18 @@
 exports[`WidgetPanelsToolSettings should not render w/o tool settings top center zone 1`] = `""`;
 
 exports[`WidgetPanelsToolSettings should render 1`] = `<DockedToolSettings />`;
+
+exports[`useToolSettings ToolSettingsGrid should render 1`] = `
+<div
+  className="uifw-standard-toolsettings-two-column-grid"
+>
+  <span
+    className="uifw-standard-toolsettings-label-entry"
+  >
+    Date
+  </span>
+  <input
+    type="date"
+  />
+</div>
+`;

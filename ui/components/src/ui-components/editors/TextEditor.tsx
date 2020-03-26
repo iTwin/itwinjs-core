@@ -125,11 +125,14 @@ export class TextEditor extends React.PureComponent<PropertyEditorProps, TextEdi
   /** @internal */
   public render(): React.ReactNode {
     const className = classnames("components-cell-editor", "components-text-editor", this.props.className);
-
+    const minSize = this.state.size ? this.state.size : 8;
+    const minWidthStyle: React.CSSProperties = {
+      minWidth: `${minSize * 0.75}em`,
+    };
     const inputProps: InputProps = {
       type: "text",
       className,
-      style: this.props.style,
+      style: this.props.style ? this.props.style : minWidthStyle,
       readOnly: this.state.readonly,
       disabled: this.state.isDisabled,
       size: this.state.size,

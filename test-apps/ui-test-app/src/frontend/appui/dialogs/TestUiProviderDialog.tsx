@@ -15,7 +15,7 @@ import {
   PropertyDescription,
   PropertyEditorParamTypes,
   SuppressLabelEditorParams,
-  DialogItemSyncArgs,
+  SyncPropertiesChangeEventArgs,
 } from "@bentley/ui-abstract";
 import { ColorDef, ColorByName } from "@bentley/imodeljs-common";
 import {
@@ -377,10 +377,9 @@ export class TestUiProviderDialog extends React.Component<TestUiProviderDialogPr
     if (!lengthItem || !useLengthItem)
       return;
 
-    const lockSyncItem: DialogPropertySyncItem = { value: useLengthItem.value, propertyName: TestUiProviderDialog._useLengthName };
     const syncItem: DialogPropertySyncItem = { value: lengthItem.value, propertyName: TestUiProviderDialog._lengthName, isDisabled: !this.useLength };
-    const synchEventArgs: DialogItemSyncArgs = { items: [lockSyncItem, syncItem] };
-    this._itemsManager.onPropertiesChanged.emit(synchEventArgs);
+    const synchEventArgs: SyncPropertiesChangeEventArgs = { properties: [syncItem] };
+    this._itemsManager.onSyncPropertiesChangeEvent.emit(synchEventArgs);
   }
 
   /** Used to send changes from UI */
@@ -418,7 +417,5 @@ export class TestUiProviderDialog extends React.Component<TestUiProviderDialogPr
       // not an item we know about
       return;
     }
-    const synchEventArgs: DialogItemSyncArgs = { items: [updatedValue] };
-    this._itemsManager.onPropertiesChanged.emit(synchEventArgs);
   }
 }
