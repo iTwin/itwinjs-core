@@ -6,6 +6,7 @@
 
 .nz-widgetPanels-panels {
   display: grid;
+  background-color: $buic-background-widget-panel;
   grid-template-columns: minmax(0, auto) 1fr minmax(0, auto);
   grid-template-rows: minmax(0, auto) 1fr minmax(0, auto);
 }

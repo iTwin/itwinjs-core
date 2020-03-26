@@ -68,7 +68,6 @@ interface PopupState {
   top: number;
   left: number;
   position: RelativePosition;
-  focusTarget?: React.RefObject<HTMLElement> | string;
 }
 
 /** Popup React component displays a popup relative to an optional target element.
@@ -85,7 +84,6 @@ export class Popup extends React.Component<PopupProps, PopupState> {
       top: 0,
       left: 0,
       position: this.props.position,
-      focusTarget: this.props.focusTarget,
     };
   }
 
@@ -110,18 +108,14 @@ export class Popup extends React.Component<PopupProps, PopupState> {
       if (this.props.isOpen) {
         const position = this._toggleRelativePosition();
         const point = this._fitPopup(this._getPosition(position));
-        const focusTarget = this.props.focusTarget;
-
-        if (this.state.left === point.x &&
-          this.state.top === point.y &&
-          this.state.position === position &&
-          this.state.focusTarget === focusTarget)
+        if ((Math.abs(this.state.left - point.x) < 2) &&
+          (Math.abs(this.state.top - point.y) < 2) &&
+          this.state.position === position)
           return;
         this.setState({
           left: point.x,
           top: point.y,
           position,
-          focusTarget,
         });
       }
       return;
@@ -463,7 +457,7 @@ export class Popup extends React.Component<PopupProps, PopupState> {
           tabIndex={-1}
           aria-label={this.props.ariaLabel}
         >
-          <FocusTrap active={!!this.props.moveFocus} initialFocusElement={this.state.focusTarget} returnFocusOnDeactivate={true}>
+          <FocusTrap active={!!this.props.moveFocus} initialFocusElement={this.props.focusTarget} returnFocusOnDeactivate={true}>
             {this.props.children}
           </FocusTrap>
         </div>
