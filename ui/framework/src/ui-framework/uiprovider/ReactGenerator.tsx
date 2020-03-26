@@ -80,13 +80,12 @@ function PropertyEditor({ itemsManager, record, isLock, setFocus }: { itemsManag
 
   return (
     <div key={record.property.name} className={className} >
-      // istanbul ignore next
       <EditorContainer key={record.property.name} propertyRecord={propertyRecord!} setFocus={setFocus} onCommit={handleCommit} onCancel={() => { }} />
     </div>);
 }
 
 /** Utility methods to generate react ui from DialogRow specs
- * @beta
+ * @internal
  */
 export class ReactGenerator {
 
