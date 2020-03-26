@@ -172,7 +172,7 @@ export class ExtensionClient extends Client {
    * @param contextId Context Id
    * @param extensionName Extension name
    * @param version Extension version
-   * @param file A zip archive containing extension files, in ArrayBufferLike format
+   * @param file A tar archive containing extension files, in ArrayBufferLike format
    * @internal
    */
   public async createExtension(requestContext: AuthorizedClientRequestContext, contextId: string, extensionName: string, version: string, file: ArrayBufferLike) {
@@ -181,7 +181,6 @@ export class ExtensionClient extends Client {
     const requestBody = {
       extensionName,
       version,
-      packageFileName: extensionName,
     };
 
     const options: RequestOptions = { method: "POST" };
@@ -241,19 +240,16 @@ export class ExtensionClient extends Client {
   public async deleteExtension(requestContext: AuthorizedClientRequestContext, contextId: string, extensionName: string, version?: string) {
     requestContext.enter();
 
-    const requestBody = {
-      extensionName,
-      version,
-    };
-
     const options: RequestOptions = { method: "DELETE" };
     options.headers = { authorization: requestContext.accessToken.toTokenString() };
-    options.body = requestBody;
     await this.setupOptionDefaults(options);
     requestContext.enter();
 
     try {
-      const response = await request(requestContext, await this.getUrl(requestContext) + contextId + "/IModelExtension", options);
+      let url = (await this.getUrl(requestContext)).concat(contextId, "/IModelExtension/", extensionName);
+      if (version !== undefined)
+        url = url.concat("/", version);
+      const response = await request(requestContext, url, options);
       requestContext.enter();
 
       if (response.status === 400)
@@ -262,7 +258,7 @@ export class ExtensionClient extends Client {
         throw new IModelError(ExtensionStatus.UnknownError, "Server returned status: " + response.status + ", message: " + response.body.message);
     } catch (error) {
       if (!(error instanceof ResponseError))
-        throw new IModelError(ExtensionStatus.EXTENSIONSTATUS_BASE, "Unknown error");
+        throw new IModelError(ExtensionStatus.UnknownError, "Unknown error");
       if (error.status === 400)
         throw new IModelError(ExtensionStatus.BadRequest, (error as any)._data?.message);
 

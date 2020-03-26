@@ -195,6 +195,8 @@ describe("ExtensionClient (#integration)", () => {
     it("downloads extension " + testCase.name + ", version " + testCase.version, async () => {
       const files = await extensionClient.downloadExtension(requestContext, projectId, testCase.name, testCase.version);
 
+      assert.strictEqual(files.length, testCase.files.length, "Returned file count does not match");
+
       for (const file of testCase.files) {
         const foundFile = files.find((f) => f.fileName === file.name);
         assert.isDefined(foundFile, "File not downloaded: " + file.name);
