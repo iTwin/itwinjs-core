@@ -15,7 +15,7 @@ import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { ECDb, ECDbOpenMode } from "./ECDb";
 import { Element } from "./Element";
-import { BriefcaseDb } from "./IModelDb";
+import { BriefcaseDb, SyncMode } from "./IModelDb";
 import { IModelJsFs } from "./IModelJsFs";
 import { Model } from "./Model";
 import { RelationshipProps } from "./Relationship";
@@ -220,8 +220,8 @@ export class ConcurrencyControl {
    * @internal
    */
   public onElementWrite(elementClass: typeof Element, element: ElementProps, opcode: DbOpcode): void {
-    if (this._iModel.isReadonly) {
-      throw new IModelError(IModelStatus.ReadOnly, "iModel is read-only", Logger.logError, loggerCategory);
+    if (this._iModel.openParams.syncMode !== SyncMode.PullAndPush) {
+      throw new IModelError(IModelStatus.ReadOnly, "iModel is read-only - changes cannot be pushed to the iModelHub", Logger.logError, loggerCategory);
     }
     const resourcesNeeded = new ConcurrencyControl.Request();
     this.buildRequestForElementTo(resourcesNeeded, element, opcode, elementClass);
@@ -412,7 +412,7 @@ export class ConcurrencyControl {
   }
 
   public async onOpened(requestContext: AuthorizedClientRequestContext): Promise<void> {
-    if (this._iModel.isReadonly)
+    if (this._iModel.openParams.syncMode !== SyncMode.PullAndPush)
       return;
 
     assert(!this._iModel.concurrencyControl._cache.isOpen, "BriefcaseDb.onOpened should be raised only once");
@@ -974,13 +974,16 @@ export namespace ConcurrencyControl {
     public get isOpen(): boolean { return this._db.isOpen; }
 
     private mustHaveBriefcase() {
-      if (this.concurrencyControl.iModel === undefined || this.concurrencyControl.iModel.briefcase === undefined || this.concurrencyControl.iModel.isReadonly)
-        throw new IModelError(IModelStatus.NotOpenForWrite, "not a read-write iModel briefcase", Logger.logError, loggerCategory, () => this.concurrencyControl.iModel);
+      if (this.concurrencyControl.iModel === undefined || this.concurrencyControl.iModel.briefcase === undefined
+        || this.concurrencyControl.iModel.openParams.syncMode !== SyncMode.PullAndPush)
+        throw new IModelError(IModelStatus.NotOpenForWrite, "not a briefcase that can be used to push changes to the IModel Hub", Logger.logError, loggerCategory, () => this.concurrencyControl.iModel.briefcase.getDebugInfo());
     }
 
-    private mustBeOpen() {
+    private mustBeOpenAndWriteable() {
+      if (this.concurrencyControl.iModel.openParams.syncMode !== SyncMode.PullAndPush)
+        throw new IModelError(IModelStatus.NotOpenForWrite, "not a briefcase that can be used to push changes to the IModel Hub", Logger.logError, loggerCategory, () => this.concurrencyControl.iModel.briefcase.getDebugInfo());
       if (!this.isOpen)
-        throw new IModelError(IModelStatus.NotOpen, "", Logger.logError, loggerCategory, () => this.computeCacheFileName());
+        throw new IModelError(IModelStatus.NotOpen, "not open", Logger.logError, loggerCategory, () => this.computeCacheFileName());
     }
 
     private static onOpen(fn: string) {
@@ -1070,14 +1073,14 @@ export namespace ConcurrencyControl {
     }
 
     public clear() {
-      this.mustBeOpen();
+      this.mustBeOpenAndWriteable();
       this._db.withPreparedSqliteStatement("delete from heldLocks", (stmt) => stmt.step());
       this._db.withPreparedSqliteStatement("delete from reservedCodes", (stmt) => stmt.step());
       this._db.saveChanges();
     }
 
     public getHeldLock(type: LockType, objectId: string): LockLevel {
-      this.mustBeOpen();
+      this.mustBeOpenAndWriteable();
       let ll = LockLevel.None;
       this._db.withPreparedSqliteStatement("select level from heldLocks where (type=?) and (objectId=?)", (stmt) => {
         stmt.bindValue(1, type);
@@ -1093,7 +1096,7 @@ export namespace ConcurrencyControl {
     }
 
     public isCodeReserved(code: CodeProps): boolean {
-      this.mustBeOpen();
+      this.mustBeOpenAndWriteable();
       let isFound = false;
       this._db.withPreparedSqliteStatement("select count(*) from reservedCodes where (specid=?) and (scope=?) and (value=?) limit 1", (stmt) => {
         stmt.bindValue(1, code.spec);
@@ -1106,7 +1109,7 @@ export namespace ConcurrencyControl {
     }
 
     public insertCodes(codes: CodeProps[]) {
-      this.mustBeOpen();
+      this.mustBeOpenAndWriteable();
       this._db.withPreparedSqliteStatement("insert into reservedCodes (specid,scope,value) VALUES(?,?,?)", (stmt) => {
         for (const code of codes) {
           stmt.reset();
@@ -1122,7 +1125,7 @@ export namespace ConcurrencyControl {
     }
 
     public insertLocks(locks: LockProps[]) {
-      this.mustBeOpen();
+      this.mustBeOpenAndWriteable();
       this._db.withPreparedSqliteStatement("insert into heldLocks (type,objectId,level) VALUES(?,?,?)", (stmt) => {
         for (const lock of locks) {
           stmt.reset();

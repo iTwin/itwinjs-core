@@ -27,8 +27,6 @@ import { ChangedModels } from '@bentley/imodeljs-common';
 import { ChangedValueState } from '@bentley/imodeljs-common';
 import { ChangeOpCode } from '@bentley/imodeljs-common';
 import { ChangeSet } from '@bentley/imodeljs-clients';
-import { ChangeSetApplyOption } from '@bentley/bentleyjs-core';
-import { ChangeSetStatus } from '@bentley/bentleyjs-core';
 import { ClientRequestContext } from '@bentley/bentleyjs-core';
 import { ClipVector } from '@bentley/geometry-core';
 import { CloudStorageContainerDescriptor } from '@bentley/imodeljs-common';
@@ -461,10 +459,10 @@ export class BriefcaseDb extends IModelDb {
     static readonly onCreate: BeEvent<(_requestContext: AuthorizedClientRequestContext, _contextId: string, _args: CreateIModelProps) => void>;
     static readonly onCreated: BeEvent<(_imodelDb: BriefcaseDb) => void>;
     static readonly onOpen: BeEvent<(_requestContext: AuthorizedClientRequestContext, _contextId: string, _iModelId: string, _openParams: OpenParams, _version: IModelVersion) => void>;
-    static readonly onOpened: BeEvent<(_requestContext: AuthorizedClientRequestContext, _imodelDb: BriefcaseDb) => void>;
+    static readonly onOpened: BeEvent<(_requestContext: AuthorizedClientRequestContext | ClientRequestContext, _imodelDb: BriefcaseDb) => void>;
     static open(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: string, openParams?: OpenParams, version?: IModelVersion): Promise<BriefcaseDb>;
     // @internal
-    static openBriefcase(requestContext: AuthorizedClientRequestContext, iModelToken: IModelToken): Promise<BriefcaseDb>;
+    static openBriefcase(requestContext: AuthorizedClientRequestContext | ClientRequestContext, iModelToken: IModelToken): Promise<BriefcaseDb>;
     // @beta
     pullAndMergeChanges(requestContext: AuthorizedClientRequestContext, version?: IModelVersion): Promise<void>;
     // @beta
@@ -523,7 +521,6 @@ export type BriefcaseId = number;
 
 // @internal
 export class BriefcaseManager {
-    static applyStandaloneChangeSets(briefcase: BriefcaseEntry, changeSetTokens: ChangeSetToken[], processOption: ChangeSetApplyOption): ChangeSetStatus;
     // (undocumented)
     static get cacheDir(): string;
     static close(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseEntry, keepBriefcase: KeepBriefcase): Promise<void>;
@@ -535,7 +532,6 @@ export class BriefcaseManager {
     static deleteBriefcase(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseEntry): Promise<void>;
     static download(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelId: GuidString, openParams: OpenParams, changeSetId: GuidString): Promise<BriefcaseEntry>;
     static downloadChangeSets(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, fromChangeSetId: string, toChangeSetId: string): Promise<ChangeSet[]>;
-    static dumpChangeSet(nativeDb: IModelJsNative.DgnDb, changeSetToken: ChangeSetToken): void;
     static findBriefcaseByKey(key: string): BriefcaseEntry | undefined;
     static getBriefcasesFromDisk(): Promise<BriefcaseProps[]>;
     // (undocumented)

@@ -276,7 +276,7 @@ describe.skip("DebugHubIssues (#integration)", () => {
     const changeSet: ChangeSetToken | undefined = changeSets.find((val: ChangeSetToken) => val.index === 368);
     assert.isDefined(changeSet);
 
-    BriefcaseManager.dumpChangeSet(iModel.nativeDb, changeSet!);
+    HubUtility.dumpChangeSet(iModel, changeSet!);
 
     const status: ChangeSetStatus = HubUtility.applyStandaloneChangeSets(iModel, new Array<ChangeSetToken>(changeSet!), ChangeSetApplyOption.Reverse);
     assert.equal(status, ChangeSetStatus.Success);

@@ -6,7 +6,7 @@ import { assert, ChangeSetApplyOption, ChangeSetStatus, GuidString, Logger, Open
 import { AuthorizedClientRequestContext, Briefcase as HubBriefcase, BriefcaseQuery, ChangeSet, ChangeSetQuery, ChangesType, HubIModel, IModelHubClient, IModelQuery, Project, Version, VersionQuery } from "@bentley/imodeljs-clients";
 import * as os from "os";
 import * as path from "path";
-import { BriefcaseEntry, BriefcaseManager, ChangeSetToken, IModelDb, IModelJsFs, ReservedBriefcaseId, StandaloneDb } from "../../imodeljs-backend";
+import { BriefcaseManager, ChangeSetToken, IModelDb, IModelJsFs, ReservedBriefcaseId, StandaloneDb, IModelHost } from "../../imodeljs-backend";
 
 /** Utility to work with the iModel Hub */
 export class HubUtility {
@@ -189,12 +189,16 @@ export class HubUtility {
     await BriefcaseManager.imodelClient.iModels.delete(requestContext, projectId, iModelId);
   }
 
+  public static dumpChangeSet(iModel: IModelDb, changeSetToken: ChangeSetToken) {
+    iModel.nativeDb.dumpChangeSet(JSON.stringify(changeSetToken));
+  }
+
   public static dumpChangeSetFile(iModel: IModelDb, dir: string, whichCs: string): void {
     const changeSets: ChangeSetToken[] = HubUtility.readChangeSets(dir);
 
     changeSets.forEach((changeSet) => {
       if (changeSet.id === whichCs) {
-        BriefcaseManager.dumpChangeSet(iModel.nativeDb, changeSet);
+        HubUtility.dumpChangeSet(iModel, changeSet);
         return;
       }
     });
@@ -404,8 +408,7 @@ export class HubUtility {
     // Apply change sets one by one to debug any issues
     for (const changeSet of changeSets) {
       const tempChangeSets = [changeSet];
-      const briefcaseEntry = new BriefcaseEntry("", iModel.nativeDb.getDbGuid(), "", iModel.nativeDb.getFilePath(), iModel.openParams, iModel.getBriefcaseId());
-      const status: ChangeSetStatus = BriefcaseManager.applyStandaloneChangeSets(briefcaseEntry, tempChangeSets, applyOption);
+      const status: ChangeSetStatus = IModelHost.platform.ApplyChangeSetsRequest.doApplySync(iModel.nativeDb, JSON.stringify(tempChangeSets), applyOption);
       if (status === ChangeSetStatus.Success) {
         Logger.logInfo(HubUtility.logCategory, "Successfully applied ChangeSet", () => ({ ...changeSet, status, applyOption }));
       } else {
@@ -422,7 +425,7 @@ export class HubUtility {
   /** Dumps change sets */
   public static dumpStandaloneChangeSets(iModelDb: IModelDb, changeSets: ChangeSetToken[]) {
     changeSets.forEach((changeSet) => {
-      BriefcaseManager.dumpChangeSet(iModelDb.nativeDb, changeSet);
+      HubUtility.dumpChangeSet(iModelDb, changeSet);
     });
   }
 

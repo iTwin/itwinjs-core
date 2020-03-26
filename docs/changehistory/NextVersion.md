@@ -59,10 +59,16 @@ Previously, shader programs used by the [RenderSystem]($frontend) were never com
 
 ## Opening iModels
 
-* Can open iModels at the backend with a new [SyncMode.pullOnly]($backend).
-  * Allows pulling change sets, but errors out when pushing a change set.
-  * A new briefcase is acquired from the iModel Hub and is meant for exclusive use by the user.
-  * Since the briefcase is opened ReadWrite to accept change sets, the user will still be able to make edits.
+  The API now allows opening iModels (briefcases) at the backend with a new [SyncMode.pullOnly]($backend) option. e.g.,
+  ```ts
+  const iModel = await BriefcaseDb.open(requestContext, projectId, iModelId, OpenParams.pullOnly());
+  ```
+  * Opening with this new option establishes a local briefcase that allows change sets to be pulled from the iModel Hub and merged in. e.g.,
+    ```ts
+    iModel.pullAndMergeChanges(requestContext, IModelVersion.latest());
+    ```
+  *  Upon open a new briefcase is *acquired* from the iModel Hub and is meant for exclusive use by that user.
+  * The briefcase is opened ReadWrite to allow merging of change sets even if no changes can be made to it.
 
 ## Breaking API changes
 

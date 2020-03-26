@@ -165,7 +165,7 @@ export class NativeAppRpcImpl extends RpcInterface implements NativeAppRpcInterf
    * @returns briefcase id of briefcase.
    */
   public async openBriefcase(tokenProps: IModelTokenProps): Promise<IModelProps> {
-    const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
+    const requestContext = ClientRequestContext.current;
 
     BriefcaseManager.initializeBriefcaseCacheFromDisk();
 

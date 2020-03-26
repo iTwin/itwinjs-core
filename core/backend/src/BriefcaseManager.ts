@@ -865,6 +865,8 @@ export class BriefcaseManager {
     if (briefcaseInfo.parentChangeSetId !== briefcase.parentChangeSetId || briefcaseInfo.reversedChangeSetId !== briefcase.reversedChangeSetId)
       throw new IModelError(res, "Briefcase does not match the cached info", Logger.logError, loggerCategory, () => briefcase.getDebugInfo());
 
+    BriefcaseManager.closeBriefcase(briefcase, false);
+
     assert(!this._cache.findBriefcase(briefcase), "Attempting to open or create briefcase twice");
     BriefcaseManager._cache.addBriefcase(briefcase);
 
@@ -1849,28 +1851,6 @@ export class BriefcaseManager {
     const changeSetToken: ChangeSetToken = BriefcaseManager.startCreateChangeSet(briefcaseEntry);
     BriefcaseManager.finishCreateChangeSet(briefcaseEntry);
     return changeSetToken;
-  }
-
-  /** Applies a change set to a standalone iModel
-   * @internal
-   */
-  public static applyStandaloneChangeSets(briefcase: BriefcaseEntry, changeSetTokens: ChangeSetToken[], processOption: ChangeSetApplyOption): ChangeSetStatus {
-    if (!briefcase.openParams.isSnapshot)
-      throw new IModelError(BentleyStatus.ERROR, "Cannot call applyStandaloneChangeSets() when the briefcase is not a snapshot", Logger.logError, loggerCategory, () => briefcase.getDebugInfo());
-
-    // Apply the changes one by one for debugging
-    for (const changeSetToken of changeSetTokens) {
-      const tempChangeSetTokens = new Array<ChangeSetToken>(changeSetToken);
-      const status = IModelHost.platform.ApplyChangeSetsRequest.doApplySync(briefcase.nativeDb, JSON.stringify(tempChangeSetTokens), processOption);
-      if (ChangeSetStatus.Success !== status)
-        return status;
-    }
-    return ChangeSetStatus.Success;
-  }
-
-  /** Dumps a change set */
-  public static dumpChangeSet(nativeDb: IModelJsNative.DgnDb, changeSetToken: ChangeSetToken) {
-    nativeDb.dumpChangeSet(JSON.stringify(changeSetToken));
   }
 
   /** Attempt to push a ChangeSet to iModel Hub */

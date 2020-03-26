@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { using } from "@bentley/bentleyjs-core";
-import { NativeApp, IModelApp, NativeAppLogger, AuthorizedFrontendRequestContext } from "@bentley/imodeljs-frontend";
+import { NativeApp, IModelApp, NativeAppLogger, AuthorizedFrontendRequestContext, FrontendRequestContext } from "@bentley/imodeljs-frontend";
 import { BriefcaseProps, IModelVersion } from "@bentley/imodeljs-common";
 import { Config, ProgressInfo } from "@bentley/imodeljs-clients";
 import { TestUsers, TestAuthorizationClient } from "@bentley/oidc-signin-tool/lib/TestUsers";
@@ -53,7 +53,7 @@ describe("NativeApp (#integration)", () => {
       assert(rs.length > 0);
       assert.isNumber(rs[0].fileSize);
       assert(rs[0].fileSize! > 0);
-      const conn = await NativeApp.openBriefcase(requestContext, iModelToken);
+      const conn = await NativeApp.openBriefcase(new FrontendRequestContext(), iModelToken);
       const rowCount = await conn.queryRowCount("SELECT ECInstanceId FROM bis.Element");
       assert.notEqual(rowCount, 0);
       assert.equal(scope.rejected.length, 0);
@@ -80,6 +80,7 @@ describe("NativeApp (#integration)", () => {
       }
     });
   });
+
   it("should be able to start and finish downloading a briefcase (#integration)", async () => {
     // Redirect native log to backend. Logger must be config.
     NativeAppLogger.initialize();
@@ -98,7 +99,7 @@ describe("NativeApp (#integration)", () => {
     await NativeApp.finishDownloadBriefcase(requestContext, downloadToken);
     requestContext.enter();
 
-    const iModel = await NativeApp.openBriefcase(requestContext, downloadToken.iModelToken);
+    const iModel = await NativeApp.openBriefcase(new FrontendRequestContext(), downloadToken.iModelToken);
     requestContext.enter();
 
     await iModel.close();
@@ -106,6 +107,7 @@ describe("NativeApp (#integration)", () => {
 
     await NativeApp.deleteBriefcase(requestContext, downloadToken.iModelToken);
   });
+
   it("Progress event (#integration)", async () => {
     // Redirect native log to backend. Logger must be config.
     NativeAppLogger.initialize();
@@ -155,6 +157,8 @@ describe("NativeApp (#integration)", () => {
     try {
       await NativeApp.finishDownloadBriefcase(requestContext, downloadToken);
       requestContext.enter();
+
+      await NativeApp.deleteBriefcase(requestContext, downloadToken.iModelToken);
     } catch (err) {
       requestContext.enter();
       cancelled2 = true;

@@ -6,7 +6,7 @@ import { LockLevel, LockType } from "@bentley/imodeljs-clients";
 import { CodeProps } from "@bentley/imodeljs-common";
 import { assert } from "chai";
 import * as path from "path";
-import { ConcurrencyControl, IModelJsFs } from "../../imodeljs-backend";
+import { ConcurrencyControl, IModelJsFs, SyncMode } from "../../imodeljs-backend";
 import { KnownTestLocations } from "../KnownTestLocations";
 
 describe("ConcurrencyControl.StateCache", () => {
@@ -23,6 +23,9 @@ describe("ConcurrencyControl.StateCache", () => {
         needsConcurrencyControl: true,
         briefcase: {
           pathname: mockBriefcasePathname,
+        },
+        openParams: {
+          syncMode: SyncMode.PullAndPush,
         },
       },
     };

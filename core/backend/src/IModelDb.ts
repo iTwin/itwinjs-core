@@ -8,7 +8,7 @@
 
 // cspell:ignore ulas postrc pollrc
 import {
-  AuthStatus, BeDuration, BeEvent, BentleyStatus, ChangeSetStatus, ClientRequestContext, DbResult, Guid, GuidString,
+  BeDuration, BeEvent, BentleyStatus, ChangeSetStatus, ClientRequestContext, DbResult, Guid, GuidString,
   Id64, Id64Arg, Id64Set, Id64String, JsonUtils, Logger, OpenMode, PerfLogger,
 } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext, UlasClient, UsageLogEntry, UsageType, ProgressCallback } from "@bentley/imodeljs-clients";
@@ -628,7 +628,7 @@ export abstract class IModelDb extends IModel {
     }
 
     if (!(requestContext instanceof AuthorizedClientRequestContext)) {
-      throw new IModelError(AuthStatus.Error, "Importing the schema requires an AuthorizedClientRequestContext");
+      throw new IModelError(BentleyStatus.ERROR, "Importing the schema requires an AuthorizedClientRequestContext");
     }
     if (this.isBriefcaseDb()) {
       await this.concurrencyControl.lockSchema(requestContext);
@@ -2108,7 +2108,9 @@ export class BriefcaseDb extends IModelDb {
    * @param briefcaseEntry Downloaded briefcase - see [[downloadBriefcase]]
    * @internal
    */
-  public static async openBriefcase(requestContext: AuthorizedClientRequestContext, iModelToken: IModelToken): Promise<BriefcaseDb> {
+  public static async openBriefcase(requestContext: AuthorizedClientRequestContext | ClientRequestContext, iModelToken: IModelToken): Promise<BriefcaseDb> {
+    requestContext.enter();
+
     const briefcaseEntry = BriefcaseManager.findBriefcaseByKey(iModelToken.key);
     if (briefcaseEntry === undefined)
       throw new IModelError(IModelStatus.BadRequest, "Cannot open a briefcase that has not been downloaded", Logger.logError, loggerCategory, () => iModelToken);
@@ -2132,12 +2134,17 @@ export class BriefcaseDb extends IModelDb {
       const iModelDb = new BriefcaseDb(briefcaseEntry, iModelToken, briefcaseEntry.openParams);
       briefcaseEntry.iModelDb = iModelDb;
 
-      iModelDb.setDefaultConcurrentControlAndPolicy();
-      await iModelDb.concurrencyControl.onOpened(requestContext);
+      if (briefcaseEntry.openParams.syncMode === SyncMode.PullAndPush) {
+        if (!(requestContext instanceof AuthorizedClientRequestContext))
+          throw new IModelError(BentleyStatus.ERROR, "Opening a briefcase with SyncMode = PUllAndPush requires an AuthorizedClientRequestContext");
+
+        await iModelDb.concurrencyControl.onOpened(requestContext);
+      }
       this.onOpened.raiseEvent(requestContext, iModelDb);
     }
 
-    await this.logUsage(requestContext, briefcaseEntry.contextId, briefcaseEntry.iModelDb);
+    if (requestContext instanceof AuthorizedClientRequestContext)
+      await this.logUsage(requestContext, briefcaseEntry.contextId, briefcaseEntry.iModelDb);
     return briefcaseEntry.iModelDb as BriefcaseDb; // WIP: change iModelDb type in BriefcaseEntry
   }
 
@@ -2151,7 +2158,7 @@ export class BriefcaseDb extends IModelDb {
   public async close(requestContext: AuthorizedClientRequestContext, keepBriefcase: KeepBriefcase = KeepBriefcase.Yes): Promise<void> {
     requestContext.enter();
 
-    if (!this.isReadonly) {
+    if (this.openParams.syncMode === SyncMode.PullAndPush) {
       await this.concurrencyControl.onClose(requestContext);
       requestContext.enter();
     }
@@ -2274,7 +2281,7 @@ export class BriefcaseDb extends IModelDb {
    * [[include:BriefcaseDb.onOpened]]
    * ```
    */
-  public static readonly onOpened = new BeEvent<(_requestContext: AuthorizedClientRequestContext, _imodelDb: BriefcaseDb) => void>();
+  public static readonly onOpened = new BeEvent<(_requestContext: AuthorizedClientRequestContext | ClientRequestContext, _imodelDb: BriefcaseDb) => void>();
   /** Event raised just before a BriefcaseDb is created in iModelHub.
    * This event is raised only for iModel access initiated by this app only.
    */

@@ -5343,7 +5343,7 @@ export class NativeApp {
     // (undocumented)
     static onMemoryWarning: BeEvent<() => void>;
     // (undocumented)
-    static openBriefcase(requestContext: AuthorizedClientRequestContext, iModelToken: IModelTokenProps): Promise<BriefcaseConnection>;
+    static openBriefcase(requestContext: ClientRequestContext, iModelToken: IModelTokenProps): Promise<BriefcaseConnection>;
     static openStorage(name: string): Promise<Storage>;
     // (undocumented)
     static overrideInternetConnectivity(status: InternetConnectivityStatus): Promise<void>;

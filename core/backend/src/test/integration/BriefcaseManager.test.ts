@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
-import { OpenMode, GuidString, Logger, LogLevel, BriefcaseStatus } from "@bentley/bentleyjs-core";
-import { IModelVersion, IModelToken } from "@bentley/imodeljs-common";
+import { OpenMode, GuidString, Logger, LogLevel, BriefcaseStatus, ClientRequestContext, IModelStatus } from "@bentley/bentleyjs-core";
+import { IModelVersion, IModelToken, IModelError } from "@bentley/imodeljs-common";
 import { BriefcaseQuery, Briefcase as HubBriefcase, AuthorizedClientRequestContext, HubIModel, ProgressInfo, UserCancelledError } from "@bentley/imodeljs-clients";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { IModelTestUtils, TestIModelInfo } from "../IModelTestUtils";
@@ -95,7 +95,7 @@ describe("BriefcaseManager (#integration)", () => {
     BriefcaseDb.onOpen.addListener(onOpenListener);
 
     let onOpenedCalled: boolean = false;
-    const onOpenedListener = (_requestContextIn: AuthorizedClientRequestContext, iModelDb: IModelDb) => {
+    const onOpenedListener = (_requestContextIn: AuthorizedClientRequestContext | ClientRequestContext, iModelDb: IModelDb) => {
       onOpenedCalled = true;
       assert.equal(iModelDb.iModelToken.iModelId, readOnlyTestIModel.id);
     };
@@ -518,7 +518,7 @@ describe("BriefcaseManager (#integration)", () => {
     await testUtility.deleteTestIModel();
   });
 
-  it("should be able to edit PullOnly briefcases and upgrade versions on re-open as necessary, but not be able to push changes", async () => {
+  it("should not be able to edit PullOnly briefcases", async () => {
     const userContext1 = await TestUtility.getAuthorizedClientRequestContext(TestUsers.manager); // User1 is just used to create and update the iModel
     const userContext2 = await TestUtility.getAuthorizedClientRequestContext(TestUsers.superManager); // User2 is used for the test
 
@@ -526,7 +526,7 @@ describe("BriefcaseManager (#integration)", () => {
     const testUtility = new TestChangeSetUtility(userContext1, "PullOnlyTest");
     await testUtility.createTestIModel();
 
-    // User2 opens the iModel pullOnly and is able to edit and save changes (it's after all ReadWrite!!)
+    // User2 opens the iModel pullOnly and is not able to edit (even if the db is opened read-write!)
     let iModelPullOnly = await BriefcaseDb.open(userContext2, testUtility.projectId, testUtility.iModelId, OpenParams.pullOnly(), IModelVersion.latest());
     assert.exists(iModelPullOnly);
     const briefcaseId = iModelPullOnly.briefcase.briefcaseId;
@@ -534,32 +534,36 @@ describe("BriefcaseManager (#integration)", () => {
 
     const rootEl: Element = iModelPullOnly.elements.getRootSubject();
     rootEl.userLabel = rootEl.userLabel + "changed";
-    await iModelPullOnly.concurrencyControl.requestResourcesForUpdate(userContext2, [rootEl]);
-    iModelPullOnly.elements.updateElement(rootEl);
+    let errorThrown1 = false;
+    try {
+      await iModelPullOnly.concurrencyControl.requestResourcesForUpdate(userContext2, [rootEl]);
+    } catch (err) {
+      errorThrown1 = err instanceof IModelError && err.errorNumber === IModelStatus.NotOpenForWrite;
+    }
+    assert.isTrue(errorThrown1);
 
-    await iModelPullOnly.concurrencyControl.request(userContext2);
-    assert.isTrue(iModelPullOnly.nativeDb.hasUnsavedChanges());
-    assert.isFalse(iModelPullOnly.nativeDb.hasSavedChanges());
-    iModelPullOnly.saveChanges();
-    assert.isFalse(iModelPullOnly.nativeDb.hasUnsavedChanges());
-    assert.isTrue(iModelPullOnly.nativeDb.hasSavedChanges());
+    let errorThrown2 = false;
+    try {
+      iModelPullOnly.elements.updateElement(rootEl);
+    } catch (err) {
+      errorThrown2 = true;
+    }
+    assert.isTrue(errorThrown2);
 
     await iModelPullOnly.close(userContext2, KeepBriefcase.Yes);
 
     // User2 should be able to re-open the iModel pullOnly again
-    // - the changes will still be there
     iModelPullOnly = await BriefcaseDb.open(userContext2, testUtility.projectId, testUtility.iModelId, OpenParams.pullOnly(), IModelVersion.latest());
     const changeSetIdPullAndPush = iModelPullOnly.iModelToken.changeSetId;
     assert.strictEqual(iModelPullOnly.briefcase.briefcaseId, briefcaseId);
     assert.strictEqual(iModelPullOnly.briefcase.pathname, pathname);
     assert.isFalse(iModelPullOnly.nativeDb.hasUnsavedChanges());
-    assert.isTrue(iModelPullOnly.nativeDb.hasSavedChanges());
+    assert.isFalse(iModelPullOnly.nativeDb.hasSavedChanges());
 
     // User1 pushes a change set
     await testUtility.pushTestChangeSet();
 
     // User2 should be able to re-open the iModel pullOnly again as of a newer version
-    // - the changes will still be there, but
     // - the briefcase will NOT be upgraded to the newer version since it was left open.
     iModelPullOnly = await BriefcaseDb.open(userContext2, testUtility.projectId, testUtility.iModelId, OpenParams.pullOnly(), IModelVersion.latest());
     const changeSetIdPullAndPush2 = iModelPullOnly.iModelToken.changeSetId;
@@ -567,10 +571,9 @@ describe("BriefcaseManager (#integration)", () => {
     assert.strictEqual(iModelPullOnly.briefcase.briefcaseId, briefcaseId);
     assert.strictEqual(iModelPullOnly.briefcase.pathname, pathname);
     assert.isFalse(iModelPullOnly.nativeDb.hasUnsavedChanges());
-    assert.isTrue(iModelPullOnly.nativeDb.hasSavedChanges());
+    assert.isFalse(iModelPullOnly.nativeDb.hasSavedChanges());
 
     // User2 closes and reopens the iModel pullOnly as of the newer version
-    // - the changes will still be there, AND
     // - the briefcase will be upgraded to the newer version since it was closed and re-opened.
     await iModelPullOnly.close(userContext2, KeepBriefcase.Yes);
     iModelPullOnly = await BriefcaseDb.open(userContext2, testUtility.projectId, testUtility.iModelId, OpenParams.pullOnly(), IModelVersion.latest());
@@ -579,7 +582,7 @@ describe("BriefcaseManager (#integration)", () => {
     assert.strictEqual(iModelPullOnly.briefcase.briefcaseId, briefcaseId);
     assert.strictEqual(iModelPullOnly.briefcase.pathname, pathname);
     assert.isFalse(iModelPullOnly.nativeDb.hasUnsavedChanges());
-    assert.isTrue(iModelPullOnly.nativeDb.hasSavedChanges());
+    assert.isFalse(iModelPullOnly.nativeDb.hasSavedChanges());
 
     // User1 pushes another change set
     await testUtility.pushTestChangeSet();
@@ -597,8 +600,6 @@ describe("BriefcaseManager (#integration)", () => {
       errorThrown = true;
     }
     assert.isTrue(errorThrown);
-
-    // NEEDS_WORK -> User2 needs the ability to abandon saved changes, and this needs a new method.
 
     // Delete iModel from the Hub and disk
     await iModelPullOnly.close(userContext2, KeepBriefcase.No);

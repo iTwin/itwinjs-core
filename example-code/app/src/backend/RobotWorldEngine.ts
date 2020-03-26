@@ -140,7 +140,7 @@ export class RobotWorldEngine {
 
     // __PUBLISH_EXTRACT_START__ Schema.importSchema
     // Make sure the RobotWorld schema is in the iModel.
-    BriefcaseDb.onOpened.addListener((requestContext: AuthorizedClientRequestContext, iModel: IModelDb) => {
+    BriefcaseDb.onOpened.addListener((requestContext: AuthorizedClientRequestContext | ClientRequestContext, iModel: IModelDb) => {
       RobotWorld.importSchema(requestContext, iModel); // tslint:disable-line:no-floating-promises
     });
     // __PUBLISH_EXTRACT_END__

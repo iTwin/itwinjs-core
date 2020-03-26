@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { EnvMacroSubst, OpenMode } from "@bentley/bentleyjs-core";
+import { EnvMacroSubst, OpenMode, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { BriefcaseDb, ConcurrencyControl, OpenParams } from "@bentley/imodeljs-backend";
 import { AccessToken, AuthorizedClientRequestContext, Config } from "@bentley/imodeljs-clients";
 import { IModelError, IModelStatus, IModelVersion } from "@bentley/imodeljs-common";
@@ -39,7 +39,7 @@ function configureIModel() {
   // __PUBLISH_EXTRACT_END__
 
   // __PUBLISH_EXTRACT_START__ BriefcaseDb.onOpened
-  BriefcaseDb.onOpened.addListener((_requestContext: AuthorizedClientRequestContext, iModel: BriefcaseDb) => {
+  BriefcaseDb.onOpened.addListener((_requestContext: AuthorizedClientRequestContext | ClientRequestContext, iModel: BriefcaseDb) => {
     if (iModel.openParams.openMode !== OpenMode.ReadWrite)
       return;
 
