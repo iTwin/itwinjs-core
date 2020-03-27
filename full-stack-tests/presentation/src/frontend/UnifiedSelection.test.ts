@@ -44,7 +44,7 @@ describe("Unified Selection", () => {
         nestedModelIds: [], // WIP: no nested models... need a better imodel
       },
       category: {
-        key: { className: "BisCore:Category", id: Id64.fromLocalAndBriefcaseIds(23, 0) },
+        key: { className: "BisCore:SpatialCategory", id: Id64.fromLocalAndBriefcaseIds(23, 0) },
         subCategoryIds: [Id64.fromLocalAndBriefcaseIds(24, 0)],
       },
       subcategory: {
