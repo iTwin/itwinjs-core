@@ -1297,7 +1297,8 @@ export class BackgroundTerrainTileTreeReference extends TileTreeReference {
     // (undocumented)
     protected getViewFlagOverrides(tree: TileTree): import("@bentley/imodeljs-common").ViewFlagOverrides;
     // (undocumented)
-    settings: BackgroundMapSettings;
+    get settings(): BackgroundMapSettings;
+    set settings(settings: BackgroundMapSettings);
     // (undocumented)
     get treeOwner(): TileTreeOwner;
     unionFitRange(_range: Range3d): void;

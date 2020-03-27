@@ -533,19 +533,24 @@ const backgroundTerrainTreeSupplier = new BackgroundTerrainTreeSupplier();
  * @internal
  */
 export class BackgroundTerrainTileTreeReference extends TileTreeReference {
-  public settings: BackgroundMapSettings;
+  private _settings: BackgroundMapSettings;
   private readonly _iModel: IModelConnection;
   private readonly _mapDrapeTree: BackgroundMapTileTreeReference;
 
   public constructor(settings: BackgroundMapSettings, iModel: IModelConnection) {
     super();
-    this.settings = settings;
+    this._settings = settings;
     this._iModel = iModel;
     this._mapDrapeTree = new BackgroundMapTileTreeReference(settings, iModel, true);    // The drape map can not also include terrain. -- drape and background map share trees if terrain not on.
   }
 
   /** Terrain  tiles do not contribute to the range used by "fit view". */
   public unionFitRange(_range: Range3d): void { }
+  public get settings(): BackgroundMapSettings { return this._settings; }
+  public set settings(settings: BackgroundMapSettings) {
+    this._settings = settings;
+    this._mapDrapeTree.settings = settings;
+  }
 
   public get castsShadows() {
     return false;

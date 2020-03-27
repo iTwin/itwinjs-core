@@ -369,7 +369,8 @@ export class ViewAttributes {
       terrainCheckbox.checked = map.applyTerrain;
       transCheckbox.checked = false !== map.transparency;
       globeModes.value = map.globeMode.toString();
-      enableTerrain(terrainCheckbox.checked);
+      if (map.applyTerrain !== terrainCheckbox.checked)
+        enableTerrain(terrainCheckbox.checked);
     });
     div.appendChild(backgroundSettingsDiv);
     this._element.appendChild(div);
