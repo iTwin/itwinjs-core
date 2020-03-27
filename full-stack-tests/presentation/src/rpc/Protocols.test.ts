@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as faker from "faker";
-import { BentleyCloudRpcManager, RpcManager, IModelToken, WebAppRpcRequest } from "@bentley/imodeljs-common";
+import { BentleyCloudRpcManager, RpcManager, IModelTokenProps, WebAppRpcRequest } from "@bentley/imodeljs-common";
 import { PresentationRpcInterface } from "@bentley/presentation-common";
 
 describe("PresentationRpcInterface usage with RPC protocols", () => {
@@ -12,13 +12,17 @@ describe("PresentationRpcInterface usage with RPC protocols", () => {
   describe("BentleyCloudRpcProtocol", () => {
 
     let client: PresentationRpcInterface;
-    let token: IModelToken;
+    let token: IModelTokenProps;
 
     before(() => {
       const params = { info: { title: "Test", version: "1.0" } };
       BentleyCloudRpcManager.initializeClient(params, [PresentationRpcInterface]);
       client = RpcManager.getClientForInterface(PresentationRpcInterface);
-      token = new IModelToken(faker.random.uuid(), faker.random.uuid(), faker.random.uuid());
+      token = {
+        key: faker.random.uuid(),
+        contextId: faker.random.uuid(),
+        iModelId: faker.random.uuid(),
+      };
     });
 
     it("creates valid request for getNodesCount", () => {

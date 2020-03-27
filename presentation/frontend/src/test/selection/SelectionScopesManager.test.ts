@@ -10,14 +10,14 @@ import {
   createRandomSelectionScope, createRandomId, createRandomECInstanceKey,
 } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { Id64String } from "@bentley/bentleyjs-core";
-import { IModelToken } from "@bentley/imodeljs-common";
+import { IModelTokenProps } from "@bentley/imodeljs-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { RpcRequestsHandler, KeySet, DEFAULT_KEYS_BATCH_SIZE } from "@bentley/presentation-common";
 import { SelectionScopesManager, SelectionScopesManagerProps } from "../../presentation-frontend/selection/SelectionScopesManager";
 
 describe("SelectionScopesManager", () => {
 
-  const imodelToken = new IModelToken("");
+  const imodelToken = moq.Mock.ofType<IModelTokenProps>().object;
   const imodelMock = moq.Mock.ofType<IModelConnection>();
   const rpcRequestsHandlerMock = moq.Mock.ofType<RpcRequestsHandler>();
   let manager: SelectionScopesManager | undefined;
@@ -31,7 +31,7 @@ describe("SelectionScopesManager", () => {
 
   beforeEach(() => {
     imodelMock.reset();
-    imodelMock.setup((x) => x.getRpcToken()).returns(() => imodelToken);
+    imodelMock.setup((x) => x.getRpcTokenProps()).returns(() => imodelToken);
     rpcRequestsHandlerMock.reset();
     manager = undefined;
     managerProps = {

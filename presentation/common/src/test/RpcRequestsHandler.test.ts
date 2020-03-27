@@ -13,7 +13,7 @@ import {
   createRandomSelectionScope, createRandomLabelDefinitionJSON,
 } from "./_helpers/random";
 import { Id64String } from "@bentley/bentleyjs-core";
-import { IModelToken, RpcManager, RpcInterface, RpcInterfaceDefinition, IModelTokenProps } from "@bentley/imodeljs-common";
+import { IModelTokenProps, RpcManager, RpcInterface, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
 import {
   RpcRequestsHandler, PresentationRpcInterface,
   KeySet, Paged, SelectionInfo, PresentationStatus,
@@ -21,15 +21,11 @@ import {
   PresentationRpcRequestOptions, PresentationRpcResponse,
 } from "../presentation-common";
 
-interface IModelTokenPropsForTest extends IModelTokenProps {
-  toJSON: () => any;
-}
-
 describe("RpcRequestsHandler", () => {
 
   let clientId: string;
-  let defaultRpcOptions: PresentationRpcRequestOptions & { imodel: IModelToken };
-  const token: IModelTokenPropsForTest = { key: "test", iModelId: "test", contextId: "test", toJSON() { return this; } };
+  let defaultRpcOptions: PresentationRpcRequestOptions & { imodel: IModelTokenProps };
+  const token: IModelTokenProps = { key: "test", iModelId: "test", contextId: "test" };
   const successResponse = async <TResult>(result: TResult): PresentationRpcResponse<TResult> => ({ statusCode: PresentationStatus.Success, result });
   const errorResponse = async (statusCode: PresentationStatus, errorMessage?: string): PresentationRpcResponse => ({ statusCode, errorMessage, result: undefined });
 
@@ -137,7 +133,7 @@ describe("RpcRequestsHandler", () => {
 
     beforeEach(() => {
       handler = new RpcRequestsHandler({ clientId });
-      handler.request = async <TResult, TOptions extends PresentationRpcRequestOptions>(context: any, func: (token: IModelToken, options: TOptions, ...args: any[]) => PresentationRpcResponse<TResult>, options: TOptions, ...args: any[]): Promise<TResult> => {
+      handler.request = async <TResult, TOptions extends PresentationRpcRequestOptions>(context: any, func: (token: IModelTokenProps, options: TOptions, ...args: any[]) => PresentationRpcResponse<TResult>, options: TOptions, ...args: any[]): Promise<TResult> => {
         expect(context).to.eq(rpcInterfaceMock.object);
         const result = await func.apply(context, [token, options, ...args]);
         return result.result!;
@@ -150,7 +146,7 @@ describe("RpcRequestsHandler", () => {
     });
 
     it("forwards getNodesAndCount call", async () => {
-      const options: Paged<HierarchyRequestOptions<IModelToken>> = {
+      const options: Paged<HierarchyRequestOptions<IModelTokenProps>> = {
         imodel: token,
         rulesetOrId: faker.random.word(),
       };
@@ -162,7 +158,7 @@ describe("RpcRequestsHandler", () => {
     });
 
     it("forwards getNodes call for root nodes", async () => {
-      const options: Paged<HierarchyRequestOptions<IModelToken>> = {
+      const options: Paged<HierarchyRequestOptions<IModelTokenProps>> = {
         imodel: token,
         rulesetOrId: faker.random.word(),
       };
@@ -175,7 +171,7 @@ describe("RpcRequestsHandler", () => {
 
     it("forwards getNodes call for child nodes", async () => {
       const parentKey = createRandomECInstancesNodeKeyJSON();
-      const options: Paged<HierarchyRequestOptions<IModelToken>> = {
+      const options: Paged<HierarchyRequestOptions<IModelTokenProps>> = {
         imodel: token,
         rulesetOrId: faker.random.word(),
       };
@@ -187,7 +183,7 @@ describe("RpcRequestsHandler", () => {
     });
 
     it("forwards getNodesCount call for root nodes", async () => {
-      const options: HierarchyRequestOptions<IModelToken> = {
+      const options: HierarchyRequestOptions<IModelTokenProps> = {
         imodel: token,
         rulesetOrId: faker.random.word(),
       };
@@ -200,7 +196,7 @@ describe("RpcRequestsHandler", () => {
 
     it("forwards getNodesCount call for child nodes", async () => {
       const parentKey = createRandomECInstancesNodeKeyJSON();
-      const options: HierarchyRequestOptions<IModelToken> = {
+      const options: HierarchyRequestOptions<IModelTokenProps> = {
         imodel: token,
         rulesetOrId: faker.random.word(),
       };
@@ -212,7 +208,7 @@ describe("RpcRequestsHandler", () => {
     });
 
     it("forwards getFilteredNodePaths call", async () => {
-      const options: HierarchyRequestOptions<IModelToken> = {
+      const options: HierarchyRequestOptions<IModelTokenProps> = {
         imodel: token,
         rulesetOrId: faker.random.word(),
       };
@@ -225,7 +221,7 @@ describe("RpcRequestsHandler", () => {
     });
 
     it("forwards getNodePaths call", async () => {
-      const options: HierarchyRequestOptions<IModelToken> = {
+      const options: HierarchyRequestOptions<IModelTokenProps> = {
         imodel: token,
         rulesetOrId: faker.random.word(),
       };
@@ -239,7 +235,7 @@ describe("RpcRequestsHandler", () => {
     });
 
     it("forwards loadHierarchy call", async () => {
-      const options: HierarchyRequestOptions<IModelToken> = {
+      const options: HierarchyRequestOptions<IModelTokenProps> = {
         imodel: token,
         rulesetOrId: faker.random.word(),
       };
@@ -250,7 +246,7 @@ describe("RpcRequestsHandler", () => {
     });
 
     it("forwards getContentDescriptor call", async () => {
-      const options: ContentRequestOptions<IModelToken> = {
+      const options: ContentRequestOptions<IModelTokenProps> = {
         imodel: token,
         rulesetOrId: faker.random.word(),
       };
@@ -265,7 +261,7 @@ describe("RpcRequestsHandler", () => {
     });
 
     it("forwards getContentSetSize call", async () => {
-      const options: ContentRequestOptions<IModelToken> = {
+      const options: ContentRequestOptions<IModelTokenProps> = {
         imodel: token,
         rulesetOrId: faker.random.word(),
       };
@@ -279,7 +275,7 @@ describe("RpcRequestsHandler", () => {
     });
 
     it("forwards getContent call", async () => {
-      const options: Paged<ContentRequestOptions<IModelToken>> = {
+      const options: Paged<ContentRequestOptions<IModelTokenProps>> = {
         imodel: token,
         rulesetOrId: faker.random.word(),
       };
@@ -293,7 +289,7 @@ describe("RpcRequestsHandler", () => {
     });
 
     it("forwards getContentAndSize call", async () => {
-      const options: Paged<ContentRequestOptions<IModelToken>> = {
+      const options: Paged<ContentRequestOptions<IModelTokenProps>> = {
         imodel: token,
         rulesetOrId: faker.random.word(),
       };
@@ -307,7 +303,7 @@ describe("RpcRequestsHandler", () => {
     });
 
     it("forwards getDistinctValues call", async () => {
-      const options: ContentRequestOptions<IModelToken> = {
+      const options: ContentRequestOptions<IModelTokenProps> = {
         imodel: token,
         rulesetOrId: faker.random.word(),
       };
@@ -324,7 +320,7 @@ describe("RpcRequestsHandler", () => {
 
     it("forwards getDisplayLabelDefinition call", async () => {
       const key = createRandomECInstanceKeyJSON();
-      const options: LabelRequestOptions<IModelToken> = {
+      const options: LabelRequestOptions<IModelTokenProps> = {
         imodel: token,
       };
       const rpcOptions = { ...defaultRpcOptions, ...options };
@@ -336,7 +332,7 @@ describe("RpcRequestsHandler", () => {
 
     it("forwards getDisplayLabelDefinitions call", async () => {
       const keys = [createRandomECInstanceKeyJSON(), createRandomECInstanceKeyJSON()];
-      const options: LabelRequestOptions<IModelToken> = {
+      const options: LabelRequestOptions<IModelTokenProps> = {
         imodel: token,
       };
       const rpcOptions = { ...defaultRpcOptions, ...options };
@@ -347,7 +343,7 @@ describe("RpcRequestsHandler", () => {
     });
 
     it("forwards getSelectionScopes call", async () => {
-      const options: SelectionScopeRequestOptions<IModelToken> = {
+      const options: SelectionScopeRequestOptions<IModelTokenProps> = {
         imodel: token,
       };
       const rpcOptions = { ...defaultRpcOptions, ...options };
@@ -358,7 +354,7 @@ describe("RpcRequestsHandler", () => {
     });
 
     it("forwards computeSelection call", async () => {
-      const options: SelectionScopeRequestOptions<IModelToken> = {
+      const options: SelectionScopeRequestOptions<IModelTokenProps> = {
         imodel: token,
       };
       const rpcOptions = { ...defaultRpcOptions, ...options };

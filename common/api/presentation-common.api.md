@@ -10,7 +10,6 @@ import { GetMetaDataFunction } from '@bentley/bentleyjs-core';
 import { GuidString } from '@bentley/bentleyjs-core';
 import { Id64String } from '@bentley/bentleyjs-core';
 import { IDisposable } from '@bentley/bentleyjs-core';
-import { IModelToken } from '@bentley/imodeljs-common';
 import { IModelTokenProps } from '@bentley/imodeljs-common';
 import { LogFunction } from '@bentley/bentleyjs-core';
 import { RpcInterface } from '@bentley/imodeljs-common';
@@ -196,7 +195,7 @@ export interface ContentRequestOptions<TIModel> extends RequestOptionsWithRulese
 }
 
 // @public
-export type ContentRpcRequestOptions = PresentationRpcRequestOptions & Omit<ContentRequestOptions<IModelToken>, "imodel">;
+export type ContentRpcRequestOptions = PresentationRpcRequestOptions & Omit<ContentRequestOptions<IModelTokenProps>, "imodel">;
 
 // @public
 export interface ContentRule extends RuleBase, ConditionContainer {
@@ -492,7 +491,7 @@ export interface HierarchyRequestOptions<TIModel> extends RequestOptionsWithRule
 }
 
 // @public
-export type HierarchyRpcRequestOptions = PresentationRpcRequestOptions & Omit<HierarchyRequestOptions<IModelToken>, "imodel">;
+export type HierarchyRpcRequestOptions = PresentationRpcRequestOptions & Omit<HierarchyRequestOptions<IModelTokenProps>, "imodel">;
 
 // @public
 export interface ImageIdOverride extends RuleBase, ConditionContainer {
@@ -758,7 +757,7 @@ export interface LabelRequestOptions<TIModel> extends RequestOptions<TIModel> {
 }
 
 // @public
-export type LabelRpcRequestOptions = PresentationRpcRequestOptions & Omit<LabelRequestOptions<IModelToken>, "imodel">;
+export type LabelRpcRequestOptions = PresentationRpcRequestOptions & Omit<LabelRequestOptions<IModelTokenProps>, "imodel">;
 
 // @public
 export enum LoggingNamespaces {
@@ -1322,46 +1321,46 @@ export class RpcRequestsHandler implements IDisposable {
     constructor(props?: RpcRequestsHandlerProps);
     readonly clientId: string;
     // (undocumented)
-    computeSelection(options: SelectionScopeRequestOptions<IModelToken>, ids: Id64String[], scopeId: string): Promise<KeySetJSON>;
+    computeSelection(options: SelectionScopeRequestOptions<IModelTokenProps>, ids: Id64String[], scopeId: string): Promise<KeySetJSON>;
     // (undocumented)
     dispose(): void;
     // (undocumented)
-    getContent(options: ContentRequestOptions<IModelToken>, descriptorOrOverrides: DescriptorJSON | DescriptorOverrides, keys: KeySetJSON): Promise<ContentJSON | undefined>;
+    getContent(options: ContentRequestOptions<IModelTokenProps>, descriptorOrOverrides: DescriptorJSON | DescriptorOverrides, keys: KeySetJSON): Promise<ContentJSON | undefined>;
     // (undocumented)
-    getContentAndSize(options: ContentRequestOptions<IModelToken>, descriptorOrOverrides: DescriptorJSON | DescriptorOverrides, keys: KeySetJSON): Promise<{
+    getContentAndSize(options: ContentRequestOptions<IModelTokenProps>, descriptorOrOverrides: DescriptorJSON | DescriptorOverrides, keys: KeySetJSON): Promise<{
         content?: ContentJSON | undefined;
         size: number;
     }>;
     // (undocumented)
-    getContentDescriptor(options: ContentRequestOptions<IModelToken>, displayType: string, keys: KeySetJSON, selection: SelectionInfo | undefined): Promise<DescriptorJSON | undefined>;
+    getContentDescriptor(options: ContentRequestOptions<IModelTokenProps>, displayType: string, keys: KeySetJSON, selection: SelectionInfo | undefined): Promise<DescriptorJSON | undefined>;
     // (undocumented)
-    getContentSetSize(options: ContentRequestOptions<IModelToken>, descriptorOrOverrides: DescriptorJSON | DescriptorOverrides, keys: KeySetJSON): Promise<number>;
+    getContentSetSize(options: ContentRequestOptions<IModelTokenProps>, descriptorOrOverrides: DescriptorJSON | DescriptorOverrides, keys: KeySetJSON): Promise<number>;
     // (undocumented)
-    getDisplayLabelDefinition(options: LabelRequestOptions<IModelToken>, key: InstanceKeyJSON): Promise<LabelDefinitionJSON>;
+    getDisplayLabelDefinition(options: LabelRequestOptions<IModelTokenProps>, key: InstanceKeyJSON): Promise<LabelDefinitionJSON>;
     // (undocumented)
-    getDisplayLabelDefinitions(options: LabelRequestOptions<IModelToken>, keys: InstanceKeyJSON[]): Promise<LabelDefinitionJSON[]>;
+    getDisplayLabelDefinitions(options: LabelRequestOptions<IModelTokenProps>, keys: InstanceKeyJSON[]): Promise<LabelDefinitionJSON[]>;
     // (undocumented)
-    getDistinctValues(options: ContentRequestOptions<IModelToken>, descriptor: DescriptorJSON, keys: KeySetJSON, fieldName: string, maximumValueCount: number): Promise<string[]>;
+    getDistinctValues(options: ContentRequestOptions<IModelTokenProps>, descriptor: DescriptorJSON, keys: KeySetJSON, fieldName: string, maximumValueCount: number): Promise<string[]>;
     // (undocumented)
-    getFilteredNodePaths(options: HierarchyRequestOptions<IModelToken>, filterText: string): Promise<NodePathElementJSON[]>;
+    getFilteredNodePaths(options: HierarchyRequestOptions<IModelTokenProps>, filterText: string): Promise<NodePathElementJSON[]>;
     // (undocumented)
-    getNodePaths(options: HierarchyRequestOptions<IModelToken>, paths: InstanceKeyJSON[][], markedIndex: number): Promise<NodePathElementJSON[]>;
+    getNodePaths(options: HierarchyRequestOptions<IModelTokenProps>, paths: InstanceKeyJSON[][], markedIndex: number): Promise<NodePathElementJSON[]>;
     // (undocumented)
-    getNodes(options: Paged<HierarchyRequestOptions<IModelToken>>, parentKey?: NodeKeyJSON): Promise<NodeJSON[]>;
+    getNodes(options: Paged<HierarchyRequestOptions<IModelTokenProps>>, parentKey?: NodeKeyJSON): Promise<NodeJSON[]>;
     // (undocumented)
-    getNodesAndCount(options: Paged<HierarchyRequestOptions<IModelToken>>, parentKey?: NodeKeyJSON): Promise<{
+    getNodesAndCount(options: Paged<HierarchyRequestOptions<IModelTokenProps>>, parentKey?: NodeKeyJSON): Promise<{
         nodes: NodeJSON[];
         count: number;
     }>;
     // (undocumented)
-    getNodesCount(options: HierarchyRequestOptions<IModelToken>, parentKey?: NodeKeyJSON): Promise<number>;
+    getNodesCount(options: HierarchyRequestOptions<IModelTokenProps>, parentKey?: NodeKeyJSON): Promise<number>;
     // (undocumented)
-    getSelectionScopes(options: SelectionScopeRequestOptions<IModelToken>): Promise<SelectionScope[]>;
+    getSelectionScopes(options: SelectionScopeRequestOptions<IModelTokenProps>): Promise<SelectionScope[]>;
     // (undocumented)
-    loadHierarchy(options: HierarchyRequestOptions<IModelToken>): Promise<void>;
+    loadHierarchy(options: HierarchyRequestOptions<IModelTokenProps>): Promise<void>;
     request<TResult, TOptions extends PresentationRpcRequestOptions & {
-        imodel: IModelToken;
-    }, TArg = any>(context: any, func: (token: IModelToken, options: Omit<TOptions, "imodel">, ...args: TArg[]) => PresentationRpcResponse<TResult>, options: TOptions, ...args: TArg[]): Promise<TResult>;
+        imodel: IModelTokenProps;
+    }, TArg = any>(context: any, func: (token: IModelTokenProps, options: Omit<TOptions, "imodel">, ...args: TArg[]) => PresentationRpcResponse<TResult>, options: TOptions, ...args: TArg[]): Promise<TResult>;
     }
 
 // @internal
@@ -1493,7 +1492,7 @@ export interface SelectionScopeRequestOptions<TIModel> extends RequestOptions<TI
 }
 
 // @public
-export type SelectionScopeRpcRequestOptions = PresentationRpcRequestOptions & Omit<SelectionScopeRequestOptions<IModelToken>, "imodel">;
+export type SelectionScopeRpcRequestOptions = PresentationRpcRequestOptions & Omit<SelectionScopeRequestOptions<IModelTokenProps>, "imodel">;
 
 // @public
 export interface SingleSchemaClassSpecification {

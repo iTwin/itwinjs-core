@@ -119,12 +119,12 @@ export class PresentationManager implements IDisposable {
     return this._rulesetVars.get(rulesetId)!;
   }
 
-  private toIModelTokenOptions<TOptions extends { imodel: IModelConnection, locale?: string }>(options: TOptions) {
+  private toRpcTokenOptions<TOptions extends { imodel: IModelConnection, locale?: string }>(options: TOptions) {
     // 1. put default `locale`
     // 2. put all `options` members (if `locale` is set, it'll override the default put at #1)
-    // 3. put `imodel` of type `IModelToken` which overwrites the `imodel` from `options` put at #2
+    // 3. put `imodel` of type `IModelTokenProps` which overwrites the `imodel` from `options` put at #2
     return Object.assign({}, { locale: this.activeLocale }, options, {
-      imodel: options.imodel.getRpcToken(),
+      imodel: options.imodel.getRpcTokenProps(),
     });
   }
 
@@ -154,7 +154,7 @@ export class PresentationManager implements IDisposable {
 
     const parentKeyJson = parentKey ? NodeKey.toJSON(parentKey) : undefined;
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
-    const result = await this._requestsHandler.getNodesAndCount(this.toIModelTokenOptions(options), parentKeyJson);
+    const result = await this._requestsHandler.getNodesAndCount(this.toRpcTokenOptions(options), parentKeyJson);
     return { ...result, nodes: this._localizationHelper.getLocalizedNodes(result.nodes.map(Node.fromJSON)) };
   }
 
@@ -169,7 +169,7 @@ export class PresentationManager implements IDisposable {
 
     const parentKeyJson = parentKey ? NodeKey.toJSON(parentKey) : undefined;
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
-    const result = await this._requestsHandler.getNodes(this.toIModelTokenOptions(options), parentKeyJson);
+    const result = await this._requestsHandler.getNodes(this.toRpcTokenOptions(options), parentKeyJson);
     return this._localizationHelper.getLocalizedNodes(result.map(Node.fromJSON));
   }
 
@@ -184,7 +184,7 @@ export class PresentationManager implements IDisposable {
 
     const parentKeyJson = parentKey ? NodeKey.toJSON(parentKey) : undefined;
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
-    return this._requestsHandler.getNodesCount(this.toIModelTokenOptions(options), parentKeyJson);
+    return this._requestsHandler.getNodesCount(this.toRpcTokenOptions(options), parentKeyJson);
   }
 
   /**
@@ -199,7 +199,7 @@ export class PresentationManager implements IDisposable {
 
     const pathsJson = paths.map((p) => p.map(InstanceKey.toJSON));
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
-    const result = await this._requestsHandler.getNodePaths(this.toIModelTokenOptions(options), pathsJson, markedIndex);
+    const result = await this._requestsHandler.getNodePaths(this.toRpcTokenOptions(options), pathsJson, markedIndex);
     return result.map(NodePathElement.fromJSON);
   }
 
@@ -213,7 +213,7 @@ export class PresentationManager implements IDisposable {
     await this.onConnection(requestOptions.imodel);
 
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
-    const result = await this._requestsHandler.getFilteredNodePaths(this.toIModelTokenOptions(options), filterText);
+    const result = await this._requestsHandler.getFilteredNodePaths(this.toRpcTokenOptions(options), filterText);
     return result.map(NodePathElement.fromJSON);
   }
 
@@ -229,7 +229,7 @@ export class PresentationManager implements IDisposable {
     if (!requestOptions.priority)
       requestOptions.priority = RequestPriority.Preload;
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
-    return this._requestsHandler.loadHierarchy(this.toIModelTokenOptions(options));
+    return this._requestsHandler.loadHierarchy(this.toRpcTokenOptions(options));
   }
 
   /**
@@ -244,7 +244,7 @@ export class PresentationManager implements IDisposable {
     await this.onConnection(requestOptions.imodel);
 
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
-    const result = await this._requestsHandler.getContentDescriptor(this.toIModelTokenOptions(options), displayType, keys.toJSON(), selection);
+    const result = await this._requestsHandler.getContentDescriptor(this.toRpcTokenOptions(options), displayType, keys.toJSON(), selection);
     return Descriptor.fromJSON(result);
   }
 
@@ -261,7 +261,7 @@ export class PresentationManager implements IDisposable {
     await this.onConnection(requestOptions.imodel);
 
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
-    return this._requestsHandler.getContentSetSize(this.toIModelTokenOptions(options), this.createDescriptorParam(descriptorOrOverrides), keys.toJSON());
+    return this._requestsHandler.getContentSetSize(this.toRpcTokenOptions(options), this.createDescriptorParam(descriptorOrOverrides), keys.toJSON());
   }
 
   /**
@@ -275,7 +275,7 @@ export class PresentationManager implements IDisposable {
     await this.onConnection(requestOptions.imodel);
 
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
-    const result = await this._requestsHandler.getContent(this.toIModelTokenOptions(options), this.createDescriptorParam(descriptorOrOverrides), keys.toJSON());
+    const result = await this._requestsHandler.getContent(this.toRpcTokenOptions(options), this.createDescriptorParam(descriptorOrOverrides), keys.toJSON());
     return this._localizationHelper.getLocalizedContent(Content.fromJSON(result));
   }
 
@@ -290,7 +290,7 @@ export class PresentationManager implements IDisposable {
     await this.onConnection(requestOptions.imodel);
 
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
-    const result = await this._requestsHandler.getContentAndSize(this.toIModelTokenOptions(options), this.createDescriptorParam(descriptorOrOverrides), keys.toJSON());
+    const result = await this._requestsHandler.getContentAndSize(this.toRpcTokenOptions(options), this.createDescriptorParam(descriptorOrOverrides), keys.toJSON());
     const localizedContent = this._localizationHelper.getLocalizedContent(Content.fromJSON(result.content));
     return localizedContent ? { content: localizedContent, size: result.size } : undefined;
   }
@@ -313,7 +313,7 @@ export class PresentationManager implements IDisposable {
   public async getDistinctValues(requestOptions: ContentRequestOptions<IModelConnection>, descriptor: Descriptor, keys: KeySet, fieldName: string, maximumValueCount: number = 0): Promise<string[]> {
     await this.onConnection(requestOptions.imodel);
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
-    return this._requestsHandler.getDistinctValues(this.toIModelTokenOptions(options),
+    return this._requestsHandler.getDistinctValues(this.toRpcTokenOptions(options),
       descriptor.createStrippedDescriptor().toJSON(), keys.toJSON(), fieldName, maximumValueCount);
   }
 
@@ -324,7 +324,7 @@ export class PresentationManager implements IDisposable {
    */
   public async getDisplayLabelDefinition(requestOptions: LabelRequestOptions<IModelConnection>, key: InstanceKey): Promise<LabelDefinition> {
     await this.onConnection(requestOptions.imodel);
-    const result = await this._requestsHandler.getDisplayLabelDefinition(this.toIModelTokenOptions(requestOptions), InstanceKey.toJSON(key));
+    const result = await this._requestsHandler.getDisplayLabelDefinition(this.toRpcTokenOptions(requestOptions), InstanceKey.toJSON(key));
     return this._localizationHelper.getLocalizedLabelDefinition(LabelDefinition.fromJSON(result));
   }
   /**
@@ -334,7 +334,7 @@ export class PresentationManager implements IDisposable {
    */
   public async getDisplayLabelDefinitions(requestOptions: LabelRequestOptions<IModelConnection>, keys: InstanceKey[]): Promise<LabelDefinition[]> {
     await this.onConnection(requestOptions.imodel);
-    const result = await this._requestsHandler.getDisplayLabelDefinitions(this.toIModelTokenOptions(requestOptions), keys.map(InstanceKey.toJSON));
+    const result = await this._requestsHandler.getDisplayLabelDefinitions(this.toRpcTokenOptions(requestOptions), keys.map(InstanceKey.toJSON));
     return this._localizationHelper.getLocalizedLabelDefinitions(result.map(LabelDefinition.fromJSON));
   }
 

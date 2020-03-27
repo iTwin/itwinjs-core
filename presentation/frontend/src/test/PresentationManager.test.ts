@@ -14,7 +14,7 @@ import {
   createRandomECInstanceKey, createRandomRuleset, createRandomLabelDefinition,
 } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { I18N, I18NNamespace } from "@bentley/imodeljs-i18n";
-import { IModelToken } from "@bentley/imodeljs-common";
+import { IModelTokenProps } from "@bentley/imodeljs-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import {
   KeySet, Content, HierarchyRequestOptions, Node, Ruleset, VariableValueTypes, RulesetVariable,
@@ -31,7 +31,7 @@ describe("PresentationManager", () => {
   let manager: PresentationManager;
   const i18nMock = moq.Mock.ofType<I18N>();
   const testData = {
-    imodelToken: new IModelToken(""),
+    imodelToken: moq.Mock.ofType<IModelTokenProps>().object,
     imodelMock: moq.Mock.ofType<IModelConnection>(),
     pageOptions: { start: 0, size: 0 },
     rulesetId: "",
@@ -39,7 +39,7 @@ describe("PresentationManager", () => {
 
   beforeEach(() => {
     mockI18N();
-    testData.imodelMock.setup((x) => x.getRpcToken()).returns(() => testData.imodelToken);
+    testData.imodelMock.setup((x) => x.getRpcTokenProps()).returns(() => testData.imodelToken);
     testData.pageOptions = { start: faker.random.number(), size: faker.random.number() };
     testData.rulesetId = faker.random.uuid();
     rpcRequestsHandlerMock = moq.Mock.ofType<RpcRequestsHandler>();
@@ -62,7 +62,7 @@ describe("PresentationManager", () => {
   const toIModelTokenOptions = <TOptions extends { imodel: IModelConnection, locale?: string }>(options: TOptions) => {
     // 1. put default `locale`
     // 2. put all `options` members (if `locale` is set, it'll override the default put at #1)
-    // 3. put `imodel` of type `IModelToken` which overwrites the `imodel` from `options`
+    // 3. put `imodel` of type `IModelTokenProps` which overwrites the `imodel` from `options`
     return Object.assign({}, { locale: undefined }, options, {
       imodel: testData.imodelToken,
     });

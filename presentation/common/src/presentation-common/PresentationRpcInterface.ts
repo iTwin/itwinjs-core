@@ -7,7 +7,7 @@
  */
 
 import { Id64String } from "@bentley/bentleyjs-core";
-import { RpcInterface, IModelToken, IModelTokenProps } from "@bentley/imodeljs-common";
+import { RpcInterface, IModelTokenProps } from "@bentley/imodeljs-common";
 import { NodeKeyJSON } from "./hierarchy/Key";
 import { NodePathElementJSON } from "./hierarchy/NodePathElement";
 import { NodeJSON } from "./hierarchy/Node";
@@ -50,22 +50,22 @@ export type PresentationRpcResponse<TResult = undefined> = Promise<{
  * Data structure for hierarchy request options.
  * @public
  */
-export type HierarchyRpcRequestOptions = PresentationRpcRequestOptions & Omit<HierarchyRequestOptions<IModelToken>, "imodel">;
+export type HierarchyRpcRequestOptions = PresentationRpcRequestOptions & Omit<HierarchyRequestOptions<IModelTokenProps>, "imodel">;
 /**
  * Data structure for content request options.
  * @public
  */
-export type ContentRpcRequestOptions = PresentationRpcRequestOptions & Omit<ContentRequestOptions<IModelToken>, "imodel">;
+export type ContentRpcRequestOptions = PresentationRpcRequestOptions & Omit<ContentRequestOptions<IModelTokenProps>, "imodel">;
 /**
  * Data structure for label request options.
  * @public
  */
-export type LabelRpcRequestOptions = PresentationRpcRequestOptions & Omit<LabelRequestOptions<IModelToken>, "imodel">;
+export type LabelRpcRequestOptions = PresentationRpcRequestOptions & Omit<LabelRequestOptions<IModelTokenProps>, "imodel">;
 /**
  * Data structure for selection scope request options.
  * @public
  */
-export type SelectionScopeRpcRequestOptions = PresentationRpcRequestOptions & Omit<SelectionScopeRequestOptions<IModelToken>, "imodel">;
+export type SelectionScopeRpcRequestOptions = PresentationRpcRequestOptions & Omit<SelectionScopeRequestOptions<IModelTokenProps>, "imodel">;
 /**
  * Data structure for ruleset variable request options.
  * @public
