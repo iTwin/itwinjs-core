@@ -377,7 +377,7 @@ public;SkySphere
 public;SnapDetail 
 public;SnapHeat
 public;SnapMode
-beta;SnapshotConnection 
+public;SnapshotConnection 
 public;SnapStatus
 beta;SpatialClassifiers
 internal;SpatialClassifiersContainer

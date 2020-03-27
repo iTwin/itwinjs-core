@@ -2296,9 +2296,7 @@ export abstract class IModelDb extends IModel {
     // @internal
     get isOpen(): boolean;
     get isReadonly(): boolean;
-    // @beta
     get isSnapshot(): boolean;
-    // @beta
     isSnapshotDb(): this is SnapshotDb;
     // @internal
     get isStandalone(): boolean;
@@ -3249,7 +3247,6 @@ export class OpenParams {
     openMode: OpenMode,
     syncMode?: SyncMode | undefined,
     timeout?: number | undefined);
-    // @beta (undocumented)
     static createSnapshot(): OpenParams;
     // @internal
     downloadProgress?: ProgressCallback;
@@ -3258,10 +3255,10 @@ export class OpenParams {
     get isBriefcase(): boolean;
     get isSnapshot(): boolean;
     readonly openMode: OpenMode;
-    // @beta (undocumented)
     static openSnapshot(): OpenParams;
     static pullAndPush(): OpenParams;
     static pullOnly(): OpenParams;
+    // @internal
     static standalone(openMode: OpenMode): OpenParams;
     readonly syncMode?: SyncMode | undefined;
     timeout?: number | undefined;
@@ -3497,7 +3494,6 @@ export enum ReservedBriefcaseId {
     LegacyStandalone = 1,
     // @internal
     MaxRepo = 16777216,
-    // @beta
     Snapshot = 1
 }
 
@@ -3632,7 +3628,7 @@ export class SheetViewDefinition extends ViewDefinition2d {
     static get className(): string;
 }
 
-// @beta
+// @public
 export class SnapshotDb extends IModelDb {
     close(): void;
     static createEmpty(filePath: string, options: CreateEmptySnapshotIModelProps): SnapshotDb;

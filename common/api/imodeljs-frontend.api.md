@@ -3859,11 +3859,9 @@ export abstract class IModelConnection extends IModel {
     get isBriefcase(): boolean;
     isBriefcaseConnection(): this is BriefcaseConnection;
     get isClosed(): boolean;
-    // @beta
     get isOpen(): boolean;
     get isReadonly(): boolean;
     get isSnapshot(): boolean;
-    // @beta
     isSnapshotConnection(): this is SnapshotConnection;
     loadFontMap(): Promise<FontMap>;
     readonly models: IModelConnection.Models;
@@ -7557,11 +7555,11 @@ export enum SnapMode {
     Origin = 16
 }
 
-// @beta
+// @public
 export class SnapshotConnection extends IModelConnection {
     close(): Promise<void>;
     get iModelId(): GuidString;
-    static open(fileName: string): Promise<SnapshotConnection>;
+    static open(filePath: string): Promise<SnapshotConnection>;
 }
 
 // @public (undocumented)

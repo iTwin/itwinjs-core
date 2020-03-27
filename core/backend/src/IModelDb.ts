@@ -114,13 +114,15 @@ export class OpenParams {
   /** Create parameters to open the Db that allows pulling changes from the Hub */
   public static pullOnly(): OpenParams { return new OpenParams(OpenMode.ReadWrite, SyncMode.PullOnly); }
 
-  /** @beta */
+  /** Create parameters suitable for creating snapshot iModels. */
   public static createSnapshot(): OpenParams { return new OpenParams(OpenMode.ReadWrite); }
 
-  /** @beta */
+  /** Create parameters suitable for opening snapshot iModels. */
   public static openSnapshot(): OpenParams { return new OpenParams(OpenMode.Readonly); }
 
-  /** Create parameters to open a StandaloneDb. */
+  /** Create parameters to open a StandaloneDb.
+   * @internal
+   */
   public static standalone(openMode: OpenMode) { return new OpenParams(openMode); }
 
   /** Returns true if equal and false otherwise */
@@ -217,13 +219,10 @@ export abstract class IModelDb extends IModel {
    */
   public get isBriefcase(): boolean { return this.isBriefcaseDb(); }
 
-  /** Type guard for instanceof [[SnapshotDb]]
-   * @beta
-   */
+  /** Type guard for instanceof [[SnapshotDb]] */
   public isSnapshotDb(): this is SnapshotDb { return this instanceof SnapshotDb; }
   /** Returns true if this is a *snapshot* iModel
    * @see [[SnapshotDb.open]]
-   * @beta
    */
   public get isSnapshot(): boolean { return this.isSnapshotDb(); }
 
@@ -2356,7 +2355,7 @@ export class BriefcaseDb extends IModelDb {
 /** A *snapshot* iModel database file that is typically used for archival and data transfer purposes.
  * @see [Snapshot iModels]($docs/learning/backend/AccessingIModels.md#snapshot-imodels)
  * @see [About IModelDb]($docs/learning/backend/IModelDb.md)
- * @beta
+ * @public
  */
 export class SnapshotDb extends IModelDb {
   /** Keep track of open snapshots to support `tryFind` for RPC purposes
@@ -2384,7 +2383,6 @@ export class SnapshotDb extends IModelDb {
    * @param options The parameters that define the new iModel *snapshot*
    * @returns A writeable SnapshotDb
    * @see [Snapshot iModels]($docs/learning/backend/AccessingIModels.md#snapshot-imodels)
-   * @beta
    */
   public static createEmpty(filePath: string, options: CreateEmptySnapshotIModelProps): SnapshotDb {
     const nativeDb = new IModelHost.platform.DgnDb();
@@ -2412,7 +2410,6 @@ export class SnapshotDb extends IModelDb {
    * @param options Optional properties that determine how the snapshot iModel is created.
    * @returns A writeable SnapshotDb
    * @see [Snapshot iModels]($docs/learning/backend/AccessingIModels.md#snapshot-imodels)
-   * @beta
    */
   public static createFrom(iModelDb: IModelDb, snapshotFile: string, options?: CreateSnapshotIModelProps): SnapshotDb {
     if (iModelDb.nativeDb.isEncrypted()) {
@@ -2462,7 +2459,6 @@ export class SnapshotDb extends IModelDb {
   /** Open a read-only iModel *snapshot*.
    * @see [[close]]
    * @throws [[IModelError]] If the file is not found or is not a valid *snapshot*.
-   * @beta
    */
   public static open(filePath: string, encryptionProps?: IModelEncryptionProps): SnapshotDb {
     if (SnapshotDb.tryFindByKey(filePath)) {
@@ -2480,7 +2476,6 @@ export class SnapshotDb extends IModelDb {
   /** Close this local read-only iModel *snapshot*, if it is currently open.
    * > Note: A *snapshot* cannot be modified after this function is called.
    * @throws [[IModelError]] if the iModel is not open, or is not a *snapshot*.
-   * @beta
    */
   public close(): void {
     if (!this.isOpen) {

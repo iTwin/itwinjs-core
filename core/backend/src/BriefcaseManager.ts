@@ -66,7 +66,6 @@ export enum ReservedBriefcaseId {
 
   /** A snapshot iModel is read-only once created. They are typically used for archival and data transfer purposes.
    * @note Legacy standalone iModels are now considered snapshots
-   * @beta
    */
   Snapshot = 1,
 

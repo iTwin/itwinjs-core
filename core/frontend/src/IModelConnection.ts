@@ -113,9 +113,7 @@ export abstract class IModelConnection extends IModel {
 
   /** Type guard for instanceof [[BriefcaseConnection]] */
   public isBriefcaseConnection(): this is BriefcaseConnection { return this instanceof BriefcaseConnection; }
-  /** Type guard for instanceof [[SnapshotConnection]]
-   * @beta
-   */
+  /** Type guard for instanceof [[SnapshotConnection]] */
   public isSnapshotConnection(): this is SnapshotConnection { return this instanceof SnapshotConnection; }
   /** Type guard for instanceof [[BlankConnection]]
    * @beta
@@ -139,7 +137,6 @@ export abstract class IModelConnection extends IModel {
   /** Check if the IModelConnection is open (i.e. it has a *connection* to a backend server).
    * Returns false for [[BlankConnection]] instances and after [[IModelConnection.close]] has been called.
    * @note no RPC operations are valid on this IModelConnection if this method returns false.
-   * @beta
    */
   public get isOpen(): boolean { return undefined !== this._token; }
 
@@ -743,7 +740,7 @@ export class BlankConnection extends IModelConnection {
 }
 
 /** A connection to a [SnapshotDb]($backend) hosted on the backend.
- * @beta
+ * @public
  */
 export class SnapshotConnection extends IModelConnection {
   /** The Guid that identifies this iModel. */
@@ -755,19 +752,16 @@ export class SnapshotConnection extends IModelConnection {
 
   /** Open an IModelConnection to a read-only iModel *snapshot* (not managed by iModelHub) from a file name that is resolved by the backend.
    * This method is intended for desktop or mobile applications and should not be used for web applications.
-   * @beta
    */
-  public static async open(fileName: string): Promise<SnapshotConnection> {
-    const openResponse: IModelProps = await SnapshotIModelRpcInterface.getClient().openSnapshot(fileName);
-    Logger.logTrace(loggerCategory, "SnapshotConnection.openSnapshot", () => ({ fileName }));
+  public static async open(filePath: string): Promise<SnapshotConnection> {
+    const openResponse: IModelProps = await SnapshotIModelRpcInterface.getClient().openSnapshot(filePath);
+    Logger.logTrace(loggerCategory, "SnapshotConnection.open", () => ({ fileName: filePath }));
     const connection = new SnapshotConnection(openResponse, OpenMode.Readonly);
     IModelConnection.onOpen.raiseEvent(connection);
     return connection;
   }
 
-  /** Close this IModelConnection to a read-only iModel *snapshot*.
-   * @beta
-   */
+  /** Close this SnapshotConnection. */
   public async close(): Promise<void> {
     this.beforeClose();
     if (!this.isOpen) {
