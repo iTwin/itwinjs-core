@@ -2592,7 +2592,7 @@ export class ScreenViewport extends Viewport {
       fast: BeDuration.fromSeconds(.5),
       normal: BeDuration.fromSeconds(1.0),
       slow: BeDuration.fromSeconds(1.25),
-      wheel: BeDuration.fromSeconds(.175), // zooming with the wheel
+      wheel: BeDuration.fromSeconds(.5), // zooming with the wheel
     },
     /** The easing function to use for view animations. */
     easing: Easing.Cubic.Out,
