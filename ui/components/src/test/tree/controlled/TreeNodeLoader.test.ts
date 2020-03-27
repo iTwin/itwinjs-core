@@ -325,15 +325,24 @@ describe("TreeDataSource", () => {
   describe("requestItems", () => {
 
     describe("using TreeDataProviderRaw", () => {
-      const rawProvider = [{
-        id: faker.random.uuid(),
-        label: PropertyRecord.fromString(faker.random.uuid(), "label"),
-        children: [{ id: faker.random.uuid(), label: PropertyRecord.fromString(faker.random.word(), "label") }],
-      }, {
-        id: faker.random.uuid(),
-        label: PropertyRecord.fromString(faker.random.uuid(), "label"),
-        children: [{ id: faker.random.uuid(), label: PropertyRecord.fromString(faker.random.word(), "label") }],
-      }];
+      const rawProvider = [
+        {
+          id: faker.random.uuid(),
+          label: PropertyRecord.fromString(faker.random.uuid(), "label"),
+          children: [
+            {
+              id: faker.random.uuid(), label: PropertyRecord.fromString(faker.random.word(), "label"), children: [
+                { id: faker.random.uuid(), label: PropertyRecord.fromString(faker.random.word(), "label") },
+              ],
+            },
+          ],
+        },
+        {
+          id: faker.random.uuid(),
+          label: PropertyRecord.fromString(faker.random.uuid(), "label"),
+          children: [{ id: faker.random.uuid(), label: PropertyRecord.fromString(faker.random.word(), "label") }],
+        },
+      ];
 
       it("loads one node", async () => {
         const dataSource = new TreeDataSource(rawProvider);
@@ -349,6 +358,33 @@ describe("TreeDataSource", () => {
         const request = dataSource.requestItems(undefined, 0, 0, false);
         const result = await extractSequence(rxjsFrom(request));
         expect(result[0].loadedItems).to.be.deep.eq(rawProvider);
+      });
+
+      it("loads nodes for root node", async () => {
+        const rootNode = rawProvider[1];
+        const dataSource = new TreeDataSource(rawProvider);
+
+        const request = dataSource.requestItems(rootNode, 0, 0, false);
+        const result = await extractSequence(rxjsFrom(request));
+        expect(result[0].loadedItems).to.be.deep.eq(rootNode.children);
+      });
+
+      it("loads nodes for parent node in hierarchy", async () => {
+        const parentNode: ImmediatelyLoadedTreeNodeItem = rawProvider[0].children[0];
+        const dataSource = new TreeDataSource(rawProvider);
+
+        const request = dataSource.requestItems(parentNode, 0, 0, false);
+        const result = await extractSequence(rxjsFrom(request));
+        expect(result[0].loadedItems).to.be.deep.eq(parentNode.children);
+      });
+
+      it("returns empty array if parent is not found", async () => {
+        const nonExistingNode = { id: faker.random.uuid(), label: PropertyRecord.fromString(faker.random.word()) };
+        const dataSource = new TreeDataSource(rawProvider);
+
+        const request = dataSource.requestItems(nonExistingNode, 0, 0, false);
+        const result = await extractSequence(rxjsFrom(request));
+        expect(result[0].loadedItems).to.be.empty;
       });
 
     });
@@ -376,15 +412,24 @@ describe("TreeDataSource", () => {
     });
 
     describe("using TreeDataProviderPromise", () => {
-      const rawProvider = [{
-        id: faker.random.uuid(),
-        label: PropertyRecord.fromString(faker.random.uuid(), "label"),
-        children: [{ id: faker.random.uuid(), label: PropertyRecord.fromString(faker.random.word(), "label") }],
-      }, {
-        id: faker.random.uuid(),
-        label: PropertyRecord.fromString(faker.random.uuid(), "label"),
-        children: [{ id: faker.random.uuid(), label: PropertyRecord.fromString(faker.random.word(), "label") }],
-      }];
+      const rawProvider = [
+        {
+          id: faker.random.uuid(),
+          label: PropertyRecord.fromString(faker.random.uuid(), "label"),
+          children: [
+            {
+              id: faker.random.uuid(), label: PropertyRecord.fromString(faker.random.word(), "label"), children: [
+                { id: faker.random.uuid(), label: PropertyRecord.fromString(faker.random.word(), "label") },
+              ],
+            },
+          ],
+        },
+        {
+          id: faker.random.uuid(),
+          label: PropertyRecord.fromString(faker.random.uuid(), "label"),
+          children: [{ id: faker.random.uuid(), label: PropertyRecord.fromString(faker.random.word(), "label") }],
+        },
+      ];
       const promiseProvider = new Promise<TreeDataProviderRaw>((resolve) => resolve(rawProvider));
 
       it("loads one node", async () => {
@@ -401,6 +446,33 @@ describe("TreeDataSource", () => {
         const request = dataSource.requestItems(undefined, 0, 0, false);
         const result = await extractSequence(rxjsFrom(request));
         expect(result[0].loadedItems).to.be.deep.eq(rawProvider);
+      });
+
+      it("loads nodes for root node", async () => {
+        const rootNode = rawProvider[1];
+        const dataSource = new TreeDataSource(promiseProvider);
+
+        const request = dataSource.requestItems(rootNode, 0, 0, false);
+        const result = await extractSequence(rxjsFrom(request));
+        expect(result[0].loadedItems).to.be.deep.eq(rootNode.children);
+      });
+
+      it("loads nodes for parent node in hierarchy", async () => {
+        const parentNode: ImmediatelyLoadedTreeNodeItem = rawProvider[0].children[0];
+        const dataSource = new TreeDataSource(promiseProvider);
+
+        const request = dataSource.requestItems(parentNode, 0, 0, false);
+        const result = await extractSequence(rxjsFrom(request));
+        expect(result[0].loadedItems).to.be.deep.eq(parentNode.children);
+      });
+
+      it("returns empty array if parent is not found", async () => {
+        const nonExistingNode = { id: faker.random.uuid(), label: PropertyRecord.fromString(faker.random.word()) };
+        const dataSource = new TreeDataSource(promiseProvider);
+
+        const request = dataSource.requestItems(nonExistingNode, 0, 0, false);
+        const result = await extractSequence(rxjsFrom(request));
+        expect(result[0].loadedItems).to.be.empty;
       });
 
     });

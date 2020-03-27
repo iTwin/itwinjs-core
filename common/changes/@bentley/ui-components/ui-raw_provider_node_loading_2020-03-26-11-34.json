@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-components",
+      "comment": "Fixed children node loading from TreeDataProviderRaw and TreeDataProviderPromise",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "Saulius.Skliutas@bentley.com"
+}

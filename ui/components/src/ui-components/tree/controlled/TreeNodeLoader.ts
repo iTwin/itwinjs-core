@@ -25,7 +25,7 @@ import {
 } from "./TreeModel";
 import {
   TreeDataChangesListener, TreeDataProvider, TreeNodeItem, isTreeDataProviderInterface,
-  isTreeDataProviderMethod, isTreeDataProviderPromise, isTreeDataProviderRaw,
+  isTreeDataProviderMethod, isTreeDataProviderPromise, isTreeDataProviderRaw, TreeDataProviderRaw, ImmediatelyLoadedTreeNodeItem,
 } from "../TreeDataProvider";
 import { UiComponents } from "../../UiComponents";
 import { TreeModelSource } from "./TreeModelSource";
@@ -462,7 +462,7 @@ export class TreeDataSource implements IDisposable {
 
   private async getItems(parent: TreeNodeItem | undefined): Promise<TreeNodeItemData[]> {
     if (isTreeDataProviderRaw(this._dataProvider)) {
-      return this._dataProvider;
+      return this.getChildren(this._dataProvider, parent);
     }
 
     if (isTreeDataProviderMethod(this._dataProvider)) {
@@ -471,9 +471,16 @@ export class TreeDataSource implements IDisposable {
 
     if (isTreeDataProviderPromise(this._dataProvider)) {
       this._dataProvider = await this._dataProvider;
-      return this._dataProvider;
+      return this.getChildren(this._dataProvider, parent);
     }
 
     throw new UiError(UiComponents.loggerCategory(this), "Unsupported TreeDataProvider.");
+  }
+
+  private getChildren(rawProvider: TreeDataProviderRaw, parent: TreeNodeItem | undefined): TreeNodeItemData[] {
+    if (parent === undefined)
+      return rawProvider;
+
+    return (parent as ImmediatelyLoadedTreeNodeItem).children ?? [];
   }
 }
