@@ -1219,7 +1219,10 @@ export abstract class Viewport implements IDisposable {
    */
   public changeBackgroundMapProps(props: BackgroundMapProps): void {
     this.displayStyle.changeBackgroundMapProps(props);
-    this.invalidateScene();
+    if (undefined !== props.transparency)
+      this.invalidateRenderPlan(); // terrain transparency is part of render plan.
+    else
+      this.invalidateScene(); // just need to reselect tiles based on new map settings.
   }
 
   /** Returns true if this Viewport is currently displaying the model with the specified Id. */
