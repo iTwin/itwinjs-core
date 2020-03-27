@@ -853,18 +853,18 @@ class Admin extends TileAdmin {
   public async requestTileTreeProps(iModel: IModelConnection, treeId: string): Promise<TileTreeProps> {
     this.initializeRpc();
     const intfc = IModelTileRpcInterface.getClient();
-    return intfc.requestTileTreeProps(iModel.getRpcToken(), treeId);
+    return intfc.requestTileTreeProps(iModel.getRpcTokenProps(), treeId);
   }
 
   public async purgeTileTrees(iModel: IModelConnection, modelIds: Id64Array | undefined): Promise<void> {
     this.initializeRpc();
-    return IModelTileRpcInterface.getClient().purgeTileTrees(iModel.getRpcToken(), modelIds);
+    return IModelTileRpcInterface.getClient().purgeTileTrees(iModel.getRpcTokenProps(), modelIds);
   }
 
   public async requestTileContent(iModel: IModelConnection, treeId: string, contentId: string, isCanceled: () => boolean, guid: string | undefined, qualifier: string | undefined): Promise<Uint8Array> {
     this.initializeRpc();
 
-    const tokenProps = iModel.getRpcToken();
+    const tokenProps = iModel.getRpcTokenProps();
 
     if (!guid)
       guid = tokenProps.changeSetId || "first";

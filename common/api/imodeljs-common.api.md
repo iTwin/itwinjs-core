@@ -3042,8 +3042,6 @@ export abstract class IModel implements IModelProps {
     ecefToSpatial(ecef: XYAndZ, result?: Point3d): Point3d;
     static getDefaultSubCategoryId(categoryId: Id64String): Id64String;
     getEcefTransform(): Transform;
-    // @internal @deprecated (undocumented)
-    getRpcToken(): IModelToken;
     getRpcTokenProps(): IModelTokenProps;
     get globalOrigin(): Point3d;
     set globalOrigin(org: Point3d);

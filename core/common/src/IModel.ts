@@ -306,17 +306,6 @@ export abstract class IModel implements IModelProps {
     };
   }
 
-  /**
-   * @deprecated use [[getRpcTokenProps]] instead
-   * @internal
-   */
-  public getRpcToken(): IModelToken {
-    if ((undefined === this._token) || !this.isOpen) {
-      throw new IModelError(IModelStatus.BadRequest, "Could not get IModelToken", Logger.logError);
-    }
-    return this._token;
-  }
-
   /** @internal */
   protected constructor(iModelToken: IModelToken | undefined, openMode: OpenMode) {
     this._token = iModelToken;

@@ -86,6 +86,10 @@ And for RPC implementations, the following method has been added to replace othe
 
 * [IModel.getRpcTokenProps]($common)
 
+And the following method has been renamed/refactored to *find* based on a key instead of an `IModelToken`:
+
+* `IModelDb.find` --> [IModelDb.findByKey]
+
 ### Briefcase iModels
 
 The methods for working with Briefcase iModels (those that are synchronized with iModelHub) have been moved into a new [BriefcaseDb]($backend) class, which is a breaking change.

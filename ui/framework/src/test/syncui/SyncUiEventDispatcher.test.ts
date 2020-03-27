@@ -26,7 +26,7 @@ import {
 } from "../../ui-framework";
 import TestUtils from "../TestUtils";
 
-import { IModelToken } from "@bentley/imodeljs-common";
+import { IModelTokenProps } from "@bentley/imodeljs-common";
 import { IModelConnection, SelectionSet, MockRender, IModelApp, ScreenViewport } from "@bentley/imodeljs-frontend";
 import { RpcRequestsHandler, InstanceKey } from "@bentley/presentation-common";
 import { Presentation, SelectionManager, SelectionScopesManager, SelectionScopesManagerProps } from "@bentley/presentation-frontend";
@@ -235,7 +235,7 @@ describe("SyncUiEventDispatcher", () => {
 
   describe("ConnectionEvents", () => {
 
-    const imodelToken = new IModelToken("");
+    const imodelToken: IModelTokenProps = { key: "" };
     const imodelMock = moq.Mock.ofType<IModelConnection>();
     const rpcRequestsHandlerMock = moq.Mock.ofType<RpcRequestsHandler>();
     const source: string = "test";
@@ -260,7 +260,7 @@ describe("SyncUiEventDispatcher", () => {
 
     beforeEach(() => {
       imodelMock.reset();
-      imodelMock.setup((x) => x.getRpcToken()).returns(() => imodelToken);
+      imodelMock.setup((x) => x.getRpcTokenProps()).returns(() => imodelToken);
 
       ss = new SelectionSet(imodelMock.object);
       imodelMock.setup((x) => x.selectionSet).returns(() => ss);

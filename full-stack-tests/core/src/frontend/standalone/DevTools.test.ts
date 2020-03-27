@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { LogLevel } from "@bentley/bentleyjs-core";
-import { IModelToken, DevToolsStatsOptions } from "@bentley/imodeljs-common";
+import { DevToolsStatsOptions, IModelTokenProps } from "@bentley/imodeljs-common";
 import { DevTools, IModelApp, PingTestResult } from "@bentley/imodeljs-frontend";
-import { assert } from "chai";
 import { EventSourceManager } from "@bentley/imodeljs-frontend/lib/EventSource";
+import { assert } from "chai";
 
 describe("DevTools", () => {
   let devTools: DevTools;
@@ -14,13 +14,12 @@ describe("DevTools", () => {
   before(async () => {
     IModelApp.startup();
 
-    const iModelToken: IModelToken = {
+    const tokenProps: IModelTokenProps = {
       iModelId: "test",
       changeSetId: "test",
       key: EventSourceManager.GLOBAL,
-      toJSON() { return this; },
     }; // Supply a real token in an integration test
-    devTools = DevTools.connectToBackendInstance(iModelToken);
+    devTools = DevTools.connectToBackendInstance(tokenProps);
   });
 
   after(async () => {
