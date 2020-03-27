@@ -198,7 +198,7 @@ export * from "./ui-framework/toolbar/useDefaultToolbarItems";
 
 export * from "./ui-framework/uiadmin/FrameworkUiAdmin";
 
-export * from "./ui-framework/uiprovider/DefaultReactDisplay";
+export * from "./ui-framework/uiprovider/DefaultDialogGridContainer";
 
 export * from "./ui-framework/utils/ViewUtilities";
 export * from "./ui-framework/utils/PropsHelper";

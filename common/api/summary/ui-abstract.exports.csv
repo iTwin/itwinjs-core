@@ -101,10 +101,6 @@ internal;ToolbarItemsManager
 beta;ToolbarItemUtilities
 beta;ToolbarOrientation
 beta;ToolbarUsage
-beta;ToolSettingsPropertyItem 
-beta;ToolSettingsPropertyRecord 
-beta;ToolSettingsPropertySyncItem 
-beta;ToolSettingsValue 
 public;UiAbstract
 beta;UiAdmin
 beta;class UiDataProvider

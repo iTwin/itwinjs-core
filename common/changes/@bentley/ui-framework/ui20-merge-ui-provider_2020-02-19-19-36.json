@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@bentley/ui-framework",
-      "comment": "Moved Property classes and interfaces to ui-abstract package. Created a \"DefaultReactDisplay\" to turn specifications from abstract DialogItems UI into React components. ",
+      "comment": "Moved Property classes and interfaces to ui-abstract package. Created a \"DefaultDialogGridContainer\" to turn specifications from abstract DialogItems UI into React components. ",
       "type": "none"
     }
   ],

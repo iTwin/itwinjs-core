@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-abstract",
+      "comment": "Refactor to remove duplicate ComponentGenerator instantiation. Rename files and components to remove React reference.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-abstract",
+  "email": "Nancy.McCall@Bentley.com"
+}

@@ -21,8 +21,8 @@ import { ToolUiManager, SyncToolSettingsPropertiesEventArgs } from "../toolsetti
 
 import { FrameworkVersionSwitch } from "../../hooks/useFrameworkVersion";
 import { WidgetPanelsDefaultToolSettings } from "../../widget-panels/DefaultToolSettings";
-import { DefaultReactDisplay } from "../../uiprovider/DefaultReactDisplay";
-import { ReactGenerator } from "../../uiprovider/ReactGenerator";
+import { DefaultDialogGridContainer } from "../../uiprovider/DefaultDialogGridContainer";
+import { ComponentGenerator } from "../../uiprovider/ComponentGenerator";
 
 /** Responsive Layout Mode */
 
@@ -76,7 +76,7 @@ class ToolSettingsDataProvider extends DialogItemsManager {
 export class DefaultToolSettingsProvider extends ToolUiProvider {
   public valueMap = new Map<string, DialogItem>();  // allows easy lookup of record given the property name
   public toolSettingsDP = ToolSettingsDataProvider.instance;
-  private _reactGenerator = new ReactGenerator(this.toolSettingsDP);
+  private _componentGenerator = new ComponentGenerator(this.toolSettingsDP);
 
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
@@ -93,11 +93,11 @@ export class DefaultToolSettingsProvider extends ToolUiProvider {
     if ((this.toolSettingsDP as DialogItemsManager).layoutDialogRows()) {
       this.toolSettingsNode = (
         <FrameworkVersionSwitch
-          v1={<DefaultReactDisplay itemsManager={this.toolSettingsDP} key={Date.now()} />}
+          v1={<DefaultDialogGridContainer itemsManager={this.toolSettingsDP} componentGenerator={this._componentGenerator} isToolSettings={true} key={Date.now()} />}
           v2={<WidgetPanelsDefaultToolSettings itemsManager={this.toolSettingsDP} />}
         />
       );
-      this.horizontalToolSettingNodes = this._reactGenerator.getToolSettingsEntries();
+      this.horizontalToolSettingNodes = this._componentGenerator.getToolSettingsEntries();
     } else {
       this.toolSettingsNode = null;
       this.horizontalToolSettingNodes = [];

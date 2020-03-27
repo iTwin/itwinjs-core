@@ -167,6 +167,18 @@ function tryTransformGeometry(entry: GeometryStreamIteratorEntry, transform: Tra
 }
 ```
 
+### PropertyRecord classes moved to `ui-abstract` package
+
+This includes the classes in the following files:
+
+* Description.ts
+* EditorParams.ts
+* PrimitiveTypes.ts
+* Record.ts
+* Value.ts
+
+The deprecated ToolSettingsValue.ts has been removed.
+
 ### API changes in `ui-components` package
 
 #### Hard-Deprecation
@@ -261,6 +273,8 @@ should decide what ruleset it wants to use.
 
 * Custom registered ToolUiProviders should now return a 'horizontalToolSettingNodes' property that contain an array of ToolSettingsEntry items.
 These items define the label and editor to use for each value when the Tool Settings container is in its default Horizontal orientation. The existing 'toolSettingsNode' property is still used to specify the UI if the Tool Settings are shown in a floating/rectangular container.
+
+*When using the DefaultToolSettingsProvider as specified in the `ToolUiManager`, the toolSettingsProperty argument to `ToolUiManager.initializeToolSettingsData()` has been changed from `ToolSettingsPropertyRecord[]` to `DialogItem[]`. `DialogItem` is an interface that you will find in the ui-abstract package in the file DialogItem.ts. The classes in the file ToolSettingsValue.ts have been deprecated and removed from the source tree.
 
 ### API changes in `ui-core` package
 

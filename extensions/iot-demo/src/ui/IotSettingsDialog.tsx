@@ -5,7 +5,7 @@
 import * as React from "react";
 import classnames from "classnames";
 import { Dialog, Select, Input, Button, ButtonType, Popup } from "@bentley/ui-core";
-import { ToolSettingsPropertyItem, ToolSettingsValue, SyncPropertiesChangeEventArgs, RelativePosition } from "@bentley/ui-abstract";
+import { SyncPropertiesChangeEventArgs, RelativePosition } from "@bentley/ui-abstract";
 import { ModelessDialogManager } from "@bentley/ui-framework";
 import { IotUiProvider } from "./IotUiProvider";
 import { AnimationTypeName } from "../IoTDefinitions";
@@ -163,10 +163,11 @@ export class IotSettingsDialog extends React.Component<IotSettingsDialogProps, I
     const { currentTab, sensor, startTime, endTime } = this.state;
 
     const properties = [];
-    properties.push(new ToolSettingsPropertyItem(new ToolSettingsValue(this.props.dataProvider.getAnimationTypeFromString(sensor)), this.props.dataProvider.currentAnimationTypePropertyName));
-    properties.push(new ToolSettingsPropertyItem(new ToolSettingsValue(startTime), this.props.dataProvider.startTimePropertyName));
-    properties.push(new ToolSettingsPropertyItem(new ToolSettingsValue(endTime), this.props.dataProvider.endTimePropertyName));
-    properties.push(new ToolSettingsPropertyItem(new ToolSettingsValue(1 === currentTab ? true : false), this.props.dataProvider.monitorModePropertyName));
+    properties.push({ value: { value: this.props.dataProvider.getAnimationTypeFromString(sensor)}, propertyName: this.props.dataProvider.currentAnimationTypePropertyName });
+    properties.push({ value: { value: startTime }, propertyName: this.props.dataProvider.startTimePropertyName });
+    properties.push({ value: { value: endTime}, propertyName: this.props.dataProvider.endTimePropertyName });
+    const monitorModeValue = 1 === currentTab ? true : false;
+    properties.push({ value: { value: monitorModeValue }, propertyName: this.props.dataProvider.monitorModePropertyName });
 
     this.props.dataProvider.processChangesInUi(properties);
   }

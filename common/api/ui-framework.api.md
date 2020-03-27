@@ -42,6 +42,7 @@ import { DialogItem } from '@bentley/ui-abstract';
 import { DialogItemsManager } from '@bentley/ui-abstract';
 import { DialogPropertySyncItem } from '@bentley/ui-abstract';
 import { DialogProps } from '@bentley/ui-core';
+import { DialogRow } from '@bentley/ui-abstract';
 import { Direction } from '@bentley/ui-ninezone';
 import { DisabledResizeHandles } from '@bentley/ui-ninezone';
 import { DisplayStyleProps } from '@bentley/imodeljs-common';
@@ -1409,10 +1410,11 @@ export type DeepReadonlyObject<T> = {
 };
 
 // @beta
-export interface DefaultDisplayProps {
-    // (undocumented)
-    readonly itemsManager: DialogItemsManager;
-}
+export function DefaultDialogGridContainer({ itemsManager, componentGenerator, isToolSettings }: {
+    itemsManager: DialogItemsManager;
+    componentGenerator?: ComponentGenerator;
+    isToolSettings?: boolean;
+}): JSX.Element;
 
 // @beta @deprecated
 export interface DefaultNavigationProps {
@@ -1427,15 +1429,6 @@ export class DefaultNavigationWidget extends React.Component<DefaultNavigationPr
     // (undocumented)
     render(): JSX.Element;
     }
-
-// @beta
-export class DefaultReactDisplay extends React.Component<DefaultDisplayProps, {}> {
-    constructor(props: DefaultDisplayProps);
-    get itemsManager(): DialogItemsManager;
-    set itemsManager(itemsManager: DialogItemsManager);
-    // (undocumented)
-    render(): React.ReactNode;
-}
 
 // @internal
 export class DefaultToolSettingsProvider extends ToolUiProvider {

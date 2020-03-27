@@ -890,51 +890,6 @@ export enum ToolbarUsage {
     ViewNavigation = 1
 }
 
-// @beta
-export class ToolSettingsPropertyItem implements DialogPropertyItem {
-    constructor(value: ToolSettingsValue, propertyName: string);
-    // (undocumented)
-    propertyName: string;
-    // (undocumented)
-    value: ToolSettingsValue;
-}
-
-// @beta
-export class ToolSettingsPropertyRecord extends PropertyRecord {
-    constructor(value: PropertyValue, property: PropertyDescription, editorPosition: EditorPosition, isReadonly?: boolean, lockProperty?: PropertyRecord);
-    // (undocumented)
-    static clone(record: ToolSettingsPropertyRecord, newValue?: ToolSettingsValue): ToolSettingsPropertyRecord;
-    // (undocumented)
-    editorPosition: EditorPosition;
-    // (undocumented)
-    lockProperty?: PropertyRecord;
-}
-
-// @beta
-export class ToolSettingsPropertySyncItem extends ToolSettingsPropertyItem implements DialogPropertySyncItem {
-    constructor(value: ToolSettingsValue, propertyName: string, isDisabled?: boolean);
-    isDisabled?: boolean;
-}
-
-// @beta
-export class ToolSettingsValue implements DialogItemValue {
-    constructor(value?: number | string | boolean | Date, displayValue?: string);
-    // (undocumented)
-    clone(): ToolSettingsValue;
-    // (undocumented)
-    displayValue?: string;
-    // (undocumented)
-    get hasDisplayValue(): boolean;
-    // (undocumented)
-    get isNullValue(): boolean;
-    // (undocumented)
-    update(newValue: ToolSettingsValue): boolean;
-    // (undocumented)
-    value?: number | string | boolean | Date;
-    // (undocumented)
-    readonly valueFormat = PropertyValueFormat.Primitive;
-}
-
 // @public
 export class UiAbstract {
     static get i18n(): I18N;

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 
-import { UiItemsProvider, StageUsage, ToolbarUsage, ToolbarOrientation, ToolbarItemUtilities, CommonToolbarItem, ToolSettingsPropertyItem, ToolSettingsValue, UiDataProvider, PropertyChangeStatus, PropertyChangeResult } from "@bentley/ui-abstract";
+import { UiItemsProvider, StageUsage, ToolbarUsage, ToolbarOrientation, ToolbarItemUtilities, CommonToolbarItem, DialogPropertyItem, UiDataProvider, PropertyChangeStatus, PropertyChangeResult } from "@bentley/ui-abstract";
 import { ModelessDialogManager } from "@bentley/ui-framework";
 
 import { IotSettingsDialog } from "./IotSettingsDialog";
@@ -96,23 +96,23 @@ export class IotUiProvider extends UiDataProvider implements UiItemsProvider {
   }
 
   /** Called by UI to request available properties */
-  public supplyAvailableProperties(): ToolSettingsPropertyItem[] {
+  public supplyAvailableProperties(): DialogPropertyItem[] {
     return [
-      new ToolSettingsPropertyItem(new ToolSettingsValue(this.currentAnimationType as number), this.currentAnimationTypePropertyName),
-      new ToolSettingsPropertyItem(new ToolSettingsValue(this.monitorMode), this.monitorModePropertyName),
-      new ToolSettingsPropertyItem(new ToolSettingsValue(this.startTime), this.startTimePropertyName),
-      new ToolSettingsPropertyItem(new ToolSettingsValue(this.endTime), this.endTimePropertyName),
-      new ToolSettingsPropertyItem(new ToolSettingsValue(this.monitorTime), this.monitorTimePropertyName),
-      new ToolSettingsPropertyItem(new ToolSettingsValue(this.minDate), this.minDatePropertyName),
-      new ToolSettingsPropertyItem(new ToolSettingsValue(this.maxDate), this.maxDatePropertyName),
-      new ToolSettingsPropertyItem(new ToolSettingsValue(this.alarmText), this.alarmTextPropertyName),
+      { value: { value: this.currentAnimationType as number }, propertyName: this.currentAnimationTypePropertyName },
+      { value: { value: this.monitorMode }, propertyName: this.monitorModePropertyName },
+      { value: { value: this.startTime }, propertyName: this.startTimePropertyName },
+      { value: { value: this.endTime }, propertyName: this.endTimePropertyName },
+      { value: { value: this.monitorTime }, propertyName: this.monitorTimePropertyName },
+      { value: { value: this.minDate }, propertyName: this.minDatePropertyName },
+      { value: { value: this.maxDate }, propertyName: this.maxDatePropertyName },
+      { value: { value: this.alarmText }, propertyName: this.alarmTextPropertyName },
     ];
   }
 
   public syncCurrentDateInUi(monitorTime: Date): void {
     this.monitorTime = monitorTime;
     const properties = [
-      new ToolSettingsPropertyItem(new ToolSettingsValue(this.monitorTime), this.monitorTimePropertyName),
+      { value: { value: this.monitorTime }, propertyName: this.monitorTimePropertyName },
     ];
 
     this.onSyncPropertiesChangeEvent.emit({ properties });
@@ -121,17 +121,17 @@ export class IotUiProvider extends UiDataProvider implements UiItemsProvider {
   public syncAlarmUi(monitorTime: Date, alarmText?: string): void {
     this.monitorTime = monitorTime;
     const properties = [];
-    properties.push(new ToolSettingsPropertyItem(new ToolSettingsValue(this.monitorTime), this.monitorTimePropertyName));
+    properties.push({ value: { value: this.monitorTime }, propertyName: this.monitorTimePropertyName });
     if (alarmText) {
       this.alarmText = alarmText;
-      properties.push(new ToolSettingsPropertyItem(new ToolSettingsValue(this.alarmText), this.alarmTextPropertyName));
+      properties.push({ value: { value: this.alarmText }, propertyName: this.alarmTextPropertyName });
     }
 
     this.onSyncPropertiesChangeEvent.emit({ properties });
   }
 
   /** Called by UI to inform data provider of changes */
-  public processChangesInUi(properties: ToolSettingsPropertyItem[]): PropertyChangeResult {
+  public processChangesInUi(properties: DialogPropertyItem[]): PropertyChangeResult {
     if (properties.length > 0) {
       for (const prop of properties) {
         if (prop.propertyName === this.currentAnimationTypePropertyName) {

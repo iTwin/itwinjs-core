@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { Dialog, DialogButtonType } from "@bentley/ui-core";
-import { ModalDialogManager, DefaultReactDisplay } from "@bentley/ui-framework";
+import { ModalDialogManager, DefaultDialogGridContainer } from "@bentley/ui-framework";
 import {
   ColorEditorParams,
   InputEditorSizeParams,
@@ -83,7 +83,7 @@ export class TestUiProviderDialog extends React.Component<TestUiProviderDialogPr
       maxHeight={500}
       maxWidth={400}
     >
-      <DefaultReactDisplay itemsManager={this._itemsManager} key={Date.now()} />
+      <DefaultDialogGridContainer itemsManager={this._itemsManager} key={Date.now()} />
     </Dialog>
     );
   }

@@ -140,10 +140,9 @@ beta;CustomItemProps
 public;DeepReadonly
 public;DeepReadonlyArray
 public;DeepReadonlyObject
-beta;DefaultDisplayProps
+beta;DefaultDialogGridContainer({ itemsManager, componentGenerator, isToolSettings }:
 beta;DefaultNavigationProps
 beta;DefaultNavigationWidget 
-beta;DefaultReactDisplay 
 internal;DefaultToolSettingsProvider 
 alpha;DefaultViewOverlay 
 public;DialogChangedEvent 

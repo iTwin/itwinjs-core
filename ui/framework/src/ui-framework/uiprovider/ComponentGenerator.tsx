@@ -14,7 +14,7 @@ import {
 import { PropertyUpdatedArgs, EditorContainer } from "@bentley/ui-components";
 import { ToolSettingsEntry } from "../widget-panels/ToolSettings";
 
-import "./DefaultReactDisplay.scss";
+import "./DefaultDialogGridContainer.scss";
 import { assert } from "@bentley/ui-ninezone";
 
 function EditorLabel({ itemsManager, item, isLeftmostRecord }: { itemsManager: DialogItemsManager, item: DialogItem, isLeftmostRecord?: boolean }) {
@@ -87,7 +87,7 @@ function PropertyEditor({ itemsManager, record, isLock, setFocus }: { itemsManag
 /** Utility methods to generate react ui from DialogRow specs
  * @internal
  */
-export class ReactGenerator {
+export class ComponentGenerator {
 
   private _itemsManager: DialogItemsManager;
   constructor(itemsManager: DialogItemsManager) {
@@ -197,6 +197,7 @@ export class ReactGenerator {
       );
     }
   }
+
   public getToolSettingsEntry(row: DialogRow, rowIndex: number): ToolSettingsEntry {
     if (DialogItemsManager.onlyContainButtonGroupEditors(row)) {
       return this.generateEntryWithButtonGroupEditors(row, rowIndex);

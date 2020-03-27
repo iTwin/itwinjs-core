@@ -32,7 +32,6 @@ export * from "./ui-abstract/properties/Description";
 export * from "./ui-abstract/properties/EditorParams";
 export * from "./ui-abstract/properties/PrimitiveTypes";
 export * from "./ui-abstract/properties/Record";
-export * from "./ui-abstract/properties/ToolSettingsValue";
 export * from "./ui-abstract/properties/Value";
 
 export * from "./ui-abstract/quantity/BaseQuantityDescription";
