@@ -26,8 +26,8 @@ describe("<BooleanEditor />", () => {
     const wrapper = mount(<BooleanEditor propertyRecord={record} />);
 
     await TestUtils.flushAsyncOperations();
-    const enumEditor = wrapper.instance() as BooleanEditor;
-    expect(enumEditor.getValue()).to.equal(false);
+    const editor = wrapper.instance() as BooleanEditor;
+    expect(editor.state.checkboxValue).to.equal(false);
 
     wrapper.unmount();
   });
@@ -39,7 +39,7 @@ describe("<BooleanEditor />", () => {
       spyOnCommit();
     }
     const wrapper = mount(<BooleanEditor propertyRecord={record} onCommit={handleCommit} />);
-    const enumEditor = wrapper.instance() as BooleanEditor;
+    const editor = wrapper.instance() as BooleanEditor;
     const inputNode = wrapper.find("input");
 
     expect(inputNode.length).to.eq(1);
@@ -47,7 +47,7 @@ describe("<BooleanEditor />", () => {
       const testValue = true;
       inputNode.simulate("change", { target: { value: testValue } });
       wrapper.update();
-      expect(enumEditor.getValue()).to.equal(testValue);
+      expect(editor.state.checkboxValue).to.equal(testValue);
       await TestUtils.flushAsyncOperations();
       expect(spyOnCommit.calledOnce).to.be.true;
     }
@@ -78,13 +78,13 @@ describe("<BooleanEditor />", () => {
     const wrapper = mount(<BooleanEditor propertyRecord={record} />);
 
     await TestUtils.flushAsyncOperations();
-    const enumEditor = wrapper.instance() as BooleanEditor;
-    expect(enumEditor.getValue()).to.equal(false);
+    const editor = wrapper.instance() as BooleanEditor;
+    expect(editor.state.checkboxValue).to.equal(false);
 
     const newRecord = TestUtils.createBooleanProperty("Test", true);
     wrapper.setProps({ propertyRecord: newRecord });
     await TestUtils.flushAsyncOperations();
-    expect(enumEditor.getValue()).to.equal(true);
+    expect(editor.state.checkboxValue).to.equal(true);
 
     wrapper.unmount();
   });

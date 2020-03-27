@@ -32,7 +32,7 @@ export interface UiItemsApplication {
 export class UiItemsArbiter {
   private static _uiItemsApplication?: UiItemsApplication;
 
-  /** The UiItemsApplication implementation. The application should set this to validate items from the plug-ins. */
+  /** The UiItemsApplication implementation. The application should set this to validate items from the extensions. */
   public static get uiItemsApplication(): UiItemsApplication | undefined { return UiItemsArbiter._uiItemsApplication; }
   public static set uiItemsApplication(app: UiItemsApplication | undefined) { UiItemsArbiter._uiItemsApplication = app; }
 

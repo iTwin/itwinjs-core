@@ -114,6 +114,7 @@ interface CubeNavigationAidState {
  */
 export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, CubeNavigationAidState> {
   private _start: Vector2d = Vector2d.createZero();
+  /** @internal */
   public readonly state: Readonly<CubeNavigationAidState> = {
     dragging: false,
     startRotMatrix: Matrix3d.createIdentity(),
@@ -126,6 +127,14 @@ export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, C
   private _lastTime: number | undefined;
   private _animationFrame: any;
   private _mounted: boolean = false;
+  private _labels: { [key: string]: string } = {
+    [Face.Right]: UiComponents.translate("cube.right"),
+    [Face.Left]: UiComponents.translate("cube.left"),
+    [Face.Back]: UiComponents.translate("cube.back"),
+    [Face.Front]: UiComponents.translate("cube.front"),
+    [Face.Top]: UiComponents.translate("cube.top"),
+    [Face.Bottom]: UiComponents.translate("cube.bottom"),
+  };
 
   /** @internal */
   public componentDidMount() {
@@ -210,21 +219,12 @@ export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, C
     if (rotMatrix !== startRotMatrix && rotMatrix !== endRotMatrix)
       ViewportComponentEvents.setCubeMatrix(rotMatrix, Face.None);
 
-    const labels: { [key: string]: string } = {
-      [Face.Right]: UiComponents.translate("cube.right"),
-      [Face.Left]: UiComponents.translate("cube.left"),
-      [Face.Back]: UiComponents.translate("cube.back"),
-      [Face.Front]: UiComponents.translate("cube.front"),
-      [Face.Top]: UiComponents.translate("cube.top"),
-      [Face.Bottom]: UiComponents.translate("cube.bottom"),
-    };
-
     const faces: { [key: string]: React.ReactNode } = {};
-    for (const key in labels) {
+    for (const key in this._labels) {
       // istanbul ignore else
-      if (labels.hasOwnProperty(key)) {
+      if (this._labels.hasOwnProperty(key)) {
         const f = key as Face;
-        const label = labels[f];
+        const label = this._labels[f];
         faces[f] =
           <NavCubeFace
             face={f}

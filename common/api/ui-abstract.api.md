@@ -343,26 +343,17 @@ export interface DialogItemsChangedArgs {
 // @beta
 export class DialogItemsManager extends UiDataProvider {
     constructor(items?: ReadonlyArray<DialogItem>);
-    // (undocumented)
     applyUiPropertyChange: (_item: DialogPropertySyncItem) => void;
-    // (undocumented)
     static editorWantsLabel(item: DialogItem): boolean;
-    // (undocumented)
     static getItemDisabledState(baseDialogItem: BaseDialogItem): boolean;
-    // (undocumented)
     static getPropertyRecord: (dialogItem: BaseDialogItem) => PropertyRecord;
-    // (undocumented)
     static hasAssociatedLockProperty(item: DialogItem): boolean;
-    // (undocumented)
     isToolSettingsManager: () => boolean;
-    // (undocumented)
     get items(): ReadonlyArray<DialogItem>;
     set items(items: ReadonlyArray<DialogItem>);
     // @internal (undocumented)
     layoutDialogRows(): DialogRow[];
-    // (undocumented)
     static onlyContainButtonGroupEditors(row: DialogRow): boolean;
-    // (undocumented)
     rows: DialogRow[];
 }
 
@@ -594,34 +585,25 @@ export interface PropertyChangeResult {
 
 // @beta
 export enum PropertyChangeStatus {
-    // (undocumented)
     Error = 2,
-    // (undocumented)
     Success = 0
 }
 
 // @beta
 export interface PropertyDescription {
     dataController?: string;
-    // (undocumented)
     displayLabel: string;
-    // (undocumented)
     editor?: PropertyEditorInfo;
-    // (undocumented)
     enum?: EnumerationChoicesInfo;
-    // (undocumented)
     name: string;
     // @alpha
     quantityType?: string;
-    // (undocumented)
     typename: string;
 }
 
 // @beta
 export interface PropertyEditorInfo {
-    // (undocumented)
     name?: string;
-    // (undocumented)
     params?: PropertyEditorParams[];
 }
 
@@ -651,27 +633,18 @@ export enum PropertyEditorParamTypes {
 // @beta
 export class PropertyRecord {
     constructor(value: PropertyValue, property: PropertyDescription);
-    // (undocumented)
     autoExpand?: boolean;
     copyWithNewValue(newValue: PropertyValue): PropertyRecord;
-    // (undocumented)
     description?: string;
-    // (undocumented)
     extendedData?: {
         [key: string]: any;
     };
-    // (undocumented)
     static fromString(value: string, descriptionOrName?: PropertyDescription | string): PropertyRecord;
-    // (undocumented)
     isDisabled?: boolean;
-    // (undocumented)
     isMerged?: boolean;
-    // (undocumented)
     isReadonly?: boolean;
     links?: LinkElementsInfo;
-    // (undocumented)
     readonly property: PropertyDescription;
-    // (undocumented)
     readonly value: PropertyValue;
 }
 
@@ -927,7 +900,6 @@ export class UiAdmin {
 
 // @beta
 export abstract class UiDataProvider {
-    // (undocumented)
     onSyncPropertiesChangeEvent: SyncPropertiesChangeEvent;
     processChangesInUi(_properties: DialogPropertyItem[]): PropertyChangeResult;
     supplyAvailableProperties(): DialogPropertyItem[];

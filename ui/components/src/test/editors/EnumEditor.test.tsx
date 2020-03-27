@@ -25,8 +25,8 @@ describe("<EnumEditor />", () => {
     const wrapper = mount(<EnumEditor propertyRecord={record} />);
 
     await TestUtils.flushAsyncOperations();
-    const enumEditor = wrapper.instance() as EnumEditor;
-    expect(enumEditor.getValue()).to.equal(0);
+    const editor = wrapper.instance() as EnumEditor;
+    expect(editor.state.selectValue).to.equal(0);
 
     wrapper.unmount();
   });
@@ -38,7 +38,7 @@ describe("<EnumEditor />", () => {
       spyOnCommit();
     }
     const wrapper = mount(<EnumEditor propertyRecord={record} onCommit={handleCommit} />);
-    const enumEditor = wrapper.instance() as EnumEditor;
+    const editor = wrapper.instance() as EnumEditor;
     const selectNode = wrapper.find("select");
 
     expect(selectNode.length).to.eq(1);
@@ -46,7 +46,7 @@ describe("<EnumEditor />", () => {
       const testValue = "1";
       selectNode.simulate("change", { target: { value: testValue } });
       wrapper.update();
-      expect(enumEditor.getValue()).to.equal(testValue);
+      expect(editor.state.selectValue).to.equal(testValue);
       await TestUtils.flushAsyncOperations();
       expect(spyOnCommit.calledOnce).to.be.true;
     }
@@ -59,7 +59,7 @@ describe("<EnumEditor />", () => {
       spyOnCommit();
     }
     const wrapper = mount(<EnumEditor propertyRecord={record} onCommit={handleCommit} />);
-    const enumEditor = wrapper.instance() as EnumEditor;
+    const editor = wrapper.instance() as EnumEditor;
     const selectNode = wrapper.find("select");
 
     expect(selectNode.length).to.eq(1);
@@ -67,7 +67,7 @@ describe("<EnumEditor />", () => {
       const testValue = 1;
       selectNode.simulate("change", { target: { value: testValue } });
       wrapper.update();
-      expect(enumEditor.getValue()).to.equal(testValue);
+      expect(editor.state.selectValue).to.equal(testValue);
       await TestUtils.flushAsyncOperations();
       expect(spyOnCommit.calledOnce).to.be.true;
     }
@@ -93,14 +93,14 @@ describe("<EnumEditor />", () => {
     const wrapper = mount(<EnumEditor propertyRecord={record} />);
 
     await TestUtils.flushAsyncOperations();
-    const enumEditor = wrapper.instance() as EnumEditor;
-    expect(enumEditor.getValue()).to.equal(0);
+    const editor = wrapper.instance() as EnumEditor;
+    expect(editor.state.selectValue).to.equal(0);
 
     const testValue = 1;
     const newRecord = TestUtils.createEnumProperty("Test", testValue);
     wrapper.setProps({ propertyRecord: newRecord });
     await TestUtils.flushAsyncOperations();
-    expect(enumEditor.getValue()).to.equal(testValue);
+    expect(editor.state.selectValue).to.equal(testValue);
 
     wrapper.unmount();
   });

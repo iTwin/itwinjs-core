@@ -30,10 +30,6 @@ export class ToggleEditor extends React.PureComponent<PropertyEditorProps, Toggl
     toggleValue: false,
   };
 
-  public getValue(): boolean {
-    return this.state.toggleValue;
-  }
-
   public async getPropertyValue(): Promise<PropertyValue | undefined> {
     const record = this.props.propertyRecord;
     let propertyValue: PropertyValue | undefined;
@@ -119,7 +115,8 @@ export class ToggleEditor extends React.PureComponent<PropertyEditorProps, Toggl
   }
 }
 
-/** TogglePropertyEditor React component that uses the [[ToggleEditor]] property editor.
+/** Toggle Property Editor registered for the "bool" and "boolean" type names and "toggle" editor name.
+ * It uses the [[ToggleEditor]] React component.
  * @beta
  */
 export class TogglePropertyEditor extends PropertyEditorBase {

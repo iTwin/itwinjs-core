@@ -41,7 +41,7 @@ export interface ToolbarItem extends ProvidedItem {
   readonly badgeType?: BadgeType;
   /** Optional description */
   readonly description?: string | ConditionalStringValue;
-  /** Require uniqueId for the item. To ensure uniqueness it is suggested that a namespace prefix of the plugin name be used. */
+  /** Require uniqueId for the item. To ensure uniqueness it is suggested that a namespace prefix of the extension name be used. */
   readonly id: string;
   /** optional data to used by item implementor. */
   readonly internalData?: Map<string, any>;

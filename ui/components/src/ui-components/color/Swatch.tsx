@@ -26,7 +26,7 @@ export interface ColorSwatchProps extends React.ButtonHTMLAttributes<HTMLButtonE
   round?: boolean;
 }
 
-/** ColorSwatch Functional component
+/** ColorSwatch Functional component displays a color swatch in a button
  * @beta
  */
 export function ColorSwatch(props: ColorSwatchProps) {

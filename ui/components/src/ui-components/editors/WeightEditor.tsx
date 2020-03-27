@@ -21,7 +21,7 @@ interface WeightEditorState {
   isDisabled?: boolean;
 }
 
-/** WeightEditor React component that is a property editor with text input
+/** WeightEditor React component that is a property editor for picking a weight using a [[WeightPickerButton]] component
  * @beta
  */
 export class WeightEditor extends React.PureComponent<PropertyEditorProps, WeightEditorState> implements TypeEditor {
@@ -49,11 +49,6 @@ export class WeightEditor extends React.PureComponent<PropertyEditorProps, Weigh
     //      });
     //    }
     //   }
-  }
-
-  // istanbul ignore next
-  public getValue(): number {
-    return this.state.weightValue;
   }
 
   public async getPropertyValue(): Promise<PropertyValue | undefined> {
@@ -96,15 +91,18 @@ export class WeightEditor extends React.PureComponent<PropertyEditorProps, Weigh
     });
   }
 
+  /** @internal */
   public componentDidMount() {
     this._isMounted = true;
     this.setStateFromProps(); // tslint:disable-line:no-floating-promises
   }
 
+  /** @internal */
   public componentWillUnmount() {
     this._isMounted = false;
   }
 
+  /** @internal */
   public componentDidUpdate(prevProps: PropertyEditorProps) {
     if (this.props.propertyRecord !== prevProps.propertyRecord) {
       this.setStateFromProps(); // tslint:disable-line:no-floating-promises
@@ -135,6 +133,7 @@ export class WeightEditor extends React.PureComponent<PropertyEditorProps, Weigh
       );
   }
 
+  /** @internal */
   public render() {
     return (
       <div className={classnames("components-weight-editor", this.props.className)} style={this.props.style}>
@@ -150,7 +149,8 @@ export class WeightEditor extends React.PureComponent<PropertyEditorProps, Weigh
   }
 }
 
-/** WeightPropertyEditor returns React component [[WeightEditor]] to select a  color value.
+/** Weight Property Editor registered for the "number" type name and "weight-picker" editor name.
+ * It uses the [[WeightEditor]] React component.
  * @beta
  */
 export class WeightPropertyEditor extends PropertyEditorBase {

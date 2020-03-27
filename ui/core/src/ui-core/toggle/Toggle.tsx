@@ -53,7 +53,7 @@ interface ToggleState {
 }
 
 /**
- * Toggle React component to show an "on" or "off state
+ * Toggle React component to show an "on" or "off" state
  * @public
  */
 export class Toggle extends React.PureComponent<ToggleProps, ToggleState> {

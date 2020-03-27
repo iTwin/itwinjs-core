@@ -28,7 +28,7 @@ import { ComponentGenerator } from "../../uiprovider/ComponentGenerator";
 
 /** @internal */
 
-/** DataProvider that keep underlying data in sync with UI display */
+/** DataProvider that keeps underlying data in sync with UI display */
 class ToolSettingsDataProvider extends DialogItemsManager {
   private static _thisInstance?: ToolSettingsDataProvider;
 

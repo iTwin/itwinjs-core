@@ -6,7 +6,7 @@
  * @module Item
  */
 
-/** Standard stage uses. Allows plugin to target ui item to include on a stage without
+/** Standard stage uses. Allows extension to target ui item to include on a stage without
  *  knowing the stage name defined in the host application.
  * @beta
  */

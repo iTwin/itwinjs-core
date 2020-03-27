@@ -66,8 +66,9 @@ export type NodesDeselectedCallback = OnItemsDeselectedCallback<TreeNodeItem>;
  */
 export type NodeRenderer = (item: BeInspireTreeNode<TreeNodeItem>, props: TreeNodeProps) => React.ReactNode;
 
-/** Properties for the [[DEPRECATED_Tree]] component
- * @public @deprecated Use [[ControlledTree]] instead
+/** Properties for the [DEPRECATED_Tree]($ui-components) component
+ * @public
+ * @deprecated Use [ControlledTree]($ui-components) instead. Will be removed in iModel.js 3.0.
  */
 export interface TreeProps extends CommonProps {
   /** Nodes provider */
@@ -239,9 +240,9 @@ interface TreeState {
 }
 
 /**
- * A Tree React component that uses the core of BeInspireTree
- * but renders with TreeBase and TreeNodeBase from ui-core.
- * @public @deprecated Use [[ControlledTree]] instead. Will be removed in iModel.js 3.0
+ * A Tree React component that uses the core of BeInspireTree but renders with TreeBase and TreeNodeBase from ui-core.
+ * @public
+ * @deprecated Use [ControlledTree]($ui-components) instead. Will be removed in iModel.js 3.0.
  */
 // tslint:disable-next-line: class-name
 export class DEPRECATED_Tree extends React.Component<TreeProps, TreeState> {

@@ -35,7 +35,6 @@ interface CustomNumberEditorState {
 }
 
 /** CustomNumberEditor is a React component that is a property editor for numbers that specify custom formatting and parsing functions.
- *
  * @alpha
  */
 export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps, CustomNumberEditorState> implements TypeEditor {
@@ -293,7 +292,8 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
 }
 // onKeyPress={this._onKeyPress}
 
-/** CustomNumberPropertyEditor React component that uses the [[CustomNumberEditor]] property editor.
+/** Custom Property Editor registered for the "number" type name and the "number-custom" editor name.
+ * It uses the [[CustomNumberEditor]] React component.
  * @alpha
  */
 export class CustomNumberPropertyEditor extends PropertyEditorBase {

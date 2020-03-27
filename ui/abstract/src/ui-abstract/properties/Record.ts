@@ -30,18 +30,28 @@ export interface LinkElementsInfo {
  * @beta
  */
 export class PropertyRecord {
+  /** Value for the property */
   public readonly value: PropertyValue;
+  /** The property description containing metadata for the property */
   public readonly property: PropertyDescription;
+
+  /** Description for the property */
   public description?: string;
+  /** Indicates if the property is read-only */
   public isReadonly?: boolean;
+  /** Indicates if the property is disabled */
   public isDisabled?: boolean;
+  /** Indicates if the property record represents merged properties */
   public isMerged?: boolean;
+  /** Indicates if the property should be automatically expanded */
   public autoExpand?: boolean;
+  /** Map containing any additional data */
   public extendedData?: { [key: string]: any };
 
   /** Properties for link logic */
   public links?: LinkElementsInfo;
 
+  /** Constructs a PropertyRecord instance */
   public constructor(value: PropertyValue, property: PropertyDescription) {
     this.value = value;
     this.property = property;
@@ -52,6 +62,7 @@ export class PropertyRecord {
     return new PropertyRecord(newValue, this.property);
   }
 
+  /** Creates a PropertyRecord based on a value string and an optional property description or name */
   public static fromString(value: string, descriptionOrName?: PropertyDescription | string): PropertyRecord {
     let description: PropertyDescription;
     if (descriptionOrName && typeof descriptionOrName === "object") {

@@ -56,7 +56,7 @@ export interface AbstractStatusBarItem extends ProvidedItem {
   applicationData?: any;
   /** Describes badge. Renders no badge if not specified. */
   readonly badgeType?: BadgeType;
-  /** Required unique id of the item. To ensure uniqueness it is suggested that a namespace prefix of the plugin name be used. */
+  /** Required unique id of the item. To ensure uniqueness it is suggested that a namespace prefix of the extension name be used. */
   readonly id: string;
   /** optional data to used by item implementor. */
   readonly internalData?: Map<string, any>;
@@ -96,7 +96,7 @@ export interface AbstractStatusBarLabelItem extends AbstractStatusBarItem {
   readonly labelSide?: StatusBarLabelSide;
 }
 
-/** Describes the data needed to insert a custom item into the status bar. This is used to allow plugin
+/** Describes the data needed to insert a custom item into the status bar. This is used to allow extension
  *  implementer to create a framework specific component.
  * @beta
  */
@@ -107,7 +107,7 @@ export interface AbstractStatusBarCustomItem extends AbstractStatusBarItem {
 /** Describes the data needed to insert a button into the status bar.
  * @beta
  */
-export type CommonStatusBarItem = AbstractStatusBarActionItem | AbstractStatusBarLabelItem | AbstractStatusBarCustomItem; // | AbstractStatusBarPopupItem;
+export type CommonStatusBarItem = AbstractStatusBarActionItem | AbstractStatusBarLabelItem | AbstractStatusBarCustomItem;
 
 /** AbstractStatusBarActionItem type guard.
  * @beta

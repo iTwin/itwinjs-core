@@ -116,7 +116,8 @@ export class PropertyEditorManager {
   }
 }
 
-/** BasicPropertyEditor React component that uses the [[TextEditor]] property editor.
+/** Basic Property Editor registered for the "text" and "string" type names.
+ * It uses the [[TextEditor]] React component.
  * @beta
  */
 export class BasicPropertyEditor extends PropertyEditorBase {

@@ -163,7 +163,7 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
 }
 
 /** @docs-package-description
- * The ui-components package contains React components that are data-oriented, such as PropertyGrid, Table, Tree and Breadcrumb.
+ * The ui-components package contains React components that are data-oriented, such as PropertyGrid, Table, Tree and Viewport.
  * For more information, see [learning about ui-components]($docs/learning/ui/components/index.md).
  */
 /**
@@ -220,7 +220,7 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
  */
 /**
  * @docs-group-description Toolbar
- * Functions that provide a Toolbar components.
+ * Functions and components that provide a Toolbar.
  */
 /**
  * @docs-group-description Tree

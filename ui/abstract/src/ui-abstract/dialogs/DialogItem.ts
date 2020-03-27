@@ -5,7 +5,9 @@
 /** @packageDocumentation
  * @module Dialog
  */
+
 import { PropertyDescription } from "../properties/Description";
+
 /** DialogItemValue interface of PrimitiveValue types that have type editor support for use in dialogs
  * @beta
  */
@@ -55,7 +57,6 @@ export interface DialogPropertyItem {
 /** DialogPropertySyncItem is used to pass sync messages for DialogPropertyItems
  * @beta
  */
-
 export interface DialogPropertySyncItem extends DialogPropertyItem {
   readonly isDisabled?: boolean;
 }

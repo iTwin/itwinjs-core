@@ -31,12 +31,14 @@ export abstract class UiDataProvider {
     return [];
   }
 
+  /** Get Sync UI Control Properties Event */
   public onSyncPropertiesChangeEvent = new SyncPropertiesChangeEvent();
 
   /** Called by UI to validate a property value */
   public validateProperty(_item: DialogPropertyItem): PropertyChangeResult {
     return { status: PropertyChangeStatus.Success };
   }
+
   /** Called to sync properties synchronously if a UiDataProvider is active for the UI */
   public syncProperties(_syncProperties: DialogPropertySyncItem[]) {
     return;
@@ -54,9 +56,9 @@ export interface SyncPropertiesChangeEventArgs {
  * @beta
  */
 export enum PropertyChangeStatus {
-  // Property Change(s) Succeeded
+  /** Property Change(s) Succeeded */
   Success = 0,
-  // Error Processing Property Change(s)
+  /** Error Processing Property Change(s) */
   Error = 2,
 }
 

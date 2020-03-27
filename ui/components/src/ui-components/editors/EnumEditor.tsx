@@ -32,10 +32,6 @@ export class EnumEditor extends React.PureComponent<PropertyEditorProps, EnumEdi
     valueIsNumber: false,
   };
 
-  public getValue(): string | number {
-    return this.state.selectValue;
-  }
-
   public async getPropertyValue(): Promise<PropertyValue | undefined> {
     const record = this.props.propertyRecord;
     let propertyValue: PropertyValue | undefined;
@@ -153,7 +149,8 @@ export class EnumEditor extends React.PureComponent<PropertyEditorProps, EnumEdi
   }
 }
 
-/** EnumPropertyEditor React component that uses the [[EnumEditor]] property editor.
+/** Enum Property Button Group Editor registered for the "enum" type name.
+ * It uses the [[EnumEditor]] React component.
  * @beta
  */
 export class EnumPropertyEditor extends PropertyEditorBase {

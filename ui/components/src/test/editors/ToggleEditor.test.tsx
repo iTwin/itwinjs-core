@@ -26,8 +26,8 @@ describe("<ToggleEditor />", () => {
     const wrapper = mount(<ToggleEditor propertyRecord={record} />);
 
     await TestUtils.flushAsyncOperations();
-    const enumEditor = wrapper.instance() as ToggleEditor;
-    expect(enumEditor.getValue()).to.equal(false);
+    const editor = wrapper.instance() as ToggleEditor;
+    expect(editor.state.toggleValue).to.equal(false);
 
     wrapper.unmount();
   });
@@ -39,7 +39,7 @@ describe("<ToggleEditor />", () => {
       spyOnCommit();
     }
     const wrapper = mount(<ToggleEditor propertyRecord={record} onCommit={handleCommit} />);
-    const enumEditor = wrapper.instance() as ToggleEditor;
+    const editor = wrapper.instance() as ToggleEditor;
     const inputNode = wrapper.find("input");
 
     expect(inputNode.length).to.eq(1);
@@ -47,7 +47,7 @@ describe("<ToggleEditor />", () => {
       const testValue = true;
       inputNode.simulate("change", { target: { value: testValue } });
       wrapper.update();
-      expect(enumEditor.getValue()).to.equal(testValue);
+      expect(editor.state.toggleValue).to.equal(testValue);
       await TestUtils.flushAsyncOperations();
       expect(spyOnCommit.calledOnce).to.be.true;
     }
@@ -78,13 +78,13 @@ describe("<ToggleEditor />", () => {
     const wrapper = mount(<ToggleEditor propertyRecord={record} />);
 
     await TestUtils.flushAsyncOperations();
-    const enumEditor = wrapper.instance() as ToggleEditor;
-    expect(enumEditor.getValue()).to.equal(false);
+    const editor = wrapper.instance() as ToggleEditor;
+    expect(editor.state.toggleValue).to.equal(false);
 
     const newRecord = TestUtils.createBooleanProperty("Test", true);
     wrapper.setProps({ propertyRecord: newRecord });
     await TestUtils.flushAsyncOperations();
-    expect(enumEditor.getValue()).to.equal(true);
+    expect(editor.state.toggleValue).to.equal(true);
 
     wrapper.unmount();
   });

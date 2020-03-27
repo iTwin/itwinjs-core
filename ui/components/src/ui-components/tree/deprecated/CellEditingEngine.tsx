@@ -14,10 +14,9 @@ import { PropertyUpdatedArgs, EditorContainer } from "../../editors/EditorContai
 
 // tslint:disable:deprecation
 
-// tslint:disable:deprecation
-
 /** Properties for a [[Tree]] that has cell editing enabled
- * @beta @deprecated Use [[ControlledTree]] instead
+ * @beta
+ * @deprecated Use [ControlledTree]($ui-components) instead. Will be removed in iModel.js 3.0.
  */
 export interface EditableTreeProps {
   /** Callback to when editing starts */
@@ -30,7 +29,8 @@ export interface EditableTreeProps {
 }
 
 /** Arguments for the Tree Cell Updated event callback
- * @beta @deprecated Use [[ControlledTree]] instead
+ * @beta
+ * @deprecated Use [ControlledTree]($ui-components) instead. Will be removed in iModel.js 3.0.
  */
 export interface TreeCellUpdatedArgs {
   /** The cell being updated. */
@@ -40,17 +40,20 @@ export interface TreeCellUpdatedArgs {
 }
 
 /** Prototype for function to set the currently edited tree node
- * @beta @deprecated Use [[ControlledTree]] instead
+ * @beta
+ * @deprecated Use [ControlledTree]($ui-components) instead. Will be removed in iModel.js 3.0.
  */
 export type SetCurrentlyEditedNode = (currentlyEditedNode?: BeInspireTreeNode<TreeNodeItem>) => void;
 
 /** Prototype for function to get the currently edited tree node
- * @beta @deprecated Use [[ControlledTree]] instead
+ * @beta
+ * @deprecated Use [ControlledTree]($ui-components) instead. Will be removed in iModel.js 3.0.
  */
 export type GetCurrentlyEditedNode = () => BeInspireTreeNode<TreeNodeItem> | undefined;
 
 /** Tree Cell editing information
- * @beta @deprecated Use [[ControlledTree]] instead
+ * @beta
+ * @deprecated Use [ControlledTree]($ui-components) instead. Will be removed in iModel.js 3.0.
  */
 export class CellEditingEngine {
   private _getCurrentlyEditedNode?: GetCurrentlyEditedNode;

@@ -35,7 +35,7 @@ export interface CommonBackstageItem extends ProvidedItem {
   readonly groupPriority: number;
   /** Name of icon WebFont entry or if specifying an SVG symbol added by plug on use "svg:" prefix to imported symbol Id. */
   readonly icon?: string | ConditionalStringValue;
-  /** Required unique id of the item. To ensure uniqueness it is suggested that a namespace prefix of the plugin name be used. */
+  /** Required unique id of the item. To ensure uniqueness it is suggested that a namespace prefix of the extension name be used. */
   readonly id: string;
   /** optional data to be used by item implementor. */
   readonly internalData?: Map<string, any>;

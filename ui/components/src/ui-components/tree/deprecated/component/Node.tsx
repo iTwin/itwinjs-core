@@ -28,7 +28,8 @@ import { ImageRenderer } from "../../../common/ImageRenderer";
 
 /**
  * Properties for Checkbox in [[TreeNode]]
- * @public @deprecated Use [[ControlledTree]] instead
+ * @public
+ * @deprecated Use [ControlledTree]($ui-components) instead. Will be removed in iModel.js 3.0.
  */
 export interface NodeCheckboxProps extends Omit<CheckboxProps, "onClick"> {
   onClick: (node: BeInspireTreeNode<TreeNodeItem>, newState: CheckBoxState) => void;
@@ -36,7 +37,8 @@ export interface NodeCheckboxProps extends Omit<CheckboxProps, "onClick"> {
 
 /**
  * Properties for [[TreeNode]] React component
- * @public @deprecated Use [[ControlledTree]] instead
+ * @public
+ * @deprecated Use [ControlledTree]($ui-components) instead. Will be removed in iModel.js 3.0.
  */
 export interface TreeNodeProps extends CommonProps {
   node: BeInspireTreeNode<TreeNodeItem>;
@@ -80,7 +82,7 @@ export interface TreeNodeProps extends CommonProps {
 /**
  * Default component for rendering a node for the [DEPRECATED_Tree]($ui-components)
  * @public
- * @deprecated Use [[ControlledTree]] instead
+ * @deprecated Use [ControlledTree]($ui-components) instead
  */
 export class TreeNode extends React.Component<TreeNodeProps> {
 
@@ -164,7 +166,8 @@ function doPropsDiffer(props1: TreeNodeProps, props2: TreeNodeProps) {
 }
 
 /** Properties for [[TreeNodeIcon]] React component
- * @public @deprecated Use [[ControlledTree]] instead
+ * @public
+ * @deprecated Use [ControlledTree]($ui-components) instead. Will be removed in iModel.js 3.0.
  */
 export interface TreeNodeIconProps extends React.Attributes {
   node: BeInspireTreeNode<TreeNodeItem>;
@@ -172,7 +175,8 @@ export interface TreeNodeIconProps extends React.Attributes {
 }
 
 /** React component that renders tree node icons
- * @public @deprecated Use [[ControlledTree]] instead
+ * @public
+ * @deprecated Use [ControlledTree]($ui-components) instead. Will be removed in iModel.js 3.0.
  */
 export function TreeNodeIcon(props: TreeNodeIconProps) {
   const { imageLoader, node } = props;

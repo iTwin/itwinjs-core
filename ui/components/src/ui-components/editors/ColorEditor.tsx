@@ -55,11 +55,6 @@ export class ColorEditor extends React.PureComponent<PropertyEditorProps, ColorE
     }
   }
 
-  // istanbul ignore next
-  public getValue(): number {
-    return this.state.colorValue;
-  }
-
   public async getPropertyValue(): Promise<PropertyValue | undefined> {
     const record = this.props.propertyRecord;
     let propertyValue: PropertyValue | undefined;
@@ -100,15 +95,18 @@ export class ColorEditor extends React.PureComponent<PropertyEditorProps, ColorE
     });
   }
 
+  /** @internal */
   public componentDidMount() {
     this._isMounted = true;
     this.setStateFromProps(); // tslint:disable-line:no-floating-promises
   }
 
+  /** @internal */
   public componentWillUnmount() {
     this._isMounted = false;
   }
 
+  /** @internal */
   public componentDidUpdate(prevProps: PropertyEditorProps) {
     if (this.props.propertyRecord !== prevProps.propertyRecord) {
       this.setStateFromProps(); // tslint:disable-line:no-floating-promises
@@ -139,6 +137,7 @@ export class ColorEditor extends React.PureComponent<PropertyEditorProps, ColorE
       );
   }
 
+  /** @internal */
   public render() {
     const colorDef = new ColorDef(this.state.colorValue);
     return (
@@ -156,7 +155,8 @@ export class ColorEditor extends React.PureComponent<PropertyEditorProps, ColorE
   }
 }
 
-/** ColorPropertyEditor returns React component [[ColorEditor]] to select a  color value.
+/** Color Property Editor registered for the "number" type name and "color-picker" editor name.
+ * It uses the [[ColorEditor]] React component.
  * @beta
  */
 export class ColorPropertyEditor extends PropertyEditorBase {

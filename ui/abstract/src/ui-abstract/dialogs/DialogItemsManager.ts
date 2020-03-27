@@ -38,12 +38,19 @@ export interface DialogItemSyncArgs {
  */
 export class DialogItemsManager extends UiDataProvider {
   private _items: ReadonlyArray<DialogItem> = [];
+
+  /** Array of dialog rows */
   public rows: DialogRow[] = [];
+
+  /** Applies a property change */
   // istanbul ignore next
   public applyUiPropertyChange = (_item: DialogPropertySyncItem): void => { };
+
+  /** Determines if this items manager is for the Tool Settings */
   public isToolSettingsManager = (): boolean => {
     return false;
   }
+
   constructor(items?: ReadonlyArray<DialogItem>) {
     super();
     // istanbul ignore else
@@ -57,6 +64,7 @@ export class DialogItemsManager extends UiDataProvider {
     // istanbul ignore else
   }
 
+  /** Array of dialog items */
   public get items(): ReadonlyArray<DialogItem> {
     return this._items;
   }
@@ -91,6 +99,7 @@ export class DialogItemsManager extends UiDataProvider {
     return rows;
   }
 
+  /** Determines if a dialog item editor wants a label */
   public static editorWantsLabel(item: DialogItem): boolean {
     if (item.property.editor && item.property.editor.params) {
       const params = item.property.editor.params.find((param: PropertyEditorParams) => param.type === PropertyEditorParamTypes.SuppressEditorLabel) as SuppressLabelEditorParams;
@@ -101,10 +110,12 @@ export class DialogItemsManager extends UiDataProvider {
     return true;
   }
 
+  /** Determines if a dialog items has an associated lock property */
   public static hasAssociatedLockProperty(item: DialogItem): boolean {
     return !!item.lockProperty;
   }
 
+  /** Gets the disabled state for a given dialog item */
   public static getItemDisabledState(baseDialogItem: BaseDialogItem): boolean {
     const dialogItem = baseDialogItem as DialogItem;
     // istanbul ignore else
@@ -117,6 +128,8 @@ export class DialogItemsManager extends UiDataProvider {
 
     return !value.value as boolean;
   }
+
+  /** Gets a property record for a given dialog item */
   public static getPropertyRecord = (dialogItem: BaseDialogItem): PropertyRecord => {
     const propertyValue = { valueFormat: PropertyValueFormat.Primitive, value: dialogItem.value.value, displayValue: dialogItem.value.displayValue };
     const record = new PropertyRecord(propertyValue as PrimitiveValue, dialogItem.property);
@@ -124,6 +137,7 @@ export class DialogItemsManager extends UiDataProvider {
     return record;
   }
 
+  /** Determines if a dialog row only contains button group editors */
   public static onlyContainButtonGroupEditors(row: DialogRow): boolean {
     for (const item of row.items) {
       // istanbul ignore else

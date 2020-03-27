@@ -183,7 +183,7 @@ export class UiItemsManager {
     return backstageItems;
   }
 
-  /** Called when the application is populating the Stage Panels so that any registered PluginUiProvider can add widgets
+  /** Called when the application is populating the Stage Panels so that any registered UiItemsProvider can add widgets
    * @param stageId a string identifier the active stage.
    * @param stageUsage the StageUsage of the active stage.
    * @param location the location within the stage.

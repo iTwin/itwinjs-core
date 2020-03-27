@@ -40,10 +40,6 @@ export class TextEditor extends React.PureComponent<PropertyEditorProps, TextEdi
     readonly: false,
   };
 
-  public getValue(): string {
-    return this.state.inputValue;
-  }
-
   public async getPropertyValue(): Promise<PropertyValue | undefined> {
     const record = this.props.propertyRecord;
     let propertyValue: PropertyValue | undefined;

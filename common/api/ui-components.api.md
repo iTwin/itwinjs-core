@@ -477,17 +477,15 @@ export type BeInspireTreeRenderer<TPayload> = (rootNodes: Array<BeInspireTreeNod
 
 // @beta
 export class BooleanEditor extends React.PureComponent<PropertyEditorProps, BooleanEditorState> implements TypeEditor {
-    // (undocumented)
+    // @internal (undocumented)
     componentDidMount(): void;
-    // (undocumented)
+    // @internal (undocumented)
     componentDidUpdate(prevProps: PropertyEditorProps): void;
-    // (undocumented)
+    // @internal (undocumented)
     componentWillUnmount(): void;
     // (undocumented)
     getPropertyValue(): Promise<PropertyValue | undefined>;
-    // (undocumented)
-    getValue(): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     render(): JSX.Element;
     // @internal (undocumented)
     readonly state: Readonly<BooleanEditorState>;
@@ -781,17 +779,15 @@ export interface CheckboxStateChange {
 // @beta
 export class ColorEditor extends React.PureComponent<PropertyEditorProps, ColorEditorState> implements TypeEditor {
     constructor(props: PropertyEditorProps);
-    // (undocumented)
+    // @internal (undocumented)
     componentDidMount(): void;
-    // (undocumented)
+    // @internal (undocumented)
     componentDidUpdate(prevProps: PropertyEditorProps): void;
-    // (undocumented)
+    // @internal (undocumented)
     componentWillUnmount(): void;
     // (undocumented)
     getPropertyValue(): Promise<PropertyValue | undefined>;
-    // (undocumented)
-    getValue(): number;
-    // (undocumented)
+    // @internal (undocumented)
     render(): JSX.Element;
     // @internal (undocumented)
     readonly state: Readonly<ColorEditorState>;
@@ -991,7 +987,7 @@ export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, C
     componentWillUnmount(): void;
     // (undocumented)
     render(): React.ReactNode;
-    // (undocumented)
+    // @internal (undocumented)
     readonly state: Readonly<CubeNavigationAidState>;
 }
 
@@ -1424,12 +1420,8 @@ export class EnumButtonGroupEditor extends React.Component<PropertyEditorProps, 
     componentWillUnmount(): void;
     // (undocumented)
     getPropertyValue(): Promise<PropertyValue | undefined>;
-    // (undocumented)
-    getValue(): string | number;
     // @internal (undocumented)
     render(): JSX.Element;
-    // (undocumented)
-    setFocus(): void;
     // @internal (undocumented)
     readonly state: Readonly<EnumEditorState_2>;
 }
@@ -1444,8 +1436,6 @@ export class EnumEditor extends React.PureComponent<PropertyEditorProps, EnumEdi
     componentWillUnmount(): void;
     // (undocumented)
     getPropertyValue(): Promise<PropertyValue | undefined>;
-    // (undocumented)
-    getValue(): string | number;
     // @internal (undocumented)
     render(): JSX.Element;
     // @internal (undocumented)
@@ -1778,17 +1768,15 @@ export interface HueSliderProps extends React.HTMLAttributes<HTMLDivElement>, Co
 // @alpha
 export class IconEditor extends React.PureComponent<PropertyEditorProps, IconEditorState> implements TypeEditor {
     constructor(props: PropertyEditorProps);
-    // (undocumented)
+    // @internal (undocumented)
     componentDidMount(): void;
-    // (undocumented)
+    // @internal (undocumented)
     componentDidUpdate(prevProps: PropertyEditorProps): void;
-    // (undocumented)
+    // @internal (undocumented)
     componentWillUnmount(): void;
     // (undocumented)
     getPropertyValue(): Promise<PropertyValue | undefined>;
-    // (undocumented)
-    getValue(): string;
-    // (undocumented)
+    // @internal (undocumented)
     render(): JSX.Element;
     }
 
@@ -1984,13 +1972,9 @@ export interface ITreeNodeLoaderWithProvider<TDataProvider extends TreeDataProvi
 
 // @public
 export interface LessGreaterOperatorProcessor {
-    // (undocumented)
     isGreaterThan(a: Primitives.Value, b: Primitives.Value): boolean;
-    // (undocumented)
     isGreaterThanOrEqualTo(a: Primitives.Value, b: Primitives.Value): boolean;
-    // (undocumented)
     isLessThan(a: Primitives.Value, b: Primitives.Value): boolean;
-    // (undocumented)
     isLessThanOrEqualTo(a: Primitives.Value, b: Primitives.Value): boolean;
 }
 
@@ -2271,9 +2255,7 @@ export interface NonPrimitivePropertyRendererProps extends PrimitiveRendererProp
 
 // @public
 export interface NullableOperatorProcessor {
-    // (undocumented)
     isNotNull(value: Primitives.Value): boolean;
-    // (undocumented)
     isNull(value: Primitives.Value): boolean;
 }
 
@@ -2311,9 +2293,7 @@ export type OnSelectionChanged = (shiftDown?: boolean, ctrlDown?: boolean) => vo
 
 // @public
 export interface OperatorProcessor {
-    // (undocumented)
     isEqualTo(a: Primitives.Value, b: Primitives.Value): boolean;
-    // (undocumented)
     isNotEqualTo(a: Primitives.Value, b: Primitives.Value): boolean;
 }
 
@@ -3070,7 +3050,6 @@ export class SolarTimeline extends React.PureComponent<SolarTimelineComponentPro
 
 // @public
 export interface SortComparer {
-    // (undocumented)
     sortCompare(valueA: Primitives.Value, valueB: Primitives.Value, ignoreCase?: boolean): number;
 }
 
@@ -3124,21 +3103,13 @@ export enum StandardTypeConverterTypeNames {
 
 // @public
 export interface StringOperatorProcessor {
-    // (undocumented)
     contains(a: string, b: string, caseSensitive: boolean): boolean;
-    // (undocumented)
     doesNotContain(a: string, b: string, caseSensitive: boolean): boolean;
-    // (undocumented)
     endsWith(a: string, b: string, caseSensitive: boolean): boolean;
-    // (undocumented)
     isContainedIn(a: string, b: string, caseSensitive: boolean): boolean;
-    // (undocumented)
     isEmpty(a: string): boolean;
-    // (undocumented)
     isNotContainedIn(a: string, b: string, caseSensitive: boolean): boolean;
-    // (undocumented)
     isNotEmpty(a: string): boolean;
-    // (undocumented)
     startsWith(a: string, b: string, caseSensitive: boolean): boolean;
 }
 
@@ -3426,8 +3397,6 @@ export class TextEditor extends React.PureComponent<PropertyEditorProps, TextEdi
     componentWillUnmount(): void;
     // (undocumented)
     getPropertyValue(): Promise<PropertyValue | undefined>;
-    // (undocumented)
-    getValue(): string;
     // @internal (undocumented)
     render(): React.ReactNode;
     // @internal (undocumented)
@@ -3518,8 +3487,6 @@ export class ToggleEditor extends React.PureComponent<PropertyEditorProps, Toggl
     componentWillUnmount(): void;
     // (undocumented)
     getPropertyValue(): Promise<PropertyValue | undefined>;
-    // (undocumented)
-    getValue(): boolean;
     // @internal (undocumented)
     render(): JSX.Element;
     // @internal (undocumented)
@@ -4087,32 +4054,19 @@ export interface TreeSelectionReplacementEventArgs {
 }
 
 // @public
-export abstract class TypeConverter implements SortComparer, OperatorProcessor {
-    // (undocumented)
+export abstract class TypeConverter implements SortComparer, OperatorProcessor, NullableOperatorProcessor {
     convertFromString(_value: string): ConvertedPrimitives.Value | undefined | Promise<ConvertedPrimitives.Value | undefined>;
-    // (undocumented)
     convertFromStringToPropertyValue(value: string, _propertyRecord?: PropertyRecord): Promise<PropertyValue>;
-    // (undocumented)
     convertPropertyToString(_propertyDescription: PropertyDescription, value?: Primitives.Value): string | Promise<string>;
-    // (undocumented)
     convertToString(value?: Primitives.Value): string | Promise<string>;
-    // (undocumented)
     get isBooleanType(): boolean;
-    // (undocumented)
     isEqualTo(valueA: Primitives.Value, valueB: Primitives.Value): boolean;
-    // (undocumented)
     get isLessGreaterType(): boolean;
-    // (undocumented)
     isNotEqualTo(valueA: Primitives.Value, valueB: Primitives.Value): boolean;
-    // (undocumented)
     isNotNull(value: Primitives.Value): boolean;
-    // (undocumented)
     isNull(value: Primitives.Value): boolean;
-    // (undocumented)
     get isNullableType(): boolean;
-    // (undocumented)
     get isStringType(): boolean;
-    // (undocumented)
     abstract sortCompare(valueA: Primitives.Value, valueB: Primitives.Value, _ignoreCase?: boolean): number;
 }
 
@@ -4314,17 +4268,15 @@ export interface VisibleTreeNodes extends Iterable<TreeModelNode | TreeModelNode
 // @beta
 export class WeightEditor extends React.PureComponent<PropertyEditorProps, WeightEditorState> implements TypeEditor {
     constructor(props: PropertyEditorProps);
-    // (undocumented)
+    // @internal (undocumented)
     componentDidMount(): void;
-    // (undocumented)
+    // @internal (undocumented)
     componentDidUpdate(prevProps: PropertyEditorProps): void;
-    // (undocumented)
+    // @internal (undocumented)
     componentWillUnmount(): void;
     // (undocumented)
     getPropertyValue(): Promise<PropertyValue | undefined>;
-    // (undocumented)
-    getValue(): number;
-    // (undocumented)
+    // @internal (undocumented)
     render(): JSX.Element;
     // @internal (undocumented)
     readonly state: Readonly<WeightEditorState>;
