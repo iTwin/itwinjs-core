@@ -368,7 +368,7 @@ export class Viewer extends Window {
 
   private async resetIModel(filename: string): Promise<void> {
     let newIModel: SnapshotConnection;
-    const sameFile = filename === this._imodel.key;
+    const sameFile = filename === this._imodel.getRpcTokenProps().key;
     if (!sameFile) {
       try {
         newIModel = await SnapshotConnection.open(filename);

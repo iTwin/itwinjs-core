@@ -224,8 +224,8 @@ export abstract class IModelConnection extends IModel {
     this.subcategories = new SubCategoriesCache(this);
     this.geoServices = new GeoServices(this);
     this.displayedExtents = Range3d.fromJSON(this.projectExtents);
-    if (this.key) {
-      this.eventSource = EventSourceManager.get(this.key, this.getRpcTokenProps());
+    if (this._rpcKey && this._rpcKey !== "") {
+      this.eventSource = EventSourceManager.get(this._rpcKey, this.getRpcTokenProps());
     }
   }
 
@@ -614,7 +614,7 @@ export class BriefcaseConnection extends IModelConnection {
       return;
 
     const iModelToken: IModelToken = IModelToken.fromJSON(request.parameters[0]);
-    if (this.key !== iModelToken.key)
+    if (this._rpcKey !== iModelToken.key)
       return; // The handler is called for a different connection than this
 
     const requestContext: AuthorizedFrontendRequestContext = await AuthorizedFrontendRequestContext.create(request.id); // Reuse activityId
@@ -651,14 +651,14 @@ export class BriefcaseConnection extends IModelConnection {
     RpcRequest.notFoundHandlers.removeListener(this._reopenConnectionHandler);
     requestContext.useContextForRpc = true;
 
-    let closePromise;
+    let closePromise: Promise<boolean>;
     if (this._isNativeAppBriefcase)
       closePromise = NativeAppRpcInterface.getClient().closeBriefcase(this.getRpcTokenProps());
     else
       closePromise = IModelReadRpcInterface.getClient().close(this.getRpcTokenProps()); // Ensure the method isn't awaited right away.
 
     if (this.eventSource) {
-      EventSourceManager.delete(this.key!);
+      EventSourceManager.delete(this._rpcKey);
     }
     try {
       await closePromise;

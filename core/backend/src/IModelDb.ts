@@ -8,7 +8,7 @@
 
 // cspell:ignore ulas postrc pollrc
 import {
-  assert, BeDuration, BeEvent, BentleyStatus, ChangeSetStatus, ClientRequestContext, DbResult, Guid, GuidString,
+  BeDuration, BeEvent, BentleyStatus, ChangeSetStatus, ClientRequestContext, DbResult, Guid, GuidString,
   Id64, Id64Arg, Id64Set, Id64String, JsonUtils, Logger, OpenMode, PerfLogger,
 } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext, UlasClient, UsageLogEntry, UsageType, ProgressCallback } from "@bentley/imodeljs-clients";
@@ -165,12 +165,6 @@ export abstract class IModelDb extends IModel {
 
   /** The Guid that identifies this iModel. */
   public get iModelId(): GuidString { return super.iModelId!; } // GuidString | undefined for the IModel superclass, but required for all IModelDb subclasses
-
-  /** An IModelDb will always have a key. */
-  public get key(): string {
-    assert(undefined !== super.key);
-    return super.key!;
-  }
 
   /** Get the in-memory handle of the native Db
    * @internal
@@ -1924,7 +1918,7 @@ export class BriefcaseDb extends IModelDb {
   private _eventSink?: EventSink;
 
   private clearEventSink() { if (this._eventSink) { EventSinkManager.delete(this._eventSink.id); } }
-  private initializeEventSink() { if (this.key) { this._eventSink = EventSinkManager.get(this.key!); } }
+  private initializeEventSink() { if (this._rpcKey && this._rpcKey !== "") { this._eventSink = EventSinkManager.get(this._rpcKey); } }
 
   private constructor(briefcaseEntry: BriefcaseEntry, iModelToken: IModelToken, openParams: OpenParams) {
     super(briefcaseEntry.nativeDb, iModelToken, openParams);
@@ -2524,6 +2518,9 @@ export class StandaloneDb extends IModelDb {
   private static readonly _openDbs = new Map<string, StandaloneDb>();
   /** The full path to the snapshot iModel file. */
   public get filePath(): string { return this.nativeDb.getFilePath(); }
+
+  /** This property is always undefined as a StandaloneDb does not accept or generate changesets. */
+  public get changeSetId(): undefined { return undefined; } // string | undefined for the superclass, but always undefined for StandaloneDb
 
   private constructor(nativeDb: IModelJsNative.DgnDb, openParams: OpenParams) {
     const filePath: string = nativeDb.getFilePath();

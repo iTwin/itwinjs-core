@@ -2302,7 +2302,6 @@ export abstract class IModelDb extends IModel {
     get isStandalone(): boolean;
     // @internal
     isStandaloneDb(): this is StandaloneDb;
-    get key(): string;
     // @internal
     protected static logUsage(requestContext: AuthorizedClientRequestContext, contextId: string, iModelDb: IModelDb): Promise<void>;
     // (undocumented)
@@ -3807,6 +3806,7 @@ export enum SqliteValueType {
 
 // @internal
 export class StandaloneDb extends IModelDb {
+    get changeSetId(): undefined;
     close(): void;
     static createEmpty(filePath: string, args: CreateIModelProps): StandaloneDb;
     get filePath(): string;

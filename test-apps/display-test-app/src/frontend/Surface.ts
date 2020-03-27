@@ -606,7 +606,7 @@ export class ReopenIModelTool extends Tool {
   public run(): boolean {
     const viewer = Surface.instance.firstViewer;
     if (undefined !== viewer)
-      viewer.openFile(viewer.viewport.iModel.key); // tslint:disable-line:no-floating-promises
+      viewer.openFile(viewer.viewport.iModel.getRpcTokenProps().key); // tslint:disable-line:no-floating-promises
 
     return true;
   }

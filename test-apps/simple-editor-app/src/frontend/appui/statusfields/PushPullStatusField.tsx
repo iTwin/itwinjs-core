@@ -81,8 +81,9 @@ class SyncManager {
     this.onStateChange.raiseEvent();
 
     // Once the initial state of the briefcase is known, register for events announcing new txns and pushes that clear local txns.
+    const rpcKey: string = this.iModelConnection.getRpcTokenProps().key;
 
-    EventSourceManager.get(this.iModelConnection.key!).on(IModelWriteRpcInterface.name, "onSavedChanges", (data: any) => {
+    EventSourceManager.get(rpcKey).on(IModelWriteRpcInterface.name, "onSavedChanges", (data: any) => {
       if (data.time > this.state.timeOfLastSaveEvent) { // work around out-of-order events
         this.state.timeOfLastSaveEvent = data.time;
         this.state.mustPush = data.hasPendingTxns;
@@ -90,7 +91,7 @@ class SyncManager {
       }
     });
 
-    EventSourceManager.get(this.iModelConnection.key!).on(IModelWriteRpcInterface.name, "onPushedChanges", (data: any) => {
+    EventSourceManager.get(rpcKey).on(IModelWriteRpcInterface.name, "onPushedChanges", (data: any) => {
       // In case I got the changeSetSubscription event first, remove the changeset that I pushed from the list of server changes waiting to be merged.
       const allChangesOnServer = this.state.changesOnServer.filter((cs) => cs !== data.parentChangeSetId);
       this.state.mustPush = false;
@@ -99,7 +100,7 @@ class SyncManager {
       this.onStateChange.raiseEvent();
     });
 
-    EventSourceManager.get(this.iModelConnection.key!).on(IModelWriteRpcInterface.name, "onPulledChanges", (data: any) => {
+    EventSourceManager.get(rpcKey).on(IModelWriteRpcInterface.name, "onPulledChanges", (data: any) => {
       this.updateParentChangesetId(data.parentChangeSetId);
       this.onStateChange.raiseEvent();
 
@@ -110,7 +111,7 @@ class SyncManager {
 
   private static updateParentChangesetId(parentChangeSetId: string) {
     this.state.parentChangesetId = parentChangeSetId;
-    const lastPulledIdx = this.state.changesOnServer.findIndex((csid) => csid === parentChangeSetId);
+    const lastPulledIdx = this.state.changesOnServer.findIndex((csId) => csId === parentChangeSetId);
     if (lastPulledIdx !== -1)
       this.state.changesOnServer.splice(0, lastPulledIdx + 1); // (changeSetSubscription might have added to changesOnServer after I pulled but before this event was fired)
     else

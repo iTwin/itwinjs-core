@@ -270,15 +270,26 @@ export abstract class IModel implements IModelProps {
     return out;
   }
 
-  public get key(): string | undefined { return this._token?.key; } // WIP: should not return `undefined`
+  /** A key used by RPC operations to identify this iModel across the frontend and backend.
+   * @see [[getRpcTokenProps]]
+   * @internal
+   */
+  protected get _rpcKey(): string { return this._token?.key ? this._token.key : ""; } // WIP: this getter will be replaced by a member of the same name once _token is removed
+  /** The Guid that identifies the *context* that owns this iModel. */
   public get contextId(): GuidString | undefined { return this._token?.contextId; }
+  /** The Guid that identifies this iModel. */
   public get iModelId(): GuidString | undefined { return this._token?.iModelId; }
+  /** The Id of the last changeset that was applied to this iModel.
+   * @note An empty string indicates the first version while `undefined` mean no changeset information is available.
+   */
   public get changeSetId(): string | undefined { return this._token?.changeSetId; }
-
-  /** The [[OpenMode]] used for this IModelConnection. */
+  /** The [[OpenMode]] used for this IModel. */
   public readonly openMode: OpenMode;
 
-  /** @internal */
+  /**
+   * @deprecated use [[getRpcTokenProps]] instead
+   * @internal
+   */
   protected _token?: IModelToken;
 
   /** Return a token that can be used to identify this iModel for RPC operations. */
@@ -287,7 +298,7 @@ export abstract class IModel implements IModelProps {
       throw new IModelError(IModelStatus.BadRequest, "Could not generate valid IModelTokenProps", Logger.logError);
     }
     return {
-      key: this.key!, // WIP: should not need the !
+      key: this._rpcKey,
       contextId: this.contextId,
       iModelId: this.iModelId,
       changeSetId: this.changeSetId,

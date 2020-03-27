@@ -3035,9 +3035,7 @@ export abstract class IModel implements IModelProps {
     // @internal
     protected constructor(iModelToken: IModelToken | undefined, openMode: OpenMode);
     cartographicToSpatialFromEcef(cartographic: Cartographic, result?: Point3d): Point3d;
-    // (undocumented)
     get changeSetId(): string | undefined;
-    // (undocumented)
     get contextId(): GuidString | undefined;
     static readonly dictionaryId: Id64String;
     get ecefLocation(): EcefLocation | undefined;
@@ -3049,7 +3047,6 @@ export abstract class IModel implements IModelProps {
     getRpcTokenProps(): IModelTokenProps;
     get globalOrigin(): Point3d;
     set globalOrigin(org: Point3d);
-    // (undocumented)
     get iModelId(): GuidString | undefined;
     // @internal (undocumented)
     protected initialize(name: string, props: IModelProps): void;
@@ -3058,8 +3055,6 @@ export abstract class IModel implements IModelProps {
     // (undocumented)
     abstract get isOpen(): boolean;
     abstract get isSnapshot(): boolean;
-    // (undocumented)
-    get key(): string | undefined;
     name: string;
     readonly openMode: OpenMode;
     get projectExtents(): AxisAlignedBox3d;
@@ -3067,12 +3062,14 @@ export abstract class IModel implements IModelProps {
     static readonly repositoryModelId: Id64String;
     rootSubject: RootSubjectProps;
     static readonly rootSubjectId: Id64String;
+    // @internal
+    protected get _rpcKey(): string;
     setEcefLocation(ecef: EcefLocationProps): void;
     spatialToCartographicFromEcef(spatial: XYAndZ, result?: Cartographic): Cartographic;
     spatialToEcef(spatial: XYAndZ, result?: Point3d): Point3d;
     // @internal (undocumented)
     toJSON(): IModelProps;
-    // @internal (undocumented)
+    // @internal @deprecated (undocumented)
     protected _token?: IModelToken;
 }
 
