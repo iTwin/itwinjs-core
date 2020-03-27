@@ -69,6 +69,7 @@
   "peerDependencies": {
     "@bentley/ui-abstract": "2.0.0-dev.48",
     "@bentley/bentleyjs-core": "^2.0.0-dev.48",
+    "@bentley/extension-client": "^2.0.0-dev.48",
     "@bentley/geometry-core": "^2.0.0-dev.48",
     "@bentley/imodeljs-clients": "^2.0.0-dev.48",
     "@bentley/imodeljs-common": "^2.0.0-dev.48",
