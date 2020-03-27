@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-backend",
-  "version": "2.0.0-dev.46",
+  "version": "2.0.0-dev.47",
   "description": "iModel.js backend components",
   "main": "lib/imodeljs-backend.js",
   "typings": "lib/imodeljs-backend",
@@ -47,28 +47,28 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.0.0-dev.46",
-    "@bentley/ecschema-metadata": "2.0.0-dev.46",
-    "@bentley/geometry-core": "^2.0.0-dev.46",
-    "@bentley/imodeljs-clients": "^2.0.0-dev.46",
-    "@bentley/imodeljs-clients-backend": "^2.0.0-dev.46",
-    "@bentley/imodeljs-common": "^2.0.0-dev.46"
+    "@bentley/bentleyjs-core": "^2.0.0-dev.47",
+    "@bentley/ecschema-metadata": "2.0.0-dev.47",
+    "@bentley/geometry-core": "^2.0.0-dev.47",
+    "@bentley/imodeljs-clients": "^2.0.0-dev.47",
+    "@bentley/imodeljs-clients-backend": "^2.0.0-dev.47",
+    "@bentley/imodeljs-common": "^2.0.0-dev.47"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.0.0-dev.46",
-    "@bentley/build-tools": "2.0.0-dev.46",
-    "@bentley/config-loader": "2.0.0-dev.46",
-    "@bentley/ecschema-metadata": "2.0.0-dev.46",
-    "@bentley/geometry-core": "2.0.0-dev.46",
-    "@bentley/imodeljs-clients": "2.0.0-dev.46",
-    "@bentley/imodeljs-clients-backend": "2.0.0-dev.46",
-    "@bentley/imodeljs-common": "2.0.0-dev.46",
-    "@bentley/oidc-signin-tool": "2.0.0-dev.46",
-    "@bentley/perf-tools": "2.0.0-dev.46",
+    "@bentley/bentleyjs-core": "2.0.0-dev.47",
+    "@bentley/build-tools": "2.0.0-dev.47",
+    "@bentley/config-loader": "2.0.0-dev.47",
+    "@bentley/ecschema-metadata": "2.0.0-dev.47",
+    "@bentley/geometry-core": "2.0.0-dev.47",
+    "@bentley/imodeljs-clients": "2.0.0-dev.47",
+    "@bentley/imodeljs-clients-backend": "2.0.0-dev.47",
+    "@bentley/imodeljs-common": "2.0.0-dev.47",
+    "@bentley/oidc-signin-tool": "2.0.0-dev.47",
+    "@bentley/perf-tools": "2.0.0-dev.47",
     "@types/chai": "^4.1.4",
     "@types/deep-assign": "^0.1.0",
     "@types/formidable": "^1.0.31",
