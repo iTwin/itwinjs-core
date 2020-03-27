@@ -463,7 +463,7 @@ packages:
     dev: false
     requiresBuild: true
     resolution:
-      integrity: sha1-gIXiGDg7XF/fbGBl5/2tRPpQo2M=
+      integrity: sha512-nkakDr6dQP7yNrf6oxyNf44Mu4sy3K4aYzFaJK82Ie/tgRU8NLtVfiaW/irlxjJs5h8V6BxrQwVvVPtgFOvFIw==
   /@fimbul/bifrost/0.21.0_tslint@5.20.1+typescript@3.7.5:
     dependencies:
       '@fimbul/ymir': 0.21.0_tsutils@3.17.1+typescript@3.7.5
