@@ -8452,8 +8452,6 @@ export abstract class TileAdmin {
     abstract process(): void;
     // @internal
     abstract purgeTileTrees(iModel: IModelConnection, modelIds: Id64Array | undefined): Promise<void>;
-    // @internal (undocumented)
-    abstract get realityTileExpirationTime(): BeDuration;
     // @internal
     abstract registerViewport(vp: Viewport): void;
     // @internal (undocumented)
@@ -8467,7 +8465,7 @@ export abstract class TileAdmin {
     // @internal (undocumented)
     abstract get tileExpirationTime(): BeDuration;
     // @internal (undocumented)
-    abstract get tileTreeExpirationTime(): BeDuration | undefined;
+    abstract get tileTreeExpirationTime(): BeDuration;
     // @internal (undocumented)
     abstract get useProjectExtents(): boolean;
 }
@@ -8490,8 +8488,6 @@ export namespace TileAdmin {
         maximumLevelsToSkip?: number;
         // @internal
         maximumMajorTileFormatVersion?: number;
-        // @internal
-        realityTileExpirationTime?: number;
         retryInterval?: number;
         tileExpirationTime?: number;
         tileTreeExpirationTime?: number;

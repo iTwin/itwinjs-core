@@ -107,9 +107,7 @@ export abstract class TileAdmin {
   /** @internal */
   public abstract get tileExpirationTime(): BeDuration;
   /** @internal */
-  public abstract get realityTileExpirationTime(): BeDuration;
-  /** @internal */
-  public abstract get tileTreeExpirationTime(): BeDuration | undefined;
+  public abstract get tileTreeExpirationTime(): BeDuration;
   /** @internal */
   public abstract get contextPreloadParentDepth(): number;
   /** @internal */
@@ -351,18 +349,13 @@ export namespace TileAdmin {
      */
     tileExpirationTime?: number;
 
-    /** ###TODO clean up later. Added for Microsoft demo. Specifies expiration time for reality models. Default: 5 seconds.
-     * @internal
-     */
-    realityTileExpirationTime?: number;
-
-    /** If defined, the minimum number of seconds to keep a TileTree in memory after it has become disused.
+    /** The minimum number of seconds to keep a TileTree in memory after it has become disused.
      * Each time a TileTree is drawn, we record the current time as its most-recently-used time.
      * Periodically we traverse all TileTrees in the system. Any which have not been used within this specified number of seconds will be discarded, freeing up memory.
      *
      * @note This is separate from [[tileExpirationTime]], which is applied to individual Tiles each time the TileTree *is* drawn.
      *
-     * Default value: undefined.
+     * Default value: 300 seconds (5 minutes).
      * Minimum value: 10 seconds.
      * Maximum value: 3600 seconds (1 hour).
      *
@@ -489,11 +482,9 @@ class Admin extends TileAdmin {
   private _totalAbortedRequests = 0;
   private _rpcInitialized = false;
   private readonly _tileExpirationTime: BeDuration;
-  private readonly _realityTileExpirationTime: BeDuration;
-  private readonly _pruneInterval: BeDuration;
   private _nextPruneTime: BeTimePoint;
   private _nextPurgeTime?: BeTimePoint;
-  private readonly _treeExpirationTime?: BeDuration;
+  private readonly _treeExpirationTime: BeDuration;
   private readonly _contextPreloadParentDepth: number;
   private readonly _contextPreloadParentSkip: number;
   private _canceledRequests?: Map<IModelConnection, Map<string, Set<string>>>;
@@ -546,10 +537,7 @@ class Admin extends TileAdmin {
 
     this._cancelBackendTileRequests = true === options.cancelBackendTileRequests;
 
-    const clamp = (seconds: number | undefined, min: number, max: number): BeDuration | undefined => {
-      if (undefined === seconds)
-        return undefined;
-
+    const clamp = (seconds: number, min: number, max: number): BeDuration => {
       seconds = Math.min(seconds, max);
       seconds = Math.max(seconds, min);
       return BeDuration.fromSeconds(seconds);
@@ -560,19 +548,14 @@ class Admin extends TileAdmin {
     const minTreeTime = ignoreMinimums ? 0.1 : 10;
 
     // If unspecified, tile expiration time defaults to 20 seconds.
-    this._tileExpirationTime = clamp((options.tileExpirationTime ? options.tileExpirationTime : 20), minTileTime, 60)!;
-
-    // If unspecified, reality tile expiration time defaults to 5 seconds.
-    this._realityTileExpirationTime = clamp((options.realityTileExpirationTime ? options.realityTileExpirationTime : 5), minTileTime, 60)!;
+    this._tileExpirationTime = clamp((options.tileExpirationTime ?? 20), minTileTime, 60)!;
 
     // If unspecified, trees never expire (will change this to use a default later).
-    this._treeExpirationTime = clamp(options.tileTreeExpirationTime, minTreeTime, 3600);
+    this._treeExpirationTime = clamp(options.tileTreeExpirationTime ?? 300, minTreeTime, 3600);
 
     const now = BeTimePoint.now();
-    this._pruneInterval = this._realityTileExpirationTime.milliseconds < this._tileExpirationTime.milliseconds ? this._realityTileExpirationTime : this._tileExpirationTime;
-    this._nextPruneTime = now.plus(this._pruneInterval);
-    if (undefined !== this._treeExpirationTime)
-      this._nextPurgeTime = now.plus(this._treeExpirationTime);
+    this._nextPruneTime = now.plus(this._tileExpirationTime);
+    this._nextPurgeTime = now.plus(this._treeExpirationTime);
 
     this._removeIModelConnectionOnCloseListener = IModelConnection.onClose.addListener((iModel) => this.onIModelClosed(iModel));
 
@@ -589,7 +572,6 @@ class Admin extends TileAdmin {
   public get maximumLevelsToSkip() { return this._maximumLevelsToSkip; }
   public get disableMagnification() { return this._disableMagnification; }
   public get tileExpirationTime() { return this._tileExpirationTime; }
-  public get realityTileExpirationTime() { return this._realityTileExpirationTime; }
   public get tileTreeExpirationTime() { return this._treeExpirationTime; }
   public get contextPreloadParentDepth() { return this._contextPreloadParentDepth; }
   public get contextPreloadParentSkip() { return this._contextPreloadParentSkip; }
@@ -704,7 +686,7 @@ class Admin extends TileAdmin {
       for (const tree of trees.trees)
         tree.prune();
 
-      this._nextPruneTime = now.plus(this._pruneInterval);
+      this._nextPruneTime = now.plus(this._tileExpirationTime);
     }
 
     if (treesByIModel) {
@@ -717,7 +699,6 @@ class Admin extends TileAdmin {
       }
 
       // Discard any tile trees that are no longer in use by any viewport.
-      assert(undefined !== this._treeExpirationTime);
       const olderThan = now.minus(this._treeExpirationTime);
       for (const entry of treesByIModel)
         entry[0].tiles.purge(olderThan, entry[1]);

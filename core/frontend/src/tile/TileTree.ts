@@ -123,10 +123,7 @@ export abstract class TileTree {
 
     const admin = IModelApp.tileAdmin;
     this.loadPriority = params.priority;
-    if (undefined !== params.expirationTime)
-      this.expirationTime = params.expirationTime;
-    else
-      this.expirationTime = TileLoadPriority.Context === this.loadPriority ? admin.realityTileExpirationTime : admin.tileExpirationTime;
+    this.expirationTime = params.expirationTime ?? admin.tileExpirationTime;
   }
 
   /** Selects tiles of appropriate resolution for some purpose like drawing to the screen, producing a shadow map, etc.
