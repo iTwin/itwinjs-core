@@ -90,7 +90,7 @@ class ScheduleTimelineProvider {
   }
 
   public getDescription(time: number): string {
-    return new Date(time).toString();
+    return new Date(time * 1000).toString();
   }
 
   public update(time: number, vp: Viewport): void {

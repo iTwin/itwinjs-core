@@ -950,7 +950,7 @@ export abstract class Viewport implements IDisposable {
     IModelApp.requestNextAnimation();
   }
 
-  /** The point in time reflected by the view, in UNIX milliseconds.
+  /** The point in time reflected by the view, in UNIX seconds.
    * This identifies a point on the timeline of the [[scheduleScript]], if any; it may also affect display of four-dimensional point clouds and reality meshes.
    * @beta
    */

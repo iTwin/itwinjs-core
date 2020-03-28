@@ -19,7 +19,7 @@ export namespace RenderSchedule {
    * Properties included in each property entry.
    */
   export interface TimelineEntryProps {
-    /** The time in Unix Epoch (POSIX) milliseconds */
+    /** The time in Unix Epoch (POSIX) seconds */
     time: number;
     /** Interpolation value from synchro.  2 is linear, else currently treated as step.  */
     interpolation: number;

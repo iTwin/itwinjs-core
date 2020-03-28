@@ -96,7 +96,7 @@ export interface DisplayStyleSettingsProps {
    * @beta
    */
   scheduleScript?: RenderSchedule.ModelTimelineProps[];
-  /** The point in time reflected by the view, in UNIX milliseconds.
+  /** The point in time reflected by the view, in UNIX seconds.
    * This identifies a point on the timeline of the [[scheduleScript]], if any; it may also affect display of four-dimensional reality models.
    * @beta
    */
@@ -271,7 +271,7 @@ export class DisplayStyleSettings {
     this._json.scheduleScript = props;
   }
 
-  /** The point in time reflected by the view, in UNIX milliseconds.
+  /** The point in time reflected by the view, in UNIX seconds.
    * This identifies a point on the timeline of the [[scheduleScript]], if any; it may also affect display of four-dimensional reality models.
    * @beta
    */
