@@ -170,6 +170,11 @@ describe("IModelConnection (#integration)", () => {
     for (const openMode of openModes) {
       const iModel1 = await BriefcaseConnection.open(testProjectId, testIModelId, openMode, IModelVersion.latest());
       assert.isNotNull(iModel1);
+      assert.isTrue(iModel1.isOpen);
+      assert.isFalse(iModel1.isClosed);
+      assert.equal(iModel1.contextId, testProjectId);
+      assert.equal(iModel1.iModelId, testIModelId);
+      assert.equal(iModel1.openMode, openMode);
       let n = 0;
       while (++n < 5) {
         const iModel2 = await BriefcaseConnection.open(testProjectId, testIModelId, openMode, IModelVersion.latest());
@@ -177,6 +182,8 @@ describe("IModelConnection (#integration)", () => {
         assert.equal(iModel2.getRpcTokenProps().key, iModel1.getRpcTokenProps().key);
       }
       await iModel1.close();
+      assert.isFalse(iModel1.isOpen);
+      assert.isTrue(iModel1.isClosed);
     }
   });
 

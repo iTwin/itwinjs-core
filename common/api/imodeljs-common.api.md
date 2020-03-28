@@ -3033,10 +3033,14 @@ export class ImdlHeader extends TileHeader {
 // @public
 export abstract class IModel implements IModelProps {
     // @internal
-    protected constructor(iModelToken: IModelToken | undefined, openMode: OpenMode);
+    protected constructor(tokenProps: IModelTokenProps | undefined, openMode: OpenMode);
     cartographicToSpatialFromEcef(cartographic: Cartographic, result?: Point3d): Point3d;
     get changeSetId(): string | undefined;
+    // @internal (undocumented)
+    protected _changeSetId: string | undefined;
     get contextId(): GuidString | undefined;
+    // @internal (undocumented)
+    protected _contextId?: GuidString;
     static readonly dictionaryId: Id64String;
     get ecefLocation(): EcefLocation | undefined;
     ecefToSpatial(ecef: XYAndZ, result?: Point3d): Point3d;
@@ -3061,14 +3065,12 @@ export abstract class IModel implements IModelProps {
     rootSubject: RootSubjectProps;
     static readonly rootSubjectId: Id64String;
     // @internal
-    protected get _rpcKey(): string;
+    protected _rpcKey: string;
     setEcefLocation(ecef: EcefLocationProps): void;
     spatialToCartographicFromEcef(spatial: XYAndZ, result?: Cartographic): Cartographic;
     spatialToEcef(spatial: XYAndZ, result?: Point3d): Point3d;
     // @internal (undocumented)
     toJSON(): IModelProps;
-    // @internal @deprecated (undocumented)
-    protected _token?: IModelToken;
 }
 
 // @beta
@@ -3188,7 +3190,7 @@ export type IModelTileTreeId = PrimaryTileTreeId | ClassifierTileTreeId;
 // @internal
 export function iModelTileTreeIdToString(modelId: Id64String, treeId: IModelTileTreeId, options: TileOptions): string;
 
-// @public
+// @public @deprecated
 export class IModelToken implements IModelTokenProps {
     constructor(key: string, contextId?: string, iModelid?: string, changesetId?: string, openMode?: OpenMode);
     changeSetId?: string;

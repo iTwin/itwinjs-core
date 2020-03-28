@@ -10,17 +10,17 @@ import {
   assert, BeEvent, BentleyStatus, BeTimePoint, DbResult, Dictionary, dispose, Id64, Id64Arg, Id64Array, Id64Set,
   Id64String, Logger, OneAtATimeAction, OpenMode, TransientIdSequence, DbOpcode, GuidString,
 } from "@bentley/bentleyjs-core";
-import { Angle, Point3d, Range3dProps, XYAndZ, XYZProps, Range3d } from "@bentley/geometry-core";
+import { Angle, Point3d, Range3d, Range3dProps, XYAndZ, XYZProps } from "@bentley/geometry-core";
+import { LockLevel } from "@bentley/imodeljs-clients";
 import {
-  AxisAlignedBox3d, Cartographic, CodeSpec, ElementProps, EntityQueryParams, FontMap, GeoCoordStatus,
-  ImageSourceFormat, IModel, IModelError, IModelProps, IModelReadRpcInterface,
-  IModelStatus, IModelToken, IModelVersion, IModelWriteRpcInterface, ModelProps, ModelQueryParams, QueryLimit,
-  QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus, RpcNotFoundResponse, RpcOperation, RpcRequest,
-  RpcRequestEvent, SnapRequestProps, SnapResponseProps, SnapshotIModelRpcInterface, ThumbnailProps, TileTreeProps,
-  ViewDefinitionProps, ViewQueryParams, WipRpcInterface, MassPropertiesRequestProps, MassPropertiesResponseProps,
-  EcefLocationProps, FontMapProps, EcefLocation, SubCategoryAppearance, CodeProps, BisCodeSpec, NativeAppRpcInterface,
+  AxisAlignedBox3d, BisCodeSpec, Cartographic, CodeProps, CodeSpec, EcefLocation, EcefLocationProps, ElementProps, EntityQueryParams,
+  FontMap, FontMapProps, GeoCoordStatus, ImageSourceFormat, IModel, IModelError, IModelProps, IModelReadRpcInterface, IModelStatus, IModelToken, IModelVersion, IModelWriteRpcInterface,
+  MassPropertiesRequestProps, MassPropertiesResponseProps, ModelProps, ModelQueryParams, NativeAppRpcInterface, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus,
+  RpcNotFoundResponse, RpcOperation, RpcRequest, RpcRequestEvent, SnapRequestProps, SnapResponseProps, SnapshotIModelRpcInterface, SubCategoryAppearance,
+  ThumbnailProps, TileTreeProps, ViewDefinitionProps, ViewQueryParams, WipRpcInterface,
 } from "@bentley/imodeljs-common";
 import { EntityState } from "./EntityState";
+import { EventSource, EventSourceManager } from "./EventSource";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { AuthorizedFrontendRequestContext } from "./FrontendRequestContext";
 import { GeoServices } from "./GeoServices";
@@ -30,8 +30,6 @@ import { HiliteSet, SelectionSet } from "./SelectionSet";
 import { SubCategoriesCache } from "./SubCategoriesCache";
 import { TileTree, TileTreeLoadStatus, TileTreeOwner, TileTreeSupplier } from "./tile/internal";
 import { ViewState } from "./ViewState";
-import { EventSource, EventSourceManager } from "./EventSource";
-import { LockLevel } from "@bentley/imodeljs-clients";
 
 const loggerCategory: string = FrontendLoggerCategory.IModelConnection;
 
@@ -138,13 +136,13 @@ export abstract class IModelConnection extends IModel {
    * Returns false for [[BlankConnection]] instances and after [[IModelConnection.close]] has been called.
    * @note no RPC operations are valid on this IModelConnection if this method returns false.
    */
-  public get isOpen(): boolean { return undefined !== this._token; }
+  public get isOpen(): boolean { return !this.isClosed; }
 
   /** Check if the IModelConnection is closed (i.e. it has no *connection* to a backend server).
    * Returns true for [[BlankConnection]] instances and after [[IModelConnection.close]] has been called.
    * @note no RPC operations are valid on this IModelConnection if this method returns true.
    */
-  public get isClosed(): boolean { return undefined === this._token; }
+  public abstract get isClosed(): boolean;
 
   /** Event called immediately before *any* IModelConnection is closed.
    * @note This static event is called when *any* IModelConnection is closed, and the specific IModelConnection is passed as its argument. To
@@ -212,7 +210,7 @@ export abstract class IModelConnection extends IModel {
 
   /** @internal */
   protected constructor(iModelProps: IModelProps, openMode: OpenMode) {
-    super(iModelProps.iModelToken ? IModelToken.fromJSON(iModelProps.iModelToken) : undefined, openMode);
+    super(iModelProps.iModelToken, openMode);
     super.initialize(iModelProps.name!, iModelProps);
     this.models = new IModelConnection.Models(this);
     this.elements = new IModelConnection.Elements(this);
@@ -224,7 +222,7 @@ export abstract class IModelConnection extends IModel {
     this.subcategories = new SubCategoriesCache(this);
     this.geoServices = new GeoServices(this);
     this.displayedExtents = Range3d.fromJSON(this.projectExtents);
-    if (this._rpcKey && this._rpcKey !== "") {
+    if (this._rpcKey !== "") {
       this.eventSource = EventSourceManager.get(this._rpcKey, this.getRpcTokenProps());
     }
   }
@@ -507,6 +505,10 @@ export class BriefcaseConnection extends IModelConnection {
   /** The Guid that identifies this iModel. */
   public get iModelId(): GuidString { return super.iModelId!; } // GuidString | undefined for the superclass, but required for BriefcaseConnection
 
+  /** Returns `true` if [[close]] has already been called. */
+  public get isClosed(): boolean { return this._isClosed ? true : false; }
+  private _isClosed?: boolean;
+
   private constructor(iModelProps: IModelProps, openMode: OpenMode, isNativeAppBriefcase: boolean) {
     super(iModelProps, openMode);
     this._isNativeAppBriefcase = isNativeAppBriefcase;
@@ -624,7 +626,9 @@ export class BriefcaseConnection extends IModelConnection {
 
     try {
       const openResponse: IModelProps = await BriefcaseConnection.callOpen(requestContext, iModelToken, this.openMode);
-      this._token = IModelToken.fromJSON(openResponse.iModelToken!);
+      // The new/reopened connection may have a new rpcKey and/or changeSetId, but the other IModelRpcTokenProps should be the same
+      this._rpcKey = openResponse.iModelToken!.key;
+      this._changeSetId = openResponse.iModelToken!.contextId;
     } catch (error) {
       reject(error.message);
     } finally {
@@ -641,10 +645,10 @@ export class BriefcaseConnection extends IModelConnection {
    * any un-pushed changes are lost after the close.
    */
   public async close(): Promise<void> {
-    this.beforeClose();
-    if (!this.isOpen)
+    if (this.isClosed) {
       return;
-
+    }
+    this.beforeClose();
     const requestContext = await AuthorizedFrontendRequestContext.create();
     requestContext.enter();
 
@@ -663,7 +667,7 @@ export class BriefcaseConnection extends IModelConnection {
     try {
       await closePromise;
     } finally {
-      this._token = undefined; // prevent closed connection from being reused
+      this._isClosed = true;
       this.subcategories.onIModelConnectionClose();
     }
   }
@@ -699,9 +703,11 @@ export class BriefcaseConnection extends IModelConnection {
 export class BlankConnection extends IModelConnection {
   private constructor(iModelProps: IModelProps, openMode: OpenMode) { super(iModelProps, openMode); }
 
-  /** The Guid that identifies the *context* associated with this BlankConnection. */
+  /** The Guid that identifies the *context* for this BlankConnection.
+   * @note This can also be set via the [[create]] method using [[BlankConnectionProps.contextId]].
+   */
   public get contextId(): GuidString | undefined { return this._contextId; }
-  private _contextId?: GuidString; // WIP: move _contextId down to IModel once IModelToken refactor is complete
+  public set contextId(contextId: GuidString | undefined) { this._contextId = contextId; }
   /** A BlankConnection does not have an associated iModel, so its `iModelId` is alway `undefined`. */
   public get iModelId(): undefined { return undefined; } // GuidString | undefined for the superclass, but always undefined for BlankConnection
 
@@ -720,14 +726,13 @@ export class BlankConnection extends IModelConnection {
    * @param props The properties to use for the new BlankConnection.
    */
   public static create(props: BlankConnectionProps): BlankConnection {
-    const blankConnection = new this({
+    return new this({
       rootSubject: { name: props.name },
       projectExtents: props.extents,
       globalOrigin: props.globalOrigin,
       ecefLocation: props.location instanceof Cartographic ? EcefLocation.createFromCartographicOrigin(props.location) : props.location,
+      iModelToken: { key: "", contextId: props.contextId },
     }, OpenMode.Readonly);
-    blankConnection._contextId = props.contextId; // WIP: move _contextId down to IModel once IModelToken refactor is complete
-    return blankConnection;
   }
 
   /** There are no connections to the backend to close in the case of a BlankConnection.
@@ -746,6 +751,10 @@ export class SnapshotConnection extends IModelConnection {
   /** The Guid that identifies this iModel. */
   public get iModelId(): GuidString { return super.iModelId!; } // GuidString | undefined for the superclass, but required for SnapshotConnection
 
+  /** Returns `true` if [[close]] has already been called. */
+  public get isClosed(): boolean { return this._isClosed ? true : false; }
+  private _isClosed?: boolean;
+
   private constructor(iModelProps: IModelProps, openMode: OpenMode) {
     super(iModelProps, openMode);
   }
@@ -763,14 +772,14 @@ export class SnapshotConnection extends IModelConnection {
 
   /** Close this SnapshotConnection. */
   public async close(): Promise<void> {
-    this.beforeClose();
-    if (!this.isOpen) {
+    if (this.isClosed) {
       return;
     }
+    this.beforeClose();
     try {
       await SnapshotIModelRpcInterface.getClient().closeSnapshot(this.getRpcTokenProps());
     } finally {
-      this._token = undefined; // prevent closed connection from being reused
+      this._isClosed = true;
       this.subcategories.onIModelConnectionClose();
     }
   }

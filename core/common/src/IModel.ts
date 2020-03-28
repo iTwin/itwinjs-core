@@ -30,6 +30,7 @@ export interface IModelTokenProps {
 }
 
 /** A token that identifies a specific instance of an iModel for RPC operations.
+ * @deprecated Use [[IModelTokenProps]] and [[IModel.getRpcTokenProps]] instead.
  * @public
  */
 export class IModelToken implements IModelTokenProps {
@@ -274,27 +275,26 @@ export abstract class IModel implements IModelProps {
    * @see [[getRpcTokenProps]]
    * @internal
    */
-  protected get _rpcKey(): string { return this._token?.key ? this._token.key : ""; } // WIP: this getter will be replaced by a member of the same name once _token is removed
+  protected _rpcKey: string;
   /** The Guid that identifies the *context* that owns this iModel. */
-  public get contextId(): GuidString | undefined { return this._token?.contextId; }
+  public get contextId(): GuidString | undefined { return this._contextId; }
+  /** @internal */
+  protected _contextId?: GuidString;
   /** The Guid that identifies this iModel. */
-  public get iModelId(): GuidString | undefined { return this._token?.iModelId; }
+  public get iModelId(): GuidString | undefined { return this._iModelId; }
+  private _iModelId?: GuidString;
   /** The Id of the last changeset that was applied to this iModel.
    * @note An empty string indicates the first version while `undefined` mean no changeset information is available.
    */
-  public get changeSetId(): string | undefined { return this._token?.changeSetId; }
+  public get changeSetId(): string | undefined { return this._changeSetId; }
+  /** @internal */
+  protected _changeSetId: string | undefined;
   /** The [[OpenMode]] used for this IModel. */
   public readonly openMode: OpenMode;
 
-  /**
-   * @deprecated use [[getRpcTokenProps]] instead
-   * @internal
-   */
-  protected _token?: IModelToken;
-
   /** Return a token that can be used to identify this iModel for RPC operations. */
   public getRpcTokenProps(): IModelTokenProps {
-    if ((undefined === this._token) || !this.isOpen) {
+    if (!this.isOpen) {
       throw new IModelError(IModelStatus.BadRequest, "Could not generate valid IModelTokenProps", Logger.logError);
     }
     return {
@@ -307,8 +307,11 @@ export abstract class IModel implements IModelProps {
   }
 
   /** @internal */
-  protected constructor(iModelToken: IModelToken | undefined, openMode: OpenMode) {
-    this._token = iModelToken;
+  protected constructor(tokenProps: IModelTokenProps | undefined, openMode: OpenMode) {
+    this._rpcKey = tokenProps?.key ?? "";
+    this._contextId = tokenProps?.contextId;
+    this._iModelId = tokenProps?.iModelId;
+    this._changeSetId = tokenProps?.changeSetId;
     this.openMode = openMode;
   }
 

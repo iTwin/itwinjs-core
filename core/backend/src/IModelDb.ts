@@ -779,11 +779,11 @@ export abstract class IModelDb extends IModel {
 
     const className = classFullName.split(":");
     if (className.length !== 2)
-      throw new IModelError(IModelStatus.BadArg, "Invalid classFullName", Logger.logError, loggerCategory, () => ({ ...this._token, classFullName }));
+      throw new IModelError(IModelStatus.BadArg, "Invalid classFullName", Logger.logError, loggerCategory, () => ({ ...this.getRpcTokenProps(), classFullName }));
 
     const val = this.nativeDb.getECClassMetaData(className[0], className[1]);
     if (val.error)
-      throw new IModelError(val.error.status, `Error getting class meta data for: ${classFullName}`, Logger.logError, loggerCategory, () => ({ ...this._token, classFullName }));
+      throw new IModelError(val.error.status, `Error getting class meta data for: ${classFullName}`, Logger.logError, loggerCategory, () => ({ ...this.getRpcTokenProps(), classFullName }));
 
     const metaData = new EntityMetaData(JSON.parse(val.result!));
     this.classMetaDataRegistry.add(classFullName, metaData);
@@ -1903,7 +1903,7 @@ export class BriefcaseDb extends IModelDb {
    * @note An empty string indicates the first version.
    */
   public get changeSetId(): string { return super.changeSetId!; } // string | undefined for the superclass, but required for BriefcaseDb
-  public set changeSetId(csId: string) { this._token!.changeSetId = csId; } // WIP: should be stored separately from _token
+  public set changeSetId(csId: string) { this._changeSetId = csId; }
 
   /** Get the ConcurrencyControl for this IModel.
    * @beta
@@ -1918,7 +1918,7 @@ export class BriefcaseDb extends IModelDb {
   private _eventSink?: EventSink;
 
   private clearEventSink() { if (this._eventSink) { EventSinkManager.delete(this._eventSink.id); } }
-  private initializeEventSink() { if (this._rpcKey && this._rpcKey !== "") { this._eventSink = EventSinkManager.get(this._rpcKey); } }
+  private initializeEventSink() { if (this._rpcKey !== "") { this._eventSink = EventSinkManager.get(this._rpcKey); } }
 
   private constructor(briefcaseEntry: BriefcaseEntry, iModelToken: IModelToken, openParams: OpenParams) {
     super(briefcaseEntry.nativeDb, iModelToken, openParams);

@@ -1480,6 +1480,7 @@ export class BingElevationProvider {
 export class BlankConnection extends IModelConnection {
     close(): Promise<void>;
     get contextId(): GuidString | undefined;
+    set contextId(contextId: GuidString | undefined);
     static create(props: BlankConnectionProps): BlankConnection;
     get iModelId(): undefined;
     get isClosed(): boolean;
@@ -1508,6 +1509,7 @@ export class BriefcaseConnection extends IModelConnection {
     // @internal
     detachChangeCache(): Promise<void>;
     get iModelId(): GuidString;
+    get isClosed(): boolean;
     static open(contextId: string, iModelId: string, openMode?: OpenMode, version?: IModelVersion): Promise<BriefcaseConnection>;
     }
 
@@ -3859,7 +3861,7 @@ export abstract class IModelConnection extends IModel {
     isBlankConnection(): this is BlankConnection;
     get isBriefcase(): boolean;
     isBriefcaseConnection(): this is BriefcaseConnection;
-    get isClosed(): boolean;
+    abstract get isClosed(): boolean;
     get isOpen(): boolean;
     get isReadonly(): boolean;
     get isSnapshot(): boolean;
@@ -7560,6 +7562,7 @@ export enum SnapMode {
 export class SnapshotConnection extends IModelConnection {
     close(): Promise<void>;
     get iModelId(): GuidString;
+    get isClosed(): boolean;
     static open(filePath: string): Promise<SnapshotConnection>;
 }
 
