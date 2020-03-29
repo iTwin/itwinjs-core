@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { TestRpcInterface, ZeroMajorRpcInterface, TestOp1Params, TestRpcInterface2, TestRpcInterface3, TestNotFoundResponse, TestNotFoundResponseCode, RpcTransportTestImpl, TokenValues } from "../common/TestRpcInterface";
-import { RpcInterface, RpcManager, RpcRequest, RpcOperationsProfile, RpcPendingResponse, RpcInvocation, IModelTokenProps } from "@bentley/imodeljs-common";
+import { RpcInterface, RpcManager, RpcRequest, RpcOperationsProfile, RpcPendingResponse, RpcInvocation, IModelRpcProps } from "@bentley/imodeljs-common";
 import { BentleyError, BentleyStatus, Id64String, ClientRequestContext } from "@bentley/bentleyjs-core";
 
 export async function testInterfaceResource() {
@@ -126,7 +126,7 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
     return;
   }
 
-  public async op16(token: IModelTokenProps, values: TokenValues): Promise<boolean> {
+  public async op16(token: IModelRpcProps, values: TokenValues): Promise<boolean> {
     return token.key === values.key &&
       token.contextId === values.contextId &&
       token.iModelId === values.iModelId &&

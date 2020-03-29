@@ -7,7 +7,7 @@ import {
   IModelReadRpcInterface, IModelTileRpcInterface,
   IModelWriteRpcInterface, RpcInterface, RpcManager, SnapshotIModelRpcInterface, WipRpcInterface,
   DevToolsRpcInterface, Editor3dRpcInterface,
-  IModelTokenProps,
+  IModelRpcProps,
   NativeAppRpcInterface,
 } from "@bentley/imodeljs-common";
 import { ClientRequestContextProps, GuidString } from "@bentley/bentleyjs-core";
@@ -33,15 +33,15 @@ export abstract class TestRpcInterface extends RpcInterface {
     return this.forward(arguments);
   }
 
-  public async extractChangeSummaries(_iModelToken: IModelTokenProps, _options: any): Promise<void> {
+  public async extractChangeSummaries(_iModelToken: IModelRpcProps, _options: any): Promise<void> {
     return this.forward(arguments);
   }
 
-  public async deleteChangeCache(_iModelToken: IModelTokenProps): Promise<void> {
+  public async deleteChangeCache(_iModelToken: IModelRpcProps): Promise<void> {
     return this.forward(arguments);
   }
 
-  public async executeTest(_iModelToken: IModelTokenProps, _testName: string, _params: any): Promise<any> {
+  public async executeTest(_iModelToken: IModelRpcProps, _testName: string, _params: any): Promise<any> {
     return this.forward(arguments);
   }
 
@@ -71,7 +71,7 @@ export abstract class EventsTestRpcInterface extends RpcInterface {
   }
 
   // Set a event that would be fired from backend and recieved on frontend.
-  public async echo(_iModelToken: IModelTokenProps, _id: GuidString, _message: string): Promise<void> { return this.forward(arguments); }
+  public async echo(_iModelToken: IModelRpcProps, _id: GuidString, _message: string): Promise<void> { return this.forward(arguments); }
 }
 
 export const rpcInterfaces = [

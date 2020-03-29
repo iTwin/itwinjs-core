@@ -54,7 +54,7 @@ export class SelectionScopesManager {
   public async getSelectionScopes(imodel: IModelConnection, locale?: string): Promise<SelectionScope[]> {
     if (!locale)
       locale = this._getLocale();
-    return this._rpcRequestsHandler.getSelectionScopes({ imodel: imodel.getRpcTokenProps(), locale });
+    return this._rpcRequestsHandler.getSelectionScopes({ imodel: imodel.getRpcProps(), locale });
   }
 
   /**
@@ -80,7 +80,7 @@ export class SelectionScopesManager {
       const batchStart = batchSize * batchIndex;
       const batchEnd = (batchStart + batchSize > ids.length) ? ids.length : (batchStart + batchSize);
       const batchIds = (0 === batchIndex && ids.length <= batchEnd) ? ids : ids.slice(batchStart, batchEnd);
-      batchKeyPromises.push(this._rpcRequestsHandler.computeSelection({ imodel: imodel.getRpcTokenProps() }, batchIds, scopeId));
+      batchKeyPromises.push(this._rpcRequestsHandler.computeSelection({ imodel: imodel.getRpcProps() }, batchIds, scopeId));
     }
     const batchKeys = (await Promise.all(batchKeyPromises)).map(KeySet.fromJSON);
     batchKeys.forEach((bk) => keys.add(bk));

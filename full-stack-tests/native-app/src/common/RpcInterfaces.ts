@@ -6,7 +6,7 @@ import { AuthorizedClientRequestContextProps } from "@bentley/imodeljs-clients";
 import {
   IModelReadRpcInterface,
   IModelWriteRpcInterface, RpcInterface, RpcManager,
-  IModelTokenProps,
+  IModelRpcProps,
   NativeAppRpcInterface,
 } from "@bentley/imodeljs-common";
 import { ClientRequestContextProps } from "@bentley/bentleyjs-core";
@@ -32,15 +32,15 @@ export abstract class TestRpcInterface extends RpcInterface {
     return this.forward(arguments);
   }
 
-  public async extractChangeSummaries(_iModelToken: IModelTokenProps, _options: any): Promise<void> {
+  public async extractChangeSummaries(_iModelToken: IModelRpcProps, _options: any): Promise<void> {
     return this.forward(arguments);
   }
 
-  public async deleteChangeCache(_iModelToken: IModelTokenProps): Promise<void> {
+  public async deleteChangeCache(_iModelToken: IModelRpcProps): Promise<void> {
     return this.forward(arguments);
   }
 
-  public async executeTest(_iModelToken: IModelTokenProps, _testName: string, _params: any): Promise<any> {
+  public async executeTest(_iModelToken: IModelRpcProps, _testName: string, _params: any): Promise<any> {
     return this.forward(arguments);
   }
 

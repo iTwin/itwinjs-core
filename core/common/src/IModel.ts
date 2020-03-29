@@ -16,7 +16,7 @@ import { ThumbnailProps } from "./Thumbnail";
 /** The properties that identify a specific instance of an iModel for RPC operations.
  * @public
  */
-export interface IModelTokenProps {
+export interface IModelRpcProps {
   /** Key used for identifying the iModel on the backend */
   readonly key: string;
   /** Context (Project, Asset, or other infrastructure) in which the iModel exists - must be defined if the iModel exists in the Hub or in a non-Connect infrastructure. */
@@ -27,47 +27,6 @@ export interface IModelTokenProps {
   changeSetId?: string;
   /** Mode used to open the iModel */
   openMode?: OpenMode;
-}
-
-/** A token that identifies a specific instance of an iModel for RPC operations.
- * @deprecated Use [[IModelTokenProps]] and [[IModel.getRpcTokenProps]] instead.
- * @public
- */
-export class IModelToken implements IModelTokenProps {
-  /** Constructs an IModelToken from a props object. */
-  public static fromJSON(props: IModelTokenProps): IModelToken {
-    return new IModelToken(props.key, props.contextId, props.iModelId, props.changeSetId, props.openMode);
-  }
-  /** Key used for identifying the iModel on the backend */
-  public readonly key: string;
-  /** Context (Project, Asset, or other infrastructure) in which the iModel exists - must be defined if the iModel exists in the Hub or in a non-Connect infrastructure. */
-  public readonly contextId?: GuidString;
-  /** Guid of the iModel - must be defined if the iModel exists in the Hub */
-  public readonly iModelId?: GuidString;
-  /** Id of the last ChangeSet that was applied to the iModel - must be defined if the iModel exists in the Hub. An empty string indicates the first version */
-  public changeSetId?: string;
-  /** Mode used to open the iModel */
-  public openMode?: OpenMode;
-
-  /** Constructor */
-  public constructor(key: string, contextId?: string, iModelid?: string, changesetId?: string, openMode?: OpenMode) {
-    this.key = key;
-    this.contextId = contextId;
-    this.iModelId = iModelid;
-    this.changeSetId = changesetId;
-    this.openMode = openMode;
-  }
-
-  /** Creates a props object for this IModelToken. */
-  public toJSON(): IModelTokenProps {
-    return {
-      key: this.key,
-      contextId: this.contextId,
-      iModelId: this.iModelId,
-      changeSetId: this.changeSetId,
-      openMode: this.openMode,
-    };
-  }
 }
 
 /** Properties that position an iModel on the earth via [ECEF](https://en.wikipedia.org/wiki/ECEF) (Earth Centered Earth Fixed) coordinates
@@ -156,9 +115,10 @@ export interface IModelProps {
   ecefLocation?: EcefLocationProps;
   /** The name of the iModel. */
   name?: string;
-  /** The token of the iModel. */
-  iModelToken?: IModelTokenProps;
 }
+
+/** @internal */
+export type IModelConnectionProps = IModelProps & IModelRpcProps;
 
 /** The properties that can be supplied when creating a *new* iModel.
  * @public
@@ -259,20 +219,19 @@ export abstract class IModel implements IModelProps {
   }
 
   /** @internal */
-  public toJSON(): IModelProps {
-    const out: any = {};
-    out.name = this.name;
-    out.rootSubject = this.rootSubject;
-    out.projectExtents = this.projectExtents.toJSON();
-    out.globalOrigin = this.globalOrigin.toJSON();
-    out.ecefLocation = this.ecefLocation;
-    // WIP - add contextId, iModelId, changeSetId?
-    out.iModelToken = this.getRpcTokenProps();
-    return out;
+  public toJSON(): IModelConnectionProps {
+    return {
+      name: this.name,
+      rootSubject: this.rootSubject,
+      projectExtents: this.projectExtents.toJSON(),
+      globalOrigin: this.globalOrigin.toJSON(),
+      ecefLocation: this.ecefLocation,
+      ... this.getRpcProps(),
+    };
   }
 
   /** A key used by RPC operations to identify this iModel across the frontend and backend.
-   * @see [[getRpcTokenProps]]
+   * @see [[getRpcProps]]
    * @internal
    */
   protected _rpcKey: string;
@@ -293,9 +252,9 @@ export abstract class IModel implements IModelProps {
   public readonly openMode: OpenMode;
 
   /** Return a token that can be used to identify this iModel for RPC operations. */
-  public getRpcTokenProps(): IModelTokenProps {
+  public getRpcProps(): IModelRpcProps {
     if (!this.isOpen) {
-      throw new IModelError(IModelStatus.BadRequest, "Could not generate valid IModelTokenProps", Logger.logError);
+      throw new IModelError(IModelStatus.BadRequest, "Could not generate valid IModelRpcProps", Logger.logError);
     }
     return {
       key: this._rpcKey,
@@ -307,7 +266,7 @@ export abstract class IModel implements IModelProps {
   }
 
   /** @internal */
-  protected constructor(tokenProps: IModelTokenProps | undefined, openMode: OpenMode) {
+  protected constructor(tokenProps: IModelRpcProps | undefined, openMode: OpenMode) {
     this._rpcKey = tokenProps?.key ?? "";
     this._contextId = tokenProps?.contextId;
     this._iModelId = tokenProps?.iModelId;

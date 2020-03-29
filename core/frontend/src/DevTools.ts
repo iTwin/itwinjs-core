@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { LogLevel } from "@bentley/bentleyjs-core";
-import { DevToolsRpcInterface, DevToolsStatsOptions, IModelTokenProps } from "@bentley/imodeljs-common";
+import { DevToolsRpcInterface, DevToolsStatsOptions, IModelRpcProps } from "@bentley/imodeljs-common";
 
 /**
  * Results of the ping test
@@ -28,13 +28,13 @@ export class DevTools {
    * @param tokenProps The iModelToken that identifies that backend instance.
    * Supply a dummy token if contacting the backend without the Orchestrator.
    */
-  public static connectToBackendInstance(tokenProps: IModelTokenProps): DevTools {
+  public static connectToBackendInstance(tokenProps: IModelRpcProps): DevTools {
     return new DevTools(tokenProps);
   }
 
   /** Constructor */
   private constructor(
-    private readonly _tokenProps: IModelTokenProps) {
+    private readonly _tokenProps: IModelRpcProps) {
   }
 
   /** Measures the round trip times for one or more pings to the backend

@@ -8,7 +8,7 @@
 
 import { RpcInterface } from "../RpcInterface";
 import { RpcManager } from "../RpcManager";
-import { IModelTokenProps, IModelProps } from "../IModel";
+import { IModelRpcProps, IModelProps } from "../IModel";
 import { LogLevel } from "@bentley/bentleyjs-core";
 
 /**
@@ -42,7 +42,7 @@ export namespace Events {
  * Briefcase props
  * @internal
  */
-export interface BriefcaseProps extends IModelTokenProps {
+export interface BriefcaseRpcProps extends IModelRpcProps {
   fileSize?: number;
 }
 
@@ -54,7 +54,7 @@ export interface TileTreeContentIds {
   contentIds: string[];
 }
 
-/** InternetConnectivityStatus describe type of connectivity avaliable to application
+/** InternetConnectivityStatus describe type of connectivity available to application
  * @internal
  */
 export enum InternetConnectivityStatus {
@@ -101,7 +101,7 @@ export abstract class NativeAppRpcInterface extends RpcInterface {
    * @param _maxToFetch The maximum number of events to return. If this is less than or equal to zero, all queued events will be returned.
    * @returns Up to _maxToFetch queued events.
    */
-  public async fetchEvents(_iModelToken: IModelTokenProps, _maxToFetch: number): Promise<QueuedEvent[]> { return this.forward(arguments); }
+  public async fetchEvents(_iModelToken: IModelRpcProps, _maxToFetch: number): Promise<QueuedEvent[]> { return this.forward(arguments); }
   /** Check if internet is reachable and how its reachable. */
   public async checkInternetConnectivity(): Promise<InternetConnectivityStatus> { return this.forward(arguments); }
   /** Manually override internet reachability for testing purpose.
@@ -114,61 +114,61 @@ export abstract class NativeAppRpcInterface extends RpcInterface {
    * @param _iModelToken Identifies the iModel
    * @param _contentIds A list of content requests to be canceled, grouped by tile tree Id.
    */
-  public async cancelTileContentRequests(_iModelToken: IModelTokenProps, _contentIds: TileTreeContentIds[]): Promise<void> { return this.forward(arguments); }
+  public async cancelTileContentRequests(_iModelToken: IModelRpcProps, _contentIds: TileTreeContentIds[]): Promise<void> { return this.forward(arguments); }
 
   /**
    * Downloads briefcase only. The call require internet connection and must have valid token.
    * @param _iModelToken IModel context information.
-   * @returns IModelTokenProps which allow to create IModelConnection.
+   * @returns IModelRpcProps which allow to create IModelConnection.
    */
-  public async downloadBriefcase(_iModelToken: IModelTokenProps): Promise<IModelTokenProps> { return this.forward(arguments); }
+  public async downloadBriefcase(_iModelToken: IModelRpcProps): Promise<IModelRpcProps> { return this.forward(arguments); }
 
   /**
    * Starts download of a briefcase. The call require internet connection and must have valid token.
    * @param _iModelToken IModel context information.
    * @param _reportProgress Report progress to frontend
-   * @returns IModelTokenProps which allow to create IModelConnection.
+   * @returns IModelRpcProps which allow to create IModelConnection.
    */
-  public async startDownloadBriefcase(_iModelToken: IModelTokenProps, _reportProgress: boolean): Promise<IModelTokenProps> { return this.forward(arguments); }
+  public async startDownloadBriefcase(_iModelToken: IModelRpcProps, _reportProgress: boolean): Promise<IModelRpcProps> { return this.forward(arguments); }
 
   /**
    * Finishes download of a briefcase. The call require internet connection and must have valid token.
    * @param _iModelToken IModel context information.
-   * @returns IModelTokenProps which allow to create IModelConnection.
+   * @returns IModelRpcProps which allow to create IModelConnection.
    */
-  public async finishDownloadBriefcase(_iModelToken: IModelTokenProps): Promise<void> { return this.forward(arguments); }
+  public async finishDownloadBriefcase(_iModelToken: IModelRpcProps): Promise<void> { return this.forward(arguments); }
 
   /**
    * Cancels download of a briefcase. The call require internet connection and must have valid token.
    * @param _iModelToken IModel context information.
-   * @returns IModelTokenProps which allow to create IModelConnection.
+   * @returns IModelRpcProps which allow to create IModelConnection.
    */
-  public async cancelDownloadBriefcase(_iModelToken: IModelTokenProps): Promise<boolean> { return this.forward(arguments); }
+  public async cancelDownloadBriefcase(_iModelToken: IModelRpcProps): Promise<boolean> { return this.forward(arguments); }
 
   /**
    * Opens briefcase. This api can be called offline. It opens the briefcase on disk.
    * @param _iModelToken IModel context information.
-   * @returns IModelTokenProps which allow to create IModelConnection.
+   * @returns IModelRpcProps which allow to create IModelConnection.
    */
-  public async openBriefcase(_iModelToken: IModelTokenProps): Promise<IModelProps> { return this.forward(arguments); }
+  public async openBriefcase(_iModelToken: IModelRpcProps): Promise<IModelProps> { return this.forward(arguments); }
 
   /**
    * Opens briefcase. This api can be called offline. It closes the briefcase on disk.
    * @param _iModelToken Token that identifies the briefcase
    */
-  public async closeBriefcase(_iModelToken: IModelTokenProps): Promise<boolean> { return this.forward(arguments); }
+  public async closeBriefcase(_iModelToken: IModelRpcProps): Promise<boolean> { return this.forward(arguments); }
 
   /**
    * Deletes a previously downloaded briefcase. The briefcase must be closed.
    * @param _iModelToken Token that identifies the briefcase.
    */
-  public async deleteBriefcase(_iModelToken: IModelTokenProps): Promise<void> { return this.forward(arguments); }
+  public async deleteBriefcase(_iModelToken: IModelRpcProps): Promise<void> { return this.forward(arguments); }
 
   /**
    * Gets briefcases properties that are available cache.
    * @returns list of briefcases.
    */
-  public async getBriefcases(): Promise<BriefcaseProps[]> { return this.forward(arguments); }
+  public async getBriefcases(): Promise<BriefcaseRpcProps[]> { return this.forward(arguments); }
 
   // Storage Manager Persistence Api
   public async storageMgrOpen(_storageId: string): Promise<string> { return this.forward(arguments); }

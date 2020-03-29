@@ -14,7 +14,7 @@ import { RpcInvocation } from "./RpcInvocation";
 import { RpcMarshaling, RpcSerializedValue } from "./RpcMarshaling";
 import { RpcOperation } from "./RpcOperation";
 import { RpcRequest } from "./RpcRequest";
-import { IModelTokenProps } from "../../IModel";
+import { IModelRpcProps } from "../../IModel";
 
 /** A serialized RPC operation descriptor.
  * @public
@@ -123,11 +123,11 @@ export abstract class RpcProtocol {
   /** Used by protocols that can transmit stream values natively. */
   public preserveStreams: boolean = false;
 
-  /** Used by protocols that can transmit IModelToken values natively. */
+  /** Used by protocols that can transmit IModelRpcProps values natively. */
   public checkToken: boolean = false;
 
-  /** If checkToken is true, will be called on the backend to inflate the IModelToken for each request. */
-  public inflateToken(tokenFromBody: IModelTokenProps, _request: SerializedRpcRequest): IModelTokenProps { return tokenFromBody; }
+  /** If checkToken is true, will be called on the backend to inflate the IModelRpcProps for each request. */
+  public inflateToken(tokenFromBody: IModelRpcProps, _request: SerializedRpcRequest): IModelRpcProps { return tokenFromBody; }
 
   /** Override to supply the status corresponding to a protocol-specific code value. */
   public getStatus(code: number): RpcRequestStatus {

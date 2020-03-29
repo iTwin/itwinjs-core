@@ -81,7 +81,7 @@ class SyncManager {
     this.onStateChange.raiseEvent();
 
     // Once the initial state of the briefcase is known, register for events announcing new txns and pushes that clear local txns.
-    const rpcKey: string = this.iModelConnection.getRpcTokenProps().key;
+    const rpcKey: string = this.iModelConnection.getRpcProps().key;
 
     EventSourceManager.get(rpcKey).on(IModelWriteRpcInterface.name, "onSavedChanges", (data: any) => {
       if (data.time > this.state.timeOfLastSaveEvent) { // work around out-of-order events

@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { RpcInterface, RpcManager, RpcOperationsProfile, IModelTokenProps, RpcNotFoundResponse, IModelReadRpcInterface, WipRpcInterface, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
+import { RpcInterface, RpcManager, RpcOperationsProfile, IModelRpcProps, RpcNotFoundResponse, IModelReadRpcInterface, WipRpcInterface, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
 import { Id64String } from "@bentley/bentleyjs-core";
 
 export interface TestOp1Params {
@@ -40,7 +40,7 @@ export abstract class ZeroMajorRpcInterface extends RpcInterface {
 }
 
 // tslint:disable-next-line:no-empty-interface
-export interface TokenValues extends IModelTokenProps { }
+export interface TokenValues extends IModelRpcProps { }
 
 export abstract class TestRpcInterface extends RpcInterface {
   public static readonly OP8_INITIALIZER = 5;
@@ -109,7 +109,7 @@ export abstract class TestRpcInterface extends RpcInterface {
     return this.forward(arguments);
   }
 
-  public async op16(_token: IModelTokenProps, _values: TokenValues): Promise<boolean> {
+  public async op16(_token: IModelRpcProps, _values: TokenValues): Promise<boolean> {
     return this.forward(arguments);
   }
 }

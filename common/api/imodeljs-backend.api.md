@@ -15,7 +15,7 @@ import { AxisAlignedBox3d } from '@bentley/imodeljs-common';
 import { BackgroundMapProps } from '@bentley/imodeljs-common';
 import { BeEvent } from '@bentley/bentleyjs-core';
 import { BentleyStatus } from '@bentley/bentleyjs-core';
-import { BriefcaseProps } from '@bentley/imodeljs-common';
+import { BriefcaseRpcProps } from '@bentley/imodeljs-common';
 import { CalloutProps } from '@bentley/imodeljs-common';
 import { Camera } from '@bentley/imodeljs-common';
 import { CancelRequest } from '@bentley/imodeljs-clients';
@@ -90,9 +90,8 @@ import { IModelCoordinatesResponseProps } from '@bentley/imodeljs-common';
 import { IModelEncryptionProps } from '@bentley/imodeljs-common';
 import { IModelError } from '@bentley/imodeljs-common';
 import { IModelJsNative } from '@bentley/imodeljs-native';
+import { IModelRpcProps } from '@bentley/imodeljs-common';
 import { IModelStatus } from '@bentley/imodeljs-common';
-import { IModelToken } from '@bentley/imodeljs-common';
-import { IModelTokenProps } from '@bentley/imodeljs-common';
 import { IModelVersion } from '@bentley/imodeljs-common';
 import { InformationPartitionElementProps } from '@bentley/imodeljs-common';
 import { InternetConnectivityStatus } from '@bentley/imodeljs-common';
@@ -440,7 +439,7 @@ export class BriefcaseDb extends IModelDb {
     // @internal (undocumented)
     get briefcase(): BriefcaseEntry;
     // @internal
-    static cancelDownloadBriefcase(iModelToken: IModelToken): boolean;
+    static cancelDownloadBriefcase(iModelToken: IModelRpcProps): boolean;
     get changeSetId(): string;
     set changeSetId(csId: string);
     close(requestContext: AuthorizedClientRequestContext, keepBriefcase?: KeepBriefcase): Promise<void>;
@@ -449,14 +448,14 @@ export class BriefcaseDb extends IModelDb {
     get contextId(): GuidString;
     static create(requestContext: AuthorizedClientRequestContext, contextId: string, iModelName: string, args: CreateIModelProps): Promise<BriefcaseDb>;
     // @internal
-    static deleteBriefcase(requestContext: AuthorizedClientRequestContext, iModelToken: IModelToken): Promise<void>;
+    static deleteBriefcase(requestContext: AuthorizedClientRequestContext, iModelToken: IModelRpcProps): Promise<void>;
     // @internal
-    static downloadBriefcase(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: string, openParams?: OpenParams, version?: IModelVersion): Promise<IModelToken>;
+    static downloadBriefcase(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: string, openParams?: OpenParams, version?: IModelVersion): Promise<IModelRpcProps>;
     // @internal
     get eventSink(): EventSink | undefined;
     // @internal
     static findByKey(key: string): BriefcaseDb;
-    static finishDownloadBriefcase(requestContext: AuthorizedClientRequestContext, iModelToken: IModelToken): Promise<void>;
+    static finishDownloadBriefcase(requestContext: AuthorizedClientRequestContext, iModelToken: IModelRpcProps): Promise<void>;
     readonly onBeforeClose: BeEvent<() => void>;
     readonly onChangesetApplied: BeEvent<() => void>;
     static readonly onCreate: BeEvent<(_requestContext: AuthorizedClientRequestContext, _contextId: string, _args: CreateIModelProps) => void>;
@@ -465,7 +464,7 @@ export class BriefcaseDb extends IModelDb {
     static readonly onOpened: BeEvent<(_requestContext: AuthorizedClientRequestContext | ClientRequestContext, _imodelDb: BriefcaseDb) => void>;
     static open(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: string, openParams?: OpenParams, version?: IModelVersion): Promise<BriefcaseDb>;
     // @internal
-    static openBriefcase(requestContext: AuthorizedClientRequestContext | ClientRequestContext, iModelToken: IModelToken): Promise<BriefcaseDb>;
+    static openBriefcase(requestContext: AuthorizedClientRequestContext | ClientRequestContext, iModelToken: IModelRpcProps): Promise<BriefcaseDb>;
     // @beta
     pullAndMergeChanges(requestContext: AuthorizedClientRequestContext, version?: IModelVersion): Promise<void>;
     // @beta
@@ -475,7 +474,7 @@ export class BriefcaseDb extends IModelDb {
     // @beta
     reverseChanges(requestContext: AuthorizedClientRequestContext, version?: IModelVersion): Promise<void>;
     // @internal
-    static startDownloadBriefcase(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: string, openParams?: OpenParams, version?: IModelVersion): Promise<IModelToken>;
+    static startDownloadBriefcase(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: string, openParams?: OpenParams, version?: IModelVersion): Promise<IModelRpcProps>;
     // @internal
     static tryFindByKey(key: string): BriefcaseDb | undefined;
 }
@@ -536,7 +535,7 @@ export class BriefcaseManager {
     static download(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelId: GuidString, openParams: OpenParams, changeSetId: GuidString): Promise<BriefcaseEntry>;
     static downloadChangeSets(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, fromChangeSetId: string, toChangeSetId: string): Promise<ChangeSet[]>;
     static findBriefcaseByKey(key: string): BriefcaseEntry | undefined;
-    static getBriefcasesFromDisk(): Promise<BriefcaseProps[]>;
+    static getBriefcasesFromDisk(): Promise<BriefcaseRpcProps[]>;
     // (undocumented)
     static getChangeCachePathName(iModelId: GuidString): string;
     // (undocumented)
@@ -759,7 +758,7 @@ export class CloudStorageTileUploader {
     // (undocumented)
     get activeUploads(): Iterable<Promise<void>>;
     // (undocumented)
-    cacheTile(tokenProps: IModelTokenProps, treeId: string, contentId: string, content: Uint8Array, guid: string | undefined): void;
+    cacheTile(tokenProps: IModelRpcProps, treeId: string, contentId: string, content: Uint8Array, guid: string | undefined): void;
     }
 
 // @beta (undocumented)
@@ -2252,7 +2251,7 @@ export class IModelCloneContext {
 // @public
 export abstract class IModelDb extends IModel {
     // @internal
-    protected constructor(nativeDb: IModelJsNative.DgnDb, iModelToken: IModelToken, openParams: OpenParams);
+    protected constructor(nativeDb: IModelJsNative.DgnDb, iModelToken: IModelRpcProps, openParams: OpenParams);
     abandonChanges(): void;
     cancelSnap(sessionId: string): void;
     // @internal

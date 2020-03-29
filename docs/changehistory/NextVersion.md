@@ -84,9 +84,10 @@ The properties formerly under `IModel.iModelToken` have been promoted to [IModel
 
 And for RPC implementations, the following method has been added to replace other uses of `IModel.iModelToken`:
 
-* [IModel.getRpcTokenProps]($common)
+* [IModel.getRpcProps]($common)
+  * This method returns an object of type [IModelRpcProps]($common) which replaces `IModelToken` and `IModelTokenProps` but maintains the same property names as before.
 
-And the following method has been renamed/refactored to *find* based on a key instead of an `IModelToken`:
+And the following method has been renamed/refactored to *find* based on a key:
 
 * `IModelDb.find` --> [IModelDb.findByKey]
 

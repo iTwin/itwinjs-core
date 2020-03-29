@@ -138,7 +138,7 @@ export class ViewsList extends React.Component<ViewsListProps, ViewsListState> {
       const params: ViewQueryParams = {};
       params.from = ViewState.classFullName; // use "BisCore.ViewDefinition" as default class name
       params.where = "";
-      const viewProps = await IModelReadRpcInterface.getClient().queryElementProps(imodel.getRpcTokenProps(), params);
+      const viewProps = await IModelReadRpcInterface.getClient().queryElementProps(imodel.getRpcProps(), params);
       this._viewDefCache = viewProps as ViewDefinitionProps[];
     }
 

@@ -122,9 +122,9 @@ export class PresentationManager implements IDisposable {
   private toRpcTokenOptions<TOptions extends { imodel: IModelConnection, locale?: string }>(options: TOptions) {
     // 1. put default `locale`
     // 2. put all `options` members (if `locale` is set, it'll override the default put at #1)
-    // 3. put `imodel` of type `IModelTokenProps` which overwrites the `imodel` from `options` put at #2
+    // 3. put `imodel` of type `IModelRpcProps` which overwrites the `imodel` from `options` put at #2
     return Object.assign({}, { locale: this.activeLocale }, options, {
-      imodel: options.imodel.getRpcTokenProps(),
+      imodel: options.imodel.getRpcProps(),
     });
   }
 

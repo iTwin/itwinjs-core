@@ -29,7 +29,7 @@ internal;bisectTileRange3d(range: Range3d, takeUpper: boolean): void
 internal;BoundingSphere
 beta;BRepEntity
 public;BRepPrimitive
-internal;BriefcaseProps 
+internal;BriefcaseRpcProps 
 public;CalloutProps 
 public;Camera 
 public;CameraProps
@@ -197,20 +197,20 @@ public;ImageSourceFormat
 internal;enum ImdlFlags
 internal;ImdlHeader 
 public;class IModel 
+internal;IModelConnectionProps = IModelProps & IModelRpcProps
 beta;IModelCoordinatesRequestProps
 beta;IModelCoordinatesResponseProps
 beta;IModelEncryptionProps
 public;IModelError 
 public;IModelNotFoundResponse 
 public;IModelProps
-public;class IModelReadRpcInterface 
+internal;class IModelReadRpcInterface 
+public;IModelRpcProps
 public;class IModelTileRpcInterface 
 internal;IModelTileTreeId = PrimaryTileTreeId | ClassifierTileTreeId
 internal;iModelTileTreeIdToString(modelId: Id64String, treeId: IModelTileTreeId, options: TileOptions): string
-public;IModelToken 
-public;IModelTokenProps
 public;IModelVersion
-alpha;class IModelWriteRpcInterface 
+internal;class IModelWriteRpcInterface 
 public;InformationPartitionElementProps 
 internal;initializeRpcRequest: () => void
 internal;INSTANCE: unique symbol
@@ -381,7 +381,7 @@ public;RpcRequestFulfillment
 public;RpcRequestInitialRetryIntervalSupplier_T = (configuration: RpcConfiguration) => number
 public;RpcRequestNotFoundHandler = (request: RpcRequest, response: RpcNotFoundResponse, resubmit: () => void, reject: (reason: any) => void) => void
 public;RpcRequestStatus
-public;RpcRequestTokenSupplier_T = (request: RpcRequest) => IModelTokenProps | undefined
+public;RpcRequestTokenSupplier_T = (request: RpcRequest) => IModelRpcProps | undefined
 public;RpcResponseCacheControl
 public;RpcResponseCachingCallback_T = (request: RpcRequest) => RpcResponseCacheControl
 public;RpcSerializedValue
@@ -403,7 +403,7 @@ public;SkyBoxProps
 public;SkyCubeProps
 beta;SnapRequestProps
 beta;SnapResponseProps
-beta;class SnapshotIModelRpcInterface 
+internal;class SnapshotIModelRpcInterface 
 beta;SolarShadowProps
 beta;SolarShadows
 beta;SpatialClassificationProps

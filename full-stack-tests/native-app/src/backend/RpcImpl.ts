@@ -5,7 +5,7 @@
 import { BentleyError, BentleyStatus, ClientRequestContext, ClientRequestContextProps } from "@bentley/bentleyjs-core";
 import { BriefcaseDb, BriefcaseManager, ChangeSummaryExtractOptions, ChangeSummaryManager, IModelDb, IModelHost, IModelJsFs } from "@bentley/imodeljs-backend";
 import { AuthorizedClientRequestContext, AuthorizedClientRequestContextProps, Config, IModelBankClient, IModelQuery } from "@bentley/imodeljs-clients";
-import { IModelToken, IModelTokenProps, RpcInterface, RpcManager } from "@bentley/imodeljs-common";
+import { IModelRpcProps, RpcInterface, RpcManager } from "@bentley/imodeljs-common";
 import { CloudEnvProps, TestRpcInterface } from "../common/RpcInterfaces";
 import { CloudEnv } from "./cloudEnv";
 
@@ -19,22 +19,21 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
     IModelHost.startup();
   }
 
-  public async extractChangeSummaries(tokenProps: IModelTokenProps, options: any): Promise<void> {
+  public async extractChangeSummaries(tokenProps: IModelRpcProps, options: any): Promise<void> {
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
     await ChangeSummaryManager.extractChangeSummaries(requestContext, BriefcaseDb.findByKey(tokenProps.key), options as ChangeSummaryExtractOptions);
   }
 
-  public async deleteChangeCache(tokenProps: IModelTokenProps): Promise<void> {
-    const iModelToken = IModelToken.fromJSON(tokenProps);
-    if (!iModelToken.iModelId)
+  public async deleteChangeCache(tokenProps: IModelRpcProps): Promise<void> {
+    if (!tokenProps.iModelId)
       throw new Error("iModelToken is invalid. Must not be a standalone iModel");
 
-    const changesPath: string = BriefcaseManager.getChangeCachePathName(iModelToken.iModelId);
+    const changesPath: string = BriefcaseManager.getChangeCachePathName(tokenProps.iModelId);
     if (IModelJsFs.existsSync(changesPath))
       IModelJsFs.unlinkSync(changesPath);
   }
 
-  public async executeTest(tokenProps: IModelTokenProps, testName: string, params: any): Promise<any> {
+  public async executeTest(tokenProps: IModelRpcProps, testName: string, params: any): Promise<any> {
     return JSON.parse(IModelDb.findByKey(tokenProps.key).nativeDb.executeTest(testName, JSON.stringify(params)));
   }
 

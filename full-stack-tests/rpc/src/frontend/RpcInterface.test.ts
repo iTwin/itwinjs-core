@@ -3,20 +3,20 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import {
-  RpcRequest,
-  RpcManager,
-  RpcOperation,
-  RpcRequestEvent,
+  IModelReadRpcInterface,
+  IModelRpcProps,
+  RpcConfiguration,
   RpcInterface,
   RpcInterfaceDefinition,
-  RpcConfiguration,
-  IModelReadRpcInterface,
-  IModelToken,
-  RpcResponseCacheControl,
-  WipRpcInterface,
+  RpcManager,
+  RpcOperation,
   RpcOperationPolicy,
+  RpcRequest,
+  RpcRequestEvent,
   RpcRequestStatus,
+  RpcResponseCacheControl,
   RpcSerializedValue,
+  WipRpcInterface,
 } from "@bentley/imodeljs-common";
 import { BentleyError, OpenMode, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
 import {
@@ -36,6 +36,7 @@ import * as semver from "semver";
 import { executeBackendCallback } from "@bentley/certa/lib/utils/CallbackUtils";
 
 const timeout = async (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+const testToken: IModelRpcProps = { key: "test", contextId: "test", iModelId: "test", changeSetId: "test", openMode: OpenMode.Readonly };
 
 describe("RpcInterface", () => {
   class LocalInterface extends RpcInterface {
@@ -258,7 +259,7 @@ describe("RpcInterface", () => {
     const endpointsRestored = await RpcManager.describeAvailableEndpoints();
     assert.isTrue(endpointsRestored[0].compatible);
 
-    RpcOperation.fallbackToken = new IModelToken("test", "test", "test", "test", OpenMode.Readonly);
+    RpcOperation.fallbackToken = { key: "test", contextId: "test", iModelId: "test", changeSetId: "test", openMode: OpenMode.Readonly };
     assert.equal(controlPolicy.token(undefined as any)!.contextId, "test");
     RpcOperation.fallbackToken = undefined;
     assert.equal(controlPolicy.token(undefined as any)!.contextId, "none");
@@ -448,7 +449,7 @@ describe("RpcInterface", () => {
   });
 
   it("should successfully call WipRpcInterface.placeholder", async () => {
-    const s: string = await WipRpcInterface.getClient().placeholder(new IModelToken("test", "test", "test", "test", OpenMode.Readonly).toJSON());
+    const s: string = await WipRpcInterface.getClient().placeholder(testToken);
     assert.equal(s, "placeholder");
   });
 
@@ -478,10 +479,10 @@ describe("RpcInterface", () => {
   it("should transport imodel tokens correctly", async () => {
     RpcOperation.lookup(TestRpcInterface, "op16").policy.token = new RpcOperationPolicy().token;
 
-    async function check(k: string, c?: string, i?: string, s?: string, o?: OpenMode) {
-      const token = new IModelToken(k, c, i, s, o);
-      const values: TokenValues = { key: k, contextId: c, iModelId: i, changeSetId: s, openMode: o };
-      assert.isTrue(await TestRpcInterface.getClient().op16(token.toJSON(), values));
+    async function check(key: string, contextId?: string, iModelId?: string, changeSetId?: string, openMode?: OpenMode) {
+      const token: IModelRpcProps = { key, contextId, iModelId, changeSetId, openMode };
+      const values: TokenValues = { key, contextId, iModelId, changeSetId, openMode };
+      assert.isTrue(await TestRpcInterface.getClient().op16(token, values));
     }
 
     await check("key1", "context1", "imodel1", "change1", OpenMode.ReadWrite);

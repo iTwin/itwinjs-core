@@ -643,7 +643,7 @@ class Admin extends TileAdmin {
           this._totalAbortedRequests += contentIds.length;
         }
 
-        NativeAppRpcInterface.getClient().cancelTileContentRequests(iModelConnection.getRpcTokenProps(), treeContentIds);
+        NativeAppRpcInterface.getClient().cancelTileContentRequests(iModelConnection.getRpcProps(), treeContentIds);
       }
 
       this._canceledRequests.clear();
@@ -853,27 +853,27 @@ class Admin extends TileAdmin {
   public async requestTileTreeProps(iModel: IModelConnection, treeId: string): Promise<TileTreeProps> {
     this.initializeRpc();
     const intfc = IModelTileRpcInterface.getClient();
-    return intfc.requestTileTreeProps(iModel.getRpcTokenProps(), treeId);
+    return intfc.requestTileTreeProps(iModel.getRpcProps(), treeId);
   }
 
   public async purgeTileTrees(iModel: IModelConnection, modelIds: Id64Array | undefined): Promise<void> {
     this.initializeRpc();
-    return IModelTileRpcInterface.getClient().purgeTileTrees(iModel.getRpcTokenProps(), modelIds);
+    return IModelTileRpcInterface.getClient().purgeTileTrees(iModel.getRpcProps(), modelIds);
   }
 
   public async requestTileContent(iModel: IModelConnection, treeId: string, contentId: string, isCanceled: () => boolean, guid: string | undefined, qualifier: string | undefined): Promise<Uint8Array> {
     this.initializeRpc();
 
-    const tokenProps = iModel.getRpcTokenProps();
+    const iModelRpcProps = iModel.getRpcProps();
 
     if (!guid)
-      guid = tokenProps.changeSetId || "first";
+      guid = iModelRpcProps.changeSetId || "first";
 
     if (qualifier)
       guid = guid + "_" + qualifier;
 
     const intfc = IModelTileRpcInterface.getClient();
-    return intfc.requestTileContent(tokenProps, treeId, contentId, isCanceled, guid);
+    return intfc.requestTileContent(iModelRpcProps, treeId, contentId, isCanceled, guid);
   }
 
   private initializeRpc(): void {

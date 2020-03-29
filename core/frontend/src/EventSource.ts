@@ -6,7 +6,7 @@
  * @module EventSource
  */
 import { Logger } from "@bentley/bentleyjs-core";
-import { IModelTokenProps, NativeAppRpcInterface, QueuedEvent, RpcRegistry } from "@bentley/imodeljs-common";
+import { IModelRpcProps, NativeAppRpcInterface, QueuedEvent, RpcRegistry } from "@bentley/imodeljs-common";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { IModelApp } from "./IModelApp";
 
@@ -21,7 +21,7 @@ export type EventListener = (data: any) => void;
 export class EventSource {
   private _timeoutHandle: any;
   private _namespaces = new Map<string, Map<string, EventListener[]>>();
-  constructor(public readonly tokenProps: IModelTokenProps) {
+  constructor(public readonly tokenProps: IModelRpcProps) {
   }
   private scheduleNextPoll() {
     const onPoll = async () => {
@@ -151,7 +151,7 @@ export abstract class EventSourceManager {
     }
     return EventSourceManager._global;
   }
-  public static get(id: string, tokenProps?: IModelTokenProps): EventSource {
+  public static get(id: string, tokenProps?: IModelRpcProps): EventSource {
     if (EventSourceManager._sources.has(id)) {
       return EventSourceManager._sources.get(id)!;
     }
@@ -178,7 +178,7 @@ export abstract class EventSourceManager {
   public static has(id: string): boolean {
     return EventSourceManager._sources.has(id);
   }
-  public static create(id: string, tokenProps: IModelTokenProps): EventSource {
+  public static create(id: string, tokenProps: IModelRpcProps): EventSource {
     if (EventSourceManager._sources.has(id)) {
       throw new Error(`EventSource with key='${id}' already exist`);
     }

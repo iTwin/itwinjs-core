@@ -5,7 +5,7 @@
 
 import { assert } from "chai";
 import { OpenMode, GuidString, Logger, LogLevel, BriefcaseStatus, ClientRequestContext, IModelStatus } from "@bentley/bentleyjs-core";
-import { IModelVersion, IModelToken, IModelError } from "@bentley/imodeljs-common";
+import { IModelVersion, IModelError, IModelRpcProps } from "@bentley/imodeljs-common";
 import { BriefcaseQuery, Briefcase as HubBriefcase, AuthorizedClientRequestContext, HubIModel, ProgressInfo, UserCancelledError } from "@bentley/imodeljs-clients";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { IModelTestUtils, TestIModelInfo } from "../IModelTestUtils";
@@ -700,13 +700,13 @@ describe("BriefcaseManager (#integration)", () => {
       numProgressCalls++;
     };
 
-    const iModelToken = await BriefcaseDb.startDownloadBriefcase(requestContext, testProjectId, testIModelId, openParams, IModelVersion.latest());
+    const iModelRpcProps = await BriefcaseDb.startDownloadBriefcase(requestContext, testProjectId, testIModelId, openParams, IModelVersion.latest());
     requestContext.enter();
 
-    await BriefcaseDb.finishDownloadBriefcase(requestContext, iModelToken);
+    await BriefcaseDb.finishDownloadBriefcase(requestContext, iModelRpcProps);
     requestContext.enter();
 
-    const iModel = await BriefcaseDb.openBriefcase(requestContext, iModelToken);
+    const iModel = await BriefcaseDb.openBriefcase(requestContext, iModelRpcProps);
     requestContext.enter();
 
     await iModel.close(requestContext, KeepBriefcase.No);
@@ -718,24 +718,24 @@ describe("BriefcaseManager (#integration)", () => {
     const testIModelId = await HubUtility.queryIModelIdByName(requestContext, testProjectId, testIModelName);
 
     const openParams = OpenParams.pullOnly();
-    let iModelToken: IModelToken;
+    let tokenProps: IModelRpcProps;
     let cancelled1: boolean = false;
 
     openParams.downloadProgress = (progress: ProgressInfo) => {
       if (progress.percent === undefined)
         return;
       if (progress.percent > 50) {
-        cancelled1 = BriefcaseDb.cancelDownloadBriefcase(iModelToken);
+        cancelled1 = BriefcaseDb.cancelDownloadBriefcase(tokenProps);
         requestContext.enter();
       }
     };
 
-    iModelToken = await BriefcaseDb.startDownloadBriefcase(requestContext, testProjectId, testIModelId, openParams, IModelVersion.latest());
+    tokenProps = await BriefcaseDb.startDownloadBriefcase(requestContext, testProjectId, testIModelId, openParams, IModelVersion.latest());
     requestContext.enter();
 
     let cancelled2: boolean = false;
     try {
-      await BriefcaseDb.finishDownloadBriefcase(requestContext, iModelToken);
+      await BriefcaseDb.finishDownloadBriefcase(requestContext, tokenProps);
       requestContext.enter();
     } catch (err) {
       requestContext.enter();

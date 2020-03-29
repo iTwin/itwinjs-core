@@ -9,7 +9,7 @@ import { Provider, connect } from "react-redux";
 import { Id64String, OpenMode, Logger, LogLevel, isElectronRenderer } from "@bentley/bentleyjs-core";
 import { Config, OidcFrontendClientConfiguration, AccessToken, isIOidcFrontendClient } from "@bentley/imodeljs-clients";
 import {
-  RpcConfiguration, RpcOperation, IModelToken, ElectronRpcManager,
+  RpcConfiguration, RpcOperation, IModelRpcProps, ElectronRpcManager,
   BentleyCloudRpcManager, OidcDesktopClientConfiguration,
 } from "@bentley/imodeljs-common";
 import {
@@ -61,9 +61,10 @@ if (isElectronRenderer)
 else
   rpcConfiguration = BentleyCloudRpcManager.initializeClient({ info: { title: "simple-editor-app", version: "v1.0" }, uriPrefix: "http://localhost:3001" }, rpcInterfaces);
 
-// WIP: WebAppRpcProtocol seems to require an IModelToken for every RPC request
+const testToken: IModelRpcProps = { key: "test", contextId: "test", iModelId: "test", changeSetId: "test", openMode: OpenMode.Readonly };
+// WIP: WebAppRpcProtocol seems to require an IModelRpcProps for every RPC request
 for (const definition of rpcConfiguration.interfaces())
-  RpcOperation.forEach(definition, (operation) => operation.policy.token = (request) => (request.findTokenPropsParameter() || new IModelToken("test", "test", "test", "test", OpenMode.Readonly)));
+  RpcOperation.forEach(definition, (operation) => operation.policy.token = (request) => (request.findTokenPropsParameter() || testToken));
 
 // cSpell:ignore setTestProperty sampleapp uitestapp setisimodellocal projectwise
 /** Action Ids used by redux and to send sync UI components. Typically used to refresh visibility or enable state of control.
@@ -210,7 +211,7 @@ export class SampleAppIModelApp {
   }
 
   public static async initialize() {
-    Presentation.initialize();
+    await Presentation.initialize();
     Presentation.selection.scopes.activeScope = "top-assembly";
     UiCore.initialize(IModelApp.i18n); // tslint:disable-line:no-floating-promises
     UiComponents.initialize(IModelApp.i18n); // tslint:disable-line:no-floating-promises
@@ -219,7 +220,7 @@ export class SampleAppIModelApp {
     await UiFramework.initialize(undefined, IModelApp.i18n, oidcConfiguration);
 
     // initialize Presentation
-    Presentation.initialize({
+    await Presentation.initialize({
       activeLocale: IModelApp.i18n.languageList()[0],
     });
 

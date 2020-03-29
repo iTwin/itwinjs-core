@@ -6,13 +6,13 @@
  * @module CloudStorage
  */
 
-import { IModelToken } from "./IModel";
+import { IModelRpcProps } from "./IModel";
 import { CloudStorageCache, CloudStorageContainerDescriptor, CloudStorageContainerUrl, CloudStorageProvider } from "./CloudStorage";
 import { IModelTileRpcInterface } from "./rpc/IModelTileRpcInterface";
 
 /** @beta */
 export interface TileContentIdentifier {
-  iModelToken: IModelToken;
+  tokenProps: IModelRpcProps;
   treeId: string;
   contentId: string;
   guid: string | undefined;
@@ -51,7 +51,7 @@ export class CloudStorageTileCache extends CloudStorageCache<TileContentIdentifi
 
   protected async obtainContainerUrl(id: TileContentIdentifier, descriptor: CloudStorageContainerDescriptor): Promise<CloudStorageContainerUrl> {
     const client = IModelTileRpcInterface.getClient();
-    return client.getTileCacheContainerUrl(id.iModelToken.toJSON(), descriptor);
+    return client.getTileCacheContainerUrl(id.tokenProps, descriptor);
   }
 
   protected async instantiateResource(response: Response): Promise<Uint8Array | undefined> {
@@ -64,11 +64,11 @@ export class CloudStorageTileCache extends CloudStorageCache<TileContentIdentifi
   }
 
   public formContainerName(id: TileContentIdentifier): string {
-    return `${id.iModelToken.iModelId}`;
+    return `${id.tokenProps.iModelId}`;
   }
 
   public formResourceName(id: TileContentIdentifier): string {
-    const changeSetId = id.iModelToken.changeSetId || "first";
+    const changeSetId = id.tokenProps.changeSetId || "first";
     const version = id.guid ? id.guid : changeSetId; // NB: id.guid can be null (backend) OR undefined (frontend) here...
     return `tiles/${id.treeId}/${version}/${id.contentId}`;
   }

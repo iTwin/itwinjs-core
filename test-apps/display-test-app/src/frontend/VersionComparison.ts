@@ -136,7 +136,7 @@ class Provider implements TiledGraphicsProvider, FeatureOverrideProvider {
       assert(view.isSpatialView());
 
       // Open the "revision" iModel.
-      const filename = vp.iModel.getRpcTokenProps().key + ".rev";
+      const filename = vp.iModel.getRpcProps().key + ".rev";
       const iModel = await SnapshotConnection.open(filename);
 
       // ###TODO determine which model(s) contain the deleted elements - don't need tiles for any others.

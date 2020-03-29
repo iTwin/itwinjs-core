@@ -26,7 +26,7 @@ import { BeEvent } from '@bentley/bentleyjs-core';
 import { BentleyStatus } from '@bentley/bentleyjs-core';
 import { BeTimePoint } from '@bentley/bentleyjs-core';
 import { BeUiEvent } from '@bentley/bentleyjs-core';
-import { BriefcaseProps } from '@bentley/imodeljs-common';
+import { BriefcaseRpcProps } from '@bentley/imodeljs-common';
 import { ByteStream } from '@bentley/bentleyjs-core';
 import { Camera } from '@bentley/imodeljs-common';
 import { Capabilities } from '@bentley/webgl-compatibility';
@@ -114,10 +114,9 @@ import { ImageSource } from '@bentley/imodeljs-common';
 import { ImageSourceFormat } from '@bentley/imodeljs-common';
 import { IModel } from '@bentley/imodeljs-common';
 import { IModelClient } from '@bentley/imodeljs-clients';
+import { IModelConnectionProps } from '@bentley/imodeljs-common';
 import { IModelCoordinatesResponseProps } from '@bentley/imodeljs-common';
-import { IModelProps } from '@bentley/imodeljs-common';
-import { IModelToken } from '@bentley/imodeljs-common';
-import { IModelTokenProps } from '@bentley/imodeljs-common';
+import { IModelRpcProps } from '@bentley/imodeljs-common';
 import { IModelVersion } from '@bentley/imodeljs-common';
 import { IndexedPolyface } from '@bentley/geometry-core';
 import { IndexMap } from '@bentley/bentleyjs-core';
@@ -1505,7 +1504,7 @@ export class BriefcaseConnection extends IModelConnection {
     close(): Promise<void>;
     get contextId(): GuidString;
     // @internal
-    static createForNativeAppBriefcase(iModelProps: IModelProps, openMode: OpenMode): BriefcaseConnection;
+    static createForNativeAppBriefcase(iModelProps: IModelConnectionProps): BriefcaseConnection;
     // @internal
     detachChangeCache(): Promise<void>;
     get iModelId(): GuidString;
@@ -2030,7 +2029,7 @@ export interface DepthRangeNpc {
 
 // @internal
 export class DevTools {
-    static connectToBackendInstance(tokenProps: IModelTokenProps): DevTools;
+    static connectToBackendInstance(tokenProps: IModelRpcProps): DevTools;
     ping(count: number): Promise<PingTestResult>;
     setLogLevel(inLoggerCategory: string, newLevel: LogLevel): Promise<LogLevel | undefined>;
     stats(options?: DevToolsStatsOptions): Promise<any>;
@@ -2127,9 +2126,9 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
 
 // @internal
 export class DownloadBriefcaseToken {
-    constructor(iModelToken: IModelToken, stopProgressEvents: () => void);
+    constructor(iModelRpcProps: IModelRpcProps, stopProgressEvents: () => void);
     // (undocumented)
-    iModelToken: IModelToken;
+    iModelRpcProps: IModelRpcProps;
     // (undocumented)
     stopProgressEvents: () => void;
 }
@@ -2554,7 +2553,7 @@ export type EventListener = (data: any) => void;
 
 // @internal
 export class EventSource {
-    constructor(tokenProps: IModelTokenProps);
+    constructor(tokenProps: IModelRpcProps);
     clear(): void;
     // (undocumented)
     get fetching(): boolean;
@@ -2563,17 +2562,17 @@ export class EventSource {
         off: () => void;
     };
     // (undocumented)
-    readonly tokenProps: IModelTokenProps;
+    readonly tokenProps: IModelRpcProps;
 }
 
 // @internal
 export abstract class EventSourceManager {
     // (undocumented)
-    static create(id: string, tokenProps: IModelTokenProps): EventSource;
+    static create(id: string, tokenProps: IModelRpcProps): EventSource;
     // (undocumented)
     static delete(id: string): void;
     // (undocumented)
-    static get(id: string, tokenProps?: IModelTokenProps): EventSource;
+    static get(id: string, tokenProps?: IModelRpcProps): EventSource;
     // (undocumented)
     static readonly GLOBAL = "__globalEvents__";
     // (undocumented)
@@ -3827,7 +3826,7 @@ export interface IModelAppOptions {
 // @public
 export abstract class IModelConnection extends IModel {
     // @internal
-    protected constructor(iModelProps: IModelProps, openMode: OpenMode);
+    protected constructor(iModelProps: IModelConnectionProps);
     // @internal
     protected beforeClose(): void;
     cartographicToSpatial(cartographic: Cartographic, result?: Point3d): Promise<Point3d>;
@@ -5317,19 +5316,19 @@ export class NativeApp {
     static checkInternetConnectivity(): Promise<InternetConnectivityStatus>;
     static closeStorage(storage: Storage, deleteId: boolean): Promise<void>;
     // (undocumented)
-    static deleteBriefcase(requestContext: AuthorizedClientRequestContext, iModelToken: IModelTokenProps): Promise<void>;
+    static deleteBriefcase(requestContext: AuthorizedClientRequestContext, iModelToken: IModelRpcProps): Promise<void>;
     // (undocumented)
-    static downloadBriefcase(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: string, version?: IModelVersion): Promise<IModelTokenProps>;
+    static downloadBriefcase(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: string, version?: IModelVersion): Promise<IModelRpcProps>;
     // (undocumented)
     static finishDownloadBriefcase(requestContext: AuthorizedClientRequestContext, downloadBriefcaseToken: DownloadBriefcaseToken): Promise<void>;
-    static getBriefcases(): Promise<BriefcaseProps[]>;
+    static getBriefcases(): Promise<BriefcaseRpcProps[]>;
     static getStorageNames(): Promise<string[]>;
     // (undocumented)
     static onInternetConnectivityChanged: BeEvent<(status: InternetConnectivityStatus) => void>;
     // (undocumented)
     static onMemoryWarning: BeEvent<() => void>;
     // (undocumented)
-    static openBriefcase(requestContext: ClientRequestContext, iModelToken: IModelTokenProps): Promise<BriefcaseConnection>;
+    static openBriefcase(requestContext: ClientRequestContext, iModelToken: IModelRpcProps): Promise<BriefcaseConnection>;
     static openStorage(name: string): Promise<Storage>;
     // (undocumented)
     static overrideInternetConnectivity(status: InternetConnectivityStatus): Promise<void>;

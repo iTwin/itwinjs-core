@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { BeEvent, Guid, GuidString } from "@bentley/bentleyjs-core";
-import { IModelTokenProps } from "@bentley/imodeljs-common";
+import { IModelRpcProps } from "@bentley/imodeljs-common";
 import { IModelApp } from "@bentley/imodeljs-frontend";
 import { EventSourceManager } from "@bentley/imodeljs-frontend/lib/EventSource";
 import { assert } from "chai";
@@ -14,7 +14,7 @@ import { EventsTestRpcInterface } from "../../common/RpcInterfaces";
  * @internal
  */
 export class EventTest {
-  public static connectToBackendInstance(tokenProps: IModelTokenProps): EventTest {
+  public static connectToBackendInstance(tokenProps: IModelRpcProps): EventTest {
     return new EventTest(tokenProps);
   }
   /**
@@ -24,7 +24,7 @@ export class EventTest {
 
   /** Constructor */
   private constructor(
-    private readonly _tokenProps: IModelTokenProps) {
+    private readonly _tokenProps: IModelRpcProps) {
     // setup backend event handler.
     const eventSourceId = this._tokenProps.key!;
     EventSourceManager.get(eventSourceId, this._tokenProps)
@@ -54,12 +54,12 @@ describe("Events", () => {
 
   before(async () => {
     IModelApp.startup();
-    const tokenProps: IModelTokenProps = {
+    const iModelRpcProps: IModelRpcProps = {
       key: EventSourceManager.GLOBAL,
       iModelId: "test",
       changeSetId: "test",
     }; // Supply a real token in an integration test
-    eventTool = EventTest.connectToBackendInstance(tokenProps);
+    eventTool = EventTest.connectToBackendInstance(iModelRpcProps);
   });
 
   after(async () => {

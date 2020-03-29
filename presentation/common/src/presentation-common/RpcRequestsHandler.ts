@@ -7,7 +7,7 @@
  */
 
 import { Guid, IDisposable, Id64String } from "@bentley/bentleyjs-core";
-import { IModelTokenProps, RpcManager } from "@bentley/imodeljs-common";
+import { IModelRpcProps, RpcManager } from "@bentley/imodeljs-common";
 import { KeySetJSON } from "./KeySet";
 import { PresentationStatus, PresentationError } from "./Error";
 import { InstanceKeyJSON } from "./EC";
@@ -65,7 +65,7 @@ export class RpcRequestsHandler implements IDisposable {
     });
   }
 
-  private async requestRepeatedly<TResult, TOptions extends PresentationRpcRequestOptions>(func: (opts: TOptions) => PresentationRpcResponse<TResult>, options: TOptions, imodelToken: IModelTokenProps, repeatCount: number = 1): Promise<TResult> {
+  private async requestRepeatedly<TResult, TOptions extends PresentationRpcRequestOptions>(func: (opts: TOptions) => PresentationRpcResponse<TResult>, options: TOptions, imodelToken: IModelRpcProps, repeatCount: number = 1): Promise<TResult> {
     const response = await func(options);
 
     if (response.statusCode === PresentationStatus.Success)
@@ -87,77 +87,77 @@ export class RpcRequestsHandler implements IDisposable {
    *
    * @internal
    */
-  public async request<TResult, TOptions extends PresentationRpcRequestOptions & { imodel: IModelTokenProps }, TArg = any>(
+  public async request<TResult, TOptions extends PresentationRpcRequestOptions & { imodel: IModelRpcProps }, TArg = any>(
     context: any,
-    func: (token: IModelTokenProps, options: Omit<TOptions, "imodel">, ...args: TArg[]) => PresentationRpcResponse<TResult>,
+    func: (token: IModelRpcProps, options: Omit<TOptions, "imodel">, ...args: TArg[]) => PresentationRpcResponse<TResult>,
     options: TOptions,
     ...args: TArg[]): Promise<TResult> {
     type TFuncOptions = Omit<TOptions, "imodel">;
-    const { imodel, ...rpcOptions } = (options as (PresentationRpcRequestOptions & { imodel: IModelTokenProps })); // TS2700: Rest types may only be created from object types...
+    const { imodel, ...rpcOptions } = (options as (PresentationRpcRequestOptions & { imodel: IModelRpcProps })); // TS2700: Rest types may only be created from object types...
     const doRequest = async (funcOptions: TFuncOptions) => func.apply(context, [imodel, funcOptions, ...args]);
     return this.requestRepeatedly(doRequest, rpcOptions as TFuncOptions, options.imodel);
   }
-  public async getNodesAndCount(options: Paged<HierarchyRequestOptions<IModelTokenProps>>, parentKey?: NodeKeyJSON) {
-    return this.request<{ nodes: NodeJSON[], count: number }, Paged<HierarchyRequestOptions<IModelTokenProps>>, any>(
+  public async getNodesAndCount(options: Paged<HierarchyRequestOptions<IModelRpcProps>>, parentKey?: NodeKeyJSON) {
+    return this.request<{ nodes: NodeJSON[], count: number }, Paged<HierarchyRequestOptions<IModelRpcProps>>, any>(
       this.rpcClient, this.rpcClient.getNodesAndCount, this.createRequestOptions(options), parentKey);
   }
-  public async getNodes(options: Paged<HierarchyRequestOptions<IModelTokenProps>>, parentKey?: NodeKeyJSON): Promise<NodeJSON[]> {
-    return this.request<NodeJSON[], Paged<HierarchyRequestOptions<IModelTokenProps>>>(
+  public async getNodes(options: Paged<HierarchyRequestOptions<IModelRpcProps>>, parentKey?: NodeKeyJSON): Promise<NodeJSON[]> {
+    return this.request<NodeJSON[], Paged<HierarchyRequestOptions<IModelRpcProps>>>(
       this.rpcClient, this.rpcClient.getNodes, this.createRequestOptions(options), parentKey);
   }
-  public async getNodesCount(options: HierarchyRequestOptions<IModelTokenProps>, parentKey?: NodeKeyJSON): Promise<number> {
-    return this.request<number, HierarchyRequestOptions<IModelTokenProps>>(
+  public async getNodesCount(options: HierarchyRequestOptions<IModelRpcProps>, parentKey?: NodeKeyJSON): Promise<number> {
+    return this.request<number, HierarchyRequestOptions<IModelRpcProps>>(
       this.rpcClient, this.rpcClient.getNodesCount, this.createRequestOptions(options), parentKey);
   }
-  public async getNodePaths(options: HierarchyRequestOptions<IModelTokenProps>, paths: InstanceKeyJSON[][], markedIndex: number): Promise<NodePathElementJSON[]> {
-    return this.request<NodePathElementJSON[], HierarchyRequestOptions<IModelTokenProps>>(
+  public async getNodePaths(options: HierarchyRequestOptions<IModelRpcProps>, paths: InstanceKeyJSON[][], markedIndex: number): Promise<NodePathElementJSON[]> {
+    return this.request<NodePathElementJSON[], HierarchyRequestOptions<IModelRpcProps>>(
       this.rpcClient, this.rpcClient.getNodePaths, this.createRequestOptions(options), paths, markedIndex);
   }
-  public async getFilteredNodePaths(options: HierarchyRequestOptions<IModelTokenProps>, filterText: string): Promise<NodePathElementJSON[]> {
-    return this.request<NodePathElementJSON[], HierarchyRequestOptions<IModelTokenProps>>(
+  public async getFilteredNodePaths(options: HierarchyRequestOptions<IModelRpcProps>, filterText: string): Promise<NodePathElementJSON[]> {
+    return this.request<NodePathElementJSON[], HierarchyRequestOptions<IModelRpcProps>>(
       this.rpcClient, this.rpcClient.getFilteredNodePaths, this.createRequestOptions(options), filterText);
   }
-  public async loadHierarchy(options: HierarchyRequestOptions<IModelTokenProps>): Promise<void> {
-    return this.request<void, HierarchyRequestOptions<IModelTokenProps>>(
+  public async loadHierarchy(options: HierarchyRequestOptions<IModelRpcProps>): Promise<void> {
+    return this.request<void, HierarchyRequestOptions<IModelRpcProps>>(
       this.rpcClient, this.rpcClient.loadHierarchy, this.createRequestOptions(options));
   }
 
-  public async getContentDescriptor(options: ContentRequestOptions<IModelTokenProps>, displayType: string, keys: KeySetJSON, selection: SelectionInfo | undefined): Promise<DescriptorJSON | undefined> {
-    return this.request<DescriptorJSON | undefined, ContentRequestOptions<IModelTokenProps>>(
+  public async getContentDescriptor(options: ContentRequestOptions<IModelRpcProps>, displayType: string, keys: KeySetJSON, selection: SelectionInfo | undefined): Promise<DescriptorJSON | undefined> {
+    return this.request<DescriptorJSON | undefined, ContentRequestOptions<IModelRpcProps>>(
       this.rpcClient, this.rpcClient.getContentDescriptor, this.createRequestOptions(options), displayType, keys, selection);
   }
-  public async getContentSetSize(options: ContentRequestOptions<IModelTokenProps>, descriptorOrOverrides: DescriptorJSON | DescriptorOverrides, keys: KeySetJSON): Promise<number> {
-    return this.request<number, ContentRequestOptions<IModelTokenProps>>(
+  public async getContentSetSize(options: ContentRequestOptions<IModelRpcProps>, descriptorOrOverrides: DescriptorJSON | DescriptorOverrides, keys: KeySetJSON): Promise<number> {
+    return this.request<number, ContentRequestOptions<IModelRpcProps>>(
       this.rpcClient, this.rpcClient.getContentSetSize, this.createRequestOptions(options), descriptorOrOverrides, keys);
   }
-  public async getContent(options: ContentRequestOptions<IModelTokenProps>, descriptorOrOverrides: DescriptorJSON | DescriptorOverrides, keys: KeySetJSON): Promise<ContentJSON | undefined> {
-    return this.request<ContentJSON | undefined, ContentRequestOptions<IModelTokenProps>>(
+  public async getContent(options: ContentRequestOptions<IModelRpcProps>, descriptorOrOverrides: DescriptorJSON | DescriptorOverrides, keys: KeySetJSON): Promise<ContentJSON | undefined> {
+    return this.request<ContentJSON | undefined, ContentRequestOptions<IModelRpcProps>>(
       this.rpcClient, this.rpcClient.getContent, this.createRequestOptions(options), descriptorOrOverrides, keys);
   }
-  public async getContentAndSize(options: ContentRequestOptions<IModelTokenProps>, descriptorOrOverrides: DescriptorJSON | DescriptorOverrides, keys: KeySetJSON) {
-    return this.request<{ content?: ContentJSON, size: number }, ContentRequestOptions<IModelTokenProps>, any>(
+  public async getContentAndSize(options: ContentRequestOptions<IModelRpcProps>, descriptorOrOverrides: DescriptorJSON | DescriptorOverrides, keys: KeySetJSON) {
+    return this.request<{ content?: ContentJSON, size: number }, ContentRequestOptions<IModelRpcProps>, any>(
       this.rpcClient, this.rpcClient.getContentAndSize, this.createRequestOptions(options), descriptorOrOverrides, keys);
   }
-  public async getDistinctValues(options: ContentRequestOptions<IModelTokenProps>, descriptor: DescriptorJSON, keys: KeySetJSON, fieldName: string, maximumValueCount: number): Promise<string[]> {
-    return this.request<string[], ContentRequestOptions<IModelTokenProps>>(
+  public async getDistinctValues(options: ContentRequestOptions<IModelRpcProps>, descriptor: DescriptorJSON, keys: KeySetJSON, fieldName: string, maximumValueCount: number): Promise<string[]> {
+    return this.request<string[], ContentRequestOptions<IModelRpcProps>>(
       this.rpcClient, this.rpcClient.getDistinctValues, this.createRequestOptions(options), descriptor, keys, fieldName, maximumValueCount);
   }
 
-  public async getDisplayLabelDefinition(options: LabelRequestOptions<IModelTokenProps>, key: InstanceKeyJSON): Promise<LabelDefinitionJSON> {
-    return this.request<LabelDefinitionJSON, LabelRequestOptions<IModelTokenProps>, any>(
+  public async getDisplayLabelDefinition(options: LabelRequestOptions<IModelRpcProps>, key: InstanceKeyJSON): Promise<LabelDefinitionJSON> {
+    return this.request<LabelDefinitionJSON, LabelRequestOptions<IModelRpcProps>, any>(
       this.rpcClient, this.rpcClient.getDisplayLabelDefinition, this.createRequestOptions(options), key);
   }
-  public async getDisplayLabelDefinitions(options: LabelRequestOptions<IModelTokenProps>, keys: InstanceKeyJSON[]): Promise<LabelDefinitionJSON[]> {
-    return this.request<LabelDefinitionJSON[], LabelRequestOptions<IModelTokenProps>, any>(
+  public async getDisplayLabelDefinitions(options: LabelRequestOptions<IModelRpcProps>, keys: InstanceKeyJSON[]): Promise<LabelDefinitionJSON[]> {
+    return this.request<LabelDefinitionJSON[], LabelRequestOptions<IModelRpcProps>, any>(
       this.rpcClient, this.rpcClient.getDisplayLabelDefinitions, this.createRequestOptions(options), keys);
   }
 
-  public async getSelectionScopes(options: SelectionScopeRequestOptions<IModelTokenProps>): Promise<SelectionScope[]> {
-    return this.request<SelectionScope[], SelectionScopeRequestOptions<IModelTokenProps>>(
+  public async getSelectionScopes(options: SelectionScopeRequestOptions<IModelRpcProps>): Promise<SelectionScope[]> {
+    return this.request<SelectionScope[], SelectionScopeRequestOptions<IModelRpcProps>>(
       this.rpcClient, this.rpcClient.getSelectionScopes, this.createRequestOptions(options));
   }
-  public async computeSelection(options: SelectionScopeRequestOptions<IModelTokenProps>, ids: Id64String[], scopeId: string): Promise<KeySetJSON> {
-    return this.request<KeySetJSON, SelectionScopeRequestOptions<IModelTokenProps>>(
+  public async computeSelection(options: SelectionScopeRequestOptions<IModelRpcProps>, ids: Id64String[], scopeId: string): Promise<KeySetJSON> {
+    return this.request<KeySetJSON, SelectionScopeRequestOptions<IModelRpcProps>>(
       this.rpcClient, this.rpcClient.computeSelection, this.createRequestOptions(options), ids, scopeId);
   }
 }

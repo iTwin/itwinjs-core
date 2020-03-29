@@ -5,7 +5,7 @@
 import { assert } from "chai";
 import { using } from "@bentley/bentleyjs-core";
 import { NativeApp, IModelApp, NativeAppLogger, AuthorizedFrontendRequestContext, FrontendRequestContext } from "@bentley/imodeljs-frontend";
-import { BriefcaseProps, IModelVersion } from "@bentley/imodeljs-common";
+import { BriefcaseRpcProps, IModelVersion } from "@bentley/imodeljs-common";
 import { Config, ProgressInfo } from "@bentley/imodeljs-clients";
 import { TestUsers, TestAuthorizationClient } from "@bentley/oidc-signin-tool/lib/TestUsers";
 import { TestUtility } from "./TestUtility";
@@ -46,14 +46,14 @@ describe("NativeApp (#integration)", () => {
 
     const requestContext = await AuthorizedFrontendRequestContext.create();
 
-    const iModelToken = await NativeApp.downloadBriefcase(requestContext, testProjectId, testIModelId);
+    const iModelRpcProps = await NativeApp.downloadBriefcase(requestContext, testProjectId, testIModelId);
     await using(new OfflineScope(), async (scope: OfflineScope) => {
       const briefcases = await NativeApp.getBriefcases();
-      const rs = briefcases.filter((_: BriefcaseProps) => _.iModelId === testIModelId);
+      const rs = briefcases.filter((_: BriefcaseRpcProps) => _.iModelId === testIModelId);
       assert(rs.length > 0);
       assert.isNumber(rs[0].fileSize);
       assert(rs[0].fileSize! > 0);
-      const conn = await NativeApp.openBriefcase(new FrontendRequestContext(), iModelToken);
+      const conn = await NativeApp.openBriefcase(new FrontendRequestContext(), iModelRpcProps);
       const rowCount = await conn.queryRowCount("SELECT ECInstanceId FROM bis.Element");
       assert.notEqual(rowCount, 0);
       assert.equal(scope.rejected.length, 0);
@@ -99,13 +99,13 @@ describe("NativeApp (#integration)", () => {
     await NativeApp.finishDownloadBriefcase(requestContext, downloadToken);
     requestContext.enter();
 
-    const iModel = await NativeApp.openBriefcase(new FrontendRequestContext(), downloadToken.iModelToken);
+    const iModel = await NativeApp.openBriefcase(new FrontendRequestContext(), downloadToken.iModelRpcProps);
     requestContext.enter();
 
     await iModel.close();
     requestContext.enter();
 
-    await NativeApp.deleteBriefcase(requestContext, downloadToken.iModelToken);
+    await NativeApp.deleteBriefcase(requestContext, downloadToken.iModelRpcProps);
   });
 
   it("Progress event (#integration)", async () => {
@@ -130,7 +130,7 @@ describe("NativeApp (#integration)", () => {
     await NativeApp.finishDownloadBriefcase(requestContext, downloadToken);
     requestContext.enter();
     assert.notEqual(events, 0);
-    await NativeApp.deleteBriefcase(requestContext, downloadToken.iModelToken);
+    await NativeApp.deleteBriefcase(requestContext, downloadToken.iModelRpcProps);
   });
 
   it("Should be able to cancel an in progress download (#integration)", async () => {
@@ -158,7 +158,7 @@ describe("NativeApp (#integration)", () => {
       await NativeApp.finishDownloadBriefcase(requestContext, downloadToken);
       requestContext.enter();
 
-      await NativeApp.deleteBriefcase(requestContext, downloadToken.iModelToken);
+      await NativeApp.deleteBriefcase(requestContext, downloadToken.iModelRpcProps);
     } catch (err) {
       requestContext.enter();
       cancelled2 = true;

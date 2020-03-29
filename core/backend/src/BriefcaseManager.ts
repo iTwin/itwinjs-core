@@ -18,7 +18,7 @@ import {
   ChangeSetApplyOption, BeEvent, DbResult, OpenMode, assert, Logger, ChangeSetStatus,
   BentleyStatus, IModelHubStatus, PerfLogger, GuidString, Id64, IModelStatus, AsyncMutex, BeDuration,
 } from "@bentley/bentleyjs-core";
-import { BriefcaseProps, BriefcaseStatus, CreateIModelProps, IModelError, IModelVersion, MobileRpcConfiguration } from "@bentley/imodeljs-common";
+import { BriefcaseRpcProps, BriefcaseStatus, CreateIModelProps, IModelError, IModelVersion, MobileRpcConfiguration } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { IModelDb, OpenParams, SyncMode } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
@@ -651,13 +651,13 @@ export class BriefcaseManager {
    *  - Waits for all the briefcases to get downloaded and initialized.
    * @internal
    */
-  public static async getBriefcasesFromDisk(): Promise<BriefcaseProps[]> {
+  public static async getBriefcasesFromDisk(): Promise<BriefcaseRpcProps[]> {
     assert(this._initBriefcaseCacheFromDisk, "Briefcase cache must have been initialized from disk");
 
     const filterFn = (value: BriefcaseEntry) => value.openParams.isBriefcase; // no standalone files or snapshots
     const briefcases = this._cache.getFilteredBriefcases(filterFn);
 
-    const briefcaseProps = new Array<BriefcaseProps>();
+    const briefcaseProps = new Array<BriefcaseRpcProps>();
     for (const briefcase of briefcases) {
       if (briefcase.isPending !== undefined) {
         await briefcase.isPending;

@@ -7,7 +7,7 @@
  */
 
 import { BentleyStatus } from "@bentley/bentleyjs-core";
-import { IModelToken } from "../../IModel";
+import { IModelRpcProps } from "../../IModel";
 import { IModelError } from "../../IModelError";
 import { RpcInterface, RpcInterfaceDefinition } from "../../RpcInterface";
 import { RpcRegistry, OPERATION, POLICY } from "./RpcRegistry";
@@ -19,7 +19,7 @@ import { RpcResponseCacheControl } from "./RpcConstants";
  * @public
  */
 export class RpcOperationPolicy {
-  /** Supplies the IModelToken for an operation request. */
+  /** Supplies the IModelRpcProps for an operation request. */
   public token: RpcRequestTokenSupplier_T = (request) => request.findTokenPropsParameter();
 
   /** Supplies the initial retry interval for an operation request. */
@@ -43,7 +43,7 @@ export class RpcOperationPolicy {
   /** Forces RpcConfiguration.strictMode for this operation. */
   public forceStrictMode: boolean = false;
 
-  /** Whether the IModelToken in the operation parameter list is allowed to differ from the token in the request URL. */
+  /** Whether the IModelRpcProps in the operation parameter list is allowed to differ from the token in the request URL. */
   public allowTokenMismatch: boolean = false;
 }
 
@@ -52,7 +52,7 @@ export class RpcOperationPolicy {
  */
 export class RpcOperation {
   /** A fallback token to use for RPC requests that do not semantically depend on an iModel. */
-  public static fallbackToken: IModelToken | undefined = undefined;
+  public static fallbackToken: IModelRpcProps | undefined = undefined;
 
   /** Looks up an RPC operation by name. */
   public static lookup(target: string | RpcInterfaceDefinition, operationName: string): RpcOperation {

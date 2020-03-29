@@ -2,32 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import {
-  ClientRequestContext,
-  BeEvent,
-  DbResult,
-  Guid,
-  Id64,
-  Id64String,
-  using,
-  Logger,
-  LogLevel,
-  GetMetaDataFunction,
-  GuidString,
-} from "@bentley/bentleyjs-core";
-import {
-  Angle,
-  GeometryQuery,
-  LineString3d,
-  Loop,
-  Matrix4d,
-  Point3d,
-  Range3d,
-  Transform,
-  StrokeOptions,
-  PolyfaceBuilder,
-  YawPitchRollAngles,
-} from "@bentley/geometry-core";
+import { BeEvent, ClientRequestContext, DbResult, GetMetaDataFunction, Guid, GuidString, Id64, Id64String, Logger, LogLevel, OpenMode, using } from "@bentley/bentleyjs-core";
+import { Angle, GeometryQuery, LineString3d, Loop, Matrix4d, Point3d, PolyfaceBuilder, Range3d, StrokeOptions, Transform, YawPitchRollAngles } from "@bentley/geometry-core";
 import { AccessToken, IAuthorizationClient } from "@bentley/imodeljs-clients";
 import {
   AxisAlignedBox3d, Code, CodeScopeSpec, CodeSpec, ColorByName, ElementProps, EntityMetaData, EntityProps, FilePropertyProps, FontMap,
@@ -1810,6 +1786,10 @@ describe("iModel", () => {
     assert.isFalse(standaloneDb1.nativeDb.isEncrypted());
     assert.equal(standaloneDb1.elements.getRootSubject().code.getValue(), standaloneRootSubjectName);
     assert.isTrue(standaloneDb1.isOpen);
+    assert.isTrue(Guid.isV4Guid(standaloneDb1.iModelId));
+    assert.isUndefined(standaloneDb1.contextId);
+    assert.isUndefined(standaloneDb1.changeSetId);
+    assert.equal(standaloneDb1.openMode, OpenMode.ReadWrite);
     standaloneDb1.close();
     assert.isFalse(standaloneDb1.isOpen);
     standaloneDb1.close(); // calling `close()` a second time is a no-op

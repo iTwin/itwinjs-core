@@ -7,7 +7,7 @@ import { Id64, Id64Arg, Id64String, OpenMode, StopWatch } from "@bentley/bentley
 import { HubIModel, OidcFrontendClientConfiguration, Project, ProjectShareClient, ProjectShareFile, ProjectShareFileQuery, ProjectShareFolderQuery, IOidcFrontendClient, AccessToken } from "@bentley/imodeljs-clients";
 import {
   BackgroundMapProps, BackgroundMapType, BentleyCloudRpcManager, DisplayStyleProps, ElectronRpcConfiguration, ElectronRpcManager, IModelReadRpcInterface,
-  IModelTileRpcInterface, IModelToken, MobileRpcConfiguration, MobileRpcManager, RpcConfiguration, RpcOperation, RenderMode,
+  IModelTileRpcInterface, IModelRpcProps, MobileRpcConfiguration, MobileRpcManager, RpcConfiguration, RpcOperation, RenderMode,
   SnapshotIModelRpcInterface, ViewDefinitionProps, OidcDesktopClientConfiguration,
 } from "@bentley/imodeljs-common";
 import {
@@ -1451,10 +1451,11 @@ window.onload = () => {
     const uriPrefix = configuration.customOrchestratorUri || "http://localhost:3001";
     rpcConfiguration = BentleyCloudRpcManager.initializeClient({ info: { title: "DisplayPerformanceTestApp", version: "v1.0" }, uriPrefix }, [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface]);
 
+    const testToken: IModelRpcProps = { key: "test", contextId: "test", iModelId: "test", changeSetId: "test", openMode: OpenMode.Readonly };
     // WIP: WebAppRpcProtocol seems to require an IModelToken for every RPC request. ECPresentation initialization tries to set active locale using
     // RPC without any imodel and fails...
     for (const definition of rpcConfiguration.interfaces())
-      RpcOperation.forEach(definition, (operation) => operation.policy.token = (request) => (request.findTokenPropsParameter() || new IModelToken("test", "test", "test", "test", OpenMode.Readonly)));
+      RpcOperation.forEach(definition, (operation) => operation.policy.token = (request) => (request.findTokenPropsParameter() || testToken));
   }
 
   // ###TODO: Raman added one-time initialization logic IModelApp.startup which replaces a couple of RpcRequest-related functions.

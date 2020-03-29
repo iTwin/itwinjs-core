@@ -6,7 +6,7 @@
  * @module RpcInterface
  */
 
-import { ChangedElements, IModelTokenProps, RpcInterface, RpcManager } from "@bentley/imodeljs-common";
+import { ChangedElements, IModelRpcProps, RpcInterface, RpcManager } from "@bentley/imodeljs-common";
 import { WipRpcInterface } from "@bentley/imodeljs-common/lib/rpc/WipRpcInterface"; // not part of the "barrel"
 import { ChangedElementsManager } from "../ChangedElementsManager";
 import { ChangeSummaryManager } from "../ChangeSummaryManager";
@@ -18,27 +18,27 @@ import { BriefcaseDb } from "../IModelDb";
 export class WipRpcImpl extends RpcInterface implements WipRpcInterface {
 
   public static register() { RpcManager.registerImpl(WipRpcInterface, WipRpcImpl); }
-  public async placeholder(_tokenProps: IModelTokenProps): Promise<string> { return "placeholder"; }
+  public async placeholder(_tokenProps: IModelRpcProps): Promise<string> { return "placeholder"; }
 
-  public async isChangeCacheAttached(tokenProps: IModelTokenProps): Promise<boolean> {
+  public async isChangeCacheAttached(tokenProps: IModelRpcProps): Promise<boolean> {
     return ChangeSummaryManager.isChangeCacheAttached(BriefcaseDb.findByKey(tokenProps.key));
   }
 
-  public async attachChangeCache(tokenProps: IModelTokenProps): Promise<void> {
+  public async attachChangeCache(tokenProps: IModelRpcProps): Promise<void> {
     ChangeSummaryManager.attachChangeCache(BriefcaseDb.findByKey(tokenProps.key));
   }
 
-  public async detachChangeCache(tokenProps: IModelTokenProps): Promise<void> {
+  public async detachChangeCache(tokenProps: IModelRpcProps): Promise<void> {
     const iModel: BriefcaseDb = BriefcaseDb.findByKey(tokenProps.key);
     if (ChangeSummaryManager.isChangeCacheAttached(iModel))
       ChangeSummaryManager.detachChangeCache(iModel);
   }
 
-  public async getChangedElements(tokenProps: IModelTokenProps, startChangesetId: string, endChangesetId: string): Promise<ChangedElements | undefined> {
+  public async getChangedElements(tokenProps: IModelRpcProps, startChangesetId: string, endChangesetId: string): Promise<ChangedElements | undefined> {
     return ChangedElementsManager.getChangedElements(tokenProps.iModelId!, startChangesetId, endChangesetId);
   }
 
-  public async isChangesetProcessed(tokenProps: IModelTokenProps, changesetId: string): Promise<boolean> {
+  public async isChangesetProcessed(tokenProps: IModelRpcProps, changesetId: string): Promise<boolean> {
     return ChangedElementsManager.isProcessed(tokenProps.iModelId!, changesetId);
   }
 }

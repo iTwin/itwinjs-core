@@ -152,7 +152,7 @@ describe("IModelConnection (#integration)", () => {
       const promise = BriefcaseConnection.open(projectId, iModelId, OpenMode.Readonly, IModelVersion.latest())
         .then((readOnlyTest2: IModelConnection) => {
           assert.isNotNull(readOnlyTest2);
-          assert.isTrue(readOnlyTest.getRpcTokenProps().key === readOnlyTest2.getRpcTokenProps().key);
+          assert.isTrue(readOnlyTest.getRpcProps().key === readOnlyTest2.getRpcProps().key);
         });
       promises.push(promise);
     }
@@ -179,7 +179,7 @@ describe("IModelConnection (#integration)", () => {
       while (++n < 5) {
         const iModel2 = await BriefcaseConnection.open(testProjectId, testIModelId, openMode, IModelVersion.latest());
         assert.isNotNull(iModel2);
-        assert.equal(iModel2.getRpcTokenProps().key, iModel1.getRpcTokenProps().key);
+        assert.equal(iModel2.getRpcProps().key, iModel1.getRpcProps().key);
       }
       await iModel1.close();
       assert.isFalse(iModel1.isOpen);

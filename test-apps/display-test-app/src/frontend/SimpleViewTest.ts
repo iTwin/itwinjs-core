@@ -11,7 +11,7 @@ import {
   ElectronRpcManager,
   IModelReadRpcInterface,
   IModelTileRpcInterface,
-  IModelToken,
+  IModelRpcProps,
   MobileRpcConfiguration,
   MobileRpcManager,
   NativeAppRpcInterface,
@@ -196,10 +196,12 @@ async function main() {
     const uriPrefix = configuration.customOrchestratorUri || "http://localhost:3001";
     rpcConfiguration = BentleyCloudRpcManager.initializeClient({ info: { title: "SimpleViewApp", version: "v1.0" }, uriPrefix }, rpcInterfaces);
 
+    const testToken: IModelRpcProps = { key: "test", contextId: "test", iModelId: "test", changeSetId: "test", openMode: OpenMode.Readonly };
+
     // WIP: WebAppRpcProtocol seems to require an IModelToken for every RPC request. ECPresentation initialization tries to set active locale using
     // RPC without any imodel and fails...
     for (const definition of rpcConfiguration.interfaces())
-      RpcOperation.forEach(definition, (operation) => operation.policy.token = (request) => (request.findTokenPropsParameter() || new IModelToken("test", "test", "test", "test", OpenMode.Readonly)));
+      RpcOperation.forEach(definition, (operation) => operation.policy.token = (request) => (request.findTokenPropsParameter() || testToken));
   }
 
   if (!configuration.standalone && !configuration.customOrchestratorUri) {

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as faker from "faker";
-import { BentleyCloudRpcManager, RpcManager, IModelTokenProps, WebAppRpcRequest } from "@bentley/imodeljs-common";
+import { BentleyCloudRpcManager, RpcManager, IModelRpcProps, WebAppRpcRequest } from "@bentley/imodeljs-common";
 import { PresentationRpcInterface } from "@bentley/presentation-common";
 
 describe("PresentationRpcInterface usage with RPC protocols", () => {
@@ -12,7 +12,7 @@ describe("PresentationRpcInterface usage with RPC protocols", () => {
   describe("BentleyCloudRpcProtocol", () => {
 
     let client: PresentationRpcInterface;
-    let token: IModelTokenProps;
+    let token: IModelRpcProps;
 
     before(() => {
       const params = { info: { title: "Test", version: "1.0" } };

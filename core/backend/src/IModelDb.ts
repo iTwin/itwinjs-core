@@ -15,9 +15,9 @@ import { AuthorizedClientRequestContext, UlasClient, UsageLogEntry, UsageType, P
 import {
   AxisAlignedBox3d, CategorySelectorProps, Code, CodeSpec, CreateEmptySnapshotIModelProps, CreateIModelProps, CreateSnapshotIModelProps, DisplayStyleProps,
   EcefLocation, ElementAspectProps, ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontMap, FontMapProps, FontProps,
-  GeoCoordinatesResponseProps, IModel, IModelCoordinatesResponseProps, IModelEncryptionProps, IModelError, IModelNotFoundResponse, IModelProps, IModelStatus, IModelToken, IModelVersion,
+  GeoCoordinatesResponseProps, IModel, IModelCoordinatesResponseProps, IModelEncryptionProps, IModelError, IModelNotFoundResponse, IModelProps, IModelStatus, IModelVersion,
   MassPropertiesRequestProps, MassPropertiesResponseProps, ModelProps, ModelSelectorProps, PropertyCallback, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus,
-  RpcPendingResponse, SheetProps, SnapRequestProps, SnapResponseProps, SpatialViewDefinitionProps, ThumbnailProps, TileTreeProps, ViewDefinitionProps, ViewQueryParams, ViewStateProps,
+  RpcPendingResponse, SheetProps, SnapRequestProps, SnapResponseProps, SpatialViewDefinitionProps, ThumbnailProps, TileTreeProps, ViewDefinitionProps, ViewQueryParams, ViewStateProps, IModelRpcProps,
 } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import * as os from "os";
@@ -173,7 +173,7 @@ export abstract class IModelDb extends IModel {
   private _nativeDb: IModelJsNative.DgnDb;
 
   /** @internal */
-  protected constructor(nativeDb: IModelJsNative.DgnDb, iModelToken: IModelToken, openParams: OpenParams) {
+  protected constructor(nativeDb: IModelJsNative.DgnDb, iModelToken: IModelRpcProps, openParams: OpenParams) {
     super(iModelToken, openParams.openMode);
     this._nativeDb = nativeDb;
     this.nativeDb.setIModelDb(this);
@@ -202,7 +202,7 @@ export abstract class IModelDb extends IModel {
     } catch (error) {
       // Note: We do not treat usage logging
       requestContext.enter();
-      Logger.logError(loggerCategory, "Could not log usage information", () => ({ errorStatus: error.status, errorMessage: error.message, iModelToken: iModelDb.getRpcTokenProps() }));
+      Logger.logError(loggerCategory, "Could not log usage information", () => ({ errorStatus: error.status, errorMessage: error.message, iModelToken: iModelDb.getRpcProps() }));
     }
   }
 
@@ -779,11 +779,11 @@ export abstract class IModelDb extends IModel {
 
     const className = classFullName.split(":");
     if (className.length !== 2)
-      throw new IModelError(IModelStatus.BadArg, "Invalid classFullName", Logger.logError, loggerCategory, () => ({ ...this.getRpcTokenProps(), classFullName }));
+      throw new IModelError(IModelStatus.BadArg, "Invalid classFullName", Logger.logError, loggerCategory, () => ({ ...this.getRpcProps(), classFullName }));
 
     const val = this.nativeDb.getECClassMetaData(className[0], className[1]);
     if (val.error)
-      throw new IModelError(val.error.status, `Error getting class meta data for: ${classFullName}`, Logger.logError, loggerCategory, () => ({ ...this.getRpcTokenProps(), classFullName }));
+      throw new IModelError(val.error.status, `Error getting class meta data for: ${classFullName}`, Logger.logError, loggerCategory, () => ({ ...this.getRpcProps(), classFullName }));
 
     const metaData = new EntityMetaData(JSON.parse(val.result!));
     this.classMetaDataRegistry.add(classFullName, metaData);
@@ -1890,7 +1890,7 @@ export class BriefcaseDb extends IModelDb {
   /** @internal */
   public get briefcase(): BriefcaseEntry {
     if (undefined === this._briefcase)
-      throw new IModelError(IModelStatus.NotOpen, "IModelDb not open", Logger.logError, loggerCategory, () => ({ name: this.name, ...this.getRpcTokenProps() }));
+      throw new IModelError(IModelStatus.NotOpen, "IModelDb not open", Logger.logError, loggerCategory, () => ({ name: this.name, ...this.getRpcProps() }));
 
     return this._briefcase;
   }
@@ -1920,7 +1920,7 @@ export class BriefcaseDb extends IModelDb {
   private clearEventSink() { if (this._eventSink) { EventSinkManager.delete(this._eventSink.id); } }
   private initializeEventSink() { if (this._rpcKey !== "") { this._eventSink = EventSinkManager.get(this._rpcKey); } }
 
-  private constructor(briefcaseEntry: BriefcaseEntry, iModelToken: IModelToken, openParams: OpenParams) {
+  private constructor(briefcaseEntry: BriefcaseEntry, iModelToken: IModelRpcProps, openParams: OpenParams) {
     super(briefcaseEntry.nativeDb, iModelToken, openParams);
     this.setupBriefcaseEntry(briefcaseEntry);
     this.setDefaultConcurrentControlAndPolicy();
@@ -1960,13 +1960,13 @@ export class BriefcaseDb extends IModelDb {
       requestContext.enter();
       const perfLogger = new PerfLogger("Opening iModel", () => ({ contextId, iModelId, ...openParams }));
 
-      const iModelToken = await this.startDownloadBriefcase(requestContext, contextId, iModelId, openParams, version);
+      const iModelRpcProps = await this.startDownloadBriefcase(requestContext, contextId, iModelId, openParams, version);
       requestContext.enter();
 
-      await this.finishDownloadBriefcase(requestContext, iModelToken);
+      await this.finishDownloadBriefcase(requestContext, iModelRpcProps);
       requestContext.enter();
 
-      iModelDb = await this.openBriefcase(requestContext, iModelToken);
+      iModelDb = await this.openBriefcase(requestContext, iModelRpcProps);
       requestContext.enter();
 
       perfLogger.dispose();
@@ -2001,16 +2001,16 @@ export class BriefcaseDb extends IModelDb {
    * @param version Version of the iModel to download
    * @internal
    */
-  public static async downloadBriefcase(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: string, openParams: OpenParams = OpenParams.pullAndPush(), version: IModelVersion = IModelVersion.latest()): Promise<IModelToken> {
+  public static async downloadBriefcase(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: string, openParams: OpenParams = OpenParams.pullAndPush(), version: IModelVersion = IModelVersion.latest()): Promise<IModelRpcProps> {
     requestContext.enter();
 
-    const iModelToken = await this.startDownloadBriefcase(requestContext, contextId, iModelId, openParams, version);
+    const iModelRpcProps = await this.startDownloadBriefcase(requestContext, contextId, iModelId, openParams, version);
     requestContext.enter();
 
-    await this.finishDownloadBriefcase(requestContext, iModelToken);
+    await this.finishDownloadBriefcase(requestContext, iModelRpcProps);
     requestContext.enter();
 
-    return iModelToken;
+    return iModelRpcProps;
   }
 
   /**
@@ -2022,7 +2022,7 @@ export class BriefcaseDb extends IModelDb {
    * @param version Version of the iModel to open
    * @internal
    */
-  public static async startDownloadBriefcase(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: string, openParams: OpenParams = OpenParams.pullAndPush(), version: IModelVersion = IModelVersion.latest()): Promise<IModelToken> {
+  public static async startDownloadBriefcase(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: string, openParams: OpenParams = OpenParams.pullAndPush(), version: IModelVersion = IModelVersion.latest()): Promise<IModelRpcProps> {
     requestContext.enter();
 
     const changeSetId: string = await version.evaluateChangeSet(requestContext, iModelId, BriefcaseManager.imodelClient);
@@ -2038,15 +2038,14 @@ export class BriefcaseDb extends IModelDb {
       throw error;
     }
 
-    const iModelToken = new IModelToken(briefcaseEntry.getKey(), contextId, iModelId, changeSetId, openParams.openMode);
-    return iModelToken;
+    return { key: briefcaseEntry.getKey(), contextId, iModelId, changeSetId, openMode: openParams.openMode };
   }
 
   /**
    * Cancel the request to download a briefcase
    * @internal
    */
-  public static cancelDownloadBriefcase(iModelToken: IModelToken): boolean {
+  public static cancelDownloadBriefcase(iModelToken: IModelRpcProps): boolean {
     const briefcaseEntry = BriefcaseManager.findBriefcaseByKey(iModelToken.key);
     if (briefcaseEntry === undefined)
       throw new IModelError(IModelStatus.BadRequest, "Cannot cancel download for a briefcase that not started to download", Logger.logError, loggerCategory, () => iModelToken);
@@ -2063,7 +2062,7 @@ export class BriefcaseDb extends IModelDb {
    * @throws [[IModelError]] If unable to delete the briefcase. The briefcase must have been completely downloaded and must be closed.
    * @internal
    */
-  public static async deleteBriefcase(requestContext: AuthorizedClientRequestContext, iModelToken: IModelToken): Promise<void> {
+  public static async deleteBriefcase(requestContext: AuthorizedClientRequestContext, iModelToken: IModelRpcProps): Promise<void> {
     const briefcaseEntry = BriefcaseManager.findBriefcaseByKey(iModelToken.key);
     if (briefcaseEntry === undefined)
       throw new IModelError(IModelStatus.BadRequest, "Cannot delete a briefcase that not been downloaded", Logger.logError, loggerCategory, () => iModelToken);
@@ -2079,7 +2078,7 @@ export class BriefcaseDb extends IModelDb {
    * Finish downloading the briefcase
    * @param briefcase
    */
-  public static async finishDownloadBriefcase(requestContext: AuthorizedClientRequestContext, iModelToken: IModelToken): Promise<void> {
+  public static async finishDownloadBriefcase(requestContext: AuthorizedClientRequestContext, iModelToken: IModelRpcProps): Promise<void> {
     requestContext.enter();
 
     const briefcaseEntry = BriefcaseManager.findBriefcaseByKey(iModelToken.key);
@@ -2115,7 +2114,7 @@ export class BriefcaseDb extends IModelDb {
    * @param briefcaseEntry Downloaded briefcase - see [[downloadBriefcase]]
    * @internal
    */
-  public static async openBriefcase(requestContext: AuthorizedClientRequestContext | ClientRequestContext, iModelToken: IModelToken): Promise<BriefcaseDb> {
+  public static async openBriefcase(requestContext: AuthorizedClientRequestContext | ClientRequestContext, iModelToken: IModelRpcProps): Promise<BriefcaseDb> {
     requestContext.enter();
 
     const briefcaseEntry = BriefcaseManager.findBriefcaseByKey(iModelToken.key);
@@ -2231,9 +2230,9 @@ export class BriefcaseDb extends IModelDb {
   public async pushChanges(requestContext: AuthorizedClientRequestContext, description: string): Promise<void> {
     requestContext.enter();
     if (this.nativeDb.hasUnsavedChanges())
-      return Promise.reject(new IModelError(ChangeSetStatus.HasUncommittedChanges, "Cannot push changeset with unsaved changes", Logger.logError, loggerCategory, () => this.getRpcTokenProps()));
+      return Promise.reject(new IModelError(ChangeSetStatus.HasUncommittedChanges, "Cannot push changeset with unsaved changes", Logger.logError, loggerCategory, () => this.getRpcProps()));
     if (this.openParams.syncMode !== SyncMode.PullAndPush)
-      throw new IModelError(BentleyStatus.ERROR, "IModel was not opened with SyncMode = PullAndPush", Logger.logError, loggerCategory, () => this.getRpcTokenProps());
+      throw new IModelError(BentleyStatus.ERROR, "IModel was not opened with SyncMode = PullAndPush", Logger.logError, loggerCategory, () => this.getRpcProps());
     if (!this.nativeDb.hasSavedChanges())
       return Promise.resolve(); // nothing to push
 
@@ -2361,8 +2360,8 @@ export class SnapshotDb extends IModelDb {
 
   private constructor(nativeDb: IModelJsNative.DgnDb, openParams: OpenParams) {
     const filePath: string = nativeDb.getFilePath();
-    const iModelToken = new IModelToken(filePath, undefined, nativeDb.getDbGuid(), "", openParams.openMode);
-    super(nativeDb, iModelToken, openParams);
+    const iModelRpcProps: IModelRpcProps = { key: filePath, iModelId: nativeDb.getDbGuid(), changeSetId: "", openMode: openParams.openMode };
+    super(nativeDb, iModelRpcProps, openParams);
     const briefcaseId: BriefcaseId = this.getBriefcaseId();
     if ((ReservedBriefcaseId.Snapshot !== briefcaseId) && (ReservedBriefcaseId.CheckpointSnapshot !== briefcaseId)) {
       throw new IModelError(IModelStatus.BadRequest, "Not a snapshot iModel", Logger.logError, loggerCategory);
@@ -2524,8 +2523,8 @@ export class StandaloneDb extends IModelDb {
 
   private constructor(nativeDb: IModelJsNative.DgnDb, openParams: OpenParams) {
     const filePath: string = nativeDb.getFilePath();
-    const iModelToken = new IModelToken(filePath, undefined, nativeDb.getDbGuid(), "", openParams.openMode);
-    super(nativeDb, iModelToken, openParams);
+    const iModelRpcProps: IModelRpcProps = { key: filePath, iModelId: nativeDb.getDbGuid(), openMode: openParams.openMode };
+    super(nativeDb, iModelRpcProps, openParams);
     const briefcaseId: BriefcaseId = this.getBriefcaseId();
     switch (briefcaseId) {
       case ReservedBriefcaseId.FutureStandalone:

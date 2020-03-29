@@ -7,7 +7,7 @@ import * as faker from "faker";
 import * as moq from "./_helpers/Mocks";
 import { createRandomDescriptor, createRandomECInstancesNodeKey, createRandomECInstanceKey } from "./_helpers/random";
 import { using, Id64String } from "@bentley/bentleyjs-core";
-import { RpcRegistry, RpcOperation, RpcRequest, RpcSerializedValue, IModelTokenProps } from "@bentley/imodeljs-common";
+import { RpcRegistry, RpcOperation, RpcRequest, RpcSerializedValue, IModelRpcProps } from "@bentley/imodeljs-common";
 import {
   PresentationRpcInterface,
   KeySet, Paged,
@@ -24,7 +24,7 @@ describe("PresentationRpcInterface", () => {
   }
 
   it("finds imodel tokens in RPC requests", () => {
-    const token: IModelTokenProps = { key: "test", iModelId: "test", contextId: "test" };
+    const token: IModelRpcProps = { key: "test", iModelId: "test", contextId: "test" };
     const parameters = [
       token,
       { rulesetOrId: faker.random.word() },
@@ -52,7 +52,7 @@ describe("PresentationRpcInterface", () => {
 
     let rpcInterface: PresentationRpcInterface;
     let mock: moq.IMock<(<T>(parameters: IArguments) => Promise<T>)>;
-    const token: IModelTokenProps = { key: "test", iModelId: "test", contextId: "test" };
+    const token: IModelRpcProps = { key: "test", iModelId: "test", contextId: "test" };
     const defaultRpcOptions: PresentationRpcRequestOptions = {};
 
     beforeEach(() => {

@@ -247,7 +247,7 @@ export class AutoPush {
     this._state = AutoPushState.NotRunning;
     this._pendingTimeout = undefined;
     this._lastPushError = undefined;
-    Logger.logTrace(loggerCategory, "AutoPush - pushed.", () => this._iModel.getRpcTokenProps());
+    Logger.logTrace(loggerCategory, "AutoPush - pushed.", () => this._iModel.getRpcProps());
     if (this._autoSchedule)
       this.scheduleNextPush();
     if (this.event)

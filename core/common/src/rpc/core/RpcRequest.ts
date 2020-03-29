@@ -14,7 +14,7 @@ import { RpcConfiguration } from "./RpcConfiguration";
 import { RpcMarshaling, RpcSerializedValue } from "./RpcMarshaling";
 import { CURRENT_REQUEST } from "./RpcRegistry";
 import { RpcNotFoundResponse } from "./RpcControl";
-import { IModelTokenProps } from "../../IModel";
+import { IModelRpcProps } from "../../IModel";
 import { IModelError, BackendError } from "../../IModelError";
 import { RpcResponseCacheControl, RpcRequestEvent, RpcRequestStatus, RpcProtocolEvent } from "./RpcConstants";
 import { CommonLoggerCategory } from "../../CommonLoggerCategory";
@@ -46,10 +46,10 @@ export class ResponseLike implements Response {
   }
 }
 
-/** Supplies an IModelTokenProps for an RPC request.
+/** Supplies an IModelRpcProps for an RPC request.
  * @public
  */
-export type RpcRequestTokenSupplier_T = (request: RpcRequest) => IModelTokenProps | undefined;
+export type RpcRequestTokenSupplier_T = (request: RpcRequest) => IModelRpcProps | undefined;
 
 /** Supplies the initial retry interval for an RPC request.
  * @public
@@ -214,8 +214,8 @@ export abstract class RpcRequest<TResponse = any> {
     return undefined;
   }
 
-  /** Finds the first IModelTokenProps parameter if present. */
-  public findTokenPropsParameter(): IModelTokenProps | undefined {
+  /** Finds the first IModelRpcProps parameter if present. */
+  public findTokenPropsParameter(): IModelRpcProps | undefined {
     if (RpcConfiguration.developmentMode) {
       return this.findParameterOfType({ iModelId: "string" });
     } else {

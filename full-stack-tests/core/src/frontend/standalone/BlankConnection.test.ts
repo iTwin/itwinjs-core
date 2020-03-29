@@ -41,7 +41,7 @@ describe("Blank Connection", () => {
     assert.isTrue(blankConnection.isClosed, "A BlankConnection is always considered closed");
     assert.isUndefined(blankConnection.iModelId);
     assert.equal(contextId, blankConnection.contextId);
-    assert.throws(() => blankConnection.getRpcTokenProps());
+    assert.throws(() => blankConnection.getRpcProps());
     const elementProps: ElementProps[] = await blankConnection.elements.getProps(IModel.rootSubjectId);
     assert.equal(0, elementProps.length);
   });

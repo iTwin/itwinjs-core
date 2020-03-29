@@ -9,7 +9,7 @@
 import { AbandonedError, Id64Array } from "@bentley/bentleyjs-core";
 import { CloudStorageContainerDescriptor, CloudStorageContainerUrl } from "../CloudStorage";
 import { CloudStorageTileCache } from "../CloudStorageTileCache";
-import { IModelTokenProps, IModelToken } from "../IModel";
+import { IModelRpcProps } from "../IModel";
 import { RpcInterface } from "../RpcInterface";
 import { RpcManager } from "../RpcManager";
 import { TileTreeProps } from "../TileProps";
@@ -30,14 +30,14 @@ export abstract class IModelTileRpcInterface extends RpcInterface {
   ===========================================================================================*/
 
   /** @beta */
-  public async getTileCacheContainerUrl(_tokenProps: IModelTokenProps, _id: CloudStorageContainerDescriptor): Promise<CloudStorageContainerUrl> {
+  public async getTileCacheContainerUrl(_tokenProps: IModelRpcProps, _id: CloudStorageContainerDescriptor): Promise<CloudStorageContainerUrl> {
     return this.forward(arguments);
   }
 
   /** @internal */
-  public async requestTileTreeProps(_tokenProps: IModelTokenProps, _id: string): Promise<TileTreeProps> { return this.forward(arguments); }
+  public async requestTileTreeProps(_tokenProps: IModelRpcProps, _id: string): Promise<TileTreeProps> { return this.forward(arguments); }
   /** @internal */
-  public async requestTileContent(iModelToken: IModelTokenProps, treeId: string, contentId: string, isCanceled?: () => boolean, guid?: string): Promise<Uint8Array> {
+  public async requestTileContent(iModelToken: IModelRpcProps, treeId: string, contentId: string, isCanceled?: () => boolean, guid?: string): Promise<Uint8Array> {
     const cached = await IModelTileRpcInterface.checkCache(iModelToken, treeId, contentId, guid);
     if (undefined === cached && undefined !== isCanceled && isCanceled())
       throw new AbandonedError();
@@ -51,10 +51,9 @@ export abstract class IModelTileRpcInterface extends RpcInterface {
    * If no array of model Ids is supplied, it purges *all* tile trees, which can be quite inefficient.
    * @internal
    */
-  public async purgeTileTrees(_tokenProps: IModelTokenProps, _modelIds: Id64Array | undefined): Promise<void> { return this.forward(arguments); }
+  public async purgeTileTrees(_tokenProps: IModelRpcProps, _modelIds: Id64Array | undefined): Promise<void> { return this.forward(arguments); }
 
-  private static async checkCache(tokenProps: IModelTokenProps, treeId: string, contentId: string, guid: string | undefined): Promise<Uint8Array | undefined> {
-    const iModelToken = IModelToken.fromJSON(tokenProps);
-    return CloudStorageTileCache.getCache().retrieve({ iModelToken, treeId, contentId, guid });
+  private static async checkCache(tokenProps: IModelRpcProps, treeId: string, contentId: string, guid: string | undefined): Promise<Uint8Array | undefined> {
+    return CloudStorageTileCache.getCache().retrieve({ tokenProps, treeId, contentId, guid });
   }
 }

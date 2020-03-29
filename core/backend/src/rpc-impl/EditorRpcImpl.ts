@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module RpcInterface */
-import { RpcInterface, RpcManager, IModelTokenProps, Editor3dRpcInterface, BentleyError, IModelStatus, GeometricElement3dProps } from "@bentley/imodeljs-common";
+import { RpcInterface, RpcManager, IModelRpcProps, Editor3dRpcInterface, BentleyError, IModelStatus, GeometricElement3dProps } from "@bentley/imodeljs-common";
 import { IModelHost } from "../IModelHost";
 import { GeometricElement3dEditor } from "../ElementEditor";
 import { IModelDb } from "../IModelDb";
@@ -22,38 +22,38 @@ function getEditor(editorId: GuidString): GeometricElement3dEditor {
 export class Editor3dRpcImpl extends RpcInterface implements Editor3dRpcInterface {
   public static register() { RpcManager.registerImpl(Editor3dRpcInterface, Editor3dRpcImpl); }
 
-  public async start(tokenProps: IModelTokenProps, editorId: GuidString): Promise<void> {
+  public async start(tokenProps: IModelRpcProps, editorId: GuidString): Promise<void> {
     const iModelDb = IModelDb.findByKey(tokenProps.key);
     IModelHost.elementEditors.set(editorId, new GeometricElement3dEditor(iModelDb));
   }
 
-  public async end(_tokenProps: IModelTokenProps, editorId: GuidString): Promise<void> {
+  public async end(_tokenProps: IModelRpcProps, editorId: GuidString): Promise<void> {
     getEditor(editorId).end();
     IModelHost.elementEditors.delete(editorId);
   }
 
-  public async writeAllChangesToBriefcase(_tokenProps: IModelTokenProps, editorId: GuidString): Promise<void> {
+  public async writeAllChangesToBriefcase(_tokenProps: IModelRpcProps, editorId: GuidString): Promise<void> {
     getEditor(editorId).writeAllChangesToBriefcase();
   }
 
-  public async startModifyingElements(_tokenProps: IModelTokenProps, editorId: GuidString, elementIds: Id64Array): Promise<void> {
+  public async startModifyingElements(_tokenProps: IModelRpcProps, editorId: GuidString, elementIds: Id64Array): Promise<void> {
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
     return getEditor(editorId).startModifyingElements(requestContext, elementIds);
   }
 
-  public async createElement(_tokenProps: IModelTokenProps, editorId: GuidString, props: GeometricElement3dProps, origin?: Point3d, angles?: YawPitchRollAngles, geometry?: any): Promise<void> {
+  public async createElement(_tokenProps: IModelRpcProps, editorId: GuidString, props: GeometricElement3dProps, origin?: Point3d, angles?: YawPitchRollAngles, geometry?: any): Promise<void> {
     getEditor(editorId).createElement(props, origin, angles, geometry);
   }
 
-  public async applyTransform(_tokenProps: IModelTokenProps, editorId: GuidString, transformProps: TransformProps) {
+  public async applyTransform(_tokenProps: IModelRpcProps, editorId: GuidString, transformProps: TransformProps) {
     getEditor(editorId).applyTransform(transformProps);
   }
 
-  public async pushState(_tokenProps: IModelTokenProps, editorId: GuidString): Promise<void> {
+  public async pushState(_tokenProps: IModelRpcProps, editorId: GuidString): Promise<void> {
     getEditor(editorId).pushState();
   }
 
-  public async popState(_tokenProps: IModelTokenProps, editorId: GuidString): Promise<void> {
+  public async popState(_tokenProps: IModelRpcProps, editorId: GuidString): Promise<void> {
     getEditor(editorId).popState();
   }
 

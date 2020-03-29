@@ -14,7 +14,7 @@ import {
   IModelTileRpcInterface,
   IModelTileTreeId,
   iModelTileTreeIdToString,
-  IModelTokenProps,
+  IModelRpcProps,
   ModelProps,
   RelatedElementProps,
   ServerTimeoutError,
@@ -1048,7 +1048,7 @@ describe("TileAdmin", () => {
 
         const intfc = IModelTileRpcInterface.getClient();
         const requestTileContent = intfc.requestTileContent;
-        intfc.requestTileContent = async (_token: IModelTokenProps, tileTreeId: string, _contentId: string, _isCanceled: () => boolean, guid?: string) => {
+        intfc.requestTileContent = async (_token: IModelRpcProps, tileTreeId: string, _contentId: string, _isCanceled: () => boolean, guid?: string) => {
           expect(tileTreeId).to.equal(treeId);
 
           expect(guid).not.to.be.undefined;

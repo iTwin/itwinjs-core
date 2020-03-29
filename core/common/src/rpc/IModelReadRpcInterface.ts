@@ -12,7 +12,7 @@ import { RpcInterface } from "../RpcInterface";
 import { RpcManager } from "../RpcManager";
 import { RpcNotFoundResponse } from "./core/RpcControl";
 import { EntityQueryParams } from "../EntityProps";
-import { IModelTokenProps, IModelProps } from "../IModel";
+import { IModelRpcProps, IModelConnectionProps } from "../IModel";
 import { ModelProps } from "../ModelProps";
 import { ElementProps } from "../ElementProps";
 import { SnapRequestProps, SnapResponseProps } from "../Snapping";
@@ -33,7 +33,7 @@ export class IModelNotFoundResponse extends RpcNotFoundResponse {
 /** The RPC interface for reading from an iModel.
  * All operations only require read-only access.
  * This interface is not normally used directly. See IModelConnection for higher-level and more convenient API for accessing iModels from a frontend.
- * @public
+ * @internal
  */
 export abstract class IModelReadRpcInterface extends RpcInterface {
   /** Returns the IModelReadRpcInterface instance for the frontend. */
@@ -49,32 +49,32 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     NOTE: Any add/remove/change to the methods below requires an update of the interface version.
     NOTE: Please consult the README in this folder for the semantic versioning rules.
   ===========================================================================================*/
-  public async openForRead(_iModelToken: IModelTokenProps): Promise<IModelProps> { return this.forward(arguments); }
-  public async close(_iModelToken: IModelTokenProps): Promise<boolean> { return this.forward(arguments); }
-  public async queryRows(_iModelToken: IModelTokenProps, _ecsql: string, _bindings?: any[] | object, _limit?: QueryLimit, _quota?: QueryQuota, _priority?: QueryPriority): Promise<QueryResponse> { return this.forward(arguments); }
-  public async getModelProps(_iModelToken: IModelTokenProps, _modelIds: Id64String[]): Promise<ModelProps[]> { return this.forward(arguments); }
-  public async queryModelRanges(_iModelToken: IModelTokenProps, _modelIds: Id64String[]): Promise<Range3dProps[]> { return this.forward(arguments); }
-  public async queryModelProps(_iModelToken: IModelTokenProps, _params: EntityQueryParams): Promise<ModelProps[]> { return this.forward(arguments); }
-  public async getElementProps(_iModelToken: IModelTokenProps, _elementIds: Id64String[]): Promise<ElementProps[]> { return this.forward(arguments); }
-  public async queryElementProps(_iModelToken: IModelTokenProps, _params: EntityQueryParams): Promise<ElementProps[]> { return this.forward(arguments); }
-  public async queryEntityIds(_iModelToken: IModelTokenProps, _params: EntityQueryParams): Promise<Id64String[]> { return this.forward(arguments); }
-  public async getClassHierarchy(_iModelToken: IModelTokenProps, _startClassName: string): Promise<string[]> { return this.forward(arguments); }
-  public async getAllCodeSpecs(_iModelToken: IModelTokenProps): Promise<any[]> { return this.forward(arguments); }
-  public async getViewStateData(_iModelToken: IModelTokenProps, _viewDefinitionId: string): Promise<ViewStateProps> { return this.forward(arguments); }
-  public async readFontJson(_iModelToken: IModelTokenProps): Promise<any> { return this.forward(arguments); }
-  public async getToolTipMessage(_iModelToken: IModelTokenProps, _elementId: string): Promise<string[]> { return this.forward(arguments); }
-  public async getViewThumbnail(_iModelToken: IModelTokenProps, _viewId: string): Promise<Uint8Array> { return this.forward(arguments); }
-  public async getDefaultViewId(_iModelToken: IModelTokenProps): Promise<Id64String> { return this.forward(arguments); }
+  public async openForRead(_iModelToken: IModelRpcProps): Promise<IModelConnectionProps> { return this.forward(arguments); }
+  public async close(_iModelToken: IModelRpcProps): Promise<boolean> { return this.forward(arguments); }
+  public async queryRows(_iModelToken: IModelRpcProps, _ecsql: string, _bindings?: any[] | object, _limit?: QueryLimit, _quota?: QueryQuota, _priority?: QueryPriority): Promise<QueryResponse> { return this.forward(arguments); }
+  public async getModelProps(_iModelToken: IModelRpcProps, _modelIds: Id64String[]): Promise<ModelProps[]> { return this.forward(arguments); }
+  public async queryModelRanges(_iModelToken: IModelRpcProps, _modelIds: Id64String[]): Promise<Range3dProps[]> { return this.forward(arguments); }
+  public async queryModelProps(_iModelToken: IModelRpcProps, _params: EntityQueryParams): Promise<ModelProps[]> { return this.forward(arguments); }
+  public async getElementProps(_iModelToken: IModelRpcProps, _elementIds: Id64String[]): Promise<ElementProps[]> { return this.forward(arguments); }
+  public async queryElementProps(_iModelToken: IModelRpcProps, _params: EntityQueryParams): Promise<ElementProps[]> { return this.forward(arguments); }
+  public async queryEntityIds(_iModelToken: IModelRpcProps, _params: EntityQueryParams): Promise<Id64String[]> { return this.forward(arguments); }
+  public async getClassHierarchy(_iModelToken: IModelRpcProps, _startClassName: string): Promise<string[]> { return this.forward(arguments); }
+  public async getAllCodeSpecs(_iModelToken: IModelRpcProps): Promise<any[]> { return this.forward(arguments); }
+  public async getViewStateData(_iModelToken: IModelRpcProps, _viewDefinitionId: string): Promise<ViewStateProps> { return this.forward(arguments); }
+  public async readFontJson(_iModelToken: IModelRpcProps): Promise<any> { return this.forward(arguments); }
+  public async getToolTipMessage(_iModelToken: IModelRpcProps, _elementId: string): Promise<string[]> { return this.forward(arguments); }
+  public async getViewThumbnail(_iModelToken: IModelRpcProps, _viewId: string): Promise<Uint8Array> { return this.forward(arguments); }
+  public async getDefaultViewId(_iModelToken: IModelRpcProps): Promise<Id64String> { return this.forward(arguments); }
   /** @beta */
-  public async requestSnap(_iModelToken: IModelTokenProps, _sessionId: string, _props: SnapRequestProps): Promise<SnapResponseProps> { return this.forward(arguments); }
+  public async requestSnap(_iModelToken: IModelRpcProps, _sessionId: string, _props: SnapRequestProps): Promise<SnapResponseProps> { return this.forward(arguments); }
   /** @beta */
-  public async cancelSnap(_iModelToken: IModelTokenProps, _sessionId: string): Promise<void> { return this.forward(arguments); }
+  public async cancelSnap(_iModelToken: IModelRpcProps, _sessionId: string): Promise<void> { return this.forward(arguments); }
   /** @beta */
-  public async getMassProperties(_iModelToken: IModelTokenProps, _props: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps> { return this.forward(arguments); }
+  public async getMassProperties(_iModelToken: IModelRpcProps, _props: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps> { return this.forward(arguments); }
   /** @beta */
-  public async getIModelCoordinatesFromGeoCoordinates(_iModelToken: IModelTokenProps, _props: string): Promise<IModelCoordinatesResponseProps> { return this.forward(arguments); }
+  public async getIModelCoordinatesFromGeoCoordinates(_iModelToken: IModelRpcProps, _props: string): Promise<IModelCoordinatesResponseProps> { return this.forward(arguments); }
   /** @beta */
-  public async getGeoCoordinatesFromIModelCoordinates(_iModelToken: IModelTokenProps, _props: string): Promise<GeoCoordinatesResponseProps> { return this.forward(arguments); }
+  public async getGeoCoordinatesFromIModelCoordinates(_iModelToken: IModelRpcProps, _props: string): Promise<GeoCoordinatesResponseProps> { return this.forward(arguments); }
   /** @alpha */
-  public async getGeometrySummary(_iModelToken: IModelTokenProps, _props: GeometrySummaryRequestProps): Promise<string> { return this.forward(arguments); }
+  public async getGeometrySummary(_iModelToken: IModelRpcProps, _props: GeometrySummaryRequestProps): Promise<string> { return this.forward(arguments); }
 }

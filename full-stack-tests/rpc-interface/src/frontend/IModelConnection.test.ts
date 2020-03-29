@@ -42,8 +42,8 @@ describe("IModel Connection", () => {
 
     expect(iModel).to.exist.and.be.not.empty;
 
-    const tokenProps = iModel.getRpcTokenProps();
-    expect(tokenProps).to.exist.and.be.not.empty;
+    const iModelRpcProps = iModel.getRpcProps();
+    expect(iModelRpcProps).to.exist.and.be.not.empty;
   });
 
   it("should successfully close an open an IModelConnection", async () => {
@@ -230,7 +230,7 @@ describe("IModelReadRpcInterface Methods requestable from an IModelConnection", 
   it("IModelReadRpcInterface method getGeometrySummary should work as expected", async () => {
     const ids: Id64Set = await iModel.elements.queryIds({ limit: 10, from: "BisCore:Subject" });
     const id = ids.values().next().value;
-    const result = await IModelReadRpcInterface.getClient().getGeometrySummary(iModel.getRpcTokenProps(), { elementIds: [id], options: {} });
+    const result = await IModelReadRpcInterface.getClient().getGeometrySummary(iModel.getRpcProps(), { elementIds: [id], options: {} });
     expect(result).to.not.be.undefined;
   });
 
@@ -382,7 +382,7 @@ describe("IModelReadRpcInterface Methods requestable from an IModelConnection", 
       operation: MassPropertiesOperation.AccumulateVolumes,
     };
 
-    const result = await IModelReadRpcInterface.getClient().getMassProperties(iModel.getRpcTokenProps(), requestProps);
+    const result = await IModelReadRpcInterface.getClient().getMassProperties(iModel.getRpcProps(), requestProps);
     expect(result).to.not.be.null;
   });
 });
@@ -418,7 +418,7 @@ describe("Snapping", () => {
       worldToView: worldToView.toJSON(),
     };
 
-    const snap = await IModelReadRpcInterface.getClient().requestSnap(iModel.getRpcTokenProps(), id, snapProps);
+    const snap = await IModelReadRpcInterface.getClient().requestSnap(iModel.getRpcProps(), id, snapProps);
 
     expect(snap.status).to.not.be.undefined;
   });
@@ -436,8 +436,8 @@ describe("Snapping", () => {
     };
 
     const requestSnapPromises: Array<Promise<SnapResponseProps>> = [];
-    requestSnapPromises.push(IModelReadRpcInterface.getClient().requestSnap(iModel.getRpcTokenProps(), id, snapProps));
-    await IModelReadRpcInterface.getClient().cancelSnap(iModel.getRpcTokenProps(), id);
+    requestSnapPromises.push(IModelReadRpcInterface.getClient().requestSnap(iModel.getRpcProps(), id, snapProps));
+    await IModelReadRpcInterface.getClient().cancelSnap(iModel.getRpcProps(), id);
 
     try {
       const snaps = await Promise.all(requestSnapPromises);

@@ -151,7 +151,7 @@ export class InspectElementTool extends PrimitiveTool {
     };
     let messageDetails: NotifyMessageDetails;
     try {
-      const str = await IModelReadRpcInterface.getClient().getGeometrySummary(this.iModel.getRpcTokenProps(), request);
+      const str = await IModelReadRpcInterface.getClient().getGeometrySummary(this.iModel.getRpcProps(), request);
       if (this._doCopy)
         copyStringToClipboard(str);
 
