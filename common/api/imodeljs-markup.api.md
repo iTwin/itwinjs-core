@@ -234,7 +234,7 @@ export class MarkupApp {
     // @internal (undocumented)
     static get dynamicsClass(): string;
     // (undocumented)
-    static getActionName(action: string): any;
+    static getActionName(action: string): string;
     // (undocumented)
     static getVpToScreenMtx(): Matrix;
     // (undocumented)

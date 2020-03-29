@@ -100,17 +100,26 @@ export class I18N {
    * const dataString: string = IModelApp.i18n.translate("iModelJs:BackgroundMap.BingDataAttribution");
    *  ```
    * assigns to dataString the string with property BackgroundMap.BingDataAttribution from the iModelJs.json localization file.
+   * @returns The string corresponding to the first key that resolves.
+   * @throws Error if no keys resolve to a string.
    * @public
    */
-  public translate(key: string | string[], options?: i18next.TranslationOptions): any { return this._i18next.t(key, options); }
+  public translate(key: string | string[], options?: i18next.TranslationOptions): string {
+    const value = this._i18next.t(key, options);
+    if (typeof value !== "string")
+      throw new Error("Translation key(s) not found");
+
+    return value;
+  }
 
   /** Similar to 'translate()' but the namespace is a separate param and the key does not include the namespace.
    * @param namespace - the namespace that identifies the particular localization file that contains the property.
    * @param key - the key that matches a property in the JSON localization file.
-   *
+   * @returns The string corresponding to the first key that resolves.
+   * @throws Error if no keys resolve to a string.
    * @internal
    */
-  public translateWithNamespace(namespace: string, key: string | string[], options?: TranslationOptions): any {
+  public translateWithNamespace(namespace: string, key: string | string[], options?: TranslationOptions): string {
     let fullKey: string | string[] = "";
 
     if (typeof key === "string") {
@@ -127,12 +136,16 @@ export class I18N {
   /** Gets the English translation.
    * @param namespace - the namespace that identifies the particular localization file that contains the property.
    * @param key - the key that matches a property in the JSON localization file.
-   *
+   * @returns The string corresponding to the first key that resolves.
+   * @throws Error if no keys resolve to a string.
    * @internal
    */
-  public getEnglishTranslation(namespace: string, key: string | string[], options?: TranslationOptions): any {
+  public getEnglishTranslation(namespace: string, key: string | string[], options?: TranslationOptions): string {
     const en = this._i18next.getFixedT("en", namespace);
     const str = en(key, options);
+    if (typeof str !== "string")
+      throw new Error("Translation key(s) not found");
+
     return str;
   }
 

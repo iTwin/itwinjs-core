@@ -10,16 +10,16 @@ import * as i18next from 'i18next';
 export class I18N {
     constructor(nameSpaces?: string | string[], options?: I18NOptions, renderFunction?: i18next.Callback);
     // @internal
-    getEnglishTranslation(namespace: string, key: string | string[], options?: TranslationOptions): any;
+    getEnglishTranslation(namespace: string, key: string | string[], options?: TranslationOptions): string;
     // @internal (undocumented)
     languageList(): string[];
     // @internal (undocumented)
     loadNamespace(name: string, i18nCallback: any): void;
     registerNamespace(name: string): I18NNamespace;
-    translate(key: string | string[], options?: i18next.TranslationOptions): any;
+    translate(key: string | string[], options?: i18next.TranslationOptions): string;
     translateKeys(line: string): string;
     // @internal
-    translateWithNamespace(namespace: string, key: string | string[], options?: TranslationOptions): any;
+    translateWithNamespace(namespace: string, key: string | string[], options?: TranslationOptions): string;
     // @internal (undocumented)
     unregisterNamespace(name: string): void;
     // @internal

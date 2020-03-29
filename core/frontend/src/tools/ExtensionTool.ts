@@ -30,7 +30,9 @@ export class ExtensionTool extends Tool {
         .then(ExtensionTool.showLoadProblems.bind(null, args[0]))
         .catch((_err: any) => {
           // this should happen only on completely unexpected errors.
-          IModelApp.notifications.outputMessage(IModelApp.i18n.translate("iModelJs:ExtensionErrors.UnableToLoad", { extensionName: args[0] }));
+          const briefMessage = IModelApp.i18n.translate("iModelJs:ExtensionErrors.UnableToLoad", { extensionName: args[0] });
+          const errorDetails = new NotifyMessageDetails(OutputMessagePriority.Error, briefMessage);
+          IModelApp.notifications.outputMessage(errorDetails);
         });
     }
     return true;

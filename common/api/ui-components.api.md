@@ -1109,9 +1109,9 @@ export class DayPicker extends React.Component<DayPickerProps, DayPickerState> {
     // (undocumented)
     static isSameDay(a: Date, b: Date): boolean;
     // (undocumented)
-    longDayName(dayOfWeek: number): any;
+    longDayName(dayOfWeek: number): string;
     // (undocumented)
-    longMonthName(month: number): any;
+    longMonthName(month: number): string;
     // (undocumented)
     nextMonth: () => void;
     // (undocumented)
@@ -1127,7 +1127,7 @@ export class DayPicker extends React.Component<DayPickerProps, DayPickerState> {
     // (undocumented)
     renderWeek: (days: any, index: number) => JSX.Element;
     // (undocumented)
-    shortDayName(dayOfWeek: number): any;
+    shortDayName(dayOfWeek: number): string;
     // (undocumented)
     get weeks(): (Date | null)[][];
 }

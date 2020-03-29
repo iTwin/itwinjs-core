@@ -1793,7 +1793,7 @@ export class CoreTools {
     // (undocumented)
     static tools: string;
     // (undocumented)
-    static translate(prompt: string): any;
+    static translate(prompt: string): string;
 }
 
 // @internal (undocumented)
@@ -4771,7 +4771,7 @@ export class MeasureAreaByPointsTool extends PrimitiveTool {
     // (undocumented)
     decorateSuspended(context: DecorateContext): void;
     // (undocumented)
-    protected static enumAsOrientationMessage(str: string): any;
+    protected static enumAsOrientationMessage(str: string): string;
     // (undocumented)
     protected static _getEnumAsOrientationDescription: () => PropertyDescription;
     // (undocumented)
@@ -9725,7 +9725,7 @@ export class ViewClipTool extends PrimitiveTool {
     // (undocumented)
     static enableClipVolume(viewport: Viewport): boolean;
     // (undocumented)
-    protected static enumAsOrientationMessage(str: string): any;
+    protected static enumAsOrientationMessage(str: string): string;
     // (undocumented)
     static getClipRayTransformed(origin: Point3d, direction: Vector3d, transform?: Transform): Ray3d;
     // (undocumented)
@@ -10966,7 +10966,7 @@ export abstract class ViewTool extends InteractiveTool {
     // (undocumented)
     static showPrompt(prompt: string): void;
     // (undocumented)
-    static translate(val: string): any;
+    static translate(val: string): string;
     // (undocumented)
     viewport?: ScreenViewport | undefined;
 }
