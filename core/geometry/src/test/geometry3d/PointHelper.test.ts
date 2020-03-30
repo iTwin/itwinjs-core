@@ -48,15 +48,8 @@ describe("FrameBuilder", () => {
     ck.testFalse(builder.hasOrigin, "frameBuilder.hasOrigin at start");
 
     for (const points of [
-      [Point3d.create(0, 0, 0),
-        Point3d.create(1, 0, 0),
-        Point3d.create(0, 1, 0)],
-      [Point3d.create(0, 0, 0),
-        Point3d.create(1, 0, 0),
-        Point3d.create(1, 1, 0)],
-      [Point3d.create(1, 2, -1),
-        Point3d.create(1, 3, 5),
-        Point3d.create(-2, 1, 7)],
+      [Point3d.create(0, 0, 0), Point3d.create(1, 0, 0), Point3d.create(0, 1, 0)], [Point3d.create(0, 0, 0), Point3d.create(1, 0, 0),
+        /* */ Point3d.create(1, 1, 0)], [Point3d.create(1, 2, -1), Point3d.create(1, 3, 5), Point3d.create(-2, 1, 7)],
     ]) {
       builder.clear();
       const point0 = points[0];
@@ -652,10 +645,7 @@ describe("Point3dArray", () => {
 
   it("Point3dArrayCarrierBadIndex", () => {
     const ck = new Checker();
-    const carrier = new Point3dArrayCarrier([Point3d.create(1, 2, 3),
-      Point3d.create(6, 2, 9),
-      Point3d.create(6, 2, 0),
-      Point3d.create(-4, 2, 8)]);
+    const carrier = new Point3dArrayCarrier([Point3d.create(1, 2, 3), Point3d.create(6, 2, 9), Point3d.create(6, 2, 0), Point3d.create(-4, 2, 8)]);
     const a = carrier.length;
     // These methods should return undefined if any index is bad.
     // (we know the index tests happen in a single validation function -- "some" calls need to test both extremes of out-of-bounds, but any particular arg only has to be tested in one direction)

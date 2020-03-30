@@ -84,7 +84,7 @@ describe("ConvexPolygon2d", () => {
       Point2d.create(0, 10),
     ];
 
-    const hull = ConvexPolygon2d.createHull(points);
+    const hull = ConvexPolygon2d.createHull(points)!;
     checkHullRaysFromCentroid(hull, ck);
 
     const rayA = Ray2d.createOriginAndDirection(Point2d.create(0, 5), Vector2d.create(2, 0));
@@ -179,7 +179,7 @@ describe("ConvexPolygon2d", () => {
       Point2d.create(13, 5),
     ];
     const insideBase = 5;
-    const hull = ConvexPolygon2d.createHull(points);
+    const hull = ConvexPolygon2d.createHull(points)!;
 
     for (let i = insideBase; i < points.length; i++) {
       ck.testTrue(hull.containsPoint(points[i]), "Point inside hull");
@@ -204,7 +204,7 @@ describe("ConvexPolygon2d", () => {
       points.push(lisajoue(theta * theta, a));
     }
 
-    const hull = ConvexPolygon2d.createHull(points);
+    const hull = ConvexPolygon2d.createHull(points)!;
 
     for (const i of points) {
       ck.testTrue(hull.containsPoint(i), "Point inside hull");
@@ -213,9 +213,9 @@ describe("ConvexPolygon2d", () => {
     // CheckHullChords (hull, hull.Points().size () / 3);   // This has nasty tolerance problems -- short edges, near-zero cross products
     checkHullRaysFromCentroid(hull, ck);
     const offsetDistance = 1.0;
-    const hull1 = ConvexPolygon2d.createHullIsValidCheck(hull.points);
+    const hull1 = ConvexPolygon2d.createHullIsValidCheck(hull.points)!;
     hull1.offsetInPlace(offsetDistance);
-    const hull2 = ConvexPolygon2d.createHullIsValidCheck(hull1.points);
+    const hull2 = ConvexPolygon2d.createHullIsValidCheck(hull1.points)!;
     hull2.offsetInPlace(0.01 * offsetDistance);
     const n = hull.points.length;
     ck.testExactNumber(n, countPointsInHull(hull1, hull.points));
@@ -229,6 +229,9 @@ describe("ConvexPolygon2d", () => {
   it("Ray2d", () => {
     const ck = new Checker();
     const ray0 = Ray2d.createOriginAndDirection(Point2d.create(2, 3), Vector2d.create(1, 4));
+    const pointA = Point2d.create(1, 2);
+    const ray1 = Ray2d.createOriginAndTarget(pointA, pointA);
+    ck.testFalse(ray1.normalizeDirectionInPlace());
     const perp0 = ray0.ccwPerpendicularRay();
     const perp1 = ray0.cwPerpendicularRay();
     ck.testCoordinate(ray0.direction.magnitude(), perp0.direction.magnitude());
@@ -247,4 +250,21 @@ describe("ConvexPolygon2d", () => {
     }
   });
 
+  it("ConvexPolygon2dEmptyCases", () => {
+    const ck = new Checker();
+    const sawPoints = [];
+    const highRay = Ray2d.createOriginAndDirection(Point2d.create(0, 2), Vector2d.create(1, 0));
+    for (let k = 0; k < 3; k++) {
+      sawPoints.push(Point2d.create(2 * k, 0));
+      sawPoints.push(Point2d.create(2 * k + 1, 1));
+      const hull1 = ConvexPolygon2d.createHullIsValidCheck(sawPoints);
+      ck.testDefined(hull1);
+      // first pass has insufficient points.
+      // all later ones are zig-zag
+      ck.testFalse(ConvexPolygon2d.isValidConvexHull(sawPoints));
+      const rayRange = hull1.clipRay(highRay);
+      ck.testTrue(rayRange.isNull);
+    }
+    expect(ck.getNumErrors()).equals(0);
+  });
 });

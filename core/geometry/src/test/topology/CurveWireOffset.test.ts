@@ -13,7 +13,7 @@ import { Sample } from "../../serialization/GeometrySamples";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 
-import { JointOptions } from "../../curve/PolygonOffsetContext";
+import { JointOptions } from "../../curve/internalContexts/PolygonOffsetContext";
 import { Loop } from "../../curve/Loop";
 import { AnyCurve } from "../../curve/CurveChain";
 import { Path } from "../../curve/Path";

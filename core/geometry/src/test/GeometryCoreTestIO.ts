@@ -20,7 +20,7 @@ import { Loop } from "../curve/Loop";
 import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
 import { UVSurface } from "../geometry3d/GeometryHandler";
 import { CurveLocationDetail, CurveLocationDetailPair } from "../curve/CurveLocationDetail";
-import { CurveChainWireOffsetContext } from "../curve/PolygonOffsetContext";
+import { CurveChainWireOffsetContext } from "../curve/internalContexts/PolygonOffsetContext";
 /* tslint:disable:no-console */
 
 // Methods (called from other files in the test suite) for doing I/O of tests files.

@@ -18,7 +18,7 @@ import { RegionOps } from "../../curve/RegionOps";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 
 import { Range3d, Range2d } from "../../geometry3d/Range";
-import { PolygonWireOffsetContext } from "../../curve/PolygonOffsetContext";
+import { PolygonWireOffsetContext } from "../../curve/internalContexts/PolygonOffsetContext";
 import { PolylineOps } from "../../geometry3d/PolylineOps";
 import { HalfEdgeGraph } from "../../topology/Graph";
 import { GraphChecker } from "./Graph.test";

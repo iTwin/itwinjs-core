@@ -1218,9 +1218,9 @@ export class ConvexClipPlaneSet implements Clipper {
 
 // @internal
 export class ConvexPolygon2d {
-    constructor(points: Point2d[]);
+    constructor(points: Point2d[] | undefined);
     clipRay(ray: Ray2d): Range1d;
-    static computeConvexHull(points: Point2d[]): Point2d[];
+    static computeConvexHull(points: Point2d[]): Point2d[] | undefined;
     containsPoint(point: Point2d): boolean;
     static createHull(points: Point2d[]): ConvexPolygon2d;
     static createHullIsValidCheck(points: Point2d[]): ConvexPolygon2d;
@@ -4270,7 +4270,7 @@ export class Ray2d {
     get direction(): Vector2d;
     fractionToPoint(f: number): Point2d;
     intersectUnboundedLine(linePointA: Point2d, linePointB: Point2d, fraction: number[], dHds: number[]): boolean;
-    normalizeDirectionInPlace(): boolean;
+    normalizeDirectionInPlace(defaultX?: number, defaultY?: number): boolean;
     get origin(): Point2d;
     parallelRay(leftFraction: number): Ray2d;
     perpendicularProjectionFraction(point: Point2d): number;

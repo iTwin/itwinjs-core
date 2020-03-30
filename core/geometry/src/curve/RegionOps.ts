@@ -19,7 +19,7 @@ import { HalfEdgeGraphMerge } from "../topology/Merging";
 import { HalfEdgeGraphSearch } from "../topology/HalfEdgeGraphSearch";
 import { Polyface } from "../polyface/Polyface";
 import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
-import { PolygonWireOffsetContext, JointOptions, CurveChainWireOffsetContext } from "./PolygonOffsetContext";
+import { PolygonWireOffsetContext, JointOptions, CurveChainWireOffsetContext } from "./internalContexts/PolygonOffsetContext";
 import { SortablePolygon } from "../geometry3d/SortablePolygon";
 import { CurveCollection, BagOfCurves, CurveChain, ConsolidateAdjacentCurvePrimitivesOptions } from "./CurveCollection";
 import { CurveWireMomentsXYZ } from "./CurveWireMomentsXYZ";

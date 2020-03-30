@@ -10,182 +10,20 @@ import { StrokeOptions } from "./StrokeOptions";
 import { GeometryQuery } from "./GeometryQuery";
 import { Range3d } from "../geometry3d/Range";
 import { Transform } from "../geometry3d/Transform";
-import { RecursiveCurveProcessor, RecursiveCurveProcessorWithStack } from "./CurveProcessor";
+import { RecursiveCurveProcessor } from "./CurveProcessor";
 import { AnyCurve } from "./CurveChain";
 import { CurvePrimitive } from "./CurvePrimitive";
-import { LineSegment3d } from "./LineSegment3d";
 import { LineString3d } from "./LineString3d";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { GeometryHandler } from "../geometry3d/GeometryHandler";
 import { Geometry } from "../Geometry";
 import { CurveLocationDetail } from "./CurveLocationDetail";
-
-// import { SumLengthsContext, GapSearchContext, CountLinearPartsSearchContext, CloneCurvesContext, TransformInPlaceContext } from "./CurveSearches";
-
-/** Algorithmic class: Accumulate maximum gap between adjacent primitives of CurveChain.
- */
-class GapSearchContext extends RecursiveCurveProcessorWithStack {
-  public maxGap: number;
-  constructor() { super(); this.maxGap = 0.0; }
-  public static maxGap(target: CurveCollection): number {
-    const context = new GapSearchContext();
-    target.announceToCurveProcessor(context);
-    return context.maxGap;
-  }
-  public announceCurvePrimitive(curve: CurvePrimitive, _indexInParent: number): void {
-    if (this._stack.length > 0) {
-      const parent = this._stack[this._stack.length - 1];
-      if (parent instanceof CurveChain) {
-        const chain = parent as CurveChain;
-        const nextCurve = chain.cyclicCurvePrimitive(_indexInParent + 1);
-        if (curve !== undefined && nextCurve !== undefined) {
-          this.maxGap = Math.max(this.maxGap, curve.endPoint().distance(nextCurve.startPoint()));
-        }
-      }
-    }
-  }
-}
-
-/** Algorithmic class: Count LineSegment3d and LineString3d primitives.
- */
-class CountLinearPartsSearchContext extends RecursiveCurveProcessorWithStack {
-  public numLineSegment: number;
-  public numLineString: number;
-  public numOther: number;
-  constructor() {
-    super();
-    this.numLineSegment = 0;
-    this.numLineString = 0;
-    this.numOther = 0;
-  }
-  public static hasNonLinearPrimitives(target: CurveCollection): boolean {
-    const context = new CountLinearPartsSearchContext();
-    target.announceToCurveProcessor(context);
-    return context.numOther > 0;
-  }
-  public announceCurvePrimitive(curve: CurvePrimitive, _indexInParent: number): void {
-    if (curve instanceof LineSegment3d)
-      this.numLineSegment++;
-    else if (curve instanceof LineString3d)
-      this.numLineString++;
-    else
-      this.numOther++;
-  }
-}
-
-/** Algorithmic class: Transform curves in place.
- */
-class TransformInPlaceContext extends RecursiveCurveProcessor {
-  public numFail: number;
-  public numOK: number;
-  public transform: Transform;
-  constructor(transform: Transform) { super(); this.numFail = 0; this.numOK = 0; this.transform = transform; }
-  public static tryTransformInPlace(target: CurveCollection, transform: Transform): boolean {
-    const context = new TransformInPlaceContext(transform);
-    target.announceToCurveProcessor(context);
-    return context.numFail === 0;
-  }
-  public announceCurvePrimitive(curvePrimitive: CurvePrimitive, _indexInParent: number): void {
-    if (!curvePrimitive.tryTransformInPlace(this.transform))
-      this.numFail++;
-    else
-      this.numOK++;
-  }
-}
-/** Algorithmic class: Sum lengths of curves */
-class SumLengthsContext extends RecursiveCurveProcessor {
-  private _sum: number;
-  private constructor() { super(); this._sum = 0.0; }
-  public static sumLengths(target: CurveCollection): number {
-    const context = new SumLengthsContext();
-    target.announceToCurveProcessor(context);
-    return context._sum;
-  }
-  public announceCurvePrimitive(curvePrimitive: CurvePrimitive, _indexInParent: number): void {
-    this._sum += curvePrimitive.curveLength();
-  }
-}
-/**
- * Algorithmic class for cloning curve collections.
- * * recurse through collection nodes, building image nodes as needed and inserting clones of children.
- * * for individual primitive, invoke doClone (protected) for direct clone; insert into parent
- */
-class CloneCurvesContext extends RecursiveCurveProcessorWithStack {
-  protected _result: CurveCollection | undefined;
-  private _transform: Transform | undefined;
-  protected constructor(transform?: Transform) {
-    super();
-    this._transform = transform;
-    this._result = undefined;
-  }
-  public static clone(target: CurveCollection, transform?: Transform): CurveCollection | undefined {
-    const context = new CloneCurvesContext(transform);
-    target.announceToCurveProcessor(context);
-    return context._result;
-  }
-  public enter(c: CurveCollection) {
-    if (c instanceof CurveCollection)
-      super.enter(c.cloneEmptyPeer());
-  }
-  public leave(): CurveCollection | undefined {
-    const result = super.leave();
-    if (result) {
-      if (this._stack.length === 0) // this should only happen once !!!
-        this._result = result as BagOfCurves;
-      else // push this result to top of stack.
-        this._stack[this._stack.length - 1].tryAddChild(result);
-    }
-    return result;
-  }
-  // specialized clone methods override this (and allow announceCurvePrimitive to insert to parent)
-  protected doClone(primitive: CurvePrimitive): CurvePrimitive | CurvePrimitive[] | undefined {
-    if (this._transform)
-      return primitive.cloneTransformed(this._transform) as CurvePrimitive;
-    return primitive.clone() as CurvePrimitive;
-  }
-
-  public announceCurvePrimitive(primitive: CurvePrimitive, _indexInParent: number): void {
-    const c = this.doClone(primitive);
-    if (c !== undefined && this._stack.length > 0) {
-      const parent = this._stack[this._stack.length - 1];
-      if (parent instanceof CurveChain || parent instanceof BagOfCurves)
-        if (Array.isArray(c)) {
-          for (const c1 of c) {
-            parent.tryAddChild(c1);
-          }
-        } else {
-          parent.tryAddChild(c);
-        }
-    }
-  }
-}
-/**
- * Algorithmic class for cloning with linestrings expanded to line segments
- */
-class CloneWithExpandedLineStrings extends CloneCurvesContext {
-  public constructor() {
-    // we have no transform ....
-    super(undefined);
-  }
-  // We know we have no transform !!!
-  protected doClone(primitive: CurvePrimitive): CurvePrimitive | CurvePrimitive[] | undefined {
-    if (primitive instanceof LineString3d && primitive.numPoints() > 1) {
-      const packedPoints = primitive.packedPoints;
-      const n = packedPoints.length;
-      const segments = [];
-      for (let i = 0; i + 1 < n; i++) {
-        segments.push(LineSegment3d.createCapture(packedPoints.getPoint3dAtUncheckedPointIndex(i), packedPoints.getPoint3dAtUncheckedPointIndex(i + 1)));
-      }
-      return segments;
-    }
-    return primitive.clone() as CurvePrimitive;
-  }
-  public static clone(target: CurveCollection): CurveCollection | undefined {
-    const context = new CloneWithExpandedLineStrings();
-    target.announceToCurveProcessor(context);
-    return context._result;
-  }
-}
+import { GapSearchContext } from "./internalContexts/GapSearchContext";
+import { CountLinearPartsSearchContext } from "./internalContexts/CountLinearPartsSearchContext";
+import { TransformInPlaceContext } from "./internalContexts/TransformInPlaceContext";
+import { SumLengthsContext } from "./internalContexts/SumLengthsContext";
+import { CloneCurvesContext } from "./internalContexts/CloneCurvesContext";
+import { CloneWithExpandedLineStrings } from "./internalContexts/CloneWithExpandedLineStrings";
 
 /** Describes the concrete type of a [[CurveCollection]]. Each type name maps to a specific subclass and can be used in conditional statements for type-switching.
  *    - "loop" => [[Loop]]
