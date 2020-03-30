@@ -30,6 +30,7 @@ export class BackendDefaultsPlugin {
       "global.GENTLY": false,
     }).apply(compiler);
     new ExternalsPlugin("commonjs", [
+      "debug",
       "@bentley/imodeljs-native/package.json",
       "@bentley/imodeljs-native/loadNativePlatform.js",
       "dtrace-provider",
