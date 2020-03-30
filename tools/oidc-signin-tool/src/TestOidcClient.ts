@@ -220,8 +220,14 @@ export class TestOidcClient implements IAuthorizationClient {
 
     // There are two page loads if it's a federated user because of a second redirect.
     // Note: On a fast internet connection this is not needed but on slower ones it will be.  See comment above for previous 'waitForNavigation' for details.
-    if (-1 !== page.url().indexOf("microsoftonline"))
-      await page.waitForNavigation({ waitUntil: "networkidle2" });
+    if (-1 !== page.url().indexOf("microsoftonline")) {
+      try {
+        await this.checkSelectorExists(page, "#i0116");
+      } catch (err) {
+        // continue with navigation when it throws.  This means the page hasn't fully loaded yet
+        await page.waitForNavigation({ waitUntil: "networkidle2" });
+      }
+    }
 
     // Check if there were any errors when performing sign-in
     await this.checkErrorOnPage(page, "#errormessage");
@@ -324,12 +330,17 @@ export class TestOidcClient implements IAuthorizationClient {
         page.$eval("#idSIButton9", (button: any) => button.click()),
       ]);
     }
+
+    await page.waitForNavigation({ waitUntil: "networkidle2" });
   }
 
   private async handleConsentPage(page: puppeteer.Page): Promise<void> {
     const consentUrl = url.resolve(this._issuer.issuer as string, "/consent");
     if (page.url().startsWith(consentUrl))
       await page.click("button[value=yes]");
+
+    if (-1 === page.url().indexOf("signin-callback?code="))
+      return;
 
     // New consent page acceptance
     if (await page.title() === "Request for Approval") {
