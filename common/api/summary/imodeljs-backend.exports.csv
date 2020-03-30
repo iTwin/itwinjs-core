@@ -179,6 +179,7 @@ public;IModelHost
 public;IModelHostConfiguration
 beta;IModelImporter
 beta;IModelImportOptions
+internal;IModelJsAdditionalFeatureData 
 public;IModelJsFs
 public;IModelJsFsStats
 beta;IModelTransformer 

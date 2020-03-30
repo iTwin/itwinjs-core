@@ -11,7 +11,7 @@ import {
   BeDuration, BeEvent, BentleyStatus, ChangeSetStatus, ClientRequestContext, DbResult, Guid, GuidString,
   Id64, Id64Arg, Id64Set, Id64String, JsonUtils, Logger, OpenMode, PerfLogger,
 } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext, UlasClient, UsageLogEntry, UsageType, ProgressCallback } from "@bentley/imodeljs-clients";
+import { AuthorizedClientRequestContext, ProgressCallback } from "@bentley/imodeljs-clients";
 import {
   AxisAlignedBox3d, CategorySelectorProps, Code, CodeSpec, CreateEmptySnapshotIModelProps, CreateIModelProps, CreateSnapshotIModelProps, DisplayStyleProps,
   EcefLocation, ElementAspectProps, ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontMap, FontMapProps, FontProps,
@@ -39,6 +39,7 @@ import { Model } from "./Model";
 import { Relationship, RelationshipProps, Relationships } from "./Relationship";
 import { CachedSqliteStatement, SqliteStatement, SqliteStatementCache } from "./SqliteStatement";
 import { SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
+import { UlasUtilities, AdditionalFeatureData } from "./ulas/UlasUtilities";
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
@@ -131,6 +132,14 @@ export class OpenParams {
   }
 }
 
+/**
+ * @internal
+ * Defines a base set of additional properties that might be useful to attach to feature logs
+ */
+export interface IModelJsAdditionalFeatureData extends AdditionalFeatureData {
+  iModelJsVersion?: string;
+}
+
 /** An iModel database file. The database file is either a local copy (briefcase) of an iModel managed by iModelHub or a read-only *snapshot* used for archival and data transfer purposes.
  * @see [Accessing iModels]($docs/learning/backend/AccessingIModels.md)
  * @see [About IModelDb]($docs/learning/backend/IModelDb.md)
@@ -186,23 +195,37 @@ export abstract class IModelDb extends IModel {
     super.initialize(props.rootSubject.name, props);
   }
 
-  private static _ulasClient: UlasClient;
   /** Log usage when opening the iModel
    * @internal
    */
-  protected static async logUsage(requestContext: AuthorizedClientRequestContext, contextId: string, iModelDb: IModelDb) {
+  protected static async logUsage(requestContext: AuthorizedClientRequestContext, contextId: string, iModelDb: IModelDb, startDate: Date, endDate: Date, featureId?: GuidString) {
     requestContext.enter();
     if (IModelHost.configuration && IModelHost.configuration.applicationType === ApplicationType.WebAgent)
       return; // We do not log usage for agents, since the usage logging service cannot handle them.
 
-    this._ulasClient = this._ulasClient || new UlasClient();
-    const ulasEntry = new UsageLogEntry(os.hostname(), UsageType.Trial, contextId);
+    const authType = requestContext.accessToken.isJwt
+      ? IModelJsNative.AuthType.OIDC
+      : IModelJsNative.AuthType.SAML;
     try {
-      await this._ulasClient.logUsage(requestContext, ulasEntry);
-    } catch (error) {
-      // Note: We do not treat usage logging
+      await UlasUtilities.postUserUsage(requestContext, contextId, authType, os.hostname(), IModelJsNative.UsageType.Trial);
+    } catch (err) {
+      // Note: We do not treat usage logging as mandatory
       requestContext.enter();
-      Logger.logError(loggerCategory, "Could not log usage information", () => ({ errorStatus: error.status, errorMessage: error.message, iModelToken: iModelDb.getRpcProps() }));
+      Logger.logError(loggerCategory, `Could not log user usage`, () => ({ errorStatus: err.status, errorMessage: err.message, iModelToken: iModelDb.getRpcProps() }));
+    }
+
+    if (featureId) {
+      const additionalFeatureData: IModelJsAdditionalFeatureData = {
+        iModelId: iModelDb.getGuid(),
+        iModelJsVersion: IModelHost.backendVersion,
+      };
+      try {
+        await UlasUtilities.postFeatureUsage(requestContext, featureId, authType, os.hostname(), IModelJsNative.UsageType.Trial, contextId, startDate, endDate, additionalFeatureData);
+      } catch (err) {
+        // Note: We do not treat feature logging as mandatory
+        requestContext.enter();
+        Logger.logError(loggerCategory, `Could not log feature usage: ${featureId}`, () => ({ errorStatus: err.status, errorMessage: err.message, iModelToken: iModelDb.getRpcProps() }));
+      }
     }
   }
 
@@ -1951,8 +1974,9 @@ export class BriefcaseDb extends IModelDb {
    * @param openParams Parameters to open the iModel
    */
   public static async open(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: string, openParams: OpenParams = OpenParams.pullAndPush(), version: IModelVersion = IModelVersion.latest()): Promise<BriefcaseDb> {
-    requestContext.enter();
+    const startDate = new Date();
 
+    requestContext.enter();
     this.onOpen.raiseEvent(requestContext, contextId, iModelId, openParams, version);
 
     let iModelDb: BriefcaseDb | undefined;
@@ -1968,6 +1992,13 @@ export class BriefcaseDb extends IModelDb {
 
       iModelDb = await this.openBriefcase(requestContext, iModelRpcProps);
       requestContext.enter();
+
+      const endDate = new Date();
+
+      if (requestContext instanceof AuthorizedClientRequestContext) {
+        await this.logUsage(requestContext, contextId, iModelDb, startDate, endDate);
+        requestContext.enter();
+      }
 
       perfLogger.dispose();
     };
@@ -2148,9 +2179,6 @@ export class BriefcaseDb extends IModelDb {
       }
       this.onOpened.raiseEvent(requestContext, iModelDb);
     }
-
-    if (requestContext instanceof AuthorizedClientRequestContext)
-      await this.logUsage(requestContext, briefcaseEntry.contextId, briefcaseEntry.iModelDb);
     return briefcaseEntry.iModelDb as BriefcaseDb; // WIP: change iModelDb type in BriefcaseEntry
   }
 

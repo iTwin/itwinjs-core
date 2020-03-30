@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Guid, GuidString, Logger } from "@bentley/bentleyjs-core";
-import { UsageLogEntry, FeatureLogEntry, FeatureStartedLogEntry, FeatureEndedLogEntry, ProductVersion, UsageType } from "./UlasClient";
+import { UsageLogEntry, FeatureLogEntry, ProductVersion, UsageType } from "./UlasClient";
 import { AuthorizedClientRequestContext } from "../AuthorizedClientRequestContext";
 import { ClientsLoggerCategory } from "../ClientsLoggerCategory";
 
@@ -70,11 +70,11 @@ export interface FeatureLogEntryJson extends UsageLogEntryJson {
   /** Gets the ID of the feature used (from the Global Feature Registry) */
   ftrID: GuidString;
   /** The start date in UTC when feature usage has started (for duration feature log entries) */
-  sDateZ: string;
+  sDateZ?: string;
   /** The end date in UTC when feature usage has started (for duration feature log entries) */
-  eDateZ: string;
+  eDateZ?: string;
   /** Additional user-defined metadata for the feature usage */
-  uData: FeatureLogEntryAttributeJson[];
+  uData?: FeatureLogEntryAttributeJson[];
 }
 
 /** @internal */
@@ -161,90 +161,76 @@ export class LogEntryConverter {
     return requestContext.sessionId;
   }
 
+  /**
+   * @internal
+   * @param requestContext
+   * @param entry
+   */
   public static toUsageLogJson(requestContext: AuthorizedClientRequestContext, entry: UsageLogEntry): UsageLogEntryJson {
     const productId: number = LogEntryConverter.getApplicationId(requestContext);
     const productVersion: ProductVersion = LogEntryConverter.getApplicationVersion(requestContext);
     const sessionId: GuidString = LogEntryConverter.getSessionId(requestContext);
 
-    const hID: string = LogEntryConverter.prepareMachineName(entry.hostName);
-    const ver: number = LogEntryConverter.toVersionNumber(productVersion);
-    const uType: string = LogEntryConverter.usageTypeToString(entry.usageType);
+    const machineName: string = LogEntryConverter.prepareMachineName(entry.hostName);
+    const versionNumber: number = LogEntryConverter.toVersionNumber(productVersion);
+    const usageType: string = LogEntryConverter.usageTypeToString(entry.usageType);
 
     return {
-      hID,
+      hID: machineName,
       polID: LogEntryConverter._policyFileId,
       secID: LogEntryConverter._securableId,
       prdid: productId,
       fstr: LogEntryConverter._featureString,
-      ver,
+      ver: versionNumber,
       projID: entry.contextId,
       corID: sessionId,
       lVer: LogEntryConverter._logEntryVersion,
       lSrc: LogEntryConverter._logPostingSource,
-      uType,
+      uType: usageType,
     };
   }
 
-  public static toFeatureLogJson(requestContext: AuthorizedClientRequestContext, entries: FeatureLogEntry[]): FeatureLogEntryJson[] {
-    const json: FeatureLogEntryJson[] = [];
+  /**
+   * @internal
+   * @param requestContext
+   * @param entry
+   */
+  public static toFeatureLogJson(requestContext: AuthorizedClientRequestContext, entry: FeatureLogEntry): FeatureLogEntryJson {
     const productId: number = LogEntryConverter.getApplicationId(requestContext);
     const productVersion: ProductVersion = LogEntryConverter.getApplicationVersion(requestContext);
     const sessionId: GuidString = LogEntryConverter.getSessionId(requestContext);
 
-    const ver: number | undefined = LogEntryConverter.toVersionNumber(productVersion);
+    const versionNumber: number | undefined = LogEntryConverter.toVersionNumber(productVersion);
+    const machineName: string = LogEntryConverter.prepareMachineName(entry.hostName);
+    const usageType: string = LogEntryConverter.usageTypeToString(entry.usageType);
 
-    for (const entry of entries) {
-      const hID: string = LogEntryConverter.prepareMachineName(entry.hostName);
+    const startDateZ = entry.startDate?.toISOString();
+    const endDateZ = entry.endDate?.toISOString();
 
-      const evTimeZ: string = entry.timestamp;
-      let sDateZ: string;
-      let eDateZ: string;
-      let corID: GuidString | undefined;
-      const startEntry: FeatureStartedLogEntry = entry as FeatureStartedLogEntry;
-      const endEntry: FeatureEndedLogEntry = entry as FeatureEndedLogEntry;
-      const defaultDate: string = "0001-01-01T00:00:00Z";
-      if (!!startEntry.entryId) {
-        sDateZ = evTimeZ;
-        eDateZ = defaultDate;
-        corID = startEntry.entryId;
-      } else if (!!endEntry.startEntryId) {
-        sDateZ = defaultDate;
-        eDateZ = evTimeZ;
-        corID = endEntry.startEntryId;
-      } else {
-        sDateZ = evTimeZ;
-        eDateZ = evTimeZ;
-        corID = sessionId;
-      }
-
-      const uType: string = LogEntryConverter.usageTypeToString(entry.usageType);
-
-      const uData: FeatureLogEntryAttributeJson[] = [];
-      for (const att of entry.usageData) {
-        uData.push({ name: att.name, value: att.value.toString() });
-      }
-
-      const entryJson: FeatureLogEntryJson = {
-        hID,
-        polID: LogEntryConverter._policyFileId,
-        secID: LogEntryConverter._securableId,
-        prdid: productId,
-        fstr: LogEntryConverter._featureString,
-        ver,
-        projID: entry.contextId,
-        corID,
-        lVer: LogEntryConverter._logEntryVersion,
-        lSrc: LogEntryConverter._logPostingSource,
-        uType,
-        ftrID: entry.featureId,
-        sDateZ,
-        eDateZ,
-        uData,
-      };
-
-      json.push(entryJson);
+    const featureMetaData: FeatureLogEntryAttributeJson[] = [];
+    for (const att of entry.usageData) {
+      featureMetaData.push({ name: att.name, value: att.value.toString() });
     }
-    return json;
+
+    const entryJson: FeatureLogEntryJson = {
+      hID: machineName,
+      polID: LogEntryConverter._policyFileId,
+      secID: LogEntryConverter._securableId,
+      prdid: productId,
+      fstr: LogEntryConverter._featureString,
+      ver: versionNumber,
+      projID: entry.contextId,
+      corID: sessionId,
+      lVer: LogEntryConverter._logEntryVersion,
+      lSrc: LogEntryConverter._logPostingSource,
+      uType: usageType,
+      ftrID: entry.featureId,
+      sDateZ: startDateZ,
+      eDateZ: endDateZ,
+      uData: featureMetaData,
+    };
+
+    return entryJson;
   }
 
   private static toVersionNumber(version: ProductVersion): number {

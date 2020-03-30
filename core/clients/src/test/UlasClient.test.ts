@@ -7,12 +7,12 @@ import { GuidString, Guid, BentleyStatus } from "@bentley/bentleyjs-core";
 import { TestUsers, getAccessTokenFromBackend, TestOidcConfiguration } from "@bentley/oidc-signin-tool/lib/frontend";
 import { Config } from "../Config";
 import { AccessToken } from "../Token";
-import { UlasClient, UsageLogEntry, FeatureLogEntry, FeatureStartedLogEntry, FeatureEndedLogEntry, LogPostingResponse, UsageType } from "../ulas/UlasClient";
+import { UlasClient, FeatureLogEntry, LogPostingResponse, UsageType, StartFeatureLogEntry, EndFeatureLogEntry } from "../ulas/UlasClient";
 import { AuthorizedClientRequestContext } from "../AuthorizedClientRequestContext";
 
 import * as os from "os";
 
-describe.skip("UlasClient - SAML Token (#integration)", () => {
+describe("UlasClient - OIDC Token (#integration)", () => {
   const client: UlasClient = new UlasClient();
   let accessToken: AccessToken;
 
@@ -27,96 +27,96 @@ describe.skip("UlasClient - SAML Token (#integration)", () => {
     accessToken = (await getAccessTokenFromBackend(TestUsers.regular, oidcConfig) as any) as AccessToken;
   });
 
-  it("Post usage log (#integration)", async () => {
-    const requestContext = new AuthorizedClientRequestContext(accessToken, undefined, "43", "3.4.5.99");
-    for (const usageType of [UsageType.Beta, UsageType.HomeUse, UsageType.PreActivation, UsageType.Production, UsageType.Trial]) {
-      const entry: UsageLogEntry = new UsageLogEntry(os.hostname(), usageType);
+  // it("Post usage log (#integration)", async () => {
+  //   const requestContext = new AuthorizedClientRequestContext(accessToken, undefined, "43", "3.4.5.99");
+  //   for (const usageType of [UsageType.Beta, UsageType.HomeUse, UsageType.PreActivation, UsageType.Production, UsageType.Trial]) {
+  //     const entry: UsageLogEntry = new UsageLogEntry(os.hostname(), usageType);
 
-      const resp: LogPostingResponse = await client.logUsage(requestContext, entry);
-      assert(resp);
-      assert.equal(resp.status, BentleyStatus.SUCCESS);
-      assert.equal(resp.message, "Accepted");
-      assert.isTrue(Guid.isGuid(resp.requestId));
-      assert.isAtLeast(resp.time, 0);
-    }
-  });
+  //     const resp: LogPostingResponse = await client.logUsage(requestContext, entry);
+  //     assert(resp);
+  //     assert.equal(resp.status, BentleyStatus.SUCCESS);
+  //     assert.equal(resp.message, "Accepted");
+  //     assert.isTrue(Guid.isGuid(resp.requestId));
+  //     assert.isAtLeast(resp.time, 0);
+  //   }
+  // });
 
-  it("Post usage log with project id (#integration)", async () => {
-    const requestContext = new AuthorizedClientRequestContext(accessToken, undefined, "43", "0.4");
-    const entry: UsageLogEntry = new UsageLogEntry(os.hostname(), UsageType.Trial, Guid.createValue());
+  // it("Post usage log with project id (#integration)", async () => {
+  //   const requestContext = new AuthorizedClientRequestContext(accessToken, undefined, "43", "0.4");
+  //   const entry: UsageLogEntry = new UsageLogEntry(os.hostname(), UsageType.Trial, Guid.createValue());
 
-    const resp: LogPostingResponse = await client.logUsage(requestContext, entry);
-    assert(resp);
-    assert.equal(resp.status, BentleyStatus.SUCCESS);
-    assert.equal(resp.message, "Accepted");
-    assert.isTrue(Guid.isGuid(resp.requestId));
-    assert.isAtLeast(resp.time, 0);
-  });
+  //   const resp: LogPostingResponse = await client.logUsage(requestContext, entry);
+  //   assert(resp);
+  //   assert.equal(resp.status, BentleyStatus.SUCCESS);
+  //   assert.equal(resp.message, "Accepted");
+  //   assert.isTrue(Guid.isGuid(resp.requestId));
+  //   assert.isAtLeast(resp.time, 0);
+  // });
 
-  it("Post usage log with session id (#integration)", async () => {
-    const requestContext = new AuthorizedClientRequestContext(accessToken, undefined, "43", "0.5", Guid.createValue());
-    const entry: UsageLogEntry = new UsageLogEntry(os.hostname(), UsageType.Trial);
+  // it("Post usage log with session id (#integration)", async () => {
+  //   const requestContext = new AuthorizedClientRequestContext(accessToken, undefined, "43", "0.5", Guid.createValue());
+  //   const entry: UsageLogEntry = new UsageLogEntry(os.hostname(), UsageType.Trial);
 
-    const resp: LogPostingResponse = await client.logUsage(requestContext, entry);
-    assert(resp);
-    assert.equal(resp.status, BentleyStatus.SUCCESS);
-    assert.equal(resp.message, "Accepted");
-    assert.isTrue(Guid.isGuid(resp.requestId));
-    assert.isAtLeast(resp.time, 0);
-  });
+  //   const resp: LogPostingResponse = await client.logUsage(requestContext, entry);
+  //   assert(resp);
+  //   assert.equal(resp.status, BentleyStatus.SUCCESS);
+  //   assert.equal(resp.message, "Accepted");
+  //   assert.isTrue(Guid.isGuid(resp.requestId));
+  //   assert.isAtLeast(resp.time, 0);
+  // });
 
-  it("Post usage log without product version (#integration)", async () => {
-    const requestContext = new AuthorizedClientRequestContext(accessToken, undefined, "43");
-    const entry: UsageLogEntry = new UsageLogEntry(os.hostname(), UsageType.Trial, Guid.createValue());
+  // it("Post usage log without product version (#integration)", async () => {
+  //   const requestContext = new AuthorizedClientRequestContext(accessToken, undefined, "43");
+  //   const entry: UsageLogEntry = new UsageLogEntry(os.hostname(), UsageType.Trial, Guid.createValue());
 
-    const resp: LogPostingResponse = await client.logUsage(requestContext, entry);
-    assert(resp);
-    assert.equal(resp.status, BentleyStatus.SUCCESS);
-    assert.equal(resp.message, "Accepted");
-    assert.isTrue(Guid.isGuid(resp.requestId));
-    assert.isAtLeast(resp.time, 0);
-  });
+  //   const resp: LogPostingResponse = await client.logUsage(requestContext, entry);
+  //   assert(resp);
+  //   assert.equal(resp.status, BentleyStatus.SUCCESS);
+  //   assert.equal(resp.message, "Accepted");
+  //   assert.isTrue(Guid.isGuid(resp.requestId));
+  //   assert.isAtLeast(resp.time, 0);
+  // });
 
-  it("Post usage log - hostName special cases (#integration)", async () => {
-    const requestContext = new AuthorizedClientRequestContext(accessToken, undefined, "43", "3.4.5");
-    for (const hostName of [
-      "::1",
-      "127.0.0.1",
-      "localhost",
-    ]) {
-      const entry: UsageLogEntry = new UsageLogEntry(hostName, UsageType.Beta);
+  // it("Post usage log - hostName special cases (#integration)", async () => {
+  //   const requestContext = new AuthorizedClientRequestContext(accessToken, undefined, "43", "3.4.5");
+  //   for (const hostName of [
+  //     "::1",
+  //     "127.0.0.1",
+  //     "localhost",
+  //   ]) {
+  //     const entry: UsageLogEntry = new UsageLogEntry(hostName, UsageType.Beta);
 
-      const resp: LogPostingResponse = await client.logUsage(requestContext, entry);
-      assert(resp);
-      assert.equal(resp.status, BentleyStatus.SUCCESS);
-      assert.equal(resp.message, "Accepted");
-      assert.isTrue(Guid.isGuid(resp.requestId));
-      assert.isAtLeast(resp.time, 0);
-    }
-  });
+  //     const resp: LogPostingResponse = await client.logUsage(requestContext, entry);
+  //     assert(resp);
+  //     assert.equal(resp.status, BentleyStatus.SUCCESS);
+  //     assert.equal(resp.message, "Accepted");
+  //     assert.isTrue(Guid.isGuid(resp.requestId));
+  //     assert.isAtLeast(resp.time, 0);
+  //   }
+  // });
 
-  it("Invalid usage log entry (#integration)", async () => {
-    const requestContext = new AuthorizedClientRequestContext(accessToken, undefined, "43", "3.4.5.101");
-    let entry: UsageLogEntry = new UsageLogEntry("", UsageType.HomeUse);
+  // it("Invalid usage log entry (#integration)", async () => {
+  //   const requestContext = new AuthorizedClientRequestContext(accessToken, undefined, "43", "3.4.5.101");
+  //   let entry: UsageLogEntry = new UsageLogEntry("", UsageType.HomeUse);
 
-    let hasThrown: boolean = false;
-    try {
-      await client.logUsage(requestContext, entry);
-    } catch (e) {
-      hasThrown = true;
-    }
-    assert.isTrue(hasThrown, "UlasClient.logUsage is expected to throw if hostName is not specified.");
+  //   let hasThrown: boolean = false;
+  //   try {
+  //     await client.logUsage(requestContext, entry);
+  //   } catch (e) {
+  //     hasThrown = true;
+  //   }
+  //   assert.isTrue(hasThrown, "UlasClient.logUsage is expected to throw if hostName is not specified.");
 
-    entry = new UsageLogEntry(os.hostname(), 100 as UsageType);
+  //   entry = new UsageLogEntry(os.hostname(), 100 as UsageType);
 
-    hasThrown = false;
-    try {
-      await client.logUsage(requestContext, entry);
-    } catch (e) {
-      hasThrown = true;
-    }
-    assert.isTrue(hasThrown, "UlasClient.logUsage is expected to throw if UsageType is not one of the enum values.");
-  });
+  //   hasThrown = false;
+  //   try {
+  //     await client.logUsage(requestContext, entry);
+  //   } catch (e) {
+  //     hasThrown = true;
+  //   }
+  //   assert.isTrue(hasThrown, "UlasClient.logUsage is expected to throw if UsageType is not one of the enum values.");
+  // });
 
   it("AccessToken without feature tracking claims (#integration)", async () => {
     enum TokenMode {
@@ -137,8 +137,7 @@ describe.skip("UlasClient - SAML Token (#integration)", () => {
       } else {
         // token from which some user profile information is removed. UlasClient does not utilize this information, and instead defers this task to the ULAS server, which examines the token string itself.
         // Need to cast to any and then back to AccessToken because of circular dependency with the oidc-signin-tool
-        tempAccessToken = (await getAccessTokenFromBackend(TestUsers.regular) as any) as AccessToken;
-        switch (mode) {
+        tempAccessToken = (await getAccessTokenFromBackend(TestUsers.regular) as any) as AccessToken; switch (mode) {
           case TokenMode.NoUserId:
             tempAccessToken.getUserInfo()!.id = "";
             break;
@@ -155,38 +154,38 @@ describe.skip("UlasClient - SAML Token (#integration)", () => {
 
       let tempRequestContext = new AuthorizedClientRequestContext(tempAccessToken, undefined, "43", "3.4.5.101");
 
-      const uEntry: UsageLogEntry = new UsageLogEntry(os.hostname(), UsageType.Trial);
+      // const uEntry: UsageLogEntry = new UsageLogEntry(os.hostname(), UsageType.Trial);
 
-      let hasThrown: boolean = false;
-      try {
-        await client.logUsage(tempRequestContext, uEntry);
-      } catch (e) {
-        hasThrown = true;
-      }
-      assert.equal(hasThrown, !passingTokenModes.includes(mode), "UlasClient.logUsage is expected to throw if access token does not have required user profile info.");
+      // let hasThrown: boolean = false;
+      // try {
+      //   await client.logUsage(tempRequestContext, uEntry);
+      // } catch (e) {
+      //   hasThrown = true;
+      // }
+      // assert.equal(hasThrown, !passingTokenModes.includes(mode), "UlasClient.logUsage is expected to throw if access token does not have required user profile info.");
 
       const fEntry = new FeatureLogEntry(Guid.createValue(), os.hostname(), UsageType.Trial);
 
       tempRequestContext = new AuthorizedClientRequestContext(tempAccessToken, undefined, "43", "3.4.99");
 
-      hasThrown = false;
+      let hasThrown = false;
       try {
-        await client.logFeature(tempRequestContext, fEntry);
+        await client.logFeatureUsage(tempRequestContext, fEntry);
       } catch (e) {
         hasThrown = true;
       }
-      assert.equal(hasThrown, !passingTokenModes.includes(mode), "UlasClient.logFeature is expected to throw if access token does not have required user profile info.");
+      assert.equal(hasThrown, !passingTokenModes.includes(mode), "UlasClient.logFeatureUsage is expected to throw if access token does not have required user profile info.");
     }
   });
 
   it("Post feature log (#integration)", async () => {
     const requestContext = new AuthorizedClientRequestContext(accessToken, undefined, "43", "3.4.99");
-    const myFeatureId: GuidString = Guid.createValue();
+    const myFeatureId = "imodeljs_clients_ulasClient_test_logFeature";
 
     for (const usageType of [UsageType.Beta, UsageType.HomeUse, UsageType.PreActivation, UsageType.Production, UsageType.Trial]) {
       const entry = new FeatureLogEntry(myFeatureId, os.hostname(), usageType);
 
-      const resp: LogPostingResponse = await client.logFeature(requestContext, entry);
+      const resp: LogPostingResponse = await client.logFeatureUsage(requestContext, entry);
       assert(resp);
       assert.equal(resp.status, BentleyStatus.SUCCESS);
       assert.equal(resp.message, "Accepted");
@@ -199,7 +198,7 @@ describe.skip("UlasClient - SAML Token (#integration)", () => {
     const requestContext = new AuthorizedClientRequestContext(accessToken, undefined, "43", "3.4.99");
     const entry = new FeatureLogEntry(Guid.createValue(), os.hostname(), UsageType.Trial, Guid.createValue());
     entry.usageData.push({ name: "imodelid", value: Guid.createValue() }, { name: "imodelsize", value: 596622 });
-    const resp: LogPostingResponse = await client.logFeature(requestContext, entry);
+    const resp: LogPostingResponse = await client.logFeatureUsage(requestContext, entry);
     assert(resp);
     assert.equal(resp.status, BentleyStatus.SUCCESS);
     assert.equal(resp.message, "Accepted");
@@ -211,7 +210,7 @@ describe.skip("UlasClient - SAML Token (#integration)", () => {
     const requestContext = new AuthorizedClientRequestContext(accessToken, undefined, "43");
     const entry = new FeatureLogEntry(Guid.createValue(), os.hostname(), UsageType.Trial, Guid.createValue());
     entry.usageData.push({ name: "imodelid", value: Guid.createValue() }, { name: "imodelsize", value: 596622 });
-    const resp: LogPostingResponse = await client.logFeature(requestContext, entry);
+    const resp: LogPostingResponse = await client.logFeatureUsage(requestContext, entry);
     assert(resp);
     assert.equal(resp.status, BentleyStatus.SUCCESS);
     assert.equal(resp.message, "Accepted");
@@ -228,7 +227,7 @@ describe.skip("UlasClient - SAML Token (#integration)", () => {
     ]) {
       const entry = new FeatureLogEntry(Guid.createValue(), hostName, UsageType.Beta);
       entry.usageData.push({ name: "imodelid", value: Guid.createValue() }, { name: "imodelsize", value: 596622 });
-      const resp: LogPostingResponse = await client.logFeature(requestContext, entry);
+      const resp: LogPostingResponse = await client.logFeatureUsage(requestContext, entry);
       assert(resp);
       assert.equal(resp.status, BentleyStatus.SUCCESS);
       assert.equal(resp.message, "Accepted");
@@ -248,7 +247,7 @@ describe.skip("UlasClient - SAML Token (#integration)", () => {
     requestContext = new AuthorizedClientRequestContext(accessToken, undefined, "43");
     const entry2 = new FeatureLogEntry(feature2Id, os.hostname(), UsageType.Beta);
     entry2.usageData.push({ name: "imodelid", value: Guid.createValue() }, { name: "imodelsize", value: 400 });
-    const resp: LogPostingResponse = await client.logFeature(requestContext, entry1, entry2);
+    const resp: LogPostingResponse = await client.logFeatureUsage(requestContext, entry1, entry2);
     assert(resp);
     assert.equal(resp.status, BentleyStatus.SUCCESS);
     assert.equal(resp.message, "Accepted");
@@ -258,7 +257,7 @@ describe.skip("UlasClient - SAML Token (#integration)", () => {
     // test that the method throws if no feature log entry is passed
     let hasThrown: boolean = false;
     try {
-      await client.logFeature(requestContext);
+      await client.logFeatureUsage(requestContext);
     } catch (e) {
       hasThrown = true;
     }
@@ -266,36 +265,19 @@ describe.skip("UlasClient - SAML Token (#integration)", () => {
   });
 
   it("Post duration feature log (#integration)", async () => {
-    let requestContext = new AuthorizedClientRequestContext(accessToken, undefined, "43", "3.4");
+    const requestContext = new AuthorizedClientRequestContext(accessToken, undefined, "43", "3.4");
     const myFeatureId: GuidString = Guid.createValue();
-    let startEntry = new FeatureStartedLogEntry(myFeatureId, os.hostname(), UsageType.Beta);
+    const startEntry = new StartFeatureLogEntry(myFeatureId, os.hostname(), UsageType.Beta);
     startEntry.usageData.push({ name: "imodelid", value: Guid.createValue() }, { name: "user", value: "123-123" });
 
-    let startResp: LogPostingResponse = await client.logFeature(requestContext, startEntry);
+    const startResp: LogPostingResponse = await client.logFeatureUsage(requestContext, startEntry);
     assert(startResp);
     assert.equal(startResp.status, BentleyStatus.SUCCESS);
     assert.equal(startResp.message, "Accepted");
     assert.isAtLeast(startResp.time, 0);
 
-    let endEntry: FeatureEndedLogEntry = FeatureEndedLogEntry.fromStartEntry(startEntry);
-    let endResp: LogPostingResponse = await client.logFeature(requestContext, endEntry);
-    assert(endResp);
-    assert.equal(endResp.status, BentleyStatus.SUCCESS);
-    assert.equal(endResp.message, "Accepted");
-    assert.isAtLeast(endResp.time, 0);
-
-    // once more, now with building end entry from scratch
-    startEntry = new FeatureStartedLogEntry(myFeatureId, os.hostname(), UsageType.HomeUse);
-    startEntry.usageData.push({ name: "imodelid", value: Guid.createValue() }, { name: "user", value: "123-123" });
-    startResp = await client.logFeature(requestContext, startEntry);
-    assert(startResp);
-    assert.equal(startResp.status, BentleyStatus.SUCCESS);
-    assert.equal(startResp.message, "Accepted");
-    assert.isAtLeast(startResp.time, 0);
-
-    requestContext = new AuthorizedClientRequestContext(accessToken, undefined, "32", "3.4");
-    endEntry = new FeatureEndedLogEntry(myFeatureId, startEntry.entryId, os.hostname(), UsageType.HomeUse);
-    endResp = await client.logFeature(requestContext, endEntry);
+    const endEntry: EndFeatureLogEntry = EndFeatureLogEntry.createFromStartEntry(startEntry);
+    const endResp: LogPostingResponse = await client.logFeatureUsage(requestContext, endEntry);
     assert(endResp);
     assert.equal(endResp.status, BentleyStatus.SUCCESS);
     assert.equal(endResp.message, "Accepted");
@@ -303,36 +285,19 @@ describe.skip("UlasClient - SAML Token (#integration)", () => {
   });
 
   it("Post duration feature log without product version (#integration)", async () => {
-    let requestContext = new AuthorizedClientRequestContext(accessToken, undefined, "43");
+    const requestContext = new AuthorizedClientRequestContext(accessToken, undefined, "43");
     const myFeatureId: GuidString = Guid.createValue();
-    let startEntry = new FeatureStartedLogEntry(myFeatureId, os.hostname(), UsageType.Beta);
+    const startEntry = new StartFeatureLogEntry(myFeatureId, os.hostname(), UsageType.Beta);
     startEntry.usageData.push({ name: "imodelid", value: Guid.createValue() }, { name: "user", value: "123-123" });
 
-    let startResp: LogPostingResponse = await client.logFeature(requestContext, startEntry);
+    const startResp: LogPostingResponse = await client.logFeatureUsage(requestContext, startEntry);
     assert(startResp);
     assert.equal(startResp.status, BentleyStatus.SUCCESS);
     assert.equal(startResp.message, "Accepted");
     assert.isAtLeast(startResp.time, 0);
 
-    let endEntry: FeatureEndedLogEntry = FeatureEndedLogEntry.fromStartEntry(startEntry);
-    let endResp: LogPostingResponse = await client.logFeature(requestContext, endEntry);
-    assert(endResp);
-    assert.equal(endResp.status, BentleyStatus.SUCCESS);
-    assert.equal(endResp.message, "Accepted");
-    assert.isAtLeast(endResp.time, 0);
-
-    // once more, now with building end entry from scratch
-    startEntry = new FeatureStartedLogEntry(myFeatureId, os.hostname(), UsageType.HomeUse);
-    startEntry.usageData.push({ name: "imodelid", value: Guid.createValue() }, { name: "user", value: "123-123" });
-    startResp = await client.logFeature(requestContext, startEntry);
-    assert(startResp);
-    assert.equal(startResp.status, BentleyStatus.SUCCESS);
-    assert.equal(startResp.message, "Accepted");
-    assert.isAtLeast(startResp.time, 0);
-
-    requestContext = new AuthorizedClientRequestContext(accessToken, undefined, "32");
-    endEntry = new FeatureEndedLogEntry(myFeatureId, startEntry.entryId, os.hostname(), UsageType.HomeUse);
-    endResp = await client.logFeature(requestContext, endEntry);
+    const endEntry: EndFeatureLogEntry = EndFeatureLogEntry.createFromStartEntry(startEntry);
+    const endResp: LogPostingResponse = await client.logFeatureUsage(requestContext, endEntry);
     assert(endResp);
     assert.equal(endResp.status, BentleyStatus.SUCCESS);
     assert.equal(endResp.message, "Accepted");

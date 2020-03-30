@@ -600,6 +600,15 @@ export class ECJsonTypeMap {
 // @beta
 export type EmptyIModelTemplate = "Empty";
 
+// @internal
+export class EndFeatureLogEntry extends FeatureLogEntry {
+    static createFromStartEntry(startEntry: StartFeatureLogEntry, endDate?: Date): EndFeatureLogEntry;
+    // (undocumented)
+    readonly endDate: Date;
+    // (undocumented)
+    readonly startDate: Date;
+}
+
 // @beta
 export class EventHandler extends EventBaseHandler {
     // @internal
@@ -659,30 +668,21 @@ export type EventType =
 "VersionEvent";
 
 // @internal
-export class FeatureEndedLogEntry extends FeatureLogEntry {
-    constructor(featureId: GuidString, startEntryId: GuidString, hostName: string, usageType: UsageType, contextId?: GuidString);
-    static fromStartEntry(startEntry: FeatureStartedLogEntry): FeatureEndedLogEntry;
-    // (undocumented)
-    readonly startEntryId: GuidString;
-}
-
-// @internal
 export class FeatureLogEntry {
-    constructor(featureId: GuidString, hostName: string, usageType: UsageType, contextId?: GuidString);
-    contextId?: GuidString;
+    constructor(
+    featureId: GuidString,
+    hostName: string,
+    usageType: UsageType,
+    contextId?: string | undefined);
+    readonly contextId?: string | undefined;
+    // (undocumented)
+    correlationId: string;
+    endDate?: Date;
     readonly featureId: GuidString;
     readonly hostName: string;
-    readonly timestamp: string;
-    usageData: FeatureLogEntryAttribute[];
+    startDate?: Date;
+    usageData: FeatureLogEntryMetadata[];
     readonly usageType: UsageType;
-}
-
-// @internal
-export interface FeatureLogEntryAttribute {
-    // (undocumented)
-    name: string;
-    // (undocumented)
-    value: any;
 }
 
 // @internal (undocumented)
@@ -695,16 +695,18 @@ export interface FeatureLogEntryAttributeJson {
 
 // @internal
 export interface FeatureLogEntryJson extends UsageLogEntryJson {
-    eDateZ: string;
+    eDateZ?: string;
     ftrID: GuidString;
-    sDateZ: string;
-    uData: FeatureLogEntryAttributeJson[];
+    sDateZ?: string;
+    uData?: FeatureLogEntryAttributeJson[];
 }
 
 // @internal
-export class FeatureStartedLogEntry extends FeatureLogEntry {
-    constructor(featureId: GuidString, hostName: string, usageType: UsageType, contextId?: GuidString);
-    readonly entryId: GuidString;
+export interface FeatureLogEntryMetadata {
+    // (undocumented)
+    name: string;
+    // (undocumented)
+    value: any;
 }
 
 // @internal
@@ -1236,7 +1238,7 @@ export interface LockUpdateOptions {
 // @internal (undocumented)
 export class LogEntryConverter {
     // (undocumented)
-    static toFeatureLogJson(requestContext: AuthorizedClientRequestContext, entries: FeatureLogEntry[]): FeatureLogEntryJson[];
+    static toFeatureLogJson(requestContext: AuthorizedClientRequestContext, entry: FeatureLogEntry): FeatureLogEntryJson;
     // (undocumented)
     static toUsageLogJson(requestContext: AuthorizedClientRequestContext, entry: UsageLogEntry): UsageLogEntryJson;
     }
@@ -1812,6 +1814,15 @@ export class SmallThumbnail extends Thumbnail {
 export class SoftiModelDeleteEvent extends IModelHubGlobalEvent {
 }
 
+// @internal
+export class StartFeatureLogEntry extends FeatureLogEntry {
+    constructor(featureId: GuidString, hostName: string, usageType: UsageType, contextId?: GuidString, startDate?: Date);
+    // (undocumented)
+    readonly endDate: Date;
+    // (undocumented)
+    readonly startDate: Date;
+}
+
 // @beta
 export class StringIdQuery extends WsgQuery {
     byId(id: string): this;
@@ -1884,15 +1895,11 @@ export abstract class Token {
     protected _x509Certificate?: string;
 }
 
-// @internal @deprecated
+// @internal
 export class UlasClient extends Client {
     constructor();
-    getAccessToken(requestContext: ClientRequestContext, authorizationToken: AuthorizationToken): Promise<AccessToken>;
     protected getUrlSearchKey(): string;
-    // @deprecated
-    logFeature(requestContext: AuthorizedClientRequestContext, ...entries: FeatureLogEntry[]): Promise<LogPostingResponse>;
-    // @deprecated
-    logUsage(requestContext: AuthorizedClientRequestContext, entry: UsageLogEntry): Promise<LogPostingResponse>;
+    logFeatureUsage(requestContext: AuthorizedClientRequestContext, ...featureEntries: FeatureLogEntry[]): Promise<LogPostingResponse>;
     // (undocumented)
     protected setupOptionDefaults(options: RequestOptions): Promise<void>;
 }

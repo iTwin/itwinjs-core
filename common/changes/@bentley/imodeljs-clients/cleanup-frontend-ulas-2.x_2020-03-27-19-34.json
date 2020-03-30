@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-clients",
+      "comment": "Update frontend UlasClient to conform to ULAS guidelines",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-clients",
+  "email": "evan.preslar@bentley.com"
+}

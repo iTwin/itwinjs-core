@@ -60,16 +60,15 @@ internal;DefaultWsgRequestOptionsProvider
 beta;class ECInstance
 internal;ECJsonTypeMap
 beta;EmptyIModelTemplate = "Empty"
+internal;EndFeatureLogEntry 
 beta;EventHandler 
 beta;EventSAS 
 beta;EventSubscription 
 beta;EventSubscriptionHandler
-internal;FeatureEndedLogEntry 
 internal;FeatureLogEntry
-internal;FeatureLogEntryAttribute
 internal;FeatureLogEntryAttributeJson
 internal;FeatureLogEntryJson 
-internal;FeatureStartedLogEntry 
+internal;FeatureLogEntryMetadata
 internal;FileAccessKey 
 beta;FileHandler
 internal;getArrayBuffer(requestContext: ClientRequestContext, url: string): Promise
@@ -164,6 +163,7 @@ alpha;SettingsResult
 alpha;SettingsStatus
 alpha;SmallThumbnail 
 internal;SoftiModelDeleteEvent 
+internal;StartFeatureLogEntry 
 beta;StringIdQuery 
 alpha;class Thumbnail 
 alpha;ThumbnailHandler

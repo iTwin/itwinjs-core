@@ -179,8 +179,6 @@ import { YawPitchRollAngles } from '@bentley/geometry-core';
 export interface AdditionalFeatureData {
     // (undocumented)
     iModelId?: GuidString;
-    // (undocumented)
-    iModelJsVersion?: string;
 }
 
 // @beta (undocumented)
@@ -2302,7 +2300,7 @@ export abstract class IModelDb extends IModel {
     // @internal
     isStandaloneDb(): this is StandaloneDb;
     // @internal
-    protected static logUsage(requestContext: AuthorizedClientRequestContext, contextId: string, iModelDb: IModelDb): Promise<void>;
+    protected static logUsage(requestContext: AuthorizedClientRequestContext, contextId: string, iModelDb: IModelDb, startDate: Date, endDate: Date, featureId?: GuidString): Promise<void>;
     // (undocumented)
     static readonly maxLimit = 10000;
     // (undocumented)
@@ -2585,6 +2583,12 @@ export class IModelImporter {
 // @beta
 export interface IModelImportOptions {
     autoExtendProjectExtents?: boolean;
+}
+
+// @internal
+export interface IModelJsAdditionalFeatureData extends AdditionalFeatureData {
+    // (undocumented)
+    iModelJsVersion?: string;
 }
 
 // @public

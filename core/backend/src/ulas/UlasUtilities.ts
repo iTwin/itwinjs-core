@@ -15,7 +15,6 @@ const loggerCategory: string = ClientsLoggerCategory.UlasClient;
  */
 export interface AdditionalFeatureData {
   iModelId?: GuidString;
-  iModelJsVersion?: string;
 }
 
 /** @internal */

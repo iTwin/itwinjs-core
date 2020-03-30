@@ -46,7 +46,7 @@ export class FeatureLogBatchClient {
     private _getRequestContext: () => Promise<AuthorizedClientRequestContext>,
     options: Partial<FeatureLogBatchOptions> = {},
     private _client: UlasClient = new UlasClient(),
-    ) {
+  ) {
     this._options = { ...this._defaultOptions, ...options };
   }
   /** slices the queue of feature logs in batches limited by the maxBatchSize option then submit them using the UlasClient */
@@ -59,7 +59,7 @@ export class FeatureLogBatchClient {
       while (queue.length > 0) {
         const logs = queue.splice(0, this._options.maxBatchSize);
         const context = await this._getRequestContext();
-        await this._client.logFeature(context, ...logs);
+        await this._client.logFeatureUsage(context, ...logs);
       }
     } catch (ex) {
       Logger.logError(loggerCategory, "Error submitting feature log entries", () => ex);

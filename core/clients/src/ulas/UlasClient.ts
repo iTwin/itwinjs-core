@@ -2,15 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { BentleyStatus, ClientRequestContext, Guid, GuidString, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { BentleyStatus, Guid, GuidString, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext } from "../AuthorizedClientRequestContext";
 import { Client } from "../Client";
-import { Config } from "../Config";
-import { ImsDelegationSecureTokenClient } from "../ImsClients";
 import { ClientsLoggerCategory } from "../ClientsLoggerCategory";
 import { request, RequestOptions, Response } from "../Request";
-import { AccessToken, AuthorizationToken, IncludePrefix } from "../Token";
-import { FeatureLogEntryJson, LogEntryConverter, UsageLogEntryJson } from "./LogEntryConverter";
+import { IncludePrefix } from "../Token";
+import { FeatureLogEntryJson, LogEntryConverter } from "./LogEntryConverter";
 
 const loggerCategory: string = ClientsLoggerCategory.UlasClient;
 
@@ -40,7 +38,7 @@ export interface ProductVersion {
  * Usage log entry data that is submitted to the ULAS Posting Service.
  * See also
  *  - [[UlasClient]]
- *  - *UsageLogEntry* entry on [ULAS Swagger](https://qa-connect-ulastm.bentley.com/Bentley.ULAS.SwaggerUI/SwaggerWebApp/?urls.primaryName=ULAS%20Posting%20Service%20v1)
+ *  - *UsageLogEntry* entry on [ULAS Swagger](https://qa-connect-ulastm.bentley.com/Bentley.ULAS.SwaggerUI/SwaggerWebApp/index.html?urls.primaryName=ULAS%20Posting%20Service%20v1)
  *  site (section *Models*)
  * @internal
  */
@@ -80,41 +78,30 @@ export class UsageLogEntry {
  * [[FeatureLogEntry]] when collecting information about feature usage.
  * @internal
  */
-export interface FeatureLogEntryAttribute {
+export interface FeatureLogEntryMetadata {
   name: string;
   value: any;
 }
 
 /**
- * Feature log entry data that is submitted to the ULAS Posting Service.
+ * Standard feature log entry data that is submitted to the ULAS Posting Service.
  * See also
  *  - [[UlasClient]]
- *  - *FeatureLogEntry* entry on [ULAS Swagger](https://qa-connect-ulastm.bentley.com/Bentley.ULAS.SwaggerUI/SwaggerWebApp/?urls.primaryName=ULAS%20Posting%20Service%20v1)
+ *  - *FeatureLogEntry* entry on [ULAS Swagger](https://qa-connect-ulastm.bentley.com/Bentley.ULAS.SwaggerUI/SwaggerWebApp/index.html?urls.primaryName=ULAS%20Posting%20Service%20v1)
  *  site (section *Models*)
  * @internal
  */
 export class FeatureLogEntry {
-  /** The GUID of the context that the usage should be associated with. */
-  public contextId?: GuidString;
-
-  /** ID of the feature to log (from the Global Feature Registry). */
-  public readonly featureId: GuidString;
-
   /** Additional user-defined metadata for the feature usage. */
-  public usageData: FeatureLogEntryAttribute[];
+  public usageData: FeatureLogEntryMetadata[] = [];
 
-  /** Name of the client machine from which usage is logged. */
-  public readonly hostName: string;
+  public correlationId = Guid.createValue();
 
-  /** The type of usage that occurred on the client. It is acting as a filter to eliminate records from log processing that
-   * should not count towards a customer’s peak processing.
-   */
-  public readonly usageType: UsageType;
+  /** Time at which feature usage began */
+  public startDate?: Date;
 
-  /** Timestamp against which the feature is logged.
-   * It is set at construction time of this object.
-   */
-  public readonly timestamp: string;
+  /** Time at which feature usage ended */
+  public endDate?: Date;
 
   /** Creates a new FeatureLogEntry object.
    *  This also sets the timestamp against which the feature will be logged.
@@ -123,80 +110,63 @@ export class FeatureLogEntry {
    *  @param usageType Usage type (see [[UsageType]])
    *  @param contextId The GUID of the context that the usage should be associated with.
    */
-  public constructor(featureId: GuidString, hostName: string, usageType: UsageType, contextId?: GuidString) {
-    this.featureId = featureId;
-    this.hostName = hostName;
-    this.usageType = usageType;
-    this.contextId = contextId;
-    this.usageData = [];
-    this.timestamp = new Date().toISOString();
+  public constructor(
+    /** ID of the feature to log (from the Global Feature Registry). */
+    public readonly featureId: GuidString,
+    /** Name of the client machine from which usage is logged. */
+    public readonly hostName: string,
+    /** The type of usage that occurred on the client. It is acting as a filter to eliminate records from log processing that
+     * should not count towards a customer’s peak processing.
+     */
+    public readonly usageType: UsageType,
+    /** The GUID of the context that the usage should be associated with. */
+    public readonly contextId?: GuidString,
+  ) { }
+}
+
+/**
+ * Feature log entry data that can be independently submitted to the ULAS Posting Service to denote the start of a feature usage session.
+ * @internal
+ */
+export class StartFeatureLogEntry extends FeatureLogEntry {
+  public readonly startDate: Date;
+  public readonly endDate = new Date("0001-01-01T00:00:00Z"); // ULAS spec demands start feature usage entries use the default date for endDate
+
+  /**
+   * @param featureId
+   * @param hostName
+   * @param usageType
+   * @param contextId
+   * @param startDate Sets the startTime of the feature entry if provided, defaults to the current time when omitted.
+   */
+  public constructor(featureId: GuidString, hostName: string, usageType: UsageType, contextId?: GuidString, startDate: Date = new Date()) {
+    super(featureId, hostName, usageType, contextId);
+    this.startDate = startDate;
   }
 }
 
 /**
- * Start point of a duration Feature log entry that is submitted to the ULAS Posting Service.
- * See also
- *  - [[UlasClient]]
- *  - [[FeatureLogEntry]]
- *  - *FeatureLogEntry* entry on [ULAS Swagger](https://qa-connect-ulastm.bentley.com/Bentley.ULAS.SwaggerUI/SwaggerWebApp/?urls.primaryName=ULAS%20Posting%20Service%20v1)
- *  site (section *Models*)
+ * Feature log entry data that can be independently submitted to the ULAS Posting Service to denote the end of a feature usage session.
+ * Expected to always be paired with a corresponding StartFeatureLogEntry (related via correlationId)
  * @internal
  */
-export class FeatureStartedLogEntry extends FeatureLogEntry {
-  /** ID of this entry which must be passed to the respective [[FeatureEndedLogEntry]] to
-   * correlate start and end entry.
-   */
-  public readonly entryId: GuidString;
+export class EndFeatureLogEntry extends FeatureLogEntry {
+  public readonly startDate = new Date("0001-01-01T00:00:00Z"); // ULAS spec demands end feature usage entries use the default date for startDate
+  public readonly endDate: Date;
 
-  /** Creates a new FeatureStartedLogEntry object.
-   *  @param featureId Feature ID from the Global Feature Registry which is being logged.
-   *  @param hostName Name of the client machine from which the feature is being logged.
-   *  @param usageType Usage type (see [[UsageType]])
-   *  @param contextId The GUID of the context that the usage should be associated with.
-   */
-  public constructor(featureId: GuidString, hostName: string, usageType: UsageType, contextId?: GuidString) {
+  private constructor(featureId: GuidString, hostName: string, usageType: UsageType, contextId?: GuidString, endDate: Date = new Date()) {
     super(featureId, hostName, usageType, contextId);
-    this.entryId = Guid.createValue();
-  }
-}
-
-/**
- * End point of a duration Feature log entry that is submitted to the ULAS Posting Service.
- * See also
- *  - [[UlasClient]]
- *  - [[FeatureStartedLogEntry]]
- *  - *FeatureLogEntry* entry on [ULAS Swagger](https://qa-connect-ulastm.bentley.com/Bentley.ULAS.SwaggerUI/SwaggerWebApp/?urls.primaryName=ULAS%20Posting%20Service%20v1)
- *  site (section *Models*)
- * @internal
- */
-export class FeatureEndedLogEntry extends FeatureLogEntry {
-  /* ID of the corresponding [[FeatureStartedLogEntry]].
-   * See [[FeatureStartedLogEntry.entryId]]
-   */
-  public readonly startEntryId: GuidString;
-
-  /** Creates a new FeatureEndedLogEntry object.
-   *  @param featureId Feature ID from the Global Feature Registry which is being logged.
-   *  @param startEntryId ID of the corresponding [[FeatureStartedLogEntry]]
-   *  @param hostName Name of the client machine from which the feature is being logged.
-   *  @param usageType Usage type (see [[UsageType]])
-   *  @param contextId The GUID of the context that the usage should be associated with.
-   */
-  public constructor(featureId: GuidString, startEntryId: GuidString, hostName: string, usageType: UsageType, contextId?: GuidString) {
-    super(featureId, hostName, usageType, contextId);
-    this.startEntryId = startEntryId;
+    this.endDate = endDate;
   }
 
-  /** Creates a new FeatureEndedLogEntry from the specified FeatureStartedLogEntry.
-   *  @param startEntry Corresponding [[FeatureStartedLogEntry]]
-   *  @return Corresponding FeatureEndedLogEntry.
+  /**
+   * Creates a feature log entry denoting the end of a usage session using a corresponding start entry.
+   * @param startEntry
+   * @param endDate Sets the endTime of the feature entry if provided, defaults to the current time when omitted.
    */
-  public static fromStartEntry(startEntry: FeatureStartedLogEntry): FeatureEndedLogEntry {
-    const endEntry = new FeatureEndedLogEntry(startEntry.featureId, startEntry.entryId,
-      startEntry.hostName, startEntry.usageType, startEntry.contextId);
-
-    endEntry.usageData = startEntry.usageData;
-
+  public static createFromStartEntry(startEntry: StartFeatureLogEntry, endDate: Date = new Date()): EndFeatureLogEntry {
+    const endEntry = new EndFeatureLogEntry(startEntry.featureId, startEntry.hostName, startEntry.usageType, startEntry.contextId, endDate);
+    endEntry.correlationId = startEntry.correlationId;
     return endEntry;
   }
 }
@@ -221,13 +191,10 @@ export interface LogPostingResponse {
 /**
  * Client for the Bentley Usage Logging & Analysis Services (ULAS).
  * See also the two `POST` requests on [ULAS Swagger](https://qa-connect-ulastm.bentley.com/Bentley.ULAS.SwaggerUI/SwaggerWebApp/?urls.primaryName=ULAS%20Posting%20Service%20v1)
- * @deprecated Use [[UlasUtilities]] instead.
  * @internal
  */
 export class UlasClient extends Client {
   private static readonly _buddiSearchKey: string = "UsageLoggingServices.RealtimeLogging.Url";
-  private static readonly _configRelyingPartyUri = "imjs_ulas_relying_party_uri";
-  private static readonly _configDefaultRelyingPartyUri = "imjs_default_relying_party_uri";
 
   /** Creates an instance of UlasClient. */
   constructor() { super(); }
@@ -244,87 +211,51 @@ export class UlasClient extends Client {
   }
 
   /**
-   * Gets theRelyingPartyUrl for the service.
-   * @returns RelyingPartyUrl for the service.
-   */
-  private getRelyingPartyUrl(): string {
-    if (Config.App.has(UlasClient._configRelyingPartyUri))
-      return Config.App.get(UlasClient._configRelyingPartyUri) + "/";
-    else
-      return Config.App.get(UlasClient._configDefaultRelyingPartyUri) + "/";
-  }
-
-  /**
-   * Gets the (delegation) access token to access the service
+   * Logs one or more feature entries via the ULAS service.
+   * For use in the frontend only. All backend feature usage should be done via [[UlasUtilities]] instead.
    * @param requestContext The client request context.
-   * @param authTokenInfo Access token.
-   * @returns Resolves to the (delegation) access token.
-   * @internal
-   */
-  public async getAccessToken(requestContext: ClientRequestContext, authorizationToken: AuthorizationToken): Promise<AccessToken> {
-    const imsClient = new ImsDelegationSecureTokenClient();
-    return imsClient.getToken(requestContext, authorizationToken, this.getRelyingPartyUrl());
-  }
-
-  /**
-   * Logs usage via the ULAS service
-   * @param requestContext The client request context.
-   * @param hostName The client host name.
-   * @param usageType The client usage type
-   * @deprecated Use [[UlasUtilities]] instead.
+   * @param featureEntries One or more feature log entries.
    * @returns Response from the service.
    */
-  public async logUsage(requestContext: AuthorizedClientRequestContext, entry: UsageLogEntry): Promise<LogPostingResponse> {
+  public async logFeatureUsage(requestContext: AuthorizedClientRequestContext, ...featureEntries: FeatureLogEntry[]): Promise<LogPostingResponse> {
     requestContext.enter();
-    const entryJson: UsageLogEntryJson = LogEntryConverter.toUsageLogJson(requestContext, entry);
-    return this.logEntry(requestContext, entryJson, false);
+
+    const featureLogEntryJson = []; // ULAS spec always expects an array of feature logs
+    for (const entry of featureEntries) {
+      const entryJson: FeatureLogEntryJson = LogEntryConverter.toFeatureLogJson(requestContext, entry);
+      featureLogEntryJson.push(entryJson);
+    }
+
+    const baseUrl = await this.getUrl(requestContext);
+    requestContext.enter();
+    const featurePostUrl = `${baseUrl}/featureLog`;
+
+    return this.logEntry(requestContext, featurePostUrl, featureLogEntryJson);
   }
 
-  /**
-   * Logs one ore more feature entries via the ULAS service
-   * @param requestContext The client request context.
-   * @param entries One or more feature log entries.
-   * @deprecated Use [[UlasUtilities]] instead.
-   * @returns Response from the service.
-   */
-  public async logFeature(requestContext: AuthorizedClientRequestContext, ...entries: FeatureLogEntry[]): Promise<LogPostingResponse> {
-    requestContext.enter();
-    if (entries.length === 0)
-      throw new Error("At least one FeatureLogEntry must be passed to UlasClient.logFeatures.");
-
-    const entriesJson: FeatureLogEntryJson[] = LogEntryConverter.toFeatureLogJson(requestContext, entries);
-    return this.logEntry(requestContext, entriesJson, true);
-  }
-
-  private async logEntry(requestContext: AuthorizedClientRequestContext, entryJson: UsageLogEntryJson | FeatureLogEntryJson[], isFeatureEntry: boolean): Promise<LogPostingResponse> {
-    requestContext.enter();
-    let postUrl: string = (await this.getUrl(requestContext));
-    requestContext.enter();
-    if (isFeatureEntry)
-      postUrl += "/featureLog";
-
+  private async logEntry(requestContext: AuthorizedClientRequestContext, postUrl: string, jsonBody: any): Promise<LogPostingResponse> {
     const token = requestContext.accessToken;
     const authString: string = !token.getSamlAssertion() ? token.toTokenString() : "SAML " + token.toTokenString(IncludePrefix.No);
     const options: RequestOptions = {
       method: "POST",
       headers: { authorization: authString },
-      body: entryJson,
+      body: jsonBody,
     };
 
     await this.setupOptionDefaults(options);
     requestContext.enter();
     if (Logger.isEnabled(loggerCategory, LogLevel.Trace))
-      Logger.logTrace(loggerCategory, `Sending ${isFeatureEntry ? "Feature" : "Usage"} Log REST request...`, () => ({ url: postUrl, body: entryJson }));
+      Logger.logTrace(loggerCategory, `Sending Usage Log REST request...`, () => ({ url: postUrl, body: jsonBody }));
 
     const resp: Response = await request(requestContext, postUrl, options);
     requestContext.enter();
-    const requestDetails = { url: postUrl, body: entryJson, response: resp };
+    const requestDetails = { url: postUrl, body: jsonBody, response: resp };
     if (Logger.isEnabled(loggerCategory, LogLevel.Trace))
-      Logger.logTrace(loggerCategory, `Sent ${isFeatureEntry ? "Feature" : "Usage"} Log REST request.`, () => requestDetails);
+      Logger.logTrace(loggerCategory, `Sent Usage Log REST request.`, () => requestDetails);
 
     const respBody: any = resp.body;
     if (!respBody || !respBody.status || respBody.status.toLowerCase() !== "success")
-      throw new Error(`Post ${isFeatureEntry ? "Feature" : "Usage"} Log REST request failed ${!!respBody.msg ? ": " + respBody.msg : ""}. Details: ${JSON.stringify(requestDetails)}`);
+      throw new Error(`Post Usage Log REST request failed ${!!respBody.msg ? ": " + respBody.msg : ""}. Details: ${JSON.stringify(requestDetails)}`);
 
     return { status: BentleyStatus.SUCCESS, message: !!respBody.msg ? respBody.msg : "", time: !!respBody.time ? respBody.time : -1, requestId: respBody.reqID };
   }
