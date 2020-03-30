@@ -16,15 +16,17 @@ import { IModelApp, Tool, NotifyMessageDetails, OutputMessagePriority, OutputMes
 import { UiFramework } from "../UiFramework";
 import "./KeyinBrowser.scss";
 
+/** Data for each key-in.
+ */
 interface KeyinBrowserData extends AutoSuggestData {
-  // value is the toolId
-  // label is the keyin
+  // AutoSuggestData.value is the toolId
+  // AutoSuggestData.label is the keyin
+
+  /** English key-in - Browser supports both English and localized key-ins */
   englishKeyin: string;
 }
 
-/**
- * Properties that hold state of key-in browser.
- * @alpha
+/** State of key-in browser.
  */
 interface KeyinBrowserState {
   keyins: KeyinBrowserData[];
@@ -32,17 +34,31 @@ interface KeyinBrowserState {
   currentArgs: string;
 }
 
+/** Arguments for [[KeyinBrowserProps]] onExecute callback.
+ * @beta
+ */
+export interface KeyinBrowserExecuteArgs {
+  /** Id of the tool that was run */
+  toolId: string | undefined;
+  /** Arguments passed to the tool */
+  args: string[];
+  /** Status of the key-in run */
+  runStatus: boolean;
+}
+
 /** Properties of the [[KeyinBrowser]] component.
- * @alpha
+ * @beta
  */
 export interface KeyinBrowserProps extends CommonProps {
-  onExecute?: () => void;
+  /** Function called after the key-in is executed */
+  onExecute?: (args: KeyinBrowserExecuteArgs) => void;
+  /** Function called on Escape or popup close */
   onCancel?: () => void;
 }
 
 /**
- * Component used to allow user to select, provide arguments, and execute a key-in.
- * @alpha
+ * Component used to allow users to select, provide arguments, and execute a key-in.
+ * @beta
  */
 export class KeyinBrowser extends React.PureComponent<KeyinBrowserProps, KeyinBrowserState> {
   private _toolIdLabel = UiFramework.translate("keyinbrowser.keyin");
@@ -128,12 +144,17 @@ export class KeyinBrowser extends React.PureComponent<KeyinBrowserProps, KeyinBr
   }
 
   private _execute(): void {
+    let toolId: string | undefined;
+    let args: string[] = [];
+    let runStatus = false;
+
     // istanbul ignore else
     if (this.state.currentToolId && this.state.currentToolId.length > 0) {
       const foundTool = IModelApp.tools.find(this.state.currentToolId);
       // istanbul ignore else
       if (foundTool) {
-        const args = this.getArgsArray();
+        toolId = foundTool.toolId;
+        args = this.getArgsArray();
         const maxArgs = foundTool.maxArgs;
 
         if (args.length < foundTool.minArgs || (undefined !== maxArgs && args.length > maxArgs)) {
@@ -142,17 +163,17 @@ export class KeyinBrowser extends React.PureComponent<KeyinBrowserProps, KeyinBr
         }
 
         let key = "keyinbrowser:keyin";
-        window.localStorage.setItem(key, foundTool.toolId);
+        window.localStorage.setItem(key, toolId);
 
         // istanbul ignore else
         if (args && args.length > 0) {
-          key = `keyinbrowser:${foundTool.toolId}`;
+          key = `keyinbrowser:${toolId}`;
           const objectAsString = JSON.stringify(args);
           window.localStorage.setItem(key, objectAsString);
         }
 
         const tool = new foundTool();
-        let runStatus = false;
+        runStatus = false;
 
         try {
           runStatus = args.length > 0 ? tool.parseAndRun(...args) : tool.run();
@@ -167,7 +188,7 @@ export class KeyinBrowser extends React.PureComponent<KeyinBrowserProps, KeyinBr
 
     // istanbul ignore else
     if (this.props.onExecute)
-      this.props.onExecute();
+      this.props.onExecute({ toolId, args, runStatus });
   }
 
   private _outputMessage = (msg: string) => {

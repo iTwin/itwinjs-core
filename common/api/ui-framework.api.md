@@ -2746,7 +2746,7 @@ export interface KeyboardShortcutProps extends ItemProps {
     shortcuts?: KeyboardShortcutProps[];
 }
 
-// @alpha
+// @beta
 export class KeyinBrowser extends React.PureComponent<KeyinBrowserProps, KeyinBrowserState> {
     // @internal
     constructor(props: any);
@@ -2758,12 +2758,17 @@ export class KeyinBrowser extends React.PureComponent<KeyinBrowserProps, KeyinBr
     render(): React.ReactNode;
     }
 
-// @alpha
+// @beta
+export interface KeyinBrowserExecuteArgs {
+    args: string[];
+    runStatus: boolean;
+    toolId: string | undefined;
+}
+
+// @beta
 export interface KeyinBrowserProps extends CommonProps {
-    // (undocumented)
     onCancel?: () => void;
-    // (undocumented)
-    onExecute?: () => void;
+    onExecute?: (args: KeyinBrowserExecuteArgs) => void;
 }
 
 // @public

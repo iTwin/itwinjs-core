@@ -260,8 +260,9 @@ public;KeyboardShortcutMenu
 public;KeyboardShortcutMenuEvent 
 public;KeyboardShortcutMenuState
 public;KeyboardShortcutProps 
-alpha;KeyinBrowser 
-alpha;KeyinBrowserProps 
+beta;KeyinBrowser 
+beta;KeyinBrowserExecuteArgs
+beta;KeyinBrowserProps 
 public;LayoutFragmentProps
 public;LayoutHorizontalSplitProps 
 public;LayoutSplit

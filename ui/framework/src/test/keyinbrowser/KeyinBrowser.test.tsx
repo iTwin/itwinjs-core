@@ -130,7 +130,7 @@ describe("<KeyinBrowser>", () => {
     const sut = mount(<KeyinBrowser onExecute={spy} />);
     const btn = sut.find(Button);
     btn.simulate("click");
-    spy.calledOnceWithExactly().should.true;
+    spy.calledOnce.should.true;
     sut.unmount();
   });
 
@@ -159,7 +159,7 @@ describe("<KeyinBrowser>", () => {
     expect(input.length).to.eq(1);
 
     input.simulate("keydown", { key: "Enter" });
-    spy.calledOnceWithExactly().should.true;
+    spy.calledOnce.should.true;
 
     wrapper.unmount();
   });
@@ -183,7 +183,7 @@ describe("<KeyinBrowser>", () => {
 
     input.simulate("keydown", { key: "Enter" });
     await TestUtils.flushAsyncOperations();
-    spy.calledOnceWithExactly().should.true;
+    spy.calledOnce.should.true;
 
     wrapper.unmount();
     document.body.removeChild(outerNode);
