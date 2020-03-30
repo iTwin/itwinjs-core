@@ -20,7 +20,7 @@ describe("EmphasizeElements tests", () => {
 
   before(async () => {
     MockRender.App.startup();
-    imodel = await SnapshotConnection.open(path.join(iModelDir, "test.bim"));
+    imodel = await SnapshotConnection.openFile(path.join(iModelDir, "test.bim"));
     spatialView = await imodel.views.load("0x34") as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
   });

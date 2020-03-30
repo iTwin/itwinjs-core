@@ -21,7 +21,7 @@ describe("Favorite properties", () => {
 
   before(async () => {
     await initialize();
-    imodel = await SnapshotConnection.open("assets/datasets/Properties_60InstancesWithUrl2.ibim");
+    imodel = await SnapshotConnection.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
     expect(imodel).is.not.null;
   });
 
@@ -137,7 +137,7 @@ describe("Favorite properties", () => {
     before(async () => {
       terminate();
       await initializeWithClientServices();
-      imodel = await SnapshotConnection.open("assets/datasets/Properties_60InstancesWithUrl2.ibim");
+      imodel = await SnapshotConnection.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
       expect(imodel).is.not.null;
     });
 

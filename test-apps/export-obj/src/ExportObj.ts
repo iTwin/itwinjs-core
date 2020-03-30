@@ -15,7 +15,7 @@ function doExport(iModelName: string, objName: string, mtlName: string) {
   Logger.initializeToConsole();
   Logger.setLevelDefault(LogLevel.Error);
 
-  const iModel = SnapshotDb.open(iModelName);
+  const iModel = SnapshotDb.openFile(iModelName);
   process.stdout.write(`Opened ${iModelName} successfully.\n`);
 
   const objFile = fs.openSync(objName, "w");

@@ -22,7 +22,7 @@ describe("RobotWorld", () => {
     const iModelFile = IModelTestUtils.prepareOutputFile("should-run-robotworld.bim");
     const seedFile = IModelTestUtils.resolveAssetFile("empty.bim");
     IModelJsFs.copySync(seedFile, iModelFile);
-    const iModel = StandaloneDb.open(iModelFile, OpenMode.ReadWrite);
+    const iModel = StandaloneDb.openFile(iModelFile, OpenMode.ReadWrite);
     assert.isTrue(iModel !== undefined);
 
     try {

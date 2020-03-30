@@ -145,7 +145,7 @@ function disposedCheck(disposable: any, ignoredAttribs?: string[]): boolean {
 describe("Disposal of System", () => {
   before(async () => {
     IModelApp.startup();
-    imodel0 = await SnapshotConnection.open(iModelLocation);
+    imodel0 = await SnapshotConnection.openFile(iModelLocation);
   });
 
   after(async () => {
@@ -191,8 +191,8 @@ describe("Disposal of WebGL Resources", () => {
   before(async () => {
     IModelApp.startup();
 
-    imodel0 = await SnapshotConnection.open(iModelLocation);
-    imodel1 = await SnapshotConnection.open(path.join(iModelDir, "testImodel.bim"));
+    imodel0 = await SnapshotConnection.openFile(iModelLocation);
+    imodel1 = await SnapshotConnection.openFile(path.join(iModelDir, "testImodel.bim"));
   });
 
   after(async () => {

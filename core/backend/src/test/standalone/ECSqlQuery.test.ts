@@ -23,11 +23,11 @@ describe("ECSql Query", () => {
   let imodel5: SnapshotDb;
 
   before(async () => {
-    imodel1 = SnapshotDb.open(IModelTestUtils.resolveAssetFile("test.bim"));
-    imodel2 = SnapshotDb.open(IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim"));
-    imodel3 = SnapshotDb.open(IModelTestUtils.resolveAssetFile("GetSetAutoHandledStructProperties.bim"));
-    imodel4 = SnapshotDb.open(IModelTestUtils.resolveAssetFile("GetSetAutoHandledArrayProperties.bim"));
-    imodel5 = SnapshotDb.open(IModelTestUtils.resolveAssetFile("mirukuru.ibim"));
+    imodel1 = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("test.bim"));
+    imodel2 = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim"));
+    imodel3 = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("GetSetAutoHandledStructProperties.bim"));
+    imodel4 = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("GetSetAutoHandledArrayProperties.bim"));
+    imodel5 = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("mirukuru.ibim"));
   });
 
   after(async () => {

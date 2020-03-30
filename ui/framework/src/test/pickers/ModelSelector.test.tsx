@@ -30,7 +30,7 @@ describe("ModelSelector", () => {
   });
 
   beforeEach(async () => {
-    imodel = await SnapshotConnection.open(testIModelPath);
+    imodel = await SnapshotConnection.openFile(testIModelPath);
     hierarchyBuilder = new HierarchyBuilder({ imodel });
   });
 

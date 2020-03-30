@@ -41,7 +41,7 @@ describe("ExcludedElements", () => {
   it.skip("dump cs file", () => {
     Logger.setLevel(NativeLoggerCategory.DgnCore, LogLevel.Trace);
     Logger.setLevel(NativeLoggerCategory.Changeset, LogLevel.Trace);
-    const db = StandaloneDb.open("D:\\dgn\\problem\\83927\\EAP_TT_001\\seed\\EAP_TT_001.bim");
+    const db = StandaloneDb.openFile("D:\\dgn\\problem\\83927\\EAP_TT_001\\seed\\EAP_TT_001.bim");
     HubUtility.dumpChangeSetFile(db, "D:\\dgn\\problem\\83927\\EAP_TT_001", "9fd0e30f88e93bec72532f6f1e05688e2c2408cd");
   });
 

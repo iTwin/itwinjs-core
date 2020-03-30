@@ -23,7 +23,7 @@ describe("GeoCoord", () => {
 
   before(async () => {
     IModelApp.startup();
-    iModel = await SnapshotConnection.open(iModelLocation);
+    iModel = await SnapshotConnection.openFile(iModelLocation);
     // make an array of 10x10 geoPoints in geoPointList.
     for (let iLatitude: number = 0; iLatitude < 10; iLatitude++) {
       for (let iLongitude: number = 0; iLongitude < 10; iLongitude++) {

@@ -14,7 +14,7 @@ describe("CodeSpecs", async () => {
 
   before(async () => {
     IModelApp.startup();
-    iModel = await SnapshotConnection.open(iModelFileName);
+    iModel = await SnapshotConnection.openFile(iModelFileName);
   });
 
   after(async () => {

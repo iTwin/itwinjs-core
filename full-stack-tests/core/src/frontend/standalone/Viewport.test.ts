@@ -34,8 +34,8 @@ describe("Viewport", () => {
 
   before(async () => {   // Create a ViewState to load into a Viewport
     MockRender.App.startup();
-    imodel = await SnapshotConnection.open(path.join(iModelDir, "test.bim"));
-    imodel2 = await SnapshotConnection.open(path.join(iModelDir, "test2.bim"));
+    imodel = await SnapshotConnection.openFile(path.join(iModelDir, "test.bim"));
+    imodel2 = await SnapshotConnection.openFile(path.join(iModelDir, "test2.bim"));
     spatialView = await imodel.views.load("0x34") as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
   });
@@ -408,8 +408,8 @@ describe("Viewport changed events", async () => {
 
   before(async () => {
     MockRender.App.startup();
-    testBim = await SnapshotConnection.open(path.join(iModelDir, "test.bim"));
-    testImodel = await SnapshotConnection.open(path.join(iModelDir, "testImodel.bim"));
+    testBim = await SnapshotConnection.openFile(path.join(iModelDir, "test.bim"));
+    testImodel = await SnapshotConnection.openFile(path.join(iModelDir, "testImodel.bim"));
   });
 
   after(async () => {
@@ -925,7 +925,7 @@ describe("Per-model category visibility overrides", () => {
 
   before(async () => {
     MockRender.App.startup();
-    imodel = await SnapshotConnection.open(path.join(iModelDir, "test.bim"));
+    imodel = await SnapshotConnection.openFile(path.join(iModelDir, "test.bim"));
     spatialView = await imodel.views.load("0x34") as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
 

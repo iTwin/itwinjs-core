@@ -24,7 +24,7 @@ describe("DisplayStyle", () => {
 
   before(async () => {
     MockRender.App.startup();
-    imodel = await SnapshotConnection.open(iModelLocation);
+    imodel = await SnapshotConnection.openFile(iModelLocation);
   });
 
   after(async () => {

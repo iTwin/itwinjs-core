@@ -150,7 +150,7 @@ export class Surface {
     }
 
     try {
-      const iModel = await SnapshotConnection.open(filename);
+      const iModel = await SnapshotConnection.openFile(filename);
       const viewer = await this.createViewer({ iModel });
       viewer.dock(Dock.Full);
     } catch (err) {

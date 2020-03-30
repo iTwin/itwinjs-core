@@ -115,12 +115,12 @@ The following renames are required:
 
 * `IModelDb.createSnapshot` (static) --> [SnapshotDb.createEmpty]($backend)
 * `IModelDb.createSnapshot` --> [SnapshotDb.createFrom]($backend)
-* `IModelDb.openSnapshot` --> [SnapshotDb.open]($backend)
+* `IModelDb.openSnapshot` --> [SnapshotDb.openFile]($backend)
 * `IModelDb.closeSnapshot` --> [SnapshotDb.close]($backend)
 
 Corresponding changes have been made to the frontend. The following methods have been moved from (the now abstract) [IModelConnection]($frontend) class:
 
-* `IModelConnection.openSnapshot` --> [SnapshotConnection.open]($frontend)
+* `IModelConnection.openSnapshot` --> [SnapshotConnection.openFile]($frontend)
 * `IModelConnection.closeSnapshot` --> [IModelConnection.close]($frontend) (abstract) and [SnapshotConnection.close]($frontend) (concrete)
 
 ### BlankConnection

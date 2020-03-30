@@ -70,7 +70,7 @@ export class IModelTestUtils {
 
   public static openSnapshotFromSeed(filename: string, opts?: IModelTestUtilsOpenOptions): SnapshotDb {
     const dbName = IModelTestUtils.copyIModelForOpen(filename, opts || {});
-    const iModel = SnapshotDb.open(dbName); // could throw Error
+    const iModel = SnapshotDb.openFile(dbName); // could throw Error
     assert.exists(iModel);
     return iModel!;
   }
@@ -78,7 +78,7 @@ export class IModelTestUtils {
   public static openIModelForWrite(filename: string, opts?: IModelTestUtilsOpenOptions): StandaloneDb {
     opts = opts || {};
     const dbName = IModelTestUtils.copyIModelForOpen(filename, opts);
-    const iModel = StandaloneDb.open(dbName, OpenMode.ReadWrite);
+    const iModel = StandaloneDb.openFile(dbName, OpenMode.ReadWrite);
     assert.exists(iModel);
     return iModel;
   }

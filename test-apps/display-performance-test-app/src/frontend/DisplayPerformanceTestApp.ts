@@ -873,7 +873,7 @@ async function loadIModel(testConfig: DefaultConfigs): Promise<boolean> {
   let openLocalIModel = (testConfig.iModelLocation !== undefined) || MobileRpcConfiguration.isMobileFrontend;
   if (openLocalIModel) {
     try {
-      activeViewState.iModelConnection = await SnapshotConnection.open(testConfig.iModelFile!);
+      activeViewState.iModelConnection = await SnapshotConnection.openFile(testConfig.iModelFile!);
     } catch (err) {
       alert("openSnapshot failed: " + err.toString());
       openLocalIModel = false;

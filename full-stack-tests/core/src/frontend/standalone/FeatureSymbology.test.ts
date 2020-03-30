@@ -27,7 +27,7 @@ describe("FeatureSymbology.Overrides", () => {
 
   before(async () => {
     IModelApp.startup();
-    imodel = await SnapshotConnection.open(iModelLocation);
+    imodel = await SnapshotConnection.openFile(iModelLocation);
     const viewRows: ViewDefinitionProps[] = await imodel.views.queryProps({ from: SpatialViewState.classFullName });
     assert.exists(viewRows, "Should find some views");
     viewState = await imodel.views.load(viewRows[0].id!) as SpatialViewState;

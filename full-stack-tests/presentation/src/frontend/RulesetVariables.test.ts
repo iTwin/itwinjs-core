@@ -265,7 +265,7 @@ describe("Ruleset Variables", async () => {
 
     beforeEach(async () => {
       const testIModelName = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
-      imodel = await SnapshotConnection.open(testIModelName);
+      imodel = await SnapshotConnection.openFile(testIModelName);
       frontends = [0, 1].map(() => PresentationManager.create());
     });
 
@@ -293,7 +293,7 @@ describe("Ruleset Variables", async () => {
 
     beforeEach(async () => {
       const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
-      imodel = await SnapshotConnection.open(testIModelName);
+      imodel = await SnapshotConnection.openFile(testIModelName);
       expect(imodel).is.not.null;
       frontend = PresentationManager.create();
     });

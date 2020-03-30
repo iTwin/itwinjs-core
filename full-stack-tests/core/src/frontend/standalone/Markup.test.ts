@@ -17,7 +17,7 @@ describe("Markup tests", async () => {
 
   before(async () => {
     IModelApp.startup();
-    imodel = await SnapshotConnection.open(testIModelName);
+    imodel = await SnapshotConnection.openFile(testIModelName);
     await MarkupApp.initialize();
     vp = await createOnScreenTestViewport("0x24", imodel, 500, 500);
     await MarkupApp.start(vp);

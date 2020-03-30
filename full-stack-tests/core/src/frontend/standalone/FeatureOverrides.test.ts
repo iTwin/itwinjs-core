@@ -31,7 +31,7 @@ describe("FeatureOverrides tests", () => {
 
   before(async () => {   // Create a ViewState to load into a Viewport
     IModelApp.startup();
-    imodel = await SnapshotConnection.open(iModelLocation);
+    imodel = await SnapshotConnection.openFile(iModelLocation);
     spatialView = await imodel.views.load("0x34") as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
   });

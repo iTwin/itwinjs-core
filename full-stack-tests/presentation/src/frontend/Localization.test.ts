@@ -28,7 +28,7 @@ describe("Localization", async () => {
   before(async () => {
     await initialize();
     const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
-    imodel = await SnapshotConnection.open(testIModelName);
+    imodel = await SnapshotConnection.openFile(testIModelName);
     expect(imodel).is.not.null;
   });
 

@@ -29,7 +29,7 @@ async function setUpTest() {
   const iModelFile = IModelTestUtils.prepareOutputFile("RobotWorldRpc.bim");
   const seedFile = IModelTestUtils.resolveAssetFile("empty.bim");
   IModelJsFs.copySync(seedFile, iModelFile);
-  const iModel = StandaloneDb.open(iModelFile, OpenMode.ReadWrite);
+  const iModel = StandaloneDb.openFile(iModelFile, OpenMode.ReadWrite);
   await RobotWorld.importSchema(requestContext, iModel);
   iModel.saveChanges();
   PhysicalModel.insert(iModel, IModel.rootSubjectId, "test");
@@ -56,7 +56,7 @@ describe("RobotWorldRpc", () => {
     const roWrite = RobotWorldWriteRpcInterface.getClient();
     const roRead = RobotWorldReadRpcInterface.getClient();
 
-    const iModel: IModelConnection = await SnapshotConnection.open(KnownTestLocations.outputDir + "/" + "RobotWorldRpc.bim");
+    const iModel: IModelConnection = await SnapshotConnection.openFile(KnownTestLocations.outputDir + "/" + "RobotWorldRpc.bim");
     assert.isTrue(iModel !== undefined);
     const iToken: IModelRpcProps = iModel.getRpcProps();
 

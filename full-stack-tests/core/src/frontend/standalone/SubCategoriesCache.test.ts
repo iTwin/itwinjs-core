@@ -24,7 +24,7 @@ describe("SubCategoriesCache", () => {
 
   before(async () => {
     MockRender.App.startup();
-    imodel = await SnapshotConnection.open(path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/test.bim"));
+    imodel = await SnapshotConnection.openFile(path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/test.bim"));
   });
 
   after(async () => {

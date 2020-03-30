@@ -16,9 +16,9 @@ describe("ModelState", () => {
   let imodel3: IModelConnection;
   before(async () => {
     MockRender.App.startup();
-    imodel2 = await SnapshotConnection.open(iModelLocation + "mirukuru.ibim");
-    imodel = await SnapshotConnection.open(iModelLocation + "CompatibilityTestSeed.bim");
-    imodel3 = await SnapshotConnection.open(iModelLocation + "test.bim");
+    imodel2 = await SnapshotConnection.openFile(iModelLocation + "mirukuru.ibim");
+    imodel = await SnapshotConnection.openFile(iModelLocation + "CompatibilityTestSeed.bim");
+    imodel3 = await SnapshotConnection.openFile(iModelLocation + "test.bim");
   });
 
   after(async () => {

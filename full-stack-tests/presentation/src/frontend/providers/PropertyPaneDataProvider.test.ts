@@ -20,7 +20,7 @@ describe("PropertyDataProvider", async () => {
     await initialize();
 
     const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
-    imodel = await SnapshotConnection.open(testIModelName);
+    imodel = await SnapshotConnection.openFile(testIModelName);
     physicalModelProps = (await imodel.models.queryProps({ from: "bis.PhysicalModel" }))[0];
     provider = new PresentationPropertyDataProvider({ imodel, ruleset: DEFAULT_PROPERTY_GRID_RULESET });
   });

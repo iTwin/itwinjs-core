@@ -64,7 +64,7 @@ describe("iModel", () => {
     IModelTestUtils.registerTestBimSchema();
     imodel1 = IModelTestUtils.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "test.bim"), IModelTestUtils.resolveAssetFile("test.bim"));
     imodel2 = IModelTestUtils.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "CompatibilityTestSeed.bim"), IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim"));
-    imodel3 = SnapshotDb.open(IModelTestUtils.resolveAssetFile("GetSetAutoHandledStructProperties.bim"));
+    imodel3 = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("GetSetAutoHandledStructProperties.bim"));
     imodel4 = IModelTestUtils.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "GetSetAutoHandledArrayProperties.bim"), IModelTestUtils.resolveAssetFile("GetSetAutoHandledArrayProperties.bim"));
     imodel5 = IModelTestUtils.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "mirukuru.ibim"), IModelTestUtils.resolveAssetFile("mirukuru.ibim"));
 
@@ -1266,7 +1266,7 @@ describe("iModel", () => {
 
     // Reopen iModel (ensure CodeSpec cache is cleared) and reconfirm CodeSpec properties
     if (true) {
-      const iModelDb = SnapshotDb.open(iModelFileName);
+      const iModelDb = SnapshotDb.openFile(iModelFileName);
       const codeSpec: CodeSpec = iModelDb.codeSpecs.getByName(codeSpecName);
       assert.isTrue(Id64.isValidId64(codeSpec.id));
       assert.equal(codeSpec.name, codeSpecName);
@@ -1794,7 +1794,7 @@ describe("iModel", () => {
     assert.isFalse(standaloneDb1.isOpen);
     standaloneDb1.close(); // calling `close()` a second time is a no-op
     assert.isUndefined(StandaloneDb.tryFindByKey(standaloneFile1));
-    standaloneDb1 = StandaloneDb.open(standaloneFile1);
+    standaloneDb1 = StandaloneDb.openFile(standaloneFile1);
     assert.equal(standaloneDb1, StandaloneDb.tryFindByKey(standaloneFile1));
     assert.isFalse(standaloneDb1.isReadonly, "By default, StandaloneDbs are opened read/write");
     standaloneDb1.close();
@@ -1860,9 +1860,9 @@ describe("iModel", () => {
     assert.isUndefined(SnapshotDb.tryFindByKey(snapshotFile1));
     assert.isUndefined(SnapshotDb.tryFindByKey(snapshotFile2));
     assert.isUndefined(SnapshotDb.tryFindByKey(snapshotFile3));
-    snapshotDb1 = SnapshotDb.open(snapshotFile1);
-    snapshotDb2 = SnapshotDb.open(snapshotFile2);
-    snapshotDb3 = SnapshotDb.open(snapshotFile3);
+    snapshotDb1 = SnapshotDb.openFile(snapshotFile1);
+    snapshotDb2 = SnapshotDb.openFile(snapshotFile2);
+    snapshotDb3 = SnapshotDb.openFile(snapshotFile3);
     assert.equal(snapshotDb1, SnapshotDb.tryFindByKey(snapshotFile1));
     assert.equal(snapshotDb2, SnapshotDb.tryFindByKey(snapshotFile2));
     assert.equal(snapshotDb3, SnapshotDb.tryFindByKey(snapshotFile3));
@@ -1893,7 +1893,7 @@ describe("iModel", () => {
     let snapshotDb1 = SnapshotDb.createFrom(imodel1, snapshotFile1);
     assert.equal(snapshotDb1.getBriefcaseId(), ReservedBriefcaseId.Snapshot);
     snapshotDb1.close();
-    snapshotDb1 = SnapshotDb.open(snapshotFile1, { password: "unnecessaryPassword" });
+    snapshotDb1 = SnapshotDb.openFile(snapshotFile1, { password: "unnecessaryPassword" });
     assert.isTrue(snapshotDb1.isSnapshotDb());
     assert.isTrue(snapshotDb1.isSnapshot);
     assert.isTrue(snapshotDb1.isReadonly, "Expect snapshots to be read-only after open");
@@ -1907,7 +1907,7 @@ describe("iModel", () => {
     const subjectId2: Id64String = Subject.insert(snapshotDb2, IModel.rootSubjectId, subjectName2);
     assert.isTrue(Id64.isValidId64(subjectId2));
     snapshotDb2.close();
-    snapshotDb2 = SnapshotDb.open(snapshotFile2, { password: "password" });
+    snapshotDb2 = SnapshotDb.openFile(snapshotFile2, { password: "password" });
     assert.isTrue(snapshotDb2.isSnapshotDb());
     assert.isTrue(snapshotDb2.isSnapshot);
     assert.isTrue(snapshotDb2.isReadonly, "Expect snapshots to be read-only after open");
@@ -1919,7 +1919,7 @@ describe("iModel", () => {
     let snapshotDb3 = SnapshotDb.createFrom(imodel1, snapshotFile3, { password: "password" });
     assert.equal(snapshotDb3.getBriefcaseId(), ReservedBriefcaseId.Snapshot);
     snapshotDb3.close();
-    snapshotDb3 = SnapshotDb.open(snapshotFile3, { password: "password" });
+    snapshotDb3 = SnapshotDb.openFile(snapshotFile3, { password: "password" });
     assert.isTrue(snapshotDb3.isSnapshotDb());
     assert.isTrue(snapshotDb3.isSnapshot);
     assert.isTrue(snapshotDb3.isReadonly, "Expect snapshots to be read-only after open");
@@ -2005,7 +2005,7 @@ describe("iModel", () => {
     let iModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("IModel", "sqlitesqlreadonlyconnection.bim"), { rootSubject: { name: "test" } });
     const iModelPath: string = iModel.filePath;
     iModel.close();
-    iModel = SnapshotDb.open(iModelPath);
+    iModel = SnapshotDb.openFile(iModelPath);
 
     iModel.withPreparedSqliteStatement("SELECT Name,StrData FROM be_Prop WHERE Namespace='ec_Db'", (stmt: SqliteStatement) => {
       let rowCount: number = 0;

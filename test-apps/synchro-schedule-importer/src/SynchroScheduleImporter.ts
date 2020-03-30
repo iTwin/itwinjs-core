@@ -229,7 +229,7 @@ function doImport(inputArgs: Yargs.Arguments<ImportInputArgs>) {
   let originalIModel: StandaloneDb;
 
   try {
-    originalIModel = StandaloneDb.open(inputArgs.input as string, inputArgs.createDuplicateIbim ? OpenMode.Readonly : OpenMode.ReadWrite); // could throw Error
+    originalIModel = StandaloneDb.openFile(inputArgs.input as string, inputArgs.createDuplicateIbim ? OpenMode.Readonly : OpenMode.ReadWrite); // could throw Error
   } catch (error) {
     process.stdout.write("Unable to open: " + inputArgs.input + "\n");
     return false;
@@ -240,7 +240,7 @@ function doImport(inputArgs: Yargs.Arguments<ImportInputArgs>) {
   if (inputArgs.createDuplicateIbim) {
     outputFileName = inputArgs.input + ".animated.ibim";
     IModelJsFs.copySync(inputArgs.input as string, outputFileName);
-    outputIModel = StandaloneDb.open(outputFileName, OpenMode.ReadWrite);
+    outputIModel = StandaloneDb.openFile(outputFileName, OpenMode.ReadWrite);
   }
   try { unlinkSync(outputFileName + ".tiles"); } catch (error) { }
   if (inputArgs.fixRange)

@@ -17,11 +17,11 @@ describe("ECSql Query", () => {
 
   before(async () => {
     IModelApp.startup();
-    imodel1 = await SnapshotConnection.open(iModelLocation + "test.bim");
-    imodel2 = await SnapshotConnection.open(iModelLocation + "CompatibilityTestSeed.bim");
-    imodel3 = await SnapshotConnection.open(iModelLocation + "GetSetAutoHandledStructProperties.bim");
-    imodel4 = await SnapshotConnection.open(iModelLocation + "GetSetAutoHandledArrayProperties.bim");
-    imodel5 = await SnapshotConnection.open(iModelLocation + "mirukuru.ibim");
+    imodel1 = await SnapshotConnection.openFile(iModelLocation + "test.bim");
+    imodel2 = await SnapshotConnection.openFile(iModelLocation + "CompatibilityTestSeed.bim");
+    imodel3 = await SnapshotConnection.openFile(iModelLocation + "GetSetAutoHandledStructProperties.bim");
+    imodel4 = await SnapshotConnection.openFile(iModelLocation + "GetSetAutoHandledArrayProperties.bim");
+    imodel5 = await SnapshotConnection.openFile(iModelLocation + "mirukuru.ibim");
   });
 
   after(async () => {

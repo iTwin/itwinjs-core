@@ -25,7 +25,7 @@ export class LocalFileSupport {
 
     try {
       const filePath = testAppConfiguration.snapshotPath + "/" + fileName;
-      iModelConnection = await SnapshotConnection.open(filePath);
+      iModelConnection = await SnapshotConnection.openFile(filePath);
     } catch (e) {
       alert(e.message);
       iModelConnection = undefined;

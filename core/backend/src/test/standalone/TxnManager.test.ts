@@ -30,7 +30,7 @@ describe("TxnManager", () => {
     const schemaFileName = IModelTestUtils.resolveAssetFile("TestBim.ecschema.xml");
     IModelJsFs.copySync(seedFileName, testFileName);
     assert.equal(performUpgrade(testFileName), 0);
-    imodel = StandaloneDb.open(testFileName, OpenMode.ReadWrite);
+    imodel = StandaloneDb.openFile(testFileName, OpenMode.ReadWrite);
     await imodel.importSchemas(requestContext, [schemaFileName]); // will throw an exception if import fails
 
     const builder = new GeometryStreamBuilder();
@@ -239,7 +239,7 @@ describe("TxnManager", () => {
 
     // test the ability to undo/redo from previous sessions
     imodel.close();
-    imodel = StandaloneDb.open(testFileName, OpenMode.ReadWrite);
+    imodel = StandaloneDb.openFile(testFileName, OpenMode.ReadWrite);
     imodel.nativeDb.enableTxnTesting();
     txns = imodel.txns;
 

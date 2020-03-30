@@ -371,7 +371,7 @@ export class Viewer extends Window {
     const sameFile = filename === this._imodel.getRpcProps().key;
     if (!sameFile) {
       try {
-        newIModel = await SnapshotConnection.open(filename);
+        newIModel = await SnapshotConnection.openFile(filename);
       } catch (err) {
         alert(err.toString());
         return;
@@ -384,7 +384,7 @@ export class Viewer extends Window {
     await this.clearViews();
 
     if (sameFile)
-      newIModel = await SnapshotConnection.open(filename);
+      newIModel = await SnapshotConnection.openFile(filename);
 
     this._imodel = newIModel!;
     await this.buildViewList();

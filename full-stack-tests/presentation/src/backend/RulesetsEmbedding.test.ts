@@ -56,7 +56,7 @@ describe("RulesEmbedding", () => {
   }
 
   function createSnapshotFromSeed(testFileName: string, seedFileName: string): SnapshotDb {
-    const seedDb = SnapshotDb.open(seedFileName);
+    const seedDb = SnapshotDb.openFile(seedFileName);
     const testDb = SnapshotDb.createFrom(seedDb, testFileName);
     seedDb.close();
     return testDb;

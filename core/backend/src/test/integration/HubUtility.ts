@@ -222,7 +222,7 @@ export class HubUtility {
 
     Logger.logInfo(HubUtility.logCategory, "Creating standalone iModel");
     HubUtility.createStandaloneIModel(briefcasePathname, iModelDir);
-    const iModel = StandaloneDb.open(briefcasePathname, OpenMode.ReadWrite);
+    const iModel = StandaloneDb.openFile(briefcasePathname, OpenMode.ReadWrite);
 
     const changeSets: ChangeSetToken[] = HubUtility.readChangeSets(iModelDir);
 
@@ -394,7 +394,7 @@ export class HubUtility {
       IModelJsFs.unlinkSync(iModelPathname);
     IModelJsFs.copySync(seedPathname, iModelPathname);
 
-    const iModel = StandaloneDb.open(iModelPathname, OpenMode.ReadWrite);
+    const iModel = StandaloneDb.openFile(iModelPathname, OpenMode.ReadWrite);
     iModel.nativeDb.setBriefcaseId(ReservedBriefcaseId.LegacyStandalone);
     iModel.close();
 

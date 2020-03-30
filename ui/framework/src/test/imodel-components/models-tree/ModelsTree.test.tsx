@@ -1546,7 +1546,7 @@ describe("ModelsTree", () => {
     });
 
     beforeEach(async () => {
-      imodel = await SnapshotConnection.open(testIModelPath);
+      imodel = await SnapshotConnection.openFile(testIModelPath);
     });
 
     afterEach(async () => {

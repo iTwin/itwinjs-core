@@ -2,15 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { ClientRequestContextProps, GuidString } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContextProps } from "@bentley/imodeljs-clients";
 import {
-  IModelReadRpcInterface, IModelTileRpcInterface,
-  IModelWriteRpcInterface, RpcInterface, RpcManager, SnapshotIModelRpcInterface, WipRpcInterface,
-  DevToolsRpcInterface, Editor3dRpcInterface,
-  IModelRpcProps,
-  NativeAppRpcInterface,
+  DevToolsRpcInterface, Editor3dRpcInterface, IModelReadRpcInterface, IModelRpcProps, IModelTileRpcInterface, IModelWriteRpcInterface, NativeAppRpcInterface,
+  RpcInterface, RpcManager, SnapshotIModelRpcInterface, WipRpcInterface,
 } from "@bentley/imodeljs-common";
-import { ClientRequestContextProps, GuidString } from "@bentley/bentleyjs-core";
 
 export interface CloudEnvProps {
   iModelBank?: {
@@ -33,15 +30,15 @@ export abstract class TestRpcInterface extends RpcInterface {
     return this.forward(arguments);
   }
 
-  public async extractChangeSummaries(_iModelToken: IModelRpcProps, _options: any): Promise<void> {
+  public async extractChangeSummaries(_iModelRpcProps: IModelRpcProps, _options: any): Promise<void> {
     return this.forward(arguments);
   }
 
-  public async deleteChangeCache(_iModelToken: IModelRpcProps): Promise<void> {
+  public async deleteChangeCache(_iModelRpcProps: IModelRpcProps): Promise<void> {
     return this.forward(arguments);
   }
 
-  public async executeTest(_iModelToken: IModelRpcProps, _testName: string, _params: any): Promise<any> {
+  public async executeTest(_iModelRpcProps: IModelRpcProps, _testName: string, _params: any): Promise<any> {
     return this.forward(arguments);
   }
 
@@ -70,8 +67,8 @@ export abstract class EventsTestRpcInterface extends RpcInterface {
     return RpcManager.getClientForInterface(EventsTestRpcInterface);
   }
 
-  // Set a event that would be fired from backend and recieved on frontend.
-  public async echo(_iModelToken: IModelRpcProps, _id: GuidString, _message: string): Promise<void> { return this.forward(arguments); }
+  // Set a event that would be fired from backend and received on frontend.
+  public async echo(_iModelRpcProps: IModelRpcProps, _id: GuidString, _message: string): Promise<void> { return this.forward(arguments); }
 }
 
 export const rpcInterfaces = [

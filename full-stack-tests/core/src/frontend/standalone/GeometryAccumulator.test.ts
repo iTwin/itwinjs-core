@@ -38,7 +38,7 @@ describe("GeometryAccumulator tests", () => {
 
   before(async () => {   // Create a ViewState to load into a Viewport
     IModelApp.startup();
-    iModel = await SnapshotConnection.open(iModelLocation);
+    iModel = await SnapshotConnection.openFile(iModelLocation);
     spatialView = await iModel.views.load("0x34") as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
   });

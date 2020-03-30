@@ -122,7 +122,7 @@ export async function toggleExternalTiledGraphicsProvider(vp: Viewport): Promise
 
   let iModel;
   try {
-    iModel = await SnapshotConnection.open(filename);
+    iModel = await SnapshotConnection.openFile(filename);
     const provider = await Provider.create(vp, iModel);
     providersByViewport.set(vp, provider);
     vp.addTiledGraphicsProvider(provider);

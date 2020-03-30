@@ -2478,10 +2478,11 @@ export class SnapshotDb extends IModelDb {
   }
 
   /** Open a read-only iModel *snapshot*.
+   * @param filePath the full path of the snapshot iModel file to open.
    * @see [[close]]
    * @throws [[IModelError]] If the file is not found or is not a valid *snapshot*.
    */
-  public static open(filePath: string, encryptionProps?: IModelEncryptionProps): SnapshotDb {
+  public static openFile(filePath: string, encryptionProps?: IModelEncryptionProps): SnapshotDb {
     if (SnapshotDb.tryFindByKey(filePath)) {
       throw new IModelError(DbResult.BE_SQLITE_CANTOPEN, `Cannot open snapshot iModel at ${filePath} again - it has already been opened once`, Logger.logError, loggerCategory);
     }
@@ -2489,7 +2490,7 @@ export class SnapshotDb extends IModelDb {
     const nativeDb = new IModelHost.platform.DgnDb();
     const status: DbResult = nativeDb.openIModel(filePath, OpenMode.Readonly, undefined, encryptionPropsString);
     if (DbResult.BE_SQLITE_OK !== status) {
-      throw new IModelError(status, "Could not open standalone iModel", Logger.logError, loggerCategory, () => ({ filePath }));
+      throw new IModelError(status, "Could not open snapshot iModel", Logger.logError, loggerCategory, () => ({ filePath }));
     }
     return new SnapshotDb(nativeDb, OpenParams.openSnapshot());
   }
@@ -2584,12 +2585,12 @@ export class StandaloneDb extends IModelDb {
     return new StandaloneDb(nativeDb, OpenParams.standalone(OpenMode.ReadWrite));
   }
 
-  /** Open a standalone iModel.
+  /** Open a standalone iModel file.
    * @param filePath The path of the standalone iModel file.
    * @param openMode Optional open mode for the standalone iModel. The default is read/write.
    * @throws [[IModelError]]
    */
-  public static open(filePath: string, openMode: OpenMode = OpenMode.ReadWrite): StandaloneDb {
+  public static openFile(filePath: string, openMode: OpenMode = OpenMode.ReadWrite): StandaloneDb {
     if (StandaloneDb.tryFindByKey(filePath)) {
       throw new IModelError(DbResult.BE_SQLITE_CANTOPEN, `Cannot open snapshot iModel at ${filePath} again - it has already been opened once`, Logger.logError, loggerCategory);
     }

@@ -97,7 +97,7 @@ describe("Render mirukuru with VAOs disabled", () => {
 
     IModelApp.startup({ renderSys: renderSysOpts });
     const imodelLocation = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/mirukuru.ibim");
-    imodel = await SnapshotConnection.open(imodelLocation);
+    imodel = await SnapshotConnection.openFile(imodelLocation);
   });
 
   after(async () => {
@@ -163,7 +163,7 @@ describe("Properly render on- or off-screen", () => {
   before(async () => {
     IModelApp.startup();
     const imodelLocation = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/mirukuru.ibim");
-    imodel = await SnapshotConnection.open(imodelLocation);
+    imodel = await SnapshotConnection.openFile(imodelLocation);
   });
 
   after(async () => {
@@ -194,7 +194,7 @@ describe("Render mirukuru with single clip plane", () => {
   before(async () => {
     IModelApp.startup();
     const imodelLocation = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/mirukuru.ibim");
-    imodel = await SnapshotConnection.open(imodelLocation);
+    imodel = await SnapshotConnection.openFile(imodelLocation);
   });
 
   after(async () => {
@@ -259,7 +259,7 @@ describe("Render mirukuru", () => {
   before(async () => {
     IModelApp.startup();
     const imodelLocation = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/mirukuru.ibim");
-    imodel = await SnapshotConnection.open(imodelLocation);
+    imodel = await SnapshotConnection.openFile(imodelLocation);
   });
 
   after(async () => {
@@ -726,7 +726,7 @@ describe("Tile unloading", async () => {
     IModelApp.startup({ tileAdmin: TileAdmin.create(tileOpts) });
 
     const imodelLocation = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/CompatibilityTestSeed.bim");
-    imodel = await SnapshotConnection.open(imodelLocation);
+    imodel = await SnapshotConnection.openFile(imodelLocation);
   });
 
   after(async () => {
@@ -942,7 +942,7 @@ describe("White-on-white reversal", async () => {
   before(async () => {
     IModelApp.startup();
     const imodelLocation = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/mirukuru.ibim");
-    imodel = await SnapshotConnection.open(imodelLocation);
+    imodel = await SnapshotConnection.openFile(imodelLocation);
   });
 
   after(async () => {

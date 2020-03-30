@@ -755,16 +755,18 @@ export class SnapshotConnection extends IModelConnection {
   public get isClosed(): boolean { return this._isClosed ? true : false; }
   private _isClosed?: boolean;
 
-  /** Open an IModelConnection to a read-only iModel *snapshot* (not managed by iModelHub) from a file name that is resolved by the backend.
+  /** Open an IModelConnection to a read-only iModel *snapshot* (not managed by iModelHub) from a file.
    * This method is intended for desktop or mobile applications and should not be used for web applications.
    */
-  public static async open(filePath: string): Promise<SnapshotConnection> {
+  public static async openFile(filePath: string): Promise<SnapshotConnection> {
     const openResponse = await SnapshotIModelRpcInterface.getClient().openSnapshot(filePath);
     Logger.logTrace(loggerCategory, "SnapshotConnection.open", () => ({ fileName: filePath }));
     const connection = new SnapshotConnection(openResponse);
     IModelConnection.onOpen.raiseEvent(connection);
     return connection;
   }
+
+  // WIP: add openRemote method
 
   /** Close this SnapshotConnection. */
   public async close(): Promise<void> {

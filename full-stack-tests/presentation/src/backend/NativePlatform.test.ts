@@ -25,7 +25,7 @@ describe("NativePlatform", () => {
 
   beforeEach(() => {
     const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
-    imodel = SnapshotDb.open(testIModelName);
+    imodel = SnapshotDb.openFile(testIModelName);
     expect(imodel).is.not.null;
     const TNativePlatform = createDefaultNativePlatform({ // tslint:disable-line: variable-name naming-convention
       id: "",

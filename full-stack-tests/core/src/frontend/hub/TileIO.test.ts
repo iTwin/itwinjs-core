@@ -270,7 +270,7 @@ describe("TileIO (WebGL)", () => {
 
   before(async () => {
     IModelApp.startup();
-    imodel = await SnapshotConnection.open(iModelLocation);
+    imodel = await SnapshotConnection.openFile(iModelLocation);
   });
 
   after(async () => {
@@ -440,7 +440,7 @@ describe("TileIO (mock render)", () => {
 
   before(async () => {
     MockRender.App.startup();
-    imodel = await SnapshotConnection.open(iModelLocation);
+    imodel = await SnapshotConnection.openFile(iModelLocation);
   });
 
   after(async () => {
@@ -598,7 +598,7 @@ describe("mirukuru TileTree", () => {
   before(async () => {
     MockRender.App.systemFactory = () => new TestSystem();
     MockRender.App.startup();
-    imodel = await SnapshotConnection.open(path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/mirukuru.ibim"));
+    imodel = await SnapshotConnection.openFile(path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/mirukuru.ibim"));
   });
 
   afterEach(() => {
@@ -855,7 +855,7 @@ describe("TileAdmin", () => {
         tileAdmin: TileAdmin.create(props),
       });
 
-      theIModel = await SnapshotConnection.open(path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/mirukuru.ibim"));
+      theIModel = await SnapshotConnection.openFile(path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/mirukuru.ibim"));
       return theIModel;
     }
 

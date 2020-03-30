@@ -14,7 +14,7 @@ describe("Tools", () => {
 
   before(async () => {
     MockRender.App.startup();
-    imodel = await SnapshotConnection.open(iModelLocation);
+    imodel = await SnapshotConnection.openFile(iModelLocation);
   });
   after(async () => {
     if (imodel) await imodel.close();
@@ -162,7 +162,7 @@ describe("HiliteSet", () => {
 
   before(async () => {
     MockRender.App.startup();
-    imodel = await SnapshotConnection.open(iModelLocation);
+    imodel = await SnapshotConnection.openFile(iModelLocation);
     selected = imodel.selectionSet;
     hilited = imodel.hilited;
   });

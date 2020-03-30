@@ -137,7 +137,7 @@ class Provider implements TiledGraphicsProvider, FeatureOverrideProvider {
 
       // Open the "revision" iModel.
       const filename = vp.iModel.getRpcProps().key + ".rev";
-      const iModel = await SnapshotConnection.open(filename);
+      const iModel = await SnapshotConnection.openFile(filename);
 
       // ###TODO determine which model(s) contain the deleted elements - don't need tiles for any others.
       await iModel.models.load(view.modelSelector.models);

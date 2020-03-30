@@ -23,7 +23,7 @@ export class SnapshotIModelRpcImpl extends RpcInterface implements SnapshotIMode
   public async openSnapshot(filePath: string): Promise<IModelConnectionProps> {
     let snapshotDb: SnapshotDb | undefined = SnapshotDb.tryFindByKey(filePath);
     if (undefined === snapshotDb) {
-      snapshotDb = SnapshotDb.open(filePath);
+      snapshotDb = SnapshotDb.openFile(filePath);
     }
     return snapshotDb.getConnectionProps();
   }

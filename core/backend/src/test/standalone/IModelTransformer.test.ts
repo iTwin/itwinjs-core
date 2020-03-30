@@ -236,14 +236,14 @@ describe("IModelTransformer", () => {
   it.skip("should successfully complete PlantSight workflow", async () => {
     // Source IModelDb
     const sourceFileName = "d:/data/DgnDb/PlantSight/PlantSightSource.bim";
-    const sourceDb = SnapshotDb.open(sourceFileName);
+    const sourceDb = SnapshotDb.openFile(sourceFileName);
     const sourceModelId: Id64String = "0x20000000002";
     assert.doesNotThrow(() => sourceDb.elements.getElement<PhysicalPartition>(sourceModelId));
     assert.doesNotThrow(() => sourceDb.models.getModel<PhysicalModel>(sourceModelId));
     assert.isAtLeast(countElementsInModel(sourceDb, sourceModelId), 1, "Source Model should contain Elements");
     // Target IModelDb
     const targetFileName = IModelTestUtils.prepareOutputFile("IModelTransformer", "PlantSightTarget.bim");
-    const targetDb = SnapshotDb.createFrom(SnapshotDb.open("d:/data/DgnDb/PlantSight/PlantSightTarget.bim"), targetFileName);
+    const targetDb = SnapshotDb.createFrom(SnapshotDb.openFile("d:/data/DgnDb/PlantSight/PlantSightTarget.bim"), targetFileName);
     // Import
     const transformer = new IModelTransformer(sourceDb, targetDb);
     transformer.processAll();
@@ -256,7 +256,7 @@ describe("IModelTransformer", () => {
   it("should clone test file", async () => {
     // open source iModel
     const sourceFileName = IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim");
-    const sourceDb = SnapshotDb.open(sourceFileName);
+    const sourceDb = SnapshotDb.openFile(sourceFileName);
     const numSourceElements: number = count(sourceDb, Element.classFullName);
     assert.exists(sourceDb);
     assert.isAtLeast(numSourceElements, 12);
@@ -423,7 +423,7 @@ describe("IModelTransformer", () => {
     // Import campus
     if (true) {
       const campusIModelFileName = "D:/data/bim/MergeTest/Campus.bim";
-      const campusDb = SnapshotDb.open(campusIModelFileName);
+      const campusDb = SnapshotDb.openFile(campusIModelFileName);
       IModelTransformerUtils.dumpIModelInfo(campusDb);
       const transformer = new IModelTransformer(campusDb, mergedDb, { targetScopeElementId: campusSubjectId });
       await transformer.processSchemas(new BackendRequestContext());
@@ -438,7 +438,7 @@ describe("IModelTransformer", () => {
     // Import garage
     if (true) {
       const garageIModelFileName = "D:/data/bim/MergeTest/Garage.bim";
-      const garageDb = SnapshotDb.open(garageIModelFileName);
+      const garageDb = SnapshotDb.openFile(garageIModelFileName);
       IModelTransformerUtils.dumpIModelInfo(garageDb);
       const transformer = new IModelTransformer(garageDb, mergedDb, { targetScopeElementId: garageSubjectId });
       transformer.context.remapElement(IModel.rootSubjectId, garageSubjectId);
@@ -452,7 +452,7 @@ describe("IModelTransformer", () => {
     // Import building
     if (true) {
       const buildingIModelFileName = "D:/data/bim/MergeTest/Building.bim";
-      const buildingDb = SnapshotDb.open(buildingIModelFileName);
+      const buildingDb = SnapshotDb.openFile(buildingIModelFileName);
       IModelTransformerUtils.dumpIModelInfo(buildingDb);
       const transformer = new IModelTransformer(buildingDb, mergedDb, { targetScopeElementId: buildingSubjectId });
       await transformer.processSchemas(new BackendRequestContext());

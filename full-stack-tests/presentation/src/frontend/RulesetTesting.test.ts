@@ -38,7 +38,7 @@ describe("RulesetTesting", () => {
 
   beforeEach(async () => {
     // set up for testing imodel presentation data
-    imodel = await SnapshotConnection.open(imodelPath);
+    imodel = await SnapshotConnection.openFile(imodelPath);
   });
 
   afterEach(async () => {

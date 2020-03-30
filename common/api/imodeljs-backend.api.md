@@ -3636,7 +3636,7 @@ export class SnapshotDb extends IModelDb {
     static createEmpty(filePath: string, options: CreateEmptySnapshotIModelProps): SnapshotDb;
     static createFrom(iModelDb: IModelDb, snapshotFile: string, options?: CreateSnapshotIModelProps): SnapshotDb;
     get filePath(): string;
-    static open(filePath: string, encryptionProps?: IModelEncryptionProps): SnapshotDb;
+    static openFile(filePath: string, encryptionProps?: IModelEncryptionProps): SnapshotDb;
     // @internal
     static tryFindByKey(key: string): SnapshotDb | undefined;
 }
@@ -3813,7 +3813,7 @@ export class StandaloneDb extends IModelDb {
     close(): void;
     static createEmpty(filePath: string, args: CreateIModelProps): StandaloneDb;
     get filePath(): string;
-    static open(filePath: string, openMode?: OpenMode): StandaloneDb;
+    static openFile(filePath: string, openMode?: OpenMode): StandaloneDb;
     static tryFindByKey(key: string): StandaloneDb | undefined;
 }
 
