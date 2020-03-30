@@ -203,9 +203,7 @@ export abstract class IModelDb extends IModel {
     if (IModelHost.configuration && IModelHost.configuration.applicationType === ApplicationType.WebAgent)
       return; // We do not log usage for agents, since the usage logging service cannot handle them.
 
-    const authType = requestContext.accessToken.isJwt
-      ? IModelJsNative.AuthType.OIDC
-      : IModelJsNative.AuthType.SAML;
+    const authType = requestContext.accessToken.isJwt ? IModelJsNative.AuthType.OIDC : IModelJsNative.AuthType.SAML;
     try {
       await UlasUtilities.postUserUsage(requestContext, contextId, authType, os.hostname(), IModelJsNative.UsageType.Trial);
     } catch (err) {
@@ -599,7 +597,9 @@ export abstract class IModelDb extends IModel {
   }
 
   /** Update the IModelProps of this iModel in the database. */
-  public updateIModelProps(): void { this.nativeDb.updateIModelProps(JSON.stringify(this.toJSON())); }
+  public updateIModelProps(): void {
+    this.nativeDb.updateIModelProps(JSON.stringify(this.toJSON()));
+  }
 
   /** Commit pending changes to this iModel.
    * @note If this IModelDb is connected to an iModel, then you must call [[ConcurrencyControl.request]] before attempting to save changes.

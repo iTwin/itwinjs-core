@@ -259,6 +259,9 @@ export type ColorDefProps = number | ColorDef;
 export class ColorDef {
   private _tbgr: number;
 
+  /** Freeze this ColorDef */
+  public freeze(): Readonly<this> { return Object.freeze(this); }
+
   /** Swap the red and blue values of a 32-bit integer representing a color. Transparency and green are unchanged. */
   public static rgb2bgr(val: number): number { scratchUInt32[0] = val; return scratchBytes[3] << 24 + scratchBytes[0] << 16 + scratchBytes[1] << 8 + scratchBytes[2]; }
 
@@ -665,11 +668,11 @@ export class ColorDef {
   /** A blue frozen ColorDef. */
   public static readonly blue = new ColorDef(ColorByName.blue);
 }
-Object.freeze(ColorDef.black);
-Object.freeze(ColorDef.white);
-Object.freeze(ColorDef.red);
-Object.freeze(ColorDef.green);
-Object.freeze(ColorDef.blue);
+ColorDef.black.freeze();
+ColorDef.white.freeze();
+ColorDef.red.freeze();
+ColorDef.green.freeze();
+ColorDef.blue.freeze();
 
 /** JSON representation of an [[RgbColor]]
  * @public

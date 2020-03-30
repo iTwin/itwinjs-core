@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module Tiles
  */
-import { Range3d, Range1d, Point3d, Point2d, Range2d, Angle, BilinearPatch } from "@bentley/geometry-core";
+import { Range3d, Range1d, Point3d, Point2d, Range2d, BilinearPatch } from "@bentley/geometry-core";
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
 import { QParams3d, QPoint3d, TextureMapping, RenderTexture, ColorDef, LinePixels, FillFlags, Cartographic } from "@bentley/imodeljs-common";
 import { Mesh, MeshArgs } from "../render/primitives/mesh/MeshPrimitives";
@@ -17,6 +17,8 @@ import { request, Response, RequestOptions } from "@bentley/imodeljs-clients";
 import { IModelConnection } from "../IModelConnection";
 import { RenderGraphic } from "../render/RenderGraphic";
 import { RenderSystem } from "../render/RenderSystem";
+
+// cspell:ignore atae qdng uyzv auje sealevel
 
 /** @internal */
 export class BingElevationProvider {
@@ -40,7 +42,7 @@ export class BingElevationProvider {
     this._heightListRequestTemplate = "https://dev.virtualearth.net/REST/v1/Elevation/List?points={points}&heights={heights}&key={BingMapsAPIKey}".replace("{BingMapsAPIKey}", bingKey);
   }
   public async getHeight(carto: Cartographic, geodetic = true) {
-    const requestUrl = this._heightListRequestTemplate.replace("{points}", Angle.radiansToDegrees(carto.latitude) + "," + Angle.radiansToDegrees(carto.longitude)).replace("{heights}", geodetic ? "ellipsoid" : "sealevel");
+    const requestUrl = this._heightListRequestTemplate.replace("{points}", carto.latitudeDegrees + "," + carto.longitudeDegrees).replace("{heights}", geodetic ? "ellipsoid" : "sealevel");
     const requestOptions: RequestOptions = { method: "GET", responseType: "json" };
     try {
       const tileResponse: Response = await request(this._requestContext, requestUrl, requestOptions);
@@ -62,7 +64,7 @@ export class BingElevationProvider {
   }
   public async getGeodeticToSeaLevelOffset(point: Point3d, iModel: IModelConnection): Promise<number> {
     const carto = iModel.spatialToCartographicFromEcef(point);
-    const requestUrl = this._seaLevelOffsetRequestTemplate.replace("{points}", Angle.radiansToDegrees(carto.latitude) + "," + Angle.radiansToDegrees(carto.longitude));
+    const requestUrl = this._seaLevelOffsetRequestTemplate.replace("{points}", carto.latitudeDegrees + "," + carto.longitudeDegrees);
     const requestOptions: RequestOptions = { method: "GET", responseType: "json" };
     try {
       const tileResponse: Response = await request(this._requestContext, requestUrl, requestOptions);
@@ -81,7 +83,7 @@ export class BingElevationProvider {
     range.expandInPlace(1000.);         // Expand for project surroundings.
     for (const corner of range.corners()) {
       const carto = iModel.spatialToCartographicFromEcef(corner);
-      latLongRange.extendXY(Angle.radiansToDegrees(carto.longitude), Angle.radiansToDegrees(carto.latitude));
+      latLongRange.extendXY(carto.longitudeDegrees, carto.latitudeDegrees);
     }
     const heights = await this.getHeights(latLongRange);
     return Range1d.createArray(heights);
@@ -91,7 +93,7 @@ export class BingElevationProvider {
     const latLongRange = Range2d.createNull();
     for (const corner of iModel.projectExtents.corners()) {
       const carto = iModel.spatialToCartographicFromEcef(corner);
-      latLongRange.extendXY(Angle.radiansToDegrees(carto.longitude), Angle.radiansToDegrees(carto.latitude));
+      latLongRange.extendXY(carto.longitudeDegrees, carto.latitudeDegrees);
     }
     const heights = await this.getHeights(latLongRange);
     let total = 0.0;
@@ -138,9 +140,9 @@ export class BingElevationProvider {
     }
     BingElevationProvider._scratchUV.y = 0.0;
     const delta = 1.0 / sizeM1;
-    for (let row = 0; row < size; row++ , BingElevationProvider._scratchUV.y += delta) {
+    for (let row = 0; row < size; row++, BingElevationProvider._scratchUV.y += delta) {
       BingElevationProvider._scratchUV.x = 0;
-      for (let col = 0; col < size; col++ , BingElevationProvider._scratchUV.x += delta) {
+      for (let col = 0; col < size; col++, BingElevationProvider._scratchUV.x += delta) {
         patch.uvFractionToPoint(BingElevationProvider._scratchUV.x, BingElevationProvider._scratchUV.y, BingElevationProvider._scratchPoint);
         BingElevationProvider._scratchPoint.z = groundBias + heights[(sizeM1 - row) * size + col];
         BingElevationProvider._scratchQPoint.init(BingElevationProvider._scratchPoint, BingElevationProvider._scratchQParams);

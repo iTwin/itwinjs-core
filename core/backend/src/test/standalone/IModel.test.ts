@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { BeEvent, ClientRequestContext, DbResult, GetMetaDataFunction, Guid, GuidString, Id64, Id64String, Logger, LogLevel, OpenMode, using } from "@bentley/bentleyjs-core";
-import { Angle, GeometryQuery, LineString3d, Loop, Matrix4d, Point3d, PolyfaceBuilder, Range3d, StrokeOptions, Transform, YawPitchRollAngles } from "@bentley/geometry-core";
+import { GeometryQuery, LineString3d, Loop, Matrix4d, Point3d, PolyfaceBuilder, Range3d, StrokeOptions, Transform, YawPitchRollAngles } from "@bentley/geometry-core";
 import { AccessToken, IAuthorizationClient } from "@bentley/imodeljs-clients";
 import {
   AxisAlignedBox3d, Code, CodeScopeSpec, CodeSpec, ColorByName, ElementProps, EntityMetaData, EntityProps, FilePropertyProps, FontMap,
@@ -1060,8 +1060,8 @@ describe("iModel", () => {
     assert.isTrue(z2.isAlmostEqual(center), "ecefToSpatial");
 
     const carto = imodel5.spatialToCartographicFromEcef(center);
-    assert.approximately(Angle.radiansToDegrees(carto.longitude), 132.70599650539427, .1); // this data is in Japan
-    assert.approximately(Angle.radiansToDegrees(carto.latitude), 34.35461328445589, .1);
+    assert.approximately(carto.longitudeDegrees, 132.70599650539427, .1); // this data is in Japan
+    assert.approximately(carto.latitudeDegrees, 34.35461328445589, .1);
     const c2 = { longitude: 2.316156576159219, latitude: 0.5996011150631385, height: 10 };
     assert.isTrue(carto.equalsEpsilon(c2, .001), "spatialToCartographic");
 

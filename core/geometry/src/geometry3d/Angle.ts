@@ -33,8 +33,8 @@ export class Angle implements BeJSONFunctions {
   private constructor(radians = 0, degrees?: number) { this._radians = radians; this._degrees = degrees; }
   /** Return a new angle with the same content. */
   public clone(): Angle { return new Angle(this._radians, this._degrees); }
-  /** Freeze this instance so it can be considered read-only */
-  public freeze() { Object.freeze(this); }
+  /** Freeze this instance so it is read-only */
+  public freeze(): Readonly<this> { return Object.freeze(this); }
 
   /**
    * Return a new Angle object for angle given in degrees.

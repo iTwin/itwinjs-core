@@ -25,7 +25,7 @@ export class SnapshotIModelRpcImpl extends RpcInterface implements SnapshotIMode
     if (undefined === snapshotDb) {
       snapshotDb = SnapshotDb.open(filePath);
     }
-    return snapshotDb.toJSON();
+    return snapshotDb.getConnectionProps();
   }
 
   /** Ask the backend to close a snapshot iModel. */

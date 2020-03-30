@@ -14,7 +14,6 @@ import {
   BeTimePoint,
 } from "@bentley/bentleyjs-core";
 import {
-  Angle,
   AxisOrder,
   BilinearPatch,
   EllipsoidPatch,
@@ -630,8 +629,8 @@ export class BackgroundTerrainTileTreeReference extends TileTreeReference {
     const worldPoint = hit.hitPoint.clone();
     const cartoGraphic = backgroundMapGeometry.dbToCartographic(worldPoint!);
     const strings = [];
-    strings.push("Latitude: " + Angle.radiansToDegrees(cartoGraphic.latitude).toFixed(4));
-    strings.push("Longitude: " + Angle.radiansToDegrees(cartoGraphic.longitude).toFixed(4));
+    strings.push("Latitude: " + cartoGraphic.latitudeDegrees.toFixed(4));
+    strings.push("Longitude: " + cartoGraphic.longitudeDegrees.toFixed(4));
     const geodeticHeight = (cartoGraphic.height - tree.bimElevationBias) / tree.exaggeration;
     strings.push("Height (Meters) Geodetic: " + geodeticHeight.toFixed(1) + " Sea Level: " + (geodeticHeight - tree.geodeticOffset).toFixed(1));
     const div = document.createElement("div");

@@ -199,18 +199,18 @@ export class Matrix3d implements BeJSONFunctions {
   }
 
   /** Freeze this Matrix3d. */
-  public freeze() {
+  public freeze(): Readonly<this> {
     this.computeCachedInverse(true);
     /* hm.. can't freeze the Float64Arrays . . .
     Object.freeze(this.coffs);
     if (this.inverseCoffs)
       Object.freeze(this.inverseCoffs);
     */
-    Object.freeze(this);
+    return Object.freeze(this);
   }
   /**
    *
-   * @param coffs optional coefficient array.  This is captured.
+   * @param coffs optional coefficient array. This is captured.
    */
   public constructor(coffs?: Float64Array) {
     this.coffs = coffs ? coffs : new Float64Array(9);
@@ -933,7 +933,7 @@ export class Matrix3d implements BeJSONFunctions {
     let ii = 3 * i;
     let jj = 3 * j;
     const limit = ii + 3;
-    for (; ii < limit; ii++ , jj++) {
+    for (; ii < limit; ii++, jj++) {
       const a = this.coffs[ii];
       const b = this.coffs[jj];
       this.coffs[ii] = a * c + b * s;

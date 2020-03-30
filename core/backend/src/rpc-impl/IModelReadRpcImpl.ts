@@ -57,7 +57,7 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     openParams.timeout = 1000; // 1 second
     const iModelVersion = IModelVersion.asOfChangeSet(tokenProps.changeSetId!);
     const db = await BriefcaseDb.open(requestContext, tokenProps.contextId!, tokenProps.iModelId!, openParams, iModelVersion);
-    return db.toJSON();
+    return db.getConnectionProps();
   }
 
   public async close(tokenProps: IModelRpcProps): Promise<boolean> {

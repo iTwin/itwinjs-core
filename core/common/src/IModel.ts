@@ -41,56 +41,6 @@ export interface EcefLocationProps {
   cartographicOrigin?: LatLongAndHeight;
 }
 
-/** The position and orientation of an iModel on the earth in [ECEF](https://en.wikipedia.org/wiki/ECEF) (Earth Centered Earth Fixed) coordinates
- * @see [GeoLocation of iModels]($docs/learning/GeoLocation.md)
- * @public
- */
-export class EcefLocation implements EcefLocationProps {
-  /** The origin of the ECEF transform. */
-  public readonly origin: Point3d;
-  /** The orientation of the ECEF transform */
-  public readonly orientation: YawPitchRollAngles;
-  /** Optional position on the earth used to establish the ECEF origin and orientation. */
-  public readonly cartographicOrigin?: Cartographic;
-  /** Get the transform from iModel Spatial coordinates to ECEF from this EcefLocation */
-  public getTransform(): Transform { return Transform.createOriginAndMatrix(this.origin, this.orientation.toMatrix3d()); }
-
-  /** Construct a new EcefLocation. Once constructed, it is frozen and cannot be modified. */
-  constructor(props: EcefLocationProps) {
-    this.origin = Point3d.fromJSON(props.origin);
-    this.orientation = YawPitchRollAngles.fromJSON(props.orientation);
-    this.origin.freeze(); // may not be modified
-    this.orientation.freeze(); // may not be modified
-    if (props.cartographicOrigin) {
-      this.cartographicOrigin = Cartographic.fromRadians(props.cartographicOrigin.longitude, props.cartographicOrigin.latitude, props.cartographicOrigin.height);
-      Object.freeze(this.cartographicOrigin); // may not be modified
-    }
-  }
-
-  /** Construct ECEF Location from cartographic origin with optional known point and angle.   */
-  public static createFromCartographicOrigin(origin: Cartographic, point?: Point3d, angle?: Angle) {
-    const ecefOrigin = origin.toEcef();
-    const zVector = Vector3d.createFrom(ecefOrigin).normalize();
-    const xVector = Vector3d.create(-Math.sin(origin.longitude), Math.cos(origin.longitude), 0.0);
-    const matrix = Matrix3d.createRigidFromColumns(zVector!, xVector, AxisOrder.ZXY)!;
-    if (angle !== undefined) {
-      const north = Matrix3d.createRotationAroundAxisIndex(AxisIndex.Z, angle);
-      matrix.multiplyMatrixMatrix(north, matrix);
-    }
-    if (point !== undefined) {
-      const delta = matrix.multiplyVector(Vector3d.create(-point.x, -point.y, -point.z));
-      ecefOrigin.addInPlace(delta);
-    }
-
-    return new EcefLocation({ origin: ecefOrigin, orientation: YawPitchRollAngles.createFromMatrix3d(matrix)!, cartographicOrigin: origin });
-  }
-  /** Get the location center of the earth in the iModel coordinate system. */
-  public get earthCenter(): Point3d {
-    const matrix = this.orientation.toMatrix3d();
-    return Point3d.createFrom(matrix.multiplyTransposeXYZ(-this.origin.x, -this.origin.y, -this.origin.z));
-  }
-}
-
 /** Properties of the [Root Subject]($docs/bis/intro/glossary#subject-root).
  * @public
  */
@@ -166,6 +116,55 @@ export interface FilePropertyProps {
   subId?: number | string;
 }
 
+/** The position and orientation of an iModel on the earth in [ECEF](https://en.wikipedia.org/wiki/ECEF) (Earth Centered Earth Fixed) coordinates
+ * @see [GeoLocation of iModels]($docs/learning/GeoLocation.md)
+ * @public
+ */
+export class EcefLocation implements EcefLocationProps {
+  /** The origin of the ECEF transform. */
+  public readonly origin: Point3d;
+  /** The orientation of the ECEF transform */
+  public readonly orientation: YawPitchRollAngles;
+  /** Optional position on the earth used to establish the ECEF origin and orientation. */
+  public readonly cartographicOrigin?: Cartographic;
+
+  /** Get the transform from iModel Spatial coordinates to ECEF from this EcefLocation */
+  public getTransform(): Transform {
+    return Transform.createOriginAndMatrix(this.origin, this.orientation.toMatrix3d());
+  }
+
+  /** Construct a new EcefLocation. Once constructed, it is frozen and cannot be modified. */
+  constructor(props: EcefLocationProps) {
+    this.origin = Point3d.fromJSON(props.origin).freeze();
+    this.orientation = YawPitchRollAngles.fromJSON(props.orientation).freeze();
+    if (props.cartographicOrigin)
+      this.cartographicOrigin = Cartographic.fromRadians(props.cartographicOrigin.longitude, props.cartographicOrigin.latitude, props.cartographicOrigin.height).freeze();
+  }
+
+  /** Construct ECEF Location from cartographic origin with optional known point and angle.   */
+  public static createFromCartographicOrigin(origin: Cartographic, point?: Point3d, angle?: Angle) {
+    const ecefOrigin = origin.toEcef();
+    const zVector = Vector3d.createFrom(ecefOrigin).normalize();
+    const xVector = Vector3d.create(-Math.sin(origin.longitude), Math.cos(origin.longitude), 0.0);
+    const matrix = Matrix3d.createRigidFromColumns(zVector!, xVector, AxisOrder.ZXY)!;
+    if (angle !== undefined) {
+      const north = Matrix3d.createRotationAroundAxisIndex(AxisIndex.Z, angle);
+      matrix.multiplyMatrixMatrix(north, matrix);
+    }
+    if (point !== undefined) {
+      const delta = matrix.multiplyVector(Vector3d.create(-point.x, -point.y, -point.z));
+      ecefOrigin.addInPlace(delta);
+    }
+
+    return new EcefLocation({ origin: ecefOrigin, orientation: YawPitchRollAngles.createFromMatrix3d(matrix)!, cartographicOrigin: origin });
+  }
+  /** Get the location center of the earth in the iModel coordinate system. */
+  public get earthCenter(): Point3d {
+    const matrix = this.orientation.toMatrix3d();
+    return Point3d.createFrom(matrix.multiplyTransposeXYZ(-this.origin.x, -this.origin.y, -this.origin.z));
+  }
+}
+
 /** Represents an iModel in JavaScript.
  * @see [GeoLocation of iModels]($docs/learning/GeoLocation.md)
  * @public
@@ -219,7 +218,7 @@ export abstract class IModel implements IModelProps {
   }
 
   /** @internal */
-  public toJSON(): IModelConnectionProps {
+  public getConnectionProps(): IModelConnectionProps {
     return {
       name: this.name,
       rootSubject: this.rootSubject,
@@ -228,6 +227,11 @@ export abstract class IModel implements IModelProps {
       ecefLocation: this.ecefLocation,
       ... this.getRpcProps(),
     };
+  }
+
+  /** @internal */
+  public toJSON(): IModelConnectionProps {
+    return this.getConnectionProps();
   }
 
   /** A key used by RPC operations to identify this iModel across the frontend and backend.

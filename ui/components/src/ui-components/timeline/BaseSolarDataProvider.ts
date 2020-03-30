@@ -7,7 +7,7 @@
  */
 
 import { Cartographic, ColorDef, ColorByName } from "@bentley/imodeljs-common";
-import { Point3d, Angle } from "@bentley/geometry-core";
+import { Point3d } from "@bentley/geometry-core";
 import { IModelConnection, ScreenViewport, calculateSunriseOrSunset } from "@bentley/imodeljs-frontend";
 import {
   SolarDataProvider,
@@ -100,8 +100,7 @@ export class BaseSolarDataProvider implements SolarDataProvider {
   }
 
   private getZone(location: Cartographic) {
-    const longitude = Angle.radiansToDegrees(location.longitude);
-    return Math.floor(.5 + longitude / 15.0);
+    return Math.floor(.5 + location.longitudeDegrees / 15.0);
   }
 
   public get sunrise(): Date {

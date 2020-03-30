@@ -43,6 +43,21 @@ export class Cartographic implements LatLongAndHeight {
     return result;
   }
 
+  /** Freeze this Cartographic */
+  public freeze(): Readonly<this> {
+    return Object.freeze(this);
+  }
+
+  /** longitude, in degrees */
+  public get longitudeDegrees() {
+    return Angle.radiansToDegrees(this.longitude);
+  }
+
+  /** latitude, in degrees */
+  public get latitudeDegrees() {
+    return Angle.radiansToDegrees(this.latitude);
+  }
+
   private static _oneMinusF = 1 - (Constant.earthRadiusWGS84.equator - Constant.earthRadiusWGS84.polar) / Constant.earthRadiusWGS84.equator;
   private static _equatorOverPolar = Constant.earthRadiusWGS84.equator / Constant.earthRadiusWGS84.polar;
   /** return the geocentric latitude angle for the input geodetic latitude angle (both in radians).

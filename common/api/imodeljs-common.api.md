@@ -589,6 +589,7 @@ export class Cartographic implements LatLongAndHeight {
     clone(result?: Cartographic): Cartographic;
     equals(right: LatLongAndHeight): boolean;
     equalsEpsilon(right: LatLongAndHeight, epsilon: number): boolean;
+    freeze(): Readonly<this>;
     static fromAngles(longitude: Angle, latitude: Angle, height: number, result?: Cartographic): Cartographic;
     static fromDegrees(longitude: number, latitude: number, height: number, result?: Cartographic): Cartographic;
     static fromEcef(cartesian: Point3d, result?: Cartographic): Cartographic | undefined;
@@ -598,8 +599,10 @@ export class Cartographic implements LatLongAndHeight {
     height: number;
     // (undocumented)
     latitude: number;
+    get latitudeDegrees(): number;
     // (undocumented)
     longitude: number;
+    get longitudeDegrees(): number;
     static parametricLatitudeFromGeodeticLatitude(geodeticLatitude: number): number;
     static scalePointToGeodeticSurface(point: Point3d, result?: Point3d): Point3d | undefined;
     toEcef(result?: Point3d): Point3d;
@@ -1174,6 +1177,7 @@ export class ColorDef {
         t: number;
     };
     equals(other: ColorDef): boolean;
+    freeze(): Readonly<this>;
     static from(red: number, green: number, blue: number, transparency?: number, result?: ColorDef): ColorDef;
     static fromHSL(h: number, s: number, l: number, out?: ColorDef): ColorDef;
     static fromHSV(hsv: HSVColor, out?: ColorDef): ColorDef;
@@ -3044,6 +3048,8 @@ export abstract class IModel implements IModelProps {
     static readonly dictionaryId: Id64String;
     get ecefLocation(): EcefLocation | undefined;
     ecefToSpatial(ecef: XYAndZ, result?: Point3d): Point3d;
+    // @internal (undocumented)
+    getConnectionProps(): IModelConnectionProps;
     static getDefaultSubCategoryId(categoryId: Id64String): Id64String;
     getEcefTransform(): Transform;
     getRpcProps(): IModelRpcProps;

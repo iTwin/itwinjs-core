@@ -167,8 +167,8 @@ function calculateJulianDay(date: Date) {
  */
 export function calculateSolarAngles(date: Date, location: Cartographic): { azimuth: number, elevation: number } {
   const jDay = calculateJulianDay(date);
-  const latitude = Angle.radiansToDegrees(location.latitude);
-  const longitude = Angle.radiansToDegrees(location.longitude);
+  const latitude = location.latitudeDegrees;
+  const longitude = location.longitudeDegrees;
   const utcMinutes = date.getUTCHours() * 60 + date.getUTCMinutes() + date.getUTCSeconds() / 60;
   const zone = Math.floor(.5 + longitude / 15.0); // date.getTimeZoneOffset mixes in DST.
   const localMinutes = utcMinutes + zone * 60;
@@ -214,8 +214,8 @@ function calcSunriseUtcMinutes(rise: boolean, lat: number, longitude: number, jD
  */
 export function calculateSunriseOrSunset(date: Date, location: Cartographic, sunrise: boolean): Date {
   const jDay = calculateJulianDay(date);
-  const longitude = Angle.radiansToDegrees(location.longitude);
-  const latitude = Angle.radiansToDegrees(location.latitude);
+  const longitude = location.longitudeDegrees;
+  const latitude = location.latitudeDegrees;
   const utcMinutes = calcSunriseUtcMinutes(sunrise, latitude, longitude, jDay);
   return sunrise ? dateFromUtcMinutes(date, utcMinutes) : dateFromUtcMinutes(date, calcSunriseUtcMinutes(sunrise, latitude, longitude, jDay + utcMinutes / 1440));
 

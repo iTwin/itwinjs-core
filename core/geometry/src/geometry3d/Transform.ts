@@ -49,8 +49,8 @@ export class Transform implements BeJSONFunctions {
 
     return this._identity;
   }
-  /** Freeze this instance (and its deep content) so it can be considered read-only */
-  public freeze() { Object.freeze(this); Object.freeze(this._origin); this._matrix.freeze(); }
+  /** Freeze this instance (and its members) so it is read-only */
+  public freeze(): Readonly<this> { this._origin.freeze(); this._matrix.freeze(); return Object.freeze(this); }
   /**
    * Copy contents from other Transform into this Transform
    * @param other source transform

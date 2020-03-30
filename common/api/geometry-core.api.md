@@ -51,7 +51,7 @@ export class Angle implements BeJSONFunctions {
     static readonly degreesPerRadian: number;
     static degreesToRadians(degrees: number): number;
     static dotProductsToHalfAngleTrigValues(dotUU: number, dotVV: number, dotUV: number, favorZero?: boolean): TrigValues;
-    freeze(): void;
+    freeze(): Readonly<this>;
     static fromJSON(json?: AngleProps, defaultValRadians?: number): Angle;
     isAlmostEqual(other: Angle): boolean;
     isAlmostEqualAllowPeriodShift(other: Angle): boolean;
@@ -2925,7 +2925,7 @@ export class Matrix3d implements BeJSONFunctions {
     } | undefined;
     fastSymmetricEigenvalues(leftEigenvectors: Matrix3d, lambda: Vector3d): boolean;
     static flatIndexOf(row: number, column: number): number;
-    freeze(): void;
+    freeze(): Readonly<this>;
     static fromJSON(json?: Matrix3dProps): Matrix3d;
     getAxisAndAngleOfRotation(): {
         axis: Vector3d;
@@ -4110,7 +4110,7 @@ export class Range2d extends RangeBase implements LowAndHighXY {
     extendTransformedXY(transform: Transform, x: number, y: number): void;
     extendXY(x: number, y: number): void;
     fractionToPoint(fractionX: number, fractionY: number, result?: Point2d): Point2d;
-    freeze(): void;
+    freeze(): Readonly<this>;
     static fromArrayBuffer<T extends Range2d>(buffer: ArrayBuffer): T;
     static fromFloat64Array<T extends Range2d>(f64: Float64Array): T;
     static fromJSON<T extends Range2d>(json?: Range2dProps): T;
@@ -4197,7 +4197,7 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
     extendZOnly(z: number): void;
     static faceCornerIndices(index: number): number[];
     fractionToPoint(fractionX: number, fractionY: number, fractionZ: number, result?: Point3d): Point3d;
-    freeze(): void;
+    freeze(): Readonly<this>;
     static fromArrayBuffer<T extends Range3d>(buffer: ArrayBuffer): T;
     static fromFloat64Array<T extends Range3d>(f64: Float64Array): T;
     static fromJSON<T extends Range3d>(json?: Range3dProps): T;
@@ -4864,7 +4864,7 @@ export class Transform implements BeJSONFunctions {
     static createTranslation(translation: XYZ, result?: Transform): Transform;
     static createTranslationXYZ(x?: number, y?: number, z?: number, result?: Transform): Transform;
     static createZero(result?: Transform): Transform;
-    freeze(): void;
+    freeze(): Readonly<this>;
     static fromJSON(json?: TransformProps): Transform;
     getOrigin(): Point3d;
     getTranslation(): Vector3d;
@@ -5301,7 +5301,7 @@ export class XY implements XAndY {
     static crossProductToPoints(origin: XAndY, targetA: XAndY, targetB: XAndY): number;
     distance(other: XAndY): number;
     distanceSquared(other: XAndY): number;
-    freeze(): void;
+    freeze(): Readonly<this>;
     isAlmostEqual(other: XAndY, tol?: number): boolean;
     isAlmostEqualMetric(other: XAndY): boolean;
     isAlmostEqualXY(x: number, y: number, tol?: number): boolean;
@@ -5347,7 +5347,7 @@ export class XYZ implements XYAndZ {
     distanceSquared(other: XYAndZ): number;
     distanceSquaredXY(other: XAndY): number;
     distanceXY(other: XAndY): number;
-    freeze(): void;
+    freeze(): Readonly<this>;
     static hasZ(arg: any): arg is HasZ;
     indexOfMaxAbs(): number;
     isAlmostEqual(other: XYAndZ, tol?: number): boolean;
@@ -5399,7 +5399,7 @@ export class YawPitchRollAngles {
     static createDegrees(yawDegrees: number, pitchDegrees: number, rollDegrees: number): YawPitchRollAngles;
     static createFromMatrix3d(matrix: Matrix3d, result?: YawPitchRollAngles): YawPitchRollAngles | undefined;
     static createRadians(yawRadians: number, pitchRadians: number, rollRadians: number): YawPitchRollAngles;
-    freeze(): void;
+    freeze(): Readonly<this>;
     static fromJSON(json?: YawPitchRollProps): YawPitchRollAngles;
     isAlmostEqual(other: YawPitchRollAngles): boolean;
     isIdentity(allowPeriodShift?: boolean): boolean;

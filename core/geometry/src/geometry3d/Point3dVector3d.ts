@@ -294,7 +294,7 @@ export class XYZ implements XYAndZ {
    */
   public unitVectorTo(target: XYAndZ, result?: Vector3d): Vector3d | undefined { return this.vectorTo(target, result).normalize(result); }
   /** Freeze this XYZ */
-  public freeze() { Object.freeze(this); }
+  public freeze(): Readonly<this> { return Object.freeze(this); }
 }
 /** 3D point with `x`,`y`,`z` as properties
  * @public

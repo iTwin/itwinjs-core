@@ -72,7 +72,7 @@ export class IModelWriteRpcImpl extends RpcInterface implements IModelWriteRpcIn
     const openParams: OpenParams = OpenParams.pullAndPush();
     openParams.timeout = 1000;
     const db = await BriefcaseDb.open(requestContext, tokenProps.contextId!, tokenProps.iModelId!, openParams);
-    return db.toJSON();
+    return db.getConnectionProps();
   }
 
   public async saveChanges(tokenProps: IModelRpcProps, description?: string): Promise<void> {
