@@ -5,6 +5,8 @@
 
 const path = require("path");
 const webpack = require("webpack");
+const plugins = require("@bentley/webpack-tools-core");
+const paths = require("../config/paths");
 module.exports = (env) => {
   return getConfig(env);
 };
@@ -103,6 +105,8 @@ function getConfig(env) {
       Buffer: true,
     },
     plugins: [
+      new plugins.CopyAppAssetsPlugin(paths.appAssets),
+      new plugins.CopyBentleyStaticResourcesPlugin(["assets"]),
       new webpack.DefinePlugin({ "global.location.search": "''" }),
       new webpack.ProvidePlugin({}),
       new webpack.EnvironmentPlugin({})

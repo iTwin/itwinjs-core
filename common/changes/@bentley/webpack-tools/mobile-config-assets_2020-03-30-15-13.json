@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/webpack-tools",
+      "comment": "Added missing plugins for collecting required assets for iOS",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/webpack-tools",
+  "email": "vincas.razma@bentley.com"
+}
