@@ -6,9 +6,8 @@
   "imodeljsSharedLibrary": true,
   "license": "MIT",
   "scripts": {
-    "build": "npm run copy:assets && npm run pseudolocalize && tsc 1>&2",
+    "build": "npm run copy:assets && tsc 1>&2",
     "copy:assets": "cpx \"./src/public/**/*\" ./lib/public",
-    "pseudolocalize": "betools pseudolocalize --englishDir ./src/public/locales/en --out ./lib/public/locales/en-PSEUDO",
     "clean": "rimraf lib .rush package-deps.json",
     "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-markup/file.json --tsIndexFile=./imodeljs-markup.ts --onlyJson %TYPEDOC_THEME%",
     "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=imodeljs-markup",
