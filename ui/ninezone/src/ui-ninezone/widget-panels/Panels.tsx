@@ -13,7 +13,6 @@ import { CenterContent } from "./CenterContent";
 import { CursorOverlay } from "./CursorOverlay";
 import { WidgetPanel, panelSides } from "./Panel";
 import { PanelsStateContext } from "../base/NineZone";
-import { FloatingWidgets } from "../widget/FloatingWidgets";
 import { FloatingTab } from "../widget/FloatingTab";
 import { AppContent } from "./AppContent";
 import { WidgetContentRenderers } from "../widget/ContentRenderer";
@@ -27,8 +26,6 @@ export interface WidgetPanelsProps extends CommonProps {
   children?: React.ReactNode;
   /** Content that is always rendered as if panels are in a pinned state. */
   centerContent?: React.ReactNode;
-  /** Widget content. */
-  widgetContent?: React.ReactNode;
 }
 
 /** Component that displays widget panels.
@@ -38,14 +35,12 @@ export const WidgetPanels = React.memo<WidgetPanelsProps>(function WidgetPanels(
   return (
     <ContentNodeContext.Provider value={props.children}>
       <CenterContentNodeContext.Provider value={props.centerContent}>
-        <WidgetContentNodeContext.Provider value={props.widgetContent}>
-          <WidgetPanelsComponent
-            className={props.className}
-            style={props.style}
-          />
-        </WidgetContentNodeContext.Provider>
+        <WidgetPanelsComponent
+          className={props.className}
+          style={props.style}
+        />
       </CenterContentNodeContext.Provider>
-    </ContentNodeContext.Provider>
+    </ContentNodeContext.Provider >
   );
 });
 
@@ -75,16 +70,11 @@ const WidgetPanelsComponent = React.memo<CommonProps>(function WidgetPanelsCompo
           />
         );
       })}
-      <FloatingWidgets />
       <FloatingTab />
       <CursorOverlay />
     </div>
   );
 });
-
-/** @internal */
-export const WidgetContentNodeContext = React.createContext<React.ReactNode>(null); // tslint:disable-line: variable-name
-WidgetContentNodeContext.displayName = "nz:WidgetContentNodeContext";
 
 /** @internal */
 export const ContentNodeContext = React.createContext<React.ReactNode>(null); // tslint:disable-line: variable-name

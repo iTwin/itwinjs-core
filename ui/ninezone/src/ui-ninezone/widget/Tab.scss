@@ -9,7 +9,6 @@
 .nz-widget-tab {
   user-select: none;
   white-space: nowrap;
-  max-width: 9em;
 
   > span {
     font-size: $nz-widget-tab-font-size;
@@ -21,6 +20,7 @@
     cursor: pointer;
     display: flex;
     position: relative;
+    max-width: 18em;
 
     > span {
       margin-right: 3em;
@@ -53,6 +53,7 @@
     position: relative;
     border: 0 solid $buic-background-5;
     height: $nz-widget-tab-height;
+    max-width: 9em;
 
     &.nz-active {
       background: $buic-background-3;

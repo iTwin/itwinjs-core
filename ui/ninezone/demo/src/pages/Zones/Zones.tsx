@@ -13,6 +13,7 @@ import { WidgetPanels } from "@src/widget-panels/Panels";
 import { AppButton } from "@src/widget/tools/button/App";
 import { ToolsArea } from "@src/widget/ToolsArea";
 import { NavigationArea } from "@src/widget/NavigationArea";
+import { FloatingWidgets } from "@src/widget/FloatingWidgets";
 import { Direction } from "@src/utilities/Direction";
 import { ToolbarPanelAlignment } from "@src/toolbar/Toolbar";
 import { NineZoneProvider, NineZoneDispatchContext } from "@src/base/NineZone";
@@ -23,6 +24,7 @@ import {
 import { PanelSideContext, PanelPinnedContext, PanelSpanContext, isHorizontalPanelSide } from "@src/widget-panels/Panel";
 import { assert } from "@src/base/assert";
 import { TabIdContext, useTransientState } from "@src/widget/ContentRenderer";
+import { Footer } from "@src/footer/Footer";
 import "./Zones.scss";
 
 let id = 0;
@@ -316,20 +318,25 @@ export default function Zones() {
   >
     <WidgetPanels
       className="nzdemo-widgetPanels"
-      widgetContent={widget}
       centerContent={ui}
     >
       {content}
     </WidgetPanels>
-    <ToolSettings
-      settings={settings}
-    />
-  </div>, [content, ui, widget, settings]);
+    <ToolSettings settings={settings} />
+    <Footer
+      isInFooterMode
+      className="nzdemo-footer"
+    >
+      <div className="nzdemo-footer-content">Status Bar</div>
+    </Footer>
+    <FloatingWidgets />
+  </div>, [content, ui, settings]);
   return (
     <React.StrictMode>
       <NineZoneProvider
-        state={state}
         dispatch={dispatch}
+        state={state}
+        widgetContent={widget}
       >
         {nineZone}
       </NineZoneProvider>

@@ -7,7 +7,10 @@
  */
 import * as React from "react";
 import produce from "immer";
-import { WidgetPanels, NineZoneStateReducer, createNineZoneState, NineZoneProvider, NineZoneState, addPanelWidget, addTab, PanelSide, NineZoneActionTypes } from "@bentley/ui-ninezone";
+import {
+  WidgetPanels, NineZoneStateReducer, createNineZoneState, NineZoneProvider, NineZoneState, addPanelWidget, addTab, PanelSide, NineZoneActionTypes,
+  FloatingWidgets,
+} from "@bentley/ui-ninezone";
 import { useActiveFrontstageDef } from "../frontstage/Frontstage";
 import { WidgetPanelsStatusBar } from "./StatusBar";
 import { FrontstageDef } from "../frontstage/FrontstageDef";
@@ -31,6 +34,7 @@ export const WidgetPanelsFrontstage = React.memo(function WidgetPanelsFrontstage
     <NineZoneProvider
       dispatch={nineZoneDispatch}
       state={nineZone}
+      widgetContent={<WidgetContent />}
     >
       <WidgetPanelsFrontstageComponent />
     </NineZoneProvider >
@@ -44,14 +48,15 @@ const WidgetPanelsFrontstageComponent = React.memo(function WidgetPanelsFrontsta
       className="uifw-widgetPanels-frontstage"
     >
       <ModalFrontstageComposer stageInfo={activeModalFrontstageInfo} />
-      <WidgetPanelsToolSettings />
-      <WidgetPanels className="uifw-widgetPanels"
+      <WidgetPanels
+        className="uifw-widgetPanels"
         centerContent={<WidgetPanelsToolbars />}
-        widgetContent={<WidgetContent />}
       >
         <WidgetPanelsFrontstageContent />
       </WidgetPanels>
-      <WidgetPanelsStatusBar />
+      <WidgetPanelsToolSettings />
+      <WidgetPanelsStatusBar className="uifw-statusBar" />
+      <FloatingWidgets />
     </div>
   );
 });

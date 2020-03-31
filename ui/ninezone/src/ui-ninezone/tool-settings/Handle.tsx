@@ -10,22 +10,20 @@ import classnames from "classnames";
 import * as React from "react";
 import { CommonProps, useRefs, useResizeObserver } from "@bentley/ui-core";
 import { usePointerCaptor } from "../base/PointerCaptor";
-import { useToolSettingsEntry } from "./Docked";
 import "./Handle.scss";
 
 /** Properties of [[DockedToolSettingsHandle]] component.
  * @internal
  */
 export interface DockedToolSettingsHandleProps extends CommonProps {
-  onDrag?: () => void;
+  onResize?: (w: number) => void;
 }
 
 /** Component that displays tool settings as a bar across the top of the content view.
  * @internal
  */
-export function DockedToolSettingsHandle(props: DockedToolSettingsHandleProps) {
-  const { onResize } = useToolSettingsEntry();
-  const resizeObserverRef = useResizeObserver<HTMLDivElement>(onResize);
+export const DockedToolSettingsHandle = React.memo(function DockedToolSettingsHandle(props: DockedToolSettingsHandleProps) { // tslint:disable-line: variable-name no-shadowed-variable
+  const resizeObserverRef = useResizeObserver<HTMLDivElement>(props.onResize);
   const pointerCaptorRef = usePointerCaptor<HTMLDivElement>();
   const ref = useRefs(pointerCaptorRef, resizeObserverRef);
   const className = classnames(
@@ -52,4 +50,4 @@ export function DockedToolSettingsHandle(props: DockedToolSettingsHandleProps) {
       </div>
     </div>
   );
-}
+});

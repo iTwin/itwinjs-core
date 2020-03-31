@@ -28,7 +28,7 @@ export function FloatingTab() {
       dragBy,
     });
   }, [dispatch, id]);
-  const onDragEnd = React.useCallback<NonNullable<UseDragTabArgs["onDragEnd"]>>((dragTarget) => {
+  const onDragEnd = React.useCallback<NonNullable<UseDragTabArgs["onDragEnd"]>>((dragTarget, size) => {
     let target: TabTargetState;
     if (dragTarget && isTabTarget(dragTarget)) {
       target = {
@@ -43,6 +43,7 @@ export function FloatingTab() {
       target = {
         type: "floatingWidget",
         newFloatingWidgetId: getUniqueId(),
+        size,
       };
     }
     id && dispatch({

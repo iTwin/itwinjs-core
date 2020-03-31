@@ -8,7 +8,7 @@
 
 import { produce, castDraft, Draft } from "immer";
 import { PanelSide, HorizontalPanelSide, VerticalPanelSide, isHorizontalPanelSide } from "../widget-panels/Panel";
-import { RectangleProps, PointProps, Rectangle, Point } from "@bentley/ui-core";
+import { RectangleProps, PointProps, Rectangle, Point, SizeProps } from "@bentley/ui-core";
 import { assert } from "./assert";
 
 /** @internal future */
@@ -75,6 +75,7 @@ export interface TabTargetWidgetState {
 export interface TabTargetFloatingWidgetState {
   readonly type: "floatingWidget";
   readonly newFloatingWidgetId: FloatingWidgetState["id"];
+  readonly size: SizeProps;
 }
 
 /** @internal future */
@@ -519,7 +520,7 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
         };
       } else {
         state.floatingWidgets.byId[target.newFloatingWidgetId] = {
-          bounds: Rectangle.createFromSize({ height: 200, width: 200 }).offset(state.draggedTab.position).toProps(),
+          bounds: Rectangle.createFromSize(target.size).offset(state.draggedTab.position).toProps(),
           id: target.newFloatingWidgetId,
         };
         state.floatingWidgets.allIds.push(target.newFloatingWidgetId);

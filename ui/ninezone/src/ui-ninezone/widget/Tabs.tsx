@@ -24,10 +24,10 @@ export const WidgetTabs = React.memo(function WidgetTabs() { // tslint:disable-l
   const side = React.useContext(PanelSideContext);
   const widget = React.useContext(WidgetStateContext);
   assert(widget);
+  const activeTabIndex = widget.activeTabId ? widget.tabs.indexOf(widget.activeTabId) : undefined;
   const children = React.useMemo<React.ReactNode>(() => {
-    const activeIndex = widget.activeTabId ? widget.tabs.indexOf(widget.activeTabId) : undefined;
     return widget.tabs.map((tabId, index, array) => {
-      const firstInactive = activeIndex === undefined ? false : activeIndex + 1 === index;
+      const firstInactive = activeTabIndex === undefined ? false : activeTabIndex + 1 === index;
       return (
         <React.Fragment
           key={tabId}
@@ -48,8 +48,8 @@ export const WidgetTabs = React.memo(function WidgetTabs() { // tslint:disable-l
         </React.Fragment>
       );
     });
-  }, [widget, tabs]);
-  const [overflown, handleResize, handleOverflowResize, handleEntryResize] = useOverflow(children);
+  }, [widget, tabs, activeTabIndex]);
+  const [overflown, handleResize, handleOverflowResize, handleEntryResize] = useOverflow(children, activeTabIndex);
   const horizontal = side && isHorizontalPanelSide(side);
   const ref = useResizeObserver(handleResize);
   const childrenArray = React.useMemo(() => React.Children.toArray(children), [children]);

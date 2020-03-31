@@ -3,9 +3,8 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { DockedToolSettings, useToolSettingsEntry } from "@src/tool-settings/Docked";
+import { DockedToolSettings } from "@src/tool-settings/Docked";
 import { ToolSettingProps, ToolSetting } from "./ToolSetting";
-import { DockedToolSettingsHandle } from "@src/tool-settings/Handle";
 
 export interface ToolSettingsProps {
   readonly settings: ReadonlyArray<ToolSettingProps>;
@@ -28,9 +27,10 @@ export default function ToolSettings(props: ToolSettingsProps) {
       </ToolSettingWrapper>
       {props.settings.map((setting) => {
         return (
-          <ToolSettingWrapper>
+          <ToolSettingWrapper
+            key={setting.id}
+          >
             <ToolSetting
-              key={setting.id}
               {...setting}
             />
           </ToolSettingWrapper>

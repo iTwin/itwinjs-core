@@ -697,6 +697,10 @@ describe("NineZoneStateReducer", () => {
           target: {
             type: "floatingWidget",
             newFloatingWidgetId: "newId",
+            size: {
+              height: 200,
+              width: 200,
+            },
           },
         });
         (!!newState.floatingWidgets.byId.newId).should.true;

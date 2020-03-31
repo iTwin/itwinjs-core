@@ -6,17 +6,27 @@
  * @module Base
  */
 import * as React from "react";
-import { Point, PointProps } from "@bentley/ui-core";
+import { Point, PointProps, SizeProps } from "@bentley/ui-core";
 import { TabState, WidgetState } from "./NineZoneState";
 import { Event, EventEmitter } from "./Event";
 import { PanelSide } from "../widget-panels/Panel";
 import { FloatingWidgetResizeHandle } from "../widget/FloatingWidget";
 
 /** @internal */
+export interface DragItemDragStartArgs {
+  initialPointerPosition: Point;
+}
+
+/** @internal */
+export interface DragTabDragStartArgs extends DragItemDragStartArgs {
+  widgetSize: SizeProps;
+}
+
+/** @internal */
 export interface UseDragTabArgs {
   tabId: TabState["id"];
   onDrag?: (dragBy: PointProps) => void;
-  onDragEnd?: (target: DragTarget | undefined) => void;
+  onDragEnd?: (target: DragTarget | undefined, widgetSize: SizeProps) => void;
 }
 
 /** @internal */
@@ -32,14 +42,24 @@ export function useDragTab(args: UseDragTabArgs) {
     const dragBy = info.lastPointerPosition.getOffsetTo(info.pointerPosition);
     onDrag && onDrag(dragBy.toProps());
   }, [onDrag]);
-  const handleDragEnd = React.useCallback<DragEventHandler>((_, __, target) => {
-    onDragEnd && onDragEnd(target);
+  const handleDragEnd = React.useCallback<DragEventHandler>((_, info, target) => {
+    const tabInfo = info as TabDragItemInfo;
+    onDragEnd && onDragEnd(target, tabInfo.widgetSize);
   }, [onDragEnd]);
-  return useDragItem({
+  const onDragStart = useDragItem({
     item,
     onDrag: handleDrag,
     onDragEnd: handleDragEnd,
   });
+  const handleDragStart = React.useCallback(({ initialPointerPosition, widgetSize }: DragTabDragStartArgs) => {
+    onDragStart({
+      initialPointerPosition,
+      pointerPosition: initialPointerPosition,
+      lastPointerPosition: initialPointerPosition,
+      widgetSize,
+    });
+  }, [onDragStart]);
+  return handleDragStart;
 }
 
 type UpdateWidgetDragItemFn = (id: WidgetDragItem["id"]) => void;
@@ -73,12 +93,20 @@ export function useDragWidget(args: UseDragWidgetArgs) {
   const handleDragEnd = React.useCallback<DragEventHandler>((_, __, target) => {
     onDragEnd && onDragEnd(target);
   }, [onDragEnd]);
-  return useDragItem({
+  const onItemDragStart = useDragItem({
     item: widgetItem,
     onDragStart: handleDragStart,
     onDrag: handleDrag,
     onDragEnd: handleDragEnd,
   });
+  const handleWidgetDragStart = React.useCallback(({ initialPointerPosition }: DragItemDragStartArgs) => {
+    onItemDragStart({
+      initialPointerPosition,
+      pointerPosition: initialPointerPosition,
+      lastPointerPosition: initialPointerPosition,
+    });
+  }, [onItemDragStart]);
+  return handleWidgetDragStart;
 }
 
 /** @internal */
@@ -103,11 +131,19 @@ export function useDragPanelGrip(args: UseDragPanelGripArgs) {
   const handleDragEnd = React.useCallback<DragEventHandler>(() => {
     onDragEnd && onDragEnd();
   }, [onDragEnd]);
-  return useDragItem({
+  const onItemDragStart = useDragItem({
     item: widgetItem,
     onDrag: handleDrag,
     onDragEnd: handleDragEnd,
   });
+  const handleDragStart = React.useCallback(({ initialPointerPosition }: DragItemDragStartArgs) => {
+    onItemDragStart({
+      initialPointerPosition,
+      pointerPosition: initialPointerPosition,
+      lastPointerPosition: initialPointerPosition,
+    });
+  }, [onItemDragStart]);
+  return handleDragStart;
 }
 
 /** @internal */
@@ -133,11 +169,19 @@ export function useDragResizeHandle(args: UseDragResizeHandleArgs) {
   const handleDrag = React.useCallback<DragEventHandler>((_, info) => {
     onDrag && onDrag(info.pointerPosition);
   }, [onDrag]);
-  return useDragItem({
+  const onItemDragStart = useDragItem({
     item: widgetItem,
     isDragItem,
     onDrag: handleDrag,
   });
+  const handleDragStart = React.useCallback(({ initialPointerPosition }: DragItemDragStartArgs) => {
+    onItemDragStart({
+      initialPointerPosition,
+      pointerPosition: initialPointerPosition,
+      lastPointerPosition: initialPointerPosition,
+    });
+  }, [onItemDragStart]);
+  return handleDragStart;
 }
 
 /** @internal */
@@ -207,11 +251,6 @@ export interface UseDragItemArgs<T extends DragItem> {
   onDragEnd?: DragEventHandler;
 }
 
-/** @internal */
-export interface DragItemDragStartArgs {
-  initialPointerPosition: Point;
-}
-
 function defaultIsDragItem(item: DragItem, dragged: DragItem) {
   return dragged.type === item.type && dragged.id === item.id;
 }
@@ -220,10 +259,10 @@ function defaultIsDragItem(item: DragItem, dragged: DragItem) {
 export function useDragItem<T extends DragItem>(args: UseDragItemArgs<T>) {
   const dragManager = React.useContext(DragManagerContext);
   const { item, isDragItem, onDragStart, onDrag, onDragEnd } = args;
-  const handleDragStart = React.useCallback(({ initialPointerPosition }: DragItemDragStartArgs) => {
+  const handleDragStart = React.useCallback((info: DragItemInfo) => {
     item && dragManager.handleDragStart({
       item,
-      initialPointerPosition,
+      info,
     });
   }, [dragManager, item]);
   React.useEffect(() => {
@@ -441,15 +480,21 @@ export function isTabTarget(target: DragTarget): target is TabTarget {
   return target.type === "tab";
 }
 
-interface DragItemInfo {
+interface BaseDragItemInfo {
   initialPointerPosition: Point;
   lastPointerPosition: Point;
   pointerPosition: Point;
 }
 
+interface TabDragItemInfo extends BaseDragItemInfo {
+  widgetSize: SizeProps;
+}
+
+type DragItemInfo = BaseDragItemInfo | TabDragItemInfo;
+
 interface HandleDragStartArgs {
   item: DragItem;
-  initialPointerPosition: Point;
+  info: DragItemInfo;
 }
 
 interface Dragged {
@@ -494,14 +539,10 @@ export class DragManager {
     return this._onDragEndEmitter;
   }
 
-  public handleDragStart({ item, initialPointerPosition }: HandleDragStartArgs) {
+  public handleDragStart({ item, info }: HandleDragStartArgs) {
     this._dragged = {
       item,
-      info: {
-        initialPointerPosition,
-        pointerPosition: initialPointerPosition,
-        lastPointerPosition: initialPointerPosition,
-      },
+      info,
       target: undefined,
     };
     this._onDragStartEmitter.emit(this._dragged.item, this._dragged.info, this._dragged.target);

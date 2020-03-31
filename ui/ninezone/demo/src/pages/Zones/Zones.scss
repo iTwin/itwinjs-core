@@ -5,7 +5,7 @@
 .nzdemo-zones-zones {
   height: 100%;
   display: flex;
-  flex-direction: column-reverse;
+  flex-direction: column;
   box-sizing: border-box;
 
   ul {
@@ -22,6 +22,7 @@
   .nzdemo-widgetPanels {
     flex: 1 1 auto;
     min-height: 0;
+    order: 2;
   }
 
   .nz-widgetPanels-content {
@@ -51,5 +52,16 @@
     background: #66666666;
     height: 50px;
     overflow: auto;
+  }
+
+  .nzdemo-footer {
+    order: 3;
+
+    .nzdemo-footer-content {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+    }
   }
 }

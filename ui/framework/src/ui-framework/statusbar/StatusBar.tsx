@@ -128,10 +128,12 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
         <SafeAreaContext.Consumer>
           {(safeAreaInsets) => (
             <Footer
+              className={this.props.className}
               messages={this.getFooterMessage()}
               isInFooterMode={this.props.isInFooterMode}
               onMouseEnter={UiShowHideManager.handleWidgetMouseEnter}
               safeAreaInsets={safeAreaInsets}
+              style={this.props.style}
             >
               {footerSections}
             </Footer>

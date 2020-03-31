@@ -12,19 +12,32 @@ import { CommonProps, useRefs, useResizeObserver, useOnOutsideClick } from "@ben
 import { DockedToolSettingsOverflow } from "./Overflow";
 import { ToolSettingsOverflowPanel } from "./Panel";
 import { DockedToolSettingsHandle } from "./Handle";
-import { assert } from "../../ui-ninezone";
+import { assert } from "../base/assert";
 import "./Docked.scss";
 
+/** @internal */
+export function onOverflowLabelAndEditorResize() {
+}
+
 /** This component takes a DockedToolSetting "wrapper" component and extract only the label and editor components from it */
-function OverflowLabeAndEditor({ wrapper }: { wrapper: React.ReactNode }) {
+// tslint:disable-next-line: variable-name no-shadowed-variable
+const OverflowLabelAndEditor = React.memo(function OverflowLabelAndEditor({ wrapper }: { wrapper: React.ReactNode }) {
   assert(React.isValidElement(wrapper));
+  const entryValue = React.useMemo<DockedToolSettingsEntryContextArgs>(() => ({
+    isOverflown: true,
+    onResize: onOverflowLabelAndEditorResize,
+  }), []);
   const wrapperChildren = (wrapper as React.ReactElement<any>).props.children;
   return (
     <>
-      {wrapperChildren && React.Children.map(wrapperChildren, (child: React.ReactNode) => child)}
+      <DockedToolSettingsEntryContext.Provider
+        value={entryValue}
+      >
+        {wrapperChildren && React.Children.map(wrapperChildren, (child: React.ReactNode) => child)}
+      </DockedToolSettingsEntryContext.Provider>
     </>
   );
-}
+});
 
 /** Properties of [[DockedToolSettings]] component.
  * @internal future
@@ -70,7 +83,7 @@ export function DockedToolSettings(props: DockedToolSettingsProps) {
   const panelRef = useOnOutsideClick<HTMLDivElement>(onOutsideClick, isOutsideEvent);
 
   const refs = useRefs(ref, resizeObserverRef);
-  const children = React.Children.toArray(props.children);
+  const children = React.useMemo(() => React.Children.toArray(props.children), [props.children]);
   const dockedChildren = children.reduce<Array<[string, React.ReactNode]>>((acc, child, index) => {
     const key = getChildKey(child, index);
     if (!overflown || overflown.indexOf(key) < 0) {
@@ -85,53 +98,37 @@ export function DockedToolSettings(props: DockedToolSettingsProps) {
     }
     return acc;
   }, []) : [];
-
   // tslint:disable-next-line: variable-name
   const PanelContainer = props.panelContainer ? props.panelContainer : DefaultPanelContainer;
   const className = classnames(
     "nz-toolSettings-docked",
     props.className,
   );
-  // istanbul ignore next
   return (
     <div
       className={className}
       ref={refs}
       style={props.style}
     >
-      <DockedToolSettingsEntryContext.Provider
-        value={{
-          isOverflown: false,
-          onResize: handleHandleResize,
-        }}
-      >
-        <DockedToolSettingsHandle />
-      </DockedToolSettingsEntryContext.Provider>
+      <DockedToolSettingsHandle
+        onResize={handleHandleResize}
+      />
       {dockedChildren.map(([key, child]) => {
-        const onEntryResize = handleEntryResize(key);
         return (
-          <DockedToolSettingsEntryContext.Provider
+          <DockedToolSettingsEntry
             key={key}
-            value={{
-              isOverflown: false,
-              onResize: onEntryResize,
-            }}
+            entryKey={key}
+            getOnResize={handleEntryResize}
           >
             {child}
-          </DockedToolSettingsEntryContext.Provider>
+          </DockedToolSettingsEntry>
         );
       })}
       {(!overflown || overflown.length > 0) && (
-        <DockedToolSettingsEntryContext.Provider
-          value={{
-            isOverflown: false,
-            onResize: handleOverflowResize,
-          }}
-        >
-          <DockedToolSettingsOverflow
-            onClick={onOverflowClick}
-          />
-        </DockedToolSettingsEntryContext.Provider>
+        <DockedToolSettingsOverflow
+          onClick={onOverflowClick}
+          onResize={handleOverflowResize}
+        />
       )}
       {overflownChildren.length > 0 && isOverflowPanelOpen &&
         <ToolSettingsOverflowPanel
@@ -140,15 +137,10 @@ export function DockedToolSettings(props: DockedToolSettingsProps) {
           <PanelContainer>
             {overflownChildren.map(([key, child]) => {
               return (
-                <DockedToolSettingsEntryContext.Provider
+                <OverflowLabelAndEditor
                   key={key}
-                  value={{
-                    isOverflown: true,
-                    onResize: () => { },
-                  }}
-                >
-                  <OverflowLabeAndEditor wrapper={child} />
-                </DockedToolSettingsEntryContext.Provider>
+                  wrapper={child}
+                />
               );
             })}
           </PanelContainer>
@@ -157,6 +149,26 @@ export function DockedToolSettings(props: DockedToolSettingsProps) {
     </div>
   );
 }
+
+interface DockedToolSettingsEntryProps {
+  children?: React.ReactNode;
+  entryKey: string;
+  getOnResize: (key: string) => (w: number) => void;
+}
+
+// tslint:disable-next-line: variable-name no-shadowed-variable
+const DockedToolSettingsEntry = React.memo<DockedToolSettingsEntryProps>(function DockedToolSettingsEntry({ children, entryKey, getOnResize }) {
+  const onResize = React.useMemo(() => getOnResize(entryKey), [getOnResize, entryKey]);
+  const entry = React.useMemo<DockedToolSettingsEntryContextArgs>(() => ({
+    isOverflown: false,
+    onResize,
+  }), [onResize]);
+  return (
+    <DockedToolSettingsEntryContext.Provider value={entry}>
+      {children}
+    </DockedToolSettingsEntryContext.Provider>
+  );
+});
 
 /** Returns key of a child. Must be used along with React.Children.toArray to preserve the semanticts of children.
  * @internal
@@ -171,10 +183,16 @@ export function getChildKey(child: React.ReactNode, index: number) {
 /** Returns a subset of docked entry keys that exceed given width and should be overflown.
  * @internal
  */
-export function getOverflown(width: number, docked: ReadonlyArray<readonly [string, number]>, overflowWidth: number) {
+export function getOverflown(width: number, docked: ReadonlyArray<readonly [string, number]>, overflowWidth: number, activeIndex?: number) {
   let settingsWidth = 0;
+  if (activeIndex !== undefined) {
+    const activeWidth = docked[activeIndex];
+    settingsWidth += activeWidth[1];
+  }
   let i = 0;
   for (; i < docked.length; i++) {
+    if (i === activeIndex)
+      continue;
     const w = docked[i][1];
     const newSettingsWidth = settingsWidth + w;
     if (newSettingsWidth > width) {
@@ -183,21 +201,30 @@ export function getOverflown(width: number, docked: ReadonlyArray<readonly [stri
     }
     settingsWidth = newSettingsWidth;
   }
+
   let j = i;
   for (; j > 0; j--) {
+    if (j === activeIndex)
+      continue;
     if (settingsWidth <= width)
       break;
     const w = docked[j][1];
     settingsWidth -= w;
   }
 
-  return docked.slice(j).map((e) => e[0]);
+  const overflown = new Array<string>();
+  for (i = j; i < docked.length; i++) {
+    if (i === activeIndex)
+      continue;
+    overflown.push(docked[i][0]);
+  }
+  return overflown;
 }
 
 /** Hook that returns a list of overflown children.
  * @internal
  */
-export function useOverflow(children: React.ReactNode): [
+export function useOverflow(children: React.ReactNode, activeChildIndex?: number): [
   ReadonlyArray<string> | undefined,
   (size: number) => void,
   (size: number) => void,
@@ -209,18 +236,21 @@ export function useOverflow(children: React.ReactNode): [
   const overflowWidth = React.useRef<number | undefined>(undefined);
 
   const calculateOverflow = React.useCallback(() => {
-    setOverflown(undefined);
     const widths = verifiedMapEntries(entryWidths.current);
     if (width.current === undefined ||
       widths === undefined ||
-      overflowWidth.current === undefined) {
+      overflowWidth.current === undefined
+    ) {
+      setOverflown(undefined);
       return;
     }
 
     // Calculate overflow.
-    const newOverflown = getOverflown(width.current, [...widths.entries()], overflowWidth.current);
-    setOverflown(newOverflown);
-  }, []);
+    const newOverflown = getOverflown(width.current, [...widths.entries()], overflowWidth.current, activeChildIndex);
+    setOverflown((prevOverflown) => {
+      return eqlOverflown(prevOverflown, newOverflown) ? prevOverflown : newOverflown;
+    });
+  }, [activeChildIndex]);
 
   React.useLayoutEffect(() => {
     const newEntryWidths = new Map<string, number | undefined>();
@@ -249,10 +279,8 @@ export function useOverflow(children: React.ReactNode): [
 
   const handleEntryResize = React.useCallback((key: string) => (w: number) => {
     const oldW = entryWidths.current.get(key);
-    if (oldW !== w) {
-      entryWidths.current.set(key, w);
-      calculateOverflow();
-    }
+    oldW !== w && entryWidths.current.set(key, w);
+    oldW !== w && calculateOverflow();
   }, [calculateOverflow]);
 
   return [overflown, handleContainerResize, handleOverflowResize, handleEntryResize];
@@ -282,4 +310,19 @@ function verifiedMapEntries<T>(map: Map<string, T | undefined>) {
 
 function DefaultPanelContainer(p: { children: React.ReactNode }) {
   return <>{p.children}</>;
+}
+
+/** @internal */
+export function eqlOverflown(prev: readonly string[] | undefined, value: readonly string[]) {
+  if (!prev)
+    return false;
+  if (prev.length !== value.length)
+    return false;
+  for (let i = 0; i < prev.length; i++) {
+    const p = prev[i];
+    const v = value[i];
+    if (p !== v)
+      return false;
+  }
+  return true;
 }

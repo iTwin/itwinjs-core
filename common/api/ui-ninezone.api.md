@@ -307,20 +307,21 @@ export function DockedToolSetting(props: ToolSettingProps): JSX.Element;
 export function DockedToolSettings(props: DockedToolSettingsProps): JSX.Element;
 
 // @internal
-export function DockedToolSettingsHandle(props: DockedToolSettingsHandleProps): JSX.Element;
+export const DockedToolSettingsHandle: React.NamedExoticComponent<DockedToolSettingsHandleProps>;
 
 // @internal
 export interface DockedToolSettingsHandleProps extends CommonProps {
     // (undocumented)
-    onDrag?: () => void;
+    onResize?: (w: number) => void;
 }
 
 // @internal
-export function DockedToolSettingsOverflow(props: DockedToolSettingsOverflowProps): JSX.Element;
+export const DockedToolSettingsOverflow: React.NamedExoticComponent<DockedToolSettingsOverflowProps>;
 
 // @internal
 export interface DockedToolSettingsOverflowProps extends ToolSettingProps {
     onClick?: () => void;
+    onResize?: (w: number) => void;
 }
 
 // @internal
@@ -398,7 +399,7 @@ export class DragManager {
     // (undocumented)
     getDraggedIdOfType<T extends DragItem>(type: T["type"]): T["id"] | undefined;
     // (undocumented)
-    handleDragStart({ item, initialPointerPosition }: HandleDragStartArgs): void;
+    handleDragStart({ item, info }: HandleDragStartArgs): void;
     // (undocumented)
     handlePointerMove(e: PointerEvent): void;
     // (undocumented)
@@ -430,10 +431,19 @@ export interface DragProviderProps {
 }
 
 // @internal (undocumented)
+export interface DragTabDragStartArgs extends DragItemDragStartArgs {
+    // (undocumented)
+    widgetSize: SizeProps;
+}
+
+// @internal (undocumented)
 export type DragTarget = TabTarget | PanelTarget_2 | WidgetTarget_2;
 
 // @internal
 export function Ellipsis(props: CommonProps): JSX.Element;
+
+// @internal (undocumented)
+export function eqlOverflown(prev: readonly string[] | undefined, value: readonly string[]): boolean;
 
 // @internal (undocumented)
 export interface Event<T extends EventHandler> {
@@ -673,7 +683,7 @@ export const getDefaultZonesManagerZonesProps: () => ZonesManagerZonesProps;
 export const getDragDistance: (from: Point, to: Point, direction: Direction) => number;
 
 // @internal
-export function getOverflown(width: number, docked: ReadonlyArray<readonly [string, number]>, overflowWidth: number): string[];
+export function getOverflown(width: number, docked: ReadonlyArray<readonly [string, number]>, overflowWidth: number, activeIndex?: number): string[];
 
 // @internal (undocumented)
 export function getResizeBy(handle: FloatingWidgetResizeHandle, offset: PointProps): Rectangle;
@@ -1142,6 +1152,8 @@ export interface NineZoneProviderProps {
     dispatch: NineZoneDispatch;
     // (undocumented)
     state: NineZoneState;
+    // (undocumented)
+    widgetContent?: React.ReactNode;
 }
 
 // @alpha
@@ -1230,6 +1242,9 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
 
 // @internal
 export const offsetAndContainInContainer: (tooltipBounds: RectangleProps, containerSize: SizeProps, offset?: PointProps) => Point;
+
+// @internal (undocumented)
+export function onOverflowLabelAndEditorResize(): void;
 
 // @alpha
 export enum OrthogonalDirection {
@@ -1944,6 +1959,8 @@ export interface TabTargetFloatingWidgetState {
     // (undocumented)
     readonly newFloatingWidgetId: FloatingWidgetState["id"];
     // (undocumented)
+    readonly size: SizeProps;
+    // (undocumented)
     readonly type: "floatingWidget";
 }
 
@@ -2328,7 +2345,7 @@ export type TopPanelSide = "top";
 export function useDraggedItemId<T extends DragItem>(type: T["type"]): T["id"] | undefined;
 
 // @internal (undocumented)
-export function useDragItem<T extends DragItem>(args: UseDragItemArgs<T>): ({ initialPointerPosition }: DragItemDragStartArgs) => void;
+export function useDragItem<T extends DragItem>(args: UseDragItemArgs<T>): (info: DragItemInfo) => void;
 
 // @internal (undocumented)
 export interface UseDragItemArgs<T extends DragItem> {
@@ -2371,14 +2388,14 @@ export interface UseDragResizeHandleArgs {
 }
 
 // @internal (undocumented)
-export function useDragTab(args: UseDragTabArgs): ({ initialPointerPosition }: DragItemDragStartArgs) => void;
+export function useDragTab(args: UseDragTabArgs): ({ initialPointerPosition, widgetSize }: DragTabDragStartArgs) => void;
 
 // @internal (undocumented)
 export interface UseDragTabArgs {
     // (undocumented)
     onDrag?: (dragBy: PointProps) => void;
     // (undocumented)
-    onDragEnd?: (target: DragTarget | undefined) => void;
+    onDragEnd?: (target: DragTarget | undefined, widgetSize: SizeProps) => void;
     // (undocumented)
     tabId: TabState["id"];
 }
@@ -2408,7 +2425,7 @@ export function useIsDraggedItem(item: DragItem): boolean;
 export function useIsDraggedType(type: DragItem["type"]): boolean;
 
 // @internal
-export function useOverflow(children: React.ReactNode): [ReadonlyArray<string> | undefined, (size: number) => void, (size: number) => void, (key: string) => (size: number) => void];
+export function useOverflow(children: React.ReactNode, activeChildIndex?: number): [ReadonlyArray<string> | undefined, (size: number) => void, (size: number) => void, (key: string) => (size: number) => void];
 
 // @internal (undocumented)
 export function usePanelTarget(args: UsePanelTargetArgs): (isTargeted: boolean) => void;
@@ -2580,6 +2597,15 @@ export const WidgetContentRenderer: React.NamedExoticComponent<WidgetContentRend
 // @internal (undocumented)
 export const WidgetContentRenderers: React.NamedExoticComponent<object>;
 
+// @internal (undocumented)
+export const WidgetContext: React.Context<WidgetContextArgs>;
+
+// @internal (undocumented)
+export interface WidgetContextArgs {
+    // (undocumented)
+    measure: () => SizeProps;
+}
+
 // @internal
 export interface WidgetDragAction {
     // (undocumented)
@@ -2692,7 +2718,6 @@ export interface WidgetPanelsContentProps extends CommonProps {
 export interface WidgetPanelsProps extends CommonProps {
     centerContent?: React.ReactNode;
     children?: React.ReactNode;
-    widgetContent?: React.ReactNode;
 }
 
 // @internal (undocumented)

@@ -21,7 +21,15 @@ function DragStarter(props: DragStarterProps) {
   const dragManager = React.useContext(DragManagerContext);
   React.useEffect(() => {
     dragManager.handleDragStart({
-      initialPointerPosition: new Point(),
+      info: {
+        initialPointerPosition: new Point(),
+        lastPointerPosition: new Point(),
+        pointerPosition: new Point(),
+        widgetSize: {
+          height: 0,
+          width: 0,
+        },
+      },
       item: {
         type: "tab",
         id: props.tabId,

@@ -431,7 +431,9 @@ function useOverflow(availableItems: React.ReactNode, overflowButtonAtStart: boo
 
     // Calculate overflow.
     const newOverflown = determineOverflowItems(size.current, [...sizes.entries()], overflowButtonSize.current, overflowButtonAtStart);
-    setOverflown(newOverflown);
+    setOverflown((prevOverflown) => {
+      return eql(prevOverflown, newOverflown) ? prevOverflown : newOverflown;
+    });
   }, [overflowButtonAtStart]);
 
   React.useLayoutEffect(() => {
@@ -459,13 +461,13 @@ function useOverflow(availableItems: React.ReactNode, overflowButtonAtStart: boo
     calculate && calculateOverflow();
   }, [calculateOverflow]);
 
-  const handleEntryResize = (key: string) => (w: number) => {
+  const handleEntryResize = React.useCallback((key: string) => (w: number) => {
     const oldW = itemSizes.current.get(key);
     if (oldW !== w) {
       itemSizes.current.set(key, w);
       calculateOverflow();
     }
-  };
+  }, [calculateOverflow]);
 
   return [overflowItemKeys, handleContainerResize, handleOverflowResize, handleEntryResize];
 }
@@ -497,4 +499,18 @@ function verifiedMapEntries<T>(map: Map<string, T | undefined>) {
       return undefined;
   }
   return map as Map<string, T>;
+}
+
+function eql(prev: readonly string[] | undefined, value: readonly string[]) {
+  if (!prev)
+    return false;
+  if (prev.length !== value.length)
+    return false;
+  for (let i = 0; i < prev.length; i++) {
+    const p = prev[i];
+    const v = value[i];
+    if (p !== v)
+      return false;
+  }
+  return true;
 }

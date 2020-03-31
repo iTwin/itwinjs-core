@@ -11,6 +11,7 @@
   border-radius: $nz-widget-tab-border-radius $nz-widget-tab-border-radius 0 0;
   flex: 0 0 auto;
   position: relative;
+  min-height: $nz-widget-tab-height;
 
   > .nz-handle {
     width: 100%;

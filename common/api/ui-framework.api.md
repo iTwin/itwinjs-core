@@ -5533,7 +5533,7 @@ export const WidgetPanelsFrontstage: React.NamedExoticComponent<object>;
 export function WidgetPanelsFrontstageContent(): JSX.Element | null;
 
 // @internal (undocumented)
-export function WidgetPanelsStatusBar(): JSX.Element | null;
+export function WidgetPanelsStatusBar(props: CommonProps): JSX.Element | null;
 
 // @internal (undocumented)
 export function WidgetPanelsToolbars(): JSX.Element;

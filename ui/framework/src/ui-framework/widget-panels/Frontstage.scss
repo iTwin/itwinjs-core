@@ -12,10 +12,15 @@
   > .uifw-widgetPanels {
     flex: 1 1 auto;
     min-height: 0;
+    order: 2;
 
     > .nz-widgetPanels-content {
       position: relative;
       pointer-events: none;
     }
+  }
+
+  .uifw-statusBar {
+    order: 3;
   }
 }

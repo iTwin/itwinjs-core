@@ -9,8 +9,7 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { WidgetContentManagerContext, WidgetContentContainersContext } from "./ContentManager";
-import { TabsStateContext } from "../base/NineZone";
-import { WidgetContentNodeContext } from "../widget-panels/Panels";
+import { TabsStateContext, WidgetContentNodeContext } from "../base/NineZone";
 import { TabState } from "../base/NineZoneState";
 import "./ContentRenderer.scss";
 

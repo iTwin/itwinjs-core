@@ -50,9 +50,9 @@ beta;DisabledResizeHandles
 internal;DisabledResizeHandlesHelpers
 internal;DockedToolSetting(props: ToolSettingProps): JSX.Element
 internal;DockedToolSettings(props: DockedToolSettingsProps): JSX.Element
-internal;DockedToolSettingsHandle(props: DockedToolSettingsHandleProps): JSX.Element
+internal;DockedToolSettingsHandle: React.NamedExoticComponent
 internal;DockedToolSettingsHandleProps 
-internal;DockedToolSettingsOverflow(props: DockedToolSettingsOverflowProps): JSX.Element
+internal;DockedToolSettingsOverflow: React.NamedExoticComponent
 internal;DockedToolSettingsOverflowProps 
 internal;DockedToolSettingsProps 
 internal;DraggedPanelSideContext: React.Context
@@ -70,8 +70,10 @@ internal;DragManager
 internal;DragManagerContext: React.Context
 internal;DragProvider: React.NamedExoticComponent
 internal;DragProviderProps
+internal;DragTabDragStartArgs 
 internal;DragTarget = TabTarget | PanelTarget_2 | WidgetTarget_2
 internal;Ellipsis(props: CommonProps): JSX.Element
+internal;eqlOverflown(prev: readonly string[] | undefined, value: readonly string[]): boolean
 internal;Event
 internal;EventEmitter
 internal;EventHandler = (...args: any[]) => void
@@ -205,6 +207,7 @@ alpha;NineZoneStagePanelsManagerProps
 internal;NineZoneState
 internal;NineZoneStateReducer: (state: NineZoneState, action: NineZoneActionTypes) => NineZoneState
 internal;offsetAndContainInContainer: (tooltipBounds: RectangleProps, containerSize: SizeProps, offset?: PointProps) => Point
+internal;onOverflowLabelAndEditorResize(): void
 alpha;OrthogonalDirection
 internal;OrthogonalDirectionHelpers
 beta;Outline 
@@ -358,14 +361,14 @@ internal;useDragPanelGrip(args: UseDragPanelGripArgs): ({ initialPointerPosition
 internal;UseDragPanelGripArgs
 internal;useDragResizeHandle(args: UseDragResizeHandleArgs): ({ initialPointerPosition }: DragItemDragStartArgs) => void
 internal;UseDragResizeHandleArgs
-internal;useDragTab(args: UseDragTabArgs): ({ initialPointerPosition }: DragItemDragStartArgs) => void
+internal;useDragTab(args: UseDragTabArgs): ({ initialPointerPosition, widgetSize }: DragTabDragStartArgs) => void
 internal;UseDragTabArgs
 internal;useDragWidget(args: UseDragWidgetArgs): ({ initialPointerPosition }: DragItemDragStartArgs) => void
 internal;UseDragWidgetArgs
 internal;useIsDragged(callback: () => boolean): boolean
 internal;useIsDraggedItem(item: DragItem): boolean
 internal;useIsDraggedType(type: DragItem["type"]): boolean
-internal;useOverflow(children: React.ReactNode): [ReadonlyArray
+internal;useOverflow(children: React.ReactNode, activeChildIndex?: number): [ReadonlyArray
 internal;usePanelTarget(args: UsePanelTargetArgs): (isTargeted: boolean) => void
 internal;UsePanelTargetArgs
 internal;usePointerCaptor: 
@@ -402,6 +405,8 @@ internal;WidgetContentNodeContext: React.Context
 alpha;WidgetContentProps 
 internal;WidgetContentRenderer: React.NamedExoticComponent
 internal;WidgetContentRenderers: React.NamedExoticComponent
+internal;WidgetContext: React.Context
+internal;WidgetContextArgs
 internal;WidgetDragAction
 internal;WidgetDragEndAction
 internal;WidgetIdContext: React.Context

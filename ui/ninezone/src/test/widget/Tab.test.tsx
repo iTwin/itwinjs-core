@@ -10,6 +10,7 @@ import {
 } from "../../ui-ninezone";
 import { PanelSideContext } from "../../ui-ninezone/widget-panels/Panel";
 import { WidgetTabsEntryContext } from "../../ui-ninezone/widget/Tabs";
+import { WidgetContext } from "../../ui-ninezone/widget/Widget";
 
 describe("WidgetTab", () => {
   const sandbox = sinon.createSandbox();
@@ -207,9 +208,11 @@ describe("WidgetTab", () => {
         state={nineZone}
         dispatch={dispatch}
       >
-        <WidgetStateContext.Provider value={nineZone.widgets.w1}>
-          <WidgetTab tab={nineZone.tabs.t1} />
-        </WidgetStateContext.Provider>
+        <WidgetContext.Provider value={{ measure: () => ({ height: 0, width: 0 }) }}>
+          <WidgetStateContext.Provider value={nineZone.widgets.w1}>
+            <WidgetTab tab={nineZone.tabs.t1} />
+          </WidgetStateContext.Provider>
+        </WidgetContext.Provider>
       </NineZoneProvider>,
     );
     const tab = document.getElementsByClassName("nz-widget-tab")[0];

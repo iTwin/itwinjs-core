@@ -14,16 +14,15 @@ import { useRefs } from "./useRefs";
  * @internal
  */
 export function useResizeObserver<T extends Element>(onResize?: (width: number) => void, useHeight?: boolean) {
-  const resizeObserverRef = React.useRef(new ResizeObserver((entries) => {
-    entries.length === 1 && onResize && onResize(useHeight ? entries[0].target.getBoundingClientRect().height : entries[0].target.getBoundingClientRect().width);
-  }));
   const observerRef = useRefEffect((instance: T | null) => {
-    const resizeObserver = resizeObserverRef.current;
+    const resizeObserver = new ResizeObserver((entries) => {
+      entries.length === 1 && onResize && onResize(useHeight ? entries[0].target.getBoundingClientRect().height : entries[0].target.getBoundingClientRect().width);
+    });
     instance && resizeObserver.observe(instance);
     return () => {
       instance && resizeObserver.unobserve(instance);
     };
-  }, []);
+  }, [onResize]);
   const handleRef = React.useCallback((instance: T | null) => {
     instance && onResize && onResize(useHeight ? instance.getBoundingClientRect().height : instance.getBoundingClientRect().width);
   }, [onResize, useHeight]);

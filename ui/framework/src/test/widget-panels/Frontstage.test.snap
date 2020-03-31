@@ -60,6 +60,7 @@ exports[`WidgetPanelsFrontstage should render 1`] = `
       "widgets": Object {},
     }
   }
+  widgetContent={<WidgetContent />}
 >
   <WidgetPanelsFrontstageComponent />
 </NineZoneProvider>
@@ -123,6 +124,7 @@ exports[`WidgetPanelsFrontstage should render modal stage content 1`] = `
       "widgets": Object {},
     }
   }
+  widgetContent={<WidgetContent />}
 >
   <WidgetPanelsFrontstageComponent />
 </NineZoneProvider>

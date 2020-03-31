@@ -36,8 +36,9 @@ describe("WidgetPanels", () => {
       <NineZoneProvider
         state={nineZone}
         dispatch={sinon.spy()}
+        widgetContent={<div>Hello World!</div>}
       >
-        <WidgetPanels widgetContent={<div>Hello World!</div>} />
+        <WidgetPanels />
       </NineZoneProvider>,
     );
     container.firstChild!.should.matchSnapshot();

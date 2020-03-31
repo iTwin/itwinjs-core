@@ -8,7 +8,7 @@
 
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps, Rectangle } from "@bentley/ui-core";
+import { CommonProps, Rectangle, SizeProps } from "@bentley/ui-core";
 import { WidgetState, PANEL_WIDGET_DRAG_START } from "../base/NineZoneState";
 import { getUniqueId, NineZoneDispatchContext } from "../base/NineZone";
 import { PanelSideContext } from "../widget-panels/Panel";
@@ -81,18 +81,27 @@ export const Widget = React.memo<WidgetProps>(function Widget(props) { // tslint
       element.removeEventListener("pointerdown", onPointerDown, true);
     };
   }, [dispatch, floatingWidgetId]);
+  const measure = React.useCallback<WidgetContextArgs["measure"]>(() => {
+    const bounds = ref.current!.getBoundingClientRect();
+    return bounds;
+  }, []);
+  const widgetContextValue = React.useMemo<WidgetContextArgs>(() => ({
+    measure,
+  }), [measure]);
   const className = classnames(
     "nz-widget-widget",
     props.className,
   );
   return (
-    <div
-      className={className}
-      ref={ref}
-      style={props.style}
-    >
-      {props.children}
-    </div>
+    <WidgetContext.Provider value={widgetContextValue}>
+      <div
+        className={className}
+        ref={ref}
+        style={props.style}
+      >
+        {props.children}
+      </div>
+    </WidgetContext.Provider>
   );
 });
 
@@ -103,3 +112,12 @@ WidgetIdContext.displayName = "nz:WidgetIdContext";
 /** @internal */
 export const WidgetStateContext = React.createContext<WidgetState | undefined>(undefined); // tslint:disable-line: variable-name
 WidgetStateContext.displayName = "nz:WidgetStateContext";
+
+/** @internal */
+export interface WidgetContextArgs {
+  measure: () => SizeProps;
+}
+
+/** @internal */
+export const WidgetContext = React.createContext<WidgetContextArgs>(null!); // tslint:disable-line: variable-name
+WidgetContext.displayName = "nz:WidgetContext";

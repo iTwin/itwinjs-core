@@ -7,6 +7,7 @@ import * as sinon from "sinon";
 import { act, render, fireEvent } from "@testing-library/react";
 import { createNineZoneState, NineZoneProvider, addPanelWidget, NineZoneDispatch, PanelWidget, PANEL_WIDGET_DRAG_START, PanelSideContext } from "../../ui-ninezone";
 import * as NineZoneModule from "../../ui-ninezone/base/NineZone";
+import { addTab } from "../../ui-ninezone/base/NineZoneState";
 
 describe("PanelWidget", () => {
   const sandbox = sinon.createSandbox();
@@ -43,5 +44,37 @@ describe("PanelWidget", () => {
       id: "w1",
       newFloatingWidgetId: "newId",
     })).should.true;
+  });
+
+  it("should measure widget bounds", () => {
+    let nineZone = createNineZoneState();
+    nineZone = addPanelWidget(nineZone, "left", "w1");
+    nineZone = addTab(nineZone, "w1", "t1");
+    const { container } = render(
+      <NineZoneProvider
+        state={nineZone}
+        dispatch={sinon.spy()}
+      >
+        <PanelSideContext.Provider value="left">
+          <PanelWidget widgetId="w1" />
+        </PanelSideContext.Provider>
+      </NineZoneProvider>,
+    );
+
+    const widget = container.getElementsByClassName("nz-widget-panelWidget")[0];
+    const spy = sinon.spy(widget, "getBoundingClientRect");
+
+    const tab = container.getElementsByClassName("nz-widget-tab")[0];
+    act(() => {
+      fireEvent.pointerDown(tab);
+
+      const moveEvent = document.createEvent("MouseEvent");
+      moveEvent.initEvent("pointermove");
+      sinon.stub(moveEvent, "clientX").get(() => 10);
+      sinon.stub(moveEvent, "clientY").get(() => 10);
+      fireEvent(document, moveEvent);
+    });
+
+    spy.calledOnce.should.true;
   });
 });

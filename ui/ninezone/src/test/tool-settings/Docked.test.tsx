@@ -5,7 +5,7 @@
 import * as React from "react";
 import * as sinon from "sinon";
 import { render, act, fireEvent, queryByText } from "@testing-library/react";
-import { DockedToolSettings, getOverflown, DockedToolSetting } from "../../ui-ninezone";
+import { DockedToolSettings, getOverflown, DockedToolSetting, onOverflowLabelAndEditorResize, eqlOverflown } from "../../ui-ninezone";
 import * as ResizeObserverModule from "@bentley/ui-core/lib/ui-core/utils/hooks/ResizeObserverPolyfill"; // tslint:disable-line: no-direct-imports
 import { createDOMRect, ResizeObserverMock } from "../Utils";
 
@@ -170,7 +170,7 @@ describe("DockedToolSettings", () => {
     act(() => {
       width = 50;
       resizeObserver!.callback([{
-        contentRect: createDOMRect({ width: 50 }),
+        contentRect: createDOMRect(),
         target: target!,
       }], resizeObserver!);
     });
@@ -180,7 +180,6 @@ describe("DockedToolSettings", () => {
 
   it("should recalculate overflow on entry resize", () => {
     let width = 50;
-
     // tslint:disable-next-line: only-arrow-functions
     sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
       if (this.classList.contains("nz-toolSettings-docked")) {
@@ -195,7 +194,7 @@ describe("DockedToolSettings", () => {
     let target: Element | undefined;
     sandbox.stub(ResizeObserverModule, "ResizeObserver").callsFake((callback) => new ResizeObserverMock(callback));
     sandbox.stub(ResizeObserverMock.prototype, "observe").callsFake(function (this: ResizeObserverMock, element: Element) {
-      if (element instanceof HTMLElement && queryByText(element, "Entry 1")) {
+      if (element instanceof HTMLElement && element.classList.contains("nz-toolSettings-setting") && queryByText(element, "Entry 1")) {
         resizeObserver = this;
         target = element;
       }
@@ -214,7 +213,7 @@ describe("DockedToolSettings", () => {
     act(() => {
       width = 100;
       resizeObserver!.callback([{
-        contentRect: createDOMRect({ width: 100 }),
+        contentRect: createDOMRect(),
         target: target!,
       }], resizeObserver!);
     });
@@ -231,5 +230,26 @@ describe("getOverflown", () => {
       ["3", 40],
     ], 50);
     overflown.should.eql(["2", "3"]);
+  });
+
+  it("should not overflow active item", () => {
+    const overflown = getOverflown(100, [
+      ["1", 40],
+      ["2", 40],
+      ["3", 40],
+    ], 50, 1);
+    overflown.should.eql(["1", "3"]);
+  });
+});
+
+describe("onOverflowLabelAndEditorResize", () => {
+  it("should not throw", () => {
+    (() => onOverflowLabelAndEditorResize()).should.not.throw();
+  });
+});
+
+describe("eqlOverflown", () => {
+  it("should return false if entries are not equal", () => {
+    eqlOverflown(["a", "b"], ["a", "c"]).should.false;
   });
 });

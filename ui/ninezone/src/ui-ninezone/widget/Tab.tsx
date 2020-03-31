@@ -15,7 +15,7 @@ import { assert } from "../base/assert";
 import { usePointerCaptor } from "../base/PointerCaptor";
 import { WidgetTabsEntryContext } from "./Tabs";
 import { FloatingWidgetIdContext } from "./FloatingWidget";
-import { WidgetStateContext } from "./Widget";
+import { WidgetStateContext, WidgetContext } from "./Widget";
 import { PanelSideContext } from "../widget-panels/Panel";
 import { useDragTab } from "../base/DragManager";
 import "./Tab.scss";
@@ -41,6 +41,7 @@ export const WidgetTab = React.memo<WidgetTabProps>(function WidgetTab(props) { 
   const side = React.useContext(PanelSideContext);
   const floatingWidgetId = React.useContext(FloatingWidgetIdContext);
   const widget = React.useContext(WidgetStateContext);
+  const widgetContext = React.useContext(WidgetContext);
   assert(widget);
   const handleDragStart = useDragTab({
     tabId: id,
@@ -50,8 +51,10 @@ export const WidgetTab = React.memo<WidgetTabProps>(function WidgetTab(props) { 
     assert(ref.current);
     assert(initialPointerPosition.current);
     const position = Rectangle.create(ref.current.getBoundingClientRect()).topLeft().toProps();
+    const widgetSize = widgetContext.measure();
     handleDragStart({
       initialPointerPosition: initialPointerPosition.current,
+      widgetSize,
     });
     dispatch({
       type: WIDGET_TAB_DRAG_START,
@@ -63,7 +66,7 @@ export const WidgetTab = React.memo<WidgetTabProps>(function WidgetTab(props) { 
     });
     dragStartTimer.current.stop();
     initialPointerPosition.current = undefined;
-  }, [dispatch, floatingWidgetId, handleDragStart, side, widgetId, id]);
+  }, [dispatch, floatingWidgetId, handleDragStart, side, widgetContext, widgetId, id]);
   const handleClick = React.useCallback(() => {
     dispatch({
       type: WIDGET_TAB_CLICK,

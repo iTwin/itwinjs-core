@@ -565,7 +565,7 @@ internal;WidgetPanelsDefaultToolSettings(props: WidgetPanelsDefaultToolSettingsP
 internal;WidgetPanelsDefaultToolSettingsProps
 internal;WidgetPanelsFrontstage: React.NamedExoticComponent
 internal;WidgetPanelsFrontstageContent(): JSX.Element | null
-internal;WidgetPanelsStatusBar(): JSX.Element | null
+internal;WidgetPanelsStatusBar(props: CommonProps): JSX.Element | null
 internal;WidgetPanelsToolbars(): JSX.Element
 internal;WidgetPanelsToolSettings(): JSX.Element | null
 public;WidgetProps 

@@ -20,8 +20,9 @@ export type NineZoneDispatch = (action: NineZoneActionTypes) => void;
 /** @internal future */
 export interface NineZoneProviderProps {
   children?: React.ReactNode;
-  state: NineZoneState;
   dispatch: NineZoneDispatch;
+  state: NineZoneState;
+  widgetContent?: React.ReactNode;
 }
 
 /** @internal future */
@@ -29,25 +30,27 @@ export function NineZoneProvider(props: NineZoneProviderProps) {
   return (
     <NineZoneContext.Provider value={props.state}>
       <NineZoneDispatchContext.Provider value={props.dispatch}>
-        <DraggedTabStateContext.Provider value={props.state.draggedTab}>
-          <DraggedTabContext.Provider value={!!props.state.draggedTab}>
-            <TabsStateContext.Provider value={props.state.tabs}>
-              <WidgetsStateContext.Provider value={props.state.widgets}>
-                <PanelsStateContext.Provider value={props.state.panels}>
-                  <FloatingWidgetsStateContext.Provider value={props.state.floatingWidgets}>
-                    <DragProvider>
-                      <CursorTypeProvider>
-                        <WidgetContentManager>
-                          {props.children}
-                        </WidgetContentManager>
-                      </CursorTypeProvider>
-                    </DragProvider>
-                  </FloatingWidgetsStateContext.Provider>
-                </PanelsStateContext.Provider>
-              </WidgetsStateContext.Provider>
-            </TabsStateContext.Provider>
-          </DraggedTabContext.Provider>
-        </DraggedTabStateContext.Provider>
+        <WidgetContentNodeContext.Provider value={props.widgetContent}>
+          <DraggedTabStateContext.Provider value={props.state.draggedTab}>
+            <DraggedTabContext.Provider value={!!props.state.draggedTab}>
+              <TabsStateContext.Provider value={props.state.tabs}>
+                <WidgetsStateContext.Provider value={props.state.widgets}>
+                  <PanelsStateContext.Provider value={props.state.panels}>
+                    <FloatingWidgetsStateContext.Provider value={props.state.floatingWidgets}>
+                      <DragProvider>
+                        <CursorTypeProvider>
+                          <WidgetContentManager>
+                            {props.children}
+                          </WidgetContentManager>
+                        </CursorTypeProvider>
+                      </DragProvider>
+                    </FloatingWidgetsStateContext.Provider>
+                  </PanelsStateContext.Provider>
+                </WidgetsStateContext.Provider>
+              </TabsStateContext.Provider>
+            </DraggedTabContext.Provider>
+          </DraggedTabStateContext.Provider>
+        </WidgetContentNodeContext.Provider>
       </NineZoneDispatchContext.Provider>
     </NineZoneContext.Provider>
   );
@@ -88,6 +91,10 @@ FloatingWidgetsStateContext.displayName = "nz:FloatingWidgetsStateContext";
 /** @internal */
 export const CursorTypeContext = React.createContext<CursorType | undefined>(undefined); // tslint:disable-line: variable-name
 CursorTypeContext.displayName = "nz:CursorTypeContext";
+
+/** @internal */
+export const WidgetContentNodeContext = React.createContext<React.ReactNode>(null); // tslint:disable-line: variable-name
+WidgetContentNodeContext.displayName = "nz:WidgetContentNodeContext";
 
 function CursorTypeProvider(props: { children?: React.ReactNode }) {
   const draggedTab = React.useContext(DraggedTabContext);

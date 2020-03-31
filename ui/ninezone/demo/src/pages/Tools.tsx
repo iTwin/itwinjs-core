@@ -19,7 +19,7 @@ import { AppButton } from "@src/widget/tools/button/App";
 import { BackButton } from "@src/widget/tools/button/Back";
 import { ExpandableButton } from "@src/widget/tools/button/Expandable";
 import { ToolbarIcon } from "@src/widget/tools/button/Icon";
-import { Popup, Position as PopupDirection } from "@bentley/ui-core";
+import { Popup } from "@bentley/ui-core";
 import { RelativePosition } from "@bentley/ui-abstract";
 
 interface State {
