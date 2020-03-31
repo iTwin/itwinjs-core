@@ -99,7 +99,13 @@ export abstract class MapTile extends RealityTile {
 
   public disposeContents() {
     super.disposeContents();
-    this._texture = dispose(this._texture);
+    this.disposeTexture();
+  }
+
+  private disposeTexture(): void {
+    // Drape tile textures are shared with terrain tile graphics - let garbage collector dispose of them.
+    if (!this.mapLoader.isDrape)
+      this._texture = dispose(this._texture);
   }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
@@ -325,7 +331,7 @@ export abstract class MapTile extends RealityTile {
 
   public setContent(content: WebMapTileContent): void {
     this.setGraphic(content.graphic);
-    dispose(this._texture);
+    this.disposeTexture();
     this._texture = content.imageryTexture;
 
     if (undefined !== content.contentRange)

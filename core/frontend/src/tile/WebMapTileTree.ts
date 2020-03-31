@@ -163,7 +163,10 @@ export class WebMapTileLoader extends MapTileLoaderBase {
 
   private async loadTextureImage(imageSource: ImageSource, iModel: IModelConnection, system: RenderSystem, isCanceled: () => boolean): Promise<RenderTexture | undefined> {
     try {
-      const textureParams = new RenderTexture.Params(undefined, this._filterTextures ? RenderTexture.Type.FilteredTileSection : RenderTexture.Type.TileSection);
+      const isOwned = this.isDrape; // drape textures are shared with terrain tile graphics - let garbage collector dispose of them.
+      const type = this._filterTextures ? RenderTexture.Type.FilteredTileSection : RenderTexture.Type.TileSection;
+      const textureParams = new RenderTexture.Params(undefined, type, isOwned);
+
       return imageElementFromImageSource(imageSource)
         .then((image) => isCanceled() ? undefined : system.createTextureFromImage(image, ImageSourceFormat.Png === imageSource.format, iModel, textureParams))
         .catch((_) => undefined);

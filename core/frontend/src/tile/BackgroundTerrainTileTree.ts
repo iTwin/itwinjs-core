@@ -182,7 +182,7 @@ export interface TerrainTileContent extends TileContent {
 /** @internal */
 export class TerrainMapTile extends MapTile {
   private static _maxParentHeightDepth = 4;
-  public drapeTiles?: MapTile[];
+  private _drapeTiles?: MapTile[];
   public everLoaded = false;                    // If the tile is only required for availability metadata, load it once and then allow it to be unloaded.
   protected _heightRange: Range1d | undefined;
   protected _geometry?: RenderTerrainMeshGeometry;
@@ -200,8 +200,8 @@ export class TerrainMapTile extends MapTile {
   }
   public markUsed(args: TileDrawArgs) {
     super.markUsed(args);
-    if (this.drapeTiles)
-      for (const drapeTile of this.drapeTiles)
+    if (this._drapeTiles)
+      for (const drapeTile of this._drapeTiles)
         drapeTile.markUsed(args);
   }
 
@@ -216,7 +216,12 @@ export class TerrainMapTile extends MapTile {
 
     const loader = this.mapLoader;
     const textures = this.getDrapeTextures();
-    return this._graphic = IModelApp.renderSystem.createTerrainMeshGraphic(geometry, loader.featureTable, textures);
+    this._graphic = IModelApp.renderSystem.createTerrainMeshGraphic(geometry, loader.featureTable, textures);
+
+    // We no longer need the drape tiles.
+    this._drapeTiles = undefined;
+
+    return this._graphic;
   }
 
   public getClipShape(): Point3d[] {
@@ -271,13 +276,10 @@ export class TerrainMapTile extends MapTile {
   }
 
   public get drapesAreReady(): boolean {
-    if (undefined === this.drapeTiles)
+    if (undefined === this._drapeTiles)
       return undefined === this.terrainTree.drapeTree;
 
-    for (const drapeTile of this.drapeTiles)
-      if (!drapeTile.isReady)
-        return false;
-    return true;
+    return this._drapeTiles.every((tile) => tile.isReady);
   }
 
   /** Select secondary (imagery) tiles
@@ -287,9 +289,9 @@ export class TerrainMapTile extends MapTile {
     if (undefined === this.terrainTree.drapeTree || this.drapesAreReady)
       return;
 
-    this.drapeTiles = this.terrainTree.drapeTree.selectCartoDrapeTiles(this, args);
+    this._drapeTiles = this.terrainTree.drapeTree.selectCartoDrapeTiles(this, args);
 
-    for (const drapeTile of this.drapeTiles) {
+    for (const drapeTile of this._drapeTiles) {
       if (drapeTile.isReady)
         args.markReady(drapeTile);
       else
@@ -318,7 +320,7 @@ export class TerrainMapTile extends MapTile {
   private static _scratchThisDiagonal = Vector2d.create();
   private static _scratchDrapeDiagonal = Vector2d.create();
   public getDrapeTextures(): TerrainTexture[] | undefined {
-    if (undefined === this.drapeTiles)
+    if (undefined === this._drapeTiles)
       return undefined;
 
     const drapeTextures: TerrainTexture[] = [];
@@ -326,7 +328,7 @@ export class TerrainMapTile extends MapTile {
     const thisDiagonal = thisRectangle.diagonal(TerrainMapTile._scratchThisDiagonal);
     const bordersNorthPole = this.quadId.bordersNorthPole(this.mapTree.sourceTilingScheme);
     const bordersSouthPole = this.quadId.bordersSouthPole(this.mapTree.sourceTilingScheme);
-    for (const drapeTile of this.drapeTiles) {
+    for (const drapeTile of this._drapeTiles) {
       if (drapeTile.texture) {
         drapeTextures.push(this.computeDrapeTexture(thisRectangle, thisDiagonal, drapeTile, drapeTile.rectangle));
         if ((bordersNorthPole && drapeTile.quadId.bordersNorthPole(drapeTile.mapTree.sourceTilingScheme) && drapeTile.rectangle.high.y < thisRectangle.high.y) ||
@@ -391,6 +393,7 @@ export class TerrainMapTile extends MapTile {
     super.disposeContents();
     this._geometry = dispose(this._geometry);
     this._mesh = undefined;
+    this._drapeTiles = undefined;
   }
 }
 

@@ -8227,8 +8227,6 @@ export class TerrainMapTile extends MapTile {
     // (undocumented)
     get drapesAreReady(): boolean;
     // (undocumented)
-    drapeTiles?: MapTile[];
-    // (undocumented)
     everLoaded: boolean;
     forceSelectRealityTile(): boolean;
     // (undocumented)
