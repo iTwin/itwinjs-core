@@ -419,12 +419,6 @@
       "shouldPublish": false
     },
     {
-      "packageName": "webworker-test-app",
-      "projectFolder": "test-apps/webworker-test-app",
-      "reviewCategory": "internal",
-      "shouldPublish": false
-    },
-    {
       "packageName": "core-full-stack-tests",
       "projectFolder": "full-stack-tests/core",
       "reviewCategory": "internal",
