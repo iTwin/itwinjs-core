@@ -123,6 +123,8 @@ You can use these environment variables to alter the default behavior of various
   * If defined, shader source code will be preserved as internal strings, useful for debugging purposes.
 * SVT_TILETREE_EXPIRATION_SECONDS
   * If defined, the number of seconds after a TileTree has been most recently drawn before purging it.
+* SVT_TILE_EXPIRATION_SECONDS
+  * If defined, the number of seconds after a Tile has been most recently used before pruning it.
 * SVT_DISABLE_LOG_Z
   * If defined, the logarithmic depth buffer will not be used.
 * SVT_FAKE_CLOUD_STORAGE

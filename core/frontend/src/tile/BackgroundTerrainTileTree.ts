@@ -206,7 +206,7 @@ export class TerrainMapTile extends MapTile {
   }
 
   public produceGraphics(): RenderGraphic | undefined {
-    if (undefined !== this._graphic)
+    if (undefined !== this._graphic && this.drapesAreReady)
       return this._graphic;
 
     const geometry = this.geometry;

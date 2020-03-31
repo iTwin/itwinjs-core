@@ -22,6 +22,7 @@ export interface SVTConfiguration {
   useProjectExtents?: boolean; // default ON
   maxTilesToSkip?: number;
   tileTreeExpirationSeconds?: number;
+  tileExpirationSeconds?: number;
   logarithmicZBuffer?: boolean; // default ON (if extension supported)
   filterMapTextures?: boolean;  // default OFF
   filterMapDrapeTextures?: boolean; // default ON (if extension supported)

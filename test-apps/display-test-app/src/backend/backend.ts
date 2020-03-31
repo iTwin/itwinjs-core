@@ -67,13 +67,18 @@ function setupStandaloneConfiguration(): SVTConfiguration {
     configuration.doIdleWork = false;
 
   configuration.useProjectExtents = undefined === process.env.SVT_NO_USE_PROJECT_EXTENTS;
-  const treeExpiration = process.env.SVT_TILETREE_EXPIRATION_SECONDS;
-  if (undefined !== treeExpiration)
-    try {
-      configuration.tileTreeExpirationSeconds = Number.parseInt(treeExpiration, 10);
-    } catch (_) {
-      //
-    }
+
+  const parseSeconds = (key: string) => {
+    const env = process.env[key];
+    if (!env)
+      return undefined;
+
+    const val = Number.parseInt(env, 10);
+    return Number.isNaN(val) ? undefined : val;
+  };
+
+  configuration.tileTreeExpirationSeconds = parseSeconds("SVT_TILETREE_EXPIRATION_SECONDS");
+  configuration.tileExpirationSeconds = parseSeconds("SVT_TILE_EXPIRATION_SECONDS");
 
   const maxToSkipVar = process.env.SVT_MAX_TILES_TO_SKIP;
   if (undefined !== maxToSkipVar) {

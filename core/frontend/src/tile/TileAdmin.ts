@@ -483,7 +483,7 @@ class Admin extends TileAdmin {
   private _rpcInitialized = false;
   private readonly _tileExpirationTime: BeDuration;
   private _nextPruneTime: BeTimePoint;
-  private _nextPurgeTime?: BeTimePoint;
+  private _nextPurgeTime: BeTimePoint;
   private readonly _treeExpirationTime: BeDuration;
   private readonly _contextPreloadParentDepth: number;
   private readonly _contextPreloadParentSkip: number;
@@ -662,7 +662,7 @@ class Admin extends TileAdmin {
   private pruneAndPurge(): void {
     const now = BeTimePoint.now();
     const needPrune = this._nextPruneTime.before(now);
-    const needPurge = undefined !== this._nextPurgeTime && this._nextPurgeTime.before(now);
+    const needPurge = this._nextPurgeTime.before(now);
     if (!needPrune && !needPurge)
       return;
 
