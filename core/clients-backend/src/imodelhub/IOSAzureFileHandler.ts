@@ -78,7 +78,10 @@ export class IOSAzureFileHandler implements FileHandler {
           }
         };
         xhr.onerror = () => {
-          reject();
+          if (xhr.status === 5000)
+            reject(new UserCancelledError(BriefcaseStatus.DownloadCancelled, "User cancelled download", Logger.logWarning));
+          else
+            reject();
         };
         if (progressCallback) {
           (xhr as any).onprogress = (doneBytes: number, totalBytes: number) => {
@@ -88,7 +91,6 @@ export class IOSAzureFileHandler implements FileHandler {
         if (cancelRequest !== undefined) {
           cancelRequest.cancel = () => {
             (xhr as any).cancel();
-            reject(new UserCancelledError(BriefcaseStatus.DownloadCancelled, "User cancelled download", Logger.logWarning));
             return true;
           };
         }
