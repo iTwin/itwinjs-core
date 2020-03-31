@@ -1,6 +1,16 @@
 # Change Log - @bentley/imodeljs-backend
 
-This log was last generated on Wed, 04 Mar 2020 16:16:31 GMT and should not be manually modified.
+This log was last generated on Tue, 31 Mar 2020 15:44:19 GMT and should not be manually modified.
+
+## 1.14.0
+Tue, 31 Mar 2020 15:44:19 GMT
+
+### Updates
+
+- Update to addon 1.14.1
+- Fixed downloading of files using https/streaming to resolve when the filestream is closed instead of when the input stream is exhausted. 
+- Add handling for invalid predecessor ids to IModelTransformer
+- Accomodate updated imodeljs-native ULAS functions
 
 ## 1.13.0
 Wed, 04 Mar 2020 16:16:31 GMT

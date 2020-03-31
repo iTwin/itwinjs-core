@@ -11,8 +11,9 @@ chai.use(chaiAsPromised);
 
 import { Config } from "@bentley/imodeljs-clients";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
-import { getTestOidcToken, TestOidcConfiguration } from "../TestOidcClient";
-import { TestUsers } from "../TestUsers";
+import { getTestOidcToken } from "../TestOidcClient";
+import { TestUsers, TestOidcConfiguration } from "../TestUsers";
+import { TestUtility } from "../TestUtility";
 
 IModelJsConfig.init(true /* suppress exception */, false /* suppress error message */, Config.App);
 
@@ -57,18 +58,18 @@ describe("Sign in (#integration)", () => {
 describe("TestUsers utility (#integration)", () => {
 
   it("can sign-in all the typically used integration test users", async () => {
-    let token = await TestUsers.getAccessToken(TestUsers.regular);
+    let token = await TestUtility.getAccessToken(TestUsers.regular);
     assert.exists(token);
-    token = await TestUsers.getAccessToken(TestUsers.manager);
+    token = await TestUtility.getAccessToken(TestUsers.manager);
     assert.exists(token);
-    token = await TestUsers.getAccessToken(TestUsers.super);
+    token = await TestUtility.getAccessToken(TestUsers.super);
     assert.exists(token);
-    token = await TestUsers.getAccessToken(TestUsers.superManager);
+    token = await TestUtility.getAccessToken(TestUsers.superManager);
     assert.exists(token);
   });
 
   it("can construct request context for integration test users", async () => {
-    const requestContext = await TestUsers.getAuthorizedClientRequestContext(TestUsers.regular);
+    const requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
     assert.exists(requestContext);
   });
 

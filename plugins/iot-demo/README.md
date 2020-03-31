@@ -15,17 +15,17 @@ See http://imodeljs.org for comprehensive documentation on the iModel.js API and
 
 3. Build the plugin as part of the "rush build" in the iModel.js repository, or separately build using the npm build command.
 
-  ```sh
-  npm run build
-  ```
+    ```sh
+    npm run build
+    ```
 
 4. Copy all the output files in the lib/build directory tree to imjs_plugins/iotDemo directory in the web resources of the host application.
 
 5. Start the host application - go to its directory and run:
 
-  ```sh
-  npm run start:servers
-  ```
+    ```sh
+    npm run start:servers
+    ```
 
 6. Open a web browser (e.g., Chrome or Edge), and browse to localhost:3000.
 

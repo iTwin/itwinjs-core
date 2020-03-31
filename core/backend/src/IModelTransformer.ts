@@ -227,10 +227,14 @@ export class IModelTransformer extends IModelExportHandler {
    */
   private findMissingPredecessors(sourceElement: Element): Id64Set {
     const predecessorIds: Id64Set = sourceElement.getPredecessorIds();
-    predecessorIds.forEach((elementId: Id64String) => {
-      const targetElementId: Id64String = this.context.findTargetElementId(elementId);
-      if (Id64.isValidId64(targetElementId)) {
-        predecessorIds.delete(elementId);
+    predecessorIds.forEach((sourceElementId: Id64String) => {
+      if (Id64.invalid === sourceElementId) {
+        predecessorIds.delete(sourceElementId);
+      } else {
+        const targetElementId: Id64String = this.context.findTargetElementId(sourceElementId);
+        if (Id64.isValidId64(targetElementId)) {
+          predecessorIds.delete(sourceElementId);
+        }
       }
     });
     return predecessorIds;
@@ -289,8 +293,10 @@ export class IModelTransformer extends IModelExportHandler {
         this.skipElement(sourceElement);
         if (Logger.isEnabled(loggerCategory, LogLevel.Trace)) {
           for (const missingPredecessorId of missingPredecessorIds) {
-            const missingPredecessorElement: Element = this.sourceDb.elements.getElement(missingPredecessorId);
-            Logger.logTrace(loggerCategory, `Remapping not found for predecessor ${this.formatElementForLogger(missingPredecessorElement)}`);
+            const missingPredecessorElement: Element | undefined = this.sourceDb.elements.tryGetElement(missingPredecessorId);
+            if (missingPredecessorElement) {
+              Logger.logTrace(loggerCategory, `Remapping not found for predecessor ${this.formatElementForLogger(missingPredecessorElement)}`);
+            }
           }
         }
         return;

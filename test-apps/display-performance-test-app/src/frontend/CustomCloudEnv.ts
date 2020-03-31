@@ -21,7 +21,7 @@ export async function initializeCustomCloudEnv(projectName: string | undefined, 
   const accessToken = AccessToken.fromForeignProjectAccessTokenJson(JSON.stringify(foreignAccessTokenWrapper));
 
   if (undefined === projectName)
-    projectName = "iModelJsTest";
+    projectName = "iModelJsIntegrationTest";
 
   const bankContextClient = new IModelBankFileSystemContextClient(url);
   const requestContext = new AuthorizedFrontendRequestContext(accessToken!);

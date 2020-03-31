@@ -2,6 +2,27 @@
   "name": "@bentley/imodeljs-backend",
   "entries": [
     {
+      "version": "1.14.0",
+      "tag": "@bentley/imodeljs-backend_v1.14.0",
+      "date": "Tue, 31 Mar 2020 15:44:19 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update to addon 1.14.1"
+          },
+          {
+            "comment": "Fixed downloading of files using https/streaming to resolve when the filestream is closed instead of when the input stream is exhausted. "
+          },
+          {
+            "comment": "Add handling for invalid predecessor ids to IModelTransformer"
+          },
+          {
+            "comment": "Accomodate updated imodeljs-native ULAS functions"
+          }
+        ]
+      }
+    },
+    {
       "version": "1.13.0",
       "tag": "@bentley/imodeljs-backend_v1.13.0",
       "date": "Wed, 04 Mar 2020 16:16:31 GMT",

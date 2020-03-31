@@ -1,6 +1,15 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Wed, 04 Mar 2020 16:16:31 GMT and should not be manually modified.
+This log was last generated on Tue, 31 Mar 2020 15:44:19 GMT and should not be manually modified.
+
+## 1.14.0
+Tue, 31 Mar 2020 15:44:19 GMT
+
+### Updates
+
+- #269633 #285220 Wrong LocateResponse when 1st HitList entry isn't the accepted hit.
+- Tentative snap should not hilite reality models.
+- Ensure view decorations are scaled by device-pixel ratio.
 
 ## 1.13.0
 Wed, 04 Mar 2020 16:16:31 GMT

@@ -22,7 +22,6 @@
     "common/temp": true,
     "tools/build/mocha-reporter": true,
     "tools/build/tslint-rules": true,
-    "tools/webpack/bin/buildIModelJsModule.js": true
   },
   "files.trimTrailingWhitespace": true,
   "typescript.tsdk": "node_modules\\typescript\\lib",

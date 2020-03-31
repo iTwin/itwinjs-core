@@ -295,7 +295,7 @@ body.layout-full-width #main-landing-wrapper {
   }
 
   .middle-content-group {
-    flex-flow: column;
+    flex-flow: column-reverse;
     -ms-flex-flow: row wrap;
     align-items: center;
   }

@@ -2,6 +2,24 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "1.14.0",
+      "tag": "@bentley/imodeljs-frontend_v1.14.0",
+      "date": "Tue, 31 Mar 2020 15:44:19 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "#269633 #285220 Wrong LocateResponse when 1st HitList entry isn't the accepted hit."
+          },
+          {
+            "comment": "Tentative snap should not hilite reality models."
+          },
+          {
+            "comment": "Ensure view decorations are scaled by device-pixel ratio."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.13.0",
       "tag": "@bentley/imodeljs-frontend_v1.13.0",
       "date": "Wed, 04 Mar 2020 16:16:31 GMT",

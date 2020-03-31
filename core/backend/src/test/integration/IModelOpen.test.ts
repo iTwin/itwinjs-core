@@ -6,7 +6,7 @@ import { assert } from "chai";
 import { GuidString, BentleyError } from "@bentley/bentleyjs-core";
 import { IModelVersion, RpcPendingResponse } from "@bentley/imodeljs-common";
 import { AccessToken, ChangeSet } from "@bentley/imodeljs-clients";
-import { TestUsers } from "@bentley/oidc-signin-tool";
+import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { IModelDb, OpenParams, AuthorizedBackendRequestContext, BriefcaseManager } from "../../imodeljs-backend";
 import { HubUtility } from "./HubUtility";
@@ -16,7 +16,7 @@ describe("IModelOpen (#integration)", () => {
 
   let requestContext: AuthorizedBackendRequestContext;
   let badRequestContext: AuthorizedBackendRequestContext;
-  const testProjectName = "Design Review ATP";
+  const testProjectName = "iModelJsIntegrationTest";
   const testIModelName = "Stadium Dataset 1";
   let testIModelId: GuidString;
   let testProjectId: GuidString;
@@ -26,7 +26,7 @@ describe("IModelOpen (#integration)", () => {
     IModelTestUtils.setupLogging();
     // IModelTestUtils.setupDebugLogLevels();
 
-    requestContext = await TestUsers.getAuthorizedClientRequestContext(TestUsers.regular);
+    requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
     testProjectId = await HubUtility.queryProjectIdByName(requestContext, testProjectName);
     testIModelId = await HubUtility.queryIModelIdByName(requestContext, testProjectId, testIModelName);
     testChangeSetId = await HubUtility.queryLatestChangeSetId(requestContext, testIModelId);

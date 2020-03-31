@@ -1,6 +1,6 @@
 {
   "name": "@bentley/webpack-tools",
-  "version": "1.13.0",
+  "version": "1.14.0",
   "description": "Configuration and scripts for imodeljs apps and services.",
   "license": "MIT",
   "repository": {
@@ -12,10 +12,10 @@
     "url": "http://www.bentley.com"
   },
   "scripts": {
-    "build": "tsc 1>&2 && cpx ./lib/buildIModelJsModule.js ./bin && node ../build/scripts/ignoreargs.js 1>&2",
+    "build": "tsc 1>&2 && node ../build/scripts/ignoreargs.js 1>&2",
     "clean": "rimraf lib .rush",
     "docs": "",
-    "lint": "",
+    "lint": "tslint --project . 1>&2",
     "test": "",
     "cover": ""
   },
@@ -25,9 +25,9 @@
   },
   "types": "./index.d.ts",
   "dependencies": {
-    "@bentley/config-loader": "1.13.0",
-    "@bentley/build-tools": "1.13.0",
-    "@bentley/webpack-tools-core": "1.13.0",
+    "@bentley/config-loader": "1.14.0",
+    "@bentley/build-tools": "1.14.0",
+    "@bentley/webpack-tools-core": "1.14.0",
     "@types/chai": "^4.1.4",
     "@types/enzyme": "3.9.3",
     "@types/mocha": "^5.2.5",
@@ -104,7 +104,9 @@
     "typescript": ">=2.9.1"
   },
   "devDependencies": {
+    "@types/fs-extra": "^4.0.7",
     "@types/glob": "^5.0.35",
+    "@types/lodash": "^4.14.0",
     "@types/react": "^16.8.0",
     "@types/react-dom": "^16.8.0",
     "@types/tar": "^4.0.0",

@@ -6,7 +6,7 @@ import {
   IModelDb, OpenParams, ElementAspect, DictionaryModel, SpatialCategory, IModelJsFs,
 } from "../imodeljs-backend";
 import { Config, AuthorizedClientRequestContext, IModelHubError } from "@bentley/imodeljs-clients";
-import { TestUsers } from "@bentley/oidc-signin-tool";
+import { TestUtility, TestUsers } from "@bentley/oidc-signin-tool";
 import { IModelTestUtils } from "../test/IModelTestUtils";
 import { IModelVersion, ElementAspectProps, IModel, SubCategoryAppearance } from "@bentley/imodeljs-common";
 import { assert } from "chai";
@@ -51,7 +51,7 @@ describe("ElementAspectPerfomance", () => {
     };
     Config.App.merge(myAppConfig);
 
-    requestContext = await TestUsers.getAuthorizedClientRequestContext(TestUsers.regular);
+    requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
     imodeldbhub = await IModelDb.open(requestContext, projectId, imodelId, OpenParams.fixedVersion(), IModelVersion.latest());
     assert.exists(imodeldbhub);
   });

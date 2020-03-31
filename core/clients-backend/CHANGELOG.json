@@ -2,6 +2,18 @@
   "name": "@bentley/imodeljs-clients-backend",
   "entries": [
     {
+      "version": "1.14.0",
+      "tag": "@bentley/imodeljs-clients-backend_v1.14.0",
+      "date": "Tue, 31 Mar 2020 15:44:19 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fixed downloading of files using https/streaming to resolve when the filestream is closed instead of when the input stream is exhausted. "
+          }
+        ]
+      }
+    },
+    {
       "version": "1.13.0",
       "tag": "@bentley/imodeljs-clients-backend_v1.13.0",
       "date": "Wed, 04 Mar 2020 16:16:31 GMT",

@@ -4720,10 +4720,14 @@ export class LocateOptions {
 
 // @public (undocumented)
 export class LocateResponse {
+    // @internal (undocumented)
+    clone(): LocateResponse;
     // (undocumented)
     explanation: string;
     // (undocumented)
     reason?: string;
+    // @internal (undocumented)
+    setFrom(other: LocateResponse): void;
     // (undocumented)
     snapStatus: SnapStatus;
 }

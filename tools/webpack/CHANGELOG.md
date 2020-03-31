@@ -1,6 +1,13 @@
 # Change Log - @bentley/webpack-tools
 
-This log was last generated on Wed, 04 Mar 2020 16:16:31 GMT and should not be manually modified.
+This log was last generated on Tue, 31 Mar 2020 15:44:19 GMT and should not be manually modified.
+
+## 1.14.0
+Tue, 31 Mar 2020 15:44:19 GMT
+
+### Updates
+
+- Fix buildIModelJsModule not returning the proper error codes.
 
 ## 1.13.0
 Wed, 04 Mar 2020 16:16:31 GMT

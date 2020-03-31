@@ -42,34 +42,46 @@ export class UrlFileHandler implements FileHandler {
     UrlFileHandler.makeDirectoryRecursive(path.dirname(downloadToPathname));
 
     return new Promise<void>((resolve, reject) => {
+      let error: any;
       const callback = (response: http.IncomingMessage) => {
         if (response.statusCode !== 200) {
           reject();
-        } else {
-          const passThroughStream = new PassThrough();
-          let bytesWritten: number = 0;
-          const target = new WriteStreamAtomic(downloadToPathname);
-          target.on("error", (err) => {
-            reject(err);
-          });
+          return;
+        }
 
-          target.on("close", () => {
-            if (progressCallback) {
+        const passThroughStream = new PassThrough();
+        let bytesWritten: number = 0;
+        const target = new WriteStreamAtomic(downloadToPathname);
+
+        if (progressCallback) {
+          target.on("drain", () => {
+            if (error === undefined)
+              progressCallback({ loaded: bytesWritten, total: fileSize, percent: fileSize ? 100 * bytesWritten / fileSize : 0 });
+          });
+          target.on("finish", () => {
+            if (error === undefined) {
               fileSize = fileSize || fs.statSync(downloadToPathname).size;
               progressCallback({ percent: 100, total: fileSize, loaded: fileSize });
             }
-            resolve();
           });
-
-          response
-            .pipe(passThroughStream)
-            .on("data", (chunk: any) => {
-              bytesWritten += chunk.length;
-              if (progressCallback)
-                progressCallback({ loaded: bytesWritten, total: fileSize, percent: fileSize ? 100 * bytesWritten / fileSize : 0 });
-            })
-            .pipe(target);
         }
+
+        target.on("close", () => {
+          if (error !== undefined)
+            reject(error);
+          else
+            resolve();
+        });
+
+        response
+          .pipe(passThroughStream)
+          .on("data", (chunk: any) => {
+            bytesWritten += chunk.length;
+          })
+          .pipe(target)
+          .on("error", (err: any) => {
+            error = err;
+          });
       };
       downloadUrl.startsWith("https:") ? https.get(downloadUrl, callback) : http.get(downloadUrl, callback);
     });

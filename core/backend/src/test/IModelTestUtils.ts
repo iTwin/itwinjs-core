@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Logger, OpenMode, Id64, Id64String, IDisposable, BeEvent, LogLevel, BentleyLoggerCategory } from "@bentley/bentleyjs-core";
+import { DbResult, IModelStatus, Logger, OpenMode, Id64, Id64String, IDisposable, BeEvent, LogLevel, BentleyLoggerCategory } from "@bentley/bentleyjs-core";
 import { Config, ChangeSet, AuthorizedClientRequestContext, ClientsLoggerCategory } from "@bentley/imodeljs-clients";
-import { Code, ElementProps, RpcManager, GeometricElement3dProps, IModel, IModelReadRpcInterface, RelatedElement, RpcConfiguration, CodeProps } from "@bentley/imodeljs-common";
+import { IModelError, Code, ElementProps, RpcManager, GeometricElement3dProps, IModel, IModelReadRpcInterface, RelatedElement, RpcConfiguration, CodeProps } from "@bentley/imodeljs-common";
 import {
   IModelHostConfiguration, IModelHost, BriefcaseManager, IModelDb, Model, Element,
   InformationPartitionElement, SpatialCategory, IModelJsFs, PhysicalPartition, PhysicalModel, SubjectOwnsPartitionElements,
@@ -178,12 +178,12 @@ export class IModelTestUtils {
     return testDb;
   }
 
-  public static getUniqueModelCode(testIModel: IModelDb, newModelCodeBase: string): Code {
+  public static getUniqueModelCode(testDb: IModelDb, newModelCodeBase: string): Code {
     let newModelCode: string = newModelCodeBase;
     let iter: number = 0;
     while (true) {
-      const modelCode = InformationPartitionElement.createCode(testIModel, IModel.rootSubjectId, newModelCode);
-      if (testIModel.elements.queryElementIdByCode(modelCode) === undefined)
+      const modelCode = InformationPartitionElement.createCode(testDb, IModel.rootSubjectId, newModelCode);
+      if (testDb.elements.queryElementIdByCode(modelCode) === undefined)
         return modelCode;
 
       newModelCode = newModelCodeBase + iter;
@@ -192,35 +192,37 @@ export class IModelTestUtils {
   }
 
   // Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel.
-  public static createAndInsertPhysicalPartition(testImodel: IModelDb, newModelCode: CodeProps): Id64String {
+  public static createAndInsertPhysicalPartition(testDb: IModelDb, newModelCode: CodeProps): Id64String {
     const modeledElementProps: ElementProps = {
       classFullName: PhysicalPartition.classFullName,
       parent: new SubjectOwnsPartitionElements(IModel.rootSubjectId),
       model: IModel.repositoryModelId,
       code: newModelCode,
     };
-    const modeledElement: Element = testImodel.elements.createElement(modeledElementProps);
-    return testImodel.elements.insertElement(modeledElement);
+    const modeledElement: Element = testDb.elements.createElement(modeledElementProps);
+    return testDb.elements.insertElement(modeledElement);
   }
 
   // Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel.
-  public static async createAndInsertPhysicalPartitionAsync(rqctx: AuthorizedClientRequestContext, testImodel: IModelDb, newModelCode: CodeProps): Promise<Id64String> {
+  public static async createAndInsertPhysicalPartitionAsync(rqctx: AuthorizedClientRequestContext, testDb: IModelDb, newModelCode: CodeProps): Promise<Id64String> {
     const modeledElementProps: ElementProps = {
       classFullName: PhysicalPartition.classFullName,
       parent: new SubjectOwnsPartitionElements(IModel.rootSubjectId),
       model: IModel.repositoryModelId,
       code: newModelCode,
     };
-    const modeledElement: Element = testImodel.elements.createElement(modeledElementProps);
-    await testImodel.concurrencyControl.requestResourcesForInsert(rqctx, [modeledElement]);
-    rqctx.enter();
-    return testImodel.elements.insertElement(modeledElement);
+    const modeledElement: Element = testDb.elements.createElement(modeledElementProps);
+    if (testDb instanceof IModelDb) {
+      await testDb.concurrencyControl.requestResourcesForInsert(rqctx, [modeledElement]);
+      rqctx.enter();
+    }
+    return testDb.elements.insertElement(modeledElement);
   }
 
   // Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel.
-  public static createAndInsertPhysicalModel(testImodel: IModelDb, modeledElementRef: RelatedElement, privateModel: boolean = false): Id64String {
-    const newModel = testImodel.models.createModel({ modeledElement: modeledElementRef, classFullName: PhysicalModel.classFullName, isPrivate: privateModel });
-    const newModelId = testImodel.models.insertModel(newModel);
+  public static createAndInsertPhysicalModel(testDb: IModelDb, modeledElementRef: RelatedElement, privateModel: boolean = false): Id64String {
+    const newModel = testDb.models.createModel({ modeledElement: modeledElementRef, classFullName: PhysicalModel.classFullName, isPrivate: privateModel });
+    const newModelId = testDb.models.insertModel(newModel);
     assert.isTrue(Id64.isValidId64(newModelId));
     assert.isTrue(Id64.isValidId64(newModel.id));
     assert.deepEqual(newModelId, newModel.id);
@@ -228,11 +230,13 @@ export class IModelTestUtils {
   }
 
   // Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel.
-  public static async createAndInsertPhysicalModelAsync(rqctx: AuthorizedClientRequestContext, testImodel: IModelDb, modeledElementRef: RelatedElement, privateModel: boolean = false): Promise<Id64String> {
-    const newModel = testImodel.models.createModel({ modeledElement: modeledElementRef, classFullName: PhysicalModel.classFullName, isPrivate: privateModel });
-    await testImodel.concurrencyControl.requestResourcesForInsert(rqctx, [], [newModel]);
-    rqctx.enter();
-    const newModelId = testImodel.models.insertModel(newModel);
+  public static async createAndInsertPhysicalModelAsync(rqctx: AuthorizedClientRequestContext, testDb: IModelDb, modeledElementRef: RelatedElement, privateModel: boolean = false): Promise<Id64String> {
+    const newModel = testDb.models.createModel({ modeledElement: modeledElementRef, classFullName: PhysicalModel.classFullName, isPrivate: privateModel });
+    if (testDb instanceof IModelDb) {
+      await testDb.concurrencyControl.requestResourcesForInsert(rqctx, [], [newModel]);
+      rqctx.enter();
+    }
+    const newModelId = testDb.models.insertModel(newModel);
     assert.isTrue(Id64.isValidId64(newModelId));
     assert.isTrue(Id64.isValidId64(newModel.id));
     assert.deepEqual(newModelId, newModel.id);
@@ -333,8 +337,9 @@ export class IModelTestUtils {
     Logger.setLevel(ClientsLoggerCategory.Clients, reset ? LogLevel.Error : LogLevel.Trace);
     Logger.setLevel(ClientsLoggerCategory.IModelHub, reset ? LogLevel.Error : LogLevel.Trace);
     Logger.setLevel(ClientsLoggerCategory.Request, reset ? LogLevel.Error : LogLevel.Trace);
-    Logger.setLevel(NativeLoggerCategory.DgnCore, reset ? LogLevel.Error : LogLevel.Error);
-    Logger.setLevel(NativeLoggerCategory.BeSQLite, reset ? LogLevel.Error : LogLevel.Error);
+    Logger.setLevel(NativeLoggerCategory.DgnCore, reset ? LogLevel.Error : LogLevel.Trace);
+    Logger.setLevel(NativeLoggerCategory.BeSQLite, reset ? LogLevel.Error : LogLevel.Trace);
+    Logger.setLevel(NativeLoggerCategory.Licensing, reset ? LogLevel.Error : LogLevel.Trace);
   }
 
   // Setup typical programmatic log level overrides here
@@ -345,6 +350,22 @@ export class IModelTestUtils {
 
   public static resetDebugLogLevels() {
     IModelTestUtils.initDebugLogLevels(true);
+  }
+
+  public static executeQuery(db: IModelDb, ecsql: string, bindings?: any[] | object): any[] {
+    return db.withPreparedStatement(ecsql, (stmt) => {
+      if (bindings)
+        stmt.bindValues(bindings);
+
+      const rows: any[] = [];
+      while (DbResult.BE_SQLITE_ROW === stmt.step()) {
+        rows.push(stmt.getRow());
+        if (rows.length > IModelDb.maxLimit)
+          throw new IModelError(IModelStatus.BadRequest, "Max LIMIT exceeded in SELECT statement");
+      }
+
+      return rows;
+    });
   }
 }
 

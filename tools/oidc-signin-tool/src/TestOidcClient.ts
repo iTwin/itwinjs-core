@@ -5,28 +5,10 @@
 import { Client, Issuer, UserinfoResponse as OIDCUserInfo, TokenSet, AuthorizationParameters, OpenIDCallbackChecks, generators } from "openid-client";
 import { IAuthorizationClient, AccessToken, UserInfo, UrlDiscoveryClient, Config } from "@bentley/imodeljs-clients";
 import { assert, ClientRequestContext } from "@bentley/bentleyjs-core";
+import { TestOidcConfiguration, TestUserCredentials } from "./TestUsers";
 import * as url from "url";
 import * as puppeteer from "puppeteer";
 import * as os from "os";
-
-/**
- * Interface for test user credentials
- * @alpha
- */
-export interface TestUserCredentials {
-  email: string;
-  password: string;
-}
-
-/**
- * Configuration used by [[TestOidcClient]]
- * @alpha
- */
-export interface TestOidcConfiguration {
-  clientId: string;
-  redirectUri: string;
-  scope: string;
-}
 
 /**
  * Implementation of IAuthorizationClient used for the iModel.js integration tests.
@@ -117,13 +99,13 @@ export class TestOidcClient implements IAuthorizationClient {
       await this.initialize();
 
     // tslint:disable-next-line:no-console
-    console.log(`Starting OIDC signin for ${this._user.email} ...`);
+    // console.log(`Starting OIDC signin for ${this._user.email} ...`);
 
     const [authParams, callbackChecks] = this.createAuthParams(this._config.scope);
     const authorizationUrl = this._client.authorizationUrl(authParams);
 
     // Launch puppeteer with no sandbox only on linux
-    let launchOptions: puppeteer.LaunchOptions = { dumpio: true }; // , headless: false, slowMo: 500 };
+    let launchOptions: puppeteer.LaunchOptions = { dumpio: true, headless: false, slowMo: 50 };
     if (os.platform() === "linux") {
       launchOptions = {
         args: ["--no-sandbox"], // , "--disable-setuid-sandbox"],
@@ -156,7 +138,7 @@ export class TestOidcClient implements IAuthorizationClient {
     await browser.close();
 
     // tslint:disable-next-line:no-console
-    console.log(`Finished OIDC signin for ${this._user.email} ...`);
+    // console.log(`Finished OIDC signin for ${this._user.email} ...`);
 
     return this.tokenSetToAccessToken(tokenSet);
   }
@@ -264,10 +246,8 @@ export class TestOidcClient implements IAuthorizationClient {
     ]);
 
     // Cut out for federated sign-in
-    if (-1 !== page.url().indexOf("microsoftonline")) {
-      await page.waitForNavigation({ waitUntil: "networkidle2" });
+    if (-1 !== page.url().indexOf("microsoftonline"))
       return;
-    }
 
     await page.waitForSelector("#password");
     await page.type("#password", this._user.password);
@@ -280,6 +260,9 @@ export class TestOidcClient implements IAuthorizationClient {
       }),
       page.$eval(".allow", (button: any) => button.click()),
     ]);
+
+    // Check if there were any errors when performing sign-in
+    await this.checkErrorOnPageByClassName(page, "ping-error");
   }
 
   // Bentley-specific federated login.  This will get called if a redirect to a url including "wsfed".
@@ -360,7 +343,6 @@ export class TestOidcClient implements IAuthorizationClient {
         page.$eval(".allow", (button: any) => button.click()),
       ]);
     }
-
   }
 
   private async checkSelectorExists(page: puppeteer.Page, selector: string): Promise<boolean> {
@@ -376,6 +358,18 @@ export class TestOidcClient implements IAuthorizationClient {
         return undefined;
       return errMsgElement.textContent;
     }, selector);
+
+    if (undefined !== errMsgText && null !== errMsgText)
+      throw new Error(errMsgText);
+  }
+
+  private async checkErrorOnPageByClassName(page: puppeteer.Page, className: string): Promise<void> {
+    const errMsgText = await page.evaluate((s) => {
+      const elements = document.getElementsByClassName(s);
+      if (0 === elements.length || undefined === elements[0].innerHTML)
+        return undefined;
+      return elements[0].innerHTML;
+    }, className);
 
     if (undefined !== errMsgText && null !== errMsgText)
       throw new Error(errMsgText);

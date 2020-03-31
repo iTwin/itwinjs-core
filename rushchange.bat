@@ -1,4 +1,4 @@
-call rush change
+call rush change -b origin/v1.x
 git status
 @echo off
 setlocal

@@ -2,6 +2,18 @@
   "name": "@bentley/ui-framework",
   "entries": [
     {
+      "version": "1.14.0",
+      "tag": "@bentley/ui-framework_v1.14.0",
+      "date": "Tue, 31 Mar 2020 15:44:19 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Models Tree: Fix non-geometric models being used when changing subject's display"
+          }
+        ]
+      }
+    },
+    {
       "version": "1.13.0",
       "tag": "@bentley/ui-framework_v1.13.0",
       "date": "Wed, 04 Mar 2020 16:16:31 GMT",

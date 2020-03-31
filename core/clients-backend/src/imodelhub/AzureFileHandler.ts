@@ -193,40 +193,43 @@ export class AzureFileHandler implements FileHandler {
       bufferedStream = new PassThrough();
     }
 
-    const fileStream = new WriteStreamAtomic(downloadToPathname, { encoding: "binary" });
-    let bytesWritten: number = 0;
-
-    if (progressCallback) {
-      fileStream.on("drain", () => {
-        progressCallback({ loaded: bytesWritten, total: fileSize, percent: fileSize ? bytesWritten / fileSize : 0 });
-      });
-      fileStream.on("finish", () => {
-        progressCallback({ loaded: bytesWritten, total: fileSize, percent: fileSize ? bytesWritten / fileSize : 0 });
-      });
-    }
-
     return new Promise((resolve, reject) => {
+      const fileStream = new WriteStreamAtomic(downloadToPathname, { encoding: "binary" });
+      let bytesWritten: number = 0;
+      let error: any;
+
+      if (progressCallback) {
+        fileStream.on("drain", () => {
+          progressCallback({ loaded: bytesWritten, total: fileSize, percent: fileSize ? bytesWritten / fileSize : 0 });
+        });
+        fileStream.on("finish", () => {
+          progressCallback({ loaded: bytesWritten, total: fileSize, percent: fileSize ? bytesWritten / fileSize : 0 });
+        });
+      }
+
+      fileStream.on("close", () => {
+        if (error !== undefined)
+          reject(error);
+        else
+          resolve();
+      });
+
       const downloadCallback = ((res: http.IncomingMessage) => {
         res.pipe(bufferedStream)
           .on("data", (chunk: any) => {
             bytesWritten += chunk.length;
           })
           .pipe(fileStream)
-          .on("error", (error: any) => {
-            const parsedError = ResponseError.parse(error);
-            reject(parsedError);
-          })
-          .on("finish", () => {
-            resolve();
+          .on("error", (err: any) => {
+            error = ResponseError.parse(err);
           });
       });
 
       const clientRequest = downloadUrl.startsWith("https:") ?
         https.get(downloadUrl, downloadCallback) : http.get(downloadUrl, downloadCallback);
 
-      clientRequest.on("error", (error: any) => {
-        const parsedError = ResponseError.parse(error);
-        reject(parsedError);
+      clientRequest.on("error", (err: any) => {
+        error = ResponseError.parse(err);
       });
     });
   }
