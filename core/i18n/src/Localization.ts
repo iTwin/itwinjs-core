@@ -13,7 +13,7 @@ import { BentleyError, Logger } from "@bentley/bentleyjs-core";
 
 /** @public */
 export interface I18NOptions {
-  urlTemplate?: string;
+  urlTemplate?: I18NextXhrBackend.LoadPathOption;
 }
 
 /** @internal */

@@ -52,7 +52,13 @@ export abstract class Extension {
 
   // returns an instance of I18N that can be reliably called from the Extension.
   private getI18n(): I18N {
-    return new I18N("noDefaultNs", { urlTemplate: this.resolveResourceUrl("locales").concat("/{{lng}}/{{ns}}.json") });
+    return new I18N("noDefaultNs", {
+      urlTemplate: (lng: string[], ns: string[]) => {
+        if (lng.length < 1 || ns.length < 1)
+          throw new Error("No language info provided");
+        return this.resolveResourceUrl("locales".concat("/", lng[0], "/", ns[0], ".json"));
+      },
+    });
   }
 
   /** Method called when the Extension is first loaded.

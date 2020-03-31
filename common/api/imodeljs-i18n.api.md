@@ -5,6 +5,7 @@
 ```ts
 
 import * as i18next from 'i18next';
+import { I18NextXhrBackend } from 'i18next-xhr-backend';
 
 // @public
 export class I18N {
@@ -38,7 +39,7 @@ export class I18NNamespace {
 // @public (undocumented)
 export interface I18NOptions {
     // (undocumented)
-    urlTemplate?: string;
+    urlTemplate?: I18NextXhrBackend.LoadPathOption;
 }
 
 // @internal (undocumented)
