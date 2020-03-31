@@ -441,6 +441,8 @@ export class BriefcaseDb extends IModelDb {
     get changeSetId(): string;
     set changeSetId(csId: string);
     close(requestContext: AuthorizedClientRequestContext, keepBriefcase?: KeepBriefcase): Promise<void>;
+    // @internal
+    closeBriefcase(requestContext: ClientRequestContext | AuthorizedClientRequestContext, keepBriefcase?: KeepBriefcase): Promise<void>;
     // @beta
     get concurrencyControl(): ConcurrencyControl;
     get contextId(): GuidString;
@@ -523,7 +525,7 @@ export type BriefcaseId = number;
 export class BriefcaseManager {
     // (undocumented)
     static get cacheDir(): string;
-    static close(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseEntry, keepBriefcase: KeepBriefcase): Promise<void>;
+    static close(requestContext: ClientRequestContext | AuthorizedClientRequestContext, briefcase: BriefcaseEntry, keepBriefcase: KeepBriefcase): Promise<void>;
     static get connectClient(): ConnectClient;
     static create(requestContext: AuthorizedClientRequestContext, contextId: string, iModelName: string, args: CreateIModelProps): Promise<string>;
     static createStandaloneChangeSet(iModelDb: IModelDb): ChangeSetToken;
@@ -533,7 +535,7 @@ export class BriefcaseManager {
     static download(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelId: GuidString, openParams: OpenParams, changeSetId: GuidString): Promise<BriefcaseEntry>;
     static downloadChangeSets(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, fromChangeSetId: string, toChangeSetId: string): Promise<ChangeSet[]>;
     static findBriefcaseByKey(key: string): BriefcaseEntry | undefined;
-    static getBriefcasesFromDisk(): Promise<BriefcaseRpcProps[]>;
+    static getBriefcasesFromDisk(requestContext: ClientRequestContext): Promise<BriefcaseRpcProps[]>;
     // (undocumented)
     static getChangeCachePathName(iModelId: GuidString): string;
     // (undocumented)
@@ -542,7 +544,7 @@ export class BriefcaseManager {
     static getChangeSetsPath(iModelId: GuidString): string;
     static get imodelClient(): IModelClient;
     static initialize(cacheRootDir: string, iModelClient?: IModelClient): void;
-    static initializeBriefcaseCacheFromDisk(): void;
+    static initializeBriefcaseCacheFromDisk(requestContext: ClientRequestContext | AuthorizedClientRequestContext): Promise<void>;
     static openBriefcase(briefcase: BriefcaseEntry): void;
     static pullAndMergeChanges(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseEntry, mergeToVersion?: IModelVersion): Promise<void>;
     static purgeCache(requestContext: AuthorizedClientRequestContext): Promise<void>;

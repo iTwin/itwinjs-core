@@ -104,7 +104,7 @@ export class NativeAppRpcImpl extends RpcInterface implements NativeAppRpcInterf
   public async downloadBriefcase(tokenProps: IModelRpcProps): Promise<IModelRpcProps> {
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
 
-    BriefcaseManager.initializeBriefcaseCacheFromDisk();
+    await BriefcaseManager.initializeBriefcaseCacheFromDisk(requestContext);
 
     const openParams: OpenParams = OpenParams.pullOnly();
     const iModelVersion = IModelVersion.asOfChangeSet(tokenProps.changeSetId!);
@@ -120,7 +120,7 @@ export class NativeAppRpcImpl extends RpcInterface implements NativeAppRpcInterf
   public async startDownloadBriefcase(tokenProps: IModelRpcProps, reportProgress: boolean): Promise<IModelRpcProps> {
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
 
-    BriefcaseManager.initializeBriefcaseCacheFromDisk();
+    await BriefcaseManager.initializeBriefcaseCacheFromDisk(requestContext);
     const openParams: OpenParams = OpenParams.pullOnly();
     if (reportProgress) {
       openParams.downloadProgress = (progress: ProgressInfo) => {
@@ -160,10 +160,11 @@ export class NativeAppRpcImpl extends RpcInterface implements NativeAppRpcInterf
   public async openBriefcase(tokenProps: IModelRpcProps): Promise<IModelProps> {
     const requestContext = ClientRequestContext.current;
 
-    BriefcaseManager.initializeBriefcaseCacheFromDisk();
+    await BriefcaseManager.initializeBriefcaseCacheFromDisk(requestContext);
+    requestContext.enter();
 
     if (!tokenProps.key) {
-      const allBriefcases = await BriefcaseManager.getBriefcasesFromDisk();
+      const allBriefcases = await BriefcaseManager.getBriefcasesFromDisk(requestContext);
       const briefcases = allBriefcases.filter((v) => {
         return v.changeSetId === tokenProps.changeSetId
           && v.iModelId === tokenProps.iModelId;
@@ -175,6 +176,7 @@ export class NativeAppRpcImpl extends RpcInterface implements NativeAppRpcInterf
       Object.assign(tokenProps, { key: briefcases[0].key });
     }
     const db = await BriefcaseDb.openBriefcase(requestContext, tokenProps);
+    requestContext.enter();
     return db.toJSON();
   }
 
@@ -183,8 +185,8 @@ export class NativeAppRpcImpl extends RpcInterface implements NativeAppRpcInterf
    * @param tokenProps Identifies briefcase to be closed
    */
   public async closeBriefcase(tokenProps: IModelRpcProps): Promise<boolean> {
-    const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
-    await BriefcaseDb.findByKey(tokenProps.key).close(requestContext, KeepBriefcase.Yes);
+    const requestContext = ClientRequestContext.current;
+    await BriefcaseDb.findByKey(tokenProps.key).closeBriefcase(requestContext, KeepBriefcase.Yes);
     return Promise.resolve(true);
   }
 
@@ -202,8 +204,10 @@ export class NativeAppRpcImpl extends RpcInterface implements NativeAppRpcInterf
    * @note The ContextId in empty and should remain empty when pass to openBriefcase() call.
    */
   public async getBriefcases(): Promise<BriefcaseRpcProps[]> {
-    BriefcaseManager.initializeBriefcaseCacheFromDisk();
-    return BriefcaseManager.getBriefcasesFromDisk();
+    const requestContext: ClientRequestContext = ClientRequestContext.current;
+    await BriefcaseManager.initializeBriefcaseCacheFromDisk(requestContext);
+    requestContext.enter();
+    return BriefcaseManager.getBriefcasesFromDisk(requestContext);
   }
 
   /**

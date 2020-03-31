@@ -16,7 +16,7 @@ import { IModelBankClient } from "@bentley/imodeljs-clients/lib/imodelbank/IMode
 import { AzureFileHandler, IOSAzureFileHandler } from "@bentley/imodeljs-clients-backend";
 import {
   ChangeSetApplyOption, BeEvent, DbResult, OpenMode, assert, Logger, ChangeSetStatus,
-  BentleyStatus, IModelHubStatus, PerfLogger, GuidString, Id64, IModelStatus, AsyncMutex, BeDuration,
+  BentleyStatus, IModelHubStatus, PerfLogger, GuidString, Id64, IModelStatus, AsyncMutex, BeDuration, ClientRequestContext,
 } from "@bentley/bentleyjs-core";
 import { BriefcaseRpcProps, BriefcaseStatus, CreateIModelProps, IModelError, IModelVersion, MobileRpcConfiguration } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
@@ -419,7 +419,9 @@ export class BriefcaseManager {
    * @param requestContext Context of the authorized user
    * @internal
    */
-  public static initializeBriefcaseCacheFromDisk() {
+  public static async initializeBriefcaseCacheFromDisk(requestContext: ClientRequestContext | AuthorizedClientRequestContext): Promise<void> {
+    requestContext.enter();
+
     if (this._initBriefcaseCacheFromDisk)
       return;
     if (!IModelJsFs.existsSync(BriefcaseManager.cacheDir))
@@ -447,7 +449,21 @@ export class BriefcaseManager {
           if (!IModelJsFs.lstatSync(briefcasePath)?.isDirectory)
             continue;
 
-          this.initializeBriefcaseOffline(briefcasePath);
+          let status = true;
+          try {
+            this.initializeBriefcaseOffline(briefcasePath);
+          } catch (err) {
+            status = false;
+          }
+
+          // On error, if online, delete the briefcase from disk and the server
+          if (!status && requestContext instanceof AuthorizedClientRequestContext) {
+            try {
+              await this.deleteBriefcaseFromServerById(requestContext, iModelId, +bcDir);
+              BriefcaseManager.deleteFolderAndContents(briefcasePath);
+            } catch (err) {
+            }
+          }
         }
       }
     }
@@ -651,7 +667,8 @@ export class BriefcaseManager {
    *  - Waits for all the briefcases to get downloaded and initialized.
    * @internal
    */
-  public static async getBriefcasesFromDisk(): Promise<BriefcaseRpcProps[]> {
+  public static async getBriefcasesFromDisk(requestContext: ClientRequestContext): Promise<BriefcaseRpcProps[]> {
+    requestContext.enter();
     assert(this._initBriefcaseCacheFromDisk, "Briefcase cache must have been initialized from disk");
 
     const filterFn = (value: BriefcaseEntry) => value.openParams.isBriefcase; // no standalone files or snapshots
@@ -661,6 +678,7 @@ export class BriefcaseManager {
     for (const briefcase of briefcases) {
       if (briefcase.isPending !== undefined) {
         await briefcase.isPending;
+        requestContext.enter();
         briefcase.isPending = undefined;
       }
 
@@ -868,8 +886,6 @@ export class BriefcaseManager {
 
     assert(!this._cache.findBriefcase(briefcase), "Attempting to open or create briefcase twice");
     BriefcaseManager._cache.addBriefcase(briefcase);
-
-    return briefcase;
   }
 
   private static async finishInitializeBriefcase(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseEntry) {
@@ -1056,11 +1072,14 @@ export class BriefcaseManager {
   }
 
   /** Close a briefcase, and delete from the hub if necessary */
-  public static async close(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseEntry, keepBriefcase: KeepBriefcase): Promise<void> {
+  public static async close(requestContext: ClientRequestContext | AuthorizedClientRequestContext, briefcase: BriefcaseEntry, keepBriefcase: KeepBriefcase): Promise<void> {
     requestContext.enter();
     assert(!briefcase.openParams.isSnapshot, "Cannot use IModelDb.close() to close a standalone iModel. Use IModelDb.closeStandalone() instead");
     BriefcaseManager.closeBriefcase(briefcase, true);
     if (keepBriefcase === KeepBriefcase.No) {
+      if (!(requestContext instanceof AuthorizedClientRequestContext))
+        throw new IModelError(BentleyStatus.ERROR, "Deleting a briefcase require an AuthorizedClientRequestContext");
+
       await BriefcaseManager.deleteBriefcase(requestContext, briefcase);
       requestContext.enter();
     }
@@ -1121,9 +1140,14 @@ export class BriefcaseManager {
       Logger.logError(loggerCategory, "Briefcase with invalid iModelId detected", () => briefcase.getDebugInfo());
       return;
     }
+    return this.deleteBriefcaseFromServerById(requestContext, briefcase.iModelId, briefcase.briefcaseId);
+  }
+
+  private static async deleteBriefcaseFromServerById(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, briefcaseId: number): Promise<void> {
+    requestContext.enter();
 
     try {
-      await BriefcaseManager.imodelClient.briefcases.get(requestContext, briefcase.iModelId, new BriefcaseQuery().byId(briefcase.briefcaseId));
+      await BriefcaseManager.imodelClient.briefcases.get(requestContext, iModelId, new BriefcaseQuery().byId(briefcaseId));
       requestContext.enter();
     } catch (err) {
       requestContext.enter();
@@ -1131,12 +1155,12 @@ export class BriefcaseManager {
     }
 
     try {
-      await BriefcaseManager.imodelClient.briefcases.delete(requestContext, briefcase.iModelId, briefcase.briefcaseId);
+      await BriefcaseManager.imodelClient.briefcases.delete(requestContext, iModelId, briefcaseId);
       requestContext.enter();
-      Logger.logTrace(loggerCategory, "Deleted briefcase from the server", () => briefcase.getDebugInfo());
+      Logger.logTrace(loggerCategory, "Deleted briefcase from the server", () => ({ iModelId, briefcaseId }));
     } catch (err) {
       requestContext.enter();
-      Logger.logError(loggerCategory, "Could not delete the acquired briefcase", () => briefcase.getDebugInfo()); // Could well be that the current user does not have the appropriate access
+      Logger.logError(loggerCategory, "Could not delete the acquired briefcase", () => ({ iModelId, briefcaseId })); // Could well be that the current user does not have the appropriate access
     }
   }
 
@@ -1436,6 +1460,7 @@ export class BriefcaseManager {
     return this._cache.findBriefcaseByKey(key);
   }
 
+  /** Close the briefcase */
   private static closeBriefcase(briefcase: BriefcaseEntry, raiseOnCloseEvent: boolean) {
     if (!briefcase.isOpen) {
       Logger.logTrace(loggerCategory, "Briefcase already closed", () => briefcase.getDebugInfo());

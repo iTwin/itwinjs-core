@@ -5314,6 +5314,8 @@ export class NativeApp {
     static cancelDownloadBriefcase(requestContext: AuthorizedClientRequestContext, downloadBriefcaseToken: DownloadBriefcaseToken): Promise<boolean>;
     // (undocumented)
     static checkInternetConnectivity(): Promise<InternetConnectivityStatus>;
+    // (undocumented)
+    static closeBriefcase(requestContext: ClientRequestContext, iModelToken: IModelRpcProps): Promise<void>;
     static closeStorage(storage: Storage, deleteId: boolean): Promise<void>;
     // (undocumented)
     static deleteBriefcase(requestContext: AuthorizedClientRequestContext, iModelToken: IModelRpcProps): Promise<void>;

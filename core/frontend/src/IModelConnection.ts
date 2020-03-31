@@ -667,6 +667,7 @@ export class BriefcaseConnection extends IModelConnection {
     try {
       await closePromise;
     } finally {
+      requestContext.enter();
       this._isClosed = true;
       this.subcategories.onIModelConnectionClose();
     }

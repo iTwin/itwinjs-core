@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @module NativeApp */
-import { BeEvent, BentleyStatus, ClientRequestContext, IModelStatus } from "@bentley/bentleyjs-core";
+import { BeEvent, ClientRequestContext, IModelStatus } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext, Config, ProgressCallback, ProgressInfo, RequestGlobalOptions } from "@bentley/imodeljs-clients";
 import { BriefcaseRpcProps, Events, IModelError, IModelRpcProps, IModelVersion, InternetConnectivityStatus, NativeAppRpcInterface, OverriddenBy, RpcRegistry, StorageValue } from "@bentley/imodeljs-common";
 import { EventSourceManager } from "./EventSource";
@@ -83,10 +83,8 @@ export class NativeApp {
 
   public static async downloadBriefcase(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: string, version: IModelVersion = IModelVersion.latest()): Promise<IModelRpcProps> {
     requestContext.enter();
-
-    // openMode: OpenMode = OpenMode.Readonly
     if (!IModelApp.initialized)
-      throw new IModelError(BentleyStatus.ERROR, "Call NativeApp.startup() before calling downloadBriefcase");
+      throw new IModelError(IModelStatus.BadRequest, "Call NativeApp.startup() before calling downloadBriefcase");
 
     const changeSetId: string = await version.evaluateChangeSet(requestContext, iModelId, IModelApp.iModelClient);
     requestContext.enter();
@@ -100,7 +98,7 @@ export class NativeApp {
   public static async startDownloadBriefcase(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: string, version: IModelVersion = IModelVersion.latest(), progress?: ProgressCallback): Promise<DownloadBriefcaseToken> {
     requestContext.enter();
     if (!IModelApp.initialized)
-      throw new IModelError(BentleyStatus.ERROR, "Call NativeApp.startup() before calling startDownloadBriefcase");
+      throw new IModelError(IModelStatus.BadRequest, "Call NativeApp.startup() before calling startDownloadBriefcase");
 
     const changeSetId: string = await version.evaluateChangeSet(requestContext, iModelId, IModelApp.iModelClient);
     requestContext.enter();
@@ -119,10 +117,11 @@ export class NativeApp {
     const retIModelRpcProps = await NativeAppRpcInterface.getClient().startDownloadBriefcase(iModelRpcProps, reportProgress);
     return new DownloadBriefcaseToken(retIModelRpcProps, stopProgressEvents);
   }
+
   public static async finishDownloadBriefcase(requestContext: AuthorizedClientRequestContext, downloadBriefcaseToken: DownloadBriefcaseToken): Promise<void> {
     requestContext.enter();
     if (!IModelApp.initialized)
-      throw new IModelError(BentleyStatus.ERROR, "Call NativeApp.startDownloadBriefcase first");
+      throw new IModelError(IModelStatus.BadRequest, "Call NativeApp.startDownloadBriefcase first");
     try {
       requestContext.useContextForRpc = true;
       await NativeAppRpcInterface.getClient().finishDownloadBriefcase(downloadBriefcaseToken.iModelRpcProps);
@@ -134,7 +133,7 @@ export class NativeApp {
   public static async cancelDownloadBriefcase(requestContext: AuthorizedClientRequestContext, downloadBriefcaseToken: DownloadBriefcaseToken): Promise<boolean> {
     requestContext.enter();
     if (!IModelApp.initialized)
-      throw new IModelError(BentleyStatus.ERROR, "Call NativeApp.startDownloadBriefcase first");
+      throw new IModelError(IModelStatus.BadRequest, "Call NativeApp.startDownloadBriefcase first");
     try {
       requestContext.useContextForRpc = true;
       return await NativeAppRpcInterface.getClient().cancelDownloadBriefcase(downloadBriefcaseToken.iModelRpcProps);
@@ -146,7 +145,7 @@ export class NativeApp {
   public static async deleteBriefcase(requestContext: AuthorizedClientRequestContext, iModelToken: IModelRpcProps): Promise<void> {
     requestContext.enter();
     if (!IModelApp.initialized)
-      throw new IModelError(BentleyStatus.ERROR, "Call NativeApp.startDownloadBriefcase first");
+      throw new IModelError(IModelStatus.BadRequest, "Call NativeApp.startDownloadBriefcase first");
     requestContext.useContextForRpc = true;
     await NativeAppRpcInterface.getClient().deleteBriefcase(iModelToken);
   }
@@ -154,10 +153,18 @@ export class NativeApp {
   public static async openBriefcase(requestContext: ClientRequestContext, iModelToken: IModelRpcProps): Promise<BriefcaseConnection> {
     requestContext.enter();
     if (!IModelApp.initialized)
-      throw new IModelError(BentleyStatus.ERROR, "Call NativeApp.startup() before calling downloadBriefcase");
+      throw new IModelError(IModelStatus.BadRequest, "Call NativeApp.startup() before calling openBriefcase");
     requestContext.useContextForRpc = true;
     const iModelProps = await NativeAppRpcInterface.getClient().openBriefcase(iModelToken);
     return BriefcaseConnection.createForNativeAppBriefcase({ ...iModelProps, ...iModelToken });
+  }
+
+  public static async closeBriefcase(requestContext: ClientRequestContext, iModelToken: IModelRpcProps): Promise<void> {
+    requestContext.enter();
+    if (!IModelApp.initialized)
+      throw new IModelError(IModelStatus.BadRequest, "Call NativeApp.startup() before calling downloadBriefcase");
+    requestContext.useContextForRpc = true;
+    await NativeAppRpcInterface.getClient().closeBriefcase(iModelToken);
   }
 
   /**
@@ -166,7 +173,7 @@ export class NativeApp {
    */
   public static async getBriefcases(): Promise<BriefcaseRpcProps[]> {
     if (!IModelApp.initialized)
-      throw new IModelError(BentleyStatus.ERROR, "Call NativeApp.startup() before calling downloadBriefcase");
+      throw new IModelError(IModelStatus.BadRequest, "Call NativeApp.startup() before calling downloadBriefcase");
 
     return NativeAppRpcInterface.getClient().getBriefcases();
   }

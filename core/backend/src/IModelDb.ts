@@ -2191,11 +2191,25 @@ export class BriefcaseDb extends IModelDb {
    */
   public async close(requestContext: AuthorizedClientRequestContext, keepBriefcase: KeepBriefcase = KeepBriefcase.Yes): Promise<void> {
     requestContext.enter();
+    await this.closeBriefcase(requestContext, keepBriefcase);
+  }
 
-    if (this.openParams.syncMode === SyncMode.PullAndPush) {
+  /**
+   * Close a previously opened briefcase
+   * @param requestContext
+   * @internal
+   */
+  public async closeBriefcase(requestContext: ClientRequestContext | AuthorizedClientRequestContext, keepBriefcase: KeepBriefcase = KeepBriefcase.Yes): Promise<void> {
+    requestContext.enter();
+
+    if (this.briefcase.openParams.syncMode === SyncMode.PullAndPush) {
+      if (!(requestContext instanceof AuthorizedClientRequestContext))
+        throw new IModelError(BentleyStatus.ERROR, "Closing a briefcase with SyncMode = PUllAndPush requires an AuthorizedClientRequestContext");
+
       await this.concurrencyControl.onClose(requestContext);
       requestContext.enter();
     }
+
     try {
       await BriefcaseManager.close(requestContext, this.briefcase, keepBriefcase);
     } catch (error) {

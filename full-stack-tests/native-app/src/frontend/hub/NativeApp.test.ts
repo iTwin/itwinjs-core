@@ -91,21 +91,23 @@ describe("NativeApp (#integration)", () => {
     const testProjectId = await TestUtility.getTestProjectId(testProjectName);
     const testIModelId = await TestUtility.getTestIModelId(testProjectId, testIModelName);
 
-    const requestContext = await AuthorizedFrontendRequestContext.create();
+    const authorizedRequestContext = await AuthorizedFrontendRequestContext.create();
 
-    const downloadToken = await NativeApp.startDownloadBriefcase(requestContext, testProjectId, testIModelId);
+    const downloadToken = await NativeApp.startDownloadBriefcase(authorizedRequestContext, testProjectId, testIModelId);
+    authorizedRequestContext.enter();
+
+    await NativeApp.finishDownloadBriefcase(authorizedRequestContext, downloadToken);
+    authorizedRequestContext.enter();
+
+    const requestContext = new FrontendRequestContext();
+
+    await NativeApp.openBriefcase(requestContext, downloadToken.iModelRpcProps);
     requestContext.enter();
 
-    await NativeApp.finishDownloadBriefcase(requestContext, downloadToken);
+    await NativeApp.closeBriefcase(requestContext, downloadToken.iModelRpcProps);
     requestContext.enter();
 
-    const iModel = await NativeApp.openBriefcase(new FrontendRequestContext(), downloadToken.iModelRpcProps);
-    requestContext.enter();
-
-    await iModel.close();
-    requestContext.enter();
-
-    await NativeApp.deleteBriefcase(requestContext, downloadToken.iModelRpcProps);
+    await NativeApp.deleteBriefcase(authorizedRequestContext, downloadToken.iModelRpcProps);
   });
 
   it("Progress event (#integration)", async () => {
