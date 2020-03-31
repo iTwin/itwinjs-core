@@ -5,7 +5,6 @@
 import { BeDuration, Id64, Id64Arg, Id64Set, Id64String } from "@bentley/bentleyjs-core";
 import { IModelConnection, MockRender, SnapshotConnection, SubCategoriesCache } from "@bentley/imodeljs-frontend";
 import { expect } from "chai";
-import * as path from "path";
 
 describe("SubCategoriesCache", () => {
   // test.bim:
@@ -24,7 +23,7 @@ describe("SubCategoriesCache", () => {
 
   before(async () => {
     MockRender.App.startup();
-    imodel = await SnapshotConnection.openFile(path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/test.bim"));
+    imodel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
   });
 
   after(async () => {

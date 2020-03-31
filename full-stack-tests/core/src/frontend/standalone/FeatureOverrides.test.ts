@@ -7,9 +7,6 @@ import { Feature, FeatureTable, GeometryClass, PackedFeatureTable } from "@bentl
 import { HiliteSet, IModelApp, IModelConnection, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId } from "@bentley/imodeljs-frontend";
 import { FeatureOverrides, Target } from "@bentley/imodeljs-frontend/lib/webgl";
 import { assert, expect } from "chai";
-import * as path from "path";
-
-const iModelLocation = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/test.bim");
 
 function waitUntilTimeHasPassed() {
   const ot = Date.now();
@@ -31,7 +28,7 @@ describe("FeatureOverrides tests", () => {
 
   before(async () => {   // Create a ViewState to load into a Viewport
     IModelApp.startup();
-    imodel = await SnapshotConnection.openFile(iModelLocation);
+    imodel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
     spatialView = await imodel.views.load("0x34") as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
   });

@@ -1902,6 +1902,14 @@ export namespace ExternalSourceAspect {
 }
 
 // @public
+export abstract class FileNameResolver {
+    resolveFileName(inFileName: string): string;
+    resolveKey(fileKey: string): string;
+    tryResolveFileName(inFileName: string): string | undefined;
+    tryResolveKey(_fileKey: string): string | undefined;
+}
+
+// @public
 export abstract class FunctionalBreakdownElement extends FunctionalElement {
     // @internal
     constructor(props: FunctionalElementProps, iModel: IModelDb);
@@ -2501,6 +2509,7 @@ export class IModelHost {
     static get restrictTileUrlsByClientIp(): boolean;
     static sessionId: GuidString;
     static shutdown(): void;
+    static snapshotFileNameResolver?: FileNameResolver;
     static startup(configuration?: IModelHostConfiguration): void;
     // @beta
     static tileCacheService: CloudStorageService;

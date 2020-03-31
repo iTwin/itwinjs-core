@@ -4,9 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 import { IModelApp, IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
 import { assert } from "chai";
-import * as path from "path";
-
-const iModelLocation = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/");
 
 describe("ECSql Query", () => {
   let imodel1: IModelConnection;
@@ -17,11 +14,11 @@ describe("ECSql Query", () => {
 
   before(async () => {
     IModelApp.startup();
-    imodel1 = await SnapshotConnection.openFile(iModelLocation + "test.bim");
-    imodel2 = await SnapshotConnection.openFile(iModelLocation + "CompatibilityTestSeed.bim");
-    imodel3 = await SnapshotConnection.openFile(iModelLocation + "GetSetAutoHandledStructProperties.bim");
-    imodel4 = await SnapshotConnection.openFile(iModelLocation + "GetSetAutoHandledArrayProperties.bim");
-    imodel5 = await SnapshotConnection.openFile(iModelLocation + "mirukuru.ibim");
+    imodel1 = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
+    imodel2 = await SnapshotConnection.openFile("CompatibilityTestSeed.bim"); // relative path resolved by BackendTestAssetResolver
+    imodel3 = await SnapshotConnection.openFile("GetSetAutoHandledStructProperties.bim"); // relative path resolved by BackendTestAssetResolver
+    imodel4 = await SnapshotConnection.openFile("GetSetAutoHandledArrayProperties.bim"); // relative path resolved by BackendTestAssetResolver
+    imodel5 = await SnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
   });
 
   after(async () => {

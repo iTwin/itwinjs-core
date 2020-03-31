@@ -10,11 +10,8 @@ import {
   PerModelCategoryVisibility, ScreenViewport, SpatialViewState, StandardViewId, TwoWayViewportSync, Viewport, RenderPlan, SnapshotConnection,
 } from "@bentley/imodeljs-frontend";
 import { assert, expect } from "chai";
-import * as path from "path";
 
 // cSpell:ignore calibri subcats subcat pmcv ovrs
-
-const iModelDir = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets");
 
 function createViewDiv() {
   const div = document.createElement("div") as HTMLDivElement;
@@ -34,8 +31,8 @@ describe("Viewport", () => {
 
   before(async () => {   // Create a ViewState to load into a Viewport
     MockRender.App.startup();
-    imodel = await SnapshotConnection.openFile(path.join(iModelDir, "test.bim"));
-    imodel2 = await SnapshotConnection.openFile(path.join(iModelDir, "test2.bim"));
+    imodel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
+    imodel2 = await SnapshotConnection.openFile("test2.bim"); // relative path resolved by BackendTestAssetResolver
     spatialView = await imodel.views.load("0x34") as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
   });
@@ -408,8 +405,8 @@ describe("Viewport changed events", async () => {
 
   before(async () => {
     MockRender.App.startup();
-    testBim = await SnapshotConnection.openFile(path.join(iModelDir, "test.bim"));
-    testImodel = await SnapshotConnection.openFile(path.join(iModelDir, "testImodel.bim"));
+    testBim = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
+    testImodel = await SnapshotConnection.openFile("testImodel.bim"); // relative path resolved by BackendTestAssetResolver
   });
 
   after(async () => {
@@ -925,7 +922,7 @@ describe("Per-model category visibility overrides", () => {
 
   before(async () => {
     MockRender.App.startup();
-    imodel = await SnapshotConnection.openFile(path.join(iModelDir, "test.bim"));
+    imodel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
     spatialView = await imodel.views.load("0x34") as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
 

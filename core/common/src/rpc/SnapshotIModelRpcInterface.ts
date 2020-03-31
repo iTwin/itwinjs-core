@@ -22,13 +22,14 @@ export abstract class SnapshotIModelRpcInterface extends RpcInterface {
   public static readonly interfaceName = "SnapshotIModelRpcInterface";
 
   /** The version of the interface. */
-  public static interfaceVersion = "1.0.0";
+  public static interfaceVersion = "2.0.0";
 
   /*===========================================================================================
     NOTE: Any add/remove/change to the methods below requires an update of the interface version.
     NOTE: Please consult the README in this folder for the semantic versioning rules.
   ===========================================================================================*/
 
-  public async openSnapshot(_filePath: string): Promise<IModelConnectionProps> { return this.forward(arguments); }
-  public async closeSnapshot(_iModelRpcProps: IModelRpcProps): Promise<boolean> { return this.forward(arguments); }
+  public async openFile(_filePath: string): Promise<IModelConnectionProps> { return this.forward(arguments); }
+  public async openRemote(_key: string): Promise<IModelConnectionProps> { return this.forward(arguments); }
+  public async close(_iModelRpcProps: IModelRpcProps): Promise<boolean> { return this.forward(arguments); }
 }

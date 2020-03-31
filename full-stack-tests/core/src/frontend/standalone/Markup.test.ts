@@ -6,10 +6,7 @@ import { IModelApp, IModelConnection, SnapshotConnection, StandardViewId, Standa
 import { EditTextTool, LineTool, MarkupApp, SelectTool } from "@bentley/imodeljs-markup";
 import { Element, G, LinkedHTMLElement } from "@svgdotjs/svg.js";
 import { assert } from "chai";
-import * as path from "path";
 import { createOnScreenTestViewport, ScreenTestViewport } from "../TestViewport";
-
-const testIModelName = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/mirukuru.ibim");
 
 describe("Markup tests", async () => {
   let imodel: IModelConnection;
@@ -17,7 +14,7 @@ describe("Markup tests", async () => {
 
   before(async () => {
     IModelApp.startup();
-    imodel = await SnapshotConnection.openFile(testIModelName);
+    imodel = await SnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
     await MarkupApp.initialize();
     vp = await createOnScreenTestViewport("0x24", imodel, 500, 500);
     await MarkupApp.start(vp);

@@ -8,9 +8,6 @@ import { GraphicType, IModelConnection, MockRender, ScreenViewport, SnapshotConn
 import { DisplayParams, Geometry, Mesh, MeshBuilder, PolyfacePrimitive, PolyfacePrimitiveList, PrimitiveBuilder, StrokesPrimitiveList, StrokesPrimitivePointLists, ToleranceRatio, Triangle } from "@bentley/imodeljs-frontend/lib/render-primitives";
 import { System } from "@bentley/imodeljs-frontend/lib/webgl";
 import { assert, expect } from "chai";
-import * as path from "path";
-
-const iModelLocation = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/test.bim");
 
 export class FakeDisplayParams extends DisplayParams {
   public constructor() { super(DisplayParams.Type.Linear, new ColorDef(), new ColorDef()); }
@@ -31,7 +28,7 @@ describe("Mesh Builder Tests", () => {
 
   before(async () => {   // Create a ViewState to load into a Viewport
     MockRender.App.startup();
-    imodel = await SnapshotConnection.openFile(iModelLocation);
+    imodel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
     spatialView = await imodel.views.load("0x34") as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
   });

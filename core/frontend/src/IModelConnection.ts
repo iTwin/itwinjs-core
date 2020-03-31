@@ -756,18 +756,27 @@ export class SnapshotConnection extends IModelConnection {
   public get isClosed(): boolean { return this._isClosed ? true : false; }
   private _isClosed?: boolean;
 
-  /** Open an IModelConnection to a read-only iModel *snapshot* (not managed by iModelHub) from a file.
-   * This method is intended for desktop or mobile applications and should not be used for web applications.
+  /** Open an IModelConnection to a read-only snapshot iModel from a file name.
+   * @note This method is intended for desktop or mobile applications and should not be used for web applications.
    */
   public static async openFile(filePath: string): Promise<SnapshotConnection> {
-    const openResponse = await SnapshotIModelRpcInterface.getClient().openSnapshot(filePath);
-    Logger.logTrace(loggerCategory, "SnapshotConnection.open", () => ({ fileName: filePath }));
+    const openResponse = await SnapshotIModelRpcInterface.getClient().openFile(filePath);
+    Logger.logTrace(loggerCategory, "SnapshotConnection.openFile", () => ({ filePath }));
     const connection = new SnapshotConnection(openResponse);
     IModelConnection.onOpen.raiseEvent(connection);
     return connection;
   }
 
-  // WIP: add openRemote method
+  /** Open an IModelConnection to a remote read-only snapshot iModel from a key that will be resolved by the backend.
+   * @note This method is primarily intended for web applications.
+   */
+  public static async openRemote(fileKey: string): Promise<SnapshotConnection> {
+    const openResponse = await SnapshotIModelRpcInterface.getClient().openRemote(fileKey);
+    Logger.logTrace(loggerCategory, "SnapshotConnection.openRemote", () => ({ fileKey }));
+    const connection = new SnapshotConnection(openResponse);
+    IModelConnection.onOpen.raiseEvent(connection);
+    return connection;
+  }
 
   /** Close this SnapshotConnection. */
   public async close(): Promise<void> {
@@ -776,7 +785,7 @@ export class SnapshotConnection extends IModelConnection {
     }
     this.beforeClose();
     try {
-      await SnapshotIModelRpcInterface.getClient().closeSnapshot(this.getRpcProps());
+      await SnapshotIModelRpcInterface.getClient().close(this.getRpcProps());
     } finally {
       this._isClosed = true;
       this.subcategories.onIModelConnectionClose();

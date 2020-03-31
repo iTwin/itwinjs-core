@@ -6,9 +6,6 @@ import { Point3d, XYZProps } from "@bentley/geometry-core";
 import { GeoCoordinatesResponseProps, GeoCoordStatus, IModelCoordinatesResponseProps } from "@bentley/imodeljs-common";
 import { GeoConverter, IModelApp, IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
 import { expect } from "chai";
-import * as path from "path";
-
-const iModelLocation = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/mirukuru.ibim");
 
 // spell-checker: disable
 
@@ -23,7 +20,7 @@ describe("GeoCoord", () => {
 
   before(async () => {
     IModelApp.startup();
-    iModel = await SnapshotConnection.openFile(iModelLocation);
+    iModel = await SnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
     // make an array of 10x10 geoPoints in geoPointList.
     for (let iLatitude: number = 0; iLatitude < 10; iLatitude++) {
       for (let iLongitude: number = 0; iLongitude < 10; iLongitude++) {

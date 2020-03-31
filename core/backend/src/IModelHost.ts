@@ -35,6 +35,8 @@ import { IElementEditor } from "./ElementEditor";
 import { Editor3dRpcImpl } from "./rpc-impl/EditorRpcImpl";
 const loggerCategory: string = BackendLoggerCategory.IModelHost;
 
+// cspell:ignore nodereport fatalerror apicall alicloud rpcs
+
 /** @alpha */
 export interface CrashReportingConfigNameValuePair {
   name: string;
@@ -179,7 +181,7 @@ export class IModelHostConfiguration {
     useUncommittedRead: false,
     quota: {
       maxTimeAllowed: 60, // 1 Minute
-      maxMemoryAllowed: 2 * 1024 * 1024, // 2 Mbytes
+      maxMemoryAllowed: 2 * 1024 * 1024, // 2 MB
     },
   };
 
@@ -220,11 +222,13 @@ export class IModelHost {
   /** The version of this backend application - needs to be set if is an agent application. The applicationVersion will otherwise originate at the frontend. */
   public static applicationVersion: string;
 
-  /**
-   * Active element editors. Each editor is identified by a GUID.
+  /** Active element editors. Each editor is identified by a GUID.
    * @internal
    */
   public static elementEditors = new Map<GuidString, IElementEditor>();
+
+  /** The optional [[FileNameResolver]] that resolves keys and partial file names for snapshot iModels. */
+  public static snapshotFileNameResolver?: FileNameResolver;
 
   /** Implementation of [[IAuthorizationClient]] to supply the authorization information for this session - only required for backend applications */
   /** Implementation of [[IAuthorizationClient]] to supply the authorization information for this session - only required for agent applications, or backends that want to override access tokens passed from the frontend */
@@ -373,17 +377,24 @@ export class IModelHost {
 
     IModelHost.setupRpcRequestContext();
 
-    IModelReadRpcImpl.register();
-    IModelTileRpcImpl.register();
-    IModelWriteRpcImpl.register();
-    SnapshotIModelRpcImpl.register();
-    WipRpcImpl.register();
-    DevToolsRpcImpl.register();
-    Editor3dRpcImpl.register();
-    NativeAppRpcImpl.register();
-    BisCoreSchema.registerSchema();
-    GenericSchema.registerSchema();
-    FunctionalSchema.registerSchema();
+    const rpcs = [
+      IModelReadRpcImpl,
+      IModelTileRpcImpl,
+      IModelWriteRpcImpl,
+      SnapshotIModelRpcImpl,
+      WipRpcImpl,
+      DevToolsRpcImpl,
+      Editor3dRpcImpl,
+      NativeAppRpcImpl,
+    ];
+    const schemas = [
+      BisCoreSchema,
+      GenericSchema,
+      FunctionalSchema,
+    ];
+
+    rpcs.forEach((rpc) => rpc.register()); // register all of the RPC implementations
+    schemas.forEach((schema) => schema.registerSchema()); // register all of the schemas
 
     IModelHost.configuration = configuration;
     IModelHost.setupTileCache();
@@ -522,5 +533,47 @@ export class KnownLocations {
   public static get tmpdir(): string {
     const imodeljsMobile = Platform.imodeljsMobile;
     return imodeljsMobile !== undefined ? imodeljsMobile.knownLocations.tempDir : os.tmpdir();
+  }
+}
+
+/** Extend this class to provide custom file name resolution behavior.
+ * @note Only `tryResolveKey` and/or `tryResolveFileName` need to be overridden as the implementations of `resolveKey` and `resolveFileName` work for most purposes.
+ * @see [[IModelHost.snapshotFileNameResolver]]
+ * @public
+ */
+export abstract class FileNameResolver {
+  /** Resolve a file name from the specified key.
+   * @param _fileKey The key that identifies the file name in a `Map` or other similar data structure.
+   * @returns The resolved file name or `undefined` if not found.
+   */
+  public tryResolveKey(_fileKey: string): string | undefined { return undefined; }
+  /** Resolve a file name from the specified key.
+   * @param fileKey The key that identifies the file name in a `Map` or other similar data structure.
+   * @returns The resolved file name.
+   * @throws [[IModelError]] if not found.
+   */
+  public resolveKey(fileKey: string): string {
+    const resolvedFileName: string | undefined = this.tryResolveKey(fileKey);
+    if (undefined === resolvedFileName) {
+      throw new IModelError(IModelStatus.NotFound, `${fileKey} not resolved`, Logger.logWarning, loggerCategory);
+    }
+    return resolvedFileName;
+  }
+  /** Resolve the input file name, which may be a partial name, into a full path file name.
+   * @param inFileName The partial file name.
+   * @returns The resolved full path file name or `undefined` if not found.
+   */
+  public tryResolveFileName(inFileName: string): string | undefined { return inFileName; }
+  /** Resolve the input file name, which may be a partial name, into a full path file name.
+   * @param inFileName The partial file name.
+   * @returns The resolved full path file name.
+   * @throws [[IModelError]] if not found.
+   */
+  public resolveFileName(inFileName: string): string {
+    const resolvedFileName: string | undefined = this.tryResolveFileName(inFileName);
+    if (undefined === resolvedFileName) {
+      throw new IModelError(IModelStatus.NotFound, `${inFileName} not resolved`, Logger.logWarning, loggerCategory);
+    }
+    return resolvedFileName;
   }
 }

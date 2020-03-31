@@ -5616,12 +5616,14 @@ export interface SnapResponseProps {
 // @internal
 export abstract class SnapshotIModelRpcInterface extends RpcInterface {
     // (undocumented)
-    closeSnapshot(_iModelRpcProps: IModelRpcProps): Promise<boolean>;
+    close(_iModelRpcProps: IModelRpcProps): Promise<boolean>;
     static getClient(): SnapshotIModelRpcInterface;
     static readonly interfaceName = "SnapshotIModelRpcInterface";
     static interfaceVersion: string;
     // (undocumented)
-    openSnapshot(_filePath: string): Promise<IModelConnectionProps>;
+    openFile(_filePath: string): Promise<IModelConnectionProps>;
+    // (undocumented)
+    openRemote(_key: string): Promise<IModelConnectionProps>;
 }
 
 // @beta

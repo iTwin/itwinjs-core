@@ -14,7 +14,6 @@ import {
   SpatialViewDefinitionProps,
   ViewDefinitionProps,
 } from "@bentley/imodeljs-common";
-import * as path from "path";
 import {
   AuxCoordSystemSpatialState,
   CategorySelectorState,
@@ -35,9 +34,6 @@ import {
 } from "@bentley/imodeljs-frontend";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
 
-const iModelLocation = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/test.bim");
-const iModelLocation2 = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/CompatibilityTestSeed.bim");
-
 describe("ViewState", () => {
   let imodel: IModelConnection;
   let imodel2: IModelConnection;
@@ -46,12 +42,12 @@ describe("ViewState", () => {
 
   before(async () => {
     MockRender.App.startup();
-    imodel = await SnapshotConnection.openFile(iModelLocation);
+    imodel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
     const viewRows: ViewDefinitionProps[] = await imodel.views.queryProps({ from: SpatialViewState.classFullName });
     assert.exists(viewRows, "Should find some views");
     viewState = await imodel.views.load(viewRows[0].id!) as SpatialViewState;
 
-    imodel2 = await SnapshotConnection.openFile(iModelLocation2);
+    imodel2 = await SnapshotConnection.openFile("CompatibilityTestSeed.bim"); // relative path resolved by BackendTestAssetResolver
 
     unitTestRpcImp = TestRpcInterface.getClient();
   });

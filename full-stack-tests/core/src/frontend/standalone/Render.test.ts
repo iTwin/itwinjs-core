@@ -3,7 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import * as path from "path";
 import {
   Color,
   TestViewport,
@@ -96,8 +95,7 @@ describe("Render mirukuru with VAOs disabled", () => {
     renderSysOpts.disabledExtensions = ["OES_vertex_array_object"];
 
     IModelApp.startup({ renderSys: renderSysOpts });
-    const imodelLocation = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/mirukuru.ibim");
-    imodel = await SnapshotConnection.openFile(imodelLocation);
+    imodel = await SnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
   });
 
   after(async () => {
@@ -162,8 +160,7 @@ describe("Properly render on- or off-screen", () => {
 
   before(async () => {
     IModelApp.startup();
-    const imodelLocation = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/mirukuru.ibim");
-    imodel = await SnapshotConnection.openFile(imodelLocation);
+    imodel = await SnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
   });
 
   after(async () => {
@@ -193,8 +190,7 @@ describe("Render mirukuru with single clip plane", () => {
 
   before(async () => {
     IModelApp.startup();
-    const imodelLocation = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/mirukuru.ibim");
-    imodel = await SnapshotConnection.openFile(imodelLocation);
+    imodel = await SnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
   });
 
   after(async () => {
@@ -258,8 +254,7 @@ describe("Render mirukuru", () => {
 
   before(async () => {
     IModelApp.startup();
-    const imodelLocation = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/mirukuru.ibim");
-    imodel = await SnapshotConnection.openFile(imodelLocation);
+    imodel = await SnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
   });
 
   after(async () => {
@@ -724,9 +719,7 @@ describe("Tile unloading", async () => {
 
   before(async () => {
     IModelApp.startup({ tileAdmin: TileAdmin.create(tileOpts) });
-
-    const imodelLocation = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/CompatibilityTestSeed.bim");
-    imodel = await SnapshotConnection.openFile(imodelLocation);
+    imodel = await SnapshotConnection.openFile("CompatibilityTestSeed.bim"); // relative path resolved by BackendTestAssetResolver
   });
 
   after(async () => {
@@ -941,8 +934,7 @@ describe("White-on-white reversal", async () => {
 
   before(async () => {
     IModelApp.startup();
-    const imodelLocation = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/mirukuru.ibim");
-    imodel = await SnapshotConnection.openFile(imodelLocation);
+    imodel = await SnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
   });
 
   after(async () => {

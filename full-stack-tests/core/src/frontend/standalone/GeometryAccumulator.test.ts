@@ -8,9 +8,6 @@ import { IModelApp, IModelConnection, RenderGraphic, SnapshotConnection, Spatial
 import { DisplayParams, Geometry, GeometryAccumulator, GeometryOptions, PolyfacePrimitive, PolyfacePrimitiveList, StrokesPrimitiveList } from "@bentley/imodeljs-frontend/lib/render-primitives";
 import { Branch, System } from "@bentley/imodeljs-frontend/lib/webgl";
 import { assert, expect } from "chai";
-import * as path from "path";
-
-const iModelLocation = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/test.bim");
 
 export class FakeDisplayParams extends DisplayParams {
   public constructor() { super(DisplayParams.Type.Linear, new ColorDef(), new ColorDef()); }
@@ -38,7 +35,7 @@ describe("GeometryAccumulator tests", () => {
 
   before(async () => {   // Create a ViewState to load into a Viewport
     IModelApp.startup();
-    iModel = await SnapshotConnection.openFile(iModelLocation);
+    iModel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
     spatialView = await iModel.views.load("0x34") as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
   });

@@ -5,9 +5,6 @@
 import { ColorDef, Feature, LinePixels, RgbColor } from "@bentley/imodeljs-common";
 import { EmphasizeElements, FeatureOverrideType, FeatureSymbology, IModelConnection, MockRender, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId } from "@bentley/imodeljs-frontend";
 import { assert, expect } from "chai";
-import * as path from "path";
-
-const iModelDir = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets");
 
 describe("EmphasizeElements tests", () => {
   let imodel: IModelConnection;
@@ -20,7 +17,7 @@ describe("EmphasizeElements tests", () => {
 
   before(async () => {
     MockRender.App.startup();
-    imodel = await SnapshotConnection.openFile(path.join(iModelDir, "test.bim"));
+    imodel = await SnapshotConnection.openFile("test.bim");
     spatialView = await imodel.views.load("0x34") as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
   });

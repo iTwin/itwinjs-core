@@ -23,7 +23,6 @@ import {
   TileReadStatus,
 } from "@bentley/imodeljs-common";
 import { ByteStream, Id64, Id64String } from "@bentley/bentleyjs-core";
-import * as path from "path";
 import {
   GeometricModelState,
   ImdlReader,
@@ -48,8 +47,6 @@ import { TILE_DATA_1_4 } from "./TileIO.data.1.4";
 import { TILE_DATA_2_0 } from "./TileIO.data.2.0";
 import { changeMinorVersion, changeMajorVersion, changeHeaderLength } from "./TileIO.data.fake";
 import { testOnScreenViewport } from "../TestViewport";
-
-const iModelLocation = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/test.bim");
 
 const testCases = [
   TILE_DATA_1_1,
@@ -270,7 +267,7 @@ describe("TileIO (WebGL)", () => {
 
   before(async () => {
     IModelApp.startup();
-    imodel = await SnapshotConnection.openFile(iModelLocation);
+    imodel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
   });
 
   after(async () => {
@@ -440,7 +437,7 @@ describe("TileIO (mock render)", () => {
 
   before(async () => {
     MockRender.App.startup();
-    imodel = await SnapshotConnection.openFile(iModelLocation);
+    imodel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
   });
 
   after(async () => {
@@ -598,7 +595,7 @@ describe("mirukuru TileTree", () => {
   before(async () => {
     MockRender.App.systemFactory = () => new TestSystem();
     MockRender.App.startup();
-    imodel = await SnapshotConnection.openFile(path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/mirukuru.ibim"));
+    imodel = await SnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
   });
 
   afterEach(() => {
@@ -855,7 +852,7 @@ describe("TileAdmin", () => {
         tileAdmin: TileAdmin.create(props),
       });
 
-      theIModel = await SnapshotConnection.openFile(path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/mirukuru.ibim"));
+      theIModel = await SnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
       return theIModel;
     }
 

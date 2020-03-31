@@ -6,9 +6,6 @@ import { Id64 } from "@bentley/bentleyjs-core";
 import { Code, IModel, ModelSelectorProps } from "@bentley/imodeljs-common";
 import { DrawingModelState, GeometricModelState, IModelConnection, MockRender, ModelSelectorState, SheetModelState, SnapshotConnection, SpatialModelState } from "@bentley/imodeljs-frontend";
 import { assert, expect } from "chai";
-import * as path from "path";
-
-const iModelLocation = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/");
 
 describe("ModelState", () => {
   let imodel: IModelConnection;
@@ -16,9 +13,9 @@ describe("ModelState", () => {
   let imodel3: IModelConnection;
   before(async () => {
     MockRender.App.startup();
-    imodel2 = await SnapshotConnection.openFile(iModelLocation + "mirukuru.ibim");
-    imodel = await SnapshotConnection.openFile(iModelLocation + "CompatibilityTestSeed.bim");
-    imodel3 = await SnapshotConnection.openFile(iModelLocation + "test.bim");
+    imodel2 = await SnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
+    imodel = await SnapshotConnection.openFile("CompatibilityTestSeed.bim"); // relative path resolved by BackendTestAssetResolver
+    imodel3 = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
   });
 
   after(async () => {

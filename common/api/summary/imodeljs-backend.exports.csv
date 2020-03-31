@@ -131,6 +131,7 @@ public;ExportPartLinesFunction = (info: ExportPartLinesInfo) => void
 public;ExportPartLinesInfo
 public;ExternalSourceAspect 
 public;ExternalSourceAspect
+public;class FileNameResolver
 public;class FunctionalBreakdownElement 
 public;class FunctionalComponentElement 
 public;FunctionalComposite 

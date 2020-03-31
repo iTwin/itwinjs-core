@@ -4,10 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
-import { IModelHost, IModelHostConfiguration } from "@bentley/imodeljs-backend";
+import { IModelHost, IModelHostConfiguration, FileNameResolver } from "@bentley/imodeljs-backend";
 import { Config } from "@bentley/imodeljs-clients";
 import { IModelJsExpressServer } from "@bentley/express-server";
 import { BentleyCloudRpcManager, ElectronRpcConfiguration, ElectronRpcManager, RpcConfiguration } from "@bentley/imodeljs-common";
+import * as path from "path";
 
 import { rpcInterfaces } from "../common/RpcInterfaces";
 import "./RpcImpl";
@@ -31,6 +32,7 @@ async function init() {
   hostConfig.concurrentQuery.concurrent = 2;
   hostConfig.concurrentQuery.pollInterval = 5;
   IModelHost.startup(hostConfig);
+  IModelHost.snapshotFileNameResolver = new BackendTestAssetResolver();
 
   Logger.initializeToConsole();
   Logger.setLevel("imodeljs-backend.IModelReadRpcImpl", LogLevel.Error);  // Change to trace to debug
@@ -48,6 +50,25 @@ async function init() {
     const server = new IModelJsExpressServer(rpcConfig.protocol);
     await server.initialize(port);
     console.log("Web backend for full-stack-tests listening on port " + port);
+  }
+}
+
+/** A FileNameResolver for resolving test iModel files from core/backend */
+class BackendTestAssetResolver extends FileNameResolver {
+  /** Resolve a base file name to a full path file name in the core/backend/lib/test/assets/ directory. */
+  public tryResolveFileName(inFileName: string): string {
+    if (path.isAbsolute(inFileName)) {
+      return inFileName;
+    }
+    return path.join(__dirname, "../../../../core/backend/lib/test/assets/", inFileName);
+  }
+  /** Resolve a key (for testing FileNameResolver) */
+  public tryResolveKey(fileKey: string): string | undefined {
+    switch (fileKey) {
+      case "test-key": return this.tryResolveFileName("test.bim");
+      case "test2-key": return this.tryResolveFileName("test2.bim");
+      default: return undefined;
+    }
   }
 }
 

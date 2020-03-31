@@ -22,15 +22,11 @@ import {
   SnapshotConnection,
 } from "@bentley/imodeljs-frontend";
 import { ColorDef, ImageBuffer, ImageBufferFormat, RenderTexture, QPoint3dList, QParams3d, ColorByName } from "@bentley/imodeljs-common";
-import * as path from "path";
 import { MeshArgs } from "@bentley/imodeljs-frontend/lib/render-primitives";
 import { OnScreenTarget, Target, Batch, WorldDecorations, TextureHandle } from "@bentley/imodeljs-frontend/lib/webgl";
 import { Point3d, Range3d, Arc3d } from "@bentley/geometry-core";
 import { FakeGMState, FakeModelProps, FakeREProps } from "./TileIO.test";
 import { TILE_DATA_1_1 } from "./TileIO.data.1.1";
-
-const iModelDir = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/");
-const iModelLocation = path.join(iModelDir, "test.bim");
 
 let imodel0: IModelConnection;
 let imodel1: IModelConnection;
@@ -145,7 +141,7 @@ function disposedCheck(disposable: any, ignoredAttribs?: string[]): boolean {
 describe("Disposal of System", () => {
   before(async () => {
     IModelApp.startup();
-    imodel0 = await SnapshotConnection.openFile(iModelLocation);
+    imodel0 = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
   });
 
   after(async () => {
@@ -191,8 +187,8 @@ describe("Disposal of WebGL Resources", () => {
   before(async () => {
     IModelApp.startup();
 
-    imodel0 = await SnapshotConnection.openFile(iModelLocation);
-    imodel1 = await SnapshotConnection.openFile(path.join(iModelDir, "testImodel.bim"));
+    imodel0 = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
+    imodel1 = await SnapshotConnection.openFile("testImodel.bim"); // relative path resolved by BackendTestAssetResolver
   });
 
   after(async () => {

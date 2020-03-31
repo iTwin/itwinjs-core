@@ -7,20 +7,17 @@ import { ColorByName, QParams3d, QPoint3dList } from "@bentley/imodeljs-common";
 import { IModelApp, IModelConnection, RenderGraphic, RenderMemory, SnapshotConnection } from "@bentley/imodeljs-frontend";
 import { MeshArgs } from "@bentley/imodeljs-frontend/lib/render-primitives";
 import { expect } from "chai";
-import * as path from "path";
 
 export class FakeGraphic extends RenderGraphic {
   public dispose(): void { }
   public collectStatistics(_stats: RenderMemory.Statistics): void { }
 }
 
-const iModelLocation = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/test.bim");
-
 describe("createTriMesh", () => {
   let imodel: IModelConnection;
   before(async () => {
     IModelApp.startup();
-    imodel = await SnapshotConnection.openFile(iModelLocation);
+    imodel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
   });
 
   after(async () => {

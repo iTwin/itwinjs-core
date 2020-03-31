@@ -5,16 +5,13 @@
 import { Id64, Id64Arg } from "@bentley/bentleyjs-core";
 import { ElementAgenda, HiliteSet, IModelConnection, MockRender, ModifyElementSource, SelectionSet, SelectionSetEventType, SnapshotConnection } from "@bentley/imodeljs-frontend";
 import { assert, expect } from "chai";
-import * as path from "path";
-
-const iModelLocation = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/test.bim");
 
 describe("Tools", () => {
   let imodel: IModelConnection;
 
   before(async () => {
     MockRender.App.startup();
-    imodel = await SnapshotConnection.openFile(iModelLocation);
+    imodel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
   });
   after(async () => {
     if (imodel) await imodel.close();
@@ -162,7 +159,7 @@ describe("HiliteSet", () => {
 
   before(async () => {
     MockRender.App.startup();
-    imodel = await SnapshotConnection.openFile(iModelLocation);
+    imodel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
     selected = imodel.selectionSet;
     hilited = imodel.hilited;
   });

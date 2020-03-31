@@ -6,9 +6,6 @@ import { Vector3d } from "@bentley/geometry-core";
 import { DisplayStyle3dProps } from "@bentley/imodeljs-common";
 import { DisplayStyle3dState, IModelConnection, MockRender, SnapshotConnection } from "@bentley/imodeljs-frontend";
 import { expect } from "chai";
-import * as path from "path";
-
-const iModelLocation = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/test.bim");
 
 describe("DisplayStyle", () => {
   let imodel: IModelConnection;
@@ -24,7 +21,7 @@ describe("DisplayStyle", () => {
 
   before(async () => {
     MockRender.App.startup();
-    imodel = await SnapshotConnection.openFile(iModelLocation);
+    imodel = await SnapshotConnection.openFile("test.bim");
   });
 
   after(async () => {
