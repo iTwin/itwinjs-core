@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { OpenMode } from "@bentley/bentleyjs-core";
+import { OpenMode, ClientRequestContext } from "@bentley/bentleyjs-core";
 import {
   BentleyCloudRpcManager,
   CloudStorageContainerUrl,
@@ -22,12 +22,11 @@ import {
   SnapshotIModelRpcInterface,
   TileContentIdentifier,
 } from "@bentley/imodeljs-common";
-import { OidcFrontendClientConfiguration, IOidcFrontendClient, AccessToken } from "@bentley/imodeljs-clients";
+import { AccessToken, BrowserAuthorizationClient, BrowserAuthorizationCallbackHandler, BrowserAuthorizationClientConfiguration } from "@bentley/imodeljs-clients";
 import {
   FrontendRequestContext,
   IModelApp,
   IModelConnection,
-  OidcBrowserClient,
   RenderDiagnostics,
   RenderSystem,
   OidcDesktopClientRenderer,
@@ -79,36 +78,55 @@ async function openSnapshotIModel(filename: string): Promise<IModelConnection> {
   return iModelConnection;
 }
 
-function createOidcClient(): IOidcFrontendClient {
-  let oidcClient: IOidcFrontendClient;
-  const scope = "openid email profile organization imodelhub context-registry-service:read-only reality-data:read product-settings-service projectwise-share urlps-third-party";
-  if (ElectronRpcConfiguration.isElectron) {
-    const clientId = "imodeljs-electron-test";
-    const redirectUri = "http://localhost:3000/signin-callback";
-    const oidcConfiguration: OidcDesktopClientConfiguration = { clientId, redirectUri, scope: scope + " offline_access" };
-    oidcClient = new OidcDesktopClientRenderer(oidcConfiguration);
-  } else {
-    const clientId = "imodeljs-spa-test";
-    const redirectUri = "http://localhost:3000/signin-callback";
-    const oidcConfiguration: OidcFrontendClientConfiguration = { clientId, redirectUri, scope: scope + " imodeljs-router", responseType: "code" };
-    oidcClient = new OidcBrowserClient(oidcConfiguration);
+function getOidcConfiguration(): BrowserAuthorizationClientConfiguration | OidcDesktopClientConfiguration {
+  const redirectUri = "http://localhost:3000/signin-callback";
+  const baseOidcScope = "openid email profile organization imodelhub context-registry-service:read-only reality-data:read product-settings-service projectwise-share urlps-third-party";
+
+  return ElectronRpcConfiguration.isElectron
+    ? {
+      clientId: "imodeljs-electron-test",
+      redirectUri,
+      scope: baseOidcScope + " offline_access",
+    }
+    : {
+      clientId: "imodeljs-spa-test",
+      redirectUri,
+      scope: baseOidcScope + " imodeljs-router",
+      responseType: "code",
+    };
+}
+
+async function handleOidcCallback(oidcConfiguration: BrowserAuthorizationClientConfiguration): Promise<void> {
+  if (!ElectronRpcConfiguration.isElectron) {
+    await BrowserAuthorizationCallbackHandler.handleSigninCallback(oidcConfiguration.redirectUri);
   }
-  return oidcClient;
+}
+
+async function createOidcClient(requestContext: ClientRequestContext, oidcConfiguration: BrowserAuthorizationClientConfiguration | OidcDesktopClientConfiguration): Promise<OidcDesktopClientRenderer | BrowserAuthorizationClient> {
+  if (ElectronRpcConfiguration.isElectron) {
+    const desktopClient = new OidcDesktopClientRenderer(oidcConfiguration as OidcDesktopClientConfiguration);
+    await desktopClient.initialize(requestContext);
+    return desktopClient;
+  } else {
+    const browserClient = new BrowserAuthorizationClient(oidcConfiguration as BrowserAuthorizationClientConfiguration);
+    return browserClient;
+  }
 }
 
 // Wraps the signIn process
 // In the case of use in web applications:
 // - called the first time to start the signIn process - resolves to false
-// - called the second time as the Authorization provider redirects to cause the application to refresh/reload - resolves to false
-// - called the third time as the application redirects back to complete the authorization - finally resolves to true
+// - called the second time to catch the incoming auth redirect and save the token - resolves to false
+// - called the third time to restart the app and complete the signin - resolves to true
 // In the case of use in electron applications:
 // - promise wraps around a registered call back and resolves to true when the sign in is complete
 // @return Promise that resolves to true only after signIn is complete. Resolves to false until then.
 async function signIn(): Promise<boolean> {
-  const oidcClient: IOidcFrontendClient = createOidcClient();
-
   const requestContext = new FrontendRequestContext();
-  await oidcClient.initialize(requestContext);
+  const oidcConfig = getOidcConfiguration();
+  await handleOidcCallback(oidcConfig);
+  const oidcClient = await createOidcClient(requestContext, oidcConfig);
+
   IModelApp.authorizationClient = oidcClient;
   if (oidcClient.isAuthorized)
     return true;
@@ -117,9 +135,12 @@ async function signIn(): Promise<boolean> {
     oidcClient.onUserStateChanged.addListener((token: AccessToken | undefined) => {
       resolve(token !== undefined);
     });
+
+    oidcClient.signIn(requestContext).catch((err) => {
+      _reject(err);
+    });
   });
 
-  await oidcClient.signIn(requestContext);
   return retPromise;
 }
 

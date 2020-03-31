@@ -119,14 +119,6 @@ export * from "./tile/PntsTileIO";
 export * from "./tile/TileIO";
 export * from "./tile/TileMetadata";
 
-// Set the version number so it can be found at runtime. BUILD_SEMVER is replaced at build time by the webpack DefinePlugin.
-declare var BUILD_SEMVER: string;
-if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") && window) {
-  if (!(window as any).iModelJsVersions)
-    (window as any).iModelJsVersions = new Map<string, string>();
-  (window as any).iModelJsVersions.set("imodeljs-common", BUILD_SEMVER);
-}
-
 /** @docs-package-description
  * The imodeljs-common package contains classes for working with iModels that can be used in both [frontend]($docs/learning/frontend/index.md) and [backend]($docs/learning/backend/index.md).
  */

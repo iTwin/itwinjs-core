@@ -14,8 +14,8 @@ function getLoaderString(pkgName: string, pkgVersion: string) {
   return `  module.exports = (() => {
     if (!window.${IMJS_GLOBAL_OBJECT} || !window.${IMJS_GLOBAL_LIBS_VERS} || !window.${IMJS_GLOBAL_LIBS})
       throw new Error("Expected globals are missing!");
-    if (window.${IMJS_GLOBAL_LIBS_VERS}[${pkgName}] === ${pkgVersion})
-      return window.__IMJS_SHARED[${pkgName}];
+    if (window.${IMJS_GLOBAL_LIBS_VERS}[${pkgName}] >= ${pkgVersion})
+      return window.${IMJS_GLOBAL_LIBS}[${pkgName}];
     if (window.${IMJS_GLOBAL_LIBS}[${pkgName}])
       throw new Error("iModel.js Shared Library " + ${pkgName} + " is loaded, but is an incompatible version." )
     throw new Error("iModel.js Shared Library " + ${pkgName} + " is not yet loaded." )

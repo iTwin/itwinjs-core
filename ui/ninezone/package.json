@@ -11,7 +11,8 @@
     "url": "https://github.com/imodeljs/imodeljs/tree/master/ui/ninezone"
   },
   "scripts": {
-    "build": "buildIModelJsModule",
+    "copy:assets": "cpx \"./src/**/*.*css\" \"./lib\"",
+    "build": "npm run copy:assets && tsc 1>&2",
     "build:watch": "tsc -w",
     "clean": "rimraf lib out .rush demo/lib package-deps.json",
     "cover": "nyc npm test",
@@ -26,27 +27,6 @@
     "start": "webpack-dev-server --config ./demo/webpack.dev.ts",
     "test": "mocha --opts ../mocha.opts \"./lib/test/**/*.test.js\"",
     "test:watch": "npm test -- --reporter min --watch-extensions ts,tsx --watch"
-  },
-  "iModelJs": {
-    "buildModule": {
-      "type": "system",
-      "sourceResources": [
-        {
-          "source": "./src/**/*.*css",
-          "dest": "./lib"
-        },
-        {
-          "source": "./public/**/*",
-          "dest": "./lib/public"
-        }
-      ],
-      "webpack": {
-        "dest": "./lib/module",
-        "entry": "./lib/ui-ninezone.js",
-        "bundleName": "ui-ninezone",
-        "styleSheets": true
-      }
-    }
   },
   "keywords": [
     "Bentley",
@@ -70,7 +50,6 @@
     "@bentley/ui-abstract": "2.0.0-dev.52",
     "@bentley/ui-components": "2.0.0-dev.52",
     "@bentley/ui-core": "2.0.0-dev.52",
-    "@bentley/webpack-tools": "2.0.0-dev.52",
     "@testing-library/react": "^8.0.1",
     "@testing-library/react-hooks": "^3.2.1",
     "@types/chai": "^4.1.4",
@@ -97,6 +76,7 @@
     "chai-as-promised": "^7",
     "chai-jest-snapshot": "^2.0.0",
     "chai-spies": "1.0.0",
+    "cpx": "^1.5.0",
     "cross-env": "^5.1.4",
     "css-loader": "^2.1.1",
     "enzyme": "^3.4.0",
@@ -117,6 +97,7 @@
     "react-markdown": "^3.2.1",
     "react-resize-detector": "^3.2.0",
     "react-router-dom": "^4.2.2",
+    "react-test-renderer": "^16.13.1",
     "rimraf": "^3.0.2",
     "sass-loader": "^7.1.0",
     "sinon": "^7.5.0",
@@ -135,9 +116,9 @@
     "typemoq": "^2.1.0",
     "typescript": "~3.7.4",
     "url-loader": "^1.0.1",
-    "webpack": "^4.20.2",
+    "webpack": "4.41.5",
     "webpack-cli": "^3.1.0",
-    "webpack-dev-server": "^3.1.6",
+    "webpack-dev-server": "3.10.2",
     "webpack-merge": "^4.1.4"
   },
   "//dependencies": [

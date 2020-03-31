@@ -145,12 +145,3 @@ export { RelatedInstanceSpecification } from "./presentation-common/rules/Relate
 export * from "./presentation-common/rules/RelationshipDirection";
 export * from "./presentation-common/rules/ClassSpecifications";
 export * from "./presentation-common/rules/SchemasSpecification";
-
-// Set the version number so it can be found at runtime. BUILD_SEMVER is replaced at build time by the webpack DefinePlugin.
-declare var BUILD_SEMVER: string;
-/* istanbul ignore next */
-if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") && window) {
-  if (!(window as any).iModelJsVersions)
-    (window as any).iModelJsVersions = new Map<string, string>();
-  (window as any).iModelJsVersions.set("presentation-common", BUILD_SEMVER);
-}

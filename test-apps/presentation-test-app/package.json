@@ -12,43 +12,21 @@
   },
   "private": true,
   "scripts": {
-    "build": "node ./node_modules/@bentley/webpack-tools/bin/buildIModelJsModule",
+    "build": "npm run build:backend && npm run build:frontend",
+    "build:backend": "npm run copy:assets && tsc -p tsconfig.backend.json",
+    "build:frontend": "cross-env GENERATE_SOURCEMAP=false react-scripts build --unsafe-fast-sass",
+    "copy:assets": "cpx \"./assets/**/*\" \"./lib/assets\"",
     "clean": "rimraf lib .rush",
     "docs": "npm run extract",
     "extract": "node ./node_modules/@bentley/build-tools/scripts/extract.js --fileExt=ts,tsx --extractFrom=./src --recursive --out=../../generated-docs/extract",
     "lint": "tslint -p ./tsconfig.json 1>&2",
-    "electron": "electron ./lib/backend/main.js",
-    "start:webserver": "node ./node_modules/@bentley/imodeljs-webserver/lib/webserver.js --port=3000 --resources=./lib/webresources/",
+    "electron": "run-p start:webserver start:electron",
+    "start:electron": "electron ./lib/backend/main.js",
+    "start:webserver": "cross-env BROWSER=none react-scripts start",
     "start:backend": "node --inspect --max-http-header-size=16000 lib/backend/main.js",
     "start:servers": "run-p start:webserver start:backend",
     "test": "",
     "cover": ""
-  },
-  "iModelJs": {
-    "buildModule": {
-      "type": "application",
-      "sourceResources": [
-        {
-          "source": "./src/**/*.css",
-          "dest": "./lib"
-        },
-        {
-          "source": "./public/**/*",
-          "dest": "./lib/webresources"
-        }
-      ],
-      "webpack": {
-        "dest": "./lib/webresources",
-        "entry": "./lib/frontend/index.js",
-        "bundleName": "main",
-        "styleSheets": true,
-        "htmlTemplate": "./src/frontend/index.html"
-      },
-      "makeConfig": {
-        "dest": "./lib/webresources/config.json",
-        "filter": "^imjs_"
-      }
-    }
   },
   "dependencies": {
     "@bentley/bentleyjs-core": "2.0.0-dev.52",
@@ -77,11 +55,13 @@
     "@bentley/config-loader": "2.0.0-dev.52",
     "@bentley/build-tools": "2.0.0-dev.52",
     "@bentley/imodeljs-webserver": "2.0.0-dev.52",
-    "@bentley/webpack-tools": "2.0.0-dev.52",
+    "@bentley/react-scripts": "3.4.1-dev.12",
     "@types/bunyan": "^1.8.4",
     "@types/react": "^16.8.0",
     "@types/react-dom": "^16.8.0",
     "autoprefixer": "^8.6.5",
+    "cpx": "^1.5.0",
+    "cross-env": "^5.1.4",
     "electron": "^6.1.5",
     "electron-chromedriver": "^2.0.0",
     "npm-run-all": "^4.1.5",
@@ -92,5 +72,22 @@
     "tslint-etc": "^1.5.2",
     "typescript": "~3.7.4"
   },
-  "proxy": "http://localhost:5000"
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "electron 6.0.0",
+      "last 4 chrome version",
+      "last 4 firefox version",
+      "last 4 safari version",
+      "last 4 ios version",
+      "last 4 ChromeAndroid version",
+      "last 4 edge version",
+      "not dead",
+      "not <0.2%"
+    ]
+  }
 }

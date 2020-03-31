@@ -18,3 +18,9 @@ declare module "*.css" {
   const value: any;
   export default value;
 }
+
+// iModel.js Change: Add support for SVG Sprites.
+declare module '*.svg?sprite' {
+  const src: string;
+  export default src;
+}

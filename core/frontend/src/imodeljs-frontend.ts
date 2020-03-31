@@ -48,9 +48,11 @@ export * from "./ViewManager";
 export * from "./ViewRect";
 export * from "./ViewState";
 export * from "./Viewport";
-export * from "./oidc/OidcBrowserClient";
 export * from "./oidc/OidcDesktopClientRenderer";
 export * from "./extension/Extension";
+export * from "./extension/ExtensionAdmin";
+export * from "./extension/ExtensionResults";
+export * from "./extension/SavedExtensions";
 export * from "./properties/AngleDescription";
 export * from "./properties/FormattedQuantityDescription";
 export * from "./properties/LengthDescription";
@@ -89,16 +91,6 @@ export * from "./tools/ToolAdmin";
 export * from "./tools/ToolAssistance";
 export * from "./tools/ViewTool";
 export * from "./BackgroundMapGeometry";
-
-// Set the version number so it can be found at runtime. BUILD_SEMVER is replaced at build time by the webpack DefinePlugin.
-declare var BUILD_SEMVER: string;
-declare var BUILD_TYPE: string;
-if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") && window) {
-  if (!(window as any).iModelJsVersions)
-    (window as any).iModelJsVersions = new Map<string, string>();
-  (window as any).iModelJsVersions.set("imodeljs-frontend", BUILD_SEMVER);
-  (window as any).iModelJsVersions.set("buildType", BUILD_TYPE);
-}
 
 /** @docs-package-description
  * The imodeljs-frontend package always runs in a web browser. It contains classes for [querying iModels and showing views]($docs/learning/frontend/index.md).

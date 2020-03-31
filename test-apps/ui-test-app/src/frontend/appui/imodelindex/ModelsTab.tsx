@@ -169,7 +169,8 @@ export class ModelsTab extends React.Component<ModelsProps, ModelsState> {
   }
 
   private async loadModelsFromPresentationRules() {
-    Presentation.presentation.rulesets().add(require("../../../../rulesets/Models"))
+    Presentation.presentation.rulesets().add(require("../../../assets/rulesets/Models"))
+
       .then((ruleset: RegisteredRuleset) => {
         if (!this._isMounted)
           return;

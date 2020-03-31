@@ -9,7 +9,7 @@
     "node": ">=10.11.0 <13.0"
   },
   "scripts": {
-    "build": "tsc 1>&2 && node ./node_modules/@bentley/build-tools/scripts/ignoreargs.js 1>&2",
+    "build": "tsc 1>&2",
     "clean": "rimraf lib .rush package-deps.json",
     "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --includes=../../generated-docs/extract --json=../../generated-docs/core/electron-manager/file.json --tsIndexFile=./ElectronManager.ts --onlyJson %TYPEDOC_THEME%",
     "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=ElectronManager",
@@ -43,6 +43,7 @@
     "@bentley/build-tools": "2.0.0-dev.52",
     "@bentley/bentleyjs-core": "2.0.0-dev.52",
     "@bentley/imodeljs-clients": "2.0.0-dev.52",
+    "@bentley/imodeljs-common": "2.0.0-dev.52",
     "@bentley/imodeljs-backend": "2.0.0-dev.52",
     "@types/node": "10.14.1",
     "electron": "^6.1.5",

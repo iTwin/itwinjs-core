@@ -6,15 +6,15 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { Store } from "redux";  // createStore,
 import { Provider, connect } from "react-redux";
-import { Id64String, OpenMode, Logger, LogLevel, isElectronRenderer } from "@bentley/bentleyjs-core";
-import { Config, OidcFrontendClientConfiguration, AccessToken, isIOidcFrontendClient } from "@bentley/imodeljs-clients";
+import { Id64String, OpenMode, Logger, LogLevel, isElectronRenderer, ClientRequestContext } from "@bentley/bentleyjs-core";
+import { Config, AccessToken, IFrontendAuthorizationClient, BrowserAuthorizationClient, BrowserAuthorizationCallbackHandler, BrowserAuthorizationClientConfiguration, isBrowserAuthorizationClient } from "@bentley/imodeljs-clients";
 import {
   RpcConfiguration, RpcOperation, IModelRpcProps, ElectronRpcManager,
   BentleyCloudRpcManager, OidcDesktopClientConfiguration,
 } from "@bentley/imodeljs-common";
 import {
   IModelApp, IModelConnection, SnapMode, AccuSnap, ViewClipByPlaneTool, RenderSystem,
-  IModelAppOptions, SelectionTool, ViewState, ExternalServerExtensionLoader,
+  IModelAppOptions, SelectionTool, ViewState, ExternalServerExtensionLoader, OidcDesktopClientRenderer,
 } from "@bentley/imodeljs-frontend";
 import { MarkupApp } from "@bentley/imodeljs-markup";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
@@ -178,11 +178,8 @@ export class SampleAppIModelApp {
     opts.uiAdmin = new FrameworkUiAdmin();
     IModelApp.startup(opts);
 
-    // For testing local extensions. Shouldn't be used in prod apps.
-    IModelApp.extensionAdmin.addExtensionLoader(new ExternalServerExtensionLoader("http://localhost:4000"), 1);
-
-    // Add an Extension loader to support the Extension being hosted by the webserver serving out the frontend.
-    IModelApp.extensionAdmin.addExtensionLoader(new ExternalServerExtensionLoader("http://localhost:3000"), 2);
+    // For testing local extensions only, should not be used in production.
+    IModelApp.extensionAdmin.addExtensionLoader(new ExternalServerExtensionLoader("http://localhost:3000"), 50);
 
     this.sampleAppNamespace = IModelApp.i18n.registerNamespace("SampleApp");
 
@@ -223,8 +220,7 @@ export class SampleAppIModelApp {
     UiCore.initialize(IModelApp.i18n); // tslint:disable-line:no-floating-promises
     UiComponents.initialize(IModelApp.i18n); // tslint:disable-line:no-floating-promises
 
-    const oidcConfiguration = this.getOidcConfiguration();
-    await UiFramework.initialize(undefined, IModelApp.i18n, oidcConfiguration);
+    await UiFramework.initialize(undefined, IModelApp.i18n);
 
     // initialize Presentation
     await Presentation.initialize({
@@ -245,22 +241,6 @@ export class SampleAppIModelApp {
     UiFramework.setDefaultIModelViewportControlId(IModelViewportControl.id);
 
     await MarkupApp.initialize();
-  }
-
-  private static getOidcConfiguration(): OidcFrontendClientConfiguration | OidcDesktopClientConfiguration {
-    const scope = "openid email profile organization imodelhub context-registry-service:read-only product-settings-service projectwise-share urlps-third-party";
-    if (isElectronRenderer) {
-      const clientId = "imodeljs-electron-test";
-      const redirectUri = "http://localhost:3000/signin-callback";
-      const oidcConfiguration: OidcDesktopClientConfiguration = { clientId, redirectUri, scope: scope + " offline_access" };
-      return oidcConfiguration;
-    } else {
-      const clientId = "imodeljs-spa-test";
-      const redirectUri = "http://localhost:3000/signin-callback";
-      const postSignoutRedirectUri = "http://localhost:3000/";
-      const oidcConfiguration: OidcFrontendClientConfiguration = { clientId, redirectUri, postSignoutRedirectUri, scope: scope + " imodeljs-router", responseType: "code" };
-      return oidcConfiguration;
-    }
   }
 
   // cSpell:enable
@@ -535,13 +515,13 @@ export class SampleAppViewer extends React.Component<any> {
 
   public componentDidMount() {
     const oidcClient = IModelApp.authorizationClient;
-    if (isIOidcFrontendClient(oidcClient))
+    if (isBrowserAuthorizationClient(oidcClient))
       oidcClient.onUserStateChanged.addListener(this._onUserStateChanged);
   }
 
   public componentWillUnmount() {
     const oidcClient = IModelApp.authorizationClient;
-    if (isIOidcFrontendClient(oidcClient))
+    if (isBrowserAuthorizationClient(oidcClient))
       oidcClient.onUserStateChanged.removeListener(this._onUserStateChanged);
   }
 
@@ -593,6 +573,44 @@ async function retrieveConfiguration(): Promise<void> {
   });
 }
 
+function getOidcConfiguration(): BrowserAuthorizationClientConfiguration | OidcDesktopClientConfiguration {
+  const redirectUri = "http://localhost:3000/signin-callback";
+  const baseOidcScope = "openid email profile organization imodelhub context-registry-service:read-only product-settings-service projectwise-share urlps-third-party";
+
+  return isElectronRenderer
+    ? {
+      clientId: "imodeljs-electron-test",
+      redirectUri,
+      scope: baseOidcScope + " offline_access",
+    }
+    : {
+      clientId: "imodeljs-spa-test",
+      redirectUri,
+      scope: baseOidcScope + " imodeljs-router",
+      responseType: "code",
+    };
+}
+
+async function handleOidcCallback(oidcConfiguration: BrowserAuthorizationClientConfiguration): Promise<void> {
+  if (!isElectronRenderer) {
+    await BrowserAuthorizationCallbackHandler.handleSigninCallback(oidcConfiguration.redirectUri);
+  }
+}
+
+async function createOidcClient(requestContext: ClientRequestContext, oidcConfiguration: BrowserAuthorizationClientConfiguration | OidcDesktopClientConfiguration): Promise<IFrontendAuthorizationClient> {
+  if (isElectronRenderer) {
+    const desktopClient = new OidcDesktopClientRenderer(oidcConfiguration as OidcDesktopClientConfiguration);
+    await desktopClient.initialize(requestContext);
+    return desktopClient;
+  } else {
+    const browserClient = new BrowserAuthorizationClient(oidcConfiguration as BrowserAuthorizationClientConfiguration);
+    try {
+      await browserClient.signInSilent(requestContext);
+    } catch (err) { }
+    return browserClient;
+  }
+}
+
 // main entry point.
 async function main() {
   // retrieve, set, and output the global configuration variable
@@ -610,13 +628,17 @@ async function main() {
   // Logger.setLevel("ui-framework.Toolbar", LogLevel.Trace);  // used to show detailed output calculating toolbar overflow
   // Logger.setLevel("ui-framework.DefaultToolSettings", LogLevel.Trace);  // used to show detailed output calculating default toolsettings
 
+  const oidcConfig = getOidcConfiguration();
+  await handleOidcCallback(oidcConfig);
+  const oidcClient = await createOidcClient(new ClientRequestContext(), oidcConfig);
+
   // Set up render option to displaySolarShadows.
   const renderSystemOptions: RenderSystem.Options = {
     displaySolarShadows: true,
   };
 
   // Start the app.
-  SampleAppIModelApp.startup({ renderSys: renderSystemOptions });
+  SampleAppIModelApp.startup({ renderSys: renderSystemOptions, authorizationClient: oidcClient });
 
   // wait for both our i18n namespaces to be read.
   SampleAppIModelApp.initialize().then(() => { // tslint:disable-line:no-floating-promises

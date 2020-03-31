@@ -8,11 +8,9 @@
 
 import { Store } from "redux";
 
-import { OidcFrontendClientConfiguration, IOidcFrontendClient, AccessToken } from "@bentley/imodeljs-clients";
+import { AccessToken } from "@bentley/imodeljs-clients";
 import { I18N, TranslationOptions } from "@bentley/imodeljs-i18n";
-import { ClientRequestContext, isElectronRenderer } from "@bentley/bentleyjs-core";
-import { OidcDesktopClientConfiguration } from "@bentley/imodeljs-common";
-import { IModelConnection, SnapMode, IModelApp, OidcBrowserClient, ViewState, FrontendRequestContext, OidcDesktopClientRenderer } from "@bentley/imodeljs-frontend";
+import { IModelConnection, SnapMode, ViewState } from "@bentley/imodeljs-frontend";
 import { UiError, getClassName } from "@bentley/ui-abstract";
 import { UiEvent } from "@bentley/ui-core";
 import { Presentation } from "@bentley/presentation-frontend";
@@ -68,25 +66,23 @@ export class UiFramework {
    * Called by the app to initialize the UiFramework
    * @param store The single Redux store created by the host application. If this is `undefined` then it is assumed that the [[StateManager]] is being used to provide the Redux store.
    * @param i18n The internationalization service created by the app.
-   * @param oidcConfig Configuration for authenticating user.
    * @param frameworkStateKey The name of the key used by the app when adding the UiFramework state into the Redux store. If not defined "frameworkState" is assumed. This value is ignored if [[StateManager]] is being used. The StateManager use "frameworkState".
    */
-  public static async initialize(store: Store<any> | undefined, i18n: I18N, oidcConfig?: OidcFrontendClientConfiguration | OidcDesktopClientConfiguration, frameworkStateKey?: string): Promise<any> {
-    return this.initializeEx(store, i18n, oidcConfig, frameworkStateKey);
+  public static async initialize(store: Store<any> | undefined, i18n: I18N, frameworkStateKey?: string): Promise<void> {
+    return this.initializeEx(store, i18n, frameworkStateKey);
   }
 
   /**
    * Called by the app to initialize the UiFramework
    * @param store The single Redux store created by the host application. If this is `undefined` then it is assumed that the [[StateManager]] is being used to provide the Redux store.
    * @param i18n The internationalization service created by the app.
-   * @param oidcConfig Optional configuration for authenticating user.
    * @param frameworkStateKey The name of the key used by the app when adding the UiFramework state into the Redux store. If not defined "frameworkState" is assumed. This value is ignored if [[StateManager]] is being used. The StateManager use "frameworkState".
    * @param projectServices Optional app defined projectServices. If not specified DefaultProjectServices will be used.
    * @param iModelServices Optional app defined iModelServices. If not specified DefaultIModelServices will be used.
    *
    * @internal
    */
-  public static async initializeEx(store: Store<any> | undefined, i18n: I18N, oidcConfig?: OidcFrontendClientConfiguration | OidcDesktopClientConfiguration, frameworkStateKey?: string, projectServices?: ProjectServices, iModelServices?: IModelServices): Promise<any> {
+  public static async initializeEx(store: Store<any> | undefined, i18n: I18N, frameworkStateKey?: string, projectServices?: ProjectServices, iModelServices?: IModelServices): Promise<void> {
     // if store is undefined then the StateManager class should have been initialized by parent app and the apps default set of reducer registered with it.
     UiFramework._store = store;
     UiFramework._i18n = i18n;
@@ -102,13 +98,6 @@ export class UiFramework {
     UiFramework._backstageManager = new BackstageManager();
     UiFramework._widgetManager = new WidgetManager();
 
-    // istanbul ignore next
-    if (oidcConfig) {
-      const oidcClient = isElectronRenderer ? new OidcDesktopClientRenderer(oidcConfig as OidcDesktopClientConfiguration) : new OidcBrowserClient(oidcConfig as OidcFrontendClientConfiguration);
-      UiFramework.oidcClient = oidcClient;  // tslint:disable-line: deprecation
-      const initOidcPromise = oidcClient.initialize(new ClientRequestContext());
-      return Promise.all([readFinishedPromise, initOidcPromise]);
-    }
     return readFinishedPromise;
   }
 
@@ -124,33 +113,6 @@ export class UiFramework {
     UiFramework._iModelServices = undefined;
     UiFramework._backstageManager = undefined;
     UiFramework._widgetManager = undefined;
-  }
-
-  private static _oidcClient: IOidcFrontendClient | undefined;
-  private static _removeUserStateListener: () => void;
-
-  /** @deprecated Use IModelApp.authorizationClient and isIOidcFrontendClient instead */
-  // istanbul ignore next
-  public static get oidcClient(): IOidcFrontendClient | undefined {
-    return UiFramework._oidcClient;
-  }
-  // istanbul ignore next
-  public static set oidcClient(oidcClient: IOidcFrontendClient | undefined) {
-    if (UiFramework._removeUserStateListener)
-      UiFramework._removeUserStateListener();
-    UiFramework._oidcClient = oidcClient;
-    IModelApp.authorizationClient = oidcClient;
-    if (oidcClient) {
-      UiFramework._removeUserStateListener = oidcClient.onUserStateChanged.addListener((token: AccessToken | undefined) => UiFramework.setAccessTokenInternal(token));
-      if (oidcClient.isAuthorized) {
-        oidcClient.getAccessToken(new FrontendRequestContext()) // tslint:disable-line: no-floating-promises
-          .then((accessToken: AccessToken) => {
-            UiFramework.setAccessTokenInternal(accessToken);
-          });
-      } else {
-        UiFramework.setAccessTokenInternal(undefined);
-      }
-    }
   }
 
   /** @beta */

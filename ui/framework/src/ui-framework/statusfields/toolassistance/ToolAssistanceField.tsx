@@ -33,22 +33,22 @@ import { StatusBarFieldId } from "../../statusbar/StatusBarWidgetControl";
 import { UiFramework } from "../../UiFramework";
 
 import "./ToolAssistanceField.scss";
-import acceptPointIcon from "./accept-point.svg";
-import cursorClickIcon from "./cursor-click.svg";
-import clickLeftIcon from "./mouse-click-left.svg";
-import clickRightIcon from "./mouse-click-right.svg";
-import mouseWheelClickIcon from "./mouse-click-wheel.svg";
-import clickLeftDragIcon from "./mouse-click-left-drag.svg";
-import clickRightDragIcon from "./mouse-click-right-drag.svg";
-import clickMouseWheelDragIcon from "./mouse-click-wheel-drag.svg";
-import oneTouchTapIcon from "./gesture-one-finger-tap.svg";
-import oneTouchDoubleTapIcon from "./gesture-one-finger-tap-double.svg";
-import oneTouchDragIcon from "./gesture-one-finger-drag.svg";
-import twoTouchTapIcon from "./gesture-two-finger-tap.svg";
-import twoTouchDragIcon from "./gesture-two-finger-drag.svg";
-import twoTouchPinchIcon from "./gesture-pinch.svg";
-import touchCursorTapIcon from "./touch-cursor-point.svg";
-import touchCursorDragIcon from "./touch-cursor-pan.svg";
+import acceptPointIcon from "./accept-point.svg?sprite";
+import cursorClickIcon from "./cursor-click.svg?sprite";
+import clickLeftIcon from "./mouse-click-left.svg?sprite";
+import clickRightIcon from "./mouse-click-right.svg?sprite";
+import mouseWheelClickIcon from "./mouse-click-wheel.svg?sprite";
+import clickLeftDragIcon from "./mouse-click-left-drag.svg?sprite";
+import clickRightDragIcon from "./mouse-click-right-drag.svg?sprite";
+import clickMouseWheelDragIcon from "./mouse-click-wheel-drag.svg?sprite";
+import oneTouchTapIcon from "./gesture-one-finger-tap.svg?sprite";
+import oneTouchDoubleTapIcon from "./gesture-one-finger-tap-double.svg?sprite";
+import oneTouchDragIcon from "./gesture-one-finger-drag.svg?sprite";
+import twoTouchTapIcon from "./gesture-two-finger-tap.svg?sprite";
+import twoTouchDragIcon from "./gesture-two-finger-drag.svg?sprite";
+import twoTouchPinchIcon from "./gesture-pinch.svg?sprite";
+import touchCursorTapIcon from "./touch-cursor-point.svg?sprite";
+import touchCursorDragIcon from "./touch-cursor-pan.svg?sprite";
 
 /** Properties of [[ToolAssistanceField]] component.
  * @beta

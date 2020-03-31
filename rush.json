@@ -17,7 +17,8 @@
       "@types"
     ]
   },
-  "projects": [{
+  "projects": [
+    {
       "packageName": "@bentley/build-tools",
       "projectFolder": "tools/build",
       "reviewCategory": "tools",
@@ -226,13 +227,6 @@
     {
       "packageName": "@bentley/ecschema2ts",
       "projectFolder": "tools/ecschema2ts",
-      "reviewCategory": "tools",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
-      "packageName": "@bentley/webpack-tools",
-      "projectFolder": "tools/webpack",
       "reviewCategory": "tools",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"

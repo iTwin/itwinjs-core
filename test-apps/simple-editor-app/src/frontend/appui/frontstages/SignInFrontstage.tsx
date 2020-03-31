@@ -9,14 +9,14 @@ import {
 } from "@bentley/ui-framework";
 import { SampleAppIModelApp } from "../../index";
 import { IModelApp } from "@bentley/imodeljs-frontend";
-import { isIOidcFrontendClient } from "@bentley/imodeljs-clients";
+import { isBrowserAuthorizationClient } from "@bentley/imodeljs-clients";
 
 class SignInControl extends ContentControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
 
     const oidcClient = IModelApp.authorizationClient;
-    if (isIOidcFrontendClient(oidcClient))
+    if (isBrowserAuthorizationClient(oidcClient))
       this.reactNode = <SignIn oidcClient={oidcClient} onOffline={this._onWorkOffline} onRegister={this._onRegister} />;
     else
       this.reactNode = null;

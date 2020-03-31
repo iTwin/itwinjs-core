@@ -93,7 +93,7 @@ export interface TextureImage {
 }
 
 /** @internal */
-export const enum RenderDiagnostics {
+export enum RenderDiagnostics {
   /** No diagnostics enabled. */
   None = 0,
   /** Debugging output to browser console enabled. */

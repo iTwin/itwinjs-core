@@ -18,6 +18,10 @@ internal;BriefcaseDeletedEvent
 beta;class BriefcaseEvent 
 internal;BriefcaseHandler
 internal;BriefcaseQuery 
+beta;BrowserAuthorizationCallbackHandler 
+beta;BrowserAuthorizationCallbackHandlerConfiguration
+beta;BrowserAuthorizationClient 
+beta;BrowserAuthorizationClientConfiguration
 beta;CancelRequest
 beta;ChangeSet 
 internal;ChangeSetCreatedEvent 
@@ -83,6 +87,7 @@ alpha;HubCode
 beta;HubIModel 
 alpha;HubUserInfo 
 beta;IAuthorizationClient
+beta;IFrontendAuthorizationClient 
 internal;IModelBankClient 
 internal;IModelBankFileSystemContextClient 
 beta;IModelBankHandler 
@@ -104,14 +109,14 @@ beta;IModelsHandler
 internal;ImsActiveSecureTokenClient 
 internal;ImsDelegationSecureTokenClient 
 internal;ImsFederatedAuthenticationClient 
+beta;ImsOidcClient 
 internal;ImsTestAuthorizationClient 
 internal;ImsUserCredentials
 internal;IncludePrefix
 beta;InitializationState
 beta;InstanceIdQuery 
-beta;IOidcFrontendClient 
 beta;isAuthorizedClientRequestContext: (requestContext: ClientRequestContext) => requestContext is AuthorizedClientRequestContext
-beta;isIOidcFrontendClient: (client: IAuthorizationClient | undefined) => client is IOidcFrontendClient
+beta;isBrowserAuthorizationClient: (client: IAuthorizationClient | undefined) => client is IFrontendAuthorizationClient
 alpha;LargeThumbnail 
 alpha;Lock 
 alpha;LockBase 
@@ -126,8 +131,7 @@ internal;LogPostingResponse
 internal;MultiCode 
 alpha;MultiLock 
 internal;NamedVersionCreatedEvent 
-beta;class OidcClient 
-beta;OidcFrontendClientConfiguration
+beta;OidcCallbackResponseMode
 internal;ParseEvent(response: Response): IModelHubEvent
 internal;ParseGlobalEvent(response: Response, handler?: IModelBaseHandler, sasToken?: string): IModelHubGlobalEvent
 internal;Permission 

@@ -12,8 +12,8 @@ import { ClientRequestContext } from '@bentley/bentleyjs-core';
 import { FileHandler } from '@bentley/imodeljs-clients';
 import * as https from 'https';
 import { IAuthorizationClient } from '@bentley/imodeljs-clients';
+import { ImsOidcClient } from '@bentley/imodeljs-clients';
 import { Issuer } from 'openid-client';
-import { OidcClient } from '@bentley/imodeljs-clients';
 import { ProgressCallback } from '@bentley/imodeljs-clients';
 import { TokenSet } from 'openid-client';
 import { Transform } from 'stream';
@@ -97,7 +97,7 @@ export class OidcAgentClientV1 extends OidcBackendClient {
 }
 
 // @beta
-export abstract class OidcBackendClient extends OidcClient {
+export abstract class OidcBackendClient extends ImsOidcClient {
     constructor(configuration: OidcBackendClientConfiguration);
     // (undocumented)
     protected _configuration: OidcBackendClientConfiguration;

@@ -20,6 +20,13 @@ const chaiJestSnapshot = require("chai-jest-snapshot");
 const enzyme = require("enzyme/build");
 const spies = require("chai-spies");
 
+// Fix node's module loader to strip ?sprite from SVG imports
+const m = require("module");
+const origLoader = m._load;
+m._load = (request, parent, isMain) => {
+  return origLoader(request.replace("?sprite", ""), parent, isMain);
+};
+
 // setup enzyme (testing utils for React)
 enzyme.configure({
   adapter: new (require("enzyme-adapter-react-16/build"))()

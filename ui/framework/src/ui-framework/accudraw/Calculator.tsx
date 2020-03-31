@@ -17,7 +17,7 @@ import { CalculatorOperator, CalculatorEngine } from "./CalculatorEngine";
 
 import "./Calculator.scss";
 
-import backspaceIcon from "./backspace.svg";
+import backspaceIcon from "./backspace.svg?sprite";
 
 // cSpell:ignore plusmn
 

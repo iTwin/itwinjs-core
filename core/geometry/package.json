@@ -7,7 +7,7 @@
   "imodeljsSharedLibrary": true,
   "license": "MIT",
   "scripts": {
-    "build": "buildIModelJsModule",
+    "build": "tsc 1>&2",
     "clean": "rimraf lib .rush ./src/test/output package-deps.json",
     "watch": "tsc --watch",
     "test": "node ./node_modules/@bentley/build-tools/scripts/test.js",
@@ -17,16 +17,6 @@
     "cover": "nyc npm test",
     "cover:docs": "node ./node_modules/@bentley/build-tools/scripts/docscoverage.js",
     "lint": "tslint --project . 1>&2"
-  },
-  "iModelJs": {
-    "buildModule": {
-      "type": "system",
-      "webpack": {
-        "dest": "./lib/module",
-        "entry": "./lib/geometry-core.js",
-        "bundleName": "geometry-core"
-      }
-    }
   },
   "repository": {
     "type": "git",
@@ -46,7 +36,6 @@
   "devDependencies": {
     "@bentley/bentleyjs-core": "2.0.0-dev.52",
     "@bentley/build-tools": "2.0.0-dev.52",
-    "@bentley/webpack-tools": "2.0.0-dev.52",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
     "@types/node": "10.14.1",

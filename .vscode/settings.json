@@ -18,11 +18,11 @@
     "**/package-deps.json": true,
     "**/node_modules": true,
     "**/out": true,
+    "**/build": true,
     "**/lib": true,
     "common/temp": true,
     "tools/build/mocha-reporter": true,
-    "tools/build/tslint-rules": true,
-    "tools/webpack/bin/buildIModelJsModule.js": true
+    "tools/build/tslint-rules": true
   },
   "files.trimTrailingWhitespace": true,
   "typescript.tsdk": "node_modules\\typescript\\lib",

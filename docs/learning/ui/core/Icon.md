@@ -32,7 +32,7 @@ This example shows how to use an SVG from `@bentley/icons-generic`.
 import { IconSpecUtilities } from "@bentley/ui-abstract";
 import { Icon } from "@bentley/ui-core";
 
-import placeholderSvg from "@bentley/icons-generic/icons/placeholder.svg";
+import placeholderSvg from "@bentley/icons-generic/icons/placeholder.svg?sprite";
 . . .
 const iconSpec = IconSpecUtilities.createSvgIconSpec(placeholderSvg);
 . . .
@@ -44,7 +44,7 @@ const iconSpec = IconSpecUtilities.createSvgIconSpec(placeholderSvg);
 This example shows how to use an SVG from within the application.
 
 ```tsx
-import rotateSvg from "../icons/rotate.svg";
+import rotateSvg from "../icons/rotate.svg?sprite";
 . . .
 const iconSpec = IconSpecUtilities.createSvgIconSpec(rotateSvg);
 . . .
@@ -57,7 +57,7 @@ Rather then using the Icon component with SVG files, the SvgSprite component can
 
 ```tsx
 import { Icon } from "@bentley/ui-core";
-import rotateSvg from "../icons/rotate.svg";
+import rotateSvg from "../icons/rotate.svg?sprite";
 . . .
 <SvgSprite src={rotateSvg} />
 ```

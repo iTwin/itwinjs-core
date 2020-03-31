@@ -3,8 +3,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Id64, Id64Arg, Id64String, OpenMode, StopWatch } from "@bentley/bentleyjs-core";
-import { HubIModel, OidcFrontendClientConfiguration, Project, ProjectShareClient, ProjectShareFile, ProjectShareFileQuery, ProjectShareFolderQuery, IOidcFrontendClient, AccessToken } from "@bentley/imodeljs-clients";
+import { Id64, Id64Arg, Id64String, OpenMode, StopWatch, ClientRequestContext } from "@bentley/bentleyjs-core";
+import { HubIModel, Project, ProjectShareClient, ProjectShareFile, ProjectShareFileQuery, ProjectShareFolderQuery, AccessToken, BrowserAuthorizationClient, IFrontendAuthorizationClient, BrowserAuthorizationClientConfiguration } from "@bentley/imodeljs-clients";
 import {
   BackgroundMapProps, BackgroundMapType, BentleyCloudRpcManager, DisplayStyleProps, ElectronRpcConfiguration, ElectronRpcManager, IModelReadRpcInterface,
   IModelTileRpcInterface, IModelRpcProps, MobileRpcConfiguration, MobileRpcManager, RpcConfiguration, RpcOperation, RenderMode,
@@ -12,13 +12,12 @@ import {
 } from "@bentley/imodeljs-common";
 import {
   AuthorizedFrontendRequestContext, FrontendRequestContext, DisplayStyleState, DisplayStyle3dState, IModelApp, IModelConnection, EntityState,
-  OidcBrowserClient, PerformanceMetrics, Pixel, RenderSystem, ScreenViewport, Target, TileAdmin, Viewport, ViewRect, ViewState, IModelAppOptions,
+  PerformanceMetrics, Pixel, RenderSystem, ScreenViewport, Target, TileAdmin, Viewport, ViewRect, ViewState, IModelAppOptions,
   FeatureOverrideProvider, FeatureSymbology, GLTimerResult, OidcDesktopClientRenderer, SnapshotConnection,
 } from "@bentley/imodeljs-frontend";
 import { System } from "@bentley/imodeljs-frontend/lib/webgl";
 import { I18NOptions } from "@bentley/imodeljs-i18n";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
-import { ConnectProjectConfiguration, SVTConfiguration } from "../common/SVTConfiguration";
 import { initializeIModelHub } from "./ConnectEnv";
 import { IModelApi } from "./IModelApi";
 import * as path from "path";
@@ -32,6 +31,11 @@ const testNamesTimings = new Map<string, number>(); // Keep track of test names 
 let minimize = false;
 interface Options {
   [key: string]: any; // Add index signature
+}
+
+interface ConnectProjectConfiguration {
+  projectName: string;
+  iModelName: string;
 }
 
 // Retrieve default config data from json file
@@ -719,7 +723,7 @@ class SimpleViewState {
   public viewState?: ViewState;
   public viewPort?: Viewport;
   public projectConfig?: ConnectProjectConfiguration;
-  public oidcClient?: OidcBrowserClient;
+  public oidcClient?: BrowserAuthorizationClient;
   public externalSavedViews?: any[];
   public overrideElements?: any[];
   public selectedElements?: Id64Arg;
@@ -821,21 +825,23 @@ async function openView(state: SimpleViewState, viewSize: ViewSize) {
   }
 }
 
-function createOidcClient(): IOidcFrontendClient {
-  let oidcClient: IOidcFrontendClient;
+async function createOidcClient(requestContext: ClientRequestContext): Promise<IFrontendAuthorizationClient> {
   const scope = "openid email profile organization imodelhub context-registry-service:read-only reality-data:read product-settings-service projectwise-share urlps-third-party";
+
   if (ElectronRpcConfiguration.isElectron) {
     const clientId = "imodeljs-electron-test";
     const redirectUri = "http://localhost:3000/signin-callback";
     const oidcConfiguration: OidcDesktopClientConfiguration = { clientId, redirectUri, scope: scope + " offline_access" };
-    oidcClient = new OidcDesktopClientRenderer(oidcConfiguration);
+    const desktopClient = new OidcDesktopClientRenderer(oidcConfiguration);
+    await desktopClient.initialize(requestContext);
+    return desktopClient;
   } else {
     const clientId = "imodeljs-spa-test";
     const redirectUri = "http://localhost:3000/signin-callback";
-    const oidcConfiguration: OidcFrontendClientConfiguration = { clientId, redirectUri, scope: scope + " imodeljs-router", responseType: "code" };
-    oidcClient = new OidcBrowserClient(oidcConfiguration);
+    const oidcConfiguration: BrowserAuthorizationClientConfiguration = { clientId, redirectUri, scope: scope + " imodeljs-router", responseType: "code" };
+    const browserClient = new BrowserAuthorizationClient(oidcConfiguration);
+    return browserClient;
   }
-  return oidcClient;
 }
 
 // Wraps the signIn process
@@ -847,10 +853,9 @@ function createOidcClient(): IOidcFrontendClient {
 // - promise wraps around a registered call back and resolves to true when the sign in is complete
 // @return Promise that resolves to true only after signIn is complete. Resolves to false until then.
 async function signIn(): Promise<boolean> {
-  const oidcClient: IOidcFrontendClient = createOidcClient();
-
   const requestContext = new FrontendRequestContext();
-  await oidcClient.initialize(requestContext);
+  const oidcClient: IFrontendAuthorizationClient = await createOidcClient(requestContext);
+
   IModelApp.authorizationClient = oidcClient;
   if (oidcClient.isAuthorized)
     return true;
@@ -867,7 +872,7 @@ async function signIn(): Promise<boolean> {
 
 async function loadIModel(testConfig: DefaultConfigs): Promise<boolean> {
   activeViewState = new SimpleViewState();
-  activeViewState.viewState;
+  activeViewState.viewState; // eslint-disable-line @typescript-eslint/no-unused-expressions
 
   // Open an iModel from a local file
   let openLocalIModel = (testConfig.iModelLocation !== undefined) || MobileRpcConfiguration.isMobileFrontend;
@@ -902,34 +907,39 @@ async function loadIModel(testConfig: DefaultConfigs): Promise<boolean> {
     activeViewState.iModelConnection = await IModelApi.openIModel(activeViewState.project!.wsgId, activeViewState.iModel!.wsgId, undefined, OpenMode.Readonly);
 
     if (activeViewState.project) { // Get any external saved views from the iModelHub if they exist
-      const projectShareClient: ProjectShareClient = new ProjectShareClient();
-      const projectId = activeViewState.project.wsgId;
-      const findFile = async (folderId: string): Promise<boolean> => {
-        const files: ProjectShareFile[] = await projectShareClient.getFiles(requestContext, projectId, new ProjectShareFileQuery().inFolderWithNameLike(folderId, iModelName + "_ESV.json"));
-        if (files && files.length > 0) {
-          const content = await projectShareClient.readFile(requestContext, files[0]);
-          const esvString = new TextDecoder("utf-8").decode(content);
-          if (undefined !== esvString && "" !== esvString) {
-            activeViewState.externalSavedViews = JSON.parse(esvString) as any[];
+      try {
+        const projectShareClient: ProjectShareClient = new ProjectShareClient();
+        const projectId = activeViewState.project.wsgId;
+        const findFile = async (folderId: string): Promise<boolean> => {
+          const files: ProjectShareFile[] = await projectShareClient.getFiles(requestContext, projectId, new ProjectShareFileQuery().inFolderWithNameLike(folderId, iModelName + "_ESV.json"));
+          if (files && files.length > 0) {
+            const content = await projectShareClient.readFile(requestContext, files[0]);
+            const esvString = new TextDecoder("utf-8").decode(content);
+            if (undefined !== esvString && "" !== esvString) {
+              activeViewState.externalSavedViews = JSON.parse(esvString) as any[];
+            }
+            return true;
           }
-          return true;
-        }
-        return false;
-      };
-      const findAllFiles = async (folderId: string): Promise<boolean> => {
-        if (await findFile(folderId))
-          return true;
-        else {
-          const folders = await projectShareClient.getFolders(requestContext, projectId, new ProjectShareFolderQuery().inFolder(folderId));
-          let fileFound = false;
-          for (let i = 0; i < folders.length && !fileFound; i++) {
-            fileFound = await findAllFiles(folders[i].wsgId);
+          return false;
+        };
+        const findAllFiles = async (folderId: string): Promise<boolean> => {
+          if (await findFile(folderId))
+            return true;
+          else {
+            const folders = await projectShareClient.getFolders(requestContext, projectId, new ProjectShareFolderQuery().inFolder(folderId));
+            let fileFound = false;
+            for (let i = 0; i < folders.length && !fileFound; i++) {
+              fileFound = await findAllFiles(folders[i].wsgId);
+            }
+            return fileFound;
           }
-          return fileFound;
-        }
-      };
-      // Set activeViewState.externalSavedViews using the first _ESV.json file found in the iModelHub with the iModel's name
-      await findAllFiles(activeViewState.project!.wsgId);
+        };
+        // Set activeViewState.externalSavedViews using the first _ESV.json file found in the iModelHub with the iModel's name
+        await findAllFiles(activeViewState.project!.wsgId);
+      } catch (error) {
+        // Couldn't access the project share files
+      }
+
     }
   }
 
@@ -1438,8 +1448,6 @@ async function main() {
 }
 
 window.onload = () => {
-  const configuration = {} as SVTConfiguration;
-
   // Choose RpcConfiguration based on whether we are in electron or browser
   RpcConfiguration.developmentMode = true;
   let rpcConfiguration: RpcConfiguration;
@@ -1448,7 +1456,7 @@ window.onload = () => {
   } else if (MobileRpcConfiguration.isMobileFrontend) {
     rpcConfiguration = MobileRpcManager.initializeClient([DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface]);
   } else {
-    const uriPrefix = configuration.customOrchestratorUri || "http://localhost:3001";
+    const uriPrefix = "http://localhost:3001";
     rpcConfiguration = BentleyCloudRpcManager.initializeClient({ info: { title: "DisplayPerformanceTestApp", version: "v1.0" }, uriPrefix }, [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface]);
 
     const testToken: IModelRpcProps = { key: "test", contextId: "test", iModelId: "test", changeSetId: "test", openMode: OpenMode.Readonly };

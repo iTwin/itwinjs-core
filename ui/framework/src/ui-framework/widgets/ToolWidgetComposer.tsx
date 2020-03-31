@@ -12,7 +12,7 @@ import { ToolsArea, AppButton } from "@bentley/ui-ninezone";
 import { UiShowHideManager } from "../utils/UiShowHideManager";
 import { Icon, CommonProps } from "@bentley/ui-core";
 
-import widgetIconSvg from "@bentley/icons-generic/icons/home.svg";
+import widgetIconSvg from "@bentley/icons-generic/icons/home.svg?sprite";
 import { IconSpecUtilities } from "@bentley/ui-abstract";
 import { BackstageManager } from "../backstage/BackstageManager";
 import { useFrameworkVersion } from "../hooks/useFrameworkVersion";

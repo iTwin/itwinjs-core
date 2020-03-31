@@ -108,6 +108,7 @@ import { Id64Array } from '@bentley/bentleyjs-core';
 import { Id64Set } from '@bentley/bentleyjs-core';
 import { Id64String } from '@bentley/bentleyjs-core';
 import { IDisposable } from '@bentley/bentleyjs-core';
+import { IFrontendAuthorizationClient } from '@bentley/imodeljs-clients';
 import { ImageBuffer } from '@bentley/imodeljs-common';
 import { ImageBufferFormat } from '@bentley/imodeljs-common';
 import { ImageSource } from '@bentley/imodeljs-common';
@@ -121,7 +122,6 @@ import { IModelVersion } from '@bentley/imodeljs-common';
 import { IndexedPolyface } from '@bentley/geometry-core';
 import { IndexMap } from '@bentley/bentleyjs-core';
 import { InternetConnectivityStatus } from '@bentley/imodeljs-common';
-import { IOidcFrontendClient } from '@bentley/imodeljs-clients';
 import { LDClient } from 'ldclient-js';
 import { LDFlagValue } from 'ldclient-js';
 import { LinePixels } from '@bentley/imodeljs-common';
@@ -143,9 +143,7 @@ import { ModelProps } from '@bentley/imodeljs-common';
 import { ModelQueryParams } from '@bentley/imodeljs-common';
 import { ModelSelectorProps } from '@bentley/imodeljs-common';
 import { OctEncodedNormal } from '@bentley/imodeljs-common';
-import { OidcClient } from '@bentley/imodeljs-clients';
 import { OidcDesktopClientConfiguration } from '@bentley/imodeljs-common';
-import { OidcFrontendClientConfiguration } from '@bentley/imodeljs-clients';
 import { OpenMode } from '@bentley/bentleyjs-core';
 import { PackedFeatureTable } from '@bentley/imodeljs-common';
 import { ParseResult } from '@bentley/imodeljs-quantity';
@@ -225,8 +223,6 @@ import { UnitConversion } from '@bentley/imodeljs-quantity';
 import { UnitProps } from '@bentley/imodeljs-quantity';
 import { UnitsProvider } from '@bentley/imodeljs-quantity';
 import { UsageType } from '@bentley/imodeljs-clients';
-import { User } from 'oidc-client';
-import { UserManagerSettings } from 'oidc-client';
 import { Vector2d } from '@bentley/geometry-core';
 import { Vector3d } from '@bentley/geometry-core';
 import { ViewAttachmentProps } from '@bentley/imodeljs-common';
@@ -2027,6 +2023,12 @@ export interface DepthRangeNpc {
     minimum: number;
 }
 
+// @internal (undocumented)
+export function detailsFromExtensionLoadResults(extensionName: string, results: ExtensionLoadResults, reportSuccess: boolean): {
+    detailHTML: HTMLElement | undefined;
+    detailStrings: string[] | undefined;
+};
+
 // @internal
 export class DevTools {
     static connectToBackendInstance(tokenProps: IModelRpcProps): DevTools;
@@ -2590,8 +2592,6 @@ export interface EventSourceOptions {
 // @beta
 export abstract class Extension {
     constructor(name: string);
-    // (undocumented)
-    protected getManifest(): Promise<Manifest>;
     get i18n(): I18N;
     // @internal (undocumented)
     get loader(): ExtensionLoader | undefined;
@@ -2606,14 +2606,33 @@ export abstract class Extension {
 }
 
 // @beta
+export class ExtensionAdmin {
+    constructor(props?: ExtensionAdminProps);
+    addExtensionLoader(extensionLoader: ExtensionLoader, priority: number): void;
+    // @internal (undocumented)
+    addPendingExtension(extensionRootName: string, pendingExtension: PendingExtension): void;
+    loadExtension(extensionRoot: string, extensionVersion?: string, args?: string[]): Promise<ExtensionLoadResults>;
+    onInitialized(): void;
+    register(extension: Extension): string[] | undefined;
+    }
+
+// @beta
+export interface ExtensionAdminProps {
+    loadProductStartupExtensions?: boolean;
+}
+
+// @beta
 export interface ExtensionLoader {
     // (undocumented)
     getExtensionName(extensionRoot: string): string;
     // (undocumented)
-    loadExtension(extensionName: string, buildType: string, extensionVersion?: string, args?: string[]): Promise<PendingExtension | undefined>;
+    loadExtension(extensionName: string, extensionVersion?: string, args?: string[]): Promise<PendingExtension | undefined>;
     // (undocumented)
     resolveResourceUrl(extensionName: string, relativeFileName: string): string;
 }
+
+// @beta
+export type ExtensionLoadResults = Extension | undefined | string | string[];
 
 // @beta
 export class ExtensionServiceExtensionLoader implements ExtensionLoader {
@@ -2621,7 +2640,7 @@ export class ExtensionServiceExtensionLoader implements ExtensionLoader {
     // (undocumented)
     getExtensionName(extensionRoot: string): string;
     // (undocumented)
-    loadExtension(extensionName: string, buildType: string, extensionVersion?: string, args?: string[] | undefined): Promise<PendingExtension | undefined>;
+    loadExtension(extensionName: string, extensionVersion?: string, args?: string[] | undefined): Promise<PendingExtension | undefined>;
     // (undocumented)
     resolveResourceUrl(extensionName: string, relativeFileName: string): string;
 }
@@ -2638,7 +2657,7 @@ export class ExternalServerExtensionLoader implements ExtensionLoader {
     // (undocumented)
     getExtensionName(extensionRoot: string): string;
     // (undocumented)
-    loadExtension(extensionName: string, buildType: string, _extensionVersion?: string, args?: string[]): Promise<PendingExtension | undefined>;
+    loadExtension(extensionName: string, _extensionVersion?: string, args?: string[]): Promise<PendingExtension | undefined>;
     // (undocumented)
     resolveResourceUrl(extensionName: string, relativeUrl: string): string;
     // (undocumented)
@@ -4260,6 +4279,37 @@ export class LengthDescription extends FormattedQuantityDescription {
 // @internal (undocumented)
 export function linePlaneIntersect(outP: Point3d, linePt: Point3d, lineNormal: Vector3d | undefined, planePt: Point3d, planeNormal: Vector3d, perpendicular: boolean): void;
 
+// @internal (undocumented)
+export class LoadSavedExtensionsResult {
+    constructor(status: LoadSavedExtensionsStatus, i18nkey?: string | undefined, extensionResults?: Map<string, ExtensionLoadResults> | undefined);
+    // (undocumented)
+    extensionResults?: Map<string, ExtensionLoadResults> | undefined;
+    // (undocumented)
+    i18nkey?: string | undefined;
+    // (undocumented)
+    report(): void;
+    // (undocumented)
+    status: LoadSavedExtensionsStatus;
+}
+
+// @internal (undocumented)
+export enum LoadSavedExtensionsStatus {
+    // (undocumented)
+    AllExtensionsFailedToLoad = 5,
+    // (undocumented)
+    LoadError = 6,
+    // (undocumented)
+    NoSavedExtensions = 2,
+    // (undocumented)
+    NotLoggedIn = 1,
+    // (undocumented)
+    SettingsInvalid = 3,
+    // (undocumented)
+    SomeExtensionsFailedToLoad = 4,
+    // (undocumented)
+    Success = 0
+}
+
 // @public
 export enum LocateAction {
     // (undocumented)
@@ -5518,32 +5568,8 @@ export class OffScreenViewport extends Viewport {
     get viewRect(): ViewRect;
 }
 
-// @beta
-export class OidcBrowserClient extends OidcClient implements IOidcFrontendClient {
-    constructor(_configuration: OidcFrontendClientConfiguration);
-    // (undocumented)
-    protected _accessToken?: AccessToken;
-    dispose(): void;
-    getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
-    // @internal
-    protected getUserManagerSettings(requestContext: FrontendRequestContext): Promise<UserManagerSettings>;
-    get hasExpired(): boolean;
-    get hasSignedIn(): boolean;
-    initialize(requestContext: FrontendRequestContext): Promise<void>;
-    get isAuthorized(): boolean;
-    readonly onUserStateChanged: BeEvent<(token: AccessToken | undefined) => void>;
-    signIn(requestContext: ClientRequestContext, successRedirectUrl?: string): Promise<void>;
-    protected signInSilent(requestContext: ClientRequestContext): Promise<User>;
-    signOut(requestContext: ClientRequestContext): Promise<void>;
-    }
-
-// @internal @deprecated
-export class OidcBrowserSamlClient extends OidcBrowserClient {
-    getSamlToken(requestContext: ClientRequestContext): Promise<AccessToken>;
-}
-
 // @alpha
-export class OidcDesktopClientRenderer implements IOidcFrontendClient {
+export class OidcDesktopClientRenderer implements IFrontendAuthorizationClient {
     constructor(clientConfiguration: OidcDesktopClientConfiguration);
     dispose(): void;
     getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
@@ -6225,7 +6251,7 @@ export class RenderContext {
 }
 
 // @internal (undocumented)
-export const enum RenderDiagnostics {
+export enum RenderDiagnostics {
     All = 6,
     DebugOutput = 2,
     None = 0,
@@ -6922,6 +6948,16 @@ export interface SavedClipProps {
     clip: ClipVector;
     // (undocumented)
     name?: string;
+}
+
+// @alpha (undocumented)
+export class SavedExtensionClient {
+    // @beta
+    addSavedExtensions(requestContext: AuthorizedClientRequestContext, extensionName: string, args: string[] | undefined, allUsers: boolean, settingName: string): Promise<void>;
+    // @internal
+    static loadSavedExtensions(requestContext: AuthorizedClientRequestContext, settingName: string, userSettings?: boolean, appSettings?: boolean, configuration?: boolean): Promise<LoadSavedExtensionsResult>;
+    // @beta
+    static removeSavedExtensions(requestContext: AuthorizedClientRequestContext, extensionName: string, allUsers: boolean, settingName: string): Promise<void>;
 }
 
 // @internal (undocumented)

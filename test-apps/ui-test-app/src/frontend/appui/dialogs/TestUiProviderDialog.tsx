@@ -25,7 +25,7 @@ import {
   OutputMessagePriority,
 } from "@bentley/imodeljs-frontend";
 
-const enum ColorOptions {
+enum ColorOptions {
   Red,
   White,
   Blue,
@@ -102,6 +102,7 @@ export class TestUiProviderDialog extends React.Component<TestUiProviderDialogPr
   }
 
   private _closeDialog = (followUp: () => void) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     this.setState({
       opened: false,
     }), () => {

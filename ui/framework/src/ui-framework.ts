@@ -245,15 +245,6 @@ export * from "./ui-framework/zones/toolsettings/DefaultToolSettingsProvider";
 export * from "./ui-framework/zones/Zone";
 export * from "./ui-framework/zones/ZoneDef";
 
-// Set the version number so it can be found at runtime. BUILD_SEMVER is replaced at build time by the webpack DefinePlugin.
-declare var BUILD_SEMVER: string;
-// istanbul ignore next
-if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") && window) {
-  if (!(window as any).iModelJsVersions)
-    (window as any).iModelJsVersions = new Map<string, string>();
-  (window as any).iModelJsVersions.set("ui-framework", BUILD_SEMVER);
-}
-
 /** @docs-package-description
  * The ui-framework package contains application fragments for Login, Project, iModel and View selection,
  * and configuration of the application UI with the Backstage, Frontstages, Widgets, etc.

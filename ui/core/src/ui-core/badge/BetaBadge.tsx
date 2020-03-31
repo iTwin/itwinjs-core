@@ -10,7 +10,7 @@ import * as React from "react";
 import { Badge } from "./Badge";
 import { CommonProps } from "../utils/Props";
 
-import betaBadgeIcon from "./technical-preview-badge.svg";
+import betaBadgeIcon from "./technical-preview-badge.svg?sprite";
 
 /** Beta Badge React component
  * @internal

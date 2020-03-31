@@ -3,17 +3,21 @@
   "version": "2.0.0-dev.52",
   "description": "Geotagged Photo Viewer",
   "main": "index.js",
+  "license": "MIT",
   "scripts": {
-    "build": "buildIModelJsModule",
+    "prebuild": "npm run pseudolocalize && npm run copy:assets",
+    "build": "npm run prebuild && extension-webpack-tools build -s ./src/geoPhoto.ts -o ./lib/extension",
     "clean": "rimraf lib .rush",
+    "copy:assets": "cpx \"./src/public/locales/**/*\" ./lib/extension/locales/",
+    "cover": "",
+    "docs": "",
     "lint": "tslint -p . 1>&2",
-    "webpackTests": "webpack --config ./src/test/webpack.config.js 1>&2",
+    "pseudolocalize": "betools pseudolocalize --englishDir=./src/public/locales/en --out=./lib/extension/locales/en-PSEUDO",
+    "test": "",
     "test:integration": "npm run webpackTests && npm run test:integration:chrome && npm run test:integration:electron",
     "test:integration:chrome": "node --max-http-header-size=16000 ./node_modules/@bentley/certa/bin/certa.js -r chrome --grep \"#integration\"",
     "test:integration:electron": "node ./node_modules/@bentley/certa/bin/certa.js -r electron --grep \"#integration\"",
-    "test": "",
-    "cover": "",
-    "docs": ""
+    "webpackTests": "webpack --config ./src/test/webpack.config.js 1>&2"
   },
   "keywords": [
     "iModel",
@@ -25,62 +29,20 @@
     "name": "Bentley Systems, Inc.",
     "url": "http://www.bentley.com"
   },
-  "license": "MIT",
-  "iModelJs": {
-    "buildModule": {
-      "type": "plugin",
-      "sourceResources": [
-        {
-          "source": "./src/**/*.scss",
-          "dest": "./lib"
-        },
-        {
-          "source": "./src/public/**/*",
-          "dest": "./lib/build"
-        },
-        {
-          "source": "./src/**/*.svg",
-          "dest": "./lib"
-        },
-        {
-          "source": "./src/public/*.svg",
-          "dest": "./lib/public/"
-        },
-        {
-          "source": "./src/pannellum/css/**/*",
-          "dest": "./lib/pannellum/css"
-        }
-      ],
-      "webpack": {
-        "build": "./lib/build",
-        "dest": "./lib/plugin",
-        "entry": "./lib/geoPhoto.js",
-        "styleSheets": true,
-        "bundleName": "geoPhoto"
-      },
-      "pseudoLocalize": {
-        "source": "./lib/build/locales/en",
-        "dest": "./lib/build/locales/en-PSEUDO"
-      },
-      "installTo": [
-        "../../test-apps/ui-test-app"
-      ]
-    }
-  },
   "devDependencies": {
     "@bentley/certa": "2.0.0-dev.52",
     "@bentley/build-tools": "2.0.0-dev.52",
-    "@bentley/webpack-tools": "2.0.0-dev.52",
     "@bentley/config-loader": "2.0.0-dev.52",
+    "@bentley/extension-webpack-tools": "2.0.0-dev.52",
     "@bentley/express-server": "2.0.0-dev.52",
     "@bentley/imodeljs-backend": "2.0.0-dev.52",
     "@bentley/oidc-signin-tool": "2.0.0-dev.52",
-    "ui-test-app": "0.0.0",
     "@types/node": "10.14.1",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
     "@types/react": "^16.8.0",
     "chai": "^4.1.2",
+    "cpx": "^1.5.0",
     "mocha": "^5.2.0",
     "null-loader": "^0.1.1",
     "rimraf": "^3.0.2",
@@ -88,7 +50,7 @@
     "tslint": "^5.11.0",
     "tslint-etc": "^1.5.2",
     "typescript": "~3.7.4",
-    "webpack": "^4.20.2",
+    "webpack": "4.41.5",
     "webpack-cli": "^3.1.0",
     "source-map-loader": "^0.2.3",
     "svg-baker-runtime": "^1.4.2"
@@ -107,6 +69,6 @@
     "@bentley/ui-ninezone": "2.0.0-dev.52",
     "@bentley/ui-framework": "2.0.0-dev.52",
     "react": "^16.8.0",
-    "svg-sprite-loader": "^3.8.0"
+    "svg-sprite-loader": "4.2.1"
   }
 }

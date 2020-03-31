@@ -4,7 +4,7 @@
   "private": true,
   "license": "MIT",
   "scripts": {
-    "build": "npm run build-code && npm run extract-assets && node ./node_modules/@bentley/build-tools/scripts/ignoreargs.js 1>&2",
+    "build": "npm run build-code && npm run extract-assets",
     "lint": "tslint -p . 1>&2",
     "build-code": "tsc 1>&2",
     "clean": "rimraf lib .rush package-deps.json ../../generated-docs",
@@ -23,7 +23,6 @@
     "body-parser": "^1.18.2"
   },
   "devDependencies": {
-    "@bentley/webpack-tools": "2.0.0-dev.52",
     "@bentley/build-tools": "2.0.0-dev.52",
     "@types/body-parser": "^1.17.0",
     "@types/express": "^4.16.1",

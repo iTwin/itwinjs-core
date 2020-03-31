@@ -58,7 +58,7 @@ import { ActiveSettingsWidget } from "../widgets/ActiveSettingsWidget";
 
 // SVG Support - SvgPath or SvgSprite
 // import { SvgPath } from "@bentley/ui-core";
-// import rotateIcon from "../icons/rotate.svg";
+// import rotateIcon from "../icons/rotate.svg?sprite";
 
 import { SelectionMode } from "@bentley/ui-components";
 import { ModelCreationWidget } from "../widgets/ModelCreationWidget";

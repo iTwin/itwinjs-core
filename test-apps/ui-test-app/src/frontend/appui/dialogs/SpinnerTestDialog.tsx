@@ -132,7 +132,7 @@ export class SpinnerTestDialog extends React.Component<SpinnerTestDialogProps, S
   }
 
   private _closeDialog = () => {
-    this.setState({
+    this.setState({  // eslint-disable-line @typescript-eslint/no-unused-expressions
       opened: false,
     }), () => {
       if (!this.state.opened)

@@ -34,27 +34,35 @@ interface PriorityLoaderPair {
  * @beta
  */
 export class ExtensionAdmin {
-  private _extensionAdminProps: ExtensionAdminProps;
-  private _bentleyExtensionServiceLoaderAdded: boolean = false;
+  private _extensionAdminProps?: ExtensionAdminProps;
+  // private _bentleyExtensionServiceLoaderAdded: boolean = false;
   private _extensionLoaders: PriorityLoaderPair[] = [];
   private _pendingExtensions: Map<string, PendingExtension> = new Map<string, PendingExtension>();
   private _registeredExtensions: Map<string, Extension> = new Map<string, Extension>();
   private _viewStartupExtensionsLoaded: boolean = false;
-  public constructor(props: ExtensionAdminProps) {
+
+  public constructor(props?: ExtensionAdminProps) {
     this._extensionAdminProps = props;
   }
+
   /** On view startup, [[IModelApp.viewManager.onViewOpen]], any saved extensions will be loaded.
    * @beta
    */
   public onInitialized() {
-    if (this._extensionAdminProps.loadProductStartupExtensions)
+    if (this._extensionAdminProps && this._extensionAdminProps.loadProductStartupExtensions)
       IModelApp.viewManager.onViewOpen.addOnce(this.loadViewStartupExtensions.bind(this));
+
+    // TODO: find default context id
+    // TODO: Only load when specified, this should be the default
+    this.addExtensionLoader(new ExtensionServiceExtensionLoader(""), 100);
   }
+
   /** @internal */
   public addPendingExtension(extensionRootName: string, pendingExtension: PendingExtension) {
     const extensionNameLC = extensionRootName.toLowerCase();
     this._pendingExtensions.set(extensionNameLC, pendingExtension);
   }
+
   /**
    * Adds an ExtensionLoader to the list of extension loaders in use. Extension loaders will be invoked in the ascending order of priority.
    * By default, the list consists of Extension service with priority 100.
@@ -69,32 +77,25 @@ export class ExtensionAdmin {
     });
     this._extensionLoaders = this._extensionLoaders.sort((a, b) => a.priority - b.priority);
   }
+
   /**
    * Loads an Extension using one of the available [[ExtensionLoader]]s that are registered on the [[ExtensionAdmin]].
    * @param extensionRoot the root name of the Extension to be loaded from the web server.
+   * @param extensionVersion the version of the Extension to be loaded
    * @param args arguments that will be passed to the Extension.onLoaded and Extension.onExecute methods. If the first argument is not the extension name, the extension name will be prepended to the args array.
    */
   public async loadExtension(extensionRoot: string, extensionVersion?: string, args?: string[]): Promise<ExtensionLoadResults> {
-    const buildType = (window as any).iModelJsVersions.get("buildType");
-    if (!buildType)
-      throw new Error("The 'buildType' was not found in 'window.iModelJsVersions'");
-    if (!this._bentleyExtensionServiceLoaderAdded) {
-      // TODO: find default context id
-      this.addExtensionLoader(new ExtensionServiceExtensionLoader(""), 100);
-      this._bentleyExtensionServiceLoaderAdded = true;
-    }
     for (const loaderPriorityPair of this._extensionLoaders) {
       const extensionLoader = loaderPriorityPair.loader;
       const extensionName = extensionLoader.getExtensionName(extensionRoot);
       // make sure there's an args and make sure the first element is the extension name.
       if (!args) {
         args = [extensionName];
-      } else {
-        if ((args.length < 1) || (args[0] !== extensionName)) {
-          const newArray: string[] = [extensionName];
-          args = newArray.concat(args);
-        }
+      } else if ((args.length < 1) || (args[0] !== extensionName)) {
+        const newArray: string[] = [extensionName];
+        args = newArray.concat(args);
       }
+
       const extensionNameLC = extensionName.toLowerCase();
       const pendingExtension = this._pendingExtensions.get(extensionNameLC);
       if (undefined !== pendingExtension) {
@@ -108,7 +109,8 @@ export class ExtensionAdmin {
         }
         return pendingExtension.promise;
       }
-      const pending: PendingExtension | undefined = await extensionLoader.loadExtension(extensionName, buildType, extensionVersion, args);
+
+      const pending: PendingExtension | undefined = await extensionLoader.loadExtension(extensionName, extensionVersion, args);
       if (pending === undefined)
         continue; // try another loader
       this.addPendingExtension(extensionName, pending);
@@ -117,9 +119,10 @@ export class ExtensionAdmin {
     }
     return undefined;
   }
+
   /**
-   * Registers a Extension with the ExtensionAdmin. This method is called by the Extension when it is first loaded.
-   * This method verifies that the required versions of the iModel.js system modules are loaded. If those
+   * Registers an Extension with the ExtensionAdmin. This method is called by the Extension when it is first loaded.
+   * This method verifies that the required versions of the iModel.js shared libraries are loaded. If those
    * requirements are met, then the onLoad and onExecute methods of the Extension will be called (@see [[Extension]]).
    * If not, no further action is taken and the Extension is not active.
    * @param extension a newly instantiated subclass of Extension.
@@ -133,19 +136,20 @@ export class ExtensionAdmin {
     // retrieve the args we saved in the pendingExtension.
     let args: string[] | undefined;
     const pendingExtension = this._pendingExtensions.get(extensionNameLC);
-    if (pendingExtension) {
-      pendingExtension.resolve!(extension);
-      extension.loader = pendingExtension.loader;
-      args = pendingExtension.args;
-    } else {
+    if (undefined === pendingExtension)
       throw new Error("Pending Extension not found.");
-    }
+
+    pendingExtension.resolve!(extension);
+    extension.loader = pendingExtension.loader;
+    args = pendingExtension.args;
+
     if (!args)
       args = [extension.name];
     extension.onLoad(args);
     extension.onExecute(args);
     return undefined;
   }
+
   /** @internal */
   private async loadViewStartupExtensions(): Promise<void> {
     if (this._viewStartupExtensionsLoaded)

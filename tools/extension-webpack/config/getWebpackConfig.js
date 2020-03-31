@@ -17,15 +17,6 @@ const postcssNormalize = require("postcss-normalize");
 
 const appPackageJson = require(paths.appPackageJson);
 
-const threadLoader = require(require.resolve("thread-loader"));
-const threadLoaderOpts = {};
-threadLoader.warmup(threadLoaderOpts, [
-  require.resolve("babel-loader"),
-  require.resolve("fast-sass-loader"),
-  require.resolve("css-loader"),
-  require.resolve("postcss-loader"),
-]);
-
 // Source maps are resource heavy and can cause out of memory issue for large source files.
 const shouldUseSourceMap = !process.env.DISABLE_SOURCE_MAPS;
 const imageInlineSizeLimit = parseInt(process.env.IMAGE_INLINE_SIZE_LIMIT || "10000");
@@ -264,12 +255,10 @@ module.exports = function (srcFile, outDir) {
             {
               test: cssRegex,
               exclude: cssModuleRegex,
-              use: [require.resolve("cache-loader")].concat(
-                getStyleLoaders({
-                  importLoaders: 2,
-                  sourceMap: shouldUseSourceMap,
-                })
-              ),
+              use: getStyleLoaders({
+                importLoaders: 2,
+                sourceMap: shouldUseSourceMap,
+              }),
               // Don't consider CSS imports dead code even if the
               // containing package claims to have no side effects.
               // Remove this when webpack adds a warning or an error for this.
@@ -280,15 +269,13 @@ module.exports = function (srcFile, outDir) {
             // using the extension .module.css
             {
               test: cssModuleRegex,
-              use: [require.resolve("cache-loader")].concat(
-                getStyleLoaders({
-                  importLoaders: 2,
-                  sourceMap: shouldUseSourceMap,
-                  modules: {
-                    getLocalIdent: getCSSModuleLocalIdent,
-                  }
-                })
-              ),
+              use: getStyleLoaders({
+                importLoaders: 2,
+                sourceMap: shouldUseSourceMap,
+                modules: {
+                  getLocalIdent: getCSSModuleLocalIdent,
+                }
+              }),
             },
             // Opt-in support for SASS (using .scss or .sass extensions).
             // By default we support SASS Modules with the
@@ -296,14 +283,12 @@ module.exports = function (srcFile, outDir) {
             {
               test: sassRegex,
               exclude: sassModuleRegex,
-              use: [require.resolve("cache-loader")].concat(
-                getStyleLoaders(
-                  {
-                    importLoaders: 2,
-                    sourceMap: shouldUseSourceMap,
-                  },
-                  sassLoaderConfig
-                )
+              use: getStyleLoaders(
+                {
+                  importLoaders: 2,
+                  sourceMap: shouldUseSourceMap,
+                },
+                sassLoaderConfig
               ),
               // Don't consider CSS imports dead code even if the
               // containing package claims to have no side effects.
@@ -315,18 +300,29 @@ module.exports = function (srcFile, outDir) {
             // using the extension .module.scss or .module.sass
             {
               test: sassModuleRegex,
-              use: [require.resolve("cache-loader")].concat(
-                getStyleLoaders(
-                  {
-                    importLoaders: 2,
-                    sourceMap: shouldUseSourceMap,
-                    modules: {
-                      getLocalIdent: getCSSModuleLocalIdent,
-                    },
+              use: getStyleLoaders(
+                {
+                  importLoaders: 2,
+                  sourceMap: shouldUseSourceMap,
+                  modules: {
+                    getLocalIdent: getCSSModuleLocalIdent,
                   },
-                  sassLoaderConfig
-                )
+                },
+                sassLoaderConfig
               ),
+            },
+            // iModel.js Change: Add support for SVG Sprites.
+            {
+              test: /\.svg$/,
+              resourceQuery: /sprite/,
+              use: {
+                loader: require.resolve('svg-sprite-loader'),
+                options: {
+                  symbolId: '[name]-[hash:6]',
+                  runtimeCompat: true,
+                  spriteFilename: 'sprite-[hash:6].svg',
+                },
+              },
             },
             // "file" loader makes sure those assets get served by WebpackDevServer.
             // When you `import` an asset, you get its (virtual) filename.

@@ -3,13 +3,15 @@
   "version": "2.0.0-dev.52",
   "description": "Geolocation Extension",
   "main": "index.js",
+  "license": "MIT",
   "scripts": {
-    "build": "buildIModelJsModule",
+    "build": "extension-webpack-tools build -s ./src/geoNames.ts -o ./lib/extension",
     "clean": "rimraf lib .rush",
-    "lint": "tslint -p . 1>&2",
-    "test": "",
+    "copy:assets": "cpx \"./src/public/**/*\" ./lib/extension/",
     "cover": "",
-    "docs": ""
+    "docs": "",
+    "lint": "tslint -p . 1>&2",
+    "test": ""
   },
   "keywords": [
     "iModel",
@@ -21,51 +23,16 @@
     "name": "Bentley Systems, Inc.",
     "url": "http://www.bentley.com"
   },
-  "license": "MIT",
-  "iModelJs": {
-    "buildModule": {
-      "type": "plugin",
-      "sourceResources": [
-        {
-          "source": "./src/public/**/*",
-          "dest": "./lib/build"
-        },
-        {
-          "source": "./src/public/*.svg",
-          "dest": "./lib/public/"
-        }
-      ],
-      "webpack": {
-        "build": "./lib/build",
-        "dest": "./lib/plugin",
-        "entry": "./lib/geoNames.js",
-        "styleSheets": true,
-        "bundleName": "geoNames"
-      },
-      "installTo": [
-        "../../test-apps/display-test-app",
-        "../../test-apps/ui-test-app"
-      ]
-    }
-  },
   "devDependencies": {
     "@bentley/build-tools": "2.0.0-dev.52",
     "@bentley/config-loader": "2.0.0-dev.52",
-    "@bentley/webpack-tools": "2.0.0-dev.52",
-    "ui-test-app": "0.0.0",
-    "display-test-app": "1.8.0",
+    "@bentley/extension-webpack-tools": "2.0.0-dev.52",
     "@types/node": "10.14.1",
-    "chai": "^4.1.2",
-    "mocha": "^5.2.0",
-    "null-loader": "^0.1.1",
+    "cpx": "^1.5.0",
     "rimraf": "^3.0.2",
-    "tsconfig-paths": "^3.3.2",
     "tslint": "^5.11.0",
     "tslint-etc": "^1.5.2",
-    "typescript": "~3.7.4",
-    "webpack": "^4.20.2",
-    "webpack-cli": "^3.1.0",
-    "svg-baker-runtime": "^1.4.2"
+    "typescript": "~3.7.4"
   },
   "dependencies": {
     "@bentley/bentleyjs-core": "2.0.0-dev.52",
@@ -75,6 +42,6 @@
     "@bentley/imodeljs-i18n": "2.0.0-dev.52",
     "@bentley/imodeljs-frontend": "2.0.0-dev.52",
     "@bentley/imodeljs-quantity": "2.0.0-dev.52",
-    "svg-sprite-loader": "^3.8.0"
+    "svg-sprite-loader": "4.2.1"
   }
 }

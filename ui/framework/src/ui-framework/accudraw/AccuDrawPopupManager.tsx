@@ -22,9 +22,9 @@ import { MenuButtonPopup } from "./MenuButtonPopup";
 import { CalculatorPopup } from "./CalculatorPopup";
 import { PopupManager, PopupInfo } from "../popup/PopupManager";
 
-import angleIcon from "./angle.svg";
-import lengthIcon from "./distance.svg";
-import heightIcon from "./height-2.svg";
+import angleIcon from "./angle.svg?sprite";
+import lengthIcon from "./distance.svg?sprite";
+import heightIcon from "./height-2.svg?sprite";
 
 /** AccuDraw Popup Manager class
  * @alpha

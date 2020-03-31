@@ -69,7 +69,7 @@ export class SavedViewPicker extends ToolBarDropDown {
     }
     // Make sure that any feature overrides are cleared.
     // Note: this is only really necessary if FeatureOverridesPanel has not been opened yet and we have recalled a view that has saved feature overrides
-    Provider.remove(this._vp);
+    // Provider.remove(this._vp);
   }
 
   public async populate(): Promise<void> {
@@ -188,6 +188,7 @@ export class SavedViewPicker extends ToolBarDropDown {
   }
 
   private async deleteView(): Promise<void> {
+    // eslint-disable-next-line no-restricted-globals
     if (undefined === this._selectedView || !confirm("Do you really want to delete saved view '" + this._selectedView.name + "?"))
       return Promise.resolve();
 
@@ -202,6 +203,7 @@ export class SavedViewPicker extends ToolBarDropDown {
       return Promise.resolve();
 
     if (undefined !== this.findView(newName)) {
+      // eslint-disable-next-line no-restricted-globals
       if (!confirm("Saved view '" + newName + "' already exists. Replace it?"))
         return Promise.resolve();
 

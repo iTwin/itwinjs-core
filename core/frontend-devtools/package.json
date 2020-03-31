@@ -6,29 +6,14 @@
   "imodeljsSharedLibrary": true,
   "license": "MIT",
   "scripts": {
-    "build": "buildIModelJsModule",
+    "build": "npm run copy:assets && tsc 1>&2",
+    "copy:assets": "cpx ./public/**/* ./lib/public",
     "clean": "rimraf lib .rush package-deps.json",
     "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --includes=../../generated-docs/extract --json=../../generated-docs/core/frontend-devtools/file.json --tsIndexFile=./frontend-devtools.ts --onlyJson %TYPEDOC_THEME%",
     "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=frontend-devtools",
     "lint": "tslint --project . 1>&2",
     "test": "",
     "cover": ""
-  },
-  "iModelJs": {
-    "buildModule": {
-      "type": "system",
-      "sourceResources": [
-        {
-          "source": "./public/**/*",
-          "dest": "./lib/public"
-        }
-      ],
-      "webpack": {
-        "dest": "./lib/module",
-        "entry": "./lib/frontend-devtools.js",
-        "bundleName": "frontend-devtools"
-      }
-    }
   },
   "repository": {
     "type": "git",
@@ -56,9 +41,9 @@
   "peerDependencies": {},
   "devDependencies": {
     "@bentley/build-tools": "2.0.0-dev.52",
-    "@bentley/webpack-tools": "2.0.0-dev.52",
     "@types/node": "10.14.1",
     "@types/file-saver": "^2.0.1",
+    "cpx": "^1.5.0",
     "rimraf": "^3.0.2",
     "typescript": "~3.7.4",
     "tslint": "^5.11.0",

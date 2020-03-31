@@ -65,8 +65,6 @@ require("./IModeljs-css");
 
 // cSpell:ignore noopener noreferrer gprid forin nbsp
 
-declare var BUILD_SEMVER: string;
-
 /** Options that can be supplied to [[IModelApp.startup]] to customize frontend behavior.
  * @public
  */
@@ -330,7 +328,7 @@ export class IModelApp {
     // Initialize basic application details before log messages are sent out
     this.sessionId = (opts.sessionId !== undefined) ? opts.sessionId : Guid.createValue();
     this._applicationId = (opts.applicationId !== undefined) ? opts.applicationId : "2686";  // Default to product id of iModel.js
-    this._applicationVersion = (opts.applicationVersion !== undefined) ? opts.applicationVersion : (typeof BUILD_SEMVER !== "undefined" ? BUILD_SEMVER : "");
+    this._applicationVersion = (opts.applicationVersion !== undefined) ? opts.applicationVersion : "";
     this.authorizationClient = opts.authorizationClient;
 
     this._imodelClient = (opts.imodelClient !== undefined) ? opts.imodelClient : new IModelHubClient();

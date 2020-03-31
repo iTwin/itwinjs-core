@@ -95,7 +95,7 @@ export class TestUtils {
         (window as any).__REDUX_DEVTOOLS_EXTENSION__ && (window as any).__REDUX_DEVTOOLS_EXTENSION__());
 
       if (testAlternateKey)
-        await UiFramework.initialize(this.store, TestUtils.i18n, undefined, "testDifferentFrameworkKey");
+        await UiFramework.initialize(this.store, TestUtils.i18n, "testDifferentFrameworkKey");
       else
         await UiFramework.initialize(this.store, TestUtils.i18n);
 

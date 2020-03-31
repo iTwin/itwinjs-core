@@ -46,7 +46,8 @@ export function setupSnapshotConfiguration() {
   if (undefined !== process.env.TESTAPP_START_WITH_SNAPSHOTS)
     testAppConfiguration.startWithSnapshots = true;
 
-  const configPathname = path.normalize(path.join(__dirname, "..", "..", "webresources", "testAppConfiguration.json"));
+  // Write the configuration file to the output build directory.
+  const configPathname = path.normalize(path.join(__dirname, "..", "..", "..", "build", "public", "testAppConfiguration.json"));
 
   fs.writeFileSync(configPathname, JSON.stringify(testAppConfiguration), "utf8");
 }

@@ -116,7 +116,7 @@ function setupStandaloneConfiguration(): SVTConfiguration {
 
   configuration.disableEdges = undefined !== process.env.SVT_DISABLE_EDGE_DISPLAY;
 
-  const configPathname = path.normalize(path.join(__dirname, "../webresources", "configuration.json"));
+  const configPathname = path.normalize(path.join(__dirname, "../../public", "configuration.json"));
   fs.writeFileSync(configPathname, JSON.stringify(configuration), "utf8");
 
   return configuration;

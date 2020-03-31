@@ -4,7 +4,7 @@
   "private": true,
   "license": "MIT",
   "scripts": {
-    "build": "tsc 1>&2 && node ./node_modules/@bentley/build-tools/scripts/ignoreargs.js 1>&2",
+    "build": "tsc 1>&2",
     "clean": "rimraf lib .rush package-deps.json ../../generated-docs",
     "extract-assets": "cpx \"./src/backend/assets/**/*\" ../../generated-docs/extract",
     "copy:backend-assets": "cpx \"./src/backend/assets/**/*\" ./lib/backend/assets",
@@ -35,7 +35,7 @@
     "i18next-xhr-backend": "^2.0.1",
     "js-base64": "^2.4.5",
     "save": "^2.3.3",
-    "webpack": "^4.20.2"
+    "webpack": "4.41.5"
   },
   "devDependencies": {
     "@bentley/config-loader": "2.0.0-dev.52",

@@ -9,7 +9,7 @@
  */
 
 import { BeEvent, BentleyError, AuthStatus, Logger, assert, ClientRequestContext } from "@bentley/bentleyjs-core";
-import { AccessToken, UserInfo, OidcClient, IOidcFrontendClient, request, RequestOptions } from "@bentley/imodeljs-clients";
+import { AccessToken, UserInfo, ImsOidcClient, request, RequestOptions, IFrontendAuthorizationClient } from "@bentley/imodeljs-clients";
 import { OidcDesktopClientConfiguration, defaultOidcDesktopClientExpiryBuffer } from "@bentley/imodeljs-common";
 import {
   GRANT_TYPE_AUTHORIZATION_CODE, GRANT_TYPE_REFRESH_TOKEN,
@@ -31,7 +31,7 @@ const loggerCategory = BackendLoggerCategory.Authorization;
  * Utility to generate OIDC/OAuth tokens for Desktop Applications
  * @alpha
  */
-export class OidcDesktopClient extends OidcClient implements IOidcFrontendClient {
+export class OidcDesktopClient extends ImsOidcClient implements IFrontendAuthorizationClient {
   private _clientConfiguration: OidcDesktopClientConfiguration;
   private _configuration: AuthorizationServiceConfiguration | undefined;
   private _tokenResponse: TokenResponse | undefined;

@@ -5,7 +5,8 @@
   "license": "MIT",
   "version": "0.0.0",
   "scripts": {
-    "build": "node ./node_modules/@bentley/webpack-tools/bin/buildIModelJsModule",
+    "build": "",
+    "//build": "echo I'd like to just remove this entire app... && node ./node_modules/@bentley/webpack-tools/bin/buildIModelJsModule",
     "lint": "tslint -p . 1>&2",
     "clean": "rimraf lib .rush dist package-deps.json",
     "test": "",
@@ -47,7 +48,6 @@
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/webpack-tools": "2.0.0-dev.52",
     "@bentley/build-tools": "2.0.0-dev.52",
     "rimraf": "^3.0.2",
     "tsconfig-paths": "^3.3.2",

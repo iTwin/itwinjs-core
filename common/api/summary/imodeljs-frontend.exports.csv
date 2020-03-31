@@ -103,6 +103,7 @@ internal;DefineACSByPointsTool
 alpha;DepthPointOptions
 alpha;DepthPointSource
 public;DepthRangeNpc
+internal;detailsFromExtensionLoadResults(extensionName: string, results: ExtensionLoadResults, reportSuccess: boolean):
 internal;DevTools
 public;DisplayStyle2dState 
 public;DisplayStyle3dState 
@@ -133,7 +134,10 @@ internal;EventSource
 internal;class EventSourceManager
 internal;EventSourceOptions
 beta;class Extension
+beta;ExtensionAdmin
+beta;ExtensionAdminProps
 beta;ExtensionLoader
+beta;ExtensionLoadResults = Extension | undefined | string | string[]
 beta;ExtensionServiceExtensionLoader 
 public;ExtentLimits
 beta;ExternalServerExtensionLoader 
@@ -233,6 +237,8 @@ alpha;ItemField
 internal;KeyinStatus
 beta;LengthDescription 
 internal;linePlaneIntersect(outP: Point3d, linePt: Point3d, lineNormal: Vector3d | undefined, planePt: Point3d, planeNormal: Vector3d, perpendicular: boolean): void
+internal;LoadSavedExtensionsResult
+internal;LoadSavedExtensionsStatus
 public;LocateAction
 public;LocateFilterStatus
 public;LocateOptions
@@ -283,8 +289,6 @@ internal;NullRenderSystem
 internal;NullTarget 
 internal;OffScreenTarget 
 internal;OffScreenViewport 
-beta;OidcBrowserClient 
-internal;OidcBrowserSamlClient 
 alpha;OidcDesktopClientRenderer 
 internal;OnScreenTarget 
 beta;openImageDataUrlInNewWindow(url: string, title?: string): void
@@ -322,7 +326,7 @@ internal;RealityTileTree
 internal;RealityTileTreeParams 
 beta;class RenderClipVolume 
 public;RenderContext
-internal;enum RenderDiagnostics
+internal;RenderDiagnostics
 public;class RenderGraphic 
 public;class RenderGraphicOwner 
 internal;RenderMemory
@@ -343,6 +347,7 @@ internal;RoundOff
 internal;SavedClipCache
 alpha;SavedClipEntry
 internal;SavedClipProps
+alpha;SavedExtensionClient
 internal;SavedState
 beta;Scene
 beta;SceneContext 

@@ -21,17 +21,6 @@ export const loggerCategory = "imodeljs-frontend.Extension";
 type resolveFunc = ((arg: any) => void);
 type rejectFunc = ((arg: Error) => void);
 
-/**  The structure expected of a `manifest.json` file from a extension
- * @internal
- */
-interface Manifest {
-  bundleName?: string;
-  devPlugin?: string;
-  versionsRequired?: {
-    [moduleName: string]: string;
-  };
-}
-
 /** Implement this interface, then register it using IModelApp.extensionAdmin.addExtensionLoader to load extensions from a different source.
  * @beta
  */
@@ -39,7 +28,7 @@ export interface ExtensionLoader {
   // get extension name from extension root string
   getExtensionName(extensionRoot: string): string;
   // load the extension javascript from the tar file.
-  loadExtension(extensionName: string, buildType: string, extensionVersion?: string, args?: string[]): Promise<PendingExtension | undefined>;
+  loadExtension(extensionName: string, extensionVersion?: string, args?: string[]): Promise<PendingExtension | undefined>;
   // resolve resource url given a relative path
   resolveResourceUrl(extensionName: string, relativeFileName: string): string;
 }
@@ -59,21 +48,11 @@ export abstract class Extension {
    *  IModelApp.extensionAdmin.register(myExtension);
    * ```
    */
-  public constructor(public name: string) {
-  }
+  public constructor(public name: string) { }
 
   // returns an instance of I18N that can be reliably called from the Extension.
   private getI18n(): I18N {
     return new I18N("noDefaultNs", { urlTemplate: this.resolveResourceUrl("locales").concat("/{{lng}}/{{ns}}.json") });
-  }
-
-  // get the extension manifest.
-  protected async getManifest(): Promise<Manifest> {
-    if (this._loader === undefined)
-      throw new Error("The register method must be called prior to using the getManifest method of Extension.");
-    const url: string = this.resolveResourceUrl("manifest.json");
-    const response = await fetch(url);
-    return response.json();
   }
 
   /** Method called when the Extension is first loaded.
@@ -186,9 +165,9 @@ export class ExternalServerExtensionLoader implements ExtensionLoader {
     return extensionRoot.slice(slashPos + 1);
   }
 
-  public async loadExtension(extensionName: string, buildType: string, _extensionVersion?: string, args?: string[]): Promise<PendingExtension | undefined> {
-    // the person setting up the server must have already untar'ed the plugin tar file. All we have to do is select the right file based on buildType.
-    const jsFileUrl: string = this.resolveResourceUrl(extensionName, buildType.concat("/", extensionName, ".js"));
+  public async loadExtension(extensionName: string, _extensionVersion?: string, args?: string[]): Promise<PendingExtension | undefined> {
+    // TODO: The entry point must be a "index.js" file at this point and no need for a manifest file.  All version checking is done in the Extensions bundle (i.e. "index.js")
+    const jsFileUrl: string = this.resolveResourceUrl(extensionName, "/index.js");
 
     // check if the entry point exists
     const response = await fetch(jsFileUrl, { method: "HEAD" });
@@ -229,16 +208,14 @@ export class ExtensionServiceExtensionLoader implements ExtensionLoader {
     return extensionRoot;
   }
 
-  public async loadExtension(extensionName: string, buildType: string, extensionVersion?: string, args?: string[] | undefined): Promise<PendingExtension | undefined> {
+  public async loadExtension(extensionName: string, extensionVersion?: string, args?: string[] | undefined): Promise<PendingExtension | undefined> {
     const loadedExtensionProps = await this.getExtensionProps(extensionName, extensionVersion);
-
     if (loadedExtensionProps === undefined)
       return undefined;
 
     this._loadedExtensionProps[extensionName] = loadedExtensionProps;
 
-    const mainFileRelativePath = buildType.concat("/", extensionName, ".js");
-    const mainFilePath = new URL(mainFileRelativePath, loadedExtensionProps.basePath).toString();
+    const mainFilePath = new URL("index.js", loadedExtensionProps.basePath).toString();
     const mainFileUrl = loadedExtensionProps.props.uri.find((uri) => uri.startsWith(mainFilePath));
     if (mainFileUrl === undefined)
       return undefined;

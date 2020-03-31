@@ -59,9 +59,9 @@ import { IconSpec } from '@bentley/ui-core';
 import { Id64Array } from '@bentley/bentleyjs-core';
 import { Id64String } from '@bentley/bentleyjs-core';
 import { IDisposable } from '@bentley/bentleyjs-core';
+import { IFrontendAuthorizationClient } from '@bentley/imodeljs-clients';
 import { IModelConnection } from '@bentley/imodeljs-frontend';
 import { InteractiveTool } from '@bentley/imodeljs-frontend';
-import { IOidcFrontendClient } from '@bentley/imodeljs-clients';
 import { IPresentationTreeDataProvider } from '@bentley/presentation-components';
 import { MessageBoxIconType } from '@bentley/imodeljs-frontend';
 import { MessageBoxType } from '@bentley/imodeljs-frontend';
@@ -81,8 +81,6 @@ import { NodeKey } from '@bentley/presentation-common';
 import { NodePathElement } from '@bentley/presentation-common';
 import { NotificationManager } from '@bentley/imodeljs-frontend';
 import { NotifyMessageDetails } from '@bentley/imodeljs-frontend';
-import { OidcDesktopClientConfiguration } from '@bentley/imodeljs-common';
-import { OidcFrontendClientConfiguration } from '@bentley/imodeljs-clients';
 import { Omit } from '@bentley/ui-core';
 import { OnCancelFunc } from '@bentley/ui-abstract';
 import { OnItemExecutedFunc } from '@bentley/ui-abstract';
@@ -3935,7 +3933,7 @@ export class SignIn extends React.PureComponent<SignInProps> {
 
 // @public
 export interface SignInProps extends CommonProps {
-    oidcClient?: IOidcFrontendClient;
+    oidcClient?: IFrontendAuthorizationClient;
     onOffline?: () => void;
     onRegister?: () => void;
     onSignedIn?: () => void;
@@ -4938,16 +4936,13 @@ export class UiFramework {
     static get i18nNamespace(): string;
     // @internal (undocumented)
     static get iModelServices(): IModelServices;
-    static initialize(store: Store<any> | undefined, i18n: I18N, oidcConfig?: OidcFrontendClientConfiguration | OidcDesktopClientConfiguration, frameworkStateKey?: string): Promise<any>;
+    static initialize(store: Store<any> | undefined, i18n: I18N, frameworkStateKey?: string): Promise<void>;
     // @internal
-    static initializeEx(store: Store<any> | undefined, i18n: I18N, oidcConfig?: OidcFrontendClientConfiguration | OidcDesktopClientConfiguration, frameworkStateKey?: string, projectServices?: ProjectServices, iModelServices?: IModelServices): Promise<any>;
+    static initializeEx(store: Store<any> | undefined, i18n: I18N, frameworkStateKey?: string, projectServices?: ProjectServices, iModelServices?: IModelServices): Promise<void>;
     // @beta (undocumented)
     static isMobile(): boolean;
     // @internal (undocumented)
     static loggerCategory(obj: any): string;
-    // @deprecated (undocumented)
-    static get oidcClient(): IOidcFrontendClient | undefined;
-    static set oidcClient(oidcClient: IOidcFrontendClient | undefined);
     // @beta
     static readonly onUiVisibilityChanged: UiVisibilityChangedEvent;
     // @beta (undocumented)

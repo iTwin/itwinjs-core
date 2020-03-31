@@ -18,6 +18,9 @@ import { IDisposable } from '@bentley/bentleyjs-core';
 import { IModelHubStatus } from '@bentley/bentleyjs-core';
 import { LogFunction } from '@bentley/bentleyjs-core';
 import { URL } from 'url';
+import { User } from 'oidc-client';
+import { UserManager } from 'oidc-client';
+import { UserManagerSettings } from 'oidc-client';
 
 // @beta
 export class AccessToken extends Token {
@@ -168,6 +171,76 @@ export class BriefcaseQuery extends WsgQuery {
     ownedByMe(): this;
     selectApplicationData(): this;
     selectDownloadUrl(): this;
+}
+
+// @beta
+export class BrowserAuthorizationCallbackHandler extends BrowserAuthorizationBase<BrowserAuthorizationCallbackHandlerConfiguration> {
+    // (undocumented)
+    protected getUserManager(): Promise<UserManager>;
+    protected getUserManagerSettings(basicSettings: BrowserAuthorizationCallbackHandlerConfiguration, advancedSettings?: UserManagerSettings): Promise<UserManagerSettings>;
+    static handleSigninCallback(redirectUrl?: string): Promise<void>;
+    // (undocumented)
+    protected static readonly _loggerCategory: string;
+}
+
+// @beta (undocumented)
+export interface BrowserAuthorizationCallbackHandlerConfiguration {
+    responseMode?: "query" | "fragment" | string;
+}
+
+// @beta (undocumented)
+export class BrowserAuthorizationClient extends BrowserAuthorizationBase<BrowserAuthorizationClientConfiguration> implements IFrontendAuthorizationClient {
+    constructor(configuration: BrowserAuthorizationClientConfiguration);
+    // (undocumented)
+    protected _accessToken?: AccessToken;
+    checkSessionStatus(requestContext: ClientRequestContext): Promise<boolean>;
+    protected createUserManager(settings: UserManagerSettings): UserManager;
+    dispose(): void;
+    getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
+    // (undocumented)
+    protected getUserManager(requestContext: ClientRequestContext): Promise<UserManager>;
+    protected getUserManagerSettings(requestContext: ClientRequestContext, basicSettings: BrowserAuthorizationClientConfiguration, advancedSettings?: UserManagerSettings): Promise<UserManagerSettings>;
+    // (undocumented)
+    get hasExpired(): boolean;
+    // (undocumented)
+    get hasSignedIn(): boolean;
+    // (undocumented)
+    protected initAccessToken(user: User | undefined): void;
+    // (undocumented)
+    get isAuthorized(): boolean;
+    protected loadUser(requestContext: ClientRequestContext): Promise<User | undefined>;
+    // (undocumented)
+    static readonly loggerCategory: string;
+    protected nonInteractiveSignIn(requestContext: ClientRequestContext): Promise<User | undefined>;
+    protected _onAccessTokenExpired: () => void;
+    protected _onAccessTokenExpiring: () => Promise<void>;
+    protected _onSilentRenewError: () => void;
+    protected _onUserLoaded: (user: User) => void;
+    protected _onUserSignedOut: () => void;
+    // (undocumented)
+    readonly onUserStateChanged: BeEvent<(token: AccessToken | undefined) => void>;
+    // (undocumented)
+    protected _onUserStateChanged: (user: User | undefined) => void;
+    protected _onUserUnloaded: () => void;
+    signIn(requestContext: ClientRequestContext): Promise<void>;
+    signInPopup(requestContext: ClientRequestContext): Promise<void>;
+    signInRedirect(requestContext: ClientRequestContext, successRedirectUrl?: string): Promise<void>;
+    signInSilent(requestContext: ClientRequestContext): Promise<void>;
+    signOut(requestContext: ClientRequestContext): Promise<void>;
+    // (undocumented)
+    signOutPopup(requestContext: ClientRequestContext): Promise<void>;
+    // (undocumented)
+    signOutRedirect(requestContext: ClientRequestContext): Promise<void>;
+}
+
+// @beta (undocumented)
+export interface BrowserAuthorizationClientConfiguration {
+    readonly authority?: string;
+    readonly clientId: string;
+    readonly postSignoutRedirectUri?: string;
+    readonly redirectUri: string;
+    readonly responseType?: "code" | "id_token" | "id_token token" | "code id_token" | "code token" | "code id_token token" | string;
+    readonly scope: string;
 }
 
 // @beta
@@ -832,6 +905,13 @@ export interface IAuthorizationClient {
     isAuthorized: boolean;
 }
 
+// @beta (undocumented)
+export interface IFrontendAuthorizationClient extends IDisposable, IAuthorizationClient {
+    readonly onUserStateChanged: BeEvent<(token: AccessToken | undefined) => void>;
+    signIn(requestContext: ClientRequestContext): Promise<void>;
+    signOut(requestContext: ClientRequestContext): Promise<void>;
+}
+
 // @internal
 export class IModelBankClient extends IModelClient {
     constructor(url: string, handler: FileHandler | undefined);
@@ -1092,6 +1172,14 @@ export class ImsFederatedAuthenticationClient extends Client {
     static readonly searchKey: string;
 }
 
+// @beta (undocumented)
+export class ImsOidcClient extends Client {
+    constructor();
+    protected getUrlSearchKey(): string;
+    // (undocumented)
+    static readonly searchKey: string;
+}
+
 // @internal @deprecated
 export class ImsTestAuthorizationClient implements IAuthorizationClient {
     getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
@@ -1139,22 +1227,10 @@ export class InstanceIdQuery extends WsgQuery {
 }
 
 // @beta
-export interface IOidcFrontendClient extends IDisposable, IAuthorizationClient {
-    getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
-    hasExpired: boolean;
-    hasSignedIn: boolean;
-    initialize(requestContext: ClientRequestContext): Promise<void>;
-    isAuthorized: boolean;
-    readonly onUserStateChanged: BeEvent<(token: AccessToken | undefined) => void>;
-    signIn(requestContext: ClientRequestContext): Promise<void>;
-    signOut(requestContext: ClientRequestContext): Promise<void>;
-}
-
-// @beta
 export const isAuthorizedClientRequestContext: (requestContext: ClientRequestContext) => requestContext is AuthorizedClientRequestContext;
 
 // @beta
-export const isIOidcFrontendClient: (client: IAuthorizationClient | undefined) => client is IOidcFrontendClient;
+export const isBrowserAuthorizationClient: (client: IAuthorizationClient | undefined) => client is IFrontendAuthorizationClient;
 
 // @alpha
 export class LargeThumbnail extends Thumbnail {
@@ -1279,27 +1355,12 @@ export class NamedVersionCreatedEvent extends IModelHubGlobalEvent {
 }
 
 // @beta (undocumented)
-export abstract class OidcClient extends Client {
-    constructor();
-    protected getUrlSearchKey(): string;
+export enum OidcCallbackResponseMode {
     // (undocumented)
-    static readonly searchKey: string;
-}
-
-// @beta
-export interface OidcFrontendClientConfiguration {
-    // @internal
-    authority?: string;
-    clientId: string;
-    // @internal
-    clockSkew?: number;
-    // @internal
-    metadata?: any;
-    postSignoutRedirectUri?: string;
-    redirectUri: string;
-    // @internal
-    responseType?: string;
-    scope: string;
+    Fragment = 2,
+    // (undocumented)
+    Query = 1,
+    Unknown = 3
 }
 
 // @internal

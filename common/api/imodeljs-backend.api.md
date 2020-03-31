@@ -83,6 +83,7 @@ import { Id64Array } from '@bentley/bentleyjs-core';
 import { Id64Set } from '@bentley/bentleyjs-core';
 import { Id64String } from '@bentley/bentleyjs-core';
 import { IDisposable } from '@bentley/bentleyjs-core';
+import { IFrontendAuthorizationClient } from '@bentley/imodeljs-clients';
 import { ImageSourceFormat } from '@bentley/imodeljs-common';
 import { IModel } from '@bentley/imodeljs-common';
 import { IModelClient } from '@bentley/imodeljs-clients';
@@ -93,9 +94,9 @@ import { IModelJsNative } from '@bentley/imodeljs-native';
 import { IModelRpcProps } from '@bentley/imodeljs-common';
 import { IModelStatus } from '@bentley/imodeljs-common';
 import { IModelVersion } from '@bentley/imodeljs-common';
+import { ImsOidcClient } from '@bentley/imodeljs-clients';
 import { InformationPartitionElementProps } from '@bentley/imodeljs-common';
 import { InternetConnectivityStatus } from '@bentley/imodeljs-common';
-import { IOidcFrontendClient } from '@bentley/imodeljs-clients';
 import { LightLocationProps } from '@bentley/imodeljs-common';
 import { LinearLocationReference } from '@bentley/imodeljs-common';
 import { LinearlyLocatedAttributionProps } from '@bentley/imodeljs-common';
@@ -116,7 +117,6 @@ import { ModelProps } from '@bentley/imodeljs-common';
 import { ModelSelectorProps } from '@bentley/imodeljs-common';
 import { NavigationBindingValue } from '@bentley/imodeljs-common';
 import { NavigationValue } from '@bentley/imodeljs-common';
-import { OidcClient } from '@bentley/imodeljs-clients';
 import { OidcDesktopClientConfiguration } from '@bentley/imodeljs-common';
 import { OpenMode } from '@bentley/bentleyjs-core';
 import * as os from 'os';
@@ -3232,7 +3232,7 @@ export class NativeAppBackend {
 }
 
 // @alpha
-export class OidcDesktopClient extends OidcClient implements IOidcFrontendClient {
+export class OidcDesktopClient extends ImsOidcClient implements IFrontendAuthorizationClient {
     constructor(clientConfiguration: OidcDesktopClientConfiguration);
     dispose(): void;
     getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;

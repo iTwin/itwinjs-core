@@ -10,7 +10,7 @@
     "url": "https://github.com/imodeljs/imodeljs/tree/master/core/ecschema-locaters"
   },
   "scripts": {
-    "build": "tsc 1>&2 && node ./node_modules/@bentley/build-tools/scripts/ignoreargs.js 1>&2",
+    "build": "tsc 1>&2",
     "clean": "rimraf lib .rush package-deps.json",
     "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=ecschema-locaters",
     "lint": "tslint --project . 1>&2",

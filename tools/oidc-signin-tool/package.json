@@ -10,7 +10,7 @@
     "url": "https://github.com/imodeljs/imodeljs/tree/master/tools/oidc-signin-tool"
   },
   "scripts": {
-    "build": "tsc 1>&2 && node ./node_modules/@bentley/build-tools/scripts/ignoreargs.js 1>&2",
+    "build": "tsc 1>&2",
     "clean": "rimraf lib .rush",
     "lint": "tslint --project . 1>&2",
     "test": "",

@@ -25,9 +25,9 @@ export function detailsFromExtensionLoadResults(extensionName: string, results: 
 
   // report load errors to the user.
   let allDetails: string = "";
-  for (const thisMessage of problems) {
+  for (const thisMessage of problems)
     allDetails = allDetails.concat("<span>", thisMessage, "<br>", "</span>");
-  }
+
   const allDetailsFragment: any = document.createRange().createContextualFragment(allDetails);
   const allDetailsHtml: HTMLElement = document.createElement("span");
   allDetailsHtml.appendChild(allDetailsFragment);

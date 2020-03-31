@@ -6,7 +6,7 @@ import * as path from "path";
 
 import { assert } from "@bentley/bentleyjs-core";
 import { RpcInterfaceDefinition, ElectronRpcManager } from "@bentley/imodeljs-common";
-import { IModelJsElectronManager } from "@bentley/electron-manager";
+import { IModelJsElectronManager, WebpackDevServerElectronManager, StandardElectronManager } from "@bentley/electron-manager";
 /**
  * Initializes Electron backend
  */
@@ -15,7 +15,11 @@ const autoOpenDevTools = false;
 
 export default function initialize(rpcs: RpcInterfaceDefinition[]) {
   (async () => { // tslint:disable-line:no-floating-promises
-    const manager = new IModelJsElectronManager(path.join(__dirname, "..", "..", "webresources"));
+    let manager: StandardElectronManager;
+    if (process.env.NODE_ENV === "production")
+      manager = new IModelJsElectronManager(path.join(__dirname, "..", "build"));
+    else
+      manager = new WebpackDevServerElectronManager(3000); // port should match the port of the local dev server
 
     await manager.initialize({
       width: 800,

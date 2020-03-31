@@ -11,23 +11,13 @@
     "url": "https://github.com/imodeljs/imodeljs/tree/master/core/i18n"
   },
   "scripts": {
-    "build": "buildIModelJsModule",
+    "build": "tsc 1>&2",
     "clean": "rimraf lib .rush package-deps.json",
     "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-i18n/file.json --tsIndexFile=./imodeljs-i18n.ts --onlyJson %TYPEDOC_THEME%",
     "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=imodeljs-i18n",
     "lint": "tslint --project . 1>&2",
     "test": "",
     "cover": ""
-  },
-  "iModelJs": {
-    "buildModule": {
-      "type": "system",
-      "webpack": {
-        "dest": "./lib/module",
-        "entry": "./lib/imodeljs-i18n.js",
-        "bundleName": "imodeljs-i18n"
-      }
-    }
   },
   "keywords": [
     "Bentley",
@@ -48,7 +38,6 @@
   "devDependencies": {
     "@bentley/bentleyjs-core": "2.0.0-dev.52",
     "@bentley/build-tools": "2.0.0-dev.52",
-    "@bentley/webpack-tools": "2.0.0-dev.52",
     "@types/i18next": "^8.4.2",
     "@types/i18next-browser-languagedetector": "^2.0.1",
     "@types/node": "10.14.1",

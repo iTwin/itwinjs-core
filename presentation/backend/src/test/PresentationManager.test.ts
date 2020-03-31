@@ -41,7 +41,7 @@ import { NativePlatformDefinition, NativePlatformRequestTypes } from "../present
 import { PresentationManager, PresentationManagerMode } from "../presentation-backend/PresentationManager";
 import { RulesetManagerImpl } from "../presentation-backend/RulesetManager";
 import { RulesetVariablesManagerImpl } from "../presentation-backend/RulesetVariablesManager";
-import { PRESENTATION_BACKEND_ASSETS_ROOT, PRESENTATION_COMMON_ASSETS_ROOT } from "../presentation-backend/Constants";
+import { PRESENTATION_BACKEND_ASSETS_ROOT, PRESENTATION_COMMON_PUBLIC_ROOT } from "../presentation-backend/Constants";
 
 describe("PresentationManager", () => {
 
@@ -99,7 +99,7 @@ describe("PresentationManager", () => {
           expect((manager.getNativePlatform() as any)._nativeAddon).instanceOf(IModelHost.platform.ECPresentationManager);
           expect(constructorSpy).to.be.calledOnceWithExactly(
             "",
-            [getLocalesDirectory(PRESENTATION_COMMON_ASSETS_ROOT)],
+            [getLocalesDirectory(PRESENTATION_COMMON_PUBLIC_ROOT)],
             { [RequestPriority.Preload]: 1, [RequestPriority.Max]: 1 },
             IModelHost.platform.ECPresentationManagerMode.ReadWrite,
           );
@@ -120,7 +120,7 @@ describe("PresentationManager", () => {
           expect((manager.getNativePlatform() as any)._nativeAddon).instanceOf(IModelHost.platform.ECPresentationManager);
           expect(constructorSpy).to.be.calledOnceWithExactly(
             props.id,
-            [getLocalesDirectory(PRESENTATION_COMMON_ASSETS_ROOT), testLocale],
+            [getLocalesDirectory(PRESENTATION_COMMON_PUBLIC_ROOT), testLocale],
             testTaskAllocations,
             IModelHost.platform.ECPresentationManagerMode.ReadOnly,
           );

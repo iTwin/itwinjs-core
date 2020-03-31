@@ -264,8 +264,6 @@ export class ProjectLocationExtension extends Extension {
   }
 }
 
-// This variable is set by webPack when building a extension.
-declare var PLUGIN_NAME: string;
-
 // Register the extension with the extensionAdmin.
-IModelApp.extensionAdmin.register(new ProjectLocationExtension(PLUGIN_NAME));
+// NOTE: The name used here is how the Extension is registered with the whatever Extension server it is hosted on.
+IModelApp.extensionAdmin.register(new ProjectLocationExtension("projectLocation"));

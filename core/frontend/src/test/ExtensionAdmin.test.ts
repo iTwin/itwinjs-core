@@ -18,7 +18,7 @@ describe("ExtensionAdmin tests", () => {
       getExtensionName(_extensionRoot: string): string {
         return _extensionRoot;
       },
-      async loadExtension(_extensionName: string, _buildType: string, _extensionVersion?: string | undefined, _args?: string[] | undefined): Promise<PendingExtension | undefined> {
+      async loadExtension(_extensionName: string, _extensionVersion?: string | undefined, _args?: string[] | undefined): Promise<PendingExtension | undefined> {
         calledFirst = true;
         return { promise: "fake" } as any;
       },
@@ -28,7 +28,7 @@ describe("ExtensionAdmin tests", () => {
       getExtensionName(_extensionRoot: string): string {
         return _extensionRoot;
       },
-      async loadExtension(_extensionName: string, _buildType: string, _extensionVersion?: string | undefined, _args?: string[] | undefined): Promise<PendingExtension | undefined> {
+      async loadExtension(_extensionName: string, _extensionVersion?: string | undefined, _args?: string[] | undefined): Promise<PendingExtension | undefined> {
         calledSecond = true;
         return { promise: "fake" } as any;
       },
@@ -53,7 +53,7 @@ describe("ExtensionAdmin tests", () => {
       getExtensionName(_extensionRoot: string): string {
         return _extensionRoot;
       },
-      async loadExtension(_extensionName: string, _buildType: string, _extensionVersion?: string | undefined, _args?: string[] | undefined): Promise<PendingExtension | undefined> {
+      async loadExtension(_extensionName: string, _extensionVersion?: string | undefined, _args?: string[] | undefined): Promise<PendingExtension | undefined> {
         calledFirst = true;
         return undefined;
       },
@@ -63,7 +63,7 @@ describe("ExtensionAdmin tests", () => {
       getExtensionName(_extensionRoot: string): string {
         return _extensionRoot;
       },
-      async loadExtension(_extensionName: string, _buildType: string, _extensionVersion?: string | undefined, _args?: string[] | undefined): Promise<PendingExtension | undefined> {
+      async loadExtension(_extensionName: string, _extensionVersion?: string | undefined, _args?: string[] | undefined): Promise<PendingExtension | undefined> {
         calledSecond = true;
         return { promise: "fake" } as any;
       },

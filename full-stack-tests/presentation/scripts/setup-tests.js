@@ -7,6 +7,13 @@ const faker = require("faker");
 const chaiJestSnapshot = require("chai-jest-snapshot");
 const chaiAsPromised = require("chai-as-promised");
 
+// Fix node's module loader to strip ?sprite from SVG imports
+const m = require("module");
+const origLoader = m._load;
+m._load = (request, parent, isMain) => {
+  return origLoader(request.replace("?sprite", ""), parent, isMain);
+};
+
 chai.use(chaiJestSnapshot);
 chai.use(chaiAsPromised);
 

@@ -23,7 +23,7 @@ import { ColorDef, ColorByName } from "@bentley/imodeljs-common";
 import { FormatterSpec } from "@bentley/imodeljs-quantity";
 import { UiFramework, CursorInformation, MenuItemProps } from "@bentley/ui-framework";
 
-const enum ToolOptions {
+enum ToolOptions {
   Red,
   White,
   Blue,

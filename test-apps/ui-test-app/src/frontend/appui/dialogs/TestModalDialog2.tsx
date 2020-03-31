@@ -115,7 +115,7 @@ export class TestModalDialog2 extends React.Component<TestModalDialog2Props, Tes
   }
 
   private _closeDialog = (followUp: () => void) => {
-    this.setState({
+    this.setState({ // eslint-disable-line @typescript-eslint/no-unused-expressions
       opened: false,
     }), () => {
       if (!this.state.opened)

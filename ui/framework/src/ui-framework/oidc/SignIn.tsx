@@ -9,7 +9,7 @@
 import * as React from "react";
 
 import { ClientRequestContext, isElectronRenderer } from "@bentley/bentleyjs-core";
-import { IOidcFrontendClient } from "@bentley/imodeljs-clients";
+import { IFrontendAuthorizationClient } from "@bentley/imodeljs-clients";
 import { CommonProps } from "@bentley/ui-core";
 import { SignIn as SignInBase } from "@bentley/ui-components";
 import { UiFramework } from "../UiFramework";
@@ -19,7 +19,7 @@ import { UiFramework } from "../UiFramework";
  */
 export interface SignInProps extends CommonProps {
   /** Oidc Frontend Client object */
-  oidcClient?: IOidcFrontendClient;
+  oidcClient?: IFrontendAuthorizationClient;
   /** Handler called after sign-in has completed */
   onSignedIn?: () => void;
   /** Handler for the Register link */

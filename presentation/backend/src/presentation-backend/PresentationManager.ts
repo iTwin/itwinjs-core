@@ -22,7 +22,7 @@ import { getLocalesDirectory } from "@bentley/presentation-common/lib/presentati
 import { NativePlatformDefinition, createDefaultNativePlatform, NativePlatformRequestTypes } from "./NativePlatform";
 import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager";
 import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
-import { PRESENTATION_BACKEND_ASSETS_ROOT, PRESENTATION_COMMON_ASSETS_ROOT } from "./Constants";
+import { PRESENTATION_BACKEND_ASSETS_ROOT, PRESENTATION_COMMON_PUBLIC_ROOT } from "./Constants";
 
 /**
  * Presentation manager working mode.
@@ -832,7 +832,7 @@ const skipTransients = (callback: (id: Id64String) => void) => {
 };
 
 const createLocaleDirectoryList = (props?: PresentationManagerProps) => {
-  const localeDirectories = [getLocalesDirectory(PRESENTATION_COMMON_ASSETS_ROOT)];
+  const localeDirectories = [getLocalesDirectory(PRESENTATION_COMMON_PUBLIC_ROOT)];
   if (props && props.localeDirectories) {
     props.localeDirectories.forEach((dir) => {
       if (-1 === localeDirectories.indexOf(dir))

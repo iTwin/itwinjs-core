@@ -11,7 +11,7 @@
     "url": "https://github.com/imodeljs/imodeljs/tree/master/core/ecschema-metadata"
   },
   "scripts": {
-    "build": "tsc 1>&2 && node ./node_modules/@bentley/build-tools/scripts/ignoreargs.js 1>&2 && npm run createLocalization",
+    "build": "tsc 1>&2  && npm run createLocalization",
     "clean": "rimraf lib .rush package-deps.json",
     "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=ecschema-metadata",
     "lint": "tslint --project . 1>&2",

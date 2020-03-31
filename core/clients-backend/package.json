@@ -12,7 +12,7 @@
     "node": ">=10.11.0 <13.0"
   },
   "scripts": {
-    "build": "tsc 1>&2 && npm run copy:typedefs && node ./node_modules/@bentley/build-tools/scripts/ignoreargs.js 1>&2",
+    "build": "tsc 1>&2 && npm run copy:typedefs",
     "copy:typedefs": "cpx \"./src/openid-client.d.ts\" ./lib/",
     "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/test/assets",
     "clean": "rimraf lib .rush package-deps.json",

@@ -18,7 +18,7 @@
     "url": "http://www.bentley.com"
   },
   "scripts": {
-    "build": "npm run copy:files && tsc 1>&2 && npm run webpack:frontend && node ./node_modules/@bentley/build-tools/scripts/ignoreargs.js 1>&2",
+    "build": "npm run copy:files && tsc 1>&2 && npm run webpack:frontend",
     "clean": "rimraf lib .rush integration_test_results",
     "copy:files": "cpx \"./rulesets/**/*\" ./lib/rulesets/",
     "cover": "",
@@ -70,7 +70,7 @@
     "source-map-loader": "^0.2.3",
     "tslint": "^5.11.0",
     "typescript": "~3.7.4",
-    "webpack": "^4.20.2",
+    "webpack": "4.41.5",
     "webpack-cli": "^3.1.0"
   }
 }

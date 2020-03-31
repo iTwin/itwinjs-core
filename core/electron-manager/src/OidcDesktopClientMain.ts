@@ -2,9 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { BentleyError, AuthStatus, Logger, ClientRequestContext } from "@bentley/bentleyjs-core";
-import { OidcFrontendClientConfiguration, AccessToken } from "@bentley/imodeljs-clients";
-import { OidcDesktopClient, IModelHost } from "@bentley/imodeljs-backend";
+import { AuthStatus, BentleyError, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
+import { IModelHost, OidcDesktopClient } from "@bentley/imodeljs-backend";
+import { AccessToken } from "@bentley/imodeljs-clients";
+import { OidcDesktopClientConfiguration } from "@bentley/imodeljs-common";
 import * as electron from "electron";
 import { ElectronManagerLoggerCategory } from "./ElectronManagerLoggerCategory";
 const { ipcMain: ipc } = electron;
@@ -52,7 +53,7 @@ export class OidcDesktopClientMain {
 
   /** Initialize the IPC communication for OidcDesktopClient */
   public static initializeIpc(mainWindow: electron.BrowserWindow) {
-    this.ipcOn("OidcDesktopClient.initialize", async (event: electron.IpcMainEvent, requestContextObj: ClientRequestContext, configuration: OidcFrontendClientConfiguration) => {
+    this.ipcOn("OidcDesktopClient.initialize", async (event: electron.IpcMainEvent, requestContextObj: ClientRequestContext, configuration: OidcDesktopClientConfiguration) => {
       const requestContext = this.createRequestContext(requestContextObj);
       requestContext.enter();
       try {

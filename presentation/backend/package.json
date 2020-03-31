@@ -21,7 +21,7 @@
   "main": "lib/presentation-backend.js",
   "typings": "lib/presentation-backend",
   "scripts": {
-    "build": "tsc 1>&2 && npm run build:assets && node ./node_modules/@bentley/build-tools/scripts/ignoreargs.js 1>&2",
+    "build": "tsc 1>&2 && npm run build:assets",
     "build:assets": "cpx \"./assets/**/*\" ./lib/assets",
     "build:watch": "npm run build:assets && tsc -w",
     "clean": "rimraf lib .rush package-deps.json",

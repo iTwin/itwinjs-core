@@ -3,7 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
-import * as express from "express";
+//import * as express from "express";
+const express = require("express");
 import * as https from "https";
 import * as fs from "fs";
 
@@ -59,7 +60,7 @@ const app = express();
 app.use(express.text());
 
 // Enable CORS for all apis
-app.all("/*", (_req, res, next) => {
+app.all("/*", (_req: any, res: any, next: any) => {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Methods", "POST, GET");
   res.header("Access-Control-Allow-Headers", "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With, X-Correlation-Id, X-Session-Id, X-Application-Id, X-Application-Version, X-User-Id");
@@ -69,10 +70,10 @@ app.all("/*", (_req, res, next) => {
 // --------------------------------------------
 // Routes
 // --------------------------------------------
-app.get("/v3/swagger.json", (req, res) => cloudConfig.protocol.handleOpenApiDescriptionRequest(req, res));
-app.post("*", async (req, res) => cloudConfig.protocol.handleOperationPostRequest(req, res));
-app.get(/\/imodel\//, async (req, res) => cloudConfig.protocol.handleOperationGetRequest(req, res));
-app.use("*", (_req, res) => { res.send("<h1>IModelJs RPC Server</h1>"); });
+app.get("/v3/swagger.json", (req: any, res: any) => cloudConfig.protocol.handleOpenApiDescriptionRequest(req, res));
+app.post("*", async (req: any, res: any) => cloudConfig.protocol.handleOperationPostRequest(req, res));
+app.get(/\/imodel\//, async (req: any, res: any) => cloudConfig.protocol.handleOperationGetRequest(req, res));
+app.use("*", (_req: any, res: any) => { res.send("<h1>IModelJs RPC Server</h1>"); });
 
 // ---------------------------------------------
 // Run the server...

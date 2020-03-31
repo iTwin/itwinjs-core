@@ -11,7 +11,7 @@
     "url": "https://github.com/imodeljs/imodeljs/tree/master/core/bentley"
   },
   "scripts": {
-    "build": "buildIModelJsModule",
+    "build": "tsc 1>&2",
     "clean": "rimraf lib .rush package-deps.json",
     "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=bentleyjs-core",
     "test": "node ./node_modules/@bentley/build-tools/scripts/test.js",
@@ -19,16 +19,6 @@
     "cover": "nyc npm test",
     "cover:docs": "node ./node_modules/@bentley/build-tools/scripts/docscoverage.js",
     "lint": "tslint --project . 1>&2"
-  },
-  "iModelJs": {
-    "buildModule": {
-      "type": "system",
-      "webpack": {
-        "dest": "./lib/module",
-        "entry": "./lib/bentleyjs-core.js",
-        "bundleName": "bentleyjs-core"
-      }
-    }
   },
   "keywords": [
     "Bentley",
@@ -41,7 +31,6 @@
   "dependencies": {},
   "devDependencies": {
     "@bentley/build-tools": "2.0.0-dev.52",
-    "@bentley/webpack-tools": "2.0.0-dev.52",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/mocha": "^5.2.5",

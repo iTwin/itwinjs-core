@@ -9,7 +9,7 @@
     "outDir": "./lib",
     "jsx": "react",
     "types": [
-      "@bentley/webpack-tools"
+      "@bentley/extension-webpack-tools"
     ]
   },
   "include": [
@@ -19,6 +19,5 @@
   "exclude": [
     "lib",
     "node_modules",
-    "test"
   ]
 }

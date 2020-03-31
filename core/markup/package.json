@@ -6,7 +6,9 @@
   "imodeljsSharedLibrary": true,
   "license": "MIT",
   "scripts": {
-    "build": "buildIModelJsModule",
+    "build": "npm run copy:assets && npm run pseudolocalize && tsc 1>&2",
+    "copy:assets": "cpx \"./src/public/**/*\" ./lib/public",
+    "pseudolocalize": "betools pseudolocalize --englishDir ./src/public/locales/en --out ./lib/public/locales/en-PSEUDO",
     "clean": "rimraf lib .rush package-deps.json",
     "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-markup/file.json --tsIndexFile=./imodeljs-markup.ts --onlyJson %TYPEDOC_THEME%",
     "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=imodeljs-markup",
@@ -15,22 +17,6 @@
     "cover": "npm test -- --cover",
     "debug:tests": "node ./node_modules/@bentley/certa/bin/certa.js -r chrome --debug",
     "webpackTests": "webpack --config ./src/test/utils/webpack.config.js 1>&2"
-  },
-  "iModelJs": {
-    "buildModule": {
-      "type": "system",
-      "sourceResources": [
-        {
-          "source": "./src/public/**/*",
-          "dest": "./lib/public"
-        }
-      ],
-      "webpack": {
-        "dest": "./lib/module",
-        "entry": "./lib/imodeljs-markup.js",
-        "bundleName": "imodeljs-markup"
-      }
-    }
   },
   "repository": {
     "type": "git",
@@ -64,12 +50,12 @@
     "@bentley/geometry-core": "2.0.0-dev.52",
     "@bentley/imodeljs-i18n": "2.0.0-dev.52",
     "@bentley/build-tools": "2.0.0-dev.52",
-    "@bentley/webpack-tools": "2.0.0-dev.52",
     "@bentley/certa": "2.0.0-dev.52",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
     "@types/node": "10.14.1",
     "chai": "^4.1.2",
+    "cpx": "^1.5.0",
     "glob": "^7.1.2",
     "mocha": "^5.2.0",
     "nyc": "^14.0.0",
@@ -78,7 +64,7 @@
     "tslint": "^5.11.0",
     "tslint-etc": "^1.5.2",
     "typescript": "~3.7.4",
-    "webpack": "^4.20.2"
+    "webpack": "4.41.5"
   },
   "nyc": {
     "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc"

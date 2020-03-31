@@ -7,7 +7,7 @@
  */
 
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
-import { OidcClient, AccessToken, UserInfo } from "@bentley/imodeljs-clients";
+import { ImsOidcClient, AccessToken, UserInfo } from "@bentley/imodeljs-clients";
 import { Issuer, Client as OpenIdClient, ClientConfiguration, TokenSet } from "openid-client";
 import { decode } from "jsonwebtoken";
 
@@ -28,7 +28,7 @@ export interface OidcBackendClientConfiguration {
  * Utility to generate OIDC/OAuth tokens for backend applications
  * @beta
  */
-export abstract class OidcBackendClient extends OidcClient {
+export abstract class OidcBackendClient extends ImsOidcClient {
   protected _configuration: OidcBackendClientConfiguration;
 
   /**

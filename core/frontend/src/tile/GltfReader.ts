@@ -140,8 +140,6 @@ export type ShouldAbortReadGltf = (reader: GltfReader) => boolean;
       super("imageBytesToImageBitmap", [imageBytes, imageMimeType], [imageBytes]);
     }
   }
-
-  declare var BUILD_SEMVER: string;
 -------------------------------------- */
 
 /** Deserializes [glTF](https://www.khronos.org/gltf/).

@@ -3,6 +3,44 @@ ignore: true
 ---
 # NextVersion
 
+## Update to iModel.js Build System
+
+The iModel.js 1.0 build system relied on a single package (`@bentley/webpack-tools`) to build iModel.js backends, frontends and plugins.  With the release of 2.0, there are significant improvements to the build system to help with both clarity and usability to make creating an app based on the latest technologies easier.  To aid in this, the build system is now split into 3 separate components:
+
+- Build of an iModel.js backend, and agent, with the `@bentley/backend-webpack-tools`
+- Webpack/bundling of an iModel.js Extension (formerly Plugin) with `@bentley/extension-webpack-tools`
+- The iModel.js frontend build system is now using Create-React-App as its base.  More details in the [iModel.js frontend build updates](#frontend-build-updates)
+
+### Frontend Build Updates
+
+Quick overview... create-react-app (CRA) is a very popular way to start writing React applications and is actually maintained by Facebook (the creators/maintainers of React).  React-scripts is the webpack/build configuration that is used by CRA and therefore most react-based applications.
+
+There are a lot of details about CRA and how it works on their website [here](https://create-react-app.dev/).  Then more information in the [README](https://dev.azure.com/bentleycs/iModelTechnologies/_git/react-scripts?path=%2FREADME-bentley.md&version=GBbentley) for the Bentley/iModel.js fork of the react-scripts and why we need/want it.
+
+Here I'd like to cover just the changes made to our current test-apps to make compatible with CRA/react-scripts.  One of the main principles of CRA is that you have a `src` folder with a `index.ts` at the root, which is the entry point of an app, and a `public` folder with a `index.html` at the root.  Everything within the `src` folder is then subject to webpacking, including all of the assets that are parsed via loader (i.e. scss, css, json, etc.), and everything in the `public` folder is expected to live at the webroot when it's deployed so it's copied into the build output appropriately.
+
+With the above in mind, the quickest/easiest migration pattern for all existing apps is,
+
+1. Move the current `index.html`, that now most likely lives within `src/frontend/index.html`, to `public/index.html`
+1. Update the `index.html` to remove the following lines,
+
+    ```html
+    <!-- check the browser to verify it is supported. -->
+    <script type="text/javascript" src="v<%= htmlWebpackPlugin.options.loaderVersion %>/checkbrowser.js"></script>
+
+    <script type="text/javascript" src="v<%= htmlWebpackPlugin.options.runtimeVersion %>/runtime.js"></script>
+    <script type="text/javascript" src="v<%= htmlWebpackPlugin.options.loaderVersion %>/IModelJsLoader.js"
+    data-imjsversions='<%= htmlWebpackPlugin.options.imjsVersions %>'></script>
+    ```
+
+   and replace it with,
+
+    ```html
+    <script type="text/javascript" src="%PUBLIC_URL%/scripts/checkbrowser.js"></script>
+    ```
+
+1. Add a `src/index.ts` file which references the current entry point of your app.  For example, if the entry point is currently, `./src/frontend/index.ts`, then the new `./src/index.ts` will be as simple as the new [ui-test-app/src/index.ts](https://dev.azure.com/bentleycs/iModelTechnologies/_git/imodeljs/pullrequest/74170?_a=files&path=%2Ftest-apps%2Fui-test-app%2Fsrc%2Findex.ts) file
+
 ## 3D Globe Background Map Display
 
 The background map can now be displayed as either a plane or a three-dimensional globe. This is controlled by the [GlobeMode]($common) property of the [DisplayStyleSettings.backgroundMap]($common) associated with a [DisplayStyleState]($frontend) or [DisplayStyle]($backend).
@@ -72,7 +110,7 @@ Previously, shader programs used by the [RenderSystem]($frontend) were never com
 
 ## Breaking API changes
 
-With a new major version of the iModel.js library come breaking API changes. The majority of those changes result from the removal of previously deprecated APIs. In addition, the following APis have changed in ways that may require calling code to be adjusted:
+With a new major version of the iModel.js library come breaking API changes. The majority of those changes result from the removal of previously deprecated APIs. In addition, the following APIs have changed in ways that may require calling code to be adjusted:
 
 ### IModel, IModelConnection, IModelDb
 
@@ -460,23 +498,23 @@ import { DEPRECATED_treeWithUnifiedSelection as treeWithUnifiedSelection } from 
       * old `CurveCurve.intersectionProjectedXY (...) : CurveLocationDetailArrayPair`
       * new `CurveCurve.intersectionProjectedXYPairs (...) : CurveLocationDetailPair[]`
   * If `oldIntersections` is the old pair of arrays and `newIntersections` is the new array of pairs,
-     * change   `oldIntersections.dataA[i]`
-     * to `newIntersections[i].detailA`
-     * old `intersections.dataB[i]`
-     * to `newIntersections[i].detailB`
+    * change   `oldIntersections.dataA[i]`
+    * to `newIntersections[i].detailA`
+    * old `intersections.dataB[i]`
+    * to `newIntersections[i].detailB`
   * The method `CurveCurveIntersectXY.grabResults()` is removed -- `grabPairedResults` is the modernized form.
 * `GrowableXYZArray` method `myArray.distance(i,j)` for distance between points identified by indices `(i,j)` is replaced by
-   * old:   `myArray.distance(i,j)`
-   * new:   `myArray.distanceIndexIndex(i,j)`
-   * this clarifies the difference among distance methods:
-      * `myArray.distanceIndexToPoint(i: number, point: Point3d)`
-      * `myArray.distanceSquaredIndexIndex(i: number, point: Point3d)`
+  * old:   `myArray.distance(i,j)`
+  * new:   `myArray.distanceIndexIndex(i,j)`
+  * this clarifies the difference among distance methods:
+    * `myArray.distanceIndexToPoint(i: number, point: Point3d)`
+    * `myArray.distanceSquaredIndexIndex(i: number, point: Point3d)`
 * In `PointHelpers`, the methods to parse variant XYZ data are removed.
-   * In the replacements, the original single callback is replaced by an callback object that can receive start-end callbacks in addition to the primary xyz or xyz pair callback.
-   * old `Point3dArray.streamXYZ (.. )` is removed.
-   * new `VariantPointDataStream.streamXYZ (..)`
-   * old `Point3dArray.streamXYZXYZ(..)` is removed.
-   * new `VariantPointDataStream.streamXYZXYZ (..)`
+  * In the replacements, the original single callback is replaced by an callback object that can receive start-end callbacks in addition to the primary xyz or xyz pair callback.
+  * old `Point3dArray.streamXYZ (.. )` is removed.
+  * new `VariantPointDataStream.streamXYZ (..)`
+  * old `Point3dArray.streamXYZXYZ(..)` is removed.
+  * new `VariantPointDataStream.streamXYZXYZ (..)`
 * `PolyfaceBuilder`
   * old (impropertly cased) method `findOrAddNormalnLineString` is removed. The properly spelled replacement is `findOrAddNormalInLineString` (note the added capital `I`)
 * `ArcSweep`
@@ -489,31 +527,30 @@ import { DEPRECATED_treeWithUnifiedSelection as treeWithUnifiedSelection } from 
   * old instance method `myClipPlane.convexPolygonClipInPlace (. . )` is replaced by (static) `Point3dArrayPolygonOps.convexPolygonClipInPlace`
   * old instance method `myClipPlane.polygonCrossings(polygonPoints, crossings)` is replaced by (static) Point3dArrayPolygonOps.polygonPlaneCrossings (clipPlane, polygonPoints, crossings)`
   * old static  method `myClipPlane.intersectRangeConvexPolygonInPlace (. . )` is replaced by (static) `IndexedXYZCollectionPolygonOps.intersectRangeConvexPolygonInPlace`
- * Various methods (usually static createXXXX) that accept `MultiLineStringDataVariant` have previously been marked as deprecated, with replacement methods that include the words `FromVariant` data.  This decision has been reversed, and that short names are again considered ok.   This includes:
+* Various methods (usually static createXXXX) that accept `MultiLineStringDataVariant` have previously been marked as deprecated, with replacement methods that include the words `FromVariant` data.  This decision has been reversed, and that short names are again considered ok.   This includes:
   * `LineString3d.createArrayOfLineString3d (variantLinestringData:MultiLineStringDataVariant): LineString3d[]` is un-deprecated, and the mangled name `createArrayOfLineString3dFromVariantData` is deprecated.
 
-### various method name changes (breaking)
+### Various method name changes (breaking)
 
-  * On Arc3d, there were previously (confusingly) two "get" properties for the internal matrix of the Arc3d.
-    * arc.matrixRef
-       * This returns a reference to the matrix.
-      * This is not changed.
-      * Direct access to the matrix is dangerous, but the "Ref" qualifier makes that clear.
-    * arc.matrix
-      * this formerly returned a clone of the matrix.
-      * Cloning is expensive.
-      * this is removed.
-      * It is replaced by a method (not property)  `arc3d.matrixClone ()`
-      * `arc3d.matrixClone()` clones the matrix.
-    * `Ellipsoid` API changed to eliminate use of `Point2d` as carrier for a pair of angles.
-      * angle pairs are instead returned in strongly typed`LongitudeLatitudeNumber` objects.
-      * method `ellipsoid.surfaceNormalToRadians` is removed.
-        Use `ellipsoid.surfaceNormalToAngles` for the same result in proper `LongitudeLatitudeNumber` form.
-      * method `ellipsoid.intersectRay (ray, rayFractions[], xyz[], thetaPhiRadians[])` now returns `thetaPhiRadians` as an array of strongly typed `LongitutdeLatitudeNumber`.
-        * Changes made to callers in core\frontend\BackgroundMapGeometry.ts
-      * `SurfaceLocationDetail` has a new (constructor-like) static method `createUVNumbersPoint (surface, u, v, point)` with the surface `u` and `v` parameters as separate numeric values (previously packaged as `Point2d`)
-      * `SphereImplicit.intersectSphereRay` returns its surface angle data as `LongitudeLatitudePoint` instead of as `Point2d`.
-
+* On Arc3d, there were previously (confusingly) two "get" properties for the internal matrix of the Arc3d.
+  * arc.matrixRef
+    * This returns a reference to the matrix.
+    * This is not changed.
+    * Direct access to the matrix is dangerous, but the "Ref" qualifier makes that clear.
+  * arc.matrix
+    * this formerly returned a clone of the matrix.
+    * Cloning is expensive.
+    * this is removed.
+    * It is replaced by a method (not property)  `arc3d.matrixClone ()`
+    * `arc3d.matrixClone()` clones the matrix.
+  * `Ellipsoid` API changed to eliminate use of `Point2d` as carrier for a pair of angles.
+    * angle pairs are instead returned in strongly typed`LongitudeLatitudeNumber` objects.
+    * method `ellipsoid.surfaceNormalToRadians` is removed.
+      Use `ellipsoid.surfaceNormalToAngles` for the same result in proper `LongitudeLatitudeNumber` form.
+    * method `ellipsoid.intersectRay (ray, rayFractions[], xyz[], thetaPhiRadians[])` now returns `thetaPhiRadians` as an array of strongly typed `LongitutdeLatitudeNumber`.
+      * Changes made to callers in core\frontend\BackgroundMapGeometry.ts
+    * `SurfaceLocationDetail` has a new (constructor-like) static method `createUVNumbersPoint (surface, u, v, point)` with the surface `u` and `v` parameters as separate numeric values (previously packaged as `Point2d`)
+    * `SphereImplicit.intersectSphereRay` returns its surface angle data as `LongitudeLatitudePoint` instead of as `Point2d`.
 
 ### Bug fixes
 

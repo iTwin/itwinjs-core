@@ -4,7 +4,7 @@
   "private": true,
   "license": "MIT",
   "scripts": {
-    "build": "tsc 1>&2 && npm run webpack:frontend && node ./node_modules/@bentley/build-tools/scripts/ignoreargs.js 1>&2",
+    "build": "tsc 1>&2 && npm run webpack:frontend",
     "clean": "rimraf lib .rush package-deps.json coverage",
     "cover": "npm run test:chrome -- --cover && npm run test:electron -- --cover",
     "docs": "",
@@ -53,6 +53,6 @@
     "tslint-etc": "^1.5.2",
     "typescript": "~3.7.4",
     "nyc": "^14.0.0",
-    "webpack": "^4.20.2"
+    "webpack": "4.41.5"
   }
 }

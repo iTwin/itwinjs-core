@@ -4,7 +4,7 @@
   "private": true,
   "license": "MIT",
   "scripts": {
-    "build": "npm run build-code && npm run extract-assets && node ./node_modules/@bentley/build-tools/scripts/ignoreargs.js 1>&2",
+    "build": "npm run build-code && npm run extract-assets",
     "lint": "tslint -p . 1>&2",
     "build-code": "tsc 1>&2",
     "clean": "rimraf lib .rush package-deps.json ../../generated-docs",

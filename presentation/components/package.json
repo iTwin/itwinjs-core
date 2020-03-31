@@ -24,7 +24,9 @@
     "url": "http://www.bentley.com"
   },
   "scripts": {
-    "build": "npm run extract && buildIModelJsModule",
+    "copy:locale": "cpx \"../common/assets/**/*\" ./lib/public && cpx \"./public/**/*\" ./lib/public",
+    "copy:assets": "cpx \"./src/**/*.{scss,json}\" ./lib",
+    "build": "npm run copy:assets && npm run copy:locale && npm run pseudolocalize && npm run extract && tsc 1>&2",
     "build:watch": "tsc -w",
     "clean": "rimraf lib .rush package-deps.json",
     "cover": "nyc npm test",
@@ -36,37 +38,9 @@
     "lint": "npm run tslint && npm run eslint",
     "eslint": "eslint src --ext .ts,.tsx,.js,.jsx",
     "tslint": "tslint --project . 1>&2",
+    "pseudolocalize": "node ./node_modules/@bentley/build-tools/scripts/pseudolocalize.js --englishDir ./lib/public/locales/en --out ./lib/public/locales/en-PSEUDO",
     "test": "mocha --opts ../mocha.opts -r ignore-styles -r jsdom-global/register --file ./lib/test/index.test.js \"./lib/test/**/*.test.js\"",
     "test:watch": "npm test -- --reporter min --watch-extensions ts,tsx --watch"
-  },
-  "iModelJs": {
-    "buildModule": {
-      "type": "system",
-      "sourceResources": [
-        {
-          "source": "./src/**/*.json",
-          "dest": "./lib"
-        },
-        {
-          "source": "./src/**/*.scss",
-          "dest": "./lib"
-        },
-        {
-          "source": "./public/**/*",
-          "dest": "./lib/public"
-        }
-      ],
-      "webpack": {
-        "dest": "./lib/module",
-        "entry": "./lib/presentation-components.js",
-        "bundleName": "presentation-components",
-        "styleSheets": true
-      },
-      "pseudoLocalize": {
-        "source": "./lib/public/locales/en",
-        "dest": "./lib/public/locales/en-PSEUDO"
-      }
-    }
   },
   "dependencies": {
     "lodash": "^4.17.10",
@@ -96,7 +70,6 @@
     "@bentley/presentation-frontend": "2.0.0-dev.52",
     "@bentley/ui-core": "2.0.0-dev.52",
     "@bentley/ui-components": "2.0.0-dev.52",
-    "@bentley/webpack-tools": "2.0.0-dev.52",
     "@bentley/ui-abstract": "2.0.0-dev.52",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
@@ -123,9 +96,11 @@
     "eslint-plugin-react-hooks": "^2.3.0",
     "faker": "^4.1.0",
     "ignore-styles": "^5.0.1",
+    "jsdom-global": "3.0.2",
     "mocha": "^5.2.0",
     "nyc": "^14.0.0",
     "@testing-library/react-hooks": "^3.2.1",
+    "react-test-renderer": "^16.13.1",
     "rimraf": "^3.0.2",
     "sinon": "^7.5.0",
     "sinon-chai": "^3.2.0",

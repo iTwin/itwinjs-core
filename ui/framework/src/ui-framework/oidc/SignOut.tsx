@@ -9,7 +9,7 @@
 import * as React from "react";
 
 import { ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
-import { UserInfo, AccessToken, IOidcFrontendClient, IAuthorizationClient } from "@bentley/imodeljs-clients";
+import { UserInfo, AccessToken, isBrowserAuthorizationClient } from "@bentley/imodeljs-clients";
 import { IModelApp } from "@bentley/imodeljs-frontend";
 import { getUserColor } from "@bentley/ui-core";
 
@@ -67,7 +67,7 @@ export class SignOutModalFrontstage implements ModalFrontstageInfo {
     const authorizationClient = IModelApp.authorizationClient;
 
     // istanbul ignore next
-    if (isIOidcFrontendClient(authorizationClient))
+    if (isBrowserAuthorizationClient(authorizationClient))
       authorizationClient.signOut(new ClientRequestContext()); // tslint:disable-line:no-floating-promises
     else
       Logger.logInfo(UiFramework.loggerCategory(this), "IModelApp.authorizationClient must be set for signOut");
@@ -101,10 +101,3 @@ export class SignOutModalFrontstage implements ModalFrontstageInfo {
     );
   }
 }
-
-/** IOidcFrontendClient type guard.
- * @beta
- */
-const isIOidcFrontendClient = (item: IAuthorizationClient | undefined): item is IOidcFrontendClient => {
-  return item !== undefined && (item as IOidcFrontendClient).signOut !== undefined;
-};

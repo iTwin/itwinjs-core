@@ -1,0 +1,369 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+import { assert, AuthStatus, BeEvent, BentleyError, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
+import { User, UserManager, UserManagerSettings } from "oidc-client";
+import { AccessToken } from "../../Token";
+import { UserInfo } from "../../UserInfo";
+import { IFrontendAuthorizationClient } from "../IFrontendAuthorizationClient";
+import { ImsOidcClient } from "../ImsOidcClient";
+import { BrowserAuthorizationClientRedirectState } from "./BrowserAuthorizationClientRedirectState";
+import { BrowserAuthorizationBase } from "./BrowserAuthorizationBase";
+import { IAuthorizationClient } from "../../AuthorizationClient";
+
+/**
+ * @beta
+ */
+export interface BrowserAuthorizationClientConfiguration {
+  /** The URL of the OIDC/OAuth2 provider. If left undefined, the Bentley auth authority will be used by default. */
+  readonly authority?: string;
+  /** The unique client id registered through the issuing authority. Required to obtain authorization from the user. */
+  readonly clientId: string;
+  /**
+   * The URL passed in the authorization request, to which the authority will redirect the browser after the user grants/denies access
+   * The redirect URL must be registered against the clientId through the issuing authority to be considered valid.
+   */
+  readonly redirectUri: string;
+  /**
+   * The URL passed in the signout request, to which the authority will redirect the browser after the user has been signed out.
+   * The signout URL must be registered against the clientId through the issuing authority to be considered valid.
+   */
+  readonly postSignoutRedirectUri?: string;
+  /** A space-delimited collection of individual access claims specified by the authority. The user must consent to all specified scopes in order to grant authorization */
+  readonly scope: string;
+  /** The mechanism (or authentication flow) used to acquire auth information from the user through the authority */
+  readonly responseType?: "code" | "id_token" | "id_token token" | "code id_token" | "code token" | "code id_token token" | string;
+}
+
+/** IOidcFrontendClient type guard.
+ * @beta
+ */
+export const isBrowserAuthorizationClient = (client: IAuthorizationClient | undefined): client is IFrontendAuthorizationClient => {
+  return client !== undefined && (client as IFrontendAuthorizationClient).signIn !== undefined && (client as IFrontendAuthorizationClient).signOut !== undefined;
+};
+
+/**
+ * @beta
+ */
+export class BrowserAuthorizationClient extends BrowserAuthorizationBase<BrowserAuthorizationClientConfiguration> implements IFrontendAuthorizationClient {
+  public static readonly loggerCategory: string = "imodeljs-clients.BrowserAuthorizationClient";
+
+  public readonly onUserStateChanged = new BeEvent<(token: AccessToken | undefined) => void>();
+
+  protected _accessToken?: AccessToken;
+
+  public get isAuthorized(): boolean {
+    return this.hasSignedIn;
+  }
+
+  public get hasExpired(): boolean {
+    return !this._accessToken;
+  }
+
+  public get hasSignedIn(): boolean {
+    return !!this._accessToken;
+  }
+
+  public constructor(configuration: BrowserAuthorizationClientConfiguration) {
+    super(configuration);
+  }
+
+  protected async getUserManager(requestContext: ClientRequestContext): Promise<UserManager> {
+    if (this._userManager) {
+      return this._userManager;
+    }
+
+    const settings = await this.getUserManagerSettings(requestContext, this._basicSettings, this._advancedSettings);
+    this._userManager = this.createUserManager(settings);
+    return this._userManager;
+  }
+
+  /**
+   * Merges the basic and advanced settings into a single configuration object consumable by the internal userManager.
+   * @param requestContext
+   * @param basicSettings
+   * @param advancedSettings
+   */
+  protected async getUserManagerSettings(requestContext: ClientRequestContext, basicSettings: BrowserAuthorizationClientConfiguration, advancedSettings?: UserManagerSettings): Promise<UserManagerSettings> {
+    let userManagerSettings: UserManagerSettings = {
+      authority: basicSettings.authority,
+      redirect_uri: basicSettings.redirectUri,
+      client_id: basicSettings.clientId,
+      scope: basicSettings.scope,
+      post_logout_redirect_uri: basicSettings.postSignoutRedirectUri,
+      response_type: basicSettings.responseType,
+    };
+
+    if (advancedSettings) {
+      userManagerSettings = Object.assign(userManagerSettings, advancedSettings);
+    }
+
+    if (!userManagerSettings.authority) {
+      const imsOidcClient = new ImsOidcClient();
+      const authority = await imsOidcClient.getUrl(requestContext);
+      userManagerSettings.authority = authority;
+    }
+
+    return userManagerSettings;
+  }
+
+  /**
+   * Creates the internal user manager and binds all relevant events to their respective callback function.
+   * @param settings
+   */
+  protected createUserManager(settings: UserManagerSettings): UserManager {
+    const userManager = new UserManager(settings);
+
+    userManager.events.addUserLoaded(this._onUserLoaded);
+    userManager.events.addUserUnloaded(this._onUserUnloaded);
+    userManager.events.addAccessTokenExpiring(this._onAccessTokenExpiring);
+    userManager.events.addAccessTokenExpired(this._onAccessTokenExpired);
+    userManager.events.addSilentRenewError(this._onSilentRenewError);
+    userManager.events.addUserSignedOut(this._onUserSignedOut);
+
+    return userManager;
+  }
+
+  /**
+   * Alias for signInRedirect needed to satisfy [[IFrontendAuthorizationClient]]
+   * @param requestContext
+   */
+  public async signIn(requestContext: ClientRequestContext): Promise<void> {
+    return this.signInRedirect(requestContext);
+  }
+
+  /**
+   * Attempts a sign-in via redirection with the authorization provider.
+   * If possible, a non-interactive signin will be attempted first.
+   * If successful, the returned promise will be resolved.
+   * Otherwise, an attempt to redirect the browser will proceed.
+   * If an error prvents the redirection from occurring, the returned promise will be rejected with the responsible error.
+   * Otherwise, the browser's window will be redirected away from the current page, effectively ending execution here.
+   */
+  public async signInRedirect(requestContext: ClientRequestContext, successRedirectUrl?: string): Promise<void> {
+    requestContext.enter();
+
+    const user = await this.nonInteractiveSignIn(requestContext);
+    if (user) {
+      return;
+    }
+
+    const userManager = await this.getUserManager(requestContext);
+    const state: BrowserAuthorizationClientRedirectState = {
+      successRedirectUrl: successRedirectUrl || window.location.href,
+    };
+
+    await userManager.signinRedirect({
+      state,
+    }); // This call changes the window's URL, which effectively ends execution here unless an exception is thrown.
+  }
+
+  /**
+   * Attempts a sign-in via popup with the authorization provider
+   * @param requestContext
+   */
+  public async signInPopup(requestContext: ClientRequestContext): Promise<void> {
+    requestContext.enter();
+
+    let user = await this.nonInteractiveSignIn(requestContext);
+    if (user) {
+      return;
+    }
+
+    const userManager = await this.getUserManager(requestContext);
+    user = await userManager.signinPopup();
+    assert(user && !user.expired, "Expected userManager.signinPopup to always resolve to an authorized user");
+    return;
+  }
+
+  /**
+   * Attempts a silent sign in with the authorization provider
+   * @throws [[Error]] If the silent sign in fails
+   */
+  public async signInSilent(requestContext: ClientRequestContext): Promise<void> {
+    requestContext.enter();
+
+    const user = await this.nonInteractiveSignIn(requestContext);
+    assert(!!user && !user.expired, "Expected userManager.signinSilent to always resolve to an authorized user");
+    return;
+  }
+
+  /**
+   * Attempts a non-interactive signIn
+   * - tries to load the user from storage
+   * - tries to silently sign-in the user
+   */
+  protected async nonInteractiveSignIn(requestContext: ClientRequestContext): Promise<User | undefined> {
+    let user = await this.loadUser(requestContext);
+    if (user) {
+      return user;
+    }
+
+    const userManager = await this.getUserManager(requestContext);
+    if (userManager.settings.prompt && userManager.settings.prompt !== "none") { // No need to even try a silent sign in if we know the prompt will force its failure.
+      return undefined;
+    }
+
+    // Attempt a silent sign-in
+    try {
+      user = await userManager.signinSilent(); // calls events
+      return user;
+    } catch (err) {
+      Logger.logInfo(BrowserAuthorizationClient.loggerCategory, "Silent sign-in failed");
+      return undefined;
+    }
+  }
+
+  /**
+   * Gets the user from storage
+   * @return User found in storage.
+   * - Resolves to undefined if no user was found.
+   * - Returned user may have expired - so it's up to the caller to check the expired state
+   */
+  protected async loadUser(requestContext: ClientRequestContext): Promise<User | undefined> {
+    const userManager = await this.getUserManager(requestContext);
+    requestContext.enter();
+
+    const user = await userManager.getUser();
+    requestContext.enter();
+
+    if (user && !user.expired) {
+      this._onUserLoaded(user); // Call only because getUser() doesn't call any events
+      return user;
+    }
+
+    return undefined;
+  }
+
+  protected initAccessToken(user: User | undefined) {
+    if (!user) {
+      this._accessToken = undefined;
+      return;
+    }
+
+    const startsAt: Date = new Date((user.expires_at - user.expires_in!) * 1000);
+    const expiresAt: Date = new Date(user.expires_at * 1000);
+    const userInfo = UserInfo.fromJson(user.profile);
+    this._accessToken = AccessToken.fromJsonWebTokenString(user.access_token, startsAt, expiresAt, userInfo);
+  }
+
+  /**
+   * Alias for signOutRedirect
+   * @param requestContext
+   */
+  public async signOut(requestContext: ClientRequestContext): Promise<void> {
+    await this.signOutRedirect(requestContext);
+  }
+
+  public async signOutRedirect(requestContext: ClientRequestContext): Promise<void> {
+    const userManager = await this.getUserManager(requestContext);
+    requestContext.enter();
+
+    await userManager.signoutRedirect();
+  }
+
+  public async signOutPopup(requestContext: ClientRequestContext): Promise<void> {
+    const userManager = await this.getUserManager(requestContext);
+    requestContext.enter();
+
+    await userManager.signoutPopup();
+  }
+
+  /**
+   * Returns a promise that resolves to the AccessToken of the currently authorized user.
+   * The token is refreshed as necessary.
+   * @throws [[BentleyError]] If signIn() was not called, or there was an authorization error.
+   */
+  public async getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken> {
+    if (this._accessToken)
+      return this._accessToken;
+    if (requestContext)
+      requestContext.enter();
+    throw new BentleyError(AuthStatus.Error, "Not signed in.", Logger.logError, BrowserAuthorizationClient.loggerCategory);
+  }
+
+  /**
+   * Checks the current local user session against that of the identity provider.
+   * If the session is no longer valid, the local user is removed from storage.
+   * @returns true if the local session is still active with the provider, false otherwise.
+   * @param requestContext
+   * @param ignoreCheckInterval Bypass the default behavior to wait until a certain time has passed since the last check was performed
+   */
+  public async checkSessionStatus(requestContext: ClientRequestContext): Promise<boolean> {
+    requestContext.enter();
+
+    const userManager = await this.getUserManager(requestContext);
+    try {
+      await userManager.querySessionStatus();
+    } catch (err) { // Access token is no longer valid in this session
+      await userManager.removeUser();
+      return false;
+    }
+
+    return true;
+  }
+
+  protected _onUserStateChanged = (user: User | undefined) => {
+    this.initAccessToken(user);
+    try {
+      this.onUserStateChanged.raiseEvent(this._accessToken);
+    } catch (err) {
+      Logger.logError(BrowserAuthorizationClient.loggerCategory, "Error thrown when handing OidcBrowserClient.onUserStateChanged event", () => ({ message: err.message }));
+    }
+  }
+
+  /**
+   * Raised when a user session has been established (or re-established).
+   * This can happen on startup, after token refresh or token callback.
+   */
+  protected _onUserLoaded = (user: User) => {
+    this._onUserStateChanged(user);
+  }
+
+  /**
+   * Raised when a user session has been terminated.
+   */
+  protected _onUserUnloaded = () => {
+    this._onUserStateChanged(undefined);
+  }
+
+  /**
+   * Raised prior to the access token expiring
+   */
+  protected _onAccessTokenExpiring = async () => {
+  }
+
+  /**
+   * Raised after the access token has expired.
+   */
+  protected _onAccessTokenExpired = () => {
+    this._onUserStateChanged(undefined);
+  }
+
+  /**
+   * Raised when the automatic silent renew has failed.
+   */
+  protected _onSilentRenewError = () => {
+    this._onUserStateChanged(undefined);
+  }
+
+  /**
+   * Raised when the user's sign-in status at the OP has changed.
+   */
+  protected _onUserSignedOut = () => {
+    this._onUserStateChanged(undefined);
+  }
+
+  /** Disposes the resources held by this client */
+  public dispose(): void {
+    if (this._userManager) {
+      this._userManager.events.removeUserLoaded(this._onUserLoaded);
+      this._userManager.events.removeAccessTokenExpiring(this._onAccessTokenExpiring);
+      this._userManager.events.removeAccessTokenExpired(this._onAccessTokenExpired);
+      this._userManager.events.removeUserUnloaded(this._onUserUnloaded);
+      this._userManager.events.removeSilentRenewError(this._onSilentRenewError);
+      this._userManager.events.removeUserSignedOut(this._onUserSignedOut);
+    }
+  }
+}

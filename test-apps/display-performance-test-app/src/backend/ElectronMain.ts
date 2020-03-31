@@ -6,7 +6,7 @@ import * as path from "path";
 
 import { ElectronRpcManager } from "@bentley/imodeljs-common";
 import { initializeBackend, getRpcInterfaces } from "./backend";
-import { IModelJsElectronManager } from "@bentley/electron-manager";
+import { IModelJsElectronManager, WebpackDevServerElectronManager, StandardElectronManager } from "@bentley/electron-manager";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 
 import * as electron from "electron";
@@ -26,7 +26,7 @@ const autoOpenDevTools = (undefined === process.env.SVT_NO_DEV_TOOLS);
 const maximizeWindow = (undefined === process.env.SVT_NO_MAXIMIZE_WINDOW); // Make max window the default
 
 (async () => { // tslint:disable-line:no-floating-promises
-  const manager = new IModelJsElectronManager(path.join(__dirname, "..", "webresources"));
+  const manager: IModelJsElectronManager = new IModelJsElectronManager(path.join(__dirname, "..", "..", "build"));
 
   await manager.initialize({
     width: 1280,
@@ -49,17 +49,6 @@ const maximizeWindow = (undefined === process.env.SVT_NO_MAXIMIZE_WINDOW); // Ma
     }
     if (autoOpenDevTools)
       manager.mainWindow.webContents.toggleDevTools();
-  }
-
-  // tslint:disable-next-line:no-var-requires
-  const configPathname = path.normalize(path.join(__dirname, "../webresources", "config.json"));
-  const configuration = require(configPathname);
-  if (configuration.useIModelBank) {
-    electron.app.on("certificate-error", (event, _webContents, _url, _error, _certificate, callback) => {
-      // (needed temporarily to use self-signed cert to communicate with iModelBank via https)
-      event.preventDefault();
-      callback(true);
-    });
   }
 
   // Handle custom keyboard shortcuts

@@ -58,10 +58,6 @@ steps:
   - script: node common/scripts/install-run-rush.js rebuild -v
     displayName: rush build
     workingDirectory: ${{ parameters.workingDir }}
-  - script: node common/scripts/install-run-rush.js rebuild --production -v
-    displayName: rush build prod
-    workingDirectory: ${{ parameters.workingDir }}
-    condition: and(succeeded(), in(variables['Build.Reason'], 'IndividualCI', 'Schedule', 'Manual'))
   - script: node common/scripts/install-run-rush.js extract-api
     displayName: rush extract-api
     workingDirectory: ${{ parameters.workingDir }}

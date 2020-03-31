@@ -6,7 +6,6 @@ import * as path from "path";
 import * as express from "express";
 import * as child_process from "child_process";
 import * as chromeLauncher from "chrome-launcher";
-import { IModelJsFs } from "@bentley/imodeljs-backend";
 import { BentleyCloudRpcManager, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface } from "@bentley/imodeljs-common";
 import { initializeBackend } from "./backend";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
@@ -15,18 +14,6 @@ import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 
 export function getRpcInterfaces() {
   return [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface];
-}
-
-function setupStandaloneConfiguration() {
-  const filename = process.env.SVT_STANDALONE_FILENAME;
-  if (filename !== undefined) {
-    const configuration: any = {};
-    configuration.standalone = true;
-    configuration.standalonePath = filename;
-    configuration.viewName = process.env.SVT_STANDALONE_VIEWNAME; // optional
-    configuration.iModelName = filename;
-    IModelJsFs.writeFileSync(path.join(__dirname, "configuration.json"), JSON.stringify(configuration));
-  }
 }
 
 // Start the Express web server
@@ -42,10 +29,10 @@ function startWebServer() {
   });
   // All we do is serve out static files, so We have only the simple public path route.
   // If args.resources is relative, we expect it to be relative to process.cwd
-  const resourceRoot = path.resolve(process.cwd(), "./lib/webresources/");
+  const resourceRoot = path.resolve(process.cwd(), "./build");
   appExp.use(express.static(resourceRoot));
   appExp.use("*", (_req, resp) => {
-    resp.sendFile(path.resolve("./lib/webresources/", "index.html"));
+    resp.sendFile(path.resolve(resourceRoot, "index.html"));
   });
   // Run the server...
   appExp.set("port", 3000);
@@ -70,8 +57,6 @@ process.argv.forEach((arg) => {
 });
 
 if (serverConfig === undefined) {
-  setupStandaloneConfiguration();
-
   serverConfig = { port: 3001, baseUrl: "https://localhost" };
 } else {
 
@@ -94,14 +79,10 @@ app.all("/*", (_req, res, next) => {
 // --------------------------------------------
 // Routes
 // --------------------------------------------
-app.use(express.static(path.resolve(__dirname, "public")));
 app.get("/v3/swagger.json", (req, res) => cloudConfig.protocol.handleOpenApiDescriptionRequest(req, res));
 app.post("*", async (req, res) => cloudConfig.protocol.handleOperationPostRequest(req, res));
 app.get(/\/imodel\//, async (req, res) => cloudConfig.protocol.handleOperationGetRequest(req, res));
 app.use("*", (_req, res) => { res.send("<h1>IModelJs RPC Server</h1>"); });
-app.get("/signin-callback", (_req, res) => {
-  res.sendFile(path.join(__dirname, "public/index.html"));
-});
 
 // ---------------------------------------------
 // Run the server...

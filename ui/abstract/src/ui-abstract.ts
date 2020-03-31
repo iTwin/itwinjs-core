@@ -53,15 +53,6 @@ export * from "./ui-abstract/widget/AbstractWidgetProps";
 export * from "./ui-abstract/widget/StagePanel";
 export * from "./ui-abstract/widget/WidgetState";
 
-// Set the version number so it can be found at runtime. BUILD_SEMVER is replaced at build time by the webpack DefinePlugin.
-declare var BUILD_SEMVER: string;
-// istanbul ignore next
-if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") && window) {
-  if (!(window as any).iModelJsVersions)
-    (window as any).iModelJsVersions = new Map<string, string>();
-  (window as any).iModelJsVersions.set("ui-abstract", BUILD_SEMVER);
-}
-
 /** @docs-package-description
  * The ui-abstract package contains abstractions for UI controls, such as toolbars, buttons and menus.
  * For more information, see [learning about ui-abstract]($docs/learning/ui/abstract/index.md).

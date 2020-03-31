@@ -130,15 +130,15 @@ You can use these environment variables to alter the default behavior of various
 * SVT_FAKE_CLOUD_STORAGE
   * If defined, cloud storage tile caching will be simulated. Cached tiles will be stored in ./lib/webresources/tiles/. They will be removed by a `rush clean`.
     * NOTE: This currently only works when running display-test-app in a browser.
- * SVT_ENABLE_MAP_TEXTURE_FILTER
+* SVT_ENABLE_MAP_TEXTURE_FILTER
   * If defined, the anisotropic filtering will be used for (planar) map tiles.
- * SVT_DISABLE_MAP_DRAPE_TEXTURE_FILTER
+* SVT_DISABLE_MAP_DRAPE_TEXTURE_FILTER
   * If defined, the anisotropic filtering will be disabled for map tiles draped on terrain.
- * SVT_DISABLE_DPI_AWARE_VIEWPORTS
+* SVT_DISABLE_DPI_AWARE_VIEWPORTS
   * If defined, do not respect the DPI of the system when rendering viewports.
- * SVT_NO_CANCEL_TILE_REQUESTS
+* SVT_NO_CANCEL_TILE_REQUESTS
   * If defined, do not cancel tile requests on backend when cancelled on front-end.
- * SVT_DISABLE_EDGE_DISPLAY
+* SVT_DISABLE_EDGE_DISPLAY
   * If defined, do not allow visible or hidden edges to be displayed, and also do not create any UI related to them.
 * SVT_USE_WEBGL2
   * If defined, the system will attempt to create a WebGL2 context.

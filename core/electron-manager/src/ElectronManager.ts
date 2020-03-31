@@ -6,6 +6,7 @@ import * as path from "path";
 import * as fs from "fs";
 import { app, BrowserWindow, BrowserWindowConstructorOptions, protocol } from "electron";
 import { OidcDesktopClientMain } from "./OidcDesktopClientMain";
+import { BeDuration } from "@bentley/bentleyjs-core";
 
 /**
  * A helper class that simplifies the creation of basic single-window desktop applications
@@ -53,6 +54,9 @@ export abstract class StandardElectronManager {
       await new Promise((resolve) => app.on("ready", resolve));
 
     this.openMainWindow(windowOptions);
+
+    // Setup handlers for IPC calls to support Authorization
+    OidcDesktopClientMain.initializeIpc(this.mainWindow!);
   }
 }
 
@@ -121,9 +125,6 @@ export class IModelJsElectronManager extends StandardElectronManager {
     protocol.registerFileProtocol("electron", (request, callback) => callback(this.parseElectronUrl(request.url)));
 
     await super.initialize(windowOptions);
-
-    // Setup handlers for IPC calls to support Authorization
-    OidcDesktopClientMain.initializeIpc(this.mainWindow!);
   }
 }
 
@@ -148,5 +149,25 @@ export class WebpackDevServerElectronManager extends StandardElectronManager {
       autoHideMenuBar: true,
       icon: this.appIconPath,
     };
+  }
+
+  public async initialize(windowOptions?: BrowserWindowConstructorOptions): Promise<void> {
+    protocol.registerSchemesAsPrivileged([
+      { scheme: "electron", privileges: { standard: true, secure: true } },
+    ]);
+
+    // Occasionally, the electron backend may start before the webpack devserver has even started.
+    // If this happens, we'll just retry and keep reloading the page.
+    app.on("web-contents-created", (_e, webcontents) => {
+      webcontents.on("did-fail-load", async (_event, errorCode, _errorDescription, _validatedURL, isMainFrame) => {
+        // errorCode -102 is CONNECTION_REFUSED - see https://cs.chromium.org/chromium/src/net/base/net_error_list.h
+        if (isMainFrame && errorCode === -102) {
+          await BeDuration.wait(100);
+          webcontents.reload();
+        }
+      });
+    });
+
+    return super.initialize(windowOptions);
   }
 }

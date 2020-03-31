@@ -11,7 +11,7 @@ import { ModelessDialogManager } from "@bentley/ui-framework";
 import { ITreeDataProvider } from "@bentley/ui-components";
 
 import { GeoPhotoDialog } from "./GPDialog";
-import geoPhotoButtonSvg from "./geoPhoto-button.svg";
+import geoPhotoButtonSvg from "./geoPhoto-button.svg?sprite";
 import { GeoPhotoExtension, GeoPhotoSettings } from "../geoPhoto";
 import { GPLoadTracker } from "../PhotoTree";
 
@@ -80,22 +80,22 @@ export class GPDialogUiProvider extends UiDataProvider implements UiItemsProvide
 
   public syncLoadPhaseInUi() {
     const syncArgs: DialogPropertySyncItem[] = [{ value: { value: this.loadPhase }, propertyName: this.loadPhasePropertyName }];
-    this.onSyncPropertiesChangeEvent.emit({properties: syncArgs});
+    this.onSyncPropertiesChangeEvent.emit({ properties: syncArgs });
   }
 
   private syncFolderCountInUi() {
     const syncArgs: DialogPropertySyncItem[] = [{ value: { value: this.folderCount }, propertyName: this.folderCountPropertyName }];
-    this.onSyncPropertiesChangeEvent.emit({properties: syncArgs});
+    this.onSyncPropertiesChangeEvent.emit({ properties: syncArgs });
   }
 
   private syncFolderNameInUi() {
     const syncArgs: DialogPropertySyncItem[] = [{ value: { value: this.folderName }, propertyName: this.folderNamePropertyName }];
-    this.onSyncPropertiesChangeEvent.emit({properties: syncArgs});
+    this.onSyncPropertiesChangeEvent.emit({ properties: syncArgs });
   }
 
   private syncFileCountInUi() {
     const syncArgs: DialogPropertySyncItem[] = [{ value: { value: this.fileCount }, propertyName: this.folderNamePropertyName }];
-    this.onSyncPropertiesChangeEvent.emit({properties: syncArgs});
+    this.onSyncPropertiesChangeEvent.emit({ properties: syncArgs });
   }
 
   // synch the Phase1 Counts (folders, files, photos, and panoramas) every .1 second.
@@ -119,7 +119,7 @@ export class GPDialogUiProvider extends UiDataProvider implements UiItemsProvide
       { value: { value: this.photoCount }, propertyName: this.photoCountPropertyName },
       { value: { value: this.panoramaCount }, propertyName: this.panoramaCountPropertyName },
     ];
-    this.onSyncPropertiesChangeEvent.emit({properties: syncArgs});
+    this.onSyncPropertiesChangeEvent.emit({ properties: syncArgs });
   }
 
   public syncTitle(title: string) {

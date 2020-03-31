@@ -6,7 +6,7 @@
   "main": "lib/webgl-compatibility.js",
   "imodeljsSharedLibrary": true,
   "scripts": {
-    "build": "buildIModelJsModule",
+    "build": "tsc 1>&2",
     "clean": "rimraf lib .rush package-deps.json",
     "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --includes=../../generated-docs/extract --json=../../generated-docs/core/webgl-compatibility/file.json --tsIndexFile=./webgl-compatibility.ts --onlyJson %TYPEDOC_THEME%",
     "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=webgl-compatibility",
@@ -14,16 +14,6 @@
     "test": "npm run webpackTests && node ./node_modules/@bentley/certa/bin/certa.js -r chrome",
     "cover": "npm test -- --cover",
     "webpackTests": "webpack --config ./src/test/utils/webpack.config.js 1>&2"
-  },
-  "iModelJs": {
-    "buildModule": {
-      "type": "system",
-      "webpack": {
-        "dest": "./lib/module",
-        "entry": "./lib/webgl-compatibility.js",
-        "bundleName": "webgl-compatibility"
-      }
-    }
   },
   "repository": {
     "type": "git",
@@ -45,7 +35,6 @@
   "peerDependencies": {},
   "devDependencies": {
     "@bentley/build-tools": "2.0.0-dev.52",
-    "@bentley/webpack-tools": "2.0.0-dev.52",
     "@bentley/certa": "2.0.0-dev.52",
     "@types/node": "10.14.1",
     "@types/mocha": "^5.2.5",
@@ -58,6 +47,6 @@
     "mocha": "^5.2.0",
     "source-map-loader": "^0.2.3",
     "glob": "^7.1.2",
-    "webpack": "^4.20.2"
+    "webpack": "4.41.5"
   }
 }

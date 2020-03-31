@@ -11,7 +11,7 @@
     "url": "https://github.com/imodeljs/imodeljs/tree/master/core/quantity"
   },
   "scripts": {
-    "build": "buildIModelJsModule",
+    "build": "tsc 1>&2",
     "clean": "rimraf lib .rush package-deps.json .nyc_output",
     "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=imodeljs-quantity",
     "lint": "tslint --project . 1>&2",
@@ -19,16 +19,6 @@
     "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-quantity/file.json --tsIndexFile=./imodeljs-quantity.ts --onlyJson %TYPEDOC_THEME%",
     "cover": "nyc npm test",
     "start": "npm run lint && npm run clean && npm run build && npm run test & npm run cover & npm run docs"
-  },
-  "iModelJs": {
-    "buildModule": {
-      "type": "system",
-      "webpack": {
-        "dest": "./lib/module",
-        "entry": "./lib/imodeljs-quantity.js",
-        "bundleName": "imodeljs-quantity"
-      }
-    }
   },
   "keywords": [
     "Bentley",
@@ -42,7 +32,6 @@
   "devDependencies": {
     "@bentley/bentleyjs-core": "2.0.0-dev.52",
     "@bentley/build-tools": "2.0.0-dev.52",
-    "@bentley/webpack-tools": "2.0.0-dev.52",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/glob": "^5.0.35",

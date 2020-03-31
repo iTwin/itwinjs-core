@@ -9,7 +9,7 @@
   },
   "typings": "lib/index",
   "scripts": {
-    "build": "tsc 1>&2 && node ./node_modules/@bentley/build-tools/scripts/ignoreargs.js 1>&2",
+    "build": "tsc 1>&2",
     "clean": "rimraf lib .rush package-deps.json",
     "docs": "",
     "lint": "tslint --project . 1>&2",

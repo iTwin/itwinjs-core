@@ -6,7 +6,7 @@ import * as path from "path";
 
 import { ElectronRpcManager } from "@bentley/imodeljs-common";
 import { initializeBackend, getRpcInterfaces } from "./backend";
-import { IModelJsElectronManager } from "@bentley/electron-manager";
+import { IModelJsElectronManager, WebpackDevServerElectronManager, StandardElectronManager } from "@bentley/electron-manager";
 
 import * as electron from "electron";
 
@@ -17,7 +17,11 @@ const autoOpenDevTools = (undefined === process.env.SVT_NO_DEV_TOOLS);
 const maximizeWindow = (undefined === process.env.SVT_NO_MAXIMIZE_WINDOW);
 
 (async () => { // tslint:disable-line:no-floating-promises
-  const manager = new IModelJsElectronManager(path.join(__dirname, "..", "webresources"));
+  let manager: StandardElectronManager;
+  if (process.env.NODE_ENV === "production")
+    manager = new IModelJsElectronManager(path.join(__dirname, "..", "build"));
+  else
+    manager = new WebpackDevServerElectronManager(3000); // port should match the port of the local dev server
 
   // Handle custom keyboard shortcuts
   electron.app.on("web-contents-created", (_e, wc) => {
@@ -56,7 +60,7 @@ const maximizeWindow = (undefined === process.env.SVT_NO_MAXIMIZE_WINDOW);
   }
 
   // tslint:disable-next-line:no-var-requires
-  const configPathname = path.normalize(path.join(__dirname, "../webresources", "config.json"));
+  const configPathname = path.normalize(path.join(__dirname, "../../public", "configuration.json"));
   const configuration = require(configPathname);
   if (configuration.useIModelBank) {
     electron.app.on("certificate-error", (event, _webContents, _url, _error, _certificate, callback) => {

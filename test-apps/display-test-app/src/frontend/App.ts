@@ -45,8 +45,6 @@ import {
   Surface,
 } from "./Surface";
 
-declare var BUILD_SEMVER: string;
-
 class DisplayTestAppAccuSnap extends AccuSnap {
   private readonly _activeSnaps: SnapMode[] = [SnapMode.NearestKeypoint];
 
@@ -244,11 +242,11 @@ export class DisplayTestApp {
     opts.tileAdmin = TileAdmin.create(DisplayTestApp.tileAdminProps);
     IModelApp.startup(opts);
 
-    // for testing local extensions. Shouldn't be used in prod apps.
+    // For testing local extensions only, should not be used in production.
     IModelApp.extensionAdmin.addExtensionLoader(new ExternalServerExtensionLoader("http://localhost:3000"), 50);
 
     IModelApp.applicationLogoCard =
-      () => IModelApp.makeLogoCard({ iconSrc: "DTA.png", iconWidth: 100, heading: "Display Test App", notice: "For internal testing<br>" + BUILD_SEMVER });
+      () => IModelApp.makeLogoCard({ iconSrc: "DTA.png", iconWidth: 100, heading: "Display Test App", notice: "For internal testing" });
 
     const svtToolNamespace = IModelApp.i18n.registerNamespace("SVTTools");
     [

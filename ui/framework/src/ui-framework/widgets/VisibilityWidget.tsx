@@ -22,7 +22,7 @@ import { ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl"
 
 import "./VisibilityWidget.scss";
 
-import widgetIconSvg from "@bentley/icons-generic/icons/hierarchy-tree.svg";
+import widgetIconSvg from "@bentley/icons-generic/icons/hierarchy-tree.svg?sprite";
 import { ModelsTree, ModelsTreeSelectionPredicate } from "../imodel-components/models-tree/ModelsTree";
 import { CategoryTreeWithSearchBox } from "../imodel-components/category-tree/CategoriesTreeWithSearchBox";
 

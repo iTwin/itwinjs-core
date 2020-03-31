@@ -7,7 +7,7 @@
  */
 
 import { AuthStatus, BeEvent, BentleyError, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
-import { AccessToken, IOidcFrontendClient, OidcClient, UserInfo } from "@bentley/imodeljs-clients";
+import { AccessToken, UserInfo, ImsOidcClient, IFrontendAuthorizationClient } from "@bentley/imodeljs-clients";
 import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
 
 const loggerCategory: string = FrontendLoggerCategory.OidcIOSClient;
@@ -15,7 +15,7 @@ const loggerCategory: string = FrontendLoggerCategory.OidcIOSClient;
 /** Utility to provide OIDC/OAuth tokens from native ios app to frontend
  * @alpha
  */
-export class OidcIOSClient extends OidcClient implements IOidcFrontendClient {
+export class OidcIOSClient extends ImsOidcClient implements IFrontendAuthorizationClient {
   private _accessToken: AccessToken | undefined;
   public constructor() {
     super();

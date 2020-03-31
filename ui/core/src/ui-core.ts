@@ -153,15 +153,6 @@ export * from "./ui-core/utils/hooks/useRefs";
 export * from "./ui-core/utils/hooks/useResizeObserver";
 export * from "./ui-core/utils/hooks/useTargeted";
 
-// Set the version number so it can be found at runtime. BUILD_SEMVER is replaced at build time by the webpack DefinePlugin.
-declare var BUILD_SEMVER: string;
-// istanbul ignore next
-if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") && window) {
-  if (!(window as any).iModelJsVersions)
-    (window as any).iModelJsVersions = new Map<string, string>();
-  (window as any).iModelJsVersions.set("ui-core", BUILD_SEMVER);
-}
-
 /** @docs-package-description
  * The ui-core package contains general purpose React components, such as Dialog, MessageBox, SearchBox, RadialMenu and SplitButton.
  * For more information, see [learning about ui-core]($docs/learning/ui/core/index.md).
