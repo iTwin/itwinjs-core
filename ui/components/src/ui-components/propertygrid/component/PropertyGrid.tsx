@@ -47,10 +47,12 @@ export interface PropertyGridProps extends CommonProps {
   isPropertyEditingEnabled?: boolean;
   /** Callback for when properties are being edited @beta */
   onPropertyEditing?: (args: PropertyEditingArgs, category: PropertyCategory) => void;
-  /** Callback for when links in properties are being clicked @beta */
-  onPropertyLinkClick?: (property: PropertyRecord, text: string) => void;
   /** Callback for when properties are updated @beta */
   onPropertyUpdated?: (args: PropertyUpdatedArgs, category: PropertyCategory) => Promise<boolean>;
+
+  /** Callback for when links in properties are being clicked @beta */
+  onPropertyLinkClick?: (property: PropertyRecord, text: string) => void;
+
   /** Custom property value renderer manager */
   propertyValueRendererManager?: PropertyValueRendererManager;
 

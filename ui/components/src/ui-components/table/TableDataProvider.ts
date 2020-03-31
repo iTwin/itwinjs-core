@@ -102,7 +102,10 @@ export interface RowItem {
    */
   extendedData?: { [key: string]: any };
 
-  /** Get the value from the cell for filtering purposes */
+  /**
+   * Get the value from the cell for filtering purposes.
+   * If not specified and the value is a primitive, the recordValue.value is returned.
+   */
   getValueFromCell?: (columnKey: string) => any;
 }
 

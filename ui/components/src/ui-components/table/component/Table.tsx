@@ -98,7 +98,7 @@ interface ScrollState {
 export interface TableProps extends CommonProps {
   /** Data provider for the Table */
   dataProvider: TableDataProvider;
-  /** Amount of rows per page */
+  /** Amount of rows per page. The default is 100. */
   pageAmount?: number;
 
   /** Called when rows are loaded */
@@ -118,9 +118,9 @@ export interface TableProps extends CommonProps {
   /** Callback for when cells are deselected */
   onCellsDeselected?: (cellIterator: AsyncIterableIterator<[RowItem, CellItem]>) => Promise<boolean>;
 
-  /** Specifies the selection target. */
+  /** Specifies the selection target. The default is Row. */
   tableSelectionTarget?: TableSelectionTarget;
-  /** Specifies the selection mode. */
+  /** Specifies the selection mode. The default is Single. */
   selectionMode?: SelectionMode;
 
   /** Callback for when properties are being edited @beta */

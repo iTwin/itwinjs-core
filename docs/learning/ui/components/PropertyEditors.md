@@ -23,7 +23,7 @@ which contains the type name and optional editor name.
 
 The following is a list of the provided property editors:
 
-* [BasicPropertyEditor]($ui-components) - registered for the "text" and "string" type names type name
+* [BasicPropertyEditor]($ui-components) - registered for the "text" and "string" type names
 * [BooleanPropertyEditor]($ui-components) - registered for the "bool" and "boolean" type names
 * [ColorPropertyEditor]($ui-components) - registered for the "number" type name and "color-picker" editor name
 * [EnumPropertyButtonGroupEditor]($ui-components) - registered for the "enum" type name and the "enum-buttongroup" editor name

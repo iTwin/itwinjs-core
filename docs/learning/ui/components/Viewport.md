@@ -6,7 +6,7 @@ classes and components for working with a Viewport.
 ## Component and Properties
 
 The [ViewportComponent]($ui-components) React component is wrapper for a [ScreenViewport]($imodeljs-frontend).
-The [ViewportProps]($ui-components) interface specifies the properties for the ViewportComponent.
+The [ViewportProps]($ui-components) interface defines the properties for the ViewportComponent.
 
 The `imodel` prop is required and specifies the [IModelConnection]($imodeljs-frontend) to display.
 

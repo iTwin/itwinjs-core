@@ -40,6 +40,7 @@ The following is a list of the provided type converters:
 * [NavigationPropertyTypeConverter]($ui-components)
 * [Point2dTypeConverter]($ui-components)
 * [Point3dTypeConverter]($ui-components)
+* [ShortDateTypeConverter]($ui-components)
 * [StringTypeConverter]($ui-components)
 
 **Note**: `TypeConverterManager.registerConverter` is called by the system for these delivered type converters.
