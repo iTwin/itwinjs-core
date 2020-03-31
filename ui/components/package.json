@@ -11,9 +11,8 @@
     "url": "https://github.com/imodeljs/imodeljs/tree/master/ui/components"
   },
   "scripts": {
-    "copy:assets": "cpx \"./src/**/*.*css\" \"./lib\" && cpx \"./public/**/*\" \"./lib/public\"",
-    "pseudolocalize": "betools pseudolocalize --englishDir ./public/locales/en --out ./lib/public/locales/en-PSEUDO",
-    "build": "npm run copy:assets && npm run pseudolocalize && tsc 1>&2",
+    "copy:assets": "cpx \"./src/**/*.*css\" ./lib && cpx \"./public/**/*\" ./lib/public",
+    "build": "npm run copy:assets && tsc 1>&2",
     "clean": "rimraf lib .rush package-deps.json",
     "cover": "nyc npm test",
     "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --includes=../../generated-docs/extract --json=../../generated-docs/ui/ui-components/file.json --tsIndexFile=./ui-components.ts --onlyJson %TYPEDOC_THEME%",

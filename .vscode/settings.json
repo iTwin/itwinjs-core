@@ -18,8 +18,8 @@
     "**/package-deps.json": true,
     "**/node_modules": true,
     "**/out": true,
-    "**/build": true,
     "**/lib": true,
+    "**/test-apps/build": true,
     "common/temp": true,
     "tools/build/mocha-reporter": true,
     "tools/build/tslint-rules": true
