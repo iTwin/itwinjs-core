@@ -17,31 +17,67 @@ describe("SnapshotConnection", () => {
   });
 
   it("SnapshotConnection properties", async () => {
-    const snapshotConnection1: SnapshotConnection = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
-    const snapshotConnection2: SnapshotConnection = await SnapshotConnection.openRemote("test2-key"); // file key resolved by BackendTestAssetResolver
-    assert.isTrue(snapshotConnection1.isOpen);
-    assert.isTrue(snapshotConnection2.isOpen);
-    assert.isFalse(snapshotConnection1.isClosed);
-    assert.isFalse(snapshotConnection2.isClosed);
-    assert.isDefined(snapshotConnection1.iModelId);
-    assert.isDefined(snapshotConnection2.iModelId);
-    assert.isTrue(Guid.isV4Guid(snapshotConnection1.iModelId));
-    assert.isTrue(Guid.isV4Guid(snapshotConnection2.iModelId));
-    assert.isTrue(snapshotConnection1.isSnapshot);
-    assert.isTrue(snapshotConnection2.isSnapshot);
-    assert.isTrue(snapshotConnection1.isSnapshotConnection());
-    assert.isTrue(snapshotConnection2.isSnapshotConnection());
-    const elementProps1: ElementProps[] = await snapshotConnection1.elements.getProps(IModel.rootSubjectId);
-    const elementProps2: ElementProps[] = await snapshotConnection2.elements.getProps(IModel.rootSubjectId);
-    assert.equal(1, elementProps1.length);
-    assert.equal(1, elementProps2.length);
-    assert.equal(elementProps1[0].id, IModel.rootSubjectId);
-    assert.equal(elementProps2[0].id, IModel.rootSubjectId);
-    await snapshotConnection1.close();
-    await snapshotConnection2.close();
-    assert.isFalse(snapshotConnection1.isOpen);
-    assert.isFalse(snapshotConnection2.isOpen);
-    assert.isTrue(snapshotConnection1.isClosed);
-    assert.isTrue(snapshotConnection2.isClosed);
+    const snapshotR1: SnapshotConnection = await SnapshotConnection.openRemote("test-key"); // file key resolved by BackendTestAssetResolver
+    const snapshotR2: SnapshotConnection = await SnapshotConnection.openRemote("test2-key"); // file key resolved by BackendTestAssetResolver
+    const snapshotF1: SnapshotConnection = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
+
+    assert.isTrue(snapshotR1.isRemote);
+    assert.isTrue(snapshotR2.isRemote);
+    assert.isFalse(snapshotF1.isRemote);
+
+    assert.isTrue(snapshotR1.isOpen);
+    assert.isTrue(snapshotR2.isOpen);
+    assert.isTrue(snapshotF1.isOpen);
+
+    assert.isFalse(snapshotR1.isClosed);
+    assert.isFalse(snapshotR2.isClosed);
+    assert.isFalse(snapshotF1.isClosed);
+
+    assert.isDefined(snapshotR1.iModelId);
+    assert.isDefined(snapshotR2.iModelId);
+    assert.isDefined(snapshotF1.iModelId);
+
+    assert.isTrue(Guid.isV4Guid(snapshotR1.iModelId));
+    assert.isTrue(Guid.isV4Guid(snapshotR2.iModelId));
+    assert.isTrue(Guid.isV4Guid(snapshotF1.iModelId));
+
+    assert.isTrue(snapshotR1.isSnapshot);
+    assert.isTrue(snapshotR2.isSnapshot);
+    assert.isTrue(snapshotF1.isSnapshot);
+
+    assert.isTrue(snapshotR1.isSnapshotConnection());
+    assert.isTrue(snapshotR2.isSnapshotConnection());
+    assert.isTrue(snapshotF1.isSnapshotConnection());
+
+    assert.isFalse(snapshotR1.isBriefcase);
+    assert.isFalse(snapshotR2.isBriefcase);
+    assert.isFalse(snapshotF1.isBriefcase);
+
+    assert.isFalse(snapshotR1.isBriefcaseConnection());
+    assert.isFalse(snapshotR2.isBriefcaseConnection());
+    assert.isFalse(snapshotF1.isBriefcaseConnection());
+
+    const elementPropsR1: ElementProps[] = await snapshotR1.elements.getProps(IModel.rootSubjectId);
+    assert.equal(1, elementPropsR1.length);
+    assert.equal(elementPropsR1[0].id, IModel.rootSubjectId);
+    await snapshotR1.close(); // R1 is the same backend iModel as F1, but close should not affect F1
+
+    const elementPropsR2: ElementProps[] = await snapshotR2.elements.getProps(IModel.rootSubjectId);
+    assert.equal(1, elementPropsR2.length);
+    assert.equal(elementPropsR2[0].id, IModel.rootSubjectId);
+    await snapshotR2.close();
+
+    const elementPropsF1: ElementProps[] = await snapshotF1.elements.getProps(IModel.rootSubjectId);
+    assert.equal(1, elementPropsF1.length, "R1 close should not have affected F1");
+    assert.equal(elementPropsF1[0].id, IModel.rootSubjectId, "R1 close should not have affected F1");
+    await snapshotF1.close();
+
+    assert.isFalse(snapshotR1.isOpen);
+    assert.isFalse(snapshotR2.isOpen);
+    assert.isFalse(snapshotF1.isOpen);
+
+    assert.isTrue(snapshotR1.isClosed);
+    assert.isTrue(snapshotR2.isClosed);
+    assert.isTrue(snapshotF1.isClosed);
   });
 });

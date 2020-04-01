@@ -7623,6 +7623,7 @@ export class SnapshotConnection extends IModelConnection {
     close(): Promise<void>;
     get iModelId(): GuidString;
     get isClosed(): boolean;
+    get isRemote(): boolean;
     static openFile(filePath: string): Promise<SnapshotConnection>;
     static openRemote(fileKey: string): Promise<SnapshotConnection>;
 }

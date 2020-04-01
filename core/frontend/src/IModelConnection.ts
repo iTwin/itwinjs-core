@@ -756,6 +756,12 @@ export class SnapshotConnection extends IModelConnection {
   public get isClosed(): boolean { return this._isClosed ? true : false; }
   private _isClosed?: boolean;
 
+  /** Returns `true` if this is a connection to a remote snapshot iModel resolved by the backend.
+   * @see [[openRemote]]
+   */
+  public get isRemote(): boolean { return this._isRemote ? true : false; }
+  private _isRemote?: boolean;
+
   /** Open an IModelConnection to a read-only snapshot iModel from a file name.
    * @note This method is intended for desktop or mobile applications and should not be used for web applications.
    */
@@ -774,18 +780,25 @@ export class SnapshotConnection extends IModelConnection {
     const openResponse = await SnapshotIModelRpcInterface.getClient().openRemote(fileKey);
     Logger.logTrace(loggerCategory, "SnapshotConnection.openRemote", () => ({ fileKey }));
     const connection = new SnapshotConnection(openResponse);
+    connection._isRemote = true;
     IModelConnection.onOpen.raiseEvent(connection);
     return connection;
   }
 
-  /** Close this SnapshotConnection. */
+  /** Close this SnapshotConnection.
+   * @note For local snapshot files, `close` closes the connection and the underlying [SnapshotDb]($backend) database file.
+   * For remote snapshots, `close` only closes the connection and frees any frontend resources allocated to the connection.
+   * @see [[openFile]], [[openRemote]]
+   */
   public async close(): Promise<void> {
     if (this.isClosed) {
       return;
     }
     this.beforeClose();
     try {
-      await SnapshotIModelRpcInterface.getClient().close(this.getRpcProps());
+      if (!this.isRemote) {
+        await SnapshotIModelRpcInterface.getClient().close(this.getRpcProps());
+      }
     } finally {
       this._isClosed = true;
       this.subcategories.onIModelConnectionClose();
