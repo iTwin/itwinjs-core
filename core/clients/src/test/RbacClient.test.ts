@@ -15,12 +15,12 @@ describe.skip("RbacClient (#integration)", () => {
   const rbacClient = new RbacClient();
   let requestContext: AuthorizedClientRequestContext;
 
-  before(async function (this: Mocha.IHookCallbackContext) {
+  before(async function () {
     this.enableTimeouts(false);
     requestContext = await TestConfig.getAuthorizedClientRequestContext(TestUsers.super);
   });
 
-  it("should get the permissions for any service for the specified project (#integration)", async function (this: Mocha.ITestCallbackContext) {
+  it("should get the permissions for any service for the specified project (#integration)", async () => {
     // Get test project
     const queryOptions: ConnectRequestQueryOptions = {
       $select: "*",
@@ -35,7 +35,7 @@ describe.skip("RbacClient (#integration)", () => {
     expect(permissions.length).equals(6);
   });
 
-  it("should get the permissions relevant to the iModelHubService for the specified project (#integration)", async function (this: Mocha.ITestCallbackContext) {
+  it("should get the permissions relevant to the iModelHubService for the specified project (#integration)", async () => {
     // Get test project
     const queryOptions: ConnectRequestQueryOptions = {
       $select: "*",

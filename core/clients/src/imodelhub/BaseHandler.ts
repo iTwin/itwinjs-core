@@ -10,8 +10,6 @@ import { DefaultWsgRequestOptionsProvider, WsgClient, WsgRequestOptions } from "
 import { RequestOptions, RequestQueryOptions } from "../Request";
 import { WsgInstance } from "../ECJsonTypeMap";
 import { IModelHubError } from "./Errors";
-import { AuthorizationToken, AccessToken } from "../Token";
-import { ImsDelegationSecureTokenClient } from "../ImsClients";
 import { FileHandler } from "../imodeljs-clients";
 import { CustomRequestOptions } from "./CustomRequestOptions";
 import { AuthorizedClientRequestContext } from "../AuthorizedClientRequestContext";
@@ -109,18 +107,6 @@ export class IModelBaseHandler extends WsgClient {
    */
   public async getUrl(requestContext: ClientRequestContext): Promise<string> {
     return super.getUrl(requestContext);
-  }
-
-  /**
-   * Get the (delegation) access token to access the service
-   * @param requestContext The client request context
-   * @param authorizationToken Authorization token.
-   * @returns Resolves to the (delegation) access token.
-   * @internal
-   */
-  public async getAccessToken(requestContext: ClientRequestContext, authorizationToken: AuthorizationToken): Promise<AccessToken> {
-    const imsClient = new ImsDelegationSecureTokenClient();
-    return imsClient.getToken(requestContext, authorizationToken, this.getRelyingPartyUrl());
   }
 
   /**

@@ -7,10 +7,8 @@
  */
 import { request, RequestOptions, Response } from "./Request";
 import { Client } from "./Client";
-import { AuthorizationToken, AccessToken } from "./Token";
 import { SettingsAdmin, SettingsStatus, SettingsResult, SettingsMapResult } from "./SettingsAdmin";
-import { BentleyError, BentleyStatus, ClientRequestContext } from "@bentley/bentleyjs-core";
-import { ImsDelegationSecureTokenClient } from "./ImsClients";
+import { BentleyError, BentleyStatus } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext } from "./AuthorizedClientRequestContext";
 
 // this internal class is used to collect the settings when we are asking for them by namespace, because in that case there is a continuationToken when
@@ -63,19 +61,6 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
    * Creates an instance of ConnectSettingsClient.
    */
   public constructor(public applicationId: string) { super(); }
-
-  /** Convenience method to get access token from a SAML authorization token.
-   * @param requestContext The client request context.
-   * @param authSamlToken Authorization SAML token (e.g. as obtained from ImsFederatedAuthenticationClient)
-   * @returns SAML access token
-   * @internal
-   */
-  public async getAccessToken(requestContext: ClientRequestContext, authSamlToken: AuthorizationToken): Promise<AccessToken> {
-    const baseUrl: string = await this.getUrl(requestContext);
-
-    const imsClient = new ImsDelegationSecureTokenClient();
-    return imsClient.getToken(requestContext, authSamlToken, baseUrl);
-  }
 
   protected getUrlSearchKey(): string { return ConnectSettingsClient.searchKey; }
 

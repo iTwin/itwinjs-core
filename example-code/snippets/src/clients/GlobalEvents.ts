@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import {
-  IModelHubClient, AccessToken, GlobalEventSubscription, AuthorizationToken,
+  IModelHubClient, AccessToken, GlobalEventSubscription,
   IModelHubGlobalEvent, GlobalEventSAS, GetEventOperationType,
   AuthorizedClientRequestContext,
   Config,
@@ -29,8 +29,7 @@ const imodelHubClient: IModelHubClient = new IModelHubClient();
 // __PUBLISH_EXTRACT_START__ GlobalEventHandler.createListener.authenticate.example-code
 async function authenticate(): Promise<AccessToken> {
   const requestContext = new ClientRequestContext();
-  const authorizationToken: AuthorizationToken = await authorizationClient.getAccessToken(requestContext);
-  return imodelHubClient.getAccessToken(requestContext, authorizationToken);
+  return authorizationClient.getAccessToken(requestContext);
 }
 // __PUBLISH_EXTRACT_END__
 

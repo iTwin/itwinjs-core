@@ -10,10 +10,8 @@ import * as deepAssign from "deep-assign";
 import { AuthorizedClientRequestContext } from "./AuthorizedClientRequestContext";
 import { AuthenticationError, Client, DefaultRequestOptionsProvider } from "./Client";
 import { ECJsonTypeMap, WsgInstance } from "./ECJsonTypeMap";
-import { ImsDelegationSecureTokenClient } from "./ImsClients";
 import { ClientsLoggerCategory } from "./ClientsLoggerCategory";
 import { request, RequestOptions, RequestQueryOptions, Response, ResponseError } from "./Request";
-import { AccessToken, AuthorizationToken } from "./Token";
 
 const loggerCategory: string = ClientsLoggerCategory.Clients;
 
@@ -257,17 +255,6 @@ export abstract class WsgClient extends Client {
         }
         return Promise.resolve(this._url); // TODO: On the server this really needs a lifetime!!
       });
-  }
-
-  /**
-   * Gets the (delegation) access token to access the service
-   * @param authTokenInfo Access token.
-   * @returns Resolves to the (delegation) access token.
-   * @internal
-   */
-  public async getAccessToken(requestContext: ClientRequestContext, authorizationToken: AuthorizationToken): Promise<AccessToken> {
-    const imsClient = new ImsDelegationSecureTokenClient();
-    return imsClient.getToken(requestContext, authorizationToken, this.getRelyingPartyUrl());
   }
 
   /** used by clients to delete strongly typed instances through the standard WSG REST API */

@@ -391,8 +391,6 @@ export enum ClientsLoggerCategory {
     // @internal (undocumented)
     IModelBank = "imodeljs-clients.iModelBank",
     IModelHub = "imodeljs-clients.imodelhub",
-    // @internal (undocumented)
-    ImsClients = "imodeljs-clients.ImsClients",
     // (undocumented)
     Request = "imodeljs-clients.Request",
     // @internal (undocumented)
@@ -560,7 +558,6 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
     deleteUserSetting(requestContext: AuthorizedClientRequestContext, settingNamespace: string, settingName: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
     // (undocumented)
     formErrorResponse(response: Response): SettingsResult;
-    getAccessToken(requestContext: ClientRequestContext, authSamlToken: AuthorizationToken): Promise<AccessToken>;
     // (undocumented)
     getSetting(requestContext: AuthorizedClientRequestContext, settingNamespace: string, settingName: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
     // (undocumented)
@@ -957,8 +954,6 @@ export class IModelBaseHandler extends WsgClient {
     protected _fileHandler: FileHandler | undefined;
     // (undocumented)
     formatContextIdForUrl(contextId: string): string;
-    // @internal
-    getAccessToken(requestContext: ClientRequestContext, authorizationToken: AuthorizationToken): Promise<AccessToken>;
     getAgent(): any;
     getCustomRequestOptions(): CustomRequestOptions;
     // (undocumented)
@@ -1050,8 +1045,6 @@ export class IModelHandler {
 // @beta
 export class IModelHubClient extends IModelClient {
     constructor(fileHandler?: FileHandler, iModelBaseHandler?: IModelBaseHandler);
-    // @internal
-    getAccessToken(requestContext: ClientRequestContext, authorizationToken: AuthorizationToken): Promise<AccessToken>;
 }
 
 // @beta
@@ -1142,60 +1135,12 @@ export class IModelsHandler {
     update(requestContext: AuthorizedClientRequestContext, contextId: string, imodel: HubIModel): Promise<HubIModel>;
     }
 
-// @internal @deprecated
-export class ImsActiveSecureTokenClient extends Client {
-    constructor();
-    getToken(requestContext: ClientRequestContext, userCredentials: ImsUserCredentials, appId?: string): Promise<AuthorizationToken>;
-    protected getUrlSearchKey(): string;
-    // (undocumented)
-    static readonly searchKey: string;
-    // (undocumented)
-    protected setupOptionDefaults(options: RequestOptions): Promise<void>;
-}
-
-// @internal @deprecated
-export class ImsDelegationSecureTokenClient extends Client {
-    constructor();
-    getToken(requestContext: ClientRequestContext, authorizationToken: AuthorizationToken, relyingPartyUri?: string, appId?: string): Promise<AccessToken>;
-    protected getUrlSearchKey(): string;
-    // (undocumented)
-    static readonly searchKey: string;
-    protected setupOptionDefaults(options: RequestOptions): Promise<void>;
-}
-
-// @internal @deprecated
-export class ImsFederatedAuthenticationClient extends Client {
-    constructor();
-    protected getUrlSearchKey(): string;
-    static parseTokenResponse(authTokenResponse: string): AuthorizationToken | undefined;
-    // (undocumented)
-    static readonly searchKey: string;
-}
-
 // @beta (undocumented)
 export class ImsOidcClient extends Client {
     constructor();
     protected getUrlSearchKey(): string;
     // (undocumented)
     static readonly searchKey: string;
-}
-
-// @internal @deprecated
-export class ImsTestAuthorizationClient implements IAuthorizationClient {
-    getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
-    get hasExpired(): boolean;
-    get hasSignedIn(): boolean;
-    get isAuthorized(): boolean;
-    // (undocumented)
-    signIn(requestContext: ClientRequestContext, userCredentials: ImsUserCredentials, relyingPartyUri?: string): Promise<AccessToken>;
-    }
-
-// @internal @deprecated
-export interface ImsUserCredentials {
-    // (undocumented)
-    email: string;
-    // (undocumented)
-    password: string;
 }
 
 // @internal (undocumented)
@@ -2206,8 +2151,6 @@ export abstract class WsgClient extends Client {
     // (undocumented)
     static readonly configUseHostRelyingPartyUriAsFallback = "imjs_use_default_relying_party_uri_as_fallback";
     protected deleteInstance<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, relativeUrlPath: string, instance?: T, requestOptions?: WsgRequestOptions): Promise<void>;
-    // @internal
-    getAccessToken(requestContext: ClientRequestContext, authorizationToken: AuthorizationToken): Promise<AccessToken>;
     protected getInstances<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, queryOptions?: RequestQueryOptions): Promise<T[]>;
     protected abstract getRelyingPartyUrl(): string;
     getUrl(requestContext: ClientRequestContext, excludeApiVersion?: boolean): Promise<string>;

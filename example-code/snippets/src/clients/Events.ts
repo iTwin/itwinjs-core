@@ -5,7 +5,7 @@
 
 import {
   IModelHubClient, AccessToken, EventSubscription,
-  IModelHubEvent, EventSAS, AuthorizationToken,
+  IModelHubEvent, EventSAS,
   AuthorizedClientRequestContext, Config,
 } from "@bentley/imodeljs-clients";
 import { OidcAgentClient, OidcBackendClientConfiguration } from "@bentley/imodeljs-clients-backend";
@@ -29,8 +29,7 @@ const imodelId: GuidString = Guid.createValue();
 // __PUBLISH_EXTRACT_START__ EventHandler.createListener.authenticate.example-code
 async function authenticate(): Promise<AccessToken> {
   const requestContext = new ClientRequestContext();
-  const authorizationToken: AuthorizationToken = await authorizationClient.getAccessToken(requestContext);
-  return imodelHubClient.getAccessToken(requestContext, authorizationToken);
+  return authorizationClient.getAccessToken(requestContext);
 }
 // __PUBLISH_EXTRACT_END__
 

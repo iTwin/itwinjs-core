@@ -112,6 +112,11 @@ Previously, shader programs used by the [RenderSystem]($frontend) were never com
 
 With a new major version of the iModel.js library come breaking API changes. The majority of those changes result from the removal of previously deprecated APIs. In addition, the following APIs have changed in ways that may require calling code to be adjusted:
 
+### Authorization
+
+* The deprecated SAML based authentication utilities, ImsActiveSecureTokenClient and ImsDelegationSecureTokenClient have now been removed. All authentication must be done using OIDC.
+* The deprecated OidcAgentClientV1 for SAML based authentication of agents has been removed.
+
 ### IModel, IModelConnection, IModelDb
 
 The properties formerly under `IModel.iModelToken` have been promoted to [IModel]($common). These renames affect [IModelConnection]($frontend) and [IModelDb]($backend):

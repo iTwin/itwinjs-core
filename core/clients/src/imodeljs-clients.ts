@@ -13,7 +13,6 @@ export * from "./RbacClient";
 export * from "./WsgClient";
 export * from "./FileHandler";
 export * from "./IModelClient";
-export * from "./ImsClients";
 export * from "./ClientsLoggerCategory";
 export * from "./Config";
 export * from "./projectshare/ProjectShareClient";

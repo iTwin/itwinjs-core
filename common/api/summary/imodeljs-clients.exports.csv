@@ -106,12 +106,7 @@ internal;class IModelHubGlobalEvent
 internal;IModelHubPermission
 beta;IModelQuery 
 beta;IModelsHandler
-internal;ImsActiveSecureTokenClient 
-internal;ImsDelegationSecureTokenClient 
-internal;ImsFederatedAuthenticationClient 
 beta;ImsOidcClient 
-internal;ImsTestAuthorizationClient 
-internal;ImsUserCredentials
 internal;IncludePrefix
 beta;InitializationState
 beta;InstanceIdQuery 

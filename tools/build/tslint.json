@@ -150,7 +150,7 @@
     "import-within-package": true,
     "require-basic-rpc-values": true,
     "deprecation": {
-      "severity": "warning"
+      "severity": "error"
     },
     "tslint-react-set-state-usage": [
       true,

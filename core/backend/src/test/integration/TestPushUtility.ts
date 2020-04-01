@@ -4,9 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { GuidString, Id64String } from "@bentley/bentleyjs-core";
 import { Point3d, Range3d, YawPitchRollAngles } from "@bentley/geometry-core";
-import { ImsUserCredentials } from "@bentley/imodeljs-clients";
 import { Code, CodeScopeSpec, ColorDef, GeometricElement3dProps, IModel, IModelVersion } from "@bentley/imodeljs-common";
-import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
+import { TestUsers, TestUtility, TestUserCredentials } from "@bentley/oidc-signin-tool";
 import * as fs from "fs";
 import * as path from "path";
 import { AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseManager, CategorySelector, ConcurrencyControl, DisplayStyle3d, GeometricElement, IModelDb, ModelSelector, OpenParams, OrthographicViewDefinition, PhysicalModel, SnapshotDb, SpatialCategory } from "../../imodeljs-backend";
@@ -30,7 +29,7 @@ export class TestPushUtility {
   private _currentLevel: number = 0;
 
   /** Initializes the utility */
-  public async initialize(projectName: string, iModelName: string, user: ImsUserCredentials = TestUsers.superManager) {
+  public async initialize(projectName: string, iModelName: string, user: TestUserCredentials = TestUsers.superManager) {
     this._requestContext = await TestUtility.getAuthorizedClientRequestContext(user);
     this.iModelName = iModelName;
     this._projectId = await HubUtility.queryProjectIdByName(this._requestContext, projectName);

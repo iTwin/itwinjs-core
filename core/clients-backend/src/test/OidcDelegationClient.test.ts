@@ -30,7 +30,7 @@ describe("OidcDelegationClient (#integration)", () => {
     };
 
     const agentClient = new OidcAgentClient(agentConfiguration);
-    jwt = await agentClient.getToken(requestContext);
+    jwt = await agentClient.getAccessToken(requestContext);
   });
 
   it("should get valid SAML delegation tokens", async () => {

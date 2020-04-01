@@ -24,9 +24,6 @@ export enum ClientsLoggerCategory {
   /** The logger category used for interactions with iModelHub. */
   IModelHub = "imodeljs-clients.imodelhub",
 
-  /** @internal */
-  ImsClients = "imodeljs-clients.ImsClients",
-
   Request = "imodeljs-clients.Request",
 
   /** @internal */
