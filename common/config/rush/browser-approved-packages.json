@@ -463,10 +463,6 @@
       "allowedCategories": [ "internal" ]
     },
     {
-      "name": "jquery",
-      "allowedCategories": [ "internal" ]
-    },
-    {
       "name": "js-base64",
       "allowedCategories": [ "backend", "common", "frontend", "internal" ]
     },
