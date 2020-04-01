@@ -12,6 +12,7 @@ import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
+import { BinaryPropertyTypeConverter } from "./BinaryPropertyTypeConverter";
 
 const loggerCategory = BackendLoggerCategory.Relationship;
 
@@ -197,7 +198,7 @@ export class Relationships {
    * @throws [[IModelError]] if unable to insert the relationship instance.
    */
   public insertInstance(props: RelationshipProps): Id64String {
-    const val = this._iModel.nativeDb.insertLinkTableRelationship(JSON.stringify(props));
+    const val = this._iModel.nativeDb.insertLinkTableRelationship(JSON.stringify(props, BinaryPropertyTypeConverter.createReplacerCallback(false)));
     if (val.error)
       throw new IModelError(val.error.status, "Error inserting relationship instance", Logger.logWarning, loggerCategory);
 
@@ -210,7 +211,7 @@ export class Relationships {
    * @throws [[IModelError]] if unable to update the relationship instance.
    */
   public updateInstance(props: RelationshipProps): void {
-    const error = this._iModel.nativeDb.updateLinkTableRelationship(JSON.stringify(props));
+    const error = this._iModel.nativeDb.updateLinkTableRelationship(JSON.stringify(props, BinaryPropertyTypeConverter.createReplacerCallback(false)));
     if (error !== DbResult.BE_SQLITE_OK)
       throw new IModelError(error, "Error updating relationship instance", Logger.logWarning, loggerCategory);
   }

@@ -9,6 +9,7 @@ import { Code, ColorDef, ElementAspectProps, GeometricElementProps, GeometryStre
 import { assert, expect } from "chai";
 import { BackendRequestContext, ECSqlStatement, IModelDb, IModelJsFs, SnapshotDb, SpatialCategory } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
+import { ElementRefersToElements } from "../../Relationship";
 
 interface IPrimitiveBase {
   i?: number;
@@ -50,6 +51,8 @@ interface ComplexStruct extends IPrimitiveArrayBase, IPrimitiveBase { }
 interface TestElement extends IPrimitive, IPrimitiveArray, GeometricElementProps { }
 
 interface TestElementAspect extends IPrimitive, IPrimitiveArray, ElementAspectProps { }
+
+interface TestElementRefersToElements extends IPrimitive, IPrimitiveArray, ElementRefersToElements { }
 
 function verifyPrimitiveBase(actualValue: IPrimitiveBase, expectedValue: IPrimitiveBase) {
   if (expectedValue.i) assert.equal(actualValue.i, expectedValue.i, "'integer' type property did not roundtrip as expected");
@@ -228,6 +231,20 @@ function blobEqual(lhs: any, rhs: any) {
   return true;
 }
 
+function initElementRefersToElementsProps(className: string, _iModelName: IModelDb, elId1: Id64String, elId2: Id64String, autoHandledProp: any): TestElementRefersToElements {
+  // Create props
+  const result: TestElementRefersToElements = {
+    classFullName: "ElementRoundTripTest:" + className,
+    sourceId: elId1,
+    targetId: elId2,
+  } as TestElementRefersToElements;
+
+  if (autoHandledProp)
+    Object.assign(result, autoHandledProp);
+
+  return result;
+}
+
 describe("Element and ElementAspect roundtrip test for all type of properties", () => {
   const testSchema = `<?xml version="1.0" encoding="UTF-8"?>
     <ECSchema schemaName="ElementRoundTripTest" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
@@ -243,6 +260,37 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
         <BaseClass>IPrimitiveAspect</BaseClass>
         <BaseClass>IPrimitiveArrayAspect</BaseClass>
       </ECEntityClass>
+      <ECRelationshipClass typeName="TestElementRefersToElements" strength="referencing" modifier="Sealed">
+        <BaseClass>bis:ElementRefersToElements</BaseClass>
+        <Source multiplicity="(0..*)" roleLabel="refers to" polymorphic="true">
+            <Class class="TestElement"/>
+        </Source>
+        <Target multiplicity="(0..*)" roleLabel="is referenced by" polymorphic="true">
+            <Class class="TestElement"/>
+        </Target>
+        <ECProperty propertyName="i" typeName="int"/>
+        <ECProperty propertyName="l" typeName="long"/>
+        <ECProperty propertyName="d" typeName="double"/>
+        <ECProperty propertyName="b" typeName="boolean"/>
+        <ECProperty propertyName="dt" typeName="dateTime"/>
+        <ECProperty propertyName="s" typeName="string"/>
+        <ECProperty propertyName="bin" typeName="binary"/>
+        <ECProperty propertyName="p2d" typeName="point2d"/>
+        <ECProperty propertyName="p3d" typeName="point3d"/>
+        <ECProperty propertyName="g" typeName="Bentley.Geometry.Common.IGeometry"/>
+        <!--<ECStructProperty propertyName="st" typeName="ComplexStruct"/>-->
+        <ECArrayProperty propertyName="array_i" typeName="int"  minOccurs="0" maxOccurs="unbounded"/>
+        <ECArrayProperty propertyName="array_l" typeName="long"  minOccurs="0" maxOccurs="unbounded"/>
+        <ECArrayProperty propertyName="array_d" typeName="double"  minOccurs="0" maxOccurs="unbounded"/>
+        <ECArrayProperty propertyName="array_b" typeName="boolean"  minOccurs="0" maxOccurs="unbounded"/>
+        <ECArrayProperty propertyName="array_dt" typeName="dateTime"  minOccurs="0" maxOccurs="unbounded"/>
+        <ECArrayProperty propertyName="array_s" typeName="string"  minOccurs="0" maxOccurs="unbounded"/>
+        <ECArrayProperty propertyName="array_bin" typeName="binary"  minOccurs="0" maxOccurs="unbounded"/>
+        <ECArrayProperty propertyName="array_p2d" typeName="point2d"  minOccurs="0" maxOccurs="unbounded"/>
+        <ECArrayProperty propertyName="array_p3d" typeName="point3d"  minOccurs="0" maxOccurs="unbounded"/>
+        <ECArrayProperty propertyName="array_g" typeName="Bentley.Geometry.Common.IGeometry"  minOccurs="0" maxOccurs="unbounded"/>
+        <!--<ECStructArrayProperty propertyName="array_st" typeName="ComplexStruct"  minOccurs="0" maxOccurs="unbounded"/>-->
+      </ECRelationshipClass>
       <ECEntityClass typeName="IPrimitive" modifier="Abstract">
         <ECCustomAttributes>
           <IsMixin xmlns="CoreCustomAttributes.01.00.03">
@@ -570,6 +618,99 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
       assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
       const stmtRow = stmt.getRow() as TestElementAspect;
       verifyTestElementAspect(stmtRow, actualAspectValue[0]);
+    });
+
+    imodel.close();
+  });
+
+  function verifyTestElementRefersToElements(actualValue: TestElementRefersToElements, expectedValue: TestElementRefersToElements) {
+    assert.equal(actualValue.sourceId, expectedValue.sourceId, "'sourceId' type property did not roundtrip as expected");
+    assert.equal(actualValue.targetId, expectedValue.targetId, "'targetId' type property did not roundtrip as expected");
+    verifyPrimitiveBase(actualValue, expectedValue);
+    verifyPrimitiveArrayBase(actualValue, expectedValue);
+  }
+
+  it("Roundtrip all type of properties via ElementRefersToElements, ConcurrentQuery and ECSqlStatement via insert and update", async () => {
+    const testFileName = IModelTestUtils.prepareOutputFile(subDirName, "roundtrip_relationships_correct_data.bim");
+    const imodel = IModelTestUtils.createSnapshotFromSeed(testFileName, iModelPath);
+    const spatialCategoryId = SpatialCategory.queryCategoryIdByName(imodel, IModel.dictionaryId, categoryName);
+    const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(imodel, Code.createEmpty(), true);
+
+    // create elements to use
+    const element1 = initElemProps("TestElement", imodel, newModelId, spatialCategoryId!, {}) as TestElement;
+    const element2 = initElemProps("TestElement", imodel, newModelId, spatialCategoryId!, {}) as TestElement;
+
+    const geomElement1 = imodel.elements.createElement(element1);
+    const elId1 = imodel.elements.insertElement(geomElement1);
+    assert.isTrue(Id64.isValidId64(elId1), "insert of element 1 worked");
+    const geomElement2 = imodel.elements.createElement(element2);
+    const elId2 = imodel.elements.insertElement(geomElement2);
+    assert.isTrue(Id64.isValidId64(elId2), "insert of element 2 worked");
+
+    // TODO: Skipping structs here, because of a bug that prevents querying from link tables that have an overflow table, by skipping the struct we reduce the amount of used columns
+    const expectedRelationshipValue = initElementRefersToElementsProps("TestElementRefersToElements", imodel, elId1, elId2, {
+      ...primInst1,
+      ...primArrInst1,
+      /* st: { ...primArrInst2, ...primInst1 },
+      array_st: [{ ...primInst1, ...primArrInst2 }, { ...primInst2, ...primArrInst1 }], */
+    });
+
+    const instance = expectedRelationshipValue; // imodel.relationships.createInstance(expectedRelationshipValue);
+    const relationshipId: Id64String = imodel.relationships.insertInstance(instance);
+    imodel.saveChanges();
+
+    // verify inserted properties
+    const actualRelationshipValue: TestElementRefersToElements = imodel.relationships.getInstanceProps(expectedRelationshipValue.classFullName, relationshipId);
+    assert.exists(actualRelationshipValue);
+
+    verifyTestElementRefersToElements(actualRelationshipValue, expectedRelationshipValue);
+
+    // verify via concurrent query
+    let rowCount = 0;
+    for await (const row of imodel.query("SELECT * FROM ts.TestElementRefersToElements")) {
+      const val = row as TestElementRefersToElements;
+      verifyTestElementRefersToElements(val, expectedRelationshipValue);
+      rowCount++;
+    }
+    assert.equal(rowCount, 1);
+
+    // verify via ecsql statement
+    await imodel.withPreparedStatement("SELECT * FROM ts.TestElementRefersToElements", async (stmt: ECSqlStatement) => {
+      assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+      const stmtRow = stmt.getRow() as TestElementRefersToElements;
+      verifyTestElementRefersToElements(stmtRow, expectedRelationshipValue);
+    });
+
+    const updatedExpectedValue = actualRelationshipValue;
+    // update the element autohandled properties
+    Object.assign(updatedExpectedValue, {
+      ...primInst2,
+      ...primArrInst2,
+      /*      st: { ...primArrInst1, ...primInst2 },
+            array_st: [{ ...primInst2, ...primArrInst2 }, { ...primInst1, ...primArrInst1 }],*/
+    });
+
+    // update
+    imodel.relationships.updateInstance(updatedExpectedValue);
+    imodel.saveChanges();
+
+    // verify updated values
+    const updatedValue: TestElementRefersToElements = imodel.relationships.getInstanceProps(expectedRelationshipValue.classFullName, relationshipId);
+    verifyTestElementRefersToElements(updatedValue, updatedExpectedValue);
+
+    // verify via concurrent query
+    rowCount = 0;
+    for await (const row of imodel.query("SELECT * FROM ts.TestElementRefersToElements")) {
+      verifyTestElementRefersToElements(row as TestElementRefersToElements, updatedExpectedValue);
+      rowCount++;
+    }
+    assert.equal(rowCount, 1);
+
+    // verify via ecsql statement
+    await imodel.withPreparedStatement("SELECT * FROM ts.TestElementRefersToElements", async (stmt: ECSqlStatement) => {
+      assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+      const stmtRow = stmt.getRow() as TestElementRefersToElements;
+      verifyTestElementRefersToElements(stmtRow, updatedExpectedValue);
     });
 
     imodel.close();
