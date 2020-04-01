@@ -289,6 +289,7 @@ internal;NullRenderSystem
 internal;NullTarget 
 internal;OffScreenTarget 
 internal;OffScreenViewport 
+beta;OidcBrowserClient 
 alpha;OidcDesktopClientRenderer 
 internal;OnScreenTarget 
 beta;openImageDataUrlInNewWindow(url: string, title?: string): void

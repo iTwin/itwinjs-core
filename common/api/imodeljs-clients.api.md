@@ -1226,11 +1226,26 @@ export class InstanceIdQuery extends WsgQuery {
     getId(): string | undefined;
 }
 
+// @beta @deprecated
+export interface IOidcFrontendClient extends IDisposable, IAuthorizationClient {
+    getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
+    hasExpired: boolean;
+    hasSignedIn: boolean;
+    initialize(requestContext: ClientRequestContext): Promise<void>;
+    isAuthorized: boolean;
+    readonly onUserStateChanged: BeEvent<(token: AccessToken | undefined) => void>;
+    signIn(requestContext: ClientRequestContext): Promise<void>;
+    signOut(requestContext: ClientRequestContext): Promise<void>;
+}
+
 // @beta
 export const isAuthorizedClientRequestContext: (requestContext: ClientRequestContext) => requestContext is AuthorizedClientRequestContext;
 
 // @beta
 export const isBrowserAuthorizationClient: (client: IAuthorizationClient | undefined) => client is IFrontendAuthorizationClient;
+
+// @beta @deprecated
+export const isIOidcFrontendClient: (client: IAuthorizationClient | undefined) => client is IOidcFrontendClient;
 
 // @alpha
 export class LargeThumbnail extends Thumbnail {
@@ -1361,6 +1376,22 @@ export enum OidcCallbackResponseMode {
     // (undocumented)
     Query = 1,
     Unknown = 3
+}
+
+// @beta @deprecated
+export interface OidcFrontendClientConfiguration {
+    // @internal
+    authority?: string;
+    clientId: string;
+    // @internal
+    clockSkew?: number;
+    // @internal
+    metadata?: any;
+    postSignoutRedirectUri?: string;
+    redirectUri: string;
+    // @internal
+    responseType?: string;
+    scope: string;
 }
 
 // @internal

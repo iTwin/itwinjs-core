@@ -48,7 +48,7 @@ export * from "./oidc/IFrontendAuthorizationClient";
 export * from "./oidc/ImsOidcClient";
 export * from "./oidc/browser/BrowserAuthorizationCallbackHandler";
 export * from "./oidc/browser/BrowserAuthorizationClient";
-
+export * from "./oidc/OidcFrontendClient";
 export * from "./ulas/LogEntryConverter";
 export * from "./ulas/UlasClient";
 

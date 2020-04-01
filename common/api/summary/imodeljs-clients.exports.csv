@@ -115,8 +115,10 @@ internal;ImsUserCredentials
 internal;IncludePrefix
 beta;InitializationState
 beta;InstanceIdQuery 
+beta;IOidcFrontendClient 
 beta;isAuthorizedClientRequestContext: (requestContext: ClientRequestContext) => requestContext is AuthorizedClientRequestContext
 beta;isBrowserAuthorizationClient: (client: IAuthorizationClient | undefined) => client is IFrontendAuthorizationClient
+beta;isIOidcFrontendClient: (client: IAuthorizationClient | undefined) => client is IOidcFrontendClient
 alpha;LargeThumbnail 
 alpha;Lock 
 alpha;LockBase 
@@ -132,6 +134,7 @@ internal;MultiCode
 alpha;MultiLock 
 internal;NamedVersionCreatedEvent 
 beta;OidcCallbackResponseMode
+beta;OidcFrontendClientConfiguration
 internal;ParseEvent(response: Response): IModelHubEvent
 internal;ParseGlobalEvent(response: Response, handler?: IModelBaseHandler, sasToken?: string): IModelHubGlobalEvent
 internal;Permission 
