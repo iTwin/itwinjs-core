@@ -8,7 +8,6 @@ import { AuthorizedFrontendRequestContext, IModelApp, IModelConnection } from "@
 import { Logger, ClientRequestContext, Id64String } from "@bentley/bentleyjs-core";
 import { IModelCloudEnvironment } from "@bentley/imodeljs-clients/lib/IModelCloudEnvironment";
 import { TestUserCredentials, getAccessTokenFromBackend } from "@bentley/oidc-signin-tool/lib/frontend";
-
 import { TestRpcInterface } from "../../common/RpcInterfaces";
 import { IModelBankCloudEnv } from "./IModelBankCloudEnv";
 import { IModelHubCloudEnv } from "./IModelHubCloudEnv";
@@ -62,6 +61,10 @@ export class TestUtility {
     return TestRpcInterface.getClient().purgeBriefcaseCache();
   }
 
+  public static async restartIModelHost() {
+    return TestRpcInterface.getClient().restartIModelHost();
+  }
+
   public static async getModelLockLevel(iModel: IModelConnection, modelId: Id64String): Promise<LockLevel> {
     const req = new AuthorizedClientRequestContext(await IModelApp.authorizationClient!.getAccessToken());
     const lockedModels = await IModelApp.iModelClient.locks.get(req, iModel.iModelId!, new LockQuery().byObjectId(modelId));
@@ -86,4 +89,5 @@ export class TestUtility {
       await Promise.all(promises);
     }
   }
+
 }

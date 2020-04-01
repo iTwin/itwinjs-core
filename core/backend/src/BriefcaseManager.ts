@@ -568,6 +568,7 @@ export class BriefcaseManager {
     BriefcaseManager._connectClient = undefined;
     BriefcaseManager.clearCacheDir();
     BriefcaseManager._initialized = false;
+    BriefcaseManager._initBriefcaseCacheFromDisk = false;
   }
 
   /** Create a folder, recursively setting up the path as necessary */
@@ -871,6 +872,9 @@ export class BriefcaseManager {
     briefcase.parentChangeSetIndex = briefcaseInfo.parentChangeSetIndex;
     briefcase.reversedChangeSetIndex = briefcaseInfo.reversedChangeSetIndex;
 
+    if (this._cache.findBriefcase(briefcase))
+      return;
+
     const nativeDb = new IModelHost.platform.DgnDb();
     const res = nativeDb.openIModel(briefcasePathname, openParams.openMode);
     if (DbResult.BE_SQLITE_OK !== res)
@@ -879,12 +883,11 @@ export class BriefcaseManager {
     briefcase.setNativeDb(nativeDb); // Note: Sets briefcaseId, currentChangeSetId in BriefcaseEntry by reading the values from nativeDb
     assert(briefcase.isOpen);
 
+    BriefcaseManager.closeBriefcase(briefcase, false);
+
     if (briefcaseInfo.parentChangeSetId !== briefcase.parentChangeSetId || briefcaseInfo.reversedChangeSetId !== briefcase.reversedChangeSetId)
       throw new IModelError(res, "Briefcase does not match the cached info", Logger.logError, loggerCategory, () => briefcase.getDebugInfo());
 
-    BriefcaseManager.closeBriefcase(briefcase, false);
-
-    assert(!this._cache.findBriefcase(briefcase), "Attempting to open or create briefcase twice");
     BriefcaseManager._cache.addBriefcase(briefcase);
   }
 
@@ -1555,6 +1558,9 @@ export class BriefcaseManager {
       await this.initBriefcaseChangeSetIndexes(requestContext, briefcase);
       requestContext.enter();
     }
+
+    // Update cached information on the briefcase
+    BriefcaseManager.writeCachedBriefcaseInfo(briefcase);
   }
 
   private static async applyChangeSets(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseEntry, targetChangeSetId: string, targetChangeSetIndex: number, processOption: ChangeSetApplyOption): Promise<void> {

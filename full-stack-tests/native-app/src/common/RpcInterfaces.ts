@@ -63,6 +63,22 @@ export abstract class TestRpcInterface extends RpcInterface {
   public async purgeBriefcaseCache(): Promise<void> {
     return this.forward(arguments);
   }
+
+  public async initTestChangeSetUtility(_projectName: string, _iModelBaseName: string): Promise<void> {
+    return this.forward(arguments);
+  }
+
+  public async createTestIModel(): Promise<string> {
+    return this.forward(arguments);
+  }
+
+  public async pushTestChangeSet(): Promise<void> {
+    return this.forward(arguments);
+  }
+
+  public async deleteTestIModel(): Promise<void> {
+    return this.forward(arguments);
+  }
 }
 export const rpcInterfaces = [
   IModelReadRpcInterface,
