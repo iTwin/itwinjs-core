@@ -43,8 +43,9 @@ export class ExternalIModel {
     const imodelQuery = new IModelQuery();
     imodelQuery.byName(imodelName);
     const imodels = await IModelApp.iModelClient.iModels.get(requestContext, project.wsgId, imodelQuery);
-    if (imodels.length === 0)
+    if (imodels.length === 0) {
       throw new Error(`iModel with name "${imodelName}" does not exist in project "${projectName}"`);
+    }
     return { projectId: project.wsgId, imodelId: imodels[0].wsgId };
   }
 
@@ -72,8 +73,9 @@ export class ExternalIModel {
       "BisCore:DrawingViewDefinition",
     ];
     const acceptedViewSpecs = viewSpecs.filter((spec) => (-1 !== acceptedViewClasses.indexOf(spec.classFullName)));
-    if (0 === acceptedViewSpecs.length)
+    if (0 === acceptedViewSpecs.length) {
       throw new Error("No valid view definitions in imodel");
+    }
 
     // Prefer spatial view over drawing.
     const spatialViews = acceptedViewSpecs.filter((v) => {
