@@ -32,7 +32,7 @@ export class FeatureTrackingManager {
   }
 
   /** Basic tracking function to be overridden by an app. By default, iModelApp does not know the context to log track features.  */
-  public track(_iModelConnection: IModelConnection, _featureId: string, _featureName?: string) {
+  public track(_featureId: string, _featureName?: string, _iModelConnection?: IModelConnection) {
     return;
   }
 }

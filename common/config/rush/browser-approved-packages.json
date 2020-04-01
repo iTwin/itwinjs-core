@@ -331,10 +331,6 @@
       "allowedCategories": [ "tools" ]
     },
     {
-      "name": "display-test-app",
-      "allowedCategories": [ "extensions" ]
-    },
-    {
       "name": "dotenv",
       "allowedCategories": [ "tools" ]
     },
@@ -836,7 +832,7 @@
     },
     {
       "name": "tsconfig-paths",
-      "allowedCategories": [ "extensions", "frontend", "internal", "tools" ]
+      "allowedCategories": [ "extensions", "frontend", "tools" ]
     },
     {
       "name": "tslib",
@@ -889,10 +885,6 @@
     {
       "name": "typescript-json-schema",
       "allowedCategories": [ "common" ]
-    },
-    {
-      "name": "ui-test-app",
-      "allowedCategories": [ "extensions" ]
     },
     {
       "name": "url-loader",

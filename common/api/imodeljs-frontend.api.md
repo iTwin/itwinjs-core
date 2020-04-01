@@ -2841,7 +2841,7 @@ export class FeatureTrackingManager {
     protected _client: FeatureLogBatchClient;
     protected _hostFallbackName: string;
     protected _hostName: string;
-    track(_iModelConnection: IModelConnection, _featureId: string, _featureName?: string): void;
+    track(_featureId: string, _featureName?: string, _iModelConnection?: IModelConnection): void;
     protected _usageType: UsageType;
 }
 
