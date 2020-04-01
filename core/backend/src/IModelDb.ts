@@ -2397,6 +2397,7 @@ export class SnapshotDb extends IModelDb {
    * @note The key for this map is the full path of the snapshot iModel file.
    */
   private static readonly _openDbs = new Map<string, SnapshotDb>();
+  private _createClassViewsOnClose?: boolean;
   /** The full path to the snapshot iModel file. */
   public get filePath(): string { return this.nativeDb.getFilePath(); }
 
@@ -2432,7 +2433,7 @@ export class SnapshotDb extends IModelDb {
     }
     const snapshotDb = new SnapshotDb(nativeDb, OpenParams.createSnapshot());
     if (options.createClassViews) {
-      (snapshotDb as any).createClassViewsOnClose = true; // save flag that will be checked when close() is called
+      snapshotDb._createClassViewsOnClose = true; // save flag that will be checked when close() is called
     }
     return snapshotDb;
   }
@@ -2486,7 +2487,7 @@ export class SnapshotDb extends IModelDb {
     }
     snapshotDb.nativeDb.setBriefcaseId(ReservedBriefcaseId.Snapshot, optionsString);
     if (options?.createClassViews) {
-      (snapshotDb as any).createClassViewsOnClose = true; // save flag that will be checked when close() is called
+      snapshotDb._createClassViewsOnClose = true; // save flag that will be checked when close() is called
     }
     return snapshotDb;
   }
@@ -2517,7 +2518,7 @@ export class SnapshotDb extends IModelDb {
     if (!this.isOpen) {
       return; // don't continue if already closed
     }
-    if ((this as any).createClassViewsOnClose) { // check for flag set during create
+    if (this._createClassViewsOnClose) { // check for flag set during create
       if (BentleyStatus.SUCCESS !== this.nativeDb.createClassViewsInDb()) {
         throw new IModelError(IModelStatus.SQLiteError, "Error creating class views", Logger.logError, loggerCategory);
       }
