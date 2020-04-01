@@ -7,7 +7,7 @@ import { Id64String } from "@bentley/bentleyjs-core";
 import { ViewQueryParams } from "@bentley/imodeljs-common";
 import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
 import { PropertyRecord } from "@bentley/ui-abstract";
-import { DefaultContentDisplayTypes } from "@bentley/presentation-common";
+import { DefaultContentDisplayTypes, PresentationUnitSystem } from "@bentley/presentation-common";
 import { Presentation, SelectionChangeEventArgs } from "@bentley/presentation-frontend";
 import { ElementSeparator, Orientation } from "@bentley/ui-core";
 import { IPresentationTableDataProvider, IPresentationPropertyDataProvider, DataProvidersFactory } from "@bentley/presentation-components";
@@ -16,6 +16,7 @@ import PropertiesWidget from "../properties-widget/PropertiesWidget";
 import GridWidget from "../grid-widget/GridWidget";
 import FindSimilarWidget from "../find-similar-widget/FindSimilarWidget";
 import RulesetSelector from "../ruleset-selector/RulesetSelector";
+import UnitSystemSelector from "../unit-system-selector/UnitSystemSelector";
 import SelectionScopePicker from "../selection-scope-picker/SelectionScopePicker";
 import ViewportContentControl from "../viewport/ViewportContentControl";
 import { TreeWidget } from "../tree-widget/TreeWidget";
@@ -32,6 +33,7 @@ export interface State {
   contentRatio: number;
   contentWidth?: number;
   similarInstancesProvider?: IPresentationTableDataProvider;
+  activeUnitSystem?: PresentationUnitSystem;
 }
 
 export default class App extends React.Component<{}, State> {
@@ -44,6 +46,7 @@ export default class App extends React.Component<{}, State> {
   private _selectionListener!: () => void;
 
   public readonly state: State = {
+    activeUnitSystem: Presentation.presentation.activeUnitSystem,
     rightPaneRatio: 0.5,
     contentRatio: 0.7,
   };
@@ -73,6 +76,12 @@ export default class App extends React.Component<{}, State> {
     // no need to wait on this - we just want to queue a request and forget it
     // tslint:disable-next-line:no-floating-promises
     Presentation.presentation.loadHierarchy({ imodel, rulesetOrId: rulesetId });
+  }
+
+  // tslint:disable-next-line:naming-convention
+  private onUnitSystemSelected = (unitSystem: PresentationUnitSystem | undefined) => {
+    Presentation.presentation.activeUnitSystem = unitSystem;
+    this.setState({ activeUnitSystem: unitSystem });
   }
 
   private async getFirstViewDefinitionId(imodel: IModelConnection): Promise<Id64String> {
@@ -236,6 +245,7 @@ export default class App extends React.Component<{}, State> {
         </div>
         <IModelSelector onIModelSelected={this.onIModelSelected} />
         <RulesetSelector onRulesetSelected={this.onRulesetSelected} />
+        <UnitSystemSelector selectedUnitSystem={this.state.activeUnitSystem} onUnitSystemSelected={this.onUnitSystemSelected} />
         {imodelComponents}
       </div>
     );

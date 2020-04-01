@@ -24,6 +24,14 @@ export enum RequestPriority {
   Max = Number.MAX_SAFE_INTEGER,
 }
 
+/** @alpha */
+export enum PresentationUnitSystem {
+  Metric = "metric",
+  BritishImperial = "british-imperial",
+  UsCustomary = "us-customary",
+  UsSurvey = "us-survey",
+}
+
 /**
  * A generic request options type used for both hierarchy and content requests
  * @public
@@ -66,7 +74,15 @@ export interface HierarchyRequestOptions<TIModel> extends RequestOptionsWithRule
  * Request type for content requests
  * @public
  */
-export interface ContentRequestOptions<TIModel> extends RequestOptionsWithRuleset<TIModel> { }
+export interface ContentRequestOptions<TIModel> extends RequestOptionsWithRuleset<TIModel> {
+  /**
+   * Unit system to use when formatting property values with units. Default presentation
+   * unit is used if unit system is not specified.
+   *
+   * @alpha
+   */
+  unitSystem?: PresentationUnitSystem;
+}
 
 /**
  * Request type for label requests

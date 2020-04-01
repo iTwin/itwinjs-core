@@ -18,7 +18,8 @@ import { IModelRpcProps } from "@bentley/imodeljs-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import {
   KeySet, Content, HierarchyRequestOptions, Node, Ruleset, VariableValueTypes, RulesetVariable,
-  Paged, ContentRequestOptions, RpcRequestsHandler, LabelRequestOptions, NodeKey, NodePathElement, InstanceKey, Descriptor, RequestPriority,
+  Paged, ContentRequestOptions, RpcRequestsHandler, LabelRequestOptions, NodeKey, NodePathElement,
+  InstanceKey, Descriptor, RequestPriority, PresentationUnitSystem,
 } from "@bentley/presentation-common";
 import { PresentationManager } from "../presentation-frontend/PresentationManager";
 import { RulesetVariablesManagerImpl } from "../presentation-frontend/RulesetVariablesManager";
@@ -39,6 +40,7 @@ describe("PresentationManager", () => {
 
   beforeEach(() => {
     mockI18N();
+    testData.imodelMock.reset();
     testData.imodelMock.setup((x) => x.getRpcProps()).returns(() => testData.imodelToken);
     testData.pageOptions = { start: faker.random.number(), size: faker.random.number() };
     testData.rulesetId = faker.random.uuid();
@@ -59,12 +61,9 @@ describe("PresentationManager", () => {
     i18nMock.setup((x) => x.translate(moq.It.isAny(), moq.It.isAny())).returns((stringId) => stringId);
   };
 
-  const toIModelTokenOptions = <TOptions extends { imodel: IModelConnection, locale?: string }>(options: TOptions) => {
-    // 1. put default `locale`
-    // 2. put all `options` members (if `locale` is set, it'll override the default put at #1)
-    // 3. put `imodel` of type `IModelRpcProps` which overwrites the `imodel` from `options`
-    return Object.assign({}, { locale: undefined }, options, {
-      imodel: testData.imodelToken,
+  const toIModelTokenOptions = <TOptions extends { imodel: IModelConnection, locale?: string, unitSystem?: PresentationUnitSystem }>(requestOptions: TOptions) => {
+    return Object.assign({}, requestOptions, {
+      imodel: requestOptions.imodel.getRpcProps(),
     });
   };
 
@@ -81,7 +80,7 @@ describe("PresentationManager", () => {
     return { ...options, rulesetOrId: foundRulesetOrId, rulesetVariables: [] };
   };
 
-  const prepareOptions = <TOptions extends { imodel: IModelConnection, locale?: string, rulesetId?: string, rulesetOrId?: Ruleset | string }>(options: TOptions) => {
+  const prepareOptions = <TOptions extends { imodel: IModelConnection, locale?: string, unitSystem?: PresentationUnitSystem, rulesetId?: string, rulesetOrId?: Ruleset | string }>(options: TOptions) => {
     return toIModelTokenOptions(addRulesetAndVariablesToOptions(options));
   };
 
@@ -91,6 +90,12 @@ describe("PresentationManager", () => {
       const props = { activeLocale: faker.locale };
       const mgr = PresentationManager.create(props);
       expect(mgr.activeLocale).to.eq(props.activeLocale);
+    });
+
+    it("sets active unit system if supplied with props", async () => {
+      const props = { activeUnitSystem: PresentationUnitSystem.UsSurvey };
+      const mgr = PresentationManager.create(props);
+      expect(mgr.activeUnitSystem).to.eq(props.activeUnitSystem);
     });
 
     it("sets custom RpcRequestsHandler if supplied with props", async () => {
@@ -150,6 +155,8 @@ describe("PresentationManager", () => {
 
     it("requests with request's locale if set", async () => {
       const locale = faker.random.locale();
+      manager.activeLocale = faker.random.locale();
+      expect(manager.activeLocale).to.not.eq(locale);
       await manager.getNodesCount({
         imodel: testData.imodelMock.object,
         rulesetOrId: testData.rulesetId,
@@ -161,6 +168,43 @@ describe("PresentationManager", () => {
         locale,
         rulesetVariables: [],
       }, undefined), moq.Times.once());
+    });
+
+  });
+
+  describe("activeUnitSystem", () => {
+
+    it("requests with manager's unit system if not set in request options", async () => {
+      const keys = new KeySet();
+      const unitSystem = PresentationUnitSystem.UsSurvey;
+      manager.activeUnitSystem = unitSystem;
+      await manager.getContentDescriptor({
+        imodel: testData.imodelMock.object,
+        rulesetOrId: testData.rulesetId,
+      }, "", keys, undefined);
+      rpcRequestsHandlerMock.verify((x) => x.getContentDescriptor({
+        imodel: testData.imodelToken,
+        rulesetOrId: testData.rulesetId,
+        unitSystem,
+        rulesetVariables: [],
+      }, "", keys.toJSON(), undefined), moq.Times.once());
+    });
+
+    it("requests with request's locale if set", async () => {
+      const keys = new KeySet();
+      const unitSystem = PresentationUnitSystem.UsSurvey;
+      manager.activeUnitSystem = PresentationUnitSystem.Metric;
+      await manager.getContentDescriptor({
+        imodel: testData.imodelMock.object,
+        rulesetOrId: testData.rulesetId,
+        unitSystem,
+      }, "", keys, undefined);
+      rpcRequestsHandlerMock.verify((x) => x.getContentDescriptor({
+        imodel: testData.imodelToken,
+        rulesetOrId: testData.rulesetId,
+        unitSystem,
+        rulesetVariables: [],
+      }, "", keys.toJSON(), undefined), moq.Times.once());
     });
 
   });
