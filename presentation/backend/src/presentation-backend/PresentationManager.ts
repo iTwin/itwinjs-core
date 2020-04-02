@@ -48,17 +48,33 @@ export enum PresentationManagerMode {
  */
 export interface PresentationManagerProps {
   /**
-   * A list of directories containing presentation rulesets.
+   * A path override for presentation-backend's assets. Need to be overriden by application if
+   * it puts these assets someplace else than the default.
+   *
+   * By default the root is determined using this algorithm:
+   * - if 'presentation-backend' is in node_modules, assume the directory structure is:
+   *   - assets/*\*\/*
+   *   - presentation-backend/{source_files}
+   *   which means the assets can be found through a relative path '../assets/' from the JS file being executed.
+   * - else, assume the backend is webpacked into a single file with assets next to it:
+   *   - assets/*\*\/*
+   *   - main.js
+   *   which means the assets can be found through a relative path './assets/' from the JS file being executed.
+   */
+  presentationAssetsRoot?: string;
+
+  /**
+   * A list of directories containing application's presentation rulesets.
    */
   rulesetDirectories?: string[];
 
   /**
-   * A list of directories containing supplemental presentation rulesets.
+   * A list of directories containing application's supplemental presentation rulesets.
    */
   supplementalRulesetDirectories?: string[];
 
   /**
-   * A list of directories containing locale-specific localized
+   * A list of directories containing application's locale-specific localized
    * string files (in simplified i18next v3 format)
    */
   localeDirectories?: string[];
@@ -217,7 +233,7 @@ export class PresentationManager {
   }
 
   private setupRulesetDirectories(props?: PresentationManagerProps) {
-    const supplementalRulesetDirectories = [path.join(PRESENTATION_BACKEND_ASSETS_ROOT, "supplemental-presentation-rules")];
+    const supplementalRulesetDirectories = [path.join(props?.presentationAssetsRoot ?? PRESENTATION_BACKEND_ASSETS_ROOT, "supplemental-presentation-rules")];
     if (props && props.supplementalRulesetDirectories) {
       props.supplementalRulesetDirectories.forEach((dir) => {
         if (-1 === supplementalRulesetDirectories.indexOf(dir))
@@ -832,7 +848,7 @@ const skipTransients = (callback: (id: Id64String) => void) => {
 };
 
 const createLocaleDirectoryList = (props?: PresentationManagerProps) => {
-  const localeDirectories = [getLocalesDirectory(PRESENTATION_COMMON_PUBLIC_ROOT)];
+  const localeDirectories = [getLocalesDirectory(props?.presentationAssetsRoot ?? PRESENTATION_COMMON_PUBLIC_ROOT)];
   if (props && props.localeDirectories) {
     props.localeDirectories.forEach((dir) => {
       if (-1 === localeDirectories.indexOf(dir))

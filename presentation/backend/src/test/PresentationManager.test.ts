@@ -38,7 +38,7 @@ import { ItemJSON } from "@bentley/presentation-common/lib/presentation-common/c
 import { PropertiesFieldJSON, NestedContentFieldJSON, FieldJSON } from "@bentley/presentation-common/lib/presentation-common/content/Fields";
 import { DescriptorJSON, SelectClassInfoJSON } from "@bentley/presentation-common/lib/presentation-common/content/Descriptor";
 import { NativePlatformDefinition, NativePlatformRequestTypes } from "../presentation-backend/NativePlatform";
-import { PresentationManager, PresentationManagerMode } from "../presentation-backend/PresentationManager";
+import { PresentationManager, PresentationManagerMode, PresentationManagerProps } from "../presentation-backend/PresentationManager";
 import { RulesetManagerImpl } from "../presentation-backend/RulesetManager";
 import { RulesetVariablesManagerImpl } from "../presentation-backend/RulesetVariablesManager";
 import { PRESENTATION_BACKEND_ASSETS_ROOT, PRESENTATION_COMMON_PUBLIC_ROOT } from "../presentation-backend/Constants";
@@ -110,8 +110,9 @@ describe("PresentationManager", () => {
         const constructorSpy = sinon.spy(IModelHost.platform, "ECPresentationManager");
         const testLocale = faker.random.locale();
         const testTaskAllocations = { [999]: 111 };
-        const props = {
+        const props: PresentationManagerProps = {
           id: faker.random.uuid(),
+          presentationAssetsRoot: "/test",
           localeDirectories: [testLocale, testLocale],
           taskAllocationsMap: testTaskAllocations,
           mode: PresentationManagerMode.ReadOnly,
@@ -120,7 +121,7 @@ describe("PresentationManager", () => {
           expect((manager.getNativePlatform() as any)._nativeAddon).instanceOf(IModelHost.platform.ECPresentationManager);
           expect(constructorSpy).to.be.calledOnceWithExactly(
             props.id,
-            [getLocalesDirectory(PRESENTATION_COMMON_PUBLIC_ROOT), testLocale],
+            [getLocalesDirectory("/test"), testLocale],
             testTaskAllocations,
             IModelHost.platform.ECPresentationManagerMode.ReadOnly,
           );
@@ -156,7 +157,16 @@ describe("PresentationManager", () => {
         addon
           .setup((x) => x.setupSupplementalRulesetDirectories(addonDirs))
           .verifiable();
-        using(new PresentationManager({ addon: addon.object, supplementalRulesetDirectories: dirs }), (pm: PresentationManager) => { pm; });
+        using(new PresentationManager({ addon: addon.object, supplementalRulesetDirectories: dirs }), (_pm: PresentationManager) => { });
+        addon.verifyAll();
+      });
+
+      it("sets up presentation backend's supplemental ruleset directories using `presentationAssetsRoot` if supplied", () => {
+        const addonDirs = [path.join("/test", "supplemental-presentation-rules")];
+        addon
+          .setup((x) => x.setupSupplementalRulesetDirectories(addonDirs))
+          .verifiable();
+        using(new PresentationManager({ addon: addon.object, presentationAssetsRoot: "/test" }), (_pm: PresentationManager) => { });
         addon.verifyAll();
       });
 
