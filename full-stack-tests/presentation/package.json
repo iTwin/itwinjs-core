@@ -34,7 +34,6 @@
     "@bentley/presentation-testing": "2.0.0-dev.54",
     "@bentley/ui-core": "2.0.0-dev.54",
     "@bentley/ui-components": "2.0.0-dev.54",
-    "@bentley/ui-framework": "2.0.0-dev.54",
     "@bentley/ui-abstract": "2.0.0-dev.54",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
