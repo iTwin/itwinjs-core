@@ -22,7 +22,7 @@
     "lint": "tslint -p ./tsconfig.json 1>&2",
     "electron": "run-p start:webserver start:electron",
     "start:electron": "electron ./lib/backend/main.js",
-    "start:webserver": "cross-env BROWSER=none react-scripts start",
+    "start:webserver": "cross-env BROWSER=none react-scripts start --unsafe-fast-sass",
     "start:backend": "node --inspect --max-http-header-size=16000 lib/backend/main.js",
     "start:servers": "run-p start:webserver start:backend",
     "test": "",

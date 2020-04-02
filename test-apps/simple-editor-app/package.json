@@ -13,7 +13,7 @@
     "lint": "tslint -p . 1>&2",
     "start": "run-p start:webserver start:electron",
     "start:electron": "electron ./lib/backend/main.js",
-    "start:webserver": "cross-env BROWSER=none npm run pseudolocalize && react-scripts start",
+    "start:webserver": "cross-env BROWSER=none npm run pseudolocalize && react-scripts start --unsafe-fast-sass",
     "start:backend": "node --max-http-header-size=16000 lib/backend/main.js",
     "start:extensionserver": "node ./node_modules/@bentley/imodeljs-webserver/lib/WebServer.js --port=4200 --resources=./lib/extensionserver/",
     "start:servers": "run-p \"start:webserver\" \"start:backend\"",
