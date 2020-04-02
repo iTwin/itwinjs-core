@@ -724,4 +724,68 @@ describe("Triangulation", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
+  it("PinchedTriangulation", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let dx = -960;
+    const dy = -3616;
+    const loops = [];
+    // A single pinch point:
+    for (const dy14 of [0, 1, -1]) {
+      loops.push([
+        { x: 960, y: 3616 },
+        // { x: 961, y: 3616 },
+        { x: 968, y: 3612 + dy14 },
+        // { x: 969, y: 3612 + dy14 },
+        { x: 972, y: 3608 },
+        { x: 968, y: 3608 },
+        { x: 968, y: 3612 + dy14 },
+        { x: 960, y: 3612 },
+        { x: 960, y: 3616 },
+        { x: 960, y: 3616 }]);
+    }
+    // multiple pinch points:
+    const x0 = 960;
+    const y0 = 3616;
+    for (const touchAllPointsOnReturn  of [true, false]) {
+      for (const numPinch of [2, 3, 5]) {
+        const points = [];
+        points.push({ x: x0, y: y0 });
+        let x1 = x0;
+        const y1 = y0 - 2;
+        // walk out in sawtooth steps
+        for (let i = 0; i < numPinch; i++) {
+          points.push({ x: x1 + 1, y: y1 });
+          points.push({ x: x1 + 2, y: y0 });
+          x1 += 2;
+        }
+        if (touchAllPointsOnReturn) {
+          // walk back in each interval
+          for (let i = 0; i < numPinch; i++) {
+            points.push({ x: x1, y: y0 });
+            x1 -= 2;
+          }
+        }
+        loops.push(points);
+      }
+    }
+    for (const points of loops) {
+      const graph = Triangulator.createTriangulatedGraphFromSingleLoop(points);
+      GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(points), dx, dy);
+      GraphChecker.captureAnnotatedGraph(allGeometry, graph, dx, dy + 10);
+      GraphChecker.verifyMaskAroundFaces(ck, graph, HalfEdgeMask.EXTERIOR);
+      const polyface = PolyfaceBuilder.graphToPolyface(graph);
+      GeometryCoreTestIO.captureGeometry(allGeometry, polyface, dx, dy + 20);
+
+      const graph1 = Triangulator.createTriangulatedGraphFromLoops([points]);
+      if (graph1) {
+        const polyface1 = PolyfaceBuilder.graphToPolyface(graph1);
+        GeometryCoreTestIO.captureGeometry(allGeometry, polyface1, dx, dy + 30);
+      }
+      dx += 20;
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Triangulation", "PinchedTriangulation");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
 });

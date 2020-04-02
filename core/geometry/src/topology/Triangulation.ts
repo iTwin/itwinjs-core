@@ -300,9 +300,9 @@ export class Triangulator {
     }
     if (!baseNode)
       return graph.splitEdge(baseNode, x, y, z);
-    if (Triangulator.equalXAndYXY(baseNode, x, y))
+    if (Triangulator.isAlmostEqualXAndYXY(baseNode, x, y))
       return baseNode;
-    if (Triangulator.equalXAndYXY(baseNode.faceSuccessor, x, y))
+    if (Triangulator.isAlmostEqualXAndYXY(baseNode.faceSuccessor, x, y))
       return baseNode;
     return graph.splitEdge(baseNode, x, y, z);
   }
@@ -491,15 +491,26 @@ export class Triangulator {
 
     let next;
     let next2;
+    let pred;
     let maxCandidate = ear.countEdgesAroundFace();
     let numCandidate = 0;
     ear.clearMaskAroundFace(HalfEdgeMask.TRIANGULATED_FACE);
     // iterate through ears, slicing them one by one
     while (!ear.isMaskSet(HalfEdgeMask.TRIANGULATED_FACE)) {
+      pred = ear?.facePredecessor;
       next = ear.faceSuccessor;
       next2 = next.faceSuccessor;
       if (next === ear || next2 === ear || next2.faceSuccessor === ear)
         return true;
+      // earcut does not support self intersections.
+      // BUT  .. maybe if we watch from the simplest case of next2 returning to pred it will catch some . . .
+      // (no need to do flips -- we know it's already a triangle)
+      if (Geometry.isAlmostEqualXAndY(next2, pred)) {
+        HalfEdge.pinch(pred, next2);
+        ear.setMaskAroundFace(HalfEdgeMask.TRIANGULATED_FACE);
+        ear = next2;
+        continue;
+      }
       if (++numCandidate > maxCandidate)
         return false;
       if (Triangulator.isEar(ear)) {
@@ -664,8 +675,8 @@ export class Triangulator {
   }
 
   /** check if two points are equal */
-  private static equalXAndYXY(p1: XAndY, x: number, y: number) {
-    return Geometry.isSameCoordinate(p1.x, x) && Geometry.isSameCoordinate(p1.y, y);
+  private static isAlmostEqualXAndYXY(p1: XAndY, x: number, y: number) {
+    return Geometry.isAlmostEqualNumber(p1.x, x) && Geometry.isAlmostEqualNumber(p1.y, y);
   }
 
   /** check if a polygon diagonal is locally inside the polygon */
