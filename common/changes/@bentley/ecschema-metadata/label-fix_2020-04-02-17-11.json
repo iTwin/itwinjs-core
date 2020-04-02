@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ecschema-metadata",
+      "comment": "Undefined display labels should equal empty display labels during schema comparison.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ecschema-metadata",
+  "email": "Chris.Lawson@bentley.com"
+}
