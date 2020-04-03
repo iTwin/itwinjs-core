@@ -41,6 +41,10 @@ With the above in mind, the quickest/easiest migration pattern for all existing 
 
 1. Add a `src/index.ts` file which references the current entry point of your app.  For example, if the entry point is currently, `./src/frontend/index.ts`, then the new `./src/index.ts` will be as simple as the new [ui-test-app/src/index.ts](https://dev.azure.com/bentleycs/iModelTechnologies/_git/imodeljs/pullrequest/74170?_a=files&path=%2Ftest-apps%2Fui-test-app%2Fsrc%2Findex.ts) file
 
+## Update to Electron 8
+
+iModel.js has officially moved up to the [latest stable version](https://www.electronjs.org/docs/tutorial/electron-timelines) of Electron.
+
 ## 3D Globe Background Map Display
 
 The background map can now be displayed as either a plane or a three-dimensional globe. This is controlled by the [GlobeMode]($common) property of the [DisplayStyleSettings.backgroundMap]($common) associated with a [DisplayStyleState]($frontend) or [DisplayStyle]($backend).
