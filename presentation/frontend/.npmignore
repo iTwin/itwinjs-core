@@ -2,9 +2,9 @@
 *
 # then add back only the files we want
 !lib/**/*.d.ts
+!lib/**/*.d.ts.map
 !lib/**/*.js
 !lib/**/*.json
-!lib/module/dev/presentation-frontend.js.map
 !*.md
 # then ignore some stuff again
 lib/test
