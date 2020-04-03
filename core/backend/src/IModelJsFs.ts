@@ -122,7 +122,7 @@ export class IModelJsFs {
     for (const childPath of IModelJsFs.readdirSync(rootDir)) {
       const fullPath = path.join(rootDir, childPath);
       const isDir = IModelJsFs.lstatSync(fullPath)?.isDirectory;
-      if (!cb(fullPath, true)) {
+      if (!cb(fullPath, isDir!)) {
         return;
       }
       if (isDir) {
@@ -142,5 +142,21 @@ export class IModelJsFs {
     if (parentPath !== dirPath)
       IModelJsFs.recursiveMkDirSync(parentPath);
     IModelJsFs.mkdirSync(dirPath);
+  }
+
+  /** Remove a directory, recursively */
+  public static purgeDirSync(dirPath: string) {
+    if (!IModelJsFs.existsSync(dirPath))
+      return;
+
+    IModelJsFs.walkDirSync(dirPath, (pathName: string, isDir: boolean) => {
+      if (isDir) {
+        IModelJsFs.purgeDirSync(pathName);
+        IModelJsFs.removeSync(pathName);
+      } else {
+        IModelJsFs.unlinkSync(pathName);
+      }
+      return true;
+    });
   }
 }

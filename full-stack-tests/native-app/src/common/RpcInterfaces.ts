@@ -32,6 +32,10 @@ export abstract class TestRpcInterface extends RpcInterface {
     return this.forward(arguments);
   }
 
+  public async purgeStorageCache(): Promise<void> {
+    return this.forward(arguments);
+  }
+
   public async extractChangeSummaries(_iModelToken: IModelRpcProps, _options: any): Promise<void> {
     return this.forward(arguments);
   }

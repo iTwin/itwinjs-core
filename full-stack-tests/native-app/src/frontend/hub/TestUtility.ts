@@ -53,6 +53,10 @@ export class TestUtility {
     return iModels[0].wsgId;
   }
 
+  public static async purgeStorageCache() {
+    return TestRpcInterface.getClient().purgeStorageCache();
+  }
+
   public static async createIModel(name: string, contextId: string, deleteIfExists = false) {
     return TestRpcInterface.getClient().createIModel(name, contextId, deleteIfExists);
   }

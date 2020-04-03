@@ -79,6 +79,10 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
     return hubIModel.id;
   }
 
+  public async purgeStorageCache(): Promise<void> {
+    return IModelJsFs.purgeDirSync(IModelHost.configuration!.nativeAppCacheDir!);
+  }
+
   public async purgeBriefcaseCache(): Promise<void> {
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
     await BriefcaseManager.purgeCache(requestContext);

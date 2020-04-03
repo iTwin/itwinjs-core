@@ -4,8 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { NativeAppStorage } from "../../NativeAppStorage";
+import { IModelJsFs } from "../../IModelJsFs";
+import { IModelHost } from "../../IModelHost";
 
 describe("NativeApp Storage", () => {
+  before(() => {
+    IModelJsFs.purgeDirSync(IModelHost.configuration!.nativeAppCacheDir!);
+  });
+
   it("Primitive Type", () => {
     const test1 = NativeAppStorage.open("backend_test_1");
     test1.removeAll();
