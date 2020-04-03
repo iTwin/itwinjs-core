@@ -15,7 +15,7 @@
     "build": "npm run build:backend & npm run build:frontend",
     "build:backend": "tsc -p tsconfig.backend.json",
     "build:frontend": "react-scripts build",
-    "clean": "rimraf lib build .rush package-deps.json",
+    "clean": "rimraf lib build .rush",
     "docs": "",
     "lint": "tslint --project . 1>&2",
     "mobile": "tsc 1>&2 && webpack --config mobile.backend.webpack.config.js 1>&2 && webpack --config mobile.frontend.webpack.config.js 1>&2 && cpx \"public/**/*\" ./lib/mobile/public && cpx \"assets/**/*\" ./lib/mobile/assets ",

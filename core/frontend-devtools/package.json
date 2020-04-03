@@ -8,7 +8,7 @@
   "scripts": {
     "build": "npm run copy:assets && tsc 1>&2",
     "copy:assets": "cpx ./public/**/* ./lib/public",
-    "clean": "rimraf lib .rush package-deps.json",
+    "clean": "rimraf lib .rush",
     "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --includes=../../generated-docs/extract --json=../../generated-docs/core/frontend-devtools/file.json --tsIndexFile=./frontend-devtools.ts --onlyJson %TYPEDOC_THEME%",
     "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=frontend-devtools",
     "lint": "tslint --project . 1>&2",

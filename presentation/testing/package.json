@@ -22,7 +22,7 @@
   "scripts": {
     "build": "npm run extract && tsc 1>&2",
     "build:watch": "tsc -w",
-    "clean": "rimraf lib .rush package-deps.json",
+    "clean": "rimraf lib .rush",
     "cover": "nyc npm test",
     "docs": "npm run docs:reference && npm run docs:changelog",
     "docs:changelog": "cpx \"./CHANGELOG.md\" ../../generated-docs/presentation/presentation-testing",

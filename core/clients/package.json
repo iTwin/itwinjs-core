@@ -8,7 +8,7 @@
   "license": "MIT",
   "scripts": {
     "build": "tsc 1>&2",
-    "clean": "rimraf lib .rush package-deps.json",
+    "clean": "rimraf lib .rush",
     "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=imodeljs-clients",
     "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-clients/file.json --tsIndexFile=imodeljs-clients.ts --onlyJson %TYPEDOC_THEME%",
     "lint": "tslint --project . 1>&2",

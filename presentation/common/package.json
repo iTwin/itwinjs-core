@@ -24,7 +24,7 @@
     "build": "npm run ruleset-json-schema && npm run build:assets && npm run extract && tsc 1>&2",
     "build:assets": "cpx \"./assets/**/*\" ./lib/public && npm run pseudolocalize",
     "build:watch": "npm run ruleset-json-schema && npm run build:assets && tsc -w",
-    "clean": "rimraf lib .rush package-deps.json",
+    "clean": "rimraf lib .rush",
     "cover": "nyc npm test",
     "docs": "npm run docs:reference && npm run docs:changelog",
     "docs:changelog": "cpx \"./CHANGELOG.md\" ../../generated-docs/presentation/presentation-common",

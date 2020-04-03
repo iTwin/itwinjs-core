@@ -14,7 +14,7 @@
     "copy:assets": "cpx \"./src/**/*.*css\" ./lib",
     "build": "npm run copy:assets && tsc 1>&2",
     "build:watch": "tsc -w",
-    "clean": "rimraf lib out .rush demo/lib package-deps.json",
+    "clean": "rimraf lib out .rush demo/lib",
     "cover": "nyc npm test",
     "docs": "npm run docs:typedoc",
     "docs:typedoc": "node ./node_modules/@bentley/build-tools/scripts/docs.js --includes=../../generated-docs/extract --json=../../generated-docs/ui/ui-ninezone/file.json --tsIndexFile=./ui-ninezone.ts --onlyJson %TYPEDOC_THEME%",

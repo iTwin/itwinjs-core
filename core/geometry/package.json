@@ -8,7 +8,7 @@
   "license": "MIT",
   "scripts": {
     "build": "tsc 1>&2",
-    "clean": "rimraf lib .rush ./src/test/output package-deps.json",
+    "clean": "rimraf lib .rush ./src/test/output",
     "watch": "tsc --watch",
     "test": "node ./node_modules/@bentley/build-tools/scripts/test.js",
     "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=geometry-core",

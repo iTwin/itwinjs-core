@@ -5,7 +5,7 @@
   "license": "MIT",
   "scripts": {
     "build": "tsc 1>&2",
-    "clean": "rimraf lib .rush package-deps.json ../../generated-docs",
+    "clean": "rimraf lib .rush ../../generated-docs",
     "copy:assets": "cpx \"./src/backend/assets/**/*\" ./lib/backend/assets",
     "extract": "node ./node_modules/@bentley/build-tools/scripts/extract.js --fileExt=ts --extractFrom=./src --recursive --out=../../generated-docs/extract",
     "docs": "npm run copy:assets && npm run extract",

@@ -12,7 +12,7 @@
   },
   "scripts": {
     "build": "tsc 1>&2",
-    "clean": "rimraf lib .rush package-deps.json .nyc_output",
+    "clean": "rimraf lib .rush .nyc_output",
     "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=imodeljs-quantity",
     "lint": "tslint --project . 1>&2",
     "test": "node ./node_modules/@bentley/build-tools/scripts/test-tsnode.js --testDir=./test/",

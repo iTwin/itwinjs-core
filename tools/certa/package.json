@@ -14,7 +14,7 @@
   "scripts": {
     "prebsuild": "webpack --config webpack.config.js 1>&2",
     "build": "tsc 1>&2",
-    "clean": "rimraf lib .rush package-deps.json",
+    "clean": "rimraf lib .rush",
     "lint": "tslint --project . 1>&2",
     "test": "",
     "docs": "",

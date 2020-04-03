@@ -9,7 +9,7 @@
     "build:backend": "npm run copy:assets && tsc -p tsconfig.backend.json",
     "build:frontend": "npm run pseudolocalize && cross-env GENERATE_SOURCEMAP=false react-scripts build --unsafe-fast-sass",
     "copy:assets": "cpx ./src/backend/web/BackendServer.config.json ./lib/backend/web",
-    "clean": "rimraf build lib .rush dist package-deps.json",
+    "clean": "rimraf build lib .rush dist",
     "lint": "tslint -p . 1>&2",
     "start": "run-p start:webserver start:electron",
     "start:electron": "electron ./lib/backend/main.js",

@@ -15,7 +15,7 @@
     "build": "tsc 1>&2 && npm run copy:typedefs",
     "copy:typedefs": "cpx \"./src/openid-client.d.ts\" ./lib/",
     "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/test/assets",
-    "clean": "rimraf lib .rush package-deps.json",
+    "clean": "rimraf lib .rush",
     "cover": "nyc npm test",
     "cover:integration": "npm run copy:test-assets && nyc --report-dir ./lib/test/coverage/integration npm run test-integration",
     "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-clients-backend/file.json --tsIndexFile=imodeljs-clients-backend.ts --onlyJson %TYPEDOC_THEME%",

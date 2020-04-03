@@ -5,7 +5,7 @@
   "license": "MIT",
   "scripts": {
     "build": "tsc 1>&2 && npm run webpack:frontend",
-    "clean": "rimraf lib .rush package-deps.json coverage",
+    "clean": "rimraf lib .rush coverage",
     "cover": "npm run test:chrome -- --cover && npm run test:electron -- --cover",
     "docs": "",
     "lint": "tslint --project . 1>&2",

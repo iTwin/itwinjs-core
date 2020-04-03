@@ -5,7 +5,7 @@
   "license": "MIT",
   "scripts": {
     "build": "tsc 1>&2",
-    "clean": "rimraf lib .rush package-deps.json ../../generated-docs",
+    "clean": "rimraf lib .rush ../../generated-docs",
     "extract-assets": "cpx \"./src/backend/assets/**/*\" ../../generated-docs/extract",
     "copy:backend-assets": "cpx \"./src/backend/assets/**/*\" ./lib/backend/assets",
     "copy:test-backend-assets": "cpx \"./src/backend/test/assets/**/*\" ./lib/backend/test/assets",
