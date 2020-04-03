@@ -15,7 +15,7 @@ import {
   CloudStorageUploadOptions,
 } from "@bentley/imodeljs-backend";
 
-/** Simulates cloud storage tile cache, caching tiles in ./webresources/tiles/ */
+/** Simulates cloud storage tile cache, caching tiles in ./build/tiles/ */
 export class FakeTileCacheService extends CloudStorageService {
   private readonly _dirname: string;
   public readonly id = CloudStorageProvider.External;

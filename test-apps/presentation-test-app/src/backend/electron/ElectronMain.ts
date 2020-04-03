@@ -14,6 +14,6 @@ export default async function initialize(rpcs: RpcInterfaceDefinition[]) {
   ElectronRpcManager.initializeImpl({}, rpcs);
   // __PUBLISH_EXTRACT_END__
 
-  const app = (process.env.NODE_ENV === "development") ? new WebpackDevServerElectronManager() : new IModelJsElectronManager();
+  const app = (process.env.NODE_ENV === "development") ? new WebpackDevServerElectronManager() : new IModelJsElectronManager(`${__dirname}/../../../build`);
   return app.initialize();
 }

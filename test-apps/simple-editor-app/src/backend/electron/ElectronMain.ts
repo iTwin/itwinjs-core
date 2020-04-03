@@ -17,7 +17,7 @@ export default function initialize(rpcs: RpcInterfaceDefinition[]) {
   (async () => { // tslint:disable-line:no-floating-promises
     let manager: StandardElectronManager;
     if (process.env.NODE_ENV === "production")
-      manager = new IModelJsElectronManager(path.join(__dirname, "..", "build"));
+      manager = new IModelJsElectronManager(path.join(__dirname, "..", "..", "..", "build"));
     else
       manager = new WebpackDevServerElectronManager(3000); // port should match the port of the local dev server
 
@@ -28,7 +28,6 @@ export default function initialize(rpcs: RpcInterfaceDefinition[]) {
       show: true,
       webPreferences: {
         nodeIntegration: true,
-        preload: path.join(__dirname, "preload.js"),
       },
     });
 

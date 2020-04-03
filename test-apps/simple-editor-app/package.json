@@ -44,7 +44,7 @@
     "@bentley/imodeljs-webserver": "2.0.0-dev.56",
     "@bentley/icons-generic-webfont": "^1.0.0",
     "@bentley/icons-generic": "^1.0.0",
-    "@bentley/react-scripts": "3.4.1-dev.12",
+    "@bentley/react-scripts": "3.4.1-dev.17",
     "@types/classnames": "^2.2.3",
     "@types/lorem-ipsum": "^1.0.2",
     "@types/node": "10.14.1",
@@ -62,7 +62,7 @@
     "tslint": "^5.11.0",
     "tslint-etc": "^1.5.2",
     "typescript": "~3.7.4",
-    "webpack": "4.41.5"
+    "webpack": "4.42.0"
   },
   "dependencies": {
     "@bentley/bentleyjs-core": "2.0.0-dev.56",
@@ -99,22 +99,15 @@
     "semver": "^5.5.0",
     "svg-sprite-loader": "4.2.1"
   },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "electron 6.0.0",
-      "last 4 chrome version",
-      "last 4 firefox version",
-      "last 4 safari version",
-      "last 4 ios version",
-      "last 4 ChromeAndroid version",
-      "last 4 edge version",
-      "not dead",
-      "not <0.2%"
-    ]
-  }
+  "browserslist": [
+    "electron 6.0.0",
+    "last 4 chrome version",
+    "last 4 firefox version",
+    "last 4 safari version",
+    "last 4 ios version",
+    "last 4 ChromeAndroid version",
+    "last 4 edge version",
+    "not dead",
+    "not <0.2%"
+  ]
 }

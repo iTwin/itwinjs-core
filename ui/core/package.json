@@ -49,7 +49,7 @@
     "@bentley/bentleyjs-core": "2.0.0-dev.56",
     "@bentley/imodeljs-i18n": "2.0.0-dev.56",
     "@bentley/ui-abstract": "2.0.0-dev.56",
-    "@bentley/react-scripts": "3.4.1-dev.12",
+    "@bentley/react-scripts": "3.4.1-dev.17",
     "@testing-library/react": "^8.0.1",
     "@testing-library/react-hooks": "^3.2.1",
     "@types/chai": "^4.1.4",

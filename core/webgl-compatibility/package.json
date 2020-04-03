@@ -47,6 +47,6 @@
     "mocha": "^5.2.0",
     "source-map-loader": "^0.2.3",
     "glob": "^7.1.2",
-    "webpack": "4.41.5"
+    "webpack": "4.42.0"
   }
 }

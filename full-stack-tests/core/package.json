@@ -53,6 +53,6 @@
     "tslint-etc": "^1.5.2",
     "typescript": "~3.7.4",
     "nyc": "^14.0.0",
-    "webpack": "4.41.5"
+    "webpack": "4.42.0"
   }
 }

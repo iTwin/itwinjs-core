@@ -47,7 +47,7 @@ export function setupSnapshotConfiguration() {
     testAppConfiguration.startWithSnapshots = true;
 
   // Write the configuration file to the output build directory.
-  const configPathname = path.normalize(path.join(__dirname, "..", "..", "..", "build", "public", "testAppConfiguration.json"));
+  const configPathname = path.normalize(path.join(__dirname, "..", "..", "..", "build", "testAppConfiguration.json"));
 
   fs.writeFileSync(configPathname, JSON.stringify(testAppConfiguration), "utf8");
 }

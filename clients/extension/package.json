@@ -55,7 +55,7 @@
     "tslint": "^5.11.0",
     "typescript": "~3.7.4",
     "ts-node": "^7.0.1",
-    "webpack": "4.41.5"
+    "webpack": "4.42.0"
   },
   "nyc": {
     "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc"

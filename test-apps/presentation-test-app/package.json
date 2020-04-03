@@ -15,7 +15,7 @@
     "build": "npm run build:backend && npm run build:frontend",
     "build:backend": "npm run copy:assets && tsc -p tsconfig.backend.json",
     "build:frontend": "cross-env GENERATE_SOURCEMAP=false react-scripts build --unsafe-fast-sass",
-    "copy:assets": "cpx \"./assets/**/*\" \"./lib/assets\"",
+    "copy:assets": "cpx \"./assets/**/*\" ./lib/assets",
     "clean": "rimraf lib .rush",
     "docs": "npm run extract",
     "extract": "node ./node_modules/@bentley/build-tools/scripts/extract.js --fileExt=ts,tsx --extractFrom=./src --recursive --out=../../generated-docs/extract",
@@ -55,7 +55,7 @@
     "@bentley/config-loader": "2.0.0-dev.56",
     "@bentley/build-tools": "2.0.0-dev.56",
     "@bentley/imodeljs-webserver": "2.0.0-dev.56",
-    "@bentley/react-scripts": "3.4.1-dev.12",
+    "@bentley/react-scripts": "3.4.1-dev.17",
     "@types/bunyan": "^1.8.4",
     "@types/react": "^16.8.0",
     "@types/react-dom": "^16.8.0",
@@ -72,22 +72,15 @@
     "tslint-etc": "^1.5.2",
     "typescript": "~3.7.4"
   },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "electron 6.0.0",
-      "last 4 chrome version",
-      "last 4 firefox version",
-      "last 4 safari version",
-      "last 4 ios version",
-      "last 4 ChromeAndroid version",
-      "last 4 edge version",
-      "not dead",
-      "not <0.2%"
-    ]
-  }
+  "browserslist": [
+    "electron 6.0.0",
+    "last 4 chrome version",
+    "last 4 firefox version",
+    "last 4 safari version",
+    "last 4 ios version",
+    "last 4 ChromeAndroid version",
+    "last 4 edge version",
+    "not dead",
+    "not <0.2%"
+  ]
 }
