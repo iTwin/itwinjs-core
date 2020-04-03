@@ -113,7 +113,7 @@ export class ExtensionAdmin {
       const pending: PendingExtension | undefined = await extensionLoader.loadExtension(extensionName, extensionVersion, args);
       if (pending === undefined)
         continue; // try another loader
-      this.addPendingExtension(extensionName, pending);
+      this.addPendingExtension(extensionNameLC, pending);
       // Return the promise of the pending plugin.
       return pending.promise;
     }
