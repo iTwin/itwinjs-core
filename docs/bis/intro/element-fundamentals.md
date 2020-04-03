@@ -95,15 +95,15 @@ When stored in an iModel, Elements also have a unique 64-bit *local* identifier,
 
 An Element may have child Elements. Both the parent and the children must live in the same Model. The parent-child relationship implies ownership and cascading deletes. This is discussed more in the [Assemblies](#assemblies) section below.
 
-## Core Element Types
+## Core Element Classes
 
-These are subclasses of Element defined in the BIS core from which all other Element types must descend:
+These are subclasses of Element defined in the BIS core from which all other Element classes must descend:
 
 - `GeometricElement`
 - `InformationContentElement`
 - `RoleElement`
 
-![Core Element Types](./media/core-element-types.png)
+![Core Element Classes](./media/core-element-types.png)
 
 ### GeometricElement
 
