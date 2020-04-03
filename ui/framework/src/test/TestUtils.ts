@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as enzyme from "enzyme";
+import * as sinon from "sinon";
 import { I18N } from "@bentley/imodeljs-i18n";
 import {
   UiFramework,
@@ -17,7 +18,7 @@ import {
   combineReducers,
 } from "../ui-framework";
 import { UiComponents } from "@bentley/ui-components";
-import { UiCore } from "@bentley/ui-core";
+import { UiCore, UiSettings, UiSettingsStatus, UiSettingsResult } from "@bentley/ui-core";
 import { Store, createStore } from "redux";
 import { TestContentControl } from "./frontstage/FrontstageTestUtils";
 import { ToolUiManager } from "../ui-framework/zones/toolsettings/ToolUiManager";
@@ -246,6 +247,29 @@ export const storageMock = () => {
     },
   };
 };
+
+export class UiSettingsStub implements UiSettings {
+  public async deleteSetting(): Promise<UiSettingsResult> {
+    return {
+      status: UiSettingsStatus.Success,
+      setting: {},
+    };
+  }
+
+  public async getSetting(): Promise<UiSettingsResult> {
+    return {
+      status: UiSettingsStatus.NotFound,
+      setting: {},
+    };
+  }
+
+  public async saveSetting(): Promise<UiSettingsResult> {
+    return {
+      status: UiSettingsStatus.Success,
+      setting: {},
+    };
+  }
+}
 
 export type ReactWrapper<C extends React.Component, P = C["props"], S = C["state"]> = enzyme.ReactWrapper<P, S, C>;
 

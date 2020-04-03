@@ -200,6 +200,9 @@ export * from "./ui-framework/uiadmin/FrameworkUiAdmin";
 
 export * from "./ui-framework/uiprovider/DefaultDialogGridContainer";
 
+export * from "./ui-framework/uisettings/IModelAppUiSettings";
+export * from "./ui-framework/uisettings/useUiSettings";
+
 export * from "./ui-framework/utils/ViewUtilities";
 export * from "./ui-framework/utils/PropsHelper";
 export * from "./ui-framework/utils/UiShowHideManager";
@@ -345,6 +348,10 @@ export * from "./ui-framework/zones/ZoneDef";
 /**
  * @docs-group-description UiProvider
  * Interfaces and classes for specifying UI items to be inserted at runtime.
+ */
+/**
+ * @docs-group-description UiSettings
+ * Interfaces and classes for persisting UI settings.
  */
 /**
  * @docs-group-description Utilities

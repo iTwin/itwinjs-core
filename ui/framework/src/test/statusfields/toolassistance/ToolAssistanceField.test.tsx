@@ -28,6 +28,12 @@ import {
 } from "../../../ui-framework";
 
 describe("ToolAssistanceField", () => {
+  const uiSettings = new LocalUiSettings({ localStorage: storageMock() } as Window);
+
+  before(async () => {
+    await uiSettings.saveSetting("ToolAssistance", "showPromptAtCursor", true);
+    await uiSettings.saveSetting("ToolAssistance", "mouseTouchTabIndex", 0);
+  });
 
   class AppStatusBarWidgetControl extends StatusBarWidgetControl {
     constructor(info: ConfigurableCreateInfo, options: any) {
@@ -35,10 +41,6 @@ describe("ToolAssistanceField", () => {
     }
 
     public getReactNode({ isInFooterMode, onOpenWidget, openWidget }: StatusBarWidgetControlArgs): React.ReactNode {
-      const uiSettings = new LocalUiSettings({ localStorage: storageMock() } as Window);
-      uiSettings.saveSetting("ToolAssistance", "showPromptAtCursor", true);
-      uiSettings.saveSetting("ToolAssistance", "mouseTouchTabIndex", 0);
-
       return (
         <>
           <ToolAssistanceField isInFooterMode={isInFooterMode} onOpenWidget={onOpenWidget} openWidget={openWidget}
@@ -416,7 +418,7 @@ describe("ToolAssistanceField", () => {
 
   it("should set showPromptAtCursor on toggle click", async () => {
     const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={false} />);
-
+    await TestUtils.flushAsyncOperations();
     const toolAssistanceField = wrapper.find(ToolAssistanceField);
     expect(toolAssistanceField.length).to.eq(1);
     expect(toolAssistanceField.state("showPromptAtCursor")).to.be.true;

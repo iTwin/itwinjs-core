@@ -6,7 +6,8 @@
  * @module Frontstage
  */
 import * as React from "react";
-import produce from "immer";
+import produce, { castDraft } from "immer";
+import { UiSettingsStatus, UiSettingsResult } from "@bentley/ui-core";
 import {
   WidgetPanels, NineZoneStateReducer, createNineZoneState, NineZoneProvider, NineZoneState, addPanelWidget, addTab, PanelSide, NineZoneActionTypes,
   FloatingWidgets,
@@ -22,18 +23,20 @@ import { WidgetDef } from "../widgets/WidgetDef";
 import { ZoneState } from "../zones/ZoneDef";
 import { StagePanelState, StagePanelZoneDefKeys } from "../stagepanels/StagePanelDef";
 import { ModalFrontstageComposer, useActiveModalFrontstageInfo } from "./ModalFrontstageComposer";
+import { useUiSettingsContext } from "../uisettings/useUiSettings";
 import "./Frontstage.scss";
 
 /** @internal */
 export const WidgetPanelsFrontstage = React.memo(function WidgetPanelsFrontstage() { // tslint:disable-line: variable-name no-shadowed-variable
   const frontstageDef = useActiveFrontstageDef();
-  const [nineZone, nineZoneDispatch] = useFrontstageDefNineZone(frontstageDef);
+  const [frontstageState, nineZoneDispatch] = useFrontstageDefNineZone(frontstageDef);
+  useSaveFrontstageSettings(frontstageState);
   if (!frontstageDef)
     return null;
   return (
     <NineZoneProvider
       dispatch={nineZoneDispatch}
-      state={nineZone}
+      state={frontstageState.setting.nineZone}
       widgetContent={<WidgetContent />}
     >
       <WidgetPanelsFrontstageComponent />
@@ -185,14 +188,27 @@ export function addPanelWidgets(
   return state;
 }
 
+interface InitializeFrontstageStateArgs {
+  frontstage: FrontstageDef | undefined;
+}
+
+function isFrontstageStateSettingResult(settingsResult: UiSettingsResult): settingsResult is {
+  status: UiSettingsStatus.Success;
+  setting: FrontstageStateSetting;
+} {
+  if (settingsResult.status === UiSettingsStatus.Success)
+    return true;
+  return false;
+}
+
 /** @internal */
-export function initializeNineZoneState(frontstage: FrontstageDef | undefined): NineZoneState {
-  let state = createNineZoneState();
-  state = addPanelWidgets(state, frontstage, "left");
-  state = addPanelWidgets(state, frontstage, "right");
-  state = addPanelWidgets(state, frontstage, "top");
-  state = addPanelWidgets(state, frontstage, "bottom");
-  state = produce(state, (stateDraft) => {
+export function initializeFrontstageState({ frontstage }: InitializeFrontstageStateArgs): FrontstageState {
+  let nineZone = createNineZoneState();
+  nineZone = addPanelWidgets(nineZone, frontstage, "left");
+  nineZone = addPanelWidgets(nineZone, frontstage, "right");
+  nineZone = addPanelWidgets(nineZone, frontstage, "top");
+  nineZone = addPanelWidgets(nineZone, frontstage, "bottom");
+  nineZone = produce(nineZone, (stateDraft) => {
     for (const [, panel] of Object.entries(stateDraft.panels)) {
       const widgetWithActiveTab = panel.widgets.find((widgetId) => stateDraft.widgets[widgetId].activeTabId !== undefined);
       const firstWidget = panel.widgets.length > 0 ? stateDraft.widgets[panel.widgets[0]] : undefined;
@@ -218,7 +234,14 @@ export function initializeNineZoneState(frontstage: FrontstageDef | undefined): 
       frontstage?.bottomMostPanel?.panelState,
     ]);
   });
-  return state;
+  return {
+    setting: {
+      id: getFrontstageId(frontstage),
+      nineZone,
+      version: getFrontstageVersion(frontstage),
+    },
+    status: "LOADING",
+  };
 }
 
 /** @internal */
@@ -228,35 +251,133 @@ export function isPanelCollapsed(zoneStates: ReadonlyArray<ZoneState | undefined
   return !openZone && !openPanel;
 }
 
-/** @internal future */
-export const NINE_ZONE_INITIALIZE = "NINE_ZONE_INITIALIZE";
+/** @internal */
+export const FRONTSTAGE_INITIALIZE = "FRONTSTAGE_INITIALIZE";
 
-/** @internal future */
-export interface InitializeNineZoneAction {
-  readonly type: typeof NINE_ZONE_INITIALIZE;
+/** @internal */
+export const FRONTSTAGE_STATE_SETTING_LOAD = "FRONTSTAGE_STATE_SETTING_LOAD";
+
+/** @internal */
+export interface FrontstageInitializeAction {
+  readonly type: typeof FRONTSTAGE_INITIALIZE;
   readonly frontstage: FrontstageDef | undefined;
 }
 
-/** @internal future */
-export type FrontstageDefNineZoneActionTypes =
-  NineZoneActionTypes |
-  InitializeNineZoneAction;
+/** @internal */
+export interface FrontstageStateSettingLoadAction {
+  readonly type: typeof FRONTSTAGE_STATE_SETTING_LOAD;
+  readonly setting: FrontstageStateSetting | undefined;
+}
 
 /** @internal */
-export function useFrontstageDefNineZone(frontstage?: FrontstageDef): [NineZoneState, React.Dispatch<FrontstageDefNineZoneActionTypes>] {
-  const reducerCallback = React.useCallback((state: NineZoneState, action: FrontstageDefNineZoneActionTypes) => {
-    if (action.type === NINE_ZONE_INITIALIZE)
-      return initializeNineZoneState(action.frontstage);
-    // TODO: update WidgetDef state here
-    return NineZoneStateReducer(state, action);
+export type FrontstageActionTypes =
+  NineZoneActionTypes |
+  FrontstageInitializeAction |
+  FrontstageStateSettingLoadAction;
+
+interface FrontstageState {
+  setting: FrontstageStateSetting;
+  status: "LOADING" | "DONE";
+}
+
+interface FrontstageStateSetting {
+  nineZone: NineZoneState;
+  id: FrontstageDef["id"];
+  version: number;
+}
+
+/** @internal */
+export function useFrontstageDefNineZone(frontstage?: FrontstageDef): [FrontstageState, React.Dispatch<FrontstageActionTypes>] {
+  const uiSettings = useUiSettingsContext();
+  const uiSettingsRef = React.useRef(uiSettings);
+  const reducerCallback = React.useCallback<React.Reducer<FrontstageState, FrontstageActionTypes>>((state, action) => {
+    if (action.type === FRONTSTAGE_INITIALIZE) {
+      return initializeFrontstageState({ frontstage: action.frontstage });
+    } else if (action.type === FRONTSTAGE_STATE_SETTING_LOAD) {
+      return produce(state, (draft) => {
+        draft.setting = castDraft(action.setting) || draft.setting;
+        draft.status = "DONE";
+      });
+    }
+    return produce(state, (draft) => {
+      draft.setting.nineZone = castDraft(NineZoneStateReducer(draft.setting.nineZone, action));
+    });
   }, []);
-  const [nineZone, dispatch] = React.useReducer(reducerCallback, frontstage, initializeNineZoneState);
+  const [nineZone, dispatch] = React.useReducer(reducerCallback, { frontstage }, initializeFrontstageState);
+  React.useEffect(() => {
+    uiSettingsRef.current = uiSettings;
+  }, [uiSettings]);
   React.useEffect(() => {
     dispatch({
-      type: NINE_ZONE_INITIALIZE,
+      type: FRONTSTAGE_INITIALIZE,
       frontstage,
     });
+    async function fetchFrontstageState() {
+      const id = getFrontstageId(frontstage);
+      const version = getFrontstageVersion(frontstage);
+      const settingsResult = await uiSettingsRef.current.getSetting(FRONTSTAGE_SETTINGS_NAMESPACE, getFrontstageStateSettingName(id));
+      if (isFrontstageStateSettingResult(settingsResult) && settingsResult.setting.version >= version) {
+        dispatch({
+          type: FRONTSTAGE_STATE_SETTING_LOAD,
+          setting: settingsResult.setting,
+        });
+        return;
+      }
+      dispatch({
+        type: FRONTSTAGE_STATE_SETTING_LOAD,
+        setting: undefined,
+      });
+    }
+    fetchFrontstageState(); // tslint:disable-line: no-floating-promises
   }, [frontstage]);
   // TODO: subscribe to WidgetDef state change api and use dispatch to sync the states OR re-initialize
   return [nineZone, dispatch];
+}
+
+/** @internal */
+export function useSaveFrontstageSettings(frontstageState: FrontstageState) {
+  const uiSettings = useUiSettingsContext();
+  const saveSetting = React.useCallback(debounce(async (state: FrontstageState) => {
+    await uiSettings.saveSetting(FRONTSTAGE_SETTINGS_NAMESPACE, getFrontstageStateSettingName(state.setting.id), state.setting);
+  }, 1000), [uiSettings]);
+  React.useEffect(() => {
+    return () => {
+      saveSetting.cancel();
+    };
+  }, [saveSetting]);
+  React.useEffect(() => {
+    if (frontstageState.setting.nineZone.draggedTab || frontstageState.status === "LOADING")
+      return;
+    saveSetting(frontstageState);
+  }, [frontstageState, saveSetting]);
+}
+
+const FRONTSTAGE_SETTINGS_NAMESPACE = "uifw-frontstageSettings";
+
+function getFrontstageStateSettingName(frontstageId: FrontstageStateSetting["id"]) {
+  return `frontstageState[${frontstageId}]`;
+}
+
+function debounce<T extends (...args: any[]) => any>(func: T, duration: number) {
+  let timeout: number | undefined;
+  const debounced = (...args: Parameters<T>) => {
+    const handler = () => {
+      timeout = undefined;
+      return func(...args);
+    };
+    window.clearTimeout(timeout);
+    timeout = window.setTimeout(handler, duration);
+  };
+  debounced.cancel = () => {
+    window.clearTimeout(timeout);
+  };
+  return debounced;
+}
+
+function getFrontstageId(frontstage: FrontstageDef | undefined) {
+  return frontstage ? frontstage.id : "";
+}
+
+function getFrontstageVersion(frontstage: FrontstageDef | undefined) {
+  return frontstage ? frontstage.version : 0;
 }

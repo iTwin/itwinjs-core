@@ -1066,11 +1066,11 @@ export interface LoadingStatusProps extends CommonProps {
 export class LocalUiSettings implements UiSettings {
     constructor(w?: Window);
     // (undocumented)
-    deleteSetting: (settingNamespace: string, settingName: string) => UiSettingsResult;
+    deleteSetting(settingNamespace: string, settingName: string): Promise<UiSettingsResult>;
     // (undocumented)
-    getSetting: (settingNamespace: string, settingName: string) => UiSettingsResult;
+    getSetting(settingNamespace: string, settingName: string): Promise<UiSettingsResult>;
     // (undocumented)
-    saveSetting: (settingNamespace: string, settingName: string, setting: any) => UiSettingsResult;
+    saveSetting(settingNamespace: string, settingName: string, setting: any): Promise<UiSettingsResult>;
     // (undocumented)
     w: Window;
 }
@@ -1549,11 +1549,11 @@ export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElemen
 export class SessionUiSettings implements UiSettings {
     constructor(w?: Window);
     // (undocumented)
-    deleteSetting: (settingNamespace: string, settingName: string) => UiSettingsResult;
+    deleteSetting(settingNamespace: string, settingName: string): Promise<UiSettingsResult>;
     // (undocumented)
-    getSetting: (settingNamespace: string, settingName: string) => UiSettingsResult;
+    getSetting(settingNamespace: string, settingName: string): Promise<UiSettingsResult>;
     // (undocumented)
-    saveSetting: (settingNamespace: string, settingName: string, setting: any) => UiSettingsResult;
+    saveSetting(settingNamespace: string, settingName: string, setting: any): Promise<UiSettingsResult>;
     // (undocumented)
     w: Window;
 }
@@ -1965,11 +1965,11 @@ export class UiEvent<TEventArgs> extends BeUiEvent<TEventArgs> {
 // @beta
 export interface UiSettings {
     // (undocumented)
-    deleteSetting(settingNamespace: string, settingName: string): UiSettingsResult;
+    deleteSetting(settingNamespace: string, settingName: string): Promise<UiSettingsResult>;
     // (undocumented)
-    getSetting(settingNamespace: string, settingName: string): UiSettingsResult;
+    getSetting(settingNamespace: string, settingName: string): Promise<UiSettingsResult>;
     // (undocumented)
-    saveSetting(settingNamespace: string, settingName: string, setting: any): UiSettingsResult;
+    saveSetting(settingNamespace: string, settingName: string, setting: any): Promise<UiSettingsResult>;
 }
 
 // @beta

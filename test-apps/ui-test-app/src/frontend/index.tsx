@@ -7,20 +7,23 @@ import * as ReactDOM from "react-dom";
 import { Store } from "redux";  // createStore,
 import { Provider, connect } from "react-redux";
 import { Id64String, OpenMode, Logger, LogLevel, isElectronRenderer, ClientRequestContext } from "@bentley/bentleyjs-core";
-import { Config, AccessToken, IFrontendAuthorizationClient, BrowserAuthorizationClient, BrowserAuthorizationCallbackHandler, BrowserAuthorizationClientConfiguration, isBrowserAuthorizationClient } from "@bentley/imodeljs-clients";
+import {
+  Config, AccessToken, IFrontendAuthorizationClient, BrowserAuthorizationClient, BrowserAuthorizationCallbackHandler, BrowserAuthorizationClientConfiguration,
+  isBrowserAuthorizationClient,
+} from "@bentley/imodeljs-clients";
 import {
   RpcConfiguration, RpcOperation, IModelRpcProps, ElectronRpcManager,
   BentleyCloudRpcManager, OidcDesktopClientConfiguration,
 } from "@bentley/imodeljs-common";
 import {
-  IModelApp, IModelConnection, SnapMode, AccuSnap, ViewClipByPlaneTool, RenderSystem,
-  IModelAppOptions, SelectionTool, ViewState, ExternalServerExtensionLoader, OidcDesktopClientRenderer,
+  IModelApp, IModelConnection, SnapMode, AccuSnap, ViewClipByPlaneTool, RenderSystem, IModelAppOptions, SelectionTool, ViewState,
+  ExternalServerExtensionLoader, OidcDesktopClientRenderer,
 } from "@bentley/imodeljs-frontend";
 import { MarkupApp } from "@bentley/imodeljs-markup";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { Presentation } from "@bentley/presentation-frontend";
 import { getClassName } from "@bentley/ui-abstract";
-import { UiCore } from "@bentley/ui-core";
+import { UiCore, UiSettings, LocalUiSettings } from "@bentley/ui-core";
 import { UiComponents, BeDragDropContext } from "@bentley/ui-components";
 import {
   UiFramework, FrameworkReducer, AppNotificationManager, FrameworkUiAdmin,   // , FrameworkState
@@ -32,6 +35,8 @@ import {
   StateManager,
   FrameworkRootState,
   FrameworkVersion,
+  UiSettingsProvider,
+  IModelAppUiSettings,
 } from "@bentley/ui-framework";
 import getSupportedRpcs from "../common/rpcs";
 import { AppUi } from "./appui/AppUi";
@@ -166,9 +171,14 @@ export class SampleAppIModelApp {
   // deprecated - public static rootReducer: any;
   public static iModelParams: SampleIModelParams | undefined;
   private static _appStateManager: StateManager | undefined;
+  private static _uiSettings: UiSettings | undefined;
 
   public static get store(): Store<RootState> {
     return StateManager.store as Store<RootState>;
+  }
+
+  public static get uiSettings(): UiSettings | undefined {
+    return SampleAppIModelApp._uiSettings;
   }
 
   public static startup(opts?: IModelAppOptions): void {
@@ -496,20 +506,24 @@ const AppDragInteraction = connect(mapDragInteractionStateToProps)(AppDragIntera
 // tslint:disable-next-line: variable-name
 const AppFrameworkVersion = connect(mapFrameworkVersionStateToProps)(AppFrameworkVersionComponent);
 
-export class SampleAppViewer extends React.Component<any> {
-
+export class SampleAppViewer extends React.Component<any, { authorized: boolean }> {
   constructor(props: any) {
     super(props);
 
     AppUi.initialize();
     this._initializeSignin(!!IModelApp.authorizationClient && IModelApp.authorizationClient.isAuthorized); // tslint:disable-line:no-floating-promises
+
+    this.state = {
+      authorized: !!IModelApp.authorizationClient && IModelApp.authorizationClient.isAuthorized,
+    };
   }
 
-  private _initializeSignin = async (isAuthorized: boolean): Promise<void> => {
-    return isAuthorized ? SampleAppIModelApp.showSignedIn() : SampleAppIModelApp.showSignedOut();
+  private _initializeSignin = async (authorized: boolean): Promise<void> => {
+    return authorized ? SampleAppIModelApp.showSignedIn() : SampleAppIModelApp.showSignedOut();
   }
 
   private _onUserStateChanged = (accessToken: AccessToken | undefined) => {
+    this.setState({ authorized: !!IModelApp.authorizationClient && IModelApp.authorizationClient.isAuthorized });
     this._initializeSignin(accessToken !== undefined); // tslint:disable-line:no-floating-promises
   }
 
@@ -533,9 +547,12 @@ export class SampleAppViewer extends React.Component<any> {
             <SafeAreaContext.Provider value={SafeAreaInsets.All}>
               <AppDragInteraction>
                 <AppFrameworkVersion>
-                  <ConfigurableUiContent
-                    appBackstage={<AppBackstageComposer />}
-                  />
+                  {/** UiSettingsProvider is optional. By default LocalUiSettings is used to store UI settings. */}
+                  <UiSettingsProvider uiSettings={this.state.authorized ? new IModelAppUiSettings() : new LocalUiSettings()}>
+                    <ConfigurableUiContent
+                      appBackstage={<AppBackstageComposer />}
+                    />
+                  </UiSettingsProvider>
                 </AppFrameworkVersion>
               </AppDragInteraction>
             </SafeAreaContext.Provider>

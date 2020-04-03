@@ -53,6 +53,8 @@ export interface FrontstageProps extends CommonProps {
   applicationData?: any;
   /** Usage type for this Frontstage. */
   usage?: string;
+  /** Frontstage version. Used to force saved layout reinitialization after changes to frontstage. */
+  version?: number;
 
   /** The Zone in the top-left corner. @deprecated Use 'contentManipulationTools' property. */
   topLeft?: React.ReactElement<ZoneProps>;

@@ -118,7 +118,7 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
     this.state = {
       instructions: undefined,
       toolIconSpec: "",
-      showPromptAtCursor: false,
+      showPromptAtCursor: p.defaultPromptAtCursor,
       includeMouseInstructions: !mobile,
       includeTouchInstructions: true,
       showMouseTouchTabs: false,
@@ -133,35 +133,37 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
   }
 
   /** @internal */
-  public componentDidMount() {
-    let result: UiSettingsResult;
-
+  public async componentDidMount() {
     MessageManager.onToolAssistanceChangedEvent.addListener(this._handleToolAssistanceChangedEvent);
     FrontstageManager.onToolIconChangedEvent.addListener(this._handleToolIconChangedEvent);
 
-    let showPromptAtCursor = this.props.defaultPromptAtCursor;
-    if (this.props.includePromptAtCursor) {
-      result = this.props.uiSettings.getSetting(ToolAssistanceField._toolAssistanceKey, ToolAssistanceField._showPromptAtCursorKey);
-
-      // istanbul ignore else
-      if (result.status === UiSettingsStatus.Success)
-        showPromptAtCursor = result.setting as boolean;
-    }
-
-    let mouseTouchTabIndex = 0;
-    result = this.props.uiSettings.getSetting(ToolAssistanceField._toolAssistanceKey, ToolAssistanceField._mouseTouchTabIndexKey);
-
-    // istanbul ignore else
-    if (result.status === UiSettingsStatus.Success)
-      mouseTouchTabIndex = result.setting as number;
-
-    this.setState({ showPromptAtCursor, mouseTouchTabIndex });
+    await this.restoreSettings();
   }
 
   /** @internal */
   public componentWillUnmount() {
     MessageManager.onToolAssistanceChangedEvent.removeListener(this._handleToolAssistanceChangedEvent);
     FrontstageManager.onToolIconChangedEvent.removeListener(this._handleToolIconChangedEvent);
+  }
+
+  private async restoreSettings() {
+    let getShowPromptAtCursor: Promise<UiSettingsResult> | undefined;
+    if (this.props.includePromptAtCursor) {
+      getShowPromptAtCursor = this.props.uiSettings.getSetting(ToolAssistanceField._toolAssistanceKey, ToolAssistanceField._showPromptAtCursorKey);
+    }
+    const getMouseTouchTabIndex = this.props.uiSettings.getSetting(ToolAssistanceField._toolAssistanceKey, ToolAssistanceField._mouseTouchTabIndexKey);
+    const [showPromptAtCursorResult, mouseTouchTabIndexResult] = await Promise.all([
+      getShowPromptAtCursor,
+      getMouseTouchTabIndex,
+    ]);
+
+    // istanbul ignore else
+    if (showPromptAtCursorResult !== undefined && showPromptAtCursorResult.status === UiSettingsStatus.Success)
+      this.setState({ showPromptAtCursor: showPromptAtCursorResult.setting });
+
+    // istanbul ignore else
+    if (mouseTouchTabIndexResult.status === UiSettingsStatus.Success)
+      this.setState({ mouseTouchTabIndex: mouseTouchTabIndexResult.setting });
   }
 
   private _handleToolAssistanceChangedEvent = (args: ToolAssistanceChangedEventArgs): void => {
@@ -241,9 +243,7 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
     return displayableInstructions;
   }
 
-  private _handleMouseTouchTab = (index: number) => {
-    this.props.uiSettings.saveSetting(ToolAssistanceField._toolAssistanceKey, ToolAssistanceField._mouseTouchTabIndexKey, index);
-
+  private _handleMouseTouchTab = async (index: number) => {
     const showMouseInstructions = index === 0;
     const showTouchInstructions = index === 1;
 
@@ -252,6 +252,7 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
       showMouseInstructions,
       showTouchInstructions,
     });
+    await this.props.uiSettings.saveSetting(ToolAssistanceField._toolAssistanceKey, ToolAssistanceField._mouseTouchTabIndexKey, index);
   }
 
   /** @internal */
@@ -387,10 +388,10 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
     this.setState({ target });
   }
 
-  private _onPromptAtCursorChange = (checked: boolean) => {
-    this.props.uiSettings.saveSetting(ToolAssistanceField._toolAssistanceKey, ToolAssistanceField._showPromptAtCursorKey, checked);
-
+  private _onPromptAtCursorChange = async (checked: boolean) => {
     this.setState({ showPromptAtCursor: checked });
+
+    await this.props.uiSettings.saveSetting(ToolAssistanceField._toolAssistanceKey, ToolAssistanceField._showPromptAtCursorKey, checked);
   }
 
   private _handleClose = () => {

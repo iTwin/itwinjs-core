@@ -487,16 +487,16 @@ export class Table extends React.Component<TableProps, TableState> {
     let dataGridColumns = columnDescriptions.map(this._columnDescriptionToReactDataGridColumn);
     if (this.props.settingsIdentifier) {
       const uiSettings: UiSettings = this.props.uiSettings || new LocalUiSettings();
-      const reorderResult = uiSettings.getSetting(this.props.settingsIdentifier, "ColumnReorder");
+      const reorderResult = await uiSettings.getSetting(this.props.settingsIdentifier, "ColumnReorder");
       if (reorderResult.status === UiSettingsStatus.Success) {
         const setting = reorderResult.setting as string[];
         // map columns according to the keys in columns, in the order of the loaded array of keys
         dataGridColumns = setting.map((key) => dataGridColumns.filter((col) => col.key === key)[0]);
       } else if (reorderResult.status === UiSettingsStatus.NotFound) {
         const keys = columnDescriptions.map((col) => col.key);
-        uiSettings.saveSetting(this.props.settingsIdentifier, "ColumnReorder", keys);
+        await uiSettings.saveSetting(this.props.settingsIdentifier, "ColumnReorder", keys);
       }
-      const showhideResult = uiSettings.getSetting(this.props.settingsIdentifier, "ColumnShowHideHiddenColumns");
+      const showhideResult = await uiSettings.getSetting(this.props.settingsIdentifier, "ColumnShowHideHiddenColumns");
       if (showhideResult.status === UiSettingsStatus.Success) {
         const hiddenColumns = showhideResult.setting as string[];
         this.setState({ hiddenColumns });
@@ -1176,7 +1176,7 @@ export class Table extends React.Component<TableProps, TableState> {
     if (this.props.settingsIdentifier) {
       const uiSettings: UiSettings = this.props.uiSettings || new LocalUiSettings();
       const keys = cols.map((col) => col.key);
-      uiSettings.saveSetting(this.props.settingsIdentifier, "ColumnReorder", keys);
+      uiSettings.saveSetting(this.props.settingsIdentifier, "ColumnReorder", keys); // tslint:disable-line: no-floating-promises
     }
     this.setState({ columns: [] }, () => { // fix react-data-grid update issues
       this.setState({ columns: cols });
@@ -1300,7 +1300,7 @@ export class Table extends React.Component<TableProps, TableState> {
     this.setState({ hiddenColumns: cols });
     if (this.props.settingsIdentifier) {
       const uiSettings: UiSettings = this.props.uiSettings || new LocalUiSettings();
-      uiSettings.saveSetting(this.props.settingsIdentifier, "ColumnShowHideHiddenColumns", cols);
+      uiSettings.saveSetting(this.props.settingsIdentifier, "ColumnShowHideHiddenColumns", cols); // tslint:disable-line: no-floating-promises
     }
     return true;
   }

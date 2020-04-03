@@ -106,6 +106,7 @@ import { Ruleset } from '@bentley/presentation-common';
 import { SafeAreaInsets } from '@bentley/ui-ninezone';
 import { ScreenViewport } from '@bentley/imodeljs-frontend';
 import { SelectionMode } from '@bentley/ui-components';
+import { SettingsStatus } from '@bentley/imodeljs-clients';
 import { SheetProps } from '@bentley/imodeljs-common';
 import { Size } from '@bentley/ui-core';
 import { SizeProps } from '@bentley/ui-core';
@@ -144,6 +145,8 @@ import { UiAdmin } from '@bentley/ui-abstract';
 import { UiDataProvider } from '@bentley/ui-abstract';
 import { UiEvent } from '@bentley/ui-core';
 import { UiSettings } from '@bentley/ui-core';
+import { UiSettingsResult } from '@bentley/ui-core';
+import { UiSettingsStatus } from '@bentley/ui-core';
 import { UnifiedSelectionTreeEventHandler } from '@bentley/presentation-components';
 import { UnifiedSelectionTreeEventHandlerParams } from '@bentley/presentation-components';
 import { VerticalAnchor } from '@bentley/ui-ninezone';
@@ -1844,6 +1847,15 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
     render(): React.ReactNode;
     }
 
+// @internal (undocumented)
+export const FRONTSTAGE_INITIALIZE = "FRONTSTAGE_INITIALIZE";
+
+// @internal (undocumented)
+export const FRONTSTAGE_STATE_SETTING_LOAD = "FRONTSTAGE_STATE_SETTING_LOAD";
+
+// @internal (undocumented)
+export type FrontstageActionTypes = NineZoneActionTypes | FrontstageInitializeAction | FrontstageStateSettingLoadAction;
+
 // @public
 export class FrontstageActivatedEvent extends UiEvent<FrontstageActivatedEventArgs> {
 }
@@ -1996,12 +2008,19 @@ export class FrontstageDef {
     updateWidgetDefs(): void;
     // (undocumented)
     get usage(): string;
+    // (undocumented)
+    get version(): number;
     waitUntilReady(): Promise<void>;
     get zoneDefs(): ZoneDef[];
 }
 
-// @internal
-export type FrontstageDefNineZoneActionTypes = NineZoneActionTypes | InitializeNineZoneAction;
+// @internal (undocumented)
+export interface FrontstageInitializeAction {
+    // (undocumented)
+    readonly frontstage: FrontstageDef | undefined;
+    // (undocumented)
+    readonly type: typeof FRONTSTAGE_INITIALIZE;
+}
 
 // @public
 export class FrontstageLaunchBackstageItem extends React.PureComponent<FrontstageLaunchBackstageItemProps, BackstageItemState> {
@@ -2123,6 +2142,7 @@ export interface FrontstageProps extends CommonProps {
     // @deprecated
     topRight?: React.ReactElement<ZoneProps>;
     usage?: string;
+    version?: number;
     // @alpha
     viewNavigationTools?: React.ReactElement<ZoneProps>;
 }
@@ -2162,6 +2182,14 @@ export interface FrontstageRuntimeProps {
     widgetTabs: WidgetTabs;
     // (undocumented)
     zoneDefProvider: ZoneDefProvider;
+}
+
+// @internal (undocumented)
+export interface FrontstageStateSettingLoadAction {
+    // (undocumented)
+    readonly setting: FrontstageStateSetting | undefined;
+    // (undocumented)
+    readonly type: typeof FRONTSTAGE_STATE_SETTING_LOAD;
 }
 
 // @public
@@ -2341,6 +2369,16 @@ export interface HTMLElementPopupProps extends PopupPropsBase {
     relativePosition: RelativePosition;
 }
 
+// @alpha
+export class IModelAppUiSettings implements UiSettings {
+    // (undocumented)
+    deleteSetting(namespace: string, name: string): Promise<UiSettingsResult>;
+    // (undocumented)
+    getSetting(namespace: string, name: string): Promise<UiSettingsResult>;
+    // (undocumented)
+    saveSetting(namespace: string, name: string, setting: any): Promise<UiSettingsResult>;
+}
+
 // @beta
 export const IModelConnectedCategoryTree: any;
 
@@ -2450,16 +2488,8 @@ export class Indicator extends React.Component<IndicatorProps, any> {
     render(): JSX.Element;
 }
 
-// @internal
-export interface InitializeNineZoneAction {
-    // (undocumented)
-    readonly frontstage: FrontstageDef | undefined;
-    // (undocumented)
-    readonly type: typeof NINE_ZONE_INITIALIZE;
-}
-
 // @internal (undocumented)
-export function initializeNineZoneState(frontstage: FrontstageDef | undefined): NineZoneState;
+export function initializeFrontstageState({ frontstage }: InitializeFrontstageStateArgs): FrontstageState_2;
 
 // @alpha (undocumented)
 export class InputEditorCommitHandler {
@@ -3308,9 +3338,6 @@ export class NestedFrontstage {
     static get backToPreviousFrontstageCommand(): CommandItemDef;
 }
 
-// @internal
-export const NINE_ZONE_INITIALIZE = "NINE_ZONE_INITIALIZE";
-
 // @public
 export interface NineZoneChangeHandler {
     // (undocumented)
@@ -3855,6 +3882,9 @@ export const sessionStateMapDispatchToProps: {
 
 // @beta
 export function SessionStateReducer(state: SessionState | undefined, action: SessionStateActionsUnion): DeepReadonly<SessionState>;
+
+// @internal (undocumented)
+export function settingsStatusToUiSettingsStatus(status: SettingsStatus): UiSettingsStatus;
 
 // @alpha
 export class SheetCard extends React.Component<SheetCardProps, SheetCardState> {
@@ -4555,7 +4585,7 @@ export interface ToolAssistanceChangedEventArgs {
 export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProps, ToolAssistanceFieldState> {
     constructor(p: ToolAssistanceFieldProps);
     // @internal (undocumented)
-    componentDidMount(): void;
+    componentDidMount(): Promise<void>;
     // @internal (undocumented)
     componentWillUnmount(): void;
     // @internal (undocumented)
@@ -4981,6 +5011,20 @@ export class UiFramework {
     static get widgetManager(): WidgetManager;
     }
 
+// @internal (undocumented)
+export const UiSettingsContext: React.Context<UiSettings>;
+
+// @alpha
+export function UiSettingsProvider(props: UiSettingsProviderProps): JSX.Element;
+
+// @alpha
+export interface UiSettingsProviderProps {
+    // (undocumented)
+    children?: React.ReactNode;
+    // (undocumented)
+    uiSettings: UiSettings;
+}
+
 // @beta
 export class UiShowHideManager {
     static get autoHideUi(): boolean;
@@ -5037,11 +5081,11 @@ export const useDefaultStatusBarItems: (manager: StatusBarItemsManager_2) => rea
 // @beta
 export const useDefaultToolbarItems: (manager: ToolbarItemsManager) => readonly CommonToolbarItem[];
 
-// @internal
+// @internal (undocumented)
 export function useFrameworkVersion(): FrameworkVersion;
 
 // @internal (undocumented)
-export function useFrontstageDefNineZone(frontstage?: FrontstageDef): [NineZoneState, React.Dispatch<FrontstageDefNineZoneActionTypes>];
+export function useFrontstageDefNineZone(frontstage?: FrontstageDef): [FrontstageState_2, React.Dispatch<FrontstageActionTypes>];
 
 // @internal (undocumented)
 export const useGroupedItems: (items: readonly BackstageItem[]) => GroupedItems;
@@ -5064,6 +5108,9 @@ export interface UserProfileBackstageItemProps extends CommonProps {
 }
 
 // @internal (undocumented)
+export function useSaveFrontstageSettings(frontstageState: FrontstageState_2): void;
+
+// @internal (undocumented)
 export function useToolSettings(): ToolSettingsEntry[] | undefined;
 
 // @beta
@@ -5071,6 +5118,9 @@ export const useUiItemsProviderStatusBarItems: (manager: StatusBarItemsManager_2
 
 // @beta
 export const useUiItemsProviderToolbarItems: (manager: ToolbarItemsManager, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation) => readonly CommonToolbarItem[];
+
+// @internal (undocumented)
+export function useUiSettingsContext(): UiSettings;
 
 // @internal (undocumented)
 export function useUiVisibility(): boolean;

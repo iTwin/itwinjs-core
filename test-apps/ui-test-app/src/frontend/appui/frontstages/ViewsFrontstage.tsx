@@ -169,6 +169,7 @@ export class ViewsFrontstage extends FrontstageProvider {
         defaultLayout={contentLayoutDef} contentGroup={myContentGroup}
         isInFooterMode={true} applicationData={{ key: "value" }}
         usage="MyUsage"
+        version={1} // Defaults to 0. Increment this when Frontstage changes are meaningful enough to reinitialize saved user layout settings.
         contentManipulationTools={
           < Zone
             widgets={
