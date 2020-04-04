@@ -827,7 +827,7 @@ export class BriefcaseManager {
     }
 
     // PullOnly or PullAndPush, and the required version doesn't match the current version
-    Logger.logWarning(loggerCategory, "Briefcase found is not of the required version. Must be updated before use", ({ ...briefcase.getDebugInfo(), requiredChangeSetId }));
+    Logger.logWarning(loggerCategory, "Briefcase found is not of the required version. Must be updated before use", () => ({ ...briefcase.getDebugInfo(), requiredChangeSetId }));
     return BriefcaseValidity.Update;
   }
 
