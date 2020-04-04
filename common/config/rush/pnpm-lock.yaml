@@ -4,6 +4,7 @@ dependencies:
   '@bentley/icons-generic': 1.0.4
   '@bentley/icons-generic-webfont': 1.0.4
   '@bentley/imodeljs-native': 2.0.18
+  '@bentley/imodeljs-webserver': 2.0.0-dev.56
   '@bentley/oidc-signin-tool': 2.0.0-dev.37
   '@bentley/react-scripts': 3.4.1-dev.17_a4f1093162180b0de057e31a5d2c1cc3
   '@microsoft/api-extractor': 7.7.3
@@ -43,7 +44,6 @@ dependencies:
   '@rush-temp/imodeljs-i18n': 'file:projects/imodeljs-i18n.tgz'
   '@rush-temp/imodeljs-markup': 'file:projects/imodeljs-markup.tgz'
   '@rush-temp/imodeljs-quantity': 'file:projects/imodeljs-quantity.tgz'
-  '@rush-temp/imodeljs-webserver': 'file:projects/imodeljs-webserver.tgz'
   '@rush-temp/iot-demo': 'file:projects/iot-demo.tgz_webpack@4.42.0'
   '@rush-temp/logger-config': 'file:projects/logger-config.tgz'
   '@rush-temp/native-app-full-stack-tests': 'file:projects/native-app-full-stack-tests.tgz'
@@ -85,7 +85,6 @@ dependencies:
   '@types/chai-spies': 1.0.1
   '@types/chai-string': 1.4.2
   '@types/classnames': 2.2.10
-  '@types/cors': 2.8.6
   '@types/cpx': 1.5.1
   '@types/deep-assign': 0.1.1
   '@types/deep-equal': 1.0.1
@@ -168,7 +167,6 @@ dependencies:
   classnames: 2.2.6
   commander: 2.20.3
   concurrently: 3.6.1
-  cors: 2.8.5
   cpx: 1.5.0
   cross-env: 5.2.1
   cross-spawn: 7.0.1
@@ -2140,6 +2138,15 @@ packages:
     requiresBuild: true
     resolution:
       integrity: sha1-tX5o7p1QQdnQMQgS5r7LhqyAiCs=
+  /@bentley/imodeljs-webserver/2.0.0-dev.56:
+    dependencies:
+      cors: 2.8.5
+      express: 4.17.1
+      tree-kill: 1.2.2
+      yargs: 15.3.1
+    dev: false
+    resolution:
+      integrity: sha1-LNp4DgLP2jchGp1wbk2L0xs54+0=
   /@bentley/oidc-signin-tool/2.0.0-dev.37:
     dependencies:
       '@bentley/bentleyjs-core': 2.0.0-dev.37
@@ -2909,12 +2916,6 @@ packages:
     dev: false
     resolution:
       integrity: sha512-aRnpPa7ysx3aNW60hTiCtLHlQaIFsXFCgQlpakNgDNVFzbtusSY8PwjAQgRWfSk0ekNoBjO51eQRB6upA9uuyw==
-  /@types/cors/2.8.6:
-    dependencies:
-      '@types/express': 4.17.4
-    dev: false
-    resolution:
-      integrity: sha512-invOmosX0DqbpA+cE2yoHGUlF/blyf7nB0OGYBBiH27crcVm5NmFaZkLP4Ta1hGaesckCi5lVLlydNJCxkTOSg==
   /@types/cpx/1.5.1:
     dependencies:
       '@types/node': 10.14.1
@@ -19698,7 +19699,7 @@ packages:
     peerDependencies:
       node-sass: '*'
     resolution:
-      integrity: sha512-xrq1MyothcxRt5zz3U/4zzydZwBeZ4F/h5pApEk3DvyF8yhFcCz054OkhAq9i8kBPAobMhxQ3IVCdTrh3firnQ==
+      integrity: sha512-hqys9L/S2oF8Wlqpt7duYjEnx2l/vAlaDrU7mP2qoIb/j0Z+ltDmXV4jBGD7OcSPpbRQpTsOQ6sS0Wjg35qhWg==
       tarball: 'file:projects/display-performance-test-app.tgz'
     version: 0.0.0
   'file:projects/display-test-app.tgz':
@@ -19728,7 +19729,7 @@ packages:
     dev: false
     name: '@rush-temp/display-test-app'
     resolution:
-      integrity: sha512-FB897ve/inij6p/7/QmzORjro4EM7trnRNwhMyKwpAvKplAMDlwbQoid70sBV4wh2PD2S4pYgh3a/o9/AeAGBw==
+      integrity: sha512-rrAiiQf4wvsyDw5UpjFCiLz1U0clmm8BYexAW3EEFELLQurB+9+WD7VbMv+RwiW5qmGsQyCowWGi7sadYgS2SQ==
       tarball: 'file:projects/display-test-app.tgz'
     version: 0.0.0
   'file:projects/ecschema-locaters.tgz':
@@ -20408,27 +20409,6 @@ packages:
       integrity: sha512-haRybWwKbv+8hYG/uzkc4I+08K5O18WKJHoBQ4fbVE9XsP34DHpUL+49Ftn/VlI0ZRufMiZXpzXbYAljTf6GWg==
       tarball: 'file:projects/imodeljs-quantity.tgz'
     version: 0.0.0
-  'file:projects/imodeljs-webserver.tgz':
-    dependencies:
-      '@types/body-parser': 1.19.0
-      '@types/cors': 2.8.6
-      '@types/express': 4.17.4
-      '@types/node': 10.14.1
-      '@types/yargs': 12.0.16
-      cors: 2.8.5
-      express: 4.17.1
-      rimraf: 3.0.2
-      tree-kill: 1.2.2
-      tslint: 5.20.1_typescript@3.7.5
-      tslint-etc: 1.10.1_tslint@5.20.1+typescript@3.7.5
-      typescript: 3.7.5
-      yargs: 15.3.1
-    dev: false
-    name: '@rush-temp/imodeljs-webserver'
-    resolution:
-      integrity: sha512-k2nO6Sbf2NtdcWnL9JoUrXewy4KjvWUpPeWIHPk9hUQhvLa0jCnxqJ9Sgwa7CkzKTZxtF2Jj1uZcy3+1scBOcw==
-      tarball: 'file:projects/imodeljs-webserver.tgz'
-    version: 0.0.0
   'file:projects/iot-demo.tgz_webpack@4.42.0':
     dependencies:
       '@types/classnames': 2.2.10
@@ -20785,7 +20765,7 @@ packages:
     peerDependencies:
       node-sass: '*'
     resolution:
-      integrity: sha512-P4d19QP0KYQsQbXiO6negP4wK+Ccdxjor68Rh/4MHFpx/S71eBet74p6CuP4A2N85s/2wXrZV7eCGCR3ZfiEag==
+      integrity: sha512-AEEo3SqeImX4rEjS2Xufh1mv/loW4OK4paQkHgbA/kpHnZgvc9Cas1uIPR16WdqOd2NkCc3spDSvK78CsRSttg==
       tarball: 'file:projects/presentation-test-app.tgz'
     version: 0.0.0
   'file:projects/presentation-testing.tgz_jsdom@11.12.0':
@@ -20887,6 +20867,7 @@ packages:
     dependencies:
       '@bentley/icons-generic': 1.0.4
       '@bentley/icons-generic-webfont': 1.0.4
+      '@bentley/imodeljs-webserver': 2.0.0-dev.56
       '@bentley/react-scripts': 3.4.1-dev.17_a4f1093162180b0de057e31a5d2c1cc3
       '@types/classnames': 2.2.10
       '@types/lorem-ipsum': 1.0.2
@@ -20924,7 +20905,7 @@ packages:
     peerDependencies:
       node-sass: '*'
     resolution:
-      integrity: sha512-ES/NcbztfdilzNLtDPK5cXF5t7ATuP/66z7QKFi1QMuXgtfvXlUSaDgntmWhbCN0FcuMGW4P0l7M5uIQ3cJKJA==
+      integrity: sha512-SVexg5uO3aKF7O7IrcxqG+ouuD3IfKLveYy4kt0pUfgOBsbx9FghGp5OCgZNE8cLEN0rspdGM1HrLEVRc16ZTQ==
       tarball: 'file:projects/simple-editor-app.tgz'
     version: 0.0.0
   'file:projects/test-apps-analysis-importer.tgz':
@@ -21385,7 +21366,7 @@ packages:
       node-sass: '*'
       webpack: '*'
     resolution:
-      integrity: sha512-MzawZzvsfNOaVEP5YBSz5dTtD+1KzUeraZe3CWVHSacaDSb6M9Ww72phZmk3NWIZgz7V/DN0rFBS+0gCHORRUw==
+      integrity: sha512-9UsM9hhSUAXBgQlO595V2JbE6L3Rmo8Lkm5zohgbHiMWUZVipdpxcgKCXtfT16SI9jVoIff1yiejZvWQfW9tlg==
       tarball: 'file:projects/ui-test-app.tgz'
     version: 0.0.0
   'file:projects/webgl-compatibility.tgz':
@@ -21443,12 +21424,14 @@ packages:
       integrity: sha512-hNxHbAHnTbqUSieyTusAAD8xtY+ch3AxU1m02CE0LbzFNavBey7m6fWCo3njUD0ZBu01xQqQiMCkepA2j+55tA==
       tarball: 'file:projects/wms-extension-example.tgz'
     version: 0.0.0
+registry: ''
 specifiers:
   '@azure/storage-blob': 10.4.0
   '@babel/core': 7.7.4
   '@bentley/icons-generic': ^1.0.0
   '@bentley/icons-generic-webfont': ^1.0.0
   '@bentley/imodeljs-native': 2.0.18
+  '@bentley/imodeljs-webserver': 2.0.0-dev.56
   '@bentley/oidc-signin-tool': 2.0.0-dev.37
   '@bentley/react-scripts': 3.4.1-dev.17
   '@microsoft/api-extractor': 7.7.3
@@ -21488,7 +21471,6 @@ specifiers:
   '@rush-temp/imodeljs-i18n': 'file:./projects/imodeljs-i18n.tgz'
   '@rush-temp/imodeljs-markup': 'file:./projects/imodeljs-markup.tgz'
   '@rush-temp/imodeljs-quantity': 'file:./projects/imodeljs-quantity.tgz'
-  '@rush-temp/imodeljs-webserver': 'file:./projects/imodeljs-webserver.tgz'
   '@rush-temp/iot-demo': 'file:./projects/iot-demo.tgz'
   '@rush-temp/logger-config': 'file:./projects/logger-config.tgz'
   '@rush-temp/native-app-full-stack-tests': 'file:./projects/native-app-full-stack-tests.tgz'
@@ -21530,7 +21512,6 @@ specifiers:
   '@types/chai-spies': ^1.0.0
   '@types/chai-string': ^1.4.1
   '@types/classnames': ^2.2.3
-  '@types/cors': ^2.8.6
   '@types/cpx': '1.5'
   '@types/deep-assign': ^0.1.0
   '@types/deep-equal': ^1
@@ -21613,7 +21594,6 @@ specifiers:
   classnames: ^2.2.5
   commander: ^2.14.1
   concurrently: ^3.6.1
-  cors: ^2.8.5
   cpx: ^1.5.0
   cross-env: ^5.1.4
   cross-spawn: ^7.0.1
