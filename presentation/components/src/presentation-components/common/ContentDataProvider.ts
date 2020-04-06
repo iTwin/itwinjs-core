@@ -123,6 +123,12 @@ export interface ContentDataProviderProps {
    * ```
    */
   pagingSize?: number;
+  /**
+   * A flag telling the provider to not listen for presentation updates
+   * an invalidate cache.
+   * @internal
+   */
+  doNotListenForPresentationUpdates?: boolean;
 }
 
 /**
@@ -145,11 +151,14 @@ export class ContentDataProvider implements IContentDataProvider {
     this._imodel = props.imodel;
     this._keys = new KeySet();
     this._previousKeysGuid = this._keys.guid;
+    if (!props.doNotListenForPresentationUpdates)
+      Presentation.presentation.onContentUpdate.addListener(this.onContentUpdate);
     this.invalidateCache(CacheInvalidationProps.full());
   }
 
   /** Destructor. Must be called to clean up.  */
   public dispose() {
+    Presentation.presentation.onContentUpdate.removeListener(this.onContentUpdate);
     this._rulesetRegistration.dispose();
   }
 
@@ -369,6 +378,17 @@ export class ContentDataProvider implements IContentDataProvider {
     const content = await Presentation.presentation.getContent(options, descriptorOrOverrides, this.keys);
     return content ? { content, size: content.contentSet.length } : undefined;
   }, { isMatchingKey: MemoizationHelpers.areContentRequestsEqual as any });
+
+  // tslint:disable-next-line: naming-convention
+  private onContentUpdate = (ruleset: Ruleset) => {
+    if (ruleset.id !== this.rulesetId)
+      return;
+
+    // note: subclasses are expected to override `invalidateCache` and notify components about
+    // the changed content so components know to reload
+    this.invalidateCache(CacheInvalidationProps.full());
+  }
+
 }
 
 class MemoizationHelpers {

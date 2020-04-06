@@ -6,7 +6,6 @@ import { expect } from "chai";
 import * as moq from "typemoq";
 import * as faker from "faker";
 import * as path from "path";
-import * as hash from "object-hash";
 import * as sinon from "sinon";
 const deepEqual = require("deep-equal"); // tslint:disable-line:no-var-requires
 import {
@@ -20,13 +19,13 @@ import "@bentley/presentation-common/lib/test/_helpers/Promises";
 import "./IModelHostSetup";
 import { using, ClientRequestContext, Id64, Id64String, DbResult } from "@bentley/bentleyjs-core";
 import { EntityMetaData, ElementProps, ModelProps, IModelError } from "@bentley/imodeljs-common";
-import { IModelHost, IModelDb, DrawingGraphic, Element, ECSqlStatement, ECSqlValue, BriefcaseDb } from "@bentley/imodeljs-backend";
+import { IModelHost, IModelDb, DrawingGraphic, Element, ECSqlStatement, ECSqlValue, BriefcaseDb, EventSink } from "@bentley/imodeljs-backend";
 import {
   PageOptions, SelectionInfo, KeySet, PresentationError,
   HierarchyRequestOptions, Paged, ContentRequestOptions, ContentFlags,
   PrimitiveTypeDescription, ArrayTypeDescription, StructTypeDescription,
   KindOfQuantityInfo, DefaultContentDisplayTypes, LabelRequestOptions, InstanceKey,
-  Ruleset, VariableValueTypes, RequestPriority, LabelDefinition, PresentationUnitSystem,
+  VariableValueTypes, RequestPriority, LabelDefinition, PresentationUnitSystem,
 } from "@bentley/presentation-common";
 import { getLocalesDirectory } from "@bentley/presentation-common/lib/presentation-common/Utils";
 import { PropertyInfoJSON } from "@bentley/presentation-common/lib/presentation-common/EC";
@@ -38,10 +37,11 @@ import { ItemJSON } from "@bentley/presentation-common/lib/presentation-common/c
 import { PropertiesFieldJSON, NestedContentFieldJSON, FieldJSON } from "@bentley/presentation-common/lib/presentation-common/content/Fields";
 import { DescriptorJSON, SelectClassInfoJSON } from "@bentley/presentation-common/lib/presentation-common/content/Descriptor";
 import { NativePlatformDefinition, NativePlatformRequestTypes } from "../presentation-backend/NativePlatform";
-import { PresentationManager, PresentationManagerMode } from "../presentation-backend/PresentationManager";
+import { PresentationManager, PresentationManagerMode, PresentationManagerProps } from "../presentation-backend/PresentationManager";
 import { RulesetManagerImpl } from "../presentation-backend/RulesetManager";
 import { RulesetVariablesManagerImpl } from "../presentation-backend/RulesetVariablesManager";
 import { PRESENTATION_BACKEND_ASSETS_ROOT, PRESENTATION_COMMON_PUBLIC_ROOT } from "../presentation-backend/Constants";
+import { UpdatesTracker } from "../presentation-backend/UpdatesTracker";
 
 describe("PresentationManager", () => {
 
@@ -102,6 +102,7 @@ describe("PresentationManager", () => {
             [getLocalesDirectory(PRESENTATION_COMMON_PUBLIC_ROOT)],
             { [RequestPriority.Preload]: 1, [RequestPriority.Max]: 1 },
             IModelHost.platform.ECPresentationManagerMode.ReadWrite,
+            false,
           );
         });
       });
@@ -110,11 +111,12 @@ describe("PresentationManager", () => {
         const constructorSpy = sinon.spy(IModelHost.platform, "ECPresentationManager");
         const testLocale = faker.random.locale();
         const testTaskAllocations = { [999]: 111 };
-        const props = {
+        const props: PresentationManagerProps = {
           id: faker.random.uuid(),
           localeDirectories: [testLocale, testLocale],
           taskAllocationsMap: testTaskAllocations,
-          mode: PresentationManagerMode.ReadOnly,
+          mode: PresentationManagerMode.ReadWrite,
+          updatesPollInterval: 1,
         };
         using(new PresentationManager(props), (manager) => {
           expect((manager.getNativePlatform() as any)._nativeAddon).instanceOf(IModelHost.platform.ECPresentationManager);
@@ -122,7 +124,8 @@ describe("PresentationManager", () => {
             props.id,
             [getLocalesDirectory(PRESENTATION_COMMON_PUBLIC_ROOT), testLocale],
             testTaskAllocations,
-            IModelHost.platform.ECPresentationManagerMode.ReadOnly,
+            IModelHost.platform.ECPresentationManagerMode.ReadWrite,
+            true,
           );
         });
       });
@@ -174,6 +177,17 @@ describe("PresentationManager", () => {
         using(new PresentationManager({ addon: addon.object, enableSchemasPreload: true }), (_) => {
           expect(BriefcaseDb.onOpened.numberOfListeners).to.eq(1);
         });
+      });
+
+      it("creates an `UpdateTracker` when in read-write mode and `updatesPollInterval` is specified", () => {
+        const eventSink = sinon.createStubInstance(EventSink) as unknown as EventSink;
+        const tracker = sinon.createStubInstance(UpdatesTracker) as unknown as UpdatesTracker;
+        const stub = sinon.stub(UpdatesTracker, "create").returns(tracker);
+        using(new PresentationManager({ addon: addon.object, mode: PresentationManagerMode.ReadWrite, updatesPollInterval: 123, eventSink }), (_) => {
+          expect(stub).to.be.calledOnceWith(sinon.match({ pollInterval: 123, eventSink }));
+          expect(tracker.dispose).to.not.be.called;
+        });
+        expect(tracker.dispose).to.be.calledOnce;
       });
 
     });
@@ -336,6 +350,38 @@ describe("PresentationManager", () => {
 
   });
 
+  describe("getRulesetId", () => {
+
+    let manager: PresentationManager;
+
+    beforeEach(() => {
+      const addon = moq.Mock.ofType<NativePlatformDefinition>();
+      manager = new PresentationManager({ addon: addon.object });
+    });
+
+    afterEach(() => {
+      manager.dispose();
+    });
+
+    it("returns correct id when input is a string", () => {
+      const rulesetId = faker.random.word();
+      expect(manager.getRulesetId(rulesetId)).to.eq(rulesetId);
+    });
+
+    it("returns correct id when input is a ruleset", async () => {
+      const ruleset = await createRandomRuleset();
+      expect(manager.getRulesetId(ruleset)).to.contain(ruleset.id);
+    });
+
+    it("returns correct id when input is a ruleset and in native app mode", async () => {
+      sinon.stub(IModelHost, "isNativeAppBackend").get(() => true);
+      manager = new PresentationManager({ addon: moq.Mock.ofType<NativePlatformDefinition>().object });
+      const ruleset = await createRandomRuleset();
+      expect(manager.getRulesetId(ruleset)).to.eq(ruleset.id);
+    });
+
+  });
+
   describe("handling options", () => {
 
     const addonMock = moq.Mock.ofType<NativePlatformDefinition>();
@@ -359,6 +405,34 @@ describe("PresentationManager", () => {
         .setup((x) => x.setRulesetVariableValue(rulesetId, variable.id, variable.type, variable.value))
         .verifiable(moq.Times.once());
       await manager.getNodesCount(ClientRequestContext.current, { imodel: imodelMock.object, rulesetOrId: rulesetId, rulesetVariables });
+      addonMock.verifyAll();
+    });
+
+    it("registers ruleset if `rulesetOrId` is a ruleset", async () => {
+      const ruleset = await createRandomRuleset();
+      addonMock
+        .setup((x) => x.handleRequest(ClientRequestContext.current, moq.It.isAny(), moq.It.isAny()))
+        .returns(async () => "{}")
+        .verifiable(moq.Times.once());
+      addonMock
+        .setup((x) => x.addRuleset(moq.It.isAnyString()))
+        .returns(() => "hash")
+        .verifiable(moq.Times.once());
+      await manager.getNodesCount(ClientRequestContext.current, { imodel: imodelMock.object, rulesetOrId: ruleset });
+      addonMock.verifyAll();
+    });
+
+    it("doesn't register ruleset if `rulesetOrId` is a string", async () => {
+      const rulesetId = faker.random.word();
+      addonMock
+        .setup((x) => x.handleRequest(ClientRequestContext.current, moq.It.isAny(), moq.It.isAny()))
+        .returns(async () => "{}")
+        .verifiable(moq.Times.once());
+      addonMock
+        .setup((x) => x.addRuleset(moq.It.isAnyString()))
+        .returns(() => "hash")
+        .verifiable(moq.Times.never());
+      await manager.getNodesCount(ClientRequestContext.current, { imodel: imodelMock.object, rulesetOrId: rulesetId });
       addonMock.verifyAll();
     });
 
@@ -404,11 +478,6 @@ describe("PresentationManager", () => {
       nativePlatformMock.verifyAll();
     });
 
-    const getRulesetId = (rulesetOrId: Ruleset | string) => {
-      if (typeof rulesetOrId === "object")
-        return `${rulesetOrId.id}-${hash.MD5(rulesetOrId)}`;
-      return rulesetOrId;
-    };
     const setup = (addonResponse: any) => {
       // nativePlatformMock the handleRequest function
       nativePlatformMock.setup(async (x) => x.handleRequest(ClientRequestContext.current, moq.It.isAny(), moq.It.isAnyString()))
@@ -441,7 +510,7 @@ describe("PresentationManager", () => {
         requestId: NativePlatformRequestTypes.GetRootNodes,
         params: {
           paging: testData.pageOptions,
-          rulesetId: getRulesetId(testData.rulesetOrId),
+          rulesetId: manager.getRulesetId(testData.rulesetOrId),
         },
       };
 
@@ -507,7 +576,7 @@ describe("PresentationManager", () => {
       const expectedParams = {
         requestId: NativePlatformRequestTypes.GetRootNodesCount,
         params: {
-          rulesetId: getRulesetId(testData.rulesetOrId),
+          rulesetId: manager.getRulesetId(testData.rulesetOrId),
         },
       };
 
@@ -531,13 +600,13 @@ describe("PresentationManager", () => {
         requestId: NativePlatformRequestTypes.GetRootNodes,
         params: {
           paging: pageOptions,
-          rulesetId: getRulesetId(testData.rulesetOrId),
+          rulesetId: manager.getRulesetId(testData.rulesetOrId),
         },
       };
       const expectedGetRootNodesCountParams = {
         requestId: NativePlatformRequestTypes.GetRootNodesCount,
         params: {
-          rulesetId: getRulesetId(testData.rulesetOrId),
+          rulesetId: manager.getRulesetId(testData.rulesetOrId),
           paging: pageOptions,
         },
       };
@@ -611,7 +680,7 @@ describe("PresentationManager", () => {
         params: {
           nodeKey: parentNodeKeyJSON,
           paging: testData.pageOptions,
-          rulesetId: getRulesetId(testData.rulesetOrId),
+          rulesetId: manager.getRulesetId(testData.rulesetOrId),
         },
       };
 
@@ -649,7 +718,7 @@ describe("PresentationManager", () => {
         requestId: NativePlatformRequestTypes.GetChildrenCount,
         params: {
           nodeKey: parentNodeKeyJSON,
-          rulesetId: getRulesetId(testData.rulesetOrId),
+          rulesetId: manager.getRulesetId(testData.rulesetOrId),
         },
       };
 
@@ -674,7 +743,7 @@ describe("PresentationManager", () => {
         requestId: NativePlatformRequestTypes.GetChildren,
         params: {
           nodeKey: parentNodeKeyJSON,
-          rulesetId: getRulesetId(testData.rulesetOrId),
+          rulesetId: manager.getRulesetId(testData.rulesetOrId),
           paging: pageOptions,
         },
       };
@@ -682,7 +751,7 @@ describe("PresentationManager", () => {
         requestId: NativePlatformRequestTypes.GetChildrenCount,
         params: {
           nodeKey: parentNodeKeyJSON,
-          rulesetId: getRulesetId(testData.rulesetOrId),
+          rulesetId: manager.getRulesetId(testData.rulesetOrId),
           paging: pageOptions,
         },
       };
@@ -725,7 +794,7 @@ describe("PresentationManager", () => {
         requestId: NativePlatformRequestTypes.GetFilteredNodePaths,
         params: {
           filterText: "filter",
-          rulesetId: getRulesetId(testData.rulesetOrId),
+          rulesetId: manager.getRulesetId(testData.rulesetOrId),
         },
       };
 
@@ -752,7 +821,7 @@ describe("PresentationManager", () => {
         params: {
           paths: keyJsonArray,
           markedIndex,
-          rulesetId: getRulesetId(testData.rulesetOrId),
+          rulesetId: manager.getRulesetId(testData.rulesetOrId),
         },
       };
 
@@ -774,7 +843,7 @@ describe("PresentationManager", () => {
       const expectedParams = {
         requestId: NativePlatformRequestTypes.LoadHierarchy,
         params: {
-          rulesetId: getRulesetId(testData.rulesetOrId),
+          rulesetId: manager.getRulesetId(testData.rulesetOrId),
         },
       };
 
@@ -801,7 +870,7 @@ describe("PresentationManager", () => {
           displayType: testData.displayType,
           keys: keys.toJSON(),
           selection: testData.selectionInfo,
-          rulesetId: getRulesetId(testData.rulesetOrId),
+          rulesetId: manager.getRulesetId(testData.rulesetOrId),
         },
       };
 
@@ -956,7 +1025,7 @@ describe("PresentationManager", () => {
         params: {
           keys: keys.toJSON(),
           descriptorOverrides: descriptor.createDescriptorOverrides(),
-          rulesetId: getRulesetId(testData.rulesetOrId),
+          rulesetId: manager.getRulesetId(testData.rulesetOrId),
         },
       };
 
@@ -986,7 +1055,7 @@ describe("PresentationManager", () => {
             hiddenFieldNames: [],
             contentFlags: 0,
           },
-          rulesetId: getRulesetId(testData.rulesetOrId),
+          rulesetId: manager.getRulesetId(testData.rulesetOrId),
         },
       };
 
@@ -1013,7 +1082,7 @@ describe("PresentationManager", () => {
           keys: keys.toJSON(),
           descriptorOverrides: descriptor.createDescriptorOverrides(),
           paging: testData.pageOptions,
-          rulesetId: getRulesetId(testData.rulesetOrId),
+          rulesetId: manager.getRulesetId(testData.rulesetOrId),
         },
       };
 
@@ -1089,7 +1158,7 @@ describe("PresentationManager", () => {
           keys: new KeySet([concreteClassKey]).toJSON(),
           descriptorOverrides: descriptor.createDescriptorOverrides(),
           paging: testData.pageOptions,
-          rulesetId: getRulesetId(testData.rulesetOrId),
+          rulesetId: manager.getRulesetId(testData.rulesetOrId),
         },
       };
 
@@ -1164,7 +1233,7 @@ describe("PresentationManager", () => {
           keys: new KeySet([baseClassKey]).toJSON(),
           descriptorOverrides: descriptor.createDescriptorOverrides(),
           paging: testData.pageOptions,
-          rulesetId: getRulesetId(testData.rulesetOrId),
+          rulesetId: manager.getRulesetId(testData.rulesetOrId),
         },
       };
 
@@ -1242,7 +1311,7 @@ describe("PresentationManager", () => {
             contentFlags: 0,
           },
           paging: testData.pageOptions,
-          rulesetId: getRulesetId(testData.rulesetOrId),
+          rulesetId: manager.getRulesetId(testData.rulesetOrId),
         },
       };
 
@@ -1317,7 +1386,7 @@ describe("PresentationManager", () => {
           keys: keys.toJSON(),
           descriptorOverrides: descriptor.createDescriptorOverrides(),
           paging: pageOptions,
-          rulesetId: getRulesetId(testData.rulesetOrId),
+          rulesetId: manager.getRulesetId(testData.rulesetOrId),
         },
       };
       const expectedGetContentSetSizeParams = {
@@ -1325,7 +1394,7 @@ describe("PresentationManager", () => {
         params: {
           keys: keys.toJSON(),
           descriptorOverrides: descriptor.createDescriptorOverrides(),
-          rulesetId: getRulesetId(testData.rulesetOrId),
+          rulesetId: manager.getRulesetId(testData.rulesetOrId),
           paging: pageOptions,
         },
       };
@@ -1410,7 +1479,7 @@ describe("PresentationManager", () => {
             keys: keys.toJSON(),
             fieldName,
             maximumValueCount,
-            rulesetId: getRulesetId(testData.rulesetOrId),
+            rulesetId: manager.getRulesetId(testData.rulesetOrId),
           },
         };
 
@@ -1438,7 +1507,7 @@ describe("PresentationManager", () => {
             keys: { instanceKeys: [], nodeKeys: [] },
             fieldName: "",
             maximumValueCount: 0,
-            rulesetId: getRulesetId(testData.rulesetOrId),
+            rulesetId: manager.getRulesetId(testData.rulesetOrId),
           },
         };
 

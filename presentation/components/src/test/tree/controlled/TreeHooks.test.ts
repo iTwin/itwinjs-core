@@ -8,6 +8,7 @@ import * as moq from "typemoq";
 import * as sinon from "sinon";
 import { renderHook } from "@testing-library/react-hooks";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { Ruleset, HierarchyUpdateInfo } from "@bentley/presentation-common";
 import { PresentationManager, Presentation } from "@bentley/presentation-frontend";
 import { BeEvent, IDisposable } from "@bentley/bentleyjs-core";
 import { TreeNodeItem, TreeDataChangesListener } from "@bentley/ui-components";
@@ -15,6 +16,8 @@ import { IPresentationTreeDataProvider } from "../../../presentation-components"
 import { usePresentationTreeNodeLoader, PresentationTreeNodeLoaderProps } from "../../../presentation-components/tree/controlled/TreeHooks";
 
 describe("usePresentationNodeLoader", () => {
+
+  let onHierarchyUpdateEvent: BeEvent<(ruleset: Ruleset, info: HierarchyUpdateInfo) => void>;
   const imodelMock = moq.Mock.ofType<IModelConnection>();
   const presentationManagerMock = moq.Mock.ofType<PresentationManager>();
   const initialProps = {
@@ -24,7 +27,9 @@ describe("usePresentationNodeLoader", () => {
   };
 
   beforeEach(() => {
+    onHierarchyUpdateEvent = new BeEvent();
     presentationManagerMock.reset();
+    presentationManagerMock.setup((x) => x.onHierarchyUpdate).returns(() => onHierarchyUpdateEvent);
     Presentation.setPresentationManager(presentationManagerMock.object);
   });
 
@@ -76,6 +81,45 @@ describe("usePresentationNodeLoader", () => {
     rerender({ ...initialProps, pageSize: 20 });
 
     expect(result.current).to.not.eq(oldNodeLoader);
+  });
+
+  it("creates a new nodeLoader when `PresentationManager` raises a related `onHierarchyUpdate` event and using ruleset id", () => {
+    const ruleset: Ruleset = { id: initialProps.ruleset, rules: [] };
+    const { result } = renderHook(
+      (props: PresentationTreeNodeLoaderProps) => usePresentationTreeNodeLoader(props),
+      { initialProps: { ...initialProps, ruleset: ruleset.id } },
+    );
+    const oldNodeLoader = result.current;
+
+    onHierarchyUpdateEvent.raiseEvent(ruleset, "FULL");
+
+    expect(result.current).to.not.eq(oldNodeLoader);
+  });
+
+  it("creates a new nodeLoader when `PresentationManager` raises a related `onHierarchyUpdate` event and using ruleset object", () => {
+    const ruleset: Ruleset = { id: initialProps.ruleset, rules: [] };
+    const { result } = renderHook(
+      (props: PresentationTreeNodeLoaderProps) => usePresentationTreeNodeLoader(props),
+      { initialProps: { ...initialProps, ruleset } },
+    );
+
+    const oldNodeLoader = result.current;
+    onHierarchyUpdateEvent.raiseEvent(ruleset, "FULL");
+
+    expect(result.current).to.not.eq(oldNodeLoader);
+  });
+
+  it("doesn't create a new nodeLoader when `PresentationManager` raises an unrelated `onHierarchyUpdate` event", () => {
+    const { result } = renderHook(
+      (props: PresentationTreeNodeLoaderProps) => usePresentationTreeNodeLoader(props),
+      { initialProps },
+    );
+    const oldNodeLoader = result.current;
+
+    const ruleset: Ruleset = { id: "unrelated", rules: [] };
+    onHierarchyUpdateEvent.raiseEvent(ruleset, "FULL");
+
+    expect(result.current).to.eq(oldNodeLoader);
   });
 
   it("starts preloading hierarchy", () => {

@@ -31,6 +31,10 @@ export {
   PresentationUnitSystem,
 } from "./presentation-common/PresentationManagerOptions";
 export { LabelDefinition, LabelRawValue, LabelCompositeValue } from "./presentation-common/LabelDefinition";
+export {
+  UpdateInfo, HierarchyUpdateInfo, ContentUpdateInfo, UPDATE_FULL,
+  NodeInsertionInfo, NodeDeletionInfo, NodeUpdateInfo,
+} from "./presentation-common/Update";
 
 /**
  * @module RPC
@@ -43,7 +47,7 @@ export {
   PresentationRpcInterface, PresentationRpcRequestOptions,
   LabelRpcRequestOptions, ContentRpcRequestOptions,
   HierarchyRpcRequestOptions, SelectionScopeRpcRequestOptions,
-  PresentationRpcResponse,
+  PresentationRpcResponse, PresentationRpcEvents,
 } from "./presentation-common/PresentationRpcInterface";
 export { RpcRequestsHandler, RpcRequestsHandlerProps } from "./presentation-common/RpcRequestsHandler";
 

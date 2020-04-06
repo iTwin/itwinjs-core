@@ -69,6 +69,7 @@ describe("ModelsTree", () => {
       selectionManagerMock.setup((x) => x.getSelection(imodelMock.object, moq.It.isAny())).returns(() => new KeySet());
       Presentation.setSelectionManager(selectionManagerMock.object);
       presentationManagerMock.setup((x) => x.rulesets()).returns(() => rulesetManagerMock.object);
+      presentationManagerMock.setup((x) => x.onHierarchyUpdate).returns(() => new BeEvent());
       Presentation.setPresentationManager(presentationManagerMock.object);
     });
 

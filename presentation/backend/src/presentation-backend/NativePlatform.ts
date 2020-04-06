@@ -8,7 +8,7 @@
 
 import { IDisposable, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { IModelJsNative, IModelDb, IModelHost } from "@bentley/imodeljs-backend";
-import { PresentationError, PresentationStatus, VariableValueTypes } from "@bentley/presentation-common";
+import { PresentationError, PresentationStatus, VariableValueTypes, UpdateInfo } from "@bentley/presentation-common";
 import { VariableValueJSON } from "@bentley/presentation-common/lib/presentation-common/RulesetVariables";
 import { PresentationManagerMode } from "./PresentationManager";
 
@@ -41,6 +41,7 @@ export interface NativePlatformDefinition extends IDisposable {
   handleRequest(requestContext: ClientRequestContext, db: any, options: string): Promise<string>;
   getRulesetVariableValue(rulesetId: string, variableId: string, type: VariableValueTypes): VariableValueJSON;
   setRulesetVariableValue(rulesetId: string, variableId: string, type: VariableValueTypes, value: VariableValueJSON): void;
+  getUpdateInfo(): UpdateInfo | undefined;
 }
 
 /** @internal */
@@ -49,6 +50,7 @@ export interface DefaultNativePlatformProps {
   localeDirectories: string[];
   taskAllocationsMap: { [priority: number]: number };
   mode: PresentationManagerMode;
+  isChangeTrackingEnabled: boolean;
 }
 
 /** @internal */
@@ -59,7 +61,7 @@ export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): 
     private _nativeAddon: IModelJsNative.ECPresentationManager;
     public constructor() {
       const mode = (props.mode === PresentationManagerMode.ReadOnly) ? IModelJsNative.ECPresentationManagerMode.ReadOnly : IModelJsNative.ECPresentationManagerMode.ReadWrite;
-      this._nativeAddon = new IModelHost.platform.ECPresentationManager(props.id, props.localeDirectories, props.taskAllocationsMap, mode);
+      this._nativeAddon = new IModelHost.platform.ECPresentationManager(props.id, props.localeDirectories, props.taskAllocationsMap, mode, props.isChangeTrackingEnabled);
     }
     private getStatus(responseStatus: IModelJsNative.ECPresentationStatus): PresentationStatus {
       switch (responseStatus) {
@@ -73,9 +75,7 @@ export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): 
         throw new PresentationError(PresentationStatus.InvalidResponse);
       if (response.error)
         throw new PresentationError(this.getStatus(response.error.status), response.error.message);
-      if (response.result === undefined)
-        throw new PresentationError(PresentationStatus.InvalidResponse);
-      return response.result;
+      return response.result!;
     }
     private handleVoidResult(response: IModelJsNative.ErrorStatusOrResult<IModelJsNative.ECPresentationStatus, void>): void {
       if (!response)
@@ -137,6 +137,9 @@ export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): 
     }
     public setRulesetVariableValue(rulesetId: string, variableId: string, type: VariableValueTypes, value: VariableValueJSON): void {
       this.handleVoidResult(this._nativeAddon.setRulesetVariableValue(rulesetId, variableId, type, value));
+    }
+    public getUpdateInfo() {
+      return this.handleResult(this._nativeAddon.getUpdateInfo());
     }
   };
 };
