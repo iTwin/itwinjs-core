@@ -89,7 +89,7 @@ import { BreadcrumbDemoWidgetControl } from "../widgets/BreadcrumbDemoWidget";
 import { FeedbackDemoWidget } from "../widgets/FeedbackWidget";
 import { UnifiedSelectionPropertyGridWidgetControl } from "../widgets/UnifiedSelectionPropertyGridWidget";
 import { UnifiedSelectionTableWidgetControl } from "../widgets/UnifiedSelectionTableWidget";
-import { ViewportWidgetControl, ViewportWidget } from "../widgets/ViewportWidget";
+import {/* ViewportWidgetControl, */ ViewportWidget } from "../widgets/ViewportWidget";
 import { NestedAnimationStage } from "./NestedAnimationStage";
 import { ExampleForm } from "../forms/ExampleForm";
 
@@ -258,8 +258,8 @@ export class ViewsFrontstage extends FrontstageProvider {
               [
                 <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.UnifiedSelectionTable" control={UnifiedSelectionTableWidgetControl}
                   applicationData={{ iModelConnection: this.iModelConnection, rulesetId: "Items" }} fillZone={true} badgeType={BadgeType.New} />,
-                <Widget iconSpec="icon-placeholder" label="External iModel View" control={ViewportWidgetControl} fillZone={true} badgeType={BadgeType.TechnicalPreview}
-                  applicationData={{ projectName: "iModelHubTest", imodelName: "GrandCanyonTerrain" }} />,
+                /* <Widget iconSpec="icon-placeholder" label="External iModel View" control={ViewportWidgetControl} fillZone={true} badgeType={BadgeType.TechnicalPreview}
+                   applicationData={{ projectName: "iModelHubTest", imodelName: "GrandCanyonTerrain" }} />, */
               ]}
           />
         }

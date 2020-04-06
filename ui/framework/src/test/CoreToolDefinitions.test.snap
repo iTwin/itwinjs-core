@@ -235,7 +235,15 @@ exports[`CoreToolDefinitions ToolWidget should render correctly with Core Tool D
                 "execute": [Function],
                 "getKey": [Function],
                 "handleSizeKnown": [Function],
-                "iconSpec": "icon-camera",
+                "iconSpec": ConditionalStringValue {
+                  "_value": "icon-camera-animation-disabled",
+                  "stringGetter": [Function],
+                  "syncEventIds": Array [
+                    "activecontentchanged",
+                    "activeviewportchanged",
+                    "viewstatechanged",
+                  ],
+                },
                 "isActive": false,
                 "isDisabled": undefined,
                 "isEnabled": true,
@@ -565,7 +573,15 @@ exports[`CoreToolDefinitions ToolWidgetComposer should render correctly with Cor
           Object {
             "badgeType": undefined,
             "execute": [Function],
-            "icon": "icon-camera",
+            "icon": ConditionalStringValue {
+              "_value": "icon-camera-animation-disabled",
+              "stringGetter": [Function],
+              "syncEventIds": Array [
+                "activecontentchanged",
+                "activeviewportchanged",
+                "viewstatechanged",
+              ],
+            },
             "id": "View.ToggleCamera",
             "internalData": Map {},
             "isActive": false,

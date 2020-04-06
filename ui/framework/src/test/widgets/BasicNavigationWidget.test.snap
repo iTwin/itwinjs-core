@@ -136,7 +136,15 @@ exports[`BasicNavigationWidget BasicNavigationWidget should render correctly 1`]
           Object {
             "badgeType": undefined,
             "execute": [Function],
-            "icon": "icon-camera",
+            "icon": ConditionalStringValue {
+              "_value": undefined,
+              "stringGetter": [Function],
+              "syncEventIds": Array [
+                "activecontentchanged",
+                "activeviewportchanged",
+                "viewstatechanged",
+              ],
+            },
             "id": "View.ToggleCamera",
             "internalData": Map {},
             "isActive": false,
@@ -322,7 +330,15 @@ exports[`BasicNavigationWidget BasicNavigationWidget with suffix and prefix item
           Object {
             "badgeType": undefined,
             "execute": [Function],
-            "icon": "icon-camera",
+            "icon": ConditionalStringValue {
+              "_value": undefined,
+              "stringGetter": [Function],
+              "syncEventIds": Array [
+                "activecontentchanged",
+                "activeviewportchanged",
+                "viewstatechanged",
+              ],
+            },
             "id": "View.ToggleCamera",
             "internalData": Map {},
             "isActive": false,

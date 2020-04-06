@@ -46,7 +46,7 @@
   ],
   "devDependencies": {
     "@bentley/build-tools": "2.0.0-dev.57",
-    "@bentley/icons-generic-webfont": "^1.0.0",
+    "@bentley/icons-generic-webfont": "^1.0.5",
     "@bentley/ui-abstract": "2.0.0-dev.57",
     "@bentley/ui-components": "2.0.0-dev.57",
     "@bentley/ui-core": "2.0.0-dev.57",

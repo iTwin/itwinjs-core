@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-framework",
+      "comment": "Fix bug 292829 where toolbar border displayed when all items are hidden. Add new camera on/off icons definitions.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-framework",
+  "email": "bill.steinbock@bentley.com"
+}
