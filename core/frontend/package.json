@@ -34,7 +34,6 @@
   "peerDependencies": {
     "@bentley/ui-abstract": "2.0.0-dev.57",
     "@bentley/bentleyjs-core": "^2.0.0-dev.57",
-    "@bentley/extension-client": "^2.0.0-dev.57",
     "@bentley/geometry-core": "^2.0.0-dev.57",
     "@bentley/imodeljs-clients": "^2.0.0-dev.57",
     "@bentley/imodeljs-common": "^2.0.0-dev.57",
@@ -55,7 +54,6 @@
     "@bentley/imodeljs-common": "2.0.0-dev.57",
     "@bentley/imodeljs-i18n": "2.0.0-dev.57",
     "@bentley/imodeljs-quantity": "2.0.0-dev.57",
-    "@bentley/extension-client": "2.0.0-dev.57",
     "@bentley/webgl-compatibility": "2.0.0-dev.57",
     "@bentley/ui-abstract": "2.0.0-dev.57",
     "@types/chai": "^4.1.4",
@@ -80,6 +78,7 @@
     "NOTE: imodeljs-frontend should remain UI technology agnostic, so no react/angular dependencies are allowed"
   ],
   "dependencies": {
+    "@bentley/extension-client": "2.0.0-dev.57",
     "fuse.js": "^3.3.0",
     "js-base64": "^2.4.5",
     "ldclient-js": "^2.6.0",
