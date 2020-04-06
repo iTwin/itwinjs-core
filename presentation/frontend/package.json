@@ -22,14 +22,14 @@
     "url": "http://www.bentley.com"
   },
   "scripts": {
-    "copy:locale": "cpx \"../common/assets/**/*\" \"./lib/public\"",
-    "copy:assets": "cpx \"./src/**/*.json\" \"./lib\"",
+    "copy:locale": "cpx \"../common/assets/**/*.json\" ./lib/public",
+    "copy:assets": "cpx \"./src/**/*.json\" ./lib",
     "build": "npm run copy:assets && npm run copy:locale && npm run pseudolocalize && npm run extract && tsc 1>&2",
     "build:watch": "tsc -w",
     "clean": "rimraf lib .rush",
     "cover": "nyc npm test",
     "docs": "npm run docs:reference && npm run docs:changelog",
-    "docs:changelog": "cpx \"./CHANGELOG.md\" ../../generated-docs/presentation/presentation-frontend",
+    "docs:changelog": "cpx ./CHANGELOG.md ../../generated-docs/presentation/presentation-frontend",
     "docs:reference": "node ./node_modules/@bentley/build-tools/scripts/docs.js --includes=../../generated-docs/extract --json=../../generated-docs/presentation/presentation-frontend/file.json --tsIndexFile=presentation-frontend.ts --onlyJson %TYPEDOC_THEME%",
     "extract": "node ./node_modules/@bentley/build-tools/scripts/extract.js --fileExt=ts --extractFrom=./src/test --recursive --out=../../generated-docs/extract",
     "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=presentation-frontend",

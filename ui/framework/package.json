@@ -11,8 +11,9 @@
     "url": "https://github.com/imodeljs/imodeljs/tree/master/ui/framework"
   },
   "scripts": {
-    "copy:assets": "cpx \"./src/**/*.{*css,json,svg}\" ./lib && cpx \"./public/**/*\" ./lib/public",
-    "build": "npm run copy:assets && tsc 1>&2",
+    "copy:assets": "cpx \"./src/**/*.{*css,json,svg}\" \"./lib\" && cpx \"./public/**/*\" \"./lib/public\"",
+    "pseudolocalize": "betools pseudolocalize --englishDir ./public/locales/en --out ./lib/public/locales/en-PSEUDO",
+    "build": "npm run copy:assets && npm run pseudolocalize && tsc 1>&2",
     "build:watch": "tsc --w",
     "clean": "rimraf lib .rush",
     "cover": "nyc npm test",

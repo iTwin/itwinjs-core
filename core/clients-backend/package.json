@@ -13,7 +13,7 @@
   },
   "scripts": {
     "build": "tsc 1>&2 && npm run copy:typedefs",
-    "copy:typedefs": "cpx \"./src/openid-client.d.ts\" ./lib/",
+    "copy:typedefs": "cpx ./src/openid-client.d.ts ./lib/",
     "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/test/assets",
     "clean": "rimraf lib .rush",
     "cover": "nyc npm test",

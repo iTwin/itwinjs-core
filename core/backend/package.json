@@ -18,7 +18,7 @@
     "cover:integration": "nyc npm run test:integration",
     "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=imodeljs-backend",
     "lint": "tslint --project . 1>&2",
-    "pretest": "cpx \"./src/test/logging.config.json\" ./lib/test",
+    "pretest": "cpx ./src/test/logging.config.json ./lib/test",
     "test": "node ./node_modules/@bentley/build-tools/scripts/test.js --offline=\"mock\" --grep \"#integration|#WebGLPerformance\" --invert",
     "test:integration": "npm run pretest && node ./node_modules/@bentley/build-tools/scripts/test.js --testDir=\"./lib/test/integration\"",
     "perftest:pre": "npm run pretest && cpx \"./src/perftest/*.json\" ./lib/perftest",
@@ -29,7 +29,7 @@
     "perftest:schema": "npm run perftest:pre && node ./node_modules/@bentley/build-tools/scripts/test.js --testDir=\"./lib/perftest\" --timeout=999999999 --grep SchemaDesignPerf",
     "copy:ios-test-assets": "cpx \"./src/test/assets/**/*\" ./lib/test/ios/webpack/assets && cpx \"./lib/assets/**/*\" ./lib/test/ios/webpack/assets",
     "build:imodeljs-backend-test-app": "xcrun xcodebuild build-for-testing -configuration Debug -sdk iphoneos -workspace ./src/test/ios/imodeljs-backend-test-app.xcworkspace -scheme imodeljs-backend-test-app -derivedDataPath ./lib/test/ios/DerivedData -allowProvisioningUpdates",
-    "webpack:imodeljs-test": "npm run copy:ios-test-assets && cpx \"./src/test/ios/config/ignoreTest.js\" ./lib/test && cpx \"./src/test/ios/runMochaTestsDirectly.js\" ./lib/test && node ./src/test/ios/scripts/generateTestBarrel.js ./lib/test ./lib/test/ios-test-barrel.js && webpack --target=webworker --config=./src/test/ios/config/mobile.webpack.config.js",
+    "webpack:imodeljs-test": "npm run copy:ios-test-assets && cpx ./src/test/ios/config/ignoreTest.js ./lib/test && cpx ./src/test/ios/runMochaTestsDirectly.js ./lib/test && node ./src/test/ios/scripts/generateTestBarrel.js ./lib/test ./lib/test/ios-test-barrel.js && webpack --target=webworker --config=./src/test/ios/config/mobile.webpack.config.js",
     "install-ios-lib": "node ./src/test/ios/scripts/installIosNativeLib.js",
     "build:ios-test": "npm run install-ios-lib && npm run webpack:imodeljs-test && npm run build:imodeljs-backend-test-app"
   },

@@ -27,7 +27,7 @@
     "clean": "rimraf lib .rush",
     "cover": "nyc npm test",
     "docs": "npm run docs:reference && npm run extract && npm run docs:changelog",
-    "docs:changelog": "cpx \"./CHANGELOG.md\" ../../generated-docs/presentation/presentation-backend",
+    "docs:changelog": "cpx ./CHANGELOG.md ../../generated-docs/presentation/presentation-backend",
     "docs:reference": "node ./node_modules/@bentley/build-tools/scripts/docs.js --includes=../../generated-docs/extract --json=../../generated-docs/presentation/presentation-backend/file.json --tsIndexFile=presentation-backend.ts --onlyJson %TYPEDOC_THEME%",
     "extract": "node ./node_modules/@bentley/build-tools/scripts/extract.js --fileExt=ts --extractFrom=./src/test --recursive --out=../../generated-docs/extract",
     "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=presentation-backend",
