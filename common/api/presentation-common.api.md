@@ -192,6 +192,8 @@ export type ContentRelatedInstancesSpecification = DEPRECATED_ContentRelatedInst
 
 // @public
 export interface ContentRequestOptions<TIModel> extends RequestOptionsWithRuleset<TIModel> {
+    // @alpha
+    unitSystem?: PresentationUnitSystem;
 }
 
 // @public
@@ -1023,6 +1025,18 @@ export enum PresentationStatus {
     NotInitialized = 65537,
     Success = 0,
     UseAfterDisposal = 65538
+}
+
+// @alpha (undocumented)
+export enum PresentationUnitSystem {
+    // (undocumented)
+    BritishImperial = "british-imperial",
+    // (undocumented)
+    Metric = "metric",
+    // (undocumented)
+    UsCustomary = "us-customary",
+    // (undocumented)
+    UsSurvey = "us-survey"
 }
 
 // @public

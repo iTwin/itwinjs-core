@@ -5,7 +5,7 @@
 
 .app {
   display: grid;
-  grid-template-rows: 80px 30px 30px calc(100vh - 80px - 30px - 30px);
+  grid-template-rows: 80px 30px 30px 30px calc(100vh - 80px - 30px - 30px - 30px);
   height: 100vh;
   position: relative;
   overflow: hidden;

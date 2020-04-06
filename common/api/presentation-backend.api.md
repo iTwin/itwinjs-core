@@ -21,6 +21,7 @@ import { Node } from '@bentley/presentation-common';
 import { NodeKey } from '@bentley/presentation-common';
 import { NodePathElement } from '@bentley/presentation-common';
 import { Paged } from '@bentley/presentation-common';
+import { PresentationUnitSystem } from '@bentley/presentation-common';
 import { RegisteredRuleset } from '@bentley/presentation-common';
 import { Ruleset } from '@bentley/presentation-common';
 import { SelectionInfo } from '@bentley/presentation-common';
@@ -51,6 +52,7 @@ export class Presentation {
 export class PresentationManager {
     constructor(props?: PresentationManagerProps);
     activeLocale: string | undefined;
+    activeUnitSystem: PresentationUnitSystem | undefined;
     computeSelection(requestContext: ClientRequestContext, requestOptions: SelectionScopeRequestOptions<IModelDb>, ids: Id64String[], scopeId: string): Promise<KeySet>;
     dispose(): void;
     getContent(requestContext: ClientRequestContext, requestOptions: Paged<ContentRequestOptions<IModelDb>>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet): Promise<Content | undefined>;
@@ -90,6 +92,8 @@ export enum PresentationManagerMode {
 // @public
 export interface PresentationManagerProps {
     activeLocale?: string;
+    // @alpha
+    activeUnitSystem?: PresentationUnitSystem;
     // @internal (undocumented)
     addon?: NativePlatformDefinition;
     enableSchemasPreload?: boolean;
