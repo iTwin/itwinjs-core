@@ -20,12 +20,10 @@ export class IconSpecUtilities {
 
   /** Get the SVG Source from an IconSpec */
   public static getSvgSource(iconSpec: string): string | undefined {
-    let svgSource: string | undefined;
-
     if (iconSpec.startsWith(IconSpecUtilities.SVG_PREFIX) && iconSpec.length > 4) {
-      svgSource = iconSpec.slice(4);
+      return iconSpec.slice(4);
     }
 
-    return svgSource;
+    return undefined;
   }
 }

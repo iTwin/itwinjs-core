@@ -26,8 +26,8 @@ import { ComponentExampleCategory, ComponentExampleProps } from "./ComponentExam
 import { SampleImageCheckBox } from "./SampleImageCheckBox";
 import { SampleExpandableBlock } from "./SampleExpandableBlock";
 
-import moreSvg from "@bentley/icons-generic/icons/more-circular.svg?sprite";
-import moreVerticalSvg from "@bentley/icons-generic/icons/more-vertical-circular.svg?sprite";
+import moreSvg from "@bentley/icons-generic/icons/more-circular.svg";
+import moreVerticalSvg from "@bentley/icons-generic/icons/more-vertical-circular.svg";
 import { SampleContextMenu } from "./SampleContextMenu";
 
 /** Creates a Component Example */

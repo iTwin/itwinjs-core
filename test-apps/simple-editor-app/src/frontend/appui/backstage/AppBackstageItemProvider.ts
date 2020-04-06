@@ -9,8 +9,8 @@ import { IModelApp } from "@bentley/imodeljs-frontend";
 import { SettingsModalFrontstage } from "../frontstages/Settings";
 import { SampleAppIModelApp, SampleAppUiActionId } from "../..";
 
-import settingsIconSvg from "@bentley/icons-generic/icons/settings.svg?sprite";
-import stageIconSvg from "@bentley/icons-generic/icons/imodeljs.svg?sprite";
+import settingsIconSvg from "@bentley/icons-generic/icons/settings.svg";
+import stageIconSvg from "@bentley/icons-generic/icons/imodeljs.svg";
 
 export class AppBackstageItemProvider {
   public static readonly id = "simple-editor-app.AppBackstageItemProvider";
