@@ -1296,6 +1296,8 @@ export class BackgroundTerrainTileTreeReference extends TileTreeReference {
     // (undocumented)
     protected getViewFlagOverrides(tree: TileTree): import("@bentley/imodeljs-common").ViewFlagOverrides;
     // (undocumented)
+    protected get _isLoadingComplete(): boolean;
+    // (undocumented)
     get settings(): BackgroundMapSettings;
     set settings(settings: BackgroundMapSettings);
     // (undocumented)
@@ -8826,6 +8828,10 @@ export abstract class TileTreeReference {
     getTerrainHeight(_terrainHeights: Range1d): void;
     getToolTip(_hit: HitDetail): HTMLElement | string | undefined;
     protected getViewFlagOverrides(tree: TileTree): ViewFlagOverrides;
+    // @internal
+    get isLoadingComplete(): boolean;
+    // @internal
+    protected get _isLoadingComplete(): boolean;
     abstract get treeOwner(): TileTreeOwner;
     unionFitRange(union: Range3d): void;
 }

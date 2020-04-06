@@ -53,7 +53,7 @@ import { NotifyMessageDetails, OutputMessagePriority } from "./NotificationManag
 import { GraphicType } from "./render/GraphicBuilder";
 import { RenderScheduleState } from "./RenderScheduleState";
 import { StandardView, StandardViewId } from "./StandardView";
-import { TileTreeReference, TileTreeLoadStatus, TileTreeSet } from "./tile/internal";
+import { TileTreeReference, TileTreeSet } from "./tile/internal";
 import { DecorateContext, SceneContext } from "./ViewContext";
 import { Viewport } from "./Viewport";
 import { GlobalLocation, areaToEyeHeight } from "./ViewGlobalLocation";
@@ -297,9 +297,7 @@ export abstract class ViewState extends ElementState {
   public get areAllTileTreesLoaded(): boolean {
     let allLoaded = true;
     this.forEachTileTreeRef((ref) => {
-      // Loaded or NotFound qualify as "loaded" - either the load succeeded or failed.
-      if (ref.treeOwner.loadStatus < TileTreeLoadStatus.Loaded)
-        allLoaded = false;
+      allLoaded = allLoaded && ref.isLoadingComplete;
     });
 
     return allLoaded;

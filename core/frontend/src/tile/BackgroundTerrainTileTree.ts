@@ -456,9 +456,11 @@ class BackgroundTerrainTileTree extends MapTileTree {
   public createGlobeChild(params: TileParams, quadId: QuadId, _rangeCorners: Point3d[], rectangle: MapCartoRectangle, ellipsoidPatch: EllipsoidPatch, heightRange?: Range1d): MapTile {
     return new TerrainMapTile(params, this, quadId, ellipsoidPatch, rectangle, heightRange, this.getCornerRays(rectangle));
   }
+
   public getChildHeightRange(quadId: QuadId, rectangle: MapCartoRectangle, parent: MapTile): Range1d | undefined {
     return (quadId.level <= ApproximateTerrainHeights.maxLevel) ? ApproximateTerrainHeights.instance.getMinimumMaximumHeights(rectangle) : (parent as TerrainMapTile).heightRange;
   }
+
   public purgeRealityTiles(purgeOlderThan: BeTimePoint) {
     super.purgeRealityTiles(purgeOlderThan);
     if (this.drapeTree)
@@ -556,6 +558,11 @@ export class BackgroundTerrainTileTreeReference extends TileTreeReference {
 
   public get castsShadows() {
     return false;
+  }
+
+  protected get _isLoadingComplete(): boolean {
+    // Wait until drape tree is fully loaded too.
+    return this._mapDrapeTree.isLoadingComplete;
   }
 
   public get treeOwner(): TileTreeOwner {

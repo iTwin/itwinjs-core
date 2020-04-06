@@ -25,6 +25,7 @@ import { FeatureSymbology } from "../render/FeatureSymbology";
 import {
   TileDrawArgs,
   TileTree,
+  TileTreeLoadStatus,
   TileTreeOwner,
   TileTreeSet,
 } from "./internal";
@@ -101,6 +102,30 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
     const tree = this.treeOwner.tileTree;
     if (undefined !== tree)
       tree.collectStatistics(stats);
+  }
+
+  /** Return true if the tile tree is fully loaded.
+   * The default implementation returns true if the tile tree loading process completed (whether it resulted in success or failure).
+   * @note Do *not* override this property - override [[_isLoadingComplete]] instead..
+   * @internal
+   */
+  public get isLoadingComplete(): boolean {
+    switch (this.treeOwner.loadStatus) {
+      case TileTreeLoadStatus.NotLoaded:
+      case TileTreeLoadStatus.Loading:
+        return false;
+      case TileTreeLoadStatus.NotFound:
+        return true; // we tried, and failed, to load.
+      case TileTreeLoadStatus.Loaded:
+        return this._isLoadingComplete;
+    }
+  }
+
+  /** Override if additional asynchronous loading is required after the tile tree is successfully loaded.
+   * @internal
+   */
+  protected get _isLoadingComplete(): boolean {
+    return true;
   }
 
   /** Create context for drawing the tile tree, if it is ready for drawing.

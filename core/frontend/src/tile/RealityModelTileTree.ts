@@ -473,6 +473,10 @@ class RealityTreeReference extends RealityModelTileTree.Reference {
     return true;
   }
 
+  protected get _isLoadingComplete(): boolean {
+    return !this._mapDrapeTree || this._mapDrapeTree.isLoadingComplete;
+  }
+
   public get classifiers(): SpatialClassifiers | undefined { return undefined !== this._classifier ? this._classifier.classifiers : undefined; }
 
   public addToScene(context: SceneContext): void {
