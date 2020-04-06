@@ -14,7 +14,6 @@ import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Geometry } from "../../Geometry";
 import { Arc3d } from "../../curve/Arc3d";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
-
 /* tslint:disable:no-console no-trailing-whitespace */
 
 // Toggle for printing in cubic & quartic testers
@@ -478,8 +477,8 @@ describe("AnalyticRoots.CheckQuartic", () => {
     // Symmetry with varying speed
     for (const delta of [0.1, 1, 5, 10]) {
       CheckQuartic(-100, -100 + delta, 100 - delta, 100, mediumTol, ck);
-      CheckQuartic(-100, -100 + delta, 100 - delta, 100, mediumTol, ck);
-      CheckQuartic(-100, -100 + delta, 100 - delta, 100, mediumTol, ck);
+      // CheckQuartic(-100, -100 + delta, 100 - delta, 100, mediumTol, ck);
+      // CheckQuartic(-100, -100 + delta, 100 - delta, 100, mediumTol, ck);
     }
     ck.checkpoint("SolveQuartic");
     expect(ck.getNumErrors()).equals(0);
@@ -674,4 +673,58 @@ describe("Geometry", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
+});
+it("NickelsA", () => {
+  const ck = new Checker();
+  for (const b of [0, 0.3, -0.3, 5, -5]) {
+    for (const a of [1, -1]) {
+      for (const c of [1, 0, - 1]) {
+        for (const d of [0, 0.2, -0.2, 0.8, -0.8, 1.0, -1.0, 2.0, -2.0]) {
+          const cubic = new Degree3PowerPolynomial(d, c, b, a);
+          const roots = new GrowableFloat64Array();
+          AnalyticRoots.appendCubicRoots([d, c, b, a], roots);
+          // Easy to confirm that the returned roots are in fact roots.
+          // This does NOT confirm that all roots were found.
+          for (let i = 0; i < roots.length; i++)
+            ck.testCoordinate(0, cubic.evaluate(roots.atUncheckedIndex (i)), " abcd", a, b, c, d);
+        }
+      }
+    }
+  }
+
+  expect(ck.getNumErrors()).equals(0);
+});
+function findRoot(r: number, roots: GrowableFloat64Array, tol: number = 1.0e-10): boolean {
+  for (let i = 0; i < roots.length; i++) {
+    const q = roots.atUncheckedIndex(i);
+    if (Math.abs(r - q) < tol)
+      return true;
+  }
+  return false;
+}
+it("NickelsThreeRootCases", () => {
+  const ck = new Checker();
+  // construct cubics s * (x-r0) * (x-r1) * (x-r2) with known distinct roots.
+  const epsilon1 = 0.25;
+  const epsilon2 = -0.01;
+  for (const s of [1, 2, -1, -2]) {
+    for (const r0 of [-2, -1, 0, 1, 2]) {
+      for (const q1 of [-2, -2, -0, 1, 2]) {
+        const r1 = q1 + epsilon1;
+        for (const q2 of [-2, -1, 0, 1, 2]) {
+          const r2 = q2 + epsilon2;
+          const a = s;
+          const b = -s * (r0 + r1 + r2);
+          const c = s * (r0 * r1 + r1 * r2 + r0 * r2);
+          const d = - s * r0 * r1 * r2;
+          const roots = new GrowableFloat64Array();
+          AnalyticRoots.appendCubicRoots([d, c, b, a], roots);
+          ck.testTrue(findRoot(r0, roots), a, b, c, d);
+          ck.testTrue(findRoot(r1, roots), a, b, c, d);
+          ck.testTrue(findRoot(r2, roots), a, b, c, d);
+        }
+      }
+    }
+  }
+  expect(ck.getNumErrors()).equals(0);
 });
