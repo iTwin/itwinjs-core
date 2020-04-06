@@ -21,6 +21,7 @@ import {
   WidgetProvider,
 } from "../../ui-framework";
 import { getDefaultZonesManagerProps } from "@bentley/ui-ninezone";
+import { NoRenderApp, IModelApp } from "@bentley/imodeljs-frontend";
 
 import { TestFrontstage, TestWidgetElement } from "./FrontstageTestUtils";
 import { ZoneDef } from "../../ui-framework/zones/ZoneDef";
@@ -30,12 +31,14 @@ describe("Frontstage", () => {
   const sandbox = sinon.createSandbox();
 
   before(async () => {
+    NoRenderApp.startup();
     await TestUtils.initializeUiFramework();
     FrontstageManager.clearFrontstageDefs();
   });
 
   after(() => {
     TestUtils.terminateUiFramework();
+    IModelApp.shutdown();
   });
 
   beforeEach(() => {
@@ -139,7 +142,7 @@ describe("Frontstage", () => {
     const componentWillUnmountSpy = sinon.spy(widgetElement.instance(), "componentWillUnmount");
     const widgetElementComponentDidMountSpy = sandbox.spy(TestWidgetElement.prototype, "componentDidMount");
 
-    expect(contentRenderer.state().widgetKey).eq(1);
+    expect(contentRenderer.state().widgetKey).eq(2);
 
     let zones = FrontstageManager.NineZoneManager.getZonesManager().mergeZone(4, 7, wrapper.state("nineZone").zones);
     zones = FrontstageManager.NineZoneManager.getZonesManager().setWidgetTabIndex(4, 0, zones);
@@ -152,7 +155,7 @@ describe("Frontstage", () => {
     });
     wrapper.update();
 
-    expect(contentRenderer.state().widgetKey).eq(2);
+    expect(contentRenderer.state().widgetKey).eq(3);
     expect(componentWillUnmountSpy.calledOnce).true;
     expect(widgetElementComponentDidMountSpy.calledOnce).true;
 
@@ -173,7 +176,7 @@ describe("Frontstage", () => {
     const componentWillUnmountSpy = sinon.spy(widgetElement.instance(), "componentWillUnmount");
     const widgetElementComponentDidMountSpy = sandbox.spy(TestWidgetElement.prototype, "componentDidMount");
 
-    expect(contentRenderer.state().widgetKey).eq(1);
+    expect(contentRenderer.state().widgetKey).eq(2);
 
     let zones = FrontstageManager.NineZoneManager.getZonesManager().mergeZone(4, 7, wrapper.state("nineZone").zones);
     zones = FrontstageManager.NineZoneManager.getZonesManager().setWidgetTabIndex(4, 0, zones);
@@ -186,7 +189,7 @@ describe("Frontstage", () => {
     });
     wrapper.update();
 
-    expect(contentRenderer.state().widgetKey).eq(2);
+    expect(contentRenderer.state().widgetKey).eq(3);
     expect(componentWillUnmountSpy.calledOnce).true;
     expect(widgetElementComponentDidMountSpy.calledOnce).true;
 
@@ -207,7 +210,7 @@ describe("Frontstage", () => {
     const componentWillUnmountSpy = sinon.spy(widgetElement.instance(), "componentWillUnmount");
     const widgetElementComponentDidMountSpy = sandbox.spy(TestWidgetElement.prototype, "componentDidMount");
 
-    expect(contentRenderer.state().widgetKey).eq(1);
+    expect(contentRenderer.state().widgetKey).eq(2);
 
     let zones = FrontstageManager.NineZoneManager.getZonesManager().mergeZone(4, 7, wrapper.state("nineZone").zones);
     zones = FrontstageManager.NineZoneManager.getZonesManager().setWidgetTabIndex(4, 0, zones);
@@ -220,7 +223,7 @@ describe("Frontstage", () => {
     });
     wrapper.update();
 
-    expect(contentRenderer.state().widgetKey).eq(1);
+    expect(contentRenderer.state().widgetKey).eq(2);
     expect(componentWillUnmountSpy.calledOnce).false;
     expect(widgetElementComponentDidMountSpy.calledOnce).false;
 
