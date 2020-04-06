@@ -16,7 +16,7 @@ import {
   ContentRequestOptions, SelectionInfo, Content, Descriptor,
   DescriptorOverrides, Paged, KeySet, InstanceKey, LabelRequestOptions,
   SelectionScopeRequestOptions, SelectionScope, DefaultContentDisplayTypes,
-  ContentFlags, Ruleset, RulesetVariable, RequestPriority, LabelDefinition,
+  ContentFlags, Ruleset, RulesetVariable, RequestPriority, LabelDefinition, PresentationUnitSystem,
 } from "@bentley/presentation-common";
 import { getLocalesDirectory } from "@bentley/presentation-common/lib/presentation-common/Utils";
 import { NativePlatformDefinition, createDefaultNativePlatform, NativePlatformRequestTypes } from "./NativePlatform";
@@ -84,6 +84,15 @@ export interface PresentationManagerProps {
    * strings. It can later be changed through [[PresentationManager]].
    */
   activeLocale?: string;
+
+  /**
+   * Sets the active unit system to use for formatting property values with
+   * units. Default presentation units are used if this is not specified. The active unit
+   * system can later be changed through [[PresentationManager]] or overriden for each request
+   *
+   * @alpha
+   */
+  activeUnitSystem?: PresentationUnitSystem;
 
   /**
    * Should schemas preloading be enabled. If true, presentation manager listens
@@ -158,10 +167,11 @@ export class PresentationManager {
   private _isDisposed: boolean;
   private _disposeIModelOpenedListener?: () => void;
 
-  /**
-   * Get / set active locale used for localizing presentation data
-   */
+  /** Get / set active locale used for localizing presentation data */
   public activeLocale: string | undefined;
+
+  /** Get / set active unit system used to format property values with units */
+  public activeUnitSystem: PresentationUnitSystem | undefined;
 
   /**
    * Creates an instance of PresentationManager.
@@ -182,8 +192,10 @@ export class PresentationManager {
       this._nativePlatform = new nativePlatformImpl();
     }
     this.setupRulesetDirectories(props);
-    if (props)
+    if (props) {
       this.activeLocale = props.activeLocale;
+      this.activeUnitSystem = props.activeUnitSystem;
+    }
     this._rulesets = new RulesetManagerImpl(this.getNativePlatform);
     if (this._props.enableSchemasPreload)
       this._disposeIModelOpenedListener = BriefcaseDb.onOpened.addListener(this.onIModelOpened);
@@ -802,10 +814,10 @@ export class PresentationManager {
     return JSON.parse(serializedResponse, reviver);
   }
 
-  private createRequestParams(requestId: string, genericOptions: { imodel: IModelDb, locale?: string }, additionalOptions?: object): string {
-    const { imodel, locale, ...genericOptionsStripped } = genericOptions;
+  private createRequestParams(requestId: string, genericOptions: { imodel: IModelDb, locale?: string, unitSystem?: PresentationUnitSystem }, additionalOptions?: object): string {
+    const { imodel, locale, unitSystem, ...genericOptionsStripped } = genericOptions;
 
-    let lowerCaseLocale = locale ? locale : this.activeLocale;
+    let lowerCaseLocale = locale ?? this.activeLocale;
     if (lowerCaseLocale)
       lowerCaseLocale = lowerCaseLocale.toLowerCase();
 
@@ -813,6 +825,7 @@ export class PresentationManager {
       requestId,
       params: {
         locale: lowerCaseLocale,
+        unitSystem: unitSystem ?? this.activeUnitSystem,
         ...genericOptionsStripped,
         ...additionalOptions,
       },

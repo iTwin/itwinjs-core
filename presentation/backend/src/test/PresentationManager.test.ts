@@ -26,7 +26,7 @@ import {
   HierarchyRequestOptions, Paged, ContentRequestOptions, ContentFlags,
   PrimitiveTypeDescription, ArrayTypeDescription, StructTypeDescription,
   KindOfQuantityInfo, DefaultContentDisplayTypes, LabelRequestOptions, InstanceKey,
-  Ruleset, VariableValueTypes, RequestPriority, LabelDefinition,
+  Ruleset, VariableValueTypes, RequestPriority, LabelDefinition, PresentationUnitSystem,
 } from "@bentley/presentation-common";
 import { getLocalesDirectory } from "@bentley/presentation-common/lib/presentation-common/Utils";
 import { PropertyInfoJSON } from "@bentley/presentation-common/lib/presentation-common/EC";
@@ -245,6 +245,50 @@ describe("PresentationManager", () => {
           .returns(async () => "{}")
           .verifiable(moq.Times.once());
         await manager.getNodesCount(ClientRequestContext.current, { imodel: imodelMock.object, rulesetOrId: rulesetId, locale });
+        addonMock.verifyAll();
+      });
+    });
+
+  });
+
+  describe("activeUnitSystem", () => {
+
+    const addonMock = moq.Mock.ofType<NativePlatformDefinition>();
+    beforeEach(() => {
+      addonMock.reset();
+    });
+
+    it("uses manager's activeUnitSystem when not specified in request options", async () => {
+      const imodelMock = moq.Mock.ofType<IModelDb>();
+      const rulesetId = faker.random.word();
+      const unitSystem = PresentationUnitSystem.UsSurvey;
+      await using(new PresentationManager({ addon: addonMock.object, activeUnitSystem: unitSystem }), async (manager) => {
+        addonMock
+          .setup(async (x) => x.handleRequest(ClientRequestContext.current, moq.It.isAny(), moq.It.is((serializedRequest: string): boolean => {
+            const request = JSON.parse(serializedRequest);
+            return request.params.unitSystem === unitSystem;
+          })))
+          .returns(async () => "null")
+          .verifiable(moq.Times.once());
+        await manager.getContentDescriptor(ClientRequestContext.current, { imodel: imodelMock.object, rulesetOrId: rulesetId }, "", new KeySet(), undefined);
+        addonMock.verifyAll();
+      });
+    });
+
+    it("ignores manager's activeLocale when locale is specified in request options", async () => {
+      const imodelMock = moq.Mock.ofType<IModelDb>();
+      const rulesetId = faker.random.word();
+      const unitSystem = PresentationUnitSystem.UsSurvey;
+      await using(new PresentationManager({ addon: addonMock.object, activeLocale: PresentationUnitSystem.Metric }), async (manager) => {
+        expect(manager.activeUnitSystem).to.not.eq(unitSystem);
+        addonMock
+          .setup(async (x) => x.handleRequest(ClientRequestContext.current, moq.It.isAny(), moq.It.is((serializedRequest: string): boolean => {
+            const request = JSON.parse(serializedRequest);
+            return request.params.unitSystem === unitSystem;
+          })))
+          .returns(async () => "null")
+          .verifiable(moq.Times.once());
+        await manager.getContentDescriptor(ClientRequestContext.current, { imodel: imodelMock.object, rulesetOrId: rulesetId, unitSystem }, "", new KeySet(), undefined);
         addonMock.verifyAll();
       });
     });

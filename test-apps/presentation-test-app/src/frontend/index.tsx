@@ -22,6 +22,7 @@ import { MyAppFrontend } from "./api/MyAppFrontend";
 import rpcs from "../common/Rpcs";
 import App from "./components/app/App";
 import "./index.css";
+import { PresentationUnitSystem } from "@bentley/presentation-common";
 
 // initialize logging
 Logger.initializeToConsole();
@@ -71,6 +72,9 @@ export class SampleApp {
 
       // specify locale for localizing presentation data
       activeLocale: IModelApp.i18n.languageList()[0],
+
+      // specify the preferred unit system
+      activeUnitSystem: PresentationUnitSystem.Metric,
     });
     // __PUBLISH_EXTRACT_END__
 

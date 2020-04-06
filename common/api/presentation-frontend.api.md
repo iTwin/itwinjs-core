@@ -27,6 +27,7 @@ import { Node } from '@bentley/presentation-common';
 import { NodeKey } from '@bentley/presentation-common';
 import { NodePathElement } from '@bentley/presentation-common';
 import { Paged } from '@bentley/presentation-common';
+import { PresentationUnitSystem } from '@bentley/presentation-common';
 import { RegisteredRuleset } from '@bentley/presentation-common';
 import { RpcRequestsHandler } from '@bentley/presentation-common';
 import { Ruleset } from '@bentley/presentation-common';
@@ -151,6 +152,7 @@ export class Presentation {
 // @public
 export class PresentationManager implements IDisposable {
     activeLocale: string | undefined;
+    activeUnitSystem: PresentationUnitSystem | undefined;
     static create(props?: PresentationManagerProps): PresentationManager;
     // (undocumented)
     dispose(): void;
@@ -185,6 +187,8 @@ export class PresentationManager implements IDisposable {
 // @public
 export interface PresentationManagerProps {
     activeLocale?: string;
+    // @alpha
+    activeUnitSystem?: PresentationUnitSystem;
     clientId?: string;
     // @internal (undocumented)
     rpcRequestsHandler?: RpcRequestsHandler;

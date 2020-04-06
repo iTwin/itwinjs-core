@@ -28,6 +28,7 @@ export {
   RequestOptions, HierarchyRequestOptions, ContentRequestOptions,
   LabelRequestOptions, SelectionScopeRequestOptions,
   PageOptions, Paged, RequestOptionsWithRuleset, RequestPriority,
+  PresentationUnitSystem,
 } from "./presentation-common/PresentationManagerOptions";
 export { LabelDefinition, LabelRawValue, LabelCompositeValue } from "./presentation-common/LabelDefinition";
 

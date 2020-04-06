@@ -33,6 +33,7 @@
       "select-imodel": "Select an iModel",
       "no-available-rulesets": "No available rulesets",
       "select-ruleset": "Select a ruleset",
+      "select-unit-system": "Select active unit system",
       "select-tree-type": "Select tree widget type"
     }
   },

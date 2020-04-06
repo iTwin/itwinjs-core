@@ -12,7 +12,8 @@ import {
   RpcRequestsHandler, RequestPriority, DescriptorOverrides,
   HierarchyRequestOptions, Node, NodeKey, NodePathElement,
   ContentRequestOptions, Content, Descriptor, SelectionInfo,
-  Paged, KeySet, InstanceKey, LabelRequestOptions, Ruleset, RulesetVariable, LabelDefinition,
+  Paged, KeySet, InstanceKey, LabelRequestOptions, Ruleset, RulesetVariable,
+  LabelDefinition, PresentationUnitSystem,
 } from "@bentley/presentation-common";
 import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager";
 import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
@@ -28,6 +29,15 @@ export interface PresentationManagerProps {
    * strings. It can later be changed through [[PresentationManager]].
    */
   activeLocale?: string;
+
+  /**
+   * Sets the active unit system to use for formatting property values with
+   * units. Default presentation units are used if this is not specified. The active unit
+   * system can later be changed through [[PresentationManager]] or overriden for each request
+   *
+   * @alpha
+   */
+  activeUnitSystem?: PresentationUnitSystem;
 
   /**
    * ID used to identify client that requests data. Generally, clients should
@@ -56,14 +66,17 @@ export class PresentationManager implements IDisposable {
   private _rulesetVars: Map<string, RulesetVariablesManager>;
   private _connections: Map<IModelConnection, Promise<void>>;
 
-  /**
-   * Get / set active locale used for localizing presentation data
-   */
+  /** Get / set active locale used for localizing presentation data */
   public activeLocale: string | undefined;
 
+  /** Get / set active unit system used to format property values with units */
+  public activeUnitSystem: PresentationUnitSystem | undefined;
+
   private constructor(props?: PresentationManagerProps) {
-    if (props)
+    if (props) {
       this.activeLocale = props.activeLocale;
+      this.activeUnitSystem = props.activeUnitSystem;
+    }
 
     this._requestsHandler = (props && props.rpcRequestsHandler)
       ? props.rpcRequestsHandler
@@ -119,12 +132,17 @@ export class PresentationManager implements IDisposable {
     return this._rulesetVars.get(rulesetId)!;
   }
 
-  private toRpcTokenOptions<TOptions extends { imodel: IModelConnection, locale?: string }>(options: TOptions) {
-    // 1. put default `locale`
-    // 2. put all `options` members (if `locale` is set, it'll override the default put at #1)
-    // 3. put `imodel` of type `IModelRpcProps` which overwrites the `imodel` from `options` put at #2
-    return Object.assign({}, { locale: this.activeLocale }, options, {
-      imodel: options.imodel.getRpcProps(),
+  private toRpcTokenOptions<TOptions extends { imodel: IModelConnection, locale?: string, unitSystem?: PresentationUnitSystem }>(requestOptions: TOptions) {
+    // 1. put default `locale` and `unitSystem`
+    // 2. put all `requestOptions` members (if `locale` or `unitSystem` are set, they'll override the defaults put at #1)
+    // 3. put `imodel` of type `IModelRpcProps` which overwrites the `imodel` from `requestOptions` put at #2
+    const managerOptions: Pick<TOptions, "locale" | "unitSystem"> = {};
+    if (this.activeLocale)
+      managerOptions.locale = this.activeLocale;
+    if (this.activeUnitSystem)
+      managerOptions.unitSystem = this.activeUnitSystem;
+    return Object.assign({}, managerOptions, requestOptions, {
+      imodel: requestOptions.imodel.getRpcProps(),
     });
   }
 
