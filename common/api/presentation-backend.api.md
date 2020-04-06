@@ -107,6 +107,7 @@ export interface PresentationManagerProps {
     id?: string;
     localeDirectories?: string[];
     mode?: PresentationManagerMode;
+    presentationAssetsRoot?: string;
     rulesetDirectories?: string[];
     supplementalRulesetDirectories?: string[];
     taskAllocationsMap?: {

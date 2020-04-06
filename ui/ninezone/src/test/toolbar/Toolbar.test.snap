@@ -19,11 +19,53 @@ exports[`<Toolbar /> renders with expandsTo 1`] = `
   <div
     className="nz-expanded nz-panels"
   />
-  <Items
-    className="nz-items"
-    direction={0}
-  />
 </div>
+`;
+
+exports[`<Toolbar /> renders with item 1`] = `
+<Toolbar
+  expandsTo={3}
+  items={
+    <UNDEFINED>
+      <button />
+    </UNDEFINED>
+  }
+  panelAlignment={0}
+>
+  <PanelsProvider
+    items={
+      <UNDEFINED>
+        <button />
+      </UNDEFINED>
+    }
+    panels={
+      <div
+        class="nz-expanded nz-panels"
+      />
+    }
+  >
+    <div
+      className="nz-toolbar-toolbar nz-direction-right nz-vertical nz-panel-alignment-start"
+    >
+      <div
+        className="nz-expanded nz-panels"
+      />
+      <Items
+        className="nz-items"
+        direction={0}
+      >
+        <div
+          className="nz-toolbar-items nz-vertical nz-items"
+        >
+          <button
+            key=".$.0"
+            toolbarItemRef={[Function]}
+          />
+        </div>
+      </Items>
+    </div>
+  </PanelsProvider>
+</Toolbar>
 `;
 
 exports[`<Toolbar /> renders with panelAlignment 1`] = `
@@ -32,10 +74,6 @@ exports[`<Toolbar /> renders with panelAlignment 1`] = `
 >
   <div
     className="nz-expanded nz-panels"
-  />
-  <Items
-    className="nz-items"
-    direction={1}
   />
 </div>
 `;

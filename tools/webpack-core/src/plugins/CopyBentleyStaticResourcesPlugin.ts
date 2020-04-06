@@ -52,10 +52,12 @@ async function tryCopyDirectoryContents(source: string, target: string) {
 
 export class CopyBentleyStaticResourcesPlugin extends AbstractAsyncStartupPlugin {
   private _directoryNames: string[];
+  private _useDirectoryName: boolean;
 
-  constructor(directoryNames: string[]) {
+  constructor(directoryNames: string[], useDirectoryName?: boolean) {
     super("CopyBentleyStaticResourcesPlugin");
     this._directoryNames = directoryNames;
+    this._useDirectoryName = undefined === useDirectoryName ? false : useDirectoryName;
   }
 
   public async runAsync(compiler: Compiler) {
@@ -69,7 +71,7 @@ export class CopyBentleyStaticResourcesPlugin extends AbstractAsyncStartupPlugin
       for (const staticAssetsDirectoryName of this._directoryNames) {
         await tryCopyDirectoryContents(
           path.join(fullDirName, "lib", staticAssetsDirectoryName),
-          path.join(compiler.outputPath, staticAssetsDirectoryName),
+          this._useDirectoryName ? compiler.outputPath : path.join(compiler.outputPath, staticAssetsDirectoryName),
         );
       }
     }

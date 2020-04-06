@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-quantity",
-  "version": "2.0.0-dev.53",
+  "version": "2.0.0-dev.57",
   "description": "Quantity parsing, formatting and conversions for iModel.js",
   "main": "lib/imodeljs-quantity.js",
   "typings": "lib/imodeljs-quantity",
@@ -12,7 +12,7 @@
   },
   "scripts": {
     "build": "tsc 1>&2",
-    "clean": "rimraf lib .rush package-deps.json .nyc_output",
+    "clean": "rimraf lib .rush .nyc_output",
     "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=imodeljs-quantity",
     "lint": "tslint --project . 1>&2",
     "test": "node ./node_modules/@bentley/build-tools/scripts/test-tsnode.js --testDir=./test/",
@@ -30,8 +30,8 @@
     "url": "http://www.bentley.com"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.0.0-dev.53",
-    "@bentley/build-tools": "2.0.0-dev.53",
+    "@bentley/bentleyjs-core": "2.0.0-dev.57",
+    "@bentley/build-tools": "2.0.0-dev.57",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/glob": "^5.0.35",
@@ -51,7 +51,7 @@
   },
   "dependencies": {},
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.0.0-dev.53"
+    "@bentley/bentleyjs-core": "^2.0.0-dev.57"
   },
   "nyc": {
     "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc",

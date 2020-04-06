@@ -17,7 +17,7 @@ import {
 } from "@bentley/imodeljs-frontend";
 import { IconSpecUtilities } from "@bentley/ui-abstract";
 import {
-  SvgSprite, FillCentered, LocalUiSettings, UiSettingsStatus, UiSettings,
+  FillCentered, LocalUiSettings, UiSettingsStatus, UiSettings,
   HorizontalTabs, UiCore, LabeledToggle, Icon, UiSettingsResult,
 } from "@bentley/ui-core";
 import {
@@ -33,22 +33,22 @@ import { StatusBarFieldId } from "../../statusbar/StatusBarWidgetControl";
 import { UiFramework } from "../../UiFramework";
 
 import "./ToolAssistanceField.scss";
-import acceptPointIcon from "./accept-point.svg?sprite";
-import cursorClickIcon from "./cursor-click.svg?sprite";
-import clickLeftIcon from "./mouse-click-left.svg?sprite";
-import clickRightIcon from "./mouse-click-right.svg?sprite";
-import mouseWheelClickIcon from "./mouse-click-wheel.svg?sprite";
-import clickLeftDragIcon from "./mouse-click-left-drag.svg?sprite";
-import clickRightDragIcon from "./mouse-click-right-drag.svg?sprite";
-import clickMouseWheelDragIcon from "./mouse-click-wheel-drag.svg?sprite";
-import oneTouchTapIcon from "./gesture-one-finger-tap.svg?sprite";
-import oneTouchDoubleTapIcon from "./gesture-one-finger-tap-double.svg?sprite";
-import oneTouchDragIcon from "./gesture-one-finger-drag.svg?sprite";
-import twoTouchTapIcon from "./gesture-two-finger-tap.svg?sprite";
-import twoTouchDragIcon from "./gesture-two-finger-drag.svg?sprite";
-import twoTouchPinchIcon from "./gesture-pinch.svg?sprite";
-import touchCursorTapIcon from "./touch-cursor-point.svg?sprite";
-import touchCursorDragIcon from "./touch-cursor-pan.svg?sprite";
+const acceptPointIcon = require("./accept-point.svg"); // tslint:disable-line: no-var-requires
+const cursorClickIcon = require("./cursor-click.svg"); // tslint:disable-line: no-var-requires
+const clickLeftIcon = require("./mouse-click-left.svg"); // tslint:disable-line: no-var-requires
+const clickRightIcon = require("./mouse-click-right.svg"); // tslint:disable-line: no-var-requires
+const mouseWheelClickIcon = require("./mouse-click-wheel.svg"); // tslint:disable-line: no-var-requires
+const clickLeftDragIcon = require("./mouse-click-left-drag.svg"); // tslint:disable-line: no-var-requires
+const clickRightDragIcon = require("./mouse-click-right-drag.svg"); // tslint:disable-line: no-var-requires
+const clickMouseWheelDragIcon = require("./mouse-click-wheel-drag.svg"); // tslint:disable-line: no-var-requires
+const oneTouchTapIcon = require("./gesture-one-finger-tap.svg"); // tslint:disable-line: no-var-requires
+const oneTouchDoubleTapIcon = require("./gesture-one-finger-tap-double.svg"); // tslint:disable-line: no-var-requires
+const oneTouchDragIcon = require("./gesture-one-finger-drag.svg"); // tslint:disable-line: no-var-requires
+const twoTouchTapIcon = require("./gesture-two-finger-tap.svg"); // tslint:disable-line: no-var-requires
+const twoTouchDragIcon = require("./gesture-two-finger-drag.svg"); // tslint:disable-line: no-var-requires
+const twoTouchPinchIcon = require("./gesture-pinch.svg"); // tslint:disable-line: no-var-requires
+const touchCursorTapIcon = require("./touch-cursor-point.svg"); // tslint:disable-line: no-var-requires
+const touchCursorDragIcon = require("./touch-cursor-pan.svg"); // tslint:disable-line: no-var-requires
 
 /** Properties of [[ToolAssistanceField]] component.
  * @beta
@@ -118,7 +118,7 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
     this.state = {
       instructions: undefined,
       toolIconSpec: "",
-      showPromptAtCursor: false,
+      showPromptAtCursor: p.defaultPromptAtCursor,
       includeMouseInstructions: !mobile,
       includeTouchInstructions: true,
       showMouseTouchTabs: false,
@@ -133,35 +133,37 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
   }
 
   /** @internal */
-  public componentDidMount() {
-    let result: UiSettingsResult;
-
+  public async componentDidMount() {
     MessageManager.onToolAssistanceChangedEvent.addListener(this._handleToolAssistanceChangedEvent);
     FrontstageManager.onToolIconChangedEvent.addListener(this._handleToolIconChangedEvent);
 
-    let showPromptAtCursor = this.props.defaultPromptAtCursor;
-    if (this.props.includePromptAtCursor) {
-      result = this.props.uiSettings.getSetting(ToolAssistanceField._toolAssistanceKey, ToolAssistanceField._showPromptAtCursorKey);
-
-      // istanbul ignore else
-      if (result.status === UiSettingsStatus.Success)
-        showPromptAtCursor = result.setting as boolean;
-    }
-
-    let mouseTouchTabIndex = 0;
-    result = this.props.uiSettings.getSetting(ToolAssistanceField._toolAssistanceKey, ToolAssistanceField._mouseTouchTabIndexKey);
-
-    // istanbul ignore else
-    if (result.status === UiSettingsStatus.Success)
-      mouseTouchTabIndex = result.setting as number;
-
-    this.setState({ showPromptAtCursor, mouseTouchTabIndex });
+    await this.restoreSettings();
   }
 
   /** @internal */
   public componentWillUnmount() {
     MessageManager.onToolAssistanceChangedEvent.removeListener(this._handleToolAssistanceChangedEvent);
     FrontstageManager.onToolIconChangedEvent.removeListener(this._handleToolIconChangedEvent);
+  }
+
+  private async restoreSettings() {
+    let getShowPromptAtCursor: Promise<UiSettingsResult> | undefined;
+    if (this.props.includePromptAtCursor) {
+      getShowPromptAtCursor = this.props.uiSettings.getSetting(ToolAssistanceField._toolAssistanceKey, ToolAssistanceField._showPromptAtCursorKey);
+    }
+    const getMouseTouchTabIndex = this.props.uiSettings.getSetting(ToolAssistanceField._toolAssistanceKey, ToolAssistanceField._mouseTouchTabIndexKey);
+    const [showPromptAtCursorResult, mouseTouchTabIndexResult] = await Promise.all([
+      getShowPromptAtCursor,
+      getMouseTouchTabIndex,
+    ]);
+
+    // istanbul ignore else
+    if (showPromptAtCursorResult !== undefined && showPromptAtCursorResult.status === UiSettingsStatus.Success)
+      this.setState({ showPromptAtCursor: showPromptAtCursorResult.setting });
+
+    // istanbul ignore else
+    if (mouseTouchTabIndexResult.status === UiSettingsStatus.Success)
+      this.setState({ mouseTouchTabIndex: mouseTouchTabIndexResult.setting });
   }
 
   private _handleToolAssistanceChangedEvent = (args: ToolAssistanceChangedEventArgs): void => {
@@ -241,9 +243,7 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
     return displayableInstructions;
   }
 
-  private _handleMouseTouchTab = (index: number) => {
-    this.props.uiSettings.saveSetting(ToolAssistanceField._toolAssistanceKey, ToolAssistanceField._mouseTouchTabIndexKey, index);
-
+  private _handleMouseTouchTab = async (index: number) => {
     const showMouseInstructions = index === 0;
     const showTouchInstructions = index === 1;
 
@@ -252,6 +252,7 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
       showMouseInstructions,
       showTouchInstructions,
     });
+    await this.props.uiSettings.saveSetting(ToolAssistanceField._toolAssistanceKey, ToolAssistanceField._mouseTouchTabIndexKey, index);
   }
 
   /** @internal */
@@ -387,10 +388,10 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
     this.setState({ target });
   }
 
-  private _onPromptAtCursorChange = (checked: boolean) => {
-    this.props.uiSettings.saveSetting(ToolAssistanceField._toolAssistanceKey, ToolAssistanceField._showPromptAtCursorKey, checked);
-
+  private _onPromptAtCursorChange = async (checked: boolean) => {
     this.setState({ showPromptAtCursor: checked });
+
+    await this.props.uiSettings.saveSetting(ToolAssistanceField._toolAssistanceKey, ToolAssistanceField._showPromptAtCursorKey, checked);
   }
 
   private _handleClose = () => {
@@ -540,7 +541,7 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
       image = (
         <div className={className}>
           {svgImage &&
-            <SvgSprite src={svgImage} />
+            <img src={svgImage} />
           }
         </div>
       );

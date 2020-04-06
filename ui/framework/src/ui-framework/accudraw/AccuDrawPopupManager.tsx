@@ -22,9 +22,9 @@ import { MenuButtonPopup } from "./MenuButtonPopup";
 import { CalculatorPopup } from "./CalculatorPopup";
 import { PopupManager, PopupInfo } from "../popup/PopupManager";
 
-import angleIcon from "./angle.svg?sprite";
-import lengthIcon from "./distance.svg?sprite";
-import heightIcon from "./height-2.svg?sprite";
+const angleIcon = require("./angle.svg"); // tslint:disable-line: no-var-requires
+const lengthIcon = require("./distance.svg"); // tslint:disable-line: no-var-requires
+const heightIcon = require("./height-2.svg"); // tslint:disable-line: no-var-requires
 
 /** AccuDraw Popup Manager class
  * @alpha

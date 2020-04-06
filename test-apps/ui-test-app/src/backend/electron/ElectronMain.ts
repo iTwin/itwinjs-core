@@ -5,7 +5,6 @@
 import * as path from "path";
 import * as electron from "electron";
 
-import { assert } from "@bentley/bentleyjs-core";
 import { RpcInterfaceDefinition, ElectronRpcManager } from "@bentley/imodeljs-common";
 import { IModelJsElectronManager, WebpackDevServerElectronManager, StandardElectronManager } from "@bentley/electron-manager";
 
@@ -19,7 +18,7 @@ export default function initialize(rpcs: RpcInterfaceDefinition[]) {
   (async () => { // tslint:disable-line:no-floating-promises
     let manager: StandardElectronManager;
     if (process.env.NODE_ENV === "production")
-      manager = new IModelJsElectronManager(path.join(__dirname, "..", "build"));
+      manager = new IModelJsElectronManager(path.join(__dirname, "..", "..", "..", "build"));
     else
       manager = new WebpackDevServerElectronManager(3000); // port should match the port of the local dev server
 
@@ -42,7 +41,6 @@ export default function initialize(rpcs: RpcInterfaceDefinition[]) {
       webPreferences: {
         nodeIntegration: true,
         experimentalFeatures: true, // Needed for CSS Grid support
-        // preload: path.join(__dirname, "preload.js"),
       },
       autoHideMenuBar: true,
       show: !maximizeWindow,

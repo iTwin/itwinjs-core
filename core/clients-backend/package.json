@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-clients-backend",
-  "version": "2.0.0-dev.53",
+  "version": "2.0.0-dev.57",
   "description": "Clients for various Bentley Services used by iModel.js at the backend",
   "main": "lib/imodeljs-clients-backend.js",
   "browser": {
@@ -15,7 +15,7 @@
     "build": "tsc 1>&2 && npm run copy:typedefs",
     "copy:typedefs": "cpx \"./src/openid-client.d.ts\" ./lib/",
     "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/test/assets",
-    "clean": "rimraf lib .rush package-deps.json",
+    "clean": "rimraf lib .rush",
     "cover": "nyc npm test",
     "cover:integration": "npm run copy:test-assets && nyc --report-dir ./lib/test/coverage/integration npm run test-integration",
     "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-clients-backend/file.json --tsIndexFile=imodeljs-clients-backend.ts --onlyJson %TYPEDOC_THEME%",
@@ -39,23 +39,23 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.0.0-dev.53",
-    "@bentley/geometry-core": "^2.0.0-dev.53",
-    "@bentley/imodeljs-clients": "^2.0.0-dev.53",
-    "@bentley/imodeljs-common": "^2.0.0-dev.53"
+    "@bentley/bentleyjs-core": "^2.0.0-dev.57",
+    "@bentley/geometry-core": "^2.0.0-dev.57",
+    "@bentley/imodeljs-clients": "^2.0.0-dev.57",
+    "@bentley/imodeljs-common": "^2.0.0-dev.57"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.0.0-dev.53",
-    "@bentley/build-tools": "2.0.0-dev.53",
-    "@bentley/config-loader": "2.0.0-dev.53",
-    "@bentley/geometry-core": "2.0.0-dev.53",
-    "@bentley/imodeljs-clients": "2.0.0-dev.53",
-    "@bentley/imodeljs-common": "2.0.0-dev.53",
-    "@bentley/oidc-signin-tool": "2.0.0-dev.53",
+    "@bentley/bentleyjs-core": "2.0.0-dev.57",
+    "@bentley/build-tools": "2.0.0-dev.57",
+    "@bentley/config-loader": "2.0.0-dev.57",
+    "@bentley/geometry-core": "2.0.0-dev.57",
+    "@bentley/imodeljs-clients": "2.0.0-dev.57",
+    "@bentley/imodeljs-common": "2.0.0-dev.57",
+    "@bentley/oidc-signin-tool": "2.0.0-dev.57",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
     "@types/nock": "^9.1.2",

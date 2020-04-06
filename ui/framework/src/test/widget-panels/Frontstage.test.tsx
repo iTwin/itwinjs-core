@@ -7,15 +7,22 @@ import * as sinon from "sinon";
 import * as moq from "typemoq";
 import { shallow, mount } from "enzyme";
 import { renderHook, act } from "@testing-library/react-hooks";
+import { UiSettingsResult, UiSettingsStatus } from "@bentley/ui-core";
 import { PANEL_INITIALIZE, createNineZoneState } from "@bentley/ui-ninezone";
 import {
-  addWidgets, FrontstageManager, FrontstageDef, FrontstageProvider, WidgetPanelsFrontstage, ZoneDef,
-  useFrontstageDefNineZone, initializeNineZoneState, StagePanelDef, WidgetDef, WidgetState, addPanelWidgets, StagePanelZonesDef, StagePanelZoneDef, getWidgetId,
+  addWidgets, FrontstageManager, FrontstageDef, FrontstageProvider, WidgetPanelsFrontstage, ZoneDef, useFrontstageDefNineZone,
+  initializeFrontstageState, StagePanelDef, WidgetDef, WidgetState, addPanelWidgets, StagePanelZonesDef, StagePanelZoneDef, getWidgetId,
+  UiSettingsProvider,
 } from "../../ui-framework";
 import { useActiveModalFrontstageInfo } from "../../ui-framework/widget-panels/ModalFrontstageComposer";
+import TestUtils, { storageMock, UiSettingsStub } from "../TestUtils";
 
 describe("WidgetPanelsFrontstage", () => {
   const sandbox = sinon.createSandbox();
+
+  beforeEach(() => {
+    sandbox.stub(window, "localStorage").get(() => storageMock());
+  });
 
   afterEach(() => {
     sandbox.restore();
@@ -120,14 +127,26 @@ describe("WidgetPanelsFrontstage", () => {
 });
 
 describe("useFrontstageDefNineZone", () => {
-  it("should dispatch initialize action when frontstage def changes", () => {
+  const sandbox = sinon.createSandbox();
+
+  beforeEach(() => {
+    sandbox.stub(window, "localStorage").get(() => storageMock());
+  });
+
+  afterEach(() => {
+    sandbox.restore();
+  });
+
+  it("should dispatch FRONTSTAGE_INITIALIZE when frontstage def changes", () => {
     const { result, rerender } = renderHook((frontstage) => useFrontstageDefNineZone(frontstage), {
       initialProps: new FrontstageDef(),
     });
-    const initialState = result.current[0];
-    rerender(new FrontstageDef());
+    const [initialState] = result.current;
 
-    initialState.should.not.eq(result.current[1]);
+    rerender(new FrontstageDef());
+    const [newState] = result.current;
+
+    initialState.should.not.eq(newState);
   });
 
   it("should use NineZoneStateReducer", () => {
@@ -140,11 +159,29 @@ describe("useFrontstageDefNineZone", () => {
         size: 200,
       });
     });
-    result.current[0].panels.left.size!.should.eq(200);
+    result.current[0].setting.nineZone.panels.left.size!.should.eq(200);
+  });
+
+  it("should dispatch FRONTSTAGE_STATE_LOAD", async () => {
+    const setting = {
+      version: 0,
+    };
+    const uiSettings = new UiSettingsStub();
+    sinon.stub(uiSettings, "getSetting").returns(Promise.resolve<UiSettingsResult>({
+      status: UiSettingsStatus.Success,
+      setting,
+    }));
+    const frontstage = new FrontstageDef();
+    const { result } = renderHook(() => useFrontstageDefNineZone(frontstage), {
+      wrapper: (props) => <UiSettingsProvider {...props} uiSettings={uiSettings} />,
+    });
+    await TestUtils.flushAsyncOperations();
+    result.current[0].setting.should.eq(setting);
+    result.current[0].status.should.eq("DONE");
   });
 });
 
-describe("initializeNineZoneState", () => {
+describe("initializeFrontstageState", () => {
   it("should initialize widgets", () => {
     const frontstage = new FrontstageDef();
     sinon.stub(frontstage, "centerLeft").get(() => new ZoneDef());
@@ -157,7 +194,7 @@ describe("initializeNineZoneState", () => {
     sinon.stub(frontstage, "topMostPanel").get(() => new StagePanelDef());
     sinon.stub(frontstage, "bottomPanel").get(() => new StagePanelDef());
     sinon.stub(frontstage, "bottomMostPanel").get(() => new StagePanelDef());
-    const state = initializeNineZoneState(frontstage);
+    const state = initializeFrontstageState({ frontstage });
     state.should.matchSnapshot();
   });
 
@@ -169,8 +206,8 @@ describe("initializeNineZoneState", () => {
     });
     sinon.stub(frontstage, "centerLeft").get(() => centerLeft);
     sinon.stub(centerLeft, "widgetDefs").get(() => [widgetDef]);
-    const state = initializeNineZoneState(frontstage);
-    state.widgets.leftStart.activeTabId!.should.eq("w1");
+    const state = initializeFrontstageState({ frontstage });
+    state.setting.nineZone.widgets.leftStart.activeTabId!.should.eq("w1");
   });
 });
 

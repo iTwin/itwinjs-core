@@ -1,6 +1,6 @@
 {
   "name": "@bentley/ui-ninezone",
-  "version": "2.0.0-dev.53",
+  "version": "2.0.0-dev.57",
   "description": "iModel.js Nine-zone React UI components",
   "main": "lib/ui-ninezone.js",
   "typings": "lib/ui-ninezone",
@@ -14,7 +14,7 @@
     "copy:assets": "cpx \"./src/**/*.*css\" ./lib",
     "build": "npm run copy:assets && tsc 1>&2",
     "build:watch": "tsc -w",
-    "clean": "rimraf lib out .rush demo/lib package-deps.json",
+    "clean": "rimraf lib out .rush demo/lib",
     "cover": "nyc npm test",
     "docs": "npm run docs:typedoc",
     "docs:typedoc": "node ./node_modules/@bentley/build-tools/scripts/docs.js --includes=../../generated-docs/extract --json=../../generated-docs/ui/ui-ninezone/file.json --tsIndexFile=./ui-ninezone.ts --onlyJson %TYPEDOC_THEME%",
@@ -38,18 +38,18 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/ui-core": "^2.0.0-dev.53"
+    "@bentley/ui-core": "^2.0.0-dev.57"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/build-tools": "2.0.0-dev.53",
-    "@bentley/icons-generic-webfont": "^1.0.0",
-    "@bentley/ui-abstract": "2.0.0-dev.53",
-    "@bentley/ui-components": "2.0.0-dev.53",
-    "@bentley/ui-core": "2.0.0-dev.53",
+    "@bentley/build-tools": "2.0.0-dev.57",
+    "@bentley/icons-generic-webfont": "^1.0.5",
+    "@bentley/ui-abstract": "2.0.0-dev.57",
+    "@bentley/ui-components": "2.0.0-dev.57",
+    "@bentley/ui-core": "2.0.0-dev.57",
     "@testing-library/react": "^8.0.1",
     "@testing-library/react-hooks": "^3.2.1",
     "@types/chai": "^4.1.4",
@@ -70,7 +70,7 @@
     "@types/uuid": "~3.4.4",
     "@types/webpack": "^4.41.2",
     "@types/webpack-merge": "^4.1.5",
-    "@types/webpack-dev-server": "^3.1.6",
+    "@types/webpack-dev-server": "^3.10.1",
     "@typescript-eslint/parser": "2.22.0",
     "chai": "^4.1.2",
     "chai-as-promised": "^7",
@@ -116,9 +116,9 @@
     "typemoq": "^2.1.0",
     "typescript": "~3.7.4",
     "url-loader": "^1.0.1",
-    "webpack": "4.41.5",
+    "webpack": "4.42.0",
     "webpack-cli": "^3.1.0",
-    "webpack-dev-server": "3.10.2",
+    "webpack-dev-server": "3.10.3",
     "webpack-merge": "^4.1.4"
   },
   "//dependencies": [

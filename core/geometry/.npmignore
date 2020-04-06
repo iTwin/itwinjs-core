@@ -1,7 +1,6 @@
 # start off ignoring everything, and then add back only the files we want
 *
 !lib/**/*.d.ts
+!lib/**/*.d.ts.map
 !lib/**/*.js
-!lib/module/dev/geometry-core.js.map
 test
-!LICENSE.md

@@ -3,15 +3,21 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { using } from "@bentley/bentleyjs-core";
+import { using, GuidString } from "@bentley/bentleyjs-core";
 import { NativeApp, IModelApp, NativeAppLogger, AuthorizedFrontendRequestContext, FrontendRequestContext } from "@bentley/imodeljs-frontend";
 import { BriefcaseRpcProps, IModelVersion } from "@bentley/imodeljs-common";
 import { Config, ProgressInfo } from "@bentley/imodeljs-clients";
 import { TestUsers, TestAuthorizationClient } from "@bentley/oidc-signin-tool/lib/TestUsers";
 import { TestUtility } from "./TestUtility";
+import { TestChangeSetUtility } from "./TestChangeSetUtility";
 import { OfflineScope } from "./HttpRequestHook";
 
 describe("NativeApp (#integration)", () => {
+  let testProjectName: string;
+  let testProjectId: GuidString;
+  let testIModelName: string;
+  let testIModelId: GuidString;
+
   before(async () => {
     await NativeApp.startup({
       applicationId: "1234",
@@ -21,6 +27,13 @@ describe("NativeApp (#integration)", () => {
 
     const requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
     IModelApp.authorizationClient = new TestAuthorizationClient(requestContext.accessToken);
+
+    testProjectName = Config.App.get("imjs_test_project_name");
+    testIModelName = Config.App.get("imjs_test_imodel_name");
+
+    await TestUtility.initializeTestProject(testProjectName, TestUsers.regular);
+    testProjectId = await TestUtility.getTestProjectId(testProjectName);
+    testIModelId = await TestUtility.getTestIModelId(testProjectId, testIModelName);
   });
 
   after(async () => {
@@ -35,14 +48,6 @@ describe("NativeApp (#integration)", () => {
   it("Download Briefcase (#integration)", async () => {
     // Redirect native log to backend. Logger must be config.
     NativeAppLogger.initialize();
-    const testProjectName = Config.App.get("imjs_test_project_name");
-    const testIModelName = Config.App.get("imjs_test_imodel_name");
-
-    await TestUtility.initializeTestProject(testProjectName, TestUsers.regular);
-
-    // Setup a model with a large number of change sets
-    const testProjectId = await TestUtility.getTestProjectId(testProjectName);
-    const testIModelId = await TestUtility.getTestIModelId(testProjectId, testIModelName);
 
     const requestContext = await AuthorizedFrontendRequestContext.create();
 
@@ -63,12 +68,6 @@ describe("NativeApp (#integration)", () => {
   it("Download Briefcase Offline (#integration)", async () => {
     // Redirect native log to backend. Logger must be config.
     NativeAppLogger.initialize();
-    const testProjectName = Config.App.get("imjs_test_project_name");
-    const testIModelName = Config.App.get("imjs_test_imodel_name");
-
-    await TestUtility.initializeTestProject(testProjectName, TestUsers.regular);
-    const testProjectId = await TestUtility.getTestProjectId(testProjectName);
-    const testIModelId = await TestUtility.getTestIModelId(testProjectId, testIModelName);
 
     const requestContext = await AuthorizedFrontendRequestContext.create();
 
@@ -84,16 +83,12 @@ describe("NativeApp (#integration)", () => {
   it("should be able to start and finish downloading a briefcase (#integration)", async () => {
     // Redirect native log to backend. Logger must be config.
     NativeAppLogger.initialize();
-    const testProjectName = "iModelJsIntegrationTest";
-    const testIModelName = "Stadium Dataset 1";
-
-    await TestUtility.initializeTestProject(testProjectName, TestUsers.regular);
-    const testProjectId = await TestUtility.getTestProjectId(testProjectName);
-    const testIModelId = await TestUtility.getTestIModelId(testProjectId, testIModelName);
+    const locTestIModelName = "Stadium Dataset 1";
+    const locTestIModelId = await TestUtility.getTestIModelId(testProjectId, locTestIModelName);
 
     const authorizedRequestContext = await AuthorizedFrontendRequestContext.create();
 
-    const downloadToken = await NativeApp.startDownloadBriefcase(authorizedRequestContext, testProjectId, testIModelId);
+    const downloadToken = await NativeApp.startDownloadBriefcase(authorizedRequestContext, testProjectId, locTestIModelId);
     authorizedRequestContext.enter();
 
     await NativeApp.finishDownloadBriefcase(authorizedRequestContext, downloadToken);
@@ -113,17 +108,13 @@ describe("NativeApp (#integration)", () => {
   it("Progress event (#integration)", async () => {
     // Redirect native log to backend. Logger must be config.
     NativeAppLogger.initialize();
-    const testProjectName = "iModelJsIntegrationTest";
-    const testIModelName = "Stadium Dataset 1";
-
-    await TestUtility.initializeTestProject(testProjectName, TestUsers.regular);
-    const testProjectId = await TestUtility.getTestProjectId(testProjectName);
-    const testIModelId = await TestUtility.getTestIModelId(testProjectId, testIModelName);
+    const locTestIModelName = "Stadium Dataset 1";
+    const locTestIModelId = await TestUtility.getTestIModelId(testProjectId, locTestIModelName);
 
     const requestContext = await AuthorizedFrontendRequestContext.create();
     let events = 0;
     IModelApp.eventSourceOptions.pollInterval = 1000;
-    const downloadToken = await NativeApp.startDownloadBriefcase(requestContext, testProjectId, testIModelId, IModelVersion.latest(),
+    const downloadToken = await NativeApp.startDownloadBriefcase(requestContext, testProjectId, locTestIModelId, IModelVersion.latest(),
       (_progress: ProgressInfo) => {
         events++;
       });
@@ -135,18 +126,15 @@ describe("NativeApp (#integration)", () => {
     await NativeApp.deleteBriefcase(requestContext, downloadToken.iModelRpcProps);
   });
 
-  it("Should be able to cancel an in progress download (#integration)", async () => {
+  // NEEDS_WORK: VSTS#295999
+  it.skip("Should be able to cancel an in progress download (#integration)", async () => {
     NativeAppLogger.initialize();
-    const testProjectName = "iModelJsIntegrationTest";
-    const testIModelName = "Stadium Dataset 1";
-
-    await TestUtility.initializeTestProject(testProjectName, TestUsers.regular);
-    const testProjectId = await TestUtility.getTestProjectId(testProjectName);
-    const testIModelId = await TestUtility.getTestIModelId(testProjectId, testIModelName);
+    const locTestIModelName = "Stadium Dataset 1";
+    const locTestIModelId = await TestUtility.getTestIModelId(testProjectId, locTestIModelName);
 
     const requestContext = await AuthorizedFrontendRequestContext.create();
 
-    const downloadToken = await NativeApp.startDownloadBriefcase(requestContext, testProjectId, testIModelId);
+    const downloadToken = await NativeApp.startDownloadBriefcase(requestContext, testProjectId, locTestIModelId);
     requestContext.enter();
 
     let cancelled1: boolean = false;
@@ -169,4 +157,45 @@ describe("NativeApp (#integration)", () => {
     assert.isTrue(cancelled1);
     assert.isTrue(cancelled2);
   });
+
+  it("should be able to update a briefcase by reopening it", async () => {
+    const testIModelBaseName = "NativeAppTest";
+    const testChangeSetUtility = new TestChangeSetUtility();
+    await testChangeSetUtility.initialize(testProjectName, testIModelBaseName);
+
+    const locTestIModelId = await testChangeSetUtility.createTestIModel();
+
+    // Download a test iModel
+    const requestContext = await AuthorizedFrontendRequestContext.create();
+    const briefcaseToken = await NativeApp.startDownloadBriefcase(requestContext, testProjectId, locTestIModelId, IModelVersion.latest());
+    requestContext.enter();
+    await NativeApp.finishDownloadBriefcase(requestContext, briefcaseToken);
+    requestContext.enter();
+
+    const briefcases: BriefcaseRpcProps[] = await NativeApp.getBriefcases();
+    assert.isTrue(briefcases.length > 0);
+
+    // Update test iModel with a change set
+    await testChangeSetUtility.pushTestChangeSet();
+
+    // Restart the Host (to force re-initialization of caches)
+    await TestUtility.restartIModelHost();
+
+    // Download the test iModel again
+    const updatedBriefcaseToken = await NativeApp.startDownloadBriefcase(requestContext, testProjectId, locTestIModelId, IModelVersion.latest());
+    requestContext.enter();
+    await NativeApp.finishDownloadBriefcase(requestContext, updatedBriefcaseToken);
+    requestContext.enter();
+
+    // Validate that the change set got updated
+    assert.notEqual(updatedBriefcaseToken.iModelRpcProps.changeSetId, briefcaseToken.iModelRpcProps.changeSetId);
+    // NEEDS_WORK: Check that the change set id matches the one that was pushed
+
+    const updatedBriefcases: BriefcaseRpcProps[] = await NativeApp.getBriefcases();
+    assert.equal(briefcases.length, updatedBriefcases.length);
+
+    // Delete iModel from the Hub and disk
+    await testChangeSetUtility.deleteTestIModel();
+  });
+
 });

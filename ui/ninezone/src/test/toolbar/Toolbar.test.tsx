@@ -29,6 +29,19 @@ describe("<Toolbar />", () => {
     rendered.should.matchSnapshot();
   });
 
+  it("renders with item", () => {
+    const rendered = mount(
+      <Toolbar items={
+        <>
+          <button />
+        </>
+      }
+        expandsTo={Direction.Right}
+      />,
+    );
+    rendered.should.matchSnapshot();
+  });
+
   it("renders with panelAlignment", () => {
     const sut = shallow(
       <Toolbar

@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-backend",
-  "version": "2.0.0-dev.53",
+  "version": "2.0.0-dev.57",
   "description": "iModel.js backend components",
   "main": "lib/imodeljs-backend.js",
   "typings": "lib/imodeljs-backend",
@@ -10,7 +10,7 @@
   },
   "scripts": {
     "build": "tsc 1>&2 && npm run copy:assets && npm run copy:test-assets",
-    "clean": "rimraf lib .rush package-deps.json",
+    "clean": "rimraf lib .rush",
     "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-backend/file.json --tsIndexFile=./imodeljs-backend.ts --onlyJson %TYPEDOC_THEME%",
     "copy:assets": "cpx \"./src/assets/**/*\" ./lib/assets",
     "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/test/assets",
@@ -47,28 +47,28 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.0.0-dev.53",
-    "@bentley/ecschema-metadata": "2.0.0-dev.53",
-    "@bentley/geometry-core": "^2.0.0-dev.53",
-    "@bentley/imodeljs-clients": "^2.0.0-dev.53",
-    "@bentley/imodeljs-clients-backend": "^2.0.0-dev.53",
-    "@bentley/imodeljs-common": "^2.0.0-dev.53"
+    "@bentley/bentleyjs-core": "^2.0.0-dev.57",
+    "@bentley/ecschema-metadata": "2.0.0-dev.57",
+    "@bentley/geometry-core": "^2.0.0-dev.57",
+    "@bentley/imodeljs-clients": "^2.0.0-dev.57",
+    "@bentley/imodeljs-clients-backend": "^2.0.0-dev.57",
+    "@bentley/imodeljs-common": "^2.0.0-dev.57"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.0.0-dev.53",
-    "@bentley/build-tools": "2.0.0-dev.53",
-    "@bentley/config-loader": "2.0.0-dev.53",
-    "@bentley/ecschema-metadata": "2.0.0-dev.53",
-    "@bentley/geometry-core": "2.0.0-dev.53",
-    "@bentley/imodeljs-clients": "2.0.0-dev.53",
-    "@bentley/imodeljs-clients-backend": "2.0.0-dev.53",
-    "@bentley/imodeljs-common": "2.0.0-dev.53",
-    "@bentley/oidc-signin-tool": "2.0.0-dev.53",
-    "@bentley/perf-tools": "2.0.0-dev.53",
+    "@bentley/bentleyjs-core": "2.0.0-dev.57",
+    "@bentley/build-tools": "2.0.0-dev.57",
+    "@bentley/config-loader": "2.0.0-dev.57",
+    "@bentley/ecschema-metadata": "2.0.0-dev.57",
+    "@bentley/geometry-core": "2.0.0-dev.57",
+    "@bentley/imodeljs-clients": "2.0.0-dev.57",
+    "@bentley/imodeljs-clients-backend": "2.0.0-dev.57",
+    "@bentley/imodeljs-common": "2.0.0-dev.57",
+    "@bentley/oidc-signin-tool": "2.0.0-dev.57",
+    "@bentley/perf-tools": "2.0.0-dev.57",
     "@types/chai": "^4.1.4",
     "@types/deep-assign": "^0.1.0",
     "@types/formidable": "^1.0.31",
@@ -93,10 +93,10 @@
     "tslint": "^5.11.0",
     "tslint-etc": "^1.5.2",
     "typescript": "~3.7.4",
-    "webpack": "4.41.5"
+    "webpack": "4.42.0"
   },
   "dependencies": {
-    "@bentley/imodeljs-native": "2.0.18",
+    "@bentley/imodeljs-native": "2.0.20",
     "@azure/storage-blob": "10.4.0",
     "deep-assign": "^2.0.0",
     "form-data": "^2.3.2",

@@ -184,12 +184,15 @@ export class Toolbar extends React.PureComponent<ToolbarProps, ToolbarState> {
           className="nz-expanded nz-panels"
           ref={this._handlePanelsRef}
         />
-        <Items
-          className="nz-items"
-          direction={direction}
-        >
-          {items}
-        </Items>
+        {React.Children.count(items) > 0 &&
+          <Items
+            className="nz-items"
+            direction={direction}
+          >
+            {items}
+          </Items>
+        }
+
       </div>
     );
   }

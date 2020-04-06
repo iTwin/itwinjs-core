@@ -116,7 +116,7 @@ function setupStandaloneConfiguration(): SVTConfiguration {
 
   configuration.disableEdges = undefined !== process.env.SVT_DISABLE_EDGE_DISPLAY;
 
-  const configPathname = path.normalize(path.join(__dirname, "../../public", "configuration.json"));
+  const configPathname = path.normalize(path.join(__dirname, "../../build", "configuration.json"));
   fs.writeFileSync(configPathname, JSON.stringify(configuration), "utf8");
 
   return configuration;
@@ -152,5 +152,5 @@ export function initializeBackend() {
   Logger.setLevel("SVT", LogLevel.Trace);
 
   if (svtConfig.useFakeCloudStorageTileCache)
-    IModelHost.tileCacheService = new FakeTileCacheService(path.normalize(path.join(__dirname, "../webresources", "tiles/")));
+    IModelHost.tileCacheService = new FakeTileCacheService(path.normalize(path.join(__dirname, "../../build/", "tiles/")));
 }

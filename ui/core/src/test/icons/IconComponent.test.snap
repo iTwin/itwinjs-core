@@ -17,13 +17,10 @@ exports[`IconComponent should render correctly with icon class string 1`] = `
 `;
 
 exports[`IconComponent should render correctly with icon svg string 1`] = `
-<i
-  className="icon core-svg-icon"
->
-  <SvgSprite
-    src="test.svg"
-  />
-</i>
+<img
+  className="core-svg-icon"
+  src="test.svg"
+/>
 `;
 
 exports[`IconComponent should render correctly with no iconSpec 1`] = `""`;

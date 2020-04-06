@@ -180,13 +180,16 @@ internal;FrameworkVersionSwitchProps
 internal;FrameworkZone 
 internal;FrameworkZoneProps 
 public;Frontstage 
+internal;FRONTSTAGE_INITIALIZE = "FRONTSTAGE_INITIALIZE"
+internal;FRONTSTAGE_STATE_SETTING_LOAD = "FRONTSTAGE_STATE_SETTING_LOAD"
+internal;FrontstageActionTypes = NineZoneActionTypes | FrontstageInitializeAction | FrontstageStateSettingLoadAction
 public;FrontstageActivatedEvent 
 public;FrontstageActivatedEventArgs
 public;FrontstageComposer 
 public;FrontstageDeactivatedEvent 
 public;FrontstageDeactivatedEventArgs
 public;FrontstageDef
-internal;FrontstageDefNineZoneActionTypes = NineZoneActionTypes | InitializeNineZoneAction
+internal;FrontstageInitializeAction
 public;FrontstageLaunchBackstageItem 
 public;FrontstageLaunchBackstageItemProps 
 public;FrontstageManager
@@ -195,6 +198,7 @@ public;class FrontstageProvider
 public;FrontstageReadyEvent 
 public;FrontstageReadyEventArgs
 internal;FrontstageRuntimeProps
+internal;FrontstageStateSettingLoadAction
 public;FunctionKey
 public;FunctionType = (...args: any[]) => any
 public;getBackstageItemStateFromProps: (props: BackstageItemProps) => BackstageItemState
@@ -218,6 +222,7 @@ public;GroupItemDef
 public;GroupItemProps 
 alpha;HTMLElementPopup 
 alpha;HTMLElementPopupProps 
+alpha;IModelAppUiSettings 
 beta;IModelConnectedCategoryTree: any
 alpha;IModelConnectedModelsTree: any
 beta;IModelConnectedNavigationWidget: any
@@ -233,8 +238,7 @@ beta;IModelViewportControl
 beta;IModelViewportControlOptions
 internal;INACTIVITY_TIME_DEFAULT = 3500
 beta;Indicator 
-internal;InitializeNineZoneAction
-internal;initializeNineZoneState(frontstage: FrontstageDef | undefined): NineZoneState
+internal;initializeFrontstageState({ frontstage }: InitializeFrontstageStateArgs): FrontstageState_2
 alpha;InputEditorCommitHandler
 alpha;InputEditorPopup 
 alpha;InputEditorPopupProps 
@@ -324,7 +328,6 @@ public;NavigationWidgetDef
 public;NavigationWidgetProps 
 public;NavigationWidgetPropsEx 
 public;NestedFrontstage
-internal;NINE_ZONE_INITIALIZE = "NINE_ZONE_INITIALIZE"
 public;NineZoneChangeHandler
 alpha;PanelStateChangedEvent 
 alpha;PanelStateChangedEventArgs
@@ -385,6 +388,7 @@ beta;SessionStateActionsProps
 beta;SessionStateActionsUnion = ActionsUnion
 beta;sessionStateMapDispatchToProps:
 beta;SessionStateReducer(state: SessionState | undefined, action: SessionStateActionsUnion): DeepReadonly
+internal;settingsStatusToUiSettingsStatus(status: SettingsStatus): UiSettingsStatus
 alpha;SheetCard 
 alpha;SheetCardProps
 alpha;SheetData
@@ -501,6 +505,9 @@ public;ToolWidgetDef
 public;ToolWidgetProps 
 public;ToolWidgetPropsEx 
 public;UiFramework
+internal;UiSettingsContext: React.Context
+alpha;UiSettingsProvider(props: UiSettingsProviderProps): JSX.Element
+alpha;UiSettingsProviderProps
 beta;UiShowHideManager
 beta;UiVisibilityChangedEvent 
 beta;UiVisibilityEventArgs
@@ -514,14 +521,16 @@ internal;useDefaultBackstageItems: (manager: BackstageItemsManager) => readonly 
 beta;useDefaultStatusBarItems: (manager: StatusBarItemsManager_2) => readonly CommonStatusBarItem[]
 beta;useDefaultToolbarItems: (manager: ToolbarItemsManager) => readonly CommonToolbarItem[]
 internal;useFrameworkVersion(): FrameworkVersion
-internal;useFrontstageDefNineZone(frontstage?: FrontstageDef): [NineZoneState, React.Dispatch
+internal;useFrontstageDefNineZone(frontstage?: FrontstageDef): [FrontstageState_2, React.Dispatch
 internal;useGroupedItems: (items: readonly BackstageItem[]) => GroupedItems
 beta;useIsBackstageOpen: (manager: BackstageManager) => boolean
 public;UserProfileBackstageItem 
 public;UserProfileBackstageItemProps 
+internal;useSaveFrontstageSettings(frontstageState: FrontstageState_2): void
 internal;useToolSettings(): ToolSettingsEntry[] | undefined
 beta;useUiItemsProviderStatusBarItems: (manager: StatusBarItemsManager_2) => readonly CommonStatusBarItem[]
 beta;useUiItemsProviderToolbarItems: (manager: ToolbarItemsManager, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation) => readonly CommonToolbarItem[]
+internal;useUiSettingsContext(): UiSettings
 internal;useUiVisibility(): boolean
 alpha;useVisibilityTreeFiltering: (nodeLoader: AbstractTreeNodeLoaderWithProvider
 alpha;useVisibilityTreeRenderer: (iconsEnabled: boolean, descriptionsEnabled: boolean) => (props: TreeRendererProps) => JSX.Element

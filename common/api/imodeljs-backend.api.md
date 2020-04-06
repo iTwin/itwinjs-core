@@ -2609,6 +2609,7 @@ export class IModelJsFs {
     static existsSync(pathname: string): boolean;
     static lstatSync(pathname: string): IModelJsFsStats | undefined;
     static mkdirSync(pathname: string): void;
+    static purgeDirSync(dirPath: string): void;
     static readdirSync(pathname: string): string[];
     static readFileSync(pathname: string): string | Buffer;
     static recursiveMkDirSync(dirPath: string): void;

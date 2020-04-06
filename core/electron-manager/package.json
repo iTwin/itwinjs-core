@@ -1,6 +1,6 @@
 {
   "name": "@bentley/electron-manager",
-  "version": "2.0.0-dev.53",
+  "version": "2.0.0-dev.57",
   "description": "iModel.js electron utilities",
   "main": "lib/ElectronManager.js",
   "typings": "lib/ElectronManager",
@@ -10,7 +10,7 @@
   },
   "scripts": {
     "build": "tsc 1>&2",
-    "clean": "rimraf lib .rush package-deps.json",
+    "clean": "rimraf lib .rush",
     "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --includes=../../generated-docs/extract --json=../../generated-docs/core/electron-manager/file.json --tsIndexFile=./ElectronManager.ts --onlyJson %TYPEDOC_THEME%",
     "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=ElectronManager",
     "lint": "tslint --project . 1>&2",
@@ -31,22 +31,22 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "electron": "^6.1.5",
-    "@bentley/bentleyjs-core": "^2.0.0-dev.53",
-    "@bentley/imodeljs-backend": "^2.0.0-dev.53"
+    "electron": "^8.0.0",
+    "@bentley/bentleyjs-core": "^2.0.0-dev.57",
+    "@bentley/imodeljs-backend": "^2.0.0-dev.57"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/build-tools": "2.0.0-dev.53",
-    "@bentley/bentleyjs-core": "2.0.0-dev.53",
-    "@bentley/imodeljs-clients": "2.0.0-dev.53",
-    "@bentley/imodeljs-common": "2.0.0-dev.53",
-    "@bentley/imodeljs-backend": "2.0.0-dev.53",
+    "@bentley/build-tools": "2.0.0-dev.57",
+    "@bentley/bentleyjs-core": "2.0.0-dev.57",
+    "@bentley/imodeljs-clients": "2.0.0-dev.57",
+    "@bentley/imodeljs-common": "2.0.0-dev.57",
+    "@bentley/imodeljs-backend": "2.0.0-dev.57",
     "@types/node": "10.14.1",
-    "electron": "^6.1.5",
+    "electron": "^8.0.0",
     "rimraf": "^3.0.2",
     "tslint": "^5.11.0",
     "tslint-etc": "^1.5.2",

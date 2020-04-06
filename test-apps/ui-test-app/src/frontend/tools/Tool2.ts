@@ -11,7 +11,7 @@ import {
 } from "@bentley/imodeljs-frontend";
 import { IconSpecUtilities } from "@bentley/ui-abstract";
 
-import placeholderSvg from "@bentley/icons-generic/icons/placeholder.svg?sprite";
+import placeholderSvg from "@bentley/icons-generic/icons/placeholder.svg";
 
 export class Tool2 extends PrimitiveTool {
   public static toolId = "Tool2";

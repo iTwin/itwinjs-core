@@ -8,10 +8,7 @@
 
 import * as React from "react";
 
-/** React hook that maintains the number of available UiItemsProviders. This allows components to use it to refresh when a
- * UiItemsProviders is added or removed allowing the ui component to be re-rendered.
- * @internal
- */
+/** @internal */
 export function useFrameworkVersion(): FrameworkVersion {
   return React.useContext(FrameworkVersionContext);
 }

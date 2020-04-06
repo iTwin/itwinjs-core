@@ -149,7 +149,12 @@ export class CoreTools {
   public static get toggleCameraViewCommand() {
     return new ToolItemDef({
       toolId: ViewToggleCameraTool.toolId,
-      iconSpec: ViewToggleCameraTool.iconSpec,
+      iconSpec: new ConditionalStringValue(() => {
+        const activeContentControl = ContentViewManager.getActiveContentControl();
+        if (activeContentControl?.viewport?.view.is3d() && activeContentControl?.viewport?.isCameraOn)
+          return "icon-camera-animation";
+        return "icon-camera-animation-disabled";
+      }, [SyncUiEventId.ActiveContentChanged, SyncUiEventId.ActiveViewportChanged, SyncUiEventId.ViewStateChanged]),
       label: ViewToggleCameraTool.flyover,
       description: ViewToggleCameraTool.description,
       isHidden: new ConditionalBooleanValue(() => {

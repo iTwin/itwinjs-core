@@ -69,7 +69,7 @@ export class IModelJsElectronManager extends StandardElectronManager {
   public frontendURL: string;
   public appIconPath: string;
 
-  constructor(webResourcesPath: string = `${__dirname}/public`) {
+  constructor(webResourcesPath: string = `${__dirname}/`) {
     super();
     this._webResourcesPath = webResourcesPath;
 
@@ -129,7 +129,7 @@ export class IModelJsElectronManager extends StandardElectronManager {
 }
 
 /**
- * A StandardElectronManager that adds some reasonable defaults for applications built with @bentley/webpack-tools running in "development" mode.
+ * A StandardElectronManager that adds some reasonable defaults for applications built with @bentley/react-scripts running in "development" mode.
  * @beta
  */
 export class WebpackDevServerElectronManager extends StandardElectronManager {

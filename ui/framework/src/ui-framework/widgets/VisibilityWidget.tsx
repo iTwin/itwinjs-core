@@ -19,12 +19,11 @@ import { SpatialContainmentTree } from "../imodel-components/spatial-tree/Spatia
 import { UiFramework } from "../UiFramework";
 import { WidgetControl } from "../widgets/WidgetControl";
 import { ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";
-
-import "./VisibilityWidget.scss";
-
-import widgetIconSvg from "@bentley/icons-generic/icons/hierarchy-tree.svg?sprite";
 import { ModelsTree, ModelsTreeSelectionPredicate } from "../imodel-components/models-tree/ModelsTree";
 import { CategoryTreeWithSearchBox } from "../imodel-components/category-tree/CategoriesTreeWithSearchBox";
+
+const hierarchyTreeSvg = require("@bentley/icons-generic/icons/hierarchy-tree.svg"); // tslint:disable-line: no-var-requires
+import "./VisibilityWidget.scss";
 
 /**
  * Types of hierarchies displayed in the `VisibilityComponent`
@@ -223,7 +222,7 @@ export class VisibilityWidget extends WidgetControl {
   private _maintainScrollPosition?: ScrollPositionMaintainer;
 
   public static get iconSpec() {
-    return IconSpecUtilities.createSvgIconSpec(widgetIconSvg);
+    return IconSpecUtilities.createSvgIconSpec(hierarchyTreeSvg);
   }
 
   public static get label() {

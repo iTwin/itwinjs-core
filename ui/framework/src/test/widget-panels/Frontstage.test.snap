@@ -130,58 +130,65 @@ exports[`WidgetPanelsFrontstage should render modal stage content 1`] = `
 </NineZoneProvider>
 `;
 
-exports[`initializeNineZoneState should initialize widgets 1`] = `
+exports[`initializeFrontstageState should initialize widgets 1`] = `
 Object {
-  "draggedTab": undefined,
-  "floatingWidgets": Object {
-    "allIds": Array [],
-    "byId": Object {},
+  "setting": Object {
+    "id": "",
+    "nineZone": Object {
+      "draggedTab": undefined,
+      "floatingWidgets": Object {
+        "allIds": Array [],
+        "byId": Object {},
+      },
+      "panels": Object {
+        "bottom": Object {
+          "collapseOffset": 100,
+          "collapsed": false,
+          "maxSize": 600,
+          "minSize": 200,
+          "pinned": true,
+          "side": "bottom",
+          "size": undefined,
+          "span": true,
+          "widgets": Array [],
+        },
+        "left": Object {
+          "collapseOffset": 100,
+          "collapsed": false,
+          "maxSize": 600,
+          "minSize": 200,
+          "pinned": true,
+          "side": "left",
+          "size": undefined,
+          "widgets": Array [],
+        },
+        "right": Object {
+          "collapseOffset": 100,
+          "collapsed": false,
+          "maxSize": 600,
+          "minSize": 200,
+          "pinned": true,
+          "side": "right",
+          "size": undefined,
+          "widgets": Array [],
+        },
+        "top": Object {
+          "collapseOffset": 100,
+          "collapsed": false,
+          "maxSize": 600,
+          "minSize": 200,
+          "pinned": true,
+          "side": "top",
+          "size": undefined,
+          "span": true,
+          "widgets": Array [],
+        },
+      },
+      "tabs": Object {},
+      "widgets": Object {},
+    },
+    "version": 0,
   },
-  "panels": Object {
-    "bottom": Object {
-      "collapseOffset": 100,
-      "collapsed": false,
-      "maxSize": 600,
-      "minSize": 200,
-      "pinned": true,
-      "side": "bottom",
-      "size": undefined,
-      "span": true,
-      "widgets": Array [],
-    },
-    "left": Object {
-      "collapseOffset": 100,
-      "collapsed": false,
-      "maxSize": 600,
-      "minSize": 200,
-      "pinned": true,
-      "side": "left",
-      "size": undefined,
-      "widgets": Array [],
-    },
-    "right": Object {
-      "collapseOffset": 100,
-      "collapsed": false,
-      "maxSize": 600,
-      "minSize": 200,
-      "pinned": true,
-      "side": "right",
-      "size": undefined,
-      "widgets": Array [],
-    },
-    "top": Object {
-      "collapseOffset": 100,
-      "collapsed": false,
-      "maxSize": 600,
-      "minSize": 200,
-      "pinned": true,
-      "side": "top",
-      "size": undefined,
-      "span": true,
-      "widgets": Array [],
-    },
-  },
-  "tabs": Object {},
-  "widgets": Object {},
+  "status": "LOADING",
 }
 `;

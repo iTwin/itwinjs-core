@@ -21,6 +21,7 @@
 - [Overlapping Systems](./intro/overlapping-systems.md)
 - [3D Guidance](./intro/3d-guidance.md)
 - [Physical Models and Elements](./intro/physical-models-and-elements.md)
+- [Type Definitions](./intro/type-definitions.md)
 - [Functional Models and Elements](./intro/functional-models-and-elements.md)
 - [Analysis Models and Elements](./intro/analysis-models-and-elements.md)
 - [Information Models and Elements](./intro/information-models-and-elements.md)

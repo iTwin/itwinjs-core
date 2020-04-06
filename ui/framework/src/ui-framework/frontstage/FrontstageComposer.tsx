@@ -137,7 +137,6 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
 
     // Get the id and nineZoneProps for the current FrontstageDef
     const nineZone = this.determineNineZoneProps(this._frontstageDef);
-    const needInitialLayout = (this._frontstageDef && this._frontstageDef.nineZone) ? false : true;
     const widgetTabs = this._frontstageDef ? this.determineWidgetTabs() : getDefaultWidgetTabs();
 
     this.state = {
@@ -146,9 +145,6 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
       modalFrontstageCount: FrontstageManager.modalFrontstageCount,
       widgetTabs,
     };
-
-    if (this._frontstageDef && needInitialLayout)
-      this.initializeFrontstageLayout(nineZone);
   }
 
   private determineNineZoneProps(frontstageDef?: FrontstageDef): NineZoneManagerProps {
@@ -366,6 +362,10 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
 
   public componentDidMount(): void {
     this._isMounted = true;
+    const needInitialLayout = (this._frontstageDef && this._frontstageDef.nineZone) ? false : true;
+    if (this._frontstageDef && needInitialLayout)
+      this.initializeFrontstageLayout(this.state.nineZone);
+
     this.layout();
     this.initializeZoneBounds();
     window.addEventListener("resize", this._handleWindowResize, true);

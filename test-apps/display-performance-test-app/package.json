@@ -15,7 +15,7 @@
     "build": "npm run build:backend & npm run build:frontend",
     "build:backend": "tsc -p tsconfig.backend.json",
     "build:frontend": "react-scripts build",
-    "clean": "rimraf lib build .rush package-deps.json",
+    "clean": "rimraf lib build .rush",
     "docs": "",
     "lint": "tslint --project . 1>&2",
     "mobile": "tsc 1>&2 && webpack --config mobile.backend.webpack.config.js 1>&2 && webpack --config mobile.frontend.webpack.config.js 1>&2 && cpx \"public/**/*\" ./lib/mobile/public && cpx \"assets/**/*\" ./lib/mobile/assets ",
@@ -32,26 +32,25 @@
   },
   "repository": {},
   "dependencies": {
-    "@bentley/bentleyjs-core": "2.0.0-dev.53",
-    "@bentley/electron-manager": "2.0.0-dev.53",
-    "@bentley/geometry-core": "2.0.0-dev.53",
-    "@bentley/imodeljs-clients": "2.0.0-dev.53",
-    "@bentley/imodeljs-clients-backend": "2.0.0-dev.53",
-    "@bentley/imodeljs-common": "2.0.0-dev.53",
-    "@bentley/imodeljs-i18n": "2.0.0-dev.53",
-    "@bentley/imodeljs-quantity": "2.0.0-dev.53",
-    "@bentley/imodeljs-frontend": "2.0.0-dev.53",
-    "@bentley/imodeljs-backend": "2.0.0-dev.53",
-    "@bentley/ui-abstract": "2.0.0-dev.53",
+    "@bentley/bentleyjs-core": "2.0.0-dev.57",
+    "@bentley/electron-manager": "2.0.0-dev.57",
+    "@bentley/geometry-core": "2.0.0-dev.57",
+    "@bentley/imodeljs-clients": "2.0.0-dev.57",
+    "@bentley/imodeljs-clients-backend": "2.0.0-dev.57",
+    "@bentley/imodeljs-common": "2.0.0-dev.57",
+    "@bentley/imodeljs-i18n": "2.0.0-dev.57",
+    "@bentley/imodeljs-quantity": "2.0.0-dev.57",
+    "@bentley/imodeljs-frontend": "2.0.0-dev.57",
+    "@bentley/imodeljs-backend": "2.0.0-dev.57",
+    "@bentley/ui-abstract": "2.0.0-dev.57",
     "body-parser": "^1.18.2",
     "tooltip.js": "^1.2.0"
   },
   "devDependencies": {
-    "@bentley/perf-tools": "2.0.0-dev.53",
-    "@bentley/config-loader": "2.0.0-dev.53",
-    "@bentley/build-tools": "2.0.0-dev.53",
-    "@bentley/imodeljs-webserver": "2.0.0-dev.53",
-    "@bentley/react-scripts": "3.4.1-dev.12",
+    "@bentley/perf-tools": "2.0.0-dev.57",
+    "@bentley/config-loader": "2.0.0-dev.57",
+    "@bentley/build-tools": "2.0.0-dev.57",
+    "@bentley/react-scripts": "3.4.1-dev.17",
     "@types/body-parser": "^1.17.0",
     "@types/express": "^4.16.1",
     "@types/node": "10.14.1",
@@ -59,7 +58,7 @@
     "chrome-launcher": "^0.10.5",
     "cross-env": "^5.1.4",
     "cpx": "^1.5.0",
-    "electron": "^6.1.5",
+    "electron": "^8.0.0",
     "express": "^4.16.3",
     "npm-run-all": "^4.1.5",
     "null-loader": "^0.1.1",
@@ -69,27 +68,20 @@
     "tslint": "^5.11.0",
     "tslint-etc": "^1.5.2",
     "typescript": "~3.7.4",
-    "webpack": "4.41.5"
+    "webpack": "4.42.0"
   },
   "homepage": "http://localhost:3000/",
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "electron 6.0.0",
-      "last 4 chrome version",
-      "last 4 firefox version",
-      "last 4 safari version",
-      "last 4 ios version",
-      "last 4 ChromeAndroid version",
-      "last 4 edge version",
-      "not dead",
-      "not <0.2%"
-    ]
-  },
+  "browserslist": [
+    "electron 6.0.0",
+    "last 4 chrome version",
+    "last 4 firefox version",
+    "last 4 safari version",
+    "last 4 ios version",
+    "last 4 ChromeAndroid version",
+    "last 4 edge version",
+    "not dead",
+    "not <0.2%"
+  ],
   "eslintConfig": {
     "settings": {
       "react": {

@@ -309,35 +309,37 @@ export function ToolbarWithOverflow(props: ToolbarWithOverflowProps) {
         overflowDirection: direction === OrthogonalDirection.Horizontal ? OrthogonalDirection.Vertical : OrthogonalDirection.Horizontal,
       }
     }>
-      <div
-        className={className}
-        ref={refs}
-        style={props.style}
-      >
-        <ToolbarItems
-          className="components-items"
-          direction={direction}
+      {(displayedItems.length > 0) &&
+        <div
+          className={className}
+          ref={refs}
+          style={props.style}
         >
-          {(!overflowItemKeys || overflowItemKeys.length > 0) && showOverflowAtStart && addOverflowButton(true)}
-          {displayedItems.map(([key, child]) => {
-            const onEntryResize = handleEntryResize(key);
-            return (
-              <ToolbarItemContext.Provider
-                key={key}
-                value={{
-                  hasOverflow: false,
-                  useHeight,
-                  onResize: onEntryResize,
-                }}
-              >
-                {<ItemWrapper >{child}</ItemWrapper>}
-              </ToolbarItemContext.Provider>
-            );
-          })}
-          {(!overflowItemKeys || overflowItemKeys.length > 0) && !showOverflowAtStart && addOverflowButton(false)}
+          <ToolbarItems
+            className="components-items"
+            direction={direction}
+          >
+            {(!overflowItemKeys || overflowItemKeys.length > 0) && showOverflowAtStart && addOverflowButton(true)}
+            {displayedItems.map(([key, child]) => {
+              const onEntryResize = handleEntryResize(key);
+              return (
+                <ToolbarItemContext.Provider
+                  key={key}
+                  value={{
+                    hasOverflow: false,
+                    useHeight,
+                    onResize: onEntryResize,
+                  }}
+                >
+                  {<ItemWrapper >{child}</ItemWrapper>}
+                </ToolbarItemContext.Provider>
+              );
+            })}
+            {(!overflowItemKeys || overflowItemKeys.length > 0) && !showOverflowAtStart && addOverflowButton(false)}
 
-        </ToolbarItems>
-      </div>
+          </ToolbarItems>
+        </div>
+      }
     </ToolbarWithOverflowDirectionContext.Provider >
   );
 }

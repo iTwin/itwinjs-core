@@ -1799,6 +1799,7 @@ export class Geometry {
     static inverseMetricDistance(a: number): number | undefined;
     static inverseMetricDistanceSquared(a: number): number | undefined;
     static isAlmostEqualNumber(a: number, b: number): boolean;
+    static isAlmostEqualXAndY(a: XAndY, b: XAndY): boolean;
     static isArrayOfNumberArray(json: any, numNumberArray: number, minEntries?: number): boolean;
     static isDistanceWithinTol(distance: number, tol: number): boolean;
     static isHugeCoordinate(x: number): boolean;
@@ -2122,7 +2123,7 @@ export class HalfEdge {
     static horizontalScanFraction01(node0: HalfEdge, y: number): number | undefined;
     i: number;
     get id(): any;
-    isEqualXY(other: HalfEdge): boolean;
+    isEqualXY(other: XAndY): boolean;
     isMaskSet(mask: HalfEdgeMask): boolean;
     static isNodeVisibleInSector(spaceNode: HalfEdge, sectorNode: HalfEdge): boolean;
     maskBits: number;

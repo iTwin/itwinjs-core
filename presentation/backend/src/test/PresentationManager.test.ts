@@ -113,6 +113,7 @@ describe("PresentationManager", () => {
         const testTaskAllocations = { [999]: 111 };
         const props: PresentationManagerProps = {
           id: faker.random.uuid(),
+          presentationAssetsRoot: "/test",
           localeDirectories: [testLocale, testLocale],
           taskAllocationsMap: testTaskAllocations,
           mode: PresentationManagerMode.ReadWrite,
@@ -122,7 +123,7 @@ describe("PresentationManager", () => {
           expect((manager.getNativePlatform() as any)._nativeAddon).instanceOf(IModelHost.platform.ECPresentationManager);
           expect(constructorSpy).to.be.calledOnceWithExactly(
             props.id,
-            [getLocalesDirectory(PRESENTATION_COMMON_PUBLIC_ROOT), testLocale],
+            [getLocalesDirectory("/test"), testLocale],
             testTaskAllocations,
             IModelHost.platform.ECPresentationManagerMode.ReadWrite,
             true,
@@ -159,7 +160,16 @@ describe("PresentationManager", () => {
         addon
           .setup((x) => x.setupSupplementalRulesetDirectories(addonDirs))
           .verifiable();
-        using(new PresentationManager({ addon: addon.object, supplementalRulesetDirectories: dirs }), (pm: PresentationManager) => { pm; });
+        using(new PresentationManager({ addon: addon.object, supplementalRulesetDirectories: dirs }), (_pm: PresentationManager) => { });
+        addon.verifyAll();
+      });
+
+      it("sets up presentation backend's supplemental ruleset directories using `presentationAssetsRoot` if supplied", () => {
+        const addonDirs = [path.join("/test", "supplemental-presentation-rules")];
+        addon
+          .setup((x) => x.setupSupplementalRulesetDirectories(addonDirs))
+          .verifiable();
+        using(new PresentationManager({ addon: addon.object, presentationAssetsRoot: "/test" }), (_pm: PresentationManager) => { });
         addon.verifyAll();
       });
 

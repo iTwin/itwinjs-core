@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Logger, Guid } from "@bentley/bentleyjs-core";
+import { ViewQueryParams } from "@bentley/imodeljs-common";
 import { IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
 import SampleRpcInterface from "../../common/SampleRpcInterface";
 
@@ -31,5 +32,17 @@ export class MyAppFrontend {
       window.localStorage.setItem(key, value);
     }
     return value;
+  }
+
+  public static async getViewDefinitions(imodel: IModelConnection) {
+    const viewQueryParams: ViewQueryParams = { wantPrivate: false };
+    const viewSpecs = await imodel.views.queryProps(viewQueryParams);
+    return viewSpecs
+      .filter((spec) => !spec.isPrivate)
+      .map((spec) => ({
+        id: spec.id!,
+        class: spec.classFullName,
+        label: spec.userLabel ?? spec.code.value!,
+      }));
   }
 }

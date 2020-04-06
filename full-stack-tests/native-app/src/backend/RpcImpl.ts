@@ -8,6 +8,7 @@ import { AuthorizedClientRequestContext, AuthorizedClientRequestContextProps, Co
 import { IModelRpcProps, RpcInterface, RpcManager } from "@bentley/imodeljs-common";
 import { CloudEnvProps, TestRpcInterface } from "../common/RpcInterfaces";
 import { CloudEnv } from "./cloudEnv";
+import { TestChangeSetUtility } from "./TestChangeSetUtility";
 
 export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
   public static register() {
@@ -78,9 +79,39 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
     return hubIModel.id;
   }
 
+  public async purgeStorageCache(): Promise<void> {
+    return IModelJsFs.purgeDirSync(IModelHost.configuration!.nativeAppCacheDir!);
+  }
+
   public async purgeBriefcaseCache(): Promise<void> {
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
     await BriefcaseManager.purgeCache(requestContext);
+  }
+
+  private _testChangeSetUtility?: TestChangeSetUtility;
+
+  public async initTestChangeSetUtility(projectName: string, iModelBaseName: string): Promise<void> {
+    const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
+    this._testChangeSetUtility = new TestChangeSetUtility(requestContext, projectName, iModelBaseName);
+  }
+
+  public async createTestIModel(): Promise<string> {
+    if (this._testChangeSetUtility === undefined)
+      throw new BentleyError(BentleyStatus.ERROR, "First call setupTestChangeSetUtility()");
+    await this._testChangeSetUtility.createTestIModel();
+    return this._testChangeSetUtility.iModelId;
+  }
+
+  public async pushTestChangeSet(): Promise<void> {
+    if (this._testChangeSetUtility === undefined)
+      throw new BentleyError(BentleyStatus.ERROR, "First call createTestIModel()");
+    await this._testChangeSetUtility.pushTestChangeSet();
+  }
+
+  public async deleteTestIModel(): Promise<void> {
+    if (this._testChangeSetUtility === undefined)
+      throw new BentleyError(BentleyStatus.ERROR, "First call createTestIModel()");
+    await this._testChangeSetUtility.deleteTestIModel();
   }
 }
 TestRpcImpl.register();

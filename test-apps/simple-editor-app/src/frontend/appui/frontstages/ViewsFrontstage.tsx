@@ -58,7 +58,9 @@ import { ActiveSettingsWidget } from "../widgets/ActiveSettingsWidget";
 
 // SVG Support - SvgPath or SvgSprite
 // import { SvgPath } from "@bentley/ui-core";
-// import rotateIcon from "../icons/rotate.svg?sprite";
+// import rotateIcon from "../icons/rotate.svg";
+
+import homeIconSvg from "@bentley/icons-generic/icons/home.svg";
 
 import { SelectionMode } from "@bentley/ui-components";
 import { ModelCreationWidget } from "../widgets/ModelCreationWidget";
@@ -135,7 +137,7 @@ export class ViewsFrontstage extends FrontstageProvider {
           < Zone
             widgets={
               [
-                <Widget isFreeform={true} element={<BasicToolWidget additionalHorizontalItems={this._additionalTools.additionalHorizontalToolbarItems}
+                <Widget isFreeform={true} element={<BasicToolWidget icon={`svg:${homeIconSvg}`} additionalHorizontalItems={this._additionalTools.additionalHorizontalToolbarItems}
                   additionalVerticalItems={this._additionalTools.additionalVerticalToolbarItems} showCategoryAndModelsContextTools={false} />} />,
               ]}
           />

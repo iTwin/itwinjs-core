@@ -1,6 +1,6 @@
 {
   "name": "@bentley/extension-client",
-  "version": "2.0.0-dev.53",
+  "version": "2.0.0-dev.57",
   "description": "IModel.js Extension Client",
   "main": "lib/extension-client.js",
   "typings": "lib/extension-client",
@@ -34,15 +34,15 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "@bentley/imodeljs-clients": "2.0.0-dev.53",
-    "@bentley/imodeljs-common": "2.0.0-dev.53",
-    "@bentley/bentleyjs-core": "2.0.0-dev.53"
+    "@bentley/imodeljs-clients": "2.0.0-dev.57",
+    "@bentley/imodeljs-common": "2.0.0-dev.57",
+    "@bentley/bentleyjs-core": "2.0.0-dev.57"
   },
   "devDependencies": {
-    "@bentley/build-tools": "2.0.0-dev.53",
-    "@bentley/certa": "2.0.0-dev.53",
-    "@bentley/config-loader": "2.0.0-dev.53",
-    "@bentley/oidc-signin-tool": "2.0.0-dev.53",
+    "@bentley/build-tools": "2.0.0-dev.57",
+    "@bentley/certa": "2.0.0-dev.57",
+    "@bentley/config-loader": "2.0.0-dev.57",
+    "@bentley/oidc-signin-tool": "2.0.0-dev.57",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
     "@types/rimraf": "^2.0.2",
@@ -55,7 +55,7 @@
     "tslint": "^5.11.0",
     "typescript": "~3.7.4",
     "ts-node": "^7.0.1",
-    "webpack": "4.41.5"
+    "webpack": "4.42.0"
   },
   "nyc": {
     "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc"

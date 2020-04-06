@@ -8,7 +8,6 @@ import { AuthorizedFrontendRequestContext, IModelApp, IModelConnection } from "@
 import { Logger, ClientRequestContext, Id64String } from "@bentley/bentleyjs-core";
 import { IModelCloudEnvironment } from "@bentley/imodeljs-clients/lib/IModelCloudEnvironment";
 import { TestUserCredentials, getAccessTokenFromBackend } from "@bentley/oidc-signin-tool/lib/frontend";
-
 import { TestRpcInterface } from "../../common/RpcInterfaces";
 import { IModelBankCloudEnv } from "./IModelBankCloudEnv";
 import { IModelHubCloudEnv } from "./IModelHubCloudEnv";
@@ -54,12 +53,20 @@ export class TestUtility {
     return iModels[0].wsgId;
   }
 
+  public static async purgeStorageCache() {
+    return TestRpcInterface.getClient().purgeStorageCache();
+  }
+
   public static async createIModel(name: string, contextId: string, deleteIfExists = false) {
     return TestRpcInterface.getClient().createIModel(name, contextId, deleteIfExists);
   }
 
   public static async purgeBriefcaseCache() {
     return TestRpcInterface.getClient().purgeBriefcaseCache();
+  }
+
+  public static async restartIModelHost() {
+    return TestRpcInterface.getClient().restartIModelHost();
   }
 
   public static async getModelLockLevel(iModel: IModelConnection, modelId: Id64String): Promise<LockLevel> {
@@ -86,4 +93,5 @@ export class TestUtility {
       await Promise.all(promises);
     }
   }
+
 }

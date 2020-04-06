@@ -1,6 +1,6 @@
 {
   "name": "@bentley/ecschema-metadata",
-  "version": "2.0.0-dev.53",
+  "version": "2.0.0-dev.57",
   "description": "ECObjects core concepts in typescript",
   "license": "MIT",
   "main": "lib/ecschema-metadata.js",
@@ -12,7 +12,7 @@
   },
   "scripts": {
     "build": "tsc 1>&2  && npm run createLocalization",
-    "clean": "rimraf lib .rush package-deps.json",
+    "clean": "rimraf lib .rush",
     "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=ecschema-metadata",
     "lint": "tslint --project . 1>&2",
     "test": "node ./node_modules/@bentley/build-tools/scripts/test-tsnode.js --testDir=./test/",
@@ -32,9 +32,9 @@
     "url": "http://www.bentley.com"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.0.0-dev.53",
-    "@bentley/build-tools": "2.0.0-dev.53",
-    "@bentley/imodeljs-i18n": "2.0.0-dev.53",
+    "@bentley/bentleyjs-core": "2.0.0-dev.57",
+    "@bentley/build-tools": "2.0.0-dev.57",
+    "@bentley/imodeljs-i18n": "2.0.0-dev.57",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/mocha": "^5.2.5",
@@ -56,8 +56,8 @@
   },
   "dependencies": {},
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.0.0-dev.53",
-    "@bentley/imodeljs-i18n": "^2.0.0-dev.53"
+    "@bentley/bentleyjs-core": "^2.0.0-dev.57",
+    "@bentley/imodeljs-i18n": "^2.0.0-dev.57"
   },
   "nyc": {
     "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc",

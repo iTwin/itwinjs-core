@@ -1,6 +1,6 @@
 {
   "name": "@bentley/webpack-tools-core",
-  "version": "2.0.0-dev.53",
+  "version": "2.0.0-dev.57",
   "description": "Set of Webpack Plugins and Loaders used for building iModel.js applications",
   "license": "MIT",
   "repository": {
@@ -28,10 +28,10 @@
     "webpack-sources": "^1.4.3"
   },
   "peerDependencies": {
-    "webpack": "4.41.5"
+    "webpack": "4.42.0"
   },
   "devDependencies": {
-    "@bentley/build-tools": "2.0.0-dev.53",
+    "@bentley/build-tools": "2.0.0-dev.57",
     "@types/fs-extra": "^4.0.7",
     "@types/glob": "^5.0.35",
     "@types/node": "10.14.1",
@@ -40,6 +40,6 @@
     "rimraf": "^3.0.2",
     "tslint": "^5.11.0",
     "typescript": "~3.7.4",
-    "webpack": "4.41.5"
+    "webpack": "4.42.0"
   }
 }

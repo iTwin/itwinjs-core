@@ -40,6 +40,7 @@ export class FrontstageDef {
   private _isInFooterMode: boolean = true;
   private _applicationData?: any;
   private _usage?: string;
+  private _version: number = 0;
   private _topLeft?: ZoneDef;
   private _topCenter?: ZoneDef;
   private _topRight?: ZoneDef;
@@ -68,6 +69,7 @@ export class FrontstageDef {
   public get isInFooterMode(): boolean { return this._isInFooterMode; }
   public get applicationData(): any | undefined { return this._applicationData; }
   public get usage(): string { return this._usage !== undefined ? this._usage : StageUsage.General; }
+  public get version(): number { return this._version; }
 
   public get topLeft(): ZoneDef | undefined { return this._topLeft; }
   public get topCenter(): ZoneDef | undefined { return this._topCenter; }
@@ -448,6 +450,7 @@ export class FrontstageDef {
       this._applicationData = props.applicationData;
 
     this._usage = props.usage;
+    this._version = props.version || 0;
 
     this._topLeft = Frontstage.createZoneDef(props.contentManipulationTools ? props.contentManipulationTools : props.topLeft, ZoneLocation.TopLeft, props);
     this._topCenter = Frontstage.createZoneDef(props.toolSettings ? props.toolSettings : props.topCenter, ZoneLocation.TopCenter, props);

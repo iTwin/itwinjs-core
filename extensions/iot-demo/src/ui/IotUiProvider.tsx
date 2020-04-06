@@ -8,7 +8,7 @@ import { UiItemsProvider, StageUsage, ToolbarUsage, ToolbarOrientation, ToolbarI
 import { ModelessDialogManager } from "@bentley/ui-framework";
 
 import { IotSettingsDialog } from "./IotSettingsDialog";
-import iotButtonSvg from "./iot-button.svg?sprite";
+import iotButtonSvg from "./iot-button.svg";
 import { AnimationType, AnimationTypeName } from "../IoTDefinitions";
 import { IoTDemoExtension } from "../iotDemo";
 

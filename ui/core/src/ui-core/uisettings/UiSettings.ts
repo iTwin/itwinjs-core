@@ -11,9 +11,9 @@
  * @beta
  */
 export interface UiSettings {
-  getSetting(settingNamespace: string, settingName: string): UiSettingsResult;
-  saveSetting(settingNamespace: string, settingName: string, setting: any): UiSettingsResult;
-  deleteSetting(settingNamespace: string, settingName: string): UiSettingsResult;
+  getSetting(settingNamespace: string, settingName: string): Promise<UiSettingsResult>;
+  saveSetting(settingNamespace: string, settingName: string, setting: any): Promise<UiSettingsResult>;
+  deleteSetting(settingNamespace: string, settingName: string): Promise<UiSettingsResult>;
 }
 
 /** Enum for [[UiSettings]] status.

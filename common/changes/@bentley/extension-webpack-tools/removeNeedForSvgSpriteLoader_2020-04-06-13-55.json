@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/extension-webpack-tools",
+      "comment": "Updates to remove need for svg-sprite-loader, use defualt CRA svgr loader instead.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/extension-webpack-tools",
+  "email": "bill.steinbock@bentley.com"
+}

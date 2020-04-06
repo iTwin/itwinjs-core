@@ -233,7 +233,15 @@ exports[`DefaultNavigationWidget DefaultNavigationWidget should render correctly
         "execute": [Function],
         "getKey": [Function],
         "handleSizeKnown": [Function],
-        "iconSpec": "icon-camera",
+        "iconSpec": ConditionalStringValue {
+          "_value": undefined,
+          "stringGetter": [Function],
+          "syncEventIds": Array [
+            "activecontentchanged",
+            "activeviewportchanged",
+            "viewstatechanged",
+          ],
+        },
         "isActive": false,
         "isDisabled": undefined,
         "isEnabled": true,
@@ -561,7 +569,15 @@ exports[`DefaultNavigationWidget DefaultNavigationWidget with suffix and prefix 
         "execute": [Function],
         "getKey": [Function],
         "handleSizeKnown": [Function],
-        "iconSpec": "icon-camera",
+        "iconSpec": ConditionalStringValue {
+          "_value": undefined,
+          "stringGetter": [Function],
+          "syncEventIds": Array [
+            "activecontentchanged",
+            "activeviewportchanged",
+            "viewstatechanged",
+          ],
+        },
         "isActive": false,
         "isDisabled": undefined,
         "isEnabled": true,

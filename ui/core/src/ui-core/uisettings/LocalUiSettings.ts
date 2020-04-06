@@ -6,7 +6,7 @@
  * @module UiSettings
  */
 
-import { UiSettings, UiSettingsResult, UiSettingsStatus } from "./UiSettings";
+import { UiSettings, UiSettingsStatus, UiSettingsResult } from "./UiSettings";
 
 /**
  * Implementation of [[UiSettings]] using Window.localStorage.
@@ -16,7 +16,7 @@ export class LocalUiSettings implements UiSettings {
 
   constructor(public w: Window = window) { }
 
-  public getSetting = (settingNamespace: string, settingName: string): UiSettingsResult => {
+  public async getSetting(settingNamespace: string, settingName: string): Promise<UiSettingsResult> {
     const setting = this.w.localStorage.getItem(`${settingNamespace}.${settingName}`);
     if (setting !== null)
       return { status: UiSettingsStatus.Success, setting: JSON.parse(setting) };
@@ -24,12 +24,12 @@ export class LocalUiSettings implements UiSettings {
       return { status: UiSettingsStatus.NotFound };
   }
 
-  public saveSetting = (settingNamespace: string, settingName: string, setting: any): UiSettingsResult => {
+  public async saveSetting(settingNamespace: string, settingName: string, setting: any): Promise<UiSettingsResult> {
     this.w.localStorage.setItem(`${settingNamespace}.${settingName}`, JSON.stringify(setting));
     return { status: UiSettingsStatus.Success };
   }
 
-  public deleteSetting = (settingNamespace: string, settingName: string): UiSettingsResult => {
+  public async deleteSetting(settingNamespace: string, settingName: string): Promise<UiSettingsResult> {
     const name = `${settingNamespace}.${settingName}`;
     const setting = this.w.localStorage.getItem(name);
     if (setting === null)

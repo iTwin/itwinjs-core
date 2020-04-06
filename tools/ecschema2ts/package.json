@@ -2,7 +2,7 @@
   "name": "@bentley/ecschema2ts",
   "description": "Command line tools that takes an ECSchema xml file and outputs a typescript module",
   "license": "MIT",
-  "version": "2.0.0-dev.53",
+  "version": "2.0.0-dev.57",
   "bin": {
     "ecschema2ts": "./bin/index.js"
   },
@@ -13,7 +13,7 @@
   },
   "scripts": {
     "build": "tsc 1>&2 && npm run copy:test-assets",
-    "clean": "rimraf lib .rush package-deps.json",
+    "clean": "rimraf lib .rush",
     "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/test/assets",
     "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=ecschema2ts",
     "lint": "tslint --project . 1>&2",
@@ -35,7 +35,7 @@
     "url": "http://www.bentley.com"
   },
   "devDependencies": {
-    "@bentley/build-tools": "2.0.0-dev.53",
+    "@bentley/build-tools": "2.0.0-dev.57",
     "@types/chai": "^4.1.4",
     "@types/chai-string": "^1.4.1",
     "@types/fs-extra": "^4.0.7",
@@ -54,14 +54,14 @@
     "typescript": "~3.7.4"
   },
   "dependencies": {
-    "@bentley/bentleyjs-core": "2.0.0-dev.53",
-    "@bentley/ecschema-metadata": "2.0.0-dev.53",
-    "@bentley/ecschema-locaters": "2.0.0-dev.53",
-    "@bentley/imodeljs-clients": "2.0.0-dev.53",
-    "@bentley/imodeljs-clients-backend": "2.0.0-dev.53",
-    "@bentley/imodeljs-common": "2.0.0-dev.53",
-    "@bentley/imodeljs-backend": "2.0.0-dev.53",
-    "@bentley/geometry-core": "2.0.0-dev.53",
+    "@bentley/bentleyjs-core": "2.0.0-dev.57",
+    "@bentley/ecschema-metadata": "2.0.0-dev.57",
+    "@bentley/ecschema-locaters": "2.0.0-dev.57",
+    "@bentley/imodeljs-clients": "2.0.0-dev.57",
+    "@bentley/imodeljs-clients-backend": "2.0.0-dev.57",
+    "@bentley/imodeljs-common": "2.0.0-dev.57",
+    "@bentley/imodeljs-backend": "2.0.0-dev.57",
+    "@bentley/geometry-core": "2.0.0-dev.57",
     "@types/chai-string": "^1.4.1",
     "@types/xmldom": "^0.1.29",
     "chai-string": "^1.5.0",

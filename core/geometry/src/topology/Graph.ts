@@ -13,7 +13,7 @@ import { LineSegment3d } from "../curve/LineSegment3d";
 import { Geometry } from "../Geometry";
 import { SmallSystem } from "../numerics/Polynomials";
 import { Transform } from "../geometry3d/Transform";
-import { XYAndZ } from "../geometry3d/XYZProps";
+import { XYAndZ, XAndY } from "../geometry3d/XYZProps";
 import { MaskManager } from "./MaskManager";
 /** function signature for function of one node with no return type restrictions
  * @internal
@@ -595,7 +595,7 @@ export class HalfEdge {
   }
 
   /** Return true if x and y coordinates of this and other are exactly equal */
-  public isEqualXY(other: HalfEdge): boolean {
+  public isEqualXY(other: XAndY): boolean {
     return this.x === other.x && this.y === other.y;
   }
 

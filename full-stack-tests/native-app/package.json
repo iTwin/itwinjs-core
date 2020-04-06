@@ -5,7 +5,7 @@
   "license": "MIT",
   "scripts": {
     "build": "tsc 1>&2 && npm run webpack:frontend",
-    "clean": "rimraf lib .rush package-deps.json coverage",
+    "clean": "rimraf lib .rush coverage",
     "cover": "npm run test:chrome -- --cover && npm run test:electron -- --cover",
     "docs": "",
     "lint": "tslint --project . 1>&2",
@@ -19,25 +19,25 @@
   },
   "repository": {},
   "dependencies": {
-    "@bentley/bentleyjs-core": "2.0.0-dev.53",
-    "@bentley/express-server": "2.0.0-dev.53",
-    "@bentley/geometry-core": "2.0.0-dev.53",
-    "@bentley/imodeljs-backend": "2.0.0-dev.53",
-    "@bentley/imodeljs-clients": "2.0.0-dev.53",
-    "@bentley/imodeljs-clients-backend": "2.0.0-dev.53",
-    "@bentley/imodeljs-common": "2.0.0-dev.53",
-    "@bentley/imodeljs-i18n": "2.0.0-dev.53",
-    "@bentley/imodeljs-frontend": "2.0.0-dev.53",
-    "@bentley/imodeljs-markup": "2.0.0-dev.53",
+    "@bentley/bentleyjs-core": "2.0.0-dev.57",
+    "@bentley/express-server": "2.0.0-dev.57",
+    "@bentley/geometry-core": "2.0.0-dev.57",
+    "@bentley/imodeljs-backend": "2.0.0-dev.57",
+    "@bentley/imodeljs-clients": "2.0.0-dev.57",
+    "@bentley/imodeljs-clients-backend": "2.0.0-dev.57",
+    "@bentley/imodeljs-common": "2.0.0-dev.57",
+    "@bentley/imodeljs-i18n": "2.0.0-dev.57",
+    "@bentley/imodeljs-frontend": "2.0.0-dev.57",
+    "@bentley/imodeljs-markup": "2.0.0-dev.57",
     "chai": "^4.1.2",
     "fs-extra": "^8.1.0",
-    "electron": "^6.1.5"
+    "electron": "^8.0.0"
   },
   "devDependencies": {
-    "@bentley/certa": "2.0.0-dev.53",
-    "@bentley/config-loader": "2.0.0-dev.53",
-    "@bentley/build-tools": "2.0.0-dev.53",
-    "@bentley/oidc-signin-tool": "2.0.0-dev.53",
+    "@bentley/certa": "2.0.0-dev.57",
+    "@bentley/config-loader": "2.0.0-dev.57",
+    "@bentley/build-tools": "2.0.0-dev.57",
+    "@bentley/oidc-signin-tool": "2.0.0-dev.57",
     "@types/chai": "^4.1.4",
     "@types/fs-extra": "^4.0.7",
     "@types/mocha": "^5.2.5",
@@ -53,6 +53,6 @@
     "tslint-etc": "^1.5.2",
     "typescript": "~3.7.4",
     "nyc": "^14.0.0",
-    "webpack": "4.41.5"
+    "webpack": "4.42.0"
   }
 }
