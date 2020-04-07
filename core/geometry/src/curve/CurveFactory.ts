@@ -20,6 +20,11 @@ import { Geometry } from "../Geometry";
 import { Ellipsoid, GeodesicPathPoint } from "../geometry3d/Ellipsoid";
 import { Loop } from "./Loop";
 import { AngleSweep } from "../geometry3d/AngleSweep";
+import { CurveChain } from "./CurveCollection";
+import { Cone } from "../solid/Cone";
+import { TorusPipe } from "../solid/TorusPipe";
+import { CurvePrimitive } from "./CurvePrimitive";
+import { GeometryQuery } from "./GeometryQuery";
 /**
  * The `CurveFactory` class contains methods for specialized curve constructions.
  * @public
@@ -34,15 +39,20 @@ export class CurveFactory {
   }
   /**
    * Construct a sequence of alternating lines and arcs with the arcs creating tangent transition between consecutive edges.
+   *  * If the radius parameter is a number, that radius is used throughout.
+   *  * If the radius parameter is an array of numbers, `radius[i]` is applied at `point[i]`.
+   *    * Note that since no fillet is constructed at the initial or final point, those entries in `radius[]` are never referenced.
+   *    * A zero radius for any point indicates to leave the as a simple corner.
    * @param points point source
-   * @param radius fillet radius
+   * @param radius fillet radius or array of radii indexed to correspond to the points.
    * @param allowBackupAlongEdge true to allow edges to be created going "backwards" along edges if needed to create the blend.
    */
-  public static createFilletsInLineString(points: LineString3d | IndexedXYZCollection | Point3d[], radius: number, allowBackupAlongEdge: boolean = true): Path | undefined {
+  public static createFilletsInLineString(points: LineString3d | IndexedXYZCollection | Point3d[], radius: number | number[], allowBackupAlongEdge: boolean = true): Path | undefined {
     if (Array.isArray(points))
       return this.createFilletsInLineString(new Point3dArrayCarrier(points), radius, allowBackupAlongEdge);
     if (points instanceof LineString3d)
       return this.createFilletsInLineString(points.packedPoints, radius, allowBackupAlongEdge);
+
     const n = points.length;
     if (n <= 1)
       return undefined;
@@ -55,7 +65,17 @@ export class CurveFactory {
 
     for (let i = 1; i + 1 < n; i++) {
       const pointC = points.getPoint3dAtCheckedPointIndex(i + 1)!;
-      blendArray.push(Arc3d.createFilletArc(pointA, pointB, pointC, radius));
+      let thisRadius = 0;
+      if (Array.isArray(radius)) {
+        if (i < radius.length)
+          thisRadius = radius[i];
+      } else if (Number.isFinite(radius))
+        thisRadius = radius;
+
+      if (thisRadius !== 0.0)
+        blendArray.push(Arc3d.createFilletArc(pointA, pointB, pointC, thisRadius));
+      else
+        blendArray.push({ fraction10: 0.0, fraction12: 0.0, point: pointB.clone() });
       pointA.setFromPoint3d(pointB);
       pointB.setFromPoint3d(pointC);
     }
@@ -175,5 +195,34 @@ export class CurveFactory {
       arcPath.tryAddChild(arc);
     }
     return arcPath;
+  }
+  private static appendGeometryQueryArray(candidate: GeometryQuery | GeometryQuery[] | undefined, result: GeometryQuery[]) {
+    if (candidate instanceof GeometryQuery)
+      result.push(candidate);
+    else if (Array.isArray(candidate)) {
+      for (const p of candidate)
+        this.appendGeometryQueryArray(p, result);
+    }
+
+  }
+  /**
+   * Create solid primitives for pipe segments (e.g. Cone or TorusPipe) around line and arc primitives.
+   * @param centerline centerline geometry/
+   * @param pipeRadius radius of pipe.
+   */
+  public static createPipeSegments(centerline: CurvePrimitive | CurveChain, pipeRadius: number): GeometryQuery | GeometryQuery[] | undefined {
+    if (centerline instanceof LineSegment3d) {
+      return Cone.createAxisPoints(centerline.startPoint(), centerline.endPoint(), pipeRadius, pipeRadius, false);
+    } else if (centerline instanceof Arc3d) {
+      return TorusPipe.createAlongArc(centerline, pipeRadius, false);
+    } else if (centerline instanceof CurveChain) {
+      const result: GeometryQuery[] = [];
+      for (const p of centerline.children) {
+        const pipe = this.createPipeSegments(p, pipeRadius);
+        this.appendGeometryQueryArray(pipe, result);
+      }
+      return result;
+    }
+    return undefined;
   }
 }

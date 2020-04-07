@@ -75,7 +75,7 @@ describe("CurveFactory", () => {
     for (const lambda of [0.0, -0.52, 0.45, 1.2, 1.0]) {
       const point1 = point0.interpolate(lambda, point2);
       const data = Arc3d.createFilletArc(point0, point1, point2, radius);
-      ck.testDefined (data, "Degenerated arc data");
+      ck.testDefined(data, "Degenerated arc data");
       ck.testUndefined(data.arc, "Degenerate arc -- expect no arc in data");
     }
     expect(ck.getNumErrors()).equals(0);
@@ -126,7 +126,36 @@ describe("CurveFactory", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveFactory", "appendToArcInPlace");
     expect(ck.getNumErrors()).equals(0);
   });
+  it("FilletsInLinestring", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let x0 = 0.0;
+    const points = [Point3d.create(0, 0, 0), Point3d.create(2, 0, 0), Point3d.create(2, 5, 1), Point3d.create(4, 5, 1), Point3d.create(6, 2, 1), Point3d.create(6, 5, 1)];
+    const lineString0 = LineString3d.create(points);
+    points.reverse();
+    const lineString1 = LineString3d.create(points);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, lineString0, x0, 0);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, lineString1, x0, 28);
+    x0 += 20.0;
+    for (const filletRadius of [0.2, 0.4, 0.6, 0.8, 1.2, 2.0, 4.0, 6.0]) {
+      let y0 = 0.0;
+      for (const lineString of [lineString0, lineString1]) {
+        const chain0 = CurveFactory.createFilletsInLineString(lineString, filletRadius, false)!;
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain0, x0, y0);
+        y0 += 8.0;
+        const chain1 = CurveFactory.createFilletsInLineString(lineString, filletRadius, true)!;
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain1, x0, y0);
+        y0 += 20.0;
+      }
+      x0 += 20.0;
+    }
 
+    const radii = [0, 2, 1, 0.8, 0.6, 0.4];
+    const chain2 = CurveFactory.createFilletsInLineString(lineString0, radii, true)!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain2, x0, 0.0);
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveFactory", "FilletsInLineString");
+    expect(ck.getNumErrors()).equals(0);
+  });
 });
 /**
  *

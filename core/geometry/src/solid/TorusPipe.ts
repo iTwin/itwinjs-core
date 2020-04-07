@@ -123,6 +123,16 @@ export class TorusPipe extends SolidPrimitive implements UVSurface, UVSurfaceIso
     const frame = Transform.createOriginAndMatrixColumns(center, vectorX, vectorY, vectorZ);
     return TorusPipe.createInFrame(frame, majorRadius, minorRadius, sweep, capped);
   }
+  /** Create a TorusPipe from its primary arc and minor radius */
+  public static createAlongArc (arc: Arc3d, minorRadius: number, capped: boolean) {
+    if (!Angle.isAlmostEqualRadiansAllowPeriodShift(0.0, arc.sweep.startRadians))
+      arc = arc.cloneInRotatedBasis(arc.sweep.startAngle);
+    const sweepRadians = arc.sweep.sweepRadians;
+    const data = arc.toScaledMatrix3d();
+    const frame = Transform.createOriginAndMatrix(data.center, data.axes);
+    return TorusPipe.createInFrame(frame, data.r0, minorRadius, Angle.createRadians(sweepRadians), capped);
+  }
+
   /** Return a coordinate frame (right handed, unit axes)
    * * origin at center of major circle
    * * major circle in xy plane
@@ -208,7 +218,7 @@ export class TorusPipe extends SolidPrimitive implements UVSurface, UVSurfaceIso
     const numThetaSample = Math.ceil(theta1Radians / (Math.PI / 16.0));
     const numHalfPhiSample = 16;
     let phi0 = 0;
-    let dphi = 0;
+    let dPhi = 0;
     let numPhiSample = 0;
     let theta = 0;
     let cosTheta = 0;
@@ -225,16 +235,16 @@ export class TorusPipe extends SolidPrimitive implements UVSurface, UVSurfaceIso
       // Otherwise only do the outer half
       if (i === 0 || i === numThetaSample) {
         phi0 = -Math.PI;
-        dphi = 2.0 * Math.PI / numHalfPhiSample;
+        dPhi = 2.0 * Math.PI / numHalfPhiSample;
         numPhiSample = numHalfPhiSample;
       } else {
         phi0 = -0.5 * Math.PI;
-        dphi = Math.PI / numHalfPhiSample;
+        dPhi = Math.PI / numHalfPhiSample;
         numPhiSample = 2 * numHalfPhiSample - 1;
       }
       if (transform) {
         for (j = 0; j <= numPhiSample; j++) {
-          phi = phi0 + j * dphi;
+          phi = phi0 + j * dPhi;
           rxy = majorRadius + minorRadius * Math.cos(phi);
           rangeToExtend.extendTransformTransformedXYZ(transform, transform0,
             cosTheta * rxy, sinTheta * rxy,
@@ -242,7 +252,7 @@ export class TorusPipe extends SolidPrimitive implements UVSurface, UVSurfaceIso
         }
       } else {
         for (j = 0; j <= numPhiSample; j++) {
-          phi = phi0 + j * dphi;
+          phi = phi0 + j * dPhi;
           rxy = majorRadius + minorRadius * Math.sin(phi);
           rangeToExtend.extendTransformedXYZ(transform0,
             cosTheta * rxy, sinTheta * rxy,

@@ -505,7 +505,7 @@ export class RegionOps {
    * @param curves
    */
   public static splitToPathsBetweenFlagBreaks(source: CurveCollection | CurvePrimitive | undefined,
-    makeClones: boolean): BagOfCurves | Path | CurvePrimitive | undefined {
+    makeClones: boolean): BagOfCurves | Path | CurvePrimitive | Loop | undefined {
     if (source === undefined)
       return undefined;
     if (source instanceof CurvePrimitive)
