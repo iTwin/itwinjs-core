@@ -5,7 +5,6 @@
 
 import { MobileRpcManager } from "@bentley/imodeljs-common";
 import { getRpcInterfaces, initializeBackend } from "./backend";
-// tslint:disable:no-console
 
 // Initialize the backend
 initializeBackend();

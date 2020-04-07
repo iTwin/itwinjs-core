@@ -59,9 +59,8 @@ const maximizeWindow = (undefined === process.env.SVT_NO_MAXIMIZE_WINDOW);
       manager.mainWindow.webContents.toggleDevTools();
   }
 
-  // tslint:disable-next-line:no-var-requires
-  const configPathname = path.normalize(path.join(__dirname, "../../build", "configuration.json"));
-  const configuration = require(configPathname);
+  const configPathname = path.normalize(path.join(__dirname, "..", "..", "build", "configuration.json"));
+  const configuration = require(configPathname); // tslint:disable-line:no-var-requires
   if (configuration.useIModelBank) {
     electron.app.on("certificate-error", (event, _webContents, _url, _error, _certificate, callback) => {
       // (needed temporarily to use self-signed cert to communicate with iModelBank via https)
