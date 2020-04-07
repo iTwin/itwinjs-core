@@ -165,8 +165,6 @@ export class TileRequest {
   }
 }
 
-// tslint:disable:no-const-enum
-
 /** @beta */
 export namespace TileRequest {
   /** The type of a raw response to a request for tile content. Processed upon receipt into a [[TileRequest.Response]] type.
@@ -183,7 +181,7 @@ export namespace TileRequest {
   /** The states through which a TileRequest proceeds. During the first 3 states, the [[Tile]]'s `request` member is defined, and its [[Tile.LoadStatus]] is computed based on the state of its request.
    * @internal
    */
-  export const enum State {
+  export enum State {
     /** Initial state. Request is pending but not yet dispatched. */
     Queued,
     /** Follows `Queued` when request begins to be actively processed. */

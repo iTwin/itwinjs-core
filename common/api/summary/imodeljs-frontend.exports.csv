@@ -74,7 +74,7 @@ beta;ChangeFlag
 beta;ChangeFlags
 public;ChangeViewedModel2dOptions
 alpha;ClipEventType
-beta;enum ClippingType
+beta;ClippingType
 internal;ClipResult
 internal;Clips
 public;Cluster
@@ -309,7 +309,7 @@ beta;Pixel
 internal;PlanarClassifierMap = Map
 internal;PlanarMapTile 
 public;class PrimitiveTool 
-alpha;enum PrimitiveVisibility
+alpha;PrimitiveVisibility
 internal;QuadId
 alpha;QuantityFormatter 
 beta;QuantityType
@@ -366,7 +366,7 @@ public;SelectionSet
 public;SelectionSetEvent = SelectAddEvent | SelectRemoveEvent | SelectReplaceEvent
 public;SelectionSetEventType
 public;SelectionTool 
-internal;enum SelectParent
+internal;SelectParent
 public;SelectRemoveEvent
 public;SelectReplaceEvent
 alpha;SetupCameraTool 
@@ -419,17 +419,17 @@ beta;class Tile
 alpha;class TileAdmin
 alpha;TileAdmin
 internal;TileAvailability
-internal;enum TileBoundingBoxes
+internal;TileBoundingBoxes
 beta;TileContent
 beta;TiledGraphicsProvider
 beta;TileDrawArgs
 beta;TileGraphicType
-beta;enum TileLoadPriority
-beta;enum TileLoadStatus
+beta;TileLoadPriority
+beta;TileLoadStatus
 beta;TileParams
 beta;TileRequest
 beta;TileRequest
-internal;enum State
+internal;State
 beta;class TileTree
 beta;TileTreeDiscloser
 beta;TileTreeLoadStatus
@@ -439,7 +439,7 @@ beta;class TileTreeReference
 beta;TileTreeSet
 beta;TileTreeSupplier
 beta;TileUsageMarker
-beta;enum TileVisibility
+beta;TileVisibility
 public;Tool
 public;ToolAdmin
 public;ToolAdmin
@@ -488,7 +488,7 @@ beta;ViewGlobeIModelTool
 beta;ViewGlobeLocationTool 
 beta;ViewGlobeSatelliteTool 
 internal;ViewHandleArray
-internal;enum ViewHandleType
+internal;ViewHandleType
 beta;ViewingSpace
 internal;class ViewingToolHandle
 public;ViewManager

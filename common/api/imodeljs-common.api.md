@@ -154,7 +154,7 @@ export interface AnalysisStyleProps {
 }
 
 // @internal (undocumented)
-export const enum AntiAliasPref {
+export enum AntiAliasPref {
     // (undocumented)
     Detect = 0,
     // (undocumented)
@@ -1329,7 +1329,7 @@ export const CURRENT_INVOCATION: unique symbol;
 export const CURRENT_REQUEST: unique symbol;
 
 // @internal
-export const enum CurrentImdlVersion {
+export enum CurrentImdlVersion {
     Combined = 589824,
     Major = 9,
     Minor = 0
@@ -2092,7 +2092,7 @@ export namespace FrustumPlanes {
     // (undocumented)
     export function addPlaneFromPoints(planes: ClipPlane[], points: Point3d[], i0: number, i1: number, i2: number, expandPlaneDistance?: number): void;
     // (undocumented)
-    export const enum Containment {
+    export enum Containment {
         // (undocumented)
         Inside = 2,
         // (undocumented)
@@ -2410,7 +2410,7 @@ export class GltfBufferView {
 }
 
 // @internal (undocumented)
-export const enum GltfConstants {
+export enum GltfConstants {
     // (undocumented)
     ArrayBuffer = 34962,
     // (undocumented)
@@ -2437,7 +2437,7 @@ export const enum GltfConstants {
 export type GltfDataBuffer = Uint8Array | Uint16Array | Uint32Array | Float32Array;
 
 // @internal (undocumented)
-export const enum GltfDataType {
+export enum GltfDataType {
     // (undocumented)
     Float = 5126,
     // (undocumented)
@@ -2464,7 +2464,7 @@ export class GltfHeader extends TileHeader {
 }
 
 // @internal (undocumented)
-export const enum GltfMeshMode {
+export enum GltfMeshMode {
     // (undocumented)
     Lines = 1,
     // (undocumented)
@@ -2474,7 +2474,7 @@ export const enum GltfMeshMode {
 }
 
 // @internal (undocumented)
-export const enum GltfV2ChunkTypes {
+export enum GltfV2ChunkTypes {
     // (undocumented)
     Binary = 5130562,
     // (undocumented)
@@ -2482,7 +2482,7 @@ export const enum GltfV2ChunkTypes {
 }
 
 // @internal
-export const enum GltfVersions {
+export enum GltfVersions {
     // (undocumented)
     CurrentVersion = 1,
     // (undocumented)
@@ -3007,7 +3007,7 @@ export enum ImageSourceFormat {
 }
 
 // @internal
-export const enum ImdlFlags {
+export enum ImdlFlags {
     ContainsCurves = 1,
     Incomplete = 4,
     None = 0
@@ -4821,7 +4821,7 @@ export namespace RenderTexture {
         readonly key?: string;
         readonly type: Type;
     }
-    export const enum Type {
+    export enum Type {
         FilteredTileSection = 4,
         Glyph = 1,
         Normal = 0,
@@ -6042,7 +6042,7 @@ export interface TileContentMetadata {
 }
 
 // @internal
-export const enum TileFormat {
+export enum TileFormat {
     // (undocumented)
     A3x = 5780289,
     // (undocumented)
@@ -6123,7 +6123,7 @@ export class TileReadError extends BentleyError {
 }
 
 // @internal
-export const enum TileReadStatus {
+export enum TileReadStatus {
     // (undocumented)
     Canceled = 7,
     // (undocumented)
@@ -6437,7 +6437,7 @@ export class ViewFlagOverrides {
     }
 
 // @public
-export const enum ViewFlagPresence {
+export enum ViewFlagPresence {
     // (undocumented)
     BackgroundMap = 20,
     // (undocumented)

@@ -6,8 +6,6 @@
  * @module Tile
  */
 
-// tslint:disable:no-const-enum
-
 import { ByteStream } from "@bentley/bentleyjs-core";
 import {
   TileFormat,
@@ -17,7 +15,7 @@ import {
 /** Known version of the [glTF format](https://www.khronos.org/gltf/).
  * @internal
  */
-export const enum GltfVersions {
+export enum GltfVersions {
   Version1 = 1,
   Version2 = 2,
   CurrentVersion = Version1,
@@ -25,20 +23,20 @@ export const enum GltfVersions {
 }
 
 /** @internal */
-export const enum GltfV2ChunkTypes {
+export enum GltfV2ChunkTypes {
   JSON = 0x4E4F534a,
   Binary = 0x004E4942,
 }
 
 /** @internal */
-export const enum GltfMeshMode {
+export enum GltfMeshMode {
   Lines = 1,
   LineStrip = 3,
   Triangles = 4,
 }
 
 /** @internal */
-export const enum GltfDataType {
+export enum GltfDataType {
   // SignedByte = 0x1400,
   UnsignedByte = 0x1401,
   // SignedShort = 5122,
@@ -58,7 +56,7 @@ export const enum GltfDataType {
 }
 
 /** @internal */
-export const enum GltfConstants {
+export enum GltfConstants {
   CullFace = 2884,
   DepthTest = 2929,
   Nearest = 0x2600,

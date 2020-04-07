@@ -1660,7 +1660,7 @@ export enum ClipEventType {
 }
 
 // @beta
-export const enum ClippingType {
+export enum ClippingType {
     Mask = 1,
     None = 0,
     Planes = 2
@@ -5903,7 +5903,7 @@ export abstract class PrimitiveTool extends InteractiveTool {
 }
 
 // @alpha
-export const enum PrimitiveVisibility {
+export enum PrimitiveVisibility {
     All = 0,
     Instanced = 1,
     Uninstanced = 2
@@ -6330,7 +6330,7 @@ export namespace RenderMemory {
         get visibleEdges(): Consumers;
     }
     // (undocumented)
-    export const enum BufferType {
+    export enum BufferType {
         // (undocumented)
         COUNT = 9,
         // (undocumented)
@@ -6370,7 +6370,7 @@ export namespace RenderMemory {
         totalBytes: number;
     }
     // (undocumented)
-    export const enum ConsumerType {
+    export enum ConsumerType {
         // (undocumented)
         ClipVolumes = 4,
         // (undocumented)
@@ -7346,7 +7346,7 @@ export class SelectionTool extends PrimitiveTool {
 }
 
 // @internal
-export const enum SelectParent {
+export enum SelectParent {
     // (undocumented)
     No = 0,
     // (undocumented)
@@ -8589,7 +8589,7 @@ export class TileAvailability {
     }
 
 // @internal
-export const enum TileBoundingBoxes {
+export enum TileBoundingBoxes {
     Both = 3,
     ChildVolumes = 4,
     Content = 2,
@@ -8667,7 +8667,7 @@ export enum TileGraphicType {
 }
 
 // @beta
-export const enum TileLoadPriority {
+export enum TileLoadPriority {
     Classifier = 50,
     Context = 40,
     Map = 15,
@@ -8676,7 +8676,7 @@ export const enum TileLoadPriority {
 }
 
 // @beta
-export const enum TileLoadStatus {
+export enum TileLoadStatus {
     Abandoned = 5,
     Loading = 2,
     NotFound = 4,
@@ -8718,7 +8718,7 @@ export namespace TileRequest {
     export type Response = Uint8Array | ArrayBuffer | string | ImageSource | undefined;
     export type ResponseData = Uint8Array | ImageSource;
     // @internal
-    export const enum State {
+    export enum State {
         Completed = 3,
         Dispatched = 1,
         Failed = 4,
@@ -8858,7 +8858,7 @@ export class TileUsageMarker {
     }
 
 // @beta
-export const enum TileVisibility {
+export enum TileVisibility {
     OutsideFrustum = 0,
     TooCoarse = 1,
     Visible = 2
@@ -9943,7 +9943,7 @@ export class ViewHandleArray {
 }
 
 // @internal (undocumented)
-export const enum ViewHandleType {
+export enum ViewHandleType {
     // (undocumented)
     Fly = 64,
     // (undocumented)

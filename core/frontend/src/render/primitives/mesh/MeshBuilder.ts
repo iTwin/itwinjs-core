@@ -284,7 +284,7 @@ export class MeshEdgeCreationOptions {
 
 /** @internal */
 export namespace MeshEdgeCreationOptions {
-  export const enum Type {  // tslint:disable-line:no-const-enum
+  export enum Type {
     NoEdges = 0x0000,
     SheetEdges = 0x0001 << 0,
     CreaseEdges = 0x0001 << 1,

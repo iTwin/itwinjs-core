@@ -70,7 +70,7 @@ import { ViewRect } from "../ViewRect";
 import { SpatialViewState, ViewState, ViewState2d, ViewState3d } from "../ViewState";
 import { SheetViewState } from "../Sheet";
 
-const enum Tile3dPlacement { // tslint:disable-line:no-const-enum
+const enum Tile3dPlacement {
   UpperLeft,
   UpperRight,
   LowerLeft,

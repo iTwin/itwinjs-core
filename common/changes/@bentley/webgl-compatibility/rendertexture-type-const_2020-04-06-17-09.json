@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/webgl-compatibility",
+      "comment": "Remove 'const' from exported enums.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/webgl-compatibility",
+  "email": "Paul.Connelly@bentley.com"
+}

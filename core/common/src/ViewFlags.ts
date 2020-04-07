@@ -9,7 +9,7 @@
 import { JsonUtils } from "@bentley/bentleyjs-core";
 
 /** @internal */
-export const enum AntiAliasPref { Detect = 0, On = 1, Off = 2 } // tslint:disable-line:no-const-enum
+export enum AntiAliasPref { Detect = 0, On = 1, Off = 2 }
 
 /** Enumerates the available rendering modes. The rendering mode chiefly controls whether and how surfaces and their edges are drawn.
  * Generally speaking,
@@ -349,7 +349,7 @@ export class ViewFlags {
 /** Values used by [[ViewFlagOverrides]] to indicate which aspects of the [[ViewFlags]] are overridden.
  * @public
  */
-export const enum ViewFlagPresence { // tslint:disable-line:no-const-enum
+export enum ViewFlagPresence {
   RenderMode,
   Dimensions,
   Patterns,

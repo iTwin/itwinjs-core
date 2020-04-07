@@ -44,7 +44,7 @@ import { Scene } from "./Scene";
  * @see [[RenderTargetDebugControl]].
  * @alpha
  */
-export const enum PrimitiveVisibility { // tslint:disable-line:no-const-enum
+export enum PrimitiveVisibility {
   /** Draw all primitives. */
   All,
   /** Only draw instanced primitives. */

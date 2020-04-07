@@ -14,7 +14,7 @@ import { ColorDef } from "@bentley/imodeljs-common";
 /** Describes the type of a RenderClipVolume.
  * @beta
  */
-export const enum ClippingType { // tslint:disable-line:no-const-enum
+export enum ClippingType {
   /** No clip volume. */
   None,
   /** A 2d mask which excludes geometry obscured by the mask. */

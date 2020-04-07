@@ -41,7 +41,7 @@ const enum ViewHandleWeight {
 }
 
 /** @internal */
-export const enum ViewHandleType {  // tslint:disable-line:no-const-enum
+export enum ViewHandleType {
   None = 0,
   Rotate = 1,
   TargetCenter = 1 << 1,
