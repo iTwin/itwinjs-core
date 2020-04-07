@@ -1,6 +1,6 @@
 {
   "name": "@bentley/geonames-extension",
-  "version": "2.0.0-dev.58",
+  "version": "2.0.0-dev.59",
   "description": "Geolocation Extension",
   "main": "index.js",
   "license": "MIT",
@@ -24,9 +24,9 @@
     "url": "http://www.bentley.com"
   },
   "devDependencies": {
-    "@bentley/build-tools": "2.0.0-dev.58",
-    "@bentley/config-loader": "2.0.0-dev.58",
-    "@bentley/extension-webpack-tools": "2.0.0-dev.58",
+    "@bentley/build-tools": "2.0.0-dev.59",
+    "@bentley/config-loader": "2.0.0-dev.59",
+    "@bentley/extension-webpack-tools": "2.0.0-dev.59",
     "@types/node": "10.14.1",
     "cpx": "^1.5.0",
     "rimraf": "^3.0.2",
@@ -35,13 +35,13 @@
     "typescript": "~3.7.4"
   },
   "dependencies": {
-    "@bentley/bentleyjs-core": "2.0.0-dev.58",
-    "@bentley/geometry-core": "2.0.0-dev.58",
-    "@bentley/imodeljs-clients": "2.0.0-dev.58",
-    "@bentley/imodeljs-common": "2.0.0-dev.58",
-    "@bentley/imodeljs-i18n": "2.0.0-dev.58",
-    "@bentley/imodeljs-frontend": "2.0.0-dev.58",
-    "@bentley/imodeljs-quantity": "2.0.0-dev.58",
+    "@bentley/bentleyjs-core": "2.0.0-dev.59",
+    "@bentley/geometry-core": "2.0.0-dev.59",
+    "@bentley/imodeljs-clients": "2.0.0-dev.59",
+    "@bentley/imodeljs-common": "2.0.0-dev.59",
+    "@bentley/imodeljs-i18n": "2.0.0-dev.59",
+    "@bentley/imodeljs-frontend": "2.0.0-dev.59",
+    "@bentley/imodeljs-quantity": "2.0.0-dev.59",
     "svg-sprite-loader": "4.2.1"
   }
 }
