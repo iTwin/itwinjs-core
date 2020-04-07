@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-clients-backend",
-  "version": "2.0.0-dev.57",
+  "version": "2.0.0-dev.58",
   "description": "Clients for various Bentley Services used by iModel.js at the backend",
   "main": "lib/imodeljs-clients-backend.js",
   "browser": {
@@ -39,23 +39,23 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.0.0-dev.57",
-    "@bentley/geometry-core": "^2.0.0-dev.57",
-    "@bentley/imodeljs-clients": "^2.0.0-dev.57",
-    "@bentley/imodeljs-common": "^2.0.0-dev.57"
+    "@bentley/bentleyjs-core": "^2.0.0-dev.58",
+    "@bentley/geometry-core": "^2.0.0-dev.58",
+    "@bentley/imodeljs-clients": "^2.0.0-dev.58",
+    "@bentley/imodeljs-common": "^2.0.0-dev.58"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.0.0-dev.57",
-    "@bentley/build-tools": "2.0.0-dev.57",
-    "@bentley/config-loader": "2.0.0-dev.57",
-    "@bentley/geometry-core": "2.0.0-dev.57",
-    "@bentley/imodeljs-clients": "2.0.0-dev.57",
-    "@bentley/imodeljs-common": "2.0.0-dev.57",
-    "@bentley/oidc-signin-tool": "2.0.0-dev.57",
+    "@bentley/bentleyjs-core": "2.0.0-dev.58",
+    "@bentley/build-tools": "2.0.0-dev.58",
+    "@bentley/config-loader": "2.0.0-dev.58",
+    "@bentley/geometry-core": "2.0.0-dev.58",
+    "@bentley/imodeljs-clients": "2.0.0-dev.58",
+    "@bentley/imodeljs-common": "2.0.0-dev.58",
+    "@bentley/oidc-signin-tool": "2.0.0-dev.58",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
     "@types/nock": "^9.1.2",
