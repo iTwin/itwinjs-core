@@ -3909,6 +3909,8 @@ export abstract class IModelConnection extends IModel {
     requestSnap(props: SnapRequestProps): Promise<SnapResponseProps>;
     saveChanges(description?: string): Promise<void>;
     readonly selectionSet: SelectionSet;
+    // @internal (undocumented)
+    setEcefLocation(ecef: EcefLocationProps): void;
     spatialToCartographic(spatial: XYAndZ, result?: Cartographic): Promise<Cartographic>;
     spatialToCartographicFromGcs(spatial: XYAndZ, result?: Cartographic): Promise<Cartographic>;
     // @internal
@@ -4002,6 +4004,8 @@ export namespace IModelConnection {
         getTileTreeProps(id: string): Promise<TileTreeProps>;
         // @internal (undocumented)
         get isDisposed(): boolean;
+        // @internal (undocumented)
+        onEcefChanged(): void;
         purge(olderThan: BeTimePoint, exclude?: Set<TileTree>): void;
         // @internal (undocumented)
         purgeTileTrees(modelIds: Id64Array | undefined): Promise<void>;
@@ -8848,6 +8852,7 @@ export class TileTreeSet {
 export interface TileTreeSupplier {
     compareTileTreeIds(lhs: any, rhs: any): number;
     createTileTree(id: any, iModel: IModelConnection): Promise<TileTree | undefined>;
+    readonly isEcefDependent?: true;
 }
 
 // @beta

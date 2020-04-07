@@ -88,6 +88,8 @@ function compareMatrices(lhs: Matrix3d, rhs: Matrix3d): number {
 }
 
 class RealityTreeSupplier implements TileTreeSupplier {
+  public readonly isEcefDependent = true;
+
   public getOwner(treeId: RealityTreeId, iModel: IModelConnection): TileTreeOwner {
     return iModel.tiles.getTileTreeOwner(treeId, this);
   }

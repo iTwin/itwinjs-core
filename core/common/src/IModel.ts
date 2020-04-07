@@ -212,7 +212,7 @@ export abstract class IModel implements IModelProps {
   public get ecefLocation(): EcefLocation | undefined { return this._ecefLocation; }
 
   /** Set the [EcefLocation]($docs/learning/glossary#ecefLocation) for this iModel. */
-  public setEcefLocation(ecef: EcefLocationProps) {
+  public setEcefLocation(ecef: EcefLocationProps): void {
     this._ecefLocation = new EcefLocation(ecef);
     this._ecefTrans = undefined;
   }

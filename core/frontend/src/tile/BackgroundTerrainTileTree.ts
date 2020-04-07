@@ -469,6 +469,8 @@ class BackgroundTerrainTileTree extends MapTileTree {
 }
 
 class BackgroundTerrainTreeSupplier implements TileTreeSupplier {
+  public readonly isEcefDependent = true;
+
   public compareTileTreeIds(lhs: BackgroundTerrainTreeId, rhs: BackgroundTerrainTreeId): number {
     if (lhs.wantSkirts !== rhs.wantSkirts)
       return lhs.wantSkirts ? 1 : -1;
