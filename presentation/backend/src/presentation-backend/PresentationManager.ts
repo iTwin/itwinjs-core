@@ -9,7 +9,10 @@
 import * as path from "path";
 import * as hash from "object-hash";
 import { ClientRequestContext, Id64String, Id64, DbResult, Logger } from "@bentley/bentleyjs-core";
-import { BriefcaseDb, IModelDb, Element, GeometricElement, GeometricElement3d } from "@bentley/imodeljs-backend";
+import {
+  BriefcaseDb, IModelDb, Element, GeometricElement, GeometricElement3d,
+  EventSinkManager, EventSink, IModelHost,
+} from "@bentley/imodeljs-backend";
 import {
   PresentationError, PresentationStatus,
   HierarchyRequestOptions, NodeKey, Node, NodePathElement,
@@ -23,6 +26,7 @@ import { NativePlatformDefinition, createDefaultNativePlatform, NativePlatformRe
 import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager";
 import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
 import { PRESENTATION_BACKEND_ASSETS_ROOT, PRESENTATION_COMMON_PUBLIC_ROOT } from "./Constants";
+import { UpdatesTracker } from "./UpdatesTracker";
 
 /**
  * Presentation manager working mode.
@@ -140,6 +144,14 @@ export interface PresentationManagerProps {
   mode?: PresentationManagerMode;
 
   /**
+   * The interval (in milliseconds) used to poll for presentation data changes. Only has
+   * effect in read-write mode (see [[mode]]).
+   *
+   * @alpha
+   */
+  updatesPollInterval?: number;
+
+  /**
    * An identifier which helps separate multiple presentation managers. It's
    * mostly useful in tests where multiple presentation managers can co-exist
    * and try to share the same resources, which we don't want. With this identifier
@@ -151,6 +163,9 @@ export interface PresentationManagerProps {
 
   /** @internal */
   addon?: NativePlatformDefinition;
+
+  /** @internal */
+  eventSink?: EventSink;
 }
 
 /**
@@ -164,8 +179,10 @@ export class PresentationManager {
   private _props: PresentationManagerProps;
   private _nativePlatform?: NativePlatformDefinition;
   private _rulesets: RulesetManager;
+  private _isOneFrontendPerBackend: boolean;
   private _isDisposed: boolean;
   private _disposeIModelOpenedListener?: () => void;
+  private _updatesTracker?: UpdatesTracker;
 
   /** Get / set active locale used for localizing presentation data */
   public activeLocale: string | undefined;
@@ -178,27 +195,46 @@ export class PresentationManager {
    * @param props Optional configuration properties.
    */
   constructor(props?: PresentationManagerProps) {
-    this._props = props || {};
+    this._props = props ?? {};
     this._isDisposed = false;
+
+    const mode = props?.mode ?? PresentationManagerMode.ReadWrite;
+    const isChangeTrackingEnabled = (mode === PresentationManagerMode.ReadWrite && !!props?.updatesPollInterval);
+
     if (props && props.addon) {
       this._nativePlatform = props.addon;
     } else {
       const nativePlatformImpl = createDefaultNativePlatform({
-        id: this._props.id || "",
+        id: this._props.id ?? "",
         localeDirectories: createLocaleDirectoryList(props),
         taskAllocationsMap: createTaskAllocationsMap(props),
-        mode: (undefined !== this._props.mode) ? this._props.mode : PresentationManagerMode.ReadWrite,
+        mode,
+        isChangeTrackingEnabled,
       });
       this._nativePlatform = new nativePlatformImpl();
     }
+
     this.setupRulesetDirectories(props);
     if (props) {
       this.activeLocale = props.activeLocale;
       this.activeUnitSystem = props.activeUnitSystem;
     }
+
     this._rulesets = new RulesetManagerImpl(this.getNativePlatform);
+
     if (this._props.enableSchemasPreload)
       this._disposeIModelOpenedListener = BriefcaseDb.onOpened.addListener(this.onIModelOpened);
+
+    this._isOneFrontendPerBackend = IModelHost.isNativeAppBackend;
+    if (isChangeTrackingEnabled) {
+      // if change tracking is enabled, assume we're in native app mode even if `IModelHost.isNativeAppBackend` tells we're not
+      this._isOneFrontendPerBackend = true;
+      this._updatesTracker = UpdatesTracker.create({
+        nativePlatformGetter: this.getNativePlatform,
+        eventSink: (props && props.eventSink) ? props.eventSink /* istanbul ignore next */ : EventSinkManager.global,
+        pollInterval: props!.updatesPollInterval!, // set if `isChangeTrackingEnabled == true`
+      });
+    }
   }
 
   /**
@@ -209,8 +245,15 @@ export class PresentationManager {
       this.getNativePlatform().dispose();
       this._nativePlatform = undefined;
     }
+
     if (this._disposeIModelOpenedListener)
       this._disposeIModelOpenedListener();
+
+    if (this._updatesTracker) {
+      this._updatesTracker.dispose();
+      this._updatesTracker = undefined;
+    }
+
     this._isDisposed = true;
   }
 
@@ -257,29 +300,37 @@ export class PresentationManager {
       this.getNativePlatform().setupRulesetDirectories(props.rulesetDirectories);
   }
 
-  private ensureRulesetRegistered<TOptions extends { rulesetOrId: Ruleset | string }>(options: TOptions) {
-    const { rulesetOrId, ...strippedOptions } = options;
-    let nativeRulesetId: string;
-    if (rulesetOrId && typeof rulesetOrId === "object") {
-      const rulesetNativeId = `${rulesetOrId.id}-${hash.MD5(rulesetOrId)}`;
-      const rulesetWithNativeId = { ...rulesetOrId, id: rulesetNativeId };
-      nativeRulesetId = this._rulesets.add(rulesetWithNativeId).id;
-    } else {
-      nativeRulesetId = rulesetOrId;
+  /** @internal */
+  public getRulesetId(rulesetOrId: Ruleset | string): string {
+    if (typeof rulesetOrId === "object") {
+      if (this._isOneFrontendPerBackend) {
+        // in case of native apps we don't have to enforce ruleset id uniqueness, since there's ony one
+        // frontend and it's up to the frontend to make sure rulesets are unique
+        return rulesetOrId.id;
+      }
+      return `${rulesetOrId.id}-${hash.MD5(rulesetOrId)}`;
     }
-    return { rulesetId: nativeRulesetId, ...strippedOptions };
+    return rulesetOrId;
+  }
+
+  private ensureRulesetRegistered(rulesetOrId: Ruleset | string): string {
+    if (typeof rulesetOrId === "object") {
+      const rulesetWithNativeId = { ...rulesetOrId, id: this.getRulesetId(rulesetOrId) };
+      return this.rulesets().add(rulesetWithNativeId).id;
+    }
+    return rulesetOrId;
   }
 
   private handleOptions<TOptions extends { rulesetOrId: Ruleset | string, rulesetVariables?: RulesetVariable[] }>(options: TOptions) {
-    const { rulesetVariables, ...strippedOptions } = options;
-    const optionsWithRulesetId = this.ensureRulesetRegistered(strippedOptions);
+    const { rulesetVariables, rulesetOrId, ...strippedOptions } = options;
+    const registeredRulesetId = this.ensureRulesetRegistered(rulesetOrId);
     if (rulesetVariables) {
-      const variablesManager = this.vars(optionsWithRulesetId.rulesetId);
+      const variablesManager = this.vars(registeredRulesetId);
       for (const variable of rulesetVariables) {
         variablesManager.setValue(variable.id, variable.type, variable.value);
       }
     }
-    return optionsWithRulesetId;
+    return { rulesetId: registeredRulesetId, ...strippedOptions };
   }
 
   /**

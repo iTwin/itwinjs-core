@@ -6,7 +6,7 @@ import * as moq from "typemoq";
 import * as sinon from "sinon";
 import { expect, use } from "chai";
 import ChaiAsPromised from "chai-as-promised";
-import { Id64String, Guid } from "@bentley/bentleyjs-core";
+import { Id64String, Guid, BeEvent } from "@bentley/bentleyjs-core";
 import { PresentationManager, Presentation, RulesetManager } from "@bentley/presentation-frontend";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import {
@@ -174,6 +174,7 @@ describe("ContentBuilder", () => {
       presentationManagerMock.reset();
       presentationManagerMock.setup((manager) => manager.rulesets()).returns(() => rulesetManagerMock.object);
       presentationManagerMock.setup(async (manager) => manager.getContent(moq.It.isAny(), moq.It.isAny(), moq.It.isAny())).returns(getEmptyContent);
+      presentationManagerMock.setup((x) => x.onContentUpdate).returns(() => new BeEvent());
       Presentation.setPresentationManager(presentationManagerMock.object);
     });
 

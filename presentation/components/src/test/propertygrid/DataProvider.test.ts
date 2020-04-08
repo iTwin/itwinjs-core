@@ -23,8 +23,7 @@ import {
   CategoryDescription, Content, ContentFlags, Item,
   NestedContentValue, NestedContentField, Property,
   ArrayTypeDescription, PropertyValueFormat, PropertiesField, StructTypeDescription,
-  PresentationError,
-  RegisteredRuleset,
+  PresentationError, RegisteredRuleset, Ruleset, ContentUpdateInfo,
 } from "@bentley/presentation-common";
 import { Presentation, PresentationManager, FavoritePropertiesManager, RulesetManager, FavoritePropertiesScope } from "@bentley/presentation-frontend";
 import { PresentationPropertyDataProvider } from "../../presentation-components/propertygrid/DataProvider";
@@ -63,6 +62,7 @@ describe("PropertyDataProvider", () => {
 
   let rulesetId: string;
   let provider: Provider;
+  let onContentUpdateEvent: BeEvent<(ruleset: Ruleset, info: ContentUpdateInfo) => void>;
   const presentationManagerMock = moq.Mock.ofType<PresentationManager>();
   const rulesetsManagerMock = moq.Mock.ofType<RulesetManager>();
   const favoritePropertiesManagerMock = moq.Mock.ofType<FavoritePropertiesManager>();
@@ -83,7 +83,9 @@ describe("PropertyDataProvider", () => {
   });
 
   beforeEach(() => {
+    onContentUpdateEvent = new BeEvent();
     presentationManagerMock.reset();
+    presentationManagerMock.setup((x) => x.onContentUpdate).returns(() => onContentUpdateEvent);
     presentationManagerMock.setup((x) => x.rulesets()).returns(() => rulesetsManagerMock.object);
     favoritePropertiesManagerMock.reset();
     favoritePropertiesManagerMock.setup((x) => x.onFavoritesChanged).returns(() => moq.Mock.ofType<BeEvent<() => void>>().object);

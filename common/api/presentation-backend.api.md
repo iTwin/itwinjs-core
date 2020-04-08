@@ -9,6 +9,7 @@ import { Content } from '@bentley/presentation-common';
 import { ContentRequestOptions } from '@bentley/presentation-common';
 import { Descriptor } from '@bentley/presentation-common';
 import { DescriptorOverrides } from '@bentley/presentation-common';
+import { EventSink } from '@bentley/imodeljs-backend';
 import { HierarchyRequestOptions } from '@bentley/presentation-common';
 import { Id64String } from '@bentley/bentleyjs-core';
 import { IDisposable } from '@bentley/bentleyjs-core';
@@ -27,6 +28,7 @@ import { Ruleset } from '@bentley/presentation-common';
 import { SelectionInfo } from '@bentley/presentation-common';
 import { SelectionScope } from '@bentley/presentation-common';
 import { SelectionScopeRequestOptions } from '@bentley/presentation-common';
+import { UpdateInfo } from '@bentley/presentation-common';
 import { VariableValue } from '@bentley/presentation-common';
 import { VariableValueJSON } from '@bentley/presentation-common/lib/presentation-common/RulesetVariables';
 import { VariableValueTypes } from '@bentley/presentation-common';
@@ -75,6 +77,8 @@ export class PresentationManager {
         count: number;
     }>;
     getNodesCount(requestContext: ClientRequestContext, requestOptions: HierarchyRequestOptions<IModelDb>, parentKey?: NodeKey): Promise<number>;
+    // @internal (undocumented)
+    getRulesetId(rulesetOrId: Ruleset | string): string;
     getSelectionScopes(requestContext: ClientRequestContext, requestOptions: SelectionScopeRequestOptions<IModelDb>): Promise<SelectionScope[]>;
     // @alpha
     loadHierarchy(requestContext: ClientRequestContext, requestOptions: HierarchyRequestOptions<IModelDb>): Promise<void>;
@@ -97,6 +101,8 @@ export interface PresentationManagerProps {
     // @internal (undocumented)
     addon?: NativePlatformDefinition;
     enableSchemasPreload?: boolean;
+    // @internal (undocumented)
+    eventSink?: EventSink;
     // @internal
     id?: string;
     localeDirectories?: string[];
@@ -107,6 +113,8 @@ export interface PresentationManagerProps {
     taskAllocationsMap?: {
         [priority: number]: number;
     };
+    // @alpha
+    updatesPollInterval?: number;
 }
 
 // @public

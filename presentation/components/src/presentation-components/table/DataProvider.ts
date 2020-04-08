@@ -68,6 +68,13 @@ export interface PresentationTableDataProviderProps {
 
   /** Display type to use when requesting data from the backend. Defaults to [[DefaultContentDisplayTypes.Grid]] */
   displayType?: string;
+
+  /**
+   * A flag telling the provider to not listen for presentation updates
+   * an invalidate cache.
+   * @internal
+   */
+  doNotListenForPresentationUpdates?: boolean;
 }
 
 /**
@@ -89,6 +96,7 @@ export class PresentationTableDataProvider extends ContentDataProvider implement
       ruleset: props.ruleset,
       displayType: props.displayType || DefaultContentDisplayTypes.Grid,
       pagingSize: props.pageSize || TABLE_DATA_PROVIDER_DEFAULT_PAGE_SIZE,
+      doNotListenForPresentationUpdates: props.doNotListenForPresentationUpdates,
     });
     this._pages = new PageContainer(props.pageSize || TABLE_DATA_PROVIDER_DEFAULT_PAGE_SIZE,
       props.cachedPagesCount || TABLE_DATA_PROVIDER_DEFAULT_CACHED_PAGES_COUNT);

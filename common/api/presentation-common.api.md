@@ -197,7 +197,7 @@ export interface ContentRequestOptions<TIModel> extends RequestOptionsWithRulese
 }
 
 // @public
-export type ContentRpcRequestOptions = PresentationRpcRequestOptions & Omit<ContentRequestOptions<IModelRpcProps>, "imodel">;
+export type ContentRpcRequestOptions = PresentationRpcRequestOptions<ContentRequestOptions<any>>;
 
 // @public
 export interface ContentRule extends RuleBase, ConditionContainer {
@@ -226,6 +226,9 @@ export enum ContentSpecificationTypes {
     // (undocumented)
     SelectedNodeInstances = "SelectedNodeInstances"
 }
+
+// @alpha (undocumented)
+export type ContentUpdateInfo = typeof UPDATE_FULL;
 
 // @public
 export type CustomizationRule = InstanceLabelOverride | CheckBoxRule | GroupingRule | ImageIdOverride | LabelOverride | SortingRule | StyleOverride | ExtendedDataRule | NodeArtifactsRule;
@@ -493,7 +496,10 @@ export interface HierarchyRequestOptions<TIModel> extends RequestOptionsWithRule
 }
 
 // @public
-export type HierarchyRpcRequestOptions = PresentationRpcRequestOptions & Omit<HierarchyRequestOptions<IModelRpcProps>, "imodel">;
+export type HierarchyRpcRequestOptions = PresentationRpcRequestOptions<HierarchyRequestOptions<any>>;
+
+// @alpha (undocumented)
+export type HierarchyUpdateInfo = typeof UPDATE_FULL | Array<NodeInsertionInfo | NodeDeletionInfo | NodeUpdateInfo>;
 
 // @public
 export interface ImageIdOverride extends RuleBase, ConditionContainer {
@@ -759,7 +765,7 @@ export interface LabelRequestOptions<TIModel> extends RequestOptions<TIModel> {
 }
 
 // @public
-export type LabelRpcRequestOptions = PresentationRpcRequestOptions & Omit<LabelRequestOptions<IModelRpcProps>, "imodel">;
+export type LabelRpcRequestOptions = PresentationRpcRequestOptions<LabelRequestOptions<any>>;
 
 // @public
 export enum LoggingNamespaces {
@@ -888,6 +894,24 @@ export interface NodeArtifactsRule extends RuleBase, ConditionContainer {
     ruleType: RuleTypes.NodeArtifacts;
 }
 
+// @alpha (undocumented)
+export interface NodeDeletionInfo {
+    // (undocumented)
+    node: Node;
+    // (undocumented)
+    type: "Delete";
+}
+
+// @alpha (undocumented)
+export interface NodeInsertionInfo {
+    // (undocumented)
+    node: Node;
+    // (undocumented)
+    position: number;
+    // (undocumented)
+    type: "Insert";
+}
+
 // @public
 export type NodeKey = BaseNodeKey | ECInstancesNodeKey | ECClassGroupingNodeKey | ECPropertyGroupingNodeKey | LabelGroupingNodeKey;
 
@@ -939,6 +963,20 @@ export interface NodePathFilteringData {
     matchesCount: number;
 }
 
+// @alpha (undocumented)
+export interface NodeUpdateInfo {
+    // (undocumented)
+    changes: Array<{
+        name: string;
+        old: unknown;
+        new: unknown;
+    }>;
+    // (undocumented)
+    node: Node;
+    // (undocumented)
+    type: "Update";
+}
+
 // @public
 export type Omit<T, K> = Pick<T, Exclude<keyof T, K>>;
 
@@ -957,6 +995,11 @@ export interface PageOptions {
 export class PresentationError extends BentleyError {
     constructor(errorNumber: PresentationStatus, message?: string, log?: LogFunction, getMetaData?: GetMetaDataFunction);
     protected _initName(): string;
+}
+
+// @alpha (undocumented)
+export enum PresentationRpcEvents {
+    Update = "OnUpdate"
 }
 
 // @public
@@ -1002,9 +1045,9 @@ export class PresentationRpcInterface extends RpcInterface {
 }
 
 // @public
-export interface PresentationRpcRequestOptions {
+export type PresentationRpcRequestOptions<TManagerRequestOptions> = Omit<TManagerRequestOptions, "imodel"> & {
     clientId?: string;
-}
+};
 
 // @public
 export type PresentationRpcResponse<TResult = undefined> = Promise<{
@@ -1372,9 +1415,9 @@ export class RpcRequestsHandler implements IDisposable {
     getSelectionScopes(options: SelectionScopeRequestOptions<IModelRpcProps>): Promise<SelectionScope[]>;
     // (undocumented)
     loadHierarchy(options: HierarchyRequestOptions<IModelRpcProps>): Promise<void>;
-    request<TResult, TOptions extends PresentationRpcRequestOptions & {
+    request<TResult, TOptions extends {
         imodel: IModelRpcProps;
-    }, TArg = any>(context: any, func: (token: IModelRpcProps, options: Omit<TOptions, "imodel">, ...args: TArg[]) => PresentationRpcResponse<TResult>, options: TOptions, ...args: TArg[]): Promise<TResult>;
+    }, TArg = any>(context: any, func: (token: IModelRpcProps, options: PresentationRpcRequestOptions<Omit<TOptions, "imodel">>, ...args: TArg[]) => PresentationRpcResponse<TResult>, options: TOptions, ...args: TArg[]): Promise<TResult>;
     }
 
 // @internal
@@ -1506,7 +1549,7 @@ export interface SelectionScopeRequestOptions<TIModel> extends RequestOptions<TI
 }
 
 // @public
-export type SelectionScopeRpcRequestOptions = PresentationRpcRequestOptions & Omit<SelectionScopeRequestOptions<IModelRpcProps>, "imodel">;
+export type SelectionScopeRpcRequestOptions = PresentationRpcRequestOptions<SelectionScopeRequestOptions<any>>;
 
 // @public
 export interface SingleSchemaClassSpecification {
@@ -1589,6 +1632,18 @@ export interface SupplementationInfo {
 
 // @public
 export type TypeDescription = PrimitiveTypeDescription | ArrayTypeDescription | StructTypeDescription;
+
+// @alpha (undocumented)
+export const UPDATE_FULL = "FULL";
+
+// @alpha (undocumented)
+export interface UpdateInfo {
+    // (undocumented)
+    [rulesetId: string]: {
+        hierarchy?: HierarchyUpdateInfo;
+        content?: ContentUpdateInfo;
+    };
+}
 
 // @public
 export type Value = string | number | boolean | undefined | ValuesMap | ValuesArray | NestedContentValue[];

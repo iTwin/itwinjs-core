@@ -13,10 +13,9 @@ import {
   Node, NodeKey, NodePathElement,
   Descriptor, SelectionInfo,
   PresentationError, PresentationStatus,
-  Paged, RequestOptions, InstanceKey, KeySet,
-  Omit, SelectionScope, DescriptorOverrides,
-  PresentationRpcResponse, PresentationRpcRequestOptions,
-  HierarchyRpcRequestOptions, ContentRpcRequestOptions,
+  Paged, InstanceKey, KeySet,
+  SelectionScope, DescriptorOverrides,
+  PresentationRpcResponse, HierarchyRpcRequestOptions, ContentRpcRequestOptions,
   SelectionScopeRpcRequestOptions,
   LabelRpcRequestOptions, PresentationRpcInterface, Ruleset, LabelDefinition,
 } from "@bentley/presentation-common";
@@ -90,22 +89,17 @@ export class PresentationRpcImpl extends PresentationRpcInterface {
     return imodel;
   }
 
-  private toIModelDbOptions<TOptions extends (PresentationRpcRequestOptions & Omit<RequestOptions<IModelRpcProps>, "imodel" | "rulesetId">)>(token: IModelRpcProps, options: TOptions) {
-    const { clientId, ...requestOptions } = options;
-    return { ...requestOptions, imodel: this.getIModel(token) };
-  }
-
-  private async makeRequest<TResult>(token: IModelRpcProps, requestOptions: any, request: ContentGetter<Promise<TResult>>): PresentationRpcResponse<TResult> {
+  private async makeRequest<TOptions extends { rulesetOrId?: Ruleset | string, clientId?: string }, TResult>(token: IModelRpcProps, requestOptions: TOptions, request: ContentGetter<Promise<TResult>>): PresentationRpcResponse<TResult> {
     const requestContext = ClientRequestContext.current;
-
-    let options: {};
+    let imodel: IModelDb;
     try {
-      options = this.toIModelDbOptions(token, requestOptions);
+      imodel = this.getIModel(token);
     } catch (e) {
       return this.errorResponse((e as PresentationError).errorNumber, (e as PresentationError).message);
     }
 
-    const resultPromise = request(requestContext, options)
+    const { clientId, ...options } = requestOptions;
+    const resultPromise = request(requestContext, { ...options, imodel })
       .then((result: TResult) => this.successResponse(result))
       .catch((e: PresentationError) => this.errorResponse(e.errorNumber, e.message));
 

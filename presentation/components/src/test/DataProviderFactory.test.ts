@@ -10,16 +10,18 @@ import * as sinon from "sinon";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { createRandomContent, createRandomRuleset, createRandomDescriptor, createRandomPrimitiveField } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { createRandomPropertyRecord } from "./_helpers/UiComponents";
-import { RulesetsFactory, Content, Item } from "@bentley/presentation-common";
+import { RulesetsFactory, Content, Item, Ruleset, ContentUpdateInfo } from "@bentley/presentation-common";
 import { Presentation, PresentationManager, RulesetManager } from "@bentley/presentation-frontend";
 import { TypeConverterManager, TypeConverter } from "@bentley/ui-components";
 import {
   IPresentationPropertyDataProvider, PresentationTableDataProvider,
   DataProvidersFactory, DataProvidersFactoryProps,
 } from "../presentation-components";
+import { BeEvent } from "@bentley/bentleyjs-core";
 
 describe("DataProvidersFactory", () => {
 
+  let onContentUpdateEvent: BeEvent<(ruleset: Ruleset, info: ContentUpdateInfo) => void>;
   const presentationManagerMock = moq.Mock.ofType<PresentationManager>();
   const propertiesProvider = moq.Mock.ofType<IPresentationPropertyDataProvider>();
   let factory: DataProvidersFactory | undefined;
@@ -36,8 +38,10 @@ describe("DataProvidersFactory", () => {
   beforeEach(() => {
     props = undefined;
     factory = undefined;
+    onContentUpdateEvent = new BeEvent();
     propertiesProvider.reset();
     presentationManagerMock.reset();
+    presentationManagerMock.setup((x) => x.onContentUpdate).returns(() => onContentUpdateEvent);
     presentationManagerMock.setup((x) => x.rulesets()).returns(() => moq.Mock.ofType<RulesetManager>().object);
   });
 

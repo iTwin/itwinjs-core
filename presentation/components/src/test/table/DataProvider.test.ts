@@ -18,6 +18,7 @@ import {
   PresentationError, ValuesDictionary, Content,
   DefaultContentDisplayTypes, Descriptor, Item,
   SortDirection as ContentSortDirection, KeySet,
+  Ruleset, ContentUpdateInfo,
 } from "@bentley/presentation-common";
 import { Presentation, PresentationManager } from "@bentley/presentation-frontend";
 import { RowItem } from "@bentley/ui-components";
@@ -25,6 +26,7 @@ import { CacheInvalidationProps } from "../../presentation-components/common/Con
 import { PresentationTableDataProvider } from "../../presentation-components/table/DataProvider";
 import { initializeLocalization } from "../../presentation-components/common/Utils";
 import { I18N } from "@bentley/imodeljs-i18n";
+import { BeEvent } from "@bentley/bentleyjs-core";
 
 /**
  * This is just a helper class to provide public access to
@@ -40,6 +42,7 @@ describe("TableDataProvider", () => {
   let rulesetId: string;
   let provider: Provider;
   let invalidateCacheSpy: sinon.SinonSpy<[CacheInvalidationProps], void>;
+  let onContentUpdateEvent: BeEvent<(ruleset: Ruleset, info: ContentUpdateInfo) => void>;
   const presentationManagerMock = moq.Mock.ofType<PresentationManager>();
   const imodelMock = moq.Mock.ofType<IModelConnection>();
 
@@ -57,7 +60,9 @@ describe("TableDataProvider", () => {
   });
 
   beforeEach(() => {
+    onContentUpdateEvent = new BeEvent();
     presentationManagerMock.reset();
+    presentationManagerMock.setup((x) => x.onContentUpdate).returns(() => onContentUpdateEvent);
     provider = new Provider({ imodel: imodelMock.object, ruleset: rulesetId });
     provider.keys = new KeySet([createRandomECInstanceKey()]);
     invalidateCacheSpy = sinon.spy(provider, "invalidateCache");

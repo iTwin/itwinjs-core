@@ -106,6 +106,8 @@ export class ContentDataProvider implements IContentDataProvider {
 // @public
 export interface ContentDataProviderProps {
     displayType: string;
+    // @internal
+    doNotListenForPresentationUpdates?: boolean;
     imodel: IModelConnection;
     pagingSize?: number;
     ruleset: string | Ruleset;
@@ -150,7 +152,7 @@ export interface DataProvidersFactoryProps {
 }
 
 // @beta @deprecated
-export function DEPRECATED_controlledTreeWithFilteringSupport<P extends ControlledTreeWithVisibleNodesProps>(TreeComponent: React.FC<P>): React.FC<Pick<P & ControlledTreeWithFilteringSupportProps, "filter" | "onFilterApplied" | "onMatchesCounted" | "activeMatchIndex" | "nodeLoader" | "onNodeLoaderChanged" | Exclude<keyof P, "visibleNodes">>>;
+export function DEPRECATED_controlledTreeWithFilteringSupport<P extends ControlledTreeWithVisibleNodesProps>(TreeComponent: React.FC<P>): React.FC<Pick<P & ControlledTreeWithFilteringSupportProps, "filter" | "nodeLoader" | "onFilterApplied" | "onMatchesCounted" | "onNodeLoaderChanged" | "activeMatchIndex" | Exclude<keyof P, "visibleNodes">>>;
 
 // @beta @deprecated
 export function DEPRECATED_controlledTreeWithVisibleNodes<P extends ControlledTreeProps>(TreeComponent: React.FC<P>): React.FC<Pick<P & ControlledTreeWithVisibleNodesProps, "style" | "className" | "selectionMode" | "nodeHighlightingProps" | "nodeLoader" | "treeEvents" | "descriptionsEnabled" | "iconsEnabled" | "treeRenderer" | "spinnerRenderer" | "noDataRenderer" | Exclude<keyof P, "visibleNodes">>>;
@@ -289,6 +291,8 @@ export class PresentationTableDataProvider extends ContentDataProvider implement
 export interface PresentationTableDataProviderProps {
     cachedPagesCount?: number;
     displayType?: string;
+    // @internal
+    doNotListenForPresentationUpdates?: boolean;
     imodel: IModelConnection;
     pageSize?: number;
     ruleset: string | Ruleset;

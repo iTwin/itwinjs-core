@@ -15,16 +15,18 @@ import {
 } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { I18N, I18NNamespace } from "@bentley/imodeljs-i18n";
 import { IModelRpcProps } from "@bentley/imodeljs-common";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { IModelConnection, EventSource } from "@bentley/imodeljs-frontend";
 import {
   KeySet, Content, HierarchyRequestOptions, Node, Ruleset, VariableValueTypes, RulesetVariable,
   Paged, ContentRequestOptions, RpcRequestsHandler, LabelRequestOptions, NodeKey, NodePathElement,
-  InstanceKey, Descriptor, RequestPriority, PresentationUnitSystem,
+  InstanceKey, Descriptor, RequestPriority, PresentationRpcInterface, PresentationRpcEvents,
+  PresentationUnitSystem, UpdateInfo, HierarchyUpdateInfo, ContentUpdateInfo,
 } from "@bentley/presentation-common";
 import { PresentationManager } from "../presentation-frontend/PresentationManager";
 import { RulesetVariablesManagerImpl } from "../presentation-frontend/RulesetVariablesManager";
 import { RulesetManagerImpl } from "../presentation-frontend/RulesetManager";
 import { Presentation } from "../presentation-frontend/Presentation";
+import { using, BeDuration } from "@bentley/bentleyjs-core";
 
 describe("PresentationManager", () => {
 
@@ -111,6 +113,12 @@ describe("PresentationManager", () => {
       expect(mgr.rpcRequestsHandler.clientId).to.eq(props.clientId);
     });
 
+    it("starts listening to update events", async () => {
+      const eventSource = sinon.createStubInstance(EventSource) as unknown as EventSource;
+      PresentationManager.create({ eventSource });
+      expect(eventSource.on).to.be.calledOnceWith(PresentationRpcInterface.interfaceName, PresentationRpcEvents.Update, sinon.match((arg) => typeof arg === "function"));
+    });
+
   });
 
   describe("dispose", () => {
@@ -118,6 +126,12 @@ describe("PresentationManager", () => {
     it("disposes RPC requests handler", () => {
       manager.dispose();
       rpcRequestsHandlerMock.verify((x) => x.dispose(), moq.Times.once());
+    });
+
+    it("stops listening to update events", async () => {
+      const eventSource = sinon.createStubInstance(EventSource) as unknown as EventSource;
+      using(PresentationManager.create({ eventSource }), (_) => { });
+      expect(eventSource.off).to.be.calledOnceWith(PresentationRpcInterface.interfaceName, PresentationRpcEvents.Update, sinon.match((arg) => typeof arg === "function"));
     });
 
   });
@@ -758,6 +772,64 @@ describe("PresentationManager", () => {
         .verifiable();
       await manager.getNodesCount(options);
       rpcRequestsHandlerMock.verifyAll();
+    });
+
+  });
+
+  describe("listening to updates", () => {
+
+    let eventSourceListener: (report: UpdateInfo) => void;
+    let hierarchyUpdatesSpy: sinon.SinonSpy<[Ruleset, HierarchyUpdateInfo], void>;
+    let contentUpdatesSpy: sinon.SinonSpy<[Ruleset, ContentUpdateInfo], void>;
+
+    beforeEach(() => {
+      const eventSource = sinon.createStubInstance(EventSource);
+      manager = PresentationManager.create({ eventSource: eventSource as unknown as EventSource });
+
+      eventSourceListener = eventSource.on.args[0][2];
+      expect(eventSourceListener).to.not.be.undefined;
+
+      hierarchyUpdatesSpy = sinon.spy() as any;
+      manager.onHierarchyUpdate.addListener(hierarchyUpdatesSpy);
+
+      contentUpdatesSpy = sinon.spy() as any;
+      manager.onContentUpdate.addListener(contentUpdatesSpy);
+    });
+
+    it("triggers appropriate hierarchy and content events on update event", async () => {
+      const ruleset1: Ruleset = { id: "1", rules: [] };
+      const ruleset2: Ruleset = { id: "2", rules: [] };
+      const ruleset3: Ruleset = { id: "3", rules: [] };
+      const ruleset4: Ruleset = { id: "4", rules: [] };
+      await manager.rulesets().add(ruleset1);
+      await manager.rulesets().add(ruleset2);
+      await manager.rulesets().add(ruleset3);
+
+      const report: UpdateInfo = {
+        [ruleset1.id]: {
+          hierarchy: "FULL",
+          content: "FULL",
+        },
+        [ruleset2.id]: {
+          hierarchy: [],
+        },
+        [ruleset3.id]: {
+          content: "FULL",
+        },
+        [ruleset4.id]: {},
+      };
+      eventSourceListener(report);
+
+      // workaround for a floating promise...
+      await BeDuration.wait(1);
+
+      expect(hierarchyUpdatesSpy).to.be.calledTwice;
+      expect(hierarchyUpdatesSpy.firstCall).to.be.calledWith(sinon.match((r) => r.id === ruleset1.id), "FULL");
+      expect(hierarchyUpdatesSpy.secondCall).to.be.calledWith(sinon.match((r) => r.id === ruleset2.id), []);
+
+      expect(contentUpdatesSpy).to.be.calledTwice;
+      expect(contentUpdatesSpy.firstCall).to.be.calledWith(sinon.match((r) => r.id === ruleset1.id), "FULL");
+      expect(contentUpdatesSpy.secondCall).to.be.calledWith(sinon.match((r) => r.id === ruleset3.id), "FULL");
     });
 
   });

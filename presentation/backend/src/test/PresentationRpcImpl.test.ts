@@ -59,7 +59,7 @@ describe("PresentationRpcImpl", () => {
   describe("calls forwarding", () => {
 
     let testData: any;
-    let defaultRpcParams: PresentationRpcRequestOptions;
+    let defaultRpcParams: { clientId: string };
     let impl: PresentationRpcImpl;
     let stub_IModelDb_findByKey: sinon.SinonStub<[string], IModelDb>; // tslint:disable-line: variable-name
     const presentationManagerMock = moq.Mock.ofType<PresentationManager>();
@@ -96,7 +96,7 @@ describe("PresentationRpcImpl", () => {
       stub_IModelDb_findByKey.throws(IModelNotFoundResponse);
       const options: Paged<HierarchyRpcRequestOptions> = {
         ...defaultRpcParams,
-        rulesetOrId: testData.rulesetId,
+        rulesetOrId: testData.rulesetOrId,
       };
 
       const response = await impl.getNodes(testData.imodelToken, options);
@@ -108,8 +108,8 @@ describe("PresentationRpcImpl", () => {
       it("calls manager for root nodes", async () => {
         const getRootNodesResult: Node[] = [createRandomECInstancesNode(), createRandomECInstancesNode(), createRandomECInstancesNode()];
         const getRootNodesCountResult = 999;
-        const options: Paged<Omit<HierarchyRequestOptions<IModelRpcProps>, "imodel">> = {
-          rulesetOrId: testData.rulesetId,
+        const options: PresentationRpcRequestOptions<Paged<HierarchyRequestOptions<any>>> = {
+          rulesetOrId: testData.rulesetOrId,
           paging: testData.pageOptions,
         };
 
@@ -127,8 +127,8 @@ describe("PresentationRpcImpl", () => {
         const getChildNodeResult: Node[] = [createRandomECInstancesNode(), createRandomECInstancesNode(), createRandomECInstancesNode()];
         const getChildNodesCountResult = 999;
         const parentNodeKey = createRandomECInstancesNodeKey();
-        const options: Paged<Omit<HierarchyRequestOptions<IModelRpcProps>, "imodel">> = {
-          rulesetOrId: testData.rulesetId,
+        const options: Paged<Omit<HierarchyRequestOptions<any>, "imodel">> = {
+          rulesetOrId: testData.rulesetOrId,
           paging: testData.pageOptions,
         };
 
@@ -144,8 +144,8 @@ describe("PresentationRpcImpl", () => {
 
       it("should return `PresentationStatus.BackendTimeout` without any result if manager request takes more than requestTimeout", async () => {
         const parentNodeKey = createRandomECInstancesNodeKey();
-        const options: Paged<Omit<HierarchyRequestOptions<IModelRpcProps>, "imodel">> = {
-          rulesetOrId: testData.rulesetId,
+        const options: Paged<Omit<HierarchyRequestOptions<any>, "imodel">> = {
+          rulesetOrId: testData.rulesetOrId,
           paging: testData.pageOptions,
         };
         const result = new ResolvablePromise<{ nodes: Node[], count: number }>();
@@ -166,8 +166,8 @@ describe("PresentationRpcImpl", () => {
           clientManagerFactory: () => presentationManagerMock.object,
         });
         const parentNodeKey = createRandomECInstancesNodeKey();
-        const options: Paged<Omit<HierarchyRequestOptions<IModelRpcProps>, "imodel">> = {
-          rulesetOrId: testData.rulesetId,
+        const options: Paged<Omit<HierarchyRequestOptions<any>, "imodel">> = {
+          rulesetOrId: testData.rulesetOrId,
           paging: testData.pageOptions,
         };
         const result = new ResolvablePromise<{ nodes: Node[], count: number }>();
@@ -188,8 +188,8 @@ describe("PresentationRpcImpl", () => {
 
       it("should return error result if manager throws", async () => {
         const parentNodeKey = createRandomECInstancesNodeKey();
-        const options: Paged<Omit<HierarchyRequestOptions<IModelRpcProps>, "imodel">> = {
-          rulesetOrId: testData.rulesetId,
+        const options: Paged<Omit<HierarchyRequestOptions<any>, "imodel">> = {
+          rulesetOrId: testData.rulesetOrId,
           paging: testData.pageOptions,
         };
 
@@ -212,8 +212,8 @@ describe("PresentationRpcImpl", () => {
           clientManagerFactory: () => presentationManagerMock.object,
         });
         const parentNodeKey = createRandomECInstancesNodeKey();
-        const options: Paged<Omit<HierarchyRequestOptions<IModelRpcProps>, "imodel">> = {
-          rulesetOrId: testData.rulesetId,
+        const options: Paged<Omit<HierarchyRequestOptions<any>, "imodel">> = {
+          rulesetOrId: testData.rulesetOrId,
           paging: testData.pageOptions,
         };
 
@@ -235,8 +235,8 @@ describe("PresentationRpcImpl", () => {
 
       it("calls manager for root nodes", async () => {
         const result: Node[] = [createRandomECInstancesNode(), createRandomECInstancesNode(), createRandomECInstancesNode()];
-        const options: Paged<Omit<HierarchyRequestOptions<IModelRpcProps>, "imodel">> = {
-          rulesetOrId: testData.rulesetId,
+        const options: Paged<Omit<HierarchyRequestOptions<any>, "imodel">> = {
+          rulesetOrId: testData.rulesetOrId,
           paging: testData.pageOptions,
         };
         presentationManagerMock.setup((x) => x.getNodes(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }, undefined))
@@ -253,8 +253,8 @@ describe("PresentationRpcImpl", () => {
           clientManagerFactory: () => presentationManagerMock.object,
         });
         const result: Node[] = [createRandomECInstancesNode(), createRandomECInstancesNode(), createRandomECInstancesNode()];
-        const options: Paged<Omit<HierarchyRequestOptions<IModelRpcProps>, "imodel">> = {
-          rulesetOrId: testData.rulesetId,
+        const options: Paged<Omit<HierarchyRequestOptions<any>, "imodel">> = {
+          rulesetOrId: testData.rulesetOrId,
           paging: testData.pageOptions,
         };
         presentationManagerMock.setup((x) => x.getNodes(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }, undefined))
@@ -266,8 +266,8 @@ describe("PresentationRpcImpl", () => {
       });
 
       it("should return `PresentationStatus.BackendTimeout` without any result if manager request takes more than requestTimeout", async () => {
-        const options: Paged<Omit<HierarchyRequestOptions<IModelRpcProps>, "imodel">> = {
-          rulesetOrId: testData.rulesetId,
+        const options: Paged<Omit<HierarchyRequestOptions<any>, "imodel">> = {
+          rulesetOrId: testData.rulesetOrId,
           paging: testData.pageOptions,
         };
         const result = new ResolvablePromise<Node[]>();
@@ -284,8 +284,8 @@ describe("PresentationRpcImpl", () => {
       it("calls manager for child nodes", async () => {
         const result: Node[] = [createRandomECInstancesNode(), createRandomECInstancesNode(), createRandomECInstancesNode()];
         const parentNodeKey = createRandomECInstancesNodeKey();
-        const options: Paged<Omit<HierarchyRequestOptions<IModelRpcProps>, "imodel">> = {
-          rulesetOrId: testData.rulesetId,
+        const options: Paged<Omit<HierarchyRequestOptions<any>, "imodel">> = {
+          rulesetOrId: testData.rulesetOrId,
           paging: testData.pageOptions,
         };
         presentationManagerMock.setup((x) => x.getNodes(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }, parentNodeKey))
@@ -302,8 +302,8 @@ describe("PresentationRpcImpl", () => {
 
       it("calls manager for root nodes count", async () => {
         const result = 999;
-        const options: Omit<HierarchyRequestOptions<IModelRpcProps>, "imodel"> = {
-          rulesetOrId: testData.rulesetId,
+        const options: Omit<HierarchyRequestOptions<any>, "imodel"> = {
+          rulesetOrId: testData.rulesetOrId,
         };
         presentationManagerMock.setup((x) => x.getNodesCount(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }, undefined))
           .returns(() => Promise.resolve(result))
@@ -316,8 +316,8 @@ describe("PresentationRpcImpl", () => {
       it("calls manager for child nodes count", async () => {
         const result = 999;
         const parentNodeKey = createRandomECInstancesNodeKey();
-        const options: Omit<HierarchyRequestOptions<IModelRpcProps>, "imodel"> = {
-          rulesetOrId: testData.rulesetId,
+        const options: Omit<HierarchyRequestOptions<any>, "imodel"> = {
+          rulesetOrId: testData.rulesetOrId,
         };
         presentationManagerMock.setup((x) => x.getNodesCount(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }, parentNodeKey))
           .returns(() => Promise.resolve(result))
@@ -335,8 +335,8 @@ describe("PresentationRpcImpl", () => {
         });
         const result = 999;
         const parentNodeKey = createRandomECInstancesNodeKey();
-        const options: Omit<HierarchyRequestOptions<IModelRpcProps>, "imodel"> = {
-          rulesetOrId: testData.rulesetId,
+        const options: Omit<HierarchyRequestOptions<any>, "imodel"> = {
+          rulesetOrId: testData.rulesetOrId,
         };
         presentationManagerMock.setup((x) => x.getNodesCount(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }, parentNodeKey))
           .returns(() => Promise.resolve(result))
@@ -348,8 +348,8 @@ describe("PresentationRpcImpl", () => {
 
       it("should return `PresentationStatus.BackendTimeout` without any result if manager request takes more than requestTimeout", async () => {
         const parentNodeKey = createRandomECInstancesNodeKey();
-        const options: Omit<HierarchyRequestOptions<IModelRpcProps>, "imodel"> = {
-          rulesetOrId: testData.rulesetId,
+        const options: Omit<HierarchyRequestOptions<any>, "imodel"> = {
+          rulesetOrId: testData.rulesetOrId,
         };
         const result = new ResolvablePromise<number>();
         presentationManagerMock.setup((x) => x.getNodesCount(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }, parentNodeKey))
@@ -367,8 +367,8 @@ describe("PresentationRpcImpl", () => {
 
       it("calls manager", async () => {
         const result = [createRandomNodePathElement(0), createRandomNodePathElement(0)];
-        const options: Omit<HierarchyRequestOptions<IModelRpcProps>, "imodel"> = {
-          rulesetOrId: testData.rulesetId,
+        const options: Omit<HierarchyRequestOptions<any>, "imodel"> = {
+          rulesetOrId: testData.rulesetOrId,
         };
         presentationManagerMock.setup((x) => x.getFilteredNodePaths(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }, "filter"))
           .returns(async () => result)
@@ -385,8 +385,8 @@ describe("PresentationRpcImpl", () => {
           clientManagerFactory: () => presentationManagerMock.object,
         });
         const result = [createRandomNodePathElement(0), createRandomNodePathElement(0)];
-        const options: Omit<HierarchyRequestOptions<IModelRpcProps>, "imodel"> = {
-          rulesetOrId: testData.rulesetId,
+        const options: Omit<HierarchyRequestOptions<any>, "imodel"> = {
+          rulesetOrId: testData.rulesetOrId,
         };
         presentationManagerMock.setup((x) => x.getFilteredNodePaths(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }, "filter"))
           .returns(async () => result)
@@ -397,8 +397,8 @@ describe("PresentationRpcImpl", () => {
       });
 
       it("should return `PresentationStatus.BackendTimeout` without any result if manager request takes more than requestTimeout", async () => {
-        const options: Omit<HierarchyRequestOptions<IModelRpcProps>, "imodel"> = {
-          rulesetOrId: testData.rulesetId,
+        const options: Omit<HierarchyRequestOptions<any>, "imodel"> = {
+          rulesetOrId: testData.rulesetOrId,
         };
         const result = new ResolvablePromise<NodePathElement[]>();
         presentationManagerMock.setup((x) => x.getFilteredNodePaths(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }, "filter"))
@@ -418,8 +418,8 @@ describe("PresentationRpcImpl", () => {
       it("calls manager", async () => {
         const result = [createRandomNodePathElement(0), createRandomNodePathElement(0)];
         const keyArray: InstanceKey[][] = [[createRandomECInstanceKey(), createRandomECInstanceKey()]];
-        const options: Omit<HierarchyRequestOptions<IModelRpcProps>, "imodel"> = {
-          rulesetOrId: testData.rulesetId,
+        const options: Omit<HierarchyRequestOptions<any>, "imodel"> = {
+          rulesetOrId: testData.rulesetOrId,
         };
         presentationManagerMock.setup((x) => x.getNodePaths(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }, keyArray, 1))
           .returns(async () => result)
@@ -437,8 +437,8 @@ describe("PresentationRpcImpl", () => {
         });
         const result = [createRandomNodePathElement(0), createRandomNodePathElement(0)];
         const keyArray: InstanceKey[][] = [[createRandomECInstanceKey(), createRandomECInstanceKey()]];
-        const options: Omit<HierarchyRequestOptions<IModelRpcProps>, "imodel"> = {
-          rulesetOrId: testData.rulesetId,
+        const options: Omit<HierarchyRequestOptions<any>, "imodel"> = {
+          rulesetOrId: testData.rulesetOrId,
         };
         presentationManagerMock.setup((x) => x.getNodePaths(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }, keyArray, 1))
           .returns(async () => result)
@@ -450,8 +450,8 @@ describe("PresentationRpcImpl", () => {
 
       it("should return `PresentationStatus.BackendTimeout` without any result if manager request takes more than requestTimeout", async () => {
         const keyArray: InstanceKey[][] = [[createRandomECInstanceKey(), createRandomECInstanceKey()]];
-        const options: Omit<HierarchyRequestOptions<IModelRpcProps>, "imodel"> = {
-          rulesetOrId: testData.rulesetId,
+        const options: Omit<HierarchyRequestOptions<any>, "imodel"> = {
+          rulesetOrId: testData.rulesetOrId,
         };
         const result = new ResolvablePromise<NodePathElement[]>();
         presentationManagerMock.setup((x) => x.getNodePaths(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }, keyArray, 1))
@@ -469,8 +469,8 @@ describe("PresentationRpcImpl", () => {
     describe("loadHierarchy", () => {
 
       it("calls manager", async () => {
-        const options: Omit<HierarchyRequestOptions<IModelRpcProps>, "imodel"> = {
-          rulesetOrId: testData.rulesetId,
+        const options: Omit<HierarchyRequestOptions<any>, "imodel"> = {
+          rulesetOrId: testData.rulesetOrId,
         };
         presentationManagerMock.setup((x) => x.loadHierarchy(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }))
           .returns(async () => undefined)
@@ -481,8 +481,8 @@ describe("PresentationRpcImpl", () => {
       });
 
       it("does not await for load to complete", async () => {
-        const options: Omit<HierarchyRequestOptions<IModelRpcProps>, "imodel"> = {
-          rulesetOrId: testData.rulesetId,
+        const options: Omit<HierarchyRequestOptions<any>, "imodel"> = {
+          rulesetOrId: testData.rulesetOrId,
         };
         const result = new ResolvablePromise<void>();
         presentationManagerMock.setup((x) => x.loadHierarchy(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }))
@@ -496,8 +496,8 @@ describe("PresentationRpcImpl", () => {
 
       it("logs warning if load throws", async () => {
         const loggerSpy = sinon.spy(Logger, "logWarning");
-        const options: Omit<HierarchyRequestOptions<IModelRpcProps>, "imodel"> = {
-          rulesetOrId: testData.rulesetId,
+        const options: Omit<HierarchyRequestOptions<any>, "imodel"> = {
+          rulesetOrId: testData.rulesetOrId,
         };
         presentationManagerMock.setup((x) => x.loadHierarchy(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }))
           .returns(async () => {
@@ -517,8 +517,8 @@ describe("PresentationRpcImpl", () => {
       it("calls manager", async () => {
         const keys = new KeySet();
         const descriptor = createRandomDescriptor();
-        const options: Omit<ContentRequestOptions<IModelRpcProps>, "imodel"> = {
-          rulesetOrId: testData.rulesetId,
+        const options: Omit<ContentRequestOptions<any>, "imodel"> = {
+          rulesetOrId: testData.rulesetOrId,
         };
         presentationManagerMock.setup((x) => x.getContentDescriptor(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }, testData.displayType, moq.isKeySet(keys), undefined))
           .returns(async () => descriptor)
@@ -531,8 +531,8 @@ describe("PresentationRpcImpl", () => {
 
       it("handles undefined descriptor response", async () => {
         const keys = new KeySet();
-        const options: Omit<ContentRequestOptions<IModelRpcProps>, "imodel"> = {
-          rulesetOrId: testData.rulesetId,
+        const options: Omit<ContentRequestOptions<any>, "imodel"> = {
+          rulesetOrId: testData.rulesetOrId,
         };
         presentationManagerMock.setup((x) => x.getContentDescriptor(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }, testData.displayType, moq.isKeySet(keys), undefined))
           .returns(async () => undefined)
@@ -550,8 +550,8 @@ describe("PresentationRpcImpl", () => {
           clientManagerFactory: () => presentationManagerMock.object,
         });
         const keys = new KeySet();
-        const options: Omit<ContentRequestOptions<IModelRpcProps>, "imodel"> = {
-          rulesetOrId: testData.rulesetId,
+        const options: Omit<ContentRequestOptions<any>, "imodel"> = {
+          rulesetOrId: testData.rulesetOrId,
         };
         presentationManagerMock.setup((x) => x.getContentDescriptor(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }, testData.displayType, moq.isKeySet(keys), undefined))
           .returns(async () => undefined)
@@ -564,8 +564,8 @@ describe("PresentationRpcImpl", () => {
 
       it("should return `PresentationStatus.BackendTimeout` without any result if manager request takes more than requestTimeout", async () => {
         const keys = new KeySet();
-        const options: Omit<ContentRequestOptions<IModelRpcProps>, "imodel"> = {
-          rulesetOrId: testData.rulesetId,
+        const options: Omit<ContentRequestOptions<any>, "imodel"> = {
+          rulesetOrId: testData.rulesetOrId,
         };
         const result = new ResolvablePromise<Descriptor>();
         presentationManagerMock.setup((x) => x.getContentDescriptor(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }, testData.displayType, moq.isKeySet(keys), undefined))
@@ -587,8 +587,8 @@ describe("PresentationRpcImpl", () => {
         const contentSize = 789;
         const keys = new KeySet();
         const content = createRandomContent();
-        const options: Paged<Omit<ContentRequestOptions<IModelRpcProps>, "imodel">> = {
-          rulesetOrId: testData.rulesetId,
+        const options: Paged<Omit<ContentRequestOptions<any>, "imodel">> = {
+          rulesetOrId: testData.rulesetOrId,
           paging: testData.pageOptions,
         };
         presentationManagerMock.setup(async (x) => x.getContentAndSize(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }, content.descriptor, moq.isKeySet(keys)))
@@ -610,8 +610,8 @@ describe("PresentationRpcImpl", () => {
         const contentSize = 789;
         const keys = new KeySet();
         const content = createRandomContent();
-        const options: Paged<Omit<ContentRequestOptions<IModelRpcProps>, "imodel">> = {
-          rulesetOrId: testData.rulesetId,
+        const options: Paged<Omit<ContentRequestOptions<any>, "imodel">> = {
+          rulesetOrId: testData.rulesetOrId,
           paging: testData.pageOptions,
         };
         presentationManagerMock.setup(async (x) => x.getContentAndSize(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }, content.descriptor, moq.isKeySet(keys)))
@@ -628,8 +628,8 @@ describe("PresentationRpcImpl", () => {
         const contentSize = 789;
         const keys = new KeySet();
         const content = createRandomContent();
-        const options: Paged<Omit<ContentRequestOptions<IModelRpcProps>, "imodel">> = {
-          rulesetOrId: testData.rulesetId,
+        const options: Paged<Omit<ContentRequestOptions<any>, "imodel">> = {
+          rulesetOrId: testData.rulesetOrId,
           paging: testData.pageOptions,
         };
         const result = new ResolvablePromise<{ content: Content, size: number }>();
@@ -651,8 +651,8 @@ describe("PresentationRpcImpl", () => {
           contentFlags: 0,
           hiddenFieldNames: [],
         };
-        const options: Paged<Omit<ContentRequestOptions<IModelRpcProps>, "imodel">> = {
-          rulesetOrId: testData.rulesetId,
+        const options: Paged<Omit<ContentRequestOptions<any>, "imodel">> = {
+          rulesetOrId: testData.rulesetOrId,
           paging: testData.pageOptions,
         };
         presentationManagerMock
@@ -674,8 +674,8 @@ describe("PresentationRpcImpl", () => {
         const keys = new KeySet();
         const result = 789;
         const descriptor = createRandomDescriptor();
-        const options: Omit<ContentRequestOptions<IModelRpcProps>, "imodel"> = {
-          rulesetOrId: testData.rulesetId,
+        const options: Omit<ContentRequestOptions<any>, "imodel"> = {
+          rulesetOrId: testData.rulesetOrId,
         };
         presentationManagerMock
           .setup(async (x) => x.getContentSetSize(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }, descriptor, moq.isKeySet(keys)))
@@ -696,8 +696,8 @@ describe("PresentationRpcImpl", () => {
         const keys = new KeySet();
         const result = 789;
         const descriptor = createRandomDescriptor();
-        const options: Omit<ContentRequestOptions<IModelRpcProps>, "imodel"> = {
-          rulesetOrId: testData.rulesetId,
+        const options: Omit<ContentRequestOptions<any>, "imodel"> = {
+          rulesetOrId: testData.rulesetOrId,
         };
         presentationManagerMock
           .setup(async (x) => x.getContentSetSize(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }, descriptor, moq.isKeySet(keys)))
@@ -712,8 +712,8 @@ describe("PresentationRpcImpl", () => {
       it("should return `PresentationStatus.BackendTimeout` without any result if manager request takes more than requestTimeout", async () => {
         const keys = new KeySet();
         const descriptor = createRandomDescriptor();
-        const options: Omit<ContentRequestOptions<IModelRpcProps>, "imodel"> = {
-          rulesetOrId: testData.rulesetId,
+        const options: Omit<ContentRequestOptions<any>, "imodel"> = {
+          rulesetOrId: testData.rulesetOrId,
         };
         const result = new ResolvablePromise<number>();
         presentationManagerMock
@@ -734,8 +734,8 @@ describe("PresentationRpcImpl", () => {
       it("calls manager", async () => {
         const keys = new KeySet();
         const content = createRandomContent();
-        const options: Paged<Omit<ContentRequestOptions<IModelRpcProps>, "imodel">> = {
-          rulesetOrId: testData.rulesetId,
+        const options: Paged<Omit<ContentRequestOptions<any>, "imodel">> = {
+          rulesetOrId: testData.rulesetOrId,
           paging: testData.pageOptions,
         };
         presentationManagerMock.setup(async (x) => x.getContent(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }, content.descriptor, moq.isKeySet(keys)))
@@ -755,8 +755,8 @@ describe("PresentationRpcImpl", () => {
         });
         const keys = new KeySet();
         const content = createRandomContent();
-        const options: Paged<Omit<ContentRequestOptions<IModelRpcProps>, "imodel">> = {
-          rulesetOrId: testData.rulesetId,
+        const options: Paged<Omit<ContentRequestOptions<any>, "imodel">> = {
+          rulesetOrId: testData.rulesetOrId,
           paging: testData.pageOptions,
         };
         presentationManagerMock.setup(async (x) => x.getContent(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }, content.descriptor, moq.isKeySet(keys)))
@@ -771,8 +771,8 @@ describe("PresentationRpcImpl", () => {
       it("should return `PresentationStatus.BackendTimeout` without any result if manager request takes more than requestTimeout", async () => {
         const keys = new KeySet();
         const content = createRandomContent();
-        const options: Paged<Omit<ContentRequestOptions<IModelRpcProps>, "imodel">> = {
-          rulesetOrId: testData.rulesetId,
+        const options: Paged<Omit<ContentRequestOptions<any>, "imodel">> = {
+          rulesetOrId: testData.rulesetOrId,
           paging: testData.pageOptions,
         };
         const result = new ResolvablePromise<Content>();
@@ -794,8 +794,8 @@ describe("PresentationRpcImpl", () => {
           contentFlags: 0,
           hiddenFieldNames: [],
         };
-        const options: Paged<Omit<ContentRequestOptions<IModelRpcProps>, "imodel">> = {
-          rulesetOrId: testData.rulesetId,
+        const options: Paged<Omit<ContentRequestOptions<any>, "imodel">> = {
+          rulesetOrId: testData.rulesetOrId,
           paging: testData.pageOptions,
         };
         presentationManagerMock.setup(async (x) => x.getContent(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }, descriptorOverrides, moq.isKeySet(keys)))
@@ -817,8 +817,8 @@ describe("PresentationRpcImpl", () => {
         const descriptor = createRandomDescriptor();
         const fieldName = faker.random.word();
         const maximumValueCount = faker.random.number();
-        const options: Omit<ContentRequestOptions<IModelRpcProps>, "imodel"> = {
-          rulesetOrId: testData.rulesetId,
+        const options: Omit<ContentRequestOptions<any>, "imodel"> = {
+          rulesetOrId: testData.rulesetOrId,
         };
         presentationManagerMock.setup((x) => x.getDistinctValues(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }, descriptor, moq.isKeySet(keys), fieldName, maximumValueCount))
           .returns(async () => distinctValues)
@@ -840,8 +840,8 @@ describe("PresentationRpcImpl", () => {
         const descriptor = createRandomDescriptor();
         const fieldName = faker.random.word();
         const maximumValueCount = faker.random.number();
-        const options: Omit<ContentRequestOptions<IModelRpcProps>, "imodel"> = {
-          rulesetOrId: testData.rulesetId,
+        const options: Omit<ContentRequestOptions<any>, "imodel"> = {
+          rulesetOrId: testData.rulesetOrId,
         };
         presentationManagerMock.setup((x) => x.getDistinctValues(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }, descriptor, moq.isKeySet(keys), fieldName, maximumValueCount))
           .returns(async () => distinctValues)
@@ -857,8 +857,8 @@ describe("PresentationRpcImpl", () => {
         const descriptor = createRandomDescriptor();
         const fieldName = faker.random.word();
         const maximumValueCount = faker.random.number();
-        const options: Omit<ContentRequestOptions<IModelRpcProps>, "imodel"> = {
-          rulesetOrId: testData.rulesetId,
+        const options: Omit<ContentRequestOptions<any>, "imodel"> = {
+          rulesetOrId: testData.rulesetOrId,
         };
         const result = new ResolvablePromise<string[]>();
         presentationManagerMock.setup((x) => x.getDistinctValues(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }, descriptor, moq.isKeySet(keys), fieldName, maximumValueCount))
