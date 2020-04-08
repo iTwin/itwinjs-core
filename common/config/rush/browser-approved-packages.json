@@ -792,7 +792,7 @@
     },
     {
       "name": "svg-sprite-loader",
-      "allowedCategories": [ "extensions", "frontend", "internal" ]
+      "allowedCategories": [ "extensions", "frontend", "internal", "tools" ]
     },
     {
       "name": "tar",

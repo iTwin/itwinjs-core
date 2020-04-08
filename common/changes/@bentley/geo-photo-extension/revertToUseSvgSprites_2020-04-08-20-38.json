@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/geo-photo-extension",
+      "comment": "Revert back to using svg-sprite-loader and sprite resourceQuery.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/geo-photo-extension",
+  "email": "bill.steinbock@bentley.com"
+}

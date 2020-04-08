@@ -28,8 +28,7 @@ import { TestMessageBox } from "../appui/dialogs/TestMessageBox";
 import { AppUi } from "../appui/AppUi";
 import { SampleStatusField } from "../appui/statusfields/SampleStatusField";
 
-// import metricIconSvg from "@bentley/icons-generic/icons/app-1.svg";
-import imperialIconSvg from "@bentley/icons-generic/icons/app-2.svg";
+import imperialIconSvg from "@bentley/icons-generic/icons/app-2.svg?sprite";
 
 // tslint:disable-next-line: variable-name
 const SampleStatus = withStatusFieldProps(SampleStatusField);

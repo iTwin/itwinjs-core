@@ -10,8 +10,8 @@ import { SettingsModalFrontstage } from "../frontstages/Settings";
 import { ComponentExamplesModalFrontstage } from "../frontstages/component-examples/ComponentExamples";
 import { SampleAppIModelApp, SampleAppUiActionId } from "../..";
 
-import settingsIconSvg from "@bentley/icons-generic/icons/settings.svg";
-import stageIconSvg from "./imodeljs.svg";
+import settingsIconSvg from "@bentley/icons-generic/icons/settings.svg?sprite";
+import stageIconSvg from "./imodeljs.svg?sprite";
 
 export class AppBackstageItemProvider {
   public static readonly id = "ui-test-app.AppBackstageItemProvider";

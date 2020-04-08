@@ -10,7 +10,7 @@ import * as React from "react";
 import { Badge } from "./Badge";
 import { CommonProps } from "../utils/Props";
 
-const betaBadgeIcon = require("./technical-preview-badge.svg"); // tslint:disable-line: no-var-requires
+import betaBadgeIcon from "./technical-preview-badge.svg?sprite";
 
 /** Beta Badge React component
  * @internal

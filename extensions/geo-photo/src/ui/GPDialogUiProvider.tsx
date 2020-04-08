@@ -11,7 +11,7 @@ import { ModelessDialogManager } from "@bentley/ui-framework";
 import { ITreeDataProvider } from "@bentley/ui-components";
 
 import { GeoPhotoDialog } from "./GPDialog";
-import geoPhotoButtonSvg from "./geoPhoto-button.svg";
+import geoPhotoButtonSvg from "./geoPhoto-button.svg?sprite";
 import { GeoPhotoExtension, GeoPhotoSettings } from "../geoPhoto";
 import { GPLoadTracker } from "../PhotoTree";
 
