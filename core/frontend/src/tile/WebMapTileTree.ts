@@ -263,6 +263,9 @@ class ImageryTreeSupplier implements TileTreeSupplier {
  * @internal
  */
 export async function getGcsConverterAvailable(iModel: IModelConnection) {
+  if (iModel.noGcsDefined)
+    return false;
+
   // Determine if we have a usable GCS.
   const converter = iModel.geoServices.getConverter("WGS84");
   if (undefined === converter)
