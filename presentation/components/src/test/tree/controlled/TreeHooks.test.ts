@@ -9,7 +9,7 @@ import * as sinon from "sinon";
 import { renderHook } from "@testing-library/react-hooks";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { Ruleset, HierarchyUpdateInfo } from "@bentley/presentation-common";
-import { PresentationManager, Presentation } from "@bentley/presentation-frontend";
+import { PresentationManager, Presentation, RulesetManager } from "@bentley/presentation-frontend";
 import { BeEvent, IDisposable } from "@bentley/bentleyjs-core";
 import { TreeNodeItem, TreeDataChangesListener } from "@bentley/ui-components";
 import { IPresentationTreeDataProvider } from "../../../presentation-components";
@@ -19,6 +19,7 @@ describe("usePresentationNodeLoader", () => {
 
   let onHierarchyUpdateEvent: BeEvent<(ruleset: Ruleset, info: HierarchyUpdateInfo) => void>;
   const imodelMock = moq.Mock.ofType<IModelConnection>();
+  const rulesetManagerMock = moq.Mock.ofType<RulesetManager>();
   const presentationManagerMock = moq.Mock.ofType<PresentationManager>();
   const initialProps = {
     imodel: imodelMock.object,
@@ -30,6 +31,7 @@ describe("usePresentationNodeLoader", () => {
     onHierarchyUpdateEvent = new BeEvent();
     presentationManagerMock.reset();
     presentationManagerMock.setup((x) => x.onHierarchyUpdate).returns(() => onHierarchyUpdateEvent);
+    presentationManagerMock.setup((x) => x.rulesets()).returns(() => rulesetManagerMock.object);
     Presentation.setPresentationManager(presentationManagerMock.object);
   });
 

@@ -103,6 +103,7 @@ describe("PresentationManager", () => {
             { [RequestPriority.Preload]: 1, [RequestPriority.Max]: 1 },
             IModelHost.platform.ECPresentationManagerMode.ReadWrite,
             false,
+            "",
           );
         });
       });
@@ -118,7 +119,9 @@ describe("PresentationManager", () => {
           taskAllocationsMap: testTaskAllocations,
           mode: PresentationManagerMode.ReadWrite,
           updatesPollInterval: 1,
+          cacheDirectory: faker.random.word(),
         };
+        const expectedCacheDirectory = path.resolve(props.cacheDirectory!);
         using(new PresentationManager(props), (manager) => {
           expect((manager.getNativePlatform() as any)._nativeAddon).instanceOf(IModelHost.platform.ECPresentationManager);
           expect(constructorSpy).to.be.calledOnceWithExactly(
@@ -127,6 +130,7 @@ describe("PresentationManager", () => {
             testTaskAllocations,
             IModelHost.platform.ECPresentationManagerMode.ReadWrite,
             true,
+            expectedCacheDirectory,
           );
         });
       });

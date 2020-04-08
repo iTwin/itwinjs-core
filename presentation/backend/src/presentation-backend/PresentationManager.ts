@@ -152,6 +152,14 @@ export interface PresentationManagerProps {
   updatesPollInterval?: number;
 
   /**
+   * A directory for Presentation hierarchy caches. If not set hierarchy cache is created
+   * along side iModel.
+   *
+   * @alpha
+   */
+  cacheDirectory?: string;
+
+  /**
    * An identifier which helps separate multiple presentation managers. It's
    * mostly useful in tests where multiple presentation managers can co-exist
    * and try to share the same resources, which we don't want. With this identifier
@@ -210,6 +218,7 @@ export class PresentationManager {
         taskAllocationsMap: createTaskAllocationsMap(props),
         mode,
         isChangeTrackingEnabled,
+        cacheDirectory: this._props.cacheDirectory ? path.resolve(this._props.cacheDirectory) : "",
       });
       this._nativePlatform = new nativePlatformImpl();
     }

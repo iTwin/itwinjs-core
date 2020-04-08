@@ -71,6 +71,7 @@ const initializeCommon = async (props: { backendTimeout?: number, useClientServi
     taskAllocationsMap: {
       [RequestPriority.Max]: 1,
     },
+    cacheDirectory: path.join("lib", "cache"),
   };
   const frontendInitProps: PresentationFrontendProps = {
     activeLocale: "en-PSEUDO",
