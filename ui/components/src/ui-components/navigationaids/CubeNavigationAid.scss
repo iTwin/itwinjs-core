@@ -5,15 +5,17 @@
 @import "~@bentley/ui-core/lib/ui-core/index";
 
 $cube-outer-width: 96px;
-$button-width: 14px;
+$button-width: 20px;
 $nav-cube-width: 64px;
-$nav-cube-side-width: 12px;
+$nav-cube-side-width: 14px;
 
 $grad-start: $buic-background-1;
 $grad-end: $buic-background-4;
 
 $grad-start-highlight: $buic-background-2;
 $grad-end-highlight: $buic-background-5;
+
+$arrow-margin: -3px;
 
 .components-cube-container {
   position: relative;
@@ -38,7 +40,7 @@ $grad-end-highlight: $buic-background-5;
         width: 100%;
         height: 100%;
         font-size: $uicore-cap-size;
-        font-weight: $uicore-font-weight-bold;
+        font-weight: $uicore-font-weight-semibold;
         color: $buic-text-color;
         box-shadow: 0px 0px .0px 1px #000;
         .face-row {
@@ -59,10 +61,12 @@ $grad-end-highlight: $buic-background-5;
               flex-grow: 1;
             }
             &.hover {
-              background: $buic-row-hover;
+              color: black;
+              background: $buic-foreground-primary-tint;
             }
             &.active {
-              background: $buic-row-selection;
+              color: black;
+              background: $buic-foreground-primary-tint;
             }
           }
           &.center .face-cell.center {
@@ -112,28 +116,28 @@ $grad-end-highlight: $buic-background-5;
       display: none;
     }
     &:hover {
-      color: $buic-row-hover;
+      color: $buic-foreground-primary-tint;
     }
     &.up {
-      margin: 0 auto;
+      margin: $arrow-margin auto;
       left: 0px;
       right: 0px;
       top: 0px;
     }
     &.down {
-      margin: 0 auto;
+      margin: $arrow-margin auto;
       left: 0px;
       right: 0px;
       bottom: 0px;
     }
     &.left {
-      margin: auto 0;
+      margin: auto $arrow-margin;
       top: 0px;
       bottom: 0px;
       left: 0px;
     }
     &.right {
-      margin: auto 0;
+      margin: auto $arrow-margin;
       top: 0px;
       bottom: 0px;
       right: 0px;
