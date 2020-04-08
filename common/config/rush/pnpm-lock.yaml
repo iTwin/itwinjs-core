@@ -5,7 +5,7 @@ dependencies:
   '@bentley/icons-generic-webfont': 1.0.5
   '@bentley/imodeljs-native': 2.0.21
   '@bentley/oidc-signin-tool': 2.0.0-dev.37
-  '@bentley/react-scripts': 3.4.1-dev.21_a4f1093162180b0de057e31a5d2c1cc3
+  '@bentley/react-scripts': 3.4.1-dev.23_a4f1093162180b0de057e31a5d2c1cc3
   '@microsoft/api-extractor': 7.7.3
   '@openid/appauth': 1.2.7
   '@rush-temp/backend-webpack-tools': 'file:projects/backend-webpack-tools.tgz'
@@ -290,7 +290,7 @@ dependencies:
   ssri: 6.0.1
   style-loader: 1.1.3_webpack@4.42.0
   superagent: 3.8.3
-  svg-baker-runtime: 1.4.4
+  svg-baker-runtime: 1.4.5
   svg-react-loader: 0.4.6
   svg-sprite-loader: 4.2.1_webpack@4.42.0
   tar: 4.4.13
@@ -2151,7 +2151,7 @@ packages:
     dev: false
     resolution:
       integrity: sha1-GYETi34eOKDDhGqYW1vV4sHx6/I=
-  /@bentley/react-scripts/3.4.1-dev.21_a4f1093162180b0de057e31a5d2c1cc3:
+  /@bentley/react-scripts/3.4.1-dev.23_a4f1093162180b0de057e31a5d2c1cc3:
     dependencies:
       '@babel/core': 7.9.0
       '@bentley/webpack-tools-core': 2.0.0-dev.55_webpack@4.42.0
@@ -2202,6 +2202,7 @@ packages:
       source-map-loader: 0.2.4
       speed-measure-webpack-plugin: 1.3.3_webpack@4.42.0
       style-loader: 0.23.1
+      svg-sprite-loader: 4.2.1_webpack@4.42.0
       terser-webpack-plugin: 2.3.5_webpack@4.42.0
       ts-jest: 24.3.0_jest@24.9.0
       ts-pnp: 1.1.6
@@ -2224,7 +2225,7 @@ packages:
       typescript:
         optional: true
     resolution:
-      integrity: sha1-aQW9ESN8aS+jGnFNtjER2PboSe4=
+      integrity: sha1-cKtrmjTe21QTK99rR22nYDQXFP8=
   /@bentley/webpack-tools-core/2.0.0-dev.55_webpack@4.42.0:
     dependencies:
       chalk: 3.0.0
@@ -2590,22 +2591,22 @@ packages:
       node: '>=4'
     resolution:
       integrity: sha512-ONhaKPIufzzrlNbqtWFFd+jlnemX6lJAgq9ZeiZtS7I1PIf/la7CW4m83rTXRnVnsMbW2k56pGYu7AUFJD9Pow==
-  /@sinonjs/commons/1.7.1:
+  /@sinonjs/commons/1.7.2:
     dependencies:
       type-detect: 4.0.8
     dev: false
     resolution:
-      integrity: sha512-Debi3Baff1Qu1Unc3mjJ96MgpbwTn43S1+9yJ0llWygPwDNu2aaWBD6yc9y/Z8XDRNhx7U+u2UDg2OGQXkclUQ==
+      integrity: sha512-+DUO6pnp3udV/v2VfUWgaY5BIE1IfT7lLfeDzPVeMT1XKkaAp9LgSI9x5RtrFQoZ9Oi0PgXQQHPaoKu7dCjVxw==
   /@sinonjs/formatio/3.2.2:
     dependencies:
-      '@sinonjs/commons': 1.7.1
+      '@sinonjs/commons': 1.7.2
       '@sinonjs/samsam': 3.3.3
     dev: false
     resolution:
       integrity: sha512-B8SEsgd8gArBLMD6zpRw3juQ2FVSsmdd7qlevyDqzS9WTCtvF55/gAL+h6gue8ZvPYcdiPdvueM/qm//9XzyTQ==
   /@sinonjs/samsam/3.3.3:
     dependencies:
-      '@sinonjs/commons': 1.7.1
+      '@sinonjs/commons': 1.7.2
       array-from: 2.1.1
       lodash: 4.17.15
     dev: false
@@ -11544,7 +11545,7 @@ packages:
       integrity: sha512-gKO5uExCXvSm6zbF562EvM+rd1kQDnB9AZBbiQVzf1ZmdDpxUSvpnAaVOP83N/31mRK8Ml8/VE8DMvsAZQ+7wg==
   /lolex/5.1.2:
     dependencies:
-      '@sinonjs/commons': 1.7.1
+      '@sinonjs/commons': 1.7.2
     dev: false
     resolution:
       integrity: sha512-h4hmjAvHTmd+25JSwrtTIuwbKdwg5NzZVRMLn9saij4SZaepCrTCxPr35H/3bjwfMJtN+t3CX8672UIkglz28A==
@@ -16503,7 +16504,7 @@ packages:
       integrity: sha512-IifbusYiQBpUxxFJkR3wTU68xzBN0+bxCScEaKMjBvAQERg6FnTTc1F17rseLb1tjmkJ23730AXpFI0c47FgAg==
   /sinon/7.5.0:
     dependencies:
-      '@sinonjs/commons': 1.7.1
+      '@sinonjs/commons': 1.7.2
       '@sinonjs/formatio': 3.2.2
       '@sinonjs/samsam': 3.3.3
       diff: 3.5.0
@@ -17345,15 +17346,15 @@ packages:
       node: '>=8'
     resolution:
       integrity: sha512-oRSIpR8pxT1Wr2FquTNnGet79b3BWljqOuoW/h4oBhxJ/HUbX5nX6JSruTkvXDCFMwDPvsaTTbvMLKZWSy0R5g==
-  /svg-baker-runtime/1.4.4:
+  /svg-baker-runtime/1.4.5:
     dependencies:
       deepmerge: 1.3.2
       mitt: 1.1.2
-      svg-baker: 1.6.0
+      svg-baker: 1.7.0
     dev: false
     resolution:
-      integrity: sha512-ffjA5ewpZRllt05vtdAQVglThd15ztNX6AP+bsaOBjMoUaPRU0sApxqXyfy9A8ctJu6p9uB+fVIMj57RCY38Ew==
-  /svg-baker/1.6.0:
+      integrity: sha512-X9HvVjekaDUBIqnRrZI+fBbalZXpHxZA9F8wmpMOcAFXIltvaJFbJEiT7YBgCeo1eFrANVy7Ey7nkh38HGkESw==
+  /svg-baker/1.7.0:
     dependencies:
       bluebird: 3.7.2
       clone: 2.1.2
@@ -17370,7 +17371,7 @@ packages:
       traverse: 0.6.6
     dev: false
     resolution:
-      integrity: sha512-uUwkBtAH8YlX7CbEm6Q67n9FHsQ/LQs2SmLBoKYLyir+UEdNFLOg+CvTDJ5qPtVjma4lhT+FuD1DkghUPTeH+A==
+      integrity: sha512-nibslMbkXOIkqKVrfcncwha45f97fGuAOn1G99YwnwTj8kF9YiM6XexPcUso97NxOm6GsP0SIvYVIosBis1xLg==
   /svg-parser/2.0.4:
     dev: false
     resolution:
@@ -17394,8 +17395,8 @@ packages:
       escape-string-regexp: 1.0.5
       html-webpack-plugin: 3.2.0_webpack@4.42.0
       loader-utils: 1.4.0
-      svg-baker: 1.6.0
-      svg-baker-runtime: 1.4.4
+      svg-baker: 1.7.0
+      svg-baker-runtime: 1.4.5
       url-slug: 2.0.0
     dev: false
     engines:
@@ -19644,7 +19645,7 @@ packages:
     version: 0.0.0
   'file:projects/display-performance-test-app.tgz_node-sass@4.13.1':
     dependencies:
-      '@bentley/react-scripts': 3.4.1-dev.21_a4f1093162180b0de057e31a5d2c1cc3
+      '@bentley/react-scripts': 3.4.1-dev.23_a4f1093162180b0de057e31a5d2c1cc3
       '@types/body-parser': 1.19.0
       '@types/express': 4.17.4
       '@types/node': 10.14.1
@@ -19671,12 +19672,12 @@ packages:
     peerDependencies:
       node-sass: '*'
     resolution:
-      integrity: sha512-hk/SrfOR5TvpDV+vo106iyTyJ3mQ66PQ5znimR8xv/7cRjNKrQKJ2coizjaRJSxGa/mBmWuZMJolMmJX9za3pw==
+      integrity: sha512-pg34GywMhnc9OumkN09s8dXmTVFLwwaeSdOQRLwk4mUeZWgfKiaqmc5dllvAAk5AeCTNLT6sNo2eDLEVSAS2tA==
       tarball: 'file:projects/display-performance-test-app.tgz'
     version: 0.0.0
   'file:projects/display-test-app.tgz':
     dependencies:
-      '@bentley/react-scripts': 3.4.1-dev.21_a4f1093162180b0de057e31a5d2c1cc3
+      '@bentley/react-scripts': 3.4.1-dev.23_a4f1093162180b0de057e31a5d2c1cc3
       '@types/body-parser': 1.19.0
       '@types/express': 4.17.4
       '@types/fs-extra': 4.0.9
@@ -19700,7 +19701,7 @@ packages:
     dev: false
     name: '@rush-temp/display-test-app'
     resolution:
-      integrity: sha512-tw24LfnzpZ02VfC0QZTPo4wJk1qnwZrvYThyXPdTn4/HA32R2PWuILrl382J9t3//gTRvcylrl3dYtrwjG7wCQ==
+      integrity: sha512-OkhDgS2AK0y4hg8Id4JPFodtE0PaiaaDJ5ObfbYD/HA5csaGx95smdHxx9nNHjOqSXWf8o5MdsCLXycw+hDzSw==
       tarball: 'file:projects/display-test-app.tgz'
     version: 0.0.0
   'file:projects/ecschema-locaters.tgz':
@@ -20032,7 +20033,7 @@ packages:
       react: 16.13.1
       rimraf: 3.0.2
       source-map-loader: 0.2.4
-      svg-baker-runtime: 1.4.4
+      svg-baker-runtime: 1.4.5
       svg-sprite-loader: 4.2.1_webpack@4.42.0
       tsconfig-paths: 3.9.0
       tslint: 5.20.1_typescript@3.7.5
@@ -20389,7 +20390,7 @@ packages:
       react-redux: 5.1.2_react@16.13.1+redux@4.0.5
       redux: 4.0.5
       rimraf: 3.0.2
-      svg-baker-runtime: 1.4.4
+      svg-baker-runtime: 1.4.5
       svg-sprite-loader: 4.2.1_webpack@4.42.0
       tslint: 5.20.1_typescript@3.7.5
       tslint-etc: 1.10.1_tslint@5.20.1+typescript@3.7.5
@@ -20706,7 +20707,7 @@ packages:
   'file:projects/presentation-test-app.tgz_node-sass@4.13.1':
     dependencies:
       '@bentley/icons-generic-webfont': 1.0.5
-      '@bentley/react-scripts': 3.4.1-dev.21_a4f1093162180b0de057e31a5d2c1cc3
+      '@bentley/react-scripts': 3.4.1-dev.23_a4f1093162180b0de057e31a5d2c1cc3
       '@types/bunyan': 1.8.6
       '@types/react': 16.9.32
       '@types/react-dom': 16.9.6
@@ -20731,7 +20732,7 @@ packages:
     peerDependencies:
       node-sass: '*'
     resolution:
-      integrity: sha512-NTJmHIMlHIaoVdoT+N3VIR534C/WWu2c0MOiaWIXHXrcbNNFcHE2KpAcv1xpGRBn+ucnXEVtDHawIZevsOaHlw==
+      integrity: sha512-ulByPXzy8TG8A/10nJlHcXoZ3bFj5xqcp+hKu0U+Q01U2NvM1tubZsJqjKEJasvQvsnHEmIfMc9eJzQzenyZpg==
       tarball: 'file:projects/presentation-test-app.tgz'
     version: 0.0.0
   'file:projects/presentation-testing.tgz_jsdom@11.12.0':
@@ -20832,7 +20833,7 @@ packages:
     dependencies:
       '@bentley/icons-generic': 1.0.5
       '@bentley/icons-generic-webfont': 1.0.5
-      '@bentley/react-scripts': 3.4.1-dev.21_a4f1093162180b0de057e31a5d2c1cc3
+      '@bentley/react-scripts': 3.4.1-dev.23_a4f1093162180b0de057e31a5d2c1cc3
       '@types/classnames': 2.2.10
       '@types/lorem-ipsum': 1.0.2
       '@types/node': 10.14.1
@@ -20857,7 +20858,7 @@ packages:
       redux: 4.0.5
       rimraf: 3.0.2
       semver: 5.7.1
-      svg-baker-runtime: 1.4.4
+      svg-baker-runtime: 1.4.5
       svg-sprite-loader: 4.2.1_webpack@4.42.0
       tslint: 5.20.1_typescript@3.7.5
       tslint-etc: 1.10.1_tslint@5.20.1+typescript@3.7.5
@@ -20869,7 +20870,7 @@ packages:
     peerDependencies:
       node-sass: '*'
     resolution:
-      integrity: sha512-J3YbXpui0e+H3qTjzEWcMhPhWyu0FZKd178FI7haepQbRYmj5z4vZQdXJmkB5VAipsJoj1AgFWllbzihh6RxHg==
+      integrity: sha512-6FoDLkORSH3CIMy5PAL47zIH44yTtklXJjvZiP27G16eX5n9jwXInmupmHF+BjczwaedP8O8IO/nI8seBzVmYQ==
       tarball: 'file:projects/simple-editor-app.tgz'
     version: 0.0.0
   'file:projects/test-apps-analysis-importer.tgz':
@@ -21060,7 +21061,7 @@ packages:
   'file:projects/ui-core.tgz_node-sass@4.13.1+webpack@4.42.0':
     dependencies:
       '@bentley/icons-generic-webfont': 1.0.5
-      '@bentley/react-scripts': 3.4.1-dev.21_a4f1093162180b0de057e31a5d2c1cc3
+      '@bentley/react-scripts': 3.4.1-dev.23_a4f1093162180b0de057e31a5d2c1cc3
       '@testing-library/react': 8.0.9_react-dom@16.13.1+react@16.13.1
       '@testing-library/react-hooks': 3.2.1_1fb72ba09e79ce5bfd91e4d67e1015b7
       '@types/chai': 4.2.11
@@ -21107,7 +21108,7 @@ packages:
       rimraf: 3.0.2
       sinon: 7.5.0
       sinon-chai: 3.5.0_chai@4.2.0+sinon@7.5.0
-      svg-baker-runtime: 1.4.4
+      svg-baker-runtime: 1.4.5
       svg-sprite-loader: 4.2.1_webpack@4.42.0
       ts-node: 7.0.1
       tsconfig-paths: 3.9.0
@@ -21122,14 +21123,14 @@ packages:
       node-sass: '*'
       webpack: '*'
     resolution:
-      integrity: sha512-wqnJBqhSgeFyG0VO7R8BY22c0ECgj4ymkbXgH9Ek/flZ1ZqwjIG/0nK/xkNl/QqZ/qFd/PcY7m++LeLurpgfxw==
+      integrity: sha512-NKeARDAEOaqENUIao1o+5GXVaPPt8/eavGiNUGeXU7scSjUrrOP4aGwrE47h0s2snbeAlzpaJQh5OhCgFnmAAw==
       tarball: 'file:projects/ui-core.tgz'
     version: 0.0.0
   'file:projects/ui-framework.tgz_node-sass@4.13.1+webpack@4.42.0':
     dependencies:
       '@bentley/icons-generic': 1.0.5
       '@bentley/icons-generic-webfont': 1.0.5
-      '@bentley/react-scripts': 3.4.1-dev.21_a4f1093162180b0de057e31a5d2c1cc3
+      '@bentley/react-scripts': 3.4.1-dev.23_a4f1093162180b0de057e31a5d2c1cc3
       '@testing-library/dom': 5.6.1
       '@testing-library/react': 8.0.9_react-dom@16.13.1+react@16.13.1
       '@testing-library/react-hooks': 3.2.1_1fb72ba09e79ce5bfd91e4d67e1015b7
@@ -21187,7 +21188,7 @@ packages:
       rxjs: 6.5.5
       sinon: 7.5.0
       sinon-chai: 3.5.0_chai@4.2.0+sinon@7.5.0
-      svg-baker-runtime: 1.4.4
+      svg-baker-runtime: 1.4.5
       svg-sprite-loader: 4.2.1_webpack@4.42.0
       ts-node: 7.0.1
       tsconfig-paths: 3.9.0
@@ -21203,7 +21204,7 @@ packages:
       node-sass: '*'
       webpack: '*'
     resolution:
-      integrity: sha512-zfBbp5PAXCw/hPiDG8TWl/PPDHiXPwC4CDFnecL93VeAqNoTb3fOEsUyQZwrx0HWk7EXxWWgvhuwNsbjn7lMgw==
+      integrity: sha512-G9WEkj4Evn93X95MeW0Q5j64ImZMCYQ1B7x6K2NevLlFv5SOl5tOAOfsk5s9sXeI7Mx9/alYzboH2x0ZutdomQ==
       tarball: 'file:projects/ui-framework.tgz'
     version: 0.0.0
   'file:projects/ui-ninezone.tgz':
@@ -21294,7 +21295,7 @@ packages:
     dependencies:
       '@bentley/icons-generic': 1.0.5
       '@bentley/icons-generic-webfont': 1.0.5
-      '@bentley/react-scripts': 3.4.1-dev.21_a4f1093162180b0de057e31a5d2c1cc3
+      '@bentley/react-scripts': 3.4.1-dev.23_a4f1093162180b0de057e31a5d2c1cc3
       '@types/classnames': 2.2.10
       '@types/lorem-ipsum': 1.0.2
       '@types/node': 10.14.1
@@ -21318,7 +21319,7 @@ packages:
       redux: 4.0.5
       rimraf: 3.0.2
       semver: 5.7.1
-      svg-baker-runtime: 1.4.4
+      svg-baker-runtime: 1.4.5
       svg-sprite-loader: 4.2.1_webpack@4.42.0
       tslint: 5.20.1_typescript@3.7.5
       tslint-etc: 1.10.1_tslint@5.20.1+typescript@3.7.5
@@ -21330,7 +21331,7 @@ packages:
       node-sass: '*'
       webpack: '*'
     resolution:
-      integrity: sha512-I1taR28HzRJF/tuBf9zEcbM5IRFw7ez/mqYst3xWdnXIgLRUY4KJ5lKJH6AQQE2Y89E35gKKJi15eXzoHm02cg==
+      integrity: sha512-8vOd8sL/3bBEka/pJSBOhsam+z5nFAfOvUWq11v4qxmtEy+ulxsUqx9dWmIGlge4Hq6+CPWePckIpBWx/bDZIg==
       tarball: 'file:projects/ui-test-app.tgz'
     version: 0.0.0
   'file:projects/webgl-compatibility.tgz':
@@ -21395,7 +21396,7 @@ specifiers:
   '@bentley/icons-generic-webfont': ^1.0.5
   '@bentley/imodeljs-native': 2.0.21
   '@bentley/oidc-signin-tool': 2.0.0-dev.37
-  '@bentley/react-scripts': 3.4.1-dev.21
+  '@bentley/react-scripts': 3.4.1-dev.23
   '@microsoft/api-extractor': 7.7.3
   '@openid/appauth': ^1.2.6
   '@rush-temp/backend-webpack-tools': 'file:./projects/backend-webpack-tools.tgz'

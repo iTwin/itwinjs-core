@@ -1,8 +1,9 @@
 # start off ignoring everything, and then add back only the files we want
 *
 !lib/**/*.d.ts
+!lib/**/*.d.ts.map
 !lib/**/*.js
-!lib/module/dev/imodeljs-common.js.map
+!lib/**/*.js.map
 test
 !public/**
 !assets/**

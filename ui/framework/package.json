@@ -65,7 +65,7 @@
     "@bentley/presentation-common": "2.0.0-dev.60",
     "@bentley/presentation-frontend": "2.0.0-dev.60",
     "@bentley/presentation-testing": "2.0.0-dev.60",
-    "@bentley/react-scripts": "3.4.1-dev.21",
+    "@bentley/react-scripts": "3.4.1-dev.23",
     "@bentley/ui-abstract": "2.0.0-dev.60",
     "@bentley/ui-core": "2.0.0-dev.60",
     "@bentley/ui-components": "2.0.0-dev.60",
