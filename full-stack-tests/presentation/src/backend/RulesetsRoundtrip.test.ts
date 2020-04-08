@@ -25,6 +25,7 @@ describe("Rulesets roundtrip", () => {
       localeDirectories: [],
       taskAllocationsMap: {},
       mode: PresentationManagerMode.ReadWrite,
+      isChangeTrackingEnabled: false,
     });
     nativePlatform = new TNativePlatform();
 
