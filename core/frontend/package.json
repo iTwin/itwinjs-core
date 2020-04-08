@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-frontend",
-  "version": "2.0.0-dev.60",
+  "version": "2.0.0-dev.61",
   "description": "iModel.js frontend components",
   "main": "lib/imodeljs-frontend.js",
   "typings": "lib/imodeljs-frontend",
@@ -33,30 +33,30 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/ui-abstract": "2.0.0-dev.60",
-    "@bentley/bentleyjs-core": "^2.0.0-dev.60",
-    "@bentley/geometry-core": "^2.0.0-dev.60",
-    "@bentley/imodeljs-clients": "^2.0.0-dev.60",
-    "@bentley/imodeljs-common": "^2.0.0-dev.60",
-    "@bentley/imodeljs-i18n": "^2.0.0-dev.60",
-    "@bentley/imodeljs-quantity": "^2.0.0-dev.60",
-    "@bentley/webgl-compatibility": "2.0.0-dev.60"
+    "@bentley/ui-abstract": "2.0.0-dev.61",
+    "@bentley/bentleyjs-core": "^2.0.0-dev.61",
+    "@bentley/geometry-core": "^2.0.0-dev.61",
+    "@bentley/imodeljs-clients": "^2.0.0-dev.61",
+    "@bentley/imodeljs-common": "^2.0.0-dev.61",
+    "@bentley/imodeljs-i18n": "^2.0.0-dev.61",
+    "@bentley/imodeljs-quantity": "^2.0.0-dev.61",
+    "@bentley/webgl-compatibility": "2.0.0-dev.61"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.0.0-dev.60",
-    "@bentley/build-tools": "2.0.0-dev.60",
-    "@bentley/certa": "2.0.0-dev.60",
-    "@bentley/geometry-core": "2.0.0-dev.60",
-    "@bentley/imodeljs-clients": "2.0.0-dev.60",
-    "@bentley/imodeljs-common": "2.0.0-dev.60",
-    "@bentley/imodeljs-i18n": "2.0.0-dev.60",
-    "@bentley/imodeljs-quantity": "2.0.0-dev.60",
-    "@bentley/webgl-compatibility": "2.0.0-dev.60",
-    "@bentley/ui-abstract": "2.0.0-dev.60",
+    "@bentley/bentleyjs-core": "2.0.0-dev.61",
+    "@bentley/build-tools": "2.0.0-dev.61",
+    "@bentley/certa": "2.0.0-dev.61",
+    "@bentley/geometry-core": "2.0.0-dev.61",
+    "@bentley/imodeljs-clients": "2.0.0-dev.61",
+    "@bentley/imodeljs-common": "2.0.0-dev.61",
+    "@bentley/imodeljs-i18n": "2.0.0-dev.61",
+    "@bentley/imodeljs-quantity": "2.0.0-dev.61",
+    "@bentley/webgl-compatibility": "2.0.0-dev.61",
+    "@bentley/ui-abstract": "2.0.0-dev.61",
     "@types/chai": "^4.1.4",
     "@types/js-base64": "^2.3.1",
     "@types/mocha": "^5.2.5",
@@ -79,7 +79,7 @@
     "NOTE: imodeljs-frontend should remain UI technology agnostic, so no react/angular dependencies are allowed"
   ],
   "dependencies": {
-    "@bentley/extension-client": "2.0.0-dev.60",
+    "@bentley/extension-client": "2.0.0-dev.61",
     "fuse.js": "^3.3.0",
     "js-base64": "^2.4.5",
     "ldclient-js": "^2.6.0",
