@@ -171,20 +171,20 @@ describe("UlasUtilities - OIDC Token (#integration)", () => {
 
   it("Post feature log (#integration)", async function (this: Mocha.Context) {
     for (const usageType of [IModelJsNative.UsageType.Beta, IModelJsNative.UsageType.HomeUse, IModelJsNative.UsageType.PreActivation, IModelJsNative.UsageType.Production, IModelJsNative.UsageType.Trial]) {
-      await UlasUtilities.postFeatureUsage(requestContext, "imodeljs_backend_ulasClient_test_logFeature", defaultAuthType, os.hostname(), usageType);
+      await UlasUtilities.postFeatureUsage(requestContext, Guid.createValue(), defaultAuthType, os.hostname(), usageType);
     }
   });
 
   it("Post feature log with project id (#integration)", async function (this: Mocha.Context) {
     const localRequestContext = new AuthorizedClientRequestContext(requestContext.accessToken, undefined, "43", "3.4.99");
-    await UlasUtilities.postFeatureUsage(localRequestContext, "imodeljs_backend_ulasClient_test_logFeature_projectId", defaultAuthType, os.hostname(), IModelJsNative.UsageType.Production, Guid.createValue());
+    await UlasUtilities.postFeatureUsage(localRequestContext, Guid.createValue(), defaultAuthType, os.hostname(), IModelJsNative.UsageType.Production, Guid.createValue());
   });
 
   it("Post feature log with invalid project id (#integration)", async function (this: Mocha.Context) {
     const localRequestContext = new AuthorizedClientRequestContext(requestContext.accessToken, undefined, "43", "3.4.99");
     let exceptionThrown = false;
     try {
-      await UlasUtilities.postFeatureUsage(localRequestContext, "imodeljs_backend_ulasClient_test_logFeature_invalid_projectId", defaultAuthType, os.hostname(), IModelJsNative.UsageType.Production, "Non-Guid project id");
+      await UlasUtilities.postFeatureUsage(localRequestContext, Guid.createValue(), defaultAuthType, os.hostname(), IModelJsNative.UsageType.Production, "Non-Guid project id");
     } catch (err) {
       exceptionThrown = true;
     }
@@ -195,7 +195,7 @@ describe("UlasUtilities - OIDC Token (#integration)", () => {
     const localRequestContext = new AuthorizedClientRequestContext(requestContext.accessToken, undefined, "43");
     let exceptionThrown = false;
     try {
-      await UlasUtilities.postFeatureUsage(localRequestContext, "imodeljs_backend_ulasClient_test_logFeature_without_productId", defaultAuthType, os.hostname(), IModelJsNative.UsageType.Production);
+      await UlasUtilities.postFeatureUsage(localRequestContext, Guid.createValue(), defaultAuthType, os.hostname(), IModelJsNative.UsageType.Production);
     } catch (err) {
       exceptionThrown = true;
     }
@@ -209,7 +209,7 @@ describe("UlasUtilities - OIDC Token (#integration)", () => {
       "127.0.0.1",
       "localhost",
     ]) {
-      await UlasUtilities.postFeatureUsage(requestContext, "imodeljs_backend_ulasClient_test_logFeature_special_hostName", defaultAuthType, hostName, IModelJsNative.UsageType.Production);
+      await UlasUtilities.postFeatureUsage(requestContext, Guid.createValue(), defaultAuthType, hostName, IModelJsNative.UsageType.Production);
     }
   });
 
@@ -217,19 +217,19 @@ describe("UlasUtilities - OIDC Token (#integration)", () => {
     const startDate = new Date();
     const localRequestContext = new AuthorizedClientRequestContext(requestContext.accessToken, undefined, "43", "3.4.99");
     const endDate = new Date();
-    await UlasUtilities.postFeatureUsage(localRequestContext, "imodeljs_backend_ulasClient_test_logFeature_startEndDate", defaultAuthType, os.hostname(), IModelJsNative.UsageType.Production, undefined, startDate, endDate);
+    await UlasUtilities.postFeatureUsage(localRequestContext, Guid.createValue(), defaultAuthType, os.hostname(), IModelJsNative.UsageType.Production, undefined, startDate, endDate);
   });
 
   it("Post feature log - with startDate and no endDate (#integration)", async function (this: Mocha.Context) {
     const localRequestContext = new AuthorizedClientRequestContext(requestContext.accessToken, undefined, "43", "3.4.99");
     const endDate = new Date();
-    await UlasUtilities.postFeatureUsage(localRequestContext, "imodeljs_backend_ulasClient_test_logFeature_startDate", defaultAuthType, os.hostname(), IModelJsNative.UsageType.Production, undefined, undefined, endDate);
+    await UlasUtilities.postFeatureUsage(localRequestContext, Guid.createValue(), defaultAuthType, os.hostname(), IModelJsNative.UsageType.Production, undefined, undefined, endDate);
   });
 
   it("Post feature log - with endDate and no startDate (#integration)", async function (this: Mocha.Context) {
     const startDate = new Date();
     const localRequestContext = new AuthorizedClientRequestContext(requestContext.accessToken, undefined, "43", "3.4.99");
-    await UlasUtilities.postFeatureUsage(localRequestContext, "imodeljs_backend_ulasClient_test_logFeature_endDate", defaultAuthType, os.hostname(), IModelJsNative.UsageType.Production, undefined, startDate);
+    await UlasUtilities.postFeatureUsage(localRequestContext, Guid.createValue(), defaultAuthType, os.hostname(), IModelJsNative.UsageType.Production, undefined, startDate);
   });
 
   it("Post feature log - with additional metadata (#integration)", async function (this: Mocha.Context) {
@@ -238,6 +238,6 @@ describe("UlasUtilities - OIDC Token (#integration)", () => {
       iModelId: Guid.createValue(),
       iModelJsVersion: "1.2.3.4",
     };
-    await UlasUtilities.postFeatureUsage(localRequestContext, "imodeljs_backend_ulasClient_test_logFeature_metaData", defaultAuthType, os.hostname(), IModelJsNative.UsageType.Production, undefined, undefined, undefined, metadata);
+    await UlasUtilities.postFeatureUsage(localRequestContext, Guid.createValue(), defaultAuthType, os.hostname(), IModelJsNative.UsageType.Production, undefined, undefined, undefined, metadata);
   });
 });
