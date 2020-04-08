@@ -103,10 +103,6 @@
       "allowedCategories": [ "extensions", "frontend", "internal", "tools" ]
     },
     {
-      "name": "@bentley/imodeljs-webserver",
-      "allowedCategories": [ "internal" ]
-    },
-    {
       "name": "@bentley/logger-config",
       "allowedCategories": [ "internal" ]
     },
@@ -289,10 +285,6 @@
     {
       "name": "concurrently",
       "allowedCategories": [ "tools" ]
-    },
-    {
-      "name": "cors",
-      "allowedCategories": [ "backend" ]
     },
     {
       "name": "cpx",
@@ -800,7 +792,7 @@
     },
     {
       "name": "svg-sprite-loader",
-      "allowedCategories": [ "extensions", "frontend", "internal", "tools" ]
+      "allowedCategories": [ "extensions", "frontend", "internal" ]
     },
     {
       "name": "tar",
@@ -816,7 +808,7 @@
     },
     {
       "name": "tree-kill",
-      "allowedCategories": [ "backend", "tools" ]
+      "allowedCategories": [ "tools" ]
     },
     {
       "name": "ts-key-enum",
@@ -936,7 +928,7 @@
     },
     {
       "name": "yargs",
-      "allowedCategories": [ "backend", "common", "internal", "tools" ]
+      "allowedCategories": [ "common", "internal", "tools" ]
     }
   ]
 }
