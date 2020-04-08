@@ -28,10 +28,10 @@ import { PresentationStatus } from "./Error";
  * Base options for all presentation RPC requests.
  * @public
  */
-export interface PresentationRpcRequestOptions {
+export type PresentationRpcRequestOptions<TManagerRequestOptions> = Omit<TManagerRequestOptions, "imodel"> & {
   /** ID of the client requesting data */
   clientId?: string;
-}
+};
 
 /**
  * Data structure for presentation RPC responses
@@ -50,27 +50,27 @@ export type PresentationRpcResponse<TResult = undefined> = Promise<{
  * Data structure for hierarchy request options.
  * @public
  */
-export type HierarchyRpcRequestOptions = PresentationRpcRequestOptions & Omit<HierarchyRequestOptions<IModelRpcProps>, "imodel">;
+export type HierarchyRpcRequestOptions = PresentationRpcRequestOptions<HierarchyRequestOptions<any>>;
 /**
  * Data structure for content request options.
  * @public
  */
-export type ContentRpcRequestOptions = PresentationRpcRequestOptions & Omit<ContentRequestOptions<IModelRpcProps>, "imodel">;
+export type ContentRpcRequestOptions = PresentationRpcRequestOptions<ContentRequestOptions<any>>;
 /**
  * Data structure for label request options.
  * @public
  */
-export type LabelRpcRequestOptions = PresentationRpcRequestOptions & Omit<LabelRequestOptions<IModelRpcProps>, "imodel">;
+export type LabelRpcRequestOptions = PresentationRpcRequestOptions<LabelRequestOptions<any>>;
 /**
  * Data structure for selection scope request options.
  * @public
  */
-export type SelectionScopeRpcRequestOptions = PresentationRpcRequestOptions & Omit<SelectionScopeRequestOptions<IModelRpcProps>, "imodel">;
+export type SelectionScopeRpcRequestOptions = PresentationRpcRequestOptions<SelectionScopeRequestOptions<any>>;
 /**
  * Data structure for ruleset variable request options.
  * @public
  */
-export type RulesetVariableRpcRequestOptions = PresentationRpcRequestOptions & { rulesetId: string };
+export type RulesetVariableRpcRequestOptions = PresentationRpcRequestOptions<{ rulesetId: string }>;
 
 /**
  * Interface used for communication between Presentation backend and frontend.
@@ -108,4 +108,12 @@ export class PresentationRpcInterface extends RpcInterface {
 
   public async getSelectionScopes(_token: IModelRpcProps, _options: SelectionScopeRpcRequestOptions): PresentationRpcResponse<SelectionScope[]> { return this.forward(arguments); }
   public async computeSelection(_token: IModelRpcProps, _options: SelectionScopeRpcRequestOptions, _ids: Id64String[], _scopeId: string): PresentationRpcResponse<KeySetJSON> { return this.forward(arguments); }
+}
+
+/** @alpha */
+export enum PresentationRpcEvents {
+  /**
+   * ID of an event that's emitted when backend detects changes in presented data.
+   */
+  Update = "OnUpdate",
 }

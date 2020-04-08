@@ -6,14 +6,15 @@
  * @module Core
  */
 
-import { IDisposable } from "@bentley/bentleyjs-core";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { IDisposable, BeEvent } from "@bentley/bentleyjs-core";
+import { IModelConnection, EventSource, EventSourceManager } from "@bentley/imodeljs-frontend";
 import {
   RpcRequestsHandler, RequestPriority, DescriptorOverrides,
   HierarchyRequestOptions, Node, NodeKey, NodePathElement,
   ContentRequestOptions, Content, Descriptor, SelectionInfo,
-  Paged, KeySet, InstanceKey, LabelRequestOptions, Ruleset, RulesetVariable,
-  LabelDefinition, PresentationUnitSystem,
+  Paged, KeySet, InstanceKey, LabelRequestOptions, Ruleset, RulesetVariable, LabelDefinition,
+  PresentationRpcInterface, PresentationRpcEvents, RegisteredRuleset, PresentationUnitSystem,
+  UpdateInfo, HierarchyUpdateInfo, ContentUpdateInfo,
 } from "@bentley/presentation-common";
 import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager";
 import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
@@ -50,6 +51,9 @@ export interface PresentationManagerProps {
 
   /** @internal */
   rpcRequestsHandler?: RpcRequestsHandler;
+
+  /** @internal */
+  eventSource?: EventSource;
 }
 
 /**
@@ -64,7 +68,20 @@ export class PresentationManager implements IDisposable {
   private _rulesets: RulesetManager;
   private _localizationHelper: LocalizationHelper;
   private _rulesetVars: Map<string, RulesetVariablesManager>;
+  private _eventSource: EventSource;
   private _connections: Map<IModelConnection, Promise<void>>;
+
+  /**
+   * An event raised when hierarchies created using specific ruleset change
+   * @alpha
+   */
+  public onHierarchyUpdate = new BeEvent<(ruleset: Ruleset, updateInfo: HierarchyUpdateInfo) => void>();
+
+  /**
+   * An event raised when content created using specific ruleset changes
+   * @alpha
+   */
+  public onContentUpdate = new BeEvent<(ruleset: Ruleset, updateInfo: ContentUpdateInfo) => void>();
 
   /** Get / set active locale used for localizing presentation data */
   public activeLocale: string | undefined;
@@ -78,25 +95,49 @@ export class PresentationManager implements IDisposable {
       this.activeUnitSystem = props.activeUnitSystem;
     }
 
-    this._requestsHandler = (props && props.rpcRequestsHandler)
-      ? props.rpcRequestsHandler
-      : new RpcRequestsHandler(props ? { clientId: props.clientId } : undefined);
-
+    this._requestsHandler = props?.rpcRequestsHandler ?? new RpcRequestsHandler(props ? { clientId: props.clientId } : undefined);
+    this._eventSource = props?.eventSource ?? EventSourceManager.global;
     this._rulesetVars = new Map<string, RulesetVariablesManager>();
-
     this._rulesets = new RulesetManagerImpl();
     this._localizationHelper = new LocalizationHelper();
     this._connections = new Map<IModelConnection, Promise<void>>();
+
+    this._eventSource.on(PresentationRpcInterface.interfaceName, PresentationRpcEvents.Update, this.onUpdate);
   }
 
   public dispose() {
     this._requestsHandler.dispose();
+    this._eventSource.off(PresentationRpcInterface.interfaceName, PresentationRpcEvents.Update, this.onUpdate);
   }
 
   private async onConnection(imodelConnection: IModelConnection) {
     if (!this._connections.has(imodelConnection))
       this._connections.set(imodelConnection, this.onNewiModelConnection(imodelConnection));
     await this._connections.get(imodelConnection);
+  }
+
+  // tslint:disable-next-line: naming-convention
+  private onUpdate = (report: UpdateInfo) => {
+    // tslint:disable-next-line: no-floating-promises
+    this.handleUpdateAsync(report);
+  }
+
+  private async handleUpdateAsync(report: UpdateInfo) {
+    const rulesetIds = new Array<string>();
+    for (const rulesetId in report) {
+      // istanbul ignore else
+      if (report.hasOwnProperty(rulesetId))
+        rulesetIds.push(rulesetId);
+    }
+    const rulesets = (await Promise.all(rulesetIds.map((id) => this._rulesets.get(id))))
+      .filter<RegisteredRuleset>((ruleset): ruleset is RegisteredRuleset => (undefined !== ruleset));
+    rulesets.forEach((ruleset: Ruleset) => {
+      const updateInfo = report[ruleset.id];
+      if (updateInfo.content)
+        this.onContentUpdate.raiseEvent(ruleset, updateInfo.content);
+      if (updateInfo.hierarchy)
+        this.onHierarchyUpdate.raiseEvent(ruleset, updateInfo.hierarchy);
+    });
   }
 
   /** Function that is called when a new IModelConnection is used to retrieve data.

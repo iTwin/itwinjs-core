@@ -20,6 +20,7 @@ import {
 } from "@bentley/presentation-frontend";
 import { Table, TableProps, ColumnDescription, RowItem, TableDataChangeEvent } from "@bentley/ui-components";
 import { IUnifiedSelectionComponent, PresentationTableDataProvider, tableWithUnifiedSelection } from "../../presentation-components";
+import { PresentationTableDataProviderProps } from "../../presentation-components/table/DataProvider";
 
 // tslint:disable-next-line:variable-name naming-convention
 const PresentationTable = tableWithUnifiedSelection(Table);
@@ -27,8 +28,8 @@ const PresentationTable = tableWithUnifiedSelection(Table);
 describe("Table withUnifiedSelection", () => {
 
   let testRulesetId: string;
+  let dataProviderMock: moq.IMock<PresentationTableDataProvider>;
   const imodelMock = moq.Mock.ofType<IModelConnection>();
-  const dataProviderMock = moq.Mock.ofType(PresentationTableDataProvider, undefined, undefined, imodelMock.object, "ruleset_id");
   const selectionHandlerMock = moq.Mock.ofType<SelectionHandler>();
 
   before(() => {
@@ -42,6 +43,11 @@ describe("Table withUnifiedSelection", () => {
     selectionHandlerMock.reset();
     selectionHandlerMock.setup((x) => x.getSelectionLevels()).returns(() => []);
     selectionHandlerMock.setup((x) => x.getSelection(moq.It.isAnyNumber())).returns(() => new KeySet());
+    dataProviderMock = moq.Mock.ofType(PresentationTableDataProvider, undefined, undefined, {
+      imodel: imodelMock.object,
+      ruleset: "ruleset_id",
+      doNotListenForPresentationUpdates: true,
+    } as PresentationTableDataProviderProps);
     setupDataProvider();
   });
 

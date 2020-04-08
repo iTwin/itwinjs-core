@@ -9,8 +9,10 @@ import { Content } from '@bentley/presentation-common';
 import { ContentRequestOptions } from '@bentley/presentation-common';
 import { Descriptor } from '@bentley/presentation-common';
 import { DescriptorOverrides } from '@bentley/presentation-common';
+import { EventSource } from '@bentley/imodeljs-frontend';
 import { Field } from '@bentley/presentation-common';
 import { HierarchyRequestOptions } from '@bentley/presentation-common';
+import { HierarchyUpdateInfo } from '@bentley/presentation-common';
 import { I18N } from '@bentley/imodeljs-i18n';
 import { Id64Arg } from '@bentley/bentleyjs-core';
 import { Id64String } from '@bentley/bentleyjs-core';
@@ -176,6 +178,10 @@ export class PresentationManager implements IDisposable {
     getNodesCount(requestOptions: HierarchyRequestOptions<IModelConnection>, parentKey?: NodeKey): Promise<number>;
     // @alpha
     loadHierarchy(requestOptions: HierarchyRequestOptions<IModelConnection>): Promise<void>;
+    // @alpha
+    onContentUpdate: BeEvent<(ruleset: Ruleset, updateInfo: "FULL") => void>;
+    // @alpha
+    onHierarchyUpdate: BeEvent<(ruleset: Ruleset, updateInfo: HierarchyUpdateInfo) => void>;
     // @internal
     onNewiModelConnection(_: IModelConnection): Promise<void>;
     // @internal (undocumented)
@@ -190,6 +196,8 @@ export interface PresentationManagerProps {
     // @alpha
     activeUnitSystem?: PresentationUnitSystem;
     clientId?: string;
+    // @internal (undocumented)
+    eventSource?: EventSource;
     // @internal (undocumented)
     rpcRequestsHandler?: RpcRequestsHandler;
 }

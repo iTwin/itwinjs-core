@@ -215,13 +215,14 @@ export class SampleAppIModelApp {
   }
 
   public static async initialize() {
-    // initialize Presentation
+    await UiCore.initialize(IModelApp.i18n);
+    await UiComponents.initialize(IModelApp.i18n);
+
     await Presentation.initialize({
       activeLocale: IModelApp.i18n.languageList()[0],
+    }).then(() => {
+      Presentation.selection.scopes.activeScope = "top-assembly";
     });
-    Presentation.selection.scopes.activeScope = "top-assembly";
-    UiCore.initialize(IModelApp.i18n); // tslint:disable-line:no-floating-promises
-    UiComponents.initialize(IModelApp.i18n); // tslint:disable-line:no-floating-promises
 
     await UiFramework.initialize(undefined, IModelApp.i18n);
 

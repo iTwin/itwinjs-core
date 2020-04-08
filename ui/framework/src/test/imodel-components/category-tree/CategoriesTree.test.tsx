@@ -66,6 +66,7 @@ describe("CategoryTree", () => {
     Presentation.setSelectionManager(selectionManagerMock.object);
     presentationManagerMock.setup((x) => x.rulesets()).returns(() => rulesetManagerMock.object);
     presentationManagerMock.setup((x) => x.vars(moq.It.isAny())).returns(() => rulesetVariablesMock.object);
+    presentationManagerMock.setup((x) => x.onHierarchyUpdate).returns(() => new BeEvent());
     Presentation.setPresentationManager(presentationManagerMock.object);
 
     async function* generator() {

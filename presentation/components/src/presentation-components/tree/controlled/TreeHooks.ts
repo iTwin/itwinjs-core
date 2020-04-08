@@ -6,13 +6,14 @@
  * @module Tree
  */
 
-import { useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { useDisposable } from "@bentley/ui-core";
 import { usePagedTreeNodeLoader, useTreeModelSource, PagedTreeNodeLoader } from "@bentley/ui-components";
 import { Ruleset } from "@bentley/presentation-common";
 import { PresentationTreeDataProvider } from "../DataProvider";
 import { IPresentationTreeDataProvider } from "../IPresentationTreeDataProvider";
+import { Presentation } from "@bentley/presentation-frontend";
 
 /**
  * Properties for [[usePresentationTreeNodeLoader]] hook.
@@ -49,10 +50,24 @@ export interface PresentationTreeNodeLoaderProps {
  * @beta
  */
 export function usePresentationTreeNodeLoader(props: PresentationTreeNodeLoaderProps): PagedTreeNodeLoader<IPresentationTreeDataProvider> {
+  const [resetCounter, setResetCounter] = useState(0);
   const dataProvider = useDisposable(useCallback(
-    () => createDataProvider(props),
-    Object.values(props), /* eslint-disable-line react-hooks/exhaustive-deps */ /* re-create the data-provider whenever any prop changes */
+    () => {
+      return createDataProvider(props);
+    },
+    [resetCounter, ...Object.values(props)], /* eslint-disable-line react-hooks/exhaustive-deps */ /* re-create the data-provider whenever any prop changes */
   ));
+
+  // WIP: for now just re-create the data provider whenever `onHierarchyUpdate` event is fired
+  const resetDataProvider = useCallback((ruleset: Ruleset) => {
+    const propsRulesetId = (typeof props.ruleset === "object") ? props.ruleset.id : props.ruleset;
+    if (propsRulesetId === ruleset.id)
+      setResetCounter((value) => ++value);
+  }, [props.ruleset]);
+  useEffect(() => {
+    return Presentation.presentation.onHierarchyUpdate.addListener(resetDataProvider);
+  }, [resetDataProvider]);
+
   const modelSource = useTreeModelSource(dataProvider);
   return usePagedTreeNodeLoader(dataProvider, props.pageSize, modelSource);
 }

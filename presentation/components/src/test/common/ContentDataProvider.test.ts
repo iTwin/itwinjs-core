@@ -18,14 +18,13 @@ import {
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { PrimitiveValue, PropertyDescription, PropertyRecord } from "@bentley/ui-abstract";
 import {
-  Descriptor, Field,
-  SelectionInfo, Item,
-  KeySet, RegisteredRuleset,
-  Content, DescriptorOverrides, NestedContentField,
+  Descriptor, Field, SelectionInfo, Item, KeySet, RegisteredRuleset,
+  Content, DescriptorOverrides, NestedContentField, Ruleset, ContentUpdateInfo,
 } from "@bentley/presentation-common";
 import { Presentation, PresentationManager, RulesetManager } from "@bentley/presentation-frontend";
 import { ContentDataProvider, CacheInvalidationProps, ContentDataProviderProps } from "../../presentation-components/common/ContentDataProvider";
 import { FIELD_NAMES_SEPARATOR } from "../../presentation-components/common/ContentBuilder";
+import { BeEvent } from "@bentley/bentleyjs-core";
 
 /**
  * The Provider class is used to make protected ContentDataProvider
@@ -49,6 +48,7 @@ describe("ContentDataProvider", () => {
   let rulesetId: string;
   let displayType: string;
   let provider: Provider;
+  let onContentUpdateEvent: BeEvent<(ruleset: Ruleset, info: ContentUpdateInfo) => void>;
   let invalidateCacheSpy: sinon.SinonSpy<[CacheInvalidationProps], void>;
   const presentationManagerMock = moq.Mock.ofType<PresentationManager>();
   const imodelMock = moq.Mock.ofType<IModelConnection>();
@@ -63,7 +63,9 @@ describe("ContentDataProvider", () => {
   });
 
   beforeEach(() => {
+    onContentUpdateEvent = new BeEvent();
     presentationManagerMock.reset();
+    presentationManagerMock.setup((x) => x.onContentUpdate).returns(() => onContentUpdateEvent);
     provider = new Provider({ imodel: imodelMock.object, ruleset: rulesetId, displayType });
     invalidateCacheSpy = sinon.spy(provider, "invalidateCache");
   });
@@ -635,6 +637,22 @@ describe("ContentDataProvider", () => {
       const resultField = await provider.getFieldByPropertyRecord(propertyRecord);
       presentationManagerMock.verifyAll();
       expect(resultField).to.be.eq(nestedField);
+    });
+
+  });
+
+  describe("reacting to updates", () => {
+
+    it("doesn't react to updates to unrelated rulesets", () => {
+      const ruleset: Ruleset = { id: "unrelated", rules: [] };
+      onContentUpdateEvent.raiseEvent(ruleset, "FULL");
+      expect(invalidateCacheSpy).to.not.be.called;
+    });
+
+    it("invalidates cache when update happens to related ruleset", () => {
+      const ruleset: Ruleset = { id: rulesetId, rules: [] };
+      onContentUpdateEvent.raiseEvent(ruleset, "FULL");
+      expect(invalidateCacheSpy).to.be.calledOnceWith(CacheInvalidationProps.full());
     });
 
   });

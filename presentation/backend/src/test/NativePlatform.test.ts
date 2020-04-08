@@ -8,7 +8,7 @@ import * as faker from "faker";
 import "@bentley/presentation-common/lib/test/_helpers/Promises";
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
 import { IModelHost, IModelDb, IModelJsNative } from "@bentley/imodeljs-backend";
-import { PresentationError, VariableValueTypes } from "@bentley/presentation-common";
+import { PresentationError, VariableValueTypes, UpdateInfo } from "@bentley/presentation-common";
 import { NativePlatformDefinition, createDefaultNativePlatform } from "../presentation-backend/NativePlatform";
 import { PresentationManagerMode } from "../presentation-backend/PresentationManager";
 import "./IModelHostSetup";
@@ -38,6 +38,7 @@ describe("default NativePlatform", () => {
       localeDirectories: [],
       taskAllocationsMap: {},
       mode: PresentationManagerMode.ReadOnly,
+      isChangeTrackingEnabled: false,
     });
     nativePlatform = new TNativePlatform();
     // we're replacing the native addon with our mock - make sure the original
@@ -101,13 +102,6 @@ describe("default NativePlatform", () => {
       .setup((x) => x.handleRequest(moq.It.isAny(), "", moq.It.isAny()))
       .callback((_db, _options, cb) => { cb({ error: { status: IModelJsNative.ECPresentationStatus.Error, message: "test" } }); });
     await expect(nativePlatform.handleRequest(ClientRequestContext.current, undefined, "")).to.be.rejectedWith(PresentationError, "test");
-  });
-
-  it("throws on handleRequest success response without result", async () => {
-    addonMock
-      .setup((x) => x.handleRequest(moq.It.isAny(), "", moq.It.isAny()))
-      .callback((_db, _options, cb) => { cb({ result: undefined }); });
-    await expect(nativePlatform.handleRequest(ClientRequestContext.current, undefined, "")).to.be.rejectedWith(PresentationError);
   });
 
   it("calls addon's setupRulesetDirectories", async () => {
@@ -196,6 +190,16 @@ describe("default NativePlatform", () => {
     const result = nativePlatform.getRulesetVariableValue(rulesetId, variableId, VariableValueTypes.String);
     addonMock.verifyAll();
     expect(result).to.equal(value);
+  });
+
+  it("calls addon's getUpdateInfo", async () => {
+    const updates = new Array<UpdateInfo>();
+    addonMock.setup((x) => x.getUpdateInfo())
+      .returns(() => ({ result: updates }))
+      .verifiable();
+    const result = nativePlatform.getUpdateInfo();
+    addonMock.verifyAll();
+    expect(result).to.equal(updates);
   });
 
   it("returns imodel addon from IModelDb", () => {

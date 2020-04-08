@@ -32,6 +32,7 @@ describe("NativePlatform", () => {
       localeDirectories: [],
       taskAllocationsMap: {},
       mode: PresentationManagerMode.ReadWrite,
+      isChangeTrackingEnabled: true,
     });
     nativePlatform = new TNativePlatform();
   });

@@ -106,6 +106,8 @@ export class ContentDataProvider implements IContentDataProvider {
 // @public
 export interface ContentDataProviderProps {
     displayType: string;
+    // @internal
+    doNotListenForPresentationUpdates?: boolean;
     imodel: IModelConnection;
     pagingSize?: number;
     ruleset: string | Ruleset;
@@ -289,6 +291,8 @@ export class PresentationTableDataProvider extends ContentDataProvider implement
 export interface PresentationTableDataProviderProps {
     cachedPagesCount?: number;
     displayType?: string;
+    // @internal
+    doNotListenForPresentationUpdates?: boolean;
     imodel: IModelConnection;
     pageSize?: number;
     ruleset: string | Ruleset;
