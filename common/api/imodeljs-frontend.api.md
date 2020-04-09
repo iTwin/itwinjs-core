@@ -4751,6 +4751,7 @@ export class Marker implements CanvasDecoration {
     labelBaseline?: MarkerTextBaseline;
     labelColor?: MarkerFillStyle;
     labelFont?: string;
+    labelMaxWidth?: number;
     labelOffset?: XAndY;
     static makeFrom<T extends Marker>(other: Marker, ...args: any[]): T;
     onMouseButton?(_ev: BeButtonEvent): boolean;

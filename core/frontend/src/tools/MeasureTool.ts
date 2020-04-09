@@ -44,7 +44,7 @@ class MeasureLabel implements CanvasDecoration {
   }
 
   public drawDecoration(ctx: CanvasRenderingContext2D): void {
-    ctx.font = "16px san-serif";
+    ctx.font = "16px sans-serif";
     const labelHeight = ctx.measureText("M").width; // Close enough for border padding...
     const labelWidth = ctx.measureText(this.label).width + labelHeight;
 
@@ -95,8 +95,10 @@ class MeasureMarker extends Marker {
     this.drawFunc = markerDrawFunc;
     this.title = title;
     this.label = label;
-    this.labelFont = "18px san-serif";
+    this.labelFont = "16px sans-serif";
     this.labelColor = "black";
+    this.labelMaxWidth = this.size.x * 0.75;
+    this.labelOffset = { x: 0, y: -1 };
   }
 
   public onMouseButton(_ev: BeButtonEvent): boolean { return true; } // Never forward event to active tool...

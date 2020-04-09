@@ -110,7 +110,7 @@ class IncidentClusterMarker extends Marker {
     this.imageSize = new Point2d(30, 30);
     this.label = cluster.markers.length.toLocaleString();
     this.labelColor = "black";
-    this.labelFont = "bold 14px san-serif";
+    this.labelFont = "bold 14px sans-serif";
 
     let title = "";
     sorted.forEach((marker) => {

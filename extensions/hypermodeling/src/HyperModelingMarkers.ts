@@ -245,7 +245,7 @@ class SectionLocationClusterMarker extends Marker {
     this.imageOffset = new Point3d(0, 30);
     this.label = cluster.markers.length.toLocaleString();
     this.labelColor = "black";
-    this.labelFont = "bold 14px san-serif";
+    this.labelFont = "bold 14px sans-serif";
 
     const maxLen = 10;
     let title = "";
