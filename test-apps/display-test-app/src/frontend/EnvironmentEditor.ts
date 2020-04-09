@@ -5,6 +5,7 @@
 
 import {
   ColorDef,
+  RenderMode,
   SkyBoxProps,
 } from "@bentley/imodeljs-common";
 import {
@@ -27,6 +28,7 @@ import {
   createNestedMenu,
   createButton,
 } from "@bentley/frontend-devtools";
+import { LightingEditor } from "./LightingEditor";
 
 type EnvironmentAspect = "ground" | "sky";
 type UpdateAttribute = (view: ViewState) => void;
@@ -57,6 +59,16 @@ export class EnvironmentEditor {
       handler: (expanded) => expandEnvironmentEditor = expanded,
     }).body;
     const is3d = this._vp.view.is3d();
+
+    const lightingDiv = document.createElement("div");
+    const lightingEditor = new LightingEditor(vp, lightingDiv);
+    this._updates.push((view: ViewState) => {
+      lightingEditor.update(view);
+      lightingDiv.style.display = view.is3d() && RenderMode.SmoothShade === view.viewFlags.renderMode ? "" : "none";
+    });
+
+    lightingDiv.appendChild(document.createElement("hr"));
+    nestedMenu.appendChild(lightingDiv);
 
     this._eeBackgroundColor = createColorInput({
       parent: nestedMenu,

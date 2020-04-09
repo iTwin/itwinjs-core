@@ -11,7 +11,7 @@ import {
 } from "@bentley/ui-components";
 
 import { ScreenViewport, DisplayStyle3dState, ViewState } from "@bentley/imodeljs-frontend";
-import { Cartographic, ColorDef, ColorByName } from "@bentley/imodeljs-common";
+import { Cartographic, ColorDef, ColorByName, SolarShadowSettings } from "@bentley/imodeljs-common";
 
 // the interface and class are in alpha state - it may change after usability testing - test coverage not complete
 /* istanbul ignore file */
@@ -63,19 +63,31 @@ export class SolarTimelineDataProvider extends BaseSolarDataProvider {
     if (this._viewport) {
       const displayStyle = this._viewport.view.displayStyle as DisplayStyle3dState;
       if (displayStyle) {
-        return displayStyle.settings.solarShadowsSettings.color;
+        return displayStyle.settings.solarShadows.color.toColorDef();
       }
     }
     return new ColorDef(ColorByName.gray);
   }
 
   public set shadowColor(color: ColorDef) {
-    if (this._viewport) {
-      const displayStyle = this._viewport.view.displayStyle as DisplayStyle3dState;
-      if (displayStyle && color !== displayStyle.settings.solarShadowsSettings.color) {
-        displayStyle.settings.solarShadowsSettings.color = color;
-        this._viewport.invalidateScene();
-      }
-    }
+    if (!this._viewport)
+      return;
+
+    const displayStyle = this._viewport.view.displayStyle as DisplayStyle3dState;
+    if (!displayStyle)
+      return;
+
+    const prevColor = displayStyle.settings.solarShadows.color;
+    const newColor = color.colors;
+    if (prevColor.r === newColor.r && prevColor.g === newColor.g && prevColor.b === newColor.b)
+      return;
+
+    const newSettings = displayStyle.settings.solarShadows.toJSON();
+    if (!newSettings)
+      return;
+
+    newSettings.color = color;
+    displayStyle.settings.solarShadows = SolarShadowSettings.fromJSON(newSettings);
+    this._viewport.invalidateScene();
   }
 }

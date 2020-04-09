@@ -35,7 +35,7 @@ import { TechniqueId } from "../TechniqueId";
 import { unpackFloat } from "./Clipping";
 import { addRenderPass } from "./RenderPass";
 import { addTranslucency } from "./Translucency";
-import { addMonochrome } from "./Monochrome";
+import { addSurfaceMonochrome } from "./Monochrome";
 
 // NB: Textures do not contain pre-multiplied alpha.
 const sampleSurfaceTexture = `
@@ -556,7 +556,7 @@ export function createSurfaceBuilder(flags: TechniqueFlags): ProgramBuilder {
     builder.frag.set(FragmentShaderComponent.DiscardByAlpha, discardClassifiedByAlpha);
   }
 
-  addMonochrome(builder.frag);
+  addSurfaceMonochrome(builder.frag);
   addMaterial(builder, flags.hasMaterialAtlas);
 
   return builder;

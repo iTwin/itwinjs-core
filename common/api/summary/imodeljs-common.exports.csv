@@ -1,5 +1,7 @@
 sep=;
 Release Tag;API Item
+beta;AmbientLight
+beta;AmbientLightProps
 beta;AmbientOcclusion
 alpha;AnalysisStyle 
 alpha;AnalysisStyleProps
@@ -30,6 +32,9 @@ internal;BoundingSphere
 beta;BRepEntity
 public;BRepPrimitive
 internal;BriefcaseRpcProps 
+beta;calculateSolarAngles(date: Date, location: Cartographic):
+beta;calculateSolarDirection(date: Date, location: Cartographic): Vector3d
+beta;calculateSunriseOrSunset(date: Date, location: Cartographic, sunrise: boolean): Date
 public;CalloutProps 
 public;Camera 
 public;CameraProps
@@ -174,6 +179,8 @@ beta;GraphicParams
 public;GridOrientationType
 public;GroundPlane 
 public;GroundPlaneProps
+beta;HemisphereLights
+beta;HemisphereLightsProps
 beta;HiddenLine
 public;Hilite
 public;HSLColor
@@ -190,7 +197,6 @@ beta;ImageGraphic
 beta;ImageGraphicCorners
 beta;ImageGraphicCornersProps = [XYZProps, XYZProps, XYZProps, XYZProps]
 beta;ImageGraphicProps
-internal;ImageLight
 public;ImagePrimitive
 public;ImageSource
 public;ImageSourceFormat
@@ -224,10 +230,9 @@ public;isPowerOfTwo(num: number): boolean
 internal;isValidImageSourceFormat(format: ImageSourceFormat): boolean
 public;LatAndLong
 public;LatLongAndHeight 
-internal;Light
 internal;LightLocationProps 
-internal;LightProps
-internal;LightType
+beta;LightSettings
+beta;LightSettingsProps
 beta;LinearLocationReference
 beta;LinearlyLocatedAttributionProps 
 beta;LinearlyReferencedAtLocationAspectProps 
@@ -257,6 +262,7 @@ beta;MobileRpcRequest
 public;ModelProps 
 public;ModelQueryParams 
 public;ModelSelectorProps 
+public;MonochromeMode
 internal;class NativeAppRpcInterface 
 public;NavigationBindingValue
 public;NavigationValue
@@ -386,7 +392,6 @@ public;RpcResponseCacheControl
 public;RpcResponseCachingCallback_T = (request: RpcRequest) => RpcResponseCacheControl
 public;RpcSerializedValue
 public;RpcSerializedValue
-alpha;SceneLightsProps
 beta;SectionLocationProps 
 public;SectionType
 public;SerializedRpcOperation
@@ -404,12 +409,12 @@ public;SkyCubeProps
 beta;SnapRequestProps
 beta;SnapResponseProps
 internal;class SnapshotIModelRpcInterface 
-beta;SolarShadowProps
-beta;SolarShadows
+beta;SolarLight
+beta;SolarLightProps
+beta;SolarShadowSettings
+beta;SolarShadowSettingsProps
 beta;SpatialClassificationProps
 public;SpatialViewDefinitionProps 
-internal;Spot 
-internal;SpotProps 
 internal;StorageValue = string | number | boolean | null | Uint8Array
 public;SubCategoryAppearance
 public;SubCategoryAppearance

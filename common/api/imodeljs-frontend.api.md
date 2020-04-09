@@ -125,6 +125,7 @@ import { IndexMap } from '@bentley/bentleyjs-core';
 import { InternetConnectivityStatus } from '@bentley/imodeljs-common';
 import { LDClient } from 'ldclient-js';
 import { LDFlagValue } from 'ldclient-js';
+import { LightSettings } from '@bentley/imodeljs-common';
 import { LinePixels } from '@bentley/imodeljs-common';
 import { LockLevel } from '@bentley/imodeljs-clients';
 import { LogLevel } from '@bentley/bentleyjs-core';
@@ -143,6 +144,7 @@ import { MeshPolylineList } from '@bentley/imodeljs-common';
 import { ModelProps } from '@bentley/imodeljs-common';
 import { ModelQueryParams } from '@bentley/imodeljs-common';
 import { ModelSelectorProps } from '@bentley/imodeljs-common';
+import { MonochromeMode } from '@bentley/imodeljs-common';
 import { OctEncodedNormal } from '@bentley/imodeljs-common';
 import { OidcDesktopClientConfiguration } from '@bentley/imodeljs-common';
 import { OidcFrontendClientConfiguration } from '@bentley/imodeljs-clients';
@@ -201,7 +203,7 @@ import { SkyBoxProps } from '@bentley/imodeljs-common';
 import { SkyCubeProps } from '@bentley/imodeljs-common';
 import { SnapRequestProps } from '@bentley/imodeljs-common';
 import { SnapResponseProps } from '@bentley/imodeljs-common';
-import { SolarShadows } from '@bentley/imodeljs-common';
+import { SolarShadowSettings } from '@bentley/imodeljs-common';
 import { SortedArray } from '@bentley/bentleyjs-core';
 import { SpatialClassificationProps } from '@bentley/imodeljs-common';
 import { SpatialViewDefinitionProps } from '@bentley/imodeljs-common';
@@ -1523,18 +1525,6 @@ export interface CachedIModelCoordinatesResponseProps {
 // @internal (undocumented)
 export function calculateEcefToDb(iModel: IModelConnection, bimElevationBias: number): Promise<Transform>;
 
-// @beta
-export function calculateSolarAngles(date: Date, location: Cartographic): {
-    azimuth: number;
-    elevation: number;
-};
-
-// @beta
-export function calculateSolarDirection(date: Date, location: Cartographic): Vector3d;
-
-// @beta
-export function calculateSunriseOrSunset(date: Date, location: Cartographic, sunrise: boolean): Date;
-
 // @public
 export interface CanvasDecoration {
     decorationCursor?: string;
@@ -2063,14 +2053,20 @@ export class DisplayStyle3dState extends DisplayStyleState {
     clone(iModel: IModelConnection): this;
     get environment(): Environment;
     set environment(env: Environment);
+    // @alpha (undocumented)
+    get lights(): LightSettings;
+    set lights(lights: LightSettings);
     // @internal
     loadSkyBoxParams(system: RenderSystem, vp?: Viewport): SkyBox.CreateParams | undefined;
     // @beta
     setSunTime(time: number): void;
     // (undocumented)
     get settings(): DisplayStyle3dSettings;
+    // @beta
+    get solarShadows(): SolarShadowSettings;
+    set solarShadows(settings: SolarShadowSettings);
     // @beta (undocumented)
-    get sunDirection(): Vector3d | undefined;
+    get sunDirection(): Readonly<Vector3d>;
 }
 
 // @public
@@ -6501,6 +6497,10 @@ export class RenderPlan {
     // (undocumented)
     readonly isGlobeMode3D: boolean;
     // (undocumented)
+    readonly lights?: LightSettings;
+    // (undocumented)
+    readonly monochromeMode: MonochromeMode;
+    // (undocumented)
     readonly monoColor: ColorDef;
     // (undocumented)
     readonly terrainTransparency: number;
@@ -10442,6 +10442,8 @@ export abstract class Viewport implements IDisposable {
     isSubCategoryVisible(id: Id64String): boolean;
     // @internal
     lastFlashedElem?: string;
+    // @alpha (undocumented)
+    get lightSettings(): LightSettings | undefined;
     // @internal (undocumented)
     markSelectionSetDirty(): void;
     get neverDrawn(): Id64Set | undefined;
@@ -10502,11 +10504,15 @@ export abstract class Viewport implements IDisposable {
     setFeatureOverrideProviderChanged(): void;
     // @internal
     setFlashed(id: string | undefined, duration: number): void;
+    // @alpha (undocumented)
+    setLightSettings(settings: LightSettings): void;
     setNeverDrawn(ids: Id64Set): void;
     // @internal (undocumented)
     setRedrawPending(): void;
     // @internal (undocumented)
     setRenderPlanValid(): void;
+    // (undocumented)
+    setSolarShadowSettings(settings: SolarShadowSettings): void;
     setStandardRotation(id: StandardViewId): void;
     // @alpha
     setTileSizeModifier(modifier: number | undefined): void;
@@ -10516,6 +10522,8 @@ export abstract class Viewport implements IDisposable {
     setValidScene(): void;
     // @internal (undocumented)
     setViewedCategoriesPerModelChanged(): void;
+    // @beta
+    get solarShadowSettings(): SolarShadowSettings | undefined;
     // @internal (undocumented)
     readonly subcategories: SubCategoriesCache.Queue;
     synchWithView(_options?: ViewChangeOptions | boolean): void;

@@ -41,7 +41,7 @@ describe("DisplayStyle", () => {
 
   it("should preserve sun direction", () => {
     const style1 = new DisplayStyle3dState(styleProps, imodel);
-    expect(style1.sunDirection).to.be.undefined;
+    expect(style1.sunDirection).not.to.be.undefined;
 
     style1.setSunTime(Date.now());
     expect(style1.sunDirection).not.to.be.undefined;

@@ -597,8 +597,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
     this.terrainTransparency = plan.terrainTransparency;
 
-    this.uniforms.style.update(plan);
-    this.uniforms.hilite.update(plan.hiliteSettings, plan.emphasisSettings);
+    this.uniforms.updateRenderPlan(plan);
     this.isFadeOutActive = plan.isFadeOutActive;
     this.analysisStyle = plan.analysisStyle === undefined ? undefined : plan.analysisStyle.clone();
     this.analysisTexture = plan.analysisTexture;

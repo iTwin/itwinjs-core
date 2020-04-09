@@ -6,9 +6,9 @@
  * @module Timeline
  */
 
-import { Cartographic, ColorDef, ColorByName } from "@bentley/imodeljs-common";
+import { Cartographic, ColorDef, ColorByName, calculateSunriseOrSunset } from "@bentley/imodeljs-common";
 import { Point3d } from "@bentley/geometry-core";
-import { IModelConnection, ScreenViewport, calculateSunriseOrSunset } from "@bentley/imodeljs-frontend";
+import { IModelConnection, ScreenViewport } from "@bentley/imodeljs-frontend";
 import {
   SolarDataProvider,
 } from "./interfaces";

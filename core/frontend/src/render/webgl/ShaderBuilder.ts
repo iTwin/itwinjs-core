@@ -819,12 +819,12 @@ export const enum FragmentShaderComponent {
   // (Optional) Return true if the alpha value is not suitable for the current render pass
   // bool discardByAlpha(float alpha)
   DiscardByAlpha,
-  // (Optional) Apply lighting to base color
-  // vec4 applyLighting(vec4 baseColor)
-  ApplyLighting,
   // (Optional) Apply monochrome overrides to base color
   // vec4 applyMonochrome(vec4 baseColor)
   ApplyMonochrome,
+  // (Optional) Apply lighting to base color
+  // vec4 applyLighting(vec4 baseColor)
+  ApplyLighting,
   // (Optional) Apply white-on-white reversal to base color
   ReverseWhiteOnWhite,
   // (Optional) Discard if outside any clipping planes
@@ -993,15 +993,15 @@ export class FragmentShaderBuilder extends ShaderBuilder {
     if (undefined !== applyClipping)
       main.addline("  }");
 
-    if (undefined !== applyLighting) {
-      prelude.addFunction("vec4 applyLighting(vec4 baseColor)", applyLighting);
-      main.addline("  baseColor = applyLighting(baseColor);");
-    }
-
     const applyMonochrome = this.get(FragmentShaderComponent.ApplyMonochrome);
     if (undefined !== applyMonochrome) {
       prelude.addFunction("vec4 applyMonochrome(vec4 baseColor)", applyMonochrome);
       main.addline("  baseColor = applyMonochrome(baseColor);");
+    }
+
+    if (undefined !== applyLighting) {
+      prelude.addFunction("vec4 applyLighting(vec4 baseColor)", applyLighting);
+      main.addline("  baseColor = applyLighting(baseColor);");
     }
 
     const reverseWoW = this.get(FragmentShaderComponent.ReverseWhiteOnWhite);

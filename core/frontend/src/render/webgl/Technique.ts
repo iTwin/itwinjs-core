@@ -23,7 +23,7 @@ import { createCompositeProgram } from "./glsl/Composite";
 import { createClipMaskProgram } from "./glsl/ClipMask";
 import { createEVSMProgram } from "./glsl/EVSMFromDepth";
 import { addTranslucency } from "./glsl/Translucency";
-import { addMonochrome } from "./glsl/Monochrome";
+import { addUnlitMonochrome } from "./glsl/Monochrome";
 import { createSurfaceBuilder, createSurfaceHiliter } from "./glsl/Surface";
 import { createPointStringBuilder, createPointStringHiliter } from "./glsl/PointString";
 import { createPointCloudBuilder, createPointCloudHiliter } from "./glsl/PointCloud";
@@ -355,11 +355,11 @@ class PolylineTechnique extends VariedTechnique {
       for (const featureMode of featureModes) {
         flags.reset(featureMode, instanced, IsShadowable.No);
         const builder = createPolylineBuilder(instanced);
-        addMonochrome(builder.frag);
+        addUnlitMonochrome(builder.frag);
 
         // The translucent shaders do not need the element IDs.
         const builderTrans = createPolylineBuilder(instanced);
-        addMonochrome(builderTrans.frag);
+        addUnlitMonochrome(builderTrans.frag);
         if (FeatureMode.Overrides === featureMode) {
           addFeatureSymbology(builderTrans, featureMode, FeatureSymbologyOptions.Linear);
           addFeatureSymbology(builder, featureMode, FeatureSymbologyOptions.Linear);
@@ -411,11 +411,11 @@ class EdgeTechnique extends VariedTechnique {
           flags.reset(featureMode, instanced, IsShadowable.No);
           flags.isAnimated = iAnimate;
           const builder = createEdgeBuilder(isSilhouette, flags.isInstanced, flags.isAnimated);
-          addMonochrome(builder.frag);
+          addUnlitMonochrome(builder.frag);
 
           // The translucent shaders do not need the element IDs.
           const builderTrans = createEdgeBuilder(isSilhouette, flags.isInstanced, flags.isAnimated);
-          addMonochrome(builderTrans.frag);
+          addUnlitMonochrome(builderTrans.frag);
           if (FeatureMode.Overrides === featureMode) {
             addFeatureSymbology(builderTrans, featureMode, FeatureSymbologyOptions.Linear);
             addFeatureSymbology(builder, featureMode, FeatureSymbologyOptions.Linear);
@@ -465,11 +465,11 @@ class PointStringTechnique extends VariedTechnique {
       for (const featureMode of featureModes) {
         flags.reset(featureMode, instanced, IsShadowable.No);
         const builder = createPointStringBuilder(instanced);
-        addMonochrome(builder.frag);
+        addUnlitMonochrome(builder.frag);
 
         // The translucent shaders do not need the element IDs.
         const builderTrans = createPointStringBuilder(instanced);
-        addMonochrome(builderTrans.frag);
+        addUnlitMonochrome(builderTrans.frag);
         if (FeatureMode.Overrides === featureMode) {
           addFeatureSymbology(builderTrans, featureMode, FeatureSymbologyOptions.Point);
           addFeatureSymbology(builder, featureMode, FeatureSymbologyOptions.Point);

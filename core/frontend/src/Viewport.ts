@@ -6,7 +6,21 @@
  * @module Views
  */
 
-import { assert, BeDuration, BeEvent, BeTimePoint, compareStrings, dispose, Id64, Id64Arg, Id64Set, Id64String, IDisposable, SortedArray, StopWatch } from "@bentley/bentleyjs-core";
+import {
+  assert,
+  BeDuration,
+  BeEvent,
+  BeTimePoint,
+  compareStrings,
+  dispose,
+  IDisposable,
+  Id64,
+  Id64Arg,
+  Id64Set,
+  Id64String,
+  SortedArray,
+  StopWatch,
+} from "@bentley/bentleyjs-core";
 import {
   Angle,
   AngleSweep,
@@ -46,12 +60,14 @@ import {
   Hilite,
   ImageBuffer,
   Interpolation,
+  LightSettings,
   NpcCenter,
   Placement2d,
   Placement2dProps,
   Placement3d,
   Placement3dProps,
   PlacementProps,
+  SolarShadowSettings,
   SubCategoryAppearance,
   SubCategoryOverride,
   Tweens,
@@ -927,6 +943,34 @@ export abstract class Viewport implements IDisposable {
   private _emphasis = new Hilite.Settings(ColorDef.black.clone(), 0, 0, Hilite.Silhouette.Thick);
   private _outsideClipColor?: ColorDef;
   private _insideClipColor?: ColorDef;
+
+  /** @alpha */
+  public get lightSettings(): LightSettings | undefined {
+    return this.displayStyle.is3d() ? this.displayStyle.settings.lights : undefined;
+  }
+
+  /** @alpha */
+  public setLightSettings(settings: LightSettings) {
+    if (this.displayStyle.is3d()) {
+      this.displayStyle.settings.lights = settings;
+      this.invalidateRenderPlan();
+      this._changeFlags.setDisplayStyle();
+    }
+  }
+
+  /** Settings controlling shadow display for this viewport. Only applicable to 3d views.
+   * @beta
+   */
+  public get solarShadowSettings(): SolarShadowSettings | undefined {
+    return this.view.displayStyle.is3d() ? this.view.displayStyle.settings.solarShadows : undefined;
+  }
+  public setSolarShadowSettings(settings: SolarShadowSettings) {
+    if (this.view.displayStyle.is3d()) {
+      this.view.displayStyle.solarShadows = settings;
+      this.invalidateRenderPlan();
+      this._changeFlags.setDisplayStyle();
+    }
+  }
 
   /** @internal */
   public get viewingSpace(): ViewingSpace { return this._viewingSpace; }

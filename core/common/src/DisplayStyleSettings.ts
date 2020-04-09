@@ -12,13 +12,13 @@ import {
   Id64String,
   JsonUtils,
 } from "@bentley/bentleyjs-core";
-import {
-  Vector3d,
-  XYZProps,
-} from "@bentley/geometry-core";
+import { XYZProps } from "@bentley/geometry-core";
 import { HiddenLine } from "./HiddenLine";
 import { AmbientOcclusion } from "./AmbientOcclusion";
-import { SolarShadows } from "./SolarShadows";
+import {
+  SolarShadowSettings,
+  SolarShadowSettingsProps,
+} from "./SolarShadows";
 import { DefinitionElementProps } from "./ElementProps";
 import {
   ViewFlagProps,
@@ -43,6 +43,10 @@ import {
 } from "./BackgroundMapSettings";
 import { SpatialClassificationProps } from "./SpatialClassificationProps";
 import { PlanProjectionSettings, PlanProjectionSettingsProps } from "./PlanProjectionSettings";
+import {
+  LightSettings,
+  LightSettingsProps,
+} from "./LightSettings";
 
 /** Describes the [[SubCategoryOverride]]s applied to a [[SubCategory]] by a [[DisplayStyle]].
  * @see [[DisplayStyleSettingsProps]]
@@ -72,6 +76,19 @@ export interface ContextRealityModelProps {
   classifiers?: SpatialClassificationProps.Properties[];
 }
 
+/** Describes the style in which monochrome color is applied by a [[DisplayStyleSettings]].
+ * @public
+ */
+export enum MonochromeMode {
+  /** The color of all geometry is replaced with the monochrome color. e.g., if monochrome color is white, all geometry will be white. */
+  Flat = 0,
+  /** The color of surfaces is computed as normal, then scaled to a shade of the monochrome color based on the surface color's intensity.
+   * For example, if the monochrome color is white, this results in a greyscale affect.
+   * Geometry other than surfaces is treated the same as [[MonochromeMode.Flat]].
+   */
+  Scaled = 1,
+}
+
 /** JSON representation of the settings associated with a [[DisplayStyleProps]].
  * These settings are not stored directly as members of the [[DisplayStyleProps]]. Instead, they are stored
  * as members of `jsonProperties.styles`.
@@ -84,6 +101,8 @@ export interface DisplayStyleSettingsProps {
   backgroundColor?: ColorDefProps;
   /** The color used in monochrome mode. Defaults to white. */
   monochromeColor?: ColorDefProps;
+  /** The style in which the monochrome color is applied. Default: [[MonochromeMode.Scaled]]. */
+  monochromeMode?: MonochromeMode;
   /** Settings controlling display of analytical models.
    * @alpha
    */
@@ -111,13 +130,6 @@ export interface DisplayStyleSettingsProps {
   excludedElements?: Id64String[];
 }
 
-/** This is incomplete. Many of the lighting properties from MicroStation are not useful or not used in iModel.js.
- * @alpha
- */
-export interface SceneLightsProps {
-  sunDir?: XYZProps;
-}
-
 /** JSON representation of settings associated with a [[DisplayStyle3dProps]].
  * @see [[DisplayStyle3dSettings]].
  * @public
@@ -136,15 +148,20 @@ export interface DisplayStyle3dSettingsProps extends DisplayStyleSettingsProps {
   /** Settings controlling display of solar shadows, stored in Props.
    * @beta
    */
-  solarShadows?: SolarShadows.Props;
+  solarShadows?: SolarShadowSettingsProps;
   /** Scene lights. Incomplete.
    * @alpha
    */
-  sceneLights?: SceneLightsProps;
+  lights?: LightSettingsProps;
   /** Settings controlling how plan projection models are to be rendered. The key for each entry is the Id of the model to which the settings apply.
    * @beta
    */
   planProjections?: { [modelId: string]: PlanProjectionSettingsProps };
+  /** Old lighting settings - only `sunDir` was ever used; it is now part of `lights`.
+   * @deprecated
+   * @internal
+   */
+  sceneLights?: { sunDir?: XYZProps };
 }
 
 /** JSON representation of a [[DisplayStyle]] or [[DisplayStyleState]].
@@ -176,6 +193,7 @@ export class DisplayStyleSettings {
   private readonly _viewFlags: ViewFlags;
   private readonly _background: ColorDef;
   private readonly _monochrome: ColorDef;
+  private _monochromeMode: MonochromeMode;
   private readonly _subCategoryOverrides: Map<Id64String, SubCategoryOverride> = new Map<Id64String, SubCategoryOverride>();
   private readonly _excludedElements: Set<Id64String> = new Set<Id64String>();
   private _backgroundMap: BackgroundMapSettings;
@@ -194,7 +212,10 @@ export class DisplayStyleSettings {
     this._json = jsonProperties.styles;
     this._viewFlags = ViewFlags.fromJSON(this._json.viewflags);
     this._background = ColorDef.fromJSON(this._json.backgroundColor);
+
     this._monochrome = undefined !== this._json.monochromeColor ? ColorDef.fromJSON(this._json.monochromeColor) : ColorDef.white.clone();
+    this._monochromeMode = MonochromeMode.Flat === this._json.monochromeMode ? MonochromeMode.Flat : MonochromeMode.Scaled;
+
     this._backgroundMap = BackgroundMapSettings.fromJSON(this._json.backgroundMap);
 
     if (this._json.analysisStyle)
@@ -251,6 +272,13 @@ export class DisplayStyleSettings {
   public set monochromeColor(color: ColorDef) {
     this._monochrome.setFrom(color);
     this._json.monochromeColor = color.toJSON();
+  }
+
+  /** The style in which [[monochromeColor]] is applied. */
+  public get monochromeMode(): MonochromeMode { return this._monochromeMode; }
+  public set monochromeMode(mode: MonochromeMode) {
+    this._monochromeMode = mode;
+    this._json.monochromeMode = mode;
   }
 
   /** Settings controlling display of the background map within the view. */
@@ -431,8 +459,8 @@ export class DisplayStyleSettings {
 export class DisplayStyle3dSettings extends DisplayStyleSettings {
   private _hline: HiddenLine.Settings;
   private _ao: AmbientOcclusion.Settings;
-  private _solarShadows: SolarShadows.Settings;
-  private _sunDir?: Vector3d;
+  private _solarShadows: SolarShadowSettings;
+  private _lights: LightSettings;
   private _planProjections?: Map<string, PlanProjectionSettings>;
 
   private get _json3d(): DisplayStyle3dSettingsProps { return this._json as DisplayStyle3dSettingsProps; }
@@ -441,9 +469,16 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     super(jsonProperties);
     this._hline = HiddenLine.Settings.fromJSON(this._json3d.hline);
     this._ao = AmbientOcclusion.Settings.fromJSON(this._json3d.ao);
-    this._solarShadows = SolarShadows.Settings.fromJSON(this._json3d.solarShadows);
-    if (undefined !== this._json3d.sceneLights && undefined !== this._json3d.sceneLights.sunDir)
-      this._sunDir = Vector3d.fromJSON(this._json3d.sceneLights.sunDir);
+    this._solarShadows = SolarShadowSettings.fromJSON(this._json3d.solarShadows);
+
+    // Very long ago we used to stick MicroStation's light settings into json.sceneLights. Later we started adding the sunDir.
+    // We don't want any of MicroStation's settings. We do want to preserve the sunDir if present.
+    if (this._json3d.lights) {
+      this._lights = LightSettings.fromJSON(this._json3d.lights);
+    } else {
+      const sunDir = this._json3d.sceneLights?.sunDir; // tslint:disable-line:deprecation
+      this._lights = LightSettings.fromJSON(sunDir ? { solar: { direction: sunDir } } : undefined);
+    }
 
     const projections = this._json3d.planProjections;
     if (undefined !== projections) {
@@ -485,39 +520,35 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     this._json3d.ao = ao.toJSON();
   }
 
-  /** The settings that control how solar shadows are displayed.
-   * @note Do not modify the settings in place. Clone them and pass the clone to the setter.
-   */
-  public get solarShadowsSettings(): SolarShadows.Settings { return this._solarShadows; }
-  public set solarShadowsSettings(solarShadows: SolarShadows.Settings) {
-    this._solarShadows = solarShadows;
-    this._json3d.solarShadows = solarShadows.toJSON();
+  /** The settings that control how solar shadows are displayed. */
+  public get solarShadows(): SolarShadowSettings {
+    return this._solarShadows;
   }
+  public set solarShadows(solarShadows: SolarShadowSettings) {
+    this._solarShadows = solarShadows;
+    const json = solarShadows.toJSON();
+    if (!json)
+      delete this._json3d.solarShadows;
+    else
+      this._json3d.solarShadows = json;
+  }
+
   /** @internal */
   public get environment(): EnvironmentProps {
     const env = this._json3d.environment;
     return undefined !== env ? env : {};
   }
-  public set environment(environment: EnvironmentProps) { this._json3d.environment = environment; }
-
-  /** @internal */
-  public get sunDir(): Vector3d | undefined {
-    return this._sunDir;
+  public set environment(environment: EnvironmentProps) {
+    this._json3d.environment = environment;
   }
-  public set sunDir(dir: Vector3d | undefined) {
-    if (undefined === dir) {
-      this._sunDir = undefined;
-      if (undefined !== this._json3d.sceneLights)
-        this._json3d.sceneLights.sunDir = undefined;
 
-      return;
-    }
-
-    this._sunDir = dir.clone(this._sunDir);
-    if (undefined === this._json3d.sceneLights)
-      this._json3d.sceneLights = {};
-
-    this._json3d.sceneLights.sunDir = dir.toJSON();
+  /** @alpha */
+  public get lights(): LightSettings {
+    return this._lights;
+  }
+  public set lights(lights: LightSettings) {
+    this._lights = lights;
+    this._json3d.lights = lights.toJSON();
   }
 
   /** Get the plan projection settings associated with the specified model, if defined.

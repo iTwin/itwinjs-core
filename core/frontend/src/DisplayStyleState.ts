@@ -6,23 +6,26 @@
  * @module Views
  */
 import {
-  ViewFlags,
-  ColorDef,
-  DisplayStyleProps,
-  RenderTexture,
-  SubCategoryOverride,
-  SkyBoxProps,
-  SkyBoxImageType,
-  SkyCubeProps,
-  EnvironmentProps,
-  GroundPlane,
-  DisplayStyleSettings,
-  DisplayStyle3dSettings,
   BackgroundMapProps,
   BackgroundMapSettings,
-  ContextRealityModelProps,
   Cartographic,
+  ColorDef,
+  ContextRealityModelProps,
+  DisplayStyle3dSettings,
+  DisplayStyleProps,
+  DisplayStyleSettings,
+  EnvironmentProps,
   GlobeMode,
+  GroundPlane,
+  LightSettings,
+  RenderTexture,
+  SkyBoxImageType,
+  SkyBoxProps,
+  SkyCubeProps,
+  SolarShadowSettings,
+  SubCategoryOverride,
+  ViewFlags,
+  calculateSolarDirection,
 } from "@bentley/imodeljs-common";
 import { ElementState } from "./EntityState";
 import { IModelConnection } from "./IModelConnection";
@@ -33,7 +36,6 @@ import { BackgroundMapTileTreeReference, BackgroundTerrainTileTreeReference, Til
 import { ContextRealityModelState } from "./ContextRealityModelState";
 import { RenderScheduleState } from "./RenderScheduleState";
 import { Viewport, ScreenViewport } from "./Viewport";
-import { calculateSolarDirection } from "./SolarCalculate";
 import { IModelApp } from "./IModelApp";
 import { BackgroundMapGeometry } from "./BackgroundMapGeometry";
 import { Vector3d, Point3d } from "@bentley/geometry-core";
@@ -682,6 +684,10 @@ export class DisplayStyle3dState extends DisplayStyleState {
     }
   }
 
+  /** @alpha */
+  public get lights(): LightSettings { return this.settings.lights; }
+  public set lights(lights: LightSettings) { this.settings.lights = lights; }
+
   private onLoadSkyBoxParams(params?: SkyBox.CreateParams, vp?: Viewport): void {
     this._skyBoxParams = params;
     this._skyBoxParamsLoaded = true;
@@ -706,9 +712,11 @@ export class DisplayStyle3dState extends DisplayStyleState {
     return this._skyBoxParams;
   }
   /** @beta */
-  public get sunDirection(): Vector3d | undefined { return this.settings.sunDir; }
+  public get sunDirection(): Readonly<Vector3d> {
+    return this.settings.lights.solar.direction;
+  }
 
-  /** set the solar direction based on time value
+  /** Set the solar direction based on time value
    * @param time The time in unix time milliseconds.
    * @beta
    */
@@ -722,6 +730,16 @@ export class DisplayStyle3dState extends DisplayStyleState {
       cartoCenter = Cartographic.fromDegrees(-75.17035, 39.954927, 0.0);
     }
 
-    this.settings.sunDir = calculateSolarDirection(new Date(time), cartoCenter);
+    this.settings.lights = this.settings.lights.clone({ solar: { direction: calculateSolarDirection(new Date(time), cartoCenter) } });
+  }
+
+  /** Settings controlling shadow display.
+   * @beta
+   */
+  public get solarShadows(): SolarShadowSettings {
+    return this.settings.solarShadows;
+  }
+  public set solarShadows(settings: SolarShadowSettings) {
+    this.settings.solarShadows = settings;
   }
 }

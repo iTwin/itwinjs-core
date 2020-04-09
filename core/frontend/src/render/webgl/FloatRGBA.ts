@@ -26,6 +26,7 @@ function computeTbgr(r: number, g: number, b: number, a: number): number {
 }
 
 const floatColorDef = ColorDef.white.clone();
+
 export abstract class FloatColor {
   protected readonly _components: Float32Array;
   private _tbgr: number;

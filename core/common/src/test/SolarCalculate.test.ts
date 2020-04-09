@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { calculateSolarAngles, calculateSunriseOrSunset } from "../SolarCalculate";
-import { Cartographic } from "@bentley/imodeljs-common";
+import { Cartographic } from "../geometry/Cartographic";
 
 function testSolarAngleCalculation(location: Cartographic, dateString: string, expectedAzimuth: number, expectedElevation: number, expectedSunriseString?: string, expectedSunsetString?: string) {
   const date = new Date(dateString);

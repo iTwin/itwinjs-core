@@ -6,8 +6,8 @@
  * @module WebGL
  */
 
-import { Matrix4d, Vector3d } from "@bentley/geometry-core";
-import { ColorDef } from "@bentley/imodeljs-common";
+import { Matrix4d } from "@bentley/geometry-core";
+import { RgbColor } from "@bentley/imodeljs-common";
 import { desync, sync, SyncToken } from "./Sync";
 import { Target } from "./Target";
 import { FloatRgba } from "./FloatRGBA";
@@ -27,19 +27,16 @@ export class ShadowUniforms {
   private readonly _target: Target;
   private _enabled = false;
   private readonly _projectionMatrix = Matrix4d.createIdentity();
-  private readonly _color = ColorDef.white.clone();
+  private _color = RgbColor.fromJSON(undefined);
   private _bias = 0;
-  private _direction = new Vector3d();
 
   // GPU state
   private readonly _projection32 = new Matrix4();
   private readonly _colorAndBias = new FloatRgba();
-  private readonly _sunDirection32 = new Float32Array(3);
 
   // Working variables
   private readonly _scratchModel = Matrix4d.createIdentity();
   private readonly _scratchModelProjection = Matrix4d.createIdentity();
-  private readonly _scratchDirection = new Vector3d();
 
   public constructor(target: Target) {
     this._target = target;
@@ -64,18 +61,12 @@ export class ShadowUniforms {
 
     if (!this._color.equals(settings.color)) {
       desync(this);
-      settings.color.clone(this._color);
-      this._colorAndBias.setColorDef(settings.color);
+      this._color = settings.color;
+      this._colorAndBias.setColorDef(settings.color.toColorDef());
       this._colorAndBias.alpha = this._bias;
     }
 
-    // NB: The direction and projection matrix must be computed later when they are bound because they use the view and model matrices respectivles.
-    const dir = map.direction!;
-    if (!this._direction.isExactEqual(dir)) {
-      desync(this);
-      dir.clone(this._direction);
-    }
-
+    // NB: The projection matrix must be computed later when it is bound because it uses the model matrix.
     const proj = map.projectionMatrix;
     if (!proj.isExactEqual(this._projectionMatrix)) {
       desync(this);
@@ -83,7 +74,7 @@ export class ShadowUniforms {
     }
   }
 
-  private computeDirectionAndProjection(): void {
+  private computeProjection(): void {
     const branch = this._target.uniforms.branch;
     if (sync(branch, this))
       return;
@@ -95,14 +86,6 @@ export class ShadowUniforms {
     const model = Matrix4d.createTransform(this._target.currentTransform, this._scratchModel);
     const modelProj = proj.multiplyMatrixMatrix(model, this._scratchModelProjection);
     this._projection32.initFromMatrix4d(modelProj);
-
-    const viewDir = this._scratchDirection;
-    this._target.uniforms.frustum.viewMatrix.multiplyVector(this._direction, viewDir);
-    viewDir.normalizeInPlace();
-
-    this._sunDirection32[0] = -viewDir.x;
-    this._sunDirection32[1] = -viewDir.y;
-    this._sunDirection32[2] = -viewDir.z;
   }
 
   public bindColorAndBias(uniform: UniformHandle): void {
@@ -110,14 +93,8 @@ export class ShadowUniforms {
       this._colorAndBias.bind(uniform);
   }
 
-  public bindSunDirection(uniform: UniformHandle): void {
-    this.computeDirectionAndProjection();
-    if (!sync(this, uniform))
-      uniform.setUniform3fv(this._sunDirection32);
-  }
-
   public bindProjectionMatrix(uniform: UniformHandle): void {
-    this.computeDirectionAndProjection();
+    this.computeProjection();
     if (!sync(this, uniform))
       uniform.setMatrix4(this._projection32);
   }

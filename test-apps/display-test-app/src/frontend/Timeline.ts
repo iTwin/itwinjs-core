@@ -8,10 +8,10 @@ import {
   Range1d,
 } from "@bentley/geometry-core";
 import {
+  calculateSunriseOrSunset,
   Cartographic,
 } from "@bentley/imodeljs-common";
 import {
-  calculateSunriseOrSunset,
   Viewport,
 } from "@bentley/imodeljs-frontend";
 import {
@@ -28,6 +28,8 @@ interface TimelineProvider {
   update(time: number, vp: Viewport): void;
   /** Get current time from viewport. */
   getCurrentTime(vp: Viewport): number;
+  /** Called when user interacts with the timeline, by pressing Start or adjusting slider. */
+  onInteraction?: () => void;
 }
 
 class AnalysisTimelineProvider {
@@ -48,6 +50,7 @@ class AnalysisTimelineProvider {
 
 class SolarTimelineProvider {
   public readonly duration: Range1d;
+  private _active = false;
 
   public constructor(vp: Viewport) {
     let cartoCenter;
@@ -70,15 +73,19 @@ class SolarTimelineProvider {
   }
 
   public update(time: number, vp: Viewport): void {
-    if (vp.displayStyle.is3d()) {
+    if (this._active && vp.displayStyle.is3d()) {
       vp.displayStyle.setSunTime(time);
-      vp.invalidateScene();
+      vp.invalidateRenderPlan();
     }
   }
 
   public getCurrentTime(_vp: Viewport): number {
     // NB: All we have is the solar direction - cannot compute date from that.
     return this.duration.low;
+  }
+
+  public onInteraction(): void {
+    this._active = true;
   }
 }
 
@@ -234,6 +241,7 @@ class TimelinePanel extends ToolBarDropDown {
     if (this._isPlaying)
       return;
 
+    this.onInteraction();
     this._isPlaying = true;
     this._pauseButton.style.display = "block";
     this._playButton.style.display = "none";
@@ -288,6 +296,7 @@ class TimelinePanel extends ToolBarDropDown {
   }
 
   private processSliderAdjustment(): void {
+    this.onInteraction();
     const sliderValue = parseInt(this._slider.value, 10);
     const fraction = sliderValue / 1000;
     this._elapsedMillis = fraction * this._totalMillis;
@@ -306,6 +315,11 @@ class TimelinePanel extends ToolBarDropDown {
     this._lastMillis = Date.now();
 
     this.update();
+  }
+
+  private onInteraction(): void {
+    if (this._provider.onInteraction)
+      this._provider.onInteraction();
   }
 
   private createProvider(): TimelineProvider {

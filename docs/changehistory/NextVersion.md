@@ -81,6 +81,20 @@ The following are view tools that allow a user to navigate a plane or three-dime
 * To navigate to a precise latitude/longitude location on the map, specify exactly two numeric arguments to `parseAndRun`. The first will be the latitude and the second will be the longitude. These are specified in degrees.
 * To search for and possibly navigate to a named location, specify any number of string arguments to `parseAndRun`. They will be joined with single spaces between them. If a location corresponding to the joined strings can be found, the tool will navigate there.
 
+## Customizable Scene Lighting
+
+Previously, lighting of 3d scenes was entirely hard-coded with the exception of the sun direction used only when shadows were enabled. Now, nearly all lighting parameters can be customized using the [LightSettings]($common) associated with a [DisplayStyle3dSettings]($common). This includes new support for hemisphere lighting, greatly expanding the variety of display styles that can be achieved.
+
+![Example display styles](assets/display-styles.jpg)
+<p align="center">Clockwise from top-left: Default, Illustration, Sun-dappled, Moonlit, Glossy, Soft</p>
+
+## Monochrome Mode
+
+iModel.js now supports two monochrome display modes via [DisplayStyleSettings.monochromeMode]($common). The original mode, `Scaled`, preserves contrast and material textures. The new mode, `Flat`, applies the monochrome color uniformly to all surfaces.
+
+![Scaled (left) vs Flat (right) monochrome modes](assets/monochrome-mode.png)
+<p align="center">Scaled (left) vs Flat (right) monochrome modes</p>
+
 ## Colorizing Clip Regions
 
 [Viewport]($frontend) now contains the following properties which control the color of pixels outside or inside a clip region. If either of these are defined, the corresponding pixels will be shown using the specified color; otherwise, no color override occurs and clipping proceeds normally for that area of the clip region. By default, these are both undefined.
@@ -101,16 +115,24 @@ Previously, shader programs used by the [RenderSystem]($frontend) were never com
 
 ## Opening iModels
 
-  The API now allows opening iModels (briefcases) at the backend with a new [SyncMode.pullOnly]($backend) option. e.g.,
+The API now allows opening iModels (briefcases) at the backend with a new [SyncMode.pullOnly]($backend) option. e.g.,
+```ts
+const iModel = await BriefcaseDb.open(requestContext, projectId, iModelId, OpenParams.pullOnly());
+```
+* Opening with this new option establishes a local briefcase that allows change sets to be pulled from the iModel Hub and merged in. e.g.,
   ```ts
-  const iModel = await BriefcaseDb.open(requestContext, projectId, iModelId, OpenParams.pullOnly());
+  iModel.pullAndMergeChanges(requestContext, IModelVersion.latest());
   ```
-  * Opening with this new option establishes a local briefcase that allows change sets to be pulled from the iModel Hub and merged in. e.g.,
-    ```ts
-    iModel.pullAndMergeChanges(requestContext, IModelVersion.latest());
-    ```
-  *  Upon open a new briefcase is *acquired* from the iModel Hub and is meant for exclusive use by that user.
-  * The briefcase is opened ReadWrite to allow merging of change sets even if no changes can be made to it.
+*  Upon open a new briefcase is *acquired* from the iModel Hub and is meant for exclusive use by that user.
+* The briefcase is opened ReadWrite to allow merging of change sets even if no changes can be made to it.
+
+## Solar Calculation APIs
+
+The solar calculation functions [calculateSolarAngles]($common), [calculateSolarDirection]($common), and [calculateSunriseOrSunset]($common) have moved from imodeljs-frontend to imodeljs-common.
+
+## Deprecation Errors
+
+Previously, the default tslint configuration reported [usage of deprecated APIs](https://palantir.github.io/tslint/rules/deprecation/) as warnings. It will now produce errors instead. Before deprecating an API, please first remove all usage of it within the iModel.js repository.
 
 ## Breaking API changes
 
@@ -234,7 +256,7 @@ The following renames are required:
 
 The former `BriefcaseId` class has been replaced by the [BriefcaseId]($backend) type (which is just `number`) and the [ReservedBriefcaseId]($backend) enumeration.
 
-### GeometryStream iteration
+### GeometryStream Iteration
 
 The [GeometryStreamIteratorEntry]($common) exposed by a [GeometryStreamIterator]($common) has been simplified down to only four members. Access the geometric primitive associated with the entry by type-switching on its `type` property. For example, code that previously looked like:
 
@@ -284,7 +306,7 @@ This includes the classes in the following files:
 
 The deprecated ToolSettingsValue.ts has been removed.
 
-### API changes in `ui-components` package
+### API Changes in `ui-components` Package
 
 #### Hard-Deprecation
 
@@ -339,7 +361,7 @@ import { DEPRECATED_Tree as Tree } from "@bentley/ui-components";
 
 * Removed `HorizontalAlignment`. Use the `HorizontalAlignment` in @bentley/ui-core instead.
 
-### API changes in `ui-framework` package
+### API Changes in `ui-framework` Package
 
 #### Renames
 
@@ -348,7 +370,7 @@ A couple of types were renamed to better match their intention:
 * `VisibilityTree` to `ModelsTree`
 * `IModelConnectedVisibilityTree` to `IModelConnectedModelsTree`
 
-#### Removal of deprecated APIs
+#### Removal of Deprecated APIs
 
 The following items that were marked as @deprecated in the 1.x time frame have been removed:
 
@@ -383,14 +405,14 @@ These items define the label and editor to use for each value when the Tool Sett
 
 ### API changes in `ui-core` package
 
-#### Removal of deprecated APIs
+#### Removal of Deprecated APIs
 
 The following items that were marked as @deprecated in the 1.x time frame have been removed:
 
 * UiError (use UiError in @bentley/ui-abstract instead)
 * Position for Popup component (Use RelativePosition in @bentley/ui-abstract instead)
 
-### API changes in `presentation-common` package
+### API Changes in `presentation-common` Package
 
 #### RPC Changes
 
@@ -431,7 +453,7 @@ import { DEPRECATED_PropertiesDisplaySpecification as PropertiesDisplaySpecifica
 * Removed `PersistentKeysContainer`. Instead, `KeySetJSON` should be used.
 * Changed `RulesetsFactory.createSimilarInstancesRuleset` to async. Removed `RulesetsFactory.createSimilarInstancesRulesetAsync`.
 
-### API changes in `presentation-backend` package
+### API Changes in `presentation-backend` Package
 
 #### Removals and Changes
 
@@ -450,7 +472,7 @@ import { DEPRECATED_PropertiesDisplaySpecification as PropertiesDisplaySpecifica
   const embedder = new RulesetEmbedder(imodel);
   ```
 
-### API changes in `presentation-frontend` package
+### API Changes in `presentation-frontend` Package
 
 #### Removals and Changes
 
@@ -471,7 +493,7 @@ import { DEPRECATED_PropertiesDisplaySpecification as PropertiesDisplaySpecifica
   const provider = new HiliteSetProvider(imodel);
   ```
 
-### API changes in `presentation-components` package
+### API Changes in `presentation-components` Package
 
 #### Hard-Deprecation
 
@@ -530,7 +552,7 @@ import { DEPRECATED_treeWithUnifiedSelection as treeWithUnifiedSelection } from 
 * Renamed `useUnifiedSelectionEventHandler` to `useUnifiedSelectionTreeEventHandler`.
 * Removed attributes from `UnifiedSelectionTreeEventHandlerParams`: `dataProvider`, `modelSource`. They're now taken from `nodeLoader`.
 
-### API changes in `presentation-testing` package
+### API Changes in `presentation-testing` Package
 
 #### Removals and Changes
 

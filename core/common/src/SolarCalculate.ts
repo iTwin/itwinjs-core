@@ -6,8 +6,8 @@
  * @module Utils
  */
 
-import { Cartographic } from "@bentley/imodeljs-common";
 import { Angle, Vector3d } from "@bentley/geometry-core";
+import { Cartographic } from "./geometry/Cartographic";
 
 // cspell:ignore mrad sinm sint aarg
 
@@ -162,6 +162,7 @@ function calcAzEl(T: number, localTime: number, latitude: number, longitude: num
 function calculateJulianDay(date: Date) {
   return Math.floor(date.getTime() / 86400000) + 2440587.5;    // https://stackoverflow.com/questions/11759992/calculating-jdayjulian-day-in-javascript
 }
+
 /** @beta
  * calculate solar angles (in radians) based at a given date/time and location.
  */
@@ -198,6 +199,7 @@ function dateFromUtcMinutes(date: Date, utcMinutes: number) {
   output.setUTCSeconds(0);
   return output;
 }
+
 function calcSunriseUtcMinutes(rise: boolean, lat: number, longitude: number, jDay: number) {
   const t = calcTimeJulianCent(jDay);
   const eqTime = calcEquationOfTime(t);
@@ -209,6 +211,7 @@ function calcSunriseUtcMinutes(rise: boolean, lat: number, longitude: number, jD
   const delta = longitude + radToDeg(rise ? hourAngle : - hourAngle);
   return 720 - (4.0 * delta) - eqTime;	// in UTC minutes
 }
+
 /** @beta
  * calculate solar sunrise or sunset for a given day and location.
  */
@@ -218,5 +221,4 @@ export function calculateSunriseOrSunset(date: Date, location: Cartographic, sun
   const latitude = location.latitudeDegrees;
   const utcMinutes = calcSunriseUtcMinutes(sunrise, latitude, longitude, jDay);
   return sunrise ? dateFromUtcMinutes(date, utcMinutes) : dateFromUtcMinutes(date, calcSunriseUtcMinutes(sunrise, latitude, longitude, jDay + utcMinutes / 1440));
-
 }

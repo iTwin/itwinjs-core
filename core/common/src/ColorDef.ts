@@ -697,11 +697,20 @@ export class RgbColor {
     this.g = Math.max(0, Math.min(this.g, 0xff));
     this.b = Math.max(0, Math.min(this.b, 0xff));
   }
-  public equals(other: RgbColor): boolean { return this.r === other.r && this.g === other.g && this.b === other.b; }
-  /** Constructs from the red, green, and blue components of a ColorDef. The alpha component is ignored. */
+
+  /** Constructs from the red, green, and blue components of a ColorDef. The transparency component is ignored. */
   public static fromColorDef(colorDef: ColorDef): RgbColor {
     const colors = colorDef.colors;
     return new RgbColor(colors.r, colors.g, colors.b);
+  }
+
+  /** Converts this RgbColor to a ColorDef.
+   * @param transparency Value to use for the transparency component of the ColorDef.
+   * @param out If defined, this ColorDef will be modified in-place and returned; otherwise a new ColorDef will be allocated.
+   * @returns A ColorDef with RGB components equivalent to those of this RgbColor and transparency component as specified.
+   */
+  public toColorDef(transparency = 0, out?: ColorDef): ColorDef {
+    return ColorDef.from(this.r, this.g, this.b, transparency, out);
   }
 
   public toJSON(): RgbColorProps {
@@ -722,5 +731,9 @@ export class RgbColor {
     }
 
     return new RgbColor(r, g, b);
+  }
+
+  public equals(rhs: RgbColor): boolean {
+    return this.r === rhs.r && this.g === rhs.g && this.b === rhs.b;
   }
 }

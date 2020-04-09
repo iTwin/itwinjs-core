@@ -35,7 +35,6 @@ export * from "./QuantityFormatter";
 export * from "./RenderScheduleState";
 export * from "./SelectionSet";
 export * from "./Sheet";
-export * from "./SolarCalculate";
 export * from "./SpatialClassifiers";
 export * from "./Sprites";
 export * from "./StandardView";

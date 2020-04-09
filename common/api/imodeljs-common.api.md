@@ -67,6 +67,26 @@ import { YawPitchRollAngles } from '@bentley/geometry-core';
 import { YawPitchRollProps } from '@bentley/geometry-core';
 
 // @beta
+export class AmbientLight {
+    constructor(json?: AmbientLightProps);
+    clone(changed?: AmbientLightProps): AmbientLight;
+    // (undocumented)
+    readonly color: RgbColor;
+    // (undocumented)
+    equals(rhs: AmbientLight): boolean;
+    // (undocumented)
+    readonly intensity: number;
+    // (undocumented)
+    toJSON(): AmbientLightProps | undefined;
+}
+
+// @beta
+export interface AmbientLightProps {
+    color?: RgbColorProps;
+    intensity?: number;
+}
+
+// @beta
 export namespace AmbientOcclusion {
     export interface Props {
         readonly bias?: number;
@@ -523,6 +543,18 @@ export interface BriefcaseRpcProps extends IModelRpcProps {
 }
 
 export { BriefcaseStatus }
+
+// @beta
+export function calculateSolarAngles(date: Date, location: Cartographic): {
+    azimuth: number;
+    elevation: number;
+};
+
+// @beta
+export function calculateSolarDirection(date: Date, location: Cartographic): Vector3d;
+
+// @beta
+export function calculateSunriseOrSunset(date: Date, location: Cartographic, sunrise: boolean): Date;
 
 // @public (undocumented)
 export interface CalloutProps extends GeometricElement2dProps {
@@ -1404,13 +1436,13 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     getPlanProjectionSettings(modelId: Id64String): PlanProjectionSettings | undefined;
     get hiddenLineSettings(): HiddenLine.Settings;
     set hiddenLineSettings(hline: HiddenLine.Settings);
+    // @alpha (undocumented)
+    get lights(): LightSettings;
+    set lights(lights: LightSettings);
     get planProjectionSettings(): Iterable<[Id64String, PlanProjectionSettings]> | undefined;
     setPlanProjectionSettings(modelId: Id64String, settings: PlanProjectionSettings | undefined): void;
-    get solarShadowsSettings(): SolarShadows.Settings;
-    set solarShadowsSettings(solarShadows: SolarShadows.Settings);
-    // @internal (undocumented)
-    get sunDir(): Vector3d | undefined;
-    set sunDir(dir: Vector3d | undefined);
+    get solarShadows(): SolarShadowSettings;
+    set solarShadows(solarShadows: SolarShadowSettings);
     // @internal (undocumented)
     toJSON(): DisplayStyle3dSettingsProps;
 }
@@ -1422,14 +1454,18 @@ export interface DisplayStyle3dSettingsProps extends DisplayStyleSettingsProps {
     environment?: EnvironmentProps;
     // @beta
     hline?: HiddenLine.SettingsProps;
+    // @alpha
+    lights?: LightSettingsProps;
     // @beta
     planProjections?: {
         [modelId: string]: PlanProjectionSettingsProps;
     };
-    // @alpha
-    sceneLights?: SceneLightsProps;
+    // @internal @deprecated
+    sceneLights?: {
+        sunDir?: XYZProps;
+    };
     // @beta
-    solarShadows?: SolarShadows.Props;
+    solarShadows?: SolarShadowSettingsProps;
 }
 
 // @public
@@ -1466,6 +1502,8 @@ export class DisplayStyleSettings {
     protected readonly _json: DisplayStyleSettingsProps;
     get monochromeColor(): ColorDef;
     set monochromeColor(color: ColorDef);
+    get monochromeMode(): MonochromeMode;
+    set monochromeMode(mode: MonochromeMode);
     overrideSubCategory(id: Id64String, ovr: SubCategoryOverride): void;
     // @internal (undocumented)
     get scheduleScriptProps(): RenderSchedule.ModelTimelineProps[] | undefined;
@@ -1490,6 +1528,7 @@ export interface DisplayStyleSettingsProps {
     contextRealityModels?: ContextRealityModelProps[];
     excludedElements?: Id64String[];
     monochromeColor?: ColorDefProps;
+    monochromeMode?: MonochromeMode;
     // @beta
     scheduleScript?: RenderSchedule.ModelTimelineProps[];
     subCategoryOvr?: DisplayStyleSubCategoryProps[];
@@ -2707,6 +2746,29 @@ export interface GroundPlaneProps {
 }
 
 // @beta
+export class HemisphereLights {
+    constructor(json?: HemisphereLightsProps);
+    clone(changed?: HemisphereLightsProps): HemisphereLights;
+    // (undocumented)
+    equals(rhs: HemisphereLights): boolean;
+    // (undocumented)
+    readonly intensity: number;
+    // (undocumented)
+    readonly lowerColor: RgbColor;
+    // (undocumented)
+    toJSON(): HemisphereLightsProps | undefined;
+    // (undocumented)
+    readonly upperColor: RgbColor;
+}
+
+// @beta
+export interface HemisphereLightsProps {
+    intensity?: number;
+    lowerColor?: RgbColorProps;
+    upperColor?: RgbColorProps;
+}
+
+// @beta
 export namespace HiddenLine {
     export class Settings {
         static defaults: Settings;
@@ -2968,20 +3030,6 @@ export interface ImageGraphicProps {
     corners: ImageGraphicCornersProps;
     hasBorder: boolean;
     textureId: Id64String;
-}
-
-// @internal (undocumented)
-export namespace ImageLight {
-    // (undocumented)
-    export class Solar {
-        constructor(direction?: Vector3d, color?: ColorDef, intensity?: number);
-        // (undocumented)
-        color: ColorDef;
-        // (undocumented)
-        direction: Vector3d;
-        // (undocumented)
-        intensity: number;
-    }
 }
 
 // @public
@@ -3329,82 +3377,50 @@ export interface LatLongAndHeight extends LatAndLong {
 }
 
 // @internal
-export class Light {
-    constructor(opts?: LightProps);
-    // (undocumented)
-    bulbs: number;
-    // (undocumented)
-    color: ColorDef;
-    // (undocumented)
-    color2?: ColorDef;
-    // (undocumented)
-    intensity: number;
-    // (undocumented)
-    intensity2?: number;
-    // (undocumented)
-    get isValid(): boolean;
-    // (undocumented)
-    get isVisible(): boolean;
-    // (undocumented)
-    kelvin: number;
-    // (undocumented)
-    lightType: LightType;
-    // (undocumented)
-    lumens: number;
-    // (undocumented)
-    shadows: number;
-}
-
-// @internal
 export interface LightLocationProps extends GeometricElement3dProps {
     // (undocumented)
     enabled?: boolean;
 }
 
-// @internal
-export interface LightProps {
+// @beta
+export class LightSettings {
     // (undocumented)
-    bulbs?: number;
+    readonly ambient: AmbientLight;
+    clone(changed?: LightSettingsProps): LightSettings;
     // (undocumented)
-    color?: ColorDefProps;
+    equals(rhs: LightSettings): boolean;
     // (undocumented)
-    color2?: ColorDefProps;
+    static fromJSON(props?: LightSettingsProps): LightSettings;
     // (undocumented)
-    intensity?: number;
+    readonly hemisphere: HemisphereLights;
+    // @internal (undocumented)
+    readonly numCels: number;
     // (undocumented)
-    intensity2?: number;
+    readonly portraitIntensity: number;
     // (undocumented)
-    kelvin?: number;
+    readonly solar: SolarLight;
     // (undocumented)
-    lightType?: LightType;
+    readonly specularIntensity: number;
     // (undocumented)
-    lumens?: number;
-    // (undocumented)
-    shadows?: number;
+    toJSON(): LightSettingsProps | undefined;
 }
 
-// @internal
-export enum LightType {
+// @beta
+export interface LightSettingsProps {
     // (undocumented)
-    Ambient = 2,
+    ambient?: AmbientLightProps;
     // (undocumented)
-    Area = 7,
+    hemisphere?: HemisphereLightsProps;
+    // @internal
+    numCels?: number;
     // (undocumented)
-    Distant = 8,
+    portrait?: {
+        intensity?: number;
+    };
     // (undocumented)
-    Flash = 3,
+    solar?: SolarLightProps;
     // (undocumented)
-    Invalid = 0,
-    // (undocumented)
-    Point = 5,
-    // (undocumented)
-    Portrait = 4,
-    // (undocumented)
-    SkyOpening = 9,
-    // (undocumented)
-    Solar = 1,
-    // (undocumented)
-    Spot = 6
+    specularIntensity?: number;
 }
 
 // @beta
@@ -3728,6 +3744,12 @@ export interface ModelQueryParams extends EntityQueryParams {
 export interface ModelSelectorProps extends DefinitionElementProps {
     // (undocumented)
     models: Id64Array;
+}
+
+// @public
+export enum MonochromeMode {
+    Flat = 0,
+    Scaled = 1
 }
 
 // @internal
@@ -4875,7 +4897,7 @@ export class RgbColor {
     // (undocumented)
     readonly b: number;
     // (undocumented)
-    equals(other: RgbColor): boolean;
+    equals(rhs: RgbColor): boolean;
     static fromColorDef(colorDef: ColorDef): RgbColor;
     // (undocumented)
     static fromJSON(json: RgbColorProps | undefined): RgbColor;
@@ -4883,6 +4905,7 @@ export class RgbColor {
     readonly g: number;
     // (undocumented)
     readonly r: number;
+    toColorDef(transparency?: number, out?: ColorDef): ColorDef;
     // (undocumented)
     toJSON(): RgbColorProps;
 }
@@ -5412,12 +5435,6 @@ export namespace RpcSerializedValue {
     export function create(objects?: string, data?: Uint8Array[]): RpcSerializedValue;
 }
 
-// @alpha
-export interface SceneLightsProps {
-    // (undocumented)
-    sunDir?: XYZProps;
-}
-
 // @beta
 export interface SectionLocationProps extends GeometricElement3dProps {
     categorySelectorId?: Id64String;
@@ -5627,31 +5644,49 @@ export abstract class SnapshotIModelRpcInterface extends RpcInterface {
 }
 
 // @beta
-export interface SolarShadowProps {
-    bias?: number;
-    color?: ColorDefProps;
+export class SolarLight {
+    constructor(json?: SolarLightProps);
+    // (undocumented)
+    readonly alwaysEnabled: boolean;
+    clone(changedProps?: SolarLightProps): SolarLight;
+    // (undocumented)
+    readonly direction: Readonly<Vector3d>;
+    // (undocumented)
+    equals(rhs: SolarLight): boolean;
+    // (undocumented)
+    readonly intensity: number;
+    // (undocumented)
+    toJSON(): SolarLightProps | undefined;
 }
 
 // @beta
-export namespace SolarShadows {
-    export interface Props {
-        bias?: number;
-        color?: ColorDefProps;
-    }
-    export class Settings implements Props {
-        constructor(props?: SolarShadowProps);
-        // @alpha
-        bias: number;
-        // (undocumented)
-        clone(result?: SolarShadows.Settings): SolarShadows.Settings;
-        color: ColorDef;
-        // (undocumented)
-        equals(other: SolarShadows.Settings): boolean;
-        // (undocumented)
-        static fromJSON(props?: Props): Settings;
-        // (undocumented)
-        toJSON(): Props;
-    }
+export interface SolarLightProps {
+    alwaysEnabled?: boolean;
+    direction?: XYZProps;
+    intensity?: number;
+}
+
+// @beta
+export class SolarShadowSettings {
+    // @internal (undocumented)
+    readonly bias: number;
+    clone(changedProps?: SolarShadowSettingsProps): SolarShadowSettings;
+    readonly color: RgbColor;
+    // (undocumented)
+    static defaults: SolarShadowSettings;
+    // (undocumented)
+    equals(rhs: SolarShadowSettings): boolean;
+    // (undocumented)
+    static fromJSON(props?: SolarShadowSettingsProps): SolarShadowSettings;
+    // (undocumented)
+    toJSON(): SolarShadowSettingsProps | undefined;
+}
+
+// @beta
+export interface SolarShadowSettingsProps {
+    // @internal (undocumented)
+    bias?: number;
+    color?: ColorDefProps;
 }
 
 // @beta
@@ -5701,23 +5736,6 @@ export namespace SpatialClassificationProps {
 export interface SpatialViewDefinitionProps extends ViewDefinition3dProps {
     // (undocumented)
     modelSelectorId: Id64String;
-}
-
-// @internal
-export class Spot extends Light {
-    constructor(opts?: SpotProps);
-    // (undocumented)
-    inner: Angle;
-    // (undocumented)
-    outer: Angle;
-}
-
-// @internal
-export interface SpotProps extends LightProps {
-    // (undocumented)
-    inner?: AngleProps;
-    // (undocumented)
-    outer?: AngleProps;
 }
 
 // @internal

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { ViewFlags, RenderMode, ColorDef, Light, LightProps, Spot, LightType, SpotProps, Gradient } from "@bentley/imodeljs-common";
+import { ViewFlags, RenderMode, ColorDef, Gradient } from "@bentley/imodeljs-common";
 import { Angle } from "@bentley/geometry-core";
 
 describe("Render", () => {
@@ -22,59 +22,6 @@ describe("Render", () => {
     assert(flags.acsTriad === flags2.acsTriad);
     assert(flags.renderMode === flags2.renderMode);
     assert(flags.monochrome === flags2.monochrome);
-  });
-
-  it("Lights", () => {
-    const opts: LightProps = {
-      lightType: LightType.Ambient,
-      intensity: 10,
-      color: ColorDef.white,
-      kelvin: 100,
-      shadows: 1,
-      bulbs: 3,
-      lumens: 2700,
-    };
-
-    const l1 = new Light(opts);
-    assert.equal(l1.lightType, LightType.Ambient);
-    assert.equal(l1.intensity, 10);
-    assert.isTrue(l1.color.equals(ColorDef.white));
-    assert.equal(l1.kelvin, 100);
-    assert.equal(l1.shadows, 1);
-    assert.equal(l1.bulbs, 3);
-    assert.equal(l1.lumens, 2700);
-
-    const spotOpts: SpotProps = {
-      intensity: 10,
-      intensity2: 40,
-      color: ColorDef.white,
-      color2: 333,
-      kelvin: 100,
-      shadows: 1,
-      bulbs: 3,
-      lumens: 2700,
-      inner: { radians: 1.5 },
-      outer: 45.0,
-    };
-
-    const s1 = new Spot(spotOpts);
-    assert.equal(s1.lightType, LightType.Spot, "type");
-    assert.equal(s1.intensity, 10);
-    assert.equal(s1.kelvin, 100);
-    assert.equal(s1.shadows, 1);
-    assert.equal(s1.bulbs, 3);
-    assert.equal(s1.lumens, 2700);
-    assert.approximately(s1.inner.radians, 1.5, .001);
-    assert.approximately(s1.outer.degrees, 45.0, .001);
-    assert.isTrue(s1.color.equals(ColorDef.white));
-    assert.equal(s1.color2!.tbgr, 333);
-
-    let json = JSON.stringify(l1);
-    const l2 = new Light(JSON.parse(json));
-    assert.deepEqual(l1, l2);
-    json = JSON.stringify(s1);
-    const s2 = new Spot(JSON.parse(json));
-    assert.equal(json, JSON.stringify(s2));
   });
 
   it("Gradient.Symb", () => {

@@ -16,7 +16,14 @@ import { Texture, TextureHandle } from "./Texture";
 import { FrameBuffer } from "./FrameBuffer";
 import { SceneContext } from "../../ViewContext";
 import { Tile, TileDrawArgs, TileTreeReference, TileVisibility } from "../../tile/internal";
-import { Frustum, FrustumPlanes, RenderTexture, RenderMode, SolarShadows, ViewFlags } from "@bentley/imodeljs-common";
+import {
+  Frustum,
+  FrustumPlanes,
+  RenderTexture,
+  RenderMode,
+  SolarShadowSettings,
+  ViewFlags,
+} from "@bentley/imodeljs-common";
 import { System } from "./System";
 import { RenderState } from "./RenderState";
 import { BatchState, BranchStack } from "./BranchState";
@@ -177,16 +184,16 @@ class Bundle implements WebGLDisposable {
 class ShadowMapParams {
   public readonly direction = new Vector3d();
   public readonly viewFrustum = new Frustum();
-  public readonly settings: SolarShadows.Settings;
+  public settings: SolarShadowSettings;
 
-  public constructor(viewFrustum: Frustum, direction: Vector3d, settings: SolarShadows.Settings) {
+  public constructor(viewFrustum: Frustum, direction: Vector3d, settings: SolarShadowSettings) {
     direction.clone(this.direction);
     this.viewFrustum.setFrom(viewFrustum);
-    this.settings = SolarShadows.Settings.fromJSON(settings);
+    this.settings = settings;
   }
 
-  public update(viewFrustum: Frustum, direction: Vector3d, settings: SolarShadows.Settings): void {
-    settings.clone(this.settings);
+  public update(viewFrustum: Frustum, direction: Vector3d, settings: SolarShadowSettings): void {
+    this.settings = settings;
     this.viewFrustum.setFrom(viewFrustum);
     direction.clone(this.direction);
   }
@@ -234,7 +241,7 @@ export class SolarShadowMap implements RenderMemory.Consumer, WebGLDisposable {
   public get projectionMatrix(): Matrix4d { return this._projectionMatrix; }
   public get depthTexture(): Texture | undefined { return undefined !== this._bundle ? this._bundle.depthTexture : undefined; }
   public get shadowMapTexture(): Texture | undefined { return undefined !== this._bundle ? this._bundle.shadowMapTexture : undefined; }
-  public get settings(): SolarShadows.Settings | undefined { return undefined !== this._params ? this._params.settings : undefined; }
+  public get settings(): SolarShadowSettings | undefined { return undefined !== this._params ? this._params.settings : undefined; }
   public get direction(): Vector3d | undefined { return undefined !== this._params ? this._params.direction : undefined; }
   public get frustum(): Frustum { return this._shadowFrustum; }
   public get worldToViewMap(): Map4d { return this._worldToViewMap; }
@@ -311,7 +318,7 @@ export class SolarShadowMap implements RenderMemory.Consumer, WebGLDisposable {
 
     this._enabled = true;
     const viewFrustum = context.viewingSpace.getFrustum();
-    const settings = style.settings.solarShadowsSettings;
+    const settings = style.settings.solarShadows;
     if (undefined === this._params)
       this._params = new ShadowMapParams(viewFrustum, sunDirection, settings);
     else

@@ -62,9 +62,6 @@ beta;BlankConnectionProps
 public;BriefcaseConnection 
 internal;CachedIModelCoordinatesResponseProps
 internal;calculateEcefToDb(iModel: IModelConnection, bimElevationBias: number): Promise
-beta;calculateSolarAngles(date: Date, location: Cartographic):
-beta;calculateSolarDirection(date: Date, location: Cartographic): Vector3d
-beta;calculateSunriseOrSunset(date: Date, location: Cartographic, sunrise: boolean): Date
 public;CanvasDecoration
 public;CanvasDecorationList = CanvasDecoration[]
 public;canvasToImageBuffer(canvas: HTMLCanvasElement, format?: ImageBufferFormat): ImageBuffer | undefined
