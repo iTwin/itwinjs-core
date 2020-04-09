@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-components",
+      "comment": "Update CustomNumberEditor to handle onBlur. This will update the value when the user clicks in another field in the dialog and the field loses focus.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "Nancy.McCall@Bentley.com"
+}
