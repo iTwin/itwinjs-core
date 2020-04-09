@@ -216,11 +216,7 @@ export abstract class RpcRequest<TResponse = any> {
 
   /** Finds the first IModelRpcProps parameter if present. */
   public findTokenPropsParameter(): IModelRpcProps | undefined {
-    if (RpcConfiguration.developmentMode) {
-      return this.findParameterOfType({ iModelId: "string" });
-    } else {
-      return this.findParameterOfType({ iModelId: "string", contextId: "string" });
-    }
+    return this.findParameterOfType({ iModelId: "string" });
 
   }
 

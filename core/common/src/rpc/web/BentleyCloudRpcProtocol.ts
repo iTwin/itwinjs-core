@@ -16,7 +16,6 @@ import { RpcRequest } from "../core/RpcRequest";
 import { OpenAPIParameter } from "./OpenAPI";
 import { WebAppRpcProtocol } from "./WebAppRpcProtocol";
 import { IModelRpcProps } from "../../IModel";
-import { RpcConfiguration } from "../core/RpcConfiguration";
 
 enum AppMode {
   MilestoneReview = "1",
@@ -91,7 +90,7 @@ export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
       routeChangeSetId = "{changeSetId}";
     } else {
       const token = operation.policy.token(request);
-      if (!token || (!token.contextId && !RpcConfiguration.developmentMode) || !token.iModelId)
+      if (!token || !token.iModelId)
         throw new IModelError(BentleyStatus.ERROR, "Invalid iModelToken for RPC operation request", Logger.logError, CommonLoggerCategory.RpcInterfaceFrontend);
 
       contextId = encodeURIComponent(token.contextId || "");
