@@ -2,7 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-@import "~@bentley/ui-core/lib/ui-core/index";
+@import "~@bentley/ui-core/lib/ui-core/style/breakpoints";
+@import "~@bentley/ui-core/lib/ui-core/style/themecolors";
+@import "~@bentley/ui-core/lib/ui-core/style/typography";
+@import "~@bentley/ui-core/lib/ui-core/text/leading";
 
 $image-size: 22px;
 $image-size-wide: 30px;

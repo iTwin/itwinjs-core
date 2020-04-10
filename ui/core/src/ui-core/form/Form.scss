@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-@import "../index";
+@import "../style/typography";
+@import "../style/themecolors";
+@import "../inputs/variables";
 
 $text-font-size: $uicore-font-size;
 $text-font-color: $buic-text-color;

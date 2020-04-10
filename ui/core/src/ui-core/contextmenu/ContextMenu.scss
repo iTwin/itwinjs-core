@@ -2,7 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-@import "../index.scss";
+@import "../icons/variables";
+@import "../inputs/variables";
+@import "../style/baseline";
+@import "../style/colors";
+@import "../style/themecolors";
+@import "../style/typography";
+@import "../z-index";
 
 $uicore-menu-bordered-padding:  $uicore-bordered-padding + 2px;
 

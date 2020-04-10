@@ -3,8 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-@import "~@bentley/ui-ninezone/lib/ui-ninezone/footer/_variables";
-@import "~@bentley/ui-core/lib/ui-core/index";
+@import "~@bentley/ui-ninezone/lib/ui-ninezone/footer/variables";
+@import "~@bentley/ui-core/lib/ui-core/style/colors";
+@import "~@bentley/ui-core/lib/ui-core/style/space";
+@import "~@bentley/ui-core/lib/ui-core/style/typography";
 
 $outline-size: 2px;
 

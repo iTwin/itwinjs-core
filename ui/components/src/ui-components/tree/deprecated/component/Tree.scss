@@ -2,7 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-@import "~@bentley/ui-core/lib/ui-core/index";
+@import "~@bentley/ui-core/lib/ui-core/style/themecolors";
+@import "~@bentley/ui-core/lib/ui-core/scrollbar";
 
 .components-tree-loader {
   position: relative;
@@ -32,7 +33,7 @@
   .ReactWindow__VariableSizeList {
     overflow: auto !important;
 
-    @include uicore-scrollbar();
+    @include uicore-scrollbar;
 
     &:focus {
       outline: none;
