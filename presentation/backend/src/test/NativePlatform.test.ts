@@ -39,6 +39,7 @@ describe("default NativePlatform", () => {
       taskAllocationsMap: {},
       mode: PresentationManagerMode.ReadOnly,
       isChangeTrackingEnabled: false,
+      cacheDirectory: "",
     });
     nativePlatform = new TNativePlatform();
     // we're replacing the native addon with our mock - make sure the original

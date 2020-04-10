@@ -8,6 +8,7 @@ import { PresentationManagerMode } from "@bentley/presentation-backend";
 import { createDefaultNativePlatform, NativePlatformDefinition } from "@bentley/presentation-backend/lib/presentation-backend/NativePlatform";
 import { PresentationError } from "@bentley/presentation-common";
 import { expect } from "chai";
+import * as path from "path";
 import { initialize, terminate } from "../IntegrationTests";
 
 describe("NativePlatform", () => {
@@ -32,7 +33,8 @@ describe("NativePlatform", () => {
       localeDirectories: [],
       taskAllocationsMap: {},
       mode: PresentationManagerMode.ReadWrite,
-      isChangeTrackingEnabled: true,
+      isChangeTrackingEnabled: false,
+      cacheDirectory: path.join(__dirname, "lib/cache"),
     });
     nativePlatform = new TNativePlatform();
   });

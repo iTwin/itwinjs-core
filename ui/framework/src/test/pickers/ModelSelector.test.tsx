@@ -8,6 +8,7 @@ import { Presentation } from "@bentley/presentation-frontend";
 import { HierarchyBuilder, initialize, terminate } from "@bentley/presentation-testing";
 import { cleanup, render } from "@testing-library/react";
 import { expect } from "chai";
+import * as path from "path";
 import * as React from "react";
 import { ConfigurableUiControlType, ModelSelectorWidget, ModelSelectorWidgetControl, WidgetDef, WidgetProps } from "../../ui-framework";
 import { ModelSelectorDataProvider } from "../../ui-framework/pickers/ModelSelector/ModelSelectorDefinitions";
@@ -21,7 +22,11 @@ describe("ModelSelector", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
-    await initialize();
+    await initialize({
+      backendProps: {
+        cacheDirectory: path.join("lib", "test", "cache"),
+      },
+    });
   });
 
   after(() => {

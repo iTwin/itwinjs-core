@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/presentation-backend",
+      "comment": "Added ability to control hierarchy cache location",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-backend",
+  "email": "Saulius.Skliutas@bentley.com"
+}

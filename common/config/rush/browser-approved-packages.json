@@ -4,7 +4,7 @@
   "packages": [
     {
       "name": "@azure/storage-blob",
-      "allowedCategories": [ "backend", "common", "frontend" ]
+      "allowedCategories": [ "backend", "frontend" ]
     },
     {
       "name": "@babel/core",
@@ -99,10 +99,6 @@
       "allowedCategories": [ "backend" ]
     },
     {
-      "name": "@bentley/imodeljs-orbitgt",
-      "allowedCategories": [ "frontend", "internal" ]
-    },
-    {
       "name": "@bentley/imodeljs-quantity",
       "allowedCategories": [ "extensions", "frontend", "internal", "tools" ]
     },
@@ -169,10 +165,6 @@
     {
       "name": "@bentley/webgl-compatibility",
       "allowedCategories": [ "frontend", "internal" ]
-    },
-    {
-      "name": "@bentley/webpack-tools",
-      "allowedCategories": [ "common" ]
     },
     {
       "name": "@bentley/webpack-tools-core",
