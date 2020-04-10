@@ -4839,7 +4839,7 @@ export class ResponseLike implements Response {
 }
 
 // @public
-export class RgbColor {
+export class RgbColor implements RgbColorProps {
     constructor(r: number, g: number, b: number);
     // (undocumented)
     readonly b: number;
@@ -4847,7 +4847,7 @@ export class RgbColor {
     equals(rhs: RgbColor): boolean;
     static fromColorDef(colorDef: ColorDef): RgbColor;
     // (undocumented)
-    static fromJSON(json: RgbColorProps | undefined): RgbColor;
+    static fromJSON(json?: RgbColorProps): RgbColor;
     // (undocumented)
     readonly g: number;
     // (undocumented)
@@ -4858,11 +4858,14 @@ export class RgbColor {
 }
 
 // @public
-export type RgbColorProps = {
-    r: number;
-    g: number;
+export interface RgbColorProps {
+    // (undocumented)
     b: number;
-} | RgbColor;
+    // (undocumented)
+    g: number;
+    // (undocumented)
+    r: number;
+}
 
 // @beta
 export type RgbFactorProps = number[];

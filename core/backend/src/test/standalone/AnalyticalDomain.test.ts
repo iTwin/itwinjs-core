@@ -60,7 +60,7 @@ describe("Analytical Domain", () => {
     assert.isTrue(IModelJsFs.existsSync(analyticalSchemaFileName));
     assert.isTrue(IModelJsFs.existsSync(testSchemaFileName));
     await iModelDb.importSchemas(new BackendRequestContext(), [analyticalSchemaFileName, testSchemaFileName]);
-    assert.isTrue(iModelDb.nativeDb.hasSavedChanges(), "Expect importSchemas to have saved changes");
+    assert.isTrue(iModelDb.nativeDb.hasPendingTxns(), "Expect importSchemas to have saved changes");
     assert.isFalse(iModelDb.nativeDb.hasUnsavedChanges(), "Expect no unsaved changes after importSchemas");
     iModelDb.saveChanges();
     // test querySchemaVersion

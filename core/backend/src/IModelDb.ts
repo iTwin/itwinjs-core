@@ -1966,7 +1966,7 @@ export class TxnManager {
   public isTxnIdValid(txnId: TxnIdString): boolean { return this._nativeDb.isTxnIdValid(txnId); }
 
   /** Query if there are any pending Txns in this IModelDb that are waiting to be pushed.  */
-  public get hasPendingTxns(): boolean { return this._nativeDb.hasSavedChanges(); }
+  public get hasPendingTxns(): boolean { return this._nativeDb.hasPendingTxns(); }
 
   /** Query if there are any changes in memory that have yet to be saved to the IModelDb. */
   public get hasUnsavedChanges(): boolean { return this._nativeDb.hasUnsavedChanges(); }
@@ -2346,7 +2346,7 @@ export class BriefcaseDb extends IModelDb {
       return Promise.reject(new IModelError(ChangeSetStatus.HasUncommittedChanges, "Cannot push changeset with unsaved changes", Logger.logError, loggerCategory, () => this.getRpcProps()));
     if (this.openParams.syncMode !== SyncMode.PullAndPush)
       throw new IModelError(BentleyStatus.ERROR, "IModel was not opened with SyncMode = PullAndPush", Logger.logError, loggerCategory, () => this.getRpcProps());
-    if (!this.nativeDb.hasSavedChanges())
+    if (!this.nativeDb.hasPendingTxns())
       return Promise.resolve(); // nothing to push
 
     await this.concurrencyControl.onPushChanges(requestContext);

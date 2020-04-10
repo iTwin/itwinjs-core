@@ -10,7 +10,8 @@ import { Geometry } from "@bentley/geometry-core";
 
 // portions adapted from Three.js Copyright © 2010-2017 three.js authors
 
-// spell-checker: disable
+// cspell: ignore ttbbggrr bbggrr rrggbb aabbggrr abgr rrbbgg hsla lerp torgb dhue dsaturation dvalue intpart fractpart cyanish seagreen gainsboro lightyellow rebecca
+
 /** A set of known colors by name, as a 32-bit integer in the form 0xBBGGRR (red is the low byte).
  * This is different than color values in #RRGGBB format for HTML pages (red and blue are swapped).
  * @note If your colors don't look right, likely you're using 0xRRGGBB where ColorDef expects 0xBBGGRR.
@@ -276,7 +277,7 @@ export class ColorDef {
    * *"rgb(100%,0%,0%)"*
    * *"hsl(120,50%,50%)"*
    * *"#rrbbgg"*
-   * *"blanchedAlmond"* (see possible values from [[ColorByName]]). Case insensitve.
+   * *"blanchedAlmond"* (see possible values from [[ColorByName]]). Case insensitive.
    */
   public constructor(val?: string | ColorDefProps) {
     this._tbgr = 0;
@@ -307,7 +308,7 @@ export class ColorDef {
   /** Create a new ColorDef from a json object. If the json object is a number, it is assumed to be a 0xTTBBGGRR value. */
   public static fromJSON(json?: any): ColorDef { return new ColorDef(json); }
 
-  /** Initialize or create a ColorDef fromn Red,Green,Blue,Transparency values. All values should be between 0-255 */
+  /** Initialize or create a ColorDef from Red,Green,Blue,Transparency values. All values should be between 0-255 */
   public static from(red: number, green: number, blue: number, transparency?: number, result?: ColorDef): ColorDef {
     result = result ? result : new ColorDef();
     scratchBytes[0] = red;
@@ -677,25 +678,25 @@ ColorDef.blue.freeze();
 /** JSON representation of an [[RgbColor]]
  * @public
  */
-export type RgbColorProps = {
+export interface RgbColorProps {
   r: number;
   g: number;
   b: number;
-} | RgbColor;
+}
 
 /** An immutable representation of a color with red, green, and blue components each in the integer range [0, 255].
  * @public
  */
-export class RgbColor {
+export class RgbColor implements RgbColorProps {
   /** Constructs from red, green, and blue components.
    * @param r Red
    * @param g Green
    * @param b Blue
    */
   public constructor(public readonly r: number, public readonly g: number, public readonly b: number) {
-    this.r = Math.max(0, Math.min(this.r, 0xff));
-    this.g = Math.max(0, Math.min(this.g, 0xff));
-    this.b = Math.max(0, Math.min(this.b, 0xff));
+    this.r = Geometry.clamp(this.r, 0, 0xff);
+    this.g = Geometry.clamp(this.g, 0, 0xff);
+    this.b = Geometry.clamp(this.b, 0, 0xff);
   }
 
   /** Constructs from the red, green, and blue components of a ColorDef. The transparency component is ignored. */
@@ -717,7 +718,7 @@ export class RgbColor {
     return { r: this.r, g: this.g, b: this.b };
   }
 
-  public static fromJSON(json: RgbColorProps | undefined): RgbColor {
+  public static fromJSON(json?: RgbColorProps): RgbColor {
     let r = 0xff;
     let g = 0xff;
     let b = 0xff;

@@ -558,7 +558,7 @@ describe("BriefcaseManager (#integration)", () => {
     assert.strictEqual(iModelPullOnly.briefcase.briefcaseId, briefcaseId);
     assert.strictEqual(iModelPullOnly.briefcase.pathname, pathname);
     assert.isFalse(iModelPullOnly.nativeDb.hasUnsavedChanges());
-    assert.isFalse(iModelPullOnly.nativeDb.hasSavedChanges());
+    assert.isFalse(iModelPullOnly.nativeDb.hasPendingTxns());
 
     // User1 pushes a change set
     await testUtility.pushTestChangeSet();
@@ -571,7 +571,7 @@ describe("BriefcaseManager (#integration)", () => {
     assert.strictEqual(iModelPullOnly.briefcase.briefcaseId, briefcaseId);
     assert.strictEqual(iModelPullOnly.briefcase.pathname, pathname);
     assert.isFalse(iModelPullOnly.nativeDb.hasUnsavedChanges());
-    assert.isFalse(iModelPullOnly.nativeDb.hasSavedChanges());
+    assert.isFalse(iModelPullOnly.nativeDb.hasPendingTxns());
 
     // User2 closes and reopens the iModel pullOnly as of the newer version
     // - the briefcase will be upgraded to the newer version since it was closed and re-opened.
@@ -582,7 +582,7 @@ describe("BriefcaseManager (#integration)", () => {
     assert.strictEqual(iModelPullOnly.briefcase.briefcaseId, briefcaseId);
     assert.strictEqual(iModelPullOnly.briefcase.pathname, pathname);
     assert.isFalse(iModelPullOnly.nativeDb.hasUnsavedChanges());
-    assert.isFalse(iModelPullOnly.nativeDb.hasSavedChanges());
+    assert.isFalse(iModelPullOnly.nativeDb.hasPendingTxns());
 
     // User1 pushes another change set
     await testUtility.pushTestChangeSet();
@@ -627,10 +627,10 @@ describe("BriefcaseManager (#integration)", () => {
 
     await iModelPullAndPush.concurrencyControl.request(userContext2);
     assert.isTrue(iModelPullAndPush.nativeDb.hasUnsavedChanges());
-    assert.isFalse(iModelPullAndPush.nativeDb.hasSavedChanges());
+    assert.isFalse(iModelPullAndPush.nativeDb.hasPendingTxns());
     iModelPullAndPush.saveChanges();
     assert.isFalse(iModelPullAndPush.nativeDb.hasUnsavedChanges());
-    assert.isTrue(iModelPullAndPush.nativeDb.hasSavedChanges());
+    assert.isTrue(iModelPullAndPush.nativeDb.hasPendingTxns());
 
     await iModelPullAndPush.close(userContext2, KeepBriefcase.Yes);
 
@@ -641,7 +641,7 @@ describe("BriefcaseManager (#integration)", () => {
     assert.strictEqual(iModelPullAndPush.briefcase.briefcaseId, briefcaseId);
     assert.strictEqual(iModelPullAndPush.briefcase.pathname, pathname);
     assert.isFalse(iModelPullAndPush.nativeDb.hasUnsavedChanges());
-    assert.isTrue(iModelPullAndPush.nativeDb.hasSavedChanges());
+    assert.isTrue(iModelPullAndPush.nativeDb.hasPendingTxns());
 
     // User1 pushes a change set
     await testUtility.pushTestChangeSet();
@@ -655,7 +655,7 @@ describe("BriefcaseManager (#integration)", () => {
     assert.strictEqual(iModelPullAndPush.briefcase.briefcaseId, briefcaseId);
     assert.strictEqual(iModelPullAndPush.briefcase.pathname, pathname);
     assert.isFalse(iModelPullAndPush.nativeDb.hasUnsavedChanges());
-    assert.isTrue(iModelPullAndPush.nativeDb.hasSavedChanges());
+    assert.isTrue(iModelPullAndPush.nativeDb.hasPendingTxns());
 
     // User2 closes and reopens the iModel pullAndPush as of the newer version
     // - the changes will still be there, AND
@@ -667,7 +667,7 @@ describe("BriefcaseManager (#integration)", () => {
     assert.strictEqual(iModelPullAndPush.briefcase.briefcaseId, briefcaseId);
     assert.strictEqual(iModelPullAndPush.briefcase.pathname, pathname);
     assert.isFalse(iModelPullAndPush.nativeDb.hasUnsavedChanges());
-    assert.isTrue(iModelPullAndPush.nativeDb.hasSavedChanges());
+    assert.isTrue(iModelPullAndPush.nativeDb.hasPendingTxns());
 
     // User2 should be able to push the changes now
     await iModelPullAndPush.pushChanges(userContext2, "test change");

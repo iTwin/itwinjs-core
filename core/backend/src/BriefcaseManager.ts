@@ -894,7 +894,7 @@ export class BriefcaseManager {
   private static async finishInitializeBriefcase(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseEntry) {
     requestContext.enter();
 
-    const briefcaseHasChanges = briefcase.nativeDb!.hasSavedChanges();
+    const briefcaseHasChanges = briefcase.nativeDb!.hasPendingTxns();
     try {
       await this.initBriefcaseChangeSetIndexes(requestContext as AuthorizedClientRequestContext, briefcase);
       requestContext.enter();

@@ -342,8 +342,8 @@ beta;RenderSchedule
 beta;class RenderTexture 
 beta;RenderTexture
 public;ResponseLike 
-public;RgbColor
-public;RgbColorProps =
+public;RgbColor 
+public;RgbColorProps
 beta;RgbFactorProps = number[]
 public;RootSubjectProps
 public;class RpcConfiguration
