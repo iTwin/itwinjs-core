@@ -1920,7 +1920,6 @@ export abstract class ViewState2d extends ViewState {
   public readonly delta: Point2d;
   public readonly angle: Angle;
   public readonly baseModelId: Id64String;
-  private _viewedExtents?: AxisAlignedBox3d;
   /** @internal */
   protected _treeRef?: TileTreeReference;
 
@@ -1973,20 +1972,8 @@ export abstract class ViewState2d extends ViewState {
     return model;
   }
 
-  public computeFitRange(): Range3d { return this.getViewedExtents(); }
-  public getViewedExtents(): AxisAlignedBox3d {
-    if (undefined === this._viewedExtents) {
-      const treeRef = this._tileTreeRef;
-      const tree = treeRef?.treeOwner.load();
-      const location = treeRef?.getLocation();
-
-      if (undefined !== tree && undefined !== location) {
-        this._viewedExtents = Range3d.create(tree.range.low, tree.range.high);
-        location.multiplyRange(this._viewedExtents, this._viewedExtents);
-      }
-    }
-
-    return undefined !== this._viewedExtents ? this._viewedExtents : new Range3d();
+  public computeFitRange(): Range3d {
+    return this.getViewedExtents();
   }
 
   public onRenderFrame(_viewport: Viewport): void { }
@@ -2033,26 +2020,34 @@ export class DrawingViewState extends ViewState2d {
   /** @internal */
   public static get className() { return "DrawingViewDefinition"; }
   // Computed from the tile tree range once the tile tree is available; cached thereafter to avoid recomputing.
-  private _modelLimits?: ExtentLimits;
+  private _modelLimits: ExtentLimits;
+  private _viewedExtents: AxisAlignedBox3d;
+
+  public constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState, extents: AxisAlignedBox3d) {
+    super(props, iModel, categories, displayStyle);
+    if (categories instanceof DrawingViewState) {
+      this._viewedExtents = categories._viewedExtents.clone();
+      this._modelLimits = { ...categories._modelLimits };
+    } else {
+      this._viewedExtents = extents;
+      this._modelLimits = { min: Constant.oneMillimeter, max: 10 * extents.maxLength() };
+    }
+  }
 
   public static createFromProps(props: ViewStateProps, iModel: IModelConnection): DrawingViewState {
     const cat = new CategorySelectorState(props.categorySelectorProps, iModel);
     const displayStyleState = new DisplayStyle2dState(props.displayStyleProps, iModel);
+    const extents = props.modelExtents ? Range3d.fromJSON(props.modelExtents) : new Range3d();
+
     // use "new this" so subclasses are correct
-    return new this(props.viewDefinitionProps as ViewDefinition2dProps, iModel, cat, displayStyleState);
+    return new this(props.viewDefinitionProps as ViewDefinition2dProps, iModel, cat, displayStyleState, extents);
+  }
+
+  public getViewedExtents(): AxisAlignedBox3d {
+    return this._viewedExtents;
   }
 
   public get defaultExtentLimits() {
-    if (undefined !== this._modelLimits)
-      return this._modelLimits;
-
-    const treeRef = this._tileTreeRef;
-    const tree = undefined !== treeRef ? treeRef.treeOwner.load() : undefined;
-    if (undefined !== tree) {
-      this._modelLimits = { min: Constant.oneMillimeter, max: 10.0 * tree.range.maxLength() };
-      return this._modelLimits;
-    }
-
-    return { min: Constant.oneMillimeter, max: Constant.diameterOfEarth };
+    return this._modelLimits;
   }
 }

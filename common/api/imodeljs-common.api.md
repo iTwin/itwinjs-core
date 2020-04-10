@@ -6612,6 +6612,8 @@ export interface ViewStateProps {
     categorySelectorProps: CategorySelectorProps;
     // (undocumented)
     displayStyleProps: DisplayStyleProps;
+    // @alpha
+    modelExtents?: Range3dProps;
     // (undocumented)
     modelSelectorProps?: ModelSelectorProps;
     // @beta (undocumented)

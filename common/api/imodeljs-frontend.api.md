@@ -2164,12 +2164,15 @@ export class DrawingModelState extends GeometricModel2dState {
 
 // @public
 export class DrawingViewState extends ViewState2d {
+    constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState, extents: AxisAlignedBox3d);
     // @internal (undocumented)
     static get className(): string;
     // (undocumented)
     static createFromProps(props: ViewStateProps, iModel: IModelConnection): DrawingViewState;
     // (undocumented)
     get defaultExtentLimits(): ExtentLimits;
+    // (undocumented)
+    getViewedExtents(): AxisAlignedBox3d;
     }
 
 // @public
@@ -7544,6 +7547,8 @@ export class SheetViewState extends ViewState2d {
     };
     // @internal
     discloseTileTrees(trees: TileTreeSet): void;
+    // @internal (undocumented)
+    getViewedExtents(): AxisAlignedBox3d;
     // @internal
     load(): Promise<void>;
     // @internal
@@ -7551,7 +7556,7 @@ export class SheetViewState extends ViewState2d {
     // @internal
     onRenderFrame(_viewport: Viewport): void;
     readonly sheetSize: Point2d;
-}
+    }
 
 // @internal
 export type ShouldAbortReadGltf = (reader: GltfReader) => boolean;
@@ -10921,8 +10926,6 @@ export abstract class ViewState2d extends ViewState {
     getOrigin(): Point3d;
     // (undocumented)
     getRotation(): Matrix3d;
-    // (undocumented)
-    getViewedExtents(): AxisAlignedBox3d;
     getViewedModel(): GeometricModel2dState | undefined;
     // (undocumented)
     load(): Promise<void>;

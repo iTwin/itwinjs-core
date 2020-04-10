@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
+import { expect } from "chai";
 import { System } from "../webgl";
 import { IModelApp } from "../IModelApp";
 import { MockRender } from "../render/MockRender";
@@ -40,7 +40,7 @@ describe("Render Compatibility", () => {
 
 describe("Instancing", () => {
   class TestApp extends MockRender.App {
-    public static start(enableInstancing: boolean, supportsInstancing: boolean): void {
+    public static test(enableInstancing: boolean, supportsInstancing: boolean, expectEnabled: boolean): void {
       const tileAdminProps: TileAdmin.Props = { enableInstancing };
       const renderSysOpts: RenderSystem.Options = {};
       if (!supportsInstancing)
@@ -50,6 +50,9 @@ describe("Instancing", () => {
         renderSys: renderSysOpts,
         tileAdmin: TileAdmin.create(tileAdminProps),
       });
+
+      expect(IModelApp.tileAdmin.enableInstancing).to.equal(expectEnabled);
+      IModelApp.shutdown();
     }
   }
 
@@ -59,21 +62,19 @@ describe("Instancing", () => {
       TestApp.shutdown();
   });
 
-  it("should properly toggle instancing", () => {
-    TestApp.start(true, true);
-    assert.equal(IModelApp.tileAdmin.enableInstancing, true, "should produce tileAdmin.enableInstancing=true from TestApp.start(true,true)");
-    TestApp.shutdown();
+  it("should enable instancing if supported and requested", () => {
+    TestApp.test(true, true, true);
+  });
 
-    TestApp.start(true, false);
-    assert.equal(IModelApp.tileAdmin.enableInstancing, false, "should produce tileAdmin.enableInstancing=false from TestApp.start(true,false)");
-    TestApp.shutdown();
+  it("should not enable instancing if requested but not supported", () => {
+    TestApp.test(true, false, false);
+  });
 
-    TestApp.start(false, true);
-    assert.equal(IModelApp.tileAdmin.enableInstancing, false, "should produce tileAdmin.enableInstancing=false from TestApp.start(false,true)");
-    TestApp.shutdown();
+  it("should not enable instancing if supported but not requested", () => {
+    TestApp.test(false, true, false);
+  });
 
-    TestApp.start(false, false);
-    assert.equal(IModelApp.tileAdmin.enableInstancing, false, "should produce tileAdmin.enableInstancing=false from TestApp.start(false,false)");
-    TestApp.shutdown();
+  it("should not enable instancing if neither requested nor supported", () => {
+    TestApp.test(false, false, false);
   });
 });
