@@ -65,11 +65,23 @@ export interface EnvironmentProps {
   sky?: SkyBoxProps;
 }
 
+/** JSON representation of the blob properties for an OrbitGt property cloud.
+ * @alpha
+ */
+export interface OrbitGtBlobProps {
+  containerName: string;
+  blobFileName: string;
+  sasToken: string;
+  accountName: string;
+}
+
 /** JSON representation of a context reality model
  * @public
  */
 export interface ContextRealityModelProps {
   tilesetUrl: string;
+  /** @alpha */
+  orbitGtBlob?: OrbitGtBlobProps;
   name?: string;
   description?: string;
   /** @beta */

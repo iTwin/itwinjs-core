@@ -66,7 +66,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   constructor(props: DisplayStyleProps, iModel: IModelConnection) {
     super(props, iModel);
     const styles = this.jsonProperties.styles;
-    const mapSettings = BackgroundMapSettings.fromJSON(styles?.backgroundMap || { });
+    const mapSettings = BackgroundMapSettings.fromJSON(styles?.backgroundMap || {});
 
     this._backgroundMap = mapSettings.applyTerrain ? new BackgroundTerrainTileTreeReference(mapSettings, iModel) : new BackgroundMapTileTreeReference(mapSettings, iModel);
     this._backgroundDrapeMap = new BackgroundMapTileTreeReference(mapSettings, iModel, false, true);
@@ -121,7 +121,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     this.backgroundMapSettings = this.backgroundMapSettings.clone(props);
     if (props.terrainSettings !== undefined && props.terrainSettings.providerName !== undefined || props.applyTerrain !== undefined)
       this._backgroundMap = ("CesiumWorldTerrain" === this.backgroundMapSettings.terrainSettings.providerName && this.backgroundMapSettings.applyTerrain) ? new BackgroundTerrainTileTreeReference(this.backgroundMapSettings, this.iModel) : new BackgroundMapTileTreeReference(this.backgroundMapSettings, this.iModel);
-
   }
 
   /** @internal */

@@ -5,13 +5,13 @@
 /** @packageDocumentation
  * @module Views
  */
-import { ContextRealityModelProps, CartographicRange } from "@bentley/imodeljs-common";
+import { ContextRealityModelProps, CartographicRange, OrbitGtBlobProps } from "@bentley/imodeljs-common";
 import { Angle } from "@bentley/geometry-core";
 import { IModelConnection } from "./IModelConnection";
 import { IModelApp } from "./IModelApp";
 import { AuthorizedFrontendRequestContext } from "./FrontendRequestContext";
 import { SpatialModelState } from "./ModelState";
-import { TileTreeReference, createRealityTileTreeReference, RealityModelTileClient, RealityModelTileUtils, RealityModelTileTree } from "./tile/internal";
+import { TileTreeReference, createRealityTileTreeReference, createOrbitGtTileTreeReference, RealityModelTileClient, RealityModelTileUtils, RealityModelTileTree } from "./tile/internal";
 import { RealityDataServicesClient, RealityData, AccessToken } from "@bentley/imodeljs-clients";
 import { SpatialClassifiers } from "./SpatialClassifiers";
 import { DisplayStyleState } from "./DisplayStyleState";
@@ -35,22 +35,34 @@ export class ContextRealityModelState {
   private readonly _treeRef: RealityModelTileTree.Reference;
   public readonly name: string;
   public readonly url: string;
+  public readonly orbitGtBlob?: OrbitGtBlobProps;
   public readonly description: string;
   public readonly iModel: IModelConnection;
 
   public constructor(props: ContextRealityModelProps, iModel: IModelConnection, displayStyle: DisplayStyleState) {
     this.url = props.tilesetUrl;
+    this.orbitGtBlob = props.orbitGtBlob;
     this.name = undefined !== props.name ? props.name : "";
     this.description = undefined !== props.description ? props.description : "";
     this.iModel = iModel;
 
-    this._treeRef = createRealityTileTreeReference({
-      iModel,
-      source: displayStyle,
-      url: props.tilesetUrl,
-      name: props.name,
-      classifiers: new SpatialClassifiers(props),
-    });
+    const classifiers = new SpatialClassifiers(props);
+    this._treeRef = (undefined === props.orbitGtBlob) ?
+      createRealityTileTreeReference({
+        iModel,
+        source: displayStyle,
+        url: props.tilesetUrl,
+        name: props.name,
+        classifiers,
+      }) :
+      createOrbitGtTileTreeReference({
+        iModel,
+        orbitGtBlob: props.orbitGtBlob,
+        name: props.name,
+        classifiers,
+        displayStyle,
+      });
+
   }
 
   public get treeRef(): TileTreeReference { return this._treeRef; }
@@ -59,6 +71,7 @@ export class ContextRealityModelState {
   public toJSON(): ContextRealityModelProps {
     return {
       tilesetUrl: this.url,
+      orbitGtBlob: this.orbitGtBlob,
       name: 0 > this.name.length ? this.name : undefined,
       description: 0 > this.description.length ? this.description : undefined,
     };

@@ -19,12 +19,13 @@ import { assert } from "@bentley/bentleyjs-core";
  * @internal
  */
 export namespace Quantization {
-  export const rangeScale = 0xffff;
+  export const rangeScale16 = 0xffff;
+  export const rangeScale8 = 0xff;
 
-  export function computeScale(extent: number): number { return 0.0 === extent ? extent : rangeScale / extent; }
-  export function isInRange(qpos: number) { return qpos >= 0.0 && qpos < rangeScale + 1.0; }
-  export function quantize(pos: number, origin: number, scale: number) { return Math.floor(Math.max(0.0, Math.min(rangeScale, 0.5 + (pos - origin) * scale))); }
-  export function isQuantizable(pos: number, origin: number, scale: number) { return isInRange(quantize(pos, origin, scale)); }
+  export function computeScale(extent: number, rangeScale = rangeScale16): number { return 0.0 === extent ? extent : rangeScale / extent; }
+  export function isInRange(qpos: number, rangeScale = rangeScale16) { return qpos >= 0.0 && qpos < rangeScale + 1.0; }
+  export function quantize(pos: number, origin: number, scale: number, rangeScale = rangeScale16) { return Math.floor(Math.max(0.0, Math.min(rangeScale, 0.5 + (pos - origin) * scale))); }
+  export function isQuantizable(pos: number, origin: number, scale: number, rangeScale = rangeScale16) { return isInRange(quantize(pos, origin, scale, rangeScale)); }
   export function unquantize(qpos: number, origin: number, scale: number) { return 0.0 === scale ? origin : origin + qpos / scale; }
   export function isQuantized(qpos: number) { return isInRange(qpos) && qpos === Math.floor(qpos); }
 }
@@ -53,25 +54,25 @@ export class QParams2d {
   }
 
   /** Initialize these parameters to support quantization of values within the specified range. */
-  public setFromRange(range: Range2d) {
+  public setFromRange(range: Range2d, rangeScale = Quantization.rangeScale16) {
     if (!range.isNull) {
-      this.setFrom(range.low.x, range.low.y, Quantization.computeScale(range.high.x - range.low.x), Quantization.computeScale(range.high.y - range.low.y));
+      this.setFrom(range.low.x, range.low.y, Quantization.computeScale(range.high.x - range.low.x, rangeScale), Quantization.computeScale(range.high.y - range.low.y, rangeScale));
     } else {
       this.origin.x = this.origin.y = this.scale.x = this.scale.y = 0;
     }
   }
   /** Creates parameters to support quantization of values within the specified range. */
-  public static fromRange(range: Range2d, out?: QParams2d) {
+  public static fromRange(range: Range2d, out?: QParams2d, rangeScale = Quantization.rangeScale16) {
     const params = undefined !== out ? out : new QParams2d();
-    params.setFromRange(range);
+    params.setFromRange(range, rangeScale);
     return params;
   }
 
   /** Creates parameters supporting quantization of values within the range [-1.0, 1.0]. */
-  public static fromNormalizedRange() { return QParams2d.fromRange(Range2d.createArray([Point2d.create(-1, -1), Point2d.create(1, 1)])); }
+  public static fromNormalizedRange(rangeScale = Quantization.rangeScale16) { return QParams2d.fromRange(Range2d.createArray([Point2d.create(-1, -1), Point2d.create(1, 1)]), undefined, rangeScale); }
 
   /** Creates parameters supporting quantization of values within the range [0.0, 1.0]. */
-  public static fromZeroToOne() { return QParams2d.fromRange(Range2d.createArray([Point2d.create(0, 0), Point2d.create(1, 1)])); }
+  public static fromZeroToOne(rangeScale = Quantization.rangeScale16) { return QParams2d.fromRange(Range2d.createArray([Point2d.create(0, 0), Point2d.create(1, 1)]), undefined, rangeScale); }
 }
 
 /** Represents a quantized 2d point as an (x, y) pair in the integer range [0, 0xffff].
@@ -239,19 +240,19 @@ export class QParams3d {
   public setFromOriginAndScale(origin: Point3d, scale: Point3d) { this.setFrom(origin.x, origin.y, origin.z, scale.x, scale.y, scale.z); }
 
   /** Initialize these parameters to support quantization of values within the specified range. */
-  public setFromRange(range: Range3d) {
+  public setFromRange(range: Range3d, rangeScale = Quantization.rangeScale16) {
     if (!range.isNull) {
       this.setFrom(range.low.x, range.low.y, range.low.z,
-        Quantization.computeScale(range.high.x - range.low.x), Quantization.computeScale(range.high.y - range.low.y), Quantization.computeScale(range.high.z - range.low.z));
+        Quantization.computeScale(range.high.x - range.low.x, rangeScale), Quantization.computeScale(range.high.y - range.low.y, rangeScale), Quantization.computeScale(range.high.z - range.low.z, rangeScale));
     } else {
       this.origin.x = this.origin.y = this.origin.z = 0;
       this.scale.x = this.scale.y = this.scale.z = 0;
     }
   }
   /** Creates parameters to support quantization of values within the specified range. */
-  public static fromRange(range: Range3d, out?: QParams3d) {
+  public static fromRange(range: Range3d, out?: QParams3d, rangeScale = Quantization.rangeScale16) {
     const params = undefined !== out ? out : new QParams3d();
-    params.setFromRange(range);
+    params.setFromRange(range, rangeScale);
     return params;
   }
 
@@ -263,10 +264,10 @@ export class QParams3d {
   }
 
   /** Creates parameters supporting quantization of values within the range [-1.0, 1.0]. */
-  public static fromNormalizedRange() { return QParams3d.fromRange(Range3d.createArray([Point3d.create(-1, -1, -1), Point3d.create(1, 1, 1)])); }
+  public static fromNormalizedRange(rangeScale = Quantization.rangeScale16) { return QParams3d.fromRange(Range3d.createArray([Point3d.create(-1, -1, -1), Point3d.create(1, 1, 1)]), undefined, rangeScale); }
 
   /** Creates parameters supporting quantization of values within the range [0.0, 1.0]. */
-  public static fromZeroToOne() { return QParams3d.fromRange(Range3d.createArray([Point3d.create(0, 0, 0), Point3d.create(1, 1, 1)])); }
+  public static fromZeroToOne(rangeScale = Quantization.rangeScale16) { return QParams3d.fromRange(Range3d.createArray([Point3d.create(0, 0, 0), Point3d.create(1, 1, 1)]), undefined, rangeScale); }
 }
 
 /** Represents a quantized 3d point as an (x, y, z) triplet in the integer range [0, 0xffff].

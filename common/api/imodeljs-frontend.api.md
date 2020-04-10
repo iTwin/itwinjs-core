@@ -149,6 +149,8 @@ import { OctEncodedNormal } from '@bentley/imodeljs-common';
 import { OidcDesktopClientConfiguration } from '@bentley/imodeljs-common';
 import { OidcFrontendClientConfiguration } from '@bentley/imodeljs-clients';
 import { OpenMode } from '@bentley/bentleyjs-core';
+import { OrbitGtBlobProps } from '@bentley/imodeljs-common';
+import { OrbitGtDataManager } from '@bentley/orbitgt-core';
 import { PackedFeatureTable } from '@bentley/imodeljs-common';
 import { ParseResult } from '@bentley/imodeljs-quantity';
 import { ParseResults } from '@bentley/ui-abstract';
@@ -1733,6 +1735,8 @@ export class ContextRealityModelState {
     // (undocumented)
     readonly name: string;
     // (undocumented)
+    readonly orbitGtBlob?: OrbitGtBlobProps;
+    // (undocumented)
     toJSON(): ContextRealityModelProps;
     // (undocumented)
     get treeRef(): TileTreeReference;
@@ -1799,6 +1803,9 @@ export function createDefaultViewFlagOverrides(options: {
     shadows?: boolean;
     lighting?: boolean;
 }): ViewFlagOverrides;
+
+// @internal (undocumented)
+export function createOrbitGtTileTreeReference(props: OrbitGtTileTree.ReferenceProps): OrbitGtTileTree.Reference;
 
 // @internal (undocumented)
 export function createPrimaryTileTreeReference(view: ViewState, model: GeometricModelState): TileTreeReference;
@@ -2664,6 +2671,16 @@ export class ExternalServerExtensionLoader implements ExtensionLoader {
     resolveResourceUrl(extensionName: string, relativeUrl: string): string;
     // (undocumented)
     serverName: string;
+}
+
+// @alpha
+export interface ExternalTileStatistics {
+    // (undocumented)
+    ready: number;
+    // (undocumented)
+    requested: number;
+    // (undocumented)
+    selected: number;
 }
 
 // @public
@@ -5647,6 +5664,57 @@ export class OnScreenTarget extends Target {
 // @beta
 export function openImageDataUrlInNewWindow(url: string, title?: string): void;
 
+// @internal (undocumented)
+export class OrbitGtTileTree extends TileTree {
+    constructor(treeParams: TileTreeParams, _dataManager: OrbitGtDataManager, cloudRange: Range3d, _centerOffset: Vector3d);
+    // (undocumented)
+    collectStatistics(stats: RenderMemory.Statistics): void;
+    // (undocumented)
+    dispose(): void;
+    // (undocumented)
+    draw(args: TileDrawArgs): void;
+    // (undocumented)
+    get is3d(): boolean;
+    // (undocumented)
+    get isContentUnbounded(): boolean;
+    // (undocumented)
+    get maxDepth(): number | undefined;
+    // (undocumented)
+    prune(): void;
+    // (undocumented)
+    rootTile: OrbitGtRootTile;
+    // (undocumented)
+    protected _selectTiles(_args: TileDrawArgs): Tile[];
+    // (undocumented)
+    viewFlagOverrides: ViewFlagOverrides;
+}
+
+// @internal (undocumented)
+export namespace OrbitGtTileTree {
+    // (undocumented)
+    export function createOrbitGtTileTree(props: OrbitGtBlobProps, iModel: IModelConnection, modelId: Id64String): Promise<TileTree | undefined>;
+    // (undocumented)
+    export abstract class Reference extends TileTreeReference {
+        // (undocumented)
+        abstract get classifiers(): SpatialClassifiers | undefined;
+    }
+    // (undocumented)
+    export interface ReferenceProps {
+        // (undocumented)
+        classifiers?: SpatialClassifiers;
+        // (undocumented)
+        displayStyle: DisplayStyleState;
+        // (undocumented)
+        iModel: IModelConnection;
+        // (undocumented)
+        name?: string;
+        // (undocumented)
+        orbitGtBlob: OrbitGtBlobProps;
+        // (undocumented)
+        tilesetToDbTransform?: TransformProps;
+    }
+}
+
 // @public
 export class OrthographicViewState extends SpatialViewState {
     constructor(props: SpatialViewDefinitionProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle3dState, modelSelector: ModelSelectorState);
@@ -7192,6 +7260,8 @@ export interface SelectAddEvent {
 
 // @internal
 export interface SelectedAndReadyTiles {
+    // @alpha
+    readonly external: ExternalTileStatistics;
     readonly ready: Set<Tile>;
     readonly selected: Set<Tile>;
 }
@@ -8462,6 +8532,8 @@ export abstract class Tile {
 // @alpha
 export abstract class TileAdmin {
     // @internal
+    abstract addExternalTilesForViewport(vp: Viewport, statistics: ExternalTileStatistics): void;
+    // @internal
     abstract addTilesForViewport(vp: Viewport, selected: Tile[], ready: Set<Tile>): void;
     // @internal
     abstract clearTilesForViewport(vp: Viewport): void;
@@ -8633,6 +8705,7 @@ export class TileDrawArgs {
     get frustumPlanes(): FrustumPlanes;
     protected _frustumPlanes?: FrustumPlanes;
     getPixelSize(tile: Tile): number;
+    getRangePixelSize(range: Range3d): number;
     // @internal (undocumented)
     getTileCenter(tile: Tile): Point3d;
     // @internal (undocumented)

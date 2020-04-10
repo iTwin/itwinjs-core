@@ -86,6 +86,7 @@ internal;CoreTools
 internal;createAttachment(props: ViewAttachmentProps, view: ViewState): Attachment
 internal;createClassifierTileTreeReference(classifiers: SpatialClassifiers, classifiedTree: TileTreeReference, iModel: IModelConnection, source: ViewState | DisplayStyleState): SpatialClassifierTileTreeReference
 internal;createDefaultViewFlagOverrides(options:
+internal;createOrbitGtTileTreeReference(props: OrbitGtTileTree.ReferenceProps): OrbitGtTileTree.Reference
 internal;createPrimaryTileTreeReference(view: ViewState, model: GeometricModelState): TileTreeReference
 internal;createRealityTileTreeReference(props: RealityModelTileTree.ReferenceProps): RealityModelTileTree.Reference
 internal;createTileTreeFromImageryProvider(imageryProvider: ImageryProvider, bimElevationBias: number, filterTextures: boolean, globeMode: GlobeMode, useDepthBuffer: boolean, iModel: IModelConnection, forDrape?: boolean): Promise
@@ -138,6 +139,7 @@ beta;ExtensionLoadResults = Extension | undefined | string | string[]
 beta;ExtensionServiceExtensionLoader 
 public;ExtentLimits
 beta;ExternalServerExtensionLoader 
+alpha;ExternalTileStatistics
 public;extractImageSourceDimensions(source: ImageSource): Promise
 alpha;FeatureLogBatchClient
 alpha;FeatureLogBatchOptions
@@ -290,6 +292,8 @@ beta;OidcBrowserClient
 alpha;OidcDesktopClientRenderer 
 internal;OnScreenTarget 
 beta;openImageDataUrlInNewWindow(url: string, title?: string): void
+internal;OrbitGtTileTree 
+internal;OrbitGtTileTree
 public;OrthographicViewState 
 public;OutputMessageAlert
 public;OutputMessagePriority

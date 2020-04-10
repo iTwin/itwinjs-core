@@ -79,11 +79,11 @@ export class TerrainMeshPrimitive implements RenderMemory.Consumer {
     const clipAxes = new Array<ClipAxis>();
     if (uvLow.x > 0)
       clipAxes.push(new ClipAxis(true, false, uvLow.x));
-    if (uvHigh.x < Quantization.rangeScale)
+    if (uvHigh.x < Quantization.rangeScale16)
       clipAxes.push(new ClipAxis(true, true, uvHigh.x));
     if (uvLow.y > 0)
       clipAxes.push(new ClipAxis(false, false, uvLow.y));
-    if (uvHigh.y < Quantization.rangeScale)
+    if (uvHigh.y < Quantization.rangeScale16)
       clipAxes.push(new ClipAxis(false, true, uvHigh.y));
 
     for (let i = 0; i < this.indices.length;) {

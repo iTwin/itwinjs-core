@@ -61,6 +61,13 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
+      "packageName": "@bentley/orbitgt-core",
+      "projectFolder": "core/orbitgt",
+      "reviewCategory": "common",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
       "packageName": "@bentley/imodeljs-common",
       "projectFolder": "core/common",
       "reviewCategory": "common",
@@ -383,6 +390,12 @@
     {
       "packageName": "imodel-from-reality-model",
       "projectFolder": "test-apps/imodel-from-reality-model",
+      "reviewCategory": "internal",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "imodel-from-orbitgt-pointcloud",
+      "projectFolder": "test-apps/imodel-from-orbitgt",
       "reviewCategory": "internal",
       "shouldPublish": false
     },

@@ -31,6 +31,7 @@ import { RenderPlanarClassifier } from "../render/RenderPlanarClassifier";
 import { RenderTextureDrape } from "../render/RenderSystem";
 
 const scratchRange = new Range3d();
+const scratchPoint = Point3d.create();
 
 /**
  * Arguments used when selecting and drawing [[Tile]]s.
@@ -70,6 +71,18 @@ export class TileDrawArgs {
   public getPixelSize(tile: Tile): number {
     const radius = this.getTileRadius(tile); // use a sphere to test pixel size. We don't know the orientation of the image within the bounding box.
     const center = this.getTileCenter(tile);
+
+    const viewPt = this.worldToViewMap.transform0.multiplyPoint3dQuietNormalize(center);
+    const viewPt2 = new Point3d(viewPt.x + 1.0, viewPt.y, viewPt.z);
+    const pixelSizeAtPt = this.worldToViewMap.transform1.multiplyPoint3dQuietNormalize(viewPt).distance(this.worldToViewMap.transform1.multiplyPoint3dQuietNormalize(viewPt2));
+    return 0 !== pixelSizeAtPt ? radius / pixelSizeAtPt : 1.0e-3;
+  }
+
+  /** Compute this size of a sphere on screen in pixels */
+  public getRangePixelSize(range: Range3d): number {
+    const transformedRange = this.location.multiplyRange(range, scratchRange);
+    const center = transformedRange.localXYZToWorld(.5, .5, .5, scratchPoint)!;
+    const radius = transformedRange.diagonal().magnitude();
 
     const viewPt = this.worldToViewMap.transform0.multiplyPoint3dQuietNormalize(center);
     const viewPt2 = new Point3d(viewPt.x + 1.0, viewPt.y, viewPt.z);
