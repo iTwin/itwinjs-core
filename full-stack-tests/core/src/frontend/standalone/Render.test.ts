@@ -22,6 +22,9 @@ import {
   RenderMode,
   RgbColor,
   ViewFlags,
+  ThematicDisplayProps,
+  ThematicGradientColorScheme,
+  ThematicDisplay,
 } from "@bentley/imodeljs-common";
 import {
   GraphicType,
@@ -44,6 +47,7 @@ import {
   Decorator,
   DecorateContext,
   SnapshotConnection,
+  ViewState3d,
 } from "@bentley/imodeljs-frontend";
 import { Point2d, Point3d, ClipVector } from "@bentley/geometry-core";
 import { BuffersContainer, VAOContainer, VBOContainer } from "@bentley/imodeljs-frontend/lib/webgl";
@@ -239,6 +243,75 @@ describe("Render mirukuru with single clip plane", () => {
       for (const c of colors.array) {
         if (0 !== c.compare(bgColor)) {
           expect(isReddish(c) || isGreenish(c)).to.be.true;
+        }
+      }
+    });
+  });
+});
+
+describe("Render mirukuru with thematic display applied", () => {
+  let imodel: IModelConnection;
+
+  before(async () => {
+    IModelApp.startup();
+    imodel = await SnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
+  });
+
+  after(async () => {
+    if (imodel) await imodel.close();
+    IModelApp.shutdown();
+  });
+
+  it("should render the model with proper thematic colors applied", async () => {
+    const rect = new ViewRect(0, 0, 100, 100);
+    await testViewportsWithDpr(imodel, rect, async (vp) => {
+      expect(vp.view.is3d());
+
+      const vf = vp.view.viewFlags;
+      vf.visibleEdges = false;
+      vf.lighting = false;
+      vf.renderMode = RenderMode.SmoothShade;
+      vf.thematicDisplay = true;
+
+      // Create a ThematicDisplay object with the desired thematic settings
+      const thematicProps: ThematicDisplayProps = {
+        gradientSettings: {
+          colorScheme: ThematicGradientColorScheme.Custom,
+          customKeys: [{ value: 0.0, color: ColorDef.from(0, 0, 255) }, { value: 1.0, color: ColorDef.from(255, 0, 0) }],
+        },
+        range: { low: imodel.projectExtents.xLow, high: imodel.projectExtents.xHigh }, // grab imodel project extents to set range of thematic display
+        axis: [1.0, 0.0, 0.0],
+      };
+      const thematicDisplay = ThematicDisplay.fromJSON(thematicProps);
+
+      const displaySettings = (vp.view as ViewState3d).getDisplayStyle3d().settings;
+      displaySettings.thematic = thematicDisplay;
+
+      await vp.waitForAllTilesToRender();
+      expect(vp.numRequestedTiles).to.equal(0);
+      expect(vp.numSelectedTiles).to.equal(1);
+
+      // White rectangle is centered in view with black background surrounding. Thematic display sets a blue/red gradient on the rectangle. Lighting is off.
+      const colors = vp.readUniqueColors();
+      const bgColor = Color.fromRgba(0, 0, 0, 0xff);
+      expect(colors.length).least(3); // red, blue, and black - (actually way more colors!)
+      expect(colors.contains(bgColor)).to.be.true; // black background
+
+      const isReddish = (c: Color): boolean => {
+        return c.r > c.g && c.g < 0xa && c.b < 0xa && c.a === 0xff;
+      };
+
+      const isBluish = (c: Color) => {
+        return c.r < 0xa && c.g < 0xa && c.b > c.g && c.a === 0xff;
+      };
+
+      const isPurplish = (c: Color) => {
+        return c.r > c.g && c.g < 0xa && c.b > c.g && c.a === 0xff;
+      };
+
+      for (const c of colors.array) {
+        if (0 !== c.compare(bgColor)) {
+          expect(isReddish(c) || isBluish(c) || isPurplish(c)).to.be.true;
         }
       }
     });

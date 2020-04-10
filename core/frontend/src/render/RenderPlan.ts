@@ -15,6 +15,7 @@ import {
   Frustum,
   GlobeMode,
   Gradient,
+  ThematicDisplay,
   HiddenLine,
   Hilite,
   LightSettings,
@@ -46,6 +47,7 @@ export class RenderPlan {
   public readonly hline?: HiddenLine.Settings;
   public readonly analysisStyle?: AnalysisStyle;
   public readonly ao?: AmbientOcclusion.Settings;
+  public readonly thematic?: ThematicDisplay;
   public readonly isFadeOutActive: boolean;
   public readonly analysisTexture?: RenderTexture;
   public readonly classificationTextures?: Map<Id64String, RenderTexture>;
@@ -92,7 +94,7 @@ export class RenderPlan {
       this.hline = style.is3d() ? style.settings.hiddenLineSettings : undefined;
       this.ao = style.is3d() ? style.settings.ambientOcclusionSettings : undefined;
       this.analysisStyle = style.settings.analysisStyle;
-
+      this.thematic = (style.is3d() && view.displayStyle.viewFlags.thematicDisplay) ? style.settings.thematic : undefined;
       this.isGlobeMode3D = (GlobeMode.Ellipsoid === view.globeMode);
       if (this.isGlobeMode3D) {
         const lb = this.frustum.getCorner(Npc.LeftBottomRear).interpolate(0.5, this.frustum.getCorner(Npc.LeftBottomFront), scratchPoint3a);

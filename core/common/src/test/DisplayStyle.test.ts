@@ -4,7 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { Vector3d } from "@bentley/geometry-core";
+import {
+  Vector3d,
+  Range1d,
+} from "@bentley/geometry-core";
 import { DisplayStyle3dSettings } from "../DisplayStyleSettings";
 import {
   PlanProjectionSettings,
@@ -24,11 +27,19 @@ import { TerrainHeightOriginMode } from "../TerrainSettings";
 import {
   ColorByName,
   RgbColor,
+  ColorDef,
 } from "../ColorDef";
 import {
   LightSettings,
   LightSettingsProps,
 } from "../LightSettings";
+import {
+  ThematicDisplayProps,
+  ThematicDisplay,
+  ThematicDisplayMode,
+  ThematicGradientMode,
+  ThematicGradientColorScheme,
+} from "../ThematicDisplay";
 
 describe("PlanProjectionSettings", () => {
   it("round-trips through JSON", () => {
@@ -396,5 +407,63 @@ describe("LightSettings", () => {
 
     const style = new DisplayStyle3dSettings(props);
     expect(style.lights.solar.direction.isAlmostEqual(sunDir)).to.be.true;
+  });
+});
+
+describe("ThematicDisplay", () => {
+  it("Ensures ThematicDisplay derives values properly from JSON, including handling defaults and incorrect values", () => {
+    function verifyDefaults(thematicDisplay: ThematicDisplay) {
+      expect(thematicDisplay.axis).to.deep.equal(Vector3d.fromJSON({ x: 0.0, y: 0.0, z: 0.0 }));
+      expect(thematicDisplay.displayMode).to.equal(ThematicDisplayMode.Height);
+      expect(thematicDisplay.gradientSettings.mode).to.equal(ThematicGradientMode.Smooth);
+      expect(thematicDisplay.gradientSettings.stepCount).to.equal(10);
+      expect(thematicDisplay.gradientSettings.colorScheme).to.equal(ThematicGradientColorScheme.BlueRed);
+      expect(thematicDisplay.gradientSettings.marginColor.colors.r).to.equal(0);
+      expect(thematicDisplay.gradientSettings.marginColor.colors.g).to.equal(0);
+      expect(thematicDisplay.gradientSettings.marginColor.colors.b).to.equal(0);
+      expect(thematicDisplay.gradientSettings.marginColor.colors.t).to.equal(0);
+      expect(thematicDisplay.gradientSettings.customKeys.length).to.equal(0);
+      expect(thematicDisplay.range).to.deep.equal(Range1d.createNull());
+    }
+
+    // check if the creation and back-and-forth via JSON works
+    function verifyBackAndForth(a: ThematicDisplay) {
+      const aCopy = ThematicDisplay.fromJSON(a.toJSON());
+      expect(aCopy.equals(a)).to.be.true;
+    }
+
+    // create default ThematicDisplay object and verify the default values are correct
+    const defaultThematicDisplay = ThematicDisplay.fromJSON();
+    verifyDefaults(defaultThematicDisplay);
+
+    // check if the creation and back-and-forth via JSON works using the default object
+    verifyBackAndForth(defaultThematicDisplay);
+
+    // check if setting bad values for displayMode, gradient mode, and gradient color scheme yields expected defaults
+    let badThematicProps: ThematicDisplayProps = {
+      displayMode: 99999,
+      gradientSettings: {
+        mode: 99999,
+        colorScheme: 99999,
+      },
+    };
+    let td = ThematicDisplay.fromJSON(badThematicProps);
+    expect(td.equals(defaultThematicDisplay)).to.be.true;
+    verifyBackAndForth(td);
+
+    // check if configuring custom color scheme incorrectly is resolved as expected
+    badThematicProps = {
+      gradientSettings: {
+        colorScheme: ThematicGradientColorScheme.Custom,
+        customKeys: [{ value: 0.0, color: ColorDef.fromJSON() }], // (one entry is not okay - need at least two)
+      },
+    };
+    td = ThematicDisplay.fromJSON(badThematicProps);
+    expect(td.gradientSettings.customKeys.length).to.equal(2); // 2 entries should get manufactured
+    expect(td.gradientSettings.customKeys[0].color).to.deep.equal(ColorDef.from(255, 255, 255, 0)); // first should be white
+    expect(td.gradientSettings.customKeys[0].value).to.equal(0.0); // value for black should be 0.0
+    expect(td.gradientSettings.customKeys[1].color).to.deep.equal(ColorDef.from(0, 0, 0, 0)); // second should be black
+    expect(td.gradientSettings.customKeys[1].value).to.equal(1.0); // value for white should be 1.0
+    verifyBackAndForth(td);
   });
 });

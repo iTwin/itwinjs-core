@@ -58,6 +58,7 @@ export * from "./SubCategoryOverride";
 export * from "./TerrainSettings";
 export * from "./TextureMapping";
 export * from "./TextureProps";
+export * from "./ThematicDisplay";
 export * from "./Thumbnail";
 export * from "./TileProps";
 export * from "./Tween";

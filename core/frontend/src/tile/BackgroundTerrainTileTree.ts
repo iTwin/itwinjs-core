@@ -92,7 +92,7 @@ interface BackgroundTerrainTreeId {
 }
 
 function createViewFlagOverrides(wantLighting: boolean) {
-  return createDefaultViewFlagOverrides({ clipVolume: false, lighting: wantLighting });
+  return createDefaultViewFlagOverrides({ clipVolume: false, lighting: wantLighting, thematic: false });
 }
 
 const defaultViewFlagOverrides = createViewFlagOverrides(false);

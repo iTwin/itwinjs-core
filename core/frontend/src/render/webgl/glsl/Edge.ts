@@ -20,7 +20,7 @@ import { addWhiteOnWhiteReversal } from "./Fragment";
 import { addShaderFlags } from "./Common";
 import { addLineCode, adjustWidth } from "./Polyline";
 import { octDecodeNormal } from "./Surface";
-import { IsInstanced, IsAnimated } from "../TechniqueFlags";
+import { IsInstanced, IsAnimated, IsThematic } from "../TechniqueFlags";
 import { AttributeMap } from "../AttributeMap";
 import { TechniqueId } from "../TechniqueId";
 
@@ -115,7 +115,7 @@ function createBase(isSilhouette: boolean, instanced: IsInstanced, isAnimated: I
 
   vert.addInitializer(decodeEndPointAndQuadIndices);
   if (isAnimated) {
-    addAnimation(vert, false);
+    addAnimation(vert, false, IsThematic.No);
     vert.addInitializer(animateEndPoint);
   }
 

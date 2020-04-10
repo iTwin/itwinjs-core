@@ -28,6 +28,7 @@ import {
   IsInstanced,
   IsShadowable,
   TechniqueFlags,
+  IsThematic,
 } from "./TechniqueFlags";
 
 // tslint:disable:no-const-enum
@@ -211,13 +212,15 @@ export class PrimitiveCommand {
 
     const target = exec.target;
     const shadowable = (techniqueId === TechniqueId.Surface || techniqueId === TechniqueId.TerrainMesh) && target.solarShadowMap.isReady && target.currentViewFlags.shadows;
+    const thematic = this.primitive.cachedGeometry.supportsThematicDisplay && target.wantThematicDisplay;
     const isShadowable = shadowable ? IsShadowable.Yes : IsShadowable.No;
+    const isThematic = thematic ? IsThematic.Yes : IsThematic.No;
     const isClassified = (undefined !== target.currentPlanarClassifierOrDrape || undefined !== target.activeVolumeClassifierTexture) ? IsClassified.Yes : IsClassified.No;
     const isInstanced = this.primitive.isInstanced ? IsInstanced.Yes : IsInstanced.No;
     const isAnimated = this.primitive.hasAnimation ? IsAnimated.Yes : IsAnimated.No;
 
     const flags = PrimitiveCommand._scratchTechniqueFlags;
-    flags.init(target, exec.renderPass, isInstanced, isAnimated, isClassified, isShadowable);
+    flags.init(target, exec.renderPass, isInstanced, isAnimated, isClassified, isShadowable, undefined, isThematic);
     flags.setHasMaterialAtlas(target.currentViewFlags.materials && this.primitive.hasMaterialAtlas);
 
     const technique = target.techniques.getTechnique(techniqueId);

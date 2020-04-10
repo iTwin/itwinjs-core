@@ -113,6 +113,77 @@ Previously, shader programs used by the [RenderSystem]($frontend) were never com
 * Applications should consider enabling this feature if they do not open a Viewport immediately upon startup - for example, if the user is first expected to select an iModel and  a view through the user interface.
 * Shader precompilation will cease once all shader programs have been compiled, or when a Viewport is opened (registered with the [ViewManager]($frontend)).
 
+## Thematic Display
+
+[ViewFlags]($common) now contains a `thematicDisplay` property of type `boolean`; when set to `true`, this will enable thematic display for surfaces.
+* The thematic display will be configured based on the `thematic` property of type [ThematicDisplay]($common) on [DisplayStyle3dSettings]($common).
+  * This property controls the thematic display settings of the 3d display style when thematic display is enabled.
+  * [ThematicDisplay]($common) is immutable and must be constructed and altered using an underlying JSON representation. See the corresponding underlying [ThematicDisplayProps]($common) on the [DisplayStyle3dSettingsProps]($common).
+* Within the `gradientSettings` property on [ThematicDisplay]($common), the display system currently supports a `mode` value of `ThematicGradientMode.Smooth` of type [ThematicGradientMode]($common). Using this mode, the color gradient will be smoothly interpolated based on the value specified for `colorScheme` on the `gradientSettings` property of [ThematicDisplay]($common). If the `colorScheme` property of `gradientSettings` is `ThematicGradientColorScheme.Custom`, then the `customKeys` property must be properly configured with values.
+* For the `displayMode` property of [ThematicDisplay]($common), the display system currently supports a value of `ThematicDisplayMode.Height`. Using this mode, the color gradient will be mapped to surface geometry based on world height in meters.
+
+See the following snippet for the JSON representation of a [ThematicDisplay]($common) configuration object:
+
+```ts
+/** JSON representation of the thematic display setup of a [[DisplayStyle3d]].
+ * @beta
+ */
+export interface ThematicDisplayProps {
+  /** The thematic display mode. This determines how to apply the thematic color gradient to the geometry. Defaults to [[ThematicDisplayMode.Height]]. */
+  displayMode?: ThematicDisplayMode;
+  /** The settings used to create a color gradient applied to the geometry. The mode currently must be [[Gradient.ThematicMode.Smooth]]. Defaults to an instantiation using [[ThematicGradientSettings.fromJSON]] with no arguments. */
+  gradientSettings?: ThematicGradientSettingsProps;
+  /** The range in which to apply the thematic gradient. For [[ThematicDisplayMode.Height]], this is world space in meters. Defaults to a null range. */
+  range?: Range1dProps;
+  /** For [[ThematicDisplayMode.Height]], this is the axis along which to apply the thematic gradient in the scene. Defaults to {0,0,0}. */
+  axis?: XYZProps;
+}
+```
+
+Consult the following code example demonstrating how to enable thematic display and configure the thematic display:
+
+```ts
+const _scratchViewFlags = new ViewFlags();
+
+const isThematicDisplaySupported = (view: ViewState) => view.is3d();
+
+function enableAndConfigureThematicDisplay(viewport: Viewport): boolean {
+  const view = viewport.view;
+
+  if (!isThematicDisplaySupported(view))
+    return false; // Thematic display settings are only valid for 3d views
+
+  // Clone and reconfigure the Viewport's viewFlags to have thematic display enabled
+  const vf = viewport.viewFlags.clone(_scratchViewFlags);
+  vf.thematicDisplay = true;
+  viewport.viewFlags = vf;
+
+  // Create a ThematicDisplayProps object with the desired thematic settings
+  const thematicProps: ThematicDisplayProps = {
+    displayMode: ThematicDisplayMode.Height, // The only currently supported thematic display mode
+    gradientSettings: {
+      mode: ThematicGradientMode.Smooth, // The only currently supported thematic gradient mode
+      stepCount: 0, // Only relevant for ThematicGradientMode.Stepped, which is currently unsupported.
+      marginColor: new ColorDef(ColorByName.blanchedAlmond), // The color used when outside the range to apply the gradient
+      colorScheme: ThematicGradientColorScheme.BlueRed, // The color scheme used to construct the gradient; if using ThematicColorScheme.Custom, must also specify customKeys property.
+    },
+    range: { low: -900.0, high: 1000.0 }, // For ThematicDisplayMode.Height, the range in world meters to apply the gradient
+    axis: [0.0, 0.0, 1.0], // For ThematicDisplayMode.Height, the axis (direction) along which to apply the gradient (Up along Z in this case)
+  };
+
+  // Create a ThematicDisplay object using the props created above
+  const thematicDisplay = ThematicDisplay.fromJSON(thematicProps);
+
+  // Change the thematic object on the 3d display style state to contain the new object
+  (view as ViewState3d).getDisplayStyle3d().settings.thematic = thematicDisplay;
+
+  // Sync the viewport with the new view state
+  viewport.synchWithView();
+}
+```
+![Thematic height mode with a smooth "sea mountain" color gradient applied to surfaces](assets/ThematicDisplay_HeightSmooth.png)
+<p align="center">Thematic height mode with a smooth "sea mountain" color gradient applied to surfaces</p>
+
 ## Opening iModels
 
 The API now allows opening iModels (briefcases) at the backend with a new [SyncMode.pullOnly]($backend) option. e.g.,

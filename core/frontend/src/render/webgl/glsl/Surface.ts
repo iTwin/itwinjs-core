@@ -14,7 +14,7 @@ import {
   ShaderBuilder,
   ShaderBuilderFlags,
 } from "../ShaderBuilder";
-import { IsInstanced, IsAnimated, IsClassified, FeatureMode, IsShadowable, HasMaterialAtlas, TechniqueFlags } from "../TechniqueFlags";
+import { IsInstanced, IsAnimated, IsClassified, FeatureMode, IsShadowable, HasMaterialAtlas, TechniqueFlags, IsThematic } from "../TechniqueFlags";
 import { assignFragColor, addFragColorWithPreMultipliedAlpha, addWhiteOnWhiteReversal, addPickBufferOutputs, addAltPickBufferOutputs } from "./Fragment";
 import { addFeatureAndMaterialLookup, addProjectionMatrix, addModelViewMatrix, addNormalMatrix } from "./Vertex";
 import { addAnimation } from "./Animation";
@@ -36,6 +36,7 @@ import { unpackFloat } from "./Clipping";
 import { addRenderPass } from "./RenderPass";
 import { addTranslucency } from "./Translucency";
 import { addSurfaceMonochrome } from "./Monochrome";
+import { addThematicDisplay, getComputeThematicIndex } from "./Thematic";
 
 // NB: Textures do not contain pre-multiplied alpha.
 const sampleSurfaceTexture = `
@@ -195,13 +196,13 @@ const computePosition = `
   return u_proj * pos;
 `;
 
-function createCommon(instanced: IsInstanced, animated: IsAnimated, shadowable: IsShadowable): ProgramBuilder {
+function createCommon(instanced: IsInstanced, animated: IsAnimated, shadowable: IsShadowable, isThematic: IsThematic): ProgramBuilder {
   const attrMap = AttributeMap.findAttributeMap(TechniqueId.Surface, IsInstanced.Yes === instanced);
   const builder = new ProgramBuilder(attrMap, instanced ? ShaderBuilderFlags.InstancedVertexTable : ShaderBuilderFlags.VertexTable);
   const vert = builder.vert;
 
   if (animated)
-    addAnimation(vert, true);
+    addAnimation(vert, true, isThematic);
 
   if (shadowable)
     addSolarShadowMap(builder);
@@ -216,10 +217,10 @@ function createCommon(instanced: IsInstanced, animated: IsAnimated, shadowable: 
 
 /** @internal */
 export function createSurfaceHiliter(instanced: IsInstanced, classified: IsClassified): ProgramBuilder {
-  const builder = createCommon(instanced, IsAnimated.No, IsShadowable.No);
+  const builder = createCommon(instanced, IsAnimated.No, IsShadowable.No, IsThematic.No);
 
   addSurfaceFlags(builder, true, false);
-  addTexture(builder, IsAnimated.No);
+  addTexture(builder, IsAnimated.No, IsThematic.No);
   if (classified) {
     addHilitePlanarClassifier(builder);
     builder.vert.addGlobal("feature_ignore_material", VariableType.Boolean, "false");
@@ -421,28 +422,34 @@ function addNormal(builder: ProgramBuilder, animated: IsAnimated) {
   builder.addFunctionComputedVarying("v_n", VariableType.Vec3, "computeLightingNormal", animated ? computeAnimatedNormal : computeNormal);
 }
 
-function addTexture(builder: ProgramBuilder, animated: IsAnimated) {
-  builder.vert.addFunction(unquantize2d);
-  builder.addFunctionComputedVarying("v_texCoord", VariableType.Vec2, "computeTexCoord", animated ? computeAnimatedTexCoord : computeTexCoord);
-  builder.vert.addUniform("u_qTexCoordParams", VariableType.Vec4, (prog) => {
-    prog.addGraphicUniform("u_qTexCoordParams", (uniform, params) => {
-      const surfGeom = params.geometry.asSurface!;
-      const surfFlags: SurfaceFlags = surfGeom.computeSurfaceFlags(params.programParams);
-      if (SurfaceFlags.None !== (SurfaceFlags.HasTexture & surfFlags)) {
-        const uvQParams = surfGeom.lut.uvQParams;
-        if (undefined !== uvQParams) {
-          uniform.setUniform4fv(uvQParams);
+function addTexture(builder: ProgramBuilder, animated: IsAnimated, isThematic: IsThematic) {
+  if (isThematic)
+    builder.addInlineComputedVarying("v_thematicIndex", VariableType.Float, getComputeThematicIndex(builder.vert.usesInstancedGeometry));
+  else {
+    builder.vert.addFunction(unquantize2d);
+    builder.addFunctionComputedVarying("v_texCoord", VariableType.Vec2, "computeTexCoord", animated ? computeAnimatedTexCoord : computeTexCoord);
+    builder.vert.addUniform("u_qTexCoordParams", VariableType.Vec4, (prog) => {
+      prog.addGraphicUniform("u_qTexCoordParams", (uniform, params) => {
+        const surfGeom = params.geometry.asSurface!;
+        const surfFlags: SurfaceFlags = surfGeom.computeSurfaceFlags(params.programParams);
+        if (SurfaceFlags.None !== (SurfaceFlags.HasTexture & surfFlags)) {
+          const uvQParams = surfGeom.lut.uvQParams;
+          if (undefined !== uvQParams) {
+            uniform.setUniform4fv(uvQParams);
+          }
         }
-      }
+      });
     });
-  });
+    builder.frag.addFunction(sampleSurfaceTexture);
+  }
 
-  builder.frag.addFunction(sampleSurfaceTexture);
   builder.frag.addUniform("s_texture", VariableType.Sampler2D, (prog) => {
     prog.addGraphicUniform("s_texture", (uniform, params) => {
       const surfGeom = params.geometry.asSurface!;
       const surfFlags = surfGeom.computeSurfaceFlags(params.programParams);
-      if (SurfaceFlags.None !== (SurfaceFlags.HasTexture & surfFlags)) {
+      if (params.geometry.supportsThematicDisplay && params.target.wantThematicDisplay) { // NB: if thematic display is enabled, bind the thematic texture and ignore any applied surface textures
+        params.target.uniforms.thematic.bindTexture(uniform, TextureUnit.SurfaceTexture);
+      } else if (SurfaceFlags.None !== (SurfaceFlags.HasTexture & surfFlags)) {
         const texture = (params.geometry.hasAnimation && params.target.analysisTexture) ? (params.target.analysisTexture as Texture) : surfGeom.texture;
         assert(undefined !== texture);
         texture!.texture.bindSampler(uniform, TextureUnit.SurfaceTexture);
@@ -470,14 +477,18 @@ const discardTransparentTexel = `return isSurfaceBitSet(kSurfaceBit_HasTexture) 
 
 /** @internal */
 export function createSurfaceBuilder(flags: TechniqueFlags): ProgramBuilder {
-  const builder = createCommon(flags.isInstanced, flags.isAnimated, flags.isShadowable);
+  const builder = createCommon(flags.isInstanced, flags.isAnimated, flags.isShadowable, flags.isThematic);
   addShaderFlags(builder);
 
   const feat = flags.featureMode;
   let opts = FeatureMode.Overrides === feat ? FeatureSymbologyOptions.Surface : FeatureSymbologyOptions.None;
   if (flags.isClassified) {
     opts &= ~FeatureSymbologyOptions.Alpha;
-    addColorPlanarClassifier(builder, flags.isTranslucent);
+    addColorPlanarClassifier(builder, flags.isTranslucent, flags.isThematic);
+  }
+
+  if (flags.isThematic) {
+    addThematicDisplay(builder);
   }
 
   addFeatureSymbology(builder, feat, opts);
@@ -493,7 +504,7 @@ export function createSurfaceBuilder(flags: TechniqueFlags): ProgramBuilder {
     });
   });
 
-  addTexture(builder, flags.isAnimated);
+  addTexture(builder, flags.isAnimated, flags.isThematic);
 
   builder.frag.addUniform("u_applyGlyphTex", VariableType.Float, (prog) => {
     prog.addGraphicUniform("u_applyGlyphTex", (uniform, params) => {
@@ -523,7 +534,7 @@ export function createSurfaceBuilder(flags: TechniqueFlags): ProgramBuilder {
     } else {
       builder.frag.set(FragmentShaderComponent.DiscardByAlpha, discardTransparentTexel);
       if (!flags.isClassified)
-        addOverrideClassifierColor(builder);
+        addOverrideClassifierColor(builder, flags.isThematic);
       else
         addFeaturePlanarClassifier(builder);
 
@@ -536,7 +547,7 @@ export function createSurfaceBuilder(flags: TechniqueFlags): ProgramBuilder {
   }
 
   builder.frag.addGlobal("g_surfaceTexel", VariableType.Vec4);
-  builder.frag.set(FragmentShaderComponent.ComputeBaseColor, computeBaseColor);
+  builder.frag.set(FragmentShaderComponent.ComputeBaseColor, (flags.isThematic === IsThematic.No) ? computeBaseColor : "return getSurfaceColor();");
 
   if (flags.isClassified) {
     // For unclassified geometry, we need to render in both the translucent and opaque passes if any feature transparency overrides are applied that would change the default render pass used.

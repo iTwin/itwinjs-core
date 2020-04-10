@@ -216,6 +216,7 @@ import { SubCategoryAppearance } from '@bentley/imodeljs-common';
 import { SubCategoryOverride } from '@bentley/imodeljs-common';
 import { TerrainSettings } from '@bentley/imodeljs-common';
 import { TextureMapping } from '@bentley/imodeljs-common';
+import { ThematicDisplay } from '@bentley/imodeljs-common';
 import { ThumbnailProps } from '@bentley/imodeljs-common';
 import { TileProps } from '@bentley/imodeljs-common';
 import { TileReadStatus } from '@bentley/imodeljs-common';
@@ -1802,6 +1803,7 @@ export function createDefaultViewFlagOverrides(options: {
     clipVolume?: boolean;
     shadows?: boolean;
     lighting?: boolean;
+    thematic?: false;
 }): ViewFlagOverrides;
 
 // @internal (undocumented)
@@ -6577,6 +6579,8 @@ export class RenderPlan {
     // (undocumented)
     readonly terrainTransparency: number;
     // (undocumented)
+    readonly thematic?: ThematicDisplay;
+    // (undocumented)
     readonly upVector: Vector3d;
     // (undocumented)
     readonly viewFlags: ViewFlags;
@@ -8270,6 +8274,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     get wantInvertBlackBackground(): boolean;
     // (undocumented)
     get wantLogZ(): boolean;
+    // (undocumented)
+    get wantThematicDisplay(): boolean;
     }
 
 // @internal (undocumented)

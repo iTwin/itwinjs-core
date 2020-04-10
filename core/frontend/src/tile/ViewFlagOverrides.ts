@@ -17,7 +17,7 @@ import {
  * @param options Customize the overrides. Any properties left unspecified use the current view settings, except white-on-white reversal is always disabled.
  * @internal
  */
-export function createDefaultViewFlagOverrides(options: { clipVolume?: boolean, shadows?: boolean, lighting?: boolean }): ViewFlagOverrides {
+export function createDefaultViewFlagOverrides(options: { clipVolume?: boolean, shadows?: boolean, lighting?: boolean, thematic?: false }): ViewFlagOverrides {
   const noLights = undefined !== options.lighting ? !options.lighting : undefined;
   const ovrs = new ViewFlagOverrides(ViewFlags.fromJSON({
     renderMode: RenderMode.SmoothShade,
@@ -27,6 +27,7 @@ export function createDefaultViewFlagOverrides(options: { clipVolume?: boolean, 
     clipVol: options.clipVolume,
     shadows: options.shadows,
     noWhiteOnWhiteReversal: true,
+    thematicDisplay: false,
   }));
 
   if (undefined === options.clipVolume)
@@ -37,6 +38,9 @@ export function createDefaultViewFlagOverrides(options: { clipVolume?: boolean, 
 
   if (undefined === options.lighting)
     ovrs.clearPresent(ViewFlagPresence.Lighting);
+
+  if (undefined === options.thematic)
+    ovrs.clearPresent(ViewFlagPresence.ThematicDisplay);
 
   return ovrs;
 }

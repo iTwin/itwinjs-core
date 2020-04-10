@@ -148,7 +148,7 @@ export class AnalysisStyle implements AnalysisStyleProps {
     // (undocumented)
     scalarRange?: Range1d;
     // (undocumented)
-    scalarThematicSettings?: Gradient.ThematicSettings;
+    scalarThematicSettings?: ThematicGradientSettings;
     // (undocumented)
     toJSON(): AnalysisStyleProps;
 }
@@ -170,7 +170,7 @@ export interface AnalysisStyleProps {
     // (undocumented)
     scalarRange?: Range1dProps;
     // (undocumented)
-    scalarThematicSettings?: Gradient.ThematicSettingsProps;
+    scalarThematicSettings?: ThematicGradientSettingsProps;
 }
 
 // @internal (undocumented)
@@ -1445,6 +1445,8 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     setPlanProjectionSettings(modelId: Id64String, settings: PlanProjectionSettings | undefined): void;
     get solarShadows(): SolarShadowSettings;
     set solarShadows(solarShadows: SolarShadowSettings);
+    get thematic(): ThematicDisplay;
+    set thematic(thematic: ThematicDisplay);
     // @internal (undocumented)
     toJSON(): DisplayStyle3dSettingsProps;
 }
@@ -1468,6 +1470,8 @@ export interface DisplayStyle3dSettingsProps extends DisplayStyleSettingsProps {
     };
     // @beta
     solarShadows?: SolarShadowSettingsProps;
+    // @beta
+    thematic?: ThematicDisplayProps;
 }
 
 // @public
@@ -2548,6 +2552,7 @@ export namespace Gradient {
         // (undocumented)
         value: number;
     }
+    export function keyColorEquals(a: KeyColor, b: KeyColor): boolean;
     export interface KeyColorProps {
         color: ColorDefProps;
         value: number;
@@ -2576,7 +2581,7 @@ export namespace Gradient {
         compare(other: Symb): number;
         static compareSymb(lhs: Gradient.Symb, rhs: Gradient.Symb): number;
         // (undocumented)
-        static createThematic(settings: ThematicSettings): Symb;
+        static createThematic(settings: ThematicGradientSettings): Symb;
         equals(other: Symb): boolean;
         // (undocumented)
         flags: Flags;
@@ -2593,7 +2598,7 @@ export namespace Gradient {
         // (undocumented)
         shift: number;
         // (undocumented)
-        thematicSettings?: ThematicSettings;
+        thematicSettings?: ThematicGradientSettings;
         // (undocumented)
         tint?: number;
     }
@@ -2603,82 +2608,8 @@ export namespace Gradient {
         keys: KeyColorProps[];
         mode: Mode;
         shift?: number;
-        thematicSettings?: ThematicSettingsProps;
+        thematicSettings?: ThematicGradientSettingsProps;
         tint?: number;
-    }
-    // (undocumented)
-    export enum ThematicColorScheme {
-        // (undocumented)
-        BlueRed = 0,
-        // (undocumented)
-        Custom = 5,
-        // (undocumented)
-        Monochrome = 2,
-        // (undocumented)
-        RedBlue = 1,
-        // (undocumented)
-        SeaMountain = 4,
-        // (undocumented)
-        Topographic = 3
-    }
-    // (undocumented)
-    export enum ThematicMode {
-        // (undocumented)
-        IsoLines = 3,
-        // (undocumented)
-        Smooth = 0,
-        // (undocumented)
-        Stepped = 1,
-        // (undocumented)
-        SteppedWithDelimiter = 2
-    }
-    export class ThematicSettings implements ThematicSettingsProps {
-        // (undocumented)
-        clone(out?: ThematicSettings): ThematicSettings;
-        // (undocumented)
-        colorScheme: ThematicColorScheme;
-        // (undocumented)
-        static get contentMax(): number;
-        // (undocumented)
-        static get contentRange(): number;
-        // (undocumented)
-        copyFrom(other: ThematicSettingsProps): void;
-        // (undocumented)
-        static defaults: ThematicSettings;
-        // (undocumented)
-        static fromJSON(json: ThematicSettingsProps): ThematicSettings;
-        // (undocumented)
-        static get margin(): number;
-        // (undocumented)
-        marginColor: ColorDef;
-        // (undocumented)
-        mode: ThematicMode;
-        // (undocumented)
-        get range(): Range1d;
-        set range(range: Range1d);
-        // (undocumented)
-        rangeHigh: number;
-        // (undocumented)
-        rangeLow: number;
-        // (undocumented)
-        stepCount: number;
-        // (undocumented)
-        toJSON(): ThematicSettingsProps;
-    }
-    // (undocumented)
-    export interface ThematicSettingsProps {
-        // (undocumented)
-        colorScheme: ThematicColorScheme;
-        // (undocumented)
-        marginColor: ColorDefProps;
-        // (undocumented)
-        mode: ThematicMode;
-        // (undocumented)
-        rangeHigh: number;
-        // (undocumented)
-        rangeLow: number;
-        // (undocumented)
-        stepCount: number;
     }
 }
 
@@ -6033,6 +5964,94 @@ export interface TextureProps extends DefinitionElementProps {
     width: number;
 }
 
+// @beta
+export class ThematicDisplay {
+    readonly axis: Vector3d;
+    readonly displayMode: ThematicDisplayMode;
+    // (undocumented)
+    equals(other: ThematicDisplay): boolean;
+    // (undocumented)
+    static fromJSON(json?: ThematicDisplayProps): ThematicDisplay;
+    readonly gradientSettings: ThematicGradientSettings;
+    readonly range: Range1d;
+    // (undocumented)
+    toJSON(): ThematicDisplayProps;
+}
+
+// @beta
+export enum ThematicDisplayMode {
+    Height = 0
+}
+
+// @beta
+export interface ThematicDisplayProps {
+    axis?: XYZProps;
+    displayMode?: ThematicDisplayMode;
+    gradientSettings?: ThematicGradientSettingsProps;
+    range?: Range1dProps;
+}
+
+// @beta (undocumented)
+export enum ThematicGradientColorScheme {
+    // (undocumented)
+    BlueRed = 0,
+    // (undocumented)
+    Custom = 5,
+    // (undocumented)
+    Monochrome = 2,
+    // (undocumented)
+    RedBlue = 1,
+    // (undocumented)
+    SeaMountain = 4,
+    // (undocumented)
+    Topographic = 3
+}
+
+// @beta (undocumented)
+export enum ThematicGradientMode {
+    // (undocumented)
+    IsoLines = 3,
+    // (undocumented)
+    Smooth = 0,
+    // (undocumented)
+    Stepped = 1,
+    // (undocumented)
+    SteppedWithDelimiter = 2
+}
+
+// @beta
+export class ThematicGradientSettings implements ThematicGradientSettingsProps {
+    clone(changedProps?: ThematicGradientSettingsProps): ThematicGradientSettings;
+    readonly colorScheme: ThematicGradientColorScheme;
+    // (undocumented)
+    static get contentMax(): number;
+    // (undocumented)
+    static get contentRange(): number;
+    readonly customKeys: Gradient.KeyColor[];
+    // (undocumented)
+    static defaults: ThematicGradientSettings;
+    // (undocumented)
+    equals(other: ThematicGradientSettings): boolean;
+    // (undocumented)
+    static fromJSON(json?: ThematicGradientSettingsProps): ThematicGradientSettings;
+    // (undocumented)
+    static get margin(): number;
+    readonly marginColor: ColorDef;
+    readonly mode: ThematicGradientMode;
+    readonly stepCount: number;
+    // (undocumented)
+    toJSON(): ThematicGradientSettingsProps;
+}
+
+// @beta (undocumented)
+export interface ThematicGradientSettingsProps {
+    colorScheme?: ThematicGradientColorScheme;
+    customKeys?: Gradient.KeyColorProps[];
+    marginColor?: ColorDefProps;
+    mode?: ThematicGradientMode;
+    stepCount?: number;
+}
+
 // @alpha
 export interface ThumbnailFormatProps {
     format: "jpeg" | "png";
@@ -6465,6 +6484,8 @@ export class ViewFlagOverrides {
     // (undocumented)
     setShowWeights(val: boolean): void;
     // (undocumented)
+    setThematicDisplay(val: boolean): void;
+    // (undocumented)
     setUseHlineMaterialColors(val: boolean): void;
     // (undocumented)
     setWhiteOnWhiteReversal(val: boolean): void;
@@ -6509,6 +6530,8 @@ export enum ViewFlagPresence {
     // (undocumented)
     Textures = 8,
     // (undocumented)
+    ThematicDisplay = 23,
+    // (undocumented)
     Transparency = 5,
     // (undocumented)
     Unused = 6,
@@ -6548,6 +6571,7 @@ export interface ViewFlagProps {
     noWhiteOnWhiteReversal?: boolean;
     renderMode?: number;
     shadows?: boolean;
+    thematicDisplay?: boolean;
     visEdges?: boolean;
 }
 
@@ -6592,6 +6616,7 @@ export class ViewFlags {
     sourceLights: boolean;
     styles: boolean;
     textures: boolean;
+    thematicDisplay: boolean;
     // (undocumented)
     toJSON(): ViewFlagProps;
     transparency: boolean;

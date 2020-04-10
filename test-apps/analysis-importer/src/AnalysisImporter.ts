@@ -5,7 +5,7 @@
 import { Id64, Id64Array, Id64String } from "@bentley/bentleyjs-core";
 import { Angle, AuxChannel, AuxChannelData, AuxChannelDataType, IModelJson, Point3d, Polyface, PolyfaceAuxData, PolyfaceBuilder, StrokeOptions } from "@bentley/geometry-core";
 import { CategorySelector, DefinitionModel, DisplayStyle3d, IModelDb, ModelSelector, OrthographicViewDefinition, PhysicalModel, SnapshotDb, SpatialCategory } from "@bentley/imodeljs-backend";
-import { AnalysisStyleProps, Code, ColorDef, GeometricElement3dProps, GeometryStreamBuilder, GeometryStreamProps, Gradient, RenderMode, ViewFlags } from "@bentley/imodeljs-common";
+import { AnalysisStyleProps, Code, ColorDef, GeometricElement3dProps, GeometryStreamBuilder, GeometryStreamProps, RenderMode, ViewFlags, ThematicGradientMode, ThematicGradientColorScheme, ThematicGradientSettingsProps, ThematicGradientSettings } from "@bentley/imodeljs-common";
 import { readFileSync } from "fs";
 import * as path from "path";
 
@@ -38,12 +38,12 @@ export class AnalysisImporter {
 
     for (const channel of polyface.data.auxData.channels) {
       if (channel.isScalar) {
-        const thematicSettings = new Gradient.ThematicSettings();
+        const thematicSettingsJSON: ThematicGradientSettingsProps = {};
         const displacementChannel = displacementChannels.get(channel.inputName!);
         /**  If this channel ends with "Height" assign it a "Sea to Mountain" Gradient rather than the default (green-red) gradient. */
         if (channel.name && channel.name.endsWith("Height")) {
-          thematicSettings.colorScheme = Gradient.ThematicColorScheme.SeaMountain;
-          thematicSettings.mode = Gradient.ThematicMode.SteppedWithDelimiter;
+          thematicSettingsJSON.colorScheme = ThematicGradientColorScheme.SeaMountain;
+          thematicSettingsJSON.mode = ThematicGradientMode.SteppedWithDelimiter;
         }
         /** create the [[AnalysisStyle]] and add to the array. */
         analysisStyleProps.push({
@@ -51,7 +51,7 @@ export class AnalysisImporter {
           displacementScale: displacementScaleValue,
           scalarRange: channel.scalarRange,
           scalarChannelName: channel.name,
-          scalarThematicSettings: thematicSettings,
+          scalarThematicSettings: ThematicGradientSettings.fromJSON(thematicSettingsJSON),
           inputName: channel.inputName,
         });
       }

@@ -52,6 +52,7 @@ import { ToolBarDropDown } from "./ToolBar";
 import { Settings } from "./FeatureOverrides";
 import { AmbientOcclusionEditor } from "./AmbientOcclusion";
 import { EnvironmentEditor } from "./EnvironmentEditor";
+import { ThematicDisplayEditor } from "./ThematicDisplay";
 
 type UpdateAttribute = (view: ViewState) => void;
 
@@ -302,6 +303,7 @@ export class ViewAttributes {
       this.addEdgeDisplay();
 
     this.addAmbientOcclusion();
+    this.addThematicDisplay();
 
     // Set initial states
     this.update();
@@ -491,6 +493,11 @@ export class ViewAttributes {
   private addAmbientOcclusion(): void {
     const ao = new AmbientOcclusionEditor(this._vp, this._element);
     this._updates.push((view) => ao.update(view));
+  }
+
+  private addThematicDisplay(): void {
+    const thematic = new ThematicDisplayEditor(this._vp, this._element);
+    this._updates.push((view) => thematic.update(view));
   }
 
   private getBackgroundMap(view: ViewState) { return view.displayStyle.settings.backgroundMap; }

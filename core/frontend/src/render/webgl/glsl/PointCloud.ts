@@ -10,7 +10,7 @@ import { addModelViewProjectionMatrix, addLineWeight } from "./Vertex";
 import { addUniformHiliter } from "./FeatureSymbology";
 import { ProgramBuilder, VertexShaderComponent, FragmentShaderComponent, VariableType } from "../ShaderBuilder";
 import { addColorPlanarClassifier, addHilitePlanarClassifier, addFeaturePlanarClassifier } from "./PlanarClassification";
-import { IsClassified, FeatureMode } from "../TechniqueFlags";
+import { IsClassified, FeatureMode, IsThematic } from "../TechniqueFlags";
 import { AttributeMap } from "../AttributeMap";
 import { TechniqueId } from "../TechniqueId";
 import { addViewportTransformation } from "./Viewport";
@@ -58,7 +58,7 @@ export function createPointCloudBuilder(classified: IsClassified, featureMode: F
   frag.set(FragmentShaderComponent.ComputeBaseColor, computeBaseColor);
   frag.set(FragmentShaderComponent.CheckForEarlyDiscard, roundPointDiscard);
   if (classified) {
-    addColorPlanarClassifier(builder, false);
+    addColorPlanarClassifier(builder, false, IsThematic.No);
     builder.frag.set(FragmentShaderComponent.CheckForDiscard, checkForClassifiedDiscard);
 
     if (FeatureMode.None !== featureMode)

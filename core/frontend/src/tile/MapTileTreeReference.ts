@@ -18,7 +18,7 @@ import {
 import { ScreenViewport } from "../Viewport";
 import { FeatureSymbology } from "../render/FeatureSymbology";
 
-const viewFlagOverrides = createDefaultViewFlagOverrides({ clipVolume: false });
+const viewFlagOverrides = createDefaultViewFlagOverrides({ clipVolume: false, thematic: false });
 
 /** A reference to a TileTree used for drawing tiled map graphics into a Viewport.
  * @internal

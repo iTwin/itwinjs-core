@@ -679,15 +679,12 @@ export class VertexShaderBuilder extends ShaderBuilder {
       addInstancedModelMatrixRTC(this);
       this.addDefine("MAT_MV", "g_mv");
       this.addDefine("MAT_MVP", "g_mvp");
-      this.addDefine("MAT_MODEL", "g_instancedModelMatrix");
     } else {
       this.addDefine("MAT_MV", "u_mv");
       this.addDefine("MAT_MVP", "u_mvp");
-      this.addDefine("MAT_MODEL", "u_modelMatrix");
     }
 
     addPosition(this, this.usesVertexTable);
-
   }
 
   public get(id: VertexShaderComponent): string | undefined { return this.getComponent(id); }
@@ -822,6 +819,9 @@ export const enum FragmentShaderComponent {
   // (Optional) Apply monochrome overrides to base color
   // vec4 applyMonochrome(vec4 baseColor)
   ApplyMonochrome,
+  // (Optional) Apply thematic display to base color. This happens before lighting and can alter the fragment color that is lit.
+  // vec4 applyThematicDisplay(vec4 baseColor)
+  ApplyThematicDisplay,
   // (Optional) Apply lighting to base color
   // vec4 applyLighting(vec4 baseColor)
   ApplyLighting,
@@ -952,6 +952,13 @@ export class FragmentShaderBuilder extends ShaderBuilder {
     if (undefined !== applyMaterialOverrides) {
       prelude.addFunction("vec4 applyMaterialOverrides(vec4 baseColor)", applyMaterialOverrides);
       main.addline(clipIndent + "  baseColor = applyMaterialOverrides(baseColor);");
+    }
+
+    const applyThematicDisplay = this.get(FragmentShaderComponent.ApplyThematicDisplay);
+    if (undefined !== applyThematicDisplay) {
+      prelude.addFunction("vec4 applyThematicDisplay(vec4 baseColor)", applyThematicDisplay);
+      main.addline(clipIndent + "  if (u_renderPass != kRenderPass_PlanarClassification)");
+      main.addline(clipIndent + "    baseColor = applyThematicDisplay(baseColor);");
     }
 
     const applyPlanarClassifier = this.get(FragmentShaderComponent.ApplyPlanarClassifier);

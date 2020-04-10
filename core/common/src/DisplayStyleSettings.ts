@@ -47,6 +47,10 @@ import {
   LightSettings,
   LightSettingsProps,
 } from "./LightSettings";
+import {
+  ThematicDisplay,
+  ThematicDisplayProps,
+} from "./ThematicDisplay";
 
 /** Describes the [[SubCategoryOverride]]s applied to a [[SubCategory]] by a [[DisplayStyle]].
  * @see [[DisplayStyleSettingsProps]]
@@ -149,6 +153,10 @@ export interface DisplayStyleSettingsProps {
 export interface DisplayStyle3dSettingsProps extends DisplayStyleSettingsProps {
   /** Settings controlling display of skybox and ground plane. */
   environment?: EnvironmentProps;
+  /** Settings controlling thematic display.
+   * @beta
+   */
+  thematic?: ThematicDisplayProps;
   /** Settings controlling display of visible and hidden edges.
    * @beta
    */
@@ -469,6 +477,7 @@ export class DisplayStyleSettings {
  * @beta
  */
 export class DisplayStyle3dSettings extends DisplayStyleSettings {
+  private _thematic: ThematicDisplay;
   private _hline: HiddenLine.Settings;
   private _ao: AmbientOcclusion.Settings;
   private _solarShadows: SolarShadowSettings;
@@ -479,6 +488,7 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
 
   public constructor(jsonProperties: { styles?: DisplayStyle3dSettingsProps }) {
     super(jsonProperties);
+    this._thematic = ThematicDisplay.fromJSON(this._json3d.thematic);
     this._hline = HiddenLine.Settings.fromJSON(this._json3d.hline);
     this._ao = AmbientOcclusion.Settings.fromJSON(this._json3d.ao);
     this._solarShadows = SolarShadowSettings.fromJSON(this._json3d.solarShadows);
@@ -517,6 +527,13 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
 
   /** @internal */
   public toJSON(): DisplayStyle3dSettingsProps { return this._json3d; }
+
+  /** The settings that control thematic display. */
+  public get thematic(): ThematicDisplay { return this._thematic; }
+  public set thematic(thematic: ThematicDisplay) {
+    this._thematic = thematic;
+    this._json3d.thematic = thematic.toJSON();
+  }
 
   /** The settings that control how visible and hidden edges are displayed.  */
   public get hiddenLineSettings(): HiddenLine.Settings { return this._hline; }

@@ -436,6 +436,13 @@ beta;TextureMapping
 beta;TextureMapProps
 beta;TextureMapUnits
 beta;TextureProps 
+beta;ThematicDisplay
+beta;ThematicDisplayMode
+beta;ThematicDisplayProps
+beta;ThematicGradientColorScheme
+beta;ThematicGradientMode
+beta;ThematicGradientSettings 
+beta;ThematicGradientSettingsProps
 alpha;ThumbnailFormatProps
 alpha;ThumbnailProps 
 internal;TileContentDescription 

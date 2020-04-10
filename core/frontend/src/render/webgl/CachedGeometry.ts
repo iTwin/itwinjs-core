@@ -106,6 +106,8 @@ export abstract class CachedGeometry implements WebGLDisposable, RenderMemory.Co
   public get viewIndependentOrigin(): Point3d | undefined { return undefined; }
   public get isViewIndependent(): boolean { return undefined !== this.viewIndependentOrigin; }
 
+  public get supportsThematicDisplay() { return false; }
+
   public get isEdge(): boolean {
     switch (this.renderOrder) {
       case RenderOrder.Edge:

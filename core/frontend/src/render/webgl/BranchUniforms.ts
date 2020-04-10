@@ -60,6 +60,7 @@ export class BranchUniforms {
   // GPU state
   private readonly _mv32 = new Matrix4();
   private readonly _mvp32 = new Matrix4();
+  private _modelToWorld = new Float32Array([0.0, 0.0, 0.0]);
 
   // Working state
   private readonly _scratchTransform = Transform.createIdentity();
@@ -121,6 +122,11 @@ export class BranchUniforms {
       uniform.setMatrix4(this._mvp32);
   }
 
+  public bindModelToWorldTransform(uniform: UniformHandle, geom: CachedGeometry, isViewCoords: boolean) {
+    if (this.update(uniform, geom, isViewCoords))
+      uniform.setUniform3fv(this._modelToWorld);
+  }
+
   private update(uniform: UniformHandle, geometry: CachedGeometry, isViewCoords: boolean): boolean {
     const uniforms = this._target.uniforms[isViewCoords ? "viewRect" : "frustum"];
     if (!sync(uniforms, this))
@@ -170,6 +176,12 @@ export class BranchUniforms {
           mv = mv.multiplyTransformTransform(modelMatrix, mv);
         }
       }
+    }
+
+    if (this._target.wantThematicDisplay) {
+      this._modelToWorld[0] = modelMatrix.origin.x;
+      this._modelToWorld[1] = modelMatrix.origin.y;
+      this._modelToWorld[2] = modelMatrix.origin.z;
     }
 
     Matrix4d.createTransform(mv, this._mv);

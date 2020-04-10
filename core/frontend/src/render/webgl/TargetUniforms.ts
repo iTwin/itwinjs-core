@@ -22,6 +22,7 @@ import { BatchUniforms } from "./BatchUniforms";
 import { BranchUniforms } from "./BranchUniforms";
 import { ShadowUniforms } from "./ShadowUniforms";
 import { LightingUniforms } from "./LightingUniforms";
+import { ThematicUniforms } from "./ThematicUniforms";
 import { UniformHandle } from "./Handle";
 import { Matrix4 } from "./Matrix";
 import { Target } from "./Target";
@@ -34,8 +35,8 @@ import {
 
 class PixelWidthFactor {
   /** The pixel width factor depends on both the frustum and the view rect. */
-  private readonly _rectSync: SyncObserver = { };
-  private readonly _frustumSync: SyncObserver = { };
+  private readonly _rectSync: SyncObserver = {};
+  private readonly _frustumSync: SyncObserver = {};
   private _factor = 0;
   public syncKey = 0;
 
@@ -136,6 +137,7 @@ export class TargetUniforms {
   public readonly hilite = new HiliteUniforms();
   public readonly style = new StyleUniforms();
   public readonly lights = new LightingUniforms();
+  public readonly thematic = new ThematicUniforms();
   public readonly branch: BranchUniforms;
   public readonly batch: BatchUniforms;
   public readonly shadow: ShadowUniforms;
