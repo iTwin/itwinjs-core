@@ -51,6 +51,7 @@ export interface DefaultNativePlatformProps {
   taskAllocationsMap: { [priority: number]: number };
   mode: PresentationManagerMode;
   isChangeTrackingEnabled: boolean;
+  cacheDirectory: string;
 }
 
 /** @internal */
@@ -61,7 +62,7 @@ export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): 
     private _nativeAddon: IModelJsNative.ECPresentationManager;
     public constructor() {
       const mode = (props.mode === PresentationManagerMode.ReadOnly) ? IModelJsNative.ECPresentationManagerMode.ReadOnly : IModelJsNative.ECPresentationManagerMode.ReadWrite;
-      this._nativeAddon = new IModelHost.platform.ECPresentationManager(props.id, props.localeDirectories, props.taskAllocationsMap, mode, props.isChangeTrackingEnabled);
+      this._nativeAddon = new IModelHost.platform.ECPresentationManager(props.id, props.localeDirectories, props.taskAllocationsMap, mode, props.isChangeTrackingEnabled, props.cacheDirectory);
     }
     private getStatus(responseStatus: IModelJsNative.ECPresentationStatus): PresentationStatus {
       switch (responseStatus) {

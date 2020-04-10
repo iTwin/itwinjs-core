@@ -6,6 +6,7 @@
 import * as React from "react";
 import { expect } from "chai";
 import * as sinon from "sinon";
+import * as path from "path";
 import { render, waitForElement, cleanup, fireEvent } from "@testing-library/react";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { createRandomId } from "@bentley/presentation-common/lib/test/_helpers/random";
@@ -1539,7 +1540,11 @@ describe("ModelsTree", () => {
     const testIModelPath = "src/test/test-data/JoesHouse.bim";
 
     before(async () => {
-      await initializePresentationTesting();
+      await initializePresentationTesting({
+        backendProps: {
+          cacheDirectory: path.join("lib", "test", "cache"),
+        },
+      });
     });
 
     after(() => {
