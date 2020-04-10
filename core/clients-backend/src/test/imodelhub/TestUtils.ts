@@ -45,7 +45,7 @@ function configMockSettings() {
   Config.App.set("imjs_test_manager_user_name", "test");
   Config.App.set("imjs_test_manager_user_password", "test");
 }
-export function createFileHanlder(useDownloadBuffer?: boolean) {
+export function createFileHandler(useDownloadBuffer?: boolean) {
   if (MobileRpcConfiguration.isMobileBackend) {
     return new IOSAzureFileHandler();
   } else if (TestConfig.enableIModelBank && !TestConfig.enableMocks) {
@@ -169,7 +169,7 @@ let _imodelHubClient: IModelHubClient;
 export function getImodelHubClient() {
   if (_imodelHubClient !== undefined)
     return _imodelHubClient;
-  _imodelHubClient = new IModelHubClient(createFileHanlder());
+  _imodelHubClient = new IModelHubClient(createFileHandler());
   if (!TestConfig.enableMocks) {
     _imodelHubClient.requestOptions.setCustomOptions(requestBehaviorOptions.toCustomRequestOptions());
   }
@@ -384,13 +384,18 @@ export function mockGetBriefcase(imodelId: GuidString, ...briefcases: Briefcase[
   ResponseBuilder.mockResponse(IModelHubUrlMock.getUrl(), RequestType.Get, requestPath, requestResponse);
 }
 
-export function mockCreateBriefcase(imodelId: GuidString, id: number) {
+export function mockCreateBriefcase(imodelId: GuidString, id?: number, briefcase: Briefcase = ResponseBuilder.generateObject<Briefcase>(Briefcase)) {
   if (!TestConfig.enableMocks)
     return;
 
   const requestPath = createRequestUrl(ScopeType.iModel, imodelId, "Briefcase");
-  const postBody = ResponseBuilder.generatePostBody<Briefcase>(ResponseBuilder.generateObject<Briefcase>(Briefcase));
-  const requestResponse = ResponseBuilder.generatePostResponse<Briefcase>(generateBriefcase(id));
+  const postBody = ResponseBuilder.generatePostBody<Briefcase>(briefcase);
+
+  if (id !== undefined) {
+    briefcase.briefcaseId = id;
+    briefcase.wsgId = id!.toString();
+  }
+  const requestResponse = ResponseBuilder.generatePostResponse<Briefcase>(briefcase);
   ResponseBuilder.mockResponse(IModelHubUrlMock.getUrl(), RequestType.Post, requestPath, requestResponse, 1, postBody);
 }
 
@@ -843,7 +848,7 @@ export async function createChangeSets(requestContext: AuthorizedClientRequestCo
         bridgePropertiesExist = true;
     });
 
-    // Last check - if existing ChangeSets do not contain bridge properites check if it is possible to create addional ChangeSet.
+    // Last check - if existing ChangeSets do not contain bridge properties check if it is possible to create additional ChangeSet.
     if (!bridgePropertiesExist && existingChangeSets.length + 1 > maxCount)
       throw Error(`Not enough prepared ChangeSets to create additional one with bridge properties.`);
     else if (!bridgePropertiesExist)

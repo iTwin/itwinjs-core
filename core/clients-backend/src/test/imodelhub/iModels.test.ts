@@ -396,7 +396,7 @@ describe("iModelHub iModelsHandler", () => {
   });
 
   it("should download a Seed File with Buffering (#iModelBank)", async () => {
-    imodelClient.setFileHandler(utils.createFileHanlder(true));
+    imodelClient.setFileHandler(utils.createFileHandler(true));
     mockGetSeedFile(imodelId, true);
     const downloadToPathname: string = path.join(utils.workDir, imodelId.toString());
     utils.mockFileResponse();
@@ -406,7 +406,7 @@ describe("iModelHub iModelsHandler", () => {
     progressTracker.check();
     fs.existsSync(downloadToPathname).should.be.equal(true);
 
-    imodelClient.setFileHandler(utils.createFileHanlder());
+    imodelClient.setFileHandler(utils.createFileHandler());
   });
 
   it("should fail downloading the Seed File with no file handler", async () => {

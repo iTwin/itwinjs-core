@@ -7,7 +7,10 @@ import * as fs from "fs";
 import * as path from "path";
 
 import { IModelHubStatus, GuidString } from "@bentley/bentleyjs-core";
-import { AccessToken, IModelHubClient, Briefcase, BriefcaseQuery, IModelHubClientError, IModelClient, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import {
+  AccessToken, IModelHubClient, Briefcase, BriefcaseQuery, ChangeSet,
+  IModelHubClientError, IModelClient, AuthorizedClientRequestContext,
+} from "@bentley/imodeljs-clients";
 import { TestUsers } from "@bentley/oidc-signin-tool";
 import { TestConfig } from "../TestConfig";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
@@ -47,6 +50,15 @@ function mockGetBriefcaseRequest(imodelId: GuidString, briefcase: Briefcase, sel
   ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Get, requestPath, requestResponse);
 }
 
+function mockUpdateBriefcase(imodelId: GuidString, briefcase: Briefcase) {
+  if (!TestConfig.enableMocks)
+    return;
+
+  const requestPath = utils.createRequestUrl(ScopeType.iModel, imodelId, "Briefcase", `${briefcase.briefcaseId!}`);
+  const requestResponse = ResponseBuilder.generatePostResponse(briefcase);
+  ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Post, requestPath, requestResponse);
+}
+
 function mockDeleteBriefcase(imodelId: GuidString, briefcaseId: number) {
   if (!TestConfig.enableMocks)
     return;
@@ -74,7 +86,7 @@ describe("iModelHub BriefcaseHandler", () => {
     if (!TestConfig.enableMocks) {
       const briefcases = await iModelClient.briefcases.get(requestContext, imodelId, new BriefcaseQuery().ownedByMe());
       let briefcasesCount = briefcases.length;
-      if (briefcasesCount > 19) {
+      if (briefcasesCount > 18) {
         // Ensure that tests can still acquire briefcases
         for (const briefcase of briefcases) {
           await iModelClient.briefcases.delete(requestContext, imodelId, briefcase.briefcaseId!);
@@ -208,6 +220,51 @@ describe("iModelHub BriefcaseHandler", () => {
     }
   });
 
+  it("should get and extend briefcase expiration date", async () => {
+    const currentDate = new Date().getDate();
+    const dateAfter30Days = new Date().setDate(currentDate + 30);
+    const dateAfter31Days = new Date().setDate(currentDate + 31);
+
+    let briefcase: Briefcase = utils.generateBriefcase(briefcaseId);
+    briefcase.acquiredDate = new Date().toISOString();
+    briefcase.expirationDate = new Date(dateAfter30Days).toISOString();
+
+    mockGetBriefcaseById(imodelId, briefcase);
+    briefcase = (await iModelClient.briefcases.get(requestContext, imodelId, new BriefcaseQuery().byId(briefcase.briefcaseId!)))[0];
+    chai.expect(Date.parse(briefcase.expirationDate!)).to.be.within(Date.parse(briefcase.acquiredDate!), dateAfter30Days);
+
+    mockUpdateBriefcase(imodelId, briefcase);
+    briefcase = await iModelClient.briefcases.update(requestContext, imodelId, briefcase);
+    chai.expect(Date.parse(briefcase.expirationDate!)).to.be.within(dateAfter30Days, dateAfter31Days);
+  });
+
+  it("should get and set briefcase DeviceName and ChangeSetIdOnDevice", async () => {
+    // DeviceName can be set when acquiring a briefcase
+    let deviceName = "iModeljsBriefcasesTest";
+    let briefcase: Briefcase = utils.generateBriefcase(briefcaseId);
+    briefcase.deviceName = deviceName;
+    utils.mockCreateBriefcase(imodelId, undefined, briefcase);
+    briefcase = await iModelClient.briefcases.create(requestContext, imodelId, briefcase);
+
+    mockGetBriefcaseById(imodelId, briefcase);
+    briefcase = (await iModelClient.briefcases.get(requestContext, imodelId, new BriefcaseQuery().byId(briefcase.briefcaseId!)))[0];
+    chai.expect(briefcase.deviceName).to.be.equals(deviceName);
+    chai.expect(briefcase.changeSetIdOnDevice).to.be.equals(undefined);
+
+    // DeviceName can be changed and ChangeSetIdOnDevice can be set when extending a briefcase
+    const changeSet: ChangeSet = (await utils.createChangeSets(requestContext, imodelId, briefcase, 0, 1))[0];
+    deviceName += briefcase.briefcaseId;
+    briefcase.deviceName = deviceName;
+    briefcase.changeSetIdOnDevice = changeSet.id;
+    mockUpdateBriefcase(imodelId, briefcase);
+    briefcase = await iModelClient.briefcases.update(requestContext, imodelId, briefcase);
+
+    mockGetBriefcaseById(imodelId, briefcase);
+    briefcase = (await iModelClient.briefcases.get(requestContext, imodelId, new BriefcaseQuery().byId(briefcase.briefcaseId!)))[0];
+    chai.expect(briefcase.deviceName).to.be.equals(deviceName);
+    chai.expect(briefcase.changeSetIdOnDevice).to.be.equals(changeSet.id);
+  });
+
   it("should download a Briefcase (#iModelBank)", async () => {
     mockGetBriefcaseRequest(imodelId, utils.generateBriefcase(briefcaseId), true, false);
     const briefcase: Briefcase = (await iModelClient.briefcases.get(requestContext, imodelId, new BriefcaseQuery().byId(briefcaseId).selectDownloadUrl()))[0];
@@ -224,8 +281,8 @@ describe("iModelHub BriefcaseHandler", () => {
     fs.existsSync(downloadToPathname).should.be.equal(true);
   });
 
-  it("should download a Briefcase with Bufferring (#iModelBank)", async () => {
-    iModelClient.setFileHandler(utils.createFileHanlder(true));
+  it("should download a Briefcase with Buffering (#iModelBank)", async () => {
+    iModelClient.setFileHandler(utils.createFileHandler(true));
     mockGetBriefcaseRequest(imodelId, utils.generateBriefcase(briefcaseId), true, false);
     const briefcase: Briefcase = (await iModelClient.briefcases.get(requestContext, imodelId, new BriefcaseQuery().byId(briefcaseId).selectDownloadUrl()))[0];
     chai.assert(briefcase.downloadUrl);
@@ -240,7 +297,7 @@ describe("iModelHub BriefcaseHandler", () => {
     progressTracker.check();
     fs.existsSync(downloadToPathname).should.be.equal(true);
 
-    iModelClient.setFileHandler(utils.createFileHanlder());
+    iModelClient.setFileHandler(utils.createFileHandler());
   });
 
   it("should get error 409 and fail to get briefcase (#unit)", async () => {

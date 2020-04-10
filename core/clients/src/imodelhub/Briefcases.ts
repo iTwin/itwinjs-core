@@ -72,6 +72,18 @@ export class Briefcase extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.AcquiredDate")
   public acquiredDate?: string;
 
+  /** Date until this briefcase is valid. */
+  @ECJsonTypeMap.propertyToJson("wsg", "properties.ExpirationDate")
+  public expirationDate?: string;
+
+  /** Name of the device on which this briefcase is downloaded. */
+  @ECJsonTypeMap.propertyToJson("wsg", "properties.DeviceName")
+  public deviceName?: string;
+
+  /** Id of the latest [[ChangeSet]] on device. */
+  @ECJsonTypeMap.propertyToJson("wsg", "properties.ChangeSetIdOnDevice")
+  public changeSetIdOnDevice?: string;
+
   /** Shows whether the user who acquired this briefcase can perform write operations. */
   @ECJsonTypeMap.propertyToJson("wsg", "properties.IsReadOnly")
   @ECJsonTypeMap.propertyToJson("ecdb", "isReadOnly")
@@ -189,22 +201,43 @@ export class BriefcaseHandler {
    * A briefcase is automatically acquired when calling [BriefcaseDb.open]($backend) or [BriefcaseDb.create]($backend). You should use this method only when you want to acquire the briefcaseId without downloading the file. If you need just the download link, you can call [[BriefcaseHandler.get]] with [[BriefcaseQuery.selectDownloadUrl]].
    * @param requestContext The client request context
    * @param iModelId Id of the iModel. See [[HubIModel]].
+   * @param briefcase Information of the Briefcase to acquire.
    * @returns The acquired Briefcase instance.
    * @throws [[IModelHubError]] with [IModelHubStatus.MaximumNumberOfBriefcasesPerUser]($bentley) or [IModelHubStatus.MaximumNumberOfBriefcasesPerUserPerMinute]($bentley) if a limit of Briefcases for that user was reached. Users should use the Briefcases they have previously acquired. If that is no longer possible, they should delete them, to be able to acquire new ones.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async create(requestContext: AuthorizedClientRequestContext, iModelId: GuidString): Promise<Briefcase> {
+  public async create(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, briefcase: Briefcase = new Briefcase()): Promise<Briefcase> {
     requestContext.enter();
     Logger.logInfo(loggerCategory, "Acquiring briefcase for iModel", () => ({ iModelId }));
     ArgumentCheck.defined("requestContext", requestContext);
     ArgumentCheck.validGuid("iModelId", iModelId);
 
-    let briefcase: Briefcase = new Briefcase();
-
     briefcase = await this._handler.postInstance<Briefcase>(requestContext, Briefcase, this.getRelativeUrl(iModelId), briefcase);
     requestContext.enter();
     Logger.logTrace(loggerCategory, "Acquired briefcase for iModel", () => briefcase);
     return briefcase;
+  }
+
+  /** Update the [[Briefcase]] of an iModel. Only [[Briefcase.deviceName]] and [[Briefcase.changeSetIdOnDevice]] can be changed when updating the briefcase.
+   * Briefcase expiration date is also extended with each update request for a configured period of time (default is 30 days).
+   * @param requestContext The client request context.
+   * @param iModelId Id of the iModel. See [[HubIModel]].
+   * @param briefcase Briefcase to update.
+   * @returns Updated Briefcase instance from iModelHub.
+   * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
+   */
+  public async update(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, briefcase: Briefcase): Promise<Briefcase> {
+    requestContext.enter();
+    Logger.logInfo(loggerCategory, "Updating briefcase for iModel", () => ({ iModelId, briefcase }));
+    ArgumentCheck.defined("requestContext", requestContext);
+    ArgumentCheck.validGuid("iModelId", iModelId);
+    const briefcaseId = parseInt(briefcase.wsgId, 10);
+    ArgumentCheck.validBriefcaseId("briefcase.wsgId", briefcaseId);
+
+    const updatedBriefcase = await this._handler.postInstance<Briefcase>(requestContext, Briefcase, this.getRelativeUrl(iModelId, briefcaseId), briefcase);
+    requestContext.enter();
+    Logger.logTrace(loggerCategory, "Updated briefcase for iModel", () => ({ iModelId, briefcase }));
+    return updatedBriefcase;
   }
 
   /** Delete the [[Briefcase]] from iModelHub. This frees up the id to be reused later and allows user to acquire additional briefcases if one of the briefcase limits was reached.
