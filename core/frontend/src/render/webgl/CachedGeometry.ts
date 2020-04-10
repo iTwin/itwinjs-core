@@ -30,6 +30,7 @@ import { TerrainMeshGeometry } from "./TerrainMesh";
 import { AttributeMap } from "./AttributeMap";
 import { WebGLDisposable } from "./Disposable";
 import { fromSumOf, FrustumUniformType } from "./FrustumUniforms";
+import { PointCloudGeometry } from "./PointCloud";
 
 const scratchVec3a = new Vector3d();
 const scratchVec3b = new Vector3d();
@@ -58,6 +59,7 @@ export abstract class CachedGeometry implements WebGLDisposable, RenderMemory.Co
   public get asSilhouette(): SilhouetteEdgeGeometry | undefined { return undefined; }
   public get asInstanced(): InstancedGeometry | undefined { return undefined; }
   public get isInstanced() { return undefined !== this.asInstanced; }
+  public get asPointCloud(): PointCloudGeometry | undefined { return undefined; }
   public get alwaysRenderTranslucent(): boolean { return false; }
   public get allowColorOverride(): boolean { return true; }
 

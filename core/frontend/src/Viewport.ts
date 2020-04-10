@@ -1682,7 +1682,7 @@ export abstract class Viewport implements IDisposable {
    */
   public get numSelectedTiles(): number {
     const tiles = IModelApp.tileAdmin.getTilesForViewport(this);
-    return undefined !== tiles ? tiles.selected.size : 0;
+    return undefined !== tiles ? tiles.selected.size + tiles.external.selected : 0;
   }
 
   /** The number of tiles which were ready and met the desired level-of-detail for display in the view as of the most recently-drawn frame.
@@ -1694,7 +1694,7 @@ export abstract class Viewport implements IDisposable {
    */
   public get numReadyTiles(): number {
     const tiles = IModelApp.tileAdmin.getTilesForViewport(this);
-    return undefined !== tiles ? tiles.ready.size : 0;
+    return undefined !== tiles ? tiles.ready.size + tiles.external.ready : 0;
   }
 
   /** @internal */

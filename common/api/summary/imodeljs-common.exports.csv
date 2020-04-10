@@ -289,6 +289,7 @@ internal;OpenAPIResponse
 internal;OpenAPIResponses
 internal;OpenAPISchema
 internal;OPERATION: unique symbol
+alpha;OrbitGtBlobProps
 internal;OverriddenBy
 internal;PackedFeature
 internal;PackedFeatureTable

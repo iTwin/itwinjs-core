@@ -58,3 +58,4 @@ export * from "./IModelTileTree";
 export * from "./PrimaryTileTree";
 export * from "./ClassifierTileTree";
 export * from "./ViewAttachmentTileTree";
+export * from "./OrbitGtTileTree";

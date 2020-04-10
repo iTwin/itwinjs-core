@@ -1334,6 +1334,8 @@ export interface ContextRealityModelProps {
     description?: string;
     // (undocumented)
     name?: string;
+    // @alpha (undocumented)
+    orbitGtBlob?: OrbitGtBlobProps;
     // (undocumented)
     tilesetUrl: string;
 }
@@ -4047,6 +4049,18 @@ export interface OpenAPISchema {
 // @internal (undocumented)
 export const OPERATION: unique symbol;
 
+// @alpha
+export interface OrbitGtBlobProps {
+    // (undocumented)
+    accountName: string;
+    // (undocumented)
+    blobFileName: string;
+    // (undocumented)
+    containerName: string;
+    // (undocumented)
+    sasToken: string;
+}
+
 // @internal
 export enum OverriddenBy {
     // (undocumented)
@@ -4426,14 +4440,14 @@ export class QParams2d {
     clone(out?: QParams2d): QParams2d;
     // (undocumented)
     copyFrom(src: QParams2d): void;
-    static fromNormalizedRange(): QParams2d;
-    static fromRange(range: Range2d, out?: QParams2d): QParams2d;
-    static fromZeroToOne(): QParams2d;
+    static fromNormalizedRange(rangeScale?: number): QParams2d;
+    static fromRange(range: Range2d, out?: QParams2d, rangeScale?: number): QParams2d;
+    static fromZeroToOne(rangeScale?: number): QParams2d;
     // (undocumented)
     readonly origin: Point2d;
     // (undocumented)
     readonly scale: Point2d;
-    setFromRange(range: Range2d): void;
+    setFromRange(range: Range2d, rangeScale?: number): void;
 }
 
 // @internal
@@ -4442,16 +4456,16 @@ export class QParams3d {
     clone(out?: QParams3d): QParams3d;
     // (undocumented)
     copyFrom(src: QParams3d): void;
-    static fromNormalizedRange(): QParams3d;
+    static fromNormalizedRange(rangeScale?: number): QParams3d;
     static fromOriginAndScale(origin: Point3d, scale: Point3d, out?: QParams3d): QParams3d;
-    static fromRange(range: Range3d, out?: QParams3d): QParams3d;
-    static fromZeroToOne(): QParams3d;
+    static fromRange(range: Range3d, out?: QParams3d, rangeScale?: number): QParams3d;
+    static fromZeroToOne(rangeScale?: number): QParams3d;
     // (undocumented)
     readonly origin: Point3d;
     // (undocumented)
     readonly scale: Point3d;
     setFromOriginAndScale(origin: Point3d, scale: Point3d): void;
-    setFromRange(range: Range3d): void;
+    setFromRange(range: Range3d, rangeScale?: number): void;
 }
 
 // @internal
@@ -4543,17 +4557,19 @@ export class QPoint3dList {
 // @internal
 export namespace Quantization {
     const // (undocumented)
-    rangeScale = 65535;
+    rangeScale16 = 65535;
+    const // (undocumented)
+    rangeScale8 = 255;
     // (undocumented)
-    export function computeScale(extent: number): number;
+    export function computeScale(extent: number, rangeScale?: number): number;
     // (undocumented)
-    export function isInRange(qpos: number): boolean;
+    export function isInRange(qpos: number, rangeScale?: number): boolean;
     // (undocumented)
-    export function isQuantizable(pos: number, origin: number, scale: number): boolean;
+    export function isQuantizable(pos: number, origin: number, scale: number, rangeScale?: number): boolean;
     // (undocumented)
     export function isQuantized(qpos: number): boolean;
     // (undocumented)
-    export function quantize(pos: number, origin: number, scale: number): number;
+    export function quantize(pos: number, origin: number, scale: number, rangeScale?: number): number;
     // (undocumented)
     export function unquantize(qpos: number, origin: number, scale: number): number;
 }

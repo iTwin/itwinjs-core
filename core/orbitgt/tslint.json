@@ -1,0 +1,6 @@
+// No rules for now as the transpiled code does not meet many of our usual rules.
+{
+  "rules": {
+    "no-arg": true
+  }
+}

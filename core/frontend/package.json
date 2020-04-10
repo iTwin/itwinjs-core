@@ -40,7 +40,8 @@
     "@bentley/imodeljs-common": "^2.0.0-dev.63",
     "@bentley/imodeljs-i18n": "^2.0.0-dev.63",
     "@bentley/imodeljs-quantity": "^2.0.0-dev.63",
-    "@bentley/webgl-compatibility": "2.0.0-dev.63"
+    "@bentley/webgl-compatibility": "2.0.0-dev.63",
+    "@bentley/orbitgt-core": "2.0.0-dev.63"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
@@ -84,7 +85,8 @@
     "js-base64": "^2.4.5",
     "ldclient-js": "^2.6.0",
     "oidc-client": "^1.9.1",
-    "semver": "^5.5.0"
+    "semver": "^5.5.0",
+    "@azure/storage-blob": "10.4.0"
   },
   "nyc": {
     "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc"

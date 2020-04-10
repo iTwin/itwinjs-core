@@ -4,7 +4,7 @@
   "packages": [
     {
       "name": "@azure/storage-blob",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [ "backend", "common", "frontend" ]
     },
     {
       "name": "@babel/core",
@@ -99,6 +99,10 @@
       "allowedCategories": [ "backend" ]
     },
     {
+      "name": "@bentley/imodeljs-orbitgt",
+      "allowedCategories": [ "frontend", "internal" ]
+    },
+    {
       "name": "@bentley/imodeljs-quantity",
       "allowedCategories": [ "extensions", "frontend", "internal", "tools" ]
     },
@@ -109,6 +113,10 @@
     {
       "name": "@bentley/oidc-signin-tool",
       "allowedCategories": [ "backend", "common", "extensions", "internal", "tools" ]
+    },
+    {
+      "name": "@bentley/orbitgt-core",
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "@bentley/perf-tools",
@@ -161,6 +169,10 @@
     {
       "name": "@bentley/webgl-compatibility",
       "allowedCategories": [ "frontend", "internal" ]
+    },
+    {
+      "name": "@bentley/webpack-tools",
+      "allowedCategories": [ "common" ]
     },
     {
       "name": "@bentley/webpack-tools-core",

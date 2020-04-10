@@ -6,40 +6,73 @@
  * @module WebGL
  */
 
-import { addModelViewProjectionMatrix } from "./Vertex";
+import { addModelViewProjectionMatrix, addLineWeight } from "./Vertex";
 import { addUniformHiliter } from "./FeatureSymbology";
 import { ProgramBuilder, VertexShaderComponent, FragmentShaderComponent, VariableType } from "../ShaderBuilder";
 import { addColorPlanarClassifier, addHilitePlanarClassifier, addFeaturePlanarClassifier } from "./PlanarClassification";
 import { IsClassified, FeatureMode } from "../TechniqueFlags";
 import { AttributeMap } from "../AttributeMap";
 import { TechniqueId } from "../TechniqueId";
+import { addViewportTransformation } from "./Viewport";
 
-const computePosition = "gl_PointSize = 1.0; return MAT_MVP * rawPos;";
-const computeColor = "return vec4(a_color, 1.0);";
+const computeColor = "return (u_pointCloudParams.x == 1.0)?  vec4(a_color.z, a_color.y, a_color.x, 1.0) : vec4(a_color, 1.0);";
 const computeBaseColor = "return v_color;";
+
+const roundPointDiscard = `
+   vec2 pointXY = (2.0 * gl_PointCoord - 1.0);
+   return dot(pointXY, pointXY) > 1.0;
+`;
+
 const checkForClassifiedDiscard = "return baseColor.a == 0.0;";
+
+const computePosition = `
+gl_PointSize = 1.0;
+vec4 pos = MAT_MVP * rawPos;
+
+if (u_lineWeight < 0.0 && pos.w > 0.0) {
+  mat4 toView = u_viewportTransformation * MAT_MVP;
+  float scale = length(toView[0].xyz);
+  gl_PointSize = clamp (- u_lineWeight * scale / pos.w, 2.0, 20.0);
+  }
+  return pos;
+`;
 
 function createBuilder(): ProgramBuilder {
   const builder = new ProgramBuilder(AttributeMap.findAttributeMap(TechniqueId.PointCloud, false));
   const vert = builder.vert;
+  addLineWeight(vert);
+  addViewportTransformation(vert);
   vert.set(VertexShaderComponent.ComputePosition, computePosition);
   addModelViewProjectionMatrix(vert);
 
   return builder;
 }
 
+const scratchPointCloudParams = new Float32Array(2);
 /** @internal */
 export function createPointCloudBuilder(classified: IsClassified, featureMode: FeatureMode): ProgramBuilder {
   const builder = createBuilder();
 
   builder.addFunctionComputedVarying("v_color", VariableType.Vec4, "computeNonUniformColor", computeColor);
-  builder.frag.set(FragmentShaderComponent.ComputeBaseColor, computeBaseColor);
+  const frag = builder.frag;
+  frag.set(FragmentShaderComponent.ComputeBaseColor, computeBaseColor);
+  frag.set(FragmentShaderComponent.CheckForEarlyDiscard, roundPointDiscard);
   if (classified) {
     addColorPlanarClassifier(builder, false);
     builder.frag.set(FragmentShaderComponent.CheckForDiscard, checkForClassifiedDiscard);
+
     if (FeatureMode.None !== featureMode)
       addFeaturePlanarClassifier(builder);
   }
+
+  builder.vert.addUniform("u_pointCloudParams", VariableType.Vec2, (prog) => {
+    prog.addGraphicUniform("u_pointCloudParams", (uniform, params) => {
+      const pointCloud = params.geometry.asPointCloud!;
+      scratchPointCloudParams[0] = pointCloud.colorIsBgr ? 1 : 0;      // Volume classifier, by element color.
+      scratchPointCloudParams[1] = pointCloud.minimumPointSize;
+      uniform.setUniform2fv(scratchPointCloudParams);
+    });
+  });
 
   return builder;
 }
