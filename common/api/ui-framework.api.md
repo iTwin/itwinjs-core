@@ -1518,6 +1518,9 @@ export interface DialogRendererProps {
     dialogManager: DialogManagerBase;
 }
 
+// @internal
+export function DockedStatusBarItem(props: StatusBarItemProps): JSX.Element;
+
 // @beta
 export class DragDropLayerChangedEvent extends UiEvent<DragDropLayerChangedEventArgs> {
 }
@@ -4297,7 +4300,7 @@ export function StatusBarCenterSection(props: CommonDivProps): JSX.Element;
 export function StatusBarComposer(props: StatusBarComposerProps): JSX.Element;
 
 // @beta
-export interface StatusBarComposerProps {
+export interface StatusBarComposerProps extends CommonProps {
     centerClassName?: string;
     items: CommonStatusBarItem[];
     leftClassName?: string;
@@ -4314,6 +4317,11 @@ export type StatusBarFieldId = string | null;
 // @beta
 export interface StatusBarItem extends AbstractStatusBarCustomItem {
     readonly reactNode: React.ReactNode;
+}
+
+// @internal
+export interface StatusBarItemProps extends CommonProps {
+    children?: React.ReactNode;
 }
 
 // @beta @deprecated
@@ -5109,6 +5117,9 @@ export interface UserProfileBackstageItemProps extends CommonProps {
 
 // @internal (undocumented)
 export function useSaveFrontstageSettings(frontstageState: FrontstageState_2): void;
+
+// @internal (undocumented)
+export function useStatusBarEntry(): DockedStatusBarEntryContextArg;
 
 // @internal (undocumented)
 export function useToolSettings(): ToolSettingsEntry[] | undefined;

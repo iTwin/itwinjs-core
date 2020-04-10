@@ -40,3 +40,14 @@
   flex-direction: row;
   justify-content: flex-end;
 }
+
+.uifw-statusbar-docked {
+  width: 100%;
+}
+
+.uifw-statusbar-item-container {
+  display: flex;
+  flex-direction: row;
+  align-content: center;
+  width: fit-content;
+}

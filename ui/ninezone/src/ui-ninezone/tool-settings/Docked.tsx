@@ -170,7 +170,7 @@ const DockedToolSettingsEntry = React.memo<DockedToolSettingsEntryProps>(functio
   );
 });
 
-/** Returns key of a child. Must be used along with React.Children.toArray to preserve the semanticts of children.
+/** Returns key of a child. Must be used along with React.Children.toArray to preserve the semantics of children.
  * @internal
  */
 export function getChildKey(child: React.ReactNode, index: number) {
