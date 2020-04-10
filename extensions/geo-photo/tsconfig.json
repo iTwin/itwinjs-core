@@ -9,7 +9,8 @@
     "outDir": "./lib",
     "jsx": "react",
     "types": [
-      "@bentley/extension-webpack-tools"
+      "@bentley/extension-webpack-tools",
+      "mocha"
     ]
   },
   "include": [

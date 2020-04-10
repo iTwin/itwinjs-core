@@ -6,7 +6,8 @@
   "license": "MIT",
   "scripts": {
     "prebuild": "npm run pseudolocalize && npm run copy:assets",
-    "build": "npm run prebuild && extension-webpack-tools build -s ./src/geoPhoto.ts -o ./lib/extension",
+    "build": "npm run prebuild && tsc 1>&2 && npm run build:extension",
+    "build:extension": "extension-webpack-tools build -s ./src/geoPhoto.ts -o ./lib/extension",
     "clean": "rimraf lib .rush",
     "copy:assets": "cpx \"./src/public/locales/**/*\" ./lib/extension/locales/",
     "cover": "",
@@ -52,8 +53,7 @@
     "typescript": "~3.7.4",
     "webpack": "4.42.0",
     "webpack-cli": "^3.1.0",
-    "source-map-loader": "^0.2.3",
-    "svg-baker-runtime": "^1.4.2"
+    "source-map-loader": "^0.2.3"
   },
   "dependencies": {
     "@bentley/bentleyjs-core": "2.0.0-dev.63",
@@ -68,7 +68,6 @@
     "@bentley/ui-components": "2.0.0-dev.63",
     "@bentley/ui-ninezone": "2.0.0-dev.63",
     "@bentley/ui-framework": "2.0.0-dev.63",
-    "react": "^16.8.0",
-    "svg-sprite-loader": "4.2.1"
+    "react": "^16.8.0"
   }
 }
