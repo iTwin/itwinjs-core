@@ -16,7 +16,9 @@ describe("Opening IModelConnection (#integration)", () => {
   let testChangeSetId: GuidString;
 
   before(async () => {
-    MockRender.App.startup();
+    MockRender.App.startup({
+      applicationVersion: "1.2.1.1",
+    });
     Logger.initializeToConsole();
 
     const testProjectName = "iModelJsIntegrationTest";

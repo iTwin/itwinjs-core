@@ -34,7 +34,7 @@ describe("Sign in (#integration)", () => {
     assert.exists(token);
   });
 
-  it("failure with invalid Bentley federated user", async () => {
+  it.skip("failure with invalid Bentley federated user", async () => {
     const invalidUser = {
       email: "invalid@bentley.com",
       password: "invalid",

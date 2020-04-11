@@ -55,7 +55,7 @@ describe("ViewClipDecorationProvider (#integration)", () => {
   const viewClipDecoProvider = ViewClipDecorationProvider.create();
 
   before(async () => {
-    MockRender.App.startup();
+    MockRender.App.startup({ applicationVersion: "1.2.1.1" });
 
     Logger.initializeToConsole();
     Logger.setLevel("imodeljs-frontend.IModelConnection", LogLevel.Error); // Change to trace to debug

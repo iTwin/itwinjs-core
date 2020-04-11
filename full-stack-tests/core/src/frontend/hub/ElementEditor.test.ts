@@ -37,6 +37,7 @@ describe("Element editor tests (#integration)", async () => {
     const options: IModelAppOptions = {
       authorizationClient: TestUtility.imodelCloudEnv.authorization,
       imodelClient: TestUtility.imodelCloudEnv.imodelClient,
+      applicationVersion: "1.2.1.1",
     };
     IModelApp.startup(options);
 
