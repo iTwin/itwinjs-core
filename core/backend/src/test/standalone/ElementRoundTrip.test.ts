@@ -464,7 +464,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     let spatialCategoryId = SpatialCategory.queryCategoryIdByName(imodel, IModel.dictionaryId, categoryName);
     if (undefined === spatialCategoryId)
       spatialCategoryId = SpatialCategory.insert(imodel, IModel.dictionaryId, categoryName,
-        new SubCategoryAppearance({ color: new ColorDef("rgb(255,0,0)") }));
+        new SubCategoryAppearance({ color: ColorDef.create("rgb(255,0,0)").toJSON() }));
 
     imodel.saveChanges();
     imodel.close();

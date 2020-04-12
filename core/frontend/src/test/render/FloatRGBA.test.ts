@@ -71,14 +71,11 @@ describe("FloatRgb", () => {
   });
 
   it("should convert to ColorDef", () => {
-    const scratch = new ColorDef();
     const rgb = FloatRgb.fromColorDef(ColorDef.red);
-    expect(rgb.toColorDef().tbgr).to.equal(ColorDef.red.tbgr);
+    expect(rgb.tbgr).to.equal(ColorDef.red.tbgr);
 
     rgb.setColorDef(ColorDef.blue);
-    const def = rgb.toColorDef(scratch);
-    expect(def).to.equal(scratch);
-    expect(scratch.tbgr).to.equal(ColorDef.blue.tbgr);
+    expect(rgb.tbgr).to.equal(ColorDef.blue.tbgr);
   });
 });
 

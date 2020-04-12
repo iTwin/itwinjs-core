@@ -410,10 +410,8 @@ class Tile3d extends SheetTile {
     if (polys.length === 0)
       return;
 
-    const lineColor = ColorDef.blue.clone();
-    const fillColor = ColorDef.green.clone();
-    fillColor.setAlpha(0x88);
-    lineColor.setAlpha(0xff);
+    const lineColor = ColorDef.blue;
+    const fillColor = ColorDef.green.withAlpha(0x88);
     const builder = args.context.createSceneGraphicBuilder();
     builder.setSymbology(lineColor, fillColor, 2);
     for (const poly of polys) {
@@ -589,8 +587,7 @@ class TileColorSequence {
     if (this._index >= this._colors.length)
       this._index = 0;
 
-    const color = new ColorDef(this._colors[this._index]);
-    color.setAlpha(0x7f);
+    const color = ColorDef.create(this._colors[this._index]).withAlpha(0x7f);
     this._index++;
     return color;
   }
@@ -650,10 +647,9 @@ class Tree3d extends Tree {
     const style = view.displayStyle;
 
     // Override the background color. This is to match v8, but there should probably be an option in the "Details" about whether to do this or not.
-    const bgColor = sheetView.displayStyle.backgroundColor.clone();
     // Set fully-transparent so that we discard background pixels (probably no point to the above line any more...)
-    bgColor.setAlpha(0);
-    style.backgroundColor.setFrom(bgColor);
+    const bgColor = sheetView.displayStyle.backgroundColor.withAlpha(0);
+    style.backgroundColor = bgColor;
 
     // turn off skybox and groundplane
     if (view.isSpatialView()) {

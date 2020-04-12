@@ -11,7 +11,7 @@ import { ColorPickerButton } from "../../ui-components/color/ColorPickerButton";
 import { ColorByName, ColorDef } from "@bentley/imodeljs-common";
 
 describe("<ColorPickerButton/>", () => {
-  const colorDef = new ColorDef(ColorByName.blue);
+  const colorDef = ColorDef.create(ColorByName.blue);
 
   afterEach(cleanup);
 

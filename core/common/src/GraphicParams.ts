@@ -10,7 +10,6 @@ import { ColorDef } from "./ColorDef";
 import { LinePixels } from "./LinePixels";
 import { Gradient } from "./Gradient";
 import { RenderMaterial } from "./RenderMaterial";
-import { RenderTexture } from "./RenderTexture";
 
 /** Flags indicating whether and how the interiors of closed planar regions is displayed within a view.
  * @public
@@ -40,42 +39,29 @@ export class GraphicParams {
   public fillFlags = FillFlags.None;
   public linePixels = LinePixels.Solid;
   public rasterWidth = 1;
-  public readonly lineColor = new ColorDef();
-  public readonly fillColor = new ColorDef();
+  public lineColor = ColorDef.black;
+  public fillColor = ColorDef.black;
   public trueWidthStart = 0;
   public trueWidthEnd = 0;
-  public lineTexture?: RenderTexture;
   public material?: RenderMaterial;
   public gradient?: Gradient.Symb;
 
-  /** set the line color
-   *  @param lineColor the new line color for this GraphicParams.
-   */
-  public setLineColor(lineColor: ColorDef) { this.lineColor.setFrom(lineColor); }
-  public setLineTransparency(transparency: number) { this.lineColor.setAlpha(transparency); }
+  public setLineTransparency(transparency: number) { this.lineColor = this.lineColor.withAlpha(transparency); }
 
-  /**
-   * Set the current fill color for this GraphicParams.
-   * @param fillColor the new fill color for this GraphicParams.
-   */
-  public setFillColor(fillColor: ColorDef) { this.fillColor.setFrom(fillColor); }
-  public setFillTransparency(transparency: number) { this.fillColor.setAlpha(transparency); }
-
-  /** Set the linear pixel pattern for this GraphicParams. This is only valid for overlay decorators in pixel mode. */
-  public setLinePixels(code: LinePixels) { this.linePixels = code; this.lineTexture = undefined; }
+  public setFillTransparency(transparency: number) { this.fillColor = this.fillColor.withAlpha(transparency); }
 
   public static fromSymbology(lineColor: ColorDef, fillColor: ColorDef, lineWidth: number, linePixels = LinePixels.Solid): GraphicParams {
     const graphicParams = new GraphicParams();
-    graphicParams.setLineColor(lineColor);
-    graphicParams.setFillColor(fillColor);
+    graphicParams.lineColor = lineColor;
+    graphicParams.fillColor = fillColor;
     graphicParams.rasterWidth = lineWidth;
-    graphicParams.setLinePixels(linePixels);
+    graphicParams.linePixels = linePixels;
     return graphicParams;
   }
 
   public static fromBlankingFill(fillColor: ColorDef): GraphicParams {
     const graphicParams = new GraphicParams();
-    graphicParams.setFillColor(fillColor);
+    graphicParams.fillColor = fillColor;
     graphicParams.fillFlags = FillFlags.Blanking;
     return graphicParams;
   }

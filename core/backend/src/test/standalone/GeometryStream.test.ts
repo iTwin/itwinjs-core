@@ -404,8 +404,8 @@ describe("GeometryStream", () => {
     params.gradient = new Gradient.Symb();
     params.gradient.mode = Gradient.Mode.Linear;
     params.gradient.flags = Gradient.Flags.Invert;
-    params.gradient.keys.push(new Gradient.KeyColor({ value: 0.0, color: ColorDef.blue }));
-    params.gradient.keys.push(new Gradient.KeyColor({ value: 0.5, color: ColorDef.red }));
+    params.gradient.keys.push(new Gradient.KeyColor({ value: 0.0, color: ColorDef.blue.toJSON() }));
+    params.gradient.keys.push(new Gradient.KeyColor({ value: 0.5, color: ColorDef.red.toJSON() }));
     builder.appendGeometryParamsChange(params);
     shape.tryTransformInPlace(xOffset);
     builder.appendGeometry(shape);
@@ -491,7 +491,7 @@ describe("GeometryStream", () => {
     const shape = Loop.create(LineString3d.create(Point3d.create(0, 0, 0), Point3d.create(1, 0, 0), Point3d.create(1, 1, 0), Point3d.create(0, 1, 0), Point3d.create(0, 0, 0)));
 
     // Hatch w/o overrides
-    params.lineColor = new ColorDef(ColorByName.yellow);
+    params.lineColor = ColorDef.create(ColorByName.yellow);
     params.weight = 5;
     params.pattern = new AreaPattern.Params();
     params.pattern.space1 = 0.05;
@@ -866,8 +866,8 @@ describe("GeometryStream", () => {
 
     // This brep has a face symbology attribute attached to one face, make it green.
     const faceSymb: BRepEntity.FaceSymbologyProps[] = [
-      { color: params.lineColor }, // base symbology should match appearance...
-      { color: ColorDef.green, transparency: 0.5 },
+      { color: params.lineColor.toJSON() }, // base symbology should match appearance...
+      { color: ColorDef.green.toJSON(), transparency: 0.5 },
     ];
 
     const brepProps: BRepEntity.DataProps = {

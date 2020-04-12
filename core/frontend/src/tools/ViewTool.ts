@@ -326,8 +326,8 @@ export abstract class ViewManip extends ViewTool {
     const rMatrix = Matrix3d.createRigidHeadsUp(normal);
     const ellipse = Arc3d.createScaledXYColumns(origin, rMatrix, radius, radius, AngleSweep.create360());
     const colorBase = (this._depthPreview.isDefaultDepth ? ColorDef.red : (DepthPointSource.Geometry === this._depthPreview.source ? ColorDef.green : context.viewport.hilite.color));
-    const colorLine = colorBase.adjustForContrast(cursorVp.view.backgroundColor); colorLine.setTransparency(50);
-    const colorFill = colorLine.clone(); colorFill.setTransparency(200);
+    const colorLine = colorBase.adjustedForContrast(cursorVp.view.backgroundColor).withTransparency(50);
+    const colorFill = colorLine.withTransparency(200);
 
     const builder = context.createGraphicBuilder(GraphicType.WorldOverlay);
     builder.setSymbology(colorLine, colorFill, 1, this._depthPreview.isDefaultDepth ? LinePixels.Code2 : LinePixels.Solid);
@@ -3592,7 +3592,7 @@ export class SetupCameraTool extends PrimitiveTool {
     context.addDecorationFromBuilder(builderHid);
 
     const backColor = ColorDef.from(0, 0, 255, 200);
-    const sideColor = context.viewport.hilite.color.clone(); sideColor.setAlpha(25);
+    const sideColor = context.viewport.hilite.color.withAlpha(25);
     const builderVis = context.createGraphicBuilder(GraphicType.WorldDecoration);
 
     builderVis.setSymbology(color, color, ViewHandleWeight.Normal);

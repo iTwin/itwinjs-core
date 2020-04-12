@@ -10,7 +10,9 @@ import {
   Id64Set,
   Id64String,
 } from "@bentley/bentleyjs-core";
-import { SubCategoryAppearance } from "@bentley/imodeljs-common";
+import {
+  SubCategoryAppearance,
+} from "@bentley/imodeljs-common";
 import { IModelConnection } from "./IModelConnection";
 
 /** A cancelable paginated request for subcategory information.
@@ -90,7 +92,7 @@ export class SubCategoriesCache {
   }
 
   private static createSubCategoryAppearance(json?: any) {
-    let props: SubCategoryAppearance | undefined;
+    let props: SubCategoryAppearance.Props | undefined;
     if ("string" === typeof json && 0 < json.length)
       props = JSON.parse(json);
 

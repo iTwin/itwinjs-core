@@ -92,7 +92,7 @@ class FrustumDecoration {
   }
 
   public static drawPreloadFrustum(builder: GraphicBuilder, frustum: Frustum) {
-    const preloadColor = new ColorDef(ColorByName.coral);
+    const preloadColor = ColorDef.create(ColorByName.coral);
     builder.setSymbology(preloadColor, preloadColor, 1, 2);
     builder.addFrustum(frustum);
   }
@@ -102,9 +102,9 @@ class FrustumDecoration {
     const frontPts = this.getPlanePts(frustum.points, true); // front plane
 
     const bgColor = vp.view.backgroundColor;
-    const backAndBottomColor = ColorDef.red.adjustForContrast(bgColor);
-    const frontAndTopLeftColor = ColorDef.blue.adjustForContrast(bgColor);
-    const frontAndTopRightColor = ColorDef.green.adjustForContrast(bgColor);
+    const backAndBottomColor = ColorDef.red.adjustedForContrast(bgColor);
+    const frontAndTopLeftColor = ColorDef.blue.adjustedForContrast(bgColor);
+    const frontAndTopRightColor = ColorDef.green.adjustedForContrast(bgColor);
     const edgeWeight = adjustedBox ? 2 : 1;
     const edgeStyle = adjustedBox ? LinePixels.Solid : LinePixels.Code2;
 
@@ -162,8 +162,8 @@ class FrustumDecoration {
     worldToNpcMap.transform1.multiplyPoint3dArrayQuietNormalize(focalPtsWorld);
 
     const bgColor = vp.view.backgroundColor;
-    const focalPlaneColor = ColorDef.green.adjustForContrast(bgColor);
-    const focalTransColor = focalPlaneColor.clone(); focalTransColor.setTransparency(100);
+    const focalPlaneColor = ColorDef.green.adjustedForContrast(bgColor);
+    const focalTransColor = focalPlaneColor.withTransparency(100);
     builder.setSymbology(focalPlaneColor, focalTransColor, 2);
     builder.addLineString(focalPtsWorld);
     builder.addShape(focalPtsWorld);

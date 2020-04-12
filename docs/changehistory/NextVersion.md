@@ -365,6 +365,12 @@ function tryTransformGeometry(entry: GeometryStreamIteratorEntry, transform: Tra
 }
 ```
 
+### Immutable Color Types
+
+[ColorDef]($common) is now an immutable type. Naturally, mutating methods like `setTransparency` have been removed; they are replaced by methods like `withTransparency` which return a modified copy of the original `ColorDef`. The constructor is now private; replace usage of `new ColorDef(x)` with `ColorDef.create(x)`.
+
+[HSVColor]($common) and [HSLColor]($common) are also now immutable.
+
 ### PropertyRecord classes moved to `ui-abstract` package
 
 This includes the classes in the following files:

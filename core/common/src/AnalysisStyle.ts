@@ -27,7 +27,7 @@ export interface AnalysisStyleProps {
 }
 
 /** @alpha */
-export class AnalysisStyle implements AnalysisStyleProps {
+export class AnalysisStyle {
   public inputName?: string;
   public displacementChannelName?: string;
   public scalarChannelName?: string;

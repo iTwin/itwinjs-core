@@ -211,8 +211,8 @@ export interface DisplayStyle3dProps extends DisplayStyleProps {
 export class DisplayStyleSettings {
   protected readonly _json: DisplayStyleSettingsProps;
   private readonly _viewFlags: ViewFlags;
-  private readonly _background: ColorDef;
-  private readonly _monochrome: ColorDef;
+  private _background: ColorDef;
+  private _monochrome: ColorDef;
   private _monochromeMode: MonochromeMode;
   private readonly _subCategoryOverrides: Map<Id64String, SubCategoryOverride> = new Map<Id64String, SubCategoryOverride>();
   private readonly _excludedElements: Set<Id64String> = new Set<Id64String>();
@@ -233,7 +233,7 @@ export class DisplayStyleSettings {
     this._viewFlags = ViewFlags.fromJSON(this._json.viewflags);
     this._background = ColorDef.fromJSON(this._json.backgroundColor);
 
-    this._monochrome = undefined !== this._json.monochromeColor ? ColorDef.fromJSON(this._json.monochromeColor) : ColorDef.white.clone();
+    this._monochrome = undefined !== this._json.monochromeColor ? ColorDef.fromJSON(this._json.monochromeColor) : ColorDef.white;
     this._monochromeMode = MonochromeMode.Flat === this._json.monochromeMode ? MonochromeMode.Flat : MonochromeMode.Scaled;
 
     this._backgroundMap = BackgroundMapSettings.fromJSON(this._json.backgroundMap);
@@ -280,7 +280,7 @@ export class DisplayStyleSettings {
    */
   public get backgroundColor(): ColorDef { return this._background; }
   public set backgroundColor(color: ColorDef) {
-    this._background.setFrom(color);
+    this._background = color;
     this._json.backgroundColor = color.toJSON();
   }
 
@@ -290,7 +290,7 @@ export class DisplayStyleSettings {
    */
   public get monochromeColor(): ColorDef { return this._monochrome; }
   public set monochromeColor(color: ColorDef) {
-    this._monochrome.setFrom(color);
+    this._monochrome = color;
     this._json.monochromeColor = color.toJSON();
   }
 

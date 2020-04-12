@@ -97,7 +97,7 @@ class IncidentMarker extends Marker {
   private static _size = Point2d.create(30, 30);
   private static _imageSize = Point2d.create(40, 40);
   private static _imageOffset = Point2d.create(0, 30);
-  private static _amber = new ColorDef(ColorByName.amber);
+  private static _amber = ColorDef.create(ColorByName.amber);
   private static _sweep360 = AngleSweep.create360();
   private _color: ColorDef;
 

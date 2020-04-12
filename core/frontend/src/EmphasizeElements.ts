@@ -99,17 +99,24 @@ export class EmphasizeElements implements FeatureOverrideProvider {
   }
 
   /** Get color and override type for the given key. */
-  public getOverrideFromKey(key: number, color: ColorDef): FeatureOverrideType {
+  public getOverrideFromKey(key: number): { overrideType: FeatureOverrideType, color: ColorDef } {
+    let overrideType;
+    let color;
+
     if (key < 0) {
-      color.setFrom(ColorDef.from(0, 0, 0, 255 * Math.abs(key)));
-      return FeatureOverrideType.AlphaOnly;
+      color = ColorDef.from(0, 0, 0, 255 * Math.abs(key));
+      overrideType = FeatureOverrideType.AlphaOnly;
+    } else {
+      color = ColorDef.fromJSON(key);
+      if (0 === color.getAlpha()) {
+        color = color.withAlpha(255);
+        overrideType = FeatureOverrideType.ColorOnly;
+      } else {
+        overrideType = FeatureOverrideType.ColorAndAlpha;
+      }
     }
-    color.setFrom(ColorDef.fromJSON(key));
-    if (0 === color.getAlpha()) {
-      color.setAlpha(255);
-      return FeatureOverrideType.ColorOnly;
-    }
-    return FeatureOverrideType.ColorAndAlpha;
+
+    return { overrideType, color };
   }
 
   /** The current default appearance for use with overrideElements when not using emphasizeElements. */
@@ -474,10 +481,9 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     if (undefined !== overriddenElements) {
       const appearanceOverride: AppearanceOverrideProps[] = [];
       for (const [key, ovrIds] of overriddenElements) {
-        const color = new ColorDef();
-        const overrideType = this.getOverrideFromKey(key, color);
+        const { color, overrideType } = { ...this.getOverrideFromKey(key) };
         const ids = [...ovrIds];
-        appearanceOverride.push({ overrideType, color, ids });
+        appearanceOverride.push({ overrideType, color: color.toJSON(), ids });
       }
 
       props.appearanceOverride = appearanceOverride;

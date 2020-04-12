@@ -88,7 +88,7 @@ function doExport(iModelName: string, objName: string, mtlName: string) {
 
   materialMap.forEach((materialName: string, color: number) => {
     fs.appendFileSync(mtlFile, `newmtl ${materialName}\n`);
-    const rawColors = new ColorDef(color).colors;
+    const rawColors = ColorDef.getColors(color);
     fs.appendFileSync(mtlFile, `Kd ${(rawColors.r / 255).toFixed(2)} ${(rawColors.g / 255).toFixed(2)} ${(rawColors.b / 255).toFixed(2)}\n`);
     if (rawColors.t !== 0)
       fs.appendFileSync(mtlFile, `Tr ${(rawColors.t / 255).toFixed(2)}\n`);

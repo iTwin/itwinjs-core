@@ -117,7 +117,7 @@ export class SheetBorder {
     const fillColor = ColorDef.black;
 
     const params = new GraphicParams();
-    params.setFillColor(fillColor);
+    params.fillColor = fillColor;
     params.gradient = this._gradient;
 
     builder.activateGraphicParams(params);

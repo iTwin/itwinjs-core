@@ -44,7 +44,7 @@ export class TestChangeSetUtility {
   }
 
   private async addTestCategory(): Promise<void> {
-    this._categoryId = SpatialCategory.insert(this._iModel, IModel.dictionaryId, "TestSpatialCategory", new SubCategoryAppearance({ color: new ColorDef("rgb(255,0,0)") }));
+    this._categoryId = SpatialCategory.insert(this._iModel, IModel.dictionaryId, "TestSpatialCategory", new SubCategoryAppearance({ color: ColorDef.computeTbgrFromString("rgb(255,0,0)") }));
     await this._iModel.concurrencyControl.request(this.requestContext);
     this._iModel.saveChanges("Added test category");
   }

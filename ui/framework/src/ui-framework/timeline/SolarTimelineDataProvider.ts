@@ -66,7 +66,7 @@ export class SolarTimelineDataProvider extends BaseSolarDataProvider {
         return displayStyle.settings.solarShadows.color.toColorDef();
       }
     }
-    return new ColorDef(ColorByName.gray);
+    return ColorDef.create(ColorByName.gray);
   }
 
   public set shadowColor(color: ColorDef) {
@@ -86,7 +86,7 @@ export class SolarTimelineDataProvider extends BaseSolarDataProvider {
     if (!newSettings)
       return;
 
-    newSettings.color = color;
+    newSettings.color = color.tbgr;
     displayStyle.settings.solarShadows = SolarShadowSettings.fromJSON(newSettings);
     this._viewport.invalidateScene();
   }

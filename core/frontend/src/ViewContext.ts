@@ -278,7 +278,7 @@ export class DecorateContext extends RenderContext {
     const gridOffset = Point3d.create(viewZ.x * meterPerPixel, viewZ.y * meterPerPixel, viewZ.z * meterPerPixel); // Avoid z fighting with coincident geometry
     const builder = this.createGraphicBuilder(GraphicType.WorldDecoration, Transform.createTranslation(gridOffset));
     const color = vp.getContrastToBackgroundColor();
-    const planeColor = eyeDot < 0.0 ? ColorDef.red.clone() : color.clone(); planeColor.setTransparency(gridConstants.planeTransparency);
+    const planeColor = (eyeDot < 0.0 ? ColorDef.red : color).withTransparency(gridConstants.planeTransparency);
 
     builder.setBlankingFill(planeColor);
     builder.addShape(shapePoints);
@@ -327,7 +327,7 @@ export class DecorateContext extends RenderContext {
       const thisPt1 = Point3d.create();
       const thisRay = Ray3d.createZero();
 
-      const refColor = color.clone(); refColor.setTransparency(gridConstants.refTransparency);
+      let refColor = color.withTransparency(gridConstants.refTransparency);
       const linePat = eyeDot < 0.0 ? LinePixels.Code2 : LinePixels.Solid;
 
       const drawRefX = (nRefRepetitionsX < gridConstants.maxRefLines || (vp.isCameraOn && unambiguousX));
@@ -345,7 +345,7 @@ export class DecorateContext extends RenderContext {
           vp.worldToView(linePoints[1], thisPt1); thisPt1.z = 0.0;
 
           if (doFadeX) {
-            refColor.setTransparency(gridConstants.refTransparency + (fadeRefTransparencyStep * ++xFade));
+            refColor = refColor.withTransparency(gridConstants.refTransparency + (fadeRefTransparencyStep * ++xFade));
             builder.setSymbology(refColor, planeColor, 1, linePat);
           } else if (xRef > 0 && nRefRepetitionsX > 10) {
             if (xRef > gridConstants.maxRefLines) {
@@ -365,7 +365,7 @@ export class DecorateContext extends RenderContext {
       }
 
       if (drawRefY) {
-        refColor.setTransparency(gridConstants.refTransparency);
+        refColor = refColor.withTransparency(gridConstants.refTransparency);
         builder.setSymbology(refColor, planeColor, 1, linePat);
 
         for (let yRef = 0, refX = reverseY ? maxX : minX, doFadeY = false, yFade = 0; yRef <= nRefRepetitionsY && yFade < fadeRefSteps; ++yRef, refX += refStepX) {
@@ -376,7 +376,7 @@ export class DecorateContext extends RenderContext {
           vp.worldToView(linePoints[1], thisPt1); thisPt1.z = 0.0;
 
           if (doFadeY) {
-            refColor.setTransparency(gridConstants.refTransparency + (fadeRefTransparencyStep * ++yFade));
+            refColor = refColor.withTransparency(gridConstants.refTransparency + (fadeRefTransparencyStep * ++yFade));
             builder.setSymbology(refColor, planeColor, 1, linePat);
           } else if (yRef > 0 && nRefRepetitionsY > 10) {
             if (yRef > gridConstants.maxRefLines) {
@@ -398,11 +398,11 @@ export class DecorateContext extends RenderContext {
       if (drawGridLines) {
         const gridStepX = refStepX / gridsPerRef;
         const gridStepY = refStepY / gridsPerRef;
-        const gridColor = color.clone();
+        let gridColor = color;
         const fadeGridTransparencyStep = (255 - gridConstants.gridTransparency) / (gridsPerRef + 2);
 
         if (nGridRepetitionsX > 1) {
-          gridColor.setTransparency(gridConstants.gridTransparency);
+          gridColor = gridColor.withTransparency(gridConstants.gridTransparency);
           builder.setSymbology(gridColor, planeColor, 1);
 
           for (let xRef = 0, refY = reverseX ? maxY : minY; xRef < nGridRepetitionsX; ++xRef, refY += refStepY) {
@@ -411,7 +411,7 @@ export class DecorateContext extends RenderContext {
               const gridPoints: Point3d[] = [Point3d.create(minX, gridY), Point3d.create(maxX, gridY)];
               transform.multiplyPoint3dArrayInPlace(gridPoints);
               if (doFadeX) {
-                gridColor.setTransparency(gridConstants.gridTransparency + (fadeGridTransparencyStep * yGrid));
+                gridColor = gridColor.withTransparency(gridConstants.gridTransparency + (fadeGridTransparencyStep * yGrid));
                 builder.setSymbology(gridColor, planeColor, 1);
               }
               builder.addLineString(gridPoints);
@@ -420,7 +420,7 @@ export class DecorateContext extends RenderContext {
         }
 
         if (nGridRepetitionsY > 1) {
-          gridColor.setTransparency(gridConstants.gridTransparency);
+          gridColor = gridColor.withTransparency(gridConstants.gridTransparency);
           builder.setSymbology(gridColor, planeColor, 1);
 
           for (let yRef = 0, refX = reverseY ? maxX : minX; yRef < nGridRepetitionsY; ++yRef, refX += refStepX) {
@@ -429,7 +429,7 @@ export class DecorateContext extends RenderContext {
               const gridPoints: Point3d[] = [Point3d.create(gridX, minY), Point3d.create(gridX, maxY)];
               transform.multiplyPoint3dArrayInPlace(gridPoints);
               if (doFadeY) {
-                gridColor.setTransparency(gridConstants.gridTransparency + (fadeGridTransparencyStep * xGrid));
+                gridColor = gridColor.withTransparency(gridConstants.gridTransparency + (fadeGridTransparencyStep * xGrid));
                 builder.setSymbology(gridColor, planeColor, 1);
               }
               builder.addLineString(gridPoints);

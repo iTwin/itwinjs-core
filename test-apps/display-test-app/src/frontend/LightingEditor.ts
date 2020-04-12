@@ -91,7 +91,7 @@ export class LightingEditor {
       display: "inline",
       value: color?.toHexString() ?? "#FFFFFF",
       handler: (newColor) => {
-        const props = { color: new ColorDef(newColor).toJSON() };
+        const props = { color: ColorDef.create(newColor).toJSON() };
         const settings = this._vp.solarShadowSettings ? this._vp.solarShadowSettings.clone(props) : SolarShadowSettings.fromJSON(props);
         this._vp.setSolarShadowSettings(settings);
       },
@@ -183,7 +183,7 @@ export class LightingEditor {
       display: "inline",
       value: amb?.color.toColorDef().toHexString() ?? "#000000",
       handler: (color) => {
-        this.updateSettings({ ambient: { color: RgbColor.fromColorDef(new ColorDef(color)) } });
+        this.updateSettings({ ambient: { color: RgbColor.fromColorDef(ColorDef.create(color)) } });
       },
     }).input;
 
@@ -211,7 +211,7 @@ export class LightingEditor {
       display: "inline",
       value: hemi?.upperColor.toColorDef().toHexString() ?? "#FFFFFF",
       handler: (newSky) => {
-        this.updateSettings({ hemisphere: { upperColor: RgbColor.fromColorDef(new ColorDef(newSky)) } });
+        this.updateSettings({ hemisphere: { upperColor: RgbColor.fromColorDef(ColorDef.create(newSky)) } });
       },
     }).input;
 
@@ -222,7 +222,7 @@ export class LightingEditor {
       display: "inline",
       value: hemi?.lowerColor.toColorDef().toHexString() ?? "#FFFFFF",
       handler: (newGround) => {
-        this.updateSettings({ hemisphere: { lowerColor: RgbColor.fromColorDef(new ColorDef(newGround)) } });
+        this.updateSettings({ hemisphere: { lowerColor: RgbColor.fromColorDef(ColorDef.create(newGround)) } });
       },
     }).input;
 

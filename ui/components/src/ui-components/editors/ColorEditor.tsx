@@ -46,7 +46,7 @@ export class ColorEditor extends React.PureComponent<PropertyEditorProps, ColorE
       // istanbul ignore else
       if (colorParams) {
         colorParams.colorValues.forEach((colorNumber: number) => {
-          this._availableColors.push(new ColorDef(colorNumber));
+          this._availableColors.push(ColorDef.create(colorNumber));
         });
         // istanbul ignore else
         if (colorParams.numColumns)
@@ -139,7 +139,7 @@ export class ColorEditor extends React.PureComponent<PropertyEditorProps, ColorE
 
   /** @internal */
   public render() {
-    const colorDef = new ColorDef(this.state.colorValue);
+    const colorDef = ColorDef.create(this.state.colorValue);
     return (
       <div className={classnames("components-color-editor", this.props.className)} style={this.props.style}>
         <ColorPickerButton ref={(control) => this._control = control}

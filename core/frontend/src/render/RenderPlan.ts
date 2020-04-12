@@ -110,8 +110,7 @@ export class RenderPlan {
     } else {
       this.is3d = true;
       this.viewFlags = new ViewFlags();
-      this.bgColor = ColorDef.white.clone();
-      this.monoColor = ColorDef.white.clone();
+      this.bgColor = this.monoColor = ColorDef.white;
       this.monochromeMode = MonochromeMode.Scaled;
       this.hiliteSettings = new Hilite.Settings();
       this.emphasisSettings = new Hilite.Settings();

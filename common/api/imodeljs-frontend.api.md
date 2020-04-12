@@ -2460,7 +2460,10 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     static getOrCreate(vp: Viewport): EmphasizeElements;
     getOverriddenElements(): Map<number, Id64Set> | undefined;
     getOverriddenElementsByKey(key: number): Id64Set | undefined;
-    getOverrideFromKey(key: number, color: ColorDef): FeatureOverrideType;
+    getOverrideFromKey(key: number): {
+        overrideType: FeatureOverrideType;
+        color: ColorDef;
+    };
     hideElements(ids: Id64Arg, vp: Viewport, replace?: boolean): boolean;
     hideSelectedElements(vp: Viewport, replace?: boolean, clearSelection?: boolean): boolean;
     isActive(vp: Viewport): boolean;
@@ -2528,7 +2531,7 @@ export class EntityState implements EntityProps {
 }
 
 // @public
-export class Environment implements EnvironmentProps {
+export class Environment {
     constructor(json?: EnvironmentProps);
     // (undocumented)
     readonly ground: GroundPlane;

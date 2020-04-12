@@ -138,8 +138,8 @@ export class ImdlReader extends GltfReader {
   /** @internal */
   protected createDisplayParams(json: any): DisplayParams | undefined {
     const type = JsonUtils.asInt(json.type, DisplayParams.Type.Mesh);
-    const lineColor = new ColorDef(JsonUtils.asInt(json.lineColor));
-    const fillColor = new ColorDef(JsonUtils.asInt(json.fillColor));
+    const lineColor = ColorDef.create(JsonUtils.asInt(json.lineColor));
+    const fillColor = ColorDef.create(JsonUtils.asInt(json.fillColor));
     const width = JsonUtils.asInt(json.lineWidth);
     const linePixels = JsonUtils.asInt(json.linePixels, LinePixels.Solid);
     const fillFlags = JsonUtils.asInt(json.fillFlags, FillFlags.None);

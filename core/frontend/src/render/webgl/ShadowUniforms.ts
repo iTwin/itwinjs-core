@@ -7,7 +7,10 @@
  */
 
 import { Matrix4d } from "@bentley/geometry-core";
-import { RgbColor } from "@bentley/imodeljs-common";
+import {
+  ColorDef,
+  RgbColor,
+} from "@bentley/imodeljs-common";
 import { desync, sync, SyncToken } from "./Sync";
 import { Target } from "./Target";
 import { FloatRgba } from "./FloatRGBA";
@@ -62,7 +65,7 @@ export class ShadowUniforms {
     if (!this._color.equals(settings.color)) {
       desync(this);
       this._color = settings.color;
-      this._colorAndBias.setColorDef(settings.color.toColorDef());
+      this._colorAndBias.setTbgr(ColorDef.computeTbgrFromComponents(settings.color.r, settings.color.g, settings.color.b));
       this._colorAndBias.alpha = this._bias;
     }
 

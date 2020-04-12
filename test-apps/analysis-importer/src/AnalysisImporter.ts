@@ -2,10 +2,47 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Id64, Id64Array, Id64String } from "@bentley/bentleyjs-core";
-import { Angle, AuxChannel, AuxChannelData, AuxChannelDataType, IModelJson, Point3d, Polyface, PolyfaceAuxData, PolyfaceBuilder, StrokeOptions } from "@bentley/geometry-core";
-import { CategorySelector, DefinitionModel, DisplayStyle3d, IModelDb, ModelSelector, OrthographicViewDefinition, PhysicalModel, SnapshotDb, SpatialCategory } from "@bentley/imodeljs-backend";
-import { AnalysisStyleProps, Code, ColorDef, GeometricElement3dProps, GeometryStreamBuilder, GeometryStreamProps, RenderMode, ViewFlags, ThematicGradientMode, ThematicGradientColorScheme, ThematicGradientSettingsProps, ThematicGradientSettings } from "@bentley/imodeljs-common";
+import {
+  Id64,
+  Id64Array,
+  Id64String,
+} from "@bentley/bentleyjs-core";
+import {
+  Angle,
+  AuxChannel,
+  AuxChannelData,
+  AuxChannelDataType,
+  IModelJson,
+  Point3d,
+  Polyface,
+  PolyfaceAuxData,
+  PolyfaceBuilder,
+  StrokeOptions,
+} from "@bentley/geometry-core";
+import {
+  CategorySelector,
+  DefinitionModel,
+  DisplayStyle3d,
+  IModelDb,
+  ModelSelector,
+  OrthographicViewDefinition,
+  PhysicalModel,
+  SnapshotDb,
+  SpatialCategory,
+} from "@bentley/imodeljs-backend";
+import {
+  AnalysisStyleProps,
+  Code,
+  ColorDef,
+  GeometricElement3dProps,
+  GeometryStreamBuilder,
+  GeometryStreamProps,
+  RenderMode,
+  ViewFlags,
+  ThematicGradientMode,
+  ThematicGradientColorScheme,
+  ThematicGradientSettingsProps,
+} from "@bentley/imodeljs-common";
 import { readFileSync } from "fs";
 import * as path from "path";
 
@@ -51,7 +88,7 @@ export class AnalysisImporter {
           displacementScale: displacementScaleValue,
           scalarRange: channel.scalarRange,
           scalarChannelName: channel.name,
-          scalarThematicSettings: ThematicGradientSettings.fromJSON(thematicSettingsJSON),
+          scalarThematicSettings: thematicSettingsJSON,
           inputName: channel.inputName,
         });
       }
@@ -212,7 +249,7 @@ export class AnalysisImporter {
     this.definitionModelId = DefinitionModel.insert(this.iModelDb, IModelDb.rootSubjectId, "Analysis Definitions");
 
     /** Create category for analytical polyfaces */
-    const categoryId = SpatialCategory.insert(this.iModelDb, this.definitionModelId, "GeoJSON Feature", { color: ColorDef.white });
+    const categoryId = SpatialCategory.insert(this.iModelDb, this.definitionModelId, "GeoJSON Feature", { color: ColorDef.white.tbgr });
 
     /** import a polyface representing a cantilever beam with stress and displacement data. */
     const importedPolyface = this.importPolyfaceFromJson("Cantilever.json");

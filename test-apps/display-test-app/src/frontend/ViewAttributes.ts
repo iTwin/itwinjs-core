@@ -372,7 +372,7 @@ export class ViewAttributes {
       display: "inline",
       value: this._vp.view.displayStyle.settings.monochromeColor.toHexString(),
       handler: (color) => {
-        this._vp.view.displayStyle.settings.monochromeColor = new ColorDef(color);
+        this._vp.view.displayStyle.settings.monochromeColor = ColorDef.create(color);
         this.sync();
       },
     });
@@ -819,11 +819,11 @@ export class ViewAttributes {
         value: color,
         display: "inline",
         disabled: !settings.ovrColor,
-        handler: (value: string) => this.overrideEdgeSettings({ [settingsName]: this.edgeSettings[settingsName].overrideColor(new ColorDef(value)) }),
+        handler: (value: string) => this.overrideEdgeSettings({ [settingsName]: this.edgeSettings[settingsName].overrideColor(ColorDef.create(value)) }),
       }).input;
 
       colorCb.addEventListener("click", () => {
-        this.overrideEdgeSettings({ [settingsName]: this.edgeSettings[settingsName].overrideColor(colorCb!.checked ? new ColorDef(colorInput!.value) : undefined) });
+        this.overrideEdgeSettings({ [settingsName]: this.edgeSettings[settingsName].overrideColor(colorCb!.checked ? ColorDef.create(colorInput!.value) : undefined) });
       });
     }
 

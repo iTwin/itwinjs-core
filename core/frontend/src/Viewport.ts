@@ -940,7 +940,7 @@ export abstract class Viewport implements IDisposable {
   private _featureOverrideProvider?: FeatureOverrideProvider;
   private readonly _tiledGraphicsProviders = new Set<TiledGraphicsProvider>();
   private _hilite = new Hilite.Settings();
-  private _emphasis = new Hilite.Settings(ColorDef.black.clone(), 0, 0, Hilite.Silhouette.Thick);
+  private _emphasis = new Hilite.Settings(ColorDef.black, 0, 0, Hilite.Silhouette.Thick);
   private _outsideClipColor?: ColorDef;
   private _insideClipColor?: ColorDef;
 
@@ -3110,11 +3110,9 @@ export class ScreenViewport extends Viewport {
       return; // AccuSnap will flash edge/segment geometry if not a surface hit or snap location has been adjusted...
 
     const builder = context.createGraphicBuilder(GraphicType.WorldOverlay);
-    const color = context.viewport.hilite.color.invert(); // Invert hilite color for good contrast
-    const colorFill = color.clone();
+    const color = context.viewport.hilite.color.inverse().withTransparency(100); // Invert hilite color for good contrast
+    const colorFill = color.withTransparency(200);
 
-    color.setTransparency(100);
-    colorFill.setTransparency(200);
     builder.setSymbology(color, colorFill, 1);
 
     const radius = (2.5 * aperture) * context.viewport.getPixelSizeAtPoint(hit.snapPoint);

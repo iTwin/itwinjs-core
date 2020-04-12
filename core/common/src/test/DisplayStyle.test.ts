@@ -24,11 +24,9 @@ import {
   SolarShadowSettingsProps,
 } from "../SolarShadows";
 import { TerrainHeightOriginMode } from "../TerrainSettings";
-import {
-  ColorByName,
-  RgbColor,
-  ColorDef,
-} from "../ColorDef";
+import { ColorByName } from "../ColorByName";
+import { ColorDef } from "../ColorDef";
+import { RgbColor } from "../RgbColor";
 import {
   LightSettings,
   LightSettingsProps,
@@ -455,7 +453,7 @@ describe("ThematicDisplay", () => {
     badThematicProps = {
       gradientSettings: {
         colorScheme: ThematicGradientColorScheme.Custom,
-        customKeys: [{ value: 0.0, color: ColorDef.fromJSON() }], // (one entry is not okay - need at least two)
+        customKeys: [{ value: 0.0, color: 0 }], // (one entry is not okay - need at least two)
       },
     };
     td = ThematicDisplay.fromJSON(badThematicProps);

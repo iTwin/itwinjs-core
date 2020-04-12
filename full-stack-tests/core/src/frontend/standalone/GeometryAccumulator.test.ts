@@ -10,7 +10,7 @@ import { Branch, System } from "@bentley/imodeljs-frontend/lib/webgl";
 import { assert, expect } from "chai";
 
 export class FakeDisplayParams extends DisplayParams {
-  public constructor() { super(DisplayParams.Type.Linear, new ColorDef(), new ColorDef()); }
+  public constructor() { super(DisplayParams.Type.Linear, ColorDef.black, ColorDef.black); }
 }
 
 export class FakeGeometry extends Geometry {
@@ -56,7 +56,7 @@ describe("GeometryAccumulator tests", () => {
     const pth = Path.create(line);
 
     const gfParams: GraphicParams = new GraphicParams();
-    gfParams.setLineColor(ColorDef.white);
+    gfParams.lineColor = ColorDef.white;
     const displayParams: DisplayParams = DisplayParams.createForLinear(gfParams);
 
     expect(accum.geometries.isEmpty).to.be.true;
@@ -79,8 +79,8 @@ describe("GeometryAccumulator tests", () => {
     const loop = Loop.create(line);
 
     const gfParams: GraphicParams = new GraphicParams();
-    gfParams.setLineColor(ColorDef.white);
-    gfParams.setFillColor(ColorDef.black); // forces region outline flag
+    gfParams.lineColor = ColorDef.white;
+    gfParams.fillColor = ColorDef.black; // forces region outline flag
     const displayParams: DisplayParams = DisplayParams.createForMesh(gfParams);
 
     expect(accum.geometries.isEmpty).to.be.true;
@@ -103,8 +103,8 @@ describe("GeometryAccumulator tests", () => {
     const loop = Loop.create(line);
 
     const gfParams: GraphicParams = new GraphicParams();
-    gfParams.setLineColor(ColorDef.white);
-    gfParams.setFillColor(ColorDef.black); // forces region outline flag
+    gfParams.lineColor = ColorDef.white;
+    gfParams.fillColor = ColorDef.black; // forces region outline flag
     const displayParams: DisplayParams = DisplayParams.createForMesh(gfParams);
 
     const loopRange: Range3d = new Range3d();
@@ -163,8 +163,8 @@ describe("GeometryAccumulator tests", () => {
     const loop = Loop.create(line);
 
     const gfParams: GraphicParams = new GraphicParams();
-    gfParams.setLineColor(ColorDef.white);
-    gfParams.setFillColor(ColorDef.black); // forces region outline flag
+    gfParams.lineColor = ColorDef.white;
+    gfParams.fillColor = ColorDef.black; // forces region outline flag
     const displayParams: DisplayParams = DisplayParams.createForMesh(gfParams);
 
     const loopRange: Range3d = new Range3d();
@@ -180,7 +180,7 @@ describe("GeometryAccumulator tests", () => {
     const pth = Path.create(line2);
 
     const gfParams2: GraphicParams = new GraphicParams();
-    gfParams2.setLineColor(ColorDef.white);
+    gfParams2.lineColor = ColorDef.white;
     const displayParams2: DisplayParams = DisplayParams.createForLinear(gfParams2);
 
     accum.addPolyface(loopGeom.getPolyfaces(0)![0].indexedPolyface, displayParams, Transform.createIdentity());
@@ -204,8 +204,8 @@ describe("GeometryAccumulator tests", () => {
     const loop = Loop.create(line);
 
     const gfParams: GraphicParams = new GraphicParams();
-    gfParams.setLineColor(ColorDef.white);
-    gfParams.setFillColor(ColorDef.black); // forces region outline flag
+    gfParams.lineColor = ColorDef.white;
+    gfParams.fillColor = ColorDef.black; // forces region outline flag
     const displayParams: DisplayParams = DisplayParams.createForMesh(gfParams);
 
     const loopRange: Range3d = new Range3d();
@@ -221,7 +221,7 @@ describe("GeometryAccumulator tests", () => {
     const pth = Path.create(line2);
 
     const gfParams2: GraphicParams = new GraphicParams();
-    gfParams2.setLineColor(ColorDef.white);
+    gfParams2.lineColor = ColorDef.white;
     const displayParams2: DisplayParams = DisplayParams.createForLinear(gfParams2);
 
     accum.addPolyface(loopGeom.getPolyfaces(0)![0].indexedPolyface, displayParams, Transform.createIdentity());
@@ -245,8 +245,8 @@ describe("GeometryAccumulator tests", () => {
     const loop = Loop.create(line);
 
     const gfParams: GraphicParams = new GraphicParams();
-    gfParams.setLineColor(ColorDef.white);
-    gfParams.setFillColor(ColorDef.black); // forces region outline flag
+    gfParams.lineColor = ColorDef.white;
+    gfParams.fillColor = ColorDef.black; // forces region outline flag
     const displayParams: DisplayParams = DisplayParams.createForMesh(gfParams);
 
     const loopRange: Range3d = new Range3d();
@@ -262,7 +262,7 @@ describe("GeometryAccumulator tests", () => {
     const pth = Path.create(line2);
 
     const gfParams2: GraphicParams = new GraphicParams();
-    gfParams2.setLineColor(ColorDef.white);
+    gfParams2.lineColor = ColorDef.white;
     const displayParams2: DisplayParams = DisplayParams.createForLinear(gfParams2);
 
     accum.addPolyface(loopGeom.getPolyfaces(0)![0].indexedPolyface, displayParams, Transform.createIdentity());

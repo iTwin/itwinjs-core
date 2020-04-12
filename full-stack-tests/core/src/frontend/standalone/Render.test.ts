@@ -277,7 +277,7 @@ describe("Render mirukuru with thematic display applied", () => {
       const thematicProps: ThematicDisplayProps = {
         gradientSettings: {
           colorScheme: ThematicGradientColorScheme.Custom,
-          customKeys: [{ value: 0.0, color: ColorDef.from(0, 0, 255) }, { value: 1.0, color: ColorDef.from(255, 0, 0) }],
+          customKeys: [{ value: 0.0, color: ColorDef.computeTbgrFromComponents(0, 0, 255) }, { value: 1.0, color: ColorDef.computeTbgrFromComponents(255, 0, 0) }],
         },
         range: { low: imodel.projectExtents.xLow, high: imodel.projectExtents.xHigh }, // grab imodel project extents to set range of thematic display
         axis: [1.0, 0.0, 0.0],
@@ -562,7 +562,7 @@ describe("Render mirukuru", () => {
       // Specify default overrides, but also override element color
       ovrProvider.ovrFunc = (ovrs, _) => {
         ovrs.setDefaultOverrides(FeatureSymbology.Appearance.fromRgb(ColorDef.green));
-        ovrs.overrideElement(elemId, FeatureSymbology.Appearance.fromRgb(new ColorDef(0x7f0000))); // blue = 0x7f...
+        ovrs.overrideElement(elemId, FeatureSymbology.Appearance.fromRgb(ColorDef.create(0x7f0000))); // blue = 0x7f...
       };
       vp.setFeatureOverrideProviderChanged();
       await vp.drawFrame();
@@ -665,7 +665,7 @@ describe("Render mirukuru", () => {
     await testViewportsWithDpr(imodel, rect, async (vp) => {
       const vf = vp.view.viewFlags;
       vf.visibleEdges = vf.hiddenEdges = vf.lighting = false;
-      vp.hilite = new Hilite.Settings(ColorDef.red.clone(), 1.0, 0.0, Hilite.Silhouette.Thin);
+      vp.hilite = new Hilite.Settings(ColorDef.red, 1.0, 0.0, Hilite.Silhouette.Thin);
 
       await vp.waitForAllTilesToRender();
 
@@ -1112,7 +1112,7 @@ describe("White-on-white reversal", async () => {
           vp.npcToWorld({ x: 0.5, y: 0.5, z: 0.5 }),
         ]);
 
-        const greenDef = new ColorDef(0x00ff00);
+        const greenDef = ColorDef.create(0x00ff00);
         worldOverlay.setSymbology(greenDef, greenDef, 4);
         worldOverlay.addLineString([
           vp.npcToWorld({ x: 0.5, y: 0.5, z: 0.5 }),
@@ -1120,7 +1120,7 @@ describe("White-on-white reversal", async () => {
         ]);
         context.addDecorationFromBuilder(worldOverlay);
 
-        const yellowDef = new ColorDef(0x00ffff);
+        const yellowDef = ColorDef.create(0x00ffff);
         const world = context.createGraphicBuilder(GraphicType.WorldDecoration);
         world.setSymbology(ColorDef.white, ColorDef.white, 4);
         world.addLineString([

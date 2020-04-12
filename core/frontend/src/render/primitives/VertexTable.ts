@@ -103,8 +103,6 @@ function computeDimensions(nEntries: number, nRgbaPerEntry: number, nExtraRgba: 
   return { width, height };
 }
 
-const scratchColorDef = new ColorDef();
-
 /** Describes a VertexTable.
  * @internal
  */
@@ -796,9 +794,7 @@ export abstract class VertexTableBuilder {
   }
 
   private appendColor(tbgr: number) {
-    const colorDef = scratchColorDef;
-    colorDef.tbgr = tbgr;
-    const colors = colorDef.colors;
+    const colors = ColorDef.getColors(tbgr);
 
     // invert transparency => alpha
     colors.t = 255 - colors.t;

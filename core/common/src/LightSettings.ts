@@ -14,7 +14,7 @@ import {
 import {
   RgbColor,
   RgbColorProps,
-} from "./ColorDef";
+} from "./RgbColor";
 
 function extractIntensity(value: number | undefined, defaultValue: number) {
   const maxIntensity = 5;

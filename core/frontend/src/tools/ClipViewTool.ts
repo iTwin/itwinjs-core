@@ -233,7 +233,7 @@ export class ViewClipTool extends PrimitiveTool {
     if (undefined === clipShape && (undefined === clipPlanesLoops || 0 === clipPlanesLoops.length))
       return;
 
-    const color = (options && options.color ? options.color : ColorDef.white.adjustForContrast(context.viewport.view.backgroundColor));
+    const color = (options && options.color ? options.color : ColorDef.white.adjustedForContrast(context.viewport.view.backgroundColor));
     const builderVis = context.createGraphicBuilder(GraphicType.WorldDecoration, clipShape ? clipShape.transformFromClip : undefined, (options ? options.id : undefined));
     const builderHid = context.createGraphicBuilder(GraphicType.WorldOverlay, clipShape ? clipShape.transformFromClip : undefined);
     builderVis.setSymbology(color, ColorDef.black, (options && options.visibleWidth ? options.visibleWidth : 3));
@@ -243,7 +243,7 @@ export class ViewClipTool extends PrimitiveTool {
       ViewClipTool.addClipPlanesLoops(builderVis, clipPlanesLoops, true);
       ViewClipTool.addClipPlanesLoops(builderHid, clipPlanesLoops, true);
       if (options && options.fillClipPlanes) {
-        const fill = (options.fill ? options.fill : ColorDef.from(0, 255, 255, 225).adjustForContrast(context.viewport.view.backgroundColor));
+        const fill = (options.fill ? options.fill : ColorDef.from(0, 255, 255, 225).adjustedForContrast(context.viewport.view.backgroundColor));
         const builderFill = context.createGraphicBuilder(GraphicType.WorldDecoration);
         builderFill.setSymbology(fill, fill, 0);
         ViewClipTool.addClipPlanesLoops(builderFill, (options.hasPrimaryPlane ? [clipPlanesLoops[0]] : clipPlanesLoops), false);
@@ -653,9 +653,9 @@ export class ViewClipByShapeTool extends ViewClipTool {
 
     const builderAccVis = context.createGraphicBuilder(GraphicType.WorldDecoration);
     const builderAccHid = context.createGraphicBuilder(GraphicType.WorldOverlay);
-    const colorAccVis = ColorDef.white.adjustForContrast(context.viewport.view.backgroundColor);
-    const colorAccHid = colorAccVis.clone(); colorAccHid.setAlpha(100);
-    const fillAccVis = context.viewport.hilite.color.clone(); fillAccVis.setAlpha(25);
+    const colorAccVis = ColorDef.white.adjustedForContrast(context.viewport.view.backgroundColor);
+    const colorAccHid = colorAccVis.withAlpha(100);
+    const fillAccVis = context.viewport.hilite.color.withAlpha(25);
 
     builderAccVis.setSymbology(colorAccVis, fillAccVis, 3);
     builderAccHid.setSymbology(colorAccHid, fillAccVis, 1, LinePixels.Code2);
@@ -784,8 +784,8 @@ export class ViewClipByRangeTool extends ViewClipTool {
 
     const builderAccVis = context.createGraphicBuilder(GraphicType.WorldDecoration, transform);
     const builderAccHid = context.createGraphicBuilder(GraphicType.WorldOverlay, transform);
-    const colorAccVis = ColorDef.white.adjustForContrast(context.viewport.view.backgroundColor);
-    const colorAccHid = colorAccVis.clone(); colorAccHid.setAlpha(100);
+    const colorAccVis = ColorDef.white.adjustedForContrast(context.viewport.view.backgroundColor);
+    const colorAccHid = colorAccVis.withAlpha(100);
 
     builderAccVis.setSymbology(colorAccVis, ColorDef.black, 3);
     builderAccHid.setSymbology(colorAccHid, ColorDef.black, 1, LinePixels.Code2);
@@ -1110,7 +1110,7 @@ export class ViewClipShapeModifyTool extends ViewClipModifyTool {
     if (undefined === clipShape)
       return;
     const clipExtents = ViewClipTool.getClipShapeExtents(clipShape, this._viewRange);
-    const color = ColorDef.white.adjustForContrast(context.viewport.view.backgroundColor);
+    const color = ColorDef.white.adjustedForContrast(context.viewport.view.backgroundColor);
     ViewClipTool.drawClipShape(context, clipShape, clipExtents, color, 1);
     this.drawAnchorOffset(context, color, 1, clipShape.transformFromClip);
   }
@@ -1147,7 +1147,7 @@ export class ViewClipPlanesModifyTool extends ViewClipModifyTool {
     const clipPlanesLoops = ClipUtilities.loopsOfConvexClipPlaneIntersectionWithRange(clipPlanes, this._viewRange, true, false, true);
     if (undefined === clipPlanesLoops)
       return;
-    const color = ColorDef.white.adjustForContrast(context.viewport.view.backgroundColor);
+    const color = ColorDef.white.adjustedForContrast(context.viewport.view.backgroundColor);
     ViewClipTool.drawClipPlanesLoops(context, clipPlanesLoops, color, 1);
     this.drawAnchorOffset(context, color, 1);
   }
@@ -1588,21 +1588,21 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
       return;
 
     if (undefined !== this._clipShape) {
-      ViewClipTool.drawClipShape(context, this._clipShape, this._clipShapeExtents!, ColorDef.white.adjustForContrast(context.viewport.view.backgroundColor), 3, this._clipId);
+      ViewClipTool.drawClipShape(context, this._clipShape, this._clipShapeExtents!, ColorDef.white.adjustedForContrast(context.viewport.view.backgroundColor), 3, this._clipId);
     } else if (undefined !== this._clipPlanes) {
       if (undefined !== this._clipPlanesLoops)
-        ViewClipTool.drawClipPlanesLoops(context, this._clipPlanesLoops, ColorDef.white.adjustForContrast(context.viewport.view.backgroundColor), 3, false, ColorDef.from(0, 255, 255, 225).adjustForContrast(context.viewport.view.backgroundColor), this._clipId);
+        ViewClipTool.drawClipPlanesLoops(context, this._clipPlanesLoops, ColorDef.white.adjustedForContrast(context.viewport.view.backgroundColor), 3, false, ColorDef.from(0, 255, 255, 225).adjustedForContrast(context.viewport.view.backgroundColor), this._clipId);
       if (undefined !== this._clipPlanesLoopsNoncontributing)
-        ViewClipTool.drawClipPlanesLoops(context, this._clipPlanesLoopsNoncontributing, ColorDef.red.adjustForContrast(context.viewport.view.backgroundColor), 1, true);
+        ViewClipTool.drawClipPlanesLoops(context, this._clipPlanesLoopsNoncontributing, ColorDef.red.adjustedForContrast(context.viewport.view.backgroundColor), 1, true);
     }
 
     if (!this._isActive)
       return;
 
-    const outlineColor = ColorDef.from(0, 0, 0, 50).adjustForContrast(vp.view.backgroundColor);
-    const fillVisColor = ColorDef.from(150, 250, 200, 225).adjustForContrast(vp.view.backgroundColor);
-    const fillHidColor = fillVisColor.clone(); fillHidColor.setAlpha(200);
-    const fillSelColor = fillVisColor.invert(); fillSelColor.setAlpha(75);
+    const outlineColor = ColorDef.from(0, 0, 0, 50).adjustedForContrast(vp.view.backgroundColor);
+    const fillVisColor = ColorDef.from(150, 250, 200, 225).adjustedForContrast(vp.view.backgroundColor);
+    const fillHidColor = fillVisColor.withAlpha(200);
+    const fillSelColor = fillVisColor.inverse().withAlpha(75);
     const shapePts = EditManipulator.HandleUtils.getArrowShape(0.0, 0.15, 0.55, 1.0, 0.3, 0.5, 0.1);
 
     for (let iFace = 0; iFace < this._controlIds.length; iFace++) {
@@ -1651,8 +1651,8 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
 
       let outlineColorOvr = this._controls[iFace].outline;
       if (undefined !== outlineColorOvr) {
-        outlineColorOvr = outlineColorOvr.adjustForContrast(vp.view.backgroundColor);
-        outlineColorOvr.setAlpha(outlineColor.getAlpha());
+        outlineColorOvr = outlineColorOvr.adjustedForContrast(vp.view.backgroundColor);
+        outlineColorOvr = outlineColorOvr.withAlpha(outlineColor.getAlpha());
       } else {
         outlineColorOvr = outlineColor;
       }
@@ -1661,10 +1661,10 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
       let fillHidColorOvr = fillHidColor;
       let fillSelColorOvr = fillSelColor;
       if (undefined !== fillVisColorOvr) {
-        fillVisColorOvr = fillVisColorOvr.adjustForContrast(vp.view.backgroundColor);
-        fillVisColorOvr.setAlpha(fillVisColor.getAlpha());
-        fillHidColorOvr = fillVisColorOvr.clone(); fillHidColorOvr.setAlpha(fillHidColor.getAlpha());
-        fillSelColorOvr = fillVisColorOvr.invert(); fillSelColorOvr.setAlpha(fillSelColor.getAlpha());
+        fillVisColorOvr = fillVisColorOvr.adjustedForContrast(vp.view.backgroundColor);
+        fillVisColorOvr = fillVisColorOvr.withAlpha(fillVisColor.getAlpha());
+        fillHidColorOvr = fillVisColorOvr.withAlpha(fillHidColor.getAlpha());
+        fillSelColorOvr = fillVisColorOvr.inverse().withAlpha(fillSelColor.getAlpha());
       } else {
         fillVisColorOvr = fillVisColor;
       }

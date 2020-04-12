@@ -8,10 +8,10 @@
 
 import { JsonUtils } from "@bentley/bentleyjs-core";
 import {
-  ColorByName,
   ColorDef,
   ColorDefProps,
 } from "./ColorDef";
+import { ColorByName } from "./ColorByName";
 import { Gradient } from "./Gradient";
 
 /** JSON representation of a [[GroundPlane]].
@@ -31,7 +31,7 @@ export interface GroundPlaneProps {
 /** A circle drawn at a Z elevation, whose diameter is the the XY diagonal of the project extents, used to represent the ground as a reference point within a spatial view.
  * @public
  */
-export class GroundPlane implements GroundPlaneProps {
+export class GroundPlane {
   /** Whether the ground plane should be displayed. */
   public display: boolean = false;
   /** The Z height at which to draw the plane. */
@@ -47,8 +47,8 @@ export class GroundPlane implements GroundPlaneProps {
     ground = ground ? ground : {};
     this.display = JsonUtils.asBool(ground.display, false);
     this.elevation = JsonUtils.asDouble(ground.elevation, -.01);
-    this.aboveColor = (undefined !== ground.aboveColor) ? ColorDef.fromJSON(ground.aboveColor) : new ColorDef(ColorByName.darkGreen);
-    this.belowColor = (undefined !== ground.belowColor) ? ColorDef.fromJSON(ground.belowColor) : new ColorDef(ColorByName.darkBrown);
+    this.aboveColor = (undefined !== ground.aboveColor) ? ColorDef.fromJSON(ground.aboveColor) : ColorDef.fromTbgr(ColorByName.darkGreen);
+    this.belowColor = (undefined !== ground.belowColor) ? ColorDef.fromJSON(ground.belowColor) : ColorDef.fromTbgr(ColorByName.darkBrown);
   }
 
   public toJSON(): GroundPlaneProps {
@@ -72,10 +72,8 @@ export class GroundPlane implements GroundPlaneProps {
     const values = [0, .25, .5];   // gradient goes from edge of rectangle (0.0) to center (1.0)...
     const color = aboveGround ? this.aboveColor : this.belowColor;
     const alpha = aboveGround ? 0x80 : 0x85;
-    const groundColors = [color.clone(), color.clone(), color.clone()];
-    groundColors[0].setTransparency(0xff);
-    groundColors[1].setTransparency(alpha);
-    groundColors[2].setTransparency(alpha);
+    const groundColors = [color.withTransparency(0xff), color, color];
+    groundColors[1] = groundColors[2] = color.withTransparency(alpha);
 
     // Get the possibly cached gradient from the system, specific to whether or not we want ground from above or below.
     gradient = new Gradient.Symb();

@@ -44,11 +44,10 @@ export class LightingUniforms {
   private readonly _data = new Float32Array(15);
 
   // Working state
-  private readonly _colorDef = new ColorDef();
   private readonly _rgb = new FloatRgb();
 
   private setRgb(rgb: RgbColor, index: number): void {
-    this._rgb.setColorDef(rgb.toColorDef(undefined, this._colorDef));
+    this._rgb.setTbgr(ColorDef.computeTbgrFromComponents(rgb.r, rgb.g, rgb.b));
     this._data[index + 0] = this._rgb.red;
     this._data[index + 1] = this._rgb.green;
     this._data[index + 2] = this._rgb.blue;

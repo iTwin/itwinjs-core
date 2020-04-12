@@ -7,11 +7,11 @@
  */
 
 import { JsonUtils } from "@bentley/bentleyjs-core";
+import { ColorByName } from "./ColorByName";
+import { RgbColor } from "./RgbColor";
 import {
-  ColorByName,
   ColorDef,
   ColorDefProps,
-  RgbColor,
 } from "./ColorDef";
 
 /** JSON representation of [[SolarShadowSettings]].
@@ -24,7 +24,7 @@ export interface SolarShadowSettingsProps {
   bias?: number;
 }
 
-const defaultColor = RgbColor.fromColorDef(new ColorDef(ColorByName.grey));
+const defaultColor = RgbColor.fromColorDef(ColorDef.fromTbgr(ColorByName.grey));
 
 /** Settings controlling display of solar shadows for a [[DisplayStyle3dSettings]].
  * Solar shadows are imposed as a color scaling on geometry occluded from solar lighting.

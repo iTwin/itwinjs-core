@@ -302,7 +302,7 @@ class IoTTemperatureAnimation extends IoTHeatCoolAnimation {
 
   constructor(extension: IoTDemoExtension, selectedView: ScreenViewport, type: AnimationType, visibility: number, interpolation: number, floor: string, startMsec?: number, duration?: number) {
     super(extension, selectedView, type, visibility, interpolation, floor, startMsec, duration);
-    const thematicSettings = ThematicGradientSettings.fromJSON({ colorScheme: ThematicGradientColorScheme.BlueRed, mode: ThematicGradientMode.Smooth, stepCount: 0, marginColor: new ColorDef("blanchedAlmond") });
+    const thematicSettings = ThematicGradientSettings.fromJSON({ colorScheme: ThematicGradientColorScheme.BlueRed, mode: ThematicGradientMode.Smooth, stepCount: 0, marginColor: ColorDef.computeTbgrFromString("blanchedAlmond") });
     this._gradient = Gradient.Symb.createThematic(thematicSettings);
   }
 

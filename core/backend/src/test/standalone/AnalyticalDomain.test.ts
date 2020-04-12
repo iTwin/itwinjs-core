@@ -74,7 +74,7 @@ describe("Analytical Domain", () => {
     assert.isDefined(iModelDb.querySchemaVersion("analytical"), "Expect case-insensitive comparison");
     assert.isUndefined(iModelDb.querySchemaVersion("NotImported"), "Expect undefined to be returned for schemas that have not been imported");
     // insert category
-    const categoryId = SpatialCategory.insert(iModelDb, IModel.dictionaryId, "Category", { color: ColorDef.blue });
+    const categoryId = SpatialCategory.insert(iModelDb, IModel.dictionaryId, "Category", { color: ColorDef.blue.tbgr });
     assert.isTrue(Id64.isValidId64(categoryId));
     // insert TypeDefinition
     const typeDefinitionProps: TypeDefinitionElementProps = {

@@ -132,9 +132,9 @@ export abstract class MapTile extends RealityTile {
     for (let i = 0; i < 4; i++)
       builder.addLineString([lows[i], highs[i]]);
 
-    const inColor = new ColorDef(ColorByName.cornflowerBlue);
-    const outColor = new ColorDef(ColorByName.chartreuse);
-    const transitionColor = new ColorDef(ColorByName.aquamarine);
+    const inColor = ColorDef.create(ColorByName.cornflowerBlue);
+    const outColor = ColorDef.create(ColorByName.chartreuse);
+    const transitionColor = ColorDef.create(ColorByName.aquamarine);
 
     const inPoints = [], outPoints = [], transitionPoints = [];
 
@@ -448,7 +448,7 @@ class GlobeMapTile extends MapTile {
 
   public addBoundingGraphic(builder: GraphicBuilder, color: ColorDef) {
     const doMesh = false;
-    color = new ColorDef(ColorByName.bisque);
+    color = ColorDef.create(ColorByName.bisque);
 
     if (!doMesh) {
       super.addBoundingGraphic(builder, color);

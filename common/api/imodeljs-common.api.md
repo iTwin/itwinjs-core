@@ -126,7 +126,7 @@ export namespace AmbientOcclusion {
 }
 
 // @alpha (undocumented)
-export class AnalysisStyle implements AnalysisStyleProps {
+export class AnalysisStyle {
     // (undocumented)
     clone(out?: AnalysisStyle): AnalysisStyle;
     // (undocumented)
@@ -213,7 +213,7 @@ export namespace AreaPattern {
         offset?: XYProps;
         through?: XYProps;
     }
-    export class Params implements ParamsProps {
+    export class Params {
         // (undocumented)
         angle1?: Angle;
         // (undocumented)
@@ -247,6 +247,8 @@ export namespace AreaPattern {
         space2?: number;
         // (undocumented)
         symbolId?: Id64String;
+        // (undocumented)
+        toJSON(): ParamsProps;
         // (undocumented)
         static transformPatternSpace(transform: Transform, oldSpace: number, patRot: Matrix3d, angle?: Angle): number;
         // (undocumented)
@@ -1197,50 +1199,72 @@ export enum ColorByName {
 
 // @public
 export class ColorDef {
-    constructor(val?: string | ColorDefProps);
-    adjustForContrast(other: ColorDef, alpha?: number): ColorDef;
+    adjustedForContrast(other: ColorDef, alpha?: number): ColorDef;
     static readonly black: ColorDef;
     static readonly blue: ColorDef;
-    clone(result?: ColorDef): ColorDef;
     get colors(): {
+        r: number;
+        g: number;
+        b: number;
+        t: number;
+    };
+    // @internal (undocumented)
+    static computeTbgr(val?: string | ColorDefProps): number;
+    static computeTbgrFromComponents(red: number, green: number, blue: number, transparency?: number): number;
+    static computeTbgrFromHSL(h: number, s: number, l: number, transparency?: number): number;
+    static computeTbgrFromString(val: string): number;
+    static create(val?: string | ColorDefProps): ColorDef;
+    equals(other: ColorDef): boolean;
+    static from(red: number, green: number, blue: number, transparency?: number): ColorDef;
+    static fromHSL(h: number, s: number, l: number, transparency?: number): ColorDef;
+    static fromHSV(hsv: HSVColor, transparency?: number): ColorDef;
+    static fromJSON(json?: ColorDefProps): ColorDef;
+    static fromString(val: string): ColorDef;
+    static fromTbgr(tbgr: number): ColorDef;
+    getAbgr(): number;
+    static getAbgr(tbgr: number): number;
+    getAlpha(): number;
+    static getAlpha(tbgr: number): number;
+    static getColors(tbgr: number): {
         b: number;
         g: number;
         r: number;
         t: number;
     };
-    equals(other: ColorDef): boolean;
-    freeze(): Readonly<this>;
-    static from(red: number, green: number, blue: number, transparency?: number, result?: ColorDef): ColorDef;
-    static fromHSL(h: number, s: number, l: number, out?: ColorDef): ColorDef;
-    static fromHSV(hsv: HSVColor, out?: ColorDef): ColorDef;
-    static fromJSON(json?: any): ColorDef;
-    getAbgr(): number;
-    getAlpha(): number;
+    static getName(tbgr: number): string | undefined;
     getRgb(): number;
+    static getRgb(tbgr: number): number;
     getTransparency(): number;
+    static getTransparency(tbgr: number): number;
     static readonly green: ColorDef;
-    invert(): ColorDef;
+    inverse(): ColorDef;
+    static inverse(tbgr: number): number;
     get isOpaque(): boolean;
-    lerp(color2: ColorDef, weight: number, result?: ColorDef): ColorDef;
+    static isOpaque(tbgr: number): boolean;
+    lerp(color2: ColorDef, weight: number): ColorDef;
+    static lerp(tbgr1: number, tbgr2: number, weight: number): number;
     get name(): string | undefined;
     static readonly red: ColorDef;
     static rgb2bgr(val: number): number;
-    setAlpha(alpha: number): void;
-    setFrom(other: ColorDef): void;
-    setTransparency(transparency: number): void;
     get tbgr(): number;
-    set tbgr(tbgr: number);
     toHexString(): string;
-    toHSL(opt?: HSLColor): HSLColor;
-    toHSV(out?: HSVColor): HSVColor;
+    static toHexString(tbgr: number): string;
+    toHSL(): HSLColor;
+    toHSV(): HSVColor;
     toJSON(): ColorDefProps;
     toRgbaString(): string;
+    static toRgbaString(tbgr: number): string;
     toRgbString(): string;
+    static toRgbString(tbgr: number): string;
     static readonly white: ColorDef;
+    withAlpha(alpha: number): ColorDef;
+    static withAlpha(tbgr: number, alpha: number): number;
+    withTransparency(transparency: number): ColorDef;
+    static withTransparency(tbgr: number, transparency: number): number;
 }
 
 // @public
-export type ColorDefProps = number | ColorDef;
+export type ColorDefProps = number;
 
 // @internal (undocumented)
 export class ColorIndex {
@@ -2545,7 +2569,7 @@ export namespace Gradient {
         None = 0,
         Outline = 2
     }
-    export class KeyColor implements KeyColorProps {
+    export class KeyColor {
         constructor(json: KeyColorProps);
         // (undocumented)
         color: ColorDef;
@@ -2573,7 +2597,7 @@ export namespace Gradient {
         // (undocumented)
         Thematic = 6
     }
-    export class Symb implements SymbProps {
+    export class Symb {
         // (undocumented)
         angle?: Angle;
         // (undocumented)
@@ -2601,6 +2625,8 @@ export namespace Gradient {
         thematicSettings?: ThematicGradientSettings;
         // (undocumented)
         tint?: number;
+        // (undocumented)
+        toJSON(): SymbProps;
     }
     export interface SymbProps {
         angle?: AngleProps;
@@ -2616,7 +2642,7 @@ export namespace Gradient {
 // @beta
 export class GraphicParams {
     // (undocumented)
-    readonly fillColor: ColorDef;
+    fillColor: ColorDef;
     // (undocumented)
     fillFlags: FillFlags;
     // (undocumented)
@@ -2626,20 +2652,15 @@ export class GraphicParams {
     // (undocumented)
     gradient?: Gradient.Symb;
     // (undocumented)
-    readonly lineColor: ColorDef;
+    lineColor: ColorDef;
     // (undocumented)
     linePixels: LinePixels;
-    // (undocumented)
-    lineTexture?: RenderTexture;
     // (undocumented)
     material?: RenderMaterial;
     // (undocumented)
     rasterWidth: number;
-    setFillColor(fillColor: ColorDef): void;
     // (undocumented)
     setFillTransparency(transparency: number): void;
-    setLineColor(lineColor: ColorDef): void;
-    setLinePixels(code: LinePixels): void;
     // (undocumented)
     setLineTransparency(transparency: number): void;
     // (undocumented)
@@ -2658,7 +2679,7 @@ export enum GridOrientationType {
 }
 
 // @public
-export class GroundPlane implements GroundPlaneProps {
+export class GroundPlane {
     constructor(ground?: GroundPlaneProps);
     aboveColor: ColorDef;
     belowColor: ColorDef;
@@ -2720,7 +2741,7 @@ export namespace HiddenLine {
         readonly transThreshold?: number;
         readonly visible?: StyleProps;
     }
-    export class Style implements StyleProps {
+    export class Style {
         readonly color?: ColorDef;
         // (undocumented)
         static readonly defaultHidden: Style;
@@ -2768,30 +2789,42 @@ export namespace Hilite {
 
 // @public
 export class HSLColor {
+    constructor(hue?: number, saturation?: number, lightness?: number);
     // (undocumented)
-    clone(): HSLColor;
+    clone(hue?: number, saturation?: number, lightness?: number): HSLColor;
     // (undocumented)
-    static fromColorDef(val: ColorDef, out?: HSLColor): HSLColor;
-    h: number;
-    l: number;
-    s: number;
+    static fromColorDef(val: ColorDef): HSLColor;
+    readonly h: number;
+    readonly l: number;
+    readonly s: number;
     // (undocumented)
-    toColorDef(out?: ColorDef): ColorDef;
+    toColorDef(transparency?: number): ColorDef;
 }
 
 // @public
 export class HSVColor {
+    constructor(hue?: number, saturation?: number, value?: number);
     // (undocumented)
-    adjustColor(darkenColor: boolean, delta: number): void;
+    adjusted(darkenColor: boolean, delta: number): HSVColor;
     // (undocumented)
-    clone(): HSVColor;
+    clone(hue?: number, saturation?: number, value?: number): HSVColor;
     // (undocumented)
-    static fromColorDef(val: ColorDef, out?: HSVColor): HSVColor;
-    h: number;
-    s: number;
+    static fromColorDef(val: ColorDef): HSVColor;
+    readonly h: number;
+    readonly s: number;
     // (undocumented)
-    toColorDef(out?: ColorDef): ColorDef;
-    v: number;
+    toColorDef(transparency?: number): ColorDef;
+    readonly v: number;
+}
+
+// @public (undocumented)
+export enum HSVConstants {
+    // (undocumented)
+    HSV_SATURATION_WEIGHT = 4,
+    // (undocumented)
+    HSV_VALUE_WEIGHT = 2,
+    // (undocumented)
+    VISIBILITY_GOAL = 40
 }
 
 // @public (undocumented)
@@ -4839,7 +4872,7 @@ export class ResponseLike implements Response {
 }
 
 // @public
-export class RgbColor implements RgbColorProps {
+export class RgbColor {
     constructor(r: number, g: number, b: number);
     // (undocumented)
     readonly b: number;
@@ -4847,25 +4880,22 @@ export class RgbColor implements RgbColorProps {
     equals(rhs: RgbColor): boolean;
     static fromColorDef(colorDef: ColorDef): RgbColor;
     // (undocumented)
-    static fromJSON(json?: RgbColorProps): RgbColor;
+    static fromJSON(json: RgbColorProps | undefined): RgbColor;
     // (undocumented)
     readonly g: number;
     // (undocumented)
     readonly r: number;
-    toColorDef(transparency?: number, out?: ColorDef): ColorDef;
+    toColorDef(transparency?: number): ColorDef;
     // (undocumented)
     toJSON(): RgbColorProps;
 }
 
 // @public
-export interface RgbColorProps {
-    // (undocumented)
-    b: number;
-    // (undocumented)
-    g: number;
-    // (undocumented)
+export type RgbColorProps = {
     r: number;
-}
+    g: number;
+    b: number;
+} | RgbColor;
 
 // @beta
 export type RgbFactorProps = number[];
@@ -6023,7 +6053,7 @@ export enum ThematicGradientMode {
 }
 
 // @beta
-export class ThematicGradientSettings implements ThematicGradientSettingsProps {
+export class ThematicGradientSettings {
     clone(changedProps?: ThematicGradientSettingsProps): ThematicGradientSettings;
     readonly colorScheme: ThematicGradientColorScheme;
     // (undocumented)

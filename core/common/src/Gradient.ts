@@ -56,12 +56,12 @@ export namespace Gradient {
   /** Gradient fraction value to [[ColorDef]] pair
    * @see [[Gradient.KeyColorProps]]
    */
-  export class KeyColor implements KeyColorProps {
+  export class KeyColor {
     public value: number;
     public color: ColorDef;
     public constructor(json: KeyColorProps) {
       this.value = json.value;
-      this.color = new ColorDef(json.color);
+      this.color = ColorDef.fromJSON(json.color);
     }
   }
 
@@ -94,7 +94,7 @@ export namespace Gradient {
    * Gradient fill can be applied to planar regions.
    * @see [[Gradient.SymbProps]]
    */
-  export class Symb implements SymbProps {
+  export class Symb {
     public mode = Mode.None;
     public flags: Flags = Flags.None;
     public angle?: Angle;
@@ -137,20 +137,29 @@ export namespace Gradient {
 
       if (settings.colorScheme < ThematicGradientColorScheme.Custom) {
         for (const keyValue of Gradient.Symb._fixedSchemeKeys[settings.colorScheme])
-          result.keys.push(new KeyColor({ value: keyValue[0], color: ColorDef.from(keyValue[1], keyValue[3], keyValue[2]) }));
+          result.keys.push(new KeyColor({ value: keyValue[0], color: ColorDef.computeTbgrFromComponents(keyValue[1], keyValue[3], keyValue[2]) }));
       } else { // custom color scheme; must use custom keys
         assert(settings.customKeys.length > 1, "Custom thematic mode requires at least two keys to be defined");
         if (settings.customKeys.length > 1) {
           settings.customKeys.forEach((keyColor) => result.keys.push(keyColor));
         } else { // if custom color keys are not specified properly, revert to some basic key scheme and assert
           for (const keyValue of Gradient.Symb._fixedCustomKeys)
-            result.keys.push(new KeyColor({ value: keyValue[0], color: ColorDef.from(keyValue[1], keyValue[3], keyValue[2]) }));
+          result.keys.push(new KeyColor({ value: keyValue[0], color: ColorDef.from(keyValue[1], keyValue[3], keyValue[2]).toJSON() }));
         }
       }
       return result;
     }
+
+    public toJSON(): SymbProps {
+      return {
+        ...this,
+        thematicSettings: this.thematicSettings?.toJSON(),
+        keys: this.keys.map((key) => ({ value: key.value, color: key.color.toJSON() })),
+      };
+    }
+
     public clone(): Symb {
-      return Symb.fromJSON(this);
+      return Symb.fromJSON(this.toJSON());
     }
 
     /** Returns true if this symbology is equal to another, false otherwise. */
@@ -415,7 +424,7 @@ export namespace Gradient {
                     const fStep = Math.floor(f * settings.stepCount + .99999) / settings.stepCount;
                     const delimitFraction = 1 / 1024;
                     if (settings.mode === ThematicGradientMode.SteppedWithDelimiter && Math.abs(fStep - f) < delimitFraction)
-                      color = new ColorDef(0xff000000);
+                      color = ColorDef.fromJSON(0xff000000);
                     else
                       color = this.mapColor(fStep);
                   }

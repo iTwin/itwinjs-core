@@ -177,7 +177,7 @@ export class TestUiProviderDialog extends React.Component<TestUiProviderDialogPr
   }
 
   public get colorDef(): ColorDef {
-    return new ColorDef(this._optionsValue.value as number);
+    return ColorDef.create(this._optionsValue.value as number);
   }
 
   public set colorDef(colorValue: ColorDef) {
@@ -362,7 +362,7 @@ export class TestUiProviderDialog extends React.Component<TestUiProviderDialogPr
   }
 
   private showColorInfoFromUi(updatedValue: DialogPropertySyncItem) {
-    const tempColorDef = new ColorDef(updatedValue.value.value as number);
+    const tempColorDef = ColorDef.create(updatedValue.value.value as number);
     const msg = `Property '${updatedValue.propertyName}' updated to value ${tempColorDef.toRgbString()}`;
     IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
   }

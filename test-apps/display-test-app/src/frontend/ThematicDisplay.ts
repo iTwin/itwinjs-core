@@ -34,7 +34,7 @@ export class ThematicDisplayEditor {
     gradientSettings: {
       mode: ThematicGradientMode.Smooth,
       stepCount: 0,
-      marginColor: new ColorDef(ColorByName.blanchedAlmond),
+      marginColor: ColorByName.blanchedAlmond,
       colorScheme: ThematicGradientColorScheme.BlueRed,
     },
     axis: [0.0, 0.0, 1.0],
@@ -126,7 +126,7 @@ export class ThematicDisplayEditor {
         if (props.gradientSettings!.colorScheme === ThematicGradientColorScheme.Custom) {
           const customKeyValues = [[0.0, 255, 255, 0], [0.5, 255, 0, 255], [1.0, 0, 255, 255]];
           props.gradientSettings!.customKeys = [];
-          customKeyValues.forEach((key) => props.gradientSettings!.customKeys!.push({ value: key[0], color: ColorDef.from(key[1], key[2], key[3]) }));
+          customKeyValues.forEach((key) => props.gradientSettings!.customKeys!.push({ value: key[0], color: ColorDef.computeTbgrFromComponents(key[1], key[2], key[3]) }));
         }
         return props;
       }),

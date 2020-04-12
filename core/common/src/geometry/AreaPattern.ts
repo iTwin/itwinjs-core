@@ -75,7 +75,7 @@ export namespace AreaPattern {
   }
 
   /** Defines a hatch, cross hatch, or area pattern. */
-  export class Params implements ParamsProps {
+  export class Params {
     public origin?: Point3d;
     public rotation?: YawPitchRollAngles;
     public space1?: number;
@@ -115,8 +115,15 @@ export namespace AreaPattern {
       return result;
     }
 
+    public toJSON(): ParamsProps {
+      return {
+        ...this,
+        color: this.color?.toJSON(),
+      };
+    }
+
     public clone(): Params {
-      return Params.fromJSON(this);
+      return Params.fromJSON(this.toJSON());
     }
 
     public equals(other: Params): boolean {

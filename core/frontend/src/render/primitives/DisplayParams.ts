@@ -37,8 +37,8 @@ export class DisplayParams {
     this.type = type;
     this.material = material;
     this.gradient = gradient;
-    this.lineColor = DisplayParams.adjustTransparencyInPlace(lineColor);
-    this.fillColor = DisplayParams.adjustTransparencyInPlace(fillColor);
+    this.lineColor = DisplayParams.adjustTransparency(lineColor);
+    this.fillColor = DisplayParams.adjustTransparency(fillColor);
     this.width = width;
     this.linePixels = linePixels;
     this.fillFlags = fillFlags;
@@ -50,7 +50,7 @@ export class DisplayParams {
 
   /** Creates a DisplayParams object for a particular type (mesh, linear, text) based on the specified GraphicParams. */
   public static createForType(type: DisplayParams.Type, gf: GraphicParams, resolveGradient?: (grad: Gradient.Symb) => RenderTexture | undefined): DisplayParams {
-    const lineColor = DisplayParams.adjustTransparencyInPlace(gf.lineColor.clone());
+    const lineColor = DisplayParams.adjustTransparency(gf.lineColor);
     switch (type) {
       case DisplayParams.Type.Mesh: {
         let gradientMapping: TextureMapping | undefined;
@@ -59,7 +59,7 @@ export class DisplayParams {
           if (undefined !== gradientTexture)
             gradientMapping = new TextureMapping(gradientTexture, new TextureMapping.Params());
         }
-        return new DisplayParams(type, lineColor, DisplayParams.adjustTransparencyInPlace(gf.fillColor.clone()), gf.rasterWidth, gf.linePixels, gf.fillFlags, gf.material, gf.gradient, false, gradientMapping);
+        return new DisplayParams(type, lineColor, DisplayParams.adjustTransparency(gf.fillColor), gf.rasterWidth, gf.linePixels, gf.fillFlags, gf.material, gf.gradient, false, gradientMapping);
       }
       case DisplayParams.Type.Linear:
         return new DisplayParams(type, lineColor, lineColor, gf.rasterWidth, gf.linePixels);
@@ -168,10 +168,8 @@ export class DisplayParams {
    * Given a ColorDef object, check its transparency and if it falls below the minimum, mark the color as fully opaque.
    * @return The original reference to the color provided, which has possibly been modified.
    */
-  public static adjustTransparencyInPlace(color: ColorDef): ColorDef {
-    if (color.colors.t < DisplayParams.minTransparency)
-      color.setTransparency(0);
-    return color;
+  public static adjustTransparency(color: ColorDef): ColorDef {
+    return (color.colors.t < DisplayParams.minTransparency) ? color.withTransparency(0) : color;
   }
 }
 

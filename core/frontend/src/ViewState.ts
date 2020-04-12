@@ -1690,8 +1690,8 @@ export abstract class ViewState3d extends ViewState {
       return;
 
     const params = new GraphicParams();
-    params.setLineColor(gradient.keys[0].color);
-    params.setFillColor(ColorDef.white);  // Fill should be set to opaque white for gradient texture...
+    params.lineColor = gradient.keys[0].color;
+    params.fillColor = ColorDef.white;  // Fill should be set to opaque white for gradient texture...
     params.material = material;
 
     const builder = context.createGraphicBuilder(GraphicType.WorldDecoration);

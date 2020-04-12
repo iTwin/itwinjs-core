@@ -48,7 +48,7 @@ export interface ThematicGradientSettingsProps {
 /** Thematic settings specific to creating a color gradient used by [[ThematicDisplay]].
  * @beta
  */
-export class ThematicGradientSettings implements ThematicGradientSettingsProps {
+export class ThematicGradientSettings {
   /** The thematic image mode used to generate the gradient. Defaults to [[ThematicGradientMode.Smooth]]. */
   public readonly mode: ThematicGradientMode;
   /** The step count value used for [[ThematicGradientMode.Stepped]]. Defaults to 10. */
@@ -117,7 +117,7 @@ export class ThematicGradientSettings implements ThematicGradientSettingsProps {
       if (this.colorScheme === ThematicGradientColorScheme.Custom && this.customKeys.length < 2) {
         this.customKeys = [];
         for (const keyValue of ThematicGradientSettings._defaultCustomKeys)
-          this.customKeys.push(new Gradient.KeyColor({ value: keyValue[0], color: ColorDef.from(keyValue[1], keyValue[3], keyValue[2]) }));
+          this.customKeys.push(new Gradient.KeyColor({ value: keyValue[0], color: ColorDef.computeTbgrFromComponents(keyValue[1], keyValue[3], keyValue[2]) }));
       }
     }
   }
@@ -133,8 +133,9 @@ export class ThematicGradientSettings implements ThematicGradientSettingsProps {
       marginColor: this.marginColor.toJSON(),
       colorScheme: this.colorScheme,
     };
+
     json.customKeys = [];
-    this.customKeys.forEach((key) => json.customKeys!.push({ value: key.value, color: key.color.toJSON() }));
+    this.customKeys.forEach((key) => json.customKeys!.push({ value: key.value, color: key.color.tbgr }));
     return json;
   }
 
@@ -149,9 +150,9 @@ export class ThematicGradientSettings implements ThematicGradientSettingsProps {
     const props: ThematicGradientSettingsProps = {
       mode: undefined !== changedProps.mode ? changedProps.mode : this.mode,
       stepCount: undefined !== changedProps.stepCount ? changedProps.stepCount : this.stepCount,
-      marginColor: undefined !== changedProps.marginColor ? changedProps.marginColor : this.marginColor,
+      marginColor: undefined !== changedProps.marginColor ? changedProps.marginColor : this.marginColor.tbgr,
       colorScheme: undefined !== changedProps.colorScheme ? changedProps.colorScheme : this.colorScheme,
-      customKeys: undefined !== changedProps.customKeys ? changedProps.customKeys : this.customKeys,
+      customKeys: undefined !== changedProps.customKeys ? changedProps.customKeys : this.customKeys.map((key) => ({ value: key.value, color: key.color.tbgr })),
     };
 
     return ThematicGradientSettings.fromJSON(props);

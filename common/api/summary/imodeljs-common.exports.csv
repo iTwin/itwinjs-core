@@ -3,7 +3,7 @@ Release Tag;API Item
 beta;AmbientLight
 beta;AmbientLightProps
 beta;AmbientOcclusion
-alpha;AnalysisStyle 
+alpha;AnalysisStyle
 alpha;AnalysisStyleProps
 internal;AntiAliasPref
 public;AreaFillProps
@@ -62,7 +62,7 @@ public;CodeScopeSpec
 public;CodeSpec
 public;ColorByName
 public;ColorDef
-public;ColorDefProps = number | ColorDef
+public;ColorDefProps = number
 internal;ColorIndex
 public;CommonLoggerCategory
 internal;compareIModelTileTreeIds(lhs: IModelTileTreeId, rhs: IModelTileTreeId): number
@@ -177,7 +177,7 @@ internal;GltfVersions
 beta;Gradient
 beta;GraphicParams
 public;GridOrientationType
-public;GroundPlane 
+public;GroundPlane
 public;GroundPlaneProps
 beta;HemisphereLights
 beta;HemisphereLightsProps
@@ -185,6 +185,7 @@ beta;HiddenLine
 public;Hilite
 public;HSLColor
 public;HSVColor
+public;HSVConstants
 public;HttpMethod_T = "get" | "put" | "post" | "delete" | "options" | "head" | "patch" | "trace"
 public;HttpServerRequest 
 public;HttpServerResponse 
@@ -342,8 +343,8 @@ beta;RenderSchedule
 beta;class RenderTexture 
 beta;RenderTexture
 public;ResponseLike 
-public;RgbColor 
-public;RgbColorProps
+public;RgbColor
+public;RgbColorProps =
 beta;RgbFactorProps = number[]
 public;RootSubjectProps
 public;class RpcConfiguration
@@ -441,7 +442,7 @@ beta;ThematicDisplayMode
 beta;ThematicDisplayProps
 beta;ThematicGradientColorScheme
 beta;ThematicGradientMode
-beta;ThematicGradientSettings 
+beta;ThematicGradientSettings
 beta;ThematicGradientSettingsProps
 alpha;ThumbnailFormatProps
 alpha;ThumbnailProps 

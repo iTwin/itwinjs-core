@@ -3,35 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { ViewFlags, RenderMode, ColorDef, Gradient } from "@bentley/imodeljs-common";
+import { Gradient } from "../Gradient";
 import { Angle } from "@bentley/geometry-core";
 
-describe("Render", () => {
-
-  it("ViewFlags", () => {
-    const flags = new ViewFlags();
-    assert(flags.acsTriad === false);
-    assert(flags.grid === false);
-    assert(flags.fill === true);
-    assert(flags.renderMode === RenderMode.Wireframe);
-
-    flags.renderMode = RenderMode.SmoothShade;
-    flags.monochrome = true;
-    const jsonstr = JSON.stringify(flags);
-    const flags2 = ViewFlags.fromJSON(JSON.parse(jsonstr));
-    assert(flags.acsTriad === flags2.acsTriad);
-    assert(flags.renderMode === flags2.renderMode);
-    assert(flags.monochrome === flags2.monochrome);
-  });
-
-  it("Gradient.Symb", () => {
+describe("Gradient.Symb", () => {
+  it("should round=-trip through JSON", () => {
     let symb = Gradient.Symb.fromJSON({
       mode: Gradient.Mode.Linear,
       flags: Gradient.Flags.Outline,
       angle: Angle.createDegrees(45.5),
       tint: 0.6,
       shift: 1,
-      keys: [{ value: .65, color: new ColorDef(100) }, { value: .12, color: new ColorDef(100) }],
+      keys: [{ value: .65, color: 100 }, { value: .12, color: 100 }],
     });
 
     const symbCopy = symb.clone();
@@ -45,7 +28,7 @@ describe("Render", () => {
       tint: 0.042133128966509004,
       shift: 3.45912515864202,
       angle: Angle.createDegrees(92.94598821201656),
-      keys: [{ value: 0.6804815398789292, color: new ColorDef(610) }, { value: 0.731472008309797, color: new ColorDef(230) }],
+      keys: [{ value: 0.6804815398789292, color: 610 }, { value: 0.731472008309797, color: 230 }],
     });
     symbArr.push(symb);
     symb = Gradient.Symb.fromJSON({
@@ -54,7 +37,7 @@ describe("Render", () => {
       tint: 0.042133128966509004,
       shift: 3.45912515864202,
       angle: Angle.createDegrees(92.94598821201656),
-      keys: [{ value: 0.6804815398789292, color: new ColorDef(610) }, { value: 0.731472008309797, color: new ColorDef(230) }],
+      keys: [{ value: 0.6804815398789292, color: 610 }, { value: 0.731472008309797, color: 230 }],
     });
     symbArr.push(symb);
     symb = Gradient.Symb.fromJSON({
@@ -63,7 +46,7 @@ describe("Render", () => {
       tint: 0.042133128966509004,
       shift: 3.45912515864202,
       angle: Angle.createDegrees(92.94598821201656),
-      keys: [{ value: 0.6804815398789292, color: new ColorDef(610) }],
+      keys: [{ value: 0.6804815398789292, color: 610 }],
     });
     symbArr.push(symb);
     symb = Gradient.Symb.fromJSON({
@@ -72,7 +55,7 @@ describe("Render", () => {
       tint: 0.042133128966509004,
       shift: 3.45912515864202,
       angle: Angle.createDegrees(92.94598821201656),
-      keys: [{ value: 0.6804815398789292, color: new ColorDef(610) }, { value: 0.731472008309797, color: new ColorDef(230) }],
+      keys: [{ value: 0.6804815398789292, color: 610 }, { value: 0.731472008309797, color: 230 }],
     });
     symbArr.push(symb);
     symb = Gradient.Symb.fromJSON({
@@ -81,7 +64,7 @@ describe("Render", () => {
       tint: 0.042133128966509004,
       shift: 3.45912515864202,
       angle: Angle.createDegrees(92.94598821201656),
-      keys: [{ value: 0.6804815398789292, color: new ColorDef(610) }, { value: 0.731472008309797, color: new ColorDef(230) }],
+      keys: [{ value: 0.6804815398789292, color: 610 }, { value: 0.731472008309797, color: 230 }],
     });
     symbArr.push(symb);
     symb = Gradient.Symb.fromJSON({
@@ -90,7 +73,7 @@ describe("Render", () => {
       tint: 0.02,
       shift: 3.45912515864202,
       angle: Angle.createDegrees(92.94598821201656),
-      keys: [{ value: 0.6804815398789292, color: new ColorDef(610) }, { value: 0.731472008309797, color: new ColorDef(230) }],
+      keys: [{ value: 0.6804815398789292, color: 610 }, { value: 0.731472008309797, color: 230 }],
     });
     symbArr.push(symb);
     symb = Gradient.Symb.fromJSON({
@@ -99,7 +82,7 @@ describe("Render", () => {
       tint: 0.6,
       shift: 3.45912515864202,
       angle: Angle.createDegrees(92.94598821201656),
-      keys: [{ value: 0.6804815398789292, color: new ColorDef(610) }, { value: 0.731472008309797, color: new ColorDef(230) }],
+      keys: [{ value: 0.6804815398789292, color: 610 }, { value: 0.731472008309797, color: 230 }],
     });
     symbArr.push(symb);
     symb = Gradient.Symb.fromJSON({
@@ -108,7 +91,7 @@ describe("Render", () => {
       tint: 0.042133128966509004,
       shift: 2,
       angle: Angle.createDegrees(92.94598821201656),
-      keys: [{ value: 0.6804815398789292, color: new ColorDef(610) }, { value: 0.731472008309797, color: new ColorDef(230) }],
+      keys: [{ value: 0.6804815398789292, color: 610 }, { value: 0.731472008309797, color: 230 }],
     });
     symbArr.push(symb);
     symb = Gradient.Symb.fromJSON({
@@ -117,7 +100,7 @@ describe("Render", () => {
       tint: 0.042133128966509004,
       shift: 5.576,
       angle: Angle.createDegrees(92.94598821201656),
-      keys: [{ value: 0.6804815398789292, color: new ColorDef(610) }, { value: 0.731472008309797, color: new ColorDef(230) }],
+      keys: [{ value: 0.6804815398789292, color: 610 }, { value: 0.731472008309797, color: 230 }],
     });
     symbArr.push(symb);
     symb = Gradient.Symb.fromJSON({
@@ -126,7 +109,7 @@ describe("Render", () => {
       tint: 0.042133128966509004,
       shift: 3.45912515864202,
       angle: Angle.createDegrees(20.6),
-      keys: [{ value: 0.6804815398789292, color: new ColorDef(610) }, { value: 0.731472008309797, color: new ColorDef(230) }],
+      keys: [{ value: 0.6804815398789292, color: 610 }, { value: 0.731472008309797, color: 230 }],
     });
     symbArr.push(symb);
     symb = Gradient.Symb.fromJSON({
@@ -135,7 +118,7 @@ describe("Render", () => {
       tint: 0.042133128966509004,
       shift: 3.45912515864202,
       angle: Angle.createDegrees(122),
-      keys: [{ value: 0.6804815398789292, color: new ColorDef(610) }, { value: 0.731472008309797, color: new ColorDef(230) }],
+      keys: [{ value: 0.6804815398789292, color: 610 }, { value: 0.731472008309797, color: 230 }],
     });
     symbArr.push(symb);
     symb = Gradient.Symb.fromJSON({
@@ -144,7 +127,7 @@ describe("Render", () => {
       tint: 0.042133128966509004,
       shift: 3.45912515864202,
       angle: Angle.createDegrees(92.94598821201656),
-      keys: [{ value: 0.333, color: new ColorDef(610) }, { value: 0.731472008309797, color: new ColorDef(230) }],
+      keys: [{ value: 0.333, color: 610 }, { value: 0.731472008309797, color: 230 }],
     });
     symbArr.push(symb);
     symb = Gradient.Symb.fromJSON({
@@ -153,7 +136,7 @@ describe("Render", () => {
       tint: 0.042133128966509004,
       shift: 3.45912515864202,
       angle: Angle.createDegrees(92.94598821201656),
-      keys: [{ value: 0.78, color: new ColorDef(610) }, { value: 0.731472008309797, color: new ColorDef(230) }],
+      keys: [{ value: 0.78, color: 610 }, { value: 0.731472008309797, color: 230 }],
     });
     symbArr.push(symb);
     symb = Gradient.Symb.fromJSON({
@@ -162,7 +145,7 @@ describe("Render", () => {
       tint: 0.042133128966509004,
       shift: 3.45912515864202,
       angle: Angle.createDegrees(92.94598821201656),
-      keys: [{ value: 0.6804815398789292, color: new ColorDef(425) }, { value: 0.731472008309797, color: new ColorDef(230) }],
+      keys: [{ value: 0.6804815398789292, color: 425 }, { value: 0.731472008309797, color: 230 }],
     });
     symbArr.push(symb);
     symb = Gradient.Symb.fromJSON({
@@ -171,7 +154,7 @@ describe("Render", () => {
       tint: 0.042133128966509004,
       shift: 3.45912515864202,
       angle: Angle.createDegrees(92.94598821201656),
-      keys: [{ value: 0.6804815398789292, color: new ColorDef(611) }, { value: 0.731472008309797, color: new ColorDef(230) }],
+      keys: [{ value: 0.6804815398789292, color: 611 }, { value: 0.731472008309797, color: 230 }],
     });
     symbArr.push(symb);
     symb = Gradient.Symb.fromJSON({
@@ -180,7 +163,7 @@ describe("Render", () => {
       tint: 0.042133128966509004,
       shift: 3.45912515864202,
       angle: Angle.createDegrees(92.94598821201656),
-      keys: [{ value: 0.6804815398789292, color: new ColorDef(610) }, { value: 0.6767, color: new ColorDef(230) }],
+      keys: [{ value: 0.6804815398789292, color: 610 }, { value: 0.6767, color: 230 }],
     });
     symbArr.push(symb);
     symb = Gradient.Symb.fromJSON({
@@ -189,7 +172,7 @@ describe("Render", () => {
       tint: 0.042133128966509004,
       shift: 3.45912515864202,
       angle: Angle.createDegrees(92.94598821201656),
-      keys: [{ value: 0.6804815398789292, color: new ColorDef(610) }, { value: 0.8787, color: new ColorDef(230) }],
+      keys: [{ value: 0.6804815398789292, color: 610 }, { value: 0.8787, color: 230 }],
     });
     symbArr.push(symb);
     symb = Gradient.Symb.fromJSON({
@@ -198,7 +181,7 @@ describe("Render", () => {
       tint: 0.042133128966509004,
       shift: 3.45912515864202,
       angle: Angle.createDegrees(92.94598821201656),
-      keys: [{ value: 0.6804815398789292, color: new ColorDef(610) }, { value: 0.731472008309797, color: new ColorDef(231) }],
+      keys: [{ value: 0.6804815398789292, color: 610 }, { value: 0.731472008309797, color: 231 }],
     });
     symbArr.push(symb);
     symb = Gradient.Symb.fromJSON({
@@ -207,7 +190,7 @@ describe("Render", () => {
       tint: 0.042133128966509004,
       shift: 3.45912515864202,
       angle: Angle.createDegrees(92.94598821201656),
-      keys: [{ value: 0.6804815398789292, color: new ColorDef(610) }, { value: 0.731472008309797, color: new ColorDef(229) }],
+      keys: [{ value: 0.6804815398789292, color: 610 }, { value: 0.731472008309797, color: 229 }],
     });
     symbArr.push(symb);
 
