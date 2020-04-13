@@ -5050,6 +5050,8 @@ export class UiShowHideManager {
     static set showHidePanels(showHide: boolean);
     static showUiAndCancelTimer(): void;
     static showUiAndResetTimer(): void;
+    static get useProximityOpacity(): boolean;
+    static set useProximityOpacity(value: boolean);
     }
 
 // @beta

@@ -8,9 +8,10 @@
 
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps } from "@bentley/ui-core";
+import { CommonProps, useProximityToMouse } from "@bentley/ui-core";
 
 import { OrthogonalDirectionHelpers, OrthogonalDirection } from "./utilities/Direction";
+import { useToolbarWithOverflowDirectionContext } from "./Toolbar";
 import "./Items.scss";
 
 /** Properties of [[ToolbarItems]] component.
@@ -32,10 +33,27 @@ export function ToolbarItems(props: ToolbarItemsProps) {
     OrthogonalDirectionHelpers.getCssClassName(props.direction),
     props.className);
 
+  const ref = React.useRef<HTMLDivElement>(null);
+  const proximity = useProximityToMouse(ref);
+  const { useProximityOpacity, openPopupCount, overflowDisplayActive } = useToolbarWithOverflowDirectionContext();
+  let toolbarOpacity = 1.0;
+
+  if (useProximityOpacity && openPopupCount < 1 && !overflowDisplayActive) {
+    const threshold = 100;
+    const scale = ((proximity < threshold) ? threshold - proximity : 0) / threshold;
+    toolbarOpacity = (0.80 * scale) + 0.20;
+  }
+  const divStyle: React.CSSProperties = {
+    backgroundColor: `rgba(var(--buic-background-3-rgb), ${toolbarOpacity})`,
+    borderColor: `rgba(var(--buic-background-5-rgb), ${toolbarOpacity})`,
+    ...props.style,
+  };
+
   return (
     <div
       className={className}
-      style={props.style}
+      style={divStyle}
+      ref={ref}
     >
       {props.children}
     </div>

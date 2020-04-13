@@ -152,6 +152,7 @@ export * from "./ui-core/utils/hooks/useDisposable";
 export * from "./ui-core/utils/hooks/useEffectSkipFirst";
 export * from "./ui-core/utils/hooks/ResizeObserverPolyfill";
 export * from "./ui-core/utils/hooks/useOnOutsideClick";
+export * from "./ui-core/utils/hooks/useProximityToMouse";
 export * from "./ui-core/utils/hooks/useRefEffect";
 export * from "./ui-core/utils/hooks/useRefs";
 export * from "./ui-core/utils/hooks/useResizeObserver";

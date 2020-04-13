@@ -23,6 +23,7 @@ export class UiShowHideManager {
   private static _showHideFooter: boolean = false;
   private static _inactivityTime: number = INACTIVITY_TIME_DEFAULT;
   private static _timeout: NodeJS.Timeout;
+  private static _useProximityOpacity: boolean = true;
 
   /** Determines if the Ui is visible */
   public static get isUiVisible() {
@@ -66,6 +67,15 @@ export class UiShowHideManager {
   }
   public static set inactivityTime(time: number) {
     UiShowHideManager._inactivityTime = time;
+  }
+
+  /** Determines whether the proximity of the mouse should alter the opacity of a toolbar. Defaults to true. */
+  public static get useProximityOpacity(): boolean {
+    return UiShowHideManager._useProximityOpacity;
+  }
+  public static set useProximityOpacity(value: boolean) {
+    UiShowHideManager._useProximityOpacity = value;
+    UiFramework.onUiVisibilityChanged.emit({ visible: UiFramework.getIsUiVisible() });
   }
 
   /** Handler for when a Frontstage is ready */

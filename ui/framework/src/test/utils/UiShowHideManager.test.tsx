@@ -82,6 +82,25 @@ describe("UiShowHideManager", () => {
       remove();
     });
 
+    it("useProximityOpacity should return default of true", () => {
+      expect(UiShowHideManager.useProximityOpacity).to.be.true;
+    });
+
+    it("useProximityOpacity should set & return correct value", () => {
+      const spyMethod = sinon.spy();
+      const remove = UiFramework.onUiVisibilityChanged.addListener(spyMethod);
+
+      UiShowHideManager.useProximityOpacity = false;
+      expect(UiShowHideManager.useProximityOpacity).to.be.false;
+      spyMethod.calledOnce.should.true;
+
+      UiShowHideManager.useProximityOpacity = true;
+      expect(UiShowHideManager.useProximityOpacity).to.be.true;
+      spyMethod.calledTwice.should.true;
+
+      remove();
+    });
+
     it("inactivityTime should return default", () => {
       expect(UiShowHideManager.inactivityTime).to.eq(INACTIVITY_TIME_DEFAULT);
     });

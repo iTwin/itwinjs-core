@@ -352,4 +352,43 @@ describe("Rectangle", () => {
     expect(result.equals(new Rectangle(20, 0, 30, 30))).to.be.true;
   });
 
+  it("getShortestDistanceToPoint should return correct distance", () => {
+    const sut = new Rectangle(10, 10, 30, 30);
+
+    let result = sut.getShortestDistanceToPoint(new Point(10, 0));
+    expect(result).to.eq(10);
+    result = sut.getShortestDistanceToPoint(new Point(30, 0));
+    expect(result).to.eq(10);
+    result = sut.getShortestDistanceToPoint(new Point(0, 10));
+    expect(result).to.eq(10);
+    result = sut.getShortestDistanceToPoint(new Point(40, 10));
+    expect(result).to.eq(10);
+    result = sut.getShortestDistanceToPoint(new Point(10, 40));
+    expect(result).to.eq(10);
+    result = sut.getShortestDistanceToPoint(new Point(30, 40));
+    expect(result).to.eq(10);
+
+    result = sut.getShortestDistanceToPoint(new Point(0, 20));
+    expect(result).to.eq(10);
+    result = sut.getShortestDistanceToPoint(new Point(40, 20));
+    expect(result).to.eq(10);
+    result = sut.getShortestDistanceToPoint(new Point(20, 0));
+    expect(result).to.eq(10);
+    result = sut.getShortestDistanceToPoint(new Point(40, 20));
+    expect(result).to.eq(10);
+
+    const isoscelesLength = 14.142135623730951;
+    result = sut.getShortestDistanceToPoint(new Point(0, 0));
+    expect(result).to.eq(isoscelesLength);
+    result = sut.getShortestDistanceToPoint(new Point(40, 0));
+    expect(result).to.eq(isoscelesLength);
+    result = sut.getShortestDistanceToPoint(new Point(0, 40));
+    expect(result).to.eq(isoscelesLength);
+    result = sut.getShortestDistanceToPoint(new Point(40, 40));
+    expect(result).to.eq(isoscelesLength);
+
+    result = sut.getShortestDistanceToPoint(new Point(20, 20));
+    expect(result).to.eq(0);
+  });
+
 });

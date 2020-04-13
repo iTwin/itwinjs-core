@@ -8,6 +8,7 @@
 
 import { Point, PointProps } from "./Point";
 import { Size, SizeProps } from "./Size";
+import { Geometry } from "@bentley/geometry-core";
 
 /** Describes 2d bounds.
  * @beta
@@ -34,12 +35,12 @@ export enum Corner {
  */
 export class Rectangle implements RectangleProps {
   /** Creates rectangle from [[RectangleProps]]. */
-  public static create(props: RectangleProps) {
+  public static create(props: RectangleProps): Rectangle {
     return new Rectangle(props.left, props.top, props.right, props.bottom);
   }
 
   /** Creates rectangle from [[SizeProps]]. */
-  public static createFromSize(size: SizeProps) {
+  public static createFromSize(size: SizeProps): Rectangle {
     return new Rectangle(0, 0, size.width, size.height);
   }
 
@@ -48,19 +49,19 @@ export class Rectangle implements RectangleProps {
   }
 
   /** @returns Size of this rectangle. */
-  public getSize() {
+  public getSize(): Size {
     const width = this.getWidth();
     const height = this.getHeight();
     return new Size(width, height);
   }
 
   /** @returns Width of this rectangle. */
-  public getWidth() {
+  public getWidth(): number {
     return this.right - this.left;
   }
 
   /** @returns Height of this rectangle. */
-  public getHeight() {
+  public getHeight(): number {
     return this.bottom - this.top;
   }
 
@@ -87,7 +88,7 @@ export class Rectangle implements RectangleProps {
    * @note Negative arguments will increase the size of rectangle.
    * @returns New [[Rectangle]] with modified bounds.
    */
-  public inset(left: number, top: number, right: number, bottom: number) {
+  public inset(left: number, top: number, right: number, bottom: number): Rectangle {
     return new Rectangle(this.left + left, this.top + top, this.right - right, this.bottom - bottom);
   }
 
@@ -95,7 +96,7 @@ export class Rectangle implements RectangleProps {
    * Offsets the rectangle along the X and Y axes.
    * @returns New [[Rectangle]] with modified position.
    */
-  public offset(offset: PointProps) {
+  public offset(offset: PointProps): Rectangle {
     return new Rectangle(this.left + offset.x, this.top + offset.y, this.right + offset.x, this.bottom + offset.y);
   }
 
@@ -103,7 +104,7 @@ export class Rectangle implements RectangleProps {
    * Offsets the rectangle along the X axis.
    * @returns New [[Rectangle]] with modified position along X axis.
    */
-  public offsetX(offset: number) {
+  public offsetX(offset: number): Rectangle {
     return new Rectangle(this.left + offset, this.top, this.right + offset, this.bottom);
   }
 
@@ -111,7 +112,7 @@ export class Rectangle implements RectangleProps {
    * Offsets the rectangle along the Y axis.
    * @returns New [[Rectangle]] with modified position along Y axis.
    */
-  public offsetY(offset: number) {
+  public offsetY(offset: number): Rectangle {
     return new Rectangle(this.left, this.top + offset, this.right, this.bottom + offset);
   }
 
@@ -119,7 +120,7 @@ export class Rectangle implements RectangleProps {
    * Moves the top left corner of rectangle to specified point.
    * @returns New [[Rectangle]] with modified position.
    */
-  public setPosition(position: PointProps) {
+  public setPosition(position: PointProps): Rectangle {
     return new Rectangle(position.x, position.y, position.x + this.getWidth(), position.y + this.getHeight());
   }
 
@@ -128,7 +129,7 @@ export class Rectangle implements RectangleProps {
    * @note Only [[Edge.Bottom]] is subject to change.
    * @returns New [[Rectangle]] with modified height.
    */
-  public setHeight(height: number) {
+  public setHeight(height: number): Rectangle {
     return new Rectangle(this.left, this.top, this.right, this.top + height);
   }
 
@@ -137,7 +138,7 @@ export class Rectangle implements RectangleProps {
    * @note Only [[Edge.Right]] is subject to change.
    * @returns New [[Rectangle]] with modified width.
    */
-  public setWidth(width: number) {
+  public setWidth(width: number): Rectangle {
     return new Rectangle(this.left, this.top, this.left + width, this.bottom);
   }
 
@@ -146,12 +147,12 @@ export class Rectangle implements RectangleProps {
    * @note Only [[Edge.Bottom]] and [[Edge.Right]] are subjects to change.
    * @returns New [[Rectangle]] with modified height.
    */
-  public setSize(size: SizeProps) {
+  public setSize(size: SizeProps): Rectangle {
     return new Rectangle(this.left, this.top, this.left + size.width, this.top + size.height);
   }
 
   /** Checks if bounds of two rectangles match. */
-  public equals(other: RectangleProps) {
+  public equals(other: RectangleProps): boolean {
     if (this.left === other.left &&
       this.top === other.top &&
       this.right === other.right &&
@@ -165,7 +166,7 @@ export class Rectangle implements RectangleProps {
    * Checks if point is within bounds of the rectangle.
    * @note Inclusive.
    */
-  public containsPoint(point: PointProps) {
+  public containsPoint(point: PointProps): boolean {
     return point.x >= this.left && point.x <= this.right && point.y >= this.top && point.y <= this.bottom;
   }
 
@@ -209,7 +210,7 @@ export class Rectangle implements RectangleProps {
   }
 
   /** @returns true if this rectangle intersects other rectangle. */
-  public intersects(other: RectangleProps) {
+  public intersects(other: RectangleProps): boolean {
     return this.left < other.right && this.right > other.left &&
       this.top < other.bottom && this.bottom > other.top;
   }
@@ -218,7 +219,7 @@ export class Rectangle implements RectangleProps {
    * Merges outer edges of this and other rectangles.
    * @returns New [[Rectangle]] with merged bounds.
    */
-  public outerMergeWith(other: RectangleProps) {
+  public outerMergeWith(other: RectangleProps): Rectangle {
     const left = Math.min(this.left, other.left);
     const top = Math.min(this.top, other.top);
     const right = Math.max(this.right, other.right);
@@ -246,6 +247,39 @@ export class Rectangle implements RectangleProps {
 
     const left = segmentId * segmentWidth;
     return this.inset(left, 0, 0, 0).setWidth(segmentWidth);
+  }
+
+  /**
+   * Calculates the shortest distance between this rectangle and a given point.
+   * @returns The shortest distance to a point.
+   */
+  public getShortestDistanceToPoint(point: PointProps): number {
+    let shortestDistance = 0;
+
+    if (point.x < this.left) {
+      if (point.y < this.top)
+        shortestDistance = Geometry.hypotenuseXY(this.left - point.x, this.top - point.y);
+      else if (point.y <= this.bottom)
+        shortestDistance = this.left - point.x;
+      else
+        shortestDistance = Geometry.hypotenuseXY(this.left - point.x, this.bottom - point.y);
+    } else if (point.x <= this.right) {
+      if (point.y < this.top)
+        shortestDistance = this.top - point.y;
+      else if (point.y <= this.bottom)
+        shortestDistance = 0;
+      else
+        shortestDistance = point.y - this.bottom;
+    } else {
+      if (point.y < this.top)
+        shortestDistance = Geometry.hypotenuseXY(this.right - point.x, this.top - point.y);
+      else if (point.y <= this.bottom)
+        shortestDistance = point.x - this.right;
+      else
+        shortestDistance = Geometry.hypotenuseXY(this.right - point.x, this.bottom - point.y);
+    }
+
+    return shortestDistance;
   }
 
   /** @returns [[RectangleProps]] object for this rectangle. */
