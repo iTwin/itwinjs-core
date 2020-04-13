@@ -11,10 +11,8 @@ import {
 import {
   createTextBox,
   createButton,
-  createRadioBox,
   deserializeViewState,
   serializeViewState,
-  RadioBoxEntry,
 } from "@bentley/frontend-devtools";
 import { Id64Arg } from "@bentley/bentleyjs-core";
 import SVTRpcInterface from "../common/SVTRpcInterface";
@@ -50,8 +48,10 @@ export class SavedViewPicker extends ToolBarDropDown {
     this._viewer = viewer;
 
     this._element = document.createElement("div");
-    this._element.className = "scrollingToolMenu";
+    this._element.className = "toolMenu";
     this._element.style.display = "block";
+    this._element.style.width = "300px";
+    this._element.style.overflowX = "none";
 
     parent.appendChild(this._element);
   }
@@ -75,6 +75,7 @@ export class SavedViewPicker extends ToolBarDropDown {
   public async populate(): Promise<void> {
     if (!this._imodel.isOpen)
       return;
+
     const filename = this._imodel.getRpcProps().key;
     const esvString = await SVTRpcInterface.getClient().readExternalSavedViews(filename);
     this._views.loadFromString(esvString);
@@ -92,25 +93,40 @@ export class SavedViewPicker extends ToolBarDropDown {
       id: "txt_viewName",
       parent: this._element,
       tooltip: "Name of new saved view to create",
+      keypresshandler: async (_tb, ev): Promise<void> => {
+        ev.stopPropagation();
+        if ("Enter" === ev.key)
+          await this.saveView();
+
+        return Promise.resolve();
+      },
     });
 
     this._element.appendChild(document.createElement("hr"));
 
-    const entries: RadioBoxEntry[] = [];
-    for (const view of this._views) {
-      entries.push({
-        label: view.name,
-        value: view.name,
-      });
-    }
+    const viewsDiv = document.createElement("div");
+    viewsDiv.style.overflowY = "auto";
+    viewsDiv.style.overflowX = "none";
+    viewsDiv.style.width = "100%";
+    this._element.appendChild(viewsDiv);
 
-    createRadioBox({
-      id: "rbx_savedViews",
-      parent: this._element,
-      entries,
-      handler: (value, _form) => this.selectedView = this.findView(value),
-      vertical: true,
+    const viewsList = document.createElement("select");
+    viewsList.size = Math.min(15, this._views.length);
+    viewsList.style.width = "100%";
+    viewsList.style.display = 0 < this._views.length ? "" : "none";
+    viewsDiv.appendChild(viewsList);
+    viewsDiv.onchange = () => this.selectedView = viewsList.value ? this.findView(viewsList.value) : undefined;
+    viewsList.addEventListener("keyup", async (ev) => {
+      if (ev.key === "Delete")
+        await this.deleteView();
     });
+
+    for (const view of this._views) {
+      const option = document.createElement("option");
+      option.value = option.innerHTML = view.name;
+      option.addEventListener("dblclick", async () => this.recallView());
+      viewsList.appendChild(option);
+    }
 
     const buttonDiv = document.createElement("div");
     buttonDiv.style.textAlign = "center";
@@ -149,12 +165,13 @@ export class SavedViewPicker extends ToolBarDropDown {
       recallButton.disabled = deleteButton.disabled = disabled;
     };
 
-    textBox.div.style.marginLeft = "8px";
-    textBox.div.style.marginRight = "5px";
-    // textBox.textbox.size = 37;
+    textBox.div.style.marginLeft = textBox.div.style.marginRight = "3px";
+    textBox.textbox.size = 36;
     textBox.textbox.onkeyup = () => {
       this._newViewName = textBox.textbox.value;
-      newButton.disabled = 0 === this._newViewName.length;
+      const viewExists = undefined !== this.findView(this._newViewName);
+      newButton.disabled = viewExists || 0 === this._newViewName.length;
+      textBox.textbox.style.color = viewExists ? "red" : "";
     };
 
     newButton.disabled = recallButton.disabled = deleteButton.disabled = true;
@@ -189,7 +206,7 @@ export class SavedViewPicker extends ToolBarDropDown {
 
   private async deleteView(): Promise<void> {
     // eslint-disable-next-line no-restricted-globals
-    if (undefined === this._selectedView || !confirm("Do you really want to delete saved view '" + this._selectedView.name + "?"))
+    if (undefined === this._selectedView)
       return Promise.resolve();
 
     this._views.removeName(this._selectedView.name);
@@ -199,16 +216,8 @@ export class SavedViewPicker extends ToolBarDropDown {
 
   private async saveView(): Promise<void> {
     const newName = this._newViewName;
-    if (0 === newName.length)
+    if (0 === newName.length || undefined !== this.findView(newName))
       return Promise.resolve();
-
-    if (undefined !== this.findView(newName)) {
-      // eslint-disable-next-line no-restricted-globals
-      if (!confirm("Saved view '" + newName + "' already exists. Replace it?"))
-        return Promise.resolve();
-
-      this._views.removeName(newName);
-    }
 
     const props = serializeViewState(this._vp.view);
     const json = JSON.stringify(props);
