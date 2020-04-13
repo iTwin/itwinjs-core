@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-@import "../input";
-@import "../../scrollbar";
+@import "../inputs/input";
+@import "../scrollbar";
 
 .uicore-autosuggest__container {
   position: relative;

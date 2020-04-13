@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module Inputs
+ * @module AutoSuggest
  */
 
 import * as React from "react";
 import * as ReactAutosuggest from "react-autosuggest";
-import { CommonProps } from "../../utils/Props";
+import { CommonProps } from "../utils/Props";
 
 import "./AutoSuggest.scss";
 
@@ -40,7 +40,7 @@ export interface AutoSuggestProps extends React.InputHTMLAttributes<HTMLInputEle
   onPressTab?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
   /** Handler for input receiving focus. */
   onInputFocus?: (e: React.FocusEvent<HTMLInputElement>) => void;
-  /** calculate suggestions for any given input value. */
+  /** Calculate suggestions for any given input value. */
   getSuggestions?: (value: string) => AutoSuggestData[];
 
   /** @internal */

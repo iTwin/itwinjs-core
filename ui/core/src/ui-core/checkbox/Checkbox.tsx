@@ -3,14 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module Inputs
+ * @module Checkbox
  */
 
 import * as React from "react";
 import classnames from "classnames";
-import { InputStatus } from "../InputStatus";
-import { Omit } from "../../utils/typeUtils";
-import { CommonProps } from "../../utils/Props";
+import { InputStatus } from "../inputs/InputStatus";
+import { Omit } from "../utils/typeUtils";
+import { CommonProps } from "../utils/Props";
 
 /** Properties for [[Checkbox]] React component
  * @public

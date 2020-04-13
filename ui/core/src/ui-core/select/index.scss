@@ -4,8 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 @import "../style/index";
 
-@import "./variables";
-@import "./input";
-@import "./labeled-input";
-@import "./labeled-textarea";
-@import "./textarea";
+@import "../inputs/variables";
+@import "./labeled-select";
+@import "./select";

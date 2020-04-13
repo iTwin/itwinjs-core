@@ -6,8 +6,8 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { render, fireEvent } from "@testing-library/react";
 import { expect } from "chai";
-import { Checkbox } from "../../../ui-core/inputs/checkbox/Checkbox";
-import { InputStatus } from "../../../ui-core/inputs/InputStatus";
+import { Checkbox } from "../../ui-core/checkbox/Checkbox";
+import { InputStatus } from "../../ui-core/inputs/InputStatus";
 
 describe("Checkbox", () => {
   it("renders", () => {

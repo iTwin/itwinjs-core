@@ -3,14 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module Inputs
+ * @module Select
  */
 
 import * as React from "react";
 import classnames from "classnames";
 
 import { Select, SelectProps } from "./Select";
-import { LabeledComponentProps, MessagedComponentProps } from "./LabeledComponentProps";
+import { LabeledComponentProps, MessagedComponentProps } from "../inputs/LabeledComponentProps";
 
 /** Properties for [[LabeledSelect]] components
  * @public

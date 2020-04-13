@@ -154,4 +154,4 @@ The `showTickLabels` prop is added in this example.
 
 ## API Reference
 
-* [Slider]($ui-core)
+* [Slider]($ui-core:Slider)

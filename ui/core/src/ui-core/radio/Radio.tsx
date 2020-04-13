@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module Inputs
+ * @module Radio
  */
 
 import * as React from "react";
 import classnames from "classnames";
 import { CommonProps } from "../utils/Props";
-import { LabeledComponentProps } from "./LabeledComponentProps";
+import { LabeledComponentProps } from "../inputs/LabeledComponentProps";
 
 /** Properties for [[Radio]] component
  * @public

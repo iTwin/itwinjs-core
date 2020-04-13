@@ -6,8 +6,8 @@ import * as React from "react";
 import { mount } from "enzyme";
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { AutoSuggest, AutoSuggestData } from "../../../ui-core/inputs/autosuggest/AutoSuggest";
-import TestUtils from "../../TestUtils";
+import { AutoSuggest, AutoSuggestData } from "../../ui-core";
+import TestUtils from "../TestUtils";
 
 describe("AutoSuggest", () => {
   const options: AutoSuggestData[] = [

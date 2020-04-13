@@ -8,7 +8,7 @@
 
 import classnames from "classnames";
 import * as React from "react";
-import { Checkbox, CheckboxProps } from "../inputs/checkbox/Checkbox";
+import { Checkbox, CheckboxProps } from "../checkbox/Checkbox";
 import { CheckBoxState } from "../enums/CheckBoxState";
 import { ExpansionToggle } from "./ExpansionToggle";
 import { Spinner, SpinnerSize } from "../loading/Spinner";

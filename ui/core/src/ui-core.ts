@@ -56,21 +56,25 @@ export * from "./ui-core/icons/SvgPath";
 export * from "./ui-core/icons/SvgSprite";
 export * from "./ui-core/icons/WebFontIcon";
 
-export * from "./ui-core/inputs/autosuggest/AutoSuggest";
-export * from "./ui-core/inputs/checkbox/Checkbox";
+export * from "./ui-core/autosuggest/AutoSuggest";
+
+export * from "./ui-core/checkbox/Checkbox";
+
 export * from "./ui-core/inputs/Input";
 export * from "./ui-core/inputs/InputLabel";
 export * from "./ui-core/inputs/InputStatus";
 export * from "./ui-core/inputs/iconinput/IconInput";
 export * from "./ui-core/inputs/LabeledComponentProps";
 export * from "./ui-core/inputs/LabeledInput";
-export * from "./ui-core/inputs/LabeledSelect";
 export * from "./ui-core/inputs/LabeledTextarea";
 export * from "./ui-core/inputs/numericinput/NumericInput";
 export * from "./ui-core/inputs/numericinput/ReactNumericInput";
-export * from "./ui-core/inputs/Radio";
-export * from "./ui-core/inputs/Select";
 export * from "./ui-core/inputs/Textarea";
+
+export * from "./ui-core/radio/Radio";
+
+export * from "./ui-core/select/LabeledSelect";
+export * from "./ui-core/select/Select";
 
 export * from "./ui-core/loading/LoadingBar";
 export * from "./ui-core/loading/LoadingPrompt";
@@ -158,12 +162,20 @@ export * from "./ui-core/utils/hooks/useTargeted";
  * For more information, see [learning about ui-core]($docs/learning/ui/core/index.md).
  */
 /**
+ * @docs-group-description AutoSuggest
+ * Component for input with an auto-suggestion dropdown.
+ */
+/**
  * @docs-group-description Base
  * Low-level classes and components for building application UI.
  */
 /**
  * @docs-group-description Button
  * Components for working with various Buttons.
+ */
+/**
+ * @docs-group-description Checkbox
+ * Component is a wrapper for the `<input type="checkbox">` HTML element.
  */
 /**
  * @docs-group-description CheckListBox
@@ -203,7 +215,7 @@ export * from "./ui-core/utils/hooks/useTargeted";
  */
 /**
  * @docs-group-description Inputs
- * Components for working with input controls, such as Input, Radio, Checkbox, Select, Slider and Toggle.
+ * Components for working with input controls, such as Input, IconInput, NumericInput and Textarea.
  */
 /**
  * @docs-group-description Loading
@@ -218,8 +230,24 @@ export * from "./ui-core/utils/hooks/useTargeted";
  * Components for working with a RadialMenu.
  */
 /**
+ * @docs-group-description Radio
+ * Component is a wrapper for the `<input type="radio">` HTML element.
+ */
+/**
  * @docs-group-description SearchBox
  * Components for working with a SearchBox.
+ */
+/**
+ * @docs-group-description Select
+ * Component is a wrapper for the `<select>` HTML element.
+ */
+/**
+ * @docs-group-description Slider
+ * Component displays a range slider with thumbs for changing the value.
+ */
+/**
+ * @docs-group-description SplitButton
+ * Components for working with a SplitButton.
  */
 /**
  * @docs-group-description SplitButton
@@ -236,6 +264,10 @@ export * from "./ui-core/utils/hooks/useTargeted";
 /**
  * @docs-group-description Tiles
  * Components for a container rendering elements that can be grouped together.
+ */
+/**
+ * @docs-group-description Toggle
+ * Components for working with a Toggle switch.
  */
 /**
  * @docs-group-description Tree

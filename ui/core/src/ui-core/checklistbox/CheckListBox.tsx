@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import classnames from "classnames";
-import { Checkbox } from "../inputs/checkbox/Checkbox";
+import { Checkbox } from "../checkbox/Checkbox";
 import { CommonProps } from "../utils/Props";
 import "./CheckListBox.scss";
 
