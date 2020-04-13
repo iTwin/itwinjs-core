@@ -75,13 +75,9 @@ describe("YPR", () => {
   it("freeze", () => {
     const ypr = YawPitchRollAngles.createDegrees(1, 2, 3);
     ypr.freeze();
-    try {
-      ypr.yaw.setDegrees(20);
-    } catch {
-      console.log(" Yes! We caught the update to frozen angle.");
-    }
-
+    assert.throws(() => ypr.yaw.setDegrees(20));
   });
+
   it("json", () => {
     const ck = new bsiChecker.Checker();
     const ypr0 = YawPitchRollAngles.createDegrees(10, 20, 30);

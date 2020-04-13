@@ -291,13 +291,15 @@ export interface ViewChangeOptions extends ViewAnimationOptions {
   animateFrustumChange?: boolean;
   /** The percentage of the view to leave blank around the edges. */
   marginPercent?: MarginPercent;
+  /** Function to be called when the extents are adjusted due to a limits error (view too larger or too small) */
+  onExtentsError?: (status: ViewStatus) => ViewStatus;
 }
 
 /** Object to animate a Frustum transition of a viewport moving across the earth. The [[Viewport]] will show as many frames as necessary. The animation will last a variable length of time depending on the distance traversed.
  * This operates on the previous frustum and a destination cartographic coordinate, flying along an earth ellipsoid or flat plane.
  * @internal
  */
-class GlobalLocationAnimator implements Animator {
+class GlobeAnimator implements Animator {
   private _flightTweens = new Tweens();
   private _viewport: ScreenViewport;
   private _startCartographic?: Cartographic;
@@ -1704,7 +1706,7 @@ export abstract class Viewport implements IDisposable {
 
   /** Change the ViewState of this Viewport
    * @param view a fully loaded (see discussion at [[ViewState.load]] ) ViewState
-   * @param _opts options for how the view change operation  should work
+   * @param _opts options for how the view change operation should work
    */
   public changeView(view: ViewState, _opts?: ViewChangeOptions) {
     const prevView = this.view;
@@ -1976,10 +1978,10 @@ export abstract class Viewport implements IDisposable {
    * @param factor the zoom factor.
    * @param options options for behavior of view change
    */
-  public zoom(newCenter: Point3d | undefined, factor: number, options?: ViewChangeOptions): void {
+  public zoom(newCenter: Point3d | undefined, factor: number, options?: ViewChangeOptions): ViewStatus {
     const view = this.view;
     if (undefined === view)
-      return;
+      return ViewStatus.InvalidViewport;
 
     if (view.isCameraEnabled()) {
       const centerNpc = newCenter ? this.worldToNpc(newCenter) : NpcCenter.clone();
@@ -2002,12 +2004,13 @@ export abstract class Viewport implements IDisposable {
       // chance of the rotation changing due to numerical precision errors calculating it from the frustum corners.
       const delta = view.getExtents().scale(factor);
 
-      // first check to see whether the zoom operation results in an invalid view. If so, make sure we don't change anything
-      if (ViewStatus.Success !== view.validateViewDelta(delta, true))
-        return;
-
       const rot = view.getRotation();
       const center = rot.multiplyVector(newCenter ? newCenter : view.getCenter());
+
+      // fix for min/max delta
+      const stat = view.adjustViewDelta(delta, center, rot, this.viewRect.aspect, options);
+      if (ViewStatus.Success !== stat)
+        return stat;
 
       if (!view.allow3dManipulations())
         center.z = 0.0;
@@ -2017,6 +2020,7 @@ export abstract class Viewport implements IDisposable {
     }
 
     this.synchWithView(options);
+    return ViewStatus.Success;
   }
 
   /** Zoom the view to a show the tightest box around a given set of PlacementProps. Optionally, change view rotation.
@@ -2057,7 +2061,11 @@ export abstract class Viewport implements IDisposable {
         viewRange.extendArray(placement.getWorldCorners(frust).points, viewTransform);
     }
 
-    view.lookAtViewAlignedVolume(viewRange, this.viewRect.aspect, options ? options.marginPercent : undefined);
+    const ignoreError: ViewChangeOptions = {
+      ... options,
+      onExtentsError: () => ViewStatus.Success,
+    };
+    view.lookAtViewAlignedVolume(viewRange, this.viewRect.aspect, ignoreError );
     this.synchWithView(options);
   }
 
@@ -2090,7 +2098,7 @@ export abstract class Viewport implements IDisposable {
    * @param options options that control how the view change works
    */
   public zoomToVolume(volume: LowAndHighXYZ | LowAndHighXY, options?: ViewChangeOptions) {
-    this.view.lookAtVolume(volume, this.viewRect.aspect, options ? options.marginPercent : undefined);
+    this.view.lookAtVolume(volume, this.viewRect.aspect, options);
     this.synchWithView(options);
   }
 
@@ -2945,7 +2953,7 @@ export class ScreenViewport extends Viewport {
       this.turnCameraOn();
       this.setupFromView();
     }
-    this.setAnimator(new GlobalLocationAnimator(this, destination));
+    this.setAnimator(new GlobeAnimator(this, destination));
   }
 
   /** @internal */

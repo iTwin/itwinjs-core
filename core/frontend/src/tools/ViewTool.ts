@@ -17,9 +17,9 @@ import { TentativeOrAccuSnap } from "../AccuSnap";
 import { IModelApp } from "../IModelApp";
 import { GraphicType } from "../render/GraphicBuilder";
 import { DecorateContext } from "../ViewContext";
-import { CoordSystem, ScreenViewport, Viewport, Animator, DepthPointSource } from "../Viewport";
+import { CoordSystem, ScreenViewport, Viewport, Animator, DepthPointSource, ViewChangeOptions } from "../Viewport";
 import { ViewRect } from "../ViewRect";
-import { MarginPercent, ViewState3d, ViewStatus } from "../ViewState";
+import { ViewState3d, ViewStatus } from "../ViewState";
 import { BeButton, BeButtonEvent, BeTouchEvent, BeWheelEvent, CoordSource, EventHandled, InteractiveTool, CoreTools, BeModifierKeys, InputSource } from "./Tool";
 import { ToolSettings } from "./ToolSettings";
 import { AccuDraw } from "../AccuDraw";
@@ -30,6 +30,8 @@ import { LengthDescription } from "../properties/LengthDescription";
 import { ToolAssistance, ToolAssistanceInstruction, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceSection } from "./ToolAssistance";
 import { BingLocationProvider } from "../BingLocation";
 import { viewGlobalLocation, GlobalLocation, ViewGlobalLocationConstants, rangeToCartographicArea, queryTerrainElevationOffset, eyeToCartographicOnGlobe } from "../ViewGlobalLocation";
+
+// cspell:ignore wasd, arrowright, arrowleft, pagedown, pageup, arrowup, arrowdown
 
 /** @internal */
 const enum ViewHandleWeight {
@@ -767,16 +769,16 @@ export abstract class ViewManip extends ViewTool {
     return range;
   }
 
-  public static fitView(viewport: ScreenViewport, animateFrustumChange: boolean, marginPercent?: MarginPercent) {
+  public static fitView(viewport: ScreenViewport, animateFrustumChange: boolean, options?: ViewChangeOptions) {
     const range = this.computeFitRange(viewport);
     const aspect = viewport.viewRect.aspect;
-    viewport.view.lookAtVolume(range, aspect, marginPercent);
+    viewport.view.lookAtVolume(range, aspect, options);
     viewport.synchWithView({ animateFrustumChange });
     viewport.viewCmdTargetCenter = undefined;
   }
 
   /** @internal */
-  public static fitViewWithGlobeAnimation(viewport: ScreenViewport, animateFrustumChange: boolean, marginPercent?: MarginPercent) {
+  public static fitViewWithGlobeAnimation(viewport: ScreenViewport, animateFrustumChange: boolean, options?: ViewChangeOptions) {
     const range = this.computeFitRange(viewport);
 
     if (animateFrustumChange && viewport.isCameraOn && viewport.viewingGlobe) {
@@ -791,15 +793,15 @@ export abstract class ViewManip extends ViewTool {
     }
 
     const aspect = viewport.viewRect.aspect;
-    viewport.view.lookAtVolume(range, aspect, marginPercent);
+    viewport.view.lookAtVolume(range, aspect, options);
     viewport.synchWithView({ animateFrustumChange });
     viewport.viewCmdTargetCenter = undefined;
   }
 
-  public static async zoomToAlwaysDrawnExclusive(viewport: ScreenViewport, animateFrustumChange: boolean, marginPercent?: MarginPercent): Promise<boolean> {
+  public static async zoomToAlwaysDrawnExclusive(viewport: ScreenViewport, options?: ViewChangeOptions): Promise<boolean> {
     if (!viewport.isAlwaysDrawnExclusive || undefined === viewport.alwaysDrawn || 0 === viewport.alwaysDrawn.size)
       return false;
-    await viewport.zoomToElements(viewport.alwaysDrawn, { animateFrustumChange, marginPercent });
+    await viewport.zoomToElements(viewport.alwaysDrawn, options);
     return true;
   }
 
@@ -2638,7 +2640,7 @@ export class FitViewTool extends ViewTool {
   }
 
   public async doFit(viewport: ScreenViewport, oneShot: boolean, doAnimate = true, isolatedOnly = true): Promise<boolean> {
-    if (!isolatedOnly || !await ViewManip.zoomToAlwaysDrawnExclusive(viewport, doAnimate))
+    if (!isolatedOnly || !await ViewManip.zoomToAlwaysDrawnExclusive(viewport, { animateFrustumChange: doAnimate }))
       ViewManip.fitViewWithGlobeAnimation(viewport, doAnimate);
     if (oneShot)
       this.exitTool();
@@ -3082,6 +3084,10 @@ export class WindowAreaTool extends ViewTool {
     const view = vp.view;
     vp.viewToWorldArray(corners);
 
+    const opts: ViewChangeOptions = {
+      onExtentsError: (stat) => view.outputStatusMessage(stat),
+    };
+
     if (view.isCameraEnabled()) {
       const windowArray: Point3d[] = [corners[0].clone(), corners[1].clone()];
       vp.worldToViewArray(windowArray);
@@ -3109,24 +3115,26 @@ export class WindowAreaTool extends ViewTool {
       const newTarget = corners[0].interpolate(.5, corners[1]);
       const newEye = newTarget.plusScaled(view.getZVector(), focusDist);
 
-      if (ViewStatus.Success !== view.lookAtUsingLensAngle(newEye, newTarget, view.getYVector(), lensAngle))
+      if (ViewStatus.Success !== view.lookAtUsingLensAngle(newEye, newTarget, view.getYVector(), lensAngle, undefined, undefined, opts))
         return;
     } else {
-      vp.rotation.multiplyVectorArrayInPlace(corners);
+      const rot = vp.rotation;
+      rot.multiplyVectorArrayInPlace(corners);
 
       const range = Range3d.createArray(corners);
       delta = Vector3d.createStartEnd(range.low, range.high);
       // get the view extents
       delta.z = view.getExtents().z;
 
+      const originVec = rot.multiplyTransposeXYZ(range.low.x, range.low.y, range.low.z);
+
       // make sure its not too big or too small
-      if (ViewStatus.Success !== view.validateViewDelta(delta, true))
+      const stat = view.adjustViewDelta(delta, originVec, rot, vp.viewRect.aspect, opts);
+      if (stat !== ViewStatus.Success)
         return;
 
       view.setExtents(delta);
-
-      const originVec = vp.rotation.multiplyTransposeXYZ(range.low.x, range.low.y, range.low.z);
-      view.setOrigin(Point3d.createFrom(originVec));
+      view.setOrigin(originVec);
     }
 
     vp.synchWithView({ animateFrustumChange: true });

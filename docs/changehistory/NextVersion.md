@@ -367,9 +367,20 @@ function tryTransformGeometry(entry: GeometryStreamIteratorEntry, transform: Tra
 
 ### Immutable Color Types
 
-[ColorDef]($common) is now an immutable type. Naturally, mutating methods like `setTransparency` have been removed; they are replaced by methods like `withTransparency` which return a modified copy of the original `ColorDef`. The constructor is now private; replace usage of `new ColorDef(x)` with `ColorDef.create(x)`.
+[ColorDef]($common) is now an immutable type. Naturally, mutating methods like `setTransparency` have been removed; they are replaced by methods like `withTransparency` which return a modified copy of the original `ColorDef`. The constructor is now private; replace `new ColorDef(x)` with `ColorDef.create(x)`.
 
 [HSVColor]($common) and [HSLColor]($common) are also now immutable.
+
+### ViewChangeOptions Interface
+
+The [ViewChangeOptions]($frontend) interface now has a new optional member, `onExtentsError`. It provides a way for applications to be notified when a viewing operation hits the view-specific limits for extents (either minimum or maximum size.) If possible, the viewing api will adjust the extents value to the limit, but if `onExtentsError` is provided, it is called with the error value so it can show a message to the user. If the error should be ignored (i.e. the adjusted value is acceptable), return `ViewStatus.Success` from `onExtentsError`.
+
+The signatures of several `ViewState` methods have been modified to accept a `ViewChangeOptions` parameter:
+
+- [ViewState.setupFromFrustum]($frontend)
+- [ViewState.lookAt]($frontend)
+- [ViewState.lookAtVolume]($frontend)
+- [ViewState.lookAtViewAlignedVolume]($frontend)
 
 ### PropertyRecord classes moved to `ui-abstract` package
 
