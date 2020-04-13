@@ -383,6 +383,10 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "fast-sha256",
+      "allowedCategories": [ "tools" ]
+    },
+    {
       "name": "file-loader",
       "allowedCategories": [ "tools" ]
     },

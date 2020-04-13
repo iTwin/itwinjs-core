@@ -3,5 +3,5 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 export * from "./ExtensionClient";
-export * from "./Extension";
+export * from "./ExtensionProps";
 export * from "./ExtensionFile";

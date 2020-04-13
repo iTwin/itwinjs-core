@@ -507,9 +507,9 @@ export enum ExtensionStatus {
     // (undocumented)
     ExtensionAlreadyExists = 143365,
     // (undocumented)
-    EXTENSIONSTATUS_BASE = 143360,
+    ExtensionNotFound = 143363,
     // (undocumented)
-    FileNotFound = 143363,
+    EXTENSIONSTATUS_BASE = 143360,
     // (undocumented)
     Success = 0,
     // (undocumented)

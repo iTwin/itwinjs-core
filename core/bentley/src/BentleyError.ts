@@ -337,7 +337,7 @@ export enum ExtensionStatus {
   EXTENSIONSTATUS_BASE = 0x23000,
   UnknownError = EXTENSIONSTATUS_BASE + 1,
   BadRequest = EXTENSIONSTATUS_BASE + 2,
-  FileNotFound = EXTENSIONSTATUS_BASE + 3,
+  ExtensionNotFound = EXTENSIONSTATUS_BASE + 3,
   BadExtension = EXTENSIONSTATUS_BASE + 4,
   ExtensionAlreadyExists = EXTENSIONSTATUS_BASE + 5,
   UploadError = EXTENSIONSTATUS_BASE + 6,
@@ -692,7 +692,7 @@ export class BentleyError extends Error {
       case ExtensionStatus.BadExtension: return "Bad file extension";
       case ExtensionStatus.BadRequest: return "Bad request";
       case ExtensionStatus.ExtensionAlreadyExists: return "Extension with the given name and version already exists";
-      case ExtensionStatus.FileNotFound: return "Extension file not found";
+      case ExtensionStatus.ExtensionNotFound: return "Extension not found";
       case ExtensionStatus.UploadError: return "Failed to upload file";
 
       // Unexpected cases

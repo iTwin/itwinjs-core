@@ -66,6 +66,7 @@ import { EllipsoidPatch } from '@bentley/geometry-core';
 import { EntityProps } from '@bentley/imodeljs-common';
 import { EntityQueryParams } from '@bentley/imodeljs-common';
 import { EnvironmentProps } from '@bentley/imodeljs-common';
+import { ExtensionProps } from '@bentley/extension-client';
 import { Feature } from '@bentley/imodeljs-common';
 import { FeatureIndex } from '@bentley/imodeljs-common';
 import { FeatureIndexType } from '@bentley/imodeljs-common';
@@ -2660,7 +2661,7 @@ export class ExtensionServiceExtensionLoader implements ExtensionLoader {
     loadExtension(extensionName: string, extensionVersion?: string, args?: string[] | undefined): Promise<PendingExtension | undefined>;
     // (undocumented)
     resolveResourceUrl(extensionName: string, relativeFileName: string): string;
-}
+    }
 
 // @public
 export interface ExtentLimits {
@@ -4309,6 +4310,14 @@ export class LengthDescription extends FormattedQuantityDescription {
 
 // @internal (undocumented)
 export function linePlaneIntersect(outP: Point3d, linePt: Point3d, lineNormal: Vector3d | undefined, planePt: Point3d, planeNormal: Vector3d, perpendicular: boolean): void;
+
+// @internal (undocumented)
+export interface LoadedExtensionProps {
+    // (undocumented)
+    basePath: string;
+    // (undocumented)
+    props: ExtensionProps;
+}
 
 // @internal (undocumented)
 export class LoadSavedExtensionsResult {

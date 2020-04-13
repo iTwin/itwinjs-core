@@ -5,7 +5,7 @@
 import { ExtensionStatus, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { IModelError } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext, Client, request, RequestOptions, ResponseError, getArrayBuffer } from "@bentley/imodeljs-clients";
-import { ExtensionProps, Extension } from "./Extension";
+import { ExtensionProps, extensionPropsFromJSON } from "./ExtensionProps";
 import { ExtensionFile } from "./ExtensionFile";
 
 /**
@@ -39,7 +39,7 @@ export class ExtensionClient extends Client {
 
     const ret: ExtensionProps[] = [];
     json.forEach((extensionJson) => {
-      const extension = Extension.fromJSON(extensionJson);
+      const extension = extensionPropsFromJSON(extensionJson);
       if (extension !== undefined)
         ret.push(extension);
     });
@@ -71,9 +71,11 @@ export class ExtensionClient extends Client {
       return this.parseExtensionPropsArray(response.body);
     } catch (error) {
       if (!(error instanceof ResponseError))
-        throw new IModelError(ExtensionStatus.EXTENSIONSTATUS_BASE, "Unknown error");
+        throw new IModelError(ExtensionStatus.UnknownError, "Unknown error getting extensions");
       if (error.status === 400)
         throw new IModelError(ExtensionStatus.BadRequest, (error as any)._data?.message);
+      if (error.status === 404)
+        throw new IModelError(ExtensionStatus.ExtensionNotFound, (error as any)._data?.message);
 
       throw new IModelError(ExtensionStatus.UnknownError, "Server returned status: " + error.status + ", message: " + (error as any)._data?.message);
     }
@@ -105,12 +107,16 @@ export class ExtensionClient extends Client {
       if (body.length > 1)
         throw new IModelError(ExtensionStatus.UnknownError, "Server returned too many extensions");
 
-      return Extension.fromJSON(body[0]);
+      return extensionPropsFromJSON(body[0]);
     } catch (error) {
+      if (error instanceof IModelError)
+        throw error;
       if (!(error instanceof ResponseError))
-        throw new IModelError(ExtensionStatus.EXTENSIONSTATUS_BASE, "Unknown error");
+        throw new IModelError(ExtensionStatus.UnknownError, "Unknown error getting extension");
       if (error.status === 400)
         throw new IModelError(ExtensionStatus.BadRequest, (error as any)._data?.message);
+      if (error.status === 404)
+        throw new IModelError(ExtensionStatus.ExtensionNotFound, (error as any)._data?.message);
 
       throw new IModelError(ExtensionStatus.UnknownError, "Server returned status: " + error.status + ", message: " + (error as any)._data?.message);
     }
@@ -137,9 +143,11 @@ export class ExtensionClient extends Client {
    * @param extensionProps Extension information (should be gotten from any getExtension... methods)
    */
   private async downloadExtensionFromProps(requestContext: ClientRequestContext, extensionProps: ExtensionProps): Promise<ExtensionFile[]> {
-    const sortedUris = extensionProps.uri.sort();
-    const firstUri = sortedUris[0];
-    const lastUri = sortedUris[sortedUris.length - 1];
+    if (extensionProps.files.length < 1)
+      return [];
+    const sortedUris = extensionProps.files.sort((a, b) => a.url.localeCompare(b.url));
+    const firstUri = sortedUris[0].url;
+    const lastUri = sortedUris[sortedUris.length - 1].url;
     let i = 0;
     while (i < firstUri.length && firstUri[i] === lastUri[i]) i++;
     while (i > 0 && firstUri[i] !== "/") i--;
@@ -148,7 +156,7 @@ export class ExtensionClient extends Client {
     const files: ExtensionFile[] = [];
 
     for (i = 0; i < sortedUris.length; i++) {
-      const uri = sortedUris[i];
+      const uri = sortedUris[i].url;
       try {
         const response = await getArrayBuffer(requestContext, uri);
 
@@ -175,12 +183,13 @@ export class ExtensionClient extends Client {
    * @param file A tar archive containing extension files, in ArrayBufferLike format
    * @internal
    */
-  public async createExtension(requestContext: AuthorizedClientRequestContext, contextId: string, extensionName: string, version: string, file: ArrayBufferLike) {
+  public async createExtension(requestContext: AuthorizedClientRequestContext, contextId: string, extensionName: string, version: string, checksum: string, file: ArrayBufferLike) {
     requestContext.enter();
 
     const requestBody = {
       extensionName,
       version,
+      checksum,
     };
 
     const options: RequestOptions = { method: "POST" };
@@ -196,19 +205,21 @@ export class ExtensionClient extends Client {
       if (response.status !== 200)
         throw new IModelError(ExtensionStatus.UnknownError, "Server returned status: " + response.status + ", message: " + response.body.message);
 
-      const body = Extension.fromJSON(response.body);
+      const body = extensionPropsFromJSON(response.body);
       if (body === undefined)
-        throw new IModelError(ExtensionStatus.UnknownError, "Could not save extension definition");
+        throw new IModelError(ExtensionStatus.UnknownError, "Could not save extension definition. Invalid response received");
 
-      if (body.uri.length !== 1)
+      if (body.files.length !== 1)
         throw new IModelError(ExtensionStatus.UnknownError, "Server did not return a valid upload URI");
 
-      await this.uploadExtension(body.uri[0], file);
+      await this.uploadExtension(body.files[0].url, file);
     } catch (error) {
+      if (error instanceof IModelError)
+        throw error;
       if (!(error instanceof ResponseError))
-        throw new IModelError(ExtensionStatus.EXTENSIONSTATUS_BASE, "Unknown error");
+        throw new IModelError(ExtensionStatus.UnknownError, "Unknown error creating extension: " + error.message);
       if (error.status === 400)
-        throw new IModelError(ExtensionStatus.BadRequest, (error as any)._data?.message);
+        throw new IModelError(ExtensionStatus.BadRequest, JSON.stringify((error as any)._data));
       if (error.status === 409)
         throw new IModelError(ExtensionStatus.ExtensionAlreadyExists, "An extension with this name and version already exists");
 
@@ -217,18 +228,22 @@ export class ExtensionClient extends Client {
   }
 
   private async uploadExtension(url: string, file: ArrayBuffer) {
-    const response = await fetch(url, {
-      method: "PUT",
-      headers: {
-        "x-ms-blob-type": "BlockBlob",
-        "Content-Length": file.byteLength.toString(),
-      },
-      body: file,
-    });
+    try {
+      const response = await fetch(url, {
+        method: "PUT",
+        headers: {
+          "x-ms-blob-type": "BlockBlob",
+          "Content-Length": file.byteLength.toString(),
+        },
+        body: file,
+      });
 
-    // TODO: somehow add error message...
-    if (response.status !== 201)
-      throw new IModelError(ExtensionStatus.UploadError, "Storage returned status: " + response.status);
+      // TODO: somehow add error message...
+      if (response.status !== 201)
+        throw new IModelError(ExtensionStatus.UploadError, "Storage returned status: " + response.status);
+    } catch (err) {
+      throw new IModelError(ExtensionStatus.UploadError, "Unknown error uploading extension archive: " + err);
+    }
   }
 
   /**

@@ -5,7 +5,8 @@
 import { Logger } from "@bentley/bentleyjs-core";
 import { IModelApp } from "../IModelApp";
 import { ExtensionLoadResults } from "./ExtensionResults";
-import { PendingExtension, Extension, ExtensionLoader, ExtensionServiceExtensionLoader, loggerCategory } from "./Extension";
+import { PendingExtension, Extension, ExtensionLoader, loggerCategory } from "./Extension";
+import { ExtensionServiceExtensionLoader } from "./loaders/ExtensionServiceExtensionLoader";
 
 /**
  * Describes configuration options to the ExtensionAdmin
