@@ -406,6 +406,9 @@ export class SurfaceGeometry extends MeshGeometry {
   public get alwaysRenderTranslucent() { return this.isGlyph; }
   public get isTileSection() { return undefined !== this.texture && this.texture.isTileSection; }
   public get isClassifier() { return SurfaceType.VolumeClassifier === this.surfaceType; }
+  public get supportsThematicDisplay() {
+    return !this.isGlyph;
+  }
 
   public get allowColorOverride() {
     // Text background color should not be overridden by feature symbology overrides - otherwise it becomes unreadable...
@@ -605,6 +608,9 @@ export class SurfaceGeometry extends MeshGeometry {
 
     if (this.mesh.isTextureAlwaysDisplayed)
       return true;
+
+    if (this.supportsThematicDisplay && target.wantThematicDisplay)
+      return false;
 
     const fill = this.fillFlags;
     const flags = target.currentViewFlags;

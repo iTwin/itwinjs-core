@@ -81,6 +81,20 @@ The following are view tools that allow a user to navigate a plane or three-dime
 * To navigate to a precise latitude/longitude location on the map, specify exactly two numeric arguments to `parseAndRun`. The first will be the latitude and the second will be the longitude. These are specified in degrees.
 * To search for and possibly navigate to a named location, specify any number of string arguments to `parseAndRun`. They will be joined with single spaces between them. If a location corresponding to the joined strings can be found, the tool will navigate there.
 
+## Customizable Scene Lighting
+
+Previously, lighting of 3d scenes was entirely hard-coded with the exception of the sun direction used only when shadows were enabled. Now, nearly all lighting parameters can be customized using the [LightSettings]($common) associated with a [DisplayStyle3dSettings]($common). This includes new support for hemisphere lighting, greatly expanding the variety of display styles that can be achieved.
+
+![Example display styles](assets/display-styles.jpg)
+<p align="center">Clockwise from top-left: Default, Illustration, Sun-dappled, Moonlit, Glossy, Soft</p>
+
+## Monochrome Mode
+
+iModel.js now supports two monochrome display modes via [DisplayStyleSettings.monochromeMode]($common). The original mode, `Scaled`, preserves contrast and material textures. The new mode, `Flat`, applies the monochrome color uniformly to all surfaces.
+
+![Scaled (left) vs Flat (right) monochrome modes](assets/monochrome-mode.png)
+<p align="center">Scaled (left) vs Flat (right) monochrome modes</p>
+
 ## Colorizing Clip Regions
 
 [Viewport]($frontend) now contains the following properties which control the color of pixels outside or inside a clip region. If either of these are defined, the corresponding pixels will be shown using the specified color; otherwise, no color override occurs and clipping proceeds normally for that area of the clip region. By default, these are both undefined.
@@ -99,18 +113,97 @@ Previously, shader programs used by the [RenderSystem]($frontend) were never com
 * Applications should consider enabling this feature if they do not open a Viewport immediately upon startup - for example, if the user is first expected to select an iModel and  a view through the user interface.
 * Shader precompilation will cease once all shader programs have been compiled, or when a Viewport is opened (registered with the [ViewManager]($frontend)).
 
+## Thematic Display
+
+[ViewFlags]($common) now contains a `thematicDisplay` property of type `boolean`; when set to `true`, this will enable thematic display for surfaces.
+* The thematic display will be configured based on the `thematic` property of type [ThematicDisplay]($common) on [DisplayStyle3dSettings]($common).
+  * This property controls the thematic display settings of the 3d display style when thematic display is enabled.
+  * [ThematicDisplay]($common) is immutable and must be constructed and altered using an underlying JSON representation. See the corresponding underlying [ThematicDisplayProps]($common) on the [DisplayStyle3dSettingsProps]($common).
+* Within the `gradientSettings` property on [ThematicDisplay]($common), the display system currently supports a `mode` value of `ThematicGradientMode.Smooth` of type [ThematicGradientMode]($common). Using this mode, the color gradient will be smoothly interpolated based on the value specified for `colorScheme` on the `gradientSettings` property of [ThematicDisplay]($common). If the `colorScheme` property of `gradientSettings` is `ThematicGradientColorScheme.Custom`, then the `customKeys` property must be properly configured with values.
+* For the `displayMode` property of [ThematicDisplay]($common), the display system currently supports a value of `ThematicDisplayMode.Height`. Using this mode, the color gradient will be mapped to surface geometry based on world height in meters.
+
+See the following snippet for the JSON representation of a [ThematicDisplay]($common) configuration object:
+
+```ts
+/** JSON representation of the thematic display setup of a [[DisplayStyle3d]].
+ * @beta
+ */
+export interface ThematicDisplayProps {
+  /** The thematic display mode. This determines how to apply the thematic color gradient to the geometry. Defaults to [[ThematicDisplayMode.Height]]. */
+  displayMode?: ThematicDisplayMode;
+  /** The settings used to create a color gradient applied to the geometry. The mode currently must be [[Gradient.ThematicMode.Smooth]]. Defaults to an instantiation using [[ThematicGradientSettings.fromJSON]] with no arguments. */
+  gradientSettings?: ThematicGradientSettingsProps;
+  /** The range in which to apply the thematic gradient. For [[ThematicDisplayMode.Height]], this is world space in meters. Defaults to a null range. */
+  range?: Range1dProps;
+  /** For [[ThematicDisplayMode.Height]], this is the axis along which to apply the thematic gradient in the scene. Defaults to {0,0,0}. */
+  axis?: XYZProps;
+}
+```
+
+Consult the following code example demonstrating how to enable thematic display and configure the thematic display:
+
+```ts
+const _scratchViewFlags = new ViewFlags();
+
+const isThematicDisplaySupported = (view: ViewState) => view.is3d();
+
+function enableAndConfigureThematicDisplay(viewport: Viewport): boolean {
+  const view = viewport.view;
+
+  if (!isThematicDisplaySupported(view))
+    return false; // Thematic display settings are only valid for 3d views
+
+  // Clone and reconfigure the Viewport's viewFlags to have thematic display enabled
+  const vf = viewport.viewFlags.clone(_scratchViewFlags);
+  vf.thematicDisplay = true;
+  viewport.viewFlags = vf;
+
+  // Create a ThematicDisplayProps object with the desired thematic settings
+  const thematicProps: ThematicDisplayProps = {
+    displayMode: ThematicDisplayMode.Height, // The only currently supported thematic display mode
+    gradientSettings: {
+      mode: ThematicGradientMode.Smooth, // The only currently supported thematic gradient mode
+      stepCount: 0, // Only relevant for ThematicGradientMode.Stepped, which is currently unsupported.
+      marginColor: new ColorDef(ColorByName.blanchedAlmond), // The color used when outside the range to apply the gradient
+      colorScheme: ThematicGradientColorScheme.BlueRed, // The color scheme used to construct the gradient; if using ThematicColorScheme.Custom, must also specify customKeys property.
+    },
+    range: { low: -900.0, high: 1000.0 }, // For ThematicDisplayMode.Height, the range in world meters to apply the gradient
+    axis: [0.0, 0.0, 1.0], // For ThematicDisplayMode.Height, the axis (direction) along which to apply the gradient (Up along Z in this case)
+  };
+
+  // Create a ThematicDisplay object using the props created above
+  const thematicDisplay = ThematicDisplay.fromJSON(thematicProps);
+
+  // Change the thematic object on the 3d display style state to contain the new object
+  (view as ViewState3d).getDisplayStyle3d().settings.thematic = thematicDisplay;
+
+  // Sync the viewport with the new view state
+  viewport.synchWithView();
+}
+```
+![Thematic height mode with a smooth "sea mountain" color gradient applied to surfaces](assets/ThematicDisplay_HeightSmooth.png)
+<p align="center">Thematic height mode with a smooth "sea mountain" color gradient applied to surfaces</p>
+
 ## Opening iModels
 
-  The API now allows opening iModels (briefcases) at the backend with a new [SyncMode.pullOnly]($backend) option. e.g.,
+The API now allows opening iModels (briefcases) at the backend with a new [SyncMode.pullOnly]($backend) option. e.g.,
+```ts
+const iModel = await BriefcaseDb.open(requestContext, projectId, iModelId, OpenParams.pullOnly());
+```
+* Opening with this new option establishes a local briefcase that allows change sets to be pulled from the iModel Hub and merged in. e.g.,
   ```ts
-  const iModel = await BriefcaseDb.open(requestContext, projectId, iModelId, OpenParams.pullOnly());
+  iModel.pullAndMergeChanges(requestContext, IModelVersion.latest());
   ```
-  * Opening with this new option establishes a local briefcase that allows change sets to be pulled from the iModel Hub and merged in. e.g.,
-    ```ts
-    iModel.pullAndMergeChanges(requestContext, IModelVersion.latest());
-    ```
-  *  Upon open a new briefcase is *acquired* from the iModel Hub and is meant for exclusive use by that user.
-  * The briefcase is opened ReadWrite to allow merging of change sets even if no changes can be made to it.
+*  Upon open a new briefcase is *acquired* from the iModel Hub and is meant for exclusive use by that user.
+* The briefcase is opened ReadWrite to allow merging of change sets even if no changes can be made to it.
+
+## Solar Calculation APIs
+
+The solar calculation functions [calculateSolarAngles]($common), [calculateSolarDirection]($common), and [calculateSunriseOrSunset]($common) have moved from imodeljs-frontend to imodeljs-common.
+
+## Deprecation Errors
+
+Previously, the default tslint configuration reported [usage of deprecated APIs](https://palantir.github.io/tslint/rules/deprecation/) as warnings. It will now produce errors instead. Before deprecating an API, please first remove all usage of it within the iModel.js repository.
 
 ## Breaking API changes
 
@@ -120,6 +213,59 @@ With a new major version of the iModel.js library come breaking API changes. The
 
 * The deprecated SAML based authentication utilities, ImsActiveSecureTokenClient and ImsDelegationSecureTokenClient have now been removed. All authentication must be done using OIDC.
 * The deprecated OidcAgentClientV1 for SAML based authentication of agents has been removed.
+
+#### OidcBrowserClient
+
+OIDC functionality in the browser has been overhauled to better support iModel.js Extensions that might require the user to authenticate with other services.
+
+- [IOidcFrontendClient](/core/clients/src/oidc/OidcFrontendClient.ts) has been supplanted by [IFrontendAuthorizationClient](/core/clients/src/oidc/IFrontendAuthorizationClient.ts)
+  - All existing classes which previously implemented [IOidcFrontendClient](/core/clients/src/oidc/OidcFrontendClient.ts), now implement [IFrontendAuthorizationClient](/core/clients/src/oidc/IFrontendAuthorizationClient.ts)
+    - [OidcDesktopClient](/core/backend/src/oidc/OidcDesktopClient.ts)
+    - [OidcDesktopClientRenderer](/core/frontend/src/oidc/OidcDesktopClientRenderer.ts)
+    - [OidcIOSClient](/core/frontend/src/oidc/OidcIOSClient.ts)
+- [OidcBrowserClient](/core/frontend/src/oidc/OidcBrowserClient.ts) has been marked as `@deprecated` and split into the following classes:
+  - [BrowserAuthorizationClient](/core/clients/src/oidc/browser/BrowserAuthorizationClient.ts)
+    - implements [IFrontendAuthorizationClient](/core/clients/src/oidc/IFrontendAuthorizationClient.ts)
+    - used to `signIn()` and `signOut()` the user, in a similar manner to [OidcBrowserClient](/core/frontend/src/oidc/OidcBrowserClient.ts)
+  - [BrowserAuthorizationCallbackHandler](/core/clients/src/oidc/browser/BrowserAuthorizationCallbackHandler.ts)
+    - handles (via `handleSigninCallback()`) all OIDC callbacks received as a result of `signIn()` / `signOut()` calls made by [BrowserAuthorizationClient](/core/clients/src/oidc/browser/BrowserAuthorizationClient.ts)
+
+Previously, signing a user in through [OidcBrowserClient](/core/frontend/src/oidc/OidcBrowserClient.ts) involved the following process:
+
+```ts
+const oidcConfiguration: BrowserAuthorizationClientConfiguration = {
+  clientId: "imodeljs-spa-test",
+  redirectUri: "http://localhost:3000/signin-callback",
+  scope: "openid email profile organization imodelhub context-registry-service:read-only product-settings-service projectwise-share urlps-third-party",
+  responseType: "code",
+};
+const browserClient = new OidcBrowserClient(oidcConfiguration);
+await browserClient.initialize(new ClientRequestContext());
+await browserClient.signIn();
+```
+
+The equivalent process for signing in via [BrowserAuthorizationClient](/core/clients/src/oidc/browser/BrowserAuthorizationClient.ts):
+
+```ts
+const oidcConfiguration: BrowserAuthorizationClientConfiguration = {
+  clientId: "imodeljs-spa-test",
+  redirectUri: "http://localhost:3000/signin-callback",
+  scope: "openid email profile organization imodelhub context-registry-service:read-only product-settings-service projectwise-share urlps-third-party",
+  responseType: "code",
+};
+await BrowserAuthorizationCallbackHandler.handleSigninCallback(oidcConfiguration.redirectUri);
+const browserClient = new BrowserAuthorizationClient(oidcConfiguration);
+await browserClient.signIn();
+```
+
+Notably, unlike [OidcBrowserClient](/core/frontend/src/oidc/OidcBrowserClient.ts), [BrowserAuthorizationClient](/core/clients/src/oidc/browser/BrowserAuthorizationClient.ts) does not require a call to `initialize()` before calling `signIn()`. Once the class instance has been constructed, `signIn()` may be called at any point.
+However, because [OidcBrowserClient](/core/frontend/src/oidc/OidcBrowserClient.ts)`.initialize()` was where the OIDC callback was being handled before, [BrowserAuthorizationCallbackHandler](/core/clients/src/oidc/browser/BrowserAuthorizationCallbackHandler.ts) must be used in conjunction with [BrowserAuthorizationClient](/core/clients/src/oidc/browser/BrowserAuthorizationClient.ts) to now complete an OIDC signin.
+
+Aside from the `signIn()` function supported by all [IFrontendAuthorizationClient](/core/clients/src/oidc/IFrontendAuthorizationClient.ts) implementations, there are also three new functions specific to [BrowserAuthorizationClient](/core/clients/src/oidc/browser/BrowserAuthorizationClient.ts) — `signInSilent()`, `signInPopup()`, and `signInRedirect()` (which is an alias of `signIn()`) — allowing more flexibility in how the signin is performed.
+
+For situations where a signin is delayed until after app startup, `signInPopup()` is encouraged as a way to direct the user towards a login page without redirecting them away from their current UI state.
+
+Signin callbacks generated by any of the `signIn` methods can be handled easily using a single call to [BrowserAuthorizationCallbackHandler](/core/clients/src/oidc/browser/BrowserAuthorizationCallbackHandler.ts)`.handleSigninCallback()`.
 
 ### IModel, IModelConnection, IModelDb
 
@@ -181,7 +327,7 @@ The following renames are required:
 
 The former `BriefcaseId` class has been replaced by the [BriefcaseId]($backend) type (which is just `number`) and the [ReservedBriefcaseId]($backend) enumeration.
 
-### GeometryStream iteration
+### GeometryStream Iteration
 
 The [GeometryStreamIteratorEntry]($common) exposed by a [GeometryStreamIterator]($common) has been simplified down to only four members. Access the geometric primitive associated with the entry by type-switching on its `type` property. For example, code that previously looked like:
 
@@ -219,6 +365,12 @@ function tryTransformGeometry(entry: GeometryStreamIteratorEntry, transform: Tra
 }
 ```
 
+### Immutable Color Types
+
+[ColorDef]($common) is now an immutable type. Naturally, mutating methods like `setTransparency` have been removed; they are replaced by methods like `withTransparency` which return a modified copy of the original `ColorDef`. The constructor is now private; replace usage of `new ColorDef(x)` with `ColorDef.create(x)`.
+
+[HSVColor]($common) and [HSLColor]($common) are also now immutable.
+
 ### PropertyRecord classes moved to `ui-abstract` package
 
 This includes the classes in the following files:
@@ -231,7 +383,7 @@ This includes the classes in the following files:
 
 The deprecated ToolSettingsValue.ts has been removed.
 
-### API changes in `ui-components` package
+### API Changes in `ui-components` Package
 
 #### Hard-Deprecation
 
@@ -286,7 +438,7 @@ import { DEPRECATED_Tree as Tree } from "@bentley/ui-components";
 
 * Removed `HorizontalAlignment`. Use the `HorizontalAlignment` in @bentley/ui-core instead.
 
-### API changes in `ui-framework` package
+### API Changes in `ui-framework` Package
 
 #### Renames
 
@@ -295,7 +447,7 @@ A couple of types were renamed to better match their intention:
 * `VisibilityTree` to `ModelsTree`
 * `IModelConnectedVisibilityTree` to `IModelConnectedModelsTree`
 
-#### Removal of deprecated APIs
+#### Removal of Deprecated APIs
 
 The following items that were marked as @deprecated in the 1.x time frame have been removed:
 
@@ -330,14 +482,14 @@ These items define the label and editor to use for each value when the Tool Sett
 
 ### API changes in `ui-core` package
 
-#### Removal of deprecated APIs
+#### Removal of Deprecated APIs
 
 The following items that were marked as @deprecated in the 1.x time frame have been removed:
 
 * UiError (use UiError in @bentley/ui-abstract instead)
 * Position for Popup component (Use RelativePosition in @bentley/ui-abstract instead)
 
-### API changes in `presentation-common` package
+### API Changes in `presentation-common` Package
 
 #### RPC Changes
 
@@ -378,7 +530,7 @@ import { DEPRECATED_PropertiesDisplaySpecification as PropertiesDisplaySpecifica
 * Removed `PersistentKeysContainer`. Instead, `KeySetJSON` should be used.
 * Changed `RulesetsFactory.createSimilarInstancesRuleset` to async. Removed `RulesetsFactory.createSimilarInstancesRulesetAsync`.
 
-### API changes in `presentation-backend` package
+### API Changes in `presentation-backend` Package
 
 #### Removals and Changes
 
@@ -397,7 +549,7 @@ import { DEPRECATED_PropertiesDisplaySpecification as PropertiesDisplaySpecifica
   const embedder = new RulesetEmbedder(imodel);
   ```
 
-### API changes in `presentation-frontend` package
+### API Changes in `presentation-frontend` Package
 
 #### Removals and Changes
 
@@ -418,7 +570,7 @@ import { DEPRECATED_PropertiesDisplaySpecification as PropertiesDisplaySpecifica
   const provider = new HiliteSetProvider(imodel);
   ```
 
-### API changes in `presentation-components` package
+### API Changes in `presentation-components` Package
 
 #### Hard-Deprecation
 
@@ -477,7 +629,7 @@ import { DEPRECATED_treeWithUnifiedSelection as treeWithUnifiedSelection } from 
 * Renamed `useUnifiedSelectionEventHandler` to `useUnifiedSelectionTreeEventHandler`.
 * Removed attributes from `UnifiedSelectionTreeEventHandlerParams`: `dataProvider`, `modelSource`. They're now taken from `nodeLoader`.
 
-### API changes in `presentation-testing` package
+### API Changes in `presentation-testing` Package
 
 #### Removals and Changes
 

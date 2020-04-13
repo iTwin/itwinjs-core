@@ -40,13 +40,13 @@ function mockGetVersionsByNameWithThumbnails(imodelId: GuidString, name: string,
 }
 
 async function createNamedVersionWithThumbnail(requestContext: AuthorizedClientRequestContext, imodelClient: IModelClient, imodelId: GuidString, versionName: string) {
-  const changeSetCount = (await imodelClient.changeSets.get(requestContext, imodelId)).length;
+  const changeSets = (await imodelClient.changeSets.get(requestContext, imodelId));
   const briefcase2 = (await utils.getBriefcases(requestContext, imodelId, 1))[0];
   let changeSet: ChangeSet;
-  if (changeSetCount === 0 || changeSetCount > 9) {
+  if (changeSets.length === 0 || changeSets.length > 9) {
     changeSet = (await utils.createChangeSets(requestContext, imodelId, briefcase2, 0, 1))[0];
   } else {
-    changeSet = (await imodelClient.changeSets.get(requestContext, imodelId))[0];
+    changeSet = changeSets[0];
   }
   const version: Version = await imodelClient.versions.create(requestContext, imodelId, changeSet.id!, versionName);
 

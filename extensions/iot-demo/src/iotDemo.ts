@@ -13,7 +13,7 @@ import {
   ToolTipProvider,
   ScreenViewport,
 } from "@bentley/imodeljs-frontend";
-import { Gradient, ColorDef } from "@bentley/imodeljs-common";
+import { Gradient, ColorDef, ThematicGradientSettings, ThematicGradientColorScheme, ThematicGradientMode } from "@bentley/imodeljs-common";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { UiItemsManager } from "@bentley/ui-abstract";
 import { ClientRequestContext, Id64String } from "@bentley/bentleyjs-core";
@@ -302,7 +302,7 @@ class IoTTemperatureAnimation extends IoTHeatCoolAnimation {
 
   constructor(extension: IoTDemoExtension, selectedView: ScreenViewport, type: AnimationType, visibility: number, interpolation: number, floor: string, startMsec?: number, duration?: number) {
     super(extension, selectedView, type, visibility, interpolation, floor, startMsec, duration);
-    const thematicSettings = Gradient.ThematicSettings.fromJSON({ colorScheme: Gradient.ThematicColorScheme.BlueRed, mode: Gradient.ThematicMode.Smooth, stepCount: 0, rangeLow: 0.0, rangeHigh: 1.0, marginColor: new ColorDef("blanchedAlmond") });
+    const thematicSettings = ThematicGradientSettings.fromJSON({ colorScheme: ThematicGradientColorScheme.BlueRed, mode: ThematicGradientMode.Smooth, stepCount: 0, marginColor: ColorDef.computeTbgrFromString("blanchedAlmond") });
     this._gradient = Gradient.Symb.createThematic(thematicSettings);
   }
 

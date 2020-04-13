@@ -111,7 +111,7 @@ export class ToolWithSettings extends PrimitiveTool {
   }
 
   public get colorDef(): ColorDef {
-    return new ColorDef(this._optionsValue.value as number);
+    return ColorDef.create(this._optionsValue.value as number);
   }
 
   public set colorDef(colorVal: ColorDef) {

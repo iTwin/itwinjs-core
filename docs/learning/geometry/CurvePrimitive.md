@@ -3,13 +3,13 @@
 
 * A CurvePrimitive is a bounded continuous curve.
 * All curves implement methods (e.g. `fractionToPoint` to refer to "fraction" position along the curve.
-  * `fraction=0` is the startof the primitive
+  * `fraction=0` is the start of the primitive
   * `fraction=1` is the end of the primitive
   * increasing fractions always move forward along the primitive.
-  * curves implment their equations with the fraction representing the parameter in their most natural equations.
+  * curves implement their equations with the fraction representing the parameter in their most natural equations.
 * All curves also support methods to deal with _true distance_ along the curve. These include
   * `curve.curveLengthBetweenFractions (startFraction, endFraction)`
-  * `curve.moveByDistanceFromFracton (startFracton, distance)`
+  * `curve.moveByDistanceFromFraction (startFraction, distance)`
   * Fraction position along the curve is strictly proportional to true distance along the curve only for a limited number of curve types:
     * LineSegment3d
     * Arc3d
@@ -52,7 +52,7 @@ const myLineString = LineString.create ([point0, point1, point2 ....]);
 Having both individual line segments and the composite linestring complicates parameterization.
 
 * As with all CurvePrimitives, the fractional parameterization for the complete linestring must have `fraction=0` at the start and `fraction=1` at the end.
-* The fractional positions of each inerior vertex are then defined at _equal intervals in the fraction space_.
+* The fractional positions of each interior vertex are then defined at _equal intervals in the fraction space_.
 * ![>](./figs/CurvePrimitives/LineStringFractions.png)
 * Hence in the example, with 4 segments the vertex fractions increment by one quarter.
 * Within each segment, the fraction interval is mapped as if it were a line segment.
@@ -60,14 +60,14 @@ Having both individual line segments and the composite linestring complicates pa
 
 ## arcs (circular and elliptic)
 
-An arc primitive is a portion of a circular or ellipticla arc.   The equations for a complete elliptic arc require a center point and two vectors.   The start and end of a partial arc are controlled by two angles.
+An arc primitive is a portion of a circular or elliptical arc.   The equations for a complete elliptic arc require a center point and two vectors.   The start and end of a partial arc are controlled by two angles.
 
 The equational forms for circular and elliptic cases are identical.  Telling whether a given arc is true circular requires examination of the vector coordinates.
 
 The stroking equation that maps  an angle to a coordinates to points around a (full) elliptic (or circular) arc is
 ```
 C = center point
-U = vector from center point to 0-degere point
+U = vector from center point to 0-degree point
 V = vector from center point to 90-degree point.
 theta = angle
 X(theta) = C + cos (theta * U + sin(theta) * V
@@ -85,7 +85,7 @@ X(theta) = C + cos (theta * U + sin(theta) * V
 
 ### Ellipse
 
-If the `U` and `V` vectors either (a) have different lengths or (b) are not perpendicular, the ellispe is non-circular.
+If the `U` and `V` vectors either (a) have different lengths or (b) are not perpendicular, the ellipse is non-circular.
 
 If `U` and `V` are perpendicular, their lengths correspond to the common usage of "major" and "minor" axis lengths.   But the perpendicular condition is not required -- non-perpendicular vectors occur due to transformation and construction history.
 
@@ -105,7 +105,7 @@ X(f) = C + cos (theta(f)) * U + sin(theta(f)) * V
 
 
 * Angles theta0 and theta1 can be negative and can be outside of 360 degrees.
-* Anlge theta1 can be less than theta0
+* Angle theta1 can be less than theta0
 
 Examples of arc sweep
 | start and end angles | CCW signed sweep angle | image |
@@ -130,38 +130,38 @@ Internally, the curve is a is a sequence of polynomial curves that join together
 The "control point" structure has remarkable properties for computation:
 
 * The curve never leaves the overall xyz range of the control points.
-* This bounding propery applies "from any veiwpoint", not just in the coordinate system where they are given.
+* This bounding property applies "from any viewpoint", not just in the coordinate system where they are given.
 * Even tighter, the curve is contained within the convex hull of the control points.
 * No plane can intersect the curve more often than it intersects the control polygon.
   * that is, the polygon may overestimate the number of intersections, (i.e. suggest false intersections), but it never underestimates.
-* Inspection of the control polygon gives similar "never understimate" statements can be made about other propperties such as
+* Inspection of the control polygon gives similar "never underestimate" statements about other properties such as
   * the number of inflections.
   * the number of minima and maxima of the curve and its derivatives.
 * The use of "weights" on the control points allows a bspline curve to exactly trace circular and elliptic arcs without use of trig functions.
 
 ## References
 
-There are innumerable books and web pages explaining splines.  There is a high level of consistency of the concepts -- control points, basis functions, knots, and order.  But be very careful about subtle deatils of indexing.   Correct presentations may superficially appear to differ depending on whether the writer has consdiders `n` indices to run
+There are innumerable books and web pages explaining splines.  There is a high level of consistency of the concepts -- control points, basis functions, knots, and order.  But be very careful about subtle details of indexing.   Correct presentations may superficially appear to differ depending on whether the writer has considers `n` indices to run
 
 * C-style, `0 <= i < n` (with index `n` _not_ part of the sequence)
 * Fortran style , `1<=i<n`
 * (rare) `0<=i<=n`
 
-Some typcial descriptions are:
+Some typical descriptions are:
   * https://en.wikipedia.org/wiki/B-spline
   * http://web.mit.edu/hyperbook/Patrikalakis-Maekawa-Cho/node17.html
   * https://www.cs.unc.edu/~dm/UNC/COMP258/LECTURES/B-spline.pdf
 
-Be especially careful about the number of knot counts, which can differ by 2 as described in the "overclamping" section.
+Be especially careful about the number of knot counts, which can differ by 2 as described in the "over-clamping" section.
 
 The `order` of the bspline is the number of control points that are "in effect" over an individual span.
 
 * The first span is controlled by the first `order` control points, i.e. those indexed `0, 1, .. (order-1)`.
-* The next span is controled by control points indexed `1,2,..order`.
+* The next span is controlled by control points indexed `1,2,..order`.
   * That is, there is a "moving window" of `order` points that control successive spans.
   * When moving from one cluster of `order` control points to the next, the first (left) point of the first cluster is dropped and a new one is added at the right.
 * The sharing of control points provide the critical properties for the curve:
-  * No matter how many control points there are (think dozens to hundreds), each individual span is controled by only `order` points.
+  * No matter how many control points there are (think dozens to hundreds), each individual span is controlled by only `order` points.
   * this "local control" prevents changes "far away" in the control points from causing unexpected global changes in the curve.
   * The sharing of `order-1` points works into the formulas to guarantee smoothness of the curve.
   * Specifically, for a bspline of given `order`:
@@ -176,7 +176,7 @@ The required data for a bspline curve is:
 | control points | array of N points |
 | order | number | the most common orders are 2 through 4;  higher order gives smoother curves, but with performance cost. |
 |  | | Order higher than 10 is discouraged |
-| | |  3 (quaratic curve, degree 2)
+| | |  3 (quadratic curve, degree 2)
 |  | |or 4 (cubic curve, degree 3) |
 | knots    | array of `(N + order - 2)` numbers | See knot paragraph |
 
@@ -193,7 +193,7 @@ The required data for a bspline curve is:
 * Conversationally, if one is thinking of "quadratic" cubic "curves", it is common to refer to the `degree`, which is one less than the order
   * the `degree` is the highest power appearing in the polynomial
   * A conventional polynomial form would have coefficients of terms with power 1,2, through `degree`.
-  * That polynomial would alwo include a constant term that does not muliply a power of x.
+  * That polynomial would also include a constant term that does not multiply a power of x.
   * Hence there is _one more coefficient_ than the degree.
   * textbook algebra discussions prefer reference to the highest power (`degree`) because that is short indicator of complexity
   * Bspline discussion prefers reference to `order` rather than `degree` because all of the internal matrix manipulations must account for that many coefficients.
@@ -209,23 +209,23 @@ The required data for a bspline curve is:
 
 ### Clamping
 * If knot values are strictly increasing -- e.g. 1,2,3,4,5, -- all the way to the end, the curve does _not_ pass through the first and last control points.
-* Having the right number of identical knot values "at the ends" makes the curve (a) pass through the end control points and (b) have tangent direction towards the immeidate neighbor.
+* Having the right number of identical knot values "at the ends" makes the curve (a) pass through the end control points and (b) have tangent direction towards the immediate neighbor.
 * Specifically, for a curve of given `degree`, exactly that number of repeated knots creates the usual "clamped" effects.
    * For instance, for a cubic curve, the knots `[0,0,0,0.25,0.5,0.75,1.1.1]` will
       * Pass through both end points, with tangent along the end segment of the polygon
       * have interior knot breaks at 0.25, 0.5 and 0.75.
 
-#### OVERCLAMPING
-* An important point for exchanging knots with legacy graphics systems (including Microstation and Parsolid) is that there is a long-established (an unneccessary) practice of having _one extra (unused) knot at each end_.
+#### OverClamping
+* An important point for exchanging knots with legacy graphics systems (including Microstation and Parasolid) is that there is a long-established (an unnecessary) practice of having _one extra (unused) knot at each end_.
 * That is, the _overclamped_ cubic knot sequence with breaks at 0.25, 0.5, and 0.75 would be  `[0,0,0,0,0.25,0.5,0.75,1.1.1,1]`.
-* The equations for the bsplne will never reference the extra knots at the beginning and end.
-* In the overclamping convention, the relation of counts of control points (N) and (overclampled) knots is
+* The equations for the bspline will never reference the extra knots at the beginning and end.
+* In the overClamping convention, the relation of counts of control points (N) and (overClamped) knots is
 ...
-            numberOfKnotsWithOverclamping = N + order = numberOfControlPoints + order
+            numberOfKnotsWithOverClamping = N + order = numberOfControlPoints + order
 ...
 
 In `imodeljs`
-* the spline classes (`BsplineCurve3d`, `BSplineCurve3dH` and surface partners) _internally_ do _not_ overclamp.
+* the spline classes (`BsplineCurve3d`, `BSplineCurve3dH` and surface partners) _internally_ do _not_ over-clamp.
 * The API for constructing splines accepts both styles of input.  The order, knot count, and control point counts distinguish which style is being used.
   * If `numberOfControlPoints === numberOfKnots + order` the curve is overclamped, so the first and last knot values are not saved in the bspline curve object
   * If `numberOfControlPoints === numberOfKnots + order - 2` the knots are all used.
@@ -233,7 +233,7 @@ In `imodeljs`
 ...
     curve.copyKnots(includeExtraEndKnot: boolean)
 ...
-to extract knots.  The caller can indicate if they prefer overlcamped knots by passing `true` for the `includeExtraEndKnot` parameter.
+to extract knots.  The caller can indicate if they prefer overclamped knots by passing `true` for the `includeExtraEndKnot` parameter.
 * When knots are written in `iModelJson ` objects, they are written with overclamp.
 
 
@@ -258,7 +258,7 @@ to extract knots.  The caller can indicate if they prefer overlcamped knots by p
   * This concavity change is not always visually obvious.
   * These curves are not as smooth as your eye thinks.
 * There are no concavity changes within any single span.
-* Clamping (2 identical knots at start, 2 identical knots at end) makes the curve pass throught the end control points and point at neighbors.
+* Clamping (2 identical knots at start, 2 identical knots at end) makes the curve pass through the end control points and point at neighbors.
 
 ![>](./figs/BCurves/order3.png)
 
@@ -270,7 +270,7 @@ to extract knots.  The caller can indicate if they prefer overlcamped knots by p
 * Span changes (circles) are generally "off the polygon"
 * Direction and concavity are both continuous at span changes.
 * There can be one concavity change within a span.
-* Clamping (3 identical knots at start, 3 identical knots at end) makes the curve pass throught the end control points and point at neighbors.
+* Clamping (3 identical knots at start, 3 identical knots at end) makes the curve pass through the end control points and point at neighbors.
 
 ![>](./figs/BCurves/order4.png)
 
@@ -282,6 +282,6 @@ to extract knots.  The caller can indicate if they prefer overlcamped knots by p
 * Span changes (circles) are generally "off the polygon"
 * Direction, concavity, and one more derivative are all continuous at span changes.
 * There can be two concavity change within a span.
-* Clamping (4 identical knots at start, 4 identical knots at end) makes the curve pass throught the end control points and point at neighbors.
+* Clamping (4 identical knots at start, 4 identical knots at end) makes the curve pass  the end control points and point at neighbors.
 
 ![>](./figs/BCurves/order5.png)

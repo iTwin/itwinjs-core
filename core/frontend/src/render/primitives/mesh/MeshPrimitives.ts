@@ -321,7 +321,7 @@ export class Mesh {
 
 /** @internal */
 export namespace Mesh {
-  export const enum PrimitiveType { // tslint:disable-line:no-const-enum
+  export enum PrimitiveType {
     Mesh,
     Polyline,
     Point,

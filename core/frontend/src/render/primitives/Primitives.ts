@@ -15,25 +15,23 @@ export namespace ToleranceRatio {
   export const facetArea = 0.1;
 }
 
-// tslint:disable:no-const-enum
-
 /** Specifies under what circumstances a GeometryAccumulator should generate normals.
  * @internal
  */
-export const enum NormalMode {
+export enum NormalMode {
   Never,              // Never generate normals
   Always,             // Always generate normals
   CurvedSurfacesOnly, // Generate normals only for curved surfaces
 }
 
 /** @internal */
-export const enum SurfacesOnly { Yes = 1, No = 0 }  // Yes indicates polylines will not be generated, only meshes.
+export enum SurfacesOnly { Yes = 1, No = 0 }  // Yes indicates polylines will not be generated, only meshes.
 
 /** @internal */
-export const enum PreserveOrder { Yes = 1, No = 0 } // Yes indicates primitives will not be merged, and the order in which they were added to the GraphicBuilder will be preserved.
+export enum PreserveOrder { Yes = 1, No = 0 } // Yes indicates primitives will not be merged, and the order in which they were added to the GraphicBuilder will be preserved.
 
 /** @internal */
-export const enum GenerateEdges { Yes = 1, No = 0 } // Yes indicates edges will be generated for surfaces
+export enum GenerateEdges { Yes = 1, No = 0 } // Yes indicates edges will be generated for surfaces
 
 /** @internal */
 export class GeometryOptions {

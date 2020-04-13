@@ -52,19 +52,36 @@ An interactive application obtains information from an iModel and presents that 
 
 ## 4. Create a Sample Project
 
-Once you have a registered application, you will need an iModel. Our registration process makes it easy to create a new project in our “iModel Test Drive” organization, populate it with content, and give access to other developers.
+If you don’t already have an iModel, our registration process makes it easy to create a new project in our “iModel Test Drive” organization, populate it with content, and give access to other developers.​
 
-The content can be either:
+You have a few options:
 
-- **Bentley supplied example content** – Recommended if you are just starting out. Simply select an example from the Project Registration page.
+- **Bentley Example** - Bentley supplied example content if you are just starting out. Simply select an example from the Project Registration page.
 
-OR
+- **Local File** - Most common formats are directly supported (.dgn, .dwg, .rvt, .imodel), for other formats, follow <a href="https://communities.bentley.com/products/microstation/b/microstation_blog/posts/publishing-an-imodel-in-bentley-view" target="_blank">these steps</a> to convert to a ['Snapshot iModel' (.bim)](../learning/backend/accessingimodels/#snapshot-imodels) before proceeding to the Project Registration page below.</p>
 
-- **You can use your own** – Follow <a href="https://communities.bentley.com/products/microstation/b/microstation_blog/posts/publishing-an-imodel-in-bentley-view" target="_blank">these steps</a> to format your content into a ‘Snapshot iModel’ (.bim) before proceeding to the Project Registration page below.
+- **iTwin Synchronizer** - If your development project requires a live digital twin. <a href="https://www.bentley.com/Products/Product-Line/Digital-Twins/iTwin-Synchronizer?_ga=2.266197903.1838833050.1585677947-1402897844.1566391541" target="_blank"> Download here</a>, <a href="https://docs.bentley.com/LiveContent/web/iModel%20Bridge%20Administrator-v1/en/GUID-FD43F789-A531-4315-AD77-BFF1CCAC6F1C.html" target="_blank">instructions here</a>.
 
-**[Register Project Here](/getting-started/registration-dashboard?tab=1)**
+<div id="step4"></div>
 
-*Note: The “iModel Testdrive” organization is intended for developer testing only.  See <a href="https://learn.bentley.com/app/VideoPlayer/LinkToIndividualCourse?LearningPathID=109270&CourseId=114330&MediaID=5006537" target="_blank">this page</a> for information about administering a CONNECT project in your own organization.*
+<script>
+
+  // LaunchDarkly script for turning off last li in step 4.
+  $(document).ready(function () {
+    var show = ldclient.variation(featureFlags.CreateBlankProject);
+    if (show === undefined) {
+      ldclient.on('ready', function () {
+        show = ldclient.variation(featureFlags.CreateBlankProject);
+        if (!show) {
+            $('#step4').prev('ul').children('li').last().hide();
+        }
+      });
+    }
+    else if (!show) {
+        $('#step4').prev('ul').children('li').last().hide();
+    }
+  });
+</script>
 
 ## 5. Get the Sample Code
 

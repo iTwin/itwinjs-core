@@ -44,7 +44,7 @@ class MeasureLabel implements CanvasDecoration {
   }
 
   public drawDecoration(ctx: CanvasRenderingContext2D): void {
-    ctx.font = "16px san-serif";
+    ctx.font = "16px sans-serif";
     const labelHeight = ctx.measureText("M").width; // Close enough for border padding...
     const labelWidth = ctx.measureText(this.label).width + labelHeight;
 
@@ -95,8 +95,10 @@ class MeasureMarker extends Marker {
     this.drawFunc = markerDrawFunc;
     this.title = title;
     this.label = label;
-    this.labelFont = "18px san-serif";
+    this.labelFont = "16px sans-serif";
     this.labelColor = "black";
+    this.labelMaxWidth = this.size.x * 0.75;
+    this.labelOffset = { x: 0, y: -1 };
   }
 
   public onMouseButton(_ev: BeButtonEvent): boolean { return true; } // Never forward event to active tool...
@@ -228,7 +230,7 @@ export class MeasureDistanceTool extends PrimitiveTool {
       const segPoints: Point3d[] = [];
       segPoints.push(basePt); basePt = basePt.plus(xVec);
       segPoints.push(basePt);
-      const colorX = ColorDef.red.adjustForContrast(context.viewport.view.backgroundColor);
+      const colorX = ColorDef.red.adjustedForContrast(context.viewport.view.backgroundColor);
       builderAxes.setSymbology(colorX, ColorDef.black, 5);
       builderAxes.addLineString(segPoints);
     }
@@ -237,7 +239,7 @@ export class MeasureDistanceTool extends PrimitiveTool {
       const segPoints: Point3d[] = [];
       segPoints.push(basePt); basePt = basePt.plus(yVec);
       segPoints.push(basePt);
-      const colorY = ColorDef.green.adjustForContrast(context.viewport.view.backgroundColor);
+      const colorY = ColorDef.green.adjustedForContrast(context.viewport.view.backgroundColor);
       builderAxes.setSymbology(colorY, ColorDef.black, 5);
       builderAxes.addLineString(segPoints);
     }
@@ -246,12 +248,12 @@ export class MeasureDistanceTool extends PrimitiveTool {
       const segPoints: Point3d[] = [];
       segPoints.push(basePt); basePt = basePt.plus(zVec);
       segPoints.push(basePt);
-      const colorZ = ColorDef.blue.adjustForContrast(context.viewport.view.backgroundColor);
+      const colorZ = ColorDef.blue.adjustedForContrast(context.viewport.view.backgroundColor);
       builderAxes.setSymbology(colorZ, ColorDef.black, 5);
       builderAxes.addLineString(segPoints);
     }
 
-    const segGlow = context.viewport.hilite.color.clone(); segGlow.setAlpha(50);
+    const segGlow = context.viewport.hilite.color.withAlpha(50);
     builderAxes.setSymbology(segGlow, ColorDef.black, 8);
     builderAxes.addLineString([seg.start, seg.end]);
 
@@ -280,7 +282,7 @@ export class MeasureDistanceTool extends PrimitiveTool {
         context.addDecorationFromBuilder(builderDynVis);
 
         const builderDynHid = context.createGraphicBuilder(GraphicType.WorldOverlay);
-        const colorDynHid = colorDynVis.clone(); colorDynHid.setAlpha(100);
+        const colorDynHid = colorDynVis.withAlpha(100);
 
         builderDynHid.setSymbology(colorDynHid, ColorDef.black, 1, LinePixels.Code2);
         builderDynHid.addLineString(tmpPoints);
@@ -293,8 +295,8 @@ export class MeasureDistanceTool extends PrimitiveTool {
     if (this._acceptedSegments.length > 0) {
       const builderAccVis = context.createGraphicBuilder(GraphicType.WorldDecoration);
       const builderAccHid = context.createGraphicBuilder(GraphicType.WorldOverlay);
-      const colorAccVis = ColorDef.white.adjustForContrast(context.viewport.view.backgroundColor);
-      const colorAccHid = colorAccVis.clone(); colorAccHid.setAlpha(100);
+      const colorAccVis = ColorDef.white.adjustedForContrast(context.viewport.view.backgroundColor);
+      const colorAccHid = colorAccVis.withAlpha(100);
 
       builderAccVis.setSymbology(colorAccVis, ColorDef.black, 3);
       builderAccHid.setSymbology(colorAccHid, ColorDef.black, 1, LinePixels.Code2);
@@ -322,7 +324,7 @@ export class MeasureDistanceTool extends PrimitiveTool {
       this._snapGeomId = this.iModel.transientIds.next;
 
     const builderSnapPts = context.createGraphicBuilder(GraphicType.WorldOverlay, undefined, this._snapGeomId);
-    const colorAccPts = ColorDef.white.adjustForContrast(context.viewport.view.backgroundColor);
+    const colorAccPts = ColorDef.white.adjustedForContrast(context.viewport.view.backgroundColor);
 
     builderSnapPts.setSymbology(colorAccPts, ColorDef.black, 7);
     builderSnapPts.addPointString(snapPoints);
@@ -892,9 +894,9 @@ export class MeasureAreaByPointsTool extends PrimitiveTool {
 
     const builderAccVis = context.createGraphicBuilder(GraphicType.WorldDecoration);
     const builderAccHid = context.createGraphicBuilder(GraphicType.WorldOverlay);
-    const colorAccVis = ColorDef.white.adjustForContrast(context.viewport.view.backgroundColor);
-    const colorAccHid = colorAccVis.clone(); colorAccHid.setAlpha(100);
-    const fillAccVis = context.viewport.hilite.color.clone(); fillAccVis.setAlpha(50);
+    const colorAccVis = ColorDef.white.adjustedForContrast(context.viewport.view.backgroundColor);
+    const colorAccHid = colorAccVis.withAlpha(100);
+    const fillAccVis = context.viewport.hilite.color.withAlpha(50);
 
     builderAccVis.setSymbology(colorAccVis, fillAccVis, 3);
     builderAccHid.setSymbology(colorAccHid, fillAccVis, 1, LinePixels.Code2);

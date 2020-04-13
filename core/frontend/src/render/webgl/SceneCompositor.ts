@@ -1162,6 +1162,16 @@ abstract class Compositor extends SceneCompositor {
     if (!this.target.activeVolumeClassifierProps || (renderForReadPixels && 0 === cmds.length) || 0 === cmdsForVC.length)
       return;
 
+    let outsideFlags = this.target.activeVolumeClassifierProps!.flags.outside;
+    let insideFlags = this.target.activeVolumeClassifierProps!.flags.inside;
+
+    if (this.target.wantThematicDisplay) {
+      if (outsideFlags !== SpatialClassificationProps.Display.Off)
+        outsideFlags = SpatialClassificationProps.Display.On;
+      if (insideFlags !== SpatialClassificationProps.Display.Off)
+        insideFlags = SpatialClassificationProps.Display.On;
+    }
+
     // Render the geometry which we are going to classify.
     this.renderForVolumeClassification(commands, compositeFlags, renderForReadPixels);
 
@@ -1202,9 +1212,9 @@ abstract class Compositor extends SceneCompositor {
       return;
     }
 
-    const needOutsideDraw = SpatialClassificationProps.Display.On !== this.target.activeVolumeClassifierProps!.flags.outside;
-    const needInsideDraw = SpatialClassificationProps.Display.On !== this.target.activeVolumeClassifierProps!.flags.inside;
-    const doColorByElement = SpatialClassificationProps.Display.ElementColor === this.target.activeVolumeClassifierProps!.flags.inside || renderForReadPixels;
+    const needOutsideDraw = SpatialClassificationProps.Display.On !== outsideFlags;
+    const needInsideDraw = SpatialClassificationProps.Display.On !== insideFlags;
+    const doColorByElement = SpatialClassificationProps.Display.ElementColor === insideFlags || renderForReadPixels;
     const doColorByElementForIntersectingVolumes = this.target.vcSupportIntersectingVolumes;
     const needAltZ = (doColorByElement && !doColorByElementForIntersectingVolumes) || needOutsideDraw;
     let zOnlyFbo = this._frameBuffers.stencilSet;
@@ -1384,8 +1394,8 @@ abstract class Compositor extends SceneCompositor {
     // and we don't really want another whole set of hilite shaders just for this.
     const cmdsSelected = extractHilitedVolumeClassifierCommands(this.target.hilites, commands.getCommands(RenderPass.HiliteClassification));
     commands.replaceCommands(RenderPass.HiliteClassification, cmdsSelected); // replace the hilite command list for use in hilite pass as well.
-    // if (cmdsSelected.length > 0 && this.target.activeVolumeClassifierProps!.flags.inside !== this.target.activeVolumeClassifierProps!.flags.selected) {
-    if (!doColorByElement && cmdsSelected.length > 0 && this.target.activeVolumeClassifierProps!.flags.inside !== SpatialClassificationProps.Display.Hilite) { // assume selected ones are always hilited
+    // if (cmdsSelected.length > 0 && insideFlags !== this.target.activeVolumeClassifierProps!.flags.selected) {
+    if (!doColorByElement && cmdsSelected.length > 0 && insideFlags !== SpatialClassificationProps.Display.Hilite) { // assume selected ones are always hilited
       // Set the stencil using just the hilited volume classifiers.
       fbStack.execute(this._frameBuffers.stencilSet!, false, () => {
         this.target.pushState(this._vcBranchState!);

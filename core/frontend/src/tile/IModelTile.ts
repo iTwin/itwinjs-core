@@ -60,13 +60,11 @@ export function iModelTileParamsFromJSON(props: TileProps, parent: IModelTile | 
   return { contentId, range, maximumSize, isLeaf, parent, contentRange, sizeMultiplier };
 }
 
-// tslint:disable:no-const-enum
-
 /**
  * Indicates whether a parent tile should be drawn in place of a child tile.
  * @internal
  */
-export const enum SelectParent {
+export enum SelectParent {
   No,
   Yes,
 }

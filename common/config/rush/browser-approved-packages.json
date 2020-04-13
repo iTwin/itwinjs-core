@@ -4,7 +4,7 @@
   "packages": [
     {
       "name": "@azure/storage-blob",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [ "backend", "frontend" ]
     },
     {
       "name": "@babel/core",
@@ -103,16 +103,16 @@
       "allowedCategories": [ "extensions", "frontend", "internal", "tools" ]
     },
     {
-      "name": "@bentley/imodeljs-webserver",
-      "allowedCategories": [ "internal" ]
-    },
-    {
       "name": "@bentley/logger-config",
       "allowedCategories": [ "internal" ]
     },
     {
       "name": "@bentley/oidc-signin-tool",
       "allowedCategories": [ "backend", "common", "extensions", "internal", "tools" ]
+    },
+    {
+      "name": "@bentley/orbitgt-core",
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "@bentley/perf-tools",
@@ -289,10 +289,6 @@
     {
       "name": "concurrently",
       "allowedCategories": [ "tools" ]
-    },
-    {
-      "name": "cors",
-      "allowedCategories": [ "backend" ]
     },
     {
       "name": "cpx",
@@ -816,7 +812,7 @@
     },
     {
       "name": "tree-kill",
-      "allowedCategories": [ "backend", "tools" ]
+      "allowedCategories": [ "tools" ]
     },
     {
       "name": "ts-key-enum",
@@ -936,7 +932,7 @@
     },
     {
       "name": "yargs",
-      "allowedCategories": [ "backend", "common", "internal", "tools" ]
+      "allowedCategories": [ "common", "internal", "tools" ]
     }
   ]
 }

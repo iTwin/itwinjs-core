@@ -201,6 +201,8 @@ export interface BackgroundMapTreeId {
 }
 
 class BackgroundMapTreeSupplier implements TileTreeSupplier {
+  public readonly isEcefDependent = true;
+
   public compareTileTreeIds(lhs: BackgroundMapTreeId, rhs: BackgroundMapTreeId): number {
     let cmp = compareStrings(lhs.providerName, rhs.providerName);
     if (0 === cmp) {
@@ -244,6 +246,7 @@ export function getBackgroundMapTreeSupplier(): TileTreeSupplier {
 /** Better if folks implement their own TileTreeSupplier which can share tiles... */
 class ImageryTreeSupplier implements TileTreeSupplier {
   public readonly provider: ImageryProvider;
+  public readonly isEcefDependent = true;
 
   public constructor(provider: ImageryProvider) {
     this.provider = provider;
@@ -260,6 +263,9 @@ class ImageryTreeSupplier implements TileTreeSupplier {
  * @internal
  */
 export async function getGcsConverterAvailable(iModel: IModelConnection) {
+  if (iModel.noGcsDefined)
+    return false;
+
   // Determine if we have a usable GCS.
   const converter = iModel.geoServices.getConverter("WGS84");
   if (undefined === converter)

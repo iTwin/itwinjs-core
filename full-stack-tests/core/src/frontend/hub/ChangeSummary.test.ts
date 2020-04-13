@@ -34,6 +34,7 @@ describe("ChangeSummary (#integration)", () => {
     const options: IModelAppOptions = {
       authorizationClient: TestUtility.imodelCloudEnv.authorization,
       imodelClient: TestUtility.imodelCloudEnv.imodelClient,
+      applicationVersion: "1.2.1.1",
     };
     MockRender.App.startup(options);
 

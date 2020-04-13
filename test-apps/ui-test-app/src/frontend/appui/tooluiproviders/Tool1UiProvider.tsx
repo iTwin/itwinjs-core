@@ -31,7 +31,7 @@ function Tool1Color() {
       if (args.toolId === Tool1.toolId) {
         const colorSyncItem = args.syncProperties.find((syncItem: DialogPropertySyncItem) => syncItem.propertyName === "color");
         if (colorSyncItem) {
-          setColor(new ColorDef(colorSyncItem.value.value as number));
+          setColor(ColorDef.create(colorSyncItem.value.value as number));
         }
       }
     };

@@ -276,19 +276,19 @@ export class AccuDraw {
   /** @internal */
   protected _indexToleranceInches = 0.11;
   /** @internal */
-  protected readonly _frameColor = new ColorDef(ColorByName.lightGrey);
+  protected readonly _frameColor = ColorDef.create(ColorByName.lightGrey);
   /** @internal */
-  protected readonly _fillColor = new ColorDef(ColorByName.blue);
+  protected readonly _fillColor = ColorDef.create(ColorByName.blue);
   /** @internal */
-  protected readonly _xColor = new ColorDef(ColorByName.red);
+  protected readonly _xColor = ColorDef.create(ColorByName.red);
   /** @internal */
-  protected readonly _yColor = new ColorDef(ColorByName.green);
+  protected readonly _yColor = ColorDef.create(ColorByName.green);
   /** @internal */
-  protected readonly _indexColor = new ColorDef(ColorByName.white);
+  protected readonly _indexColor = ColorDef.create(ColorByName.white);
   /** @internal */
-  protected readonly _frameColorNoFocus = new ColorDef(ColorByName.darkGrey);
+  protected readonly _frameColorNoFocus = ColorDef.create(ColorByName.darkGrey);
   /** @internal */
-  protected readonly _fillColorNoFocus = new ColorDef(ColorByName.lightGrey);
+  protected readonly _fillColorNoFocus = ColorDef.create(ColorByName.lightGrey);
 
   // User Preference Settings...
   public smartKeyin = true;
@@ -1706,11 +1706,11 @@ export class AccuDraw {
 
   private displayAlignments(graphic: GraphicBuilder, vp: Viewport): void {
     const bgColor = vp.view.backgroundColor;
-    const colorIndex = this._indexColor.adjustForContrast(bgColor, 130);
+    const colorIndex = this._indexColor.adjustedForContrast(bgColor, 130);
     const origin = new Point3d(); // Compass origin is adjusted by active z-lock...
     // For non-zero Z value draw indicator line from plane point to compass origin...
     if (this.getCompassPlanePoint(origin, vp)) {
-      const colorZ = this._frameColor.adjustForContrast(bgColor, 155);
+      const colorZ = this._frameColor.adjustedForContrast(bgColor, 155);
       graphic.setSymbology(colorZ, colorZ, 2);
       graphic.addLineString([origin, this.origin]);
       graphic.setSymbology(colorZ, colorZ, 4);
@@ -1875,7 +1875,7 @@ export class AccuDraw {
       if (undefined === this._acsPickId)
         this._acsPickId = context.viewport.iModel.transientIds.next;
       const acsPickBuilder = context.createGraphicBuilder(GraphicType.WorldDecoration, undefined, this._acsPickId);
-      const color = ColorDef.blue.adjustForContrast(context.viewport.view.backgroundColor, 50);
+      const color = ColorDef.blue.adjustedForContrast(context.viewport.view.backgroundColor, 50);
       acsPickBuilder.setSymbology(color, color, 6);
       acsPickBuilder.addPointString([context.viewport.view.auxiliaryCoordinateSystem.getOrigin()]);
       context.addDecorationFromBuilder(acsPickBuilder);
@@ -1904,10 +1904,10 @@ export class AccuDraw {
 
     const hasFocus = this.hasInputFocus;
     const bgColor = vp.view.backgroundColor;
-    const frameColor = (hasFocus ? this._frameColor : this._frameColorNoFocus).adjustForContrast(bgColor, 155);
-    const fillColor = (hasFocus ? this._fillColor : this._fillColorNoFocus).adjustForContrast(bgColor, 75);
-    const xColor = (hasFocus ? this._xColor : this._frameColorNoFocus).adjustForContrast(bgColor, 155);
-    const yColor = (hasFocus ? this._yColor : this._frameColorNoFocus).adjustForContrast(bgColor, 155);
+    const frameColor = (hasFocus ? this._frameColor : this._frameColorNoFocus).adjustedForContrast(bgColor, 155);
+    const fillColor = (hasFocus ? this._fillColor : this._fillColorNoFocus).adjustedForContrast(bgColor, 75);
+    const xColor = (hasFocus ? this._xColor : this._frameColorNoFocus).adjustedForContrast(bgColor, 155);
+    const yColor = (hasFocus ? this._yColor : this._frameColorNoFocus).adjustedForContrast(bgColor, 155);
     const shadowColor = frameColor;
 
     // Display compass frame...

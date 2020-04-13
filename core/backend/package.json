@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-backend",
-  "version": "2.0.0-dev.57",
+  "version": "2.0.0-dev.64",
   "description": "iModel.js backend components",
   "main": "lib/imodeljs-backend.js",
   "typings": "lib/imodeljs-backend",
@@ -18,7 +18,7 @@
     "cover:integration": "nyc npm run test:integration",
     "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=imodeljs-backend",
     "lint": "tslint --project . 1>&2",
-    "pretest": "cpx \"./src/test/logging.config.json\" ./lib/test",
+    "pretest": "cpx ./src/test/logging.config.json ./lib/test",
     "test": "node ./node_modules/@bentley/build-tools/scripts/test.js --offline=\"mock\" --grep \"#integration|#WebGLPerformance\" --invert",
     "test:integration": "npm run pretest && node ./node_modules/@bentley/build-tools/scripts/test.js --testDir=\"./lib/test/integration\"",
     "perftest:pre": "npm run pretest && cpx \"./src/perftest/*.json\" ./lib/perftest",
@@ -29,7 +29,7 @@
     "perftest:schema": "npm run perftest:pre && node ./node_modules/@bentley/build-tools/scripts/test.js --testDir=\"./lib/perftest\" --timeout=999999999 --grep SchemaDesignPerf",
     "copy:ios-test-assets": "cpx \"./src/test/assets/**/*\" ./lib/test/ios/webpack/assets && cpx \"./lib/assets/**/*\" ./lib/test/ios/webpack/assets",
     "build:imodeljs-backend-test-app": "xcrun xcodebuild build-for-testing -configuration Debug -sdk iphoneos -workspace ./src/test/ios/imodeljs-backend-test-app.xcworkspace -scheme imodeljs-backend-test-app -derivedDataPath ./lib/test/ios/DerivedData -allowProvisioningUpdates",
-    "webpack:imodeljs-test": "npm run copy:ios-test-assets && cpx \"./src/test/ios/config/ignoreTest.js\" ./lib/test && cpx \"./src/test/ios/runMochaTestsDirectly.js\" ./lib/test && node ./src/test/ios/scripts/generateTestBarrel.js ./lib/test ./lib/test/ios-test-barrel.js && webpack --target=webworker --config=./src/test/ios/config/mobile.webpack.config.js",
+    "webpack:imodeljs-test": "npm run copy:ios-test-assets && cpx ./src/test/ios/config/ignoreTest.js ./lib/test && cpx ./src/test/ios/runMochaTestsDirectly.js ./lib/test && node ./src/test/ios/scripts/generateTestBarrel.js ./lib/test ./lib/test/ios-test-barrel.js && webpack --target=webworker --config=./src/test/ios/config/mobile.webpack.config.js",
     "install-ios-lib": "node ./src/test/ios/scripts/installIosNativeLib.js",
     "build:ios-test": "npm run install-ios-lib && npm run webpack:imodeljs-test && npm run build:imodeljs-backend-test-app"
   },
@@ -47,28 +47,28 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.0.0-dev.57",
-    "@bentley/ecschema-metadata": "2.0.0-dev.57",
-    "@bentley/geometry-core": "^2.0.0-dev.57",
-    "@bentley/imodeljs-clients": "^2.0.0-dev.57",
-    "@bentley/imodeljs-clients-backend": "^2.0.0-dev.57",
-    "@bentley/imodeljs-common": "^2.0.0-dev.57"
+    "@bentley/bentleyjs-core": "^2.0.0-dev.64",
+    "@bentley/ecschema-metadata": "2.0.0-dev.64",
+    "@bentley/geometry-core": "^2.0.0-dev.64",
+    "@bentley/imodeljs-clients": "^2.0.0-dev.64",
+    "@bentley/imodeljs-clients-backend": "^2.0.0-dev.64",
+    "@bentley/imodeljs-common": "^2.0.0-dev.64"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.0.0-dev.57",
-    "@bentley/build-tools": "2.0.0-dev.57",
-    "@bentley/config-loader": "2.0.0-dev.57",
-    "@bentley/ecschema-metadata": "2.0.0-dev.57",
-    "@bentley/geometry-core": "2.0.0-dev.57",
-    "@bentley/imodeljs-clients": "2.0.0-dev.57",
-    "@bentley/imodeljs-clients-backend": "2.0.0-dev.57",
-    "@bentley/imodeljs-common": "2.0.0-dev.57",
-    "@bentley/oidc-signin-tool": "2.0.0-dev.57",
-    "@bentley/perf-tools": "2.0.0-dev.57",
+    "@bentley/bentleyjs-core": "2.0.0-dev.64",
+    "@bentley/build-tools": "2.0.0-dev.64",
+    "@bentley/config-loader": "2.0.0-dev.64",
+    "@bentley/ecschema-metadata": "2.0.0-dev.64",
+    "@bentley/geometry-core": "2.0.0-dev.64",
+    "@bentley/imodeljs-clients": "2.0.0-dev.64",
+    "@bentley/imodeljs-clients-backend": "2.0.0-dev.64",
+    "@bentley/imodeljs-common": "2.0.0-dev.64",
+    "@bentley/oidc-signin-tool": "2.0.0-dev.64",
+    "@bentley/perf-tools": "2.0.0-dev.64",
     "@types/chai": "^4.1.4",
     "@types/deep-assign": "^0.1.0",
     "@types/formidable": "^1.0.31",
@@ -96,7 +96,7 @@
     "webpack": "4.42.0"
   },
   "dependencies": {
-    "@bentley/imodeljs-native": "2.0.20",
+    "@bentley/imodeljs-native": "2.0.23",
     "@azure/storage-blob": "10.4.0",
     "deep-assign": "^2.0.0",
     "form-data": "^2.3.2",

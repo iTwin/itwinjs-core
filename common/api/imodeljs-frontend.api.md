@@ -125,6 +125,7 @@ import { IndexMap } from '@bentley/bentleyjs-core';
 import { InternetConnectivityStatus } from '@bentley/imodeljs-common';
 import { LDClient } from 'ldclient-js';
 import { LDFlagValue } from 'ldclient-js';
+import { LightSettings } from '@bentley/imodeljs-common';
 import { LinePixels } from '@bentley/imodeljs-common';
 import { LockLevel } from '@bentley/imodeljs-clients';
 import { LogLevel } from '@bentley/bentleyjs-core';
@@ -143,10 +144,13 @@ import { MeshPolylineList } from '@bentley/imodeljs-common';
 import { ModelProps } from '@bentley/imodeljs-common';
 import { ModelQueryParams } from '@bentley/imodeljs-common';
 import { ModelSelectorProps } from '@bentley/imodeljs-common';
+import { MonochromeMode } from '@bentley/imodeljs-common';
 import { OctEncodedNormal } from '@bentley/imodeljs-common';
 import { OidcDesktopClientConfiguration } from '@bentley/imodeljs-common';
 import { OidcFrontendClientConfiguration } from '@bentley/imodeljs-clients';
 import { OpenMode } from '@bentley/bentleyjs-core';
+import { OrbitGtBlobProps } from '@bentley/imodeljs-common';
+import { OrbitGtDataManager } from '@bentley/orbitgt-core';
 import { PackedFeatureTable } from '@bentley/imodeljs-common';
 import { ParseResult } from '@bentley/imodeljs-quantity';
 import { ParseResults } from '@bentley/ui-abstract';
@@ -201,7 +205,7 @@ import { SkyBoxProps } from '@bentley/imodeljs-common';
 import { SkyCubeProps } from '@bentley/imodeljs-common';
 import { SnapRequestProps } from '@bentley/imodeljs-common';
 import { SnapResponseProps } from '@bentley/imodeljs-common';
-import { SolarShadows } from '@bentley/imodeljs-common';
+import { SolarShadowSettings } from '@bentley/imodeljs-common';
 import { SortedArray } from '@bentley/bentleyjs-core';
 import { SpatialClassificationProps } from '@bentley/imodeljs-common';
 import { SpatialViewDefinitionProps } from '@bentley/imodeljs-common';
@@ -212,6 +216,7 @@ import { SubCategoryAppearance } from '@bentley/imodeljs-common';
 import { SubCategoryOverride } from '@bentley/imodeljs-common';
 import { TerrainSettings } from '@bentley/imodeljs-common';
 import { TextureMapping } from '@bentley/imodeljs-common';
+import { ThematicDisplay } from '@bentley/imodeljs-common';
 import { ThumbnailProps } from '@bentley/imodeljs-common';
 import { TileProps } from '@bentley/imodeljs-common';
 import { TileReadStatus } from '@bentley/imodeljs-common';
@@ -1296,6 +1301,8 @@ export class BackgroundTerrainTileTreeReference extends TileTreeReference {
     // (undocumented)
     protected getViewFlagOverrides(tree: TileTree): import("@bentley/imodeljs-common").ViewFlagOverrides;
     // (undocumented)
+    protected get _isLoadingComplete(): boolean;
+    // (undocumented)
     get settings(): BackgroundMapSettings;
     set settings(settings: BackgroundMapSettings);
     // (undocumented)
@@ -1521,18 +1528,6 @@ export interface CachedIModelCoordinatesResponseProps {
 // @internal (undocumented)
 export function calculateEcefToDb(iModel: IModelConnection, bimElevationBias: number): Promise<Transform>;
 
-// @beta
-export function calculateSolarAngles(date: Date, location: Cartographic): {
-    azimuth: number;
-    elevation: number;
-};
-
-// @beta
-export function calculateSolarDirection(date: Date, location: Cartographic): Vector3d;
-
-// @beta
-export function calculateSunriseOrSunset(date: Date, location: Cartographic, sunrise: boolean): Date;
-
 // @public
 export interface CanvasDecoration {
     decorationCursor?: string;
@@ -1658,7 +1653,7 @@ export enum ClipEventType {
 }
 
 // @beta
-export const enum ClippingType {
+export enum ClippingType {
     Mask = 1,
     None = 0,
     Planes = 2
@@ -1741,6 +1736,8 @@ export class ContextRealityModelState {
     // (undocumented)
     readonly name: string;
     // (undocumented)
+    readonly orbitGtBlob?: OrbitGtBlobProps;
+    // (undocumented)
     toJSON(): ContextRealityModelProps;
     // (undocumented)
     get treeRef(): TileTreeReference;
@@ -1806,7 +1803,11 @@ export function createDefaultViewFlagOverrides(options: {
     clipVolume?: boolean;
     shadows?: boolean;
     lighting?: boolean;
+    thematic?: false;
 }): ViewFlagOverrides;
+
+// @internal (undocumented)
+export function createOrbitGtTileTreeReference(props: OrbitGtTileTree.ReferenceProps): OrbitGtTileTree.Reference;
 
 // @internal (undocumented)
 export function createPrimaryTileTreeReference(view: ViewState, model: GeometricModelState): TileTreeReference;
@@ -2061,14 +2062,20 @@ export class DisplayStyle3dState extends DisplayStyleState {
     clone(iModel: IModelConnection): this;
     get environment(): Environment;
     set environment(env: Environment);
+    // @alpha (undocumented)
+    get lights(): LightSettings;
+    set lights(lights: LightSettings);
     // @internal
     loadSkyBoxParams(system: RenderSystem, vp?: Viewport): SkyBox.CreateParams | undefined;
     // @beta
     setSunTime(time: number): void;
     // (undocumented)
     get settings(): DisplayStyle3dSettings;
+    // @beta
+    get solarShadows(): SolarShadowSettings;
+    set solarShadows(settings: SolarShadowSettings);
     // @beta (undocumented)
-    get sunDirection(): Vector3d | undefined;
+    get sunDirection(): Readonly<Vector3d>;
 }
 
 // @public
@@ -2159,12 +2166,15 @@ export class DrawingModelState extends GeometricModel2dState {
 
 // @public
 export class DrawingViewState extends ViewState2d {
+    constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState, extents: AxisAlignedBox3d);
     // @internal (undocumented)
     static get className(): string;
     // (undocumented)
     static createFromProps(props: ViewStateProps, iModel: IModelConnection): DrawingViewState;
     // (undocumented)
     get defaultExtentLimits(): ExtentLimits;
+    // (undocumented)
+    getViewedExtents(): AxisAlignedBox3d;
     }
 
 // @public
@@ -2450,7 +2460,10 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     static getOrCreate(vp: Viewport): EmphasizeElements;
     getOverriddenElements(): Map<number, Id64Set> | undefined;
     getOverriddenElementsByKey(key: number): Id64Set | undefined;
-    getOverrideFromKey(key: number, color: ColorDef): FeatureOverrideType;
+    getOverrideFromKey(key: number): {
+        overrideType: FeatureOverrideType;
+        color: ColorDef;
+    };
     hideElements(ids: Id64Arg, vp: Viewport, replace?: boolean): boolean;
     hideSelectedElements(vp: Viewport, replace?: boolean, clearSelection?: boolean): boolean;
     isActive(vp: Viewport): boolean;
@@ -2518,7 +2531,7 @@ export class EntityState implements EntityProps {
 }
 
 // @public
-export class Environment implements EnvironmentProps {
+export class Environment {
     constructor(json?: EnvironmentProps);
     // (undocumented)
     readonly ground: GroundPlane;
@@ -2666,6 +2679,16 @@ export class ExternalServerExtensionLoader implements ExtensionLoader {
     resolveResourceUrl(extensionName: string, relativeUrl: string): string;
     // (undocumented)
     serverName: string;
+}
+
+// @alpha
+export interface ExternalTileStatistics {
+    // (undocumented)
+    ready: number;
+    // (undocumented)
+    requested: number;
+    // (undocumented)
+    selected: number;
 }
 
 // @public
@@ -3907,6 +3930,8 @@ export abstract class IModelConnection extends IModel {
     requestSnap(props: SnapRequestProps): Promise<SnapResponseProps>;
     saveChanges(description?: string): Promise<void>;
     readonly selectionSet: SelectionSet;
+    // @internal (undocumented)
+    setEcefLocation(ecef: EcefLocationProps): void;
     spatialToCartographic(spatial: XYAndZ, result?: Cartographic): Promise<Cartographic>;
     spatialToCartographicFromGcs(spatial: XYAndZ, result?: Cartographic): Promise<Cartographic>;
     // @internal
@@ -4000,6 +4025,8 @@ export namespace IModelConnection {
         getTileTreeProps(id: string): Promise<TileTreeProps>;
         // @internal (undocumented)
         get isDisposed(): boolean;
+        // @internal (undocumented)
+        onEcefChanged(): void;
         purge(olderThan: BeTimePoint, exclude?: Set<TileTree>): void;
         // @internal (undocumented)
         purgeTileTrees(modelIds: Id64Array | undefined): Promise<void>;
@@ -4749,6 +4776,7 @@ export class Marker implements CanvasDecoration {
     labelBaseline?: MarkerTextBaseline;
     labelColor?: MarkerFillStyle;
     labelFont?: string;
+    labelMaxWidth?: number;
     labelOffset?: XAndY;
     static makeFrom<T extends Marker>(other: Marker, ...args: any[]): T;
     onMouseButton?(_ev: BeButtonEvent): boolean;
@@ -5644,6 +5672,57 @@ export class OnScreenTarget extends Target {
 // @beta
 export function openImageDataUrlInNewWindow(url: string, title?: string): void;
 
+// @internal (undocumented)
+export class OrbitGtTileTree extends TileTree {
+    constructor(treeParams: TileTreeParams, _dataManager: OrbitGtDataManager, cloudRange: Range3d, _centerOffset: Vector3d);
+    // (undocumented)
+    collectStatistics(stats: RenderMemory.Statistics): void;
+    // (undocumented)
+    dispose(): void;
+    // (undocumented)
+    draw(args: TileDrawArgs): void;
+    // (undocumented)
+    get is3d(): boolean;
+    // (undocumented)
+    get isContentUnbounded(): boolean;
+    // (undocumented)
+    get maxDepth(): number | undefined;
+    // (undocumented)
+    prune(): void;
+    // (undocumented)
+    rootTile: OrbitGtRootTile;
+    // (undocumented)
+    protected _selectTiles(_args: TileDrawArgs): Tile[];
+    // (undocumented)
+    viewFlagOverrides: ViewFlagOverrides;
+}
+
+// @internal (undocumented)
+export namespace OrbitGtTileTree {
+    // (undocumented)
+    export function createOrbitGtTileTree(props: OrbitGtBlobProps, iModel: IModelConnection, modelId: Id64String): Promise<TileTree | undefined>;
+    // (undocumented)
+    export abstract class Reference extends TileTreeReference {
+        // (undocumented)
+        abstract get classifiers(): SpatialClassifiers | undefined;
+    }
+    // (undocumented)
+    export interface ReferenceProps {
+        // (undocumented)
+        classifiers?: SpatialClassifiers;
+        // (undocumented)
+        displayStyle: DisplayStyleState;
+        // (undocumented)
+        iModel: IModelConnection;
+        // (undocumented)
+        name?: string;
+        // (undocumented)
+        orbitGtBlob: OrbitGtBlobProps;
+        // (undocumented)
+        tilesetToDbTransform?: TransformProps;
+    }
+}
+
 // @public
 export class OrthographicViewState extends SpatialViewState {
     constructor(props: SpatialViewDefinitionProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle3dState, modelSelector: ModelSelectorState);
@@ -5901,7 +5980,7 @@ export abstract class PrimitiveTool extends InteractiveTool {
 }
 
 // @alpha
-export const enum PrimitiveVisibility {
+export enum PrimitiveVisibility {
     All = 0,
     Instanced = 1,
     Uninstanced = 2
@@ -6328,7 +6407,7 @@ export namespace RenderMemory {
         get visibleEdges(): Consumers;
     }
     // (undocumented)
-    export const enum BufferType {
+    export enum BufferType {
         // (undocumented)
         COUNT = 9,
         // (undocumented)
@@ -6368,7 +6447,7 @@ export namespace RenderMemory {
         totalBytes: number;
     }
     // (undocumented)
-    export const enum ConsumerType {
+    export enum ConsumerType {
         // (undocumented)
         ClipVolumes = 4,
         // (undocumented)
@@ -6495,9 +6574,15 @@ export class RenderPlan {
     // (undocumented)
     readonly isGlobeMode3D: boolean;
     // (undocumented)
+    readonly lights?: LightSettings;
+    // (undocumented)
+    readonly monochromeMode: MonochromeMode;
+    // (undocumented)
     readonly monoColor: ColorDef;
     // (undocumented)
     readonly terrainTransparency: number;
+    // (undocumented)
+    readonly thematic?: ThematicDisplay;
     // (undocumented)
     readonly upVector: Vector3d;
     // (undocumented)
@@ -7185,6 +7270,8 @@ export interface SelectAddEvent {
 
 // @internal
 export interface SelectedAndReadyTiles {
+    // @alpha
+    readonly external: ExternalTileStatistics;
     readonly ready: Set<Tile>;
     readonly selected: Set<Tile>;
 }
@@ -7344,7 +7431,7 @@ export class SelectionTool extends PrimitiveTool {
 }
 
 // @internal
-export const enum SelectParent {
+export enum SelectParent {
     // (undocumented)
     No = 0,
     // (undocumented)
@@ -7467,6 +7554,8 @@ export class SheetViewState extends ViewState2d {
     };
     // @internal
     discloseTileTrees(trees: TileTreeSet): void;
+    // @internal (undocumented)
+    getViewedExtents(): AxisAlignedBox3d;
     // @internal
     load(): Promise<void>;
     // @internal
@@ -7474,7 +7563,7 @@ export class SheetViewState extends ViewState2d {
     // @internal
     onRenderFrame(_viewport: Viewport): void;
     readonly sheetSize: Point2d;
-}
+    }
 
 // @internal
 export type ShouldAbortReadGltf = (reader: GltfReader) => boolean;
@@ -8188,6 +8277,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     get wantInvertBlackBackground(): boolean;
     // (undocumented)
     get wantLogZ(): boolean;
+    // (undocumented)
+    get wantThematicDisplay(): boolean;
     }
 
 // @internal (undocumented)
@@ -8455,6 +8546,8 @@ export abstract class Tile {
 // @alpha
 export abstract class TileAdmin {
     // @internal
+    abstract addExternalTilesForViewport(vp: Viewport, statistics: ExternalTileStatistics): void;
+    // @internal
     abstract addTilesForViewport(vp: Viewport, selected: Tile[], ready: Set<Tile>): void;
     // @internal
     abstract clearTilesForViewport(vp: Viewport): void;
@@ -8587,7 +8680,7 @@ export class TileAvailability {
     }
 
 // @internal
-export const enum TileBoundingBoxes {
+export enum TileBoundingBoxes {
     Both = 3,
     ChildVolumes = 4,
     Content = 2,
@@ -8626,6 +8719,7 @@ export class TileDrawArgs {
     get frustumPlanes(): FrustumPlanes;
     protected _frustumPlanes?: FrustumPlanes;
     getPixelSize(tile: Tile): number;
+    getRangePixelSize(range: Range3d): number;
     // @internal (undocumented)
     getTileCenter(tile: Tile): Point3d;
     // @internal (undocumented)
@@ -8665,7 +8759,7 @@ export enum TileGraphicType {
 }
 
 // @beta
-export const enum TileLoadPriority {
+export enum TileLoadPriority {
     Classifier = 50,
     Context = 40,
     Map = 15,
@@ -8674,7 +8768,7 @@ export const enum TileLoadPriority {
 }
 
 // @beta
-export const enum TileLoadStatus {
+export enum TileLoadStatus {
     Abandoned = 5,
     Loading = 2,
     NotFound = 4,
@@ -8716,7 +8810,7 @@ export namespace TileRequest {
     export type Response = Uint8Array | ArrayBuffer | string | ImageSource | undefined;
     export type ResponseData = Uint8Array | ImageSource;
     // @internal
-    export const enum State {
+    export enum State {
         Completed = 3,
         Dispatched = 1,
         Failed = 4,
@@ -8826,6 +8920,10 @@ export abstract class TileTreeReference {
     getTerrainHeight(_terrainHeights: Range1d): void;
     getToolTip(_hit: HitDetail): HTMLElement | string | undefined;
     protected getViewFlagOverrides(tree: TileTree): ViewFlagOverrides;
+    // @internal
+    get isLoadingComplete(): boolean;
+    // @internal
+    protected get _isLoadingComplete(): boolean;
     abstract get treeOwner(): TileTreeOwner;
     unionFitRange(union: Range3d): void;
 }
@@ -8842,6 +8940,7 @@ export class TileTreeSet {
 export interface TileTreeSupplier {
     compareTileTreeIds(lhs: any, rhs: any): number;
     createTileTree(id: any, iModel: IModelConnection): Promise<TileTree | undefined>;
+    readonly isEcefDependent?: true;
 }
 
 // @beta
@@ -8852,7 +8951,7 @@ export class TileUsageMarker {
     }
 
 // @beta
-export const enum TileVisibility {
+export enum TileVisibility {
     OutsideFrustum = 0,
     TooCoarse = 1,
     Visible = 2
@@ -9937,7 +10036,7 @@ export class ViewHandleArray {
 }
 
 // @internal (undocumented)
-export const enum ViewHandleType {
+export enum ViewHandleType {
     // (undocumented)
     Fly = 64,
     // (undocumented)
@@ -10431,6 +10530,8 @@ export abstract class Viewport implements IDisposable {
     isSubCategoryVisible(id: Id64String): boolean;
     // @internal
     lastFlashedElem?: string;
+    // @alpha (undocumented)
+    get lightSettings(): LightSettings | undefined;
     // @internal (undocumented)
     markSelectionSetDirty(): void;
     get neverDrawn(): Id64Set | undefined;
@@ -10491,11 +10592,15 @@ export abstract class Viewport implements IDisposable {
     setFeatureOverrideProviderChanged(): void;
     // @internal
     setFlashed(id: string | undefined, duration: number): void;
+    // @alpha (undocumented)
+    setLightSettings(settings: LightSettings): void;
     setNeverDrawn(ids: Id64Set): void;
     // @internal (undocumented)
     setRedrawPending(): void;
     // @internal (undocumented)
     setRenderPlanValid(): void;
+    // (undocumented)
+    setSolarShadowSettings(settings: SolarShadowSettings): void;
     setStandardRotation(id: StandardViewId): void;
     // @alpha
     setTileSizeModifier(modifier: number | undefined): void;
@@ -10505,6 +10610,8 @@ export abstract class Viewport implements IDisposable {
     setValidScene(): void;
     // @internal (undocumented)
     setViewedCategoriesPerModelChanged(): void;
+    // @beta
+    get solarShadowSettings(): SolarShadowSettings | undefined;
     // @internal (undocumented)
     readonly subcategories: SubCategoriesCache.Queue;
     synchWithView(_options?: ViewChangeOptions | boolean): void;
@@ -10828,8 +10935,6 @@ export abstract class ViewState2d extends ViewState {
     getOrigin(): Point3d;
     // (undocumented)
     getRotation(): Matrix3d;
-    // (undocumented)
-    getViewedExtents(): AxisAlignedBox3d;
     getViewedModel(): GeometricModel2dState | undefined;
     // (undocumented)
     load(): Promise<void>;

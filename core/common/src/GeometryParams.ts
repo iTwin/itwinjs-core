@@ -137,8 +137,8 @@ export class GeometryParams {
     retVal.materialId = this.materialId;
     retVal.elmPriority = this.elmPriority;
     retVal.weight = this.weight;
-    retVal.lineColor = this.lineColor ? this.lineColor.clone() : undefined;
-    retVal.fillColor = this.fillColor ? this.fillColor.clone() : undefined;
+    retVal.lineColor = this.lineColor;
+    retVal.fillColor = this.fillColor;
     retVal.backgroundFill = this.backgroundFill;
     retVal.fillDisplay = this.fillDisplay;
     retVal.elmTransparency = this.elmTransparency;

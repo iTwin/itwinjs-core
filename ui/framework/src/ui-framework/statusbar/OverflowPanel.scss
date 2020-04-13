@@ -1,0 +1,33 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+@import "~@bentley/ui-core/lib/ui-core/index";
+
+$footer-height: 40px;
+
+.uifw-statusbar-panel {
+  @include uicore-z-index(status-popup);
+
+  background-color: $buic-background-statusbar;
+  border: {
+    width: 0;
+    top-width: 1px;
+    color: $buic-background-widget-stroke;
+    border-radius: 3px;
+    style: solid;
+  }
+  box-sizing: border-box;
+  position: absolute;
+  bottom: 100%;
+  right: 0;
+  padding: 0.5em;
+  align-items: flex-start;
+  display: grid;
+  grid-template-columns: auto;
+  row-gap: 4px;
+
+  >.uifw-statusbar-item-container {
+    height: $footer-height;
+  }
+}

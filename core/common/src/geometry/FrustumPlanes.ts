@@ -116,7 +116,7 @@ export class FrustumPlanes {
 /** @internal */
 export namespace FrustumPlanes {
   /** @internal */
-  export const enum Containment { // tslint:disable-line:no-const-enum
+  export enum Containment {
     Outside = 0,
     Partial = 1,
     Inside = 2,

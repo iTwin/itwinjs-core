@@ -33,7 +33,7 @@ class GeoPhotoMarker extends Marker {
   private static _size = Point2d.create(30, 30);
   private static _imageSize = Point2d.create(40, 40);
   private static _imageOffset = Point2d.create(-8, 22);
-  private static _amber = new ColorDef(ColorByName.amber);
+  private static _amber = ColorDef.create(ColorByName.amber);
   private static _sweep360 = AngleSweep.create360();
   private static _tooCloseYaw: number = 3.0;
   private static _tooCloseDistance: number = 5.0;  // meters
@@ -506,7 +506,7 @@ class GeoPhotoClusterMarker extends Marker {
     this.imageSize = new Point2d(30, 30);
     this.label = cluster.markers.length.toLocaleString();
     this.labelColor = "black";
-    this.labelFont = "bold 14px san-serif";
+    this.labelFont = "bold 14px sans-serif";
 
     this.title = "test";
     this._clusterColor = GeoPhotoMarker.amber.toHexString();

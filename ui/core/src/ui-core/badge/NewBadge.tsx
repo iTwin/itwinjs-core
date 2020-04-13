@@ -12,7 +12,7 @@ import classnames from "classnames";
 import { CommonProps } from "../utils/Props";
 import { Badge } from "./Badge";
 
-const newBadgeIcon = require("./new-feature-badge.svg"); // tslint:disable-line: no-var-requires
+import newBadgeIcon from "./new-feature-badge.svg?sprite";
 import "./NewBadge.scss";
 
 /** New Badge React component

@@ -2,10 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-
-@import "~@bentley/ui-ninezone/lib/ui-ninezone/footer/_variables";
-@import "~@bentley/ui-ninezone/lib/ui-ninezone/_scrollbar";
-@import "~@bentley/ui-core/lib/ui-core/index";
+@import "~@bentley/ui-ninezone/lib/ui-ninezone/footer/variables";
+@import "~@bentley/ui-ninezone/lib/ui-ninezone/scrollbar";
+@import "~@bentley/ui-core/lib/ui-core/style/colors";
+@import "~@bentley/ui-core/lib/ui-core/style/space";
+@import "~@bentley/ui-core/lib/ui-core/style/themecolors";
 
 $outline-size: 2px;
 
@@ -95,4 +96,3 @@ $outline-size: 2px;
     100% {opacity: 1;}
   }
 }
-

@@ -115,7 +115,7 @@ export function addSolarShadowMap(builder: ProgramBuilder, toTerrain = false) {
   if (!toTerrain) {
     frag.addUniform("u_sunDir", VariableType.Vec3, (prog) => {
       prog.addGraphicUniform("u_sunDir", (uniform, params) => {
-        params.target.uniforms.shadow.bindSunDirection(uniform);
+        params.target.uniforms.bindSunDirection(uniform);
       });
     });
   } else {

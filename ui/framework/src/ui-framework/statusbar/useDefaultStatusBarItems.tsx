@@ -23,6 +23,7 @@ export const useDefaultStatusBarItems = (manager: StatusBarItemsManager): readon
     }
   }, [manager]);
   React.useEffect(() => {
+    // istanbul ignore next
     const handleChanged = (args: StatusBarItemsChangedArgs) => {
       setItems(args.items);
     };

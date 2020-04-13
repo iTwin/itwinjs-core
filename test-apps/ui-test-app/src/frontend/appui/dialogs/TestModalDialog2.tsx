@@ -33,7 +33,7 @@ export class TestModalDialog2 extends React.Component<TestModalDialog2Props, Tes
 
     const redDef = ColorDef.from(255, 0, 0, 0);
     const blueDef = ColorDef.from(0, 0, 255, 0);
-    const purpleDef = new ColorDef("#800080");
+    const purpleDef = ColorDef.create("#800080");
     const greenDef = ColorDef.from(0, 255, 0, 0);
 
     this.state = {

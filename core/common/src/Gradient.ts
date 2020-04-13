@@ -10,7 +10,6 @@ import { assert } from "@bentley/bentleyjs-core";
 import {
   Angle,
   AngleProps,
-  Range1d,
 } from "@bentley/geometry-core";
 import {
   ImageBuffer,
@@ -20,6 +19,7 @@ import {
   ColorDef,
   ColorDefProps,
 } from "./ColorDef";
+import { ThematicGradientSettingsProps, ThematicGradientSettings, ThematicGradientColorScheme, ThematicGradientMode } from "./ThematicDisplay";
 
 /** @beta */
 export namespace Gradient {
@@ -45,89 +45,6 @@ export namespace Gradient {
     Thematic = 6,
   }
 
-  /** @beta */
-  export enum ThematicMode {
-    Smooth = 0,
-    Stepped = 1,
-    SteppedWithDelimiter = 2,
-    IsoLines = 3,
-  }
-
-  /** @beta */
-  export enum ThematicColorScheme {
-    BlueRed = 0,
-    RedBlue = 1,
-    Monochrome = 2,
-    Topographic = 3,
-    SeaMountain = 4,
-    Custom = 5,
-  }
-
-  /** @beta */
-  export interface ThematicSettingsProps {
-    mode: ThematicMode;
-    stepCount: number;
-    marginColor: ColorDefProps;
-    colorScheme: ThematicColorScheme;
-    rangeLow: number;
-    rangeHigh: number;
-  }
-
-  /** Gradient settings specific to thematic mesh display
-   * @beta
-   */
-  export class ThematicSettings implements ThematicSettingsProps {
-    public mode: ThematicMode = ThematicMode.Smooth;
-    public stepCount: number = 10;
-    public marginColor: ColorDef = ColorDef.from(0x3f, 0x3f, 0x3f);
-    public colorScheme: ThematicColorScheme = ThematicColorScheme.BlueRed;
-    public rangeLow: number = 1.0E200;
-    public rangeHigh: number = -1.0E200;
-    public get range() { return (this.rangeLow > this.rangeHigh) ? Range1d.createNull() : Range1d.createXX(this.rangeLow, this.rangeHigh); }
-    public set range(range: Range1d) { this.rangeLow = range.low; this.rangeHigh = range.high; }
-    public static defaults = new ThematicSettings();
-    public static get margin(): number { return .001; }    // A fixed portion of the gradient for out of range values.
-    public static get contentRange(): number { return 1.0 - 2.0 * ThematicSettings.margin; }
-    public static get contentMax(): number { return 1.0 - ThematicSettings.margin; }
-
-    public static fromJSON(json: ThematicSettingsProps) {
-      const result = new ThematicSettings();
-      result.mode = json.mode;
-      result.stepCount = json.stepCount;
-      result.marginColor = new ColorDef(json.marginColor);
-      result.colorScheme = json.colorScheme;
-      result.rangeLow = json.rangeLow;
-      result.rangeHigh = json.rangeHigh;
-      return result;
-    }
-
-    public toJSON(): ThematicSettingsProps {
-      return {
-        mode: this.mode,
-        stepCount: this.stepCount,
-        marginColor: this.marginColor.toJSON(),
-        colorScheme: this.colorScheme,
-        rangeLow: this.rangeLow,
-        rangeHigh: this.rangeHigh,
-      };
-    }
-
-    public clone(out?: ThematicSettings): ThematicSettings {
-      const result = undefined !== out ? out : new ThematicSettings();
-      result.copyFrom(this);
-      return result;
-    }
-
-    public copyFrom(other: ThematicSettingsProps): void {
-      this.mode = other.mode;
-      this.stepCount = other.stepCount;
-      this.marginColor = new ColorDef(other.marginColor);
-      this.colorScheme = other.colorScheme;
-      this.rangeLow = other.rangeLow;
-      this.rangeHigh = other.rangeHigh;
-    }
-  }
-
   /** Gradient fraction value to [[ColorDef]] pair */
   export interface KeyColorProps {
     /** Fraction from 0.0 to 1.0 to denote position along gradient */
@@ -139,13 +56,18 @@ export namespace Gradient {
   /** Gradient fraction value to [[ColorDef]] pair
    * @see [[Gradient.KeyColorProps]]
    */
-  export class KeyColor implements KeyColorProps {
+  export class KeyColor {
     public value: number;
     public color: ColorDef;
     public constructor(json: KeyColorProps) {
       this.value = json.value;
-      this.color = new ColorDef(json.color);
+      this.color = ColorDef.fromJSON(json.color);
     }
+  }
+
+  /** Compare two KeyColor objects for equality. Returns true if equal. */
+  export function keyColorEquals(a: KeyColor, b: KeyColor): boolean {
+    return (a.value === b.value) || a.color.equals(b.color);
   }
 
   /** Multi-color area fill defined by a range of colors that vary by position */
@@ -165,21 +87,21 @@ export namespace Gradient {
     /** Settings applicable to meshes and Gradient.Mode.Thematic only
      * @beta
      */
-    thematicSettings?: ThematicSettingsProps;
+    thematicSettings?: ThematicGradientSettingsProps;
   }
 
   /** Multi-color area fill defined by a range of colors that vary by position.
    * Gradient fill can be applied to planar regions.
    * @see [[Gradient.SymbProps]]
    */
-  export class Symb implements SymbProps {
+  export class Symb {
     public mode = Mode.None;
     public flags: Flags = Flags.None;
     public angle?: Angle;
     public tint?: number;
     public shift: number = 0;
     /** @beta */
-    public thematicSettings?: ThematicSettings;
+    public thematicSettings?: ThematicGradientSettings;
     public keys: KeyColor[] = [];
 
     /** create a GradientSymb from a json object. */
@@ -193,31 +115,51 @@ export namespace Gradient {
       result.tint = json.tint;
       result.shift = json.shift ? json.shift : 0;
       json.keys.forEach((key) => result.keys.push(new KeyColor(key)));
-      result.thematicSettings = (json.thematicSettings === undefined) ? undefined : ThematicSettings.fromJSON(json.thematicSettings);
+      result.thematicSettings = (json.thematicSettings === undefined) ? undefined : ThematicGradientSettings.fromJSON(json.thematicSettings);
 
       return result;
     }
 
+    private static _fixedSchemeKeys = [
+      [[0.0, 0, 255, 0], [0.25, 0, 255, 255], [0.5, 0, 0, 255], [0.75, 255, 0, 255], [1.0, 255, 0, 0]],  // Blue Red.
+      [[0.0, 255, 0, 0], [0.25, 255, 0, 255], [0.5, 0, 0, 255], [0.75, 0, 255, 255], [1.0, 0, 255, 0]], // Red blue.
+      [[0.0, 0, 0, 0], [1.0, 255, 255, 255]], // Monochrome.
+      [[0.0, 152, 148, 188], [0.5, 204, 160, 204], [1.0, 152, 72, 128]], // Based off of the topographic gradients in Point Clouds.
+      [[0.0, 0, 255, 0], [0.2, 72, 96, 160], [0.4, 152, 96, 160], [0.6, 128, 32, 104], [0.7, 148, 180, 128], [1.0, 240, 240, 240]], // Based off of the sea-mountain gradient in Point Clouds.
+    ];
+    private static _fixedCustomKeys = [[0.0, 255, 0, 0], [1.0, 0, 255, 0]];
+
     /** @beta */
-    public static createThematic(settings: ThematicSettings) {
+    public static createThematic(settings: ThematicGradientSettings) {
       const result = new Symb();
       result.mode = Mode.Thematic;
       result.thematicSettings = settings;
 
-      if (settings.colorScheme < ThematicColorScheme.Custom) {
-        const fixedSchemeKeys = [[[0.0, 0, 255, 0], [0.25, 0, 255, 255], [0.5, 0, 0, 255], [0.75, 255, 0, 255], [1.0, 255, 0, 0]],  // Blue Red.
-        [[0.0, 255, 0, 0], [0.25, 255, 0, 255], [0.5, 0, 0, 255], [0.75, 0, 255, 255], [1.0, 0, 255, 0]], // Red blue.
-        [[0.0, 0, 0, 0], [1.0, 255, 255, 255]], // Monochrome.
-        [[0.0, 152, 148, 188], [0.5, 204, 160, 204], [1.0, 152, 72, 128]], // Based off of the topographic gradients in Point Clouds.
-        [[0.0, 0, 255, 0], [0.2, 72, 96, 160], [0.4, 152, 96, 160], [0.6, 128, 32, 104], [0.7, 148, 180, 128], [1.0, 240, 240, 240]]]; // Based off of the sea-mountain gradient in Point Clouds.
-
-        for (const keyValue of fixedSchemeKeys[settings.colorScheme])
-          result.keys.push(new KeyColor({ value: keyValue[0], color: ColorDef.from(keyValue[1], keyValue[3], keyValue[2]) }));
+      if (settings.colorScheme < ThematicGradientColorScheme.Custom) {
+        for (const keyValue of Gradient.Symb._fixedSchemeKeys[settings.colorScheme])
+          result.keys.push(new KeyColor({ value: keyValue[0], color: ColorDef.computeTbgrFromComponents(keyValue[1], keyValue[3], keyValue[2]) }));
+      } else { // custom color scheme; must use custom keys
+        assert(settings.customKeys.length > 1, "Custom thematic mode requires at least two keys to be defined");
+        if (settings.customKeys.length > 1) {
+          settings.customKeys.forEach((keyColor) => result.keys.push(keyColor));
+        } else { // if custom color keys are not specified properly, revert to some basic key scheme and assert
+          for (const keyValue of Gradient.Symb._fixedCustomKeys)
+          result.keys.push(new KeyColor({ value: keyValue[0], color: ColorDef.from(keyValue[1], keyValue[3], keyValue[2]).toJSON() }));
+        }
       }
       return result;
     }
+
+    public toJSON(): SymbProps {
+      return {
+        ...this,
+        thematicSettings: this.thematicSettings?.toJSON(),
+        keys: this.keys.map((key) => ({ value: key.value, color: key.color.toJSON() })),
+      };
+    }
+
     public clone(): Symb {
-      return Symb.fromJSON(this);
+      return Symb.fromJSON(this.toJSON());
     }
 
     /** Returns true if this symbology is equal to another, false otherwise. */
@@ -342,8 +284,9 @@ export namespace Gradient {
     /** Applies this gradient's settings to produce a bitmap image. */
     public getImage(width: number, height: number): ImageBuffer {
       if (this.mode === Mode.Thematic) {
-        width = 1;
-        height = 8192;    // Thematic image height
+        // Allow caller to pass in height but not width. Thematic gradients are always one-dimensional.
+        // NB: The height used to be hardcoded to 8192 here. Now we will let the render system decide.
+        width = 1; // Force width to 1 for thematic gradients.
       }
 
       const hasAlpha = this.hasTranslucency;
@@ -462,7 +405,7 @@ export namespace Gradient {
         case Mode.Thematic: {
           let settings = this.thematicSettings;
           if (settings === undefined) {
-            settings = ThematicSettings.defaults;
+            settings = ThematicGradientSettings.defaults;
           }
 
           // TBD - Stepped and isolines...
@@ -470,24 +413,24 @@ export namespace Gradient {
             let f = 1 - j / height;
             let color: ColorDef;
 
-            if (f < ThematicSettings.margin || f > ThematicSettings.contentMax) {
+            if (f < ThematicGradientSettings.margin || f > ThematicGradientSettings.contentMax) {
               color = settings.marginColor;
             } else {
-              f = (f - ThematicSettings.margin) / (ThematicSettings.contentRange);
+              f = (f - ThematicGradientSettings.margin) / (ThematicGradientSettings.contentRange);
               switch (settings.mode) {
-                case ThematicMode.SteppedWithDelimiter:
-                case ThematicMode.Stepped: {
+                case ThematicGradientMode.SteppedWithDelimiter:
+                case ThematicGradientMode.Stepped: {
                   if (settings.stepCount !== 0) {
                     const fStep = Math.floor(f * settings.stepCount + .99999) / settings.stepCount;
                     const delimitFraction = 1 / 1024;
-                    if (settings.mode === ThematicMode.SteppedWithDelimiter && Math.abs(fStep - f) < delimitFraction)
-                      color = new ColorDef(0xff000000);
+                    if (settings.mode === ThematicGradientMode.SteppedWithDelimiter && Math.abs(fStep - f) < delimitFraction)
+                      color = ColorDef.fromJSON(0xff000000);
                     else
                       color = this.mapColor(fStep);
                   }
                   break;
                 }
-                case ThematicMode.Smooth:
+                case ThematicGradientMode.Smooth:
                   color = this.mapColor(f);
                   break;
               }

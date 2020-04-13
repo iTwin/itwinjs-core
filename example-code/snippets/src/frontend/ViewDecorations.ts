@@ -97,7 +97,7 @@ class IncidentMarker extends Marker {
   private static _size = Point2d.create(30, 30);
   private static _imageSize = Point2d.create(40, 40);
   private static _imageOffset = Point2d.create(0, 30);
-  private static _amber = new ColorDef(ColorByName.amber);
+  private static _amber = ColorDef.create(ColorByName.amber);
   private static _sweep360 = AngleSweep.create360();
   private _color: ColorDef;
 
@@ -185,7 +185,7 @@ class IncidentClusterMarker extends Marker {
     this.imageSize = new Point2d(30, 30);
     this.label = cluster.markers.length.toLocaleString();
     this.labelColor = "black";
-    this.labelFont = "bold 14px san-serif";
+    this.labelFont = "bold 14px sans-serif";
 
     let title = "";
     sorted.forEach((marker) => {

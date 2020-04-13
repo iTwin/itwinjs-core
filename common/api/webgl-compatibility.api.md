@@ -79,7 +79,7 @@ export class Capabilities {
 export type ContextCreator = (canvas: HTMLCanvasElement, inputContextAttributes?: WebGLContextAttributes, useWebGL2?: boolean) => WebGLRenderingContext | WebGL2RenderingContext | undefined;
 
 // @internal
-export const enum DepthType {
+export enum DepthType {
     // (undocumented)
     RenderBufferUnsignedShort16 = 0,
     // (undocumented)
@@ -92,7 +92,7 @@ export const enum DepthType {
 export function queryRenderCompatibility(createContext?: ContextCreator): WebGLRenderCompatibilityInfo;
 
 // @internal
-export const enum RenderType {
+export enum RenderType {
     // (undocumented)
     TextureFloat = 2,
     // (undocumented)

@@ -19,7 +19,7 @@ import { useAvailableUiItemsProviders } from "../hooks/useAvailableUiItemsProvid
 export const useUiItemsProviderStatusBarItems = (manager: StatusBarItemsManager): readonly CommonStatusBarItem[] => {
   const uiItemProviderIds = useAvailableUiItemsProviders();
   const stageId = useActiveStageId();
-  const [items, setItems] = React.useState(manager ? manager.items : []);
+  const [items, setItems] = React.useState(manager.items);
   const providersRef = React.useRef("");
   const currentStageRef = React.useRef("");
   // gathers items from registered plugins - dependent on when a UiItemsProvider is register or unregistered and if the

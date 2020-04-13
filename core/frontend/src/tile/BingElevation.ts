@@ -108,7 +108,7 @@ export class BingElevationProvider {
     const patch = new BilinearPatch(corners[0], corners[1], corners[2], corners[3]);
     const textureParams = new TextureMapping.Params({ mapMode: TextureMapping.Mode.Parametric });
     const textureMapping = new TextureMapping(texture!, textureParams);
-    const displayParams = new DisplayParams(DisplayParams.Type.Mesh, ColorDef.white.clone(), ColorDef.white.clone(), 0.0, LinePixels.Solid, FillFlags.None, undefined, undefined, false, textureMapping);
+    const displayParams = new DisplayParams(DisplayParams.Type.Mesh, ColorDef.white, ColorDef.white, 0.0, LinePixels.Solid, FillFlags.None, undefined, undefined, false, textureMapping);
     BingElevationProvider._scratchRange.setNull();
     BingElevationProvider._scratchRange.extendArray(corners);
     BingElevationProvider._scratchRange.low.z = 10E8;

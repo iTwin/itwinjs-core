@@ -19,11 +19,13 @@ import {
   CategorySelectorState,
   DisplayStyle3dState,
   DrawingModelState,
+  DrawingViewState,
   IModelConnection,
   MarginPercent,
   MockRender,
   ModelSelectorState,
   SheetModelState,
+  SheetViewState,
   SpatialModelState,
   SpatialViewState,
   StandardView,
@@ -453,5 +455,41 @@ describe("ViewState", () => {
 
     const fromJSON = new SpatialViewState(view.toJSON(), view.iModel, view.categorySelector, view.getDisplayStyle3d(), view.modelSelector);
     expect(fromJSON.allow3dManipulations()).to.be.false;
+  });
+});
+
+describe("ViewState2d", () => {
+  let imodel: IModelConnection;
+
+  before(async () => {
+    MockRender.App.startup();
+    imodel = await SnapshotConnection.openFile("ReadWriteTest.bim");
+  });
+
+  after(async () => {
+    if (imodel)
+      await imodel.close();
+
+    MockRender.App.shutdown();
+  });
+
+  it("should have valid viewed extents", async () => {
+    const sheetView = await imodel.views.load("0x1000000002e") as SheetViewState;
+    expect(sheetView).instanceof(SheetViewState);
+    const sheetViewExtents = sheetView.getViewedExtents();
+    expect(sheetViewExtents.isNull).to.be.false;
+
+    // The sheet's viewed extents are based on the *sheet size* property, not the model range.
+    // In this case, somebody scribbled outside of the sheet boundaries.
+    const sheetModelExtents = Range3d.fromJSON((await imodel.models.queryModelRanges(sheetView.baseModelId))[0]);
+    expect(sheetViewExtents.containsRange(sheetModelExtents)).to.be.false;
+
+    const drawingView = await imodel.views.load("0x10000000020") as DrawingViewState;
+    expect(drawingView).instanceof(DrawingViewState);
+    const drawingViewExtents = drawingView.getViewedExtents();
+    expect(drawingViewExtents.isNull).to.be.false;
+
+    const drawingModelExtents = Range3d.fromJSON((await imodel.models.queryModelRanges(drawingView.baseModelId))[0]);
+    expect(drawingModelExtents.isAlmostEqual(drawingViewExtents)).to.be.true;
   });
 });

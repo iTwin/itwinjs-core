@@ -9,7 +9,7 @@
 import { JsonUtils } from "@bentley/bentleyjs-core";
 
 /** @internal */
-export const enum AntiAliasPref { Detect = 0, On = 1, Off = 2 } // tslint:disable-line:no-const-enum
+export enum AntiAliasPref { Detect = 0, On = 1, Off = 2 }
 
 /** Enumerates the available rendering modes. The rendering mode chiefly controls whether and how surfaces and their edges are drawn.
  * Generally speaking,
@@ -92,6 +92,8 @@ export interface ViewFlagProps {
   backgroundMap?: boolean;
   /** If true, show ambient occlusion. */
   ambientOcclusion?: boolean;
+  /** If true, show thematic display. */
+  thematicDisplay?: boolean;
   /** Controls whether surface discard is always applied regardless of other ViewFlags.
    * Surface shaders contain complicated logic to ensure that the edges of a surface always draw in front of the surface, and that planar surfaces sketched coincident with
    * non-planar surfaces always draw in front of those non-planar surfaces.
@@ -166,6 +168,8 @@ export class ViewFlags {
   public edgeMask: number = 0;
   /** Controls whether ambient occlusion is used. */
   public ambientOcclusion: boolean = false;
+  /** Controls whether thematic display is used. */
+  public thematicDisplay: boolean = false;
   /** Controls whether surface discard is always applied regardless of other ViewFlags.
    * Surface shaders contain complicated logic to ensure that the edges of a surface always draw in front of the surface, and that planar surfaces sketched coincident with
    * non-planar surfaces always draw in front of those non-planar surfaces.
@@ -211,6 +215,7 @@ export class ViewFlags {
       val.backgroundMap = other.backgroundMap;
       val.edgeMask = other.edgeMask;
       val.ambientOcclusion = other.ambientOcclusion;
+      val.thematicDisplay = other.thematicDisplay;
       val.forceSurfaceDiscard = other.forceSurfaceDiscard;
       val.whiteOnWhiteReversal = other.whiteOnWhiteReversal;
     }
@@ -266,6 +271,7 @@ export class ViewFlags {
     if (this.backgroundMap) out.backgroundMap = true;
     if (this.edgeMask !== 0) out.edgeMask = this.edgeMask;
     if (this.ambientOcclusion) out.ambientOcclusion = true;
+    if (this.thematicDisplay) out.thematicDisplay = true;
     if (this.forceSurfaceDiscard) out.forceSurfaceDiscard = true;
     if (!this.whiteOnWhiteReversal) out.noWhiteOnWhiteReversal = true;
 
@@ -301,6 +307,7 @@ export class ViewFlags {
     val.hLineMaterialColors = JsonUtils.asBool(json.hlMatColors);
     val.backgroundMap = JsonUtils.asBool(json.backgroundMap);
     val.ambientOcclusion = JsonUtils.asBool(json.ambientOcclusion);
+    val.thematicDisplay = JsonUtils.asBool(json.thematicDisplay);
     val.forceSurfaceDiscard = JsonUtils.asBool(json.forceSurfaceDiscard);
     val.whiteOnWhiteReversal = !JsonUtils.asBool(json.noWhiteOnWhiteReversal);
 
@@ -341,6 +348,7 @@ export class ViewFlags {
       && this.backgroundMap === other.backgroundMap
       && this.edgeMask === other.edgeMask
       && this.ambientOcclusion === other.ambientOcclusion
+      && this.thematicDisplay === other.thematicDisplay
       && this.forceSurfaceDiscard === other.forceSurfaceDiscard
       && this.whiteOnWhiteReversal === other.whiteOnWhiteReversal;
   }
@@ -349,7 +357,7 @@ export class ViewFlags {
 /** Values used by [[ViewFlagOverrides]] to indicate which aspects of the [[ViewFlags]] are overridden.
  * @public
  */
-export const enum ViewFlagPresence { // tslint:disable-line:no-const-enum
+export enum ViewFlagPresence {
   RenderMode,
   Dimensions,
   Patterns,
@@ -373,6 +381,7 @@ export const enum ViewFlagPresence { // tslint:disable-line:no-const-enum
   BackgroundMap,
   ForceSurfaceDiscard,
   WhiteOnWhiteReversal,
+  ThematicDisplay,
 }
 
 /** Overrides a subset of [[ViewFlags]].
@@ -387,7 +396,10 @@ export class ViewFlagOverrides {
   /** Mark the specified flag as overridden. */
   public setPresent(flag: ViewFlagPresence) { this._present |= (1 << flag); }
   /** Mark the specified flag as not overridden. */
-  public clearPresent(flag: ViewFlagPresence) { this._present &= ~(1 << flag); }
+  public clearPresent(flag: ViewFlagPresence) {
+    // Bit-wise NOT produces signed one's complement in javascript...triple-shift right by zero to get correct result...
+    this._present &= (~(1 << flag)) >>> 0;
+  }
 
   /** Construct a ViewFlagOverrides which overrides all flags to match the specified ViewFlags, or overrides nothing if no ViewFlags are supplied. */
   constructor(flags?: ViewFlags) {
@@ -441,6 +453,7 @@ export class ViewFlagOverrides {
   public setWhiteOnWhiteReversal(val: boolean) { this._values.whiteOnWhiteReversal = val; this.setPresent(ViewFlagPresence.WhiteOnWhiteReversal); }
   public setEdgeMask(val: number) { this._values.edgeMask = val; this.setPresent(ViewFlagPresence.EdgeMask); }
   public setRenderMode(val: RenderMode) { this._values.renderMode = val; this.setPresent(ViewFlagPresence.RenderMode); }
+  public setThematicDisplay(val: boolean) { this._values.thematicDisplay = val; this.setPresent(ViewFlagPresence.ThematicDisplay); }
 
   /** Returns true if any view flags are overridden. */
   public anyOverridden() { return 0 !== this._present; }
@@ -484,6 +497,7 @@ export class ViewFlagOverrides {
     if (this.isPresent(ViewFlagPresence.WhiteOnWhiteReversal)) base.whiteOnWhiteReversal = this._values.whiteOnWhiteReversal;
     if (this.isPresent(ViewFlagPresence.EdgeMask)) base.edgeMask = this._values.edgeMask;
     if (this.isPresent(ViewFlagPresence.RenderMode)) base.renderMode = this._values.renderMode;
+    if (this.isPresent(ViewFlagPresence.ThematicDisplay)) base.thematicDisplay = this._values.thematicDisplay;
     return base;
   }
 }

@@ -179,7 +179,7 @@ describe("iModelHub ChangeSetHandler", () => {
   });
 
   it("should download ChangeSets with Buffering (#iModelBank)", async () => {
-    iModelClient.setFileHandler(utils.createFileHanlder(true));
+    iModelClient.setFileHandler(utils.createFileHandler(true));
     utils.mockGetChangeSet(imodelId, true, `&$top=${ChangeSetQuery.defaultPageSize}`, utils.generateChangeSet(), utils.generateChangeSet());
     const changeSets: ChangeSet[] = await iModelClient.changeSets.get(requestContext, imodelId, new ChangeSetQuery().selectDownloadUrl());
 
@@ -197,7 +197,7 @@ describe("iModelHub ChangeSetHandler", () => {
       fs.existsSync(downloadedPathname).should.be.equal(true);
     }
 
-    iModelClient.setFileHandler(utils.createFileHanlder());
+    iModelClient.setFileHandler(utils.createFileHandler());
   });
 
   it("should get ChangeSets skipping the first one (#iModelBank)", async () => {
@@ -622,7 +622,7 @@ describe("iModelHub ChangeSetHandler", () => {
     const changeSets: ChangeSet[] = await iModelClient.changeSets.get(requestContext, imodelId, new ChangeSetQuery().selectBridgeProperties());
 
     const index = changeSets.length;
-    chai.expect(index, `Reached maximum number of predefined ChangeSets on test iModel: '${maxChangeSetCount}'. Add aditional ChangeSets to assets to fix it.`)
+    chai.expect(index, `Reached maximum number of predefined ChangeSets on test iModel: '${maxChangeSetCount}'. Add additional ChangeSets to assets to fix it.`)
       .to.be.lessThan(maxChangeSetCount);
     const filePath = utils.getMockChangeSetPath(index, mockChangeSets[index].id!);
 

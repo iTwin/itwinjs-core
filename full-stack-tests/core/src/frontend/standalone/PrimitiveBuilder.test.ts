@@ -333,8 +333,8 @@ describe("PrimitiveBuilder tests", () => {
     const accum = new GeometryAccumulator(imodel, IModelApp.renderSystem);
 
     const gfParams: GraphicParams = new GraphicParams();
-    gfParams.setLineColor(ColorDef.white);
-    gfParams.setFillColor(ColorDef.black); // forces region outline flag
+    gfParams.lineColor = ColorDef.white;
+    gfParams.fillColor = ColorDef.black; // forces region outline flag
     const displayParams: DisplayParams = DisplayParams.createForMesh(gfParams);
 
     const points: Point3d[] = [];
@@ -358,7 +358,7 @@ describe("PrimitiveBuilder tests", () => {
     const pth = Path.create(line2);
 
     const gfParams2: GraphicParams = new GraphicParams();
-    gfParams2.setLineColor(ColorDef.white);
+    gfParams2.lineColor = ColorDef.white;
     const displayParams2: DisplayParams = DisplayParams.createForLinear(gfParams2);
 
     accum.addPolyface(loopGeom.getPolyfaces(0.22)![0].indexedPolyface, displayParams, Transform.createIdentity());

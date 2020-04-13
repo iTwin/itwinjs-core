@@ -3,6 +3,5 @@
 exports[`<NewBadge /> renders correctly 1`] = `
 <Badge
   className="core-new-badge"
-  svg={Object {}}
 />
 `;

@@ -501,7 +501,7 @@ describe("iModel", () => {
 
     const modelId = PhysicalModel.insert(imodel5, IModelDb.rootSubjectId, "test_render_material_model_name");
 
-    const categoryId = SpatialCategory.insert(imodel5, IModel.dictionaryId, "GeoJSON Feature", { color: ColorDef.white });
+    const categoryId = SpatialCategory.insert(imodel5, IModel.dictionaryId, "GeoJSON Feature", { color: ColorDef.white.toJSON() });
 
     /** generate a geometry stream containing the polyface */
     const gsBuilder = new GeometryStreamBuilder();
@@ -530,7 +530,7 @@ describe("iModel", () => {
     expect(model).not.to.be.undefined;
 
     const settings: DisplayStyleSettingsProps = {
-      backgroundColor: ColorDef.blue,
+      backgroundColor: ColorDef.blue.toJSON(),
       viewflags: ViewFlags.fromJSON({
         renderMode: RenderMode.SolidFill,
       }),

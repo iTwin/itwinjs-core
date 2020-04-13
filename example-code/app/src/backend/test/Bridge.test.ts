@@ -13,7 +13,7 @@ import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 // __PUBLISH_EXTRACT_START__ Bridge.imports.example-code
 import { Id64String } from "@bentley/bentleyjs-core";
 import { BriefcaseDb, BriefcaseManager, CategorySelector, ConcurrencyControl, DefinitionModel, DisplayStyle3d, IModelDb, IModelHost, ModelSelector, OpenParams, OrthographicViewDefinition, PhysicalModel, SpatialCategory, Subject } from "@bentley/imodeljs-backend";
-import { ColorByName, ColorDef, IModel } from "@bentley/imodeljs-common";
+import { ColorByName, IModel } from "@bentley/imodeljs-common";
 // __PUBLISH_EXTRACT_END__
 
 // __PUBLISH_EXTRACT_START__ Bridge.source-data.example-code
@@ -103,8 +103,8 @@ async function runBridgeFirstTime(requestContext: AuthorizedClientRequestContext
   const defModelId = DefinitionModel.insert(briefcase, jobSubjectId, "definitions");
 
   //  Create the spatial categories that will be used by the Robots and Barriers that will be imported.
-  SpatialCategory.insert(briefcase, defModelId, Robot.classFullName, { color: new ColorDef(ColorByName.silver) });
-  SpatialCategory.insert(briefcase, defModelId, Barrier.classFullName, { color: new ColorDef(ColorByName.brown) });
+  SpatialCategory.insert(briefcase, defModelId, Robot.classFullName, { color: ColorByName.silver });
+  SpatialCategory.insert(briefcase, defModelId, Barrier.classFullName, { color: ColorByName.brown });
 
   // 2. Convert elements, aspects, etc.
 

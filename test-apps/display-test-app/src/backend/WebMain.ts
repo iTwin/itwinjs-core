@@ -3,8 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
-//import * as express from "express";
-const express = require("express");
+import * as express from "express";
 import * as https from "https";
 import * as fs from "fs";
 
@@ -13,18 +12,6 @@ import { Logger } from "@bentley/bentleyjs-core";
 import { getRpcInterfaces, initializeBackend } from "./backend";
 
 // tslint:disable:no-console
-
-function setupStandaloneConfiguration() {
-  const filename = process.env.SVT_STANDALONE_FILENAME;
-  if (filename !== undefined) {
-    const configuration: any = {};
-    configuration.standalone = true;
-    configuration.standalonePath = filename;
-    configuration.viewName = process.env.SVT_STANDALONE_VIEWNAME; // optional
-    configuration.iModelName = filename;
-    fs.writeFileSync(path.join(__dirname, "configuration.json"), JSON.stringify(configuration), "utf8");
-  }
-}
 
 // Initialize the backend
 initializeBackend();
@@ -44,12 +31,8 @@ if (process.argv.length === 3) {
   } catch (_err) { }
 }
 
-if (serverConfig === undefined) {
-  setupStandaloneConfiguration();
+if (serverConfig === undefined)
   serverConfig = { port: 3001, baseUrl: "https://localhost" };
-} else {
-
-}
 
 Logger.logTrace("SVT", `config = ${JSON.stringify(serverConfig)}`);
 

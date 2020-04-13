@@ -67,6 +67,26 @@ import { YawPitchRollAngles } from '@bentley/geometry-core';
 import { YawPitchRollProps } from '@bentley/geometry-core';
 
 // @beta
+export class AmbientLight {
+    constructor(json?: AmbientLightProps);
+    clone(changed?: AmbientLightProps): AmbientLight;
+    // (undocumented)
+    readonly color: RgbColor;
+    // (undocumented)
+    equals(rhs: AmbientLight): boolean;
+    // (undocumented)
+    readonly intensity: number;
+    // (undocumented)
+    toJSON(): AmbientLightProps | undefined;
+}
+
+// @beta
+export interface AmbientLightProps {
+    color?: RgbColorProps;
+    intensity?: number;
+}
+
+// @beta
 export namespace AmbientOcclusion {
     export interface Props {
         readonly bias?: number;
@@ -106,7 +126,7 @@ export namespace AmbientOcclusion {
 }
 
 // @alpha (undocumented)
-export class AnalysisStyle implements AnalysisStyleProps {
+export class AnalysisStyle {
     // (undocumented)
     clone(out?: AnalysisStyle): AnalysisStyle;
     // (undocumented)
@@ -128,7 +148,7 @@ export class AnalysisStyle implements AnalysisStyleProps {
     // (undocumented)
     scalarRange?: Range1d;
     // (undocumented)
-    scalarThematicSettings?: Gradient.ThematicSettings;
+    scalarThematicSettings?: ThematicGradientSettings;
     // (undocumented)
     toJSON(): AnalysisStyleProps;
 }
@@ -150,11 +170,11 @@ export interface AnalysisStyleProps {
     // (undocumented)
     scalarRange?: Range1dProps;
     // (undocumented)
-    scalarThematicSettings?: Gradient.ThematicSettingsProps;
+    scalarThematicSettings?: ThematicGradientSettingsProps;
 }
 
 // @internal (undocumented)
-export const enum AntiAliasPref {
+export enum AntiAliasPref {
     // (undocumented)
     Detect = 0,
     // (undocumented)
@@ -193,7 +213,7 @@ export namespace AreaPattern {
         offset?: XYProps;
         through?: XYProps;
     }
-    export class Params implements ParamsProps {
+    export class Params {
         // (undocumented)
         angle1?: Angle;
         // (undocumented)
@@ -227,6 +247,8 @@ export namespace AreaPattern {
         space2?: number;
         // (undocumented)
         symbolId?: Id64String;
+        // (undocumented)
+        toJSON(): ParamsProps;
         // (undocumented)
         static transformPatternSpace(transform: Transform, oldSpace: number, patRot: Matrix3d, angle?: Angle): number;
         // (undocumented)
@@ -523,6 +545,18 @@ export interface BriefcaseRpcProps extends IModelRpcProps {
 }
 
 export { BriefcaseStatus }
+
+// @beta
+export function calculateSolarAngles(date: Date, location: Cartographic): {
+    azimuth: number;
+    elevation: number;
+};
+
+// @beta
+export function calculateSolarDirection(date: Date, location: Cartographic): Vector3d;
+
+// @beta
+export function calculateSunriseOrSunset(date: Date, location: Cartographic, sunrise: boolean): Date;
 
 // @public (undocumented)
 export interface CalloutProps extends GeometricElement2dProps {
@@ -1165,50 +1199,72 @@ export enum ColorByName {
 
 // @public
 export class ColorDef {
-    constructor(val?: string | ColorDefProps);
-    adjustForContrast(other: ColorDef, alpha?: number): ColorDef;
+    adjustedForContrast(other: ColorDef, alpha?: number): ColorDef;
     static readonly black: ColorDef;
     static readonly blue: ColorDef;
-    clone(result?: ColorDef): ColorDef;
     get colors(): {
+        r: number;
+        g: number;
+        b: number;
+        t: number;
+    };
+    // @internal (undocumented)
+    static computeTbgr(val?: string | ColorDefProps): number;
+    static computeTbgrFromComponents(red: number, green: number, blue: number, transparency?: number): number;
+    static computeTbgrFromHSL(h: number, s: number, l: number, transparency?: number): number;
+    static computeTbgrFromString(val: string): number;
+    static create(val?: string | ColorDefProps): ColorDef;
+    equals(other: ColorDef): boolean;
+    static from(red: number, green: number, blue: number, transparency?: number): ColorDef;
+    static fromHSL(h: number, s: number, l: number, transparency?: number): ColorDef;
+    static fromHSV(hsv: HSVColor, transparency?: number): ColorDef;
+    static fromJSON(json?: ColorDefProps): ColorDef;
+    static fromString(val: string): ColorDef;
+    static fromTbgr(tbgr: number): ColorDef;
+    getAbgr(): number;
+    static getAbgr(tbgr: number): number;
+    getAlpha(): number;
+    static getAlpha(tbgr: number): number;
+    static getColors(tbgr: number): {
         b: number;
         g: number;
         r: number;
         t: number;
     };
-    equals(other: ColorDef): boolean;
-    freeze(): Readonly<this>;
-    static from(red: number, green: number, blue: number, transparency?: number, result?: ColorDef): ColorDef;
-    static fromHSL(h: number, s: number, l: number, out?: ColorDef): ColorDef;
-    static fromHSV(hsv: HSVColor, out?: ColorDef): ColorDef;
-    static fromJSON(json?: any): ColorDef;
-    getAbgr(): number;
-    getAlpha(): number;
+    static getName(tbgr: number): string | undefined;
     getRgb(): number;
+    static getRgb(tbgr: number): number;
     getTransparency(): number;
+    static getTransparency(tbgr: number): number;
     static readonly green: ColorDef;
-    invert(): ColorDef;
+    inverse(): ColorDef;
+    static inverse(tbgr: number): number;
     get isOpaque(): boolean;
-    lerp(color2: ColorDef, weight: number, result?: ColorDef): ColorDef;
+    static isOpaque(tbgr: number): boolean;
+    lerp(color2: ColorDef, weight: number): ColorDef;
+    static lerp(tbgr1: number, tbgr2: number, weight: number): number;
     get name(): string | undefined;
     static readonly red: ColorDef;
     static rgb2bgr(val: number): number;
-    setAlpha(alpha: number): void;
-    setFrom(other: ColorDef): void;
-    setTransparency(transparency: number): void;
     get tbgr(): number;
-    set tbgr(tbgr: number);
     toHexString(): string;
-    toHSL(opt?: HSLColor): HSLColor;
-    toHSV(out?: HSVColor): HSVColor;
+    static toHexString(tbgr: number): string;
+    toHSL(): HSLColor;
+    toHSV(): HSVColor;
     toJSON(): ColorDefProps;
     toRgbaString(): string;
+    static toRgbaString(tbgr: number): string;
     toRgbString(): string;
+    static toRgbString(tbgr: number): string;
     static readonly white: ColorDef;
+    withAlpha(alpha: number): ColorDef;
+    static withAlpha(tbgr: number, alpha: number): number;
+    withTransparency(transparency: number): ColorDef;
+    static withTransparency(tbgr: number, transparency: number): number;
 }
 
 // @public
-export type ColorDefProps = number | ColorDef;
+export type ColorDefProps = number;
 
 // @internal (undocumented)
 export class ColorIndex {
@@ -1302,6 +1358,8 @@ export interface ContextRealityModelProps {
     description?: string;
     // (undocumented)
     name?: string;
+    // @alpha (undocumented)
+    orbitGtBlob?: OrbitGtBlobProps;
     // (undocumented)
     tilesetUrl: string;
 }
@@ -1329,7 +1387,7 @@ export const CURRENT_INVOCATION: unique symbol;
 export const CURRENT_REQUEST: unique symbol;
 
 // @internal
-export const enum CurrentImdlVersion {
+export enum CurrentImdlVersion {
     Combined = 589824,
     Major = 9,
     Minor = 0
@@ -1404,13 +1462,15 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     getPlanProjectionSettings(modelId: Id64String): PlanProjectionSettings | undefined;
     get hiddenLineSettings(): HiddenLine.Settings;
     set hiddenLineSettings(hline: HiddenLine.Settings);
+    // @alpha (undocumented)
+    get lights(): LightSettings;
+    set lights(lights: LightSettings);
     get planProjectionSettings(): Iterable<[Id64String, PlanProjectionSettings]> | undefined;
     setPlanProjectionSettings(modelId: Id64String, settings: PlanProjectionSettings | undefined): void;
-    get solarShadowsSettings(): SolarShadows.Settings;
-    set solarShadowsSettings(solarShadows: SolarShadows.Settings);
-    // @internal (undocumented)
-    get sunDir(): Vector3d | undefined;
-    set sunDir(dir: Vector3d | undefined);
+    get solarShadows(): SolarShadowSettings;
+    set solarShadows(solarShadows: SolarShadowSettings);
+    get thematic(): ThematicDisplay;
+    set thematic(thematic: ThematicDisplay);
     // @internal (undocumented)
     toJSON(): DisplayStyle3dSettingsProps;
 }
@@ -1422,14 +1482,20 @@ export interface DisplayStyle3dSettingsProps extends DisplayStyleSettingsProps {
     environment?: EnvironmentProps;
     // @beta
     hline?: HiddenLine.SettingsProps;
+    // @alpha
+    lights?: LightSettingsProps;
     // @beta
     planProjections?: {
         [modelId: string]: PlanProjectionSettingsProps;
     };
-    // @alpha
-    sceneLights?: SceneLightsProps;
+    // @internal @deprecated
+    sceneLights?: {
+        sunDir?: XYZProps;
+    };
     // @beta
-    solarShadows?: SolarShadows.Props;
+    solarShadows?: SolarShadowSettingsProps;
+    // @beta
+    thematic?: ThematicDisplayProps;
 }
 
 // @public
@@ -1466,6 +1532,8 @@ export class DisplayStyleSettings {
     protected readonly _json: DisplayStyleSettingsProps;
     get monochromeColor(): ColorDef;
     set monochromeColor(color: ColorDef);
+    get monochromeMode(): MonochromeMode;
+    set monochromeMode(mode: MonochromeMode);
     overrideSubCategory(id: Id64String, ovr: SubCategoryOverride): void;
     // @internal (undocumented)
     get scheduleScriptProps(): RenderSchedule.ModelTimelineProps[] | undefined;
@@ -1490,6 +1558,7 @@ export interface DisplayStyleSettingsProps {
     contextRealityModels?: ContextRealityModelProps[];
     excludedElements?: Id64String[];
     monochromeColor?: ColorDefProps;
+    monochromeMode?: MonochromeMode;
     // @beta
     scheduleScript?: RenderSchedule.ModelTimelineProps[];
     subCategoryOvr?: DisplayStyleSubCategoryProps[];
@@ -2092,7 +2161,7 @@ export namespace FrustumPlanes {
     // (undocumented)
     export function addPlaneFromPoints(planes: ClipPlane[], points: Point3d[], i0: number, i1: number, i2: number, expandPlaneDistance?: number): void;
     // (undocumented)
-    export const enum Containment {
+    export enum Containment {
         // (undocumented)
         Inside = 2,
         // (undocumented)
@@ -2410,7 +2479,7 @@ export class GltfBufferView {
 }
 
 // @internal (undocumented)
-export const enum GltfConstants {
+export enum GltfConstants {
     // (undocumented)
     ArrayBuffer = 34962,
     // (undocumented)
@@ -2437,7 +2506,7 @@ export const enum GltfConstants {
 export type GltfDataBuffer = Uint8Array | Uint16Array | Uint32Array | Float32Array;
 
 // @internal (undocumented)
-export const enum GltfDataType {
+export enum GltfDataType {
     // (undocumented)
     Float = 5126,
     // (undocumented)
@@ -2464,7 +2533,7 @@ export class GltfHeader extends TileHeader {
 }
 
 // @internal (undocumented)
-export const enum GltfMeshMode {
+export enum GltfMeshMode {
     // (undocumented)
     Lines = 1,
     // (undocumented)
@@ -2474,7 +2543,7 @@ export const enum GltfMeshMode {
 }
 
 // @internal (undocumented)
-export const enum GltfV2ChunkTypes {
+export enum GltfV2ChunkTypes {
     // (undocumented)
     Binary = 5130562,
     // (undocumented)
@@ -2482,7 +2551,7 @@ export const enum GltfV2ChunkTypes {
 }
 
 // @internal
-export const enum GltfVersions {
+export enum GltfVersions {
     // (undocumented)
     CurrentVersion = 1,
     // (undocumented)
@@ -2500,13 +2569,14 @@ export namespace Gradient {
         None = 0,
         Outline = 2
     }
-    export class KeyColor implements KeyColorProps {
+    export class KeyColor {
         constructor(json: KeyColorProps);
         // (undocumented)
         color: ColorDef;
         // (undocumented)
         value: number;
     }
+    export function keyColorEquals(a: KeyColor, b: KeyColor): boolean;
     export interface KeyColorProps {
         color: ColorDefProps;
         value: number;
@@ -2527,7 +2597,7 @@ export namespace Gradient {
         // (undocumented)
         Thematic = 6
     }
-    export class Symb implements SymbProps {
+    export class Symb {
         // (undocumented)
         angle?: Angle;
         // (undocumented)
@@ -2535,7 +2605,7 @@ export namespace Gradient {
         compare(other: Symb): number;
         static compareSymb(lhs: Gradient.Symb, rhs: Gradient.Symb): number;
         // (undocumented)
-        static createThematic(settings: ThematicSettings): Symb;
+        static createThematic(settings: ThematicGradientSettings): Symb;
         equals(other: Symb): boolean;
         // (undocumented)
         flags: Flags;
@@ -2552,9 +2622,11 @@ export namespace Gradient {
         // (undocumented)
         shift: number;
         // (undocumented)
-        thematicSettings?: ThematicSettings;
+        thematicSettings?: ThematicGradientSettings;
         // (undocumented)
         tint?: number;
+        // (undocumented)
+        toJSON(): SymbProps;
     }
     export interface SymbProps {
         angle?: AngleProps;
@@ -2562,89 +2634,15 @@ export namespace Gradient {
         keys: KeyColorProps[];
         mode: Mode;
         shift?: number;
-        thematicSettings?: ThematicSettingsProps;
+        thematicSettings?: ThematicGradientSettingsProps;
         tint?: number;
-    }
-    // (undocumented)
-    export enum ThematicColorScheme {
-        // (undocumented)
-        BlueRed = 0,
-        // (undocumented)
-        Custom = 5,
-        // (undocumented)
-        Monochrome = 2,
-        // (undocumented)
-        RedBlue = 1,
-        // (undocumented)
-        SeaMountain = 4,
-        // (undocumented)
-        Topographic = 3
-    }
-    // (undocumented)
-    export enum ThematicMode {
-        // (undocumented)
-        IsoLines = 3,
-        // (undocumented)
-        Smooth = 0,
-        // (undocumented)
-        Stepped = 1,
-        // (undocumented)
-        SteppedWithDelimiter = 2
-    }
-    export class ThematicSettings implements ThematicSettingsProps {
-        // (undocumented)
-        clone(out?: ThematicSettings): ThematicSettings;
-        // (undocumented)
-        colorScheme: ThematicColorScheme;
-        // (undocumented)
-        static get contentMax(): number;
-        // (undocumented)
-        static get contentRange(): number;
-        // (undocumented)
-        copyFrom(other: ThematicSettingsProps): void;
-        // (undocumented)
-        static defaults: ThematicSettings;
-        // (undocumented)
-        static fromJSON(json: ThematicSettingsProps): ThematicSettings;
-        // (undocumented)
-        static get margin(): number;
-        // (undocumented)
-        marginColor: ColorDef;
-        // (undocumented)
-        mode: ThematicMode;
-        // (undocumented)
-        get range(): Range1d;
-        set range(range: Range1d);
-        // (undocumented)
-        rangeHigh: number;
-        // (undocumented)
-        rangeLow: number;
-        // (undocumented)
-        stepCount: number;
-        // (undocumented)
-        toJSON(): ThematicSettingsProps;
-    }
-    // (undocumented)
-    export interface ThematicSettingsProps {
-        // (undocumented)
-        colorScheme: ThematicColorScheme;
-        // (undocumented)
-        marginColor: ColorDefProps;
-        // (undocumented)
-        mode: ThematicMode;
-        // (undocumented)
-        rangeHigh: number;
-        // (undocumented)
-        rangeLow: number;
-        // (undocumented)
-        stepCount: number;
     }
 }
 
 // @beta
 export class GraphicParams {
     // (undocumented)
-    readonly fillColor: ColorDef;
+    fillColor: ColorDef;
     // (undocumented)
     fillFlags: FillFlags;
     // (undocumented)
@@ -2654,20 +2652,15 @@ export class GraphicParams {
     // (undocumented)
     gradient?: Gradient.Symb;
     // (undocumented)
-    readonly lineColor: ColorDef;
+    lineColor: ColorDef;
     // (undocumented)
     linePixels: LinePixels;
-    // (undocumented)
-    lineTexture?: RenderTexture;
     // (undocumented)
     material?: RenderMaterial;
     // (undocumented)
     rasterWidth: number;
-    setFillColor(fillColor: ColorDef): void;
     // (undocumented)
     setFillTransparency(transparency: number): void;
-    setLineColor(lineColor: ColorDef): void;
-    setLinePixels(code: LinePixels): void;
     // (undocumented)
     setLineTransparency(transparency: number): void;
     // (undocumented)
@@ -2686,7 +2679,7 @@ export enum GridOrientationType {
 }
 
 // @public
-export class GroundPlane implements GroundPlaneProps {
+export class GroundPlane {
     constructor(ground?: GroundPlaneProps);
     aboveColor: ColorDef;
     belowColor: ColorDef;
@@ -2704,6 +2697,29 @@ export interface GroundPlaneProps {
     belowColor?: ColorDefProps;
     display?: boolean;
     elevation?: number;
+}
+
+// @beta
+export class HemisphereLights {
+    constructor(json?: HemisphereLightsProps);
+    clone(changed?: HemisphereLightsProps): HemisphereLights;
+    // (undocumented)
+    equals(rhs: HemisphereLights): boolean;
+    // (undocumented)
+    readonly intensity: number;
+    // (undocumented)
+    readonly lowerColor: RgbColor;
+    // (undocumented)
+    toJSON(): HemisphereLightsProps | undefined;
+    // (undocumented)
+    readonly upperColor: RgbColor;
+}
+
+// @beta
+export interface HemisphereLightsProps {
+    intensity?: number;
+    lowerColor?: RgbColorProps;
+    upperColor?: RgbColorProps;
 }
 
 // @beta
@@ -2725,7 +2741,7 @@ export namespace HiddenLine {
         readonly transThreshold?: number;
         readonly visible?: StyleProps;
     }
-    export class Style implements StyleProps {
+    export class Style {
         readonly color?: ColorDef;
         // (undocumented)
         static readonly defaultHidden: Style;
@@ -2773,30 +2789,42 @@ export namespace Hilite {
 
 // @public
 export class HSLColor {
+    constructor(hue?: number, saturation?: number, lightness?: number);
     // (undocumented)
-    clone(): HSLColor;
+    clone(hue?: number, saturation?: number, lightness?: number): HSLColor;
     // (undocumented)
-    static fromColorDef(val: ColorDef, out?: HSLColor): HSLColor;
-    h: number;
-    l: number;
-    s: number;
+    static fromColorDef(val: ColorDef): HSLColor;
+    readonly h: number;
+    readonly l: number;
+    readonly s: number;
     // (undocumented)
-    toColorDef(out?: ColorDef): ColorDef;
+    toColorDef(transparency?: number): ColorDef;
 }
 
 // @public
 export class HSVColor {
+    constructor(hue?: number, saturation?: number, value?: number);
     // (undocumented)
-    adjustColor(darkenColor: boolean, delta: number): void;
+    adjusted(darkenColor: boolean, delta: number): HSVColor;
     // (undocumented)
-    clone(): HSVColor;
+    clone(hue?: number, saturation?: number, value?: number): HSVColor;
     // (undocumented)
-    static fromColorDef(val: ColorDef, out?: HSVColor): HSVColor;
-    h: number;
-    s: number;
+    static fromColorDef(val: ColorDef): HSVColor;
+    readonly h: number;
+    readonly s: number;
     // (undocumented)
-    toColorDef(out?: ColorDef): ColorDef;
-    v: number;
+    toColorDef(transparency?: number): ColorDef;
+    readonly v: number;
+}
+
+// @public (undocumented)
+export enum HSVConstants {
+    // (undocumented)
+    HSV_SATURATION_WEIGHT = 4,
+    // (undocumented)
+    HSV_VALUE_WEIGHT = 2,
+    // (undocumented)
+    VISIBILITY_GOAL = 40
 }
 
 // @public (undocumented)
@@ -2970,20 +2998,6 @@ export interface ImageGraphicProps {
     textureId: Id64String;
 }
 
-// @internal (undocumented)
-export namespace ImageLight {
-    // (undocumented)
-    export class Solar {
-        constructor(direction?: Vector3d, color?: ColorDef, intensity?: number);
-        // (undocumented)
-        color: ColorDef;
-        // (undocumented)
-        direction: Vector3d;
-        // (undocumented)
-        intensity: number;
-    }
-}
-
 // @public
 export interface ImagePrimitive {
     // @beta (undocumented)
@@ -3007,7 +3021,7 @@ export enum ImageSourceFormat {
 }
 
 // @internal
-export const enum ImdlFlags {
+export enum ImdlFlags {
     ContainsCurves = 1,
     Incomplete = 4,
     None = 0
@@ -3329,82 +3343,50 @@ export interface LatLongAndHeight extends LatAndLong {
 }
 
 // @internal
-export class Light {
-    constructor(opts?: LightProps);
-    // (undocumented)
-    bulbs: number;
-    // (undocumented)
-    color: ColorDef;
-    // (undocumented)
-    color2?: ColorDef;
-    // (undocumented)
-    intensity: number;
-    // (undocumented)
-    intensity2?: number;
-    // (undocumented)
-    get isValid(): boolean;
-    // (undocumented)
-    get isVisible(): boolean;
-    // (undocumented)
-    kelvin: number;
-    // (undocumented)
-    lightType: LightType;
-    // (undocumented)
-    lumens: number;
-    // (undocumented)
-    shadows: number;
-}
-
-// @internal
 export interface LightLocationProps extends GeometricElement3dProps {
     // (undocumented)
     enabled?: boolean;
 }
 
-// @internal
-export interface LightProps {
+// @beta
+export class LightSettings {
     // (undocumented)
-    bulbs?: number;
+    readonly ambient: AmbientLight;
+    clone(changed?: LightSettingsProps): LightSettings;
     // (undocumented)
-    color?: ColorDefProps;
+    equals(rhs: LightSettings): boolean;
     // (undocumented)
-    color2?: ColorDefProps;
+    static fromJSON(props?: LightSettingsProps): LightSettings;
     // (undocumented)
-    intensity?: number;
+    readonly hemisphere: HemisphereLights;
+    // @internal (undocumented)
+    readonly numCels: number;
     // (undocumented)
-    intensity2?: number;
+    readonly portraitIntensity: number;
     // (undocumented)
-    kelvin?: number;
+    readonly solar: SolarLight;
     // (undocumented)
-    lightType?: LightType;
+    readonly specularIntensity: number;
     // (undocumented)
-    lumens?: number;
-    // (undocumented)
-    shadows?: number;
+    toJSON(): LightSettingsProps | undefined;
 }
 
-// @internal
-export enum LightType {
+// @beta
+export interface LightSettingsProps {
     // (undocumented)
-    Ambient = 2,
+    ambient?: AmbientLightProps;
     // (undocumented)
-    Area = 7,
+    hemisphere?: HemisphereLightsProps;
+    // @internal
+    numCels?: number;
     // (undocumented)
-    Distant = 8,
+    portrait?: {
+        intensity?: number;
+    };
     // (undocumented)
-    Flash = 3,
+    solar?: SolarLightProps;
     // (undocumented)
-    Invalid = 0,
-    // (undocumented)
-    Point = 5,
-    // (undocumented)
-    Portrait = 4,
-    // (undocumented)
-    SkyOpening = 9,
-    // (undocumented)
-    Solar = 1,
-    // (undocumented)
-    Spot = 6
+    specularIntensity?: number;
 }
 
 // @beta
@@ -3730,6 +3712,12 @@ export interface ModelSelectorProps extends DefinitionElementProps {
     models: Id64Array;
 }
 
+// @public
+export enum MonochromeMode {
+    Flat = 0,
+    Scaled = 1
+}
+
 // @internal
 export abstract class NativeAppRpcInterface extends RpcInterface {
     cancelDownloadBriefcase(_iModelToken: IModelRpcProps): Promise<boolean>;
@@ -4024,6 +4012,18 @@ export interface OpenAPISchema {
 
 // @internal (undocumented)
 export const OPERATION: unique symbol;
+
+// @alpha
+export interface OrbitGtBlobProps {
+    // (undocumented)
+    accountName: string;
+    // (undocumented)
+    blobFileName: string;
+    // (undocumented)
+    containerName: string;
+    // (undocumented)
+    sasToken: string;
+}
 
 // @internal
 export enum OverriddenBy {
@@ -4404,14 +4404,14 @@ export class QParams2d {
     clone(out?: QParams2d): QParams2d;
     // (undocumented)
     copyFrom(src: QParams2d): void;
-    static fromNormalizedRange(): QParams2d;
-    static fromRange(range: Range2d, out?: QParams2d): QParams2d;
-    static fromZeroToOne(): QParams2d;
+    static fromNormalizedRange(rangeScale?: number): QParams2d;
+    static fromRange(range: Range2d, out?: QParams2d, rangeScale?: number): QParams2d;
+    static fromZeroToOne(rangeScale?: number): QParams2d;
     // (undocumented)
     readonly origin: Point2d;
     // (undocumented)
     readonly scale: Point2d;
-    setFromRange(range: Range2d): void;
+    setFromRange(range: Range2d, rangeScale?: number): void;
 }
 
 // @internal
@@ -4420,16 +4420,16 @@ export class QParams3d {
     clone(out?: QParams3d): QParams3d;
     // (undocumented)
     copyFrom(src: QParams3d): void;
-    static fromNormalizedRange(): QParams3d;
+    static fromNormalizedRange(rangeScale?: number): QParams3d;
     static fromOriginAndScale(origin: Point3d, scale: Point3d, out?: QParams3d): QParams3d;
-    static fromRange(range: Range3d, out?: QParams3d): QParams3d;
-    static fromZeroToOne(): QParams3d;
+    static fromRange(range: Range3d, out?: QParams3d, rangeScale?: number): QParams3d;
+    static fromZeroToOne(rangeScale?: number): QParams3d;
     // (undocumented)
     readonly origin: Point3d;
     // (undocumented)
     readonly scale: Point3d;
     setFromOriginAndScale(origin: Point3d, scale: Point3d): void;
-    setFromRange(range: Range3d): void;
+    setFromRange(range: Range3d, rangeScale?: number): void;
 }
 
 // @internal
@@ -4521,17 +4521,19 @@ export class QPoint3dList {
 // @internal
 export namespace Quantization {
     const // (undocumented)
-    rangeScale = 65535;
+    rangeScale16 = 65535;
+    const // (undocumented)
+    rangeScale8 = 255;
     // (undocumented)
-    export function computeScale(extent: number): number;
+    export function computeScale(extent: number, rangeScale?: number): number;
     // (undocumented)
-    export function isInRange(qpos: number): boolean;
+    export function isInRange(qpos: number, rangeScale?: number): boolean;
     // (undocumented)
-    export function isQuantizable(pos: number, origin: number, scale: number): boolean;
+    export function isQuantizable(pos: number, origin: number, scale: number, rangeScale?: number): boolean;
     // (undocumented)
     export function isQuantized(qpos: number): boolean;
     // (undocumented)
-    export function quantize(pos: number, origin: number, scale: number): number;
+    export function quantize(pos: number, origin: number, scale: number, rangeScale?: number): number;
     // (undocumented)
     export function unquantize(qpos: number, origin: number, scale: number): number;
 }
@@ -4821,7 +4823,7 @@ export namespace RenderTexture {
         readonly key?: string;
         readonly type: Type;
     }
-    export const enum Type {
+    export enum Type {
         FilteredTileSection = 4,
         Glyph = 1,
         Normal = 0,
@@ -4875,7 +4877,7 @@ export class RgbColor {
     // (undocumented)
     readonly b: number;
     // (undocumented)
-    equals(other: RgbColor): boolean;
+    equals(rhs: RgbColor): boolean;
     static fromColorDef(colorDef: ColorDef): RgbColor;
     // (undocumented)
     static fromJSON(json: RgbColorProps | undefined): RgbColor;
@@ -4883,6 +4885,7 @@ export class RgbColor {
     readonly g: number;
     // (undocumented)
     readonly r: number;
+    toColorDef(transparency?: number): ColorDef;
     // (undocumented)
     toJSON(): RgbColorProps;
 }
@@ -5412,12 +5415,6 @@ export namespace RpcSerializedValue {
     export function create(objects?: string, data?: Uint8Array[]): RpcSerializedValue;
 }
 
-// @alpha
-export interface SceneLightsProps {
-    // (undocumented)
-    sunDir?: XYZProps;
-}
-
 // @beta
 export interface SectionLocationProps extends GeometricElement3dProps {
     categorySelectorId?: Id64String;
@@ -5627,31 +5624,49 @@ export abstract class SnapshotIModelRpcInterface extends RpcInterface {
 }
 
 // @beta
-export interface SolarShadowProps {
-    bias?: number;
-    color?: ColorDefProps;
+export class SolarLight {
+    constructor(json?: SolarLightProps);
+    // (undocumented)
+    readonly alwaysEnabled: boolean;
+    clone(changedProps?: SolarLightProps): SolarLight;
+    // (undocumented)
+    readonly direction: Readonly<Vector3d>;
+    // (undocumented)
+    equals(rhs: SolarLight): boolean;
+    // (undocumented)
+    readonly intensity: number;
+    // (undocumented)
+    toJSON(): SolarLightProps | undefined;
 }
 
 // @beta
-export namespace SolarShadows {
-    export interface Props {
-        bias?: number;
-        color?: ColorDefProps;
-    }
-    export class Settings implements Props {
-        constructor(props?: SolarShadowProps);
-        // @alpha
-        bias: number;
-        // (undocumented)
-        clone(result?: SolarShadows.Settings): SolarShadows.Settings;
-        color: ColorDef;
-        // (undocumented)
-        equals(other: SolarShadows.Settings): boolean;
-        // (undocumented)
-        static fromJSON(props?: Props): Settings;
-        // (undocumented)
-        toJSON(): Props;
-    }
+export interface SolarLightProps {
+    alwaysEnabled?: boolean;
+    direction?: XYZProps;
+    intensity?: number;
+}
+
+// @beta
+export class SolarShadowSettings {
+    // @internal (undocumented)
+    readonly bias: number;
+    clone(changedProps?: SolarShadowSettingsProps): SolarShadowSettings;
+    readonly color: RgbColor;
+    // (undocumented)
+    static defaults: SolarShadowSettings;
+    // (undocumented)
+    equals(rhs: SolarShadowSettings): boolean;
+    // (undocumented)
+    static fromJSON(props?: SolarShadowSettingsProps): SolarShadowSettings;
+    // (undocumented)
+    toJSON(): SolarShadowSettingsProps | undefined;
+}
+
+// @beta
+export interface SolarShadowSettingsProps {
+    // @internal (undocumented)
+    bias?: number;
+    color?: ColorDefProps;
 }
 
 // @beta
@@ -5701,23 +5716,6 @@ export namespace SpatialClassificationProps {
 export interface SpatialViewDefinitionProps extends ViewDefinition3dProps {
     // (undocumented)
     modelSelectorId: Id64String;
-}
-
-// @internal
-export class Spot extends Light {
-    constructor(opts?: SpotProps);
-    // (undocumented)
-    inner: Angle;
-    // (undocumented)
-    outer: Angle;
-}
-
-// @internal
-export interface SpotProps extends LightProps {
-    // (undocumented)
-    inner?: AngleProps;
-    // (undocumented)
-    outer?: AngleProps;
 }
 
 // @internal
@@ -5999,6 +5997,94 @@ export interface TextureProps extends DefinitionElementProps {
     width: number;
 }
 
+// @beta
+export class ThematicDisplay {
+    readonly axis: Vector3d;
+    readonly displayMode: ThematicDisplayMode;
+    // (undocumented)
+    equals(other: ThematicDisplay): boolean;
+    // (undocumented)
+    static fromJSON(json?: ThematicDisplayProps): ThematicDisplay;
+    readonly gradientSettings: ThematicGradientSettings;
+    readonly range: Range1d;
+    // (undocumented)
+    toJSON(): ThematicDisplayProps;
+}
+
+// @beta
+export enum ThematicDisplayMode {
+    Height = 0
+}
+
+// @beta
+export interface ThematicDisplayProps {
+    axis?: XYZProps;
+    displayMode?: ThematicDisplayMode;
+    gradientSettings?: ThematicGradientSettingsProps;
+    range?: Range1dProps;
+}
+
+// @beta (undocumented)
+export enum ThematicGradientColorScheme {
+    // (undocumented)
+    BlueRed = 0,
+    // (undocumented)
+    Custom = 5,
+    // (undocumented)
+    Monochrome = 2,
+    // (undocumented)
+    RedBlue = 1,
+    // (undocumented)
+    SeaMountain = 4,
+    // (undocumented)
+    Topographic = 3
+}
+
+// @beta (undocumented)
+export enum ThematicGradientMode {
+    // (undocumented)
+    IsoLines = 3,
+    // (undocumented)
+    Smooth = 0,
+    // (undocumented)
+    Stepped = 1,
+    // (undocumented)
+    SteppedWithDelimiter = 2
+}
+
+// @beta
+export class ThematicGradientSettings {
+    clone(changedProps?: ThematicGradientSettingsProps): ThematicGradientSettings;
+    readonly colorScheme: ThematicGradientColorScheme;
+    // (undocumented)
+    static get contentMax(): number;
+    // (undocumented)
+    static get contentRange(): number;
+    readonly customKeys: Gradient.KeyColor[];
+    // (undocumented)
+    static defaults: ThematicGradientSettings;
+    // (undocumented)
+    equals(other: ThematicGradientSettings): boolean;
+    // (undocumented)
+    static fromJSON(json?: ThematicGradientSettingsProps): ThematicGradientSettings;
+    // (undocumented)
+    static get margin(): number;
+    readonly marginColor: ColorDef;
+    readonly mode: ThematicGradientMode;
+    readonly stepCount: number;
+    // (undocumented)
+    toJSON(): ThematicGradientSettingsProps;
+}
+
+// @beta (undocumented)
+export interface ThematicGradientSettingsProps {
+    colorScheme?: ThematicGradientColorScheme;
+    customKeys?: Gradient.KeyColorProps[];
+    marginColor?: ColorDefProps;
+    mode?: ThematicGradientMode;
+    stepCount?: number;
+}
+
 // @alpha
 export interface ThumbnailFormatProps {
     format: "jpeg" | "png";
@@ -6042,7 +6128,7 @@ export interface TileContentMetadata {
 }
 
 // @internal
-export const enum TileFormat {
+export enum TileFormat {
     // (undocumented)
     A3x = 5780289,
     // (undocumented)
@@ -6123,7 +6209,7 @@ export class TileReadError extends BentleyError {
 }
 
 // @internal
-export const enum TileReadStatus {
+export enum TileReadStatus {
     // (undocumented)
     Canceled = 7,
     // (undocumented)
@@ -6431,13 +6517,15 @@ export class ViewFlagOverrides {
     // (undocumented)
     setShowWeights(val: boolean): void;
     // (undocumented)
+    setThematicDisplay(val: boolean): void;
+    // (undocumented)
     setUseHlineMaterialColors(val: boolean): void;
     // (undocumented)
     setWhiteOnWhiteReversal(val: boolean): void;
     }
 
 // @public
-export const enum ViewFlagPresence {
+export enum ViewFlagPresence {
     // (undocumented)
     BackgroundMap = 20,
     // (undocumented)
@@ -6474,6 +6562,8 @@ export const enum ViewFlagPresence {
     Styles = 4,
     // (undocumented)
     Textures = 8,
+    // (undocumented)
+    ThematicDisplay = 23,
     // (undocumented)
     Transparency = 5,
     // (undocumented)
@@ -6514,6 +6604,7 @@ export interface ViewFlagProps {
     noWhiteOnWhiteReversal?: boolean;
     renderMode?: number;
     shadows?: boolean;
+    thematicDisplay?: boolean;
     visEdges?: boolean;
 }
 
@@ -6558,6 +6649,7 @@ export class ViewFlags {
     sourceLights: boolean;
     styles: boolean;
     textures: boolean;
+    thematicDisplay: boolean;
     // (undocumented)
     toJSON(): ViewFlagProps;
     transparency: boolean;
@@ -6578,6 +6670,8 @@ export interface ViewStateProps {
     categorySelectorProps: CategorySelectorProps;
     // (undocumented)
     displayStyleProps: DisplayStyleProps;
+    // @alpha
+    modelExtents?: Range3dProps;
     // (undocumented)
     modelSelectorProps?: ModelSelectorProps;
     // @beta (undocumented)

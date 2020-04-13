@@ -40,22 +40,14 @@ export class ClipColorTool extends Tool {
 
   private _setInsideClipColor(colStr: string) {
     const vp = IModelApp.viewManager.selectedView;
-    if (undefined !== vp) {
-      if (colStr === "clear")
-        vp.insideClipColor = undefined;
-      else
-        vp.insideClipColor = new ColorDef(colStr);
-    }
+    if (undefined !== vp)
+      vp.insideClipColor = colStr === "clear" ? undefined : ColorDef.fromString(colStr);
   }
 
   private _setOutsideClipColor(colStr: string) {
     const vp = IModelApp.viewManager.selectedView;
-    if (undefined !== vp) {
-      if (colStr === "clear")
-        vp.outsideClipColor = undefined;
-      else
-        vp.outsideClipColor = new ColorDef(colStr);
-    }
+    if (undefined !== vp)
+      vp.outsideClipColor = colStr === "clear" ? undefined : ColorDef.fromString(colStr);
   }
 
   public parseAndRun(...args: string[]): boolean {

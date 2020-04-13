@@ -176,27 +176,6 @@ describe("ConsolidateAdjacentPrimitives", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it("FilletsInLinestring", () => {
-    const ck = new Checker();
-    const allGeometry: GeometryQuery[] = [];
-    let x0 = 0.0;
-    const points = [Point3d.create(0, 0, 0), Point3d.create(2, 0, 0), Point3d.create(2, 3, 1), Point3d.create(4, 3, 1), Point3d.create(6, 2, 1)];
-    const lineString0 = LineString3d.create(points);
-    points.reverse();
-    const lineString1 = LineString3d.create(points);
-    for (const filletRadius of [0.2, 0.4, 0.6, 1.2, 2.0, 4.0]) {
-      let y0 = 0.0;
-      for (const lineString of [lineString0, lineString1]) {
-        const chain0 = CurveFactory.createFilletsInLineString(lineString, filletRadius, false)!;
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain0, x0, y0);
-        y0 += 8.0;
-      }
-      x0 += 20.0;
-    }
-    GeometryCoreTestIO.saveGeometry(allGeometry, "ConsolidateAdjacentPrimitives", "FilletsInLineString");
-    expect(ck.getNumErrors()).equals(0);
-  });
-
   it("LinesAndArcs", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];

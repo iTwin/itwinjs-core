@@ -9,7 +9,7 @@ import { DisplayParams, Mesh, Triangle } from "@bentley/imodeljs-frontend/lib/re
 import { assert, expect } from "chai";
 
 export class FakeDisplayParams extends DisplayParams {
-  public constructor() { super(DisplayParams.Type.Linear, new ColorDef(), new ColorDef()); }
+  public constructor() { super(DisplayParams.Type.Linear, ColorDef.black, ColorDef.black); }
 }
 
 /**

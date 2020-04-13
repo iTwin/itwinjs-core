@@ -60,31 +60,31 @@ export class ColorPickerButton extends React.PureComponent<ColorPickerProps, Col
     super(props);
 
     if (props.colorDefs) {
-      props.colorDefs.forEach((color: ColorDef) => { this._colors.push(color.clone()); });
+      props.colorDefs.forEach((color: ColorDef) => { this._colors.push(color); });
     } else {
-      ColorPickerButton.defaultColors.forEach((color: ColorDef) => { this._colors.push(color.clone()); });
+      ColorPickerButton.defaultColors.forEach((color: ColorDef) => { this._colors.push(color); });
     }
     this.state = { showPopup: false };
   }
 
   public static get defaultColors(): ColorDef[] {
     return [
-      new ColorDef(ColorByName.red),
-      new ColorDef(ColorByName.orange),
-      new ColorDef(ColorByName.yellow),
-      new ColorDef(ColorByName.green),
-      new ColorDef(ColorByName.blue),
-      new ColorDef(ColorByName.indigo),
-      new ColorDef(ColorByName.violet),
-      new ColorDef(ColorByName.black),
-      new ColorDef(ColorByName.white),
-      new ColorDef(ColorByName.cyan),
-      new ColorDef(ColorByName.fuchsia),
-      new ColorDef(ColorByName.tan),
-      new ColorDef(ColorByName.gray),
-      new ColorDef(ColorByName.brown),
-      new ColorDef(ColorByName.purple),
-      new ColorDef(ColorByName.olive),
+      ColorDef.create(ColorByName.red),
+      ColorDef.create(ColorByName.orange),
+      ColorDef.create(ColorByName.yellow),
+      ColorDef.create(ColorByName.green),
+      ColorDef.create(ColorByName.blue),
+      ColorDef.create(ColorByName.indigo),
+      ColorDef.create(ColorByName.violet),
+      ColorDef.create(ColorByName.black),
+      ColorDef.create(ColorByName.white),
+      ColorDef.create(ColorByName.cyan),
+      ColorDef.create(ColorByName.fuchsia),
+      ColorDef.create(ColorByName.tan),
+      ColorDef.create(ColorByName.gray),
+      ColorDef.create(ColorByName.brown),
+      ColorDef.create(ColorByName.purple),
+      ColorDef.create(ColorByName.olive),
     ];
   }
 

@@ -416,7 +416,8 @@ export abstract class GltfReader {
       else if (materialJson.extensions && materialJson.extensions.KHR_techniques_webgl && materialJson.extensions.KHR_techniques_webgl.values && materialJson.extensions.KHR_techniques_webgl.values.u_color)
         return this.colorFromJson(materialJson.extensions.KHR_techniques_webgl.values.u_color);
     }
-    return ColorDef.white.clone();
+
+    return ColorDef.white;
   }
 
   protected createDisplayParams(materialJson: any, hasBakedLighting: boolean): DisplayParams | undefined {

@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module WebGL
  */
-import { VariableType, ProgramBuilder, FragmentShaderComponent } from "../ShaderBuilder";
+import { VariableType, ProgramBuilder, FragmentShaderComponent, ShaderBuilder } from "../ShaderBuilder";
 import { assert } from "@bentley/bentleyjs-core";
 import { TextureUnit } from "../RenderFlags";
 import { addUInt32s } from "./Common";
@@ -16,6 +16,7 @@ import { SpatialClassificationProps } from "@bentley/imodeljs-common";
 import { Matrix4d } from "@bentley/geometry-core";
 import { Matrix4 } from "../Matrix";
 import { addInstancedRtcMatrix } from "./Vertex";
+import { IsThematic } from "../TechniqueFlags";
 
 export const volClassOpaqueColor = `
 vec4 volClassColor(vec4 baseColor, float depth) {
@@ -86,6 +87,48 @@ const applyPlanarClassificationColor = `
   return classColor;
 `;
 
+const applyPlanarClassificationColorForThematic = `
+vec2 classPos = v_pClassPos / v_pClassPosW;
+if (u_pClassColorParams.x > kClassifierDisplay_Element) { // texture/terrain drape.
+  if (u_pClassColorParams.x > kTextureDrape) {
+    return volClassColor(baseColor, depth);
+  }
+  if (classPos.x < 0.0 || classPos.x > 1.0 || classPos.y < 0.0 || classPos.y > 1.0)
+    discard;
+
+  vec3 rgb = TEXTURE(s_pClassSampler, classPos.xy).rgb;
+  return vec4(rgb, baseColor.a);
+}
+
+vec4 colorTexel = TEXTURE(s_pClassSampler, vec2(classPos.x, classPos.y / 2.0));
+float isClassified = ceil(colorTexel.a);
+float param = mix(u_pClassColorParams.y, u_pClassColorParams.x, isClassified);
+if (kClassifierDisplay_Off == param)
+  return vec4(0.0);
+
+vec4 classColor = baseColor;
+
+if (kClassifierDisplay_Element == param) {
+  if (0.0 == colorTexel.r && 0.0 == colorTexel.g && 0.0 == colorTexel.b) {
+    // black indicates discard (clip masking).
+    discard;
+    return vec4(0.0);
+  }
+  classColor = vec4(baseColor.rgb, colorTexel.a);
+  colorTexel.a = 0.5; // make conditions below potentially pass
+}
+
+if (0.0 != isClassified) {
+  if (colorTexel.r > colorTexel.a && kClassifierDisplay_Hilite != param)
+    classColor = vec4(mix(baseColor.rgb, u_hilite_settings[0], u_hilite_settings[2][0]), 1.0);
+
+  if (colorTexel.g > colorTexel.a)
+    classColor = applyClassifierFlash(classColor);
+}
+
+return classColor;
+`;
+
 const overrideFeatureId = `
   if (u_pClassColorParams.x > kClassifierDisplay_Element) return currentId;
   vec2 classPos = v_pClassPos / v_pClassPosW;
@@ -135,18 +178,21 @@ function addPlanarClassifierCommon(builder: ProgramBuilder) {
   builder.addInlineComputedVarying("v_pClassPos", VariableType.Vec2, vert.usesInstancedGeometry ? computeInstancedClassifierPos : computeClassifierPos);
   builder.addInlineComputedVarying("v_pClassPosW", VariableType.Float, computeClassifierPosW);
 
-  const frag = builder.frag;
-  frag.addDefine("kClassifierDisplay_Off", SpatialClassificationProps.Display.Off.toFixed(1));
-  frag.addDefine("kClassifierDisplay_On", SpatialClassificationProps.Display.On.toFixed(1));
-  frag.addDefine("kClassifierDisplay_Dimmed", SpatialClassificationProps.Display.Dimmed.toFixed(1));
-  frag.addDefine("kClassifierDisplay_Hilite", SpatialClassificationProps.Display.Hilite.toFixed(1));
-  frag.addDefine("kClassifierDisplay_Element", SpatialClassificationProps.Display.ElementColor.toFixed(1));
+  addPlanarClassifierConstants(builder.frag);
+}
+
+function addPlanarClassifierConstants(builder: ShaderBuilder) {
+  builder.addDefine("kClassifierDisplay_Off", SpatialClassificationProps.Display.Off.toFixed(1));
+  builder.addDefine("kClassifierDisplay_On", SpatialClassificationProps.Display.On.toFixed(1));
+  builder.addDefine("kClassifierDisplay_Dimmed", SpatialClassificationProps.Display.Dimmed.toFixed(1));
+  builder.addDefine("kClassifierDisplay_Hilite", SpatialClassificationProps.Display.Hilite.toFixed(1));
+  builder.addDefine("kClassifierDisplay_Element", SpatialClassificationProps.Display.ElementColor.toFixed(1));
   const td = SpatialClassificationProps.Display.ElementColor + 1;
-  frag.addDefine("kTextureDrape", td.toFixed(1));
+  builder.addDefine("kTextureDrape", td.toFixed(1));
 }
 
 /** @internal */
-export function addColorPlanarClassifier(builder: ProgramBuilder, translucent: boolean) {
+export function addColorPlanarClassifier(builder: ProgramBuilder, translucent: boolean, isThematic: IsThematic) {
   addPlanarClassifierCommon(builder);
   const frag = builder.frag;
   frag.addUniform("s_pClassSampler", VariableType.Sampler2D, (prog) => {
@@ -177,15 +223,18 @@ export function addColorPlanarClassifier(builder: ProgramBuilder, translucent: b
     });
   });
 
-  frag.addUniform("u_pClassPointCloud", VariableType.Boolean, (prog) => {
-    prog.addGraphicUniform("u_pClassPointCloud", (uniform, params) => {
-      const classifier = params.target.currentPlanarClassifier;
-      const isPointCloud = undefined !== classifier && classifier.isClassifyingPointCloud;
-      uniform.setUniform1i(isPointCloud ? 1 : 0);
+  if (isThematic === IsThematic.No) {
+    frag.addUniform("u_pClassPointCloud", VariableType.Boolean, (prog) => {
+      prog.addGraphicUniform("u_pClassPointCloud", (uniform, params) => {
+        const classifier = params.target.currentPlanarClassifier;
+        const isPointCloud = undefined !== classifier && classifier.isClassifyingPointCloud;
+        uniform.setUniform1i(isPointCloud ? 1 : 0);
+      });
     });
-  });
+  }
 
   addClassifierFlash(frag), false;
+
   if (translucent)
     // We will never call the shaders for volume classifiers with translucency,
     // so use a different version of the function which does not use glFragCoord to reduce the varyings count
@@ -194,7 +243,8 @@ export function addColorPlanarClassifier(builder: ProgramBuilder, translucent: b
     addWindowToTexCoords(frag);
     frag.addFunction(volClassOpaqueColor);
   }
-  frag.set(FragmentShaderComponent.ApplyPlanarClassifier, applyPlanarClassificationColor);
+
+  frag.set(FragmentShaderComponent.ApplyPlanarClassifier, (isThematic === IsThematic.No) ? applyPlanarClassificationColor : applyPlanarClassificationColorForThematic);
 }
 
 /** @internal */
@@ -233,7 +283,7 @@ export function addHilitePlanarClassifier(builder: ProgramBuilder, supportTextur
 }
 
 const overrideClassifierColorPrelude = `
-  if (!u_overrideClassifierColor)
+  if (0.0 == u_overrideClassifierColor)
     return currentColor;
 
   if (0.0 == currentColor.a)
@@ -253,6 +303,29 @@ const overrideClassifierColorPostlude = `
 const overrideClassifierWithFeatures = overrideClassifierColorPrelude + overrideClassifierEmphasis + overrideClassifierColorPostlude;
 const overrideClassifierForClip = overrideClassifierColorPrelude + overrideClassifierColorPostlude;
 
+const overrideClassifierColorPreludeForThematic = `
+  if (0.0 == u_overrideClassifierColor || (kClassifierDisplay_Element == u_overrideClassifierColor && 0.0 == currentColor.r && 0.0 == currentColor.g && 0.0 == currentColor.b))
+    return currentColor;
+
+  if (0.0 == currentColor.a)
+    return vec4(0.0, 0.0, 1.0, 0.5);
+`;
+
+const overrideClassifierEmphasisForThematic = `
+  float emph = floor(v_feature_emphasis + 0.5);
+  if (0.0 != emph)
+    return vec4(extractNthBit(emph, kEmphBit_Hilite), extractNthBit(emph, kEmphBit_Flash), 0.0, kClassifierDisplay_Element == u_overrideClassifierColor ? currentColor.a : 0.5);
+  else if (kClassifierDisplay_Element == u_overrideClassifierColor)
+    return vec4(0.0, 0.0, 1.0, currentColor.a);
+`;
+
+const overrideClassifierColorPostludeClipForThematic = `
+  return kClassifierDisplay_Element == u_overrideClassifierColor ? vec4(0.0, 0.0, 1.0, currentColor.a) : currentColor;
+`;
+
+const overrideClassifierWithFeaturesForThematic = overrideClassifierColorPreludeForThematic + overrideClassifierEmphasisForThematic + overrideClassifierColorPostlude;
+const overrideClassifierForClipForThematic = overrideClassifierColorPreludeForThematic + overrideClassifierColorPostludeClipForThematic;
+
 /** The classified geometry needs some information about the classifier geometry. The classified fragment shader outputs special values that do not represent valid RGB+A combinations when using
  * pre-multiplied alpha. The alpha channel will be 0.5, and the red, green, and/or blue channels will be 1.0:
  * - Red: hilited.
@@ -260,26 +333,42 @@ const overrideClassifierForClip = overrideClassifierColorPrelude + overrideClass
  * - Green: fully-transparent. Indicates clipping mask (discard the classified pixel).
  * @internal
  */
-export function addOverrideClassifierColor(builder: ProgramBuilder): void {
-  builder.frag.addUniform("u_overrideClassifierColor", VariableType.Boolean, (prog) => {
+export function addOverrideClassifierColor(builder: ProgramBuilder, isThematic: IsThematic): void {
+  if (isThematic === IsThematic.Yes)
+    addPlanarClassifierConstants(builder.frag);
+
+  builder.frag.addUniform("u_overrideClassifierColor", VariableType.Float, (prog) => {
     prog.addGraphicUniform("u_overrideClassifierColor", (uniform, params) => {
-      let override = false;
+      let override = 0;
       const classifier = params.target.currentlyDrawingClassifier;
       if (undefined !== classifier) {
-        switch (classifier.properties.flags.inside) {
-          case SpatialClassificationProps.Display.On:
-          case SpatialClassificationProps.Display.Dimmed:
-          case SpatialClassificationProps.Display.Hilite:
-            override = true;
-            break;
+        if (isThematic === IsThematic.No) { // for non-thematic, we just store on/off
+          switch (classifier.properties.flags.inside) {
+            case SpatialClassificationProps.Display.On:
+            case SpatialClassificationProps.Display.Dimmed:
+            case SpatialClassificationProps.Display.Hilite:
+              override = 1;
+              break;
+          }
+        } else { // for thematic, we store the actual value of the classification mode (and we include element color)
+          switch (classifier.properties.flags.inside) {
+            case SpatialClassificationProps.Display.On:
+            case SpatialClassificationProps.Display.Dimmed:
+            case SpatialClassificationProps.Display.Hilite:
+            case SpatialClassificationProps.Display.ElementColor:
+              override = classifier.properties.flags.inside;
+              break;
+          }
         }
       }
 
-      uniform.setUniform1i(override ? 1 : 0);
+      uniform.setUniform1f(override);
     });
   });
 
   const haveOverrides = undefined !== builder.frag.find("v_feature_emphasis");
-  const glsl = haveOverrides ? overrideClassifierWithFeatures : overrideClassifierForClip;
-  builder.frag.set(FragmentShaderComponent.OverrideColor, glsl);
+  if (isThematic === IsThematic.No)
+    builder.frag.set(FragmentShaderComponent.OverrideColor, haveOverrides ? overrideClassifierWithFeatures : overrideClassifierForClip);
+  else
+    builder.frag.set(FragmentShaderComponent.OverrideColor, haveOverrides ? overrideClassifierWithFeaturesForThematic : overrideClassifierForClipForThematic);
 }

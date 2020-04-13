@@ -309,7 +309,7 @@ export function ToolbarWithOverflow(props: ToolbarWithOverflowProps) {
         overflowDirection: direction === OrthogonalDirection.Horizontal ? OrthogonalDirection.Vertical : OrthogonalDirection.Horizontal,
       }
     }>
-      {(displayedItems.length > 0) &&
+      {(availableItems.length > 0) &&
         <div
           className={className}
           ref={refs}

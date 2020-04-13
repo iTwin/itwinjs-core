@@ -1400,7 +1400,8 @@ export class CurveExtendOptions {
 export class CurveFactory {
     static appendToArcInPlace(arcA: Arc3d, arcB: Arc3d, allowReverse?: boolean): boolean;
     static assembleArcChainOnEllipsoid(ellipsoid: Ellipsoid, pathPoints: GeodesicPathPoint[], fractionForIntermediateNormal?: number): Path;
-    static createFilletsInLineString(points: LineString3d | IndexedXYZCollection | Point3d[], radius: number, allowBackupAlongEdge?: boolean): Path | undefined;
+    static createFilletsInLineString(points: LineString3d | IndexedXYZCollection | Point3d[], radius: number | number[], allowBackupAlongEdge?: boolean): Path | undefined;
+    static createPipeSegments(centerline: CurvePrimitive | CurveChain, pipeRadius: number): GeometryQuery | GeometryQuery[] | undefined;
     static createRectangleXY(x0: number, y0: number, x1: number, y1: number, z?: number, filletRadius?: number): Loop;
 }
 
@@ -4423,7 +4424,7 @@ export class RegionOps {
         outsideParts: AnyCurve[];
         coincidentParts: AnyCurve[];
     };
-    static splitToPathsBetweenFlagBreaks(source: CurveCollection | CurvePrimitive | undefined, makeClones: boolean): BagOfCurves | Path | CurvePrimitive | undefined;
+    static splitToPathsBetweenFlagBreaks(source: CurveCollection | CurvePrimitive | undefined, makeClones: boolean): BagOfCurves | Path | CurvePrimitive | Loop | undefined;
     static testPointInOnOutRegionXY(curves: AnyRegion, x: number, y: number): number;
 }
 
@@ -4827,6 +4828,7 @@ export class TorusPipe extends SolidPrimitive implements UVSurface, UVSurfaceIso
     cloneVectorY(): Vector3d;
     constantUSection(uFraction: number): CurveCollection | undefined;
     constantVSection(v: number): CurveCollection | undefined;
+    static createAlongArc(arc: Arc3d, minorRadius: number, capped: boolean): TorusPipe | undefined;
     static createDgnTorusPipe(center: Point3d, vectorX: Vector3d, vectorY: Vector3d, majorRadius: number, minorRadius: number, sweep: Angle, capped: boolean): TorusPipe | undefined;
     static createInFrame(frame: Transform, majorRadius: number, minorRadius: number, sweep: Angle, capped: boolean): TorusPipe | undefined;
     dispatchToGeometryHandler(handler: GeometryHandler): any;

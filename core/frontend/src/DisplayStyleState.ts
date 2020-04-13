@@ -6,23 +6,26 @@
  * @module Views
  */
 import {
-  ViewFlags,
-  ColorDef,
-  DisplayStyleProps,
-  RenderTexture,
-  SubCategoryOverride,
-  SkyBoxProps,
-  SkyBoxImageType,
-  SkyCubeProps,
-  EnvironmentProps,
-  GroundPlane,
-  DisplayStyleSettings,
-  DisplayStyle3dSettings,
   BackgroundMapProps,
   BackgroundMapSettings,
-  ContextRealityModelProps,
   Cartographic,
+  ColorDef,
+  ContextRealityModelProps,
+  DisplayStyle3dSettings,
+  DisplayStyleProps,
+  DisplayStyleSettings,
+  EnvironmentProps,
   GlobeMode,
+  GroundPlane,
+  LightSettings,
+  RenderTexture,
+  SkyBoxImageType,
+  SkyBoxProps,
+  SkyCubeProps,
+  SolarShadowSettings,
+  SubCategoryOverride,
+  ViewFlags,
+  calculateSolarDirection,
 } from "@bentley/imodeljs-common";
 import { ElementState } from "./EntityState";
 import { IModelConnection } from "./IModelConnection";
@@ -33,7 +36,6 @@ import { BackgroundMapTileTreeReference, BackgroundTerrainTileTreeReference, Til
 import { ContextRealityModelState } from "./ContextRealityModelState";
 import { RenderScheduleState } from "./RenderScheduleState";
 import { Viewport, ScreenViewport } from "./Viewport";
-import { calculateSolarDirection } from "./SolarCalculate";
 import { IModelApp } from "./IModelApp";
 import { BackgroundMapGeometry } from "./BackgroundMapGeometry";
 import { Vector3d, Point3d } from "@bentley/geometry-core";
@@ -64,7 +66,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   constructor(props: DisplayStyleProps, iModel: IModelConnection) {
     super(props, iModel);
     const styles = this.jsonProperties.styles;
-    const mapSettings = BackgroundMapSettings.fromJSON(styles?.backgroundMap || { });
+    const mapSettings = BackgroundMapSettings.fromJSON(styles?.backgroundMap || {});
 
     this._backgroundMap = mapSettings.applyTerrain ? new BackgroundTerrainTileTreeReference(mapSettings, iModel) : new BackgroundMapTileTreeReference(mapSettings, iModel);
     this._backgroundDrapeMap = new BackgroundMapTileTreeReference(mapSettings, iModel, false, true);
@@ -119,7 +121,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     this.backgroundMapSettings = this.backgroundMapSettings.clone(props);
     if (props.terrainSettings !== undefined && props.terrainSettings.providerName !== undefined || props.applyTerrain !== undefined)
       this._backgroundMap = ("CesiumWorldTerrain" === this.backgroundMapSettings.terrainSettings.providerName && this.backgroundMapSettings.applyTerrain) ? new BackgroundTerrainTileTreeReference(this.backgroundMapSettings, this.iModel) : new BackgroundMapTileTreeReference(this.backgroundMapSettings, this.iModel);
-
   }
 
   /** @internal */
@@ -610,7 +611,7 @@ export class SkyCube extends SkyBox implements SkyCubeProps {
 /** Describes the [[SkyBox]] and [[GroundPlane]] associated with a [[DisplayStyle3dState]].
  * @public
  */
-export class Environment implements EnvironmentProps {
+export class Environment {
   public readonly sky: SkyBox;
   public readonly ground: GroundPlane;
 
@@ -682,6 +683,10 @@ export class DisplayStyle3dState extends DisplayStyleState {
     }
   }
 
+  /** @alpha */
+  public get lights(): LightSettings { return this.settings.lights; }
+  public set lights(lights: LightSettings) { this.settings.lights = lights; }
+
   private onLoadSkyBoxParams(params?: SkyBox.CreateParams, vp?: Viewport): void {
     this._skyBoxParams = params;
     this._skyBoxParamsLoaded = true;
@@ -706,9 +711,11 @@ export class DisplayStyle3dState extends DisplayStyleState {
     return this._skyBoxParams;
   }
   /** @beta */
-  public get sunDirection(): Vector3d | undefined { return this.settings.sunDir; }
+  public get sunDirection(): Readonly<Vector3d> {
+    return this.settings.lights.solar.direction;
+  }
 
-  /** set the solar direction based on time value
+  /** Set the solar direction based on time value
    * @param time The time in unix time milliseconds.
    * @beta
    */
@@ -722,6 +729,16 @@ export class DisplayStyle3dState extends DisplayStyleState {
       cartoCenter = Cartographic.fromDegrees(-75.17035, 39.954927, 0.0);
     }
 
-    this.settings.sunDir = calculateSolarDirection(new Date(time), cartoCenter);
+    this.settings.lights = this.settings.lights.clone({ solar: { direction: calculateSolarDirection(new Date(time), cartoCenter) } });
+  }
+
+  /** Settings controlling shadow display.
+   * @beta
+   */
+  public get solarShadows(): SolarShadowSettings {
+    return this.settings.solarShadows;
+  }
+  public set solarShadows(settings: SolarShadowSettings) {
+    this.settings.solarShadows = settings;
   }
 }

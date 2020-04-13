@@ -10,7 +10,7 @@ import {
   Range1d,
   Range1dProps,
 } from "@bentley/geometry-core";
-import { Gradient } from "./Gradient";
+import { ThematicGradientSettingsProps, ThematicGradientSettings } from "./ThematicDisplay";
 
 /** Properties for display of analysis data
  * @alpha
@@ -22,19 +22,19 @@ export interface AnalysisStyleProps {
   normalChannelName?: string;
   displacementScale?: number;
   scalarRange?: Range1dProps;
-  scalarThematicSettings?: Gradient.ThematicSettingsProps;
+  scalarThematicSettings?: ThematicGradientSettingsProps;
   inputRange?: Range1dProps;
 }
 
 /** @alpha */
-export class AnalysisStyle implements AnalysisStyleProps {
+export class AnalysisStyle {
   public inputName?: string;
   public displacementChannelName?: string;
   public scalarChannelName?: string;
   public normalChannelName?: string;
   public displacementScale?: number;
   public scalarRange?: Range1d;
-  public scalarThematicSettings?: Gradient.ThematicSettings;
+  public scalarThematicSettings?: ThematicGradientSettings;
   public inputRange?: Range1d;
 
   public static fromJSON(json?: AnalysisStyleProps) {
@@ -48,7 +48,7 @@ export class AnalysisStyle implements AnalysisStyleProps {
     result.normalChannelName = json.normalChannelName;
     result.displacementScale = json.displacementScale;
     result.scalarRange = json.scalarRange ? Range1d.fromJSON(json.scalarRange) : undefined;
-    result.scalarThematicSettings = json.scalarThematicSettings ? Gradient.ThematicSettings.fromJSON(json.scalarThematicSettings) : undefined;
+    result.scalarThematicSettings = json.scalarThematicSettings ? ThematicGradientSettings.fromJSON(json.scalarThematicSettings) : undefined;
     result.inputRange = json.inputRange ? Range1d.fromJSON(json.inputRange) : undefined;
     return result;
   }

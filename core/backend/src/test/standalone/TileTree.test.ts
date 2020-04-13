@@ -114,7 +114,7 @@ describe("tile tree", () => {
     // NB: The model needs to contain at least one element with a range - otherwise tile tree will have null range.
     const geomBuilder = new GeometryStreamBuilder();
     geomBuilder.appendGeometry(Box.createDgnBox(Point3d.createZero(), Vector3d.unitX(), Vector3d.unitY(), new Point3d(0, 0, 2), 2, 2, 2, 2, true)!);
-    const category = SpatialCategory.insert(db, IModel.dictionaryId, "kittycat", { color: ColorDef.white, transp: 0, invisible: false });
+    const category = SpatialCategory.insert(db, IModel.dictionaryId, "kittycat", { color: ColorDef.white.toJSON(), transp: 0, invisible: false });
     const elemProps: GeometricElement3dProps = {
       classFullName: PhysicalObject.classFullName,
       model: modelId,

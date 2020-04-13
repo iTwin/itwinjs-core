@@ -8,7 +8,7 @@ import { GraphicParams, ColorDef, ColorByName, LinePixels } from "@bentley/imode
 import { DisplayParams } from "../../render/primitives/DisplayParams";
 
 export class FakeDisplayParams extends DisplayParams {
-  public constructor() { super(DisplayParams.Type.Linear, new ColorDef(), new ColorDef()); }
+  public constructor() { super(DisplayParams.Type.Linear, ColorDef.black, ColorDef.black); }
 }
 
 describe("DisplayParams creation tests", () => {
@@ -47,8 +47,8 @@ describe("DisplayParams equality tests", () => {
   });
 
   it("two DisplayParams created with different colors should be non-equal", () => {
-    const gf0: GraphicParams = new GraphicParams(); gf0.setLineColor(ColorDef.white);
-    const gf1: GraphicParams = new GraphicParams(); gf1.setLineColor(ColorDef.black);
+    const gf0: GraphicParams = new GraphicParams(); gf0.lineColor = ColorDef.white;
+    const gf1: GraphicParams = new GraphicParams(); gf1.lineColor = ColorDef.black;
     const dpMesh0: DisplayParams = DisplayParams.createForMesh(gf0);
     const dpMesh1: DisplayParams = DisplayParams.createForMesh(gf1);
     expect(dpMesh0.equals(dpMesh1)).to.be.false;
@@ -61,10 +61,10 @@ describe("DisplayParams equality tests", () => {
   });
 
   it("two DisplayParams created with different colors (same alpha) should be equal if merge-comparing", () => {
-    const cd0: ColorDef = new ColorDef(ColorByName.white); cd0.setAlpha(64);
-    const cd1: ColorDef = new ColorDef(ColorByName.black); cd1.setAlpha(64);
-    const gf0: GraphicParams = new GraphicParams(); gf0.setLineColor(cd0);
-    const gf1: GraphicParams = new GraphicParams(); gf1.setLineColor(cd1);
+    const cd0: ColorDef = ColorDef.create(ColorByName.white).withAlpha(64);
+    const cd1: ColorDef = ColorDef.create(ColorByName.black).withAlpha(64);
+    const gf0: GraphicParams = new GraphicParams(); gf0.lineColor = cd0;
+    const gf1: GraphicParams = new GraphicParams(); gf1.lineColor = cd1;
     const dpMesh0: DisplayParams = DisplayParams.createForMesh(gf0);
     const dpMesh1: DisplayParams = DisplayParams.createForMesh(gf1);
     expect(dpMesh0.equals(dpMesh1, DisplayParams.ComparePurpose.Merge)).to.be.true;

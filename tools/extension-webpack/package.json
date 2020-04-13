@@ -1,6 +1,6 @@
 {
   "name": "@bentley/extension-webpack-tools",
-  "version": "2.0.0-dev.57",
+  "version": "2.0.0-dev.64",
   "description": "Configuration and scripts for iModel.js Extensions.",
   "license": "MIT",
   "repository": {
@@ -25,7 +25,7 @@
   "types": "./index.d.ts",
   "dependencies": {
     "@babel/core": "7.7.4",
-    "@bentley/webpack-tools-core": "2.0.0-dev.57",
+    "@bentley/webpack-tools-core": "2.0.0-dev.64",
     "@svgr/webpack": "4.3.3",
     "babel-loader": "8.1.0",
     "babel-plugin-named-asset-import": "^0.3.5",
@@ -51,6 +51,7 @@
     "resolve-url-loader": "3.1.1",
     "source-map-loader": "^0.2.3",
     "style-loader": "^1.1.3",
+    "svg-sprite-loader": "4.2.1",
     "terser-webpack-plugin": "2.2.1",
     "ts-loader": "^6.0.4",
     "typescript": "~3.7.4",

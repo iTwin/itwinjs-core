@@ -310,7 +310,7 @@ export class BackgroundMapGeometry {
           clipPlanes.planes.push(ClipPlane.createNormalAndPoint(viewZ, center)!);
         }
 
-        const ellipsoidColor = new ColorDef(ColorByName.yellow);
+        const ellipsoidColor = ColorDef.create(ColorByName.yellow);
         builder.setSymbology(ellipsoidColor, ellipsoidColor, 1, 2);
         for (const clipPlane of clipPlanes.planes) {
           const plane = clipPlane.getPlane3d();

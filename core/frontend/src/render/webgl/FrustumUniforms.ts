@@ -57,12 +57,15 @@ export class FrustumUniforms {
   public readonly projectionMatrix = Matrix4d.createIdentity();
   private _useLogZ = false;
   private readonly _target: Target;
+  private readonly _worldUpVector = Vector3d.unitZ();
+  private readonly _viewUpVector = Vector3d.unitZ();
 
   // GPU state
   private readonly _planeData: Float32Array = new Float32Array(4);
   private readonly _frustumData: Float32Array = new Float32Array(3);
   public readonly projectionMatrix32 = new Matrix4();
   private readonly _logZData = new Float32Array(2);
+  private readonly _viewUpVector32 = new Float32Array(3);
 
   // SyncTarget
   public syncKey = 0;
@@ -83,6 +86,11 @@ export class FrustumUniforms {
   public bindProjectionMatrix(uniform: UniformHandle): void {
     if (!sync(this, uniform))
       uniform.setMatrix4(this.projectionMatrix32);
+  }
+
+  public bindUpVector(uniform: UniformHandle): void {
+    if (!sync(this, uniform))
+      uniform.setUniform3fv(this._viewUpVector32);
   }
 
   // uniform vec4 u_frustumPlanes; // { top, bottom, left, right }
@@ -189,6 +197,12 @@ export class FrustumUniforms {
     }
 
     this.viewMatrix.matrix.inverseState = InverseMatrixState.unknown;
+
+    this.viewMatrix.matrix.multiplyVector(this._worldUpVector, this._viewUpVector);
+    this._viewUpVector.normalizeInPlace();
+    this._viewUpVector32[0] = this._viewUpVector.x;
+    this._viewUpVector32[1] = this._viewUpVector.y;
+    this._viewUpVector32[2] = this._viewUpVector.z;
 
     this.projectionMatrix32.initFromMatrix4d(this.projectionMatrix);
   }

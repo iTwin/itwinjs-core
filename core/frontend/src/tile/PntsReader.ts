@@ -78,8 +78,9 @@ export function readPointCloudTileContent(stream: ByteStream, iModel: IModelConn
   const featureTable = new FeatureTable(1, modelId, BatchType.Primary);
   const features = new Mesh.Features(featureTable);
   features.add(new Feature(modelId), 1);
+  const voxelSize = featureValue.QUANTIZED_VOLUME_SCALE[0] / 256;
 
-  let renderGraphic = system.createPointCloud(new PointCloudArgs(qPoints, qParams, colors, features), iModel);
+  let renderGraphic = system.createPointCloud(new PointCloudArgs(qPoints, qParams, colors, features, voxelSize), iModel);
   renderGraphic = system.createBatch(renderGraphic!, PackedFeatureTable.pack(featureTable), range);
 
   if (yAxisUp) {

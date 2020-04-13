@@ -17,7 +17,7 @@ import {
 } from "@bentley/imodeljs-frontend";
 import { IconSpecUtilities } from "@bentley/ui-abstract";
 import {
-  FillCentered, LocalUiSettings, UiSettingsStatus, UiSettings,
+  SvgSprite, FillCentered, LocalUiSettings, UiSettingsStatus, UiSettings,
   HorizontalTabs, UiCore, LabeledToggle, Icon, UiSettingsResult,
 } from "@bentley/ui-core";
 import {
@@ -33,22 +33,22 @@ import { StatusBarFieldId } from "../../statusbar/StatusBarWidgetControl";
 import { UiFramework } from "../../UiFramework";
 
 import "./ToolAssistanceField.scss";
-const acceptPointIcon = require("./accept-point.svg"); // tslint:disable-line: no-var-requires
-const cursorClickIcon = require("./cursor-click.svg"); // tslint:disable-line: no-var-requires
-const clickLeftIcon = require("./mouse-click-left.svg"); // tslint:disable-line: no-var-requires
-const clickRightIcon = require("./mouse-click-right.svg"); // tslint:disable-line: no-var-requires
-const mouseWheelClickIcon = require("./mouse-click-wheel.svg"); // tslint:disable-line: no-var-requires
-const clickLeftDragIcon = require("./mouse-click-left-drag.svg"); // tslint:disable-line: no-var-requires
-const clickRightDragIcon = require("./mouse-click-right-drag.svg"); // tslint:disable-line: no-var-requires
-const clickMouseWheelDragIcon = require("./mouse-click-wheel-drag.svg"); // tslint:disable-line: no-var-requires
-const oneTouchTapIcon = require("./gesture-one-finger-tap.svg"); // tslint:disable-line: no-var-requires
-const oneTouchDoubleTapIcon = require("./gesture-one-finger-tap-double.svg"); // tslint:disable-line: no-var-requires
-const oneTouchDragIcon = require("./gesture-one-finger-drag.svg"); // tslint:disable-line: no-var-requires
-const twoTouchTapIcon = require("./gesture-two-finger-tap.svg"); // tslint:disable-line: no-var-requires
-const twoTouchDragIcon = require("./gesture-two-finger-drag.svg"); // tslint:disable-line: no-var-requires
-const twoTouchPinchIcon = require("./gesture-pinch.svg"); // tslint:disable-line: no-var-requires
-const touchCursorTapIcon = require("./touch-cursor-point.svg"); // tslint:disable-line: no-var-requires
-const touchCursorDragIcon = require("./touch-cursor-pan.svg"); // tslint:disable-line: no-var-requires
+import acceptPointIcon from "./accept-point.svg?sprite";
+import cursorClickIcon from "./cursor-click.svg?sprite";
+import clickLeftIcon from "./mouse-click-left.svg?sprite";
+import clickRightIcon from "./mouse-click-right.svg?sprite";
+import mouseWheelClickIcon from "./mouse-click-wheel.svg?sprite";
+import clickLeftDragIcon from "./mouse-click-left-drag.svg?sprite";
+import clickRightDragIcon from "./mouse-click-right-drag.svg?sprite";
+import clickMouseWheelDragIcon from "./mouse-click-wheel-drag.svg?sprite";
+import oneTouchTapIcon from "./gesture-one-finger-tap.svg?sprite";
+import oneTouchDoubleTapIcon from "./gesture-one-finger-tap-double.svg?sprite";
+import oneTouchDragIcon from "./gesture-one-finger-drag.svg?sprite";
+import twoTouchTapIcon from "./gesture-two-finger-tap.svg?sprite";
+import twoTouchDragIcon from "./gesture-two-finger-drag.svg?sprite";
+import twoTouchPinchIcon from "./gesture-pinch.svg?sprite";
+import touchCursorTapIcon from "./touch-cursor-point.svg?sprite";
+import touchCursorDragIcon from "./touch-cursor-pan.svg?sprite";
 
 /** Properties of [[ToolAssistanceField]] component.
  * @beta
@@ -541,7 +541,7 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
       image = (
         <div className={className}>
           {svgImage &&
-            <img src={svgImage} />
+            <SvgSprite src={svgImage} />
           }
         </div>
       );

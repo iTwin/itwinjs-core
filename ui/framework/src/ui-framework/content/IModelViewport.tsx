@@ -18,6 +18,7 @@ import { ViewportContentControl } from "./ViewportContentControl";
 import { DefaultViewOverlay } from "./DefaultViewOverlay";
 import { UiFramework } from "../UiFramework";
 import { connectIModelConnectionAndViewState } from "../redux/connectIModel";
+import { FrontstageManager } from "../../ui-framework";
 
 // create a HOC viewport component that supports unified selection
 // tslint:disable-next-line:variable-name
@@ -89,6 +90,8 @@ export class IModelViewportControl extends ViewportContentControl {
         // for convenience, if window defined bind viewport to window
         if (undefined !== window)
           (window as any).viewport = v;
+        if (!FrontstageManager.isLoading)
+          FrontstageManager.activeFrontstageDef?.setActiveViewFromViewport(v);
       }}
       getViewOverlay={this._getViewOverlay}
     />;
@@ -104,6 +107,8 @@ export class IModelViewportControl extends ViewportContentControl {
         // for convenience, if window defined bind viewport to window
         if (undefined !== window)
           (window as any).viewport = v;
+        if (!FrontstageManager.isLoading)
+          FrontstageManager.activeFrontstageDef?.setActiveViewFromViewport(v);
       }}
       getViewOverlay={this._getViewOverlay}
     />;

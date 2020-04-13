@@ -88,6 +88,14 @@ describe("TxnManager", () => {
     assert.isTrue(txns.hasPendingTxns);
     assert.isTrue(txns.hasLocalChanges);
 
+    txns.reverseSingleTxn();
+    assert.isFalse(txns.hasPendingTxns, "should not have pending txns if they all are reversed");
+    assert.isFalse(txns.hasLocalChanges);
+    txns.reinstateTxn();
+    assert.isTrue(txns.hasPendingTxns, "now there should be pending txns again");
+    assert.isTrue(txns.hasLocalChanges);
+    beforeUndo = afterUndo = 0; // reset this for tests below
+
     model = models.getModel(modelId);
     assert.isDefined(model.geometryGuid);
     const guid1 = model.geometryGuid;

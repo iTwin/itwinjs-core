@@ -9,6 +9,7 @@
 import * as React from "react";
 
 import { NavigationArea } from "@bentley/ui-ninezone";
+import { ScreenViewport } from "@bentley/imodeljs-frontend";
 import { UiShowHideManager } from "../utils/UiShowHideManager";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { NavigationAidControl } from "../navigationaids/NavigationAidControl";
@@ -19,9 +20,9 @@ import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
 import { UiFramework } from "../UiFramework";
 import { CommonProps } from "@bentley/ui-core";
 
-function createNavigationAidControl(activeContentControl: ContentControl | undefined, navigationAidId: string): NavigationAidControl | undefined {
+function createNavigationAidControl(activeContentControl: ContentControl | undefined, navigationAidId: string, activeViewport: ScreenViewport | undefined): NavigationAidControl | undefined {
   // istanbul ignore else
-  if (!activeContentControl || !navigationAidId)
+  if (!activeContentControl || !navigationAidId || (activeViewport !== activeContentControl.viewport))
     return undefined;
 
   const viewport = activeContentControl.viewport;
@@ -48,11 +49,13 @@ export interface NavigationAidHostProps {
  */
 export function NavigationAidHost(props: NavigationAidHostProps) {
   const [activeContentControl, setActiveContentControl] = React.useState(() => ContentViewManager.getActiveContentControl());
+  const [activeContentViewport, setActiveContentViewport] = React.useState(() => activeContentControl?.viewport);
   const [navigationAidId, setNavigationAidId] = React.useState(() => activeContentControl ? activeContentControl.navigationAidControl : "");
 
   React.useEffect(() => {
     const handleContentControlActivated = (args: ContentControlActivatedEventArgs) => {
       setActiveContentControl(args.activeContentControl);
+      setActiveContentViewport(args.activeContentControl.viewport);
       setNavigationAidId(args.activeContentControl.navigationAidControl);
     };
 
@@ -80,7 +83,7 @@ export function NavigationAidHost(props: NavigationAidHostProps) {
     };
   }, [activeViewClass]);
 
-  const navigationAidControl = React.useMemo(() => createNavigationAidControl(activeContentControl, navigationAidId), [activeContentControl, navigationAidId]);
+  const navigationAidControl = React.useMemo(() => createNavigationAidControl(activeContentControl, navigationAidId, activeContentViewport), [activeContentControl, navigationAidId, activeContentViewport]);
 
   const divStyle: React.CSSProperties = { minWidth: props.minWidth ? props.minWidth : "64px", minHeight: props.minHeight ? props.minHeight : "64px" };
   return (

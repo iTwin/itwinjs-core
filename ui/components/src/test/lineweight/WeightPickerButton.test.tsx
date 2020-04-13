@@ -11,7 +11,7 @@ import { WeightPickerButton } from "../../ui-components/lineweight/WeightPickerB
 import { ColorByName, ColorDef } from "@bentley/imodeljs-common";
 
 describe("<WeightPickerButton/>", () => {
-  const colorDef = new ColorDef(ColorByName.blue);
+  const colorDef = ColorDef.create(ColorByName.blue);
   const activeWeight = 3;
   const weights = [1, 2, 3, 4, 5, 6];
 

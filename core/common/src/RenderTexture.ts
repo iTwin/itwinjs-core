@@ -50,7 +50,7 @@ export abstract class RenderTexture implements IDisposable {
  */
 export namespace RenderTexture {
   /** Enumerates the types of [[RenderTexture]]s. */
-  export const enum Type { // tslint:disable-line:no-const-enum
+  export enum Type {
     /** An image applied to a surface, with support for mip-mapping and repeating. */
     Normal,
     /** An image containing any number of text glyphs, used for efficiently rendering readable small text. */

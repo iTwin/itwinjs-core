@@ -2,7 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-@import "../index.scss";
+@import "../style/themecolors";
+@import "../z-index";
 
 @function background-line($orientation) {
   @return linear-gradient(

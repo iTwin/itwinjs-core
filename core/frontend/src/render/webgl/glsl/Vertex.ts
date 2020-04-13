@@ -76,19 +76,19 @@ const computeInstancedRtcMatrix = `
 
 /** @internal */
 export function addInstancedRtcMatrix(vert: VertexShaderBuilder): void {
-  if (vert.usesInstancedGeometry) {
-    assert(undefined !== vert.find("g_modelMatrixRTC")); // set up in VertexShaderBuilder constructor...
-    if (undefined === vert.find("g_instancedModelMatrix")) {
-      vert.addUniform("u_instanced_rtc", VariableType.Mat4, (prog) => {
-        prog.addGraphicUniform("u_instanced_rtc", (uniform, params) => {
-          const modelt = params.geometry.asInstanced!.getRtcOnlyTransform();
-          uniform.setMatrix4(Matrix4.fromTransform(modelt));
-        });
-      });
-      vert.addGlobal("g_instancedRtcMatrix", VariableType.Mat4);
-      vert.addInitializer(computeInstancedRtcMatrix);
-    }
-  }
+  if (!vert.usesInstancedGeometry)
+    return;
+
+  assert(undefined !== vert.find("g_modelMatrixRTC")); // set up in VertexShaderBuilder constructor...
+  vert.addUniform("u_instanced_rtc", VariableType.Mat4, (prog) => {
+    prog.addGraphicUniform("u_instanced_rtc", (uniform, params) => {
+      const modelt = params.geometry.asInstanced!.getRtcOnlyTransform();
+      uniform.setMatrix4(Matrix4.fromTransform(modelt));
+    });
+  });
+
+  vert.addGlobal("g_instancedRtcMatrix", VariableType.Mat4);
+  vert.addInitializer(computeInstancedRtcMatrix);
 }
 
 /** @internal */

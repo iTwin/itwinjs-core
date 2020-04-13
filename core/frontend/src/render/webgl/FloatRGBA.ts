@@ -25,7 +25,6 @@ function computeTbgr(r: number, g: number, b: number, a: number): number {
   return tbgr >>> 0; // triple shift removes sign
 }
 
-const floatColorDef = ColorDef.white.clone();
 export abstract class FloatColor {
   protected readonly _components: Float32Array;
   private _tbgr: number;
@@ -53,8 +52,7 @@ export abstract class FloatColor {
     if (tbgr === this.tbgr)
       return;
 
-    floatColorDef.tbgr = tbgr;
-    const c = floatColorDef.colors;
+    const c = ColorDef.getColors(tbgr);
     this.setComponents(c.r / 255, c.g / 255, c.b / 255, 1.0 - c.t / 255);
     this._tbgr = tbgr;
   }
@@ -68,15 +66,6 @@ export abstract class FloatColor {
   protected setRgbaComponents(r: number, g: number, b: number, a: number): void {
     this._tbgr = this.maskTbgr(computeTbgr(r, g, b, a));
     this.setComponents(r, g, b, a);
-  }
-
-  public toColorDef(out?: ColorDef): ColorDef {
-    if (undefined === out)
-      out = new ColorDef(this.tbgr);
-    else
-      out.tbgr = this.tbgr;
-
-    return out;
   }
 }
 

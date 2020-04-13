@@ -525,7 +525,7 @@ describe("Viewport changed events", async () => {
       vp.saveViewUndo();
 
       // Override subcategories directly on display style => no event
-      const ovr = SubCategoryOverride.fromJSON({ color: ColorDef.green });
+      const ovr = SubCategoryOverride.fromJSON({ color: ColorDef.green.tbgr });
       mon.expect(ChangeFlag.None, () => vp.displayStyle.overrideSubCategory("0x123", ovr));
 
       // Override by replacing display style on Viewport
@@ -546,7 +546,7 @@ describe("Viewport changed events", async () => {
 
       // Apply different override to same subcategory
       vp.saveViewUndo();
-      mon.expect(ChangeFlag.DisplayStyle, () => vp.overrideSubCategory("0x123", SubCategoryOverride.fromJSON({ color: ColorDef.red })));
+      mon.expect(ChangeFlag.DisplayStyle, () => vp.overrideSubCategory("0x123", SubCategoryOverride.fromJSON({ color: ColorDef.red.tbgr })));
     });
   });
 
@@ -1027,10 +1027,10 @@ describe("Per-model category visibility overrides", () => {
     vp.changeCategoryDisplay("0x2d", false);
 
     // Override 30, 32, and 33 to be invisible. Override color of 30, 33, 18, and 2e. (2e's category is turned off).
-    vp.overrideSubCategory("0x30", SubCategoryOverride.fromJSON({ color: ColorDef.green, invisible: true }));
-    vp.overrideSubCategory("0x18", SubCategoryOverride.fromJSON({ color: ColorDef.red }));
-    vp.overrideSubCategory("0x2e", SubCategoryOverride.fromJSON({ color: ColorDef.blue }));
-    vp.overrideSubCategory("0x33", SubCategoryOverride.fromJSON({ color: ColorDef.white, invisible: true }));
+    vp.overrideSubCategory("0x30", SubCategoryOverride.fromJSON({ color: ColorDef.green.tbgr, invisible: true }));
+    vp.overrideSubCategory("0x18", SubCategoryOverride.fromJSON({ color: ColorDef.red.tbgr }));
+    vp.overrideSubCategory("0x2e", SubCategoryOverride.fromJSON({ color: ColorDef.blue.tbgr }));
+    vp.overrideSubCategory("0x33", SubCategoryOverride.fromJSON({ color: ColorDef.white.tbgr, invisible: true }));
     vp.changeSubCategoryDisplay("0x32", false); // adds an override of { invisible: true }
 
     // With no per-model overrides, expect subcategory appearance overrides for invisible subcategories not to be loaded.

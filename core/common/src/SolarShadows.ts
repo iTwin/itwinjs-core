@@ -7,76 +7,83 @@
  */
 
 import { JsonUtils } from "@bentley/bentleyjs-core";
+import { ColorByName } from "./ColorByName";
+import { RgbColor } from "./RgbColor";
 import {
-  ColorByName,
   ColorDef,
   ColorDefProps,
 } from "./ColorDef";
 
-/** JSON representation of a solar shadow settings.
+/** JSON representation of [[SolarShadowSettings]].
  * @beta
  */
-export interface SolarShadowProps {
-  /** Shadow color */
+export interface SolarShadowSettingsProps {
+  /** Shadow color. Default: [[ColorByName.grey]]. */
   color?: ColorDefProps;
-  /** Shadow bias - a nonzero bias is required to avoid self-shadowing effects. */
+  /** @internal */
   bias?: number;
 }
 
-/** Namespace containing types controlling how solar shadows should be drawn.
+const defaultColor = RgbColor.fromColorDef(ColorDef.fromTbgr(ColorByName.grey));
+
+/** Settings controlling display of solar shadows for a [[DisplayStyle3dSettings]].
+ * Solar shadows are imposed as a color scaling on geometry occluded from solar lighting.
  * @beta
  */
-export namespace SolarShadows {
-  /** JSON representation of a solar shadow settings.
-   * @beta
-   */
-  export interface Props {
-    /** Shadow color */
-    color?: ColorDefProps;
-    /** Shadow bias - a nonzero bias is required to avoid self-shadowing effects. */
-    bias?: number;
+export class SolarShadowSettings {
+  /** Shadow color. */
+  public readonly color: RgbColor;
+  /** @internal */
+  public readonly bias: number;
+
+  private constructor(props: SolarShadowSettingsProps) {
+    this.bias = JsonUtils.asDouble(props.bias, 0.001);
+    if (undefined === props.color || null === props.color)
+      this.color = defaultColor;
+    else
+      this.color = RgbColor.fromColorDef(ColorDef.fromJSON(props.color));
   }
 
-  /** Solar shadows are imposed as a color scaling on geometry that is occluded from solar lighting.  Shadows are imposed independently
-   * of solar lighting and is applied to unlit geometry such as reality models and map tiles.
-   * @beta
+  public static defaults = new SolarShadowSettings({ });
+
+  public static fromJSON(props?: SolarShadowSettingsProps): SolarShadowSettings {
+    return props ? new SolarShadowSettings(props) : this.defaults;
+  }
+
+  public toJSON(): SolarShadowSettingsProps | undefined {
+    const defaults = SolarShadowSettings.defaults;
+    if (this.equals(defaults))
+      return undefined;
+
+    const props: SolarShadowSettingsProps = { };
+    if (!this.color.equals(defaults.color))
+      props.color = this.color.toColorDef().toJSON();
+
+    if (this.bias !== defaults.bias)
+      props.bias = this.bias;
+
+    return props;
+  }
+
+  public equals(rhs: SolarShadowSettings): boolean {
+    return this.bias === rhs.bias && this.color.equals(rhs.color);
+  }
+
+  /** Create a copy of these settings.
+   * @param changedProps Any property explicitly defined will be overridden in the copy.
+   * @returns A settings object equivalent to this one except for any properties explicitly overridden by `changedProps`.
    */
-  export class Settings implements Props {
-    private static readonly _defaultBias = .001;
-    /** Shadow color */
-    public color: ColorDef;
-    /** Shadow bias - a nonzero bias is required to avoid self-shadowing effects.
-     * @alpha
-     */
-    public bias: number;
+  public clone(changedProps?: SolarShadowSettingsProps): SolarShadowSettings {
+    if (!changedProps)
+      return this;
 
-    public constructor(props?: SolarShadowProps) {
-      this.bias = props ? JsonUtils.asDouble(props.bias, SolarShadows.Settings._defaultBias) : SolarShadows.Settings._defaultBias;
-      this.color = (props !== undefined && props.color !== undefined) ? ColorDef.fromJSON(props.color) : new ColorDef(ColorByName.grey);
-    }
+    const props = this.toJSON() ?? { };
+    if (changedProps.color)
+      props.color = changedProps.color;
 
-    public clone(result?: SolarShadows.Settings): SolarShadows.Settings {
-      if (undefined === result)
-        return new SolarShadows.Settings(this);
+    if (undefined !== changedProps.bias)
+      props.bias = changedProps.bias;
 
-      result.color.setFrom(this.color);
-      result.bias = this.bias;
-      return result;
-    }
-
-    public static fromJSON(props?: Props): Settings { return new Settings(props); }
-    public toJSON(): Props {
-      return {
-        bias: this.bias,
-        color: this.color,
-      };
-    }
-
-    public equals(other: SolarShadows.Settings): boolean {
-      if (this === other)
-        return true;
-
-      return this.bias === other.bias && this.color.equals(other.color);
-    }
+    return SolarShadowSettings.fromJSON(props);
   }
 }

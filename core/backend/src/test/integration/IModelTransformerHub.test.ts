@@ -168,7 +168,7 @@ describe("IModelTransformerHub (#integration)", () => {
         transformer.dispose();
         await targetDb.concurrencyControl.request(requestContext);
         targetDb.saveChanges();
-        assert.isFalse(targetDb.briefcase.nativeDb.hasSavedChanges());
+        assert.isFalse(targetDb.briefcase.nativeDb.hasPendingTxns());
         await targetDb.pushChanges(requestContext, "Should not actually push because there are no changes");
       }
 
@@ -275,7 +275,7 @@ describe("IModelTransformerHub (#integration)", () => {
 
       // push sourceDb schema changes
       await sourceDb.concurrencyControl.request(requestContext);
-      assert.isTrue(sourceDb.nativeDb.hasSavedChanges(), "Expect importSchemas to have saved changes");
+      assert.isTrue(sourceDb.nativeDb.hasPendingTxns(), "Expect importSchemas to have saved changes");
       assert.isFalse(sourceDb.nativeDb.hasUnsavedChanges(), "Expect no unsaved changes after importSchemas");
       await sourceDb.pushChanges(requestContext, "Import schemas to upgrade BisCore"); // should actually push schema changes
       assert.isFalse(sourceDb.concurrencyControl.hasSchemaLock);
@@ -284,7 +284,7 @@ describe("IModelTransformerHub (#integration)", () => {
       await sourceDb.importSchemas(requestContext, [BisCoreSchema.schemaFilePath, GenericSchema.schemaFilePath]);
       assert.isTrue(sourceDb.concurrencyControl.hasSchemaLock);
       assert.isTrue(sourceDb.concurrencyControl.hasSchemaLock);
-      assert.isFalse(sourceDb.nativeDb.hasSavedChanges(), "Expect importSchemas to be a no-op");
+      assert.isFalse(sourceDb.nativeDb.hasPendingTxns(), "Expect importSchemas to be a no-op");
       assert.isFalse(sourceDb.nativeDb.hasUnsavedChanges(), "Expect importSchemas to be a no-op");
       sourceDb.saveChanges(); // will be no changes to save in this case
       await sourceDb.pushChanges(requestContext, "Import schemas again"); // will be no changes to push in this case

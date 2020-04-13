@@ -34,7 +34,8 @@ export function createNumericInput(props: NumericInputProps, useFloat: boolean =
   input.onchange = () => {
     try {
       const value = useFloat ? parseFloat(input.value) : parseInt(input.value, 10);
-      props.handler(value, input);
+      if (!Number.isNaN(value))
+        props.handler(value, input);
     } catch (_ex) {
       //
     }

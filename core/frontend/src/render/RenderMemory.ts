@@ -6,8 +6,6 @@
  * @module Rendering
  */
 
-// tslint:disable:no-const-enum
-
 /** Contains metadata about memory consumed by the render system or aspect thereof.
  * @internal
  */
@@ -32,7 +30,7 @@ export namespace RenderMemory {
   }
 
   /** @internal */
-  export const enum BufferType {
+  export enum BufferType {
     Surfaces = 0,
     VisibleEdges,
     SilhouetteEdges,
@@ -83,7 +81,7 @@ export namespace RenderMemory {
   }
 
   /** @internal */
-  export const enum ConsumerType {
+  export enum ConsumerType {
     Textures = 0,
     VertexTables,
     FeatureTables,

@@ -1,6 +1,6 @@
 {
   "name": "@bentley/presentation-frontend",
-  "version": "2.0.0-dev.57",
+  "version": "2.0.0-dev.64",
   "description": "Frontend of iModel.js Presentation library",
   "main": "lib/presentation-frontend.js",
   "typings": "lib/presentation-frontend",
@@ -22,14 +22,14 @@
     "url": "http://www.bentley.com"
   },
   "scripts": {
-    "copy:locale": "cpx \"../common/assets/**/*\" \"./lib/public\"",
-    "copy:assets": "cpx \"./src/**/*.json\" \"./lib\"",
+    "copy:locale": "cpx \"../common/assets/**/*.json\" ./lib/public",
+    "copy:assets": "cpx \"./src/**/*.json\" ./lib",
     "build": "npm run copy:assets && npm run copy:locale && npm run pseudolocalize && npm run extract && tsc 1>&2",
     "build:watch": "tsc -w",
     "clean": "rimraf lib .rush",
     "cover": "nyc npm test",
     "docs": "npm run docs:reference && npm run docs:changelog",
-    "docs:changelog": "cpx \"./CHANGELOG.md\" ../../generated-docs/presentation/presentation-frontend",
+    "docs:changelog": "cpx ./CHANGELOG.md ../../generated-docs/presentation/presentation-frontend",
     "docs:reference": "node ./node_modules/@bentley/build-tools/scripts/docs.js --includes=../../generated-docs/extract --json=../../generated-docs/presentation/presentation-frontend/file.json --tsIndexFile=presentation-frontend.ts --onlyJson %TYPEDOC_THEME%",
     "extract": "node ./node_modules/@bentley/build-tools/scripts/extract.js --fileExt=ts --extractFrom=./src/test --recursive --out=../../generated-docs/extract",
     "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=presentation-frontend",
@@ -44,20 +44,20 @@
     "lodash": "^4.17.10"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.0.0-dev.57",
-    "@bentley/imodeljs-i18n": "^2.0.0-dev.57",
-    "@bentley/imodeljs-common": "^2.0.0-dev.57",
-    "@bentley/imodeljs-frontend": "^2.0.0-dev.57",
-    "@bentley/presentation-common": "^2.0.0-dev.57"
+    "@bentley/bentleyjs-core": "^2.0.0-dev.64",
+    "@bentley/imodeljs-i18n": "^2.0.0-dev.64",
+    "@bentley/imodeljs-common": "^2.0.0-dev.64",
+    "@bentley/imodeljs-frontend": "^2.0.0-dev.64",
+    "@bentley/presentation-common": "^2.0.0-dev.64"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.0.0-dev.57",
-    "@bentley/build-tools": "2.0.0-dev.57",
-    "@bentley/imodeljs-i18n": "2.0.0-dev.57",
-    "@bentley/imodeljs-common": "2.0.0-dev.57",
-    "@bentley/imodeljs-frontend": "2.0.0-dev.57",
-    "@bentley/imodeljs-clients": "2.0.0-dev.57",
-    "@bentley/presentation-common": "2.0.0-dev.57",
+    "@bentley/bentleyjs-core": "2.0.0-dev.64",
+    "@bentley/build-tools": "2.0.0-dev.64",
+    "@bentley/imodeljs-i18n": "2.0.0-dev.64",
+    "@bentley/imodeljs-common": "2.0.0-dev.64",
+    "@bentley/imodeljs-frontend": "2.0.0-dev.64",
+    "@bentley/imodeljs-clients": "2.0.0-dev.64",
+    "@bentley/presentation-common": "2.0.0-dev.64",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/chai-jest-snapshot": "^1.3.0",

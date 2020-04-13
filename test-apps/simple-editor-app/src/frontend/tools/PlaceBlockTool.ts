@@ -136,9 +136,9 @@ export class PlaceBlockTool extends PrimitiveToolEx {
 
     const builderAccVis = context.createGraphicBuilder(GraphicType.WorldDecoration);
     const builderAccHid = context.createGraphicBuilder(GraphicType.WorldOverlay);
-    const colorAccVis = ColorDef.white.adjustForContrast(context.viewport.view.backgroundColor);
-    const colorAccHid = colorAccVis.clone(); colorAccHid.setAlpha(100);
-    const fillAccVis = context.viewport.hilite.color.clone(); fillAccVis.setAlpha(50);
+    const colorAccVis = ColorDef.white.adjustedForContrast(context.viewport.view.backgroundColor);
+    const colorAccHid = colorAccVis.withAlpha(100);
+    const fillAccVis = context.viewport.hilite.color.withAlpha(50);
 
     builderAccVis.setSymbology(colorAccVis, fillAccVis, 3);
     builderAccHid.setSymbology(colorAccHid, fillAccVis, 1, LinePixels.Code2);

@@ -40,6 +40,16 @@ import {
   UniqueViewportSets,
 } from "../ViewportSet";
 
+/** Details about any tiles not handled by [[TileAdmin]]. At this time, that means OrbitGT point cloud tiles.
+ * Used for bookkeeping by SelectedAndReadyTiles
+ * @alpha
+ */
+export interface ExternalTileStatistics {
+  requested: number;
+  selected: number;
+  ready: number;
+}
+
 /** Describes two sets of tiles associated with a viewport's current scene.
  * @internal
  */
@@ -52,6 +62,10 @@ export interface SelectedAndReadyTiles {
    * current view, e.g., because sibling tiles are not yet ready to draw.
    */
   readonly ready: Set<Tile>;
+  /** Details about any tiles not handled by [[TileAdmin]]. At this time, that means OrbitGT point cloud tiles.
+   * @alpha
+   */
+  readonly external: ExternalTileStatistics;
 }
 
 /** Provides functionality associated with [[Tile]]s, mostly in the area of scheduling requests for tile content.
@@ -170,6 +184,12 @@ export abstract class TileAdmin {
    * @internal
    */
   public abstract addTilesForViewport(vp: Viewport, selected: Tile[], ready: Set<Tile>): void;
+
+  /** Disclose statistics about tiles that are handled externally from TileAdmin. At this time, that means OrbitGT point cloud tiles.
+   * These statistics are included in the return value of [[getTilesForViewport]].
+   * @internal
+   */
+  public abstract addExternalTilesForViewport(vp: Viewport, statistics: ExternalTileStatistics): void;
 
   /** Clears the sets of tiles associated with a viewport's current scene.
    * @internal
@@ -735,7 +755,12 @@ class Admin extends TileAdmin {
 
   public getNumRequestsForViewport(vp: Viewport): number {
     const requests = this.getRequestsForViewport(vp);
-    return undefined !== requests ? requests.size : 0;
+    let count = requests?.size ?? 0;
+    const tiles = this.getTilesForViewport(vp);
+    if (tiles)
+      count += tiles.external.requested;
+
+    return count;
   }
 
   public getRequestsForViewport(vp: Viewport): Set<Tile> | undefined {
@@ -753,7 +778,7 @@ class Admin extends TileAdmin {
   public addTilesForViewport(vp: Viewport, selected: Tile[], ready: Set<Tile>): void {
     const entry = this.getTilesForViewport(vp);
     if (undefined === entry) {
-      this._selectedAndReady.set(vp, { ready, selected: new Set<Tile>(selected) });
+      this._selectedAndReady.set(vp, { ready, selected: new Set<Tile>(selected), external: { selected: 0, requested: 0, ready: 0 } });
       return;
     }
 
@@ -762,6 +787,18 @@ class Admin extends TileAdmin {
 
     for (const tile of ready)
       entry.ready.add(tile);
+  }
+
+  public addExternalTilesForViewport(vp: Viewport, statistics: ExternalTileStatistics): void {
+    const entry = this.getTilesForViewport(vp);
+    if (!entry) {
+      this._selectedAndReady.set(vp, { ready: new Set<Tile>(), selected: new Set<Tile>(), external: { ...statistics } });
+      return;
+    }
+
+    entry.external.requested += statistics.requested;
+    entry.external.selected += statistics.selected;
+    entry.external.ready += statistics.ready;
   }
 
   public clearTilesForViewport(vp: Viewport): void {

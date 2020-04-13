@@ -56,7 +56,7 @@ describe("ExcludedElements", () => {
     let model = imodel1.models.getModel(IModel.dictionaryId) as DictionaryModel;
     expect(model).not.to.be.undefined;
     let settings: DisplayStyleSettingsProps = {
-      backgroundColor: ColorDef.blue,
+      backgroundColor: ColorDef.blue.toJSON(),
       excludedElements: undefined,
       viewflags: ViewFlags.fromJSON({
         renderMode: RenderMode.SolidFill,
@@ -91,7 +91,7 @@ describe("ExcludedElements", () => {
     model = imodel2.models.getModel(IModel.dictionaryId) as DictionaryModel;
     expect(model).not.to.be.undefined;
     settings = {
-      backgroundColor: ColorDef.blue,
+      backgroundColor: ColorDef.blue.toJSON(),
       excludedElements: undefined,
       viewflags: ViewFlags.fromJSON({
         renderMode: RenderMode.SolidFill,
@@ -126,7 +126,7 @@ describe("ExcludedElements", () => {
     model = imodel4.models.getModel(IModel.dictionaryId) as DictionaryModel;
     expect(model).not.to.be.undefined;
     settings = {
-      backgroundColor: ColorDef.blue,
+      backgroundColor: ColorDef.blue.toJSON(),
       excludedElements: undefined,
       viewflags: ViewFlags.fromJSON({
         renderMode: RenderMode.SolidFill,
@@ -161,7 +161,7 @@ describe("ExcludedElements", () => {
     model = imodel5.models.getModel(IModel.dictionaryId) as DictionaryModel;
     expect(model).not.to.be.undefined;
     settings = {
-      backgroundColor: ColorDef.blue,
+      backgroundColor: ColorDef.blue.toJSON(),
       excludedElements: undefined,
       viewflags: ViewFlags.fromJSON({
         renderMode: RenderMode.SolidFill,
@@ -199,7 +199,7 @@ describe("ExcludedElements", () => {
     let model = imodel1.models.getModel(IModel.dictionaryId) as DictionaryModel;
     expect(model).not.to.be.undefined;
     let settings: DisplayStyleSettingsProps = {
-      backgroundColor: ColorDef.blue,
+      backgroundColor: ColorDef.blue.toJSON(),
       excludedElements: [elementIds[0], elementIds[2]],
       viewflags: ViewFlags.fromJSON({
         renderMode: RenderMode.SolidFill,
@@ -236,7 +236,7 @@ describe("ExcludedElements", () => {
     model = imodel2.models.getModel(IModel.dictionaryId) as DictionaryModel;
     expect(model).not.to.be.undefined;
     settings = {
-      backgroundColor: ColorDef.blue,
+      backgroundColor: ColorDef.blue.toJSON(),
       excludedElements: [elementIds[elementIds.length - 1], elementIds[elementIds.length - 2]],
       viewflags: ViewFlags.fromJSON({
         renderMode: RenderMode.SolidFill,
@@ -272,7 +272,7 @@ describe("ExcludedElements", () => {
     model = imodel4.models.getModel(IModel.dictionaryId) as DictionaryModel;
     expect(model).not.to.be.undefined;
     settings = {
-      backgroundColor: ColorDef.blue,
+      backgroundColor: ColorDef.blue.toJSON(),
       excludedElements: [elementIds[2], elementIds[1]],
       viewflags: ViewFlags.fromJSON({
         renderMode: RenderMode.SolidFill,
@@ -308,7 +308,7 @@ describe("ExcludedElements", () => {
     model = imodel5.models.getModel(IModel.dictionaryId) as DictionaryModel;
     expect(model).not.to.be.undefined;
     settings = {
-      backgroundColor: ColorDef.blue,
+      backgroundColor: ColorDef.blue.toJSON(),
       excludedElements: [elementIds[0], elementIds[elementIds.length - 1]],
       viewflags: ViewFlags.fromJSON({
         renderMode: RenderMode.SolidFill,

@@ -229,8 +229,7 @@ describe("EmphasizeElements tests", () => {
     expectAppearance(ColorDef.red, FeatureOverrideType.AlphaOnly, { rgb: black, transparency: 0 }); // EE does not permit overriding only transparency to opaque...
     expectAppearance(ColorDef.red, FeatureOverrideType.ColorAndAlpha, { rgb, transparency: 0 });
 
-    const red = ColorDef.red.clone();
-    red.setTransparency(184);
+    const red = ColorDef.red.withTransparency(184);
     const transparency = 184 / 255;
 
     expectAppearance(red, FeatureOverrideType.ColorOnly, { rgb });
@@ -249,11 +248,10 @@ describe("EmphasizeElements tests", () => {
     overrides.push({ color: ColorDef.from(200, 150, 100, 50), overrideType: FeatureOverrideType.AlphaOnly });
     overrides.push({ color: ColorDef.from(200, 150, 100, 50), overrideType: FeatureOverrideType.ColorAndAlpha });
 
-    const color = new ColorDef();
     for (const entry of overrides) {
       const key = emph.createOverrideKey(entry.color, entry.overrideType);
       assert(undefined !== key);
-      const overrideType = emph.getOverrideFromKey(key!, color);
+      const { overrideType, color } = { ...emph.getOverrideFromKey(key!) };
       assert(overrideType === entry.overrideType);
       switch (overrideType) {
         case FeatureOverrideType.ColorOnly:
@@ -321,12 +319,10 @@ describe("EmphasizeElements tests", () => {
         for (const key of aOvr.keys()) {
           expectEqualSets(after.getOverriddenElementsByKey(key), before.getOverriddenElementsByKey(key));
 
-          const aColor = new ColorDef();
-          const bColor = new ColorDef();
-          const aOvrType = after.getOverrideFromKey(key, aColor);
-          const bOvrType = before.getOverrideFromKey(key, bColor);
-          expect(aOvrType).to.equal(bOvrType);
-          expect(aColor.tbgr).to.equal(bColor.tbgr);
+          const aOvrs = after.getOverrideFromKey(key);
+          const bOvrs = before.getOverrideFromKey(key);
+          expect(aOvrs.overrideType).to.equal(bOvrs.overrideType);
+          expect(aOvrs.color.tbgr).to.equal(bOvrs.color.tbgr);
         }
       }
 

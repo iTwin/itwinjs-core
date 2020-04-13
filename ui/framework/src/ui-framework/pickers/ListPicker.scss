@@ -3,7 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 @import "~@bentley/ui-ninezone/lib/ui-ninezone/footer/_variables";
-@import "~@bentley/ui-core/lib/ui-core/index";
+@import "~@bentley/ui-core/lib/ui-core/style/themecolors";
+@import "~@bentley/ui-core/lib/ui-core/z-index";
+@import "~@bentley/ui-core/lib/ui-core/scrollbar";
+@import "~@bentley/ui-core/lib/ui-core/typography";
 
 $no-shadow: none;
 $shadow: drop-shadow(0 1px 0 $buic-text-color-reverse);
@@ -278,4 +281,3 @@ $item-height: 32px;
 
   @include title;
 }
-

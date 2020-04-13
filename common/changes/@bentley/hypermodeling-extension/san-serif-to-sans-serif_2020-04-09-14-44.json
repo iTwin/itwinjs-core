@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/hypermodeling-extension",
+      "comment": "#301812 #288370 Fix label font specifications. Added max label width option to Marker.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/hypermodeling-extension",
+  "email": "Brien.Bastings@bentley.com"
+}

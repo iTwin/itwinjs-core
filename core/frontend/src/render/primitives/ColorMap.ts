@@ -46,9 +46,7 @@ export class ColorMap extends IndexMap<number> {
     }
   }
 
-  private static _scratchColorDef = new ColorDef();
-  private static isTranslucent(color: number) {
-    this._scratchColorDef.tbgr = color;
-    return 255 !== this._scratchColorDef.getAlpha();
+  private static isTranslucent(tbgr: number) {
+    return !ColorDef.isOpaque(tbgr);
   }
 }

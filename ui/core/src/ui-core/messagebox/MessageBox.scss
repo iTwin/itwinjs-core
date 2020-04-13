@@ -2,7 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
- @import "../index.scss";
+ @import "../icons/variables";
+ @import "../style/colors";
+ @import "../style/themecolors";
+ @import "../style/baseline";
 
 .core-message-box-container {
   display: flex;

@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-@import "~@bentley/ui-core/lib/ui-core/index.scss";
+@import "~@bentley/ui-core/lib/ui-core/style/typography";
+@import "~@bentley/ui-core/lib/ui-core/style/space";
+@import "~@bentley/ui-core/lib/ui-core/style/themecolors";
 
 .uifw-sections-footer-contents {
   display: flex;
@@ -33,4 +35,3 @@
     color: $buic-text-color-disabled;
   }
 }
-

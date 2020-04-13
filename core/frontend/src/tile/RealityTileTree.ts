@@ -179,8 +179,10 @@ export class RealityTileTree extends TileTree {
       const tileGraphicType = selectedTile.graphicType;
       let targetBranch;
       if (undefined !== tileGraphicType && tileGraphicType !== args.context.graphicType) {
-        if (!(targetBranch = graphicTypeBranches.get(tileGraphicType)))
+        if (!(targetBranch = graphicTypeBranches.get(tileGraphicType))) {
           graphicTypeBranches.set(tileGraphicType, targetBranch = new GraphicBranch());
+          targetBranch.setViewFlagOverrides(args.graphics.viewFlagOverrides);
+        }
       }
 
       if (!targetBranch)

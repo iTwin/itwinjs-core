@@ -90,7 +90,7 @@ function findOrAddMaterialIndexForColor(color: number): number {
   let result = GltfGlobals.colorToMaterialMap.get(color);
   if (result !== undefined) return result;
 
-  const rgb = new ColorDef(color).colors;
+  const rgb = ColorDef.getColors(color);
   const pbrMetallicRoughness: GltfMaterialPbrMetallicRoughness = {
     baseColorFactor: [rgb.r / 255, rgb.g / 255, rgb.b / 255, (255 - rgb.t) / 255],
     metallicFactor: 0,

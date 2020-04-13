@@ -1,14 +1,15 @@
 {
   "name": "@bentley/imodeljs-frontend",
-  "version": "2.0.0-dev.57",
+  "version": "2.0.0-dev.64",
   "description": "iModel.js frontend components",
   "main": "lib/imodeljs-frontend.js",
   "typings": "lib/imodeljs-frontend",
   "imodeljsSharedLibrary": true,
   "license": "MIT",
   "scripts": {
-    "build": "npm run copy:assets && tsc 1>&2",
-    "copy:assets": "cpx \"./src/loader/checkbrowser.js\" ./lib/loader && cpx \"./src/public/**/*\" ./lib/public",
+    "build": "npm run copy:assets && npm run pseudolocalize && tsc 1>&2",
+    "copy:assets": "cpx ./src/loader/checkbrowser.js ./lib/loader && cpx \"./src/public/**/*\" ./lib/public",
+    "pseudolocalize": "betools pseudolocalize --englishDir ./src/public/locales/en --out ./lib/public/locales/en-PSEUDO",
     "clean": "rimraf lib .rush",
     "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-frontend/file.json --tsIndexFile=./imodeljs-frontend.ts --onlyJson %TYPEDOC_THEME% --excludes=webgl/**/*,**/primitives --excludeGlob=**/*-css.ts",
     "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=imodeljs-frontend",
@@ -32,30 +33,31 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/ui-abstract": "2.0.0-dev.57",
-    "@bentley/bentleyjs-core": "^2.0.0-dev.57",
-    "@bentley/geometry-core": "^2.0.0-dev.57",
-    "@bentley/imodeljs-clients": "^2.0.0-dev.57",
-    "@bentley/imodeljs-common": "^2.0.0-dev.57",
-    "@bentley/imodeljs-i18n": "^2.0.0-dev.57",
-    "@bentley/imodeljs-quantity": "^2.0.0-dev.57",
-    "@bentley/webgl-compatibility": "2.0.0-dev.57"
+    "@bentley/ui-abstract": "2.0.0-dev.64",
+    "@bentley/bentleyjs-core": "^2.0.0-dev.64",
+    "@bentley/geometry-core": "^2.0.0-dev.64",
+    "@bentley/imodeljs-clients": "^2.0.0-dev.64",
+    "@bentley/imodeljs-common": "^2.0.0-dev.64",
+    "@bentley/imodeljs-i18n": "^2.0.0-dev.64",
+    "@bentley/imodeljs-quantity": "^2.0.0-dev.64",
+    "@bentley/webgl-compatibility": "2.0.0-dev.64",
+    "@bentley/orbitgt-core": "2.0.0-dev.64"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.0.0-dev.57",
-    "@bentley/build-tools": "2.0.0-dev.57",
-    "@bentley/certa": "2.0.0-dev.57",
-    "@bentley/geometry-core": "2.0.0-dev.57",
-    "@bentley/imodeljs-clients": "2.0.0-dev.57",
-    "@bentley/imodeljs-common": "2.0.0-dev.57",
-    "@bentley/imodeljs-i18n": "2.0.0-dev.57",
-    "@bentley/imodeljs-quantity": "2.0.0-dev.57",
-    "@bentley/webgl-compatibility": "2.0.0-dev.57",
-    "@bentley/ui-abstract": "2.0.0-dev.57",
+    "@bentley/bentleyjs-core": "2.0.0-dev.64",
+    "@bentley/build-tools": "2.0.0-dev.64",
+    "@bentley/certa": "2.0.0-dev.64",
+    "@bentley/geometry-core": "2.0.0-dev.64",
+    "@bentley/imodeljs-clients": "2.0.0-dev.64",
+    "@bentley/imodeljs-common": "2.0.0-dev.64",
+    "@bentley/imodeljs-i18n": "2.0.0-dev.64",
+    "@bentley/imodeljs-quantity": "2.0.0-dev.64",
+    "@bentley/webgl-compatibility": "2.0.0-dev.64",
+    "@bentley/ui-abstract": "2.0.0-dev.64",
     "@types/chai": "^4.1.4",
     "@types/js-base64": "^2.3.1",
     "@types/mocha": "^5.2.5",
@@ -78,12 +80,13 @@
     "NOTE: imodeljs-frontend should remain UI technology agnostic, so no react/angular dependencies are allowed"
   ],
   "dependencies": {
-    "@bentley/extension-client": "2.0.0-dev.57",
+    "@bentley/extension-client": "2.0.0-dev.64",
     "fuse.js": "^3.3.0",
     "js-base64": "^2.4.5",
     "ldclient-js": "^2.6.0",
     "oidc-client": "^1.9.1",
-    "semver": "^5.5.0"
+    "semver": "^5.5.0",
+    "@azure/storage-blob": "10.4.0"
   },
   "nyc": {
     "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc"

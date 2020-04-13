@@ -245,7 +245,7 @@ export class GeometryStreamBuilder {
   public appendGeometryParamsChange(geomParams: GeometryParams): boolean {
     const appearance: GeometryAppearanceProps = {
       subCategory: geomParams.subCategoryId,
-      color: geomParams.lineColor,
+      color: geomParams.lineColor?.toJSON(),
       weight: geomParams.weight,
       style: geomParams.styleInfo ? geomParams.styleInfo!.styleId : undefined,
       transparency: geomParams.elmTransparency,
@@ -263,19 +263,20 @@ export class GeometryStreamBuilder {
         transparency: geomParams.fillTransparency,
       };
       if (undefined !== geomParams.gradient && Gradient.Mode.None !== geomParams.gradient.mode)
-        fill.gradient = geomParams.gradient.clone();
+        fill.gradient = geomParams.gradient?.toJSON();
       else if (undefined !== geomParams.backgroundFill && BackgroundFill.None !== geomParams.backgroundFill)
         fill.backgroundFill = geomParams.backgroundFill;
       else if (undefined !== geomParams.fillColor)
-        fill.color = geomParams.fillColor;
+        fill.color = geomParams.fillColor.toJSON();
       this.geometryStream.push({ fill });
     }
 
     if (undefined !== geomParams.pattern) {
-      const localPattern = geomParams.pattern.clone();
+      const localPattern = this._worldToLocal ? geomParams.pattern.clone() : geomParams.pattern;
       if (undefined !== this._worldToLocal && !localPattern.applyTransform(this._worldToLocal))
         return false;
-      this.geometryStream.push({ pattern: localPattern });
+
+      this.geometryStream.push({ pattern: localPattern.toJSON() });
     }
 
     if (undefined !== geomParams.styleInfo && undefined !== geomParams.styleInfo.styleMod) {
@@ -618,7 +619,7 @@ export class GeometryStreamIterator implements IterableIterator<GeometryStreamIt
         if (entry.appearance.subCategory)
           this.entry.geomParams.subCategoryId = Id64.fromJSON(entry.appearance.subCategory);
         if (entry.appearance.color)
-          this.entry.geomParams.lineColor = new ColorDef(entry.appearance.color);
+          this.entry.geomParams.lineColor = ColorDef.fromJSON(entry.appearance.color);
         if (entry.appearance.weight)
           this.entry.geomParams.weight = entry.appearance.weight;
         if (entry.appearance.style)
@@ -648,7 +649,7 @@ export class GeometryStreamIterator implements IterableIterator<GeometryStreamIt
         else if (entry.fill.backgroundFill)
           this.entry.geomParams.backgroundFill = entry.fill.backgroundFill;
         else if (entry.fill.color)
-          this.entry.geomParams.fillColor = new ColorDef(entry.fill.color);
+          this.entry.geomParams.fillColor = ColorDef.fromJSON(entry.fill.color);
       } else if (entry.pattern) {
         const params = AreaPattern.Params.fromJSON(entry.pattern);
         if (this.entry.localToWorld !== undefined)

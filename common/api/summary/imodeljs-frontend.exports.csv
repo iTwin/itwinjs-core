@@ -62,9 +62,6 @@ beta;BlankConnectionProps
 public;BriefcaseConnection 
 internal;CachedIModelCoordinatesResponseProps
 internal;calculateEcefToDb(iModel: IModelConnection, bimElevationBias: number): Promise
-beta;calculateSolarAngles(date: Date, location: Cartographic):
-beta;calculateSolarDirection(date: Date, location: Cartographic): Vector3d
-beta;calculateSunriseOrSunset(date: Date, location: Cartographic, sunrise: boolean): Date
 public;CanvasDecoration
 public;CanvasDecorationList = CanvasDecoration[]
 public;canvasToImageBuffer(canvas: HTMLCanvasElement, format?: ImageBufferFormat): ImageBuffer | undefined
@@ -74,7 +71,7 @@ beta;ChangeFlag
 beta;ChangeFlags
 public;ChangeViewedModel2dOptions
 alpha;ClipEventType
-beta;enum ClippingType
+beta;ClippingType
 internal;ClipResult
 internal;Clips
 public;Cluster
@@ -89,6 +86,7 @@ internal;CoreTools
 internal;createAttachment(props: ViewAttachmentProps, view: ViewState): Attachment
 internal;createClassifierTileTreeReference(classifiers: SpatialClassifiers, classifiedTree: TileTreeReference, iModel: IModelConnection, source: ViewState | DisplayStyleState): SpatialClassifierTileTreeReference
 internal;createDefaultViewFlagOverrides(options:
+internal;createOrbitGtTileTreeReference(props: OrbitGtTileTree.ReferenceProps): OrbitGtTileTree.Reference
 internal;createPrimaryTileTreeReference(view: ViewState, model: GeometricModelState): TileTreeReference
 internal;createRealityTileTreeReference(props: RealityModelTileTree.ReferenceProps): RealityModelTileTree.Reference
 internal;createTileTreeFromImageryProvider(imageryProvider: ImageryProvider, bimElevationBias: number, filterTextures: boolean, globeMode: GlobeMode, useDepthBuffer: boolean, iModel: IModelConnection, forDrape?: boolean): Promise
@@ -125,7 +123,7 @@ beta;EmphasizeElements
 beta;EmphasizeElementsProps
 beta;EngineeringLengthDescription 
 public;EntityState 
-public;Environment 
+public;Environment
 internal;ErrorNums
 public;EventController
 public;EventHandled
@@ -141,6 +139,7 @@ beta;ExtensionLoadResults = Extension | undefined | string | string[]
 beta;ExtensionServiceExtensionLoader 
 public;ExtentLimits
 beta;ExternalServerExtensionLoader 
+alpha;ExternalTileStatistics
 public;extractImageSourceDimensions(source: ImageSource): Promise
 alpha;FeatureLogBatchClient
 alpha;FeatureLogBatchOptions
@@ -293,6 +292,8 @@ beta;OidcBrowserClient
 alpha;OidcDesktopClientRenderer 
 internal;OnScreenTarget 
 beta;openImageDataUrlInNewWindow(url: string, title?: string): void
+internal;OrbitGtTileTree 
+internal;OrbitGtTileTree
 public;OrthographicViewState 
 public;OutputMessageAlert
 public;OutputMessagePriority
@@ -309,7 +310,7 @@ beta;Pixel
 internal;PlanarClassifierMap = Map
 internal;PlanarMapTile 
 public;class PrimitiveTool 
-alpha;enum PrimitiveVisibility
+alpha;PrimitiveVisibility
 internal;QuadId
 alpha;QuantityFormatter 
 beta;QuantityType
@@ -366,7 +367,7 @@ public;SelectionSet
 public;SelectionSetEvent = SelectAddEvent | SelectRemoveEvent | SelectReplaceEvent
 public;SelectionSetEventType
 public;SelectionTool 
-internal;enum SelectParent
+internal;SelectParent
 public;SelectRemoveEvent
 public;SelectReplaceEvent
 alpha;SetupCameraTool 
@@ -419,17 +420,17 @@ beta;class Tile
 alpha;class TileAdmin
 alpha;TileAdmin
 internal;TileAvailability
-internal;enum TileBoundingBoxes
+internal;TileBoundingBoxes
 beta;TileContent
 beta;TiledGraphicsProvider
 beta;TileDrawArgs
 beta;TileGraphicType
-beta;enum TileLoadPriority
-beta;enum TileLoadStatus
+beta;TileLoadPriority
+beta;TileLoadStatus
 beta;TileParams
 beta;TileRequest
 beta;TileRequest
-internal;enum State
+internal;State
 beta;class TileTree
 beta;TileTreeDiscloser
 beta;TileTreeLoadStatus
@@ -439,7 +440,7 @@ beta;class TileTreeReference
 beta;TileTreeSet
 beta;TileTreeSupplier
 beta;TileUsageMarker
-beta;enum TileVisibility
+beta;TileVisibility
 public;Tool
 public;ToolAdmin
 public;ToolAdmin
@@ -488,7 +489,7 @@ beta;ViewGlobeIModelTool
 beta;ViewGlobeLocationTool 
 beta;ViewGlobeSatelliteTool 
 internal;ViewHandleArray
-internal;enum ViewHandleType
+internal;ViewHandleType
 beta;ViewingSpace
 internal;class ViewingToolHandle
 public;ViewManager

@@ -22,7 +22,7 @@ import { ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl"
 import { ModelsTree, ModelsTreeSelectionPredicate } from "../imodel-components/models-tree/ModelsTree";
 import { CategoryTreeWithSearchBox } from "../imodel-components/category-tree/CategoriesTreeWithSearchBox";
 
-const hierarchyTreeSvg = require("@bentley/icons-generic/icons/hierarchy-tree.svg"); // tslint:disable-line: no-var-requires
+import hierarchyTreeSvg from "@bentley/icons-generic/icons/hierarchy-tree.svg?sprite";
 import "./VisibilityWidget.scss";
 
 /**

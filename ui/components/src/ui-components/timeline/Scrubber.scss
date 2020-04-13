@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-@import "~@bentley/ui-core/lib/ui-core/index";
+@import "~@bentley/ui-core/lib/ui-core/style/themecolors";
 
 .scrubber-rail {
   position: absolute;
@@ -48,4 +48,3 @@
   background: $buic-foreground-primary;
   cursor: pointer;
 }
-

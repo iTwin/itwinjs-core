@@ -68,5 +68,8 @@
   },
   "Notices": {
     "PoweredBy": "Powered by"
+  },
+  "RealityModelTypes": {
+    "OrbitGTPointCloud": "OrbitGT Point Cloud"
   }
 }

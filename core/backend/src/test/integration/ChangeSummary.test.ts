@@ -79,6 +79,8 @@ describe("ChangeSummary (#integration)", () => {
     testProjectId = await HubUtility.queryProjectIdByName(requestContext, "iModelJsIntegrationTest");
     readOnlyTestIModel = await IModelTestUtils.getTestModelInfo(requestContext, testProjectId, "ReadOnlyTest");
     readWriteTestIModel = await IModelTestUtils.getTestModelInfo(requestContext, testProjectId, "ReadWriteTest");
+    await HubUtility.purgeAcquiredBriefcases(requestContext, "iModelJsIntegrationTest", "ReadOnlyTest");
+    await HubUtility.purgeAcquiredBriefcases(requestContext, "iModelJsIntegrationTest", "ReadWriteTest");
 
     // Purge briefcases that are close to reaching the acquire limit
     const managerRequestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.manager);
@@ -554,7 +556,7 @@ describe("ChangeSummary (#integration)", () => {
     const [, modelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(iModel, IModelTestUtils.getUniqueModelCode(iModel, "TestPhysicalModel"), true);
     await iModel.concurrencyControl.request(managerRequestContext);
     iModel.saveChanges("Added test model");
-    const categoryId = SpatialCategory.insert(iModel, IModel.dictionaryId, "TestSpatialCategory", new SubCategoryAppearance({ color: new ColorDef("rgb(255,0,0)") }));
+    const categoryId = SpatialCategory.insert(iModel, IModel.dictionaryId, "TestSpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
     await iModel.concurrencyControl.request(managerRequestContext);
     iModel.saveChanges("Added test category");
     const elementId1: Id64String = iModel.elements.insertElement(IModelTestUtils.createPhysicalObject(iModel, modelId, categoryId));

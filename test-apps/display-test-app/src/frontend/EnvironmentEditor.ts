@@ -5,6 +5,7 @@
 
 import {
   ColorDef,
+  RenderMode,
   SkyBoxProps,
 } from "@bentley/imodeljs-common";
 import {
@@ -27,6 +28,7 @@ import {
   createNestedMenu,
   createButton,
 } from "@bentley/frontend-devtools";
+import { LightingEditor } from "./LightingEditor";
 
 type EnvironmentAspect = "ground" | "sky";
 type UpdateAttribute = (view: ViewState) => void;
@@ -58,11 +60,21 @@ export class EnvironmentEditor {
     }).body;
     const is3d = this._vp.view.is3d();
 
+    const lightingDiv = document.createElement("div");
+    const lightingEditor = new LightingEditor(vp, lightingDiv);
+    this._updates.push((view: ViewState) => {
+      lightingEditor.update(view);
+      lightingDiv.style.display = view.is3d() && RenderMode.SmoothShade === view.viewFlags.renderMode ? "" : "none";
+    });
+
+    lightingDiv.appendChild(document.createElement("hr"));
+    nestedMenu.appendChild(lightingDiv);
+
     this._eeBackgroundColor = createColorInput({
       parent: nestedMenu,
       value: this._vp.view.backgroundColor.toHexString(),
       handler: (value) => {
-        this._vp.view.displayStyle.backgroundColor = new ColorDef(value);
+        this._vp.view.displayStyle.backgroundColor = ColorDef.create(value);
         this.sync();
       },
       id: "ee_bgColor",
@@ -122,7 +134,7 @@ export class EnvironmentEditor {
     row1.style.justifyContent = "flex-end";
 
     this._eeSkyColor = createColorInput({
-      handler: (value: string) => this.updateEnvironment({ skyColor: new ColorDef(value) }),
+      handler: (value: string) => this.updateEnvironment({ skyColor: ColorDef.create(value).toJSON() }),
       value: undefined === currentEnvironment ? "#FFFFFF" : currentEnvironment.skyColor.toHexString(),
       label: "Sky Color",
       parent: row1,
@@ -130,7 +142,7 @@ export class EnvironmentEditor {
     this._eeSkyColor.div.style.marginRight = "10px";
 
     this._eeZenithColor = createColorInput({
-      handler: (value: string) => this.updateEnvironment({ zenithColor: new ColorDef(value) }),
+      handler: (value: string) => this.updateEnvironment({ zenithColor: ColorDef.create(value).toJSON() }),
       value: undefined === currentEnvironment ? "#FFFFFF" : currentEnvironment.zenithColor.toHexString(),
       label: "Zenith Color",
       parent: row1,
@@ -142,7 +154,7 @@ export class EnvironmentEditor {
     row2.style.justifyContent = "flex-end";
 
     this._eeGroundColor = createColorInput({
-      handler: (value: string) => this.updateEnvironment({ groundColor: new ColorDef(value) }),
+      handler: (value: string) => this.updateEnvironment({ groundColor: ColorDef.create(value).toJSON() }),
       value: undefined === currentEnvironment ? "#FFFFFF" : currentEnvironment.groundColor.toHexString(),
       label: "Ground Color",
       parent: row2,
@@ -150,7 +162,7 @@ export class EnvironmentEditor {
     this._eeGroundColor.div.style.marginRight = "16px";
 
     this._eeNadirColor = createColorInput({
-      handler: (value: string) => this.updateEnvironment({ nadirColor: new ColorDef(value) }),
+      handler: (value: string) => this.updateEnvironment({ nadirColor: ColorDef.create(value).toJSON() }),
       value: undefined === currentEnvironment ? "#FFFFFF" : currentEnvironment.nadirColor.toHexString(),
       label: "Nadir Color",
       parent: row2,
@@ -232,17 +244,17 @@ export class EnvironmentEditor {
     newEnv = {
       display: (oldSkyEnv as SkyBox).display,
       twoColor: undefined !== newEnv.twoColor ? newEnv.twoColor : oldSkyEnv.twoColor,
-      zenithColor: undefined !== newEnv.zenithColor ? new ColorDef(newEnv.zenithColor) : oldSkyEnv.zenithColor,
-      skyColor: undefined !== newEnv.skyColor ? new ColorDef(newEnv.skyColor) : oldSkyEnv.skyColor,
-      groundColor: undefined !== newEnv.groundColor ? new ColorDef(newEnv.groundColor) : oldSkyEnv.groundColor,
-      nadirColor: undefined !== newEnv.nadirColor ? new ColorDef(newEnv.nadirColor) : oldSkyEnv.nadirColor,
+      zenithColor: undefined !== newEnv.zenithColor ? ColorDef.create(newEnv.zenithColor).toJSON() : oldSkyEnv.zenithColor.toJSON(),
+      skyColor: undefined !== newEnv.skyColor ? ColorDef.create(newEnv.skyColor).toJSON() : oldSkyEnv.skyColor.toJSON(),
+      groundColor: undefined !== newEnv.groundColor ? ColorDef.create(newEnv.groundColor).toJSON() : oldSkyEnv.groundColor.toJSON(),
+      nadirColor: undefined !== newEnv.nadirColor ? ColorDef.create(newEnv.nadirColor).toJSON() : oldSkyEnv.nadirColor.toJSON(),
       skyExponent: undefined !== newEnv.skyExponent ? newEnv.skyExponent : oldSkyEnv.skyExponent,
       groundExponent: undefined !== newEnv.groundExponent ? newEnv.groundExponent : oldSkyEnv.groundExponent,
     };
     (this._vp.view as ViewState3d).getDisplayStyle3d().environment = new Environment(
       {
-        sky: new SkyGradient(newEnv),
-        ground: oldEnv.ground,
+        sky: new SkyGradient(newEnv).toJSON(),
+        ground: oldEnv.ground.toJSON(),
       });
     this.sync();
   }

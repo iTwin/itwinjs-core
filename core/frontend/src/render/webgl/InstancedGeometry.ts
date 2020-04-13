@@ -205,6 +205,7 @@ export class InstancedGeometry extends CachedGeometry {
   public get isEdge() { return this._repr.isEdge; }
   public get hasFeatures() { return this._buffers.hasFeatures; }
   public get techniqueId(): TechniqueId { return this._repr.techniqueId; }
+  public get supportsThematicDisplay() { return this._repr.supportsThematicDisplay; }
 
   public getRenderPass(target: Target) { return this._repr.getRenderPass(target); }
   public wantWoWReversal(params: ShaderProgramParams) { return this._repr.wantWoWReversal(params); }

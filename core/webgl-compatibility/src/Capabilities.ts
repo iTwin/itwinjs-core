@@ -12,8 +12,6 @@ import {
   WebGLRenderCompatibilityStatus,
 } from "./RenderCompatibility";
 
-// tslint:disable:no-const-enum
-
 /** @internal */
 export type WebGLExtensionName = "WEBGL_draw_buffers" | "OES_element_index_uint" | "OES_texture_float" | "OES_texture_float_linear" |
   "OES_texture_half_float" | "OES_texture_half_float_linear" | "EXT_texture_filter_anisotropic" | "WEBGL_depth_texture" |
@@ -42,7 +40,7 @@ const knownExtensions: WebGLExtensionName[] = [
 /** Describes the type of a render target. Used by Capabilities to represent maximum precision render target available on host system.
  * @internal
  */
-export const enum RenderType {
+export enum RenderType {
   TextureUnsignedByte,
   TextureHalfFloat,
   TextureFloat,
@@ -53,7 +51,7 @@ export const enum RenderType {
  * Note: the commented-out values are unimplemented but left in place for reference, in case desired for future implementation.
  * @internal
  */
-export const enum DepthType {
+export enum DepthType {
   RenderBufferUnsignedShort16,     // core to WebGL1
   // TextureUnsignedShort16,       // core to WebGL2; available to WebGL1 via WEBGL_depth_texture
   // TextureUnsignedInt24,         // core to WebGL2

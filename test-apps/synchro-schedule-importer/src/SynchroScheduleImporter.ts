@@ -216,7 +216,7 @@ function doAddAnimationScript(iModel: IModelDb, animationScript: string, createS
     const vf = new ViewFlags();
     vf.renderMode = RenderMode.SmoothShade;
     vf.cameraLights = true;
-    const bgColor = new ColorDef("rgb(127, 127, 127)");
+    const bgColor = ColorDef.create("rgb(127, 127, 127)");
 
     const displayStyleId = DisplayStyle3d.insert(iModel, view.model, "Schedule View Style", { viewFlags: vf, backgroundColor: bgColor, scheduleScript: script });
     iModel.views.setDefaultViewId(SpatialViewDefinition.insertWithCamera(iModel, view.model, "Schedule View", view.modelSelectorId, view.categorySelectorId, displayStyleId, iModel.projectExtents, StandardViewIndex.Iso));

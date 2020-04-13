@@ -6,9 +6,9 @@
  * @module Timeline
  */
 
-import { Cartographic, ColorDef, ColorByName } from "@bentley/imodeljs-common";
+import { Cartographic, ColorDef, ColorByName, calculateSunriseOrSunset } from "@bentley/imodeljs-common";
 import { Point3d } from "@bentley/geometry-core";
-import { IModelConnection, ScreenViewport, calculateSunriseOrSunset } from "@bentley/imodeljs-frontend";
+import { IModelConnection, ScreenViewport } from "@bentley/imodeljs-frontend";
 import {
   SolarDataProvider,
 } from "./interfaces";
@@ -29,7 +29,7 @@ export class BaseSolarDataProvider implements SolarDataProvider {
   public animationFraction: number = 0; // value from 0.0 to 1.0 that specifies the percentage complete for the animation.
   protected _viewport: ScreenViewport | undefined;
   protected _cartographicCenter: Cartographic;
-  protected _shadowColor = new ColorDef(ColorByName.gray);
+  protected _shadowColor = ColorDef.create(ColorByName.gray);
 
   constructor(viewport?: ScreenViewport, longitude?: number, latitude?: number) {
     this._viewport = viewport;

@@ -8,16 +8,75 @@
 
 // cspell:ignore ulas postrc pollrc
 import {
-  BeDuration, BeEvent, BentleyStatus, ChangeSetStatus, ClientRequestContext, DbResult, Guid, GuidString,
-  Id64, Id64Arg, Id64Set, Id64String, JsonUtils, Logger, OpenMode, PerfLogger,
+  BeDuration,
+  BeEvent,
+  BentleyStatus,
+  ChangeSetStatus,
+  ClientRequestContext,
+  DbResult,
+  Guid,
+  GuidString,
+  Id64,
+  Id64Arg,
+  Id64Set,
+  Id64String,
+  JsonUtils,
+  Logger,
+  OpenMode,
+  PerfLogger,
 } from "@bentley/bentleyjs-core";
+import { Range3d } from "@bentley/geometry-core";
 import { AuthorizedClientRequestContext, ProgressCallback } from "@bentley/imodeljs-clients";
 import {
-  AxisAlignedBox3d, CategorySelectorProps, Code, CodeSpec, CreateEmptySnapshotIModelProps, CreateIModelProps, CreateSnapshotIModelProps, DisplayStyleProps,
-  EcefLocation, ElementAspectProps, ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontMap, FontMapProps, FontProps,
-  GeoCoordinatesResponseProps, IModel, IModelCoordinatesResponseProps, IModelEncryptionProps, IModelError, IModelNotFoundResponse, IModelProps, IModelStatus, IModelVersion,
-  MassPropertiesRequestProps, MassPropertiesResponseProps, ModelProps, ModelSelectorProps, PropertyCallback, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus,
-  RpcPendingResponse, SheetProps, SnapRequestProps, SnapResponseProps, SpatialViewDefinitionProps, ThumbnailProps, TileTreeProps, ViewDefinitionProps, ViewQueryParams, ViewStateProps, IModelRpcProps,
+  AxisAlignedBox3d,
+  CategorySelectorProps,
+  Code,
+  CodeSpec,
+  CreateEmptySnapshotIModelProps,
+  CreateIModelProps,
+  CreateSnapshotIModelProps,
+  DisplayStyleProps,
+  EcefLocation,
+  ElementAspectProps,
+  ElementLoadProps,
+  ElementProps,
+  EntityMetaData,
+  EntityProps,
+  EntityQueryParams,
+  FilePropertyProps,
+  FontMap,
+  FontMapProps,
+  FontProps,
+  GeoCoordinatesResponseProps,
+  IModel,
+  IModelCoordinatesResponseProps,
+  IModelEncryptionProps,
+  IModelError,
+  IModelNotFoundResponse,
+  IModelProps,
+  IModelRpcProps,
+  IModelStatus,
+  IModelVersion,
+  MassPropertiesRequestProps,
+  MassPropertiesResponseProps,
+  ModelProps,
+  ModelSelectorProps,
+  PropertyCallback,
+  QueryLimit,
+  QueryPriority,
+  QueryQuota,
+  QueryResponse,
+  QueryResponseStatus,
+  RpcPendingResponse,
+  SheetProps,
+  SnapRequestProps,
+  SnapResponseProps,
+  SpatialViewDefinitionProps,
+  ThumbnailProps,
+  TileTreeProps,
+  ViewDefinitionProps,
+  ViewQueryParams,
+  ViewStateProps,
 } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import * as os from "os";
@@ -38,7 +97,11 @@ import { IModelJsFs } from "./IModelJsFs";
 import { Model } from "./Model";
 import { Relationship, RelationshipProps, Relationships } from "./Relationship";
 import { CachedSqliteStatement, SqliteStatement, SqliteStatementCache } from "./SqliteStatement";
-import { SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
+import {
+  DrawingViewDefinition,
+  SheetViewDefinition,
+  ViewDefinition,
+} from "./ViewDefinition";
 import { UlasUtilities, AdditionalFeatureData } from "./ulas/UlasUtilities";
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
@@ -1592,15 +1655,23 @@ export namespace IModelDb {
       viewStateData.displayStyleProps = elements.getElementProps<DisplayStyleProps>(viewStateData.viewDefinitionProps.displayStyleId);
 
       const modelSelectorId = (viewStateData.viewDefinitionProps as SpatialViewDefinitionProps).modelSelectorId;
-      if (modelSelectorId !== undefined)
+      if (modelSelectorId !== undefined) {
         viewStateData.modelSelectorProps = elements.getElementProps<ModelSelectorProps>(modelSelectorId);
-
-      else if (viewDefinitionElement instanceof SheetViewDefinition) {
+      } else if (viewDefinitionElement instanceof SheetViewDefinition) {
         viewStateData.sheetProps = elements.getElementProps<SheetProps>(viewDefinitionElement.baseModelId);
         viewStateData.sheetAttachments = Array.from(this._iModel.queryEntityIds({
           from: "BisCore.ViewAttachment",
           where: "Model.Id=" + viewDefinitionElement.baseModelId,
         }));
+      } else if (viewDefinitionElement instanceof DrawingViewDefinition) {
+        // Ensure view has known extents
+        try {
+          const rangeVal = this._iModel.nativeDb.queryModelExtents(JSON.stringify({ id: viewDefinitionElement.baseModelId }));
+          if (rangeVal.result)
+            viewStateData.modelExtents = Range3d.fromJSON(JSON.parse(rangeVal.result).modelExtents);
+        } catch (_) {
+          //
+        }
       }
 
       return viewStateData;
@@ -1895,7 +1966,7 @@ export class TxnManager {
   public isTxnIdValid(txnId: TxnIdString): boolean { return this._nativeDb.isTxnIdValid(txnId); }
 
   /** Query if there are any pending Txns in this IModelDb that are waiting to be pushed.  */
-  public get hasPendingTxns(): boolean { return this._nativeDb.hasSavedChanges(); }
+  public get hasPendingTxns(): boolean { return this._nativeDb.hasPendingTxns(); }
 
   /** Query if there are any changes in memory that have yet to be saved to the IModelDb. */
   public get hasUnsavedChanges(): boolean { return this._nativeDb.hasUnsavedChanges(); }
@@ -2275,7 +2346,7 @@ export class BriefcaseDb extends IModelDb {
       return Promise.reject(new IModelError(ChangeSetStatus.HasUncommittedChanges, "Cannot push changeset with unsaved changes", Logger.logError, loggerCategory, () => this.getRpcProps()));
     if (this.openParams.syncMode !== SyncMode.PullAndPush)
       throw new IModelError(BentleyStatus.ERROR, "IModel was not opened with SyncMode = PullAndPush", Logger.logError, loggerCategory, () => this.getRpcProps());
-    if (!this.nativeDb.hasSavedChanges())
+    if (!this.nativeDb.hasPendingTxns())
       return Promise.resolve(); // nothing to push
 
     await this.concurrencyControl.onPushChanges(requestContext);

@@ -120,7 +120,10 @@ export class Briefcase extends WsgInstance {
     applicationId?: string;
     applicationName?: string;
     briefcaseId?: number;
+    changeSetIdOnDevice?: string;
+    deviceName?: string;
     downloadUrl?: string;
+    expirationDate?: string;
     fileDescription?: string;
     fileId?: GuidString;
     fileName?: string;
@@ -158,11 +161,12 @@ export abstract class BriefcaseEvent extends IModelHubEvent {
 // @internal
 export class BriefcaseHandler {
     constructor(handler: IModelBaseHandler, fileHandler?: FileHandler);
-    create(requestContext: AuthorizedClientRequestContext, iModelId: GuidString): Promise<Briefcase>;
+    create(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, briefcase?: Briefcase): Promise<Briefcase>;
     delete(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, briefcaseId: number): Promise<void>;
     download(requestContext: AuthorizedClientRequestContext, briefcase: Briefcase, path: string, progressCallback?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void>;
     get(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, query?: BriefcaseQuery): Promise<Briefcase[]>;
-    }
+    update(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, briefcase: Briefcase): Promise<Briefcase>;
+}
 
 // @internal
 export class BriefcaseQuery extends WsgQuery {

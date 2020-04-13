@@ -504,13 +504,11 @@ export abstract class Tile {
   }
 }
 
-// tslint:disable:no-const-enum
-
 /**
  * Describes the current status of a Tile's content. Tile content is loaded via an asynchronous [[TileRequest]].
  * @beta
  */
-export const enum TileLoadStatus {
+export enum TileLoadStatus {
   /** No attempt to load the tile's content has been made, or the tile has since been unloaded. It currently has no graphics. */
   NotLoaded = 0,
   /** A request has been dispatched to load the tile's contents, and a response is pending. */
@@ -529,7 +527,7 @@ export const enum TileLoadStatus {
  * Describes the visibility of a tile based on its size and a view frustum.
  * @beta
  */
-export const enum TileVisibility {
+export enum TileVisibility {
   /** The tile is entirely outside of the viewing frustum. */
   OutsideFrustum,
   /** The tile's graphics are of too low a resolution for the viewing frustum. */
@@ -543,7 +541,7 @@ export const enum TileVisibility {
  * @note A lower LoadPriority value indicates higher importance.
  * @beta
  */
-export const enum TileLoadPriority {
+export enum TileLoadPriority {
   /** Background map tiles. */
   Map = 15,
   /** Typically, tiles generated from the contents of geometric models. */
@@ -566,7 +564,7 @@ export const enum TileLoadPriority {
  * @see [[Viewport.debugBoundingBoxes]]
  * @internal
  */
-export const enum TileBoundingBoxes {
+export enum TileBoundingBoxes {
   /** Display no bounding boxes */
   None = 0,
   /** Display boxes representing the tile's full volume. */

@@ -30,8 +30,6 @@ import { AuxChannelTable } from "./AuxChannelTable";
 import { PolylineArgs, MeshArgs } from "./mesh/MeshPrimitives";
 import { IModelApp } from "../../IModelApp";
 
-// tslint:disable:no-const-enum
-
 /**
  * Holds an array of indices into a VertexTable. Each index is a 24-bit unsigned integer.
  * The order of the indices specifies the order in which vertices are drawn.
@@ -104,8 +102,6 @@ function computeDimensions(nEntries: number, nRgbaPerEntry: number, nExtraRgba: 
 
   return { width, height };
 }
-
-const scratchColorDef = new ColorDef();
 
 /** Describes a VertexTable.
  * @internal
@@ -446,7 +442,7 @@ class PolylineTesselator {
 }
 
 /** @internal */
-export const enum SurfaceType {
+export enum SurfaceType {
   Unlit,
   Lit,
   Textured,
@@ -798,9 +794,7 @@ export abstract class VertexTableBuilder {
   }
 
   private appendColor(tbgr: number) {
-    const colorDef = scratchColorDef;
-    colorDef.tbgr = tbgr;
-    const colors = colorDef.colors;
+    const colors = ColorDef.getColors(tbgr);
 
     // invert transparency => alpha
     colors.t = 255 - colors.t;

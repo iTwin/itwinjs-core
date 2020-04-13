@@ -15,8 +15,11 @@ import {
   Frustum,
   GlobeMode,
   Gradient,
+  ThematicDisplay,
   HiddenLine,
   Hilite,
+  LightSettings,
+  MonochromeMode,
   Npc,
   RenderTexture,
   ViewFlags,
@@ -37,12 +40,14 @@ export class RenderPlan {
   public readonly viewFlags: ViewFlags;
   public readonly bgColor: ColorDef;
   public readonly monoColor: ColorDef;
+  public readonly monochromeMode: MonochromeMode;
   public readonly hiliteSettings: Hilite.Settings;
   public readonly emphasisSettings: Hilite.Settings;
   public readonly activeClipSettings?: ViewClipSettings;
   public readonly hline?: HiddenLine.Settings;
   public readonly analysisStyle?: AnalysisStyle;
   public readonly ao?: AmbientOcclusion.Settings;
+  public readonly thematic?: ThematicDisplay;
   public readonly isFadeOutActive: boolean;
   public readonly analysisTexture?: RenderTexture;
   public readonly classificationTextures?: Map<Id64String, RenderTexture>;
@@ -53,6 +58,7 @@ export class RenderPlan {
   public readonly isGlobeMode3D: boolean;
   public readonly backgroundMapOn: boolean;
   public readonly upVector: Vector3d;
+  public readonly lights?: LightSettings;
 
   public static createFromViewport(vp: Viewport): RenderPlan {
     return new RenderPlan(vp);
@@ -74,15 +80,21 @@ export class RenderPlan {
       this.frustum = vp.viewingSpace.getFrustum();
       this.fraction = vp.viewingSpace.frustFraction;
       this.viewFlags = style.viewFlags;
+
       this.bgColor = view.backgroundColor;
       this.monoColor = style.monochromeColor;
+      this.monochromeMode = style.settings.monochromeMode;
+
       this.hiliteSettings = vp.hilite;
       this.emphasisSettings = vp.emphasisSettings;
+      this.lights = vp.lightSettings;
+
       this.isFadeOutActive = vp.isFadeOutActive;
       this.activeClipSettings = createViewClipSettings(view.getViewClip(), vp.outsideClipColor, vp.insideClipColor);
       this.hline = style.is3d() ? style.settings.hiddenLineSettings : undefined;
       this.ao = style.is3d() ? style.settings.ambientOcclusionSettings : undefined;
       this.analysisStyle = style.settings.analysisStyle;
+      this.thematic = (style.is3d() && view.displayStyle.viewFlags.thematicDisplay) ? style.settings.thematic : undefined;
       this.isGlobeMode3D = (GlobeMode.Ellipsoid === view.globeMode);
       if (this.isGlobeMode3D) {
         const lb = this.frustum.getCorner(Npc.LeftBottomRear).interpolate(0.5, this.frustum.getCorner(Npc.LeftBottomFront), scratchPoint3a);
@@ -94,11 +106,12 @@ export class RenderPlan {
 
       if (undefined !== this.analysisStyle && undefined !== this.analysisStyle.scalarThematicSettings)
         this.analysisTexture = vp.target.renderSystem.getGradientTexture(Gradient.Symb.createThematic(this.analysisStyle.scalarThematicSettings), vp.iModel);
+
     } else {
       this.is3d = true;
       this.viewFlags = new ViewFlags();
-      this.bgColor = ColorDef.white.clone();
-      this.monoColor = ColorDef.white.clone();
+      this.bgColor = this.monoColor = ColorDef.white;
+      this.monochromeMode = MonochromeMode.Scaled;
       this.hiliteSettings = new Hilite.Settings();
       this.emphasisSettings = new Hilite.Settings();
       this.frustum = new Frustum();

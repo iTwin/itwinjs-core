@@ -361,6 +361,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       && this._renderCommands.isEmpty
       && 0 === this._batches.length
       && undefined === this._activeClipVolume
+      && this.uniforms.thematic.isDisposed
       && this._isDisposed;
   }
 
@@ -488,6 +489,10 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     return this._wantAmbientOcclusion;
   }
 
+  public get wantThematicDisplay(): boolean {
+    return this.currentViewFlags.thematicDisplay && this.is3d && undefined !== this.uniforms.thematic.thematicDisplay;
+  }
+
   public updateSolarShadows(context: SceneContext | undefined): void {
     this.compositor.updateSolarShadows(context);
   }
@@ -597,8 +602,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
     this.terrainTransparency = plan.terrainTransparency;
 
-    this.uniforms.style.update(plan);
-    this.uniforms.hilite.update(plan.hiliteSettings, plan.emphasisSettings);
+    this.uniforms.updateRenderPlan(plan);
     this.isFadeOutActive = plan.isFadeOutActive;
     this.analysisStyle = plan.analysisStyle === undefined ? undefined : plan.analysisStyle.clone();
     this.analysisTexture = plan.analysisTexture;
@@ -663,6 +667,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       this._wantAmbientOcclusion = vf.ambientOcclusion = false;
     }
 
+    this.uniforms.thematic.update(plan);
+
     this._visibleEdgeOverrides.init(forceEdgesOpaque, visEdgeOvrs);
     this._hiddenEdgeOverrides.init(forceEdgesOpaque, hidEdgeOvrs);
 
@@ -699,6 +705,9 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     this._decorations = dispose(this._decorations);
     this._dynamics = disposeArray(this._dynamics);
     this._worldDecorations = dispose(this._worldDecorations);
+
+    // Clear thematic texture
+    dispose(this.uniforms.thematic);
 
     this.changePlanarClassifiers(undefined);
     this.changeTextureDrapes(undefined);

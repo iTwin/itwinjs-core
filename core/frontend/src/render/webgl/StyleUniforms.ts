@@ -17,10 +17,10 @@ import { ColorInfo } from "./ColorInfo";
  * @internal
  */
 export class StyleUniforms {
-  private readonly _bgColor = ColorDef.white.clone();
+  private _bgColor = ColorDef.white;
   private readonly _bgRgba = FloatRgba.fromColorDef(this._bgColor);
   private readonly _bgRgb = FloatRgb.fromColorDef(this._bgColor);
-  private readonly _monoColor = ColorDef.white.clone();
+  private _monoColor = ColorDef.white;
   private readonly _monoRgb = FloatRgb.fromColorDef(this._monoColor);
   private _isWhiteBackground = true;
 
@@ -32,14 +32,14 @@ export class StyleUniforms {
 
     desync(this);
 
-    plan.monoColor.clone(this._monoColor);
+    this._monoColor = plan.monoColor;
     this._monoRgb.setColorDef(plan.monoColor);
 
     this.updateBackgroundColor(plan.bgColor, true);
   }
 
   private updateBackgroundColor(bgColor: ColorDef, blackIfTransparent: boolean): void {
-    bgColor.clone(this._bgColor);
+    this._bgColor = bgColor;
     this._bgRgba.setColorDef(bgColor);
 
     // When rendering 3d view attachments, we set alpha to 0 to allow us to discard background pixels.
@@ -86,8 +86,8 @@ export class StyleUniforms {
     return this._bgRgba.alpha;
   }
 
-  public cloneBackgroundColor(result: ColorDef): void {
-    this._bgColor.clone(result);
+  public get backgroundColor() {
+    return this._bgColor;
   }
 
   public cloneBackgroundRgba(result: FloatRgba): void {

@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-@import "~@bentley/ui-core/lib/ui-core/index";
+@import "~@bentley/ui-core/lib/ui-core/style/colors";
 
-.components-nonprimitive-property{
+.components-nonprimitive-property {
   padding: 10px;
   display: grid;
   grid-row-gap: 10px;

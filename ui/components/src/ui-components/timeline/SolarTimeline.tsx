@@ -346,14 +346,14 @@ export class SolarTimeline extends React.PureComponent<SolarTimelineComponentPro
   private _amLabel = UiComponents.i18n.translate("UiComponents:time.am");
   private _pmLabel = UiComponents.i18n.translate("UiComponents:time.pm");
   private readonly _presetColors = [
-    new ColorDef(ColorByName.grey),
-    new ColorDef(ColorByName.lightGrey),
-    new ColorDef(ColorByName.darkGrey),
-    new ColorDef(ColorByName.lightBlue),
-    new ColorDef(ColorByName.lightGreen),
-    new ColorDef(ColorByName.darkGreen),
-    new ColorDef(ColorByName.tan),
-    new ColorDef(ColorByName.darkBrown),
+    ColorDef.create(ColorByName.grey),
+    ColorDef.create(ColorByName.lightGrey),
+    ColorDef.create(ColorByName.darkGrey),
+    ColorDef.create(ColorByName.lightBlue),
+    ColorDef.create(ColorByName.lightGreen),
+    ColorDef.create(ColorByName.darkGreen),
+    ColorDef.create(ColorByName.tan),
+    ColorDef.create(ColorByName.darkBrown),
   ];
 
   constructor(props: SolarTimelineComponentProps) {
@@ -618,7 +618,8 @@ export class SolarTimeline extends React.PureComponent<SolarTimelineComponentPro
 
   private _handleHueOrSaturationChange = (hueOrSaturation: HSVColor) => {
     if (hueOrSaturation.s === 0)  // for a ColorDef to be created from hsv s can't be 0
-      hueOrSaturation.s = 0.5;
+      hueOrSaturation = hueOrSaturation.clone(undefined, 0.5);
+
     const shadowColor = hueOrSaturation.toColorDef();
     this.setState({ shadowColor }, () => this.props.dataProvider.shadowColor = shadowColor);
   }

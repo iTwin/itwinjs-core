@@ -21,4 +21,11 @@ export interface TileTreeSupplier {
 
   /** Produce the TileTree corresponding to the specified tree Id. The returned TileTree will be associated with its Id in a Map. */
   createTileTree(id: any, iModel: IModelConnection): Promise<TileTree | undefined>;
+
+  /** `true` if this supplier is dependent upon the [[IModelConnection]]'s [EcefLocation]($common).
+   * Typically this returns true for suppliers of tile trees for map tiles.
+   * When the IModelConnection's ECEF location is modified (a relatively rare occurrence), all tile trees supplied by this supplier will be discarded, to be recreated using
+   * the updated ECEF location whenever they are next requested.
+   */
+  readonly isEcefDependent?: true;
 }

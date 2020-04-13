@@ -15,7 +15,7 @@ class IncidentMarker extends Marker {
   private static _size = Point2d.create(30, 30);
   private static _imageSize = Point2d.create(40, 40);
   private static _imageOffset = Point2d.create(0, 30);
-  private static _amber = new ColorDef(ColorByName.amber);
+  private static _amber = ColorDef.create(ColorByName.amber);
   private static _sweep360 = AngleSweep.create360();
   private _color: ColorDef;
 
@@ -61,9 +61,9 @@ class IncidentMarker extends Marker {
     const builder = context.createGraphicBuilder(GraphicType.WorldDecoration);
     const ellipse = Arc3d.createScaledXYColumns(this.worldLocation, context.viewport.rotation.transpose(), .2, .2, IncidentMarker._sweep360);
     // draw the circle the color of the marker, but with some transparency.
-    const color = this._color.clone();
+    let color = this._color;
     builder.setSymbology(ColorDef.white, color, 1);
-    color.setTransparency(200);
+    color = color.withTransparency(200);
     builder.addArc(ellipse, false, false);
     builder.setBlankingFill(color);
     builder.addArc(ellipse, true, true);
@@ -110,7 +110,7 @@ class IncidentClusterMarker extends Marker {
     this.imageSize = new Point2d(30, 30);
     this.label = cluster.markers.length.toLocaleString();
     this.labelColor = "black";
-    this.labelFont = "bold 14px san-serif";
+    this.labelFont = "bold 14px sans-serif";
 
     let title = "";
     sorted.forEach((marker) => {

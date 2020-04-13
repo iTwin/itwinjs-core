@@ -88,6 +88,8 @@ function compareMatrices(lhs: Matrix3d, rhs: Matrix3d): number {
 }
 
 class RealityTreeSupplier implements TileTreeSupplier {
+  public readonly isEcefDependent = true;
+
   public getOwner(treeId: RealityTreeId, iModel: IModelConnection): TileTreeOwner {
     return iModel.tiles.getTileTreeOwner(treeId, this);
   }
@@ -471,6 +473,10 @@ class RealityTreeReference extends RealityModelTileTree.Reference {
 
   public get castsShadows() {
     return true;
+  }
+
+  protected get _isLoadingComplete(): boolean {
+    return !this._mapDrapeTree || this._mapDrapeTree.isLoadingComplete;
   }
 
   public get classifiers(): SpatialClassifiers | undefined { return undefined !== this._classifier ? this._classifier.classifiers : undefined; }

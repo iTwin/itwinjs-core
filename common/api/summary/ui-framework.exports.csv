@@ -151,6 +151,7 @@ public;DialogInfo
 internal;DialogManagerBase
 internal;DialogRendererBase 
 internal;DialogRendererProps
+internal;DockedStatusBarItem(props: StatusBarItemProps): JSX.Element
 beta;DragDropLayerChangedEvent 
 beta;DragDropLayerChangedEventArgs
 beta;DragDropLayerManager
@@ -431,10 +432,11 @@ public;StateType
 public;StatusBar 
 beta;StatusBarCenterSection(props: CommonDivProps): JSX.Element
 beta;StatusBarComposer(props: StatusBarComposerProps): JSX.Element
-beta;StatusBarComposerProps
+beta;StatusBarComposerProps 
 internal;StatusBarContext: React.Context
 public;StatusBarFieldId = string | null
 beta;StatusBarItem 
+internal;StatusBarItemProps 
 beta;StatusBarItemsManager 
 beta;StatusBarItemUtilities
 beta;StatusBarLeftSection(props: CommonDivProps): JSX.Element
@@ -527,6 +529,7 @@ beta;useIsBackstageOpen: (manager: BackstageManager) => boolean
 public;UserProfileBackstageItem 
 public;UserProfileBackstageItemProps 
 internal;useSaveFrontstageSettings(frontstageState: FrontstageState_2): void
+internal;useStatusBarEntry(): DockedStatusBarEntryContextArg
 internal;useToolSettings(): ToolSettingsEntry[] | undefined
 beta;useUiItemsProviderStatusBarItems: (manager: StatusBarItemsManager_2) => readonly CommonStatusBarItem[]
 beta;useUiItemsProviderToolbarItems: (manager: ToolbarItemsManager, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation) => readonly CommonToolbarItem[]

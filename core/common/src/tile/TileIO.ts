@@ -9,12 +9,10 @@
 import { BentleyError, ByteStream } from "@bentley/bentleyjs-core";
 import { Point3d } from "@bentley/geometry-core";
 
-// tslint:disable:no-const-enum
-
 /** Type codes for various tile formats. Often these are embedded as 32-bit 'magic numbers' in a binary stream to indicate the format.
  * @internal
  */
-export const enum TileFormat {
+export enum TileFormat {
   Unknown = 0,
   B3dm = 0x6d643362, // "b3dm"
   Gltf = 0x46546c67, // "glTF"
@@ -55,7 +53,7 @@ export function tileFormatFromNumber(formatNumber: number): TileFormat {
 /** Status codes for tile reading operations
  * @internal
  */
-export const enum TileReadStatus {
+export enum TileReadStatus {
   Success = 0,
   InvalidTileData,
   InvalidHeader,

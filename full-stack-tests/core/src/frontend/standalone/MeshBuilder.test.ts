@@ -10,7 +10,7 @@ import { System } from "@bentley/imodeljs-frontend/lib/webgl";
 import { assert, expect } from "chai";
 
 export class FakeDisplayParams extends DisplayParams {
-  public constructor() { super(DisplayParams.Type.Linear, new ColorDef(), new ColorDef()); }
+  public constructor() { super(DisplayParams.Type.Linear, ColorDef.black, ColorDef.black); }
 }
 
 /**
@@ -127,8 +127,8 @@ describe("Mesh Builder Tests", () => {
     const loop = Loop.create(line);
 
     const gfParams: GraphicParams = new GraphicParams();
-    gfParams.setLineColor(ColorDef.white);
-    gfParams.setFillColor(ColorDef.black); // forces region outline flag
+    gfParams.lineColor = ColorDef.white;
+    gfParams.fillColor = ColorDef.black; // forces region outline flag
     const displayParams: DisplayParams = DisplayParams.createForMesh(gfParams);
 
     const loopRange: Range3d = new Range3d();
@@ -175,8 +175,8 @@ describe("Mesh Builder Tests", () => {
     const loop = Loop.create(line);
 
     const gfParams: GraphicParams = new GraphicParams();
-    gfParams.setLineColor(ColorDef.white);
-    gfParams.setFillColor(ColorDef.black); // forces region outline flag
+    gfParams.lineColor = ColorDef.white;
+    gfParams.fillColor = ColorDef.black; // forces region outline flag
     const displayParams: DisplayParams = DisplayParams.createForMesh(gfParams);
 
     const loopRange: Range3d = new Range3d();
@@ -223,8 +223,8 @@ describe("Mesh Builder Tests", () => {
     const loop = Loop.create(line);
 
     const gfParams: GraphicParams = new GraphicParams();
-    gfParams.setLineColor(ColorDef.white);
-    gfParams.setFillColor(ColorDef.black); // forces region outline flag
+    gfParams.lineColor = ColorDef.white;
+    gfParams.fillColor = ColorDef.black; // forces region outline flag
     const displayParams: DisplayParams = DisplayParams.createForMesh(gfParams);
 
     const loopRange: Range3d = new Range3d();
@@ -273,8 +273,8 @@ describe("Mesh Builder Tests", () => {
     const loop = Loop.create(line);
 
     const gfParams: GraphicParams = new GraphicParams();
-    gfParams.setLineColor(ColorDef.white);
-    gfParams.setFillColor(ColorDef.black); // forces region outline flag
+    gfParams.lineColor = ColorDef.white;
+    gfParams.fillColor = ColorDef.black; // forces region outline flag
     const displayParams: DisplayParams = DisplayParams.createForMesh(gfParams);
 
     const loopRange: Range3d = new Range3d();

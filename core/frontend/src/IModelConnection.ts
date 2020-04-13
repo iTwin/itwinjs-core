@@ -492,6 +492,15 @@ export abstract class IModelConnection extends IModel {
         vp.invalidateController();
     });
   }
+
+  /** @internal */
+  public setEcefLocation(ecef: EcefLocationProps): void {
+    super.setEcefLocation(ecef);
+
+    // setEcefLocation is invoked from IModel constructor...
+    if (this.tiles)
+      this.tiles.onEcefChanged();
+  }
 }
 
 /** A connection to a [BriefcaseDb]($backend) hosted on the backend. A briefcase is a copy of an iModel that is synchronized with iModelHub.
@@ -1187,6 +1196,14 @@ export namespace IModelConnection {
             if (undefined === exclude || !exclude.has(tree))
               owner.dispose();
         });
+      }
+    }
+
+    /** @internal */
+    public onEcefChanged(): void {
+      for (const supplier of this._treesBySupplier.keys()) {
+        if (supplier.isEcefDependent)
+          this.dropSupplier(supplier);
       }
     }
   }

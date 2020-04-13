@@ -148,8 +148,8 @@ export class DisplayStyle2d extends DisplayStyle {
       isPrivate: false,
       jsonProperties: {
         styles: {
-          backgroundColor: new ColorDef(),
-          monochromeColor: ColorDef.white,
+          backgroundColor: 0,
+          monochromeColor: ColorDef.white.toJSON(),
           viewflags: ViewFlags.createFrom(),
         },
       },

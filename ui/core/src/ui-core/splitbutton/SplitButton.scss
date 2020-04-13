@@ -2,7 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-@import "../index.scss";
+@import "../button/button";
+@import "../icons/variables";
+@import "../style/baseline";
+@import "../style/typography";
+@import "../style/themecolors";
+@import "../text/mixins";
 
 .core-split-button {
   flex-shrink: 1;

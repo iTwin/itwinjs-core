@@ -8,7 +8,13 @@
 
 import { Id64String, Id64Array } from "@bentley/bentleyjs-core";
 import { EntityQueryParams } from "./EntityProps";
-import { AngleProps, XYZProps, XYProps, YawPitchRollProps } from "@bentley/geometry-core";
+import {
+  AngleProps,
+  Range3dProps,
+  XYZProps,
+  XYProps,
+  YawPitchRollProps,
+} from "@bentley/geometry-core";
 import { ElementProps, DefinitionElementProps, SheetProps } from "./ElementProps";
 import { DisplayStyleProps } from "./DisplayStyleSettings";
 import { CameraProps } from "./Camera";
@@ -26,6 +32,10 @@ export interface ViewStateProps {
   sheetProps?: SheetProps;
   /** @beta */
   sheetAttachments?: Id64Array;
+  /** For drawing views, the extents of the drawing model.
+   * @alpha
+   */
+  modelExtents?: Range3dProps;
 }
 
 /** Properties that define a ModelSelector

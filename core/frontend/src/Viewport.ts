@@ -6,7 +6,21 @@
  * @module Views
  */
 
-import { assert, BeDuration, BeEvent, BeTimePoint, compareStrings, dispose, Id64, Id64Arg, Id64Set, Id64String, IDisposable, SortedArray, StopWatch } from "@bentley/bentleyjs-core";
+import {
+  assert,
+  BeDuration,
+  BeEvent,
+  BeTimePoint,
+  compareStrings,
+  dispose,
+  IDisposable,
+  Id64,
+  Id64Arg,
+  Id64Set,
+  Id64String,
+  SortedArray,
+  StopWatch,
+} from "@bentley/bentleyjs-core";
 import {
   Angle,
   AngleSweep,
@@ -46,12 +60,14 @@ import {
   Hilite,
   ImageBuffer,
   Interpolation,
+  LightSettings,
   NpcCenter,
   Placement2d,
   Placement2dProps,
   Placement3d,
   Placement3dProps,
   PlacementProps,
+  SolarShadowSettings,
   SubCategoryAppearance,
   SubCategoryOverride,
   Tweens,
@@ -924,9 +940,37 @@ export abstract class Viewport implements IDisposable {
   private _featureOverrideProvider?: FeatureOverrideProvider;
   private readonly _tiledGraphicsProviders = new Set<TiledGraphicsProvider>();
   private _hilite = new Hilite.Settings();
-  private _emphasis = new Hilite.Settings(ColorDef.black.clone(), 0, 0, Hilite.Silhouette.Thick);
+  private _emphasis = new Hilite.Settings(ColorDef.black, 0, 0, Hilite.Silhouette.Thick);
   private _outsideClipColor?: ColorDef;
   private _insideClipColor?: ColorDef;
+
+  /** @alpha */
+  public get lightSettings(): LightSettings | undefined {
+    return this.displayStyle.is3d() ? this.displayStyle.settings.lights : undefined;
+  }
+
+  /** @alpha */
+  public setLightSettings(settings: LightSettings) {
+    if (this.displayStyle.is3d()) {
+      this.displayStyle.settings.lights = settings;
+      this.invalidateRenderPlan();
+      this._changeFlags.setDisplayStyle();
+    }
+  }
+
+  /** Settings controlling shadow display for this viewport. Only applicable to 3d views.
+   * @beta
+   */
+  public get solarShadowSettings(): SolarShadowSettings | undefined {
+    return this.view.displayStyle.is3d() ? this.view.displayStyle.settings.solarShadows : undefined;
+  }
+  public setSolarShadowSettings(settings: SolarShadowSettings) {
+    if (this.view.displayStyle.is3d()) {
+      this.view.displayStyle.solarShadows = settings;
+      this.invalidateRenderPlan();
+      this._changeFlags.setDisplayStyle();
+    }
+  }
 
   /** @internal */
   public get viewingSpace(): ViewingSpace { return this._viewingSpace; }
@@ -1638,7 +1682,7 @@ export abstract class Viewport implements IDisposable {
    */
   public get numSelectedTiles(): number {
     const tiles = IModelApp.tileAdmin.getTilesForViewport(this);
-    return undefined !== tiles ? tiles.selected.size : 0;
+    return undefined !== tiles ? tiles.selected.size + tiles.external.selected : 0;
   }
 
   /** The number of tiles which were ready and met the desired level-of-detail for display in the view as of the most recently-drawn frame.
@@ -1650,7 +1694,7 @@ export abstract class Viewport implements IDisposable {
    */
   public get numReadyTiles(): number {
     const tiles = IModelApp.tileAdmin.getTilesForViewport(this);
-    return undefined !== tiles ? tiles.ready.size : 0;
+    return undefined !== tiles ? tiles.ready.size + tiles.external.ready : 0;
   }
 
   /** @internal */
@@ -3066,11 +3110,9 @@ export class ScreenViewport extends Viewport {
       return; // AccuSnap will flash edge/segment geometry if not a surface hit or snap location has been adjusted...
 
     const builder = context.createGraphicBuilder(GraphicType.WorldOverlay);
-    const color = context.viewport.hilite.color.invert(); // Invert hilite color for good contrast
-    const colorFill = color.clone();
+    const color = context.viewport.hilite.color.inverse().withTransparency(100); // Invert hilite color for good contrast
+    const colorFill = color.withTransparency(200);
 
-    color.setTransparency(100);
-    colorFill.setTransparency(200);
     builder.setSymbology(color, colorFill, 1);
 
     const radius = (2.5 * aperture) * context.viewport.getPixelSizeAtPoint(hit.snapPoint);

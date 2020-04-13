@@ -175,9 +175,8 @@ export class FrontstageManager {
   /** Handles a Viewport change & sets the active view accordingly */
   private static _handleSelectedViewportChanged = (args: SelectedViewportChangedArgs) => {
     // istanbul ignore else
-    if (args.current && FrontstageManager.activeFrontstageDef) {
-      const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
-      activeFrontstageDef.setActiveViewFromViewport(args.current);
+    if (args.current && FrontstageManager.activeFrontstageDef && !FrontstageManager.isLoading) {
+      FrontstageManager.activeFrontstageDef.setActiveViewFromViewport(args.current);
     }
   }
 

@@ -245,14 +245,13 @@ export class FrontstageDef {
 
   /** Sets the active view content control based on the selected viewport. */
   public setActiveViewFromViewport(viewport: ScreenViewport): boolean {
-    let activated = false;
     const contentControl = this.contentControls.find((control: ContentControl) => control.viewport === viewport);
     if (contentControl) {
       ContentViewManager.setActiveContent(contentControl.reactNode, true);
-      activated = true;
+      return true;
     }
 
-    return activated;
+    return false;
   }
 
   /** Gets a [[ZoneDef]] based on a given zone id */

@@ -16,7 +16,7 @@ import { SquareButton, SquareButtonProps } from "./SquareButton";
 import { CalculatorOperator, CalculatorEngine } from "./CalculatorEngine";
 
 import "./Calculator.scss";
-const backspaceIcon = require("./backspace.svg"); // tslint:disable-line: no-var-requires
+import backspaceIcon from "./backspace.svg?sprite";
 
 // cSpell:ignore plusmn
 
