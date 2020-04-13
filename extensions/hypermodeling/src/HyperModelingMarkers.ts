@@ -451,7 +451,7 @@ export class SectionLocationSetDecoration {
     if (undefined === HyperModelingExtension.extension || !vp.view.isSpatialView())
       return;
 
-    const sectionMarkerImage = await this.loadImage(HyperModelingExtension.extension.resolveResourceUrl("sectionmarkersprite.ico"));
+    const sectionMarkerImage = await this.loadImage(HyperModelingExtension.extension.resolveResourceUrl("section-marker.svg"));
     if (undefined === sectionMarkerImage)
       return; // No point continuing if we don't have a marker image to show...
 
@@ -479,9 +479,9 @@ export class SectionLocationSetDecoration {
 
     // Start by creating the decoration object and adding it as a ViewManager decorator.
     SectionLocationSetDecoration.decorator = new SectionLocationSetDecoration(vp, sectionMarkerImage);
-    SectionLocationSetDecoration.decorator._detailMarkerImage = await this.loadImage(HyperModelingExtension.extension.resolveResourceUrl("detailmarkersprite.ico"));
-    SectionLocationSetDecoration.decorator._elevationMarkerImage = await this.loadImage(HyperModelingExtension.extension.resolveResourceUrl("elevationmarkersprite.ico"));
-    SectionLocationSetDecoration.decorator._planMarkerImage = await this.loadImage(HyperModelingExtension.extension.resolveResourceUrl("planmarkersprite.ico"));
+    SectionLocationSetDecoration.decorator._detailMarkerImage = await this.loadImage(HyperModelingExtension.extension.resolveResourceUrl("detail-marker.svg"));
+    SectionLocationSetDecoration.decorator._elevationMarkerImage = await this.loadImage(HyperModelingExtension.extension.resolveResourceUrl("elevation-marker.svg"));
+    SectionLocationSetDecoration.decorator._planMarkerImage = await this.loadImage(HyperModelingExtension.extension.resolveResourceUrl("plan-marker.svg"));
     SectionLocationSetDecoration.decorator.createMarkers(secLocPropList);
 
     if (0 === SectionLocationSetDecoration.decorator._sectionLocations.markers.size) {
