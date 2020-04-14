@@ -6,6 +6,11 @@
  * @module Inputs
  */
 
+/*---------------------------------------------------------------------------------------------
+* This code has been adapted from
+* [react-numeric-input](https://github.com/vlad-ignatov/react-numeric-input).
+*--------------------------------------------------------------------------------------------*/
+
 import * as React from "react";
 import { CommonProps } from "../../utils/Props";
 import { Omit } from "../../utils/typeUtils";

@@ -691,6 +691,10 @@
       "allowedCategories": [ "frontend" ]
     },
     {
+      "name": "react-select",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "react-split-pane",
       "allowedCategories": [ "frontend" ]
     },
