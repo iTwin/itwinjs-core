@@ -1801,7 +1801,7 @@ describe("iModel", () => {
     assert.isUndefined(StandaloneDb.tryFindByKey(standaloneFile1));
   });
 
-  it.only("Snapshot iModel properties", () => {
+  it("Snapshot iModel properties", () => {
     const snapshotRootSubjectName = "Snapshot";
     const snapshotFile1: string = IModelTestUtils.prepareOutputFile("IModel", "Snapshot1.bim");
     const snapshotFile2: string = IModelTestUtils.prepareOutputFile("IModel", "Snapshot2.bim");
