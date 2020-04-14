@@ -55,7 +55,7 @@ export class ExtensionAdmin {
 
     // TODO: find default context id
     // TODO: Only load when specified, this should be the default
-    this.addExtensionLoader(new ExtensionServiceExtensionLoader(""), 100);
+    this.addExtensionLoader(new ExtensionServiceExtensionLoader("00000000-0000-0000-0000-000000000000"), 100);
   }
 
   /** @internal */

@@ -5,8 +5,9 @@
 import * as semver from "semver";
 import { ExtensionClient, ExtensionProps } from "@bentley/extension-client";
 import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { Logger, BentleyError } from "@bentley/bentleyjs-core";
 
-import { ExtensionLoader, PendingExtension, LoadedExtensionProps } from "../Extension";
+import { ExtensionLoader, PendingExtension, LoadedExtensionProps, loggerCategory } from "../Extension";
 import { IModelApp } from "../../IModelApp";
 
 /** Downloads extensions from Extension Service
@@ -95,12 +96,19 @@ export class ExtensionServiceExtensionLoader implements ExtensionLoader {
     const requestContext = new AuthorizedClientRequestContext(accessToken);
 
     let extensionProps: ExtensionProps | undefined;
-    if (extensionVersion !== undefined)
-      extensionProps = await extensionClient.getExtensionProps(requestContext, this._contextId, extensionName, extensionVersion);
-    else {
-      const props = await extensionClient.getExtensions(requestContext, this._contextId, extensionName);
-      const newestVersion = semver.rsort(props.map((ext) => ext.version))[0];
-      extensionProps = props.find((ext) => ext.version === newestVersion);
+    try {
+      if (extensionVersion !== undefined)
+        extensionProps = await extensionClient.getExtensionProps(requestContext, this._contextId, extensionName, extensionVersion);
+      else {
+        const props = await extensionClient.getExtensions(requestContext, this._contextId, extensionName);
+        const newestVersion = semver.rsort(props.map((ext) => ext.version))[0];
+        extensionProps = props.find((ext) => ext.version === newestVersion);
+      }
+    } catch (err) {
+      Logger.logInfo(loggerCategory, "Extension " + extensionName + " failed to load from Extension Service");
+      if (err instanceof BentleyError)
+        Logger.logError(loggerCategory, err.name + ": " + err.message);
+      return undefined;
     }
 
     if (extensionProps === undefined || extensionProps.files.length < 1)
