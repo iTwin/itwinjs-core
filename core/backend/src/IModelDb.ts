@@ -2519,7 +2519,6 @@ export class SnapshotDb extends IModelDb {
     if (iModelDb.nativeDb.isEncrypted()) {
       throw new IModelError(DbResult.BE_SQLITE_MISUSE, "Cannot create a snapshot from an encrypted iModel", Logger.logError, loggerCategory);
     }
-    console.log("begin = " + iModelDb.name + " TXNS: " + iModelDb.txns.hasPendingTxns);
 
     IModelJsFs.copySync(iModelDb.nativeDb.getFilePath(), snapshotFile);
     const optionsString: string | undefined = options ? JSON.stringify(options) : undefined;
@@ -2535,33 +2534,22 @@ export class SnapshotDb extends IModelDb {
       }
     }
     const nativeDb = new IModelHost.platform.DgnDb();
-    const result: DbResult = nativeDb.openIModel(snapshotFile, OpenMode.ReadWrite, undefined, optionsString);
-    if (DbResult.BE_SQLITE_OK !== result) {
+    const result = nativeDb.openIModel(snapshotFile, OpenMode.ReadWrite, undefined, optionsString);
+    if (DbResult.BE_SQLITE_OK !== result)
       throw new IModelError(result, "Could not open standalone iModel", Logger.logError, loggerCategory, () => ({ snapshotFile }));
-    }
-    const briefcaseId: BriefcaseId = nativeDb.getBriefcaseId();
-    const isSeedFileMaster: boolean = ReservedBriefcaseId.LegacyMaster === briefcaseId;
-    const isSeedFileSnapshot: boolean = ReservedBriefcaseId.Snapshot === briefcaseId;
-    // Replace iModelId if seedFile is a master or snapshot, preserve iModelId if seedFile is an iModelHub-managed briefcase
-    let iModelId: GuidString = nativeDb.getDbGuid();
-    if ((isSeedFileMaster) || (isSeedFileSnapshot)) {
-      iModelId = Guid.createValue();
-    }
+
+    const briefcaseId = nativeDb.getBriefcaseId();
+
+    // Replace iModelId if seedFile is a snapshot, preserve iModelId if seedFile is an iModelHub-managed briefcase
+    if (ReservedBriefcaseId.Snapshot === briefcaseId || ReservedBriefcaseId.CheckpointSnapshot === briefcaseId)
+      nativeDb.setDbGuid(Guid.createValue());
+
+    nativeDb.resetBriefcaseId(ReservedBriefcaseId.Snapshot);
+
     const snapshotDb = new SnapshotDb(nativeDb, OpenParams.createSnapshot()); // WIP: clean up copied file on error?
-    console.log("before3 = " + snapshotDb.txns.hasPendingTxns);
-    if (isSeedFileMaster) {
-      snapshotDb.setGuid(iModelId);
-    } else {
-      if (DbResult.BE_SQLITE_OK !== snapshotDb.nativeDb.setAsMaster(iModelId)) {
-        throw new IModelError(IModelStatus.SQLiteError, "Error creating snapshot", Logger.logWarning, loggerCategory);
-      }
-    }
-    console.log("before1 = " + snapshotDb.txns.hasPendingTxns);
-    snapshotDb.nativeDb.setBriefcaseId(ReservedBriefcaseId.Snapshot, optionsString);
-    console.log("after = " + snapshotDb.txns.hasPendingTxns);
-    if (options?.createClassViews) {
+    if (options?.createClassViews)
       snapshotDb._createClassViewsOnClose = true; // save flag that will be checked when close() is called
-    }
+
     return snapshotDb;
   }
 
@@ -2642,11 +2630,12 @@ export class StandaloneDb extends IModelDb {
     const filePath: string = nativeDb.getFilePath();
     const iModelRpcProps: IModelRpcProps = { key: filePath, iModelId: nativeDb.getDbGuid(), openMode: openParams.openMode };
     super(nativeDb, iModelRpcProps, openParams);
-    const briefcaseId: BriefcaseId = this.getBriefcaseId();
+    const briefcaseId = this.getBriefcaseId();
     switch (briefcaseId) {
-      case ReservedBriefcaseId.FutureStandalone:
-      case ReservedBriefcaseId.LegacyStandalone: // WIP: temporarily allow this
-      case ReservedBriefcaseId.LegacyMaster: // WIP: temporarily allow this
+      case ReservedBriefcaseId.Standalone:
+      case ReservedBriefcaseId.CheckpointSnapshot: // WIP to be removed.
+      case ReservedBriefcaseId.Snapshot:  // WIP to be removed.
+
         break;
       default:
         throw new IModelError(IModelStatus.BadRequest, "Not a standalone iModel", Logger.logError, loggerCategory);
@@ -2665,7 +2654,7 @@ export class StandaloneDb extends IModelDb {
     if (DbResult.BE_SQLITE_OK !== status) {
       throw new IModelError(status, "Could not create standalone iModel", Logger.logError, loggerCategory, () => ({ filePath }));
     }
-    status = nativeDb.setBriefcaseId(ReservedBriefcaseId.FutureStandalone);
+    status = nativeDb.resetBriefcaseId(ReservedBriefcaseId.Standalone);
     if (DbResult.BE_SQLITE_OK !== status) {
       throw new IModelError(status, "Could not set briefcaseId for standalone iModel", Logger.logError, loggerCategory, () => ({ filePath }));
     }

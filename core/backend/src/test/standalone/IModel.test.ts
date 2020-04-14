@@ -1779,7 +1779,7 @@ describe("iModel", () => {
     assert.isTrue(standaloneDb1.isStandaloneDb());
     assert.isTrue(standaloneDb1.isStandalone);
     assert.isFalse(standaloneDb1.isReadonly, "Expect standalone iModels to be read-write during create");
-    assert.equal(standaloneDb1.getBriefcaseId(), ReservedBriefcaseId.FutureStandalone);
+    assert.equal(standaloneDb1.getBriefcaseId(), ReservedBriefcaseId.Standalone);
     assert.equal(standaloneDb1.filePath, standaloneFile1);
     assert.equal(standaloneDb1, StandaloneDb.tryFindByKey(standaloneFile1), "Should be in the list of open StandaloneDbs");
     assert.isUndefined(SnapshotDb.tryFindByKey(standaloneFile1), "Should not be in the list of open SnapshotDbs");
