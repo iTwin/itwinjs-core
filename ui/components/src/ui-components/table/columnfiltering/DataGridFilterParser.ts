@@ -74,6 +74,9 @@ export interface NumericLessThanData {
 }
 
 /** @internal */
+export type NumericFilterRule = NumericExactMatchData | NumericRangeData | NumericGreaterThanData | NumericLessThanData;
+
+/** @internal */
 export const FILTER_PARSER_TIMER_TIMEOUT = 250;
 
 /** ReactDataGrid Filter Parser

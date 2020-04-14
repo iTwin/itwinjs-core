@@ -14,7 +14,6 @@ import classnames from "classnames";
 // Matches how react-data-grid is exported
 // https://github.com/Microsoft/TypeScript-Handbook/blob/master/pages/Modules.md#export--and-import--require
 import ReactDataGrid = require("react-data-grid");
-import ReactDataGridAddons = require("react-data-grid-addons");
 
 import { DisposableList, Guid, GuidString } from "@bentley/bentleyjs-core";
 import { PropertyValueFormat, PrimitiveValue } from "@bentley/ui-abstract";
@@ -44,17 +43,14 @@ import { TableFilterDescriptorCollection } from "../columnfiltering/TableFilterD
 
 import "./Table.scss";
 import "../columnfiltering/ColumnFiltering.scss";
+import { NumericFilter } from "../columnfiltering/data-grid-addons/NumericFilter";
+import { MultiSelectFilter } from "../columnfiltering/data-grid-addons/MultiSelectFilter";
+import { SingleSelectFilter } from "../columnfiltering/data-grid-addons/SingleSelectFilter";
 
 // cspell:ignore Overscan
 
 const TABLE_ROW_HEIGHT = 27;
 const TABLE_FILTER_ROW_HEIGHT = 32;
-
-const {
-  NumericFilter,
-  MultiSelectFilter,
-  SingleSelectFilter,
-} = ReactDataGridAddons.Filters;
 
 /**
  * Specifies table selection target.

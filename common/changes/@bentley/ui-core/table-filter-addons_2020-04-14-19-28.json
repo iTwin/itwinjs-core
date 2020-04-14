@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-core",
+      "comment": "Copied filter renderers from react-data-grid-addons to ui-components to prevent security error",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-core",
+  "email": "dan.east@bentley.com"
+}
