@@ -683,8 +683,8 @@ class AdditionalTools {
 
   // cSpell:enable
   public additionalHorizontalToolbarItems: CommonToolbarItem[] = [
+    ToolbarHelper.createToolbarItemFromItemDef(0, CoreTools.keyinBrowserButtonItemDef),
     ToolbarHelper.createToolbarItemFromItemDef(5, this._openNestedAnimationStage),
-    ToolbarHelper.createToolbarItemFromItemDef(110, CoreTools.keyinBrowserButtonItemDef),
     ToolbarHelper.createToolbarItemFromItemDef(115, AppTools.tool1),
     ToolbarHelper.createToolbarItemFromItemDef(120, AppTools.tool2),
     ToolbarHelper.createToolbarItemFromItemDef(125, this._viewportPopupButtonItemDef),
