@@ -80,7 +80,7 @@ $components-enumbuttongroup-editor-space-between-toolbar-items: 1px;
   transition-duration: 500ms;
   transition-timing-function: ease;
   position: relative;
-  background: $buic-background-control linear-gradient(to bottom, $buic-button-gradient1, $buic-button-gradient2);
+  background: $buic-background-control /* linear-gradient(to bottom, $buic-button-gradient1, $buic-button-gradient2) */;
   height: $components-enumbuttongroup-editor-item-height;
   width: $components-enumbuttongroup-editor-item-width;
 

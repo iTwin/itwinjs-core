@@ -210,6 +210,20 @@
     {
       "type": "node",
       "request": "launch",
+      "name": "Run EC Schema Locater Tests",
+      "program": "${workspaceFolder}/core/bentley/node_modules/@bentley/build-tools/scripts/test-tsnode.js",
+      "cwd": "${workspaceFolder}/core/ecschema-locaters",
+      "args": [
+        "--testDir=${workspaceFolder}/core/ecschema-locaters/test",
+        "--inspect"
+      ],
+      "port": 9229,
+      "protocol": "inspector",
+      "outputCapture": "std"
+    },
+    {
+      "type": "node",
+      "request": "launch",
       "name": "Run ecschema2ts Tests",
       "program": "${workspaceFolder}/core/bentley/node_modules/@bentley/build-tools/scripts/test-tsnode.js",
       "cwd": "${workspaceFolder}/tools/ecschema2ts",

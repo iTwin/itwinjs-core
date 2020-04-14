@@ -16,7 +16,7 @@ import {
 } from "@bentley/bentleyjs-core";
 import {
   Angle, AxisOrder, ClipVector, Constant, Geometry, LowAndHighXY, LowAndHighXYZ, Map4d, Matrix3d, Plane3dByOriginAndUnitNormal,
-  Point2d, Point3d, PolyfaceBuilder, Range3d, Ray3d, StrokeOptions, Transform, Vector2d, Vector3d, XAndY, XYAndZ, YawPitchRollAngles,
+  Point2d, Point3d, PolyfaceBuilder, Range3d, Ray3d, StrokeOptions, Transform, Vector2d, Vector3d, XAndY, XYAndZ, YawPitchRollAngles, XYZ,
 } from "@bentley/geometry-core";
 import {
   AnalysisStyle,
@@ -55,7 +55,7 @@ import { RenderScheduleState } from "./RenderScheduleState";
 import { StandardView, StandardViewId } from "./StandardView";
 import { TileTreeReference, TileTreeSet } from "./tile/internal";
 import { DecorateContext, SceneContext } from "./ViewContext";
-import { Viewport } from "./Viewport";
+import { Viewport, ViewChangeOptions } from "./Viewport";
 import { GlobalLocation, areaToEyeHeight } from "./ViewGlobalLocation";
 import { ViewingSpace } from "./ViewingSpace";
 
@@ -573,9 +573,10 @@ export abstract class ViewState extends ElementState {
    *  2. Modify the frustum based on user input.
    *  3. Update the ViewState to match the modified frustum.
    * @param frustum the input Frustum.
+   * @param opts for providing onExtentsError
    * @return Success if the frustum was successfully updated, or an appropriate error code.
    */
-  public setupFromFrustum(inFrustum: Frustum): ViewStatus {
+  public setupFromFrustum(inFrustum: Frustum, opts?: ViewChangeOptions): ViewStatus {
     const frustum = inFrustum.clone(); // make sure we don't modify input frustum
     frustum.fixPointOrder();
     const frustPts = frustum.points;
@@ -617,7 +618,7 @@ export abstract class ViewState extends ElementState {
 
     // delta is in view coordinates
     const viewDelta = viewRot.multiplyVector(viewDiagRoot);
-    const status = this.validateViewDelta(viewDelta, false);
+    const status = this.adjustViewDelta(viewDelta, viewOrg, viewRot, undefined, opts);
     if (ViewStatus.Success !== status)
       return status;
 
@@ -668,44 +669,43 @@ export abstract class ViewState extends ElementState {
   }
 
   /** @internal */
-  public showFrustumErrorMessage(status: ViewStatus): void {
-    let key: string;
-    switch (status) {
-      case ViewStatus.InvalidWindow: key = "InvalidWindow"; break;
-      case ViewStatus.MaxWindow: key = "MaxWindow"; break;
-      case ViewStatus.MinWindow: key = "MinWindow"; break;
-      case ViewStatus.MaxZoom: key = "MaxZoom"; break;
-      default:
-        return;
-    }
-    IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, IModelApp.i18n.translate("Viewing." + key)));
+  public outputStatusMessage(status: ViewStatus): ViewStatus {
+    IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, IModelApp.i18n.translate("Viewing." + ViewStatus[status])));
+    return status;
   }
 
   /** @internal */
-  public validateViewDelta(delta: Vector3d, messageNeeded?: boolean): ViewStatus {
-    const limit = this.extentLimits;
-    let error = ViewStatus.Success;
+  public adjustViewDelta(delta: Vector3d, origin: XYZ, rot: Matrix3d, aspect?: number, opts?: ViewChangeOptions): ViewStatus {
+    const origDelta = delta.clone();
 
-    const limitWindowSize = (v: number, ignoreError: boolean) => {
-      if (v < limit.min) {
-        v = limit.min;
-        if (!ignoreError)
-          error = ViewStatus.MinWindow;
-      } else if (v > limit.max) {
-        v = limit.max;
-        if (!ignoreError)
-          error = ViewStatus.MaxWindow;
+    let status = ViewStatus.Success;
+    const limit = this.extentLimits;
+    const limitDelta = (val: number) => {
+      if (val < limit.min) {
+        val = limit.min;
+        status = ViewStatus.MinWindow;
+      } else if (val > limit.max) {
+        val = limit.max;
+        status = ViewStatus.MaxWindow;
       }
-      return v;
+      return val;
     };
 
-    limitWindowSize(delta.x, false); // Just set error, don't clamp delta...
-    limitWindowSize(delta.y, false);
+    delta.x = limitDelta(delta.x);
+    delta.y = limitDelta(delta.y);
 
-    if (messageNeeded && error !== ViewStatus.Success)
-      this.showFrustumErrorMessage(error);
+    if (aspect) { // skip if either undefined or 0
+      aspect *= this.getAspectRatioSkew();
+      if (delta.x > (aspect * delta.y))
+        delta.y = delta.x / aspect;
+      else
+        delta.x = delta.y * aspect;
+    }
 
-    return error;
+    if (!delta.isAlmostEqual(origDelta))
+      origin.addScaledInPlace(rot.multiplyTransposeVector(delta.vectorTo(origDelta, origDelta)), .5);
+
+    return (status !== ViewStatus.Success && opts?.onExtentsError) ? opts.onExtentsError(status) : status;
   }
 
   /** Set the CategorySelector for this view. */
@@ -732,10 +732,15 @@ export abstract class ViewState extends ElementState {
   }
 
   /** Determine whether the specified Category is displayed in this view */
-  public viewsCategory(id: Id64String): boolean { return this.categorySelector.isCategoryViewed(id); }
+  public viewsCategory(id: Id64String): boolean {
+    return this.categorySelector.isCategoryViewed(id);
+  }
 
   /**  Get the aspect ratio (width/height) of this view */
-  public getAspectRatio(): number { const extents = this.getExtents(); return extents.x / extents.y; }
+  public getAspectRatio(): number {
+    const extents = this.getExtents();
+    return extents.x / extents.y;
+  }
 
   /** Get the aspect ratio skew (x/y, usually 1.0) that is used to exaggerate the y axis of the view. */
   public getAspectRatioSkew(): number {
@@ -849,25 +854,23 @@ export abstract class ViewState extends ElementState {
    * result in a much larger volume than worldVolume.
    * @param aspect The X/Y aspect ratio of the view into which the result will be displayed. If the aspect ratio of the volume does not
    * match aspect, the shorter axis is lengthened and the volume is centered. If aspect is undefined, no adjustment is made.
-   * @param margin The amount of "white space" to leave around the view volume (which essentially increases the volume
-   * of space shown in the view.) If undefined, no additional white space is added.
+   * @param options for providing MarginPercent and onExtentsError
    * @note for 2d views, only the X and Y values of volume are used.
    */
-  public lookAtVolume(volume: LowAndHighXYZ | LowAndHighXY, aspect?: number, margin?: MarginPercent) {
+  public lookAtVolume(volume: LowAndHighXYZ | LowAndHighXY, aspect?: number, options?: ViewChangeOptions) {
     const rangeBox = Frustum.fromRange(volume).points;
     this.getRotation().multiplyVectorArrayInPlace(rangeBox);
-    return this.lookAtViewAlignedVolume(Range3d.createArray(rangeBox), aspect, margin);
+    return this.lookAtViewAlignedVolume(Range3d.createArray(rangeBox), aspect, options);
   }
 
   /** Look at a volume of space defined by a range in view local coordinates, keeping its current rotation.
    * @param volume The new volume, in view-aligned coordinates. The resulting view will show all of the volume.
    * @param aspect The X/Y aspect ratio of the view into which the result will be displayed. If the aspect ratio of the volume does not
    * match aspect, the shorter axis is lengthened and the volume is centered. If aspect is undefined, no adjustment is made.
-   * @param margin The amount of "white space" to leave around the view volume (which essentially increases the volume
-   * of space shown in the view.) If undefined, no additional white space is added.
+   * @param options for providing MarginPercent and onExtentsError
    * @see lookAtVolume
    */
-  public lookAtViewAlignedVolume(volume: Range3d, aspect?: number, margin?: MarginPercent) {
+  public lookAtViewAlignedVolume(volume: Range3d, aspect?: number, options?: ViewChangeOptions) {
     if (volume.isNull) // make sure volume is valid
       return;
 
@@ -880,6 +883,8 @@ export abstract class ViewState extends ElementState {
       newOrigin.z -= (minimumDepth - newDelta.z) / 2.0;
       newDelta.z = minimumDepth;
     }
+
+    const margin = options?.marginPercent;
 
     if (this.isCameraEnabled()) {
       // If the camera is on, the only way to guarantee we can see the entire volume is to set delta at the front plane, not focus plane.
@@ -908,22 +913,10 @@ export abstract class ViewState extends ElementState {
       newOrigin.addScaledInPlace(origDelta.minus(newDelta, origDelta), .5);
     }
 
-    if (ViewStatus.Success !== this.validateViewDelta(newDelta, true))
-      return;
-
     viewRot.multiplyTransposeVectorInPlace(newOrigin);
 
-    if (aspect) {
-      const origExtents = newDelta.clone();
-      aspect *= this.getAspectRatioSkew();
-      if (newDelta.x > (aspect * newDelta.y))
-        newDelta.y = newDelta.x / aspect;
-      else
-        newDelta.x = newDelta.y * aspect;
-
-      // adjust origin by half of the distance we modified extents to keep centered
-      newOrigin.addScaledInPlace(viewRot.multiplyTransposeVector(newDelta.vectorTo(origExtents, origExtents)), .5);
-    }
+    if (ViewStatus.Success !== this.adjustViewDelta(newDelta, newOrigin, viewRot, aspect, options))
+      return;
 
     this.setExtents(newDelta);
     this.setOrigin(newOrigin);
@@ -1217,8 +1210,8 @@ export abstract class ViewState3d extends ViewState {
     return backgroundMapGeometry ? backgroundMapGeometry.cartographicToDb(cartographic, result) : undefined;
   }
 
-  public setupFromFrustum(frustum: Frustum): ViewStatus {
-    const stat = super.setupFromFrustum(frustum);
+  public setupFromFrustum(frustum: Frustum, opts?: ViewChangeOptions): ViewStatus {
+    const stat = super.setupFromFrustum(frustum, opts);
     if (ViewStatus.Success !== stat)
       return stat;
 
@@ -1316,11 +1309,12 @@ export abstract class ViewState3d extends ViewState {
    * If newExtents is undefined, the existing size is unchanged.
    * @param frontDistance The distance from the eyePoint to the front plane. If undefined, the existing front distance is used.
    * @param backDistance The distance from the eyePoint to the back plane. If undefined, the existing back distance is used.
+   * @param opts for providing onExtentsError
    * @returns A [[ViewStatus]] indicating whether the camera was successfully positioned.
    * @note If the aspect ratio of viewDelta does not match the aspect ratio of a Viewport into which this view is displayed, it will be
    * adjusted when the [[Viewport]] is synchronized from this view.
    */
-  public lookAt(eyePoint: XYAndZ, targetPoint: XYAndZ, upVector: Vector3d, newExtents?: XAndY, frontDistance?: number, backDistance?: number): ViewStatus {
+  public lookAt(eyePoint: XYAndZ, targetPoint: XYAndZ, upVector: Vector3d, newExtents?: XAndY, frontDistance?: number, backDistance?: number, opts?: ViewChangeOptions): ViewStatus {
     const eye = new Point3d(eyePoint.x, eyePoint.y, eyePoint.z);
     const yVec = upVector.normalize();
     if (!yVec) // up vector zero length?
@@ -1330,8 +1324,10 @@ export abstract class ViewState3d extends ViewState {
     const focusDist = zVec.normalizeWithLength(zVec).mag; // set focus at target point
     const minFrontDist = this.minimumFrontDistance();
 
-    if (focusDist <= minFrontDist) // eye and target are too close together
+    if (focusDist <= minFrontDist) { // eye and target are too close together
+      opts?.onExtentsError?.(ViewStatus.InvalidTargetPoint);
       return ViewStatus.InvalidTargetPoint;
+    }
 
     const xVec = new Vector3d();
     if (yVec.crossProduct(zVec).normalizeWithLength(xVec).mag < Geometry.smallMetricDistance)
@@ -1364,7 +1360,7 @@ export abstract class ViewState3d extends ViewState {
 
     delta.z = (backDistance - frontDistance);
 
-    const stat = this.validateViewDelta(delta, false); // validate window size on focus plane
+    const stat = this.adjustViewDelta(delta, eye, rotation, undefined, opts);
     if (ViewStatus.Success !== stat)
       return stat;
 
@@ -1393,10 +1389,11 @@ export abstract class ViewState3d extends ViewState {
    * @param fov The angle, in radians, that defines the field-of-view for the camera. Must be between .0001 and pi.
    * @param frontDistance The distance from the eyePoint to the front plane. If undefined, the existing front distance is used.
    * @param backDistance The distance from the eyePoint to the back plane. If undefined, the existing back distance is used.
+   * @param opts for providing onExtentsError
    * @returns [[ViewStatus]] indicating whether the camera was successfully positioned.
    * @note The aspect ratio of the view remains unchanged.
    */
-  public lookAtUsingLensAngle(eyePoint: Point3d, targetPoint: Point3d, upVector: Vector3d, fov: Angle, frontDistance?: number, backDistance?: number): ViewStatus {
+  public lookAtUsingLensAngle(eyePoint: Point3d, targetPoint: Point3d, upVector: Vector3d, fov: Angle, frontDistance?: number, backDistance?: number, opts?: ViewChangeOptions): ViewStatus {
     const focusDist = eyePoint.vectorTo(targetPoint).magnitude();   // Set focus at target point
 
     if (focusDist <= Constant.oneMillimeter)       // eye and target are too close together
@@ -1409,7 +1406,7 @@ export abstract class ViewState3d extends ViewState {
     const delta = Vector2d.create(this.extents.x, this.extents.y);
     delta.scale(extent / delta.x, delta);
 
-    return this.lookAt(eyePoint, targetPoint, upVector, delta, frontDistance, backDistance);
+    return this.lookAt(eyePoint, targetPoint, upVector, delta, frontDistance, backDistance, opts);
   }
 
   /** Change the focus distance for this ViewState3d. Preserves the content of the view.

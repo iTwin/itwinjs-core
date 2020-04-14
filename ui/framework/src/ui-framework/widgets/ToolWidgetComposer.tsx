@@ -8,14 +8,16 @@
 
 import * as React from "react";
 
-import { ToolsArea, AppButton } from "@bentley/ui-ninezone";
-import { UiShowHideManager } from "../utils/UiShowHideManager";
-import { Icon, CommonProps } from "@bentley/ui-core";
-
-import widgetIconSvg from "@bentley/icons-generic/icons/home.svg?sprite";
 import { IconSpecUtilities } from "@bentley/ui-abstract";
+import { Icon, CommonProps, useProximityToMouse } from "@bentley/ui-core";
+import { ToolsArea, AppButton } from "@bentley/ui-ninezone";
+
 import { BackstageManager } from "../backstage/BackstageManager";
 import { useFrameworkVersion } from "../hooks/useFrameworkVersion";
+import { UiShowHideManager } from "../utils/UiShowHideManager";
+import { UiFramework } from "../UiFramework";
+
+import widgetIconSvg from "@bentley/icons-generic/icons/home.svg?sprite";
 
 /** Properties for the [[BackstageAppButton]] React component
  * @beta
@@ -43,13 +45,27 @@ export function BackstageAppButton(props: BackstageAppButtonProps) {
     }
   }, [props.icon]);
 
+  const ref = React.useRef<HTMLDivElement>(null);
+  const proximity = useProximityToMouse(ref);
+  const divStyle: React.CSSProperties = {};
+
+  if ("1" !== useFrameworkVersion() && UiShowHideManager.useProximityOpacity && !UiFramework.isMobile()) {
+    const threshold = 100;
+    const scale = ((proximity < threshold) ? threshold - proximity : 0) / threshold;
+    const appButtonOpacity = (0.50 * scale) + 0.50;
+
+    divStyle.opacity = `${appButtonOpacity}`;
+  }
+
   return (
-    <AppButton small={useSmallAppButton}
-      onClick={backstageToggleCommand.execute}
-      icon={
-        <Icon iconSpec={icon} />
-      }
-    />
+    <div style={divStyle} ref={ref}>
+      <AppButton small={useSmallAppButton}
+        onClick={backstageToggleCommand.execute}
+        icon={
+          <Icon iconSpec={icon} />
+        }
+      />
+    </div>
   );
 }
 

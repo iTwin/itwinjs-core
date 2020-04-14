@@ -82,6 +82,7 @@ function getActiveAction(item: GroupButton): ActionButton | undefined {
 export function PopupItemWithDrag(props: PopupItemWithDragProps) {
   const [isPanelShown, setPanelShown] = React.useState(false);
   const [activeAction, setActiveAction] = React.useState(getActiveAction(props.groupItem));
+  const { expandsTo, direction, overflowExpandsTo, overflowDirection, panelAlignment, onPopupPanelOpenClose } = useToolbarWithOverflowDirectionContext();
 
   React.useEffect(() => {
     const newActiveAction = getActiveAction(props.groupItem);
@@ -98,10 +99,18 @@ export function PopupItemWithDrag(props: PopupItemWithDragProps) {
     }
   }, [props.groupItem, activeAction]);
 
+  const processPanelOpenClose = React.useCallback((isOpening: boolean) => {
+    setPanelShown((prev) => {
+      if (prev !== isOpening)
+        onPopupPanelOpenClose(isOpening);
+      return isOpening;
+    });
+  }, [setPanelShown, onPopupPanelOpenClose]);
+
   // handle open and closing popup panel
   const onOpenPanel = React.useCallback(() => {
-    setPanelShown((prev) => !prev);
-  }, []);
+    processPanelOpenClose(!isPanelShown);
+  }, [isPanelShown, processPanelOpenClose]);
 
   // handle open and closing popup panel
   const onGroupButtonClick = React.useCallback(() => {
@@ -116,7 +125,6 @@ export function PopupItemWithDrag(props: PopupItemWithDragProps) {
   const isActive = activeAction ? activeAction.isActive : props.isActive;
   const isDisabled = activeAction ? activeAction.isDisabled : props.isDisabled;
 
-  const { expandsTo, direction, overflowExpandsTo, overflowDirection, panelAlignment } = useToolbarWithOverflowDirectionContext();
   const { handlePointerDown, handleButtonClick } = useDragInteraction(onGroupButtonClick, onOpenPanel);
 
   const className = classnames(
@@ -129,7 +137,9 @@ export function PopupItemWithDrag(props: PopupItemWithDragProps) {
   const ref = React.useRef<HTMLButtonElement>(null);
   const onOutsideClick = React.useCallback(
     // istanbul ignore next
-    () => setPanelShown(false), []);
+    () => {
+      processPanelOpenClose(false);
+    }, [processPanelOpenClose]);
   const isOutsideEvent = React.useCallback((e: PointerEvent) => {
     // if clicking on button that open panel - don't trigger outside click processing
     return !!ref.current && (e.target instanceof Node) && !ref.current.contains(e.target);
@@ -146,7 +156,7 @@ export function PopupItemWithDrag(props: PopupItemWithDragProps) {
 
   return (
     <ToolbarPopupContext.Provider value={{
-      closePanel: /* istanbul ignore next */ () => setPanelShown(false),
+      closePanel: /* istanbul ignore next */ () => processPanelOpenClose(false),
       setSelectedItem: /* istanbul ignore next */ (buttonItem: ActionButton) => setActiveAction(buttonItem),
     }
     }>

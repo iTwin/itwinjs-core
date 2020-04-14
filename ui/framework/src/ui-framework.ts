@@ -216,9 +216,15 @@ export * from "./ui-framework/widget-panels/StatusBar";
 export * from "./ui-framework/widget-panels/Toolbars";
 export * from "./ui-framework/widget-panels/ToolSettings";
 
+export * from "./ui-framework/widgets/BasicNavigationWidget";
+export * from "./ui-framework/widgets/BasicToolWidget";
+export * from "./ui-framework/widgets/DefaultNavigationWidget";
 export * from "./ui-framework/widgets/NavigationWidget";
+export * from "./ui-framework/widgets/NavigationWidgetComposer";
+export * from "./ui-framework/widgets/ReviewToolWidget";
 export * from "./ui-framework/widgets/ToolbarWidgetBase";
 export * from "./ui-framework/widgets/ToolWidget";
+export * from "./ui-framework/widgets/ToolWidgetComposer";
 export * from "./ui-framework/widgets/Widget";
 export * from "./ui-framework/widgets/WidgetControl";
 export * from "./ui-framework/widgets/WidgetDef";
@@ -228,12 +234,6 @@ export * from "./ui-framework/widgets/WidgetProps";
 export * from "./ui-framework/widgets/WidgetStack";
 export * from "./ui-framework/widgets/WidgetState";
 export * from "./ui-framework/widgets/VisibilityWidget";
-export * from "./ui-framework/widgets/DefaultNavigationWidget";
-export * from "./ui-framework/widgets/ReviewToolWidget";
-export * from "./ui-framework/widgets/NavigationWidgetComposer";
-export * from "./ui-framework/widgets/ToolWidgetComposer";
-export * from "./ui-framework/widgets/BasicToolWidget";
-export * from "./ui-framework/widgets/BasicNavigationWidget";
 
 export * from "./ui-framework/workflow/Task";
 export * from "./ui-framework/workflow/Workflow";

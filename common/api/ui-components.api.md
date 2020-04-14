@@ -3542,13 +3542,21 @@ export interface ToolbarOverflowContextProps {
     // (undocumented)
     readonly expandsTo: Direction;
     // (undocumented)
+    readonly onPopupPanelOpenClose: (isOpening: boolean) => void;
+    // (undocumented)
+    readonly openPopupCount: number;
+    // (undocumented)
     readonly overflowDirection: OrthogonalDirection;
+    // (undocumented)
+    readonly overflowDisplayActive: boolean;
     // (undocumented)
     readonly overflowExpandsTo: Direction;
     // (undocumented)
     readonly panelAlignment: ToolbarPanelAlignment;
     // (undocumented)
     readonly useDragInteraction: boolean;
+    // (undocumented)
+    readonly useProximityOpacity: boolean;
 }
 
 // @beta
@@ -3591,6 +3599,7 @@ export interface ToolbarWithOverflowProps extends CommonProps, NoChildrenProps {
     overflowExpandsTo?: Direction;
     panelAlignment?: ToolbarPanelAlignment;
     useDragInteraction?: boolean;
+    useProximityOpacity?: boolean;
 }
 
 // @beta

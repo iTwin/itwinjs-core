@@ -80,7 +80,7 @@ async function openSnapshotIModel(filename: string): Promise<IModelConnection> {
 
 function getOidcConfiguration(): BrowserAuthorizationClientConfiguration | OidcDesktopClientConfiguration {
   const redirectUri = "http://localhost:3000/signin-callback";
-  const baseOidcScope = "openid email profile organization imodelhub context-registry-service:read-only reality-data:read product-settings-service projectwise-share urlps-third-party";
+  const baseOidcScope = "openid email profile organization imodelhub context-registry-service:read-only reality-data:read product-settings-service projectwise-share urlps-third-party imodel-extension-service-api";
 
   return ElectronRpcConfiguration.isElectron
     ? {

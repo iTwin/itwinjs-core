@@ -23,6 +23,8 @@ import { FrontstageManager, ToolActivatedEventArgs } from "../frontstage/Frontst
 import { SyncUiEventDispatcher, SyncUiEventArgs } from "../syncui/SyncUiEventDispatcher";
 import { useFrameworkVersion } from "../hooks/useFrameworkVersion";
 import { ToolbarDragInteractionContext } from "./DragInteraction";
+import { UiFramework, UiVisibilityEventArgs } from "../UiFramework";
+import { UiShowHideManager } from "../utils/UiShowHideManager";
 
 /** Private function to set up sync event monitoring of toolbar items */
 function useToolbarItemSyncEffect(itemsManager: ToolbarItemsManager, syncIdsOfInterest: string[]) {
@@ -197,6 +199,20 @@ function combineItems(defaultItems: ReadonlyArray<CommonToolbarItem>, addonItems
   return availableItems;
 }
 
+const useProximityOpacitySetting = () => {
+  const [proximityOpacity, setProximityOpacity] = React.useState(UiShowHideManager.useProximityOpacity);
+  React.useEffect(() => {
+    const handleUiVisibilityChanged = (_args: UiVisibilityEventArgs) => {
+      setProximityOpacity(UiShowHideManager.useProximityOpacity);
+    };
+    UiFramework.onUiVisibilityChanged.addListener(handleUiVisibilityChanged);
+    return () => {
+      UiFramework.onUiVisibilityChanged.removeListener(handleUiVisibilityChanged);
+    };
+  }, []);
+  return proximityOpacity;
+};
+
 /** Properties for the [[ToolbarComposer]] React components
  * @beta
  */
@@ -241,6 +257,7 @@ export function ToolbarComposer(props: ExtensibleToolbarProps) {
   const panelAlignment = (toolbarOrientation === Orientation.Horizontal && usage === ToolbarUsage.ViewNavigation) ? ToolbarPanelAlignment.End : ToolbarPanelAlignment.Start;
   const version = useFrameworkVersion();
   const isDragEnabled = React.useContext(ToolbarDragInteractionContext);
+  const useProximityOpacity = useProximityOpacitySetting();
 
   if ("1" === version) {
     const createReactNodes = (): React.ReactNode => {
@@ -270,6 +287,7 @@ export function ToolbarComposer(props: ExtensibleToolbarProps) {
     panelAlignment={panelAlignment}
     items={toolbarItems}
     useDragInteraction={isDragEnabled}
+    useProximityOpacity={useProximityOpacity && !UiFramework.isMobile()}
   />;
 
 }

@@ -6,6 +6,7 @@
 !lib/**/*.js
 !lib/**/*.js.map
 !lib/assets/**/*
+!lib/public/**/*
 !Ruleset.schema.json
 !*.md
 # then ignore some stuff again

@@ -45,6 +45,10 @@ With the above in mind, the quickest/easiest migration pattern for all existing 
 
 iModel.js has officially moved up to the [latest stable version](https://www.electronjs.org/docs/tutorial/electron-timelines) of Electron.
 
+## Increase minimum Node version
+
+The minimum Node version required for an iModel.js application is `10.16.0`.
+
 ## 3D Globe Background Map Display
 
 The background map can now be displayed as either a plane or a three-dimensional globe. This is controlled by the [GlobeMode]($common) property of the [DisplayStyleSettings.backgroundMap]($common) associated with a [DisplayStyleState]($frontend) or [DisplayStyle]($backend).
@@ -367,9 +371,20 @@ function tryTransformGeometry(entry: GeometryStreamIteratorEntry, transform: Tra
 
 ### Immutable Color Types
 
-[ColorDef]($common) is now an immutable type. Naturally, mutating methods like `setTransparency` have been removed; they are replaced by methods like `withTransparency` which return a modified copy of the original `ColorDef`. The constructor is now private; replace usage of `new ColorDef(x)` with `ColorDef.create(x)`.
+[ColorDef]($common) is now an immutable type. Naturally, mutating methods like `setTransparency` have been removed; they are replaced by methods like `withTransparency` which return a modified copy of the original `ColorDef`. The constructor is now private; replace `new ColorDef(x)` with `ColorDef.create(x)`.
 
 [HSVColor]($common) and [HSLColor]($common) are also now immutable.
+
+### ViewChangeOptions Interface
+
+The [ViewChangeOptions]($frontend) interface now has a new optional member, `onExtentsError`. It provides a way for applications to be notified when a viewing operation hits the view-specific limits for extents (either minimum or maximum size.) If possible, the viewing api will adjust the extents value to the limit, but if `onExtentsError` is provided, it is called with the error value so it can show a message to the user. If the error should be ignored (i.e. the adjusted value is acceptable), return `ViewStatus.Success` from `onExtentsError`.
+
+The signatures of several `ViewState` methods have been modified to accept a `ViewChangeOptions` parameter:
+
+- [ViewState.setupFromFrustum]($frontend)
+- [ViewState.lookAt]($frontend)
+- [ViewState.lookAtVolume]($frontend)
+- [ViewState.lookAtViewAlignedVolume]($frontend)
 
 ### PropertyRecord classes moved to `ui-abstract` package
 

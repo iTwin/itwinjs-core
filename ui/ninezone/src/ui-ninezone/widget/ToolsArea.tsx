@@ -30,7 +30,7 @@ export interface ToolsAreaProps extends CommonProps, NoChildrenProps {
   onMouseLeave?: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
 }
 
-/** ToolsArea widget is used in ToolsArea (Zone 1) and Navigation (Zone 3???) zones of 9-Zone UI.
+/** ToolsArea widget is used in ToolsArea (top left) and Navigation (top right) zones of 9-Zone UI.
  * @note Should be placed in [[Zone]] component.
  * @alpha
  */

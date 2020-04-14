@@ -13,7 +13,7 @@ import { Geometry, AxisOrder } from "../../Geometry";
 
 import { Sample } from "../../serialization/GeometrySamples";
 import { Checker } from "../Checker";
-import { expect } from "chai";
+import { expect, assert } from "chai";
 import { OrderedRotationAngles } from "../../geometry3d/OrderedRotationAngles";
 import { SineCosinePolynomial } from "../../numerics/Polynomials";
 import { GeometryQuery } from "../../curve/GeometryQuery";
@@ -845,11 +845,7 @@ describe("MiscAngles", () => {
 
     const f = Angle.createDegrees(10);
     f.freeze();
-    try {
-      f.setDegrees(20);
-    } catch {
-      console.log(" Yes! We caught the update to frozen angle.");
-    }
+    assert.throws(() => f.setDegrees(20));
 
     expect(ck.getNumErrors()).equals(0);
   });

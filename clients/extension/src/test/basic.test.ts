@@ -10,7 +10,7 @@ import { Config, ConnectClient, AuthorizedClientRequestContext } from "@bentley/
 import { LogLevel, Logger, Guid, ExtensionStatus } from "@bentley/bentleyjs-core";
 import { TestUsers, getAccessTokenFromBackend } from "@bentley/oidc-signin-tool/lib/frontend";
 import { ExtensionClient } from "../ExtensionClient";
-import { ExtensionProps } from "../Extension";
+import { ExtensionProps } from "../ExtensionProps";
 
 describe("ExtensionClient (#integration)", () => {
   let projectId: string;
@@ -80,15 +80,15 @@ describe("ExtensionClient (#integration)", () => {
         ].sort(),
         uploadedBy: TestUsers.regular.email,
       },
-      {
-        extensionName: "testExt 2",
-        version: "v1",
-        files: [
-          "testFile",
-          "testDir1/testFile.txt",
-        ].sort(),
-        uploadedBy: TestUsers.regular.email,
-      },
+      // {
+      //   extensionName: "testExt 2",
+      //   version: "v1",
+      //   files: [
+      //     "testFile",
+      //     "testDir1/testFile.txt",
+      //   ].sort(),
+      //   uploadedBy: TestUsers.regular.email,
+      // },
     ];
 
     const foundExtensions = await extensionClient.getExtensions(requestContext, projectId);
@@ -102,17 +102,17 @@ describe("ExtensionClient (#integration)", () => {
       // comment out until we come up with a better way to handle the difference between who uploaded and the test user used.
       // assert.strictEqual(found!.uploadedBy, expected.uploadedBy, "UploadedBy does not match");
       assert.strictEqual(found!.contextId, projectId, "ContextId does not match");
-      assert.strictEqual(found!.uri.length, expected.files.length, "Returned file count does not match");
+      assert.strictEqual(found!.files.length, expected.files.length, "Returned file count does not match");
 
-      const sortedUris = found!.uri.sort();
-      const firstUri = sortedUris[0];
-      const lastUri = sortedUris[sortedUris.length - 1];
+      const sortedUris = found!.files.sort((a, b) => a.url.localeCompare(b.url));
+      const firstUri = sortedUris[0].url;
+      const lastUri = sortedUris[sortedUris.length - 1].url;
       let relativePathStart = 0;
       while (relativePathStart < firstUri.length && firstUri[relativePathStart] === lastUri[relativePathStart]) relativePathStart++;
       while (relativePathStart > 0 && firstUri[relativePathStart] !== "/") relativePathStart--;
 
       for (let i = 0; i < expected.files.length; i++) {
-        assert.isTrue(sortedUris[i].startsWith(expected.files[i] + "?", relativePathStart + 1), "File name does not match - expected " + expected.files[i] + ", found " + sortedUris[i].substr(relativePathStart));
+        assert.isTrue(sortedUris[i].url.startsWith(expected.files[i] + "?", relativePathStart + 1), "File name does not match - expected " + expected.files[i] + ", found " + sortedUris[i].url.substr(relativePathStart));
       }
     }
   });
@@ -149,19 +149,18 @@ describe("ExtensionClient (#integration)", () => {
       const found = foundExtensions.find((props: ExtensionProps) => props.extensionName === expected.extensionName && props.version === expected.version);
       assert.isDefined(found, "Could not find extension with name " + expected.extensionName + " and version " + expected.version);
 
-      assert.strictEqual(found!.uploadedBy, expected.uploadedBy, "UploadedBy does not match");
       assert.strictEqual(found!.contextId, projectId, "ContextId does not match");
-      assert.strictEqual(found!.uri.length, expected.files.length, "Returned file count does not match");
+      assert.strictEqual(found!.files.length, expected.files.length, "Returned file count does not match");
 
-      const sortedUris = found!.uri.sort();
-      const firstUri = sortedUris[0];
-      const lastUri = sortedUris[sortedUris.length - 1];
+      const sortedUris = found!.files.sort((a, b) => a.url.localeCompare(b.url));
+      const firstUri = sortedUris[0].url;
+      const lastUri = sortedUris[sortedUris.length - 1].url;
       let relativePathStart = 0;
       while (relativePathStart < firstUri.length && firstUri[relativePathStart] === lastUri[relativePathStart]) relativePathStart++;
       while (relativePathStart > 0 && firstUri[relativePathStart] !== "/") relativePathStart--;
 
       for (let i = 0; i < expected.files.length; i++) {
-        assert.isTrue(sortedUris[i].startsWith(expected.files[i] + "?", relativePathStart + 1), "File name does not match - expected " + expected.files[i] + ", found " + sortedUris[i].substr(relativePathStart));
+        assert.isTrue(sortedUris[i].url.startsWith(expected.files[i] + "?", relativePathStart + 1), "File name does not match - expected " + expected.files[i] + ", found " + sortedUris[i].url.substr(relativePathStart));
       }
     }
   });
@@ -183,14 +182,14 @@ describe("ExtensionClient (#integration)", () => {
       { name: "testFile2", content: "test file content 2 ++" },
       { name: "testDir1/testDir2/test file3.txt", content: "test file content 3 ++" },
     ],
-  },
-  {
-    name: "testExt 2",
-    version: "v1",
-    files: [
-      { name: "testFile", content: "test file content 1" },
-      { name: "testDir1/testFile.txt", content: "test file content 2" },
-    ],
+    // },
+    // {
+    //   name: "testExt 2",
+    //   version: "v1",
+    //   files: [
+    //     { name: "testFile", content: "test file content 1" },
+    //     { name: "testDir1/testFile.txt", content: "test file content 2" },
+    //   ],
   }].forEach((testCase) => {
     it("downloads extension " + testCase.name + ", version " + testCase.version, async () => {
       const files = await extensionClient.downloadExtension(requestContext, projectId, testCase.name, testCase.version);
@@ -224,23 +223,21 @@ describe("ExtensionClient (#integration)", () => {
     });
   });
 
-  it.skip("uploads and deletes extension with specific version", async () => {
+  it("uploads and deletes extension with specific version", async () => {
     const extensionName = "tempTestExt-" + Guid.createValue();
     const currentTime = new Date().getTime();
-    await extensionClient.createExtension(requestContext, projectId, extensionName, "v1", new ArrayBuffer(64));
-    await extensionClient.createExtension(requestContext, projectId, extensionName, "v2", new ArrayBuffer(64));
+    await extensionClient.createExtension(requestContext, projectId, extensionName, "v1", "f5a5fd42d16a20302798ef6ed309979b43003d2320d9f0e8ea9831a92759fb4b", new ArrayBuffer(64));
+    await extensionClient.createExtension(requestContext, projectId, extensionName, "v2", "f5a5fd42d16a20302798ef6ed309979b43003d2320d9f0e8ea9831a92759fb4b", new ArrayBuffer(64));
 
     let extensions = await extensionClient.getExtensions(requestContext, projectId);
     let created = extensions.find((props) => props.extensionName === extensionName && props.version === "v1");
     assert.isDefined(created);
     assert.strictEqual(created!.contextId, projectId, "Incorrect contextId");
-    assert.strictEqual(created!.uploadedBy, TestUsers.regular.email, "Incorrect uploadedBy");
     assert.approximately(created!.timestamp.getTime(), currentTime, 60 * 1000, "Incorrect timestamp");
 
     created = extensions.find((props) => props.extensionName === extensionName && props.version === "v2");
     assert.isDefined(created);
     assert.strictEqual(created!.contextId, projectId, "Incorrect contextId");
-    assert.strictEqual(created!.uploadedBy, TestUsers.regular.email, "Incorrect uploadedBy");
     assert.approximately(created!.timestamp.getTime(), currentTime, 60 * 1000, "Incorrect timestamp");
 
     await extensionClient.deleteExtension(requestContext, projectId, extensionName, "v1");
@@ -253,10 +250,10 @@ describe("ExtensionClient (#integration)", () => {
     await extensionClient.deleteExtension(requestContext, projectId, extensionName, "v2");
   });
 
-  it.skip("uploads and deletes all versions of extension", async () => {
+  it("uploads and deletes all versions of extension", async () => {
     const extensionName = "tempTestExt-" + Guid.createValue();
-    await extensionClient.createExtension(requestContext, projectId, extensionName, "v1", new ArrayBuffer(64));
-    await extensionClient.createExtension(requestContext, projectId, extensionName, "v2", new ArrayBuffer(64));
+    await extensionClient.createExtension(requestContext, projectId, extensionName, "v1", "f5a5fd42d16a20302798ef6ed309979b43003d2320d9f0e8ea9831a92759fb4b", new ArrayBuffer(64));
+    await extensionClient.createExtension(requestContext, projectId, extensionName, "v2", "f5a5fd42d16a20302798ef6ed309979b43003d2320d9f0e8ea9831a92759fb4b", new ArrayBuffer(64));
 
     let extensions = await extensionClient.getExtensions(requestContext, projectId);
     let created = extensions.find((props) => props.extensionName === extensionName && props.version === "v1");
@@ -273,7 +270,7 @@ describe("ExtensionClient (#integration)", () => {
   it("fails to upload already existing extension", async () => {
     let thrown = false;
     try {
-      await extensionClient.createExtension(requestContext, projectId, "testExt1", "v1", new ArrayBuffer(64));
+      await extensionClient.createExtension(requestContext, projectId, "testExt1", "v1", "f5a5fd42d16a20302798ef6ed309979b43003d2320d9f0e8ea9831a92759fb4b", new ArrayBuffer(64));
     } catch (error) {
       thrown = true;
       assert.isDefined(error.errorNumber);
@@ -284,16 +281,16 @@ describe("ExtensionClient (#integration)", () => {
     assert.isTrue(thrown, "Exception not thrown");
   });
 
-  it("fails to get extensions with incorrect context id", async () => {
+  it("fails to get extensions with invalid context id", async () => {
     let thrown = false;
     try {
-      await extensionClient.getExtensions(requestContext, "invalid id");
+      await extensionClient.getExtensions(requestContext, "not a guid");
     } catch (error) {
       thrown = true;
       assert.isDefined(error.errorNumber);
       assert.isDefined(error.message);
       assert.strictEqual(error.errorNumber, ExtensionStatus.BadRequest);
-      assert.strictEqual(error.message, "Please Enter valid Context Id");
+      assert.strictEqual(error.message, "Please Enter valid Context Id. Invalid GUID");
     }
     assert.isTrue(thrown, "Exception not thrown");
   });

@@ -260,7 +260,7 @@ describe("ViewState", () => {
     viewState.setEyePoint(Point3d.create(5, 5, 50));
 
     let cppView: SpatialViewDefinitionProps = await unitTestRpcImp.executeTest(imodel.getRpcProps(), "lookAtVolume", testParams);
-    viewState.lookAtVolume(testParams.volume, testParams.aspectRatio, testParams.margin);
+    viewState.lookAtVolume(testParams.volume, testParams.aspectRatio, { marginPercent: testParams.margin });
     compareView(viewState, cppView, "LookAtVolume 1");
 
     // LookAtVolume test #3
@@ -274,7 +274,7 @@ describe("ViewState", () => {
     testParams.margin = new MarginPercent(.01, .02, .03, .04);
     testParams.aspectRatio = 1.2;
     cppView = await unitTestRpcImp.executeTest(imodel.getRpcProps(), "lookAtVolume", testParams);
-    viewState.lookAtVolume(testParams.volume, testParams.aspectRatio, testParams.margin);
+    viewState.lookAtVolume(testParams.volume, testParams.aspectRatio, { marginPercent: testParams.margin });
     compareView(viewState, cppView, "LookAtVolume 3");
 
     // LookAtVolume test #2
@@ -288,7 +288,7 @@ describe("ViewState", () => {
     testParams.aspectRatio = 1.0;
     testParams.margin = new MarginPercent(0, 0, 0, 0);
     cppView = await unitTestRpcImp.executeTest(imodel.getRpcProps(), "lookAtVolume", testParams);
-    viewState.lookAtVolume(testParams.volume, testParams.aspectRatio, testParams.margin);
+    viewState.lookAtVolume(testParams.volume, testParams.aspectRatio, { marginPercent: testParams.margin });
     compareView(viewState, cppView, "LookAtVolume 2");
   });
 
@@ -397,32 +397,42 @@ describe("ViewState", () => {
     expect(view.extentLimits.min).to.equal(defaultLimits.min);
     expect(view.extentLimits.max).to.equal(defaultLimits.max);
 
+    const origin = new Point3d(0, 0, 0);
+    const rot = Matrix3d.identity;
     // Default limits are accepted
     const delta = new Vector3d(defaultLimits.min, defaultLimits.min, defaultLimits.min);
-    expect(view.validateViewDelta(delta)).to.equal(ViewStatus.Success);
+    expect(view.adjustViewDelta(delta, origin, rot)).to.equal(ViewStatus.Success);
     delta.set(defaultLimits.max, defaultLimits.max, defaultLimits.max);
-    expect(view.validateViewDelta(delta)).to.equal(ViewStatus.Success);
+    expect(view.adjustViewDelta(delta, origin, rot)).to.equal(ViewStatus.Success);
     delta.scale(0.5, delta);
-    expect(view.validateViewDelta(delta)).to.equal(ViewStatus.Success);
+    expect(view.adjustViewDelta(delta, origin, rot)).to.equal(ViewStatus.Success);
 
     // Outside default limits rejected
     delta.scale(5.0, delta);
-    expect(view.validateViewDelta(delta)).to.equal(ViewStatus.MaxWindow);
+    expect(view.adjustViewDelta(delta, origin, rot)).to.equal(ViewStatus.MaxWindow);
     delta.scale(0.0, delta);
-    expect(view.validateViewDelta(delta)).to.equal(ViewStatus.MinWindow);
+    expect(view.adjustViewDelta(delta, origin, rot)).to.equal(ViewStatus.MinWindow);
 
     // Override default limits
     view.extentLimits = { min: 20, max: 100 };
     expect(view.extentLimits.min).to.equal(20);
     expect(view.extentLimits.max).to.equal(100);
     delta.set(20, 20, 20);
-    expect(view.validateViewDelta(delta)).to.equal(ViewStatus.Success);
+    expect(view.adjustViewDelta(delta, origin, rot)).to.equal(ViewStatus.Success);
     delta.set(100, 100, 100);
-    expect(view.validateViewDelta(delta)).to.equal(ViewStatus.Success);
+    expect(view.adjustViewDelta(delta, origin, rot)).to.equal(ViewStatus.Success);
     delta.set(10, 10, 10);
-    expect(view.validateViewDelta(delta)).to.equal(ViewStatus.MinWindow);
+    expect(view.adjustViewDelta(delta, origin, rot)).to.equal(ViewStatus.MinWindow);
     delta.set(110, 110, 110);
-    expect(view.validateViewDelta(delta)).to.equal(ViewStatus.MaxWindow);
+    expect(view.adjustViewDelta(delta, origin, rot)).to.equal(ViewStatus.MaxWindow);
+
+    delta.set(0, 21, 50);
+    expect(view.adjustViewDelta(delta, origin, rot, 2)).to.equal(ViewStatus.MinWindow);
+    assert.isTrue(delta.isAlmostEqual({ x: 42, y: 21, z: 50 }));
+
+    delta.set(0, 0, 50);
+    expect(view.adjustViewDelta(delta, origin, rot, .5)).to.equal(ViewStatus.MinWindow);
+    assert.isTrue(delta.isAlmostEqual({ x: 20, y: 40, z: 50 }));
 
     // Cloning preserved extent overrides
     const view2 = view.clone();

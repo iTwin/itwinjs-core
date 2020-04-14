@@ -12,7 +12,7 @@ import { ClientRequestContext } from '@bentley/bentleyjs-core';
 export class ExtensionClient extends Client {
     constructor();
     // @internal
-    createExtension(requestContext: AuthorizedClientRequestContext, contextId: string, extensionName: string, version: string, file: ArrayBufferLike): Promise<void>;
+    createExtension(requestContext: AuthorizedClientRequestContext, contextId: string, extensionName: string, version: string, checksum: string, file: ArrayBufferLike): Promise<void>;
     deleteExtension(requestContext: AuthorizedClientRequestContext, contextId: string, extensionName: string, version?: string): Promise<void>;
     downloadExtension(requestContext: AuthorizedClientRequestContext, contextId: string, extensionName: string, version: string): Promise<ExtensionFile[]>;
     getExtensionProps(requestContext: AuthorizedClientRequestContext, contextId: string, extensionName: string, version: string): Promise<ExtensionProps | undefined>;

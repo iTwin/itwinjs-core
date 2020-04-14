@@ -83,17 +83,6 @@ export class Downloader {
 }
 
 // @internal (undocumented)
-export class DownloaderNode extends Downloader {
-    constructor();
-    // (undocumented)
-    downloadBytes(method: string, requestURL: string, requestHeaders: StringMap<string>, postText: string, postData: ABuffer, responseHeaders: StringMap<string>): Promise<ABuffer>;
-    // (undocumented)
-    downloadText(method: string, requestURL: string, requestHeaders: StringMap<string>, postText: string, postData: ABuffer, responseHeaders: StringMap<string>): Promise<string>;
-    // (undocumented)
-    downloadText2(requestURL: string): Promise<string>;
-    }
-
-// @internal (undocumented)
 export class DownloaderXhr extends Downloader {
     constructor();
     // (undocumented)

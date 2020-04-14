@@ -6,11 +6,8 @@
 @import "variables";
 
 .components-toolbar-items-container {
-  $divider-color: $buic-background-toolbutton-stroke;
-  $border-color: $buic-background-toolbutton-stroke;
   $border-radius: 3px;
 
-  border-color: $border-color;
   border-width: $components-items-border-width;
   border-radius: $border-radius;
   border-style: solid;
@@ -29,7 +26,6 @@
 
         &:before {
           content: '';
-          background-color: $divider-color;
           display: block;
           position: absolute;
           pointer-events: none;
@@ -55,7 +51,6 @@
 
         &:before {
           content: '';
-          background-color: $divider-color;
           display: block;
           position: absolute;
           pointer-events: none;

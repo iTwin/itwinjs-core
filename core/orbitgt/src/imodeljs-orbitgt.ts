@@ -27,7 +27,9 @@ export * from "./spatial/crs/CRSManager";
 export * from "./spatial/ecrs/OnlineEngine";
 export * from "./system/runtime/ALong";
 export * from "./system/runtime/Downloader";
-export * from "./system/runtime/DownloaderNode";
+// Do not export the Node specific functionality from the barrel.  It will cause
+// polyfills on the frontend.
+// export * from "./system/runtime/DownloaderNode";
 export * from "./system/runtime/DownloaderXhr";
 export * from "./system/storage/PageCachedFile";
 export * from "./system/storage/UrlFS";

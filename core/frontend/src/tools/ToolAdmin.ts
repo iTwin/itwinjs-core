@@ -1646,14 +1646,15 @@ export class WheelEventProcessor {
       target.setFrom(isSnapOrPrecision ? ev.point : ev.rawPoint);
     }
 
+    const view = vp.view;
     const animationOptions: ViewChangeOptions = {
       animateFrustumChange: true,
       cancelOnAbort: true,
       animationTime: ScreenViewport.animation.time.wheel.milliseconds,
       easingFunction: Easing.Cubic.Out,
+      onExtentsError: (err) => view.outputStatusMessage(err),
     };
 
-    const view = vp.view;
     const currentInputState = IModelApp.toolAdmin.currentInputState;
     let status: ViewStatus;
     const now = Date.now();
@@ -1694,18 +1695,15 @@ export class WheelEventProcessor {
       const zDir = view.getZVector();
       target.setFrom(newEye.plusScaled(zDir, zDir.dotProduct(newEye.vectorTo(target))));
 
-      if (ViewStatus.Success === (status = view.lookAtUsingLensAngle(newEye, target, view.getYVector(), view.camera.lens)))
+      if (ViewStatus.Success === (status = view.lookAtUsingLensAngle(newEye, target, view.getYVector(), view.camera.lens, undefined, undefined, animationOptions)))
         vp.synchWithView(animationOptions);
-      else
-        vp.view.showFrustumErrorMessage(status);
     } else {
       const targetNpc = vp.worldToNpc(target);
       const trans = Transform.createFixedPointAndMatrix(targetNpc, Matrix3d.createScale(zoomRatio, zoomRatio, 1));
 
       const viewCenter = trans.multiplyPoint3d(Point3d.create(.5, .5, .5));
       vp.npcToWorld(viewCenter, viewCenter);
-      vp.zoom(viewCenter, zoomRatio, animationOptions);
-      status = ViewStatus.Success;
+      return vp.zoom(viewCenter, zoomRatio, animationOptions);
     }
 
     // if we scrolled out, we may have invalidated the current AccuSnap path

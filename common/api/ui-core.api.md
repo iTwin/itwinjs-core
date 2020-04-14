@@ -1449,6 +1449,7 @@ export class Rectangle implements RectangleProps {
     // (undocumented)
     getHeight(): number;
     getHorizontalSegmentBounds(segmentId: number, numberOfSegments: number): Rectangle;
+    getShortestDistanceToPoint(point: PointProps): number;
     // (undocumented)
     getSize(): Size;
     getVerticalSegmentBounds(segmentId: number, numberOfSegments: number): Rectangle;
@@ -2013,6 +2014,9 @@ outsideEventPredicate?: (e: PointerEvent) => boolean): React.MutableRefObject<T 
 
 // @public
 export function useOptionalDisposable<TDisposable extends IDisposable>(createDisposable: () => TDisposable | undefined): TDisposable | undefined;
+
+// @internal
+export const useProximityToMouse: (elementRef: React.RefObject<Element>) => number;
 
 // @internal
 export function useRefEffect<T>(callback: (instance: T | null) => (void | (() => void)), deps: ReadonlyArray<any>): (instance: T | null) => void;

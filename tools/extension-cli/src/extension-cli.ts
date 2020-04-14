@@ -7,6 +7,7 @@ import * as fs from "fs";
 import * as path from "path";
 import * as tar from "tar";
 import * as rimraf from "rimraf";
+import * as sha256 from "fast-sha256";
 import { ExtensionClient } from "@bentley/extension-client";
 import { IModelHost } from "@bentley/imodeljs-backend";
 import { BentleyError, ExtensionStatus } from "@bentley/bentleyjs-core";
@@ -88,7 +89,9 @@ const argv = yargs.strict(true)
       const filesToTar = fs.readdirSync(filePath);
       try {
         await tar.create({ file: tarFileName, cwd: filePath }, filesToTar);
-        await client.createExtension(requestContext, argv.contextId, argv.extensionName, argv.extensionVersion, fs.readFileSync(tarFileName).buffer);
+        const buffer = fs.readFileSync(tarFileName);
+        const checksum = Buffer.from(sha256.hash(buffer)).toString("hex");
+        await client.createExtension(requestContext, argv.contextId, argv.extensionName, argv.extensionVersion, checksum, buffer.buffer);
       } finally {
         rimraf.sync(tarFileName);
       }

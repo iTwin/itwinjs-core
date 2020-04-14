@@ -84,7 +84,6 @@ interface ToolAssistanceFieldState {
   showTouchInstructions: boolean;
   mouseTouchTabIndex: number;
   isPinned: boolean;
-  target: HTMLElement | null;
 }
 
 /** Tool Assistance Field React component.
@@ -94,9 +93,11 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
   private static _toolAssistanceKey = "ToolAssistance";
   private static _showPromptAtCursorKey = "showPromptAtCursor";
   private static _mouseTouchTabIndexKey = "mouseTouchTabIndex";
+  private _target: HTMLElement | null = null;
   private _className: string;
   private _indicator = React.createRef<HTMLDivElement>();
   private _cursorPrompt: CursorPrompt;
+  private _isMounted = false;
 
   /** @internal */
   public static readonly defaultProps: ToolAssistanceFieldDefaultProps = {
@@ -126,7 +127,6 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
       showTouchInstructions: false,
       mouseTouchTabIndex: 0,
       isPinned: false,
-      target: null,
     };
 
     this._cursorPrompt = new CursorPrompt(this.props.cursorPromptTimeout, this.props.fadeOutCursorPrompt);
@@ -134,6 +134,7 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
 
   /** @internal */
   public async componentDidMount() {
+    this._isMounted = true;
     MessageManager.onToolAssistanceChangedEvent.addListener(this._handleToolAssistanceChangedEvent);
     FrontstageManager.onToolIconChangedEvent.addListener(this._handleToolIconChangedEvent);
 
@@ -142,12 +143,14 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
 
   /** @internal */
   public componentWillUnmount() {
+    this._isMounted = false;
     MessageManager.onToolAssistanceChangedEvent.removeListener(this._handleToolAssistanceChangedEvent);
     FrontstageManager.onToolIconChangedEvent.removeListener(this._handleToolIconChangedEvent);
   }
 
   private async restoreSettings() {
     let getShowPromptAtCursor: Promise<UiSettingsResult> | undefined;
+    // istanbul ignore else
     if (this.props.includePromptAtCursor) {
       getShowPromptAtCursor = this.props.uiSettings.getSetting(ToolAssistanceField._toolAssistanceKey, ToolAssistanceField._showPromptAtCursorKey);
     }
@@ -158,12 +161,18 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
     ]);
 
     // istanbul ignore else
-    if (showPromptAtCursorResult !== undefined && showPromptAtCursorResult.status === UiSettingsStatus.Success)
-      this.setState({ showPromptAtCursor: showPromptAtCursorResult.setting });
+    if (showPromptAtCursorResult !== undefined && showPromptAtCursorResult.status === UiSettingsStatus.Success) {
+      // istanbul ignore else
+      if (this._isMounted)
+        this.setState({ showPromptAtCursor: showPromptAtCursorResult.setting });
+    }
 
     // istanbul ignore else
-    if (mouseTouchTabIndexResult.status === UiSettingsStatus.Success)
-      this.setState({ mouseTouchTabIndex: mouseTouchTabIndexResult.setting });
+    if (mouseTouchTabIndexResult.status === UiSettingsStatus.Success) {
+      // istanbul ignore else
+      if (this._isMounted)
+        this.setState({ mouseTouchTabIndex: mouseTouchTabIndexResult.setting });
+    }
   }
 
   private _handleToolAssistanceChangedEvent = (args: ToolAssistanceChangedEventArgs): void => {
@@ -191,17 +200,19 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
       }
     }
 
-    this.setState(
-      {
-        instructions: args.instructions,
-        showMouseTouchTabs,
-        showMouseInstructions,
-        showTouchInstructions,
-      },
-      () => {
-        this._showCursorPrompt();
-      },
-    );
+    // istanbul ignore else
+    if (this._isMounted)
+      this.setState(
+        {
+          instructions: args.instructions,
+          showMouseTouchTabs,
+          showMouseInstructions,
+          showTouchInstructions,
+        },
+        () => {
+          this._showCursorPrompt();
+        },
+      );
   }
 
   private _isBothInstruction = (instruction: ToolAssistanceInstruction) => {
@@ -213,12 +224,14 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
   private _isTouchInstruction = (instruction: ToolAssistanceInstruction) => instruction.inputMethod === ToolAssistanceInputMethod.Touch;
 
   private _handleToolIconChangedEvent = (args: ToolIconChangedEventArgs): void => {
-    this.setState(
-      { toolIconSpec: args.iconSpec },
-      () => {
-        this._showCursorPrompt();
-      },
-    );
+    // istanbul ignore else
+    if (this._isMounted)
+      this.setState(
+        { toolIconSpec: args.iconSpec },
+        () => {
+          this._showCursorPrompt();
+        },
+      );
 
   }
 
@@ -247,11 +260,13 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
     const showMouseInstructions = index === 0;
     const showTouchInstructions = index === 1;
 
-    this.setState({
-      mouseTouchTabIndex: index,
-      showMouseInstructions,
-      showTouchInstructions,
-    });
+    // istanbul ignore else
+    if (this._isMounted)
+      this.setState({
+        mouseTouchTabIndex: index,
+        showMouseInstructions,
+        showTouchInstructions,
+      });
     await this.props.uiSettings.saveSetting(ToolAssistanceField._toolAssistanceKey, ToolAssistanceField._mouseTouchTabIndexKey, index);
   }
 
@@ -357,7 +372,7 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
           isOpen={this.props.openWidget === this._className}
           onClose={this._handleClose}
           onOutsideClick={this._handleOutsideClick}
-          target={this.state.target}
+          target={this._target}
           isPinned={this.state.isPinned}
         >
           <ToolAssistanceDialog
@@ -385,11 +400,13 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
   }
 
   private _handleTargetRef = (target: HTMLElement | null) => {
-    this.setState({ target });
+    this._target = target;
   }
 
   private _onPromptAtCursorChange = async (checked: boolean) => {
-    this.setState({ showPromptAtCursor: checked });
+    // istanbul ignore else
+    if (this._isMounted)
+      this.setState({ showPromptAtCursor: checked });
 
     await this.props.uiSettings.saveSetting(ToolAssistanceField._toolAssistanceKey, ToolAssistanceField._showPromptAtCursorKey, checked);
   }
@@ -419,7 +436,9 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
   }
 
   private _handlePinButtonClick = () => {
-    this.setState({ isPinned: true });
+    // istanbul ignore else
+    if (this._isMounted)
+      this.setState({ isPinned: true });
   }
 
   private _handleCloseButtonClick = () => {
@@ -431,8 +450,11 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
     if (this.props.onOpenWidget)
       this.props.onOpenWidget(openWidget);
 
-    if (!openWidget && this.state.isPinned)
-      this.setState({ isPinned: false });
+    if (!openWidget && this.state.isPinned) {
+      // istanbul ignore else
+      if (this._isMounted)
+        this.setState({ isPinned: false });
+    }
   }
 
   /** @internal */
