@@ -90,8 +90,24 @@ export class TestOidcClient implements IAuthorizationClient {
     if (this.isAuthorized)
       return this._accessToken!;
 
-    this._accessToken = await this.signIn();
-    return this._accessToken;
+    // Add retry logic to help avoid flaky issues on CI machines.
+    let numRetries = 0;
+    while (numRetries < 3) {
+      try {
+        this._accessToken = await this.signIn();
+      } catch (err) {
+        // rethrow error if hit max number of retries or if it's not a navigation failure (i.e. a flaky failure)
+        if (numRetries === 2 ||
+          (err instanceof Error && -1 === err.message.indexOf("Execution context was destroyed, most likely because of a navigation")))
+          throw err;
+        numRetries++;
+        continue;
+      }
+
+      break;
+    }
+
+    return this._accessToken!;
   }
 
   private async signIn(): Promise<AccessToken> {
