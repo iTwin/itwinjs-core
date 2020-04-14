@@ -639,9 +639,6 @@ export abstract class IModelDb extends IModel {
   /** Get the GUID of this iModel.  */
   public getGuid(): GuidString { return this.nativeDb.getDbGuid(); }
 
-  /** Set the GUID of this iModel. */
-  public setGuid(guid: GuidString): DbResult { return this.nativeDb.setDbGuid(guid); }
-
   /** Update the project extents for this iModel.
    * <p><em>Example:</em>
    * ``` ts
@@ -2498,7 +2495,7 @@ export class SnapshotDb extends IModelDb {
     if (DbResult.BE_SQLITE_OK !== status) {
       throw new IModelError(status, "Could not create snapshot iModel", Logger.logError, loggerCategory, () => ({ filePath }));
     }
-    status = nativeDb.setBriefcaseId(ReservedBriefcaseId.Snapshot, optionsString); // setBriefcaseId can close/reopen nativeDb, so must pass encryption props
+    status = nativeDb.resetBriefcaseId(ReservedBriefcaseId.Snapshot);
     if (DbResult.BE_SQLITE_OK !== status) {
       throw new IModelError(status, "Could not set briefcaseId for snapshot iModel", Logger.logError, loggerCategory, () => ({ filePath }));
     }
@@ -2522,6 +2519,8 @@ export class SnapshotDb extends IModelDb {
     if (iModelDb.nativeDb.isEncrypted()) {
       throw new IModelError(DbResult.BE_SQLITE_MISUSE, "Cannot create a snapshot from an encrypted iModel", Logger.logError, loggerCategory);
     }
+    console.log("begin = " + iModelDb.name + " TXNS: " + iModelDb.txns.hasPendingTxns);
+
     IModelJsFs.copySync(iModelDb.nativeDb.getFilePath(), snapshotFile);
     const optionsString: string | undefined = options ? JSON.stringify(options) : undefined;
     if (options?.password) {
@@ -2549,6 +2548,7 @@ export class SnapshotDb extends IModelDb {
       iModelId = Guid.createValue();
     }
     const snapshotDb = new SnapshotDb(nativeDb, OpenParams.createSnapshot()); // WIP: clean up copied file on error?
+    console.log("before3 = " + snapshotDb.txns.hasPendingTxns);
     if (isSeedFileMaster) {
       snapshotDb.setGuid(iModelId);
     } else {
@@ -2556,7 +2556,9 @@ export class SnapshotDb extends IModelDb {
         throw new IModelError(IModelStatus.SQLiteError, "Error creating snapshot", Logger.logWarning, loggerCategory);
       }
     }
+    console.log("before1 = " + snapshotDb.txns.hasPendingTxns);
     snapshotDb.nativeDb.setBriefcaseId(ReservedBriefcaseId.Snapshot, optionsString);
+    console.log("after = " + snapshotDb.txns.hasPendingTxns);
     if (options?.createClassViews) {
       snapshotDb._createClassViewsOnClose = true; // save flag that will be checked when close() is called
     }

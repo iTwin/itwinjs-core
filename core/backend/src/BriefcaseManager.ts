@@ -48,21 +48,11 @@ export enum ReservedBriefcaseId {
    */
   MaxRepo = 1 << 24,
 
-  /** From a legacy perspective, 0 used to identify a master iModel. However, this value now means CheckpointSnapshot. This value is preserved for code that might encounter older iModels
-   * @internal
-   */
-  LegacyMaster = 0,
-
-  /** From a legacy perspective, 1 used to identify a standalone iModel. However, this value now means Snapshot. This value is preserved for code that might encounter older iModels
-   * @internal
-   */
-  LegacyStandalone = 1,
-
   /** Reserve a fixed BriefcaseId for the new concept of a single-practitioner standalone iModel.
    * @note This will be renamed to Standalone once all source code has been updated.
    * @internal
    */
-  FutureStandalone = ReservedBriefcaseId.MaxRepo - 2,
+  Standalone = ReservedBriefcaseId.MaxRepo - 2,
 
   /** A snapshot iModel is read-only once created. They are typically used for archival and data transfer purposes.
    * @note Legacy standalone iModels are now considered snapshots
@@ -496,7 +486,7 @@ export class BriefcaseManager {
     const pathname = this.buildFixedVersionBriefcasePath(iModelId, changeSetId);
     if (!IModelJsFs.existsSync(pathname))
       return;
-    const briefcase = this.initializeBriefcase(requestContext, contextId, iModelId, changeSetId, pathname, openParams, ReservedBriefcaseId.LegacyStandalone);
+    const briefcase = this.initializeBriefcase(requestContext, contextId, iModelId, changeSetId, pathname, openParams, ReservedBriefcaseId.Snapshot);
     return briefcase;
   }
 
@@ -940,7 +930,7 @@ export class BriefcaseManager {
   }
 
   private static async initBriefcaseFileId(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseEntry) {
-    if (briefcase.briefcaseId === ReservedBriefcaseId.LegacyStandalone)
+    if (briefcase.briefcaseId === ReservedBriefcaseId.Snapshot)
       return;
 
     const hubBriefcases: HubBriefcase[] = await BriefcaseManager.imodelClient.briefcases.get(requestContext, briefcase.iModelId, new BriefcaseQuery().byId(briefcase.briefcaseId));
@@ -952,7 +942,7 @@ export class BriefcaseManager {
 
   private static createFixedVersionBriefcase(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelId: GuidString, changeSetId: GuidString, openParams: OpenParams): BriefcaseEntry {
     const pathname = this.buildFixedVersionBriefcasePath(iModelId, changeSetId);
-    const briefcase = new BriefcaseEntry(contextId, iModelId, changeSetId, pathname, OpenParams.fixedVersion(), ReservedBriefcaseId.LegacyStandalone);
+    const briefcase = new BriefcaseEntry(contextId, iModelId, changeSetId, pathname, OpenParams.fixedVersion(), ReservedBriefcaseId.Snapshot);
     briefcase.downloadProgress = openParams.downloadProgress;
 
     briefcase.isPending = this.finishCreateBriefcase(requestContext, briefcase);
@@ -1019,23 +1009,16 @@ export class BriefcaseManager {
       await BriefcaseManager.downloadCheckpoint(requestContext, checkpoint, briefcase.pathname, briefcase.downloadProgress, briefcase.cancelDownloadRequest);
       requestContext.enter();
 
-      const perfLogger = new PerfLogger("Opening iModel - setting up context/iModel/briefcase ids", () => briefcase.getDebugInfo());
-      // Setup briefcase
-      // TODO: Only need to setup briefcase id for the ReadWrite case after the hub properly sets up these checkpoints
-      // The following function set the briefcaseId with  sync=off which should be safe for this case. It make open faster.
-      let res: DbResult = IModelHost.platform.DgnDb.unsafeSetBriefcaseId(briefcase.pathname, briefcase.briefcaseId, briefcase.iModelId, briefcase.contextId);
-      if (DbResult.BE_SQLITE_OK !== res)
-        throw new IModelError(res, "Unable setup briefcase id", Logger.logError, loggerCategory, () => ({ ...briefcase.getDebugInfo(), result: res }));
-      perfLogger.dispose();
-
       // Open checkpoint
       const nativeDb = new IModelHost.platform.DgnDb();
-      res = nativeDb.openIModel(briefcase.pathname, OpenMode.ReadWrite);
+      const res = nativeDb.openIModel(briefcase.pathname, OpenMode.ReadWrite);
       if (DbResult.BE_SQLITE_OK !== res)
         throw new IModelError(res, "Unable to open Db", Logger.logError, loggerCategory, () => ({ ...briefcase.getDebugInfo(), result: res }));
-      assert(nativeDb.getParentChangeSetId() === checkpoint.mergedChangeSetId, "The parentChangeSetId of the checkpoint was not correctly set by iModelHub");
 
-      // verify that all following values were set correctly by unsafeSetBriefcaseId()
+      nativeDb.resetBriefcaseId(briefcase.briefcaseId);
+
+      // verify that all following values were set correctly
+      assert(nativeDb.getParentChangeSetId() === checkpoint.mergedChangeSetId, "The parentChangeSetId of the checkpoint was not correctly set by iModelHub");
       assert(nativeDb.getBriefcaseId() === briefcase.briefcaseId);
       assert(nativeDb.getDbGuid() === briefcase.iModelId);
       assert(nativeDb.queryProjectGuid() === briefcase.contextId);

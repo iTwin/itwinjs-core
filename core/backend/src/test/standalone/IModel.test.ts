@@ -1801,7 +1801,7 @@ describe("iModel", () => {
     assert.isUndefined(StandaloneDb.tryFindByKey(standaloneFile1));
   });
 
-  it("Snapshot iModel properties", () => {
+  it.only("Snapshot iModel properties", () => {
     const snapshotRootSubjectName = "Snapshot";
     const snapshotFile1: string = IModelTestUtils.prepareOutputFile("IModel", "Snapshot1.bim");
     const snapshotFile2: string = IModelTestUtils.prepareOutputFile("IModel", "Snapshot2.bim");
@@ -1815,6 +1815,9 @@ describe("iModel", () => {
     assert.isTrue(snapshotDb1.isSnapshot);
     assert.isTrue(snapshotDb2.isSnapshot);
     assert.isTrue(snapshotDb3.isSnapshot);
+    assert.isFalse(snapshotDb1.txns.hasPendingTxns);
+    assert.isFalse(snapshotDb2.txns.hasPendingTxns);
+    assert.isFalse(snapshotDb3.txns.hasPendingTxns);
     assert.isFalse(snapshotDb1.isReadonly, "Expect snapshots to be read-write during create");
     assert.isFalse(snapshotDb2.isReadonly, "Expect snapshots to be read-write during create");
     assert.isFalse(snapshotDb3.isReadonly, "Expect snapshots to be read-write during create");

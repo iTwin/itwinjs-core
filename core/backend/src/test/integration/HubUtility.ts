@@ -395,7 +395,7 @@ export class HubUtility {
     IModelJsFs.copySync(seedPathname, iModelPathname);
 
     const iModel = StandaloneDb.openFile(iModelPathname, OpenMode.ReadWrite);
-    iModel.nativeDb.setBriefcaseId(ReservedBriefcaseId.LegacyStandalone);
+    iModel.nativeDb.resetBriefcaseId(ReservedBriefcaseId.Snapshot);
     iModel.close();
 
     return iModelPathname;
