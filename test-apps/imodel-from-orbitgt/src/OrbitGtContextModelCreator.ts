@@ -16,9 +16,10 @@ import {
   CRSManager,
   OnlineEngine,
   Downloader,
-  DownloaderNode,
   OrbitGtBounds,
 } from "@bentley/orbitgt-core";
+
+import { DownloaderNode } from "@bentley/orbitgt-core/lib/system/runtime/DownloaderNode";
 
 interface OrbitGtPointCloudProps {
   accountName: string;

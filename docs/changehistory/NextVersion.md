@@ -45,6 +45,10 @@ With the above in mind, the quickest/easiest migration pattern for all existing 
 
 iModel.js has officially moved up to the [latest stable version](https://www.electronjs.org/docs/tutorial/electron-timelines) of Electron.
 
+## Increase minimum Node version
+
+The minimum Node version required for an iModel.js application is `10.16.0`.
+
 ## 3D Globe Background Map Display
 
 The background map can now be displayed as either a plane or a three-dimensional globe. This is controlled by the [GlobeMode]($common) property of the [DisplayStyleSettings.backgroundMap]($common) associated with a [DisplayStyleState]($frontend) or [DisplayStyle]($backend).
