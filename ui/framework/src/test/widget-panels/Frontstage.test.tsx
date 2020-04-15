@@ -14,7 +14,7 @@ import {
   initializeFrontstageState, StagePanelDef, WidgetDef, WidgetState, addPanelWidgets, StagePanelZonesDef, StagePanelZoneDef, getWidgetId,
   UiSettingsProvider,
 } from "../../ui-framework";
-import { useActiveModalFrontstageInfo } from "../../ui-framework/widget-panels/ModalFrontstageComposer";
+import { useActiveModalFrontstageInfo, ModalFrontstageComposer } from "../../ui-framework/widget-panels/ModalFrontstageComposer";
 import TestUtils, { storageMock, UiSettingsStub } from "../TestUtils";
 
 describe("WidgetPanelsFrontstage", () => {
@@ -57,35 +57,12 @@ describe("WidgetPanelsFrontstage", () => {
     wrapper.should.matchSnapshot();
   });
 
-  it("should render modal stage content when mounter", () => {
+  it("should render modal stage content when mounted", () => {
     const modalStageInfo = {
       title: "TestModalStage",
       content: <div>Hello World!</div>,
     };
-    sandbox.stub(FrontstageManager, "activeModalFrontstage").get(() => modalStageInfo);
-    const frontstageDef = new FrontstageDef();
-    const frontstageProvider = moq.Mock.ofType<FrontstageProvider>();
-    const frontstage = moq.Mock.ofType<FrontstageProvider["frontstage"]>();
-    const contentGroup = moq.Mock.ofType<FrontstageDef["contentGroup"]>();
-    sandbox.stub(FrontstageManager, "activeFrontstageDef").get(() => frontstageDef);
-    sandbox.stub(frontstageDef, "frontstageProvider").get(() => frontstageProvider.object);
-    sandbox.stub(frontstageDef, "contentGroup").get(() => contentGroup.object);
-    frontstageProvider.setup((x) => x.frontstage).returns(() => frontstage.object);
-    const wrapper = mount(<WidgetPanelsFrontstage />);
-    wrapper.unmount();
-  });
-
-  it("should not render modal stage content if activeModalFrontstage is undefined when mounted ", () => {
-    sandbox.stub(FrontstageManager, "activeModalFrontstage").get(() => undefined);
-    const frontstageDef = new FrontstageDef();
-    const frontstageProvider = moq.Mock.ofType<FrontstageProvider>();
-    const frontstage = moq.Mock.ofType<FrontstageProvider["frontstage"]>();
-    const contentGroup = moq.Mock.ofType<FrontstageDef["contentGroup"]>();
-    sandbox.stub(FrontstageManager, "activeFrontstageDef").get(() => frontstageDef);
-    sandbox.stub(frontstageDef, "frontstageProvider").get(() => frontstageProvider.object);
-    sandbox.stub(frontstageDef, "contentGroup").get(() => contentGroup.object);
-    frontstageProvider.setup((x) => x.frontstage).returns(() => frontstage.object);
-    const wrapper = mount(<WidgetPanelsFrontstage />);
+    const wrapper = mount(<ModalFrontstageComposer stageInfo={modalStageInfo} />);
     wrapper.unmount();
   });
 

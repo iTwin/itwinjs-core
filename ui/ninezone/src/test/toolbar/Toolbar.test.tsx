@@ -9,6 +9,15 @@ import * as sinon from "sinon";
 import { Direction, Toolbar, ToolbarPanelAlignment, PanelsProvider, ToolbarItem, ToolbarItemProps } from "../../ui-ninezone";
 import { getToolbarItemProps } from "../../ui-ninezone/toolbar/Toolbar";
 
+class Item extends React.Component implements ToolbarItem {
+  public panel = document.createElement("div");
+  public history = document.createElement("div");
+
+  public render() {
+    return <div></div>;
+  }
+}
+
 describe("<Toolbar />", () => {
   it("should render", () => {
     mount(<Toolbar />);
@@ -33,7 +42,7 @@ describe("<Toolbar />", () => {
     const rendered = mount(
       <Toolbar items={
         <>
-          <button />
+          <Item />
         </>
       }
         expandsTo={Direction.Right}
@@ -53,15 +62,6 @@ describe("<Toolbar />", () => {
     rendered.should.matchSnapshot();
   });
 });
-
-class Item extends React.Component implements ToolbarItem {
-  public panel = document.createElement("div");
-  public history = document.createElement("div");
-
-  public render() {
-    return <div></div>;
-  }
-}
 
 class ExpandableItem extends React.Component<ToolbarItemProps<Item>> {
   public render() {

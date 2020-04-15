@@ -56,7 +56,7 @@ export function useToolSettings() {
     return () => {
       FrontstageManager.onToolActivatedEvent.removeListener(handleToolActivatedEvent);
     };
-  }, []);
+  }, [setSettings]);
   return settings;
 }
 

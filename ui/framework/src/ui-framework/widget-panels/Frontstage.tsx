@@ -44,6 +44,7 @@ export const WidgetPanelsFrontstage = React.memo(function WidgetPanelsFrontstage
   );
 });
 
+// istanbul ignore next
 const WidgetPanelsFrontstageComponent = React.memo(function WidgetPanelsFrontstageComponent() { // tslint:disable-line: variable-name no-shadowed-variable
   const activeModalFrontstageInfo = useActiveModalFrontstageInfo();
   return (
@@ -335,6 +336,7 @@ export function useFrontstageDefNineZone(frontstage?: FrontstageDef): [Frontstag
 }
 
 /** @internal */
+// istanbul ignore next
 export function useSaveFrontstageSettings(frontstageState: FrontstageState) {
   const uiSettings = useUiSettingsContext();
   const saveSetting = React.useCallback(debounce(async (state: FrontstageState) => {
@@ -358,6 +360,7 @@ function getFrontstageStateSettingName(frontstageId: FrontstageStateSetting["id"
   return `frontstageState[${frontstageId}]`;
 }
 
+// istanbul ignore next
 function debounce<T extends (...args: any[]) => any>(func: T, duration: number) {
   let timeout: number | undefined;
   const debounced = (...args: Parameters<T>) => {

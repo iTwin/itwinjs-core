@@ -20,13 +20,14 @@ export function useActiveModalFrontstageInfo() {
     return () => {
       FrontstageManager.onModalFrontstageChangedEvent.removeListener(handleModalFrontstageChangedEvent);
     };
-  }, []);
+  }, [setActiveModalFrontstageInfo]);
   return activeModalFrontstageInfo;
 }
 
 /** @internal */
 export function ModalFrontstageComposer({ stageInfo }: { stageInfo: ModalFrontstageInfo | undefined }) {
   const handleCloseModal = React.useCallback(/* istanbul ignore next */() => FrontstageManager.closeModalFrontstage(), []);
+  // istanbul ignore next
   if (!stageInfo)
     return null;
 

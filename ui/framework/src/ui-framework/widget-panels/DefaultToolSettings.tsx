@@ -21,6 +21,7 @@ export function WidgetPanelsDefaultToolSettings(props: WidgetPanelsDefaultToolSe
   return (<>{props.itemsManager.rows.map((row) => {
     return row.items.map((item) => {
       const record = DialogItemsManager.getPropertyRecord(item);
+      // istanbul ignore next
       if (record === undefined)
         return;
       return (

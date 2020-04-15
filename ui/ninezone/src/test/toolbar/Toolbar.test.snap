@@ -27,7 +27,7 @@ exports[`<Toolbar /> renders with item 1`] = `
   expandsTo={3}
   items={
     <UNDEFINED>
-      <button />
+      <Item />
     </UNDEFINED>
   }
   panelAlignment={0}
@@ -35,7 +35,7 @@ exports[`<Toolbar /> renders with item 1`] = `
   <PanelsProvider
     items={
       <UNDEFINED>
-        <button />
+        <Item />
       </UNDEFINED>
     }
     panels={
@@ -57,10 +57,12 @@ exports[`<Toolbar /> renders with item 1`] = `
         <div
           className="nz-toolbar-items nz-vertical nz-items"
         >
-          <button
+          <Item
             key=".$.0"
             toolbarItemRef={[Function]}
-          />
+          >
+            <div />
+          </Item>
         </div>
       </Items>
     </div>
