@@ -476,6 +476,10 @@ const checkForEarlySurfaceDiscardWithFeatureID = `
   if (kFrustumType_Ortho2d == u_frustum.z)
     return false;
 
+  // Only planar stuff is permitted to show through other, non-planar surfaces.
+  if (depthAndOrder.x < kRenderOrder_PlanarBit || u_renderOrder >= kRenderOrder_PlanarBit)
+    return false;
+
   // Use a tighter tolerance for two different elements since we're only fighting roundoff error.
   return depthDelta <= 4.0e-5;
 `;
@@ -484,6 +488,7 @@ const checkForEarlySurfaceDiscardWithFeatureID = `
 export function addRenderOrderConstants(builder: ShaderBuilder) {
   builder.addConstant("kRenderOrder_Linear", VariableType.Float, RenderOrder.Linear.toFixed(1));
   builder.addConstant("kRenderOrder_Silhouette", VariableType.Float, RenderOrder.Silhouette.toFixed(1));
+  builder.addConstant("kRenderOrder_UnlitSurface", VariableType.Float, RenderOrder.UnlitSurface.toFixed(1));
   builder.addConstant("kRenderOrder_LitSurface", VariableType.Float, RenderOrder.LitSurface.toFixed(1));
   builder.addConstant("kRenderOrder_PlanarUnlitSurface", VariableType.Float, RenderOrder.PlanarUnlitSurface.toFixed(1));
   builder.addConstant("kRenderOrder_PlanarLitSurface", VariableType.Float, RenderOrder.PlanarLitSurface.toFixed(1));
