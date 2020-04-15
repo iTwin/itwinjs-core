@@ -2337,7 +2337,6 @@ export abstract class IModelDb extends IModel {
     requestSnap(requestContext: ClientRequestContext, sessionId: string, props: SnapRequestProps): Promise<SnapResponseProps>;
     saveChanges(description?: string): void;
     saveFileProperty(prop: FilePropertyProps, strValue: string | undefined, blobVal?: Uint8Array): DbResult;
-    setGuid(guid: GuidString): DbResult;
     // (undocumented)
     readonly tiles: IModelDb.Tiles;
     static tryFindByKey(key: string): IModelDb | undefined;
@@ -3499,16 +3498,12 @@ export class RepositoryModel extends DefinitionModel {
 export enum ReservedBriefcaseId {
     // @beta
     CheckpointSnapshot = 0,
-    // @internal
-    FutureStandalone = 16777214,
     Illegal = 4294967295,
     // @internal
-    LegacyMaster = 0,
-    // @internal
-    LegacyStandalone = 1,
-    // @internal
     MaxRepo = 16777216,
-    Snapshot = 1
+    Snapshot = 1,
+    // @internal
+    Standalone = 16777214
 }
 
 // @public
