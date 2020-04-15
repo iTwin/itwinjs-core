@@ -139,7 +139,7 @@ const stylePresets: Style3dPreset[] = [
     backgroundColor: 16777215,
     viewflags: { noConstruct: true, noFill: true, visEdges: true, renderMode: 6 },
     lights: {
-      solar: { direction: [0, -0.6178171353958787, 0.7863218089378106], intensity: 1.95, alwaysEnabled: true },
+      solar: { direction: [0, -0.6178171353958787, -0.7863218089378106], intensity: 1.95, alwaysEnabled: true },
       ambient: { intensity: 0.65 },
       portrait: { intensity: 0 },
       specularIntensity: 0,
