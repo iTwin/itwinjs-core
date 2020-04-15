@@ -158,7 +158,8 @@ describe("NativeApp (#integration)", () => {
     assert.isTrue(cancelled2);
   });
 
-  it("should be able to update a briefcase by reopening it", async () => {
+  // NEEDS_WORK: VSTS#295999
+  it.skip("should be able to update a briefcase by reopening it", async () => {
     const testIModelBaseName = "NativeAppTest";
     const testChangeSetUtility = new TestChangeSetUtility();
     await testChangeSetUtility.initialize(testProjectName, testIModelBaseName);

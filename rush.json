@@ -370,12 +370,6 @@
       "shouldPublish": false
     },
     {
-      "packageName": "test-tools",
-      "projectFolder": "extensions/test-tools",
-      "reviewCategory": "internal",
-      "shouldPublish": false
-    },
-    {
       "packageName": "display-test-app",
       "projectFolder": "test-apps/display-test-app",
       "reviewCategory": "internal",

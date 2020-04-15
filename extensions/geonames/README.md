@@ -8,7 +8,7 @@ This extension is an example of a extension that can be added to iModel.js host 
 
 ## Development Setup
 
-1. Select and prepare an iModel.js host application. You can use the [Simple Viewer App](https://imodeljs.gitbub.io/simple-viewer-app), for example.
+1. Select and prepare an iModel.js host application. You can use the [Simple Viewer App](https://github.com/imodeljs/imodeljs-samples/tree/master/interactive-app/simple-viewer-app), for example.
 
 2. The dependencies are installed as part of "rush install" in the iModel.js monorepository.
 

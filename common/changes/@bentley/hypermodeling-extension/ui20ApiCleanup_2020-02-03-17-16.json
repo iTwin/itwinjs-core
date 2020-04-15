@@ -1,11 +1,11 @@
 {
   "changes": [
     {
-      "packageName": "@bentley/hypermodeling-plugin",
+      "packageName": "@bentley/hypermodeling-extension",
       "comment": "Update to use UiItemManager",
       "type": "none"
     }
   ],
-  "packageName": "@bentley/hypermodeling-plugin",
+  "packageName": "@bentley/hypermodeling-extension",
   "email": "bill.steinbock@bentley.com"
 }

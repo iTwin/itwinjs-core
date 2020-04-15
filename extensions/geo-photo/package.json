@@ -7,7 +7,7 @@
   "scripts": {
     "prebuild": "npm run pseudolocalize && npm run copy:assets",
     "build": "npm run prebuild && tsc 1>&2 && npm run build:extension",
-    "build:extension": "extension-webpack-tools build -s ./src/geoPhoto.ts -o ./lib/extension",
+    "build:extension": "extension-webpack-tools build -s ./src/geoPhoto.ts -o ./lib/extension --sourceMap true",
     "clean": "rimraf lib .rush",
     "copy:assets": "cpx \"./src/public/locales/**/*\" ./lib/extension/locales/",
     "cover": "",

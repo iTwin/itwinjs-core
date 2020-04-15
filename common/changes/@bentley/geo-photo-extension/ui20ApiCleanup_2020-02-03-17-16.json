@@ -1,11 +1,11 @@
 {
   "changes": [
     {
-      "packageName": "@bentley/geo-photo-plugin",
+      "packageName": "@bentley/geo-photo-extension",
       "comment": "Update to use UiItemManager",
       "type": "none"
     }
   ],
-  "packageName": "@bentley/geo-photo-plugin",
+  "packageName": "@bentley/geo-photo-extension",
   "email": "bill.steinbock@bentley.com"
 }
