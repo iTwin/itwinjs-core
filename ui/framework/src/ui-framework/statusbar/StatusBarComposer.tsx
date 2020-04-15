@@ -135,7 +135,7 @@ function generateActionStatusLabelItem(item: AbstractStatusBarLabelItem, isInFoo
 
 /** function to produce a StatusBarItem component from an AbstractStatusBarActionItem */
 function generateActionStatusBarItem(item: AbstractStatusBarActionItem, isInFooterMode: boolean): React.ReactNode {
-  return <Indicator toolTip={ConditionalStringValue.getValue(item.tooltip)} opened={false} onClick={item.execute} iconName={ConditionalStringValue.getValue(item.icon)}
+  return <Indicator toolTip={ConditionalStringValue.getValue(item.tooltip)} opened={false} onClick={item.execute} iconSpec={item.icon}
     isInFooterMode={isInFooterMode} />;
 }
 

@@ -31,7 +31,7 @@ import { StatusBarSection, UiItemsProvider, CommonStatusBarItem, StageUsage, Abs
 
 describe("StatusBarComposer", () => {
   class TestUiProvider implements UiItemsProvider {
-    public readonly id = "TestUiProvider";
+    public readonly id = "TestUiProvider-statusbar";
 
     public static statusBarItemIsVisible = true;
     public static uiSyncEventId = "appuiprovider:statusbar-item-visibility-changed";
@@ -256,7 +256,7 @@ describe("StatusBarComposer", () => {
 
       const wrapper = mount(<StatusBarComposer items={items} />);
 
-      let addonItem = wrapper.find("div.icon-visibility-hide-2");
+      let addonItem = wrapper.find("i.icon-visibility-hide-2");
       expect(addonItem.exists()).to.be.false;
 
       UiItemsManager.register(uiProvider);
@@ -270,7 +270,7 @@ describe("StatusBarComposer", () => {
       // tslint:disable-next-line: no-console
       // console.log(wrapper.debug());
 
-      const addonItem1 = wrapper.find("div.icon-visibility-hide-2");
+      const addonItem1 = wrapper.find("i.icon-visibility-hide-2");
       expect(addonItem1.exists()).to.be.true;
       const addonItem2 = wrapper.find("i.icon-hand-2");
       expect(addonItem2.exists()).to.be.true;
@@ -279,7 +279,7 @@ describe("StatusBarComposer", () => {
       await TestUtils.flushAsyncOperations();
       wrapper.update();
 
-      addonItem = wrapper.find("div.icon-visibility-hide-2");
+      addonItem = wrapper.find("i.icon-visibility-hide-2");
       expect(addonItem.exists()).to.be.false;
 
       wrapper.unmount();
@@ -302,7 +302,7 @@ describe("StatusBarComposer", () => {
       // tslint:disable-next-line: no-console
       // console.log(wrapper.debug());
 
-      let addonItem1 = wrapper.find("div.icon-visibility-hide-2");
+      let addonItem1 = wrapper.find("i.icon-visibility-hide-2");
       expect(addonItem1.exists()).to.be.true;
       let addonItem2 = wrapper.find("i.icon-hand-2");
       expect(addonItem2.exists()).to.be.true;
@@ -314,7 +314,7 @@ describe("StatusBarComposer", () => {
       await TestUtils.flushAsyncOperations();
       wrapper.update();
 
-      addonItem1 = wrapper.find("div.icon-visibility-hide-2");
+      addonItem1 = wrapper.find("i.icon-visibility-hide-2");
       expect(addonItem1.exists()).to.be.true;
       addonItem2 = wrapper.find("i.icon-hand-2");
       expect(addonItem2.exists()).to.be.true;
@@ -325,7 +325,7 @@ describe("StatusBarComposer", () => {
       await TestUtils.flushAsyncOperations();
       wrapper.update();
 
-      addonItem1 = wrapper.find("div.icon-visibility-hide-2");
+      addonItem1 = wrapper.find("i.icon-visibility-hide-2");
       expect(addonItem1.exists()).to.be.false;
 
       wrapper.unmount();
@@ -425,7 +425,7 @@ describe("StatusBarComposer", () => {
       expect(renderedComponent.container.querySelectorAll(".uifw-statusbar-item-container")).lengthOf(3);
     });
 
-    it("will render 1 item with overflow", () => {
+    it("will render 1 item with overflow", async () => {
       // tslint:disable-next-line: only-arrow-functions
       sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
         if (this.classList.contains("uifw-statusbar-docked")) {
@@ -454,9 +454,12 @@ describe("StatusBarComposer", () => {
       const overflow = renderedComponent.container.querySelector(".uifw-statusbar-overflow") as HTMLDivElement;
       expect(overflow).not.to.be.null;
       fireEvent.click(overflow);
+      await TestUtils.flushAsyncOperations();
       // renderedComponent.debug();
       expect(renderedComponent.container.querySelectorAll(".uifw-statusbar-item-container")).lengthOf(5);
       fireEvent.click(overflow);
+      await TestUtils.flushAsyncOperations();
+      // renderedComponent.debug();
       expect(renderedComponent.container.querySelectorAll(".uifw-statusbar-item-container")).lengthOf(1);
     });
   });

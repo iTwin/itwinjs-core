@@ -14,7 +14,7 @@ import { ZoneLocation } from "../../ui-framework/zones/Zone";
 import { TestUtils } from "../TestUtils";
 
 class TestUiProvider implements UiItemsProvider {
-  public readonly id = "TestUiProvider";
+  public readonly id = "TestUiProvider-Widget";
 
   public provideWidgets(stageId: string, _stageUsage: string, location: StagePanelLocation, _section?: StagePanelSection): ReadonlyArray<AbstractWidgetProps> {
     const widgets: AbstractWidgetProps[] = [];

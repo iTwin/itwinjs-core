@@ -8,7 +8,9 @@
 
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps } from "@bentley/ui-core";
+import { CommonProps, Icon } from "@bentley/ui-core";
+import { ConditionalStringValue } from "@bentley/ui-abstract";
+
 import "./Indicator.scss";
 
 /** Properties of [[Indicator]] component. */
@@ -19,8 +21,10 @@ interface IndicatorProps extends CommonProps {
   dialog?: React.ReactChild;
   /** Describes if the indicator label is visible. */
   isLabelVisible?: boolean;
-  /** Icon to use in the footer */
+  /** Icon to use in the footer. */
   iconName?: string;
+  /** specification for Icon, overrides iconName specification */
+  iconSpec?: string | ConditionalStringValue;
   /** Indicator label. */
   label?: string;
   /** Function called when indicator is clicked. */
@@ -41,22 +45,17 @@ export class Indicator extends React.Component<IndicatorProps, any> {
     super(props);
   }
 
+  private _handleOnIndicatorClick = () => {
+    // istanbul ignore else
+    if (this.props.onClick)
+      this.props.onClick();
+  }
+
   public render() {
     const className = classnames(
       "uifw-footer-indicator",
       this.props.isInFooterMode && "nz-footer-mode",
       this.props.className);
-
-    const getDialog = () => {
-      if (this.props.opened)
-        return (
-          <div className="nz-dialog">
-            {this.props.dialog}
-          </div>
-        );
-      else
-        return <div />;
-    };
 
     const iconClassNames = classnames(
       "icon",
@@ -69,22 +68,16 @@ export class Indicator extends React.Component<IndicatorProps, any> {
         className={className}
         title={this.props.toolTip ? this.props.toolTip : this.props.label}
         style={this.props.style}>
-        <div className="nz-balloon-container">
-          <div>
-            {getDialog()}
-          </div>
-          <div
-            className={iconClassNames}
-            onClick={this._handleOnIndicatorClick}>
-          </div>
+        <div className="nz-balloon-container" onClick={this._handleOnIndicatorClick}>
+          {(this.props.iconName && !this.props.iconSpec) && <div className={iconClassNames} />}
+          {this.props.iconSpec && <div className="uifw-indicator-icon"> <Icon iconSpec={this.props.iconSpec} /></div>}
+          {this.props.opened &&
+            <div className="nz-dialog">
+              {this.props.dialog}
+            </div>
+          }
         </div>
       </div>
     );
-  }
-
-  private _handleOnIndicatorClick = () => {
-    // istanbul ignore else
-    if (this.props.onClick)
-      this.props.onClick();
   }
 }

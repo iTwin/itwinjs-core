@@ -1,0 +1,73 @@
+{
+  "name": "@bentley/dialog-items-sample",
+  "version": "2.0.0-dev.67",
+  "description": "Dialog Items Sample",
+  "main": "index.js",
+  "scripts": {
+    "prebuild": "npm run pseudolocalize && npm run copy:assets",
+    "build": "npm run prebuild && extension-webpack-tools build -s ./src/DialogItemsSample.ts -o ./lib/extension",
+    "clean": "rimraf lib .rush",
+    "copy:assets": "cpx \"./src/public/**/*\" ./lib/extension/",
+    "cover": "",
+    "docs": "",
+    "lint": "tslint -p . 1>&2",
+    "pseudolocalize": "betools pseudolocalize --englishDir=./src/public/locales/en --out=./lib/extension/locales/en-PSEUDO",
+    "test": "",
+    "test:integration": "npm run webpackTests && npm run test:integration:chrome && npm run test:integration:electron",
+    "test:integration:chrome": "node --max-http-header-size=16000 ./node_modules/@bentley/certa/bin/certa.js -r chrome --grep \"#integration\"",
+    "test:integration:electron": "node ./node_modules/@bentley/certa/bin/certa.js -r electron --grep \"#integration\"",
+    "webpackTests": "webpack --config ./src/test/webpack.config.js 1>&2"
+  },
+  "keywords": [
+    "iModel",
+    "BIM",
+    "extension"
+  ],
+  "author": {
+    "name": "Bentley Systems, Inc.",
+    "url": "http://www.bentley.com"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "@bentley/certa": "2.0.0-dev.67",
+    "@bentley/build-tools": "2.0.0-dev.67",
+    "@bentley/config-loader": "2.0.0-dev.67",
+    "@bentley/extension-webpack-tools": "2.0.0-dev.67",
+    "@bentley/express-server": "2.0.0-dev.67",
+    "@bentley/imodeljs-backend": "2.0.0-dev.67",
+    "@bentley/oidc-signin-tool": "2.0.0-dev.67",
+    "@types/node": "10.14.1",
+    "@types/chai": "^4.1.4",
+    "@types/mocha": "^5.2.5",
+    "@types/react": "^16.8.0",
+    "chai": "^4.1.2",
+    "cpx": "^1.5.0",
+    "mocha": "^5.2.0",
+    "null-loader": "^0.1.1",
+    "rimraf": "^3.0.2",
+    "tsconfig-paths": "^3.3.2",
+    "tslint": "^5.11.0",
+    "tslint-etc": "^1.5.2",
+    "typescript": "~3.7.4",
+    "webpack": "4.42.0",
+    "webpack-cli": "^3.1.0",
+    "source-map-loader": "^0.2.3",
+    "svg-baker-runtime": "^1.4.2"
+  },
+  "dependencies": {
+    "@bentley/bentleyjs-core": "2.0.0-dev.67",
+    "@bentley/geometry-core": "2.0.0-dev.67",
+    "@bentley/imodeljs-clients": "2.0.0-dev.67",
+    "@bentley/imodeljs-common": "2.0.0-dev.67",
+    "@bentley/imodeljs-i18n": "2.0.0-dev.67",
+    "@bentley/imodeljs-frontend": "2.0.0-dev.67",
+    "@bentley/imodeljs-quantity": "2.0.0-dev.67",
+    "@bentley/ui-abstract": "2.0.0-dev.67",
+    "@bentley/ui-core": "2.0.0-dev.67",
+    "@bentley/ui-components": "2.0.0-dev.67",
+    "@bentley/ui-ninezone": "2.0.0-dev.67",
+    "@bentley/ui-framework": "2.0.0-dev.67",
+    "react": "^16.8.0",
+    "svg-sprite-loader": "4.2.1"
+  }
+}
