@@ -182,14 +182,14 @@ describe("ExtensionClient (#integration)", () => {
       { name: "testFile2", content: "test file content 2 ++" },
       { name: "testDir1/testDir2/test file3.txt", content: "test file content 3 ++" },
     ],
-    // },
-    // {
-    //   name: "testExt 2",
-    //   version: "v1",
-    //   files: [
-    //     { name: "testFile", content: "test file content 1" },
-    //     { name: "testDir1/testFile.txt", content: "test file content 2" },
-    //   ],
+  },
+  {
+    name: "testExt 2",
+    version: "v1",
+    files: [
+      { name: "testFile", content: "test file content 1" },
+      { name: "testDir1/testFile.txt", content: "test file content 2" },
+    ],
   }].forEach((testCase) => {
     it("downloads extension " + testCase.name + ", version " + testCase.version, async () => {
       const files = await extensionClient.downloadExtension(requestContext, projectId, testCase.name, testCase.version);
@@ -226,8 +226,8 @@ describe("ExtensionClient (#integration)", () => {
   it("uploads and deletes extension with specific version", async () => {
     const extensionName = "tempTestExt-" + Guid.createValue();
     const currentTime = new Date().getTime();
-    await extensionClient.createExtension(requestContext, projectId, extensionName, "v1", "f5a5fd42d16a20302798ef6ed309979b43003d2320d9f0e8ea9831a92759fb4b", new ArrayBuffer(64));
-    await extensionClient.createExtension(requestContext, projectId, extensionName, "v2", "f5a5fd42d16a20302798ef6ed309979b43003d2320d9f0e8ea9831a92759fb4b", new ArrayBuffer(64));
+    await extensionClient.createExtension(requestContext, projectId, extensionName, "v1", "f5a5fd42d16a20302798ef6ed309979b43003d2320d9f0e8ea9831a92759fb4b", Buffer.alloc(64));
+    await extensionClient.createExtension(requestContext, projectId, extensionName, "v2", "f5a5fd42d16a20302798ef6ed309979b43003d2320d9f0e8ea9831a92759fb4b", Buffer.alloc(64));
 
     let extensions = await extensionClient.getExtensions(requestContext, projectId);
     let created = extensions.find((props) => props.extensionName === extensionName && props.version === "v1");
@@ -252,8 +252,8 @@ describe("ExtensionClient (#integration)", () => {
 
   it("uploads and deletes all versions of extension", async () => {
     const extensionName = "tempTestExt-" + Guid.createValue();
-    await extensionClient.createExtension(requestContext, projectId, extensionName, "v1", "f5a5fd42d16a20302798ef6ed309979b43003d2320d9f0e8ea9831a92759fb4b", new ArrayBuffer(64));
-    await extensionClient.createExtension(requestContext, projectId, extensionName, "v2", "f5a5fd42d16a20302798ef6ed309979b43003d2320d9f0e8ea9831a92759fb4b", new ArrayBuffer(64));
+    await extensionClient.createExtension(requestContext, projectId, extensionName, "v1", "f5a5fd42d16a20302798ef6ed309979b43003d2320d9f0e8ea9831a92759fb4b", Buffer.alloc(64));
+    await extensionClient.createExtension(requestContext, projectId, extensionName, "v2", "f5a5fd42d16a20302798ef6ed309979b43003d2320d9f0e8ea9831a92759fb4b", Buffer.alloc(64));
 
     let extensions = await extensionClient.getExtensions(requestContext, projectId);
     let created = extensions.find((props) => props.extensionName === extensionName && props.version === "v1");
@@ -270,7 +270,7 @@ describe("ExtensionClient (#integration)", () => {
   it("fails to upload already existing extension", async () => {
     let thrown = false;
     try {
-      await extensionClient.createExtension(requestContext, projectId, "testExt1", "v1", "f5a5fd42d16a20302798ef6ed309979b43003d2320d9f0e8ea9831a92759fb4b", new ArrayBuffer(64));
+      await extensionClient.createExtension(requestContext, projectId, "testExt1", "v1", "f5a5fd42d16a20302798ef6ed309979b43003d2320d9f0e8ea9831a92759fb4b", Buffer.alloc(64));
     } catch (error) {
       thrown = true;
       assert.isDefined(error.errorNumber);

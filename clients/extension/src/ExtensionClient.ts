@@ -180,10 +180,11 @@ export class ExtensionClient extends Client {
    * @param contextId Context Id
    * @param extensionName Extension name
    * @param version Extension version
-   * @param file A tar archive containing extension files, in ArrayBufferLike format
+   * @param checksum SHA-256 checksum of extension files archive
+   * @param file Buffer containing extension files in the form of a tar archive
    * @internal
    */
-  public async createExtension(requestContext: AuthorizedClientRequestContext, contextId: string, extensionName: string, version: string, checksum: string, file: ArrayBufferLike) {
+  public async createExtension(requestContext: AuthorizedClientRequestContext, contextId: string, extensionName: string, version: string, checksum: string, file: Buffer) {
     requestContext.enter();
 
     const requestBody = {
@@ -227,13 +228,13 @@ export class ExtensionClient extends Client {
     }
   }
 
-  private async uploadExtension(url: string, file: ArrayBuffer) {
+  private async uploadExtension(url: string, file: Buffer) {
     try {
       const response = await fetch(url, {
         method: "PUT",
         headers: {
           "x-ms-blob-type": "BlockBlob",
-          "Content-Length": file.byteLength.toString(),
+          "Content-Length": file.length.toString(),
         },
         body: file,
       });

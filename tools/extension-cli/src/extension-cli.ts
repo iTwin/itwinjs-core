@@ -91,7 +91,27 @@ const argv = yargs.strict(true)
         await tar.create({ file: tarFileName, cwd: filePath }, filesToTar);
         const buffer = fs.readFileSync(tarFileName);
         const checksum = Buffer.from(sha256.hash(buffer)).toString("hex");
-        await client.createExtension(requestContext, argv.contextId, argv.extensionName, argv.extensionVersion, checksum, buffer.buffer);
+
+        process.stdout.write("Ready to upload");
+        await client.createExtension(requestContext, argv.contextId, argv.extensionName, argv.extensionVersion, checksum, buffer);
+        process.stdout.write("Uploading extension...");
+
+        while (true) {
+          await new Promise((resolve) => {
+            setTimeout(() => {
+              resolve();
+            }, 1000);
+          });
+
+          const status: string = (await client.getExtensionProps(requestContext, argv.contextId, argv.extensionName, argv.extensionVersion))?.status?.status ?? "";
+          if (status === "Valid") {
+            process.stdout.write("Upload successful");
+            break;
+          }
+
+          if (status.startsWith("Failed"))
+            throw new IModelError(ExtensionStatus.UploadError, status);
+        }
       } finally {
         rimraf.sync(tarFileName);
       }
@@ -106,7 +126,7 @@ const argv = yargs.strict(true)
   if (err instanceof BentleyError)
     process.stderr.write("Error: " + err.name + ": " + err.message);
   else
-    process.stderr.write("Unknown error" + err.message);
+    process.stderr.write("Unknown error " + err.message);
 });
 
 function mkdir(dirPath: string) {
