@@ -88,6 +88,9 @@ describe("TxnManager", () => {
     assert.isTrue(txns.hasPendingTxns);
     assert.isTrue(txns.hasLocalChanges);
 
+    model = models.getModel(modelId);
+    assert.isDefined(model.geometryGuid);
+
     txns.reverseSingleTxn();
     assert.isFalse(txns.hasPendingTxns, "should not have pending txns if they all are reversed");
     assert.isFalse(txns.hasLocalChanges);
