@@ -525,6 +525,7 @@ const enum DataType {
   Vec3,
   Vec4,
   Int,
+  IntArray,
   Uint,
 }
 
@@ -547,8 +548,8 @@ export class UniformHandle {
     return new UniformHandle(location);
   }
 
-  private updateData(type: DataType, data: Float32Array | number[]): boolean {
-    assert(DataType.Undefined !== type && DataType.Int !== type && DataType.Float !== type);
+  private updateData(type: DataType, data: Float32Array | Int32Array | number[]): boolean {
+    assert(DataType.Undefined !== type && DataType.Int !== type && DataType.Float !== type && DataType.Uint !== type);
 
     let updated = this._type !== type;
     if (updated) {
@@ -588,6 +589,11 @@ export class UniformHandle {
   public setMatrix4(mat: Matrix4) {
     if (this.updateData(DataType.Mat4, mat.data))
       System.instance.context.uniformMatrix4fv(this._location, false, mat.data);
+  }
+
+  public setUniform1iv(data: Int32Array | number[]) {
+    if (this.updateData(DataType.IntArray, data))
+      System.instance.context.uniform1iv(this._location, data);
   }
 
   public setUniform1fv(data: Float32Array | number[]) {
