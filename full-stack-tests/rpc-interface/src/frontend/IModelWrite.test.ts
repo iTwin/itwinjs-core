@@ -24,7 +24,10 @@ describe("IModel Read/Write Connection", () => {
     (IModelApp.authorizationClient as AuthorizationClient).setAccessToken(accessToken);
   });
 
-  after(async () => {
+  after(async function () {
+    if (!testContext.settings.runiModelWriteRpcTests)
+      this.skip();
+
     const iModelId = testContext.settings.writeIModel.id;
     const requestContext = await AuthorizedFrontendRequestContext.create();
     const briefcases: HubBriefcase[] = await IModelApp.iModelClient.briefcases.get(requestContext, iModelId, new BriefcaseQuery().ownedByMe());
