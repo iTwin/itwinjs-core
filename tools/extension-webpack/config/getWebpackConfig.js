@@ -18,7 +18,7 @@ const postcssNormalize = require("postcss-normalize");
 const appPackageJson = require(paths.appPackageJson);
 
 // Source maps are resource heavy and can cause out of memory issue for large source files.
-const shouldUseSourceMap = !process.env.DISABLE_SOURCE_MAPS;
+const shouldUseSourceMap = !(process.env.DISABLE_SOURCE_MAPS === "true");
 const imageInlineSizeLimit = parseInt(process.env.IMAGE_INLINE_SIZE_LIMIT || "10000");
 
 // style files regexes
@@ -109,6 +109,7 @@ module.exports = function (srcFile, outDir) {
     mode: "production",
     // Stop compilation early in production
     bail: true,
+    devtool: shouldUseSourceMap ? 'source-map' : false,
     // These are the "entry points" to our application.
     // This means they will be the "root" imports that are included in JS bundle.
     entry: [
