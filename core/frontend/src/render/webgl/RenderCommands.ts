@@ -493,6 +493,9 @@ export class RenderCommands {
       if (undefined !== dec)
         this.addPickableDecorations(dec);
 
+      // Also background map is pickable
+      this.addBackgroundMapGraphics(backgroundMap);
+
       this._addTranslucentAsOpaque = false;
       this.setupClassificationByVolume();
       this._layers.outputCommands();

@@ -16,11 +16,32 @@ import {
   VariablePrecision,
   FragmentShaderComponent,
 } from "../ShaderBuilder";
-import { OvrFlags, TextureUnit } from "../RenderFlags";
-import { FeatureMode, TechniqueFlags } from "../TechniqueFlags";
-import { addFeatureAndMaterialLookup, addLineWeight, replaceLineWeight, replaceLineCode, addAlpha } from "./Vertex";
-import { assignFragColor, computeLinearDepth, addWindowToTexCoords } from "./Fragment";
-import { addExtractNthBit, addEyeSpace, addUInt32s } from "./Common";
+import {
+  OvrFlags,
+  RenderOrder,
+  TextureUnit,
+} from "../RenderFlags";
+import {
+  FeatureMode,
+  TechniqueFlags,
+} from "../TechniqueFlags";
+import {
+  addAlpha,
+  addFeatureAndMaterialLookup,
+  addLineWeight,
+  replaceLineCode,
+  replaceLineWeight,
+} from "./Vertex";
+import {
+  addWindowToTexCoords,
+  assignFragColor,
+  computeLinearDepth,
+} from "./Fragment";
+import {
+  addExtractNthBit,
+  addEyeSpace,
+  addUInt32s,
+} from "./Common";
 import { decodeDepthRgb } from "./Decode";
 import { addLookupTable } from "./LookupTable";
 import { addRenderPass } from "./RenderPass";
@@ -390,6 +411,10 @@ const checkForEarlySurfaceDiscard = `
 
   vec2 tc = windowCoordsToTexCoords(gl_FragCoord.xy);
   vec2 depthAndOrder = readDepthAndOrder(tc);
+
+  if (kRenderOrder_Background == u_renderOrder && depthAndOrder.x > 0.0)
+    return true;
+
   float surfaceDepth = computeLinearDepth(v_eyeSpace.z);
   term += float(depthAndOrder.x > u_renderOrder && abs(depthAndOrder.y - surfaceDepth) < 4.0e-5);
   return factor * term > 0.0;
@@ -397,11 +422,16 @@ const checkForEarlySurfaceDiscard = `
 
 const checkForEarlySurfaceDiscardWithFeatureID = `
   // No normals => unlt => reality model => no edges.
-  if (u_renderPass > kRenderPass_Translucent || u_renderPass == kRenderPass_Layers || !u_surfaceFlags[kSurfaceBitIndex_HasNormals])
+  bool isBackgroundMap = kRenderOrder_Background == u_renderOrder;
+  if (u_renderPass > kRenderPass_Translucent || u_renderPass == kRenderPass_Layers || (!isBackgroundMap && !u_surfaceFlags[kSurfaceBitIndex_HasNormals]))
     return false;
 
   vec2 tc = windowCoordsToTexCoords(gl_FragCoord.xy);
   vec2 depthAndOrder = readDepthAndOrder(tc);
+
+  if (isBackgroundMap && depthAndOrder.x > 0.0)
+    return true;
+
   if (depthAndOrder.x <= u_renderOrder)
     return false;
 
@@ -452,19 +482,21 @@ const checkForEarlySurfaceDiscardWithFeatureID = `
 
 // This only adds the constants that are actually used in shader code.
 export function addRenderOrderConstants(builder: ShaderBuilder) {
-  builder.addConstant("kRenderOrder_Linear", VariableType.Float, "4.0");
-  builder.addConstant("kRenderOrder_Silhouette", VariableType.Float, "6.0");
-  builder.addConstant("kRenderOrder_LitSurface", VariableType.Float, "3.0");
-  builder.addConstant("kRenderOrder_PlanarUnlitSurface", VariableType.Float, "10.0");
-  builder.addConstant("kRenderOrder_PlanarLitSurface", VariableType.Float, "11.0");
-  builder.addConstant("kRenderOrder_PlanarBit", VariableType.Float, "8.0");
+  builder.addConstant("kRenderOrder_Linear", VariableType.Float, RenderOrder.Linear.toFixed(1));
+  builder.addConstant("kRenderOrder_Silhouette", VariableType.Float, RenderOrder.Silhouette.toFixed(1));
+  builder.addConstant("kRenderOrder_LitSurface", VariableType.Float, RenderOrder.LitSurface.toFixed(1));
+  builder.addConstant("kRenderOrder_PlanarUnlitSurface", VariableType.Float, RenderOrder.PlanarUnlitSurface.toFixed(1));
+  builder.addConstant("kRenderOrder_PlanarLitSurface", VariableType.Float, RenderOrder.PlanarLitSurface.toFixed(1));
+  builder.addConstant("kRenderOrder_PlanarBit", VariableType.Float, RenderOrder.PlanarBit.toFixed(1));
+  builder.addConstant("kRenderOrder_Background", VariableType.Float, RenderOrder.Background.toFixed(1));
 }
 
 /** @internal */
 export function addRenderOrder(builder: ShaderBuilder) {
   builder.addUniform("u_renderOrder", VariableType.Float, (prog) => {
     prog.addGraphicUniform("u_renderOrder", (uniform, params) => {
-      uniform.setUniform1f(params.geometry.renderOrder);
+      const order = params.target.drawingBackgroundForReadPixels ? RenderOrder.Background : params.geometry.renderOrder;
+      uniform.setUniform1f(order);
     });
   });
 }

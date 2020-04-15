@@ -8087,6 +8087,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     drawFrame(sceneMilSecElapsed?: number): void;
     // (undocumented)
+    drawingBackgroundForReadPixels: boolean;
+    // (undocumented)
     get drawNonLocatable(): boolean;
     // (undocumented)
     protected drawOverlayDecorations(): void;

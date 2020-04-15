@@ -214,6 +214,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public useLogZ = true;
   public vcSupportIntersectingVolumes: boolean = false;
   public drawForReadPixels = false;
+  public drawingBackgroundForReadPixels = false;
   public primitiveVisibility = PrimitiveVisibility.All;
   public displayDrapeFrustum = false;
   public displayRealityTilePreload = false;

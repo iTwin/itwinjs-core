@@ -474,6 +474,7 @@ class PixelBuffer implements Pixel.Buffer {
             geometryType = Pixel.GeometryType.None;
             planarity = Pixel.Planarity.None;
             break;
+          case RenderOrder.Background:
           case RenderOrder.BlankingRegion:
           case RenderOrder.LitSurface:
           case RenderOrder.UnlitSurface:
@@ -1727,6 +1728,14 @@ class MRTCompositor extends Compositor {
       this.drawPass(commands, RenderPass.OpaquePlanar, true);
       if (needAO || renderForReadPixels) {
         this.drawPass(commands, RenderPass.OpaqueGeneral, true);
+
+        if (renderForReadPixels && 0 < commands.getCommands(RenderPass.BackgroundMap).length) {
+          // Draw background map last for readPixels. Tell shader to discard surface if anything at all is already in pick buffer.
+          this.target.drawingBackgroundForReadPixels = true;
+          this.drawPass(commands, RenderPass.OpaqueGeneral, true, RenderPass.BackgroundMap);
+          this.target.drawingBackgroundForReadPixels = false;
+        }
+
         if (needAO)
           this.renderAmbientOcclusion();
       }
@@ -1948,6 +1957,14 @@ class MPCompositor extends Compositor {
     this.drawOpaquePass(colorFbo, commands, RenderPass.OpaquePlanar, true);
     if (renderForReadPixels || needAO) {
       this.drawOpaquePass(colorFbo, commands, RenderPass.OpaqueGeneral, true);
+
+      if (renderForReadPixels && 0 < commands.getCommands(RenderPass.BackgroundMap).length) {
+        // Draw background map last for readPixels. Tell shader to discard surface if anything at all is already in pick buffer.
+        this.target.drawingBackgroundForReadPixels = true;
+        this.drawOpaquePass(colorFbo, commands, RenderPass.OpaqueGeneral, true, RenderPass.BackgroundMap);
+        this.target.drawingBackgroundForReadPixels = false;
+      }
+
       if (needAO)
         this.renderAmbientOcclusion();
     }

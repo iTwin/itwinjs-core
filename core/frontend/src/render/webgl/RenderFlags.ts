@@ -90,12 +90,13 @@ export enum TextureUnit {
  */
 export const enum RenderOrder {
   None = 0,
-  BlankingRegion = 1,
-  UnlitSurface = 2, // Distinction only made for whether or not to apply ambient occlusion.
-  LitSurface = 3,
-  Linear = 4,
-  Edge = 5,
-  Silhouette = 6,
+  Background = 1, // i.e., background map drawn without depth
+  BlankingRegion = 2,
+  UnlitSurface = 3, // Distinction only made for whether or not to apply ambient occlusion.
+  LitSurface = 4,
+  Linear = 5,
+  Edge = 6,
+  Silhouette = 7,
 
   PlanarBit = 8,
 
