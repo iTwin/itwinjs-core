@@ -8,7 +8,7 @@
 
 import { dispose, assert } from "@bentley/bentleyjs-core";
 import { Point3d } from "@bentley/geometry-core";
-import { SurfaceFlags, RenderPass, RenderOrder } from "./RenderFlags";
+import { SurfaceBitIndex, RenderPass, RenderOrder } from "./RenderFlags";
 import { LUTGeometry, PolylineBuffers, CachedGeometry } from "./CachedGeometry";
 import { VertexIndices, SurfaceType, MeshParams, SegmentEdgeParams, SilhouetteParams, TesselatedPolyline } from "../primitives/VertexTable";
 import { LineCode } from "./EdgeOverrides";
@@ -534,34 +534,51 @@ export class SurfaceGeometry extends MeshGeometry {
 
   public get materialInfo(): MaterialInfo | undefined { return this.mesh.materialInfo; }
 
-  public computeSurfaceFlags(params: ShaderProgramParams): SurfaceFlags {
+  public useTexture(params: ShaderProgramParams): boolean {
+    return this.wantTextures(params.target, this.isTextured);
+  }
+
+  public computeSurfaceFlags(params: ShaderProgramParams, flags: Int32Array): void {
     const target = params.target;
     const vf = target.currentViewFlags;
 
     const useMaterial = wantMaterials(vf);
-    let flags = useMaterial ? SurfaceFlags.None : SurfaceFlags.IgnoreMaterial;
+    flags[SurfaceBitIndex.IgnoreMaterial] = useMaterial ? 0 : 1;
+
+    flags[SurfaceBitIndex.ApplyLighting] = 0;
+    flags[SurfaceBitIndex.NoFaceFront] = 0;
+    flags[SurfaceBitIndex.HasColorAndNormal] = 0;
     if (this.isLit) {
-      flags |= SurfaceFlags.HasNormals;
+      flags[SurfaceBitIndex.HasNormals] = 1;
       if (wantLighting(vf)) {
-        flags |= SurfaceFlags.ApplyLighting;
+        flags[SurfaceBitIndex.ApplyLighting] = 1;
         if (this.hasFixedNormals)
-          flags |= SurfaceFlags.NoFaceFront;
+          flags[SurfaceBitIndex.NoFaceFront] = 1;
       }
 
       // Textured meshes store normal in place of color index.
       // Untextured lit meshes store normal where textured meshes would store UV coords.
       // Tell shader where to find normal.
       if (!this.isTextured) {
-        flags |= SurfaceFlags.HasColorAndNormal;
+        flags[SurfaceBitIndex.HasColorAndNormal] = 1;
       }
+    } else {
+      flags[SurfaceBitIndex.HasNormals] = 0;
     }
 
-    if (this.wantTextures(target, this.isTextured)) {
-      flags |= SurfaceFlags.HasTexture;
+    if (this.useTexture(params)) {
+      flags[SurfaceBitIndex.HasTexture] = 1;
       if (useMaterial && undefined !== this.mesh.materialInfo && this.mesh.materialInfo.overridesAlpha && RenderPass.Translucent === params.renderPass)
-        flags |= SurfaceFlags.MultiplyAlpha;
+        flags[SurfaceBitIndex.MultiplyAlpha] = 1;
+      else
+        flags[SurfaceBitIndex.MultiplyAlpha] = 0;
+    } else {
+      flags[SurfaceBitIndex.HasTexture] = 0;
+      flags[SurfaceBitIndex.MultiplyAlpha] = 0;
     }
 
+    flags[SurfaceBitIndex.TransparencyThreshold] = 0;
+    flags[SurfaceBitIndex.BackgroundFill] = 0;
     switch (params.renderPass) {
       // NB: We need this for opaque pass due to SolidFill (must compute transparency, discard below threshold, render opaque at or above threshold)
       case RenderPass.OpaqueLinear:
@@ -574,20 +591,17 @@ export class SurfaceGeometry extends MeshGeometry {
       case RenderPass.OverlayLayers: {
         const mode = vf.renderMode;
         if (!this.isGlyph && (RenderMode.HiddenLine === mode || RenderMode.SolidFill === mode)) {
-          flags |= SurfaceFlags.TransparencyThreshold;
+          flags[SurfaceBitIndex.TransparencyThreshold] = 1;
           if (RenderMode.HiddenLine === mode && FillFlags.Always !== (this.fillFlags & FillFlags.Always)) {
             // fill flags test for text - doesn't render with bg fill in hidden line mode.
-            flags |= SurfaceFlags.BackgroundFill;
+            flags[SurfaceBitIndex.BackgroundFill] = 1;
           }
           break;
         }
       }
     }
 
-    if (params.target.isDrawingShadowMap)
-      flags |= SurfaceFlags.TransparencyThreshold;
-
-    return flags;
+    flags[SurfaceBitIndex.TransparencyThreshold] = params.target.isDrawingShadowMap ? 1 : 0;
   }
 
   private constructor(indices: BufferHandle, numIndices: number, mesh: MeshData) {

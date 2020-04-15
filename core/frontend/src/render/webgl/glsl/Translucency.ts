@@ -21,7 +21,7 @@ import { System } from "../System";
 const computeAlphaWeight = `
 float computeAlphaWeight(float a) {
   float d = computeLinearDepth(v_eyeSpace.z) * .85 + .15;
-  float z = chooseFloatWithBitFlag(d, 1.0, u_shaderFlags, kShaderBit_OITFlatAlphaWeight);
+  float z = (u_shaderFlags[kShaderBit_OITFlatAlphaWeight] ? 1.0 : d);
   return pow(a + 0.01, 4.0) + max(1e-2, 3.0 * 1e3 * pow(z, 3.0));
 }
 `;
@@ -33,7 +33,7 @@ const computeOutputs = `
   float wzi = computeAlphaWeight(ai);
 
   // If we are scaling output into the 0 to 1 range, we use the maximum output of the alpha weight function.
-  float outputScale = chooseFloatWithBitFlag(1.0, 1.0 / 3001.040604, u_shaderFlags, kShaderBit_OITScaleOutput);
+  float outputScale = (u_shaderFlags[kShaderBit_OITScaleOutput] ? 1.0 / 3001.040604 : 1.0);
 
   vec4 output0 = vec4(Ci * wzi * outputScale, ai);
   vec4 output1 = vec4(ai * wzi * outputScale);

@@ -152,6 +152,24 @@ export const enum SurfaceFlags {
   // MultiplyAlpha must be last -- add additional flags above it, not here.
 }
 
+/** Location in boolean array of SurfaceFlags above.
+ * @internal
+ */
+export const enum SurfaceBitIndex {
+  HasTexture = 0,
+  ApplyLighting = 1,
+  HasNormals = 2,
+  IgnoreMaterial = 3,
+  TransparencyThreshold = 4,
+  BackgroundFill = 5,
+  HasColorAndNormal = 6,
+  OverrideAlpha = 7,
+  OverrideRgb = 8,
+  NoFaceFront = 9,
+  MultiplyAlpha = 10,
+  Count = 11,
+}
+
 /** @internal */
 /** 16-bit flags indicating what aspects of a feature's symbology are overridden.
  * @internal

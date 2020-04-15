@@ -15,62 +15,82 @@ import { System } from "../System";
 import { RenderType } from "@bentley/webgl-compatibility";
 
 const chooseFloatWithBitFlag = `
-float chooseFloatWithBitFlag(float f1, float f2, float flags, float n) { return mix(f1, f2, extractNthBit(floor(flags + 0.5), n)); }
+float chooseFloatWithBitFlag(float f1, float f2, float flags, float n) { return nthBitSet(flags, n) ? f2 : f1; }
 `;
 const chooseFloatWithBitFlag2 = `
-float chooseFloatWithBitFlag(float f1, float f2, uint flags, uint n) { return mix (f1, f2, 0u != (flags & n)); }
+float chooseFloatWithBitFlag(float f1, float f2, uint flags, uint n) { return 0u != (flags & n) ? f2 : f1; }
 `;
 
-const chooseVec4WithBitFlag = `
-vec4 chooseVec4WithBitFlag(vec4 v1, vec4 v2, float flags, float n) { return mix(v1, v2, extractNthBit(floor(flags + 0.5), n)); }
+const chooseVec2WithBitFlag = `
+vec2 chooseVec2WithBitFlag(vec2 v1, vec2 v2, float flags, float n) { return nthBitSet(flags, n) ? v2 : v1; }
 `;
-const chooseVec4WithBitFlag2 = `
-vec4 chooseVec4WithBitFlag(vec4 v1, vec4 v2, uint flags, uint n) { return mix(v1, v2, bvec4(0u != (flags & n))); }
-`;
-
-const extractShaderBit = `
-float extractShaderBit(float flag) { return extractNthBit(floor(u_shaderFlags + 0.5), flag); }
-`;
-const extractShaderBit2 = `
-float extractShaderBit(uint flag) { return chooseFloatWithBitFlag(0.0, 1.0, u_shaderFlags, flag); }
+const chooseVec2WithBitFlag2 = `
+vec2 chooseVec2WithBitFlag(vec2 v1, vec2 v2, uint flags, uint n) { return 0u != (flags & n) ? v2 : v1; }
 `;
 
-const isShaderBitSet = `
-bool isShaderBitSet(float flag) { return 0.0 != extractShaderBit(flag); }
+const chooseVec3WithBitFlag = `
+vec3 chooseVec3WithBitFlag(vec3 v1, vec3 v2, float flags, float n) { return nthBitSet(flags, n) ? v2 : v1; }
 `;
-const isShaderBitSet2 = `
-bool isShaderBitSet(uint flag) { return 0u != (u_shaderFlags & flag); }
+const chooseVec3WithBitFlag2 = `
+vec3 chooseVec3WithBitFlag(vec3 v1, vec3 v2, uint flags, uint n) { return 0u != (flags & n) ? v2 : v1; }
 `;
 
-function addShaderFlagsLookup(shader: ShaderBuilder) {
-  shader.addBitFlagConstant("kShaderBit_Monochrome", 0);
-  shader.addBitFlagConstant("kShaderBit_NonUniformColor", 1);
-  shader.addBitFlagConstant("kShaderBit_OITFlatAlphaWeight", 2);
-  shader.addBitFlagConstant("kShaderBit_OITScaleOutput", 3);
-  shader.addBitFlagConstant("kShaderBit_IgnoreNonLocatable", 4);
+/** @internal */
+export function addChooseWithBitFlagFunctions(shader: ShaderBuilder) {
   if (System.instance.capabilities.isWebGL2) {
     shader.addFunction(extractNthBit2);
     shader.addFunction(chooseFloatWithBitFlag2);
-    shader.addFunction(chooseVec4WithBitFlag2);
-    shader.addFunction(isShaderBitSet2);
-    shader.addFunction(extractShaderBit2);
+    shader.addFunction(chooseVec2WithBitFlag2);
+    shader.addFunction(chooseVec3WithBitFlag2);
   } else {
-    shader.addFunction(extractNthBit);
+    shader.addFunction(nthBitSet);
     shader.addFunction(chooseFloatWithBitFlag);
-    shader.addFunction(chooseVec4WithBitFlag);
-    shader.addFunction(extractShaderBit);
-    shader.addFunction(isShaderBitSet);
+    shader.addFunction(chooseVec2WithBitFlag);
+    shader.addFunction(chooseVec3WithBitFlag);
   }
 }
 
+function addShaderFlagsLookup(shader: ShaderBuilder) {
+  shader.addConstant("kShaderBit_Monochrome", VariableType.Int, "0");
+  shader.addConstant("kShaderBit_NonUniformColor", VariableType.Int, "1");
+  shader.addConstant("kShaderBit_OITFlatAlphaWeight", VariableType.Int, "2");
+  shader.addConstant("kShaderBit_OITScaleOutput", VariableType.Int, "3");
+  shader.addConstant("kShaderBit_IgnoreNonLocatable", VariableType.Int, "4");
+  addChooseWithBitFlagFunctions(shader);
+  if (System.instance.capabilities.isWebGL2) {
+    shader.addFunction(extractNthBit2);
+    shader.addFunction(chooseFloatWithBitFlag2);
+    shader.addFunction(chooseVec2WithBitFlag2);
+    shader.addFunction(chooseVec3WithBitFlag2);
+  } else {
+    shader.addFunction(nthBitSet);
+    shader.addFunction(extractNthBit);
+    shader.addFunction(chooseFloatWithBitFlag);
+    shader.addFunction(chooseVec2WithBitFlag);
+    shader.addFunction(chooseVec3WithBitFlag);
+  }
+}
+
+const shaderFlagArray = new Int32Array(5);
+const kShaderBitMonochrome = 0;
+const kShaderBitNonUniformColor = 1;
+const kShaderBitOITFlatAlphaWeight = 2;
+const kShaderBitOITScaleOutput = 3;
+const kShaderBitIgnoreNonLocatable = 4;
+
 function setShaderFlags(uniform: UniformHandle, params: DrawParams) {
-  let flags = params.target.currentShaderFlags;
+  const flags = params.target.currentShaderFlags;
+  shaderFlagArray[kShaderBitMonochrome] = (0 === (flags & ShaderFlags.Monochrome) ? 0 : 1);
+  shaderFlagArray[kShaderBitNonUniformColor] = (0 === (flags & ShaderFlags.NonUniformColor) ? 0 : 1);
+  shaderFlagArray[kShaderBitOITFlatAlphaWeight] = (0 === (flags & ShaderFlags.OITFlatAlphaWeight) ? 0 : 1);
+  shaderFlagArray[kShaderBitOITScaleOutput] = (0 === (flags & ShaderFlags.OITScaleOutput) ? 0 : 1);
+  shaderFlagArray[kShaderBitIgnoreNonLocatable] = (0 === (flags & ShaderFlags.IgnoreNonLocatable) ? 0 : 1);
   const geom = params.geometry.asLUT;
   if (undefined !== geom) {
     // Could also be TerrainMeshGeometry, so only detect non-uniform color if explicitly LUTGeometry.
     const color = geom.getColor(params.target);
     if (color.isNonUniform)
-      flags |= ShaderFlags.NonUniformColor;
+      shaderFlagArray[kShaderBitNonUniformColor] = 1;
   }
 
   // Certain textures render in the translucent pass but we actually want to maintain true opacity for opaque pixels.
@@ -91,17 +111,17 @@ function setShaderFlags(uniform: UniformHandle, params: DrawParams) {
   }
 
   if (flatAlphaWeight)
-    flags |= ShaderFlags.OITFlatAlphaWeight;
+    shaderFlagArray[kShaderBitOITFlatAlphaWeight] = 1;
 
   // If Cesium-style transparency is being used with non-float texture targets, we must scale the output in the shaders to 0-1 range.
   // Otherwise, it will get implicitly clamped to that range and we'll lose any semblance our desired precision (even though it is low).
   if (maxRenderType < RenderType.TextureHalfFloat)
-    flags |= ShaderFlags.OITScaleOutput;
+    shaderFlagArray[kShaderBitOITScaleOutput] = 1;
 
   if (!params.target.drawNonLocatable)
-    flags |= ShaderFlags.IgnoreNonLocatable;
+    shaderFlagArray[kShaderBitIgnoreNonLocatable] = 1;
 
-  uniform.setUniformBitflags(flags);
+  uniform.setUniform1iv(shaderFlagArray);
 }
 
 /** @internal */
@@ -109,8 +129,7 @@ export function addShaderFlags(builder: ProgramBuilder) {
   addShaderFlagsLookup(builder.vert);
   addShaderFlagsLookup(builder.frag);
 
-  const type = (System.instance.capabilities.isWebGL2 ? VariableType.Uint : VariableType.Float);
-  builder.addUniform("u_shaderFlags", type, (prog) => {
+  builder.addUniformArray("u_shaderFlags", VariableType.Boolean, 5, (prog) => {
     prog.addGraphicUniform("u_shaderFlags", (uniform, params) => { setShaderFlags(uniform, params); });
   });
 }
@@ -149,23 +168,51 @@ export const addUInt32s = `
 `;
 
 /** Expects flags in range [0...256] with no fraction; and bit is [0..31] with no fraction.
+ * (Note that this really won't work for more than [0-22] since a float doesn't have the precision.)
  * Returns 1.0 if the nth bit is set, 0.0 otherwise.
  * dividing flags by 2^(n+1) yields #.5##... if the nth bit is set, #.0##... otherwise
- * Taking the fractional part yields 0.5##...
+ * Taking the fractional part yields 0.5##... or 0.0##...
  * Multiplying by 2.0 and taking the floor yields 1.0 or 0.0
+ * but we'll take a shortcut and just test for >= 0.5 since most often we just want a bool answer.
+ * For WebGL1 we'll also pre-compute the 1/(2^(n+1)) and just do a single multiply here.
+ * @internal
+ */
+const nthBitSet = `
+bool nthBitSet(float flags, float n) {
+  return fract(flags*n) >= 0.5;
+}
+`;
+/** Version for WebGL2 can just convert flags to a uint and bitwise-test a 0-31 uint bit.
+ * @internal
+ */
+const nthBitSet2 = `
+bool nthBitSet(float flags, uint n) {
+  return 0u != (uint(flags) & n);
+}
+`;
+
+/** For when we want a 1.0 or 0.0 answer the choose operator should be a single instruction.
  * @internal
  */
 const extractNthBit = `
 float extractNthBit(float flags, float n) {
-  float denom = pow(2.0, n+1.0);
-  return floor(fract(flags/denom)*2.0);
+  return nthBitSet(flags, n) ? 1.0 : 0.0;
 }
 `;
+/** @internal */
 const extractNthBit2 = `
 float extractNthBit(float flags, uint n) {
-  return mix (0.0, 1.0, 0u != (uint(flags) & n));
+  return 0u != (uint(flags) & n) ? 1.0 : 0.0;
 }
 `;
+
+/** @internal */
 export function addExtractNthBit(shader: ShaderBuilder): void {
-  shader.addFunction(System.instance.capabilities.isWebGL2 ? extractNthBit2 : extractNthBit);
+  if (System.instance.capabilities.isWebGL2) {
+    shader.addFunction(nthBitSet2);
+    shader.addFunction(extractNthBit2);
+  } else {
+    shader.addFunction(nthBitSet);
+    shader.addFunction(extractNthBit);
+  }
 }
