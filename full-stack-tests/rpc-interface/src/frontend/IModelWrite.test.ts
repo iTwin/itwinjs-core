@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { OpenMode } from "@bentley/bentleyjs-core";
+import { OpenMode, Logger } from "@bentley/bentleyjs-core";
 import { Range3d } from "@bentley/geometry-core";
-import { AccessToken } from "@bentley/imodeljs-clients";
-import { BriefcaseConnection, IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
+import { AccessToken, Briefcase as HubBriefcase, BriefcaseQuery } from "@bentley/imodeljs-clients";
+import { BriefcaseConnection, IModelApp, IModelConnection, AuthorizedFrontendRequestContext } from "@bentley/imodeljs-frontend";
 import { assert, expect } from "chai";
 import { AuthorizationClient } from "./setup/AuthorizationClient";
 import { TestContext } from "./setup/TestContext";
@@ -22,6 +22,21 @@ describe("IModel Read/Write Connection", () => {
 
     accessToken = testContext.adminUserAccessToken;
     (IModelApp.authorizationClient as AuthorizationClient).setAccessToken(accessToken);
+  });
+
+  after(async () => {
+    const iModelId = testContext.settings.writeIModel.id;
+    const requestContext = await AuthorizedFrontendRequestContext.create();
+    const briefcases: HubBriefcase[] = await IModelApp.iModelClient.briefcases.get(requestContext, iModelId, new BriefcaseQuery().ownedByMe());
+    if (briefcases.length > 16) {
+      Logger.logInfo("TestUtility", `Reached limit of maximum number of briefcases for ${iModelId}. Purging all briefcases.`);
+
+      const promises = new Array<Promise<void>>();
+      briefcases.forEach((briefcase: HubBriefcase) => {
+        promises.push(IModelApp.iModelClient.briefcases.delete(requestContext, iModelId, briefcase.briefcaseId!));
+      });
+      await Promise.all(promises);
+    }
   });
 
   it("should successfully open an IModelConnection for read/write", async () => {
