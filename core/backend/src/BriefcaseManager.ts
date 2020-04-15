@@ -486,7 +486,7 @@ export class BriefcaseManager {
     const pathname = this.buildFixedVersionBriefcasePath(iModelId, changeSetId);
     if (!IModelJsFs.existsSync(pathname))
       return;
-    const briefcase = this.initializeBriefcase(requestContext, contextId, iModelId, changeSetId, pathname, openParams, ReservedBriefcaseId.Snapshot);
+    const briefcase = this.initializeBriefcase(requestContext, contextId, iModelId, changeSetId, pathname, openParams, ReservedBriefcaseId.CheckpointSnapshot);
     return briefcase;
   }
 
@@ -942,7 +942,7 @@ export class BriefcaseManager {
 
   private static createFixedVersionBriefcase(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelId: GuidString, changeSetId: GuidString, openParams: OpenParams): BriefcaseEntry {
     const pathname = this.buildFixedVersionBriefcasePath(iModelId, changeSetId);
-    const briefcase = new BriefcaseEntry(contextId, iModelId, changeSetId, pathname, OpenParams.fixedVersion(), ReservedBriefcaseId.Snapshot);
+    const briefcase = new BriefcaseEntry(contextId, iModelId, changeSetId, pathname, OpenParams.fixedVersion(), ReservedBriefcaseId.CheckpointSnapshot);
     briefcase.downloadProgress = openParams.downloadProgress;
 
     briefcase.isPending = this.finishCreateBriefcase(requestContext, briefcase);
@@ -1015,7 +1015,8 @@ export class BriefcaseManager {
       if (DbResult.BE_SQLITE_OK !== res)
         throw new IModelError(res, "Unable to open Db", Logger.logError, loggerCategory, () => ({ ...briefcase.getDebugInfo(), result: res }));
 
-      nativeDb.resetBriefcaseId(briefcase.briefcaseId);
+      if (nativeDb.getBriefcaseId() !== briefcase.briefcaseId)
+        nativeDb.resetBriefcaseId(briefcase.briefcaseId);
 
       // verify that all following values were set correctly
       assert(nativeDb.getParentChangeSetId() === checkpoint.mergedChangeSetId, "The parentChangeSetId of the checkpoint was not correctly set by iModelHub");
