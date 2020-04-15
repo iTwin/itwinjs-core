@@ -36,16 +36,15 @@ export function ToolbarItems(props: ToolbarItemsProps) {
   const ref = React.useRef<HTMLDivElement>(null);
   const proximity = useProximityToMouse(ref);
   const { useProximityOpacity, openPopupCount, overflowDisplayActive } = useToolbarWithOverflowDirectionContext();
-  let toolbarOpacity = 1.0;
+  let toolbarOpacity = 1.00;
 
   if (useProximityOpacity && openPopupCount < 1 && !overflowDisplayActive) {
     const threshold = 100;
     const scale = ((proximity < threshold) ? threshold - proximity : 0) / threshold;
-    toolbarOpacity = (0.80 * scale) + 0.20;
+    toolbarOpacity = (0.60 * scale) + 0.40;
   }
   const divStyle: React.CSSProperties = {
     backgroundColor: `rgba(var(--buic-background-3-rgb), ${toolbarOpacity})`,
-    borderColor: `rgba(var(--buic-background-5-rgb), ${toolbarOpacity})`,
     ...props.style,
   };
 

@@ -8,10 +8,12 @@
   box-sizing: border-box;
   width: $mls-button-width;
   height: $mls-button-height;
+
   &.nz-toolbar-button-icon-small {
     width: $mls-small-button-width;
     height: $mls-small-button-height;
   }
+
   margin-bottom: 6px;
   cursor: pointer;
   position: relative;
@@ -41,5 +43,15 @@
       width: 0;
       height: 0;
     }
+  }
+}
+
+.nz-toolbar-button-background {
+  &:hover {
+    background-color: rgba( $buic-foreground-primary-rgb, .2 );
+  }
+
+  &:active {
+    background-color: rgba( $buic-foreground-primary-rgb, .2 );
   }
 }

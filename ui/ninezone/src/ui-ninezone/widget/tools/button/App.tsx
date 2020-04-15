@@ -16,7 +16,10 @@ import "./App.scss";
  * @alpha
  */
 export interface AppButtonProps extends OmitChildrenProp<ToolbarIconProps>, NoChildrenProps {
+  /** Indicates whether to use a small App button */
   small?: boolean;
+  /** Opacity for the background color */
+  backgroundOpacity?: number;
 }
 
 /** App button which displays icon. Used in [[Toolbar]] component.

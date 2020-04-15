@@ -47,19 +47,19 @@ export function BackstageAppButton(props: BackstageAppButtonProps) {
 
   const ref = React.useRef<HTMLDivElement>(null);
   const proximity = useProximityToMouse(ref);
-  const divStyle: React.CSSProperties = {};
+  let appButtonOpacity: number | undefined;
 
   if ("1" !== useFrameworkVersion() && UiShowHideManager.useProximityOpacity && !UiFramework.isMobile()) {
     const threshold = 100;
     const scale = ((proximity < threshold) ? threshold - proximity : 0) / threshold;
-    const appButtonOpacity = (0.50 * scale) + 0.50;
-
-    divStyle.opacity = `${appButtonOpacity}`;
+    appButtonOpacity = (0.60 * scale) + 0.40;
   }
 
   return (
-    <div style={divStyle} ref={ref}>
-      <AppButton small={useSmallAppButton}
+    <div ref={ref}>
+      <AppButton
+        small={useSmallAppButton}
+        backgroundOpacity={appButtonOpacity}
         onClick={backstageToggleCommand.execute}
         icon={
           <Icon iconSpec={icon} />

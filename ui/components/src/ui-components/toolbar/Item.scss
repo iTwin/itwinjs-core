@@ -5,12 +5,11 @@
 @import "variables";
 
 $active-background: rgba(var(--buic-background-1-rgb), 0.25);
-$active-border:     rgba(var(--buic-foreground-primary-rgb), 0.50);
+$active-border:     rgba($buic-foreground-primary-rgb, 0.50);
 
 $hover-background:  rgba(var(--buic-background-1-rgb), 0.50);
 
 .components-toolbar-button-item {
-  border-width: 1px;
   box-sizing: border-box;
   background-origin: border-box;
   border-color: transparent;
@@ -38,11 +37,10 @@ $hover-background:  rgba(var(--buic-background-1-rgb), 0.50);
     transition: all 250ms ease;
 
     svg {
+      opacity: 0.85;
+      // -webkit-filter: drop-shadow(0 1px 0 rgba( var(--buic-foreground-body-reverse-rgb), .5 ));
+      // filter: drop-shadow(0 1px 0 rgba( var(--buic-foreground-body-reverse-rgb), .5 ));
       filter: $no-shadow;
-    }
-
-    svg path {
-      fill: $icon-color;
     }
 
     img {
@@ -52,21 +50,16 @@ $hover-background:  rgba(var(--buic-background-1-rgb), 0.50);
   }
 
   &:hover {
-    background: $hover-background;
-    border-color: $hover-background;
+    background-color: rgba( $buic-foreground-primary-rgb, .2 );
 
-    > .components-icon {
-      color: $hovered-icon-color;
-      transition-duration: 150ms;
-
-      svg path {
-        fill: $hovered-icon-color;
-      }
+    svg {
+      opacity: 1;
     }
   }
 
   &:active {
-    border-color: $active-border;
+    background-color: rgba( $buic-foreground-primary-rgb, .2 );
+    border: solid 2px $buic-foreground-primary;
 
     > .components-icon {
       color: $pressed-icon-color;
@@ -74,10 +67,7 @@ $hover-background:  rgba(var(--buic-background-1-rgb), 0.50);
 
       svg {
         filter: $no-shadow;
-      }
-
-      svg path {
-        fill: $pressed-icon-color;
+        opacity: 1;
       }
     }
   }
@@ -90,25 +80,21 @@ $hover-background:  rgba(var(--buic-background-1-rgb), 0.50);
   }
 
   &.components-active {
-    background: $active-background;
-    border-width: 1px;
-    border-color: $active-border;
+    background-color: rgba( $buic-foreground-primary-rgb, .2 );
+    border: solid 2px $buic-foreground-primary;
 
     &:not(:active):not(.components-disabled) {
       transition-duration: 0s;
 
       > .components-icon {
-        color: $buic-foreground-primary;
+        color: $icon-color;
         filter: $no-shadow;
         transition-duration: 150ms;
         transition-timing-function: cubic-bezier(1, 0.1, 1, 0.5);
 
         svg {
           filter: $no-shadow;
-        }
-
-        svg path {
-          fill: $buic-foreground-primary;
+          opacity: 1;
         }
       }
 
@@ -129,10 +115,6 @@ $hover-background:  rgba(var(--buic-background-1-rgb), 0.50);
   &.components-disabled {
     > .components-icon {
       color: $disabled-icon-color;
-
-      svg path {
-        fill: $disabled-icon-color;
-      }
     }
 
     &:hover {

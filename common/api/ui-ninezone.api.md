@@ -31,7 +31,7 @@ export class AppButton extends React.PureComponent<AppButtonProps> {
 
 // @alpha
 export interface AppButtonProps extends OmitChildrenProp<ToolbarIconProps>, NoChildrenProps {
-    // (undocumented)
+    backgroundOpacity?: number;
     small?: boolean;
 }
 
@@ -2147,8 +2147,10 @@ export class ToolbarButton extends React.PureComponent<ToolbarButtonProps> {
 
 // @alpha
 export interface ToolbarButtonProps extends CommonProps {
+    backgroundOpacity?: number;
     children?: React.ReactNode;
     onClick?: () => void;
+    small?: boolean;
 }
 
 // @internal
@@ -2162,8 +2164,8 @@ export class ToolbarIcon extends React.PureComponent<ToolbarIconProps> {
 
 // @alpha
 export interface ToolbarIconProps extends ToolbarButtonProps {
+    backgroundOpacity?: number;
     icon?: React.ReactNode;
-    // (undocumented)
     small?: boolean;
 }
 

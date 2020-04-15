@@ -19,6 +19,10 @@ export interface ToolbarButtonProps extends CommonProps {
   children?: React.ReactNode;
   /** Function called when the button is clicked. */
   onClick?: () => void;
+  /** Indicates whether to use a small App button */
+  small?: boolean;
+  /** Opacity for the background color */
+  backgroundOpacity?: number;
 }
 
 /** Basic toolbar button. Used in [[Toolbar]] component.
@@ -29,14 +33,23 @@ export class ToolbarButton extends React.PureComponent<ToolbarButtonProps> {
     const className = classnames(
       "nz-toolbar-button-button",
       this.props.className);
+    const buttonStyle: React.CSSProperties = {
+      ...this.props.style,
+    };
+    const useBackgroundOpacity = this.props.backgroundOpacity !== undefined;
+
+    if (useBackgroundOpacity)
+      buttonStyle.backgroundColor = `rgba(var(--buic-background-3-rgb), ${this.props.backgroundOpacity})`;
 
     return (
       <button
         className={className}
-        style={this.props.style}
+        style={buttonStyle}
         onClick={this.props.onClick}
       >
-        <div className="nz-gradient" />
+        {!this.props.small &&
+          <div className="nz-gradient" />
+        }
         {this.props.children}
       </button>
     );

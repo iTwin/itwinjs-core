@@ -29,7 +29,15 @@
        > * {
         width: $mls-small-button-icon-size;
         height: $mls-small-button-icon-size;
-       }
+      }
+    }
+
+    &:active {
+      > .nz-icon {
+        > * {
+          color: $hovered-icon-color;
+        }
+      }
     }
   }
 

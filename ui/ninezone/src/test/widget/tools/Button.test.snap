@@ -3,6 +3,22 @@
 exports[`<ToolbarButton  /> renders correctly 1`] = `
 <button
   className="nz-toolbar-button-button"
+  style={Object {}}
+>
+  <div
+    className="nz-gradient"
+  />
+</button>
+`;
+
+exports[`<ToolbarButton  /> renders correctly with backgroundOpacity 1`] = `
+<button
+  className="nz-toolbar-button-button"
+  style={
+    Object {
+      "backgroundColor": "rgba(var(--buic-background-3-rgb), 0.5)",
+    }
+  }
 >
   <div
     className="nz-gradient"

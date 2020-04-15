@@ -61,10 +61,6 @@
     }
   }
 
-  &:hover > .components-triangle {
-    @include triangle-bottom-right-color($hovered-icon-color);
-  }
-
   > .components-triangle {
     border-radius: 0;
     position: absolute;

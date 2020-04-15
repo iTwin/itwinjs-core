@@ -17,7 +17,10 @@ import "./Icon.scss";
 export interface ToolbarIconProps extends ToolbarButtonProps {
   /** Button icon. */
   icon?: React.ReactNode;
+  /** Indicates whether to use a small App button */
   small?: boolean;
+  /** Opacity for the background color */
+  backgroundOpacity?: number;
 }
 
 /** Toolbar button which displays icon. Used in [[Toolbar]] component.
@@ -35,6 +38,7 @@ export class ToolbarIcon extends React.PureComponent<ToolbarIconProps> {
     return (
       <ToolbarButton
         className={buttonClassName}
+        small={small}
         {...props}
       >
         <div className="nz-icon">

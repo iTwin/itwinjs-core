@@ -224,7 +224,7 @@ export function ToolbarWithOverflow(props: ToolbarWithOverflowProps) {
       setPopupPanelCount((prev) => {
         const nextCount = isOpening ? (prev + 1) : (prev - 1);
         // tslint:disable-next-line: no-console
-        console.log(`new popup count = ${nextCount}`);
+        // console.log(`new popup count = ${nextCount}`);
         return nextCount < 0 ? 0 : nextCount;
       });
     });

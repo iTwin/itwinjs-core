@@ -97,7 +97,7 @@ export function NavigationAidHost(props: NavigationAidHostProps) {
   if ("1" !== useFrameworkVersion() && UiShowHideManager.useProximityOpacity && !UiFramework.isMobile()) {
     const threshold = 100;
     const scale = ((proximity < threshold) ? threshold - proximity : 0) / threshold;
-    const navigationAidOpacity = (0.50 * scale) + 0.50;
+    const navigationAidOpacity = (0.30 * scale) + 0.70;
 
     divStyle.opacity = `${navigationAidOpacity}`;
   }
