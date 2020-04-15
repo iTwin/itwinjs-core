@@ -111,7 +111,8 @@ export class SavedViewPicker extends ToolBarDropDown {
     this._element.appendChild(viewsDiv);
 
     const viewsList = document.createElement("select");
-    viewsList.size = Math.min(15, this._views.length);
+    // If only 1 entry in list, input becomes a combo box and can't select the view...
+    viewsList.size = 1 === this._views.length ? 2 : Math.min(15, this._views.length);
     viewsList.style.width = "100%";
     viewsList.style.display = 0 < this._views.length ? "" : "none";
     viewsDiv.appendChild(viewsList);
