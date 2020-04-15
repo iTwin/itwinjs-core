@@ -24,7 +24,6 @@ public;AccuSnap
 public;AccuSnap
 public;ACSDisplayOptions
 public;ACSType
-alpha;ActiveClipStatus
 public;ActivityMessageDetails
 public;ActivityMessageEndReason
 internal;addRangeGraphic(builder: GraphicBuilder, range: Range3d, is2d: boolean): void
@@ -347,9 +346,6 @@ internal;class RenderTextureDrape
 public;RotateViewTool 
 alpha;RotationMode
 internal;RoundOff
-internal;SavedClipCache
-alpha;SavedClipEntry
-internal;SavedClipProps
 alpha;SavedExtensionClient
 internal;SavedState
 beta;Scene
@@ -482,7 +478,6 @@ alpha;ViewClipDecorationProvider
 alpha;ViewClipEventHandler
 alpha;class ViewClipModifyTool 
 alpha;ViewClipPlanesModifyTool 
-alpha;ViewClipSettingsProvider
 alpha;ViewClipShapeModifyTool 
 alpha;ViewClipTool 
 beta;ViewGlobeBirdTool 
