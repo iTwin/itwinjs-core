@@ -647,10 +647,6 @@
       "allowedCategories": [ "frontend" ]
     },
     {
-      "name": "react-data-grid-addons",
-      "allowedCategories": [ "frontend" ]
-    },
-    {
       "name": "react-dev-utils",
       "allowedCategories": [ "tools" ]
     },
@@ -796,7 +792,7 @@
     },
     {
       "name": "svg-baker-runtime",
-      "allowedCategories": [ "extensions", "frontend", "internal" ]
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "svg-react-loader",
