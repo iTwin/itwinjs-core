@@ -103,7 +103,7 @@ export class GeoPhotos {
     if (!this.photoTree)
       return 0;
     this._photoCount = 0;
-    this.photoTree.traverseFolders(this.countFunc.bind(this), true, true);
+    this.photoTree.traverseFolders(this.countFunc.bind(this), true, false);
     return this._photoCount;
   }
 }

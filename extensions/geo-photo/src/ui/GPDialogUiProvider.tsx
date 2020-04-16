@@ -7,16 +7,16 @@ import * as React from "react";
 import { StopWatch } from "@bentley/bentleyjs-core";
 import { UiItemsProvider, DialogPropertySyncItem, StageUsage, ToolbarUsage, ToolbarOrientation, CommonToolbarItem, ToolbarItemUtilities, UiDataProvider } from "@bentley/ui-abstract";
 import { UiEvent } from "@bentley/ui-core";
+import { TreeDataProvider } from "@bentley/ui-components";
 import { ModelessDialogManager } from "@bentley/ui-framework";
-import { ITreeDataProvider } from "@bentley/ui-components";
 
 import { GeoPhotoDialog } from "./GPDialog";
 import geoPhotoButtonSvg from "./geoPhoto-button.svg?sprite";
 import { GeoPhotoExtension, GeoPhotoSettings } from "../geoPhoto";
-import { GPLoadTracker } from "../PhotoTree";
+import { GPLoadTracker, PhotoTree } from "../PhotoTree";
 
 export interface SyncTreeDataEventArgs {
-  treeData: ITreeDataProvider | undefined;
+  treeData: TreeDataProvider | undefined;
 }
 
 export interface SyncTitleEventArgs {
@@ -63,7 +63,7 @@ export class GPDialogUiProvider extends UiDataProvider implements UiItemsProvide
 
   public readonly id = "GPDialogUiProvider";
 
-  public treeDataProvider: ITreeDataProvider | undefined = undefined;
+  public photoTree: PhotoTree | undefined = undefined;
   public onSyncDataTreeEvent = new SyncDataTreeChangeEvent();
   public onSyncShowMarkersEvent = new SyncShowMarkersEvent();
   public onSyncSettingsEvent = new SyncSettingsEvent();
@@ -127,9 +127,9 @@ export class GPDialogUiProvider extends UiDataProvider implements UiItemsProvide
     this.onSyncTitleEvent.emit({ title });
   }
 
-  public syncTreeData(treeData: ITreeDataProvider) {
-    this.treeDataProvider = treeData;
-    this.onSyncDataTreeEvent.emit({ treeData });
+  public syncTreeData(tree: PhotoTree) {
+    this.photoTree = tree;
+    this.onSyncDataTreeEvent.emit({ treeData: tree.dataProvider });
   }
 
   public syncShowMarkers() {
@@ -202,7 +202,15 @@ export class GPDialogUiProvider extends UiDataProvider implements UiItemsProvide
   // end of implementation of GPLoadTracker ---------
 
   // called when there has been a change to the selected folders in the dialog.
-  public markerVisibilityChange(): void {
+  public markerVisibilityChange(changes: Array<{ name: string, visible: boolean }>) {
+    if (!this.photoTree)
+      return;
+
+    changes.forEach((change) => {
+      const entry = this.photoTree!.findEntry(change.name);
+      if (entry)
+        entry.visible = change.visible;
+    });
     this.extension.visibilityChange().catch((_err) => { });
   }
 

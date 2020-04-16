@@ -3,13 +3,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Logger, BeEvent, BentleyError, BentleyStatus, SortedArray } from "@bentley/bentleyjs-core";
+import { Logger, BentleyError, BentleyStatus, SortedArray } from "@bentley/bentleyjs-core";
 import { I18N } from "@bentley/imodeljs-i18n";
 import { Point3d, Vector3d, XYZProps } from "@bentley/geometry-core";
 import { IModelApp, IModelConnection, GeoConverter, QuantityType } from "@bentley/imodeljs-frontend";
 import { Cartographic, IModelCoordinatesResponseProps, GeoCoordStatus } from "@bentley/imodeljs-common";
 import { JpegTagReader, ImageTags, ImageTagValue, ImageTagsMap } from "./JpegTagReader";
-import { ITreeDataProvider, TreeNodeItem, TreeDataChangesListener, PageOptions, DelayLoadedTreeNodeItem } from "@bentley/ui-components";
+import { TreeNodeItem, ImmediatelyLoadedTreeNodeItem, TreeDataProvider } from "@bentley/ui-components";
 import { CheckBoxState } from "@bentley/ui-core";
 import { PropertyRecord } from "@bentley/ui-abstract";
 
@@ -104,7 +104,7 @@ export abstract class FolderEntry {
 }
 
 /** Abstract base class for folders in the GeoPhotos tree. */
-export abstract class PhotoFolder extends FolderEntry implements DelayLoadedTreeNodeItem {
+export abstract class PhotoFolder extends FolderEntry {
   public entries: FolderEntry[] | undefined;
   private _sortedByXNoChildren: DistanceSorter | undefined;
   private _sortedByXWithChildren: DistanceSorter | undefined;
@@ -112,51 +112,22 @@ export abstract class PhotoFolder extends FolderEntry implements DelayLoadedTree
   private _sortedByYWithChildren: DistanceSorter | undefined;
   private _sortedByTimeNoChildren: TimeSorter | undefined;
   private _sortedByTimeWithChildren: TimeSorter | undefined;
-  // public isCheckboxVisible?: boolean = true;
 
   constructor(treeHandler: PhotoTreeHandler, parent: PhotoFolder | undefined) {
     super(treeHandler, parent);
     this.entries = undefined;
   }
 
-  /* ------ These methods implement DelayLoadedTreeNodeItem --------- */
-  public get id(): string {
-    return this.name;
+  public get treeItem(): TreeNodeItem {
+    return {
+      id: this.name,
+      label: PropertyRecord.fromString(this.name),
+      autoExpand: true,
+      isCheckboxVisible: true,
+      isCheckboxDisabled: this.parent && (this.parent.treeItem.checkBoxState === CheckBoxState.Off || this.parent.treeItem.isCheckboxDisabled),
+      checkBoxState: this.visible ? CheckBoxState.On : CheckBoxState.Off,
+    };
   }
-
-  get label(): PropertyRecord {
-    return PropertyRecord.fromString(this.name);
-  }
-
-  public get hasChildren(): boolean {
-    if (this.entries !== undefined) {
-      for (const entry of this.entries) {
-        if (entry instanceof PhotoFolder)
-          return true;
-      }
-    }
-    return false;
-  }
-
-  public get autoExpand(): boolean {
-    return true;
-  }
-
-  public get isCheckboxVisible(): boolean {
-    return true;
-  }
-
-  public get isCheckboxDisabled(): boolean {
-    if (!this.parent)
-      return false;
-    return this.parent.checkBoxState === CheckBoxState.Off || this.parent.isCheckboxDisabled;
-  }
-
-  public get checkBoxState(): CheckBoxState {
-    return this.visible ? CheckBoxState.On : CheckBoxState.Off;
-  }
-
-  /* ------ End of DelayLoadedTreeNodeItem -------- */
 
   public getSubFolders(): PhotoFolder[] {
     const subFolders: PhotoFolder[] = [];
@@ -185,6 +156,22 @@ export abstract class PhotoFolder extends FolderEntry implements DelayLoadedTree
 
   public set visible(value: boolean) {
     this._visible = value;
+  }
+
+  public findEntry(name: string): FolderEntry | undefined {
+    if (!this.entries)
+      return undefined;
+
+    for (const entry of this.entries) {
+      if (entry.name === name)
+        return entry;
+
+      const nestedEntry = (entry instanceof PhotoFolder) ? entry.findEntry(name) : undefined;
+      if (nestedEntry)
+        return nestedEntry;
+    }
+
+    return undefined;
   }
 
   /** uses treeHandler to read the contents of this Folder. */
@@ -319,9 +306,9 @@ export abstract class PhotoFolder extends FolderEntry implements DelayLoadedTree
 }
 
 // This class represents the root folder of the tree.
-export class PhotoTree extends PhotoFolder implements ITreeDataProvider {
-  public onTreeNodeChanged = new BeEvent<TreeDataChangesListener>();
+export class PhotoTree extends PhotoFolder {
   public static PHOTOINFO_VERSION: string = "2";
+  private _treeDataProvider?: TreeDataProvider;
 
   constructor(treeHandler: PhotoTreeHandler, private _i18n: I18N) {
     super(treeHandler, undefined);
@@ -335,32 +322,10 @@ export class PhotoTree extends PhotoFolder implements ITreeDataProvider {
     return this._i18n.translate("geoPhoto:messages.RootFolderName");
   }
 
-  // implementation of ITreeDataProvider.getNodesCount
-  public async getNodesCount(parent?: TreeNodeItem): Promise<number> {
-    // return count of the folder nodes.
-    if (!parent)
-      parent = this;
-    if (!(parent instanceof PhotoFolder) || (undefined === parent.entries))
-      return 0;
-
-    let count = 0;
-    for (const entry of parent.entries) {
-      if (entry instanceof PhotoFolder)
-        count++;
-    }
-    return count;
-  }
-
-  // implementation of ITreeDataProvider.getNodes
-  public async getNodes(parent?: TreeNodeItem, _page?: PageOptions): Promise<DelayLoadedTreeNodeItem[]> {
-    // return only the folder nodes.
-    if (!parent)
-      parent = this;
-
-    if (!(parent instanceof PhotoFolder) || (undefined === parent.entries))
-      return [];
-
-    return parent.getSubFolders();
+  get dataProvider() {
+    if (!this._treeDataProvider)
+      this._treeDataProvider = buildTreeDataProvider(this);
+    return this._treeDataProvider;
   }
 
   // traverse callback to clear the distance sort results for an individual folder
@@ -376,6 +341,17 @@ export class PhotoTree extends PhotoFolder implements ITreeDataProvider {
     this.traverseFolders(this._clearFolderDistanceSort.bind(this), true, false);
   }
 
+}
+
+function isPhotoFolder(entry: FolderEntry): entry is PhotoFolder {
+  return entry instanceof PhotoFolder;
+}
+
+function buildTreeDataProvider(folder: PhotoFolder): ImmediatelyLoadedTreeNodeItem[] {
+  return (folder.entries ?? []).filter(isPhotoFolder).map((entry) => ({
+    ...entry.treeItem,
+    children: buildTreeDataProvider(entry),
+  }));
 }
 
 // not actually used yet.
