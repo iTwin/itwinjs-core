@@ -35,7 +35,7 @@
     "@bentley/geometry-core": "2.0.0-dev.69",
     "@bentley/imodeljs-clients": "2.0.0-dev.69",
     "openid-client": "^3.7.2",
-    "puppeteer": "chrome-stable"
+    "puppeteer": "latest"
   },
   "devDependencies": {
     "@bentley/build-tools": "2.0.0-dev.69",
@@ -43,7 +43,7 @@
     "@types/chai-as-promised": "^7",
     "@types/mocha": "^5.2.5",
     "@types/node": "10.14.1",
-    "@types/puppeteer": "1.20.2",
+    "@types/puppeteer": "2.0.1",
     "chai": "^4.1.2",
     "chai-as-promised": "^7",
     "mocha": "^5.2.0",
