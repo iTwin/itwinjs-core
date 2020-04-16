@@ -540,7 +540,7 @@
     },
     {
       "name": "nock",
-      "allowedCategories": [ "backend", "common" ]
+      "allowedCategories": [ "backend", "common", "internal" ]
     },
     {
       "name": "node-sass",

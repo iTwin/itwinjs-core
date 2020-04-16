@@ -42,6 +42,7 @@
     "@types/fs-extra": "^4.0.7",
     "@types/mocha": "^5.2.5",
     "@types/node": "10.14.1",
+    "@types/nock": "^9.1.2",
     "chai": "^4.1.2",
     "glob": "^7.1.2",
     "istanbul-instrumenter-loader": "^3.0.1",
@@ -52,6 +53,7 @@
     "tslint-etc": "^1.5.2",
     "typescript": "~3.7.4",
     "nyc": "^14.0.0",
+    "nock": "^9.2.3",
     "webpack": "4.42.0"
   }
 }

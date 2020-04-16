@@ -68,6 +68,13 @@ export abstract class TestRpcInterface extends RpcInterface {
     return this.forward(arguments);
   }
 
+  public async beginOfflineScope(): Promise<void> {
+    return this.forward(arguments);
+  }
+  public async endOfflineScope(): Promise<void> {
+    return this.forward(arguments);
+  }
+
   public async initTestChangeSetUtility(_projectName: string, _iModelBaseName: string): Promise<void> {
     return this.forward(arguments);
   }

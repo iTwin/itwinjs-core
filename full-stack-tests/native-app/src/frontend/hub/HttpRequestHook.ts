@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { IDisposable } from "@bentley/bentleyjs-core";
 import { RequestGlobalOptions } from "@bentley/imodeljs-clients";
+import { TestRpcInterface } from "../../common/RpcInterfaces";
 
 const NATIVE_XHR = Symbol.for("NATIVE_XHR");
 const NATIVE_FETCH = Symbol.for("NATIVE_FETCH");
@@ -381,29 +381,39 @@ export class HttpRequestHook {
     }
   }
 }
-
-export class OfflineScope implements IDisposable {
-  private _rejected: Request[] = [];
-  private _timeoutOldValue = { ...RequestGlobalOptions.timeout };
-  private _maxRetriesOldValue = RequestGlobalOptions.maxRetries;
-  constructor() {
-    HttpRequestHook.install();
-    HttpRequestHook.accept("http://localhost")
-      .onRequest(() => undefined)
-      .onResponse((resp) => resp);
-    HttpRequestHook.accept(/^.*$/)
-      .onRequest((req) => {
-        this._rejected.push(req);
-        return new Response(null, { status: 503 });
-      });
-    // fail fast
-    RequestGlobalOptions.timeout = { deadline: 5000, response: 5000 };
-    RequestGlobalOptions.maxRetries = 0;
-  }
-  public get rejected(): Request[] { return this._rejected; }
-  public dispose(): void {
+export async function usingOfflineScope<TResult>(func: () => Promise<TResult>): Promise<TResult> {
+  return usingBackendOfflineScope(async () => {
+    return usingFrontendOfflineScope(func);
+  });
+}
+export async function usingBackendOfflineScope<TResult>(func: () => Promise<TResult>): Promise<TResult> {
+  await TestRpcInterface.getClient().beginOfflineScope();
+  const endScope = async () => {
+    await TestRpcInterface.getClient().endOfflineScope();
+  };
+  const result = func();
+  result.then(endScope, endScope);
+  return result;
+}
+export async function usingFrontendOfflineScope<TResult>(func: () => Promise<TResult>): Promise<TResult> {
+  const timeoutOldValue = { ...RequestGlobalOptions.timeout };
+  const maxRetriesOldValue = RequestGlobalOptions.maxRetries;
+  HttpRequestHook.install();
+  HttpRequestHook.accept("http://localhost")
+    .onRequest(() => undefined)
+    .onResponse((resp) => resp);
+  HttpRequestHook.accept(/^.*$/)
+    .onRequest((_req) => {
+      return new Response(null, { status: 503 });
+    });
+  RequestGlobalOptions.timeout = { deadline: 5000, response: 5000 };
+  RequestGlobalOptions.maxRetries = 0;
+  const endScope = () => {
     HttpRequestHook.uninstall();
-    Object.assign(RequestGlobalOptions.timeout, this._timeoutOldValue);
-    RequestGlobalOptions.maxRetries = this._maxRetriesOldValue;
-  }
+    Object.assign(RequestGlobalOptions.timeout, timeoutOldValue);
+    RequestGlobalOptions.maxRetries = maxRetriesOldValue;
+  };
+  const result = func();
+  result.then(endScope, endScope);
+  return result;
 }

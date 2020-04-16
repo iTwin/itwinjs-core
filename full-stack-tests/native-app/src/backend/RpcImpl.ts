@@ -8,6 +8,7 @@ import { AuthorizedClientRequestContext, AuthorizedClientRequestContextProps, Co
 import { IModelRpcProps, RpcInterface, RpcManager } from "@bentley/imodeljs-common";
 import { CloudEnvProps, TestRpcInterface } from "../common/RpcInterfaces";
 import { CloudEnv } from "./cloudEnv";
+import * as nock from "nock";
 import { TestChangeSetUtility } from "./TestChangeSetUtility";
 
 export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
@@ -86,6 +87,18 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
   public async purgeBriefcaseCache(): Promise<void> {
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
     await BriefcaseManager.purgeCache(requestContext);
+  }
+
+  public async beginOfflineScope(): Promise<void> {
+    nock(/^https:\/\/.*$/i)
+      .log((message: any, optionalParams: any[]) => {
+        // tslint:disable-next-line:no-console
+        console.log(message, optionalParams);
+      }).get("/").reply(503);
+  }
+
+  public async endOfflineScope(): Promise<void> {
+    nock.cleanAll();
   }
 
   private _testChangeSetUtility?: TestChangeSetUtility;

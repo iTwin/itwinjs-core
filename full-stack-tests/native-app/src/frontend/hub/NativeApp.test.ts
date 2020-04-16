@@ -3,14 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { using, GuidString } from "@bentley/bentleyjs-core";
+import { GuidString } from "@bentley/bentleyjs-core";
 import { NativeApp, IModelApp, NativeAppLogger, AuthorizedFrontendRequestContext, FrontendRequestContext } from "@bentley/imodeljs-frontend";
 import { BriefcaseRpcProps, IModelVersion } from "@bentley/imodeljs-common";
 import { Config, ProgressInfo } from "@bentley/imodeljs-clients";
 import { TestUsers, TestAuthorizationClient } from "@bentley/oidc-signin-tool/lib/TestUsers";
 import { TestUtility } from "./TestUtility";
 import { TestChangeSetUtility } from "./TestChangeSetUtility";
-import { OfflineScope } from "./HttpRequestHook";
+import { usingOfflineScope } from "./HttpRequestHook";
 
 describe("NativeApp (#integration)", () => {
   let testProjectName: string;
@@ -52,7 +52,7 @@ describe("NativeApp (#integration)", () => {
     const requestContext = await AuthorizedFrontendRequestContext.create();
 
     const iModelRpcProps = await NativeApp.downloadBriefcase(requestContext, testProjectId, testIModelId);
-    await using(new OfflineScope(), async (scope: OfflineScope) => {
+    await usingOfflineScope(async () => {
       const briefcases = await NativeApp.getBriefcases();
       const rs = briefcases.filter((_: BriefcaseRpcProps) => _.iModelId === testIModelId);
       assert(rs.length > 0);
@@ -61,7 +61,6 @@ describe("NativeApp (#integration)", () => {
       const conn = await NativeApp.openBriefcase(new FrontendRequestContext(), iModelRpcProps);
       const rowCount = await conn.queryRowCount("SELECT ECInstanceId FROM bis.Element");
       assert.notEqual(rowCount, 0);
-      assert.equal(scope.rejected.length, 0);
     });
   });
 
@@ -71,7 +70,7 @@ describe("NativeApp (#integration)", () => {
 
     const requestContext = await AuthorizedFrontendRequestContext.create();
 
-    await using(new OfflineScope(), async (_scope: OfflineScope) => {
+    await usingOfflineScope(async () => {
       try {
         await NativeApp.downloadBriefcase(requestContext, testProjectId, testIModelId);
         assert(false, "downloadBriefcase() should fail in offlineScope");
