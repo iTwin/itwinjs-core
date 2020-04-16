@@ -32,6 +32,13 @@ export class Reporter {
   }
 
   /**
+   * Clear entries to get a fresh start
+   */
+  public clearEntries() {
+    this._entries = [];
+  }
+
+  /**
    * Create CSV file with report. Call after all test have run
    * @param fileName Name of the CSV file with or without .csv
    */

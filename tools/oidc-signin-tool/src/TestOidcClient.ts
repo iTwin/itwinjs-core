@@ -73,7 +73,8 @@ export class TestOidcClient implements IAuthorizationClient {
       return false;
     const expiresAt = this._accessToken.getExpiresAt();
     assert(!!expiresAt);
-    return ((expiresAt!.getTime() - Date.now()) <= 0);
+    // show expiry one minute before actual time to refresh
+    return ((expiresAt!.getTime() - Date.now()) <= 1 * 60 * 1000);
   }
 
   /** Returns true if the user has signed in, but the token has expired and requires a refresh */

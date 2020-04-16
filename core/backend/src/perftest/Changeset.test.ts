@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Id64String } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext, ChangeSet, HubIModel, IModelHubClient, IModelHubError, IModelQuery } from "@bentley/imodeljs-clients";
+import { AuthorizedClientRequestContext, ChangeSet, HubIModel, IModelHubClient, IModelHubError, IModelQuery, ChangesType } from "@bentley/imodeljs-clients";
 import { IModel, IModelVersion, SubCategoryAppearance } from "@bentley/imodeljs-common";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { Reporter } from "@bentley/perf-tools/lib/Reporter";
@@ -285,9 +285,9 @@ describe("ImodelChangesetPerformance", () => {
     if (!IModelJsFs.existsSync(KnownTestLocations.outputDir))
       IModelJsFs.mkdirSync(KnownTestLocations.outputDir);
     const configData = require(path.join(__dirname, "CSPerfConfig.json"));
-    projectId = configData.projectId;
-    imodelId = configData.imodelId;
-    imodelPushId = configData.imodelPushId;
+    projectId = configData.basicTest.projectId;
+    imodelId = configData.basicTest.imodelId;
+    imodelPushId = configData.basicTest.imodelPushId;
 
     client = new IModelHubClient();
 
@@ -327,4 +327,121 @@ describe("ImodelChangesetPerformance", () => {
     await reinstateChanges(requestContext, reporter, projectId).catch();
   });
 
+});
+
+describe("ImodelChangesetPerformance big datasets", () => {
+  const reporter = new Reporter();
+  const configData = require(path.join(__dirname, "CSPerfConfig.json"));
+  const csvPath = path.join(KnownTestLocations.outputDir, "ApplyCSPerf.csv");
+
+  function getChangesetSummary(changeSets: ChangeSet[]): {} {
+    const schemaChanges = changeSets.filter((obj) => obj.changesType === ChangesType.Schema);
+    const dataChanges = changeSets.filter((obj) => obj.changesType === ChangesType.Regular);
+    const csSummary = {
+      count: changeSets.length,
+      fileSizeKB: Math.round(changeSets.reduce((prev, cs) => prev + Number(cs.fileSize), 0) / 1024),
+      schemaChanges: {
+        count: schemaChanges.length,
+        fileSizeKB: Math.round(schemaChanges.reduce((prev, cs) => prev + Number(cs.fileSize), 0) / 1024),
+      },
+      dataChanges: {
+        count: dataChanges.length,
+        fileSizeKB: Math.round(dataChanges.reduce((prev, cs) => prev + Number(cs.fileSize), 0) / 1024),
+      },
+    };
+    return csSummary;
+  }
+
+  before(async () => {
+    if (!IModelJsFs.existsSync(KnownTestLocations.outputDir))
+      IModelJsFs.mkdirSync(KnownTestLocations.outputDir);
+  });
+
+  after(() => {
+    reporter.exportCSV(csvPath);
+  });
+
+  it("Get changeset summaries", async () => {
+    const summary: any[] = [];
+    for (const ds of configData.bigDatasets) {
+      const projId: string = ds.projId;
+      const imodelId: string = ds.modelId;
+
+      const client: IModelHubClient = new IModelHubClient();
+      const requestContext: AuthorizedClientRequestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
+
+      const changeSets: ChangeSet[] = await client.changeSets.get(requestContext, imodelId);
+      const modelSummary = {
+        projectId: projId,
+        modelId: imodelId,
+        changesetSummary: getChangesetSummary(changeSets),
+      };
+      summary.push(modelSummary);
+      const changeSetsJsonStr = JSON.stringify(changeSets, undefined, 4);
+      const changeSetsJsonPathname = path.join(KnownTestLocations.outputDir, "changeSets_" + imodelId + ".json");
+      IModelJsFs.writeFileSync(changeSetsJsonPathname, changeSetsJsonStr);
+    }
+    const csSummary: string = JSON.stringify(summary, undefined, 4);
+    const summaryJsonFile = path.join(KnownTestLocations.outputDir, "ChangesetSummary.json");
+    IModelJsFs.writeFileSync(summaryJsonFile, csSummary);
+  });
+
+  it("ApplyChangeset", async () => {
+    const batchSize: number = 50;
+    for (const ds of configData.bigDatasets) {
+      const projectId: string = ds.projId;
+      const imodelId: string = ds.modelId;
+
+      const client: IModelHubClient = new IModelHubClient();
+      let requestContext: AuthorizedClientRequestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
+      const changeSets: ChangeSet[] = await client.changeSets.get(requestContext, imodelId);
+      const startNum: number = ds.csStart ? ds.csStart : 0;
+      const endNum: number = ds.csEnd ? ds.csEnd : changeSets.length;
+      const modelInfo = {
+        projId: projectId,
+        projName: ds.projName,
+        modelId: imodelId,
+        modelName: ds.modelName,
+      };
+
+      const firstChangeSetId = changeSets[startNum].wsgId;
+      const iModelDb = await BriefcaseDb.open(requestContext, projectId, imodelId, OpenParams.pullAndPush(), IModelVersion.asOfChangeSet(firstChangeSetId));
+
+      for (let j = startNum; j < endNum; ++j) {
+        const cs: ChangeSet = changeSets[j];
+        let apply: boolean = false;
+        if (ds.csType === "All") {
+          apply = true;
+        } else {
+          if (ds.csType === cs.changesType) {
+            apply = true;
+          }
+        }
+        if (apply) {
+          // tslint:disable-next-line:no-console
+          console.log("For iModel: " + ds.modelName + ": Applying changeset: " + (j + 1).toString() + " / " + endNum.toString());
+          requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
+          const startTime = new Date().getTime();
+          await iModelDb.pullAndMergeChanges(requestContext, IModelVersion.asOfChangeSet(cs.wsgId));
+          const endTime = new Date().getTime();
+          const elapsedTime = (endTime - startTime) / 1000.0;
+
+          const csInfo = {
+            GUID: cs.wsgId,
+            fileSize: cs.fileSize,
+            type: cs.changesType,
+            desc: cs.description,
+          };
+          reporter.addEntry("ImodelChangesetPerformance", "ApplyChangeset", "Time(s)", elapsedTime, { csNum: j, csDetail: csInfo, modelDetail: modelInfo });
+        }
+        if (j % batchSize === 0) { // After few runs write results in case test fails
+          reporter.exportCSV(csvPath);
+          reporter.clearEntries();
+        }
+      }
+      await iModelDb.close(requestContext).catch();
+      reporter.exportCSV(csvPath);
+      reporter.clearEntries();
+    }
+  });
 });
