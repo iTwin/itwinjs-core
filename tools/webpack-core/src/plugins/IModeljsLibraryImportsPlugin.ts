@@ -29,7 +29,7 @@ export class IModeljsLibraryImportsPlugin {
     compiler.hooks.normalModuleFactory.tap("IModeljsLibraryImportsPlugin", (normalModuleFactory) => {
       normalModuleFactory.hooks.module.tap("IModeljsLibraryImportsPlugin", (mod, info) => {
         const pkgJson = info.resourceResolveData.descriptionFileData;
-        if (pkgJson.name === info.rawRequest && pkgJson.imodeljsSharedLibrary) {
+        if ((pkgJson.name === info.rawRequest && pkgJson.imodeljsSharedLibrary) || pkgJson.name === "react") {
           mod.___IS_BENTLEY = true;
           mod.___IMJS_VER = pkgJson.version;
           mod.___IMJS_NAME = pkgJson.name;
