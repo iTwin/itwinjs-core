@@ -54,7 +54,7 @@ export * from "./CloudStorageBackend";
 export * from "./AliCloudStorageService";
 export * from "./DevTools";
 export * from "./oidc/OidcDesktopClient";
-export * from "./ulas/UlasUtilities";
+export * from "./usage-logging/UsageLoggingUtilities";
 export * from "./IModelDb"; // must be last
 /** @docs-package-description
  * The imodeljs-backend package always runs on the computer with a local Briefcase.

@@ -5,7 +5,7 @@
 import * as sinon from "sinon";
 import { IModelApp, AuthorizedFrontendRequestContext } from "@bentley/imodeljs-frontend";
 import { IModelAppUiSettings, settingsStatusToUiSettingsStatus } from "../../ui-framework";
-import { SettingsResult, SettingsStatus, SettingsAdmin } from "@bentley/imodeljs-clients";
+import { SettingsResult, SettingsStatus, SettingsAdmin } from "@bentley/product-settings-client";
 import { UiSettingsStatus } from "@bentley/ui-core";
 
 describe("IModelAppUiSettings", () => {

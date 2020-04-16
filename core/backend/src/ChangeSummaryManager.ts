@@ -7,7 +7,7 @@
  */
 
 import { assert, DbResult, GuidString, Id64String, Logger, PerfLogger, using } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext, ChangeSet, ChangeSetQuery } from "@bentley/imodeljs-clients";
+import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
 import { ChangedValueState, ChangeOpCode, IModelError, IModelStatus, IModelVersion } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import * as path from "path";
@@ -18,6 +18,7 @@ import { ECSqlStatement } from "./ECSqlStatement";
 import { BriefcaseDb, IModelDb } from "./IModelDb";
 import { KnownLocations } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
+import { ChangeSet, ChangeSetQuery } from "@bentley/imodelhub-client";
 
 const loggerCategory: string = BackendLoggerCategory.ECDb;
 

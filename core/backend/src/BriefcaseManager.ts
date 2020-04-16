@@ -7,12 +7,10 @@
  */
 
 import {
-  Briefcase as HubBriefcase, IModelHubClient, ConnectClient, ChangeSet,
-  ChangesType, Briefcase, HubCode, IModelHubError, AuthorizedClientRequestContext, CheckpointQuery, Checkpoint,
-  BriefcaseQuery, ChangeSetQuery, ConflictingCodesError, IModelClient, HubIModel, CancelRequest, ProgressCallback,
-  UserCancelledError,
-} from "@bentley/imodeljs-clients";
-import { IModelBankClient } from "@bentley/imodeljs-clients/lib/imodelbank/IModelBankClient";
+  Briefcase as HubBriefcase, IModelHubClient, ChangeSet, ChangesType, Briefcase, HubCode, IModelHubError,
+  CheckpointQuery, Checkpoint, BriefcaseQuery, ChangeSetQuery, ConflictingCodesError, IModelClient, HubIModel, IModelBankClient,
+} from "@bentley/imodelhub-client";
+import { AuthorizedClientRequestContext, CancelRequest, ProgressCallback, UserCancelledError } from "@bentley/imodeljs-clients";
 import { AzureFileHandler, IOSAzureFileHandler } from "@bentley/imodeljs-clients-backend";
 import {
   ChangeSetApplyOption, BeEvent, DbResult, OpenMode, assert, Logger, ChangeSetStatus,
@@ -24,6 +22,7 @@ import { IModelDb, OpenParams, SyncMode } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
+import { ContextRegistryClient } from "@bentley/context-registry-client";
 import * as path from "path";
 import * as glob from "glob";
 
@@ -397,11 +396,11 @@ export class BriefcaseManager {
   }
 
   private static _firstChangeSetDir: string = "first";
-  private static _connectClient?: ConnectClient;
+  private static _contextRegistryClient?: ContextRegistryClient;
 
   /** Connect client to be used for all briefcase operations */
-  public static get connectClient(): ConnectClient {
-    return BriefcaseManager._connectClient!;
+  public static get connectClient(): ContextRegistryClient {
+    return BriefcaseManager._contextRegistryClient!;
   }
 
   /** Get the local path of the root folder storing the imodel seed file, change sets and briefcases */
@@ -545,7 +544,7 @@ export class BriefcaseManager {
   }
 
   private static setupConnectClient() {
-    BriefcaseManager._connectClient = new ConnectClient();
+    BriefcaseManager._contextRegistryClient = new ContextRegistryClient();
   }
 
   /** Initialize BriefcaseManager */
@@ -565,7 +564,7 @@ export class BriefcaseManager {
     BriefcaseManager.clearCache();
     IModelHost.onBeforeShutdown.removeListener(BriefcaseManager.finalize);
     BriefcaseManager._imodelClient = undefined;
-    BriefcaseManager._connectClient = undefined;
+    BriefcaseManager._contextRegistryClient = undefined;
     BriefcaseManager.clearCacheDir();
     BriefcaseManager._initialized = false;
     BriefcaseManager._initBriefcaseCacheFromDisk = false;

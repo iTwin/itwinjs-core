@@ -2,13 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Client, Issuer, UserinfoResponse as OIDCUserInfo, TokenSet, AuthorizationParameters, OpenIDCallbackChecks, generators } from "openid-client";
-import { IAuthorizationClient, AccessToken, UserInfo, UrlDiscoveryClient, Config } from "@bentley/imodeljs-clients";
-import { assert, ClientRequestContext } from "@bentley/bentleyjs-core";
-import { TestOidcConfiguration, TestUserCredentials } from "./TestUsers";
-import * as url from "url";
-import * as puppeteer from "puppeteer";
+import { assert, ClientRequestContext, Config } from "@bentley/bentleyjs-core";
+import { AccessToken, IAuthorizationClient, UrlDiscoveryClient, UserInfo } from "@bentley/imodeljs-clients";
+import { AuthorizationParameters, Client, generators, Issuer, OpenIDCallbackChecks, TokenSet, UserinfoResponse as OIDCUserInfo } from "openid-client";
 import * as os from "os";
+import * as puppeteer from "puppeteer";
+import * as url from "url";
+import { TestOidcConfiguration, TestUserCredentials } from "./TestUsers";
 
 /**
  * Implementation of IAuthorizationClient used for the iModel.js integration tests.

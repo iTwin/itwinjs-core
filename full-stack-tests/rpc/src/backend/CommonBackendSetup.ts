@@ -4,9 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { IModelHost } from "@bentley/imodeljs-backend";
 import { RpcConfiguration, IModelReadRpcInterface } from "@bentley/imodeljs-common";
-import { Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { Logger, LogLevel, Config } from "@bentley/bentleyjs-core";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
-import { Config } from "@bentley/imodeljs-clients";
 import { registerBackendCallback } from "@bentley/certa/lib/utils/CallbackUtils";
 import { BackendTestCallbacks } from "../common/SideChannels";
 import { TestRpcImpl2, resetOp8Initializer } from "./TestRpcImpl";

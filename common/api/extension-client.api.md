@@ -24,6 +24,4 @@ export class ExtensionClient extends Client {
     }
 
 
-// (No @packageDocumentation comment for this package)
-
 ```

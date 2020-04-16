@@ -42,6 +42,7 @@
   "peerDependencies": {
     "@bentley/bentleyjs-core": "^2.0.0-dev.70",
     "@bentley/geometry-core": "^2.0.0-dev.70",
+    "@bentley/imodelhub-client": "^2.0.0-dev.70",
     "@bentley/imodeljs-clients": "^2.0.0-dev.70"
   },
   "//devDependencies": [
@@ -52,6 +53,7 @@
     "@bentley/bentleyjs-core": "2.0.0-dev.70",
     "@bentley/build-tools": "2.0.0-dev.70",
     "@bentley/geometry-core": "2.0.0-dev.70",
+    "@bentley/imodelhub-client": "2.0.0-dev.70",
     "@bentley/imodeljs-clients": "2.0.0-dev.70",
     "@types/semver": "^5.5.0",
     "rimraf": "^3.0.2",

@@ -11,6 +11,7 @@ export * from "./BentleyLoggerCategory";
 export * from "./ByteStream";
 export * from "./ClientRequestContext";
 export * from "./Compare";
+export * from "./Config";
 export * from "./Dictionary";
 export * from "./Disposable";
 export * from "./ElectronUtils";
@@ -36,6 +37,10 @@ export * from "./Time";
 /**
  * @docs-group-description BeSQLite
  * Classes for working with SQLite databases. SQLite underlies IModelDb and ECDb - see [Executing ECSQL]($docs/learning/ECSQL.md)
+ */
+/**
+ * @docs-group-description Configuration
+ * Class for easily managing configuration variables for an iModel.js application.
  */
 /**
  * @docs-group-description Errors

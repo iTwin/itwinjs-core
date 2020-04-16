@@ -5,12 +5,11 @@
 /** @packageDocumentation
  * @module iTwinServiceClients
  */
-import { BentleyError, ClientRequestContext, GetMetaDataFunction, HttpStatus, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { BentleyError, ClientRequestContext, Config, GetMetaDataFunction, HttpStatus, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import * as deepAssign from "deep-assign";
 import * as https from "https";
 import { IStringifyOptions, stringify } from "qs";
 import * as sarequest from "superagent";
-import { Config } from "./Config";
 import { ClientsLoggerCategory } from "./ClientsLoggerCategory";
 
 const loggerCategory: string = ClientsLoggerCategory.Request;

@@ -2,13 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as chai from "chai";
-import { AccessToken, IModelClient, /* ChangeSet, */ Version, Thumbnail, ThumbnailSize, ThumbnailQuery, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
-import { TestUsers } from "@bentley/oidc-signin-tool";
-import { TestConfig } from "../TestConfig";
-import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
-import * as utils from "./TestUtils";
 import { GuidString } from "@bentley/bentleyjs-core";
+import { IModelClient, Thumbnail, ThumbnailQuery, ThumbnailSize, Version } from "@bentley/imodelhub-client";
+import { AccessToken, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { TestUsers } from "@bentley/oidc-signin-tool";
+import * as chai from "chai";
+import { RequestType, ResponseBuilder, ScopeType } from "../ResponseBuilder";
+import { TestConfig } from "../TestConfig";
+import * as utils from "./TestUtils";
 
 function getThumbnailLength(size: ThumbnailSize) {
   return size === "Small" ? 1000 : 3500;

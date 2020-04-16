@@ -6,11 +6,13 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { Store } from "redux";  // createStore,
 import { Provider, connect } from "react-redux";
-import { Id64String, OpenMode, Logger, LogLevel, isElectronRenderer, ClientRequestContext } from "@bentley/bentleyjs-core";
+import { Id64String, OpenMode, Logger, LogLevel, isElectronRenderer, ClientRequestContext, Config } from "@bentley/bentleyjs-core";
+import { AccessToken } from "@bentley/imodeljs-clients";
 import {
-  Config, AccessToken, IFrontendAuthorizationClient, BrowserAuthorizationClient, BrowserAuthorizationCallbackHandler, BrowserAuthorizationClientConfiguration,
+  IFrontendAuthorizationClient, BrowserAuthorizationClient,
+  BrowserAuthorizationCallbackHandler, BrowserAuthorizationClientConfiguration,
   isBrowserAuthorizationClient,
-} from "@bentley/imodeljs-clients";
+} from "@bentley/frontend-authorization-client";
 import {
   RpcConfiguration, RpcOperation, IModelRpcProps, ElectronRpcManager,
   BentleyCloudRpcManager, OidcDesktopClientConfiguration,

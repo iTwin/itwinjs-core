@@ -8,13 +8,16 @@ import * as path from "path";
 import * as deepAssign from "deep-assign";
 import { IModelHubStatus, GuidString } from "@bentley/bentleyjs-core";
 import {
-  AccessToken, IModelClient, IModelHubClient, Briefcase, ChangeSet, ChangeSetQuery,
-  IModelHubClientError, Version, AuthorizedClientRequestContext,
+  AccessToken, AuthorizedClientRequestContext,
 } from "@bentley/imodeljs-clients";
 import { TestUsers } from "@bentley/oidc-signin-tool";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import { TestConfig } from "../TestConfig";
 import * as utils from "./TestUtils";
+import {
+  IModelClient, IModelHubClient, Briefcase, ChangeSet, ChangeSetQuery,
+  IModelHubClientError, Version,
+} from "@bentley/imodelhub-client";
 
 chai.should();
 

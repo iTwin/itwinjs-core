@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { Config } from "@bentley/imodeljs-clients";
+import { Config } from "@bentley/bentleyjs-core";
 import { BriefcaseConnection, IModelConnection } from "@bentley/imodeljs-frontend";
 import { expect } from "chai";
 

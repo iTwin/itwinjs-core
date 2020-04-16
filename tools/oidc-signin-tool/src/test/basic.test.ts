@@ -3,17 +3,17 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { Config } from "@bentley/bentleyjs-core";
+import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 import * as chai from "chai";
+import * as chaiAsPromised from "chai-as-promised";
+import { getTestOidcToken } from "../TestOidcClient";
+import { TestOidcConfiguration, TestUsers } from "../TestUsers";
+import { TestUtility } from "../TestUtility";
+
 const assert = chai.assert;
 const expect = chai.expect;
-import * as chaiAsPromised from "chai-as-promised";
 chai.use(chaiAsPromised);
-
-import { Config } from "@bentley/imodeljs-clients";
-import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
-import { getTestOidcToken } from "../TestOidcClient";
-import { TestUsers, TestOidcConfiguration } from "../TestUsers";
-import { TestUtility } from "../TestUtility";
 
 IModelJsConfig.init(true /* suppress exception */, false /* suppress error message */, Config.App);
 

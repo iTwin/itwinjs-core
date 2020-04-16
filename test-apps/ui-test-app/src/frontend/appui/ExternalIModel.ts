@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Id64String, OpenMode } from "@bentley/bentleyjs-core";
-import { ConnectClient, IModelQuery, Project } from "@bentley/imodeljs-clients";
+import { ContextRegistryClient, Project } from "@bentley/context-registry-client";
+import { IModelQuery } from "@bentley/imodelhub-client";
 import { AuthorizedFrontendRequestContext, BriefcaseConnection, IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
 
 /** Opens External IModel */
@@ -32,7 +33,7 @@ export class ExternalIModel {
 
     const requestContext: AuthorizedFrontendRequestContext = await AuthorizedFrontendRequestContext.create();
 
-    const connectClient = new ConnectClient();
+    const connectClient = new ContextRegistryClient();
     let project: Project;
     try {
       project = await connectClient.getProject(requestContext, { $filter: `Name+eq+'${projectName}'` });

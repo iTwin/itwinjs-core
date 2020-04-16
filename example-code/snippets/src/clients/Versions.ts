@@ -3,8 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { IModelHubClient, AccessToken, ChangeSet, Version, VersionQuery, SmallThumbnail, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
-import { GuidString, Guid } from "@bentley/bentleyjs-core";
+import { Guid, GuidString } from "@bentley/bentleyjs-core";
+import { ChangeSet, IModelHubClient, SmallThumbnail, Version, VersionQuery } from "@bentley/imodelhub-client";
+import { AccessToken, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
 
 class MockAccessToken extends AccessToken {
   public constructor() { super(); this._samlAssertion = ""; }

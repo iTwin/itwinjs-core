@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { OpenMode } from "@bentley/bentleyjs-core";
+import { OpenMode, Config } from "@bentley/bentleyjs-core";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 import { IModelHost, IModelHostConfiguration, KnownLocations, SnapshotDb, StandaloneDb } from "@bentley/imodeljs-backend";
 import { IModelJsFs, IModelJsFsStats } from "@bentley/imodeljs-backend/lib/IModelJsFs";
-import { Config, ConnectClient } from "@bentley/imodeljs-clients";
+import { ContextRegistryClient } from "@bentley/context-registry-client";
 import { IModelReadRpcInterface, RpcManager } from "@bentley/imodeljs-common";
 import { assert } from "chai";
 import * as path from "path";
@@ -36,10 +36,10 @@ export class KnownTestLocations {
 
 export class IModelTestUtils {
 
-  private static _connectClient: ConnectClient | undefined;
-  public static get connectClient(): ConnectClient {
+  private static _connectClient: ContextRegistryClient | undefined;
+  public static get connectClient(): ContextRegistryClient {
     if (!IModelTestUtils._connectClient)
-      IModelTestUtils._connectClient = new ConnectClient();
+      IModelTestUtils._connectClient = new ContextRegistryClient();
     return IModelTestUtils._connectClient!;
   }
 

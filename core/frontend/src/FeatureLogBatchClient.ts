@@ -5,10 +5,11 @@
 /** @packageDocumentation
  * @module Features
  */
-import { UlasClient, FeatureLogEntry, AuthorizedClientRequestContext, ClientsLoggerCategory } from "@bentley/imodeljs-clients";
 import { Logger } from "@bentley/bentleyjs-core";
+import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { FeatureLogEntry, UsageLoggingClient, UsageLoggingClientLoggerCategory } from "@bentley/usage-logging-client";
 
-const loggerCategory: string = ClientsLoggerCategory.UlasClient;
+const loggerCategory: string = UsageLoggingClientLoggerCategory.Client;
 
 /**
  * Options for FeatureLogBatchClient
@@ -45,7 +46,7 @@ export class FeatureLogBatchClient {
   constructor(
     private _getRequestContext: () => Promise<AuthorizedClientRequestContext>,
     options: Partial<FeatureLogBatchOptions> = {},
-    private _client: UlasClient = new UlasClient(),
+    private _client: UsageLoggingClient = new UsageLoggingClient(),
   ) {
     this._options = { ...this._defaultOptions, ...options };
   }

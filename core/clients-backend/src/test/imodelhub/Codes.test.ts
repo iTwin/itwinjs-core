@@ -7,12 +7,15 @@ import * as utils from "./TestUtils";
 
 import { IModelHubStatus, Id64, GuidString } from "@bentley/bentleyjs-core";
 import {
-  AccessToken, IModelClient, CodeState, HubCode, AggregateResponseError, ConflictingCodesError, CodeQuery,
-  IModelHubClientError, CodeSequence, CodeSequenceType, AuthorizedClientRequestContext,
+  AccessToken, AuthorizedClientRequestContext,
 } from "@bentley/imodeljs-clients";
 import { TestUsers } from "@bentley/oidc-signin-tool";
 import { ResponseBuilder } from "../ResponseBuilder";
 import { TestConfig } from "../TestConfig";
+import {
+  IModelClient, CodeState, HubCode, AggregateResponseError, ConflictingCodesError, CodeQuery,
+  IModelHubClientError, CodeSequence, CodeSequenceType,
+} from "@bentley/imodelhub-client";
 chai.should();
 
 function containsCode(codes: HubCode[], wantCode: HubCode) {

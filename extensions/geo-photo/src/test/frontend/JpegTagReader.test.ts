@@ -2,14 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as chai from "chai";
 import { GuidString, StopWatch } from "@bentley/bentleyjs-core";
-import { Range3d, Point3d } from "@bentley/geometry-core";
-import {
-  AuthorizedClientRequestContext,
-  ProjectShareClient, ProjectShareFolder, ProjectShareFile, ProjectShareFolderQuery, ProjectShareFileQuery,
-} from "@bentley/imodeljs-clients";
-import { JpegTagReader, ImageTags } from "../../JpegTagReader";
+import { Point3d, Range3d } from "@bentley/geometry-core";
+import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { ProjectShareClient, ProjectShareFile, ProjectShareFileQuery, ProjectShareFolder, ProjectShareFolderQuery } from "@bentley/projectshare-client";
+import * as chai from "chai";
+import { ImageTags, JpegTagReader } from "../../JpegTagReader";
 import { TestConfig } from "../TestConfig";
 
 chai.should();

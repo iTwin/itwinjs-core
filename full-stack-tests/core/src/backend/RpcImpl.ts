@@ -2,12 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { BentleyError, BentleyStatus, ClientRequestContext, ClientRequestContextProps, GuidString } from "@bentley/bentleyjs-core";
+import { BentleyError, BentleyStatus, ClientRequestContext, ClientRequestContextProps, GuidString, Config } from "@bentley/bentleyjs-core";
 import { BriefcaseDb, BriefcaseManager, ChangeSummaryExtractOptions, ChangeSummaryManager, EventSinkManager, IModelDb, IModelHost, IModelJsFs } from "@bentley/imodeljs-backend";
-import { AuthorizedClientRequestContext, AuthorizedClientRequestContextProps, Config, IModelBankClient, IModelQuery } from "@bentley/imodeljs-clients";
+import { AuthorizedClientRequestContext, AuthorizedClientRequestContextProps } from "@bentley/imodeljs-clients";
 import { IModelRpcProps, RpcInterface, RpcManager } from "@bentley/imodeljs-common";
 import { CloudEnvProps, EventsTestRpcInterface, TestRpcInterface } from "../common/RpcInterfaces";
 import { CloudEnv } from "./cloudEnv";
+import { IModelBankClient, IModelQuery } from "@bentley/imodelhub-client";
 
 export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
   public static register() {

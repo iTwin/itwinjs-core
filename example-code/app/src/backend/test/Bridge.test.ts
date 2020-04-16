@@ -8,12 +8,14 @@ import { RobotWorldEngine } from "../RobotWorldEngine";
 import { Angle, AngleProps, Point3d, Range3d, XYZProps } from "@bentley/geometry-core";
 import { Robot } from "../RobotElement";
 import { Barrier } from "../BarrierElement";
-import { HubIModel, Project, IModelHubClient, IModelQuery, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { Project } from "@bentley/context-registry-client";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 // __PUBLISH_EXTRACT_START__ Bridge.imports.example-code
 import { Id64String } from "@bentley/bentleyjs-core";
 import { BriefcaseDb, BriefcaseManager, CategorySelector, ConcurrencyControl, DefinitionModel, DisplayStyle3d, IModelDb, IModelHost, ModelSelector, OpenParams, OrthographicViewDefinition, PhysicalModel, SpatialCategory, Subject } from "@bentley/imodeljs-backend";
 import { ColorByName, IModel } from "@bentley/imodeljs-common";
+import { IModelHubClient, HubIModel, IModelQuery } from "@bentley/imodelhub-client";
 // __PUBLISH_EXTRACT_END__
 
 // __PUBLISH_EXTRACT_START__ Bridge.source-data.example-code

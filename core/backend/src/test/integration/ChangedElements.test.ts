@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { DbResult } from "@bentley/bentleyjs-core";
-import { ChangeSet } from "@bentley/imodeljs-clients";
+import { ChangeSet } from "@bentley/imodelhub-client";
 import { ChangedElements, IModelVersion } from "@bentley/imodeljs-common";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { assert } from "chai";

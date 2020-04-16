@@ -3,12 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { GuidString } from "@bentley/bentleyjs-core";
-import {
-  AuthorizedClientRequestContext,
-  ConnectClient, HubIModel, IModelHubClient,
-  IModelClient, IModelQuery, Project,
-} from "@bentley/imodeljs-clients";
-import { TestUsers, getAccessTokenFromBackend } from "@bentley/oidc-signin-tool/lib/frontend";
+import { HubIModel, IModelClient, IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
+import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { ContextRegistryClient, Project } from "@bentley/context-registry-client";
+import { getAccessTokenFromBackend, TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
 
 /**
  * Basic configuration used by all tests
@@ -20,7 +18,7 @@ export class TestConfig {
   }
 
   public static async queryProject(requestContext: AuthorizedClientRequestContext, projectName: string): Promise<Project> {
-    const connectClient = new ConnectClient();
+    const connectClient = new ContextRegistryClient();
     const project: Project | undefined = await connectClient.getProject(requestContext, {
       $select: "*",
       $filter: `Name+eq+'${projectName}'`,

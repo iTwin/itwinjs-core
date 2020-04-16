@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { GuidString } from "@bentley/bentleyjs-core";
+import { GuidString, Config } from "@bentley/bentleyjs-core";
 import { NativeApp, IModelApp, NativeAppLogger, AuthorizedFrontendRequestContext, FrontendRequestContext } from "@bentley/imodeljs-frontend";
 import { BriefcaseRpcProps, IModelVersion } from "@bentley/imodeljs-common";
-import { Config, ProgressInfo } from "@bentley/imodeljs-clients";
+import { ProgressInfo } from "@bentley/imodeljs-clients";
 import { TestUsers, TestAuthorizationClient } from "@bentley/oidc-signin-tool/lib/TestUsers";
 import { TestUtility } from "./TestUtility";
 import { TestChangeSetUtility } from "./TestChangeSetUtility";

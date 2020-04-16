@@ -6,11 +6,12 @@
  * @module RpcInterface
  */
 import { Id64, ClientRequestContext, Id64String, DbOpcode, assert, Id64Array, GuidString } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext, LockLevel, LockType } from "@bentley/imodeljs-clients";
+import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
 import { RpcInterface, RpcManager, IModelConnectionProps, IModelRpcProps, IModelWriteRpcInterface, ThumbnailProps, ImageSourceFormat, AxisAlignedBox3dProps, CodeProps, ElementProps, IModel, RelatedElement, SubCategoryAppearance, Code } from "@bentley/imodeljs-common";
 import { BriefcaseDb, IModelDb, OpenParams } from "../IModelDb";
 import { Range3d } from "@bentley/geometry-core";
 import { ConcurrencyControl, AuthorizedBackendRequestContext, PhysicalPartition, SubjectOwnsPartitionElements, PhysicalModel, SpatialCategory, Element } from "../imodeljs-backend";
+import { LockLevel, LockType } from "@bentley/imodelhub-client";
 
 class EditingFunctions {
   public static async createAndInsertPartition(rqctx: AuthorizedBackendRequestContext, iModelDb: IModelDb, newModelCode: CodeProps): Promise<Id64String> {

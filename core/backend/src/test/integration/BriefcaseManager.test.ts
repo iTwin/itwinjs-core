@@ -6,7 +6,7 @@
 import { assert } from "chai";
 import { OpenMode, GuidString, Logger, LogLevel, BriefcaseStatus, ClientRequestContext, IModelStatus } from "@bentley/bentleyjs-core";
 import { IModelVersion, IModelError, IModelRpcProps } from "@bentley/imodeljs-common";
-import { BriefcaseQuery, Briefcase as HubBriefcase, AuthorizedClientRequestContext, HubIModel, ProgressInfo, UserCancelledError } from "@bentley/imodeljs-clients";
+import { AuthorizedClientRequestContext, ProgressInfo, UserCancelledError } from "@bentley/imodeljs-clients";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { IModelTestUtils, TestIModelInfo } from "../IModelTestUtils";
 import {
@@ -17,6 +17,7 @@ import { HubUtility } from "./HubUtility";
 import { TestChangeSetUtility } from "./TestChangeSetUtility";
 import * as readline from "readline";
 import * as os from "os";
+import { HubIModel, BriefcaseQuery, Briefcase as HubBriefcase } from "@bentley/imodelhub-client";
 
 async function createIModelOnHub(requestContext: AuthorizedBackendRequestContext, projectId: GuidString, iModelName: string): Promise<string> {
   let iModel: HubIModel | undefined = await HubUtility.queryIModelByName(requestContext, projectId, iModelName);

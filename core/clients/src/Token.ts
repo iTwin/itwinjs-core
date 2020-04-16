@@ -8,9 +8,9 @@
 
 import * as xpath from "xpath";
 import { DOMParser } from "xmldom";
-import { UserInfo } from "./UserInfo";
 import { Base64 } from "js-base64";
 import { BentleyError, BentleyStatus } from "@bentley/bentleyjs-core";
+import { UserInfo } from "./UserInfo";
 
 /** @internal */
 export enum IncludePrefix {

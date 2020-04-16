@@ -6,11 +6,10 @@
  * @module SQLite
  */
 
-import { Id64String, GuidString, DbResult, IDisposable, StatusCodeWithMessage } from "@bentley/bentleyjs-core";
+import { Id64String, GuidString, DbResult, IDisposable, StatusCodeWithMessage, Config } from "@bentley/bentleyjs-core";
 import { IModelError, ECJsNames } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { IModelHost } from "./IModelHost";
-import { Config } from "@bentley/imodeljs-clients";
 
 /** Marks a string as either an [Id64String]($bentleyjs-core) or [GuidString]($bentleyjs-core), so
  * that it can be passed to the [bindValue]($backend.SqliteStatement) or [bindValues]($backend.SqliteStatement)

@@ -14,11 +14,8 @@
     "lint": "tslint --project . 1>&2",
     "webpackTests": "webpack --config ./src/test/utils/webpack.config.js 1>&2",
     "test": "node ./node_modules/@bentley/build-tools/scripts/test.js --offline=\"mock\" --grep=\"#integration\" --invert",
-    "test:integration": "npm run webpackTests && npm run test:integration:chrome",
-    "test:integration:chrome": "node --max-http-header-size=16000 ./node_modules/@bentley/certa/bin/certa.js -r chrome --grep \"#integration\"",
-    "test:integration:electron": "node ./node_modules/@bentley/certa/bin/certa.js -r electron --grep \"#integration\"",
-    "cover": "npm test -- --cover",
-    "watch": "npm run docs && bmsWatch --src ./lib/docs/json --destination ./public"
+    "test:integration": "",
+    "cover": "npm test -- --cover"
   },
   "repository": {
     "type": "git",
@@ -46,8 +43,8 @@
     "@bentley/bentleyjs-core": "2.0.0-dev.70",
     "@bentley/build-tools": "2.0.0-dev.70",
     "@bentley/config-loader": "2.0.0-dev.70",
-    "@bentley/oidc-signin-tool": "2.0.0-dev.37",
     "@bentley/geometry-core": "2.0.0-dev.70",
+    "@bentley/oidc-signin-tool": "2.0.0-dev.70",
     "@types/chai": "^4.1.4",
     "@types/deep-assign": "^0.1.0",
     "@types/js-base64": "^2.3.1",
@@ -75,8 +72,7 @@
     "qs": "^6.5.1",
     "superagent": "^3.7.0",
     "xmldom": "^0.1.27",
-    "xpath": "0.0.27",
-    "oidc-client": "^1.9.1"
+    "xpath": "0.0.27"
   },
   "nyc": {
     "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc"

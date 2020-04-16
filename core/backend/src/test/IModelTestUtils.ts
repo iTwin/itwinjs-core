@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { DbResult, IModelStatus, Logger, OpenMode, Id64, Id64String, IDisposable, BeEvent, LogLevel, BentleyLoggerCategory } from "@bentley/bentleyjs-core";
-import { Config, ChangeSet, AuthorizedClientRequestContext, ClientsLoggerCategory } from "@bentley/imodeljs-clients";
+import { DbResult, IModelStatus, Logger, OpenMode, Id64, Id64String, IDisposable, BeEvent, LogLevel, BentleyLoggerCategory, Config } from "@bentley/bentleyjs-core";
+import { AuthorizedClientRequestContext, ClientsLoggerCategory } from "@bentley/imodeljs-clients";
 import { IModelError, Code, ElementProps, RpcManager, GeometricElement3dProps, IModel, IModelReadRpcInterface, RelatedElement, RpcConfiguration, CodeProps } from "@bentley/imodeljs-common";
 import {
   IModelHostConfiguration, IModelHost, BriefcaseManager, IModelDb, Model, Element,
@@ -20,6 +20,7 @@ import { ElementDrivesElement, RelationshipProps } from "../Relationship";
 import { PhysicalElement } from "../Element";
 import { ClassRegistry } from "../ClassRegistry";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
+import { ChangeSet, IModelHubClientLoggerCategory } from "@bentley/imodelhub-client";
 
 /** Class for simple test timing */
 export class Timer {
@@ -335,7 +336,7 @@ export class IModelTestUtils {
     Logger.setLevel(BentleyLoggerCategory.Performance, reset ? LogLevel.Error : LogLevel.Info);
     Logger.setLevel(BackendLoggerCategory.IModelDb, reset ? LogLevel.Error : LogLevel.Trace);
     Logger.setLevel(ClientsLoggerCategory.Clients, reset ? LogLevel.Error : LogLevel.Trace);
-    Logger.setLevel(ClientsLoggerCategory.IModelHub, reset ? LogLevel.Error : LogLevel.Trace);
+    Logger.setLevel(IModelHubClientLoggerCategory.IModelHub, reset ? LogLevel.Error : LogLevel.Trace);
     Logger.setLevel(ClientsLoggerCategory.Request, reset ? LogLevel.Error : LogLevel.Trace);
     Logger.setLevel(NativeLoggerCategory.DgnCore, reset ? LogLevel.Error : LogLevel.Trace);
     Logger.setLevel(NativeLoggerCategory.BeSQLite, reset ? LogLevel.Error : LogLevel.Trace);

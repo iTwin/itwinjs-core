@@ -20,7 +20,7 @@ import { IModelDb } from "./IModelDb";
 import { DrawingModel } from "./Model";
 import { SubjectOwnsSubjects } from "./NavigationRelationship";
 import { ConcurrencyControl } from "./ConcurrencyControl";
-import { LockLevel } from "@bentley/imodeljs-clients";
+import { LockLevel } from "@bentley/imodelhub-client";
 
 /** Elements are the smallest individually identifiable building blocks for modeling the real world in an iModel.
  * Each element represents an entity in the real world. Sets of Elements (contained in [[Model]]s) are used to model

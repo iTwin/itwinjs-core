@@ -7,10 +7,11 @@
  */
 
 import { AuthStatus, BeEvent, BentleyError, ClientRequestContext, Logger, LogLevel, assert } from "@bentley/bentleyjs-core";
-import { AccessToken, IFrontendAuthorizationClient, ImsOidcClient, OidcFrontendClientConfiguration, UserInfo } from "@bentley/imodeljs-clients";
+import { AccessToken, UserInfo, OidcFrontendClientConfiguration, ImsOidcClient } from "@bentley/imodeljs-clients";
 import { User, UserManager, UserManagerSettings, WebStorageStateStore, Log as OidcClientLog, Logger as IOidcClientLogger } from "oidc-client";
 import { FrontendRequestContext } from "../FrontendRequestContext";
 import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
+import { IFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 
 const loggerCategory: string = FrontendLoggerCategory.Authorization;
 

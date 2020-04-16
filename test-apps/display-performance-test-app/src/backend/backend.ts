@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { IModelHost, IModelHostConfiguration } from "@bentley/imodeljs-backend";
 import { IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface } from "@bentley/imodeljs-common";
-import { Config } from "@bentley/imodeljs-clients";
+import { Config } from "@bentley/bentleyjs-core";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 import "./DisplayPerfRpcImpl"; // just to get the RPC implementation registered
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";

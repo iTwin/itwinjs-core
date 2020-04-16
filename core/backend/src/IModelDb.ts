@@ -102,7 +102,7 @@ import {
   SheetViewDefinition,
   ViewDefinition,
 } from "./ViewDefinition";
-import { UlasUtilities, AdditionalFeatureData } from "./ulas/UlasUtilities";
+import { UsageLoggingUtilities, AdditionalFeatureData } from "./usage-logging/UsageLoggingUtilities";
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
@@ -268,7 +268,7 @@ export abstract class IModelDb extends IModel {
 
     const authType = requestContext.accessToken.isJwt ? IModelJsNative.AuthType.OIDC : IModelJsNative.AuthType.SAML;
     try {
-      await UlasUtilities.postUserUsage(requestContext, contextId, authType, os.hostname(), IModelJsNative.UsageType.Trial);
+      await UsageLoggingUtilities.postUserUsage(requestContext, contextId, authType, os.hostname(), IModelJsNative.UsageType.Trial);
     } catch (err) {
       // Note: We do not treat usage logging as mandatory
       requestContext.enter();
@@ -281,7 +281,7 @@ export abstract class IModelDb extends IModel {
         iModelJsVersion: IModelHost.backendVersion,
       };
       try {
-        await UlasUtilities.postFeatureUsage(requestContext, featureId, authType, os.hostname(), IModelJsNative.UsageType.Trial, contextId, startDate, endDate, additionalFeatureData);
+        await UsageLoggingUtilities.postFeatureUsage(requestContext, featureId, authType, os.hostname(), IModelJsNative.UsageType.Trial, contextId, startDate, endDate, additionalFeatureData);
       } catch (err) {
         // Note: We do not treat feature logging as mandatory
         requestContext.enter();

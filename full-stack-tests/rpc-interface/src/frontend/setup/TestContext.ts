@@ -6,9 +6,9 @@
 import { expect } from "chai";
 
 import { OpenAPIInfo, BentleyCloudRpcManager } from "@bentley/imodeljs-common";
-import { Config, AccessToken } from "@bentley/imodeljs-clients";
+import { AccessToken } from "@bentley/imodeljs-clients";
 import { NoRenderApp, IModelApp } from "@bentley/imodeljs-frontend";
-import { Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { Logger, LogLevel, Config } from "@bentley/bentleyjs-core";
 import { getAccessTokenFromBackend, TestUserCredentials, TestOidcConfiguration } from "@bentley/oidc-signin-tool/lib/frontend";
 
 import { Settings, getRpcInterfaces } from "../../common/Settings";

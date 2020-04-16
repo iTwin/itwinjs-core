@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Id64String } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext, IModelHubError } from "@bentley/imodeljs-clients";
+import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
 import { ElementAspectProps, IModel, IModelVersion, SubCategoryAppearance } from "@bentley/imodeljs-common";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { Reporter } from "@bentley/perf-tools/lib/Reporter";
@@ -12,6 +12,7 @@ import * as path from "path";
 import { BriefcaseDb, DictionaryModel, ElementAspect, IModelDb, IModelJsFs, OpenParams, SnapshotDb, SpatialCategory } from "../imodeljs-backend";
 import { IModelTestUtils } from "../test/IModelTestUtils";
 import { KnownTestLocations } from "../test/KnownTestLocations";
+import { IModelHubError } from "@bentley/imodelhub-client";
 
 async function createNewModelAndCategory(requestContext: AuthorizedClientRequestContext, rwIModel: IModelDb) {
   // Create a new physical model.

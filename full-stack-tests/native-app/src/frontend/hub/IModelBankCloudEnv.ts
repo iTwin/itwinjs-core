@@ -2,11 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { IModelCloudEnvironment, IModelAuthorizationClient } from "@bentley/imodeljs-clients/lib/IModelCloudEnvironment";
-import { IModelBankFileSystemContextClient, IModelClient, IModelBankClient, AuthorizedClientRequestContext, Project, WsgError } from "@bentley/imodeljs-clients";
-import { BasicAuthorizationClient } from "@bentley/imodeljs-clients/lib/imodelbank/BasicAuthorizationClient";
-import { IModelBankDummyAuthorizationClient } from "@bentley/imodeljs-clients/lib/imodelbank/IModelBankDummyAuthorizationClient";
 import { WSStatus } from "@bentley/bentleyjs-core";
+import { IModelAuthorizationClient, IModelClient, IModelCloudEnvironment, IModelBankClient, IModelBankFileSystemContextClient } from "@bentley/imodelhub-client";
+import { IModelBankDummyAuthorizationClient } from "@bentley/imodelhub-client/lib/imodelbank/IModelBankDummyAuthorizationClient";
+import { BasicAuthorizationClient } from "@bentley/imodelhub-client/lib/imodelbank/BasicAuthorizationClient";
+import { AuthorizedClientRequestContext, WsgError } from "@bentley/imodeljs-clients";
+import { Project } from "@bentley/context-registry-client";
 
 export class IModelBankCloudEnv implements IModelCloudEnvironment {
   public get isIModelHub(): boolean { return false; }

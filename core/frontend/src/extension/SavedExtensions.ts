@@ -7,13 +7,13 @@
  * @module Extensions
  */
 
-import { Logger } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext, SettingsResult, SettingsStatus, Config } from "@bentley/imodeljs-clients";
-
+import { Config, Logger } from "@bentley/bentleyjs-core";
+import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { SettingsResult, SettingsStatus } from "@bentley/product-settings-client";
 import { IModelApp } from "../IModelApp";
 import { NotifyMessageDetails, OutputMessageAlert, OutputMessagePriority, OutputMessageType } from "../NotificationManager";
-import { ExtensionLoadResults, detailsFromExtensionLoadResults } from "./ExtensionResults";
 import { Extension } from "./Extension";
+import { detailsFromExtensionLoadResults, ExtensionLoadResults } from "./ExtensionResults";
 
 const loggerCategory = "imodeljs-frontend.Extension";
 

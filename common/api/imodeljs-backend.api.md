@@ -14,7 +14,6 @@ import { AuxCoordSystemProps } from '@bentley/imodeljs-common';
 import { AxisAlignedBox3d } from '@bentley/imodeljs-common';
 import { BackgroundMapProps } from '@bentley/imodeljs-common';
 import { BeEvent } from '@bentley/bentleyjs-core';
-import { BentleyStatus } from '@bentley/bentleyjs-core';
 import { BriefcaseRpcProps } from '@bentley/imodeljs-common';
 import { CalloutProps } from '@bentley/imodeljs-common';
 import { Camera } from '@bentley/imodeljs-common';
@@ -26,7 +25,7 @@ import { ChangedElements } from '@bentley/imodeljs-common';
 import { ChangedModels } from '@bentley/imodeljs-common';
 import { ChangedValueState } from '@bentley/imodeljs-common';
 import { ChangeOpCode } from '@bentley/imodeljs-common';
-import { ChangeSet } from '@bentley/imodeljs-clients';
+import { ChangeSet } from '@bentley/imodelhub-client';
 import { ClientRequestContext } from '@bentley/bentleyjs-core';
 import { ClipVector } from '@bentley/geometry-core';
 import { CloudStorageContainerDescriptor } from '@bentley/imodeljs-common';
@@ -38,9 +37,9 @@ import { CodeScopeProps } from '@bentley/imodeljs-common';
 import { CodeScopeSpec } from '@bentley/imodeljs-common';
 import { CodeSpec } from '@bentley/imodeljs-common';
 import { ColorDef } from '@bentley/imodeljs-common';
-import { ConflictingCodesError } from '@bentley/imodeljs-clients';
-import { ConnectClient } from '@bentley/imodeljs-clients';
+import { ConflictingCodesError } from '@bentley/imodelhub-client';
 import { ContextRealityModelProps } from '@bentley/imodeljs-common';
+import { ContextRegistryClient } from '@bentley/context-registry-client';
 import { CreateEmptySnapshotIModelProps } from '@bentley/imodeljs-common';
 import { CreateIModelProps } from '@bentley/imodeljs-common';
 import { CreateSnapshotIModelProps } from '@bentley/imodeljs-common';
@@ -76,17 +75,17 @@ import { GeometricModelProps } from '@bentley/imodeljs-common';
 import { GeometryPartProps } from '@bentley/imodeljs-common';
 import { GeometryStreamProps } from '@bentley/imodeljs-common';
 import { GuidString } from '@bentley/bentleyjs-core';
-import { HubCode } from '@bentley/imodeljs-clients';
+import { HubCode } from '@bentley/imodelhub-client';
 import { IAuthorizationClient } from '@bentley/imodeljs-clients';
 import { Id64Arg } from '@bentley/bentleyjs-core';
 import { Id64Array } from '@bentley/bentleyjs-core';
 import { Id64Set } from '@bentley/bentleyjs-core';
 import { Id64String } from '@bentley/bentleyjs-core';
 import { IDisposable } from '@bentley/bentleyjs-core';
-import { IFrontendAuthorizationClient } from '@bentley/imodeljs-clients';
+import { IFrontendAuthorizationClient } from '@bentley/frontend-authorization-client';
 import { ImageSourceFormat } from '@bentley/imodeljs-common';
 import { IModel } from '@bentley/imodeljs-common';
-import { IModelClient } from '@bentley/imodeljs-clients';
+import { IModelClient } from '@bentley/imodelhub-client';
 import { IModelCoordinatesResponseProps } from '@bentley/imodeljs-common';
 import { IModelEncryptionProps } from '@bentley/imodeljs-common';
 import { IModelError } from '@bentley/imodeljs-common';
@@ -106,9 +105,9 @@ import { LinearlyReferencedFromToLocationAspectProps } from '@bentley/imodeljs-c
 import { LinearlyReferencedFromToLocationProps } from '@bentley/imodeljs-common';
 import { LinePixels } from '@bentley/imodeljs-common';
 import { LineStyleProps } from '@bentley/imodeljs-common';
-import { Lock } from '@bentley/imodeljs-clients';
-import { LockLevel } from '@bentley/imodeljs-clients';
-import { LockType } from '@bentley/imodeljs-clients';
+import { Lock } from '@bentley/imodelhub-client';
+import { LockLevel } from '@bentley/imodelhub-client';
+import { LockType } from '@bentley/imodelhub-client';
 import { LogLevel } from '@bentley/bentleyjs-core';
 import { LowAndHighXYZ } from '@bentley/geometry-core';
 import { MassPropertiesRequestProps } from '@bentley/imodeljs-common';
@@ -526,7 +525,7 @@ export class BriefcaseManager {
     // (undocumented)
     static get cacheDir(): string;
     static close(requestContext: ClientRequestContext | AuthorizedClientRequestContext, briefcase: BriefcaseEntry, keepBriefcase: KeepBriefcase): Promise<void>;
-    static get connectClient(): ConnectClient;
+    static get connectClient(): ContextRegistryClient;
     static create(requestContext: AuthorizedClientRequestContext, contextId: string, iModelName: string, args: CreateIModelProps): Promise<string>;
     static createStandaloneChangeSet(iModelDb: IModelDb): ChangeSetToken;
     // (undocumented)
@@ -4048,18 +4047,6 @@ export abstract class TypeDefinitionElement extends DefinitionElement implements
     recipe?: RelatedElement;
 }
 
-// @internal (undocumented)
-export class UlasUtilities {
-    // (undocumented)
-    static checkEntitlement(requestContext: AuthorizedClientRequestContext, contextId: GuidString, authType: IModelJsNative.AuthType, productId: number, hostName: string): IModelJsNative.Entitlement;
-    // @deprecated (undocumented)
-    static markFeature(requestContext: AuthorizedClientRequestContext, featureId: string, authType: IModelJsNative.AuthType, hostName: string, usageType: IModelJsNative.UsageType, contextId?: GuidString, startDateZ?: Date, endDateZ?: Date, additionalData?: AdditionalFeatureData): BentleyStatus;
-    static postFeatureUsage(requestContext: AuthorizedClientRequestContext, featureId: string, authType: IModelJsNative.AuthType, hostName: string, usageType: IModelJsNative.UsageType, contextId?: GuidString, startDateZ?: Date, endDateZ?: Date, additionalData?: AdditionalFeatureData): Promise<void>;
-    static postUserUsage(requestContext: AuthorizedClientRequestContext, contextId: GuidString, authType: IModelJsNative.AuthType, hostName: string, usageType: IModelJsNative.UsageType): Promise<void>;
-    // @deprecated (undocumented)
-    static trackUsage(requestContext: AuthorizedClientRequestContext, contextId: GuidString, authType: IModelJsNative.AuthType, hostName: string, usageType: IModelJsNative.UsageType): BentleyStatus;
-}
-
 // @public
 export interface UpdateModelOptions extends ModelProps {
     geometryChanged?: boolean;
@@ -4071,6 +4058,14 @@ export class UrlLink extends LinkElement {
     // @internal (undocumented)
     static get className(): string;
 }
+
+// @internal (undocumented)
+export class UsageLoggingUtilities {
+    // (undocumented)
+    static checkEntitlement(requestContext: AuthorizedClientRequestContext, contextId: GuidString, authType: IModelJsNative.AuthType, productId: number, hostName: string): IModelJsNative.Entitlement;
+    static postFeatureUsage(requestContext: AuthorizedClientRequestContext, featureId: string, authType: IModelJsNative.AuthType, hostName: string, usageType: IModelJsNative.UsageType, contextId?: GuidString, startTime?: Date, endTime?: Date, additionalData?: AdditionalFeatureData): Promise<void>;
+    static postUserUsage(requestContext: AuthorizedClientRequestContext, contextId: GuidString, authType: IModelJsNative.AuthType, hostName: string, usageType: IModelJsNative.UsageType): Promise<void>;
+    }
 
 // @beta
 export interface ValidationError {

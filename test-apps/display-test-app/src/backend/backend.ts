@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { IModelHost, IModelHostConfiguration } from "@bentley/imodeljs-backend";
-import { Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { Logger, LogLevel, Config } from "@bentley/bentleyjs-core";
 import {
   IModelReadRpcInterface,
   IModelTileRpcInterface,
@@ -15,12 +15,12 @@ import {
 import * as fs from "fs";
 import * as path from "path";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
-import { IModelBankClient, Config } from "@bentley/imodeljs-clients";
 import { UrlFileHandler } from "@bentley/imodeljs-clients-backend";
 import { SVTConfiguration } from "../common/SVTConfiguration";
 import "./SVTRpcImpl"; // just to get the RPC implementation registered
 import SVTRpcInterface from "../common/SVTRpcInterface";
 import { FakeTileCacheService } from "./FakeTileCacheService";
+import { IModelBankClient } from "@bentley/imodelhub-client";
 
 IModelJsConfig.init(true /* suppress exception */, true /* suppress error message */, Config.App);
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // (needed temporarily to use self-signed cert to communicate with iModelBank via https)

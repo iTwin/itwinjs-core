@@ -6,19 +6,19 @@ import * as fs from "fs";
 import * as path from "path";
 import * as chai from "chai";
 import { Base64 } from "js-base64";
-import { GuidString, Guid, Id64, Id64String, ClientRequestContext, Logger, WSStatus } from "@bentley/bentleyjs-core";
+import { GuidString, Guid, Id64, Id64String, ClientRequestContext, Logger, WSStatus, Config } from "@bentley/bentleyjs-core";
 import {
-  ECJsonTypeMap, AccessToken, UserInfo, Project, Asset, ProgressInfo,
+  ECJsonTypeMap, AccessToken, UserInfo, ProgressInfo,
+  AuthorizedClientRequestContext, WsgError,
+} from "@bentley/imodeljs-clients";
+import {
   IModelHubClient, HubCode, CodeState, MultiCode, Briefcase, BriefcaseQuery, ChangeSet, Version,
   Thumbnail, SmallThumbnail, LargeThumbnail, IModelQuery, LockType, LockLevel,
-  MultiLock, Lock, VersionQuery, Config, IModelBaseHandler,
-  IModelBankClient, IModelBankFileSystemContextClient, AuthorizedClientRequestContext,
-  WsgError,
-  ChangeSetQuery,
-} from "@bentley/imodeljs-clients";
+  MultiLock, Lock, VersionQuery, IModelBaseHandler, ChangeSetQuery, IModelCloudEnvironment,
+  IModelBankClient, IModelBankFileSystemContextClient,
+} from "@bentley/imodelhub-client";
 import { TestUsers, TestUserCredentials } from "@bentley/oidc-signin-tool";
 import { AzureFileHandler } from "../../imodelhub/AzureFileHandler";
-import { IModelCloudEnvironment } from "@bentley/imodeljs-clients/lib/IModelCloudEnvironment";
 import { ResponseBuilder, RequestType, ScopeType, UrlDiscoveryMock } from "../ResponseBuilder";
 import { TestConfig } from "../TestConfig";
 import { TestIModelHubCloudEnv } from "./IModelHubCloudEnv";
@@ -28,6 +28,7 @@ import { IOSAzureFileHandler } from "../../imodelhub/IOSAzureFileHandler";
 import { UrlFileHandler } from "../../UrlFileHandler";
 import { LocalhostHandler } from "../../imodelhub/LocalhostFileHandler";
 import { StorageServiceFileHandler } from "../../StorageServiceFileHandler";
+import { Project, Asset } from "@bentley/context-registry-client";
 
 const loggingCategory = "imodeljs-clients-backend.TestUtils";
 

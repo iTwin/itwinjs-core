@@ -9,7 +9,7 @@ import { RpcInterfaceDefinition } from "@bentley/imodeljs-common";
 import { Presentation } from "@bentley/presentation-backend";
 import getSupportedRpcs from "../common/rpcs";
 
-import { Config } from "@bentley/imodeljs-clients";
+import { Config } from "@bentley/bentleyjs-core";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 import { initializeLogging, setupSnapshotConfiguration } from "./web/BackendServer";
 

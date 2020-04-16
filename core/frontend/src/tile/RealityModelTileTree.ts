@@ -27,7 +27,8 @@ import {
   XYZ,
   YawPitchRollAngles,
 } from "@bentley/geometry-core";
-import { RealityDataServicesClient, AccessToken, getArrayBuffer, getJson, RealityData } from "@bentley/imodeljs-clients";
+import { AccessToken, getArrayBuffer, getJson } from "@bentley/imodeljs-clients";
+import { RealityData, RealityDataClient } from "@bentley/reality-data-client";
 import {
   BatchedTileIdMap,
   RealityTile,
@@ -554,7 +555,7 @@ export class RealityModelTileClient {
   private _realityData?: RealityData;        // For reality data stored on PW Context Share only.
   private _baseUrl: string = "";             // For use by all Reality Data. For RD stored on PW Context Share, represents the portion from the root of the Azure Blob Container
   private readonly _token?: AccessToken;     // Only used for accessing PW Context Share.
-  private static _client = new RealityDataServicesClient();  // WSG Client for accessing Reality Data on PW Context Share
+  private static _client = new RealityDataClient();  // WSG Client for accessing Reality Data on PW Context Share
 
   // ###TODO we should be able to pass the projectId / tileId directly, instead of parsing the url
   // But if the present can also be used by non PW Context Share stored data then the url is required and token is not. Possibly two classes inheriting from common interface.

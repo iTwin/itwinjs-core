@@ -2,8 +2,8 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { IModelCloudEnvironment } from "@bentley/imodeljs-clients/lib/IModelCloudEnvironment";
-import { Config } from "@bentley/imodeljs-clients";
+import { Config } from "@bentley/bentleyjs-core";
+import { IModelCloudEnvironment } from "@bentley/imodelhub-client";
 import { IModelHubBackendCloudEnv } from "./IModelHubBackendCloudEnv";
 import { getIModelBankCloudEnv } from "./IModelBankBackendCloudEnv";
 

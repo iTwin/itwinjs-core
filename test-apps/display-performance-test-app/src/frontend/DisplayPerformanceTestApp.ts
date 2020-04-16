@@ -4,7 +4,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Id64, Id64Arg, Id64String, OpenMode, StopWatch, ClientRequestContext } from "@bentley/bentleyjs-core";
-import { HubIModel, Project, ProjectShareClient, ProjectShareFile, ProjectShareFileQuery, ProjectShareFolderQuery, AccessToken, BrowserAuthorizationClient, IFrontendAuthorizationClient, BrowserAuthorizationClientConfiguration } from "@bentley/imodeljs-clients";
+import { AccessToken } from "@bentley/imodeljs-clients";
+import { Project } from "@bentley/context-registry-client";
+import { BrowserAuthorizationClient, IFrontendAuthorizationClient, BrowserAuthorizationClientConfiguration } from "@bentley/frontend-authorization-client";
+import { ProjectShareClient, ProjectShareFile, ProjectShareFileQuery, ProjectShareFolderQuery } from "@bentley/projectshare-client";
 import {
   BackgroundMapProps, BackgroundMapType, BentleyCloudRpcManager, DisplayStyleProps, ElectronRpcConfiguration, ElectronRpcManager, IModelReadRpcInterface,
   IModelTileRpcInterface, IModelRpcProps, MobileRpcConfiguration, MobileRpcManager, RpcConfiguration, RpcOperation, RenderMode,
@@ -21,6 +24,7 @@ import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import { initializeIModelHub } from "./ConnectEnv";
 import { IModelApi } from "./IModelApi";
 import * as path from "path";
+import { HubIModel } from "@bentley/imodelhub-client";
 
 let curRenderOpts: RenderSystem.Options = {}; // Keep track of the current render options (disabled webgl extensions and enableOptimizedSurfaceShaders flag)
 let curTileProps: TileAdmin.Props = {}; // Keep track of whether or not instancing has been enabled

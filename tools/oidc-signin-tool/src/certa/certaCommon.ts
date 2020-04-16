@@ -2,10 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { AccessToken, IncludePrefix, UserInfo } from "@bentley/imodeljs-clients";
 import { executeBackendCallback } from "@bentley/certa/lib/utils/CallbackUtils";
-
-import { TestUserCredentials, TestOidcConfiguration } from "../TestUsers";
+import { AccessToken, IncludePrefix, UserInfo } from "@bentley/imodeljs-clients";
+import { TestOidcConfiguration, TestUserCredentials } from "../TestUsers";
 
 // Shared by both the frontend and backend side of the tests
 export const getTokenCallbackName = "getToken";

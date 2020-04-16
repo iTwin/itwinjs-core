@@ -7,7 +7,7 @@
  */
 
 import { GuidString, Logger, OpenMode } from "@bentley/bentleyjs-core";
-import { ChangeSet, ChangeSetQuery, HubIModel, HubUserInfo, IModelHubClient, IModelQuery, UserInfoQuery, Version, VersionQuery } from "@bentley/imodeljs-clients";
+import { ChangeSet, ChangeSetQuery, HubIModel, HubUserInfo, IModelHubClient, IModelQuery, UserInfoQuery, Version, VersionQuery } from "@bentley/imodelhub-client";
 // import GatewayProxyApi from "./gatewayProxy";
 import { IModelVersion } from "@bentley/imodeljs-common";
 import { AuthorizedFrontendRequestContext, BriefcaseConnection, IModelConnection } from "@bentley/imodeljs-frontend";

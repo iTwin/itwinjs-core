@@ -13,7 +13,7 @@
     "build": "tsc 1>&2",
     "clean": "rimraf lib .rush",
     "cover": "",
-    "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --includes=../../generated-docs/extract --json=../../generated-docs/clients/extension/file.json --tsIndexFile=./ExtensionClient.ts --onlyJson %TYPEDOC_THEME%",
+    "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --includes=../../generated-docs/extract --json=../../generated-docs/clients/extension-client/file.json --tsIndexFile=./ExtensionClient.ts --onlyJson %TYPEDOC_THEME%",
     "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=ExtensionClient",
     "lint": "tslint --project . 1>&2",
     "test": "",
@@ -41,11 +41,11 @@
   "devDependencies": {
     "@bentley/build-tools": "2.0.0-dev.70",
     "@bentley/certa": "2.0.0-dev.70",
+    "@bentley/context-registry-client": "2.0.0-dev.70",
     "@bentley/config-loader": "2.0.0-dev.70",
     "@bentley/oidc-signin-tool": "2.0.0-dev.70",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
-    "@types/rimraf": "^2.0.2",
     "@types/node": "10.14.1",
     "chai": "^4.1.2",
     "mocha": "^5.2.0",
@@ -54,7 +54,6 @@
     "source-map-loader": "^0.2.3",
     "tslint": "^5.11.0",
     "typescript": "~3.7.4",
-    "ts-node": "^7.0.1",
     "webpack": "4.42.0"
   },
   "nyc": {

@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @module NativeApp */
-import { BeEvent, ClientRequestContext, IModelStatus } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext, Config, ProgressCallback, ProgressInfo, RequestGlobalOptions } from "@bentley/imodeljs-clients";
+import { BeEvent, ClientRequestContext, IModelStatus, Config } from "@bentley/bentleyjs-core";
+import { AuthorizedClientRequestContext, ProgressCallback, ProgressInfo, RequestGlobalOptions } from "@bentley/imodeljs-clients";
 import { BriefcaseRpcProps, Events, IModelError, IModelRpcProps, IModelVersion, InternetConnectivityStatus, NativeAppRpcInterface, OverriddenBy, RpcRegistry, StorageValue } from "@bentley/imodeljs-common";
 import { EventSourceManager } from "./EventSource";
 import { IModelApp, IModelAppOptions } from "./IModelApp";

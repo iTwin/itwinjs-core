@@ -9,7 +9,8 @@
 import * as React from "react";
 
 import { ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
-import { UserInfo, AccessToken, isBrowserAuthorizationClient } from "@bentley/imodeljs-clients";
+import { UserInfo, AccessToken } from "@bentley/imodeljs-clients";
+import { isBrowserAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { IModelApp } from "@bentley/imodeljs-frontend";
 import { getUserColor } from "@bentley/ui-core";
 

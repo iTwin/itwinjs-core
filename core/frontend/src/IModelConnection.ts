@@ -11,7 +11,6 @@ import {
   Id64String, Logger, OneAtATimeAction, OpenMode, TransientIdSequence, DbOpcode, GuidString,
 } from "@bentley/bentleyjs-core";
 import { Point3d, Range3d, Range3dProps, XYAndZ, XYZProps } from "@bentley/geometry-core";
-import { LockLevel } from "@bentley/imodeljs-clients";
 import {
   AxisAlignedBox3d, BisCodeSpec, Cartographic, CodeProps, CodeSpec, EcefLocation, EcefLocationProps, ElementProps, EntityQueryParams,
   FontMap, FontMapProps, GeoCoordStatus, ImageSourceFormat, IModel, IModelConnectionProps, IModelError, IModelReadRpcInterface, IModelStatus, IModelRpcProps, IModelVersion, IModelWriteRpcInterface,
@@ -30,6 +29,7 @@ import { HiliteSet, SelectionSet } from "./SelectionSet";
 import { SubCategoriesCache } from "./SubCategoriesCache";
 import { TileTree, TileTreeLoadStatus, TileTreeOwner, TileTreeSupplier } from "./tile/internal";
 import { ViewState } from "./ViewState";
+import { LockLevel } from "@bentley/imodelhub-client";
 
 const loggerCategory: string = FrontendLoggerCategory.IModelConnection;
 

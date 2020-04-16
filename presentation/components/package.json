@@ -58,7 +58,7 @@
     "@bentley/presentation-frontend": "^2.0.0-dev.70",
     "@bentley/ui-core": "^2.0.0-dev.70",
     "@bentley/ui-components": "^2.0.0-dev.70",
-    "@bentley/ui-abstract": "2.0.0-dev.70"
+    "@bentley/ui-abstract": "^2.0.0-dev.70"
   },
   "devDependencies": {
     "@bentley/bentleyjs-core": "2.0.0-dev.70",

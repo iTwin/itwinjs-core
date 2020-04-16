@@ -4,11 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
 import { IModelHubStatus, GuidString } from "@bentley/bentleyjs-core";
-import { AccessToken, UserInfoQuery, HubUserInfo, UserInfo, IModelHubClientError, IModelClient, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { AccessToken, UserInfo, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
 import { TestUsers } from "@bentley/oidc-signin-tool";
 import { ResponseBuilder, ScopeType, RequestType } from "../ResponseBuilder";
 import { TestConfig } from "../TestConfig";
 import * as utils from "./TestUtils";
+import { HubUserInfo, IModelClient, UserInfoQuery, IModelHubClientError } from "@bentley/imodelhub-client";
 
 function mockGetUserInfo(imodelId: GuidString, userInfo: HubUserInfo[], query?: string) {
   if (!TestConfig.enableMocks)

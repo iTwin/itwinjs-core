@@ -2,12 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { GuidString } from "@bentley/bentleyjs-core";
+import { GuidString, Config } from "@bentley/bentleyjs-core";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
-import {
-  HubIModel, IModelHubClient, IModelClient, ConnectClient, Project, Config, IModelQuery,
-  AuthorizedClientRequestContext,
-} from "@bentley/imodeljs-clients";
+import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { IModelClient, IModelHubClient, IModelQuery, HubIModel } from "@bentley/imodelhub-client";
+import { ContextRegistryClient, Project } from "@bentley/context-registry-client";
 
 IModelJsConfig.init(true /* suppress exception */, false /* suppress error message */, Config.App);
 
@@ -27,7 +26,7 @@ export class TestConfig {
 
   /** Query for the specified project */
   public static async queryProjectId(requestContext: AuthorizedClientRequestContext, projectName: string): Promise<string> {
-    const connectClient = new ConnectClient();
+    const connectClient = new ContextRegistryClient();
     const project: Project | undefined = await connectClient.getProject(requestContext, {
       $select: "*",
       $filter: `Name+eq+'${projectName}'`,

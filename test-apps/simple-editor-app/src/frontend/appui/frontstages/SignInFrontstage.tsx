@@ -9,7 +9,7 @@ import {
 } from "@bentley/ui-framework";
 import { SampleAppIModelApp } from "../../index";
 import { IModelApp } from "@bentley/imodeljs-frontend";
-import { isBrowserAuthorizationClient } from "@bentley/imodeljs-clients";
+import { isBrowserAuthorizationClient } from "@bentley/frontend-authorization-client";
 
 class SignInControl extends ContentControl {
   constructor(info: ConfigurableCreateInfo, options: any) {

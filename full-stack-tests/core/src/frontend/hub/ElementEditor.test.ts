@@ -4,13 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 import { Id64String, OpenMode } from "@bentley/bentleyjs-core";
 import { IModelJson, LineSegment3d, Point3d, YawPitchRollAngles } from "@bentley/geometry-core";
-import { LockLevel } from "@bentley/imodeljs-clients";
 import { Code } from "@bentley/imodeljs-common";
 import { BeButtonEvent, BriefcaseConnection, ElementEditor3d, IModelApp, IModelAppOptions, IModelConnection, Viewport } from "@bentley/imodeljs-frontend";
 import { TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
 import { assert } from "chai";
 import { PlacementTestTool } from "./TestPrimitiveTools";
 import { TestUtility } from "./TestUtility";
+import { LockLevel } from "@bentley/imodelhub-client";
 
 const testProjectName = "iModelJsIntegrationTest";
 const testIModelName = "elementEditorTest";

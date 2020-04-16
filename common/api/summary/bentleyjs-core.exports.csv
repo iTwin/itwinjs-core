@@ -29,6 +29,7 @@ public;compareStrings(a: string, b: string): number
 public;compareStringsOrUndefined(lhs?: string, rhs?: string): number
 public;compareWithTolerance(a: number, b: number, tolerance?: number): number
 public;ComputePriorityFunction
+public;Config
 public;DbOpcode
 public;DbResult
 public;Dictionary

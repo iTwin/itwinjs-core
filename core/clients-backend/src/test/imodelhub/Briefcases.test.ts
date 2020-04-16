@@ -7,14 +7,12 @@ import * as fs from "fs";
 import * as path from "path";
 
 import { IModelHubStatus, GuidString } from "@bentley/bentleyjs-core";
-import {
-  AccessToken, IModelHubClient, Briefcase, BriefcaseQuery, ChangeSet,
-  IModelHubClientError, IModelClient, AuthorizedClientRequestContext,
-} from "@bentley/imodeljs-clients";
+import { AccessToken, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
 import { TestUsers } from "@bentley/oidc-signin-tool";
 import { TestConfig } from "../TestConfig";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import * as utils from "./TestUtils";
+import { Briefcase, IModelClient, BriefcaseQuery, IModelHubClientError, IModelHubClient, ChangeSet } from "@bentley/imodelhub-client";
 
 function mockGetBriefcaseById(imodelId: GuidString, briefcase: Briefcase) {
   if (!TestConfig.enableMocks)

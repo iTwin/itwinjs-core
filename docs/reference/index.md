@@ -26,6 +26,19 @@ The iModel.js library is organized into the following separately downloadable [n
 - ($webgl-compatibility)
 - ($logger-config)
 
+## iModel.js Client Packages
+
+- ($context-registry-client)
+- ($extension-client)
+- ($forms-data-management-client)
+- ($frontend-authorization-client)
+- ($imodelhub-client)
+- ($product-settings-client)
+- ($projectshare-client)
+- ($rbac-client)
+- ($reality-data-client)
+- ($usage-logging-client)
+
 ## iModel.js UI Packages
 
 - ($ui-abstract)

@@ -7,7 +7,7 @@
  */
 
 import { assert, DbOpcode, DbResult, Id64String, Logger, RepositoryStatus } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext, CodeQuery, CodeState, HubCode, Lock, LockLevel, LockQuery, LockType } from "@bentley/imodeljs-clients";
+import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
 import { CodeProps, ElementProps, IModelError, IModelStatus, IModelWriteRpcInterface, ModelProps } from "@bentley/imodeljs-common";
 import * as deepAssign from "deep-assign";
 import * as path from "path";
@@ -19,6 +19,7 @@ import { BriefcaseDb, SyncMode } from "./IModelDb";
 import { IModelJsFs } from "./IModelJsFs";
 import { Model } from "./Model";
 import { RelationshipProps } from "./Relationship";
+import { CodeQuery, CodeState, HubCode, Lock, LockLevel, LockQuery, LockType } from "@bentley/imodelhub-client";
 
 const loggerCategory: string = BackendLoggerCategory.ConcurrencyControl;
 
@@ -346,7 +347,7 @@ export class ConcurrencyControl {
    * @param req The requests to be sent to iModelHub. If undefined, all pending requests are sent to iModelHub.
    * @throws [[IModelHubError]] if some or all of the request could not be fulfilled by iModelHub.
    * @throws [[IModelError]] if the IModelDb is not open or is not connected to an iModel.
-   * See [CodeHandler]($clients) and [LockHandler]($clients) for details on what errors may be thrown.
+   * See [CodeHandler]($imodelhub-client) and [LockHandler]($imodelhub-client) for details on what errors may be thrown.
    * See [[ConcurrencyControl.requestResources]] for a convenience method that builds and makes a request in one step.
    */
   public async request(requestContext: AuthorizedClientRequestContext, req?: ConcurrencyControl.Request): Promise<void> {
@@ -434,7 +435,7 @@ export class ConcurrencyControl {
     this.addToPendingRequestIfNotHeld(req);
   }
 
-  /** Obtain the schema lock. This is always an immediate request, never deferred. See [LockHandler]($clients) for details on what errors may be thrown. */
+  /** Obtain the schema lock. This is always an immediate request, never deferred. See [LockHandler]($imodelhub-client) for details on what errors may be thrown. */
   public async lockSchema(requestContext: AuthorizedClientRequestContext): Promise<Lock[]> {
     const locks = [ConcurrencyControl.Request.getHubSchemaLock(this)];
 
@@ -470,7 +471,7 @@ export class ConcurrencyControl {
     return this._cache.isLockHeld(ConcurrencyControl.Request.codeSpecsLock);
   }
 
-  /** Obtain the CodeSpec lock. This is always an immediate request, never deferred. See [LockHandler]($clients) for details on what errors may be thrown. */
+  /** Obtain the CodeSpec lock. This is always an immediate request, never deferred. See [LockHandler]($imodelhub-client) for details on what errors may be thrown. */
   public async lockCodeSpecs(requestContext: AuthorizedClientRequestContext): Promise<Lock[]> {
 
     const locks = [ConcurrencyControl.Request.getHubCodeSpecsLock(this)];
@@ -522,7 +523,7 @@ export class ConcurrencyControl {
     return lockStates;
   }
 
-  /** Reserve the specified codes. See [CodeHandler]($clients) for details on what errors may be thrown. */
+  /** Reserve the specified codes. See [CodeHandler]($imodelhub-client) for details on what errors may be thrown. */
   public async reserveCodes(requestContext: AuthorizedClientRequestContext, codes: CodeProps[]): Promise<HubCode[]> {
     requestContext.enter();
 
@@ -542,7 +543,7 @@ export class ConcurrencyControl {
     return codeStates;
   }
 
-  // Query the state of the Codes for the specified CodeSpec and scope. See [CodeHandler]($clients) for details on what errors may be thrown.
+  // Query the state of the Codes for the specified CodeSpec and scope. See [CodeHandler]($imodelhub-client) for details on what errors may be thrown.
   public async queryCodeStates(requestContext: AuthorizedClientRequestContext, specId: Id64String, scopeId: string, value?: string): Promise<HubCode[]> {
     requestContext.enter();
     if (!this._iModel.isOpen)

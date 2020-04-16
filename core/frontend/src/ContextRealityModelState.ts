@@ -7,14 +7,15 @@
  */
 import { ContextRealityModelProps, CartographicRange, OrbitGtBlobProps } from "@bentley/imodeljs-common";
 import { Angle } from "@bentley/geometry-core";
-import { IModelConnection } from "./IModelConnection";
-import { IModelApp } from "./IModelApp";
-import { AuthorizedFrontendRequestContext } from "./FrontendRequestContext";
-import { SpatialModelState } from "./ModelState";
-import { TileTreeReference, createRealityTileTreeReference, createOrbitGtTileTreeReference, RealityModelTileClient, RealityModelTileUtils, RealityModelTileTree } from "./tile/internal";
-import { RealityDataServicesClient, RealityData, AccessToken } from "@bentley/imodeljs-clients";
-import { SpatialClassifiers } from "./SpatialClassifiers";
+import { AccessToken } from "@bentley/imodeljs-clients";
+import { RealityData, RealityDataClient } from "@bentley/reality-data-client";
 import { DisplayStyleState } from "./DisplayStyleState";
+import { AuthorizedFrontendRequestContext } from "./FrontendRequestContext";
+import { IModelApp } from "./IModelApp";
+import { IModelConnection } from "./IModelConnection";
+import { SpatialModelState } from "./ModelState";
+import { SpatialClassifiers } from "./SpatialClassifiers";
+import { createRealityTileTreeReference, RealityModelTileClient, RealityModelTileTree, RealityModelTileUtils, TileTreeReference, createOrbitGtTileTreeReference } from "./tile/internal";
 
 async function getAccessToken(): Promise<AccessToken | undefined> {
   if (!IModelApp.authorizationClient || !IModelApp.authorizationClient.hasSignedIn)
@@ -141,7 +142,7 @@ export async function findAvailableUnattachedRealityModels(projectid: string, iM
   const requestContext = await AuthorizedFrontendRequestContext.create();
   requestContext.enter();
 
-  const client = new RealityDataServicesClient();
+  const client = new RealityDataClient();
 
   let realityData: RealityData[];
   if (modelCartographicRange) {

@@ -6,7 +6,8 @@
  * @module iModelHub
  */
 import { Logger, BriefcaseStatus } from "@bentley/bentleyjs-core";
-import { ArgumentCheck, AuthorizedClientRequestContext, FileHandler, request, RequestOptions, ProgressCallback, UserCancelledError, CancelRequest } from "@bentley/imodeljs-clients";
+import { ArgumentCheck } from "@bentley/imodelhub-client";
+import { AuthorizedClientRequestContext, FileHandler, request, RequestOptions, ProgressCallback, UserCancelledError, CancelRequest } from "@bentley/imodeljs-clients";
 import * as fs from "fs";
 import * as path from "path";
 import { ClientsBackendLoggerCategory } from "../ClientsBackendLoggerCategory";

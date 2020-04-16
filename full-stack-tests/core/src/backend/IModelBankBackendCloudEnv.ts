@@ -8,12 +8,11 @@ import * as path from "path";
 import * as child_process from "child_process";
 import * as http from "http";
 import * as https from "https";
-import { IModelBankClient, IModelBankFileSystemContextClient, Config } from "@bentley/imodeljs-clients";
-import { IModelBankDummyAuthorizationClient } from "@bentley/imodeljs-clients/lib/imodelbank/IModelBankDummyAuthorizationClient";
-import { BasicAuthorizationClient } from "@bentley/imodeljs-clients/lib/imodelbank/BasicAuthorizationClient";
 import { UrlFileHandler } from "@bentley/imodeljs-clients-backend";
-import { Logger } from "@bentley/bentleyjs-core";
-import { IModelCloudEnvironment } from "@bentley/imodeljs-clients/lib/IModelCloudEnvironment";
+import { Logger, Config } from "@bentley/bentleyjs-core";
+import { IModelCloudEnvironment, IModelBankClient, IModelBankFileSystemContextClient } from "@bentley/imodelhub-client";
+import { IModelBankDummyAuthorizationClient } from "@bentley/imodelhub-client/lib/imodelbank/IModelBankDummyAuthorizationClient";
+import { BasicAuthorizationClient } from "@bentley/imodelhub-client/lib/imodelbank/BasicAuthorizationClient";
 
 export const assetsPath = __dirname + "/../../../lib/test/assets/";
 export const workDir = __dirname + "/../../../lib/test/output/";

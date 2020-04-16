@@ -1,153 +1,32 @@
 sep=;
 Release Tag;API Item
 beta;AccessToken 
-internal;addSelectApplicationData(query: RequestQueryOptions): void
-internal;addSelectFileAccessKey(query: RequestQueryOptions): void
-internal;AggregateResponseError 
-alpha;AllCodesDeletedEvent 
-alpha;AllLocksDeletedEvent 
-internal;ArgumentCheck
-beta;Asset 
 beta;AuthenticationError 
 internal;AuthorizationToken 
 public;AuthorizedClientRequestContext 
 public;AuthorizedClientRequestContextProps 
-internal;Briefcase 
-internal;BriefcaseAccessMode
-internal;BriefcaseDeletedEvent 
-beta;class BriefcaseEvent 
-internal;BriefcaseHandler
-internal;BriefcaseQuery 
-beta;BrowserAuthorizationCallbackHandler 
-beta;BrowserAuthorizationCallbackHandlerConfiguration
-beta;BrowserAuthorizationClient 
-beta;BrowserAuthorizationClientConfiguration
 beta;CancelRequest
-beta;ChangeSet 
-internal;ChangeSetCreatedEvent 
-beta;ChangeSetHandler
-beta;ChangeSetPostPushEvent 
-beta;ChangeSetPrePushEvent 
-beta;ChangeSetQuery 
 beta;ChangeState = "new" | "modified" | "deleted"
-beta;ChangesType
-alpha;Checkpoint 
-alpha;CheckpointHandler
-alpha;CheckpointQuery 
 internal;ClassKeyMapInfo
 beta;class Client
 beta;ClientsLoggerCategory
-beta;CloneIModelTemplate
-alpha;CodeBase 
-alpha;CodeEvent 
-alpha;CodeHandler
-alpha;CodeQuery 
-alpha;CodeSequence 
-alpha;CodeSequenceHandler
-alpha;CodeSequenceType
-alpha;CodeState
-alpha;CodeUpdateOptions
-public;Config
-alpha;ConflictingCodesError 
-alpha;ConflictingLocksError 
-beta;ConnectClient 
-beta;ConnectRequestQueryOptions 
-internal;ConnectSettingsClient 
 internal;ConstructorType = new () => any
-beta;Context 
-beta;ContextType
-internal;DefaultCodeUpdateOptionsProvider
-internal;DefaultIModelCreateOptionsProvider
-internal;DefaultLockUpdateOptionsProvider
 internal;DefaultRequestOptionsProvider
 internal;DefaultWsgRequestOptionsProvider 
 beta;class ECInstance
 internal;ECJsonTypeMap
-beta;EmptyIModelTemplate = "Empty"
-internal;EndFeatureLogEntry 
-beta;EventHandler 
-beta;EventSAS 
-beta;EventSubscription 
-beta;EventSubscriptionHandler
-internal;FeatureLogEntry
-internal;FeatureLogEntryAttributeJson
-internal;FeatureLogEntryJson 
-internal;FeatureLogEntryMetadata
-internal;FileAccessKey 
 beta;FileHandler
 internal;getArrayBuffer(requestContext: ClientRequestContext, url: string): Promise
-internal;GetEventOperationType
 internal;getJson(requestContext: ClientRequestContext, url: string): Promise
-internal;GlobalEventHandler 
-internal;GlobalEventSAS 
-internal;GlobalEventSubscription 
-internal;GlobalEventSubscriptionHandler
-internal;HardiModelDeleteEvent 
-alpha;HubCode 
-beta;HubIModel 
-alpha;HubUserInfo 
 beta;IAuthorizationClient
-beta;IFrontendAuthorizationClient 
-internal;IModelBankClient 
-internal;IModelBankFileSystemContextClient 
-beta;IModelBankHandler 
-beta;IModelBaseHandler 
-beta;class IModelClient
-internal;IModelCreatedEvent 
-beta;IModelCreateOptions
-beta;IModelDeletedEvent 
-internal;IModelFileSystemContextProps
-beta;IModelHandler
-beta;IModelHubClient 
-beta;IModelHubClientError 
-beta;IModelHubError 
-beta;class IModelHubEvent 
-internal;class IModelHubGlobalEvent 
-internal;IModelHubPermission
-beta;IModelQuery 
-beta;IModelsHandler
 beta;ImsOidcClient 
 internal;IncludePrefix
-beta;InitializationState
-beta;InstanceIdQuery 
 beta;IOidcFrontendClient 
 beta;isAuthorizedClientRequestContext: (requestContext: ClientRequestContext) => requestContext is AuthorizedClientRequestContext
-beta;isBrowserAuthorizationClient: (client: IAuthorizationClient | undefined) => client is IFrontendAuthorizationClient
 beta;isIOidcFrontendClient: (client: IAuthorizationClient | undefined) => client is IOidcFrontendClient
-alpha;LargeThumbnail 
-alpha;Lock 
-alpha;LockBase 
-alpha;LockEvent 
-alpha;LockHandler
-alpha;LockLevel
-alpha;LockQuery 
-alpha;LockType
-alpha;LockUpdateOptions
-internal;LogEntryConverter
-internal;LogPostingResponse
-internal;MultiCode 
-alpha;MultiLock 
-internal;NamedVersionCreatedEvent 
-beta;OidcCallbackResponseMode
 beta;OidcFrontendClientConfiguration
-internal;ParseEvent(response: Response): IModelHubEvent
-internal;ParseGlobalEvent(response: Response, handler?: IModelBaseHandler, sasToken?: string): IModelHubGlobalEvent
-internal;Permission 
-internal;ProductVersion
 beta;ProgressCallback = (progress: ProgressInfo) => void
 beta;ProgressInfo
-beta;Project 
-alpha;ProjectShareClient 
-alpha;ProjectShareFile 
-alpha;ProjectShareFileQuery 
-alpha;ProjectShareFolder 
-alpha;ProjectShareFolderQuery 
-alpha;ProjectShareQuery 
-internal;RbacClient 
-internal;RealityData 
-internal;RealityDataRelationship 
-internal;RealityDataServicesClient 
-internal;RealityDataServicesRequestQueryOptions 
 internal;request(requestContext: ClientRequestContext, url: string, options: RequestOptions): Promise
 beta;RequestBasicCredentials
 beta;RequestGlobalOptions
@@ -158,38 +37,10 @@ beta;RequestQueryStringifyOptions
 beta;RequestTimeoutOptions
 beta;Response
 beta;ResponseError 
-internal;SeedFile 
-alpha;SettingsAdmin
-alpha;SettingsMapResult
-alpha;SettingsResult
-alpha;SettingsStatus
-alpha;SmallThumbnail 
-internal;SoftiModelDeleteEvent 
-internal;StartFeatureLogEntry 
-beta;StringIdQuery 
-alpha;class Thumbnail 
-alpha;ThumbnailHandler
-alpha;ThumbnailQuery 
-beta;ThumbnailSize = "Small" | "Large"
-alpha;TipThumbnail
 beta;class Token
-internal;UlasClient 
 internal;UrlDiscoveryClient 
-internal;UsageLogEntry
-internal;UsageLogEntryJson
-internal;UsageType
 internal;UserCancelledError 
 beta;UserInfo
-alpha;UserInfoHandler
-alpha;UserInfoQuery 
-alpha;UserStatistics 
-alpha;UserStatisticsHandler
-alpha;UserStatisticsQuery 
-public;ValueType = string | boolean | number
-beta;Version 
-beta;VersionEvent 
-beta;VersionHandler
-beta;VersionQuery 
 beta;class WsgClient 
 beta;WsgError 
 beta;class WsgInstance 

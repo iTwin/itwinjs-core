@@ -5,14 +5,14 @@
 import * as chai from "chai";
 import { GuidString, Guid } from "@bentley/bentleyjs-core";
 import {
-  AccessToken, Version, VersionQuery, Briefcase, ChangeSet, Thumbnail,
-  ThumbnailQuery, ThumbnailSize, IModelClient, AuthorizedClientRequestContext,
-  RequestGlobalOptions, RequestTimeoutOptions, IModelQuery,
+  AccessToken, AuthorizedClientRequestContext,
+  RequestGlobalOptions, RequestTimeoutOptions,
 } from "@bentley/imodeljs-clients";
 import { TestUsers } from "@bentley/oidc-signin-tool";
 import { TestConfig } from "../TestConfig";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import * as utils from "./TestUtils";
+import { Version, VersionQuery, Briefcase, ChangeSet, Thumbnail, ThumbnailQuery, ThumbnailSize, IModelClient, IModelQuery } from "@bentley/imodelhub-client";
 
 function getSelectStatement(thumbnailSizes: ThumbnailSize[]) {
   let selectStatement: string = "*";

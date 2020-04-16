@@ -2,6 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
+/** @packageDocumentation
+ * @module Extension
+ */
+
 import { ExtensionStatus, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { IModelError } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext, Client, request, RequestOptions, ResponseError, getArrayBuffer } from "@bentley/imodeljs-clients";

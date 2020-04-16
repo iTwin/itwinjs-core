@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ClientRequestContext } from "@bentley/bentleyjs-core";
-import { AccessToken, Config } from "@bentley/imodeljs-clients";
+import { ClientRequestContext, Config } from "@bentley/bentleyjs-core";
+import { AccessToken } from "@bentley/imodeljs-clients";
 import { OidcAgentClient, OidcAgentClientConfiguration } from "@bentley/imodeljs-clients-backend";
 import { IModelVersion, MobileRpcConfiguration } from "@bentley/imodeljs-common";
 import { assert } from "chai";

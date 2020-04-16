@@ -3,12 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
-import { Config, AccessToken } from "@bentley/imodeljs-clients";
-
+import { Config } from "@bentley/bentleyjs-core";
 import { registerBackendCallback } from "@bentley/certa/lib/utils/CallbackUtils";
-
-import { TestUserCredentials, TestOidcConfiguration } from "../TestUsers";
+import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
+import { AccessToken } from "@bentley/imodeljs-clients";
+import { TestOidcConfiguration, TestUserCredentials } from "../TestUsers";
 import { TestUtility } from "../TestUtility";
 import { getTokenCallbackName, serializeToken } from "./certaCommon";
 

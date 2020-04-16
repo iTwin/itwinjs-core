@@ -22,6 +22,7 @@
     "@bentley/bentleyjs-core": "2.0.0-dev.70",
     "@bentley/express-server": "2.0.0-dev.70",
     "@bentley/geometry-core": "2.0.0-dev.70",
+    "@bentley/imodelhub-client": "2.0.0-dev.70",
     "@bentley/imodeljs-backend": "2.0.0-dev.70",
     "@bentley/imodeljs-clients": "2.0.0-dev.70",
     "@bentley/imodeljs-clients-backend": "2.0.0-dev.70",
@@ -36,8 +37,10 @@
   "devDependencies": {
     "@bentley/certa": "2.0.0-dev.70",
     "@bentley/config-loader": "2.0.0-dev.70",
+    "@bentley/context-registry-client": "2.0.0-dev.70",
     "@bentley/build-tools": "2.0.0-dev.70",
     "@bentley/oidc-signin-tool": "2.0.0-dev.70",
+    "@bentley/product-settings-client": "2.0.0-dev.70",
     "@types/chai": "^4.1.4",
     "@types/fs-extra": "^4.0.7",
     "@types/mocha": "^5.2.5",

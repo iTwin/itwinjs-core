@@ -5,7 +5,7 @@
 import { assert } from "chai";
 import { IModelJsFs } from "@bentley/imodeljs-backend/lib/IModelJsFs";
 import * as path from "path";
-import { Config } from "@bentley/imodeljs-clients";
+import { Config } from "@bentley/bentleyjs-core";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 IModelJsConfig.init(true /* suppress exception */, false /* suppress error message */, Config.App);
 

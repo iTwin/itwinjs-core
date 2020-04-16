@@ -4,17 +4,18 @@
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
 
-import { Guid } from "@bentley/bentleyjs-core";
-import {
-  AccessToken, IModelClient, HubIModel, GlobalEventSubscription, GlobalEventSAS, GlobalEventType,
-  SoftiModelDeleteEvent, HardiModelDeleteEvent, IModelCreatedEvent, ChangeSetCreatedEvent,
-  NamedVersionCreatedEvent, IModelHubGlobalEvent, GetEventOperationType, AuthorizedClientRequestContext,
-  ContextType, Config,
-} from "@bentley/imodeljs-clients";
+import { Guid, Config } from "@bentley/bentleyjs-core";
+import { AccessToken, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
 import { TestUserCredentials } from "@bentley/oidc-signin-tool";
 import { TestConfig } from "../TestConfig";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import * as utils from "./TestUtils";
+import {
+  IModelClient, HubIModel, GlobalEventSubscription, GlobalEventSAS, GlobalEventType,
+  SoftiModelDeleteEvent, HardiModelDeleteEvent, IModelCreatedEvent, ChangeSetCreatedEvent,
+  NamedVersionCreatedEvent, IModelHubGlobalEvent, GetEventOperationType,
+} from "@bentley/imodelhub-client";
+import { ContextType } from "@bentley/context-registry-client";
 chai.should();
 
 function mockGetGlobalEvent(subscriptionId: string, eventBody: object, eventType?: string, timeout?: number, responseCode?: number, delay?: number) {

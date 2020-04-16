@@ -2,9 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ECJsonTypeMap, ECInstance, WsgInstance, ChangeState, Config } from "@bentley/imodeljs-clients";
+import { ECJsonTypeMap, ECInstance, WsgInstance, ChangeState } from "@bentley/imodeljs-clients";
 import nock = require("nock");
 import { TestConfig } from "./TestConfig";
+import { Config } from "@bentley/bentleyjs-core";
 
 export enum RequestType {
   Get,

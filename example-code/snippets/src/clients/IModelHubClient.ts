@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 // __PUBLISH_EXTRACT_START__ IModelHubClient.example-code
-import { IModelHubClient } from "@bentley/imodeljs-clients";
+import { IModelHubClient } from "@bentley/imodelhub-client";
 import { AzureFileHandler, IOSAzureFileHandler } from "@bentley/imodeljs-clients-backend";
 import { MobileRpcConfiguration } from "@bentley/imodeljs-common";
 

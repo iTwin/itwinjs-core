@@ -5,9 +5,8 @@
 
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import { Logger, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
+import { Logger, LogLevel, OpenMode, Config } from "@bentley/bentleyjs-core";
 import { IModelApp } from "@bentley/imodeljs-frontend";
-import { Config } from "@bentley/imodeljs-clients";
 import {
   BentleyCloudRpcManager, BentleyCloudRpcParams,
   ElectronRpcManager, ElectronRpcConfiguration,

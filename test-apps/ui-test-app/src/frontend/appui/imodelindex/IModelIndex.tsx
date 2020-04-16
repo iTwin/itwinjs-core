@@ -6,7 +6,7 @@ import * as React from "react";
 import { Tab, Tabs } from "./Tabs";
 import { IModelConnection, AuthorizedFrontendRequestContext } from "@bentley/imodeljs-frontend";
 import { Id64String } from "@bentley/bentleyjs-core";
-import { IModelHubClient, IModelClient, IModelQuery, VersionQuery, Version } from "@bentley/imodeljs-clients";
+import { IModelHubClient, IModelClient, IModelQuery, VersionQuery, Version } from "@bentley/imodelhub-client";
 import { ModelsTab } from "./ModelsTab";
 import { SheetsTab } from "./SheetsTab";
 import { UiFramework } from "@bentley/ui-framework";

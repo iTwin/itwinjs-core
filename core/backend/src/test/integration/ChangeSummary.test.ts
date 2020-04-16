@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { ChangeSetStatus, DbResult, Id64, Id64String, Logger, LogLevel, OpenMode, PerfLogger, using } from "@bentley/bentleyjs-core";
-import { ChangeSet } from "@bentley/imodeljs-clients";
+import { ChangeSet } from "@bentley/imodelhub-client";
 import { ChangedValueState, ChangeOpCode, ColorDef, IModel, IModelStatus, IModelVersion, SubCategoryAppearance } from "@bentley/imodeljs-common";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { assert, expect } from "chai";

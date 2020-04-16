@@ -6,9 +6,8 @@
  * @module ECSQL
  */
 
-import { DbResult, GuidString, Id64String, IDisposable, Logger, StatusCodeWithMessage } from "@bentley/bentleyjs-core";
+import { DbResult, GuidString, Id64String, IDisposable, Logger, StatusCodeWithMessage, Config } from "@bentley/bentleyjs-core";
 import { LowAndHighXYZ, Range3d, XAndY, XYAndZ, XYZ } from "@bentley/geometry-core";
-import { Config } from "@bentley/imodeljs-clients";
 import { ECJsNames, ECSqlValueType, IModelError, NavigationBindingValue, NavigationValue } from "@bentley/imodeljs-common";
 import { ECDb } from "./ECDb";
 import { IModelHost } from "./IModelHost";

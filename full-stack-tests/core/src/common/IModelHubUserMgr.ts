@@ -3,9 +3,8 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
-import { IModelAuthorizationClient } from "@bentley/imodeljs-clients/lib/IModelCloudEnvironment";
-import { UserInfo, AccessToken } from "@bentley/imodeljs-clients";
-
+import { IModelAuthorizationClient } from "@bentley/imodelhub-client";
+import { AccessToken, UserInfo } from "@bentley/imodeljs-clients";
 import { getAccessTokenFromBackend } from "@bentley/oidc-signin-tool/lib/frontend";
 
 export class IModelHubUserMgr implements IModelAuthorizationClient {

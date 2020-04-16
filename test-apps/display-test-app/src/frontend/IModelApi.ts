@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { OpenMode } from "@bentley/bentleyjs-core";
-import { HubIModel, IModelQuery, Version, VersionQuery } from "@bentley/imodeljs-clients";
+import { HubIModel, IModelQuery, Version, VersionQuery } from "@bentley/imodelhub-client";
 import { IModelVersion } from "@bentley/imodeljs-common";
 import { AuthorizedFrontendRequestContext, BriefcaseConnection, IModelApp } from "@bentley/imodeljs-frontend";
 

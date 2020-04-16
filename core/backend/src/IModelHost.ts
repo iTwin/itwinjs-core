@@ -6,8 +6,8 @@
  * @module IModelHost
  */
 
-import { AuthStatus, BeEvent, BentleyError, ClientRequestContext, Guid, GuidString, IModelStatus, Logger } from "@bentley/bentleyjs-core";
-import { AccessToken, AuthorizedClientRequestContext, Config, IAuthorizationClient, IModelClient, UrlDiscoveryClient, UserInfo } from "@bentley/imodeljs-clients";
+import { AuthStatus, BeEvent, BentleyError, ClientRequestContext, Guid, GuidString, IModelStatus, Logger, Config } from "@bentley/bentleyjs-core";
+import { AccessToken, AuthorizedClientRequestContext, IAuthorizationClient, UrlDiscoveryClient, UserInfo } from "@bentley/imodeljs-clients";
 import { BentleyStatus, IModelError, MobileRpcConfiguration, RpcConfiguration, SerializedRpcRequest } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import * as os from "os";
@@ -33,6 +33,7 @@ import { WipRpcImpl } from "./rpc-impl/WipRpcImpl";
 import { initializeRpcBackend } from "./RpcBackend";
 import { IElementEditor } from "./ElementEditor";
 import { Editor3dRpcImpl } from "./rpc-impl/EditorRpcImpl";
+import { IModelClient } from "@bentley/imodelhub-client";
 const loggerCategory: string = BackendLoggerCategory.IModelHost;
 
 // cspell:ignore nodereport fatalerror apicall alicloud rpcs

@@ -7,7 +7,7 @@
  */
 
 import { UiSettings, UiSettingsStatus, UiSettingsResult } from "@bentley/ui-core";
-import { SettingsStatus } from "@bentley/imodeljs-clients";
+import { SettingsStatus } from "@bentley/product-settings-client";
 import { AuthorizedFrontendRequestContext, IModelApp } from "@bentley/imodeljs-frontend";
 
 /**

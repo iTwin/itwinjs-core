@@ -4,11 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import { Logger, Id64, GuidString } from "@bentley/bentleyjs-core";
 import {
-  AccessToken, ResponseError, AuthenticationError, IModelClient,
-  Briefcase, HubCode, CodeState, CodeQuery, Lock, LockLevel, LockType, LockQuery,
-  AuthorizedClientRequestContext,
+  AccessToken, ResponseError, AuthenticationError, AuthorizedClientRequestContext,
 } from "@bentley/imodeljs-clients";
 import * as utils from "./TestUtils";
+import { IModelClient, Briefcase, HubCode, CodeState, CodeQuery, Lock, LockLevel, LockType, LockQuery } from "@bentley/imodelhub-client";
 
 describe.skip("iModelHub Performance tests", () => {
   let imodelId: GuidString;

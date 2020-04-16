@@ -17,10 +17,9 @@ import {
   SerializedClientRequestContext,
   dispose,
 } from "@bentley/bentleyjs-core";
-import {
-  AccessToken, ConnectSettingsClient, IModelClient, IModelHubClient,
-  SettingsAdmin, IAuthorizationClient, IncludePrefix,
-} from "@bentley/imodeljs-clients";
+import { IModelClient, IModelHubClient } from "@bentley/imodelhub-client";
+import { AccessToken, IncludePrefix, IAuthorizationClient } from "@bentley/imodeljs-clients";
+import { ConnectSettingsClient, SettingsAdmin } from "@bentley/product-settings-client";
 import { IModelError, IModelStatus, RpcConfiguration, RpcRequest } from "@bentley/imodeljs-common";
 import { I18N, I18NOptions } from "@bentley/imodeljs-i18n";
 import { AccuSnap } from "./AccuSnap";

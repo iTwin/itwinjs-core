@@ -2,16 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
-import { Project, IModelQuery, Briefcase as HubBriefcase, BriefcaseQuery, AccessToken, AuthorizedClientRequestContext, LockLevel, LockQuery } from "@bentley/imodeljs-clients";
+import { ClientRequestContext, Id64String, Logger } from "@bentley/bentleyjs-core";
+import { Briefcase as HubBriefcase, BriefcaseQuery, IModelCloudEnvironment, IModelQuery, LockLevel, LockQuery } from "@bentley/imodelhub-client";
+import { AccessToken, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { Project } from "@bentley/context-registry-client";
 import { AuthorizedFrontendRequestContext, IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
-import { Logger, ClientRequestContext, Id64String } from "@bentley/bentleyjs-core";
-import { IModelCloudEnvironment } from "@bentley/imodeljs-clients/lib/IModelCloudEnvironment";
+import { getAccessTokenFromBackend, TestUserCredentials } from "@bentley/oidc-signin-tool/lib/frontend";
+import { assert } from "chai";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
 import { IModelBankCloudEnv } from "./IModelBankCloudEnv";
 import { IModelHubCloudEnv } from "./IModelHubCloudEnv";
-
-import { TestUserCredentials, getAccessTokenFromBackend } from "@bentley/oidc-signin-tool/lib/frontend";
 
 export class TestUtility {
   public static imodelCloudEnv: IModelCloudEnvironment;

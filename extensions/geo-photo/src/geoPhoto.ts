@@ -8,7 +8,7 @@ import {
   Extension, ScreenViewport, Tool, AuthorizedFrontendRequestContext,
 } from "@bentley/imodeljs-frontend";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
-import { SettingsStatus } from "@bentley/imodeljs-clients";
+import { SettingsStatus } from "@bentley/product-settings-client";
 import { GeoPhotoMarkerManager } from "./geoPhotoMarker";
 import { PhotoTreeHandler, PhotoFolder, PhotoTree, PhotoTraverseFunction } from "./PhotoTree";
 import { ProjectShareHandler } from "./ProjectSharePhotoTree";

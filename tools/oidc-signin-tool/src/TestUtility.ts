@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { AccessToken, IAuthorizationClient, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { AccessToken, AuthorizedClientRequestContext, IAuthorizationClient } from "@bentley/imodeljs-clients";
 import { TestOidcClient } from "./TestOidcClient";
-import { TestUserCredentials, TestUsers, TestOidcConfiguration } from "./TestUsers";
+import { TestOidcConfiguration, TestUserCredentials, TestUsers } from "./TestUsers";
 
 /**
  * A set of convenience methods to get an Access Token, AuthorizationClient or an AuthorizedClientRequestContext for a given TestUserCredential.

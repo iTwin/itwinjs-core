@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { ChangeSetApplyOption, ChangeSetStatus, GuidString, Logger, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
-import { RequestGlobalOptions, Version, UserInfoQuery, HubUserInfo } from "@bentley/imodeljs-clients";
+import { RequestGlobalOptions } from "@bentley/imodeljs-clients";
 import { RequestHost } from "@bentley/imodeljs-clients-backend";
 import { IModel, IModelVersion } from "@bentley/imodeljs-common";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
@@ -12,6 +12,7 @@ import * as path from "path";
 import { AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseManager, ChangeSetToken, OpenParams, PhysicalModel, StandaloneDb } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
+import { Version, UserInfoQuery, HubUserInfo } from "@bentley/imodelhub-client";
 
 // Useful utilities to download/upload test cases from/to the iModel Hub
 describe.skip("DebugHubIssues (#integration)", () => {

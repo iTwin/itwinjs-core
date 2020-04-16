@@ -3,10 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { GuidString, OpenMode, StopWatch } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext, HubIModel, ProjectShareClient } from "@bentley/imodeljs-clients";
+import { HubIModel } from "@bentley/imodelhub-client";
+import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
 import { IModelVersion } from "@bentley/imodeljs-common";
 import { BriefcaseConnection, IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
 import { TestAuthorizationClient } from "@bentley/oidc-signin-tool/lib/TestUsers";
+import { ProjectShareClient } from "@bentley/projectshare-client";
 import * as chai from "chai";
 import { PhotoFile, PhotoFolder, PhotoTree } from "../../PhotoTree";
 import { ProjectShareHandler, PSPhotoFile } from "../../ProjectSharePhotoTree";

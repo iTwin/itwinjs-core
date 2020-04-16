@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { BeDuration, GuidString, Logger, OpenMode } from "@bentley/bentleyjs-core";
-import { ChangeSet, ChangeSetQuery, IModelHubClient } from "@bentley/imodeljs-clients";
+import { ChangeSet, ChangeSetQuery, IModelHubClient } from "@bentley/imodelhub-client";
 import { IModelVersion } from "@bentley/imodeljs-common";
 import { AuthorizedFrontendRequestContext, BriefcaseConnection, IModelApp, IModelConnection, MockRender } from "@bentley/imodeljs-frontend";
 import { TestAuthorizationClient, TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";

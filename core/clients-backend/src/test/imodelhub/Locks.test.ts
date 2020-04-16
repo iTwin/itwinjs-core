@@ -5,14 +5,17 @@
 import * as chai from "chai";
 import { GuidString, Guid, IModelHubStatus, Id64, Id64String } from "@bentley/bentleyjs-core";
 import {
-  AccessToken, IModelClient, Lock, Briefcase, ChangeSet, LockType, LockLevel, LockQuery,
-  AggregateResponseError, ConflictingLocksError,
-  IModelHubClientError, AuthorizedClientRequestContext,
+  AccessToken, AuthorizedClientRequestContext,
 } from "@bentley/imodeljs-clients";
 import { TestUsers } from "@bentley/oidc-signin-tool";
 import { TestConfig } from "../TestConfig";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import * as utils from "./TestUtils";
+import {
+  IModelClient, Lock, Briefcase, ChangeSet, LockType, LockLevel, LockQuery,
+  AggregateResponseError, ConflictingLocksError,
+  IModelHubClientError,
+} from "@bentley/imodelhub-client";
 
 chai.should();
 

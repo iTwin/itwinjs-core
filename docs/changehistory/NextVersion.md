@@ -222,19 +222,19 @@ With a new major version of the iModel.js library come breaking API changes. The
 
 OIDC functionality in the browser has been overhauled to better support iModel.js Extensions that might require the user to authenticate with other services.
 
-- [IOidcFrontendClient](/core/clients/src/oidc/OidcFrontendClient.ts) has been supplanted by [IFrontendAuthorizationClient](/core/clients/src/oidc/IFrontendAuthorizationClient.ts)
-  - All existing classes which previously implemented [IOidcFrontendClient](/core/clients/src/oidc/OidcFrontendClient.ts), now implement [IFrontendAuthorizationClient](/core/clients/src/oidc/IFrontendAuthorizationClient.ts)
-    - [OidcDesktopClient](/core/backend/src/oidc/OidcDesktopClient.ts)
-    - [OidcDesktopClientRenderer](/core/frontend/src/oidc/OidcDesktopClientRenderer.ts)
-    - [OidcIOSClient](/core/frontend/src/oidc/OidcIOSClient.ts)
-- [OidcBrowserClient](/core/frontend/src/oidc/OidcBrowserClient.ts) has been marked as `@deprecated` and split into the following classes:
-  - [BrowserAuthorizationClient](/core/clients/src/oidc/browser/BrowserAuthorizationClient.ts)
-    - implements [IFrontendAuthorizationClient](/core/clients/src/oidc/IFrontendAuthorizationClient.ts)
-    - used to `signIn()` and `signOut()` the user, in a similar manner to [OidcBrowserClient](/core/frontend/src/oidc/OidcBrowserClient.ts)
-  - [BrowserAuthorizationCallbackHandler](/core/clients/src/oidc/browser/BrowserAuthorizationCallbackHandler.ts)
-    - handles (via `handleSigninCallback()`) all OIDC callbacks received as a result of `signIn()` / `signOut()` calls made by [BrowserAuthorizationClient](/core/clients/src/oidc/browser/BrowserAuthorizationClient.ts)
+- [IOidcFrontendClient]($clients) has been supplanted by [IFrontendAuthorizationClient]($frontend-authorization-client)
+  - All existing classes which previously implemented [IOidcFrontendClient]($clients), now implement [IFrontendAuthorizationClient]($frontend-authorization-client)
+    - [OidcDesktopClient]($backend)
+    - [OidcDesktopClientRenderer]($frontend)
+    - [OidcIOSClient]($frontend)
+- [OidcBrowserClient]($frontend) has been marked as `@deprecated` and split into the following classes:
+  - [BrowserAuthorizationClient]($frontend-authorization-client)
+    - implements [IFrontendAuthorizationClient]($frontend-authorization-client)
+    - used to `signIn()` and `signOut()` the user, in a similar manner to [OidcBrowserClient]($frontend)
+  - [BrowserAuthorizationCallbackHandler]($frontend-authorization-client)
+    - handles (via `handleSigninCallback()`) all OIDC callbacks received as a result of `signIn()` / `signOut()` calls made by [BrowserAuthorizationClient]($frontend-authorization-client)
 
-Previously, signing a user in through [OidcBrowserClient](/core/frontend/src/oidc/OidcBrowserClient.ts) involved the following process:
+Previously, signing a user in through [OidcBrowserClient]($frontend) involved the following process:
 
 ```ts
 const oidcConfiguration: BrowserAuthorizationClientConfiguration = {
@@ -248,7 +248,7 @@ await browserClient.initialize(new ClientRequestContext());
 await browserClient.signIn();
 ```
 
-The equivalent process for signing in via [BrowserAuthorizationClient](/core/clients/src/oidc/browser/BrowserAuthorizationClient.ts):
+The equivalent process for signing in via [BrowserAuthorizationClient]($frontend-authorization-client):
 
 ```ts
 const oidcConfiguration: BrowserAuthorizationClientConfiguration = {
@@ -262,14 +262,14 @@ const browserClient = new BrowserAuthorizationClient(oidcConfiguration);
 await browserClient.signIn();
 ```
 
-Notably, unlike [OidcBrowserClient](/core/frontend/src/oidc/OidcBrowserClient.ts), [BrowserAuthorizationClient](/core/clients/src/oidc/browser/BrowserAuthorizationClient.ts) does not require a call to `initialize()` before calling `signIn()`. Once the class instance has been constructed, `signIn()` may be called at any point.
-However, because [OidcBrowserClient](/core/frontend/src/oidc/OidcBrowserClient.ts)`.initialize()` was where the OIDC callback was being handled before, [BrowserAuthorizationCallbackHandler](/core/clients/src/oidc/browser/BrowserAuthorizationCallbackHandler.ts) must be used in conjunction with [BrowserAuthorizationClient](/core/clients/src/oidc/browser/BrowserAuthorizationClient.ts) to now complete an OIDC signin.
+Notably, unlike [OidcBrowserClient]($frontend), [BrowserAuthorizationClient]($frontend-authorization-client) does not require a call to `initialize()` before calling `signIn()`. Once the class instance has been constructed, `signIn()` may be called at any point.
+However, because [OidcBrowserClient]($frontend))`.initialize()` was where the OIDC callback was being handled before, [BrowserAuthorizationCallbackHandler]($frontend-authorization-client) must be used in conjunction with [BrowserAuthorizationClient]($frontend-authorization-client) to now complete an OIDC signin.
 
-Aside from the `signIn()` function supported by all [IFrontendAuthorizationClient](/core/clients/src/oidc/IFrontendAuthorizationClient.ts) implementations, there are also three new functions specific to [BrowserAuthorizationClient](/core/clients/src/oidc/browser/BrowserAuthorizationClient.ts) — `signInSilent()`, `signInPopup()`, and `signInRedirect()` (which is an alias of `signIn()`) — allowing more flexibility in how the signin is performed.
+Aside from the `signIn()` function supported by all [IFrontendAuthorizationClient]($frontend-authorization-client) implementations, there are also three new functions specific to [BrowserAuthorizationClient]($frontend-authorization-client) — `signInSilent()`, `signInPopup()`, and `signInRedirect()` (which is an alias of `signIn()`) — allowing more flexibility in how the signin is performed.
 
 For situations where a signin is delayed until after app startup, `signInPopup()` is encouraged as a way to direct the user towards a login page without redirecting them away from their current UI state.
 
-Signin callbacks generated by any of the `signIn` methods can be handled easily using a single call to [BrowserAuthorizationCallbackHandler](/core/clients/src/oidc/browser/BrowserAuthorizationCallbackHandler.ts)`.handleSigninCallback()`.
+Signin callbacks generated by any of the `signIn` methods can be handled easily using a single call to [BrowserAuthorizationCallbackHandler]($frontend-authorization-client)`.handleSigninCallback()`.
 
 ### IModel, IModelConnection, IModelDb
 
@@ -386,6 +386,10 @@ The signatures of several `ViewState` methods have been modified to accept a `Vi
 - [ViewState.lookAtVolume]($frontend)
 - [ViewState.lookAtViewAlignedVolume]($frontend)
 
+### iModelJs Config
+
+[Config]($bentley) has been relocated to `bentleyjs-core` from `imodeljs-clients`
+
 ### PropertyRecord classes moved to `ui-abstract` package
 
 This includes the classes in the following files:
@@ -398,7 +402,11 @@ This includes the classes in the following files:
 
 The deprecated ToolSettingsValue.ts has been removed.
 
-### API Changes in `ui-components` Package
+### API changes in `imodeljs-backend` package
+
+- `UlasUtilities` has been renamed to `UsageLoggingUtilities` to better align with name of the newly created `usage-logging-client` package
+
+### API changes in `ui-components` package
 
 #### Hard-Deprecation
 

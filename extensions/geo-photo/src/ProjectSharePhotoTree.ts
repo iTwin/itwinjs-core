@@ -2,12 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { I18N } from "@bentley/imodeljs-i18n";
-import { Logger, GuidString, BeDuration, StopWatch } from "@bentley/bentleyjs-core";
-import { ProjectShareClient, ProjectShareFolder, ProjectShareFile, ProjectShareFileQuery, ProjectShareFolderQuery, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { BeDuration, GuidString, Logger, StopWatch } from "@bentley/bentleyjs-core";
+import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
 import { Cartographic } from "@bentley/imodeljs-common";
-import { IModelConnection, AuthorizedFrontendRequestContext } from "@bentley/imodeljs-frontend";
-import { loggerCategory, GeoPhotoInfo, GPLoadTracker, PhotoTreeHandler, PhotoFolder, PhotoFile, PhotoTree, FolderEntry, BasePhotoTreeHandler } from "./PhotoTree";
+import { AuthorizedFrontendRequestContext, IModelConnection } from "@bentley/imodeljs-frontend";
+import { I18N } from "@bentley/imodeljs-i18n";
+import { ProjectShareClient, ProjectShareFile, ProjectShareFileQuery, ProjectShareFolder, ProjectShareFolderQuery } from "@bentley/projectshare-client";
+import { BasePhotoTreeHandler, FolderEntry, GeoPhotoInfo, GPLoadTracker, loggerCategory, PhotoFile, PhotoFolder, PhotoTree, PhotoTreeHandler } from "./PhotoTree";
 
 // ------------------------ Project Share TreeHandler implementation ---------------------
 

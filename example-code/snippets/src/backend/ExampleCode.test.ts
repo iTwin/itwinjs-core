@@ -5,10 +5,11 @@
 import { ClientRequestContext, Id64, Id64String, Logger } from "@bentley/bentleyjs-core";
 import { Range3d } from "@bentley/geometry-core";
 import { BisCoreSchema, ClassRegistry, ConcurrencyControl, Element, ElementAspect, PhysicalModel, StandaloneDb } from "@bentley/imodeljs-backend";
-import { AccessToken, AuthorizedClientRequestContext, IModelHubError } from "@bentley/imodeljs-clients";
+import { AccessToken, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
 import { CodeScopeSpec, CodeSpec, IModel } from "@bentley/imodeljs-common";
 import { assert } from "chai";
 import { IModelTestUtils } from "./IModelTestUtils";
+import { IModelHubError } from "@bentley/imodelhub-client";
 
 /** Example code organized as tests to make sure that it builds and runs successfully. */
 describe("Example Code", () => {

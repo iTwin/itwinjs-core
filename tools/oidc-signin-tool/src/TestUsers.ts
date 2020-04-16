@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { AccessToken, IAuthorizationClient, Config } from "@bentley/imodeljs-clients";
-import { BentleyError, AuthStatus } from "@bentley/bentleyjs-core";
+import { AuthStatus, BentleyError, Config } from "@bentley/bentleyjs-core";
+import { AccessToken, IAuthorizationClient } from "@bentley/imodeljs-clients";
 
 // Keep the dependencies of this file to only ones that can be used from both the frontend and backend.  This allows the same class for
 // test users to be used in either case.

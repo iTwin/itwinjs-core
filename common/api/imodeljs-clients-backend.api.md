@@ -43,7 +43,7 @@ export class BufferedStream extends Transform {
 
 // @public
 export enum ClientsBackendLoggerCategory {
-    IModelHub = "imodeljs-clients.imodelhub",
+    IModelHub = "imodelhub-client.iModelHub",
     OidcAgentClient = "imodeljs-clients-backend.OidcAgentClient",
     OidcDesktopClient = "imodeljs-clients.OidcDesktopClient",
     OidcDeviceClient = "imodeljs-clients-backend.OidcDeviceClient"

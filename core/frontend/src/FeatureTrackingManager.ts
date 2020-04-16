@@ -5,9 +5,9 @@
 /** @packageDocumentation
  * @module Features
  */
-import { UsageType } from "@bentley/imodeljs-clients";
-import { AuthorizedFrontendRequestContext } from "./FrontendRequestContext";
+import { UsageType } from "@bentley/usage-logging-client";
 import { FeatureLogBatchClient } from "./FeatureLogBatchClient";
+import { AuthorizedFrontendRequestContext } from "./FrontendRequestContext";
 import { IModelConnection } from "./IModelConnection";
 
 /** Class that offers a default implementation of Feature Tracking, using a batch client to minimize traffic.

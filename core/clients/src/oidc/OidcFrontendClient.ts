@@ -7,9 +7,9 @@
  * @module Authentication
  */
 
-import { IDisposable, BeEvent, ClientRequestContext } from "@bentley/bentleyjs-core";
-import { AccessToken } from "../Token";
+import { BeEvent, ClientRequestContext, IDisposable } from "@bentley/bentleyjs-core";
 import { IAuthorizationClient } from "../AuthorizationClient";
+import { AccessToken } from "../Token";
 
 /**
  * Interface to implement a typical frontend client

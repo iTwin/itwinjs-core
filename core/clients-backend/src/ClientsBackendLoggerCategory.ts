@@ -15,7 +15,7 @@ export enum ClientsBackendLoggerCategory {
   /** The logger category used for interactions with iModelHub.
    * @note Should match ClientsBackendLoggerCategory.IModelHub from @bentley/imodeljs-clients.
    */
-  IModelHub = "imodeljs-clients.imodelhub",
+  IModelHub = "imodelhub-client.iModelHub",
 
   /** The logger category used by OidcDeviceClient */
   OidcDeviceClient = "imodeljs-clients-backend.OidcDeviceClient",

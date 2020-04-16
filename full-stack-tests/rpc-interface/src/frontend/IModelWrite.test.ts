@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { OpenMode, Logger } from "@bentley/bentleyjs-core";
 import { Range3d } from "@bentley/geometry-core";
-import { AccessToken, Briefcase as HubBriefcase, BriefcaseQuery } from "@bentley/imodeljs-clients";
+import { AccessToken } from "@bentley/imodeljs-clients";
+import { Briefcase as HubBriefcase, BriefcaseQuery } from "@bentley/imodelhub-client";
 import { BriefcaseConnection, IModelApp, IModelConnection, AuthorizedFrontendRequestContext } from "@bentley/imodeljs-frontend";
 import { assert, expect } from "chai";
 import { AuthorizationClient } from "./setup/AuthorizationClient";

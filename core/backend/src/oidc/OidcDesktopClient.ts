@@ -9,7 +9,8 @@
  */
 
 import { BeEvent, BentleyError, AuthStatus, Logger, assert, ClientRequestContext } from "@bentley/bentleyjs-core";
-import { AccessToken, UserInfo, ImsOidcClient, request, RequestOptions, IFrontendAuthorizationClient } from "@bentley/imodeljs-clients";
+import { AccessToken, UserInfo, request, RequestOptions, ImsOidcClient } from "@bentley/imodeljs-clients";
+import { IFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { OidcDesktopClientConfiguration, defaultOidcDesktopClientExpiryBuffer } from "@bentley/imodeljs-common";
 import {
   GRANT_TYPE_AUTHORIZATION_CODE, GRANT_TYPE_REFRESH_TOKEN,

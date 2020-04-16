@@ -3,15 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
-import { AccessToken, UserInfo, ConnectClient, Project, Asset, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
-import { ContextManagerClient, IModelAuthorizationClient, IModelCloudEnvironment } from "@bentley/imodeljs-clients/lib/IModelCloudEnvironment";
+import { ContextManagerClient, IModelAuthorizationClient, IModelCloudEnvironment } from "@bentley/imodelhub-client";
+import { AccessToken, AuthorizedClientRequestContext, UserInfo } from "@bentley/imodeljs-clients";
 import { TestUtility } from "@bentley/oidc-signin-tool";
 import { getImodelHubClient } from "./TestUtils";
+import { ContextRegistryClient, Project, Asset } from "@bentley/context-registry-client";
 
 /** An implementation of IModelProjectAbstraction backed by a iModelHub/Connect project */
 class TestConnectClient implements ContextManagerClient {
   public async queryProjectByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<Project> {
-    const client = new ConnectClient();
+    const client = new ContextRegistryClient();
     return client.getProject(requestContext, {
       $select: "*",
       $filter: `Name+eq+'${name}'`,
@@ -19,7 +20,7 @@ class TestConnectClient implements ContextManagerClient {
   }
 
   public async queryAssetByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<Asset> {
-    const client = new ConnectClient();
+    const client = new ContextRegistryClient();
     return client.getAsset(requestContext, {
       $select: "*",
       $filter: `Name+eq+'${name}'`,

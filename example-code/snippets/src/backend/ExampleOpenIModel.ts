@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { EnvMacroSubst, OpenMode, ClientRequestContext } from "@bentley/bentleyjs-core";
+import { EnvMacroSubst, OpenMode, ClientRequestContext, Config } from "@bentley/bentleyjs-core";
 import { BriefcaseDb, ConcurrencyControl, OpenParams } from "@bentley/imodeljs-backend";
-import { AccessToken, AuthorizedClientRequestContext, Config } from "@bentley/imodeljs-clients";
+import { AccessToken, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
 import { IModelError, IModelStatus, IModelVersion } from "@bentley/imodeljs-common";
 import { TestUserCredentials, TestUtility } from "@bentley/oidc-signin-tool";
 

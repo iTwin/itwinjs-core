@@ -3,14 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { Config, ExtensionStatus, Guid, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { ContextRegistryClient } from "@bentley/context-registry-client";
+import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { getAccessTokenFromBackend, TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
 import * as chai from "chai";
-const assert = chai.assert;
-
-import { Config, ConnectClient, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
-import { LogLevel, Logger, Guid, ExtensionStatus } from "@bentley/bentleyjs-core";
-import { TestUsers, getAccessTokenFromBackend } from "@bentley/oidc-signin-tool/lib/frontend";
-import { ExtensionClient } from "../ExtensionClient";
 import { ExtensionProps } from "../ExtensionProps";
+import { ExtensionClient } from "../ExtensionClient";
+
+const assert = chai.assert;
 
 describe("ExtensionClient (#integration)", () => {
   let projectId: string;
@@ -35,7 +36,7 @@ describe("ExtensionClient (#integration)", () => {
 
     projectName = Config.App.getString("imjs_test_project_name");
 
-    const connectClient = new ConnectClient();
+    const connectClient = new ContextRegistryClient();
     const project = await connectClient.getProject(requestContext, {
       $select: "*",
       $filter: `Name+eq+'${projectName}'`,

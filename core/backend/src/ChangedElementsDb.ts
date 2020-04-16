@@ -7,12 +7,13 @@
  */
 
 import { DbResult, GuidString, IDisposable, OpenMode } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext, ChangeSet, ChangesType } from "@bentley/imodeljs-clients";
+import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
 import { ChangeData, ChangedElements, ChangedModels, IModelError, IModelStatus } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import * as path from "path";
 import { IModelHost } from "./IModelHost";
 import { BriefcaseDb, BriefcaseManager, ChangeSetToken, ChangeSummaryExtractContext, ChangeSummaryManager, ECDbOpenMode, IModelDb } from "./imodeljs-backend";
+import { ChangeSet, ChangesType } from "@bentley/imodelhub-client";
 
 /** An ChangedElementsDb file
  * @internal

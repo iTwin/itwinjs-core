@@ -8,8 +8,7 @@
 import * as path from "path";
 import * as rimraf from "rimraf";
 // common includes
-import { Guid } from "@bentley/bentleyjs-core";
-import { Config } from "@bentley/imodeljs-clients";
+import { Guid, Config } from "@bentley/bentleyjs-core";
 import { PresentationRpcInterface } from "@bentley/presentation-common";
 // backend includes
 import { IModelHost, KnownLocations } from "@bentley/imodeljs-backend";

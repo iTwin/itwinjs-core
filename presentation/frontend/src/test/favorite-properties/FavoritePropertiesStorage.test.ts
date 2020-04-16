@@ -12,7 +12,7 @@ import { ResolvablePromise } from "@bentley/presentation-common/lib/test/_helper
 import { BeEvent } from "@bentley/bentleyjs-core";
 import { InternetConnectivityStatus } from "@bentley/imodeljs-common";
 import { AuthorizedFrontendRequestContext, IModelApp } from "@bentley/imodeljs-frontend";
-import { SettingsStatus, SettingsAdmin } from "@bentley/imodeljs-clients";
+import { SettingsStatus, SettingsAdmin } from "@bentley/product-settings-client";
 import { IModelAppFavoritePropertiesStorage, OfflineCachingFavoritePropertiesStorage } from "../../presentation-frontend/favorite-properties/FavoritePropertiesStorage";
 import { PropertyFullName, FavoritePropertiesOrderInfo } from "../../presentation-frontend/favorite-properties/FavoritePropertiesManager";
 import { IConnectivityInformationProvider } from "../../presentation-frontend/ConnectivityInformationProvider";

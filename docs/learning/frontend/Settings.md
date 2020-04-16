@@ -6,7 +6,7 @@ In theory, settings that are iModel-specific could be stored in the iModel itsel
 
 ## The SettingsAdmin class
 
-iModel.js provides the [SettingsAdmin]($clients) object, accessed through [IModelApp.settings]($frontend), for managing settings. The default implementation of the SettingsAdmin interface stores all settings to a Bentley CONNECT cloud service, but other implementations are possible. The default implementation treats Settings like sensitive data, which can be accessed only by logged-in users with the appropriate permissions.
+iModel.js provides the [SettingsAdmin]($product-settings-client) object, accessed through [IModelApp.settings]($frontend), for managing settings. The default implementation of the SettingsAdmin interface stores all settings to a Bentley CONNECT cloud service, but other implementations are possible. The default implementation treats Settings like sensitive data, which can be accessed only by logged-in users with the appropriate permissions.
 
 The methods on SettingsAdmin allow saving and retrieving settings that are either user-specific or for all users. Saving a setting that is not user-specific requires administrator privileges, and is stored as specific to the organization of the user. Any user that belongs to that organization can retrieve the setting.
 
@@ -33,4 +33,4 @@ Shared settings are similar to Non-user-specific settings, except that they can 
 
 Settings are identified by a namespace, that is specified by the program but should be chosen to be unique, and a name that need only be unique within the namespace.
 
-All settings are passed as objects to the SettingsAdmin methods, and persisted as JSON strings representing that object. The return value from the SettingsAdmin methods is a [SettingsResult]($clients), that contains a status property, an error message which might be populated with explanatory information if the status indicates an error, and the retrieved setting object for the settings retrieval methods.
+All settings are passed as objects to the SettingsAdmin methods, and persisted as JSON strings representing that object. The return value from the SettingsAdmin methods is a [SettingsResult]($product-settings-client), that contains a status property, an error message which might be populated with explanatory information if the status indicates an error, and the retrieved setting object for the settings retrieval methods.

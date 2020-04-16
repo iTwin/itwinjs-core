@@ -3,13 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import {
-  IModelHubClient, AccessToken, EventSubscription,
-  IModelHubEvent, EventSAS,
-  AuthorizedClientRequestContext, Config,
-} from "@bentley/imodeljs-clients";
+import { AccessToken, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
 import { OidcAgentClient, OidcBackendClientConfiguration } from "@bentley/imodeljs-clients-backend";
-import { GuidString, Guid, Logger, ClientRequestContext } from "@bentley/bentleyjs-core";
+import { GuidString, Guid, Logger, ClientRequestContext, Config } from "@bentley/bentleyjs-core";
+import { IModelHubClient, IModelHubEvent, EventSubscription, EventSAS } from "@bentley/imodelhub-client";
 
 class MockAccessToken extends AccessToken {
   public constructor() { super(); this._samlAssertion = ""; }

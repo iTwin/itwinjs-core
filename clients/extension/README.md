@@ -1,5 +1,12 @@
-# IModel.js Extension Client
+# iModel.js Extension Client
 
 Copyright © Bentley Systems, Incorporated. All rights reserved.
 
-Allows querying, uploading and deleting iModel.js extensions from the Extension Service
+## Description
+
+The __@bentley/extension-client__ package contains client wrappers for querying, uploading and deleting iModel.js Extensions from the Extension Service.
+
+## Documentation
+
+See the [iModel.js](https://www.imodeljs.org) documentation for more information.
+

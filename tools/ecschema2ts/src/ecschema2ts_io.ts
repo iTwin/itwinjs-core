@@ -10,7 +10,7 @@ import { SchemaFileLocater, SchemaJsonFileLocater, FileSchemaKey } from "@bentle
 import { DOMParser } from "xmldom";
 import { ISchemaLocater, SchemaContext } from "@bentley/ecschema-metadata/lib/Context";
 import { ECSchemaXmlContext, IModelHost } from "@bentley/imodeljs-backend";
-import { Config } from "@bentley/imodeljs-clients";
+import { Config } from "@bentley/bentleyjs-core";
 import { ECSchemaToTs } from "./ecschema2ts";
 
 const unitsSchemaKey = new SchemaKey("Units", 1, 0, 0);

@@ -33,6 +33,7 @@
     "@bentley/certa": "2.0.0-dev.70",
     "@bentley/config-loader": "2.0.0-dev.70",
     "@bentley/geometry-core": "2.0.0-dev.70",
+    "@bentley/frontend-authorization-client": "2.0.0-dev.70",
     "@bentley/imodeljs-clients": "2.0.0-dev.70",
     "openid-client": "^3.7.2",
     "puppeteer": "latest"

@@ -7,7 +7,8 @@
  */
 
 import { AuthStatus, BeEvent, BentleyError, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
-import { AccessToken, UserInfo, ImsOidcClient, IFrontendAuthorizationClient } from "@bentley/imodeljs-clients";
+import { AccessToken, UserInfo, ImsOidcClient } from "@bentley/imodeljs-clients";
+import { IFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
 
 const loggerCategory: string = FrontendLoggerCategory.OidcIOSClient;
