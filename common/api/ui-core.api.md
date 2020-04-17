@@ -146,6 +146,18 @@ export enum ButtonType {
     Primary = "primary"
 }
 
+// @internal
+export const calculateBackdropFilterBlur: (proximityScale: number) => number;
+
+// @internal
+export const calculateBoxShadowOpacity: (proximityScale: number) => number;
+
+// @internal
+export const calculateProximityScale: (proximity: number, threshold?: number) => number;
+
+// @internal
+export const calculateToolbarOpacity: (proximityScale: number) => number;
+
 // @public
 export function Centered(props: CommonDivProps): JSX.Element;
 
@@ -785,6 +797,15 @@ export interface FormProps {
 export const getDisplayName: (component: React.ComponentType<any>) => string;
 
 // @internal
+export const getToolbarBackdropFilter: (filterBlur: number) => string;
+
+// @internal
+export const getToolbarBackgroundColor: (opacity: number) => string;
+
+// @internal
+export const getToolbarBoxShadow: (opacity: number) => string;
+
+// @internal
 export function getUserColor(email: string): string;
 
 // @public
@@ -1279,6 +1300,9 @@ export interface PopupProps extends CommonProps {
     target?: HTMLElement | null;
     top: number;
 }
+
+// @internal
+export const PROXIMITY_THRESHOLD_DEFAULT = 100;
 
 // @beta
 export class RadialButton extends React.Component<RadialButtonProps, RadialButtonState> {
@@ -1845,6 +1869,15 @@ export interface ToggleProps extends CommonProps {
     setFocus?: boolean;
     showCheckmark?: boolean;
 }
+
+// @internal
+export const TOOLBAR_BACKDROP_FILTER_BLUR_DEFAULT = 10;
+
+// @internal
+export const TOOLBAR_BOX_SHADOW_OPACITY_DEFAULT = 0.35;
+
+// @internal
+export const TOOLBAR_OPACITY_DEFAULT = 0.5;
 
 // @public
 export class Tree extends React.PureComponent<TreeProps> {

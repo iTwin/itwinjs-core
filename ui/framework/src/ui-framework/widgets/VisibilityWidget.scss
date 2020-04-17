@@ -2,6 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+@import "~@bentley/ui-core/lib/ui-core/select/select";
+
 .uifw-visibility-tree {
   padding: 4px 4px 5px 5px;
   width: 100%;
@@ -16,6 +18,8 @@
     padding: 6px 0;
 
     .uifw-visibility-tree-select {
+      @include uicore-inputs-select;
+
       flex: 1;
       padding: 5px;
       border: 1px solid #ccc;

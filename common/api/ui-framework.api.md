@@ -1767,6 +1767,18 @@ export function FrameworkVersion(props: FrameworkVersionProps): JSX.Element;
 // @alpha (undocumented)
 export type FrameworkVersion = "1" | "2";
 
+// @internal
+export class FrameworkVersionChangedEvent extends UiEvent<FrameworkVersionChangedEventArgs> {
+}
+
+// @internal
+export interface FrameworkVersionChangedEventArgs {
+    // (undocumented)
+    oldVersion: string;
+    // (undocumented)
+    version: string;
+}
+
 // @internal (undocumented)
 export const FrameworkVersionContext: React.Context<FrameworkVersion>;
 
@@ -4981,6 +4993,8 @@ export class UiFramework {
     static isMobile(): boolean;
     // @internal (undocumented)
     static loggerCategory(obj: any): string;
+    // @internal
+    static readonly onFrameworkVersionChangedEvent: FrameworkVersionChangedEvent;
     // @beta
     static readonly onUiVisibilityChanged: UiVisibilityChangedEvent;
     // @beta (undocumented)

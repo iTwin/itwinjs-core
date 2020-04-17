@@ -7,6 +7,7 @@
  */
 
 import * as React from "react";
+import { UiFramework } from "../UiFramework";
 
 /** @internal */
 export function useFrameworkVersion(): FrameworkVersion {
@@ -27,6 +28,17 @@ export interface FrameworkVersionProps {
 
 /** @alpha */
 export function FrameworkVersion(props: FrameworkVersionProps) {
+  const currentVersion = React.useRef("");
+
+  React.useEffect(() => {
+    const version = props.version;
+    if (currentVersion.current !== version) {
+      const oldVersion = currentVersion.current;
+      currentVersion.current = version;
+      UiFramework.onFrameworkVersionChangedEvent.emit({ version, oldVersion });
+    }
+  }, [props.version]);
+
   return (
     <FrameworkVersionContext.Provider
       children={props.children}

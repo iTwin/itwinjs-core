@@ -8,6 +8,7 @@
 
 import { Store } from "redux";
 
+import { Logger } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { MobileRpcConfiguration } from "@bentley/imodeljs-common";
 import { I18N, TranslationOptions } from "@bentley/imodeljs-i18n";
@@ -44,6 +45,19 @@ export interface UiVisibilityEventArgs {
  */
 export class UiVisibilityChangedEvent extends UiEvent<UiVisibilityEventArgs> { }
 
+/** FrameworkVersion Changed Event Args interface.
+ * @internal
+ */
+export interface FrameworkVersionChangedEventArgs {
+  oldVersion: string;
+  version: string;
+}
+
+/** FrameworkVersion Changed Event class.
+ * @internal
+ */
+export class FrameworkVersionChangedEvent extends UiEvent<FrameworkVersionChangedEventArgs> { }
+
 /**
  * Manages the Redux store, I18N service and iModel, Project and Login services for the ui-framework package.
  * @public
@@ -57,11 +71,17 @@ export class UiFramework {
   private static _frameworkStateKeyInStore: string = "frameworkState";  // default name
   private static _backstageManager?: BackstageManager;
   private static _widgetManager?: WidgetManager;
+  private static _version1WidgetOpacity: number = WIDGET_OPACITY_DEFAULT;
 
   /** Get Show Ui event.
    * @beta
    */
   public static readonly onUiVisibilityChanged = new UiVisibilityChangedEvent();
+
+  /** Get FrameworkVersion Changed event.
+   * @internal
+   */
+  public static readonly onFrameworkVersionChangedEvent = new FrameworkVersionChangedEvent();
 
   /**
    * Called by the app to initialize the UiFramework
@@ -99,6 +119,8 @@ export class UiFramework {
     UiFramework._backstageManager = new BackstageManager();
     UiFramework._widgetManager = new WidgetManager();
 
+    UiFramework.onFrameworkVersionChangedEvent.addListener(UiFramework._handleFrameworkVersionChangedEvent);
+
     return readFinishedPromise;
   }
 
@@ -114,6 +136,8 @@ export class UiFramework {
     UiFramework._iModelServices = undefined;
     UiFramework._backstageManager = undefined;
     UiFramework._widgetManager = undefined;
+
+    UiFramework.onFrameworkVersionChangedEvent.removeListener(UiFramework._handleFrameworkVersionChangedEvent);
   }
 
   /** @beta */
@@ -353,5 +377,18 @@ export class UiFramework {
       mobile = MobileRpcConfiguration.isMobileFrontend;
     }
     return mobile;
+  }
+
+  private static _handleFrameworkVersionChangedEvent = (args: FrameworkVersionChangedEventArgs) => {
+    // Log Ui Version used
+    Logger.logInfo(UiFramework.loggerCategory(UiFramework), `Ui Version changed to ${args.version} `);
+
+    // If Ui Version 1, save widget opacity
+    if (args.oldVersion === "1")
+      UiFramework._version1WidgetOpacity = UiFramework.getWidgetOpacity();
+
+    // If Ui Version 1, restore widget opacity; otherwise, set widget opacity to 1.0 to basically turn the feature off.
+    // This fixes use of "backdrop-filter: blur(10px)"" CSS.
+    UiFramework.setWidgetOpacity(args.version === "1" ? UiFramework._version1WidgetOpacity : 1.0);
   }
 }

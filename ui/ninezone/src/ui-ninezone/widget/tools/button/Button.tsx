@@ -8,7 +8,12 @@
 
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps } from "@bentley/ui-core";
+import {
+  CommonProps,
+  calculateToolbarOpacity, calculateBoxShadowOpacity, calculateBackdropFilterBlur,
+  getToolbarBackgroundColor, getToolbarBoxShadow, getToolbarBackdropFilter,
+  TOOLBAR_OPACITY_DEFAULT, TOOLBAR_BOX_SHADOW_OPACITY_DEFAULT, TOOLBAR_BACKDROP_FILTER_BLUR_DEFAULT,
+} from "@bentley/ui-core";
 import "./Button.scss";
 
 /** Properties of [[ToolbarButton]] component.
@@ -21,8 +26,8 @@ export interface ToolbarButtonProps extends CommonProps {
   onClick?: () => void;
   /** Indicates whether to use a small App button */
   small?: boolean;
-  /** Opacity for the background color */
-  backgroundOpacity?: number;
+  /** Mouse proximity to button */
+  mouseProximity?: number;
 }
 
 /** Basic toolbar button. Used in [[Toolbar]] component.
@@ -36,10 +41,22 @@ export class ToolbarButton extends React.PureComponent<ToolbarButtonProps> {
     const buttonStyle: React.CSSProperties = {
       ...this.props.style,
     };
-    const useBackgroundOpacity = this.props.backgroundOpacity !== undefined;
 
-    if (useBackgroundOpacity)
-      buttonStyle.backgroundColor = `rgba(var(--buic-background-3-rgb), ${this.props.backgroundOpacity})`;
+    if (this.props.small) {
+      let backgroundOpacity = TOOLBAR_OPACITY_DEFAULT;
+      let boxShadowOpacity = TOOLBAR_BOX_SHADOW_OPACITY_DEFAULT;
+      let filterBlur = TOOLBAR_BACKDROP_FILTER_BLUR_DEFAULT;
+
+      if (this.props.mouseProximity !== undefined) {
+        backgroundOpacity = calculateToolbarOpacity(this.props.mouseProximity);
+        boxShadowOpacity = calculateBoxShadowOpacity(this.props.mouseProximity);
+        filterBlur = calculateBackdropFilterBlur(this.props.mouseProximity);
+      }
+
+      buttonStyle.backgroundColor = getToolbarBackgroundColor(backgroundOpacity);
+      buttonStyle.boxShadow = getToolbarBoxShadow(boxShadowOpacity);
+      buttonStyle.backdropFilter = getToolbarBackdropFilter(filterBlur);
+    }
 
     return (
       <button

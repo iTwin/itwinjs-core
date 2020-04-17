@@ -9,7 +9,7 @@
 import * as React from "react";
 
 import { IconSpecUtilities } from "@bentley/ui-abstract";
-import { Icon, CommonProps, useProximityToMouse } from "@bentley/ui-core";
+import { Icon, CommonProps, useProximityToMouse, calculateProximityScale } from "@bentley/ui-core";
 import { ToolsArea, AppButton } from "@bentley/ui-ninezone";
 
 import { BackstageManager } from "../backstage/BackstageManager";
@@ -36,6 +36,7 @@ export function BackstageAppButton(props: BackstageAppButtonProps) {
   const [icon, setIcon] = React.useState(props.icon ? props.icon : IconSpecUtilities.createSvgIconSpec(widgetIconSvg));
   const isInitialMount = React.useRef(true);
   const useSmallAppButton = "1" !== useFrameworkVersion();
+  const divClassName = useSmallAppButton ? "uifw-app-button-small" : undefined;
 
   React.useEffect(() => {
     if (isInitialMount.current)
@@ -47,19 +48,17 @@ export function BackstageAppButton(props: BackstageAppButtonProps) {
 
   const ref = React.useRef<HTMLDivElement>(null);
   const proximity = useProximityToMouse(ref);
-  let appButtonOpacity: number | undefined;
+  let proximityScale: number | undefined;
 
   if ("1" !== useFrameworkVersion() && UiShowHideManager.useProximityOpacity && !UiFramework.isMobile()) {
-    const threshold = 100;
-    const scale = ((proximity < threshold) ? threshold - proximity : 0) / threshold;
-    appButtonOpacity = (0.60 * scale) + 0.40;
+    proximityScale = calculateProximityScale(proximity);
   }
 
   return (
-    <div ref={ref}>
+    <div ref={ref} className={divClassName}>
       <AppButton
         small={useSmallAppButton}
-        backgroundOpacity={appButtonOpacity}
+        mouseProximity={proximityScale}
         onClick={backstageToggleCommand.execute}
         icon={
           <Icon iconSpec={icon} />

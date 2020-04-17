@@ -642,6 +642,7 @@ async function main() {
   Logger.initializeToConsole();
   Logger.setLevelDefault(LogLevel.Warning);
   Logger.setLevel("ui-test-app", LogLevel.Info);
+  Logger.setLevel("ui-framework.UiFramework", LogLevel.Info);
 
   // Logger.setLevel("ui-framework.Toolbar", LogLevel.Info);  // used to show minimal output calculating toolbar overflow
   // Logger.setLevel("ui-framework.Toolbar", LogLevel.Trace);  // used to show detailed output calculating toolbar overflow

@@ -8,7 +8,12 @@
 
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps, useProximityToMouse } from "@bentley/ui-core";
+import {
+  CommonProps, useProximityToMouse,
+  calculateBoxShadowOpacity, calculateProximityScale, calculateToolbarOpacity, calculateBackdropFilterBlur,
+  getToolbarBackgroundColor, getToolbarBoxShadow, getToolbarBackdropFilter,
+  TOOLBAR_OPACITY_DEFAULT, TOOLBAR_BOX_SHADOW_OPACITY_DEFAULT, TOOLBAR_BACKDROP_FILTER_BLUR_DEFAULT,
+} from "@bentley/ui-core";
 
 import { OrthogonalDirectionHelpers, OrthogonalDirection } from "./utilities/Direction";
 import { useToolbarWithOverflowDirectionContext } from "./Toolbar";
@@ -36,15 +41,21 @@ export function ToolbarItems(props: ToolbarItemsProps) {
   const ref = React.useRef<HTMLDivElement>(null);
   const proximity = useProximityToMouse(ref);
   const { useProximityOpacity, openPopupCount, overflowDisplayActive } = useToolbarWithOverflowDirectionContext();
-  let toolbarOpacity = 1.00;
+  let toolbarOpacity = TOOLBAR_OPACITY_DEFAULT;
+  let boxShadowOpacity = TOOLBAR_BOX_SHADOW_OPACITY_DEFAULT;
+  let filterBlur = TOOLBAR_BACKDROP_FILTER_BLUR_DEFAULT;
 
   if (useProximityOpacity && openPopupCount < 1 && !overflowDisplayActive) {
-    const threshold = 100;
-    const scale = ((proximity < threshold) ? threshold - proximity : 0) / threshold;
-    toolbarOpacity = (0.60 * scale) + 0.40;
+    const proximityScale = calculateProximityScale(proximity);
+    toolbarOpacity = calculateToolbarOpacity(proximityScale);
+    boxShadowOpacity = calculateBoxShadowOpacity(proximityScale);
+    filterBlur = calculateBackdropFilterBlur(proximityScale);
   }
+
   const divStyle: React.CSSProperties = {
-    backgroundColor: `rgba(var(--buic-background-3-rgb), ${toolbarOpacity})`,
+    backgroundColor: getToolbarBackgroundColor(toolbarOpacity),
+    boxShadow: getToolbarBoxShadow(boxShadowOpacity),
+    backdropFilter: getToolbarBackdropFilter(filterBlur),
     ...props.style,
   };
 

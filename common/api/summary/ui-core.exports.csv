@@ -16,6 +16,10 @@ public;Button
 public;ButtonProps 
 public;ButtonSize
 public;ButtonType
+internal;calculateBackdropFilterBlur: (proximityScale: number) => number
+internal;calculateBoxShadowOpacity: (proximityScale: number) => number
+internal;calculateProximityScale: (proximity: number, threshold?: number) => number
+internal;calculateToolbarOpacity: (proximityScale: number) => number
 public;Centered(props: CommonDivProps): JSX.Element
 public;Checkbox 
 public;CheckBoxInfo
@@ -79,6 +83,9 @@ beta;FormContext: React.Context
 beta;FormContextState 
 beta;FormProps
 internal;getDisplayName: (component: React.ComponentType
+internal;getToolbarBackdropFilter: (filterBlur: number) => string
+internal;getToolbarBackgroundColor: (opacity: number) => string
+internal;getToolbarBoxShadow: (opacity: number) => string
 internal;getUserColor(email: string): string
 public;GlobalContextMenu 
 public;GlobalContextMenuProps 
@@ -147,6 +154,7 @@ internal;Point
 beta;PointProps
 beta;Popup 
 beta;PopupProps 
+internal;PROXIMITY_THRESHOLD_DEFAULT = 100
 beta;RadialButton 
 beta;RadialButtonProps 
 beta;RadialMenu 
@@ -205,6 +213,9 @@ public;Title2(props: TextProps): JSX.Element
 public;Toggle 
 public;ToggleButtonType
 public;ToggleProps 
+internal;TOOLBAR_BACKDROP_FILTER_BLUR_DEFAULT = 10
+internal;TOOLBAR_BOX_SHADOW_OPACITY_DEFAULT = 0.35
+internal;TOOLBAR_OPACITY_DEFAULT = 0.5
 public;Tree 
 public;TreeBranch 
 public;TreeBranchProps 

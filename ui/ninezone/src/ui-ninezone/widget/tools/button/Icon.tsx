@@ -19,8 +19,8 @@ export interface ToolbarIconProps extends ToolbarButtonProps {
   icon?: React.ReactNode;
   /** Indicates whether to use a small App button */
   small?: boolean;
-  /** Opacity for the background color */
-  backgroundOpacity?: number;
+  /** Mouse proximity to button */
+  mouseProximity?: number;
 }
 
 /** Toolbar button which displays icon. Used in [[Toolbar]] component.

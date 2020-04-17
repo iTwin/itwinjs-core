@@ -4,11 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 @import "variables";
 
-$active-background: rgba(var(--buic-background-1-rgb), 0.25);
-$active-border:     rgba($buic-foreground-primary-rgb, 0.50);
-
-$hover-background:  rgba(var(--buic-background-1-rgb), 0.50);
-
 .components-toolbar-button-item {
   box-sizing: border-box;
   background-origin: border-box;
@@ -37,10 +32,8 @@ $hover-background:  rgba(var(--buic-background-1-rgb), 0.50);
     transition: all 250ms ease;
 
     svg {
-      opacity: 0.85;
-      // -webkit-filter: drop-shadow(0 1px 0 rgba( var(--buic-foreground-body-reverse-rgb), .5 ));
-      // filter: drop-shadow(0 1px 0 rgba( var(--buic-foreground-body-reverse-rgb), .5 ));
-      filter: $no-shadow;
+      -webkit-filter: drop-shadow(0 1px 0 rgba( var(--buic-foreground-body-reverse-rgb), .5 ));
+      filter: drop-shadow(0 0.5px 0 rgba( var(--buic-foreground-body-reverse-rgb), .5 ));
     }
 
     img {
@@ -63,10 +56,8 @@ $hover-background:  rgba(var(--buic-background-1-rgb), 0.50);
 
     > .components-icon {
       color: $pressed-icon-color;
-      filter: $no-shadow;
 
       svg {
-        filter: $no-shadow;
         opacity: 1;
       }
     }
@@ -88,26 +79,12 @@ $hover-background:  rgba(var(--buic-background-1-rgb), 0.50);
 
       > .components-icon {
         color: $icon-color;
-        filter: $no-shadow;
         transition-duration: 150ms;
         transition-timing-function: cubic-bezier(1, 0.1, 1, 0.5);
 
         svg {
-          filter: $no-shadow;
           opacity: 1;
         }
-      }
-
-      &:after {
-        content: '';
-        display: block;
-        position: absolute;
-        background: $buic-foreground-primary;
-        left: 3px;
-        top: ($components-desktop-item-height - $desktop-tool-stripe-height) / 2;
-        border-radius: 2px;
-        width: $desktop-tool-stripe-width;
-        height: $desktop-tool-stripe-height;
       }
     }
   }
