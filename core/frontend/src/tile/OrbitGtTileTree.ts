@@ -390,10 +390,6 @@ export namespace OrbitGtTileTree {
   }
 
   export async function createOrbitGtTileTree(props: OrbitGtBlobProps, iModel: IModelConnection, modelId: Id64String): Promise<TileTree | undefined> {
-    const ecefLocation = iModel.ecefLocation;
-    if (ecefLocation === undefined)
-      return undefined;
-
     const { accountName, containerName, blobFileName, sasToken } = props;
     if (Downloader.INSTANCE == null) Downloader.INSTANCE = new DownloaderXhr();
     if (CRSManager.ENGINE == null) CRSManager.ENGINE = await OnlineEngine.create();
@@ -405,23 +401,30 @@ export namespace OrbitGtTileTree {
     const cacheKilobytes = 128;
     const cachedBlobFile = new PageCachedFile(urlFS, blobFileURL, blobFileSize, cacheKilobytes * 1024 /*pageSize*/, 128/*maxPageCount*/);
     const pointCloudReader = await OPCReader.openFile(cachedBlobFile, blobFileURL, true/*lazyLoading*/);
-    const pointCloudCRS = pointCloudReader.getFileCRS();
+    let pointCloudCRS = pointCloudReader.getFileCRS();
+    if (pointCloudCRS == null)
+      pointCloudCRS = "";
     const dataManager = new OrbitGtDataManager(pointCloudReader, pointCloudCRS, PointDataRaw.TYPE);
     const pointCloudBounds = dataManager.getPointCloudBounds();
-    await CRSManager.ENGINE.prepareForArea(pointCloudCRS, pointCloudBounds);
-    const wgs84CRS = "4978";
-    await CRSManager.ENGINE.prepareForArea(wgs84CRS, new OrbitGtBounds());
     const pointCloudRange = rangeFromOrbitGt(pointCloudBounds);
     const pointCloudCenter = pointCloudRange.localXYZToWorld(.5, .5, .5)!;
-    const pointCloudToEcef = transformFromOrbitGt(CRSManager.createTransform(pointCloudCRS, pointCloudBounds.min, wgs84CRS));
     const addCloudCenter = Transform.createTranslation(pointCloudCenter);
-    const pointCloudCenterToEcef = pointCloudToEcef.multiplyTransformTransform(addCloudCenter);
-    const ecefToDb = ecefLocation.getTransform().inverse()!;
-    const pointCloudCenterToDb = ecefToDb.multiplyTransformTransform(pointCloudCenterToEcef);
+    let pointCloudCenterToDb = addCloudCenter;
+    if (pointCloudCRS.length > 0) {
+      await CRSManager.ENGINE.prepareForArea(pointCloudCRS, pointCloudBounds);
+      const wgs84CRS = "4978";
+      await CRSManager.ENGINE.prepareForArea(wgs84CRS, new OrbitGtBounds());
+      const pointCloudToEcef = transformFromOrbitGt(CRSManager.createTransform(pointCloudCRS, pointCloudBounds.min, wgs84CRS));
+      const pointCloudCenterToEcef = pointCloudToEcef.multiplyTransformTransform(addCloudCenter);
+      const ecefLocation = iModel.ecefLocation;
+      if (ecefLocation === undefined) return undefined;
+      const ecefToDb = ecefLocation.getTransform().inverse()!;
+      pointCloudCenterToDb = ecefToDb.multiplyTransformTransform(pointCloudCenterToEcef);
+    }
     const params = new OrbitGtTileTreeParams(props, iModel, modelId, pointCloudCenterToDb);
-    const centerOffset = Vector3d.create(-pointCloudCenter.x, -pointCloudCenter.y, -pointCloudCenter.z);
 
     // We use a RTC transform to avoid jitter from large cloud coordinates.
+    const centerOffset = Vector3d.create(-pointCloudCenter.x, -pointCloudCenter.y, -pointCloudCenter.z);
     pointCloudRange.low.addInPlace(centerOffset);
     pointCloudRange.high.addInPlace(centerOffset);
     return new OrbitGtTileTree(params, dataManager, pointCloudRange, centerOffset);

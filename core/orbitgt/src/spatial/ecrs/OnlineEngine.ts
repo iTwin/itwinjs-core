@@ -80,6 +80,10 @@ export class OnlineEngine extends CRSEngine {
      * CRSEngine method.
      */
     public transformPoint(point: Coordinate, sourceCRS: string, targetCRS: string): Coordinate {
+        if (Registry.getCRS2(sourceCRS) == null)
+            return point;
+        if (Registry.getCRS2(targetCRS) == null)
+            return point;
         let targetPoint: Coordinate = Coordinate.create();
         Transform.transform(sourceCRS, point, targetCRS, targetPoint);
         return targetPoint;

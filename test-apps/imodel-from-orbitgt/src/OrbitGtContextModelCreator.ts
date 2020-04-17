@@ -62,23 +62,30 @@ export class OrbitGtContextIModelCreator {
       const blobFile: PageCachedFile = new PageCachedFile(urlFS, blobFileURL, blobFileSize, 128 * 1024/*pageSize*/, 128/*maxPageCount*/);
       const fileReader: PointCloudReader = await OPCReader.openFile(blobFile, blobFileURL, true/*lazyLoading*/);
 
-      const fileCrs = fileReader.getFileCRS();
+      let fileCrs = fileReader.getFileCRS();
+      if (fileCrs == null)
+        fileCrs = "";
       const bounds = fileReader.getFileBounds();
-      await CRSManager.ENGINE.prepareForArea(fileCrs, bounds);
-      const wgs84Crs = "4978";
-      await CRSManager.ENGINE.prepareForArea(wgs84Crs, new OrbitGtBounds());
+      let worldRange = Range3d.createXYZXYZ(bounds.getMinX(), bounds.getMinY(), bounds.getMinZ(), bounds.getMaxX(), bounds.getMaxY(), bounds.getMaxZ());
+      let geoLocated = false;
+      if (fileCrs.length > 0) {
+        await CRSManager.ENGINE.prepareForArea(fileCrs, bounds);
+        const wgs84Crs = "4978";
+        await CRSManager.ENGINE.prepareForArea(wgs84Crs, new OrbitGtBounds());
 
-      const ecefBounds = CRSManager.transformBounds(bounds, fileCrs, wgs84Crs);
-      const ecefRange = Range3d.createXYZXYZ(ecefBounds.getMinX(), ecefBounds.getMinY(), ecefBounds.getMinZ(), ecefBounds.getMaxX(), ecefBounds.getMaxY(), ecefBounds.getMaxZ());
-      const ecefCenter = ecefRange.localXYZToWorld(.5, .5, .5)!;
-      const cartoCenter = Cartographic.fromEcef(ecefCenter)!;
-      cartoCenter.height = 0;
-      const ecefLocation = EcefLocation.createFromCartographicOrigin(cartoCenter);
-      this.iModelDb.setEcefLocation(ecefLocation);
-      const ecefToWorld = ecefLocation.getTransform().inverse()!;
-      const worldRange = ecefToWorld.multiplyRange(ecefRange);
+        const ecefBounds = CRSManager.transformBounds(bounds, fileCrs, wgs84Crs);
+        const ecefRange = Range3d.createXYZXYZ(ecefBounds.getMinX(), ecefBounds.getMinY(), ecefBounds.getMinZ(), ecefBounds.getMaxX(), ecefBounds.getMaxY(), ecefBounds.getMaxZ());
+        const ecefCenter = ecefRange.localXYZToWorld(.5, .5, .5)!;
+        const cartoCenter = Cartographic.fromEcef(ecefCenter)!;
+        cartoCenter.height = 0;
+        const ecefLocation = EcefLocation.createFromCartographicOrigin(cartoCenter);
+        this.iModelDb.setEcefLocation(ecefLocation);
+        const ecefToWorld = ecefLocation.getTransform().inverse()!;
+        worldRange = ecefToWorld.multiplyRange(ecefRange);
+        geoLocated = true;
+      }
       const orbitGtBlob = { containerName, blobFileName, accountName, sasToken };
-      this.insertSpatialView("OrbitGT Model View", worldRange, [{ tilesetUrl: "", orbitGtBlob, name: this._name }], true);
+      this.insertSpatialView("OrbitGT Model View", worldRange, [{ tilesetUrl: "", orbitGtBlob, name: this._name }], geoLocated);
       this.iModelDb.updateProjectExtents(worldRange);
       this.iModelDb.saveChanges();
     } catch (error) {
