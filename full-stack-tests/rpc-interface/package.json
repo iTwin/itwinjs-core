@@ -51,7 +51,7 @@
     "dotenv-expand": "^5.1.0",
     "mocha": "^5.2.0",
     "openid-client": "^3.7.2",
-    "puppeteer": "chrome-stable"
+    "puppeteer": "chrome-80"
   },
   "devDependencies": {
     "@bentley/express-server": "2.0.0-dev.66",
@@ -62,7 +62,7 @@
     "@types/dotenv": "^6.1.1",
     "@types/mocha": "^5.2.5",
     "@types/node": "10.14.1",
-    "@types/puppeteer": "1.20.2",
+    "@types/puppeteer": "2.0.1",
     "cpx": "^1.5.0",
     "null-loader": "^0.1.1",
     "rimraf": "^3.0.2",
