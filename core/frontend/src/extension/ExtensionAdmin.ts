@@ -128,7 +128,6 @@ export class ExtensionAdmin {
    * requirements are met, then the onLoad and onExecute methods of the Extension will be called (@see [[Extension]]).
    * If not, no further action is taken and the Extension is not active.
    * @param extension a newly instantiated subclass of Extension.
-   * @returns an array of error messages. The array will be empty if the load is successful, otherwise it is a list of one or more problems.
    */
   public register(extension: Extension) {
     const extensionNameLC = extension.name.toLowerCase();

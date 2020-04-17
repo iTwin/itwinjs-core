@@ -8,6 +8,7 @@ import * as path from "path";
 import * as tar from "tar";
 import * as rimraf from "rimraf";
 import * as sha256 from "fast-sha256";
+import * as semver from "semver";
 import { ExtensionClient } from "@bentley/extension-client";
 import { IModelHost } from "@bentley/imodeljs-backend";
 import { BentleyError, ExtensionStatus } from "@bentley/bentleyjs-core";
@@ -59,6 +60,11 @@ const argv = yargs.strict(true)
     describe: "Extension version",
     string: true,
     demandOption: true,
+    coerce: (ev: any) => {
+      if (semver.valid(ev))
+        return ev;
+      throw new Error("Invalid version format. Only semantic version numbers are allowed, see https://semver.org");
+    },
   })
   .demandCommand(1, 1, "Please choose a command.", "Only one command permitted per one run.")
   .argv;
