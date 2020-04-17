@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/extension-cli",
+      "comment": "add checksum calculation before extension upload",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/extension-cli",
+  "email": "paulius.valiunas@bentley.com"
+}

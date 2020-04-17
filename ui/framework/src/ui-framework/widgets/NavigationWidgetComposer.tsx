@@ -8,17 +8,19 @@
 
 import * as React from "react";
 
+import { CommonProps, useProximityToMouse } from "@bentley/ui-core";
+import { ViewClassFullNameChangedEventArgs, ViewportComponentEvents } from "@bentley/ui-components";
 import { NavigationArea } from "@bentley/ui-ninezone";
+
 import { ScreenViewport } from "@bentley/imodeljs-frontend";
 import { UiShowHideManager } from "../utils/UiShowHideManager";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { NavigationAidControl } from "../navigationaids/NavigationAidControl";
 import { ContentViewManager } from "../content/ContentViewManager";
 import { ContentControlActivatedEventArgs, ContentControl } from "../content/ContentControl";
-import { ViewClassFullNameChangedEventArgs, ViewportComponentEvents } from "@bentley/ui-components";
 import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
 import { UiFramework } from "../UiFramework";
-import { CommonProps } from "@bentley/ui-core";
+import { useFrameworkVersion } from "../hooks/useFrameworkVersion";
 
 function createNavigationAidControl(activeContentControl: ContentControl | undefined, navigationAidId: string, activeViewport: ScreenViewport | undefined): NavigationAidControl | undefined {
   // istanbul ignore else
@@ -85,9 +87,23 @@ export function NavigationAidHost(props: NavigationAidHostProps) {
 
   const navigationAidControl = React.useMemo(() => createNavigationAidControl(activeContentControl, navigationAidId, activeContentViewport), [activeContentControl, navigationAidId, activeContentViewport]);
 
-  const divStyle: React.CSSProperties = { minWidth: props.minWidth ? props.minWidth : "64px", minHeight: props.minHeight ? props.minHeight : "64px" };
+  const ref = React.useRef<HTMLDivElement>(null);
+  const proximity = useProximityToMouse(ref);
+  const divStyle: React.CSSProperties = {
+    minWidth: props.minWidth ? props.minWidth : "64px",
+    minHeight: props.minHeight ? props.minHeight : "64px",
+  };
+
+  if ("1" !== useFrameworkVersion() && UiShowHideManager.useProximityOpacity && !UiFramework.isMobile()) {
+    const threshold = 100;
+    const scale = ((proximity < threshold) ? threshold - proximity : 0) / threshold;
+    const navigationAidOpacity = (0.50 * scale) + 0.50;
+
+    divStyle.opacity = `${navigationAidOpacity}`;
+  }
+
   return (
-    <div style={divStyle}>
+    <div style={divStyle} ref={ref}>
       {navigationAidControl && navigationAidControl.reactNode}
     </div>
   );

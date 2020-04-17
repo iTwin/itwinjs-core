@@ -19,7 +19,7 @@ See http://imodeljs.org for comprehensive documentation on the iModel.js API and
   npm run build
   ```
 
-4. Copy all the output files in the lib/build directory tree to imjs_extensions/geoPhoto directory in the web resources of the host application.
+4. Copy all the output files in the `lib/extension` directory tree to imjs_extensions/geoPhoto directory in the `build`, or `public`, folder of the host application.
 
 5. Start the host application - go to its directory and run:
 
@@ -29,7 +29,7 @@ See http://imodeljs.org for comprehensive documentation on the iModel.js API and
 
 6. Open a web browser (e.g., Chrome or Edge), and browse to localhost:3000.
 
-7. Start the extension using the ExtensionTool - ExtensionTool.run("localhost:3000/geoPhoto");
+7. Start the extension using the ExtensionTool - `ExtensionTool.run("localhost:3000/geoPhoto");` or if the application has a Key-In browser use the `load extension <extensionName>` command.
 
 ## Contributing
 

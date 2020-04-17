@@ -9,9 +9,9 @@
 import * as React from "react";
 import { FormContext, FormContextState, FieldDef } from "./Form";
 import { Input } from "../inputs/Input";
-import { Checkbox } from "../inputs/checkbox/Checkbox";
+import { Checkbox } from "../checkbox/Checkbox";
 import { Textarea } from "../inputs/Textarea";
-import { Select } from "../inputs/Select";
+import { Select } from "../select/Select";
 
 // cSpell:ignore multilinetextbox
 

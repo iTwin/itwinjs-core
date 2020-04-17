@@ -7,6 +7,7 @@ import * as fs from "fs";
 import * as path from "path";
 import * as tar from "tar";
 import * as rimraf from "rimraf";
+import * as sha256 from "fast-sha256";
 import { ExtensionClient } from "@bentley/extension-client";
 import { IModelHost } from "@bentley/imodeljs-backend";
 import { BentleyError, ExtensionStatus } from "@bentley/bentleyjs-core";
@@ -88,7 +89,29 @@ const argv = yargs.strict(true)
       const filesToTar = fs.readdirSync(filePath);
       try {
         await tar.create({ file: tarFileName, cwd: filePath }, filesToTar);
-        await client.createExtension(requestContext, argv.contextId, argv.extensionName, argv.extensionVersion, fs.readFileSync(tarFileName).buffer);
+        const buffer = fs.readFileSync(tarFileName);
+        const checksum = Buffer.from(sha256.hash(buffer)).toString("hex");
+
+        process.stdout.write("Ready to upload");
+        await client.createExtension(requestContext, argv.contextId, argv.extensionName, argv.extensionVersion, checksum, buffer);
+        process.stdout.write("Uploading extension...");
+
+        while (true) {
+          await new Promise((resolve) => {
+            setTimeout(() => {
+              resolve();
+            }, 1000);
+          });
+
+          const status: string = (await client.getExtensionProps(requestContext, argv.contextId, argv.extensionName, argv.extensionVersion))?.status?.status ?? "";
+          if (status === "Valid") {
+            process.stdout.write("Upload successful");
+            break;
+          }
+
+          if (status.startsWith("Failed"))
+            throw new IModelError(ExtensionStatus.UploadError, status);
+        }
       } finally {
         rimraf.sync(tarFileName);
       }
@@ -103,7 +126,7 @@ const argv = yargs.strict(true)
   if (err instanceof BentleyError)
     process.stderr.write("Error: " + err.name + ": " + err.message);
   else
-    process.stderr.write("Unknown error" + err.message);
+    process.stderr.write("Unknown error " + err.message);
 });
 
 function mkdir(dirPath: string) {

@@ -52,13 +52,22 @@ export interface PopupItemProps extends ToolbarButtonItemProps {
  */
 export function PopupItem(props: PopupItemProps) {
   const [isPanelShown, setPanelShown] = React.useState(false);
+  const { expandsTo, direction, overflowExpandsTo, overflowDirection, panelAlignment, onPopupPanelOpenClose } = useToolbarWithOverflowDirectionContext();
+  const processPanelOpenClose = React.useCallback((isOpening: boolean) => {
+    setPanelShown((prev) => {
+      if (prev !== isOpening)
+        onPopupPanelOpenClose(isOpening);
+      return isOpening;
+    });
+  }, [setPanelShown, onPopupPanelOpenClose]);
+
   // handle open and closing overflow panel
   const onButtonClick = React.useCallback(() => {
-    setPanelShown((prev) => !prev);
+    processPanelOpenClose(!isPanelShown);
     // istanbul ignore next
     if (props.onClick)
       props.onClick();
-  }, [props]);
+  }, [props, isPanelShown, processPanelOpenClose]);
   const className = classnames(
     "components-toolbar-button-item",
     "components-toolbar-expandable-button",
@@ -68,15 +77,14 @@ export function PopupItem(props: PopupItemProps) {
   const ref = React.useRef<HTMLButtonElement>(null);
   // istanbul ignore next
   const onOutsideClick = React.useCallback(() => {
-    setPanelShown(false);
-  }, []);
+    processPanelOpenClose(false);
+  }, [processPanelOpenClose]);
   // istanbul ignore next
   const isOutsideEvent = React.useCallback((e: PointerEvent) => {
     // if clicking on button that open panel - don't trigger outside click processing
     return !!ref.current && (e.target instanceof Node) && !ref.current.contains(e.target);
   }, []);
   const panelRef = useOnOutsideClick<HTMLDivElement>(onOutsideClick, isOutsideEvent);
-  const { expandsTo, direction, overflowExpandsTo, overflowDirection, panelAlignment } = useToolbarWithOverflowDirectionContext();
   const { hasOverflow } = useToolItemEntryContext();
   const panelClassName = classnames(
     "components-toolbar-popup-panel-container",
@@ -88,7 +96,7 @@ export function PopupItem(props: PopupItemProps) {
 
   return (
     <ToolbarPopupContext.Provider value={{
-      closePanel: () => setPanelShown(false),
+      closePanel: () => processPanelOpenClose(false),
     }}>
       <button
         ref={ref}

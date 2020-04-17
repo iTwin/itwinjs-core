@@ -21,10 +21,12 @@ import {
   ConfigurableCreateInfo,
   FrontstageManager,
   ItemList,
+  NavigationAidHost,
 } from "../../ui-framework";
 import { ConfigurableUiManager } from "../../ui-framework/configurableui/ConfigurableUiManager";
 import { NavigationAidControl } from "../../ui-framework/navigationaids/NavigationAidControl";
 import { CoreTools } from "../../ui-framework/CoreToolDefinitions";
+import { FrameworkVersion } from "../../ui-framework/hooks/useFrameworkVersion";
 
 describe("NavigationWidget", () => {
 
@@ -175,6 +177,14 @@ describe("NavigationWidget", () => {
     FrontstageManager.setActiveToolId(CoreTools.selectElementCommand.toolId);
 
     ConfigurableUiManager.unregisterControl("Aid1");
+    wrapper.unmount();
+  });
+
+  it("NavigationAidHost should render in 2.0 mode", () => {
+    const wrapper = mount(
+      <FrameworkVersion version="2">
+        <NavigationAidHost />
+      </FrameworkVersion>);
     wrapper.unmount();
   });
 

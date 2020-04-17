@@ -67,6 +67,7 @@ import {
   ToolbarHelper,
   ModelsTreeNodeType,
   MessageManager,
+  ConfigurableUiManager,
 } from "@bentley/ui-framework";
 
 import { AppUi } from "../AppUi";
@@ -389,7 +390,7 @@ class AdditionalTools {
 
   private _tool4 = () => {
     const details = new NotifyMessageDetails(this._tool4Priority, this._tool4Message, this._tool4Detailed, OutputMessageType.Pointer);
-    const wrapper = document.getElementById("uifw-configurableui-wrapper");
+    const wrapper = ConfigurableUiManager.getWrapperElement();
     details.setPointerTypeDetails(wrapper!, { x: CursorInformation.cursorX, y: CursorInformation.cursorY }, this._toolRelativePosition);
     IModelApp.notifications.outputMessage(details);
     document.addEventListener("keyup", this._handleTool4Keypress);
@@ -682,8 +683,8 @@ class AdditionalTools {
 
   // cSpell:enable
   public additionalHorizontalToolbarItems: CommonToolbarItem[] = [
+    ToolbarHelper.createToolbarItemFromItemDef(0, CoreTools.keyinBrowserButtonItemDef),
     ToolbarHelper.createToolbarItemFromItemDef(5, this._openNestedAnimationStage),
-    ToolbarHelper.createToolbarItemFromItemDef(110, CoreTools.keyinBrowserButtonItemDef),
     ToolbarHelper.createToolbarItemFromItemDef(115, AppTools.tool1),
     ToolbarHelper.createToolbarItemFromItemDef(120, AppTools.tool2),
     ToolbarHelper.createToolbarItemFromItemDef(125, this._viewportPopupButtonItemDef),

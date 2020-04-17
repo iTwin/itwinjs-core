@@ -392,11 +392,12 @@ export abstract class Tile {
     if (!this.isDisplayable)
       return TileVisibility.TooCoarse;
 
-    if (this.hasContentRange && this.isContentCulled(args))
-      return TileVisibility.OutsideFrustum;
-
-    if (this.isLeaf)
-      return TileVisibility.Visible;
+    if (this.isLeaf) {
+      if (this.hasContentRange && this.isContentCulled(args))
+        return TileVisibility.OutsideFrustum;
+      else
+        return TileVisibility.Visible;
+    }
 
     const pixelSize = args.getPixelSize(this);
     const maxSize = this.maximumSize * args.tileSizeModifier;

@@ -44,7 +44,10 @@ function mapStateToProps(state: any) {
   if (!frameworkState)
     return undefined;
 
-  return { theme: frameworkState.configurableUiState.theme, widgetOpacity: frameworkState.configurableUiState.widgetOpacity };
+  return {
+    theme: frameworkState.configurableUiState.theme,
+    widgetOpacity: frameworkState.configurableUiState.widgetOpacity,
+  };
 }
 
 /** ThemeManagerComponent handles setting themes.
@@ -60,7 +63,6 @@ class ThemeManagerComponent extends React.Component<ThemeProps> {
       this._setTheme(this.props.theme);
     if (this.props.widgetOpacity !== prevProps.widgetOpacity)
       this._setWidgetOpacity(this.props.widgetOpacity);
-
   }
 
   private _setTheme = (theme: string) => {

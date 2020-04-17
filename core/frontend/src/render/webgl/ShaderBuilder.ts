@@ -124,8 +124,9 @@ export class ShaderVariable {
   public readonly scope: VariableScope;
   public readonly precision: VariablePrecision;
   public readonly isConst: boolean = false; // for global variables only
+  public readonly length: number; // for uniform arrays only
 
-  private constructor(name: string, type: VariableType, scope: VariableScope, precision: VariablePrecision, isConst: boolean, addBinding?: AddVariableBinding, value?: string) {
+  private constructor(name: string, type: VariableType, scope: VariableScope, precision: VariablePrecision, isConst: boolean, addBinding?: AddVariableBinding, value?: string, length: number = 0) {
     this._addBinding = addBinding;
     this.name = name;
     this.value = value;
@@ -133,10 +134,15 @@ export class ShaderVariable {
     this.scope = scope;
     this.precision = precision;
     this.isConst = isConst;
+    this.length = length;
   }
 
   public static create(name: string, type: VariableType, scope: VariableScope, addBinding?: AddVariableBinding, precision: VariablePrecision = VariablePrecision.Default): ShaderVariable {
     return new ShaderVariable(name, type, scope, precision, false, addBinding, undefined);
+  }
+
+  public static createArray(name: string, type: VariableType, length: number, scope: VariableScope, addBinding?: AddVariableBinding, precision: VariablePrecision = VariablePrecision.Default): ShaderVariable {
+    return new ShaderVariable(name, type, scope, precision, false, addBinding, undefined, length);
   }
 
   public static createGlobal(name: string, type: VariableType, value?: string, isConst: boolean = false) {
@@ -168,7 +174,11 @@ export class ShaderVariable {
       parts.push(precisionName);
 
     parts.push(this.typeName);
-    parts.push(this.name);
+
+    if (this.length > 0)
+      parts.push(this.name + "[" + this.length.toFixed(0) + "]");
+    else
+      parts.push(this.name);
 
     if (undefined !== this.value && 0 < this.value.length) {
       parts.push("=");
@@ -223,7 +233,7 @@ export class ShaderVariables {
     if (System.instance.capabilities.isWebGL2)
       this.addGlobal(name, VariableType.Uint, (2 ** value).toFixed(0) + "u", true);
     else
-      this.addGlobal(name, VariableType.Float, value.toFixed(0) + ".0", true);
+      this.addGlobal(name, VariableType.Float, (1.0 / (2 ** (value + 1))).toExponential(7), true);
   }
 
   /** Constructs the lines of glsl code declaring all of the variables. */
@@ -1151,6 +1161,9 @@ export class ProgramBuilder {
 
   public addUniform(name: string, type: VariableType, binding: AddVariableBinding, which: ShaderType = ShaderType.Both) {
     this.addVariable(ShaderVariable.create(name, type, VariableScope.Uniform, binding), which);
+  }
+  public addUniformArray(name: string, type: VariableType, length: number, binding: AddVariableBinding, which: ShaderType = ShaderType.Both) {
+    this.addVariable(ShaderVariable.createArray(name, type, length, VariableScope.Uniform, binding), which);
   }
   public addVarying(name: string, type: VariableType) {
     this.addVariable(ShaderVariable.create(name, type, VariableScope.Varying), ShaderType.Both);

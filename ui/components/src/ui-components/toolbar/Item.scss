@@ -4,15 +4,21 @@
 *--------------------------------------------------------------------------------------------*/
 @import "variables";
 
+$active-background: rgba(var(--buic-background-1-rgb), 0.25);
+$active-border:     rgba(var(--buic-foreground-primary-rgb), 0.50);
+
+$hover-background:  rgba(var(--buic-background-1-rgb), 0.50);
+
 .components-toolbar-button-item {
-  border-width: 0;
+  border-width: 1px;
+  box-sizing: border-box;
   background-origin: border-box;
-  border-color: $buic-background-toolbutton-stroke;
+  border-color: transparent;
   border-style: solid;
   cursor: pointer;
-  transition: background-color 500ms ease;
+  transition: background-color 250ms ease;
   position: relative;
-  background: $buic-background-window linear-gradient(to bottom, $buic-button-gradient1, $buic-button-gradient2);
+  background: transparent;
 
   height: 100%;
   width: 100%;
@@ -29,10 +35,14 @@
     justify-content: center;
     color: $icon-color;
     filter: $icon-shadow;
-    transition: all 500ms ease;
+    transition: all 250ms ease;
 
     svg {
-      filter: $icon-shadow;
+      filter: $no-shadow;
+    }
+
+    svg path {
+      fill: $icon-color;
     }
 
     img {
@@ -42,19 +52,32 @@
   }
 
   &:hover {
+    background: $hover-background;
+    border-color: $hover-background;
+
     > .components-icon {
       color: $hovered-icon-color;
       transition-duration: 150ms;
+
+      svg path {
+        fill: $hovered-icon-color;
+      }
     }
   }
 
   &:active {
+    border-color: $active-border;
+
     > .components-icon {
       color: $pressed-icon-color;
       filter: $no-shadow;
 
       svg {
         filter: $no-shadow;
+      }
+
+      svg path {
+        fill: $pressed-icon-color;
       }
     }
   }
@@ -67,7 +90,9 @@
   }
 
   &.components-active {
-    background: $buic-background-control;
+    background: $active-background;
+    border-width: 1px;
+    border-color: $active-border;
 
     &:not(:active):not(.components-disabled) {
       transition-duration: 0s;
@@ -80,6 +105,10 @@
 
         svg {
           filter: $no-shadow;
+        }
+
+        svg path {
+          fill: $buic-foreground-primary;
         }
       }
 
@@ -100,6 +129,10 @@
   &.components-disabled {
     > .components-icon {
       color: $disabled-icon-color;
+
+      svg path {
+        fill: $disabled-icon-color;
+      }
     }
 
     &:hover {

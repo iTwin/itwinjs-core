@@ -81,6 +81,10 @@ export interface ToolbarOverflowContextProps {
   readonly overflowDirection: OrthogonalDirection;
   readonly panelAlignment: ToolbarPanelAlignment;
   readonly useDragInteraction: boolean;
+  readonly useProximityOpacity: boolean;
+  readonly openPopupCount: number;
+  readonly onPopupPanelOpenClose: (isOpening: boolean) => void;
+  readonly overflowDisplayActive: boolean;
 }
 
 /**
@@ -95,6 +99,10 @@ export const ToolbarWithOverflowDirectionContext = React.createContext<ToolbarOv
   overflowDirection: OrthogonalDirection.Vertical,
   panelAlignment: ToolbarPanelAlignment.Start,
   useDragInteraction: false,
+  useProximityOpacity: true,
+  openPopupCount: 0,
+  onPopupPanelOpenClose: (_isOpening: boolean) => { },
+  overflowDisplayActive: false,
 });
 
 function CustomItem({ item }: { item: CustomToolbarItem }) {
@@ -194,6 +202,8 @@ export interface ToolbarWithOverflowProps extends CommonProps, NoChildrenProps {
   panelAlignment?: ToolbarPanelAlignment;
   /** Use Drag Interaction to open popups with nest action buttons */
   useDragInteraction?: boolean;
+  /** Use mouse proximity to alter the opacity of the toolbar */
+  useProximityOpacity?: boolean;
 }
 
 /** Component that displays tool settings as a bar across the top of the content view.
@@ -202,9 +212,24 @@ export interface ToolbarWithOverflowProps extends CommonProps, NoChildrenProps {
 export function ToolbarWithOverflow(props: ToolbarWithOverflowProps) {
   const expandsTo = props.expandsTo ? props.expandsTo : Direction.Bottom;
   const useDragInteraction = !!props.useDragInteraction;
+  const useProximityOpacity = !!props.useProximityOpacity;
   const panelAlignment = props.panelAlignment ? props.panelAlignment : ToolbarPanelAlignment.Start;
   const useHeight = (expandsTo === Direction.Right || expandsTo === Direction.Left);
   const [isOverflowPanelOpen, setIsOverflowPanelOpen] = React.useState(false);
+  const [popupPanelCount, setPopupPanelCount] = React.useState(0);
+
+  const handlePopupPanelOpenClose = React.useCallback((isOpening: boolean) => {
+    // use setImmediate to avoid warning about setting state in ToolbarWithOverflow from render method of PopupItem/PopupItemWithDrag
+    setImmediate(() => {
+      setPopupPanelCount((prev) => {
+        const nextCount = isOpening ? (prev + 1) : (prev - 1);
+        // tslint:disable-next-line: no-console
+        console.log(`new popup count = ${nextCount}`);
+        return nextCount < 0 ? 0 : nextCount;
+      });
+    });
+  }, []);
+
   const ref = React.useRef<HTMLDivElement>(null);
   const width = React.useRef<number | undefined>(undefined);
   const availableNodes = React.useMemo<React.ReactNode>(() => {
@@ -305,8 +330,9 @@ export function ToolbarWithOverflow(props: ToolbarWithOverflowProps) {
   return (
     <ToolbarWithOverflowDirectionContext.Provider value={
       {
-        expandsTo, direction, overflowExpandsTo, panelAlignment, useDragInteraction,
+        expandsTo, direction, overflowExpandsTo, panelAlignment, useDragInteraction, useProximityOpacity,
         overflowDirection: direction === OrthogonalDirection.Horizontal ? OrthogonalDirection.Vertical : OrthogonalDirection.Horizontal,
+        openPopupCount: popupPanelCount, onPopupPanelOpenClose: handlePopupPanelOpenClose, overflowDisplayActive: overflowPanelItems.length > 0 && isOverflowPanelOpen,
       }
     }>
       {(availableItems.length > 0) &&

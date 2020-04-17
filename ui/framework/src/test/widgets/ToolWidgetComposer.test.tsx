@@ -7,6 +7,7 @@ import { mount, shallow } from "enzyme";
 import TestUtils from "../TestUtils";
 
 import { ToolWidgetComposer, BackstageAppButton } from "../../ui-framework/widgets/ToolWidgetComposer";
+import { FrameworkVersion } from "../../ui-framework/hooks/useFrameworkVersion";
 
 describe("ToolWidgetComposer", () => {
 
@@ -34,11 +35,21 @@ describe("ToolWidgetComposer", () => {
   it("BackstageAppButtonProps should render", () => {
     const wrapper = mount(<BackstageAppButton icon={"icon-home"} />);
     wrapper.setProps({ icon: "icon-bentley" });
+    wrapper.unmount();
   });
 
   it("BackstageAppButtonProps should update with default icon", () => {
     const wrapper = mount(<BackstageAppButton icon={"icon-test"} />);
     wrapper.setProps({ icon: undefined });
+    wrapper.unmount();
+  });
+
+  it("BackstageAppButton should render in 2.0 mode", () => {
+    const wrapper = mount(
+      <FrameworkVersion version="2">
+        <BackstageAppButton icon={"icon-test"} />
+      </FrameworkVersion>);
+    wrapper.unmount();
   });
 
 });

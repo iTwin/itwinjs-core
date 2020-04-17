@@ -39,7 +39,7 @@ import { GraphicBranch } from "../render/GraphicBranch";
 import { RenderSystem } from "../render/RenderSystem";
 import { IModelApp } from "../IModelApp";
 
-const defaultViewFlagOverrides = createDefaultViewFlagOverrides({ clipVolume: false, lighting: false });
+const defaultViewFlagOverrides = createDefaultViewFlagOverrides({ lighting: false });
 
 const scratchTileCenterWorld = new Point3d();
 const scratchTileCenterView = new Point3d();

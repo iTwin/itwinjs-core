@@ -223,6 +223,7 @@ public;UnderlinedButtonProps
 public;useDisposable
 public;useEffectSkipFirst(callback: () => (void | (() => void | undefined)) | void, deps?: any[]): void
 public;useOptionalDisposable
+internal;useProximityToMouse: (elementRef: React.RefObject
 internal;useRefEffect
 internal;useRefs
 internal;useResizeObserver

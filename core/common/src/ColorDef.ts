@@ -11,6 +11,8 @@ import { HSLColor } from "./HSLColor";
 import { HSVColor, HSVConstants } from "./HSVColor";
 import { ColorByName } from "./ColorByName";
 
+// cspell: ignore ttbbggrr bbggrr rrggbb aabbggrr abgr rrbbgg hsla lerp torgb dhue dsaturation dvalue intpart fractpart cyanish
+
 // portions adapted from Three.js Copyright © 2010-2017 three.js authors
 
 const scratchBytes = new Uint8Array(4);
@@ -44,12 +46,8 @@ export type ColorDefProps = number;
 export class ColorDef {
   private readonly _tbgr: number;
 
-  /** Swap the red and blue values of a 32-bit integer representing a color. Transparency and green are unchanged. */
-  public static rgb2bgr(val: number): number { scratchUInt32[0] = val; return scratchBytes[3] << 24 + scratchBytes[0] << 16 + scratchBytes[1] << 8 + scratchBytes[2]; }
-
   private constructor(tbgr: number) {
-    // Force to be a 32-bit unsigned integer
-    scratchUInt32[0] = tbgr;
+    scratchUInt32[0] = tbgr;   // Force to be a 32-bit unsigned integer
     this._tbgr = scratchUInt32[0];
   }
 
@@ -90,7 +88,7 @@ export class ColorDef {
     return this.create(json);
   }
 
-  /** Create a ColorDef fromn Red, Green, Blue, Transparency values. All inputs should be integers between 0-255. */
+  /** Create a ColorDef from Red, Green, Blue, Transparency values. All inputs should be integers between 0-255. */
   public static from(red: number, green: number, blue: number, transparency?: number): ColorDef {
     return this.fromTbgr(this.computeTbgrFromComponents(red, green, blue, transparency));
   }
@@ -128,7 +126,7 @@ export class ColorDef {
    * *"rgb(100%,0%,0%)"*
    * *"hsl(120,50%,50%)"*
    * *"#rrbbgg"*
-   * *"blanchedAlmond"* (see possible values from [[ColorByName]]). Case-insensitve.
+   * *"blanchedAlmond"* (see possible values from [[ColorByName]]). Case-insensitive.
    */
   public static fromString(val: string): ColorDef {
     return this.fromTbgr(this.computeTbgrFromString(val));
@@ -140,7 +138,7 @@ export class ColorDef {
    * *"rgb(100%,0%,0%)"*
    * *"hsl(120,50%,50%)"*
    * *"#rrbbgg"*
-   * *"blanchedAlmond"* (see possible values from [[ColorByName]]). Case-insensitve.
+   * *"blanchedAlmond"* (see possible values from [[ColorByName]]). Case-insensitive.
    */
   public static computeTbgrFromString(val: string): number {
     if (typeof val !== "string")
@@ -260,7 +258,7 @@ export class ColorDef {
   }
 
   /** Return a copy of this ColorDef with the specified alpha component.
-   * @param alpha the new alpha value as an integerbetween 0-255.
+   * @param alpha the new alpha value as an integer between 0-255.
    * @returns A ColorDef with equivalent red, green, and blue components to this one but with the specified alpha.
    */
   public withAlpha(alpha: number): ColorDef {
@@ -609,14 +607,14 @@ export class ColorDef {
     return this._tbgr === other._tbgr;
   }
 
-  /** A black frozen ColorDef. */
+  /** pure black */
   public static readonly black = new ColorDef(ColorByName.black);
-  /** A white frozen ColorDef. */
+  /** pure white */
   public static readonly white = new ColorDef(ColorByName.white);
-  /** A red frozen ColorDef. */
+  /** pure red */
   public static readonly red = new ColorDef(ColorByName.red);
-  /** A green frozen ColorDef. */
+  /** pure green */
   public static readonly green = new ColorDef(ColorByName.green);
-  /** A blue frozen ColorDef. */
+  /** pure blue */
   public static readonly blue = new ColorDef(ColorByName.blue);
 }

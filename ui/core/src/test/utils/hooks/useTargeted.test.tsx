@@ -40,14 +40,6 @@ describe("useTargeted", () => {
     spy.calledOnceWithExactly("pointermove", sinon.match.any as any).should.true;
   });
 
-  it("should remove event listeners", () => {
-    const spy = sandbox.spy(document, "removeEventListener");
-    const sut = mount(<Targeted />);
-    sut.unmount();
-
-    spy.calledOnceWithExactly("pointermove", sinon.match.any as any).should.true;
-  });
-
   it("should add event listeners", () => {
     const spy = sandbox.spy(document, "addEventListener");
     const sut = mount(<Targeted />);

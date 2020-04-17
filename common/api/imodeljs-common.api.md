@@ -1245,7 +1245,6 @@ export class ColorDef {
     static lerp(tbgr1: number, tbgr2: number, weight: number): number;
     get name(): string | undefined;
     static readonly red: ColorDef;
-    static rgb2bgr(val: number): number;
     get tbgr(): number;
     toHexString(): string;
     static toHexString(tbgr: number): string;

@@ -1,7 +1,7 @@
 {
   "rushVersion": "5.14.0",
   "pnpmVersion": "3.5.3",
-  "nodeSupportedVersionRange": ">=10.6.0 <13.0.0",
+  "nodeSupportedVersionRange": ">=10.16.0 <13.0.0",
   "projectFolderMinDepth": 2,
   "ensureConsistentVersions": true,
   "approvedPackagesPolicy": {
@@ -366,12 +366,6 @@
     {
       "packageName": "iot-demo",
       "projectFolder": "extensions/iot-demo",
-      "reviewCategory": "internal",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "test-tools",
-      "projectFolder": "extensions/test-tools",
       "reviewCategory": "internal",
       "shouldPublish": false
     },

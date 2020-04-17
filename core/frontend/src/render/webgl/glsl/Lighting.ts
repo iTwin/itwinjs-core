@@ -34,14 +34,14 @@ float cel(float intensity) {
 
 // mat_weights: x=diffuse y=specular
 const applyLighting = `
-  if (baseColor.a <= 0.0 || !isSurfaceBitSet(kSurfaceBit_ApplyLighting))
+  if (baseColor.a <= 0.0 || !u_surfaceFlags[kSurfaceBitIndex_ApplyLighting])
     return baseColor;
 
   // Extract surface properties
   vec3 rgb = baseColor.rgb;
   vec3 normal = normalize(v_n.xyz);
-  normal *= 2.0 * float(!isSurfaceBitSet(kSurfaceBit_NoFaceFront) &&  gl_FrontFacing) - 1.0;
-  vec3 toEye = mix(vec3(0.0, 0.0, -1.0), normalize(v_eyeSpace.xyz), float(kFrustumType_Perspective == u_frustum.z));
+  normal *= 2.0 * float(!u_surfaceFlags[kSurfaceBitIndex_NoFaceFront] &&  gl_FrontFacing) - 1.0;
+  vec3 toEye = kFrustumType_Perspective == u_frustum.z ? normalize(v_eyeSpace.xyz) : vec3(0.0, 0.0, -1.0);
 
   // Extract material properties
   float diffuseWeight = mat_weights.x;

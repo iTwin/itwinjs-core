@@ -9,6 +9,7 @@
 import { Store } from "redux";
 
 import { AccessToken } from "@bentley/imodeljs-clients";
+import { MobileRpcConfiguration } from "@bentley/imodeljs-common";
 import { I18N, TranslationOptions } from "@bentley/imodeljs-i18n";
 import { IModelConnection, SnapMode, ViewState } from "@bentley/imodeljs-frontend";
 import { UiError, getClassName } from "@bentley/ui-abstract";
@@ -341,16 +342,15 @@ export class UiFramework {
     return UiFramework.frameworkState ? UiFramework.frameworkState.configurableUiState.widgetOpacity : /* istanbul ignore next */ WIDGET_OPACITY_DEFAULT;
   }
 
-  // TODO: Need better way of determining if Mobile environment
   /** @beta */
-  // istanbul ignore next
   public static isMobile() {  // tslint:disable-line: prefer-get
     let mobile = false;
     if ((/Mobi|Android/i.test(navigator.userAgent))) {
       mobile = true;
-    }
-    if (/Mobi|iPad|iPhone|iPod/i.test(navigator.userAgent)) {
+    } else if (/Mobi|iPad|iPhone|iPod/i.test(navigator.userAgent)) {
       mobile = true;
+    } else {
+      mobile = MobileRpcConfiguration.isMobileFrontend;
     }
     return mobile;
   }

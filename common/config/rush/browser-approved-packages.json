@@ -383,6 +383,10 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "fast-sha256",
+      "allowedCategories": [ "tools" ]
+    },
+    {
       "name": "file-loader",
       "allowedCategories": [ "tools" ]
     },
@@ -684,6 +688,10 @@
     },
     {
       "name": "react-router-dom",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "react-select",
       "allowedCategories": [ "frontend" ]
     },
     {

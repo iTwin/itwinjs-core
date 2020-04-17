@@ -38,7 +38,9 @@
     "dragInteractionTitle": "Drag Interaction",
     "dragInteractionDescription": "Toggle the toolbar interaction between click and drag",
     "newUiTitle": "Use 2.0 Ui",
-    "newUiDescription": "Use new 2.0 UI layout"
+    "newUiDescription": "Use new 2.0 UI layout",
+    "useProximityOpacityTitle": "Change Toolbar Opacity",
+    "useProximityOpacityDescription": "Change the toolbar opacity as the mouse gets closer or farther away"
   },
   "backstage": {
     "command": "Command",

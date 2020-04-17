@@ -5,10 +5,8 @@
 /** @packageDocumentation
  * @module Extensions
  */
-import * as semver from "semver";
 import { I18N, I18NOptions } from "@bentley/imodeljs-i18n";
-import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
-import { ExtensionClient, ExtensionProps } from "@bentley/extension-client";
+import { ExtensionProps } from "@bentley/extension-client";
 
 import { IModelApp } from "../IModelApp";
 import { ExtensionLoadResults } from "./ExtensionResults";
@@ -155,109 +153,10 @@ export class PendingExtension {
   }
 }
 
-/** Reads the extension from a plain server assuming that the extension is a set of files in a directory formatted as "imjs_extensions/<extensionName>".
- * @beta
+/**
+ * @internal
  */
-export class ExternalServerExtensionLoader implements ExtensionLoader {
-  public constructor(public serverName: string) { }
-
-  public resolveResourceUrl(extensionName: string, relativeUrl: string): string {
-    const relativeUrlWithSlash = relativeUrl.startsWith("/") ? relativeUrl : ("/" + relativeUrl);
-    return new URL("imjs_extensions/".concat(extensionName, relativeUrlWithSlash), this.serverName).toString();
-  }
-
-  public getExtensionName(extensionRoot: string): string {
-    const slashPos = extensionRoot.lastIndexOf("/");
-    return extensionRoot.slice(slashPos + 1);
-  }
-
-  public async loadExtension(extensionName: string, _extensionVersion?: string, args?: string[]): Promise<PendingExtension | undefined> {
-    // TODO: The entry point must be a "index.js" file at this point and no need for a manifest file.  All version checking is done in the Extensions bundle (i.e. "index.js")
-    const jsFileUrl: string = this.resolveResourceUrl(extensionName, "/index.js");
-
-    // check if the entry point exists
-    const response = await fetch(jsFileUrl, { method: "HEAD" });
-    if (response.status !== 200)
-      return undefined;
-
-    // set it up to load.
-    return new PendingExtension(jsFileUrl, this, args);
-  }
-}
-
-interface LoadedExtensionProps {
+export interface LoadedExtensionProps {
   props: ExtensionProps;
   basePath: string;
-}
-
-/** Downloads extensions from Extension Service
- * @beta
- */
-export class ExtensionServiceExtensionLoader implements ExtensionLoader {
-  private _loadedExtensionProps: { [extensionName: string]: LoadedExtensionProps } = {};
-
-  public constructor(private _contextId: string) { }
-
-  public resolveResourceUrl(extensionName: string, relativeFileName: string): string {
-    const loadedProps = this._loadedExtensionProps[extensionName];
-    if (loadedProps === undefined) {
-      throw new Error("Extension with given name hasn't been loaded");
-    }
-
-    const fullFileName = new URL(relativeFileName, loadedProps.basePath).toString();
-    const fileNameWithKey = loadedProps.props.uri.find((uri) => uri.startsWith(fullFileName));
-
-    return fileNameWithKey ?? fullFileName;
-  }
-
-  public getExtensionName(extensionRoot: string): string {
-    return extensionRoot;
-  }
-
-  public async loadExtension(extensionName: string, extensionVersion?: string, args?: string[] | undefined): Promise<PendingExtension | undefined> {
-    const loadedExtensionProps = await this.getExtensionProps(extensionName, extensionVersion);
-    if (loadedExtensionProps === undefined)
-      return undefined;
-
-    this._loadedExtensionProps[extensionName] = loadedExtensionProps;
-
-    const mainFilePath = new URL("index.js", loadedExtensionProps.basePath).toString();
-    const mainFileUrl = loadedExtensionProps.props.uri.find((uri) => uri.startsWith(mainFilePath));
-    if (mainFileUrl === undefined)
-      return undefined;
-
-    return new PendingExtension(mainFileUrl, this, args);
-  }
-
-  private async getExtensionProps(extensionName: string, extensionVersion?: string): Promise<LoadedExtensionProps | undefined> {
-    const extensionClient = new ExtensionClient();
-
-    const accessToken = await IModelApp.authorizationClient!.getAccessToken();
-    if (!accessToken)
-      return undefined;
-    const requestContext = new AuthorizedClientRequestContext(accessToken);
-
-    let extensionProps: ExtensionProps | undefined;
-    if (extensionVersion !== undefined)
-      extensionProps = await extensionClient.getExtensionProps(requestContext, this._contextId, extensionName, extensionVersion);
-    else {
-      const props = await extensionClient.getExtensions(requestContext, this._contextId, extensionName);
-      const newestVersion = semver.rsort(props.map((ext) => ext.version))[0];
-      extensionProps = props.find((ext) => ext.version === newestVersion);
-    }
-
-    if (extensionProps === undefined)
-      return undefined;
-
-    const sortedUris = extensionProps.uri.sort();
-    const firstUri = sortedUris[0];
-    const lastUri = sortedUris[sortedUris.length - 1];
-    let i = 0;
-    while (i < firstUri.length && firstUri[i] === lastUri[i]) i++;
-    while (i > 0 && firstUri[i] !== "/") i--;
-    const relativePathStart = i + 1;
-    const basePath = firstUri.slice(0, relativePathStart);
-
-    return { props: extensionProps, basePath };
-  }
 }

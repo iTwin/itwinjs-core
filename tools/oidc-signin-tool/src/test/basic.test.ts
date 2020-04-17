@@ -51,7 +51,7 @@ describe("Sign in (#integration)", () => {
       scope: Config.App.getString("imjs_oidc_browser_test_scopes"),
     };
     await expect(getTestOidcToken(oidcConfig, invalidUser))
-      .to.be.rejectedWith(Error, `Failed OIDC signin for ${invalidUser.email}.\nError: User name not found or incorrect password.`);
+      .to.be.rejectedWith(Error, `Failed OIDC signin for ${invalidUser.email}.\nError: We didn't recognize the username or password you entered. Please try again.`);
   });
 });
 

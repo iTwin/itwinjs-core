@@ -52,7 +52,7 @@ function saveImage(vp: Viewport) {
 async function zoomToSelectedElements(vp: Viewport) {
   const elems = vp.iModel.selectionSet.elements;
   if (0 < elems.size)
-    await vp.zoomToElements(elems);
+    await vp.zoomToElements(elems, { animateFrustumChange: true });
 }
 
 export class ZoomToSelectedElementsTool extends Tool {

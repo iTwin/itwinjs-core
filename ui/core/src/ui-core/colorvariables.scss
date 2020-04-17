@@ -29,12 +29,15 @@
   --buic-foreground-disabled:     rgba(var(--buic-foreground-body-rgb), 0.44);
   --buic-foreground-activehover:  rgba(var(--buic-foreground-body-rgb), 1.00);
 
+  --buic-foreground-primary:      rgb(var(--buic-foreground-primary-rgb));
+
   /** background.5 */
   --buic-background-titlebar:                 var(--buic-background-5);
   --buic-background-dialog-stroke:            var(--buic-background-5);
   --buic-background-widget-stroke:            var(--buic-background-5);
   --buic-background-control-stroke:           var(--buic-background-5);
   --buic-background-panel-stroke:             var(--buic-background-5);
+  --buic-background-toolbutton-stroke:        var(--buic-background-5);
 
   /** background.4 */
   --buic-background-titlebar-outoffocus:      var(--buic-background-4);
@@ -57,11 +60,12 @@
   --buic-background-dialog:                   var(--buic-background-2);
   --buic-background-widget:                   var(--buic-background-2);
   --buic-background-window:                   var(--buic-background-2);
+  --buic-background-toolbar:                  var(--buic-background-2);
 
   /** background.1 */
   --buic-background-card:                     var(--buic-background-1);
   --buic-background-control:                  var(--buic-background-1);
 
   /** Widget Opacity */
-  --buic-widget-opacity:    0.90;
+  --buic-widget-opacity:                      0.90;
 }

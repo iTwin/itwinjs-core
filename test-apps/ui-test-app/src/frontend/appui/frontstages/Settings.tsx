@@ -39,6 +39,8 @@ class SettingsPageComponent extends React.Component<SettingsPageProps> {
   private _dragInteractionDescription: string = UiFramework.i18n.translate("SampleApp:settingsStage.dragInteractionDescription");
   private _useNewUiTitle: string = UiFramework.i18n.translate("SampleApp:settingsStage.newUiTitle");
   private _useNewUiDescription: string = UiFramework.i18n.translate("SampleApp:settingsStage.newUiDescription");
+  private _useProximityOpacityTitle: string = UiFramework.i18n.translate("SampleApp:settingsStage.useProximityOpacityTitle");
+  private _useProximityOpacityDescription: string = UiFramework.i18n.translate("SampleApp:settingsStage.useProximityOpacityDescription");
 
   private _onThemeChange = () => {
     const theme = this._isLightTheme() ? ColorTheme.Dark : ColorTheme.Light;
@@ -51,6 +53,10 @@ class SettingsPageComponent extends React.Component<SettingsPageProps> {
 
   private _onAutoHideChange = () => {
     UiShowHideManager.autoHideUi = !UiShowHideManager.autoHideUi;
+  }
+
+  private _onUseProximityOpacityChange = () => {
+    UiShowHideManager.useProximityOpacity = !UiShowHideManager.useProximityOpacity;
   }
 
   public render(): React.ReactNode {
@@ -95,6 +101,15 @@ class SettingsPageComponent extends React.Component<SettingsPageProps> {
           </div>
           <div className="panel right-panel">
             <Toggle isOn={this.props.frameworkVersion === "2"} showCheckmark={false} onChange={this.props.onToggleFrameworkVersion} />
+          </div>
+        </div>
+        <div className="uifw-settings-item">
+          <div className="panel left-panel">
+            <span className="title">{this._useProximityOpacityTitle}</span>
+            <span className="description">{this._useProximityOpacityDescription}</span>
+          </div>
+          <div className="panel right-panel">
+            <Toggle isOn={UiShowHideManager.useProximityOpacity} showCheckmark={false} onChange={this._onUseProximityOpacityChange} />
           </div>
         </div>
       </div>

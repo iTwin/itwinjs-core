@@ -8,6 +8,7 @@
     "MinWindow": "Minimum window",
     "MaxWindow": "Maximum window",
     "MaxZoom": "Maximum Zoom",
+    "InvalidTargetPoint": "Too close to target",
     "NotDuringMarkup": "Cannot change view during markup"
   },
   "ElementUndo": {

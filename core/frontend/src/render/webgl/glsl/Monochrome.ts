@@ -11,7 +11,7 @@ import { FragmentShaderBuilder, FragmentShaderComponent, VariableType } from "..
 
 const applyUnlitMonochromeColor = `
   vec4 monoColor = vec4(u_monoRgb, baseColor.a);
-  return chooseVec4WithBitFlag(baseColor, monoColor, u_shaderFlags, kShaderBit_Monochrome);
+  return u_shaderFlags[kShaderBit_Monochrome] ? monoColor : baseColor;
 `;
 
 const applySurfaceMonochromeColor = `
@@ -23,7 +23,7 @@ const applySurfaceMonochromeColor = `
     monoColor.rgb = rgb;
   }
 
-  return chooseVec4WithBitFlag(baseColor, monoColor, u_shaderFlags, kShaderBit_Monochrome);
+  return u_shaderFlags[kShaderBit_Monochrome] ? monoColor : baseColor;
 `;
 
 function addMonoRgb(frag: FragmentShaderBuilder): void {

@@ -73,15 +73,27 @@ function getFeatureIndex(instanced: boolean): string {
   }`;
 }
 
+// Returns true if the specified flag is not globally overridden and is set in flags
+const nthFeatureBitSet = `
+bool nthFeatureBitSet(float flags, float n) {
+  return !nthBitSet(u_globalOvrFlags, n) && nthBitSet(flags, n);
+}
+`;
+const nthFeatureBitSet2 = `
+bool nthFeatureBitSet(float flags, uint n) {
+  return 0u == (u_globalOvrFlags & n) && nthBitSet(flags, n);
+}
+`;
+
 // Returns 1.0 if the specified flag is not globally overridden and is set in flags
 const extractNthFeatureBit = `
 float extractNthFeatureBit(float flags, float n) {
-  return (1.0 - extractNthBit(u_globalOvrFlags, n)) * extractNthBit(flags, n);
+  return !nthBitSet(u_globalOvrFlags, n) && nthBitSet(flags, n) ? 1.0 : 0.0;
 }
 `;
 const extractNthFeatureBit2 = `
 float extractNthFeatureBit(float flags, uint n) {
-  return mix(1.0, 0.0, 0u != (u_globalOvrFlags & n)) * extractNthBit(flags, n);
+  return 0u == (u_globalOvrFlags & n) && nthBitSet(flags, n) ? 1.0 : 0.0;
 }
 `;
 
@@ -106,13 +118,13 @@ vec4 getSecondFeatureRgba() {
 
 const computeLineWeight = `
 float computeLineWeight() {
-  return mix(g_lineWeight, linear_feature_overrides.y, linear_feature_overrides.x);
+  return linear_feature_overrides.x > 0.5 ? linear_feature_overrides.y : g_lineWeight;
 }
 `;
 
 const computeLineCode = `
 float computeLineCode() {
-  return mix(g_lineCode, linear_feature_overrides.w, linear_feature_overrides.z);
+  return linear_feature_overrides.z > 0.5 ? linear_feature_overrides.w : g_lineCode;
 }
 `;
 
@@ -187,9 +199,11 @@ function addCommon(builder: ProgramBuilder, mode: FeatureMode, opts: FeatureSymb
   if (wantGlobalOvrFlags) {
     let bitmapType;
     if (System.instance.capabilities.isWebGL2) {
+      vert.addFunction(nthFeatureBitSet2);
       vert.addFunction(extractNthFeatureBit2);
       bitmapType = VariableType.Uint;
     } else {
+      vert.addFunction(nthFeatureBitSet);
       vert.addFunction(extractNthFeatureBit);
       bitmapType = VariableType.Float;
     }
@@ -312,9 +326,9 @@ const computeHiliteOverrides = `
 `;
 
 const computeHiliteOverridesWithWeight = computeHiliteOverrides + `
-  linear_feature_overrides = vec4(1.0 == extractNthFeatureBit(flags, kOvrBit_Weight),
+  linear_feature_overrides = vec4(nthFeatureBitSet(flags, kOvrBit_Weight),
   value.a * 256.0,
-  1.0 == extractNthFeatureBit(flags, kOvrBit_LineCode),
+  nthFeatureBitSet(flags, kOvrBit_LineCode),
   value.b * 256.0);
 `;
 
@@ -383,7 +397,7 @@ const checkForEarlySurfaceDiscard = `
 
 const checkForEarlySurfaceDiscardWithFeatureID = `
   // No normals => unlt => reality model => no edges.
-  if (u_renderPass > kRenderPass_Translucent || u_renderPass == kRenderPass_Layers || !isSurfaceBitSet(kSurfaceBit_HasNormals))
+  if (u_renderPass > kRenderPass_Translucent || u_renderPass == kRenderPass_Layers || !u_surfaceFlags[kSurfaceBitIndex_HasNormals])
     return false;
 
   vec2 tc = windowCoordsToTexCoords(gl_FragCoord.xy);
@@ -500,7 +514,7 @@ export function addFeatureId(builder: ProgramBuilder, computeInFrag: boolean) {
 //  - Solid Fill or Hidden Line mode; or
 //  - Shaded mode and generating shadow map (sufficiently transparent surfaces receive but do not cast shadows).
 const isBelowTransparencyThreshold = `
-  return v_color.a < u_transparencyThreshold && isSurfaceBitSet(kSurfaceBit_TransparencyThreshold);
+  return v_color.a < u_transparencyThreshold && u_surfaceFlags[kSurfaceBitIndex_TransparencyThreshold];
 `;
 
 /** @internal */
@@ -577,14 +591,14 @@ const computeFeatureOverrides = `
   if (0.0 == flags)
     return; // nothing overridden for this feature
 
-  float nonLocatable = extractNthFeatureBit(flags, kOvrBit_NonLocatable) * extractShaderBit(kShaderBit_IgnoreNonLocatable);
-  float invisible = extractNthFeatureBit(flags, kOvrBit_Visibility);
-  feature_invisible = 0.0 != (invisible + nonLocatable);
+  bool nonLocatable = (u_shaderFlags[kShaderBit_IgnoreNonLocatable] ? nthFeatureBitSet(flags, kOvrBit_NonLocatable) : false);
+  bool invisible = nthFeatureBitSet(flags, kOvrBit_Visibility);
+  feature_invisible = invisible || nonLocatable;
   if (feature_invisible)
     return;
 
-  bool rgbOverridden = extractNthFeatureBit(flags, kOvrBit_Rgb) > 0.0;
-  bool alphaOverridden = extractNthFeatureBit(flags, kOvrBit_Alpha) > 0.0;
+  bool rgbOverridden = nthFeatureBitSet(flags, kOvrBit_Rgb);
+  bool alphaOverridden = nthFeatureBitSet(flags, kOvrBit_Alpha);
   if (alphaOverridden || rgbOverridden) {
     vec4 rgba = getSecondFeatureRgba();
     if (rgbOverridden)
@@ -594,12 +608,12 @@ const computeFeatureOverrides = `
       feature_alpha = rgba.a;
     }
 
-  linear_feature_overrides = vec4(1.0 == extractNthFeatureBit(flags, kOvrBit_Weight),
+  linear_feature_overrides = vec4(nthFeatureBitSet(flags, kOvrBit_Weight),
                                   value.w * 256.0,
-                                  1.0 == extractNthFeatureBit(flags, kOvrBit_LineCode),
+                                  nthFeatureBitSet(flags, kOvrBit_LineCode),
                                   value.z * 256.0);
 
-  feature_ignore_material = 0.0 != extractNthFeatureBit(flags, kOvrBit_IgnoreMaterial);
+  feature_ignore_material = nthFeatureBitSet(flags, kOvrBit_IgnoreMaterial);
   use_material = use_material && !feature_ignore_material;
 
   v_feature_emphasis += kEmphFlag_Flash * extractNthFeatureBit(flags, kOvrBit_Flashed);
@@ -620,21 +634,21 @@ const applyFlash = `
 
 const doApplyFlash = `
 vec4 doApplyFlash(float flags, vec4 baseColor) {
-  float isFlashed = extractNthBit(flags, kEmphBit_Flash);
-  float isHilited = extractNthBit(flags, kEmphBit_Hilite);
-  float isEmphasized = (1.0 - isHilited) * extractNthBit(flags, kEmphBit_Emphasize);
-  vec3 hiliteRgb = mix(u_hilite_settings[0], u_hilite_settings[1], isEmphasized);
+  bool isFlashed = nthBitSet(flags, kEmphBit_Flash);
+  bool isHilited = nthBitSet(flags, kEmphBit_Hilite);
+  bool isEmphasized = !isHilited && nthBitSet(flags, kEmphBit_Emphasize);
+  vec3 hiliteRgb = isEmphasized ? u_hilite_settings[1] : u_hilite_settings[0];
 
-  isHilited = max(isEmphasized, isHilited);
-  float hiliteRatio = isHilited * mix(u_hilite_settings[2][0], u_hilite_settings[2][1], isEmphasized);
+  isHilited = isEmphasized || isHilited;
+  float hiliteRatio = isHilited ? (isEmphasized ? u_hilite_settings[2][1] : u_hilite_settings[2][0]) : 0.0;
   baseColor.rgb = mix(baseColor.rgb, hiliteRgb, hiliteRatio);
 
   const float maxBrighten = 0.2;
-  float brighten = u_flash_intensity * maxBrighten;
-  vec3 brightRgb = baseColor.rgb + isFlashed * brighten;
+  float brighten = isFlashed ? u_flash_intensity * maxBrighten : 0.0;
+  vec3 brightRgb = baseColor.rgb + brighten;
 
   const float maxTween = 0.75;
-  float hiliteFraction = u_flash_intensity * isFlashed * maxTween;
+  float hiliteFraction = isFlashed ? u_flash_intensity * maxTween : 0.0;
   vec3 tweenRgb = baseColor.rgb * (1.0 - hiliteFraction);
   tweenRgb += u_hilite_settings[0] * hiliteFraction;
 

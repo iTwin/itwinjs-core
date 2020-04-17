@@ -24,7 +24,7 @@ const computeElementColor = `
   vec2 tc = computeLUTCoords(colorTableStart+colorIndex, u_vertParams.xy, g_vert_center, 1.0);
   vec4 lutColor = TEXTURE(u_vertLUT, tc);
   lutColor.rgb /= max(0.0001, lutColor.a);
-  vec4 color = chooseVec4WithBitFlag(u_color, lutColor, u_shaderFlags, kShaderBit_NonUniformColor);
+  vec4 color = (u_shaderFlags[kShaderBit_NonUniformColor] ? lutColor : u_color);
 `;
 const returnColor = `
   return color;

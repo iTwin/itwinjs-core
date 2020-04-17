@@ -87,7 +87,7 @@ class SamplePluginStateManager {
   }
 }
 
-/** alpha test code */
+/** test code */
 class TestUiProvider implements UiItemsProvider {
   public readonly id = "TestUiProvider";
 
@@ -118,90 +118,6 @@ class TestUiProvider implements UiItemsProvider {
     }
     return [];
   }
-
-  //  public provideToolbarItems(toolBarId: string): ToolbarItemInsertSpec[] {
-  //    // tslint:disable-next-line: no-console
-  //    // console.log(`Requesting tools for toolbar ${toolBarId}`);
-  //
-  //    if ("[ViewsFrontstage]ToolWidget-horizontal" === toolBarId) {
-  //      const simpleActionSpec: ActionItemInsertSpec = {
-  //        itemType: ToolbarItemType.ActionButton,
-  //        itemId: "simple-test-action-tool",
-  //        execute: (): void => {
-  //          // tslint:disable-next-line: no-console
-  //          console.log("Got Here!");
-  //        },
-  //        icon: "icon-developer",
-  //        label: "simple-test-action-tool",
-  //      };
-  //
-  //      const childActionSpec: ActionItemInsertSpec = {
-  //        itemType: ToolbarItemType.ActionButton,
-  //        itemId: "child-test-action-tool",
-  //        condition: {
-  //          type: ConditionalDisplayType.Visibility,
-  //          testFunc: (): boolean => SampleAppIModelApp.getTestProperty() !== "HIDE",
-  //          syncEventIds: [SampleAppUiActionId.setTestProperty],
-  //        },
-  //        execute: (): void => {
-  //          // tslint:disable-next-line: no-console
-  //          console.log("Got Here!");
-  //        },
-  //        icon: "icon-developer",
-  //        label: "child-test-action-tool",
-  //      };
-  //
-  //      const nestedActionSpec: ActionItemInsertSpec = {
-  //        itemType: ToolbarItemType.ActionButton,
-  //        parentToolGroupId: "tool-formatting-setting",
-  //        itemId: "nested-test-action-tool",
-  //        execute: (): void => {
-  //          // tslint:disable-next-line: no-console
-  //          console.log("Got Here!");
-  //        },
-  //        icon: "icon-developer",
-  //        label: "test action tool (nested)",
-  //      };
-  //
-  //      const groupSpec: GroupItemInsertSpec = {
-  //        itemType: ToolbarItemType.GroupButton,
-  //        itemId: "test-tool-group",
-  //        badgeType: BadgeType.TechnicalPreview,
-  //        icon: "icon-developer",
-  //        label: "test group",
-  //        items: [childActionSpec, simpleActionSpec],
-  //      };
-  //
-  //      return [simpleActionSpec, nestedActionSpec, groupSpec];
-  //
-  //    } else if ("[ViewsFrontstage]NavigationWidget-horizontal" === toolBarId) {
-  //      const navHorizontalSpec: ActionItemInsertSpec = {
-  //        itemType: ToolbarItemType.ActionButton,
-  //        itemId: "nav1-test-action-tool",
-  //        execute: (): void => {
-  //          // tslint:disable-next-line: no-console
-  //          console.log("Got Here!");
-  //        },
-  //        icon: "icon-developer",
-  //        label: "test action tool (navH)",
-  //      };
-  //      return [navHorizontalSpec];
-  //    } else if ("[ViewsFrontstage]NavigationWidget-vertical" === toolBarId) {
-  //      const navVerticalSpec: ActionItemInsertSpec = {
-  //        itemType: ToolbarItemType.ActionButton,
-  //        itemId: "nav2-test-action-tool",
-  //        execute: (): void => {
-  //          // tslint:disable-next-line: no-console
-  //          console.log("Got Here!");
-  //        },
-  //        icon: "icon-developer",
-  //        label: "test action tool (navV)",
-  //      };
-  //      return [navVerticalSpec];
-  //    }
-  //
-  //    return [];
-  //  }
 
   public provideStatusBarItems(_stageId: string, stageUsage: string): CommonStatusBarItem[] {
     const statusBarItems: CommonStatusBarItem[] = [];
@@ -269,11 +185,3 @@ export class UiProviderTool extends Tool {
     return true;
   }
 }
-
-// // used to test loading Plugin that provides  Ui items at startup
-// const testPluginLoadedAtStartup = false;
-// if (testPluginLoadedAtStartup) {
-//   const uiProvider = new TestUiProvider();
-//   UiItemsManager.register(uiProvider);
-//   UiProviderTool.testPluginLoaded = uiProvider.id;
-// }

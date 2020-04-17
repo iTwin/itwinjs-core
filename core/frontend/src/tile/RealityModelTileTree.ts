@@ -242,8 +242,8 @@ class FindChildResult {
   constructor(public id: string, public json: any, public transformToRoot?: Transform) { }
 }
 
-// Smooth shade, no lighting or clip volume, shadows if enabled for view.
-const realityModelViewFlagOverrides = createDefaultViewFlagOverrides({ clipVolume: false, lighting: false });
+// Smooth shade, no lighting; clip volume and shadows if enabled for view.
+const realityModelViewFlagOverrides = createDefaultViewFlagOverrides({ lighting: false });
 
 /** @internal */
 class RealityModelTileLoader extends RealityTileLoader {
