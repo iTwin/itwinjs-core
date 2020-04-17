@@ -86,7 +86,7 @@ const stylePresets: Style3dPreset[] = [
       },
     },
     viewflags: {
-      noConstruct: true, noFill: true, renderMode: 6,
+      renderMode: 6,
     },
     lights: {
       solar: { direction: [-0.9833878378071199, -0.18098510351728977, 0.013883542698953828] },
@@ -99,7 +99,7 @@ const stylePresets: Style3dPreset[] = [
     name: "Illustration",
     environment: {},
     backgroundColor: 10921638,
-    viewflags: { noConstruct: true, noFill: true, noCameraLights: true, noSourceLights: true, noSolarLight: true, visEdges: true, renderMode: 6 },
+    viewflags: { noCameraLights: true, noSourceLights: true, noSolarLight: true, visEdges: true, renderMode: 6 },
     lights: {
       solar: { direction: [-0.9833878378071199, -0.18098510351728977, 0.013883542698953828] },
     },
@@ -122,7 +122,7 @@ const stylePresets: Style3dPreset[] = [
       },
     },
     viewflags: {
-      noConstruct: true, noFill: true, shadows: true, renderMode: 6,
+      shadows: true, renderMode: 6,
     },
     lights: {
       solar: { direction: [0.9391245716329828, 0.10165764029437066, -0.3281931795832247] },
@@ -137,7 +137,7 @@ const stylePresets: Style3dPreset[] = [
     name: "Schematic",
     environment: {},
     backgroundColor: 16777215,
-    viewflags: { noConstruct: true, noFill: true, visEdges: true, renderMode: 6 },
+    viewflags: { visEdges: true, renderMode: 6 },
     lights: {
       solar: { direction: [0, -0.6178171353958787, -0.7863218089378106], intensity: 1.95, alwaysEnabled: true },
       ambient: { intensity: 0.65 },
@@ -158,7 +158,7 @@ const stylePresets: Style3dPreset[] = [
       sky: { display: true, groundColor: 8228728, zenithColor: 16741686, nadirColor: 3880, skyColor: 16764303 },
       ground: { display: false, elevation: -0.01, aboveColor: 32768, belowColor: 1262987 },
     },
-    viewflags: { noConstruct: true, noFill: true, renderMode: 6 },
+    viewflags: { renderMode: 6 },
     lights: {
       solar: { direction: [-0.9833878378071199, -0.18098510351728977, 0.013883542698953828], intensity: 1.05 },
       ambient: { intensity: 0.25 },
@@ -178,7 +178,7 @@ const stylePresets: Style3dPreset[] = [
       sky: { display: true, groundColor: 8228728, zenithColor: 16741686, nadirColor: 3880, skyColor: 16764303 },
       ground: { display: false, elevation: -0.01, aboveColor: 32768, belowColor: 1262987 },
     },
-    viewflags: { noConstruct: true, noFill: true, ambientOcclusion: true, renderMode: 6 },
+    viewflags: { ambientOcclusion: true, renderMode: 6 },
     lights: {
       solar: { direction: [-0.9833878378071199, -0.18098510351728977, 0.013883542698953828], intensity: 0 },
       ambient: { intensity: 0.75 },
@@ -196,7 +196,7 @@ const stylePresets: Style3dPreset[] = [
       sky: { display: true, groundColor: 2435876, zenithColor: 0, nadirColor: 3880, skyColor: 3481088 },
       ground: { display: false, elevation: -0.01, aboveColor: 32768, belowColor: 1262987 },
     },
-    viewflags: { noConstruct: true, noFill: true, visEdges: true, renderMode: 6 },
+    viewflags: { visEdges: true, renderMode: 6 },
     lights: {
       solar: { direction: [-0.9833878378071199, -0.18098510351728977, 0.013883542698953828], intensity: 3, alwaysEnabled: true },
       ambient: { intensity: 0.05 },
@@ -220,7 +220,7 @@ const stylePresets: Style3dPreset[] = [
       sky: { display: true, groundColor: 8228728, zenithColor: 16741686, nadirColor: 3880, skyColor: 16764303 },
       ground: { display: false, elevation: -0.01, aboveColor: 32768, belowColor: 1262987 },
     },
-    viewflags: { noConstruct: true, noFill: true, visEdges: true, renderMode: 6 },
+    viewflags: { visEdges: true, renderMode: 6 },
     lights: {
       solar: { direction: [-0.9833878378071199, -0.18098510351728977, 0.013883542698953828] },
       specularIntensity: 4.15,
@@ -472,8 +472,26 @@ export class ViewAttributes {
     if (preset.monochromeMode)
       style.settings.monochromeMode = preset.monochromeMode;
 
-    if (preset.viewflags)
-      style.viewFlags = ViewFlags.fromJSON(preset.viewflags);
+    if (preset.viewflags) {
+      // Preserve flags we don't care about, like background map, grid, constructions, etc.
+      // Set any we do care about that are not overridden to default values.
+      // Override any explicitly specified.
+      const vf = {
+        ...style.viewFlags.toJSON(),
+        noCameraLights: false,
+        noSourceLights: false,
+        noSolarLight: false,
+        visEdges: false,
+        hidEdges: false,
+        shadows: false,
+        monochrome: false,
+        ambientOcclusion: false,
+        thematicDisplay: false,
+        ...preset.viewflags,
+      };
+
+      style.viewFlags = ViewFlags.fromJSON(vf);
+    }
 
     if (preset.hline)
       style.settings.hiddenLineSettings = HiddenLine.Settings.fromJSON(preset.hline);
