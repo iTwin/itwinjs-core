@@ -31,14 +31,14 @@ interface FileInfo {
 
 function statusFromJSON(jsonObject: any): ExtensionUploadStatus | undefined {
   if (jsonObject.statusUpdateTime === undefined || typeof jsonObject.statusUpdateTime !== "string" ||
-    jsonObject.status === undefined || typeof jsonObject.status !== "string") {
+    jsonObject.status === undefined || (jsonObject.status !== null && typeof jsonObject.status !== "string")) {
 
     return undefined;
   }
 
   return {
     updateTime: new Date(jsonObject.statusUpdateTime),
-    status: jsonObject.status,
+    status: jsonObject.status ?? "Valid",
   };
 }
 

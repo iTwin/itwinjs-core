@@ -11,7 +11,6 @@ import { Tool } from "./Tool";
 import { Extension } from "../extension/Extension";
 import { NotifyMessageDetails, OutputMessageAlert, OutputMessagePriority, OutputMessageType } from "../NotificationManager";
 import { IModelApp } from "../IModelApp";
-import { ExtensionLoadResults, detailsFromExtensionLoadResults } from "../extension/ExtensionResults";
 
 const loggerCategory = "imodeljs-frontend.Extension";
 
@@ -27,11 +26,9 @@ export class ExtensionTool extends Tool {
   public run(args: any[]): boolean {
     if (args && args.length > 0 && args[0]) {
       IModelApp.extensionAdmin.loadExtension(args[0], undefined, args.slice(1))
-        .then(ExtensionTool.showLoadProblems.bind(null, args[0]))
-        .catch((_err: any) => {
-          // this should happen only on completely unexpected errors.
+        .then(ExtensionTool.showLoadProblems.bind(null, args[0]), (err) => {
           const briefMessage = IModelApp.i18n.translate("iModelJs:ExtensionErrors.UnableToLoad", { extensionName: args[0] });
-          const errorDetails = new NotifyMessageDetails(OutputMessagePriority.Error, briefMessage);
+          const errorDetails = new NotifyMessageDetails(OutputMessagePriority.Error, briefMessage, (typeof err.message === "string") ? err.message : undefined, OutputMessageType.Alert, OutputMessageAlert.Balloon);
           IModelApp.notifications.outputMessage(errorDetails);
         });
     }
@@ -39,20 +36,17 @@ export class ExtensionTool extends Tool {
   }
 
   // displays the problems encountered while trying to load a extension
-  private static showLoadProblems(extensionName: string, extensionResults: ExtensionLoadResults) {
-    if (!extensionResults || (("string" !== typeof (extensionResults)) && !Array.isArray(extensionResults))) {
-      if (extensionResults instanceof Extension) {
-        const briefMessage = IModelApp.i18n.translate("iModelJs:ExtensionErrors.Success", { extensionName });
-        const info = new NotifyMessageDetails(OutputMessagePriority.Info, briefMessage, undefined, OutputMessageType.InputField);
-        IModelApp.notifications.outputMessage(info);
-        Logger.logInfo(loggerCategory, briefMessage);
-      }
-    } else {
-      const returnVal = detailsFromExtensionLoadResults(extensionName, extensionResults, false);
-      const briefMessage = IModelApp.i18n.translate("iModelJs:ExtensionErrors.CantLoad", { extensionName });
-      const errorDetails = new NotifyMessageDetails(OutputMessagePriority.Warning, briefMessage, returnVal.detailHTML, OutputMessageType.Alert, OutputMessageAlert.Balloon);
+  private static showLoadProblems(extensionName: string, extensionResults: Extension | undefined) {
+    if (extensionResults === undefined) {
+      const briefMessage = IModelApp.i18n.translate("iModelJs:ExtensionErrors.CantFind", { extensionName });
+      const errorDetails = new NotifyMessageDetails(OutputMessagePriority.Warning, briefMessage, undefined, OutputMessageType.Alert, OutputMessageAlert.Balloon);
       IModelApp.notifications.outputMessage(errorDetails);
-      Logger.logError(loggerCategory, extensionName + " failed to load. Error=" + returnVal.detailStrings);
+      Logger.logError(loggerCategory, "Extension " + extensionName + " was not found");
+    } else {
+      const briefMessage = IModelApp.i18n.translate("iModelJs:ExtensionErrors.Success", { extensionName });
+      const info = new NotifyMessageDetails(OutputMessagePriority.Info, briefMessage, undefined, OutputMessageType.InputField);
+      IModelApp.notifications.outputMessage(info);
+      Logger.logInfo(loggerCategory, briefMessage);
     }
   }
 }

@@ -2012,12 +2012,6 @@ export interface DepthRangeNpc {
     minimum: number;
 }
 
-// @internal (undocumented)
-export function detailsFromExtensionLoadResults(extensionName: string, results: ExtensionLoadResults, reportSuccess: boolean): {
-    detailHTML: HTMLElement | undefined;
-    detailStrings: string[] | undefined;
-};
-
 // @internal
 export class DevTools {
     static connectToBackendInstance(tokenProps: IModelRpcProps): DevTools;
@@ -2612,9 +2606,11 @@ export class ExtensionAdmin {
     addExtensionLoader(extensionLoader: ExtensionLoader, priority: number): void;
     // @internal (undocumented)
     addPendingExtension(extensionRootName: string, pendingExtension: PendingExtension): void;
-    loadExtension(extensionRoot: string, extensionVersion?: string, args?: string[]): Promise<ExtensionLoadResults>;
+    loadExtension(extensionRoot: string, extensionVersion?: string, args?: string[]): Promise<Extension | undefined>;
+    // (undocumented)
+    readonly onExtensionLoaded: BeEvent<(extensionName: string) => void>;
     onInitialized(): void;
-    register(extension: Extension): string[] | undefined;
+    register(extension: Extension): void;
     }
 
 // @beta
@@ -2631,9 +2627,6 @@ export interface ExtensionLoader {
     // (undocumented)
     resolveResourceUrl(extensionName: string, relativeFileName: string): string;
 }
-
-// @beta
-export type ExtensionLoadResults = Extension | undefined | string | string[];
 
 // @beta
 export class ExtensionServiceExtensionLoader implements ExtensionLoader {
@@ -4302,37 +4295,6 @@ export interface LoadedExtensionProps {
     props: ExtensionProps;
 }
 
-// @internal (undocumented)
-export class LoadSavedExtensionsResult {
-    constructor(status: LoadSavedExtensionsStatus, i18nkey?: string | undefined, extensionResults?: Map<string, ExtensionLoadResults> | undefined);
-    // (undocumented)
-    extensionResults?: Map<string, ExtensionLoadResults> | undefined;
-    // (undocumented)
-    i18nkey?: string | undefined;
-    // (undocumented)
-    report(): void;
-    // (undocumented)
-    status: LoadSavedExtensionsStatus;
-}
-
-// @internal (undocumented)
-export enum LoadSavedExtensionsStatus {
-    // (undocumented)
-    AllExtensionsFailedToLoad = 5,
-    // (undocumented)
-    LoadError = 6,
-    // (undocumented)
-    NoSavedExtensions = 2,
-    // (undocumented)
-    NotLoggedIn = 1,
-    // (undocumented)
-    SettingsInvalid = 3,
-    // (undocumented)
-    SomeExtensionsFailedToLoad = 4,
-    // (undocumented)
-    Success = 0
-}
-
 // @public
 export enum LocateAction {
     // (undocumented)
@@ -5797,7 +5759,7 @@ export class PendingExtension {
     // (undocumented)
     loader: ExtensionLoader;
     // (undocumented)
-    promise: Promise<ExtensionLoadResults>;
+    promise: Promise<Extension>;
     // (undocumented)
     reject: rejectFunc | undefined;
     // (undocumented)
@@ -7018,16 +6980,6 @@ export class RoundOff {
     active: boolean;
     // (undocumented)
     units: Set<number>;
-}
-
-// @alpha (undocumented)
-export class SavedExtensionClient {
-    // @beta
-    addSavedExtensions(requestContext: AuthorizedClientRequestContext, extensionName: string, args: string[] | undefined, allUsers: boolean, settingName: string): Promise<void>;
-    // @internal
-    static loadSavedExtensions(requestContext: AuthorizedClientRequestContext, settingName: string, userSettings?: boolean, appSettings?: boolean, configuration?: boolean): Promise<LoadSavedExtensionsResult>;
-    // @beta
-    static removeSavedExtensions(requestContext: AuthorizedClientRequestContext, extensionName: string, allUsers: boolean, settingName: string): Promise<void>;
 }
 
 // @internal (undocumented)

@@ -40,8 +40,8 @@
   "ExtensionErrors": {
     "Success": "Extension {{- extensionName}} loaded",
     "CantLoad": "Cannot load Extension {{- extensionName}}",
-    "CantFind": "Cannot find Extension '{{- extensionUrl}}' on server",
-    "SignatureNoMatch": "Extension '{{- extensionUrl}}' contains a digital signature that does not match its contents",
+    "CantFind": "Cannot find Extension '{{- extensionName}}'",
+    "SignatureNoMatch": "Extension '{{- extensionName}}' contains a digital signature that does not match its contents",
     "NoManifest": "Extension does not contain required manifest file",
     "ManifestMember": "Extension Manifest is missing the '{{propertyName}}' required property",
     "FrontendOnly": "Extensions can be loaded in a browser or Electron only",

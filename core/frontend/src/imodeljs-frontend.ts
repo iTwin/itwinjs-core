@@ -51,8 +51,6 @@ export * from "./oidc/OidcDesktopClientRenderer";
 export * from "./oidc/OidcBrowserClient";
 export * from "./extension/Extension";
 export * from "./extension/ExtensionAdmin";
-export * from "./extension/ExtensionResults";
-export * from "./extension/SavedExtensions";
 export * from "./extension/loaders/ExtensionServiceExtensionLoader";
 export * from "./extension/loaders/ExternalServerExtensionLoader";
 export * from "./properties/AngleDescription";

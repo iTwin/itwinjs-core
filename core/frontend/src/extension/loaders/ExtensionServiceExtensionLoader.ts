@@ -101,8 +101,7 @@ export class ExtensionServiceExtensionLoader implements ExtensionLoader {
         extensionProps = await extensionClient.getExtensionProps(requestContext, this._contextId, extensionName, extensionVersion);
       else {
         const props = await extensionClient.getExtensions(requestContext, this._contextId, extensionName);
-        const newestVersion = semver.rsort(props.map((ext) => ext.version))[0];
-        extensionProps = props.find((ext) => ext.version === newestVersion);
+        extensionProps = props.sort((ext1, ext2) => semver.rcompare(ext1.version, ext2.version, true))[0];
       }
     } catch (err) {
       Logger.logInfo(loggerCategory, "Extension " + extensionName + " failed to load from Extension Service");

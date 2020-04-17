@@ -100,7 +100,6 @@ internal;DefineACSByPointsTool
 alpha;DepthPointOptions
 alpha;DepthPointSource
 public;DepthRangeNpc
-internal;detailsFromExtensionLoadResults(extensionName: string, results: ExtensionLoadResults, reportSuccess: boolean):
 internal;DevTools
 public;DisplayStyle2dState 
 public;DisplayStyle3dState 
@@ -134,7 +133,6 @@ beta;class Extension
 beta;ExtensionAdmin
 beta;ExtensionAdminProps
 beta;ExtensionLoader
-beta;ExtensionLoadResults = Extension | undefined | string | string[]
 beta;ExtensionServiceExtensionLoader 
 public;ExtentLimits
 beta;ExternalServerExtensionLoader 
@@ -236,8 +234,6 @@ internal;KeyinStatus
 beta;LengthDescription 
 internal;linePlaneIntersect(outP: Point3d, linePt: Point3d, lineNormal: Vector3d | undefined, planePt: Point3d, planeNormal: Vector3d, perpendicular: boolean): void
 internal;LoadedExtensionProps
-internal;LoadSavedExtensionsResult
-internal;LoadSavedExtensionsStatus
 public;LocateAction
 public;LocateFilterStatus
 public;LocateOptions
@@ -346,7 +342,6 @@ internal;class RenderTextureDrape
 public;RotateViewTool 
 alpha;RotationMode
 internal;RoundOff
-alpha;SavedExtensionClient
 internal;SavedState
 beta;Scene
 beta;SceneContext 

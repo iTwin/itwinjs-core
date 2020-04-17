@@ -9,7 +9,6 @@ import { I18N, I18NOptions } from "@bentley/imodeljs-i18n";
 import { ExtensionProps } from "@bentley/extension-client";
 
 import { IModelApp } from "../IModelApp";
-import { ExtensionLoadResults } from "./ExtensionResults";
 
 /**
  * @internal
@@ -122,7 +121,7 @@ export abstract class Extension {
 export class PendingExtension {
   public resolve: resolveFunc | undefined = undefined;
   public reject: rejectFunc | undefined = undefined;
-  public promise: Promise<ExtensionLoadResults>;
+  public promise: Promise<Extension>;
 
   public constructor(private _tarFileUrl: string, public loader: ExtensionLoader, public args?: string[]) {
     this.promise = new Promise(this.executor.bind(this));

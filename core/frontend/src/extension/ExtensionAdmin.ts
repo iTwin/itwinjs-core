@@ -2,9 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Logger } from "@bentley/bentleyjs-core";
+import { Logger, BeEvent } from "@bentley/bentleyjs-core";
 import { IModelApp } from "../IModelApp";
-import { ExtensionLoadResults } from "./ExtensionResults";
 import { PendingExtension, Extension, ExtensionLoader, loggerCategory } from "./Extension";
 import { ExtensionServiceExtensionLoader } from "./loaders/ExtensionServiceExtensionLoader";
 
@@ -41,6 +40,8 @@ export class ExtensionAdmin {
   private _pendingExtensions: Map<string, PendingExtension> = new Map<string, PendingExtension>();
   private _registeredExtensions: Map<string, Extension> = new Map<string, Extension>();
   private _viewStartupExtensionsLoaded: boolean = false;
+
+  public readonly onExtensionLoaded = new BeEvent<(extensionName: string) => void>();
 
   public constructor(props?: ExtensionAdminProps) {
     this._extensionAdminProps = props;
@@ -85,7 +86,7 @@ export class ExtensionAdmin {
    * @param extensionVersion the version of the Extension to be loaded
    * @param args arguments that will be passed to the Extension.onLoaded and Extension.onExecute methods. If the first argument is not the extension name, the extension name will be prepended to the args array.
    */
-  public async loadExtension(extensionRoot: string, extensionVersion?: string, args?: string[]): Promise<ExtensionLoadResults> {
+  public async loadExtension(extensionRoot: string, extensionVersion?: string, args?: string[]): Promise<Extension | undefined> {
     for (const loaderPriorityPair of this._extensionLoaders) {
       const extensionLoader = loaderPriorityPair.loader;
       const extensionName = extensionLoader.getExtensionName(extensionRoot);
@@ -129,7 +130,7 @@ export class ExtensionAdmin {
    * @param extension a newly instantiated subclass of Extension.
    * @returns an array of error messages. The array will be empty if the load is successful, otherwise it is a list of one or more problems.
    */
-  public register(extension: Extension): string[] | undefined {
+  public register(extension: Extension) {
     const extensionNameLC = extension.name.toLowerCase();
     this._registeredExtensions.set(extensionNameLC, extension);
     // log successful load after extension is registered.
@@ -148,7 +149,8 @@ export class ExtensionAdmin {
       args = [extension.name];
     extension.onLoad(args);
     extension.onExecute(args);
-    return undefined;
+
+    this.onExtensionLoaded.raiseEvent(extension.name);
   }
 
   /** @internal */
