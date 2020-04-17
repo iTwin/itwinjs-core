@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { DbResult, Guid, GuidString, Id64, Id64String } from "@bentley/bentleyjs-core";
-import { Box, LineString3d, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Transform, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
+import { Box, LineString3d, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Transform, Vector3d, YawPitchRollAngles, Cone } from "@bentley/geometry-core";
 import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
 import {
   AuxCoordSystem2dProps, BisCodeSpec, CategorySelectorProps, Code, CodeScopeSpec, CodeSpec, ColorDef, ElementAspectProps, ElementProps, FontProps, FontType,
@@ -19,7 +19,7 @@ import {
   ElementOwnsChildElements, ElementOwnsMultiAspects, ElementOwnsUniqueAspect, ElementRefersToElements, ElementUniqueAspect, ExternalSourceAspect,
   FunctionalModel, FunctionalSchema, GeometricElement3d, GeometryPart, GroupModel, IModelDb, IModelExporter, IModelExportHandler, IModelImporter, IModelJsFs, IModelTransformer,
   InformationPartitionElement, InformationRecordModel, Model, ModelSelector, OrthographicViewDefinition, PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition, Platform,
-  Relationship, RelationshipProps, RenderMaterialElement, SpatialCategory, SpatialLocationModel, SubCategory, Subject, Texture, ViewDefinition, SnapshotDb,
+  Relationship, RelationshipProps, RenderMaterialElement, SpatialCategory, SpatialLocationModel, SubCategory, Subject, TemplateRecipe3d, Texture, ViewDefinition, SnapshotDb,
 } from "../imodeljs-backend";
 import { KnownTestLocations } from "./KnownTestLocations";
 
@@ -751,7 +751,7 @@ export namespace IModelTransformerUtils {
     if (IModelJsFs.existsSync(teamFile)) {
       IModelJsFs.removeSync(teamFile);
     }
-    const iModelDb: SnapshotDb = SnapshotDb.createEmpty(teamFile, { rootSubject: { name: teamName } });
+    const iModelDb: SnapshotDb = SnapshotDb.createEmpty(teamFile, { rootSubject: { name: teamName }, createClassViews: true });
     assert.exists(iModelDb);
     populateTeamIModel(iModelDb, teamName, teamOrigin, teamColor);
     iModelDb.saveChanges();
@@ -857,6 +857,55 @@ export namespace IModelTransformerUtils {
     });
   }
 
+  export function createComponentLibrary(outputDir: string): SnapshotDb {
+    const iModelName: string = "ComponentLibrary";
+    const iModelFile: string = path.join(outputDir, `${iModelName}.bim`);
+    if (IModelJsFs.existsSync(iModelFile)) {
+      IModelJsFs.removeSync(iModelFile);
+    }
+    const iModelDb: SnapshotDb = SnapshotDb.createEmpty(iModelFile, { rootSubject: { name: iModelName }, createClassViews: true });
+    const componentCategoryId = insertSpatialCategory(iModelDb, IModel.dictionaryId, "Components", ColorDef.green);
+    const definitionModelId: Id64String = DefinitionModel.insert(iModelDb, IModel.rootSubjectId, "Components");
+    // Cylinder component
+    const cylinderTemplateId: Id64String = TemplateRecipe3d.insert(iModelDb, definitionModelId, "Cylinder");
+    assert.exists(iModelDb.models.getModel<PhysicalModel>(cylinderTemplateId));
+    const cylinderProps: GeometricElement3dProps = {
+      classFullName: PhysicalObject.classFullName,
+      model: cylinderTemplateId,
+      category: componentCategoryId,
+      code: Code.createEmpty(),
+      userLabel: "Cylinder",
+      placement: { origin: Point3d.createZero(), angles: { yaw: 0, pitch: 0, roll: 0 } },
+      geom: createCylinder(1),
+    };
+    iModelDb.elements.insertElement(cylinderProps);
+    // Assembly component
+    const assemblyTemplateId: Id64String = TemplateRecipe3d.insert(iModelDb, definitionModelId, "Assembly");
+    assert.exists(iModelDb.models.getModel<PhysicalModel>(assemblyTemplateId));
+    const assemblyHeadProps: GeometricElement3dProps = {
+      classFullName: PhysicalObject.classFullName,
+      model: assemblyTemplateId,
+      category: componentCategoryId,
+      code: Code.createEmpty(),
+      userLabel: "Assembly Head",
+      placement: { origin: Point3d.createZero(), angles: { yaw: 0, pitch: 0, roll: 0 } },
+      geom: createCylinder(1),
+    };
+    const assemblyHeadId: Id64String = iModelDb.elements.insertElement(assemblyHeadProps);
+    const childBoxProps: GeometricElement3dProps = {
+      classFullName: PhysicalObject.classFullName,
+      model: assemblyTemplateId,
+      category: componentCategoryId,
+      parent: new ElementOwnsChildElements(assemblyHeadId),
+      code: Code.createEmpty(),
+      userLabel: "Child",
+      placement: { origin: Point3d.create(2, 0, 0), angles: { yaw: 0, pitch: 0, roll: 0 } },
+      geom: createBox(Point3d.create(1, 1, 1)),
+    };
+    iModelDb.elements.insertElement(childBoxProps);
+    return iModelDb;
+  }
+
   export function querySubjectId(iModelDb: IModelDb, subjectCodeValue: string): Id64String {
     const subjectId: Id64String = iModelDb.elements.queryElementIdByCode(Subject.createCode(iModelDb, IModel.rootSubjectId, subjectCodeValue))!;
     assert.isTrue(Id64.isValidId64(subjectId));
@@ -951,6 +1000,15 @@ export namespace IModelTransformerUtils {
     if (undefined !== geometryPartId) {
       geometryStreamBuilder.appendGeometryPart3d(geometryPartId);
     }
+    return geometryStreamBuilder.geometryStream;
+  }
+
+  function createCylinder(radius: number): GeometryStreamProps {
+    const pointA = Point3d.create(0, 0, 0);
+    const pointB = Point3d.create(0, 0, 2 * radius);
+    const cylinder = Cone.createBaseAndTarget(pointA, pointB, Vector3d.unitX(), Vector3d.unitY(), radius, radius, true);
+    const geometryStreamBuilder = new GeometryStreamBuilder();
+    geometryStreamBuilder.appendGeometry(cylinder);
     return geometryStreamBuilder.geometryStream;
   }
 

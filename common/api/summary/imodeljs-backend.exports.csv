@@ -238,7 +238,7 @@ public;PhysicalPartition
 public;class PhysicalType 
 public;PlanCallout 
 public;Platform
-internal;class RecipeDefinitionElement 
+beta;class RecipeDefinitionElement 
 beta;Referent 
 beta;class ReferentElement 
 public;Relationship 
@@ -288,8 +288,9 @@ public;Subject
 public;SubjectOwnsPartitionElements 
 public;SubjectOwnsSubjects 
 public;SyncMode
+beta;TemplateModelCloner 
 internal;TemplateRecipe2d 
-internal;TemplateRecipe3d 
+beta;TemplateRecipe3d 
 internal;TemplateViewDefinition2d 
 internal;TemplateViewDefinition3d 
 public;TextAnnotation2d 

@@ -2694,6 +2694,7 @@ export class IModelTransformer extends IModelExportHandler {
 
 // @beta
 export interface IModelTransformOptions {
+    noProvenance?: boolean;
     targetScopeElementId?: Id64String;
 }
 
@@ -3365,10 +3366,11 @@ export class Platform {
     static get platformName(): string;
 }
 
-// @internal
+// @beta
 export abstract class RecipeDefinitionElement extends DefinitionElement {
+    // @internal
     constructor(props: ElementProps, iModel: IModelDb);
-    // (undocumented)
+    // @internal (undocumented)
     static get className(): string;
 }
 
@@ -3892,6 +3894,13 @@ export enum SyncMode {
     PullOnly = 3
 }
 
+// @beta
+export class TemplateModelCloner extends IModelTransformer {
+    constructor(sourceDb: IModelDb, targetDb: IModelDb);
+    protected onTransformElement(sourceElement: Element): ElementProps;
+    placeTemplate3d(sourceTemplateModelId: Id64String, targetModelId: Id64String, placement: Placement3d): Map<Id64String, Id64String>;
+    }
+
 // @internal
 export class TemplateRecipe2d extends RecipeDefinitionElement {
     constructor(props: ElementProps, iModel: IModelDb);
@@ -3899,11 +3908,15 @@ export class TemplateRecipe2d extends RecipeDefinitionElement {
     static get className(): string;
 }
 
-// @internal
+// @beta
 export class TemplateRecipe3d extends RecipeDefinitionElement {
+    // @internal
     constructor(props: ElementProps, iModel: IModelDb);
-    // (undocumented)
+    // @internal (undocumented)
     static get className(): string;
+    static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, isPrivate?: boolean): TemplateRecipe3d;
+    static createCode(iModelDb: IModelDb, definitionModelId: CodeScopeProps, codeValue: string): Code;
+    static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, isPrivate?: boolean): Id64String;
 }
 
 // @internal

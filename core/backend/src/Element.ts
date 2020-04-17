@@ -10,14 +10,14 @@ import { assert, DbOpcode, GuidString, Id64, Id64Set, Id64String, JsonUtils } fr
 import { ClipVector, Range3d, Transform } from "@bentley/geometry-core";
 import {
   AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeProps, CodeSpec, DefinitionElementProps, ElementAlignedBox3d, ElementProps, EntityMetaData,
-  GeometricElement2dProps, GeometricElement3dProps, GeometricElementProps, GeometryPartProps, GeometryStreamProps,
+  GeometricElement2dProps, GeometricElement3dProps, GeometricElementProps, GeometricModel3dProps, GeometryPartProps, GeometryStreamProps,
   IModel, InformationPartitionElementProps, LineStyleProps, Placement2d, Placement3d, RelatedElement,
   SectionLocationProps, SectionType, SheetBorderTemplateProps, SheetProps, SheetTemplateProps, SubjectProps, TypeDefinition, TypeDefinitionElementProps,
 } from "@bentley/imodeljs-common";
 import { Entity } from "./Entity";
 import { IModelCloneContext } from "./IModelCloneContext";
 import { IModelDb } from "./IModelDb";
-import { DrawingModel } from "./Model";
+import { DrawingModel, PhysicalModel } from "./Model";
 import { SubjectOwnsSubjects } from "./NavigationRelationship";
 import { ConcurrencyControl } from "./ConcurrencyControl";
 import { LockLevel } from "@bentley/imodelhub-client";
@@ -827,8 +827,8 @@ export abstract class TypeDefinitionElement extends DefinitionElement implements
   }
 }
 
-/** Defines a recipe for generating a *type*.
- * @internal
+/** Defines a recipe for generating instances from a definition.
+ * @beta
  */
 export abstract class RecipeDefinitionElement extends DefinitionElement {
   /** @internal */
@@ -879,14 +879,56 @@ export abstract class SpatialLocationType extends TypeDefinitionElement {
   }
 }
 
-/** A recipe that uses a 3d template for creating new instances.
- * @internal
+/** A TemplateRecipe3d is a DefinitionElement that has a sub-model that contains the 3d template elements.
+ * @beta
  */
 export class TemplateRecipe3d extends RecipeDefinitionElement {
   /** @internal */
   public static get className(): string { return "TemplateRecipe3d"; }
   /** @internal */
   public constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
+  /** Create a Code for a TemplateRecipe3d given a name that is meant to be unique within the scope of its Model.
+   * @param iModelDb The IModelDb
+   * @param definitionModelId The Id of the [DefinitionModel]($backend) that contains this TemplateRecipe3d element.
+   * @param codeValue The name of the TemplateRecipe3d element.
+   */
+  public static createCode(iModelDb: IModelDb, definitionModelId: CodeScopeProps, codeValue: string): Code {
+    const codeSpec: CodeSpec = iModelDb.codeSpecs.getByName(BisCodeSpec.templateRecipe3d);
+    return new Code({ spec: codeSpec.id, scope: definitionModelId, value: codeValue });
+  }
+  /** Create a TemplateRecipe3d
+   * @param iModelDb The IModelDb
+   * @param definitionModelId The Id of the [DefinitionModel]($backend) that contains this TemplateRecipe3d element.
+   * @param name The name (Code.value) of the TemplateRecipe3d
+   * @returns The newly constructed TemplateRecipe3d
+   * @throws [[IModelError]] if there is a problem creating the TemplateRecipe3d
+   */
+  public static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, isPrivate?: boolean): TemplateRecipe3d {
+    const elementProps: DefinitionElementProps = {
+      classFullName: this.classFullName,
+      model: definitionModelId,
+      code: this.createCode(iModelDb, definitionModelId, name),
+      isPrivate,
+    };
+    return new TemplateRecipe3d(elementProps, iModelDb);
+  }
+  /** Insert a TemplateRecipe3d and a PhysicalModel (sub-model) that will contain the 3d template elements.
+   * @param iModelDb The IModelDb
+   * @param definitionModelId The Id of the [DefinitionModel]($backend) that contains this TemplateRecipe3d element.
+   * @param name The name (Code.value) of the TemplateRecipe3d
+   * @returns The Id of the newly inserted TemplateRecipe3d and the PhysicalModel that sub-models it.
+   * @throws [[IModelError]] if there is a problem inserting the TemplateRecipe3d or its sub-model.
+   */
+  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, isPrivate?: boolean): Id64String {
+    const element = this.create(iModelDb, definitionModelId, name, isPrivate);
+    const modeledElementId: Id64String = iModelDb.elements.insertElement(element);
+    const modelProps: GeometricModel3dProps = {
+      classFullName: PhysicalModel.classFullName,
+      modeledElement: { id: modeledElementId },
+      isTemplate: true,
+    };
+    return iModelDb.models.insertModel(modelProps);
+  }
 }
 
 /** Defines a set of properties (the *type*) that can be associated with a 2D Graphical Element.

@@ -6,12 +6,13 @@
  * @module iModels
  */
 import { ClientRequestContext, DbResult, Guid, GuidString, Id64, Id64Set, Id64String, IModelStatus, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { Transform } from "@bentley/geometry-core";
 import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
-import { Code, CodeSpec, ElementAspectProps, ElementProps, ExternalSourceAspectProps, FontProps, IModel, IModelError, ModelProps, PrimitiveTypeCode, PropertyMetaData } from "@bentley/imodeljs-common";
+import { Code, CodeSpec, ElementAspectProps, ElementProps, ExternalSourceAspectProps, FontProps, GeometricElement3dProps, IModel, IModelError, ModelProps, Placement3d, PrimitiveTypeCode, PropertyMetaData } from "@bentley/imodeljs-common";
 import * as path from "path";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { ECSqlStatement } from "./ECSqlStatement";
-import { DefinitionPartition, Element, InformationPartitionElement, Subject } from "./Element";
+import { DefinitionPartition, Element, GeometricElement3d, InformationPartitionElement, Subject } from "./Element";
 import { ElementAspect, ElementMultiAspect, ElementUniqueAspect, ExternalSourceAspect } from "./ElementAspect";
 import { IModelCloneContext } from "./IModelCloneContext";
 import { IModelDb } from "./IModelDb";
@@ -33,6 +34,9 @@ export interface IModelTransformOptions {
    * When the goal is to consolidate multiple source iModels into a single target iModel, this option must be specified.
    */
   targetScopeElementId?: Id64String;
+
+  /** Set to true if IModelTransformer should not record provenance back to the source element in the sourceDb on the target element within the targetDb. */
+  noProvenance?: boolean;
 }
 
 /** Base class used to transform a source iModel into a different target iModel.
@@ -51,10 +55,12 @@ export class IModelTransformer extends IModelExportHandler {
   /** The IModelTransformContext for this IModelTransformer. */
   public readonly context: IModelCloneContext;
   /** The Id of the Element in the **target** iModel that represents the **source** repository as a whole and scopes its [ExternalSourceAspect]($backend) instances. */
-  public readonly targetScopeElementId: Id64String = IModel.rootSubjectId;
+  public readonly targetScopeElementId: Id64String;
 
   /** The set of Elements that were deferred during a prior transformation pass. */
   protected _deferredElementIds = new Set<Id64String>();
+  /** If true, IModelTransformer is being used in a clone-only mode and should not record provenance. */
+  private readonly _noProvenance: boolean;
 
   /** Construct a new IModelTransformer
    * @param source Specifies the source IModelExporter or the source IModelDb that will be used to construct the source IModelExporter.
@@ -64,9 +70,8 @@ export class IModelTransformer extends IModelExportHandler {
   public constructor(source: IModelDb | IModelExporter, target: IModelDb | IModelImporter, options?: IModelTransformOptions) {
     super();
     // initialize IModelTransformOptions
-    if (undefined !== options) {
-      if (undefined !== options.targetScopeElementId) this.targetScopeElementId = options.targetScopeElementId;
-    }
+    this.targetScopeElementId = options?.targetScopeElementId ?? IModel.rootSubjectId;
+    this._noProvenance = options?.noProvenance ?? false;
     // initialize exporter and sourceDb
     if (source instanceof IModelDb) {
       this.exporter = new IModelExporter(source);
@@ -305,12 +310,14 @@ export class IModelTransformer extends IModelExportHandler {
     targetElementProps.id = targetElementId; // targetElementId will be valid (indicating update) or undefined (indicating insert)
     this.importer.importElement(targetElementProps);
     this.context.remapElement(sourceElement.id, targetElementProps.id!); // targetElementProps.id assigned by importElement
-    // record provenance in ExternalSourceAspect
-    const aspectProps: ExternalSourceAspectProps = this.initElementProvenance(sourceElement, targetElementProps.id!);
-    if (aspectProps.id === undefined) {
-      this.targetDb.elements.insertAspect(aspectProps);
-    } else {
-      this.targetDb.elements.updateAspect(aspectProps);
+    if (!this._noProvenance) { // clone scenarios do not record provenance
+      // record provenance in ExternalSourceAspect
+      const aspectProps: ExternalSourceAspectProps = this.initElementProvenance(sourceElement, targetElementProps.id!);
+      if (aspectProps.id === undefined) {
+        this.targetDb.elements.insertAspect(aspectProps);
+      } else {
+        this.targetDb.elements.updateAspect(aspectProps);
+      }
     }
   }
 
@@ -648,5 +655,63 @@ export class IModelTransformer extends IModelExportHandler {
     await this.exporter.exportChanges(requestContext, startChangeSetId);
     requestContext.enter();
     this.processDeferredElements();
+  }
+}
+
+/** IModelTransformer that clones the contents of a template model.
+ * @beta
+ */
+export class TemplateModelCloner extends IModelTransformer {
+  /** The Placement to apply to the template. */
+  private _transform3d?: Transform;
+  /** Accumulates the mapping of sourceElementIds to targetElementIds from the elements in the template model that were cloned. */
+  private _sourceIdToTargetIdMap?: Map<Id64String, Id64String>;
+  /** Construct a new TemplateModelCloner
+   * @param sourceDb The source IModelDb that contains the templates to clone
+   * @param targetDb The target IModelDb where the cloned template will be inserted
+   */
+  public constructor(sourceDb: IModelDb, targetDb: IModelDb) {
+    super(sourceDb, targetDb, { noProvenance: true });
+  }
+  /** Place a template from the sourceDb at the specified placement in the target model within the targetDb.
+   * @param sourceTemplateModelId The Id of the template model in the sourceDb
+   * @param targetModelId The Id of the target model where the cloned component will be inserted.
+   * @param placement The placement for the cloned component.
+   * @note *Predecessors* like the SpatialCategory must be remapped before calling this method.
+   * @returns The mapping of sourceElementIds from the template model to the instantiated targetElementIds in the targetDb in case further processing is required.
+   */
+  public placeTemplate3d(sourceTemplateModelId: Id64String, targetModelId: Id64String, placement: Placement3d): Map<Id64String, Id64String> {
+    this.context.remapElement(sourceTemplateModelId, targetModelId);
+    this._transform3d = Transform.createOriginAndMatrix(placement.origin, placement.angles.toMatrix3d());
+    this._sourceIdToTargetIdMap = new Map<Id64String, Id64String>();
+    this.exporter.exportModelContents(sourceTemplateModelId);
+    // Note: the source --> target mapping was needed during the template model cloning phase (remapping parent/child, for example), but needs to be reset afterwards
+    for (const sourceElementId of this._sourceIdToTargetIdMap.keys()) {
+      const targetElementId = this.context.findTargetElementId(sourceElementId);
+      this._sourceIdToTargetIdMap.set(sourceElementId, targetElementId);
+      this.context.remapElement(sourceElementId, Id64.invalid); // clear the underlying native remapping context for the next clone operation
+    }
+    return this._sourceIdToTargetIdMap; // return the sourceElementId -> targetElementId Map in case further post-processing is required.
+  }
+  /** Cloning from a template requires this override of onTransformElement. */
+  protected onTransformElement(sourceElement: Element): ElementProps {
+    const predecessorIds: Id64Set = sourceElement.getPredecessorIds();
+    predecessorIds.forEach((predecessorId: Id64String) => {
+      if (Id64.invalid === this.context.findTargetElementId(predecessorId)) {
+        throw new IModelError(IModelStatus.BadRequest, "Required dependency not found in target iModel", Logger.logError, BackendLoggerCategory.IModelTransformer);
+      }
+    });
+    const targetElementProps: ElementProps = super.onTransformElement(sourceElement);
+    targetElementProps.federationGuid = undefined; // clone from template should not maintain federationGuid
+    targetElementProps.code = Code.createEmpty(); // clone from template should not maintain codes
+    if (sourceElement instanceof GeometricElement3d) {
+      const placement = Placement3d.fromJSON((targetElementProps as GeometricElement3dProps).placement);
+      if (placement.isValid) {
+        placement.multiplyTransform(this._transform3d!);
+        (targetElementProps as GeometricElement3dProps).placement = placement;
+      }
+    }
+    this._sourceIdToTargetIdMap!.set(sourceElement.id, Id64.invalid); // keep track of (source) elementIds from the template model, but the target hasn't been inserted yet
+    return targetElementProps;
   }
 }

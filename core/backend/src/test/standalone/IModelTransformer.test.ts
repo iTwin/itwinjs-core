@@ -3,14 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { DbResult, Id64, Id64String, Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { Point3d, Range3d, Transform } from "@bentley/geometry-core";
+import { Point3d, Range3d, Transform, YawPitchRollAngles } from "@bentley/geometry-core";
 import { AxisAlignedBox3d, Code, ColorDef, CreateIModelProps, GeometricElement3dProps, IModel, Placement3d } from "@bentley/imodeljs-common";
 import { assert } from "chai";
 import * as path from "path";
 import {
-  BackendLoggerCategory, BackendRequestContext, BriefcaseManager, ECSqlStatement, Element, ElementMultiAspect, ElementRefersToElements, ElementUniqueAspect, ExternalSourceAspect,
-  IModelCloneContext, IModelDb, IModelExporter, IModelJsFs, IModelTransformer, InformationRecordModel, InformationRecordPartition,
-  PhysicalModel, PhysicalObject, PhysicalPartition, SpatialCategory, Subject, SnapshotDb,
+  BackendLoggerCategory, BackendRequestContext, BriefcaseManager, DefinitionPartition, ECSqlStatement, Element, ElementMultiAspect, ElementRefersToElements, ElementUniqueAspect,
+  ExternalSourceAspect, IModelCloneContext, IModelDb, IModelExporter, IModelJsFs, IModelTransformer, InformationRecordModel, InformationRecordPartition,
+  PhysicalModel, PhysicalObject, PhysicalPartition, SnapshotDb, SpatialCategory, Subject, TemplateModelCloner, TemplateRecipe3d,
 } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { ClassCounter, IModelToTextFileExporter, IModelTransformer3d, IModelTransformerUtils, RecordingIModelImporter, TestIModelTransformer } from "../IModelTransformerUtils";
@@ -180,6 +180,57 @@ describe("IModelTransformer", () => {
       return DbResult.BE_SQLITE_ROW === statement.step() ? statement.getValue(0).getInteger() : 0;
     });
   }
+
+  it("should clone from a component library", async () => {
+    const componentLibraryDb: SnapshotDb = IModelTransformerUtils.createComponentLibrary(outputDir);
+    const sourceLibraryModelId = componentLibraryDb.elements.queryElementIdByCode(DefinitionPartition.createCode(componentLibraryDb, IModel.rootSubjectId, "Components"))!;
+    assert.isTrue(Id64.isValidId64(sourceLibraryModelId));
+    const sourceCategoryId = componentLibraryDb.elements.queryElementIdByCode(SpatialCategory.createCode(componentLibraryDb, IModel.dictionaryId, "Components"))!;
+    assert.isTrue(Id64.isValidId64(sourceCategoryId));
+    const cylinderTemplateId = componentLibraryDb.elements.queryElementIdByCode(TemplateRecipe3d.createCode(componentLibraryDb, sourceLibraryModelId, "Cylinder"))!;
+    assert.isTrue(Id64.isValidId64(cylinderTemplateId));
+    const assemblyTemplateId = componentLibraryDb.elements.queryElementIdByCode(TemplateRecipe3d.createCode(componentLibraryDb, sourceLibraryModelId, "Assembly"))!;
+    assert.isTrue(Id64.isValidId64(assemblyTemplateId));
+    const targetTeamName = "Target";
+    const targetDb: SnapshotDb = IModelTransformerUtils.createTeamIModel(outputDir, targetTeamName, Point3d.createZero(), ColorDef.green);
+    const targetPhysicalModelId = targetDb.elements.queryElementIdByCode(PhysicalPartition.createCode(targetDb, IModel.rootSubjectId, `Physical${targetTeamName}`))!;
+    assert.isTrue(Id64.isValidId64(targetPhysicalModelId));
+    const targetCategoryModelId = targetDb.elements.queryElementIdByCode(DefinitionPartition.createCode(targetDb, IModel.rootSubjectId, `Definition${targetTeamName}`))!;
+    assert.isTrue(Id64.isValidId64(targetCategoryModelId));
+    const targetCategoryId = targetDb.elements.queryElementIdByCode(SpatialCategory.createCode(targetDb, targetCategoryModelId, `SpatialCategory${targetTeamName}`))!;
+    assert.isTrue(Id64.isValidId64(targetCategoryId));
+    const cloner = new TemplateModelCloner(componentLibraryDb, targetDb);
+    assert.throws(() => cloner.placeTemplate3d(cylinderTemplateId, targetPhysicalModelId, Placement3d.fromJSON())); // expect error since category not remapped
+    cloner.context.remapElement(sourceCategoryId, targetCategoryId);
+    const cylinderLocations: Point3d[] = [
+      Point3d.create(10, 10), Point3d.create(20, 10), Point3d.create(30, 10),
+      Point3d.create(10, 20), Point3d.create(20, 20), Point3d.create(30, 20),
+      Point3d.create(10, 30), Point3d.create(20, 30), Point3d.create(30, 30),
+    ];
+    cylinderLocations.forEach((location: Point3d) => {
+      const placement = new Placement3d(location, new YawPitchRollAngles(), new Range3d());
+      const sourceIdToTargetIdMap = cloner.placeTemplate3d(cylinderTemplateId, targetPhysicalModelId, placement);
+      for (const sourceElementId of sourceIdToTargetIdMap.keys()) {
+        const sourceElement = componentLibraryDb.elements.getElement(sourceElementId);
+        const targetElement = targetDb.elements.getElement(sourceIdToTargetIdMap.get(sourceElementId)!);
+        assert.equal(sourceElement.classFullName, targetElement.classFullName);
+      }
+    });
+    const assemblyLocations: Point3d[] = [Point3d.create(-10, 0), Point3d.create(-20, 0), Point3d.create(-30, 0)];
+    assemblyLocations.forEach((location: Point3d) => {
+      const placement = new Placement3d(location, new YawPitchRollAngles(), new Range3d());
+      const sourceIdToTargetIdMap = cloner.placeTemplate3d(assemblyTemplateId, targetPhysicalModelId, placement);
+      for (const sourceElementId of sourceIdToTargetIdMap.keys()) {
+        const sourceElement = componentLibraryDb.elements.getElement(sourceElementId);
+        const targetElement = targetDb.elements.getElement(sourceIdToTargetIdMap.get(sourceElementId)!);
+        assert.equal(sourceElement.classFullName, targetElement.classFullName);
+        assert.equal(sourceElement.parent?.id ? true : false, targetElement.parent?.id ? true : false);
+      }
+    });
+    cloner.dispose();
+    componentLibraryDb.close();
+    targetDb.close();
+  });
 
   it("should import everything below a Subject", async () => {
     // Source IModelDb
