@@ -36,15 +36,6 @@ module.exports = function (srcFile, outDir) {
     const loaders = [
       {
         loader: require.resolve("style-loader"),
-        options: {
-          injectType: 'linkTag',
-        },
-      },
-      {
-        loader: require.resolve("file-loader"),
-        options: {
-          name: "static/css/[name].[contenthash:8].css",
-        },
       },
       {
         loader: require.resolve("css-loader"),
@@ -221,7 +212,7 @@ module.exports = function (srcFile, outDir) {
             // smaller than specified limit in bytes as data URLs to avoid requests.
             // A missing `test` is equivalent to a match.
             {
-              test: [/\.bmp$/, /\.gif$/, /\.jpe?g$/, /\.png$/],
+              test: [/\.bmp$/, /\.gif$/, /\.jpe?g$/, /\.png$/, /\.svg$/],
               loader: require.resolve("url-loader"),
               options: {
                 limit: imageInlineSizeLimit,
