@@ -15,7 +15,7 @@ function isECv2Schema(schemaText: string): boolean {
  * A SchemaLocater implementation for locating XML Schema files
  * from the file system using configurable search paths. Returns only
  * Schemas from XML files with their keys populated.
- * @alpha @internal
+ * @internal
  */
 export class StubSchemaXmlFileLocater extends SchemaFileLocater implements ISchemaLocater {
   /**
