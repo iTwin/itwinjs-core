@@ -358,6 +358,9 @@ export class LightSettings {
   }
 
   public equals(rhs: LightSettings): boolean {
+    if (this === rhs)
+      return true;
+
     return this.portraitIntensity === rhs.portraitIntensity && this.specularIntensity === rhs.specularIntensity
       && this.ambient.equals(rhs.ambient) && this.solar.equals(rhs.solar) && this.hemisphere.equals(rhs.hemisphere);
   }

@@ -39,6 +39,7 @@ export class LightingUniforms {
 
   // CPU state
   private _settings = LightSettings.fromJSON();
+  private _initialized = false;
 
   // GPU state.
   private readonly _data = new Float32Array(15);
@@ -54,9 +55,10 @@ export class LightingUniforms {
   }
 
   public update(settings: LightSettings): void {
-    if (this._settings.equals(settings))
+    if (this._initialized && this._settings.equals(settings))
       return;
 
+    this._initialized = true;
     this._settings = settings;
     desync(this);
 
