@@ -3,6 +3,7 @@
     "ECObjects-100": "Class '{0}' cannot derive from sealed base class '{1}'.",
     "ECObjects-101": "Class '{0}' cannot derive from base class '{1}' of type '{2}'.",
     "ECObjects-500": "The CustomAttribute container '{0}' has a CustomAttribute with the class '{1}' which is not a concrete class.",
+    "ECObjects-501": "The CustomAttribute container '{0}' has a CustomAttribute with the class '{1}' whose schema is not referenced by the container's Schema.",
     "ECObjects-700": "Enumeration '{0}' has invalid primitive type.",
     "ECObjects-1100": "Mixin '{0}' cannot be applied to the class '{1}' because it does not satisfy the applies to constraint '{2}'.",
     "ECObjects-1300": "The ECProperty '{0}.{1}' has a base property '{2}.{1}' with a value type of {3} which is incompatible with the value type of {4}.",

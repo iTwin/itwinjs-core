@@ -429,6 +429,7 @@ export const DiagnosticCodes: {
     BaseClassIsSealed: string;
     BaseClassOfDifferentType: string;
     CustomAttributeNotOfConcreteClass: string;
+    CustomAttributeSchemaMustBeReferenced: string;
     EnumerationTypeUnsupported: string;
     MixinAppliedToClassMustDeriveFromConstraint: string;
     IncompatibleValueTypePropertyOverride: string;
@@ -468,6 +469,17 @@ export const Diagnostics: {
         diagnosticType: import("./Diagnostic").DiagnosticType;
     };
     CustomAttributeNotOfConcreteClass: {
+        new (container: CustomAttributeContainerProps, messageArgs: [string, string], category?: import("./Diagnostic").DiagnosticCategory): {
+            readonly code: string;
+            readonly messageText: string;
+            readonly schema: import("../ecschema-metadata").Schema;
+            readonly diagnosticType: import("./Diagnostic").DiagnosticType;
+            ecDefinition: CustomAttributeContainerProps;
+            messageArgs?: [string, string] | undefined;
+            category: import("./Diagnostic").DiagnosticCategory;
+        };
+    };
+    CustomAttributeSchemaMustBeReferenced: {
         new (container: CustomAttributeContainerProps, messageArgs: [string, string], category?: import("./Diagnostic").DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
@@ -575,7 +587,10 @@ export const Diagnostics: {
         new (constraint: RelationshipConstraint, messageArgs: [string, string], category?: import("./Diagnostic").DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
-            readonly schema: import("../ecschema-metadata").Schema;
+            readonly schema: import("../ecschema-metadata").Schema; /**
+             * EC-1502
+             * Required message parameters: constraint class name, relationship end (source/target), relationship name, abstract constraint class name
+             */
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: RelationshipConstraint;
             messageArgs?: [string, string] | undefined;
@@ -586,7 +601,10 @@ export const Diagnostics: {
         new (constraint: RelationshipConstraint, messageArgs: [string, string], category?: import("./Diagnostic").DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
-            readonly schema: import("../ecschema-metadata").Schema;
+            readonly schema: import("../ecschema-metadata").Schema; /**
+             * EC-1502
+             * Required message parameters: constraint class name, relationship end (source/target), relationship name, abstract constraint class name
+             */
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: RelationshipConstraint;
             messageArgs?: [string, string] | undefined;
