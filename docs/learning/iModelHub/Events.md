@@ -66,7 +66,7 @@ If [EventHandler.getEvent]($imodelhub-client) is called with a timeout duration 
 
 [EventHandler.createListener]($imodelhub-client) can be used to handle repeated calls to [EventHandler.getEvent]($imodelhub-client) and [EventHandler.getSASToken]($imodelhub-client).
 
-Authentication callback example, similar to [getting access token]($docs/learning/common/AccessToken.md). [AuthorizationToken]($clients) could be retrieved from credentials stored somewhere else or refreshed before it expires.
+Authentication callback example, similar to [getting access token]($docs/learning/common/AccessToken.md). [AuthorizationToken]($itwin-client) could be retrieved from credentials stored somewhere else or refreshed before it expires.
 
 ```ts
 [[include:EventHandler.createListener.authenticate.example-code]]
@@ -90,7 +90,7 @@ Deleting the listener after it's no longer necessary is just calling the callbac
 [[include:EventHandler.createListener.delete.example-code]]
 ```
 
-Event listener will work in the background, continuously getting events for a specific [EventSubscription]($imodelhub-client). Once an [IModelHubEvent]($imodelhub-client) is received, all registered listener callbacks for that subscription are called. If [EventSAS]($imodelhub-client) expires, [EventHandler.getSASToken]($imodelhub-client) will be called automatically. If [AccessToken]($clients) expires, authentication callback will be called to refresh that token.
+Event listener will work in the background, continuously getting events for a specific [EventSubscription]($imodelhub-client). Once an [IModelHubEvent]($imodelhub-client) is received, all registered listener callbacks for that subscription are called. If [EventSAS]($imodelhub-client) expires, [EventHandler.getSASToken]($imodelhub-client) will be called automatically. If [AccessToken]($itwin-client) expires, authentication callback will be called to refresh that token.
 
 Event listener will stop if there's an error getting events for that subscription or when all listeners for it are deleted. In the latter case, any outstanding long polling requests could still complete.
 

@@ -8,15 +8,14 @@
  */
 
 import { BeEvent, ClientRequestContext, IDisposable } from "@bentley/bentleyjs-core";
-import { IAuthorizationClient } from "../AuthorizationClient";
-import { AccessToken } from "../Token";
+import { AuthorizationClient, AccessToken } from "@bentley/itwin-client";
 
 /**
  * Interface to implement a typical frontend client
  * @beta
- * @deprecated Use [[IFrontendAuthorizationClient]] instead
+ * @deprecated Use [[FrontendAuthorizationClient]] instead
  */
-export interface IOidcFrontendClient extends IDisposable, IAuthorizationClient {
+export interface IOidcFrontendClient extends IDisposable, AuthorizationClient {
   /** Used to initialize the client - must be awaited before any other methods are called */
   initialize(requestContext: ClientRequestContext): Promise<void>;
 
@@ -51,9 +50,9 @@ export interface IOidcFrontendClient extends IDisposable, IAuthorizationClient {
 
 /** IOidcFrontendClient type guard.
  * @beta
- * @deprecated Use IFrontendAuthorizationClient instead
+ * @deprecated Use [[FrontendAuthorizationClient]] instead
  */
-export const isIOidcFrontendClient = (client: IAuthorizationClient | undefined): client is IOidcFrontendClient => { // tslint:disable-line:deprecation
+export const isIOidcFrontendClient = (client: AuthorizationClient | undefined): client is IOidcFrontendClient => { // tslint:disable-line:deprecation
   return client !== undefined && (client as IOidcFrontendClient).signIn !== undefined && (client as IOidcFrontendClient).signOut !== undefined; // tslint:disable-line:deprecation
 };
 

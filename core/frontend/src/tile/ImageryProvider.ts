@@ -23,7 +23,7 @@ import {
   request,
   RequestOptions,
   Response,
-} from "@bentley/imodeljs-clients";
+} from "@bentley/itwin-client";
 import { ScreenViewport } from "../Viewport";
 import { IModelApp } from "../IModelApp";
 import {

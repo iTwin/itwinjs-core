@@ -1,16 +1,16 @@
 {
-  "name": "@bentley/imodeljs-clients",
+  "name": "@bentley/itwin-client",
   "version": "2.0.0-dev.71",
-  "description": "Clients for various Bentley Services used by iModel.js",
-  "main": "lib/imodeljs-clients.js",
-  "typings": "lib/imodeljs-clients",
+  "description": "Base client package for iTwin applications",
+  "main": "lib/itwin-client.js",
+  "typings": "lib/itwin-client",
   "imodeljsSharedLibrary": true,
   "license": "MIT",
   "scripts": {
     "build": "tsc 1>&2",
     "clean": "rimraf lib .rush",
-    "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=imodeljs-clients",
-    "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-clients/file.json --tsIndexFile=imodeljs-clients.ts --onlyJson %TYPEDOC_THEME%",
+    "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=itwin-client",
+    "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --includes=../../generated-docs/extract --json=../../generated-docs/core/itwin-client/file.json --tsIndexFile=itwin-client.ts --onlyJson %TYPEDOC_THEME%",
     "lint": "tslint --project . 1>&2",
     "webpackTests": "webpack --config ./src/test/utils/webpack.config.js 1>&2",
     "test": "node ./node_modules/@bentley/build-tools/scripts/test.js --offline=\"mock\" --grep=\"#integration\" --invert",
@@ -19,13 +19,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/imodeljs/imodeljs/tree/master/core/clients"
+    "url": "https://github.com/imodeljs/imodeljs/tree/master/core/itwin-client"
   },
   "keywords": [
     "IMS Client",
-    "Connect Client",
     "WSG Client",
-    "iModelHub Client"
+    "iTwin Client"
   ],
   "author": {
     "name": "Bentley Systems, Inc.",
@@ -44,7 +43,7 @@
     "@bentley/build-tools": "2.0.0-dev.71",
     "@bentley/config-loader": "2.0.0-dev.71",
     "@bentley/geometry-core": "2.0.0-dev.71",
-    "@bentley/oidc-signin-tool": "2.0.0-dev.70",
+    "@bentley/oidc-signin-tool": "2.0.0-dev.71",
     "@types/chai": "^4.1.4",
     "@types/deep-assign": "^0.1.0",
     "@types/js-base64": "^2.3.1",

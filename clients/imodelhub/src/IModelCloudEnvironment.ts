@@ -7,7 +7,7 @@
  */
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
 import { Asset, Project } from "@bentley/context-registry-client";
-import { AccessToken, AuthorizedClientRequestContext, IAuthorizationClient, UserInfo } from "@bentley/imodeljs-clients";
+import { AccessToken, AuthorizedClientRequestContext, AuthorizationClient, UserInfo } from "@bentley/itwin-client";
 import { IModelClient } from "./IModelClient";
 
 /** How to discover "contexts". A context corresponds roughly to a "project" in Connect.
@@ -21,7 +21,7 @@ export interface ContextManagerClient {
 /** User-authorization service.
  * @internal
  */
-export interface IModelAuthorizationClient extends IAuthorizationClient {
+export interface IModelAuthorizationClient extends AuthorizationClient {
   authorizeUser(requestContext: ClientRequestContext, userInfo: UserInfo | undefined, userCredentials: any): Promise<AccessToken>;
 }
 

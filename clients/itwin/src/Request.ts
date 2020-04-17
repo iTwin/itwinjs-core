@@ -10,7 +10,7 @@ import * as deepAssign from "deep-assign";
 import * as https from "https";
 import { IStringifyOptions, stringify } from "qs";
 import * as sarequest from "superagent";
-import { ClientsLoggerCategory } from "./ClientsLoggerCategory";
+import { ClientsLoggerCategory } from "./iTwinClientLoggerCategory";
 
 const loggerCategory: string = ClientsLoggerCategory.Request;
 

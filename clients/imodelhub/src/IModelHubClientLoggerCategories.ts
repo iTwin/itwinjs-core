@@ -7,7 +7,7 @@
  */
 
 /** Logger categories used by this package
- * @note All logger categories in this package start with the `imodeljs-clients` prefix.
+ * @note All logger categories in this package start with the `imodelhub-client` prefix.
  * @see [Logger]($bentley)
  * @beta
  */

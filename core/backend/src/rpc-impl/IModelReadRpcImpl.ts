@@ -8,7 +8,7 @@
 
 import { assert, ClientRequestContext, Id64, Id64String, IModelStatus, Logger, OpenMode } from "@bentley/bentleyjs-core";
 import { Range3d, Range3dProps } from "@bentley/geometry-core";
-import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import {
   ElementProps,
   EntityMetaData,

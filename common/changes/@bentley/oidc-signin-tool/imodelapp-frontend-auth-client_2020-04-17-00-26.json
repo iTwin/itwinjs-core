@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/oidc-signin-tool",
+      "comment": "react to changes in imodeljs-clients",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/oidc-signin-tool",
+  "email": "evan.preslar@bentley.com"
+}

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { GuidString, Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { IModelVersion } from "@bentley/imodeljs-common";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { assert } from "chai";

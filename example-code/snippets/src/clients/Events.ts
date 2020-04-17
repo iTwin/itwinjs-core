@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { AccessToken, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { OidcAgentClient, OidcBackendClientConfiguration } from "@bentley/imodeljs-clients-backend";
 import { GuidString, Guid, Logger, ClientRequestContext, Config } from "@bentley/bentleyjs-core";
 import { IModelHubClient, IModelHubEvent, EventSubscription, EventSAS } from "@bentley/imodelhub-client";

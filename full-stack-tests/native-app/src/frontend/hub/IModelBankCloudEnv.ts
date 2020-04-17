@@ -6,7 +6,7 @@ import { WSStatus } from "@bentley/bentleyjs-core";
 import { IModelAuthorizationClient, IModelClient, IModelCloudEnvironment, IModelBankClient, IModelBankFileSystemContextClient } from "@bentley/imodelhub-client";
 import { IModelBankDummyAuthorizationClient } from "@bentley/imodelhub-client/lib/imodelbank/IModelBankDummyAuthorizationClient";
 import { BasicAuthorizationClient } from "@bentley/imodelhub-client/lib/imodelbank/BasicAuthorizationClient";
-import { AuthorizedClientRequestContext, WsgError } from "@bentley/imodeljs-clients";
+import { AuthorizedClientRequestContext, WsgError } from "@bentley/itwin-client";
 import { Project } from "@bentley/context-registry-client";
 
 export class IModelBankCloudEnv implements IModelCloudEnvironment {

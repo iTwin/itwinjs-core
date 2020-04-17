@@ -7,7 +7,7 @@
  */
 
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
-import { AccessToken, UserInfo, ImsOidcClient } from "@bentley/imodeljs-clients";
+import { AccessToken, UserInfo, ImsOidcClient } from "@bentley/itwin-client";
 import { Issuer, Client as OpenIdClient, ClientConfiguration, TokenSet } from "openid-client";
 import { decode } from "jsonwebtoken";
 

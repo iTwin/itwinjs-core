@@ -7,7 +7,7 @@ import * as fs from "fs";
 import * as path from "path";
 
 import { IModelHubStatus, GuidString } from "@bentley/bentleyjs-core";
-import { AccessToken, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { TestUsers } from "@bentley/oidc-signin-tool";
 import { TestConfig } from "../TestConfig";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";

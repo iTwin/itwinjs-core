@@ -7,7 +7,7 @@
  */
 
 import { assert, Config, Guid, Logger } from "@bentley/bentleyjs-core";
-import { AccessToken } from "@bentley/imodeljs-clients";
+import { AccessToken } from "@bentley/itwin-client";
 import { initialize, LDClient, LDFlagValue, LDUser } from "ldclient-js";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 

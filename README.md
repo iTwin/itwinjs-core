@@ -16,9 +16,19 @@ See [rush.json](./rush.json) for the list of packages:
 
 | Directory | npm package
 | ---- | ---
+| `clients/context-registry` | `@bentley/context-registry-client`
+| `clients/extension-client` | `@bentley/extension-client`
+| `clients/forms-data-management` | `@bentley/forms-data-management-client`
+| `clients/frontend-authorization` | `@bentley/frontend-authorization-client`
+| `clients/imodelhub` | `@bentley/imodelhub-client`
+| `clients/itwin` | `@bentley/itwin-client`
+| `clients/product-settings` | `@bentley/product-settings-client`
+| `clients/projectshare` | `@bentley/projectshare-client`
+| `clients/rbac` | `@bentley/rbac-client`
+| `clients/reality-data` | `@bentley/reality-data-client`
+| `clients/usage-logging` | `@bentley/usage-logging-client`
 | `core/backend` | `@bentley/imodeljs-backend`
 | `core/bentley` | `@bentley/bentleyjs-core`
-| `core/clients` | `@bentley/imodeljs-clients`
 | `core/common` | `@bentley/imodeljs-common`
 | `core/frontend` | `@bentley/imodeljs-frontend`
 | `core/geometry` | `@bentley/geometry-core`

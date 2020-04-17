@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { ClientRequestContext, Logger, LogLevel, Config } from "@bentley/bentleyjs-core";
 import { IModelBaseHandler } from "@bentley/imodelhub-client";
-import { UrlDiscoveryClient, ClientsLoggerCategory } from "@bentley/imodeljs-clients";
+import { UrlDiscoveryClient, ClientsLoggerCategory } from "@bentley/itwin-client";
 import { assert, should } from "chai";
 import * as fs from "fs";
 import * as path from "path";

@@ -4,6 +4,6 @@ beta;BrowserAuthorizationCallbackHandler
 beta;BrowserAuthorizationCallbackHandlerConfiguration
 beta;BrowserAuthorizationClient 
 beta;BrowserAuthorizationClientConfiguration
-beta;IFrontendAuthorizationClient 
-beta;isBrowserAuthorizationClient: (client: IAuthorizationClient | undefined) => client is IFrontendAuthorizationClient
+beta;FrontendAuthorizationClient 
+beta;isBrowserAuthorizationClient: (client: AuthorizationClient | undefined) => client is FrontendAuthorizationClient
 beta;OidcCallbackResponseMode

@@ -9,7 +9,7 @@
 import { Store } from "redux";
 
 import { Logger } from "@bentley/bentleyjs-core";
-import { AccessToken } from "@bentley/imodeljs-clients";
+import { AccessToken } from "@bentley/itwin-client";
 import { MobileRpcConfiguration } from "@bentley/imodeljs-common";
 import { I18N, TranslationOptions } from "@bentley/imodeljs-i18n";
 import { IModelConnection, SnapMode, ViewState } from "@bentley/imodeljs-frontend";

@@ -6,7 +6,7 @@
  * @module Authentication
  */
 
-import { AccessToken, IncludePrefix } from "@bentley/imodeljs-clients";
+import { AccessToken, IncludePrefix } from "@bentley/itwin-client";
 import { GrantParams, TokenSet } from "openid-client";
 import { BentleyStatus, BentleyError, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { OidcBackendClientConfiguration, OidcBackendClient } from "./OidcBackendClient";

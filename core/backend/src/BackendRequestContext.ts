@@ -7,7 +7,7 @@
  */
 
 import { ClientRequestContext, Guid } from "@bentley/bentleyjs-core";
-import { AccessToken, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { IModelHost } from "./IModelHost";
 
 /**

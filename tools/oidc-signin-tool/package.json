@@ -34,7 +34,7 @@
     "@bentley/config-loader": "2.0.0-dev.71",
     "@bentley/geometry-core": "2.0.0-dev.71",
     "@bentley/frontend-authorization-client": "2.0.0-dev.71",
-    "@bentley/imodeljs-clients": "2.0.0-dev.71",
+    "@bentley/itwin-client": "2.0.0-dev.71",
     "openid-client": "^3.7.2",
     "puppeteer": "chrome-80"
   },

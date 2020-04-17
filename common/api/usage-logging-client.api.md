@@ -4,11 +4,11 @@
 
 ```ts
 
-import { AuthorizedClientRequestContext } from '@bentley/imodeljs-clients';
+import { AuthorizedClientRequestContext } from '@bentley/itwin-client';
 import { BentleyStatus } from '@bentley/bentleyjs-core';
-import { Client } from '@bentley/imodeljs-clients';
+import { Client } from '@bentley/itwin-client';
 import { GuidString } from '@bentley/bentleyjs-core';
-import { RequestOptions } from '@bentley/imodeljs-clients';
+import { RequestOptions } from '@bentley/itwin-client';
 
 // @internal
 export class EndFeatureLogEntry extends FeatureLogEntry {

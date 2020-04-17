@@ -24,7 +24,7 @@
     "@bentley/geometry-core": "2.0.0-dev.71",
     "@bentley/imodelhub-client": "2.0.0-dev.71",
     "@bentley/imodeljs-backend": "2.0.0-dev.71",
-    "@bentley/imodeljs-clients": "2.0.0-dev.71",
+    "@bentley/itwin-client": "2.0.0-dev.71",
     "@bentley/imodeljs-clients-backend": "2.0.0-dev.71",
     "@bentley/imodeljs-common": "2.0.0-dev.71",
     "@bentley/imodeljs-i18n": "2.0.0-dev.71",

@@ -7,7 +7,7 @@
 import { Angle } from '@bentley/geometry-core';
 import { AngleProps } from '@bentley/geometry-core';
 import { AnyGeometryQuery } from '@bentley/geometry-core';
-import { AuthorizedClientRequestContext } from '@bentley/imodeljs-clients';
+import { AuthorizedClientRequestContext } from '@bentley/itwin-client';
 import { AuthStatus } from '@bentley/bentleyjs-core';
 import { BeEvent } from '@bentley/bentleyjs-core';
 import { BentleyError } from '@bentley/bentleyjs-core';

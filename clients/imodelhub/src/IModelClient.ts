@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module iModelHubClient
  */
-import { FileHandler } from "@bentley/imodeljs-clients";
+import { FileHandler } from "@bentley/itwin-client";
 import { IModelBaseHandler } from "./imodelhub/BaseHandler";
 import { BriefcaseHandler } from "./imodelhub/Briefcases";
 import { ChangeSetHandler } from "./imodelhub/ChangeSets";

@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module iModelBankClient
  */
-import { AuthorizedClientRequestContext, FileHandler } from "@bentley/imodeljs-clients";
+import { AuthorizedClientRequestContext, FileHandler } from "@bentley/itwin-client";
 import { IModelBankHandler } from "./IModelBankHandler";
 import { IModelClient } from "../IModelClient";
 

@@ -6,7 +6,7 @@
  * @module Settings
  */
 
-import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 
 /** Possible values for SettingsResults.status
  * @alpha

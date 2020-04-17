@@ -6,7 +6,7 @@
 import * as chai from "chai";
 import { Issuer } from "openid-client";
 import { ClientRequestContext, BeDuration, Config } from "@bentley/bentleyjs-core";
-import { AccessToken, IncludePrefix } from "@bentley/imodeljs-clients";
+import { AccessToken, IncludePrefix } from "@bentley/itwin-client";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 import { OidcAgentClient, OidcAgentClientConfiguration } from "../imodeljs-clients-backend";
 import { HubAccessTestValidator } from "./HubAccessTestValidator";

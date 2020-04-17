@@ -5,7 +5,7 @@
 import { ClientRequestContext, Id64String, Logger } from "@bentley/bentleyjs-core";
 import { Project } from "@bentley/context-registry-client";
 import { Briefcase as HubBriefcase, BriefcaseQuery, IModelCloudEnvironment, IModelQuery, LockLevel, LockQuery } from "@bentley/imodelhub-client";
-import { AccessToken, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { AuthorizedFrontendRequestContext, IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
 import { getAccessTokenFromBackend, TestUserCredentials } from "@bentley/oidc-signin-tool/lib/frontend";
 import { assert } from "chai";

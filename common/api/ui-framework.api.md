@@ -10,7 +10,7 @@ import { AbstractStatusBarCustomItem } from '@bentley/ui-abstract';
 import { AbstractToolbarProps } from '@bentley/ui-abstract';
 import { AbstractTreeNodeLoaderWithProvider } from '@bentley/ui-components';
 import { AbstractWidgetProps } from '@bentley/ui-abstract';
-import { AccessToken } from '@bentley/imodeljs-clients';
+import { AccessToken } from '@bentley/itwin-client';
 import { ActionButton } from '@bentley/ui-abstract';
 import { ActivityMessageDetails } from '@bentley/imodeljs-frontend';
 import { ActivityMessageEndReason } from '@bentley/imodeljs-frontend';
@@ -51,6 +51,7 @@ import { DraggedWidgetManagerProps } from '@bentley/ui-ninezone';
 import { DragLayerProps } from '@bentley/ui-components';
 import { DragSourceArguments } from '@bentley/ui-components';
 import { EmphasizeElementsProps } from '@bentley/imodeljs-frontend';
+import { FrontendAuthorizationClient } from '@bentley/frontend-authorization-client';
 import { GroupButton as GroupButton_2 } from '@bentley/ui-abstract';
 import { HorizontalAnchor } from '@bentley/ui-ninezone';
 import { I18N } from '@bentley/imodeljs-i18n';
@@ -59,7 +60,6 @@ import { IconSpec } from '@bentley/ui-core';
 import { Id64Array } from '@bentley/bentleyjs-core';
 import { Id64String } from '@bentley/bentleyjs-core';
 import { IDisposable } from '@bentley/bentleyjs-core';
-import { IFrontendAuthorizationClient } from '@bentley/frontend-authorization-client';
 import { IModelConnection } from '@bentley/imodeljs-frontend';
 import { InteractiveTool } from '@bentley/imodeljs-frontend';
 import { IPresentationTreeDataProvider } from '@bentley/presentation-components';
@@ -3978,7 +3978,7 @@ export class SignIn extends React.PureComponent<SignInProps> {
 
 // @public
 export interface SignInProps extends CommonProps {
-    oidcClient?: IFrontendAuthorizationClient;
+    oidcClient?: FrontendAuthorizationClient;
     onOffline?: () => void;
     onRegister?: () => void;
     onSignedIn?: () => void;

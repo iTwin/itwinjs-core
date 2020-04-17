@@ -7,11 +7,12 @@
  */
 
 import { AuthStatus, BeEvent, BentleyError, ClientRequestContext, Logger, LogLevel, assert } from "@bentley/bentleyjs-core";
-import { AccessToken, UserInfo, OidcFrontendClientConfiguration, ImsOidcClient } from "@bentley/imodeljs-clients";
+import { AccessToken, UserInfo, ImsOidcClient } from "@bentley/itwin-client";
 import { User, UserManager, UserManagerSettings, WebStorageStateStore, Log as OidcClientLog, Logger as IOidcClientLogger } from "oidc-client";
 import { FrontendRequestContext } from "../FrontendRequestContext";
 import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
-import { IFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
+import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
+import { OidcFrontendClientConfiguration } from "./OidcFrontendClient";
 
 const loggerCategory: string = FrontendLoggerCategory.Authorization;
 
@@ -78,13 +79,13 @@ class OidcClientLogger implements IOidcClientLogger {
  * @beta
  * @deprecated Use [[BrowserAuthorizationClient]] instead
  */
-export class OidcBrowserClient extends ImsOidcClient implements IFrontendAuthorizationClient {
+export class OidcBrowserClient extends ImsOidcClient implements FrontendAuthorizationClient {
   private _userManager?: UserManager;
   protected _accessToken?: AccessToken;
   private _redirectPath: string;
 
   /** Constructor */
-  public constructor(private _configuration: OidcFrontendClientConfiguration) {
+  public constructor(private _configuration: OidcFrontendClientConfiguration) { // tslint:disable-line:deprecation
     super();
     const redirectUri: URL = new URL(this._configuration.redirectUri);
     this._redirectPath = redirectUri.pathname;

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { DbResult, IModelStatus, Logger, OpenMode, Id64, Id64String, IDisposable, BeEvent, LogLevel, BentleyLoggerCategory, Config } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext, ClientsLoggerCategory } from "@bentley/imodeljs-clients";
+import { AuthorizedClientRequestContext, ClientsLoggerCategory } from "@bentley/itwin-client";
 import { IModelError, Code, ElementProps, RpcManager, GeometricElement3dProps, IModel, IModelReadRpcInterface, RelatedElement, RpcConfiguration, CodeProps } from "@bentley/imodeljs-common";
 import {
   IModelHostConfiguration, IModelHost, BriefcaseManager, IModelDb, Model, Element,

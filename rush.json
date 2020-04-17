@@ -61,6 +61,16 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
+      "packageName": "@bentley/itwin-client",
+      "projectFolder": "clients/itwin",
+      "reviewCategory": "common",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep",
+      "cyclicDependencyProjects": [
+        "@bentley/oidc-signin-tool"
+      ]
+    },
+    {
       "packageName": "@bentley/product-settings-client",
       "projectFolder": "clients/product-settings",
       "reviewCategory": "common",
@@ -143,16 +153,6 @@
       "reviewCategory": "backend",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
-      "packageName": "@bentley/imodeljs-clients",
-      "projectFolder": "core/clients",
-      "reviewCategory": "common",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep",
-      "cyclicDependencyProjects": [
-        "@bentley/oidc-signin-tool"
-      ]
     },
     {
       "packageName": "@bentley/imodeljs-clients-backend",

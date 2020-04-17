@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
-import { AccessToken, IncludePrefix, UserInfo } from "@bentley/imodeljs-clients";
+import { AccessToken, IncludePrefix, UserInfo } from "@bentley/itwin-client";
 import { IModelAuthorizationClient } from "../IModelCloudEnvironment";
 
 /**

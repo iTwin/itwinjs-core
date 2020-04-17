@@ -8,8 +8,8 @@
  */
 
 import { BeEvent, ClientRequestContext, isElectronRenderer, electronRenderer, assert, Logger } from "@bentley/bentleyjs-core";
-import { AccessToken, UserInfo } from "@bentley/imodeljs-clients";
-import { IFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
+import { AccessToken, UserInfo } from "@bentley/itwin-client";
+import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { OidcDesktopClientConfiguration, defaultOidcDesktopClientExpiryBuffer } from "@bentley/imodeljs-common";
 import { FrontendRequestContext } from "../FrontendRequestContext";
 import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
@@ -22,7 +22,7 @@ const loggerCategory: string = FrontendLoggerCategory.Authorization;
  * Ipc Wrapper around OidcDestkopClient for use in the electron render process
  * @alpha
  */
-export class OidcDesktopClientRenderer implements IFrontendAuthorizationClient {
+export class OidcDesktopClientRenderer implements FrontendAuthorizationClient {
   private _clientConfiguration: OidcDesktopClientConfiguration;
   private _accessToken?: AccessToken;
 

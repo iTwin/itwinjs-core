@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { AuthStatus, BentleyError, Config } from "@bentley/bentleyjs-core";
-import { AccessToken, IAuthorizationClient } from "@bentley/imodeljs-clients";
+import { AccessToken, AuthorizationClient } from "@bentley/itwin-client";
 
 // Keep the dependencies of this file to only ones that can be used from both the frontend and backend.  This allows the same class for
 // test users to be used in either case.
@@ -84,7 +84,7 @@ export class TestUsers {
  * Basic AuthorizationClient to use with an already created access token.
  * @internal
  */
-export class TestAuthorizationClient implements IAuthorizationClient {
+export class TestAuthorizationClient implements AuthorizationClient {
   constructor(private _accessToken?: AccessToken) { }
 
   public get isAuthorized(): boolean {

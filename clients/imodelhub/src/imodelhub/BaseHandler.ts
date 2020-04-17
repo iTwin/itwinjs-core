@@ -6,7 +6,7 @@
  * @module iModelHubClient
  */
 import { ClientRequestContext, Config } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext, DefaultWsgRequestOptionsProvider, FileHandler, RequestOptions, RequestQueryOptions, WsgClient, WsgInstance, WsgRequestOptions } from "@bentley/imodeljs-clients";
+import { AuthorizedClientRequestContext, DefaultWsgRequestOptionsProvider, FileHandler, RequestOptions, RequestQueryOptions, WsgClient, WsgInstance, WsgRequestOptions } from "@bentley/itwin-client";
 import { CustomRequestOptions } from "./CustomRequestOptions";
 import { IModelHubError } from "./Errors";
 

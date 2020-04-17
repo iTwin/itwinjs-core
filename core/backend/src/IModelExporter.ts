@@ -6,7 +6,7 @@
  * @module iModels
  */
 import { DbResult, GuidString, Id64, Id64String, IModelStatus, Logger } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { CodeSpec, FontProps, IModel, IModelError } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import * as path from "path";

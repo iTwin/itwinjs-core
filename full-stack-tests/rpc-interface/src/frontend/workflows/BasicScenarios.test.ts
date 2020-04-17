@@ -7,7 +7,7 @@ import { OpenMode } from "@bentley/bentleyjs-core";
 import { BriefcaseConnection, IModelApp } from "@bentley/imodeljs-frontend";
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
-import { AuthorizationClient } from "../setup/AuthorizationClient";
+import { BasicAuthorizationClient } from "../setup/BasicAuthorizationClient";
 import { TestContext } from "../setup/TestContext";
 
 const expect = chai.expect;
@@ -20,7 +20,7 @@ describe("Basic Scenarios", async () => {
   before(async () => {
     testContext = await TestContext.instance();
     const accessToken = testContext.adminUserAccessToken;
-    (IModelApp.authorizationClient as AuthorizationClient).setAccessToken(accessToken);
+    (IModelApp.authorizationClient as BasicAuthorizationClient).setAccessToken(accessToken);
   });
 
   async function openIModelAndQueryPage(contextId: string, iModelId: string, openMode: OpenMode) {

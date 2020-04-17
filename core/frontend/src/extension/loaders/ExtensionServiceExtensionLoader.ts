@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as semver from "semver";
 import { ExtensionClient, ExtensionProps } from "@bentley/extension-client";
-import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { Logger, BentleyError } from "@bentley/bentleyjs-core";
 
 import { ExtensionLoader, PendingExtension, LoadedExtensionProps, loggerCategory } from "../Extension";

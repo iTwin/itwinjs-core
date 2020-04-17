@@ -4,8 +4,8 @@
 
 ```ts
 
-import { AuthorizedClientRequestContext } from '@bentley/imodeljs-clients';
-import { Client } from '@bentley/imodeljs-clients';
+import { AuthorizedClientRequestContext } from '@bentley/itwin-client';
+import { Client } from '@bentley/itwin-client';
 import { ClientRequestContext } from '@bentley/bentleyjs-core';
 
 // @beta

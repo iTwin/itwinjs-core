@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import { Id64, Id64Set, OpenMode } from "@bentley/bentleyjs-core";
 import { Matrix4d, Point3d, Transform, XYZProps, YawPitchRollAngles } from "@bentley/geometry-core";
-import { AccessToken } from "@bentley/imodeljs-clients";
+import { AccessToken } from "@bentley/itwin-client";
 import { EcefLocation, GeoCoordStatus, IModelCoordinatesResponseProps, IModelReadRpcInterface, IModelTileRpcInterface, MassPropertiesOperation, MassPropertiesRequestProps, ModelQueryParams, SnapResponseProps } from "@bentley/imodeljs-common";
 import { BriefcaseConnection, IModelApp, IModelConnection, SpatialModelState, ViewState } from "@bentley/imodeljs-frontend";
-import { AuthorizationClient } from "./setup/AuthorizationClient";
+import { BasicAuthorizationClient } from "./setup/BasicAuthorizationClient";
 import { TestContext } from "./setup/TestContext";
 
 import * as chai from "chai";
@@ -30,7 +30,7 @@ describe("IModel Connection", () => {
       this.skip();
 
     accessToken = testContext.adminUserAccessToken;
-    (IModelApp.authorizationClient as AuthorizationClient).setAccessToken(accessToken);
+    (IModelApp.authorizationClient as BasicAuthorizationClient).setAccessToken(accessToken);
   });
 
   it("should successfully open an IModelConnection for read", async () => {
@@ -72,7 +72,7 @@ describe("IModelConnection Tiles", () => {
     const iModelId = testContext.iModelWithChangesets!.iModelId;
     contextId = testContext.iModelWithChangesets!.contextId;
     accessToken = testContext.adminUserAccessToken;
-    (IModelApp.authorizationClient as AuthorizationClient).setAccessToken(accessToken);
+    (IModelApp.authorizationClient as BasicAuthorizationClient).setAccessToken(accessToken);
     iModel = await BriefcaseConnection.open(contextId, iModelId);
   });
 
@@ -202,7 +202,7 @@ describe("IModelReadRpcInterface Methods requestable from an IModelConnection", 
     const iModelId = testContext.iModelWithChangesets!.iModelId;
     contextId = testContext.iModelWithChangesets!.contextId;
     accessToken = testContext.adminUserAccessToken;
-    (IModelApp.authorizationClient as AuthorizationClient).setAccessToken(accessToken);
+    (IModelApp.authorizationClient as BasicAuthorizationClient).setAccessToken(accessToken);
     iModel = await BriefcaseConnection.open(contextId, iModelId);
   });
 
@@ -402,7 +402,7 @@ describe("Snapping", () => {
     const iModelId = testContext.iModelWithChangesets!.iModelId;
     contextId = testContext.iModelWithChangesets!.contextId;
     accessToken = testContext.adminUserAccessToken;
-    (IModelApp.authorizationClient as AuthorizationClient).setAccessToken(accessToken);
+    (IModelApp.authorizationClient as BasicAuthorizationClient).setAccessToken(accessToken);
     iModel = await BriefcaseConnection.open(contextId, iModelId);
   });
 

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
-import { UserInfo, AccessToken } from "@bentley/imodeljs-clients";
+import { UserInfo, AccessToken } from "@bentley/itwin-client";
 import { IModelAuthorizationClient } from "../IModelCloudEnvironment";
 
 /** Implements the user permission abstraction by creating a dummy AccessToken. Note that the corresponding IModelBank server must

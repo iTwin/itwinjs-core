@@ -1,10 +1,10 @@
-# @bentley/imodeljs-clients
+# @bentley/itwin-client
 
 Copyright © Bentley Systems, Incorporated. All rights reserved.
 
 ## Description
 
-The __@bentley/imodeljs-clients__ package contains client-side wrappers for sending requests to various services.
+The __@bentley/itwin-client__ package contains client-side wrappers for sending requests to various services.
 These classes work on both the frontend and backend.
 
 ## Documentation

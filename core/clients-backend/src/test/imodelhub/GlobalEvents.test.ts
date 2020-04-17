@@ -5,7 +5,7 @@
 import * as chai from "chai";
 
 import { Guid, Config } from "@bentley/bentleyjs-core";
-import { AccessToken, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { TestUserCredentials } from "@bentley/oidc-signin-tool";
 import { TestConfig } from "../TestConfig";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";

@@ -4,7 +4,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { GuidString } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { ColorDef, IModel, IModelVersion, SubCategoryAppearance } from "@bentley/imodeljs-common";
 import { BriefcaseDb, BriefcaseManager, KeepBriefcase, OpenParams, SpatialCategory, ConcurrencyControl } from "@bentley/imodeljs-backend";
 import { IModelTestUtils } from "./IModelTestUtils";

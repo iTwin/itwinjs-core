@@ -30,7 +30,7 @@ import {
   TileAvailability,
   TileRequest,
 } from "./internal";
-import { request, Response, RequestOptions } from "@bentley/imodeljs-clients";
+import { request, Response, RequestOptions } from "@bentley/itwin-client";
 import { Range1d, Point2d, Point3d, Vector3d } from "@bentley/geometry-core";
 import {
   nextPoint3d64FromByteStream,

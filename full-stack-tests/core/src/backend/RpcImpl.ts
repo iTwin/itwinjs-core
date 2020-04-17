@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { BentleyError, BentleyStatus, ClientRequestContext, ClientRequestContextProps, GuidString, Config } from "@bentley/bentleyjs-core";
 import { BriefcaseDb, BriefcaseManager, ChangeSummaryExtractOptions, ChangeSummaryManager, EventSinkManager, IModelDb, IModelHost, IModelJsFs } from "@bentley/imodeljs-backend";
-import { AuthorizedClientRequestContext, AuthorizedClientRequestContextProps } from "@bentley/imodeljs-clients";
+import { AuthorizedClientRequestContext, AuthorizedClientRequestContextProps } from "@bentley/itwin-client";
 import { IModelRpcProps, RpcInterface, RpcManager } from "@bentley/imodeljs-common";
 import { CloudEnvProps, EventsTestRpcInterface, TestRpcInterface } from "../common/RpcInterfaces";
 import { CloudEnv } from "./cloudEnv";

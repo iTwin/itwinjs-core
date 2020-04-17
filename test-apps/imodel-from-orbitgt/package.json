@@ -15,7 +15,7 @@
   "dependencies": {
     "@bentley/bentleyjs-core": "2.0.0-dev.71",
     "@bentley/geometry-core": "2.0.0-dev.71",
-    "@bentley/imodeljs-clients": "2.0.0-dev.71",
+    "@bentley/itwin-client": "2.0.0-dev.71",
     "@bentley/imodeljs-common": "2.0.0-dev.71",
     "@bentley/imodeljs-backend": "2.0.0-dev.71",
     "@bentley/orbitgt-core": "2.0.0-dev.71",

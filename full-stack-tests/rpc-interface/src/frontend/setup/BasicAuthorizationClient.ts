@@ -3,12 +3,12 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { BentleyError, AuthStatus } from "@bentley/bentleyjs-core";
-import { AccessToken, IAuthorizationClient } from "@bentley/imodeljs-clients";
+import { AccessToken, AuthorizationClient } from "@bentley/itwin-client";
 
 // tslint:disable:ter-indent
 
-// Trivial implementation of IAuthorizationClient
-export class AuthorizationClient implements IAuthorizationClient {
+// Trivial implementation of AuthorizationClient
+export class BasicAuthorizationClient implements AuthorizationClient {
   constructor(private _accessToken?: AccessToken) { }
 
   public get isAuthorized(): boolean {

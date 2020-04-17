@@ -8,7 +8,7 @@
 import { ClientRequestContext, Config, Logger } from "@bentley/bentleyjs-core";
 import * as deepAssign from "deep-assign";
 import { AuthorizedClientRequestContext } from "./AuthorizedClientRequestContext";
-import { ClientsLoggerCategory } from "./ClientsLoggerCategory";
+import { ClientsLoggerCategory } from "./iTwinClientLoggerCategory";
 import { request, RequestOptions, Response, ResponseError } from "./Request";
 
 const loggerCategory: string = ClientsLoggerCategory.Clients;

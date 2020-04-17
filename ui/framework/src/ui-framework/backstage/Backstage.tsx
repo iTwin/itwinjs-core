@@ -9,7 +9,7 @@
 import * as React from "react";
 import { UiEvent, CommonProps, IconSpec } from "@bentley/ui-core";
 import { Backstage as NZ_Backstage } from "@bentley/ui-ninezone";
-import { AccessToken } from "@bentley/imodeljs-clients";
+import { AccessToken } from "@bentley/itwin-client";
 import { SafeAreaContext } from "../safearea/SafeAreaContext";
 import { UserProfileBackstageItem } from "./UserProfile";
 import { UiFramework } from "../UiFramework";

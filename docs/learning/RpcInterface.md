@@ -250,7 +250,7 @@ A request may pass through many communication tiers. A request will generally be
 
 Frontend methods may also optionally log additional messages that are tagged with the same ActivityId, to provide useful information about the purpose of the activity.
 
-Frontend methods that invoke imodeljs-clients methods directly are responsible for generating or forwarding an ActivityId to them.
+Frontend methods that invoke client methods directly are responsible for generating or forwarding an ActivityId to them.
 
 A backend method that turns around an invokes another backend's method via RpcInterfaces will propagate the current ActivityId to it.
 

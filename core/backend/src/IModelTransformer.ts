@@ -7,7 +7,7 @@
  */
 import { ClientRequestContext, DbResult, Guid, GuidString, Id64, Id64Set, Id64String, IModelStatus, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { Transform } from "@bentley/geometry-core";
-import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { Code, CodeSpec, ElementAspectProps, ElementProps, ExternalSourceAspectProps, FontProps, GeometricElement3dProps, IModel, IModelError, ModelProps, Placement3d, PrimitiveTypeCode, PropertyMetaData } from "@bentley/imodeljs-common";
 import * as path from "path";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";

@@ -5,7 +5,7 @@
 
 import { Guid, GuidString } from "@bentley/bentleyjs-core";
 import { ChangeSet, IModelHubClient, SmallThumbnail, Version, VersionQuery } from "@bentley/imodelhub-client";
-import { AccessToken, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 
 class MockAccessToken extends AccessToken {
   public constructor() { super(); this._samlAssertion = ""; }

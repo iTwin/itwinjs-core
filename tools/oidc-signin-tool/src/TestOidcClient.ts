@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, ClientRequestContext, Config } from "@bentley/bentleyjs-core";
-import { AccessToken, IAuthorizationClient, UrlDiscoveryClient, UserInfo } from "@bentley/imodeljs-clients";
+import { AccessToken, AuthorizationClient, UrlDiscoveryClient, UserInfo } from "@bentley/itwin-client";
 import { AuthorizationParameters, Client, generators, Issuer, OpenIDCallbackChecks, TokenSet, UserinfoResponse as OIDCUserInfo } from "openid-client";
 import * as os from "os";
 import * as puppeteer from "puppeteer";
@@ -11,14 +11,14 @@ import * as url from "url";
 import { TestOidcConfiguration, TestUserCredentials } from "./TestUsers";
 
 /**
- * Implementation of IAuthorizationClient used for the iModel.js integration tests.
+ * Implementation of AuthorizationClient used for the iModel.js integration tests.
  * - this is only to be used in test environments, and **never** in production code.
  * - use static create method to create an authorization client for the specified user credentials.
  * - calling getAccessToken() the first time, or after token expiry, causes the authorization to happen by
  *   spawning a headless browser, and automatically filling in the supplied user credentials.
  * @alpha
  */
-export class TestOidcClient implements IAuthorizationClient {
+export class TestOidcClient implements AuthorizationClient {
   private _client!: Client;
   private _issuer!: Issuer<Client>;
   private _imsUrl!: string;

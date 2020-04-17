@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { GuidString } from "@bentley/bentleyjs-core";
 import { HubIModel, IModelClient, IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
-import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { ContextRegistryClient, Project } from "@bentley/context-registry-client";
 import { getAccessTokenFromBackend, TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
 

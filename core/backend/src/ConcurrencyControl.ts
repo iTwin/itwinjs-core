@@ -7,7 +7,7 @@
  */
 
 import { assert, DbOpcode, DbResult, Id64String, Logger, RepositoryStatus } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { CodeProps, ElementProps, IModelError, IModelStatus, IModelWriteRpcInterface, ModelProps } from "@bentley/imodeljs-common";
 import * as deepAssign from "deep-assign";
 import * as path from "path";

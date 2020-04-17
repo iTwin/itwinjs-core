@@ -7,7 +7,7 @@
  */
 
 import { Logger, BriefcaseStatus } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext, FileHandler, ProgressInfo, ProgressCallback, request, RequestOptions, ResponseError, CancelRequest, UserCancelledError } from "@bentley/imodeljs-clients";
+import { AuthorizedClientRequestContext, FileHandler, ProgressInfo, ProgressCallback, request, RequestOptions, ResponseError, CancelRequest, UserCancelledError } from "@bentley/itwin-client";
 import { Transform, TransformCallback, PassThrough } from "stream";
 import { ClientsBackendLoggerCategory } from "../ClientsBackendLoggerCategory";
 import WriteStreamAtomic = require("fs-write-stream-atomic");

@@ -7,7 +7,7 @@
  */
 import { ClientRequestContext, GetMetaDataFunction, HttpStatus, Logger, WSStatus } from "@bentley/bentleyjs-core";
 import * as deepAssign from "deep-assign";
-import { ClientsLoggerCategory } from "./ClientsLoggerCategory";
+import { ClientsLoggerCategory } from "./iTwinClientLoggerCategory";
 import { ECJsonTypeMap, WsgInstance } from "./ECJsonTypeMap";
 import { ResponseError, RequestOptions, request, Response, RequestQueryOptions } from "./Request";
 import { AuthenticationError, DefaultRequestOptionsProvider, Client } from "./Client";

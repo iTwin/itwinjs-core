@@ -38,12 +38,12 @@
   },
   "peerDependencies": {
     "@bentley/bentleyjs-core": "^2.0.0-dev.71",
-    "@bentley/imodeljs-clients": "^2.0.0-dev.71"
+    "@bentley/itwin-client": "^2.0.0-dev.71"
   },
   "devDependencies": {
     "@bentley/bentleyjs-core": "2.0.0-dev.71",
     "@bentley/build-tools": "2.0.0-dev.71",
-    "@bentley/imodeljs-clients": "2.0.0-dev.71",
+    "@bentley/itwin-client": "2.0.0-dev.71",
     "@types/deep-assign": "^0.1.0",
     "@types/js-base64": "^2.3.1",
     "@types/node": "10.14.1",

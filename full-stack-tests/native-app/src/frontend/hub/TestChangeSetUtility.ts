@@ -6,12 +6,12 @@ import { TestRpcInterface } from "../../common/RpcInterfaces";
 import { IModelApp } from "@bentley/imodeljs-frontend";
 import { TestUserCredentials, getAccessTokenFromBackend } from "@bentley/oidc-signin-tool/lib/frontend";
 import { TestAuthorizationClient, TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
-import { IAuthorizationClient } from "@bentley/imodeljs-clients";
+import { AuthorizationClient } from "@bentley/itwin-client";
 
 /** Test utility to push an iModel and ChangeSets */
 export class TestChangeSetUtility {
 
-  private _backupAuthorizationClient?: IAuthorizationClient;
+  private _backupAuthorizationClient?: AuthorizationClient;
   private _testAuthorizationClient?: TestAuthorizationClient;
 
   private setTestAuthorizationClient() {

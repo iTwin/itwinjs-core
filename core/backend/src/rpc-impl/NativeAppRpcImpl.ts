@@ -26,7 +26,7 @@ import {
 import { EventSinkManager, EmitStrategy } from "../EventSink";
 import { cancelTileContentRequests } from "./IModelTileRpcImpl";
 import { NativeAppBackend } from "../NativeAppBackend";
-import { AuthorizedClientRequestContext, ProgressInfo } from "@bentley/imodeljs-clients";
+import { AuthorizedClientRequestContext, ProgressInfo } from "@bentley/itwin-client";
 import { Logger, LogLevel, ClientRequestContext, DbResult, Config } from "@bentley/bentleyjs-core";
 import { BriefcaseDb, OpenParams } from "../IModelDb";
 import { BriefcaseManager, KeepBriefcase } from "../BriefcaseManager";

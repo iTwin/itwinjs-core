@@ -7,7 +7,7 @@
  */
 
 import { BeEvent } from "@bentley/bentleyjs-core";
-import { AccessToken, AuthorizedClientRequestContext, DefaultRequestOptionsProvider, ECJsonTypeMap, request, RequestOptions, WsgInstance } from "@bentley/imodeljs-clients";
+import { AccessToken, AuthorizedClientRequestContext, DefaultRequestOptionsProvider, ECJsonTypeMap, request, RequestOptions, WsgInstance } from "@bentley/itwin-client";
 import { IModelBaseHandler } from "./BaseHandler";
 
 /** Base class for event shared access signatures. */

@@ -6,7 +6,7 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { mount } from "enzyme";
 
-import { AccessToken, UserInfo } from "@bentley/imodeljs-clients";
+import { AccessToken, UserInfo } from "@bentley/itwin-client";
 
 import { UserProfileBackstageItem } from "../../ui-framework/backstage/UserProfile";
 import TestUtils, { MockAccessToken } from "../TestUtils";

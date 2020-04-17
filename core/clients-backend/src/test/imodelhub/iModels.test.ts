@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { Guid, GuidString, IModelHubStatus } from "@bentley/bentleyjs-core";
 import { HubIModel, IModelClient, IModelHubClient, IModelHubClientError, IModelHubError, IModelQuery, InitializationState, SeedFile } from "@bentley/imodelhub-client";
-import { AccessToken, AuthorizedClientRequestContext, RequestGlobalOptions, RequestTimeoutOptions, WsgError } from "@bentley/imodeljs-clients";
+import { AccessToken, AuthorizedClientRequestContext, RequestGlobalOptions, RequestTimeoutOptions, WsgError } from "@bentley/itwin-client";
 import { TestUsers } from "@bentley/oidc-signin-tool";
 import * as chai from "chai";
 import * as fs from "fs";

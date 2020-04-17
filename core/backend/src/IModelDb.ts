@@ -26,7 +26,7 @@ import {
   PerfLogger,
 } from "@bentley/bentleyjs-core";
 import { Range3d } from "@bentley/geometry-core";
-import { AuthorizedClientRequestContext, ProgressCallback } from "@bentley/imodeljs-clients";
+import { AuthorizedClientRequestContext, ProgressCallback } from "@bentley/itwin-client";
 import {
   AxisAlignedBox3d,
   CategorySelectorProps,

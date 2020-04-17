@@ -9,7 +9,7 @@ import * as deepAssign from "deep-assign";
 import { IModelHubStatus, GuidString } from "@bentley/bentleyjs-core";
 import {
   AccessToken, AuthorizedClientRequestContext,
-} from "@bentley/imodeljs-clients";
+} from "@bentley/itwin-client";
 import { TestUsers } from "@bentley/oidc-signin-tool";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import { TestConfig } from "../TestConfig";

@@ -9,7 +9,7 @@
 
 import { ExtensionStatus, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { IModelError } from "@bentley/imodeljs-common";
-import { AuthorizedClientRequestContext, Client, request, RequestOptions, ResponseError, getArrayBuffer } from "@bentley/imodeljs-clients";
+import { AuthorizedClientRequestContext, Client, request, RequestOptions, ResponseError, getArrayBuffer } from "@bentley/itwin-client";
 import { ExtensionProps, extensionPropsFromJSON } from "./ExtensionProps";
 import { ExtensionFile } from "./ExtensionFile";
 

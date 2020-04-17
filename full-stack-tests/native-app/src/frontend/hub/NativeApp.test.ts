@@ -6,7 +6,7 @@ import { assert } from "chai";
 import { GuidString, Config } from "@bentley/bentleyjs-core";
 import { NativeApp, IModelApp, NativeAppLogger, AuthorizedFrontendRequestContext, FrontendRequestContext } from "@bentley/imodeljs-frontend";
 import { BriefcaseRpcProps, IModelVersion } from "@bentley/imodeljs-common";
-import { ProgressInfo } from "@bentley/imodeljs-clients";
+import { ProgressInfo } from "@bentley/itwin-client";
 import { TestUsers, TestAuthorizationClient } from "@bentley/oidc-signin-tool/lib/TestUsers";
 import { TestUtility } from "./TestUtility";
 import { TestChangeSetUtility } from "./TestChangeSetUtility";

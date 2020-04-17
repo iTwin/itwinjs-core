@@ -4,11 +4,11 @@
 
 ```ts
 
-import { AuthorizedClientRequestContext } from '@bentley/imodeljs-clients';
-import { RequestOptions } from '@bentley/imodeljs-clients';
-import { RequestQueryOptions } from '@bentley/imodeljs-clients';
-import { WsgClient } from '@bentley/imodeljs-clients';
-import { WsgInstance } from '@bentley/imodeljs-clients';
+import { AuthorizedClientRequestContext } from '@bentley/itwin-client';
+import { RequestOptions } from '@bentley/itwin-client';
+import { RequestQueryOptions } from '@bentley/itwin-client';
+import { WsgClient } from '@bentley/itwin-client';
+import { WsgInstance } from '@bentley/itwin-client';
 
 // @beta
 export class Asset extends CommonContext {

@@ -6,7 +6,7 @@ import { assert } from "chai";
 import * as path from "path";
 import { Id64String, Id64, DbResult, GuidString, Config } from "@bentley/bentleyjs-core";
 import { IModelVersion, ChangedValueState, ChangeOpCode } from "@bentley/imodeljs-common";
-import { RequestGlobalOptions, RequestTimeoutOptions } from "@bentley/imodeljs-clients";
+import { RequestGlobalOptions, RequestTimeoutOptions } from "@bentley/itwin-client";
 import { HubIModel, IModelQuery, ChangeSetPostPushEvent, NamedVersionCreatedEvent } from "@bentley/imodelhub-client";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import {

@@ -4,9 +4,9 @@
 
 ```ts
 
-import { AuthorizedClientRequestContext } from '@bentley/imodeljs-clients';
-import { WsgClient } from '@bentley/imodeljs-clients';
-import { WsgInstance } from '@bentley/imodeljs-clients';
+import { AuthorizedClientRequestContext } from '@bentley/itwin-client';
+import { WsgClient } from '@bentley/itwin-client';
+import { WsgInstance } from '@bentley/itwin-client';
 
 // @internal (undocumented)
 export class FormDataManagementClient extends WsgClient {

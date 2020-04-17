@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
 import { IModelAuthorizationClient } from "@bentley/imodelhub-client";
-import { AccessToken, UserInfo } from "@bentley/imodeljs-clients";
+import { AccessToken, UserInfo } from "@bentley/itwin-client";
 import { getAccessTokenFromBackend } from "@bentley/oidc-signin-tool/lib/frontend";
 
 export class IModelHubUserMgr implements IModelAuthorizationClient {

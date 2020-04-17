@@ -12,7 +12,7 @@ import * as defaultRuleset from "./rulesets/default.json";
 import * as getRelatedDistinctValues from "./rulesets/DistinctValues/getRelatedDistinctValues.json";
 import * as getFilteredNodePaths from "./rulesets/NodePaths/getFilteredNodePaths.json";
 import * as getNodePaths from "./rulesets/NodePaths/getNodePaths.json";
-import { AuthorizationClient } from "./setup/AuthorizationClient";
+import { BasicAuthorizationClient } from "./setup/BasicAuthorizationClient";
 import { TestContext } from "./setup/TestContext";
 
 describe("PresentationRpcInterface tests", () => {
@@ -32,7 +32,7 @@ describe("PresentationRpcInterface tests", () => {
     const iModelId = testContext.iModelWithChangesets!.iModelId;
     const contextId = testContext.iModelWithChangesets!.contextId;
     const accessToken = testContext.adminUserAccessToken;
-    (IModelApp.authorizationClient as AuthorizationClient).setAccessToken(accessToken);
+    (IModelApp.authorizationClient as BasicAuthorizationClient).setAccessToken(accessToken);
     iModel = await BriefcaseConnection.open(contextId, iModelId);
   });
 

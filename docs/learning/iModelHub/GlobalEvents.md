@@ -96,7 +96,7 @@ Deleting the listener after it's no longer necessary is just calling the callbac
 [[include:GlobalEventHandler.createListener.delete.example-code]]
 ```
 
-Event listener will work in the background, continuously getting events for a specific [GlobalEventSubscription]($clients). Once an [IModelHubGlobalEvent]($clients) is received, all registered listener callbacks for that subscription are called. If [GlobalEventSAS]($clients) expires, [GlobalEventHandler.getSASToken]($clients) will be called automatically. If [AccessToken]($clients) expires, authentication callback will be called to refresh that token.
+Event listener will work in the background, continuously getting events for a specific [GlobalEventSubscription]($imodelhub-client). Once an [IModelHubGlobalEvent]($imodelhub-client) is received, all registered listener callbacks for that subscription are called. If [GlobalEventSAS]($itwin-client) expires, [GlobalEventHandler.getSASToken]($imodelhub-client) will be called automatically. If [AccessToken]($itwin-client) expires, authentication callback will be called to refresh that token.
 
 Event listener will stop if there's an error getting events for that subscription or when all listeners for it are deleted. In the latter case, any outstanding long polling requests could still complete.
 

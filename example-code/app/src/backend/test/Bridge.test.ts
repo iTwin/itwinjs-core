@@ -8,7 +8,7 @@ import { RobotWorldEngine } from "../RobotWorldEngine";
 import { Angle, AngleProps, Point3d, Range3d, XYZProps } from "@bentley/geometry-core";
 import { Robot } from "../RobotElement";
 import { Barrier } from "../BarrierElement";
-import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { Project } from "@bentley/context-registry-client";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 // __PUBLISH_EXTRACT_START__ Bridge.imports.example-code

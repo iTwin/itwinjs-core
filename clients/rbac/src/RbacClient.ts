@@ -7,7 +7,7 @@
  */
 
 import { Config } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext, ECJsonTypeMap, request, Response, WsgClient, WsgInstance } from "@bentley/imodeljs-clients";
+import { AuthorizedClientRequestContext, ECJsonTypeMap, request, Response, WsgClient, WsgInstance } from "@bentley/itwin-client";
 
 /** RBAC permission
  * @internal

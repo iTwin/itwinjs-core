@@ -4,13 +4,14 @@
 
 ```ts
 
-import { AccessToken } from '@bentley/imodeljs-clients';
+import { AccessToken } from '@bentley/itwin-client';
 import { AmbientOcclusion } from '@bentley/imodeljs-common';
 import { AnalysisStyle } from '@bentley/imodeljs-common';
 import { Angle } from '@bentley/geometry-core';
 import { AngleSweep } from '@bentley/geometry-core';
 import { Arc3d } from '@bentley/geometry-core';
-import { AuthorizedClientRequestContext } from '@bentley/imodeljs-clients';
+import { AuthorizationClient } from '@bentley/itwin-client';
+import { AuthorizedClientRequestContext } from '@bentley/itwin-client';
 import { AuxCoordSystem2dProps } from '@bentley/imodeljs-common';
 import { AuxCoordSystem3dProps } from '@bentley/imodeljs-common';
 import { AuxCoordSystemProps } from '@bentley/imodeljs-common';
@@ -76,6 +77,7 @@ import { FillFlags } from '@bentley/imodeljs-common';
 import { FontMap } from '@bentley/imodeljs-common';
 import { Format } from '@bentley/imodeljs-quantity';
 import { FormatterSpec } from '@bentley/imodeljs-quantity';
+import { FrontendAuthorizationClient } from '@bentley/frontend-authorization-client';
 import { Frustum } from '@bentley/imodeljs-common';
 import { FrustumPlanes } from '@bentley/imodeljs-common';
 import * as Fuse from 'fuse.js';
@@ -102,14 +104,12 @@ import { Hilite } from '@bentley/imodeljs-common';
 import { I18N } from '@bentley/imodeljs-i18n';
 import { I18NNamespace } from '@bentley/imodeljs-i18n';
 import { I18NOptions } from '@bentley/imodeljs-i18n';
-import { IAuthorizationClient } from '@bentley/imodeljs-clients';
 import { Id64 } from '@bentley/bentleyjs-core';
 import { Id64Arg } from '@bentley/bentleyjs-core';
 import { Id64Array } from '@bentley/bentleyjs-core';
 import { Id64Set } from '@bentley/bentleyjs-core';
 import { Id64String } from '@bentley/bentleyjs-core';
 import { IDisposable } from '@bentley/bentleyjs-core';
-import { IFrontendAuthorizationClient } from '@bentley/frontend-authorization-client';
 import { ImageBuffer } from '@bentley/imodeljs-common';
 import { ImageBufferFormat } from '@bentley/imodeljs-common';
 import { ImageSource } from '@bentley/imodeljs-common';
@@ -120,7 +120,7 @@ import { IModelConnectionProps } from '@bentley/imodeljs-common';
 import { IModelCoordinatesResponseProps } from '@bentley/imodeljs-common';
 import { IModelRpcProps } from '@bentley/imodeljs-common';
 import { IModelVersion } from '@bentley/imodeljs-common';
-import { ImsOidcClient } from '@bentley/imodeljs-clients';
+import { ImsOidcClient } from '@bentley/itwin-client';
 import { IndexedPolyface } from '@bentley/geometry-core';
 import { IndexMap } from '@bentley/bentleyjs-core';
 import { InternetConnectivityStatus } from '@bentley/imodeljs-common';
@@ -148,7 +148,6 @@ import { ModelSelectorProps } from '@bentley/imodeljs-common';
 import { MonochromeMode } from '@bentley/imodeljs-common';
 import { OctEncodedNormal } from '@bentley/imodeljs-common';
 import { OidcDesktopClientConfiguration } from '@bentley/imodeljs-common';
-import { OidcFrontendClientConfiguration } from '@bentley/imodeljs-clients';
 import { OpenMode } from '@bentley/bentleyjs-core';
 import { OrbitGtBlobProps } from '@bentley/imodeljs-common';
 import { OrbitGtDataManager } from '@bentley/orbitgt-core';
@@ -170,7 +169,7 @@ import { PolylineData } from '@bentley/imodeljs-common';
 import { PolylineEdgeArgs } from '@bentley/imodeljs-common';
 import { PolylineFlags } from '@bentley/imodeljs-common';
 import { PolylineTypeFlags } from '@bentley/imodeljs-common';
-import { ProgressCallback } from '@bentley/imodeljs-clients';
+import { ProgressCallback } from '@bentley/itwin-client';
 import { PropertyDescription } from '@bentley/ui-abstract';
 import { QParams2d } from '@bentley/imodeljs-common';
 import { QParams3d } from '@bentley/imodeljs-common';
@@ -3737,7 +3736,7 @@ export class IModelApp {
     // @beta
     static applicationLogoCard?: () => HTMLTableRowElement;
     static get applicationVersion(): string;
-    static authorizationClient?: IAuthorizationClient;
+    static authorizationClient?: AuthorizationClient;
     // @internal (undocumented)
     static createRenderSys(opts?: RenderSystem.Options): RenderSystem;
     // @internal
@@ -3816,7 +3815,7 @@ export interface IModelAppOptions {
     accuSnap?: AccuSnap;
     applicationId?: string;
     applicationVersion?: string;
-    authorizationClient?: IAuthorizationClient;
+    authorizationClient?: AuthorizationClient;
     // @internal (undocumented)
     extensionAdmin?: ExtensionAdmin;
     // @internal
@@ -5555,7 +5554,7 @@ export class OffScreenViewport extends Viewport {
 }
 
 // @beta @deprecated
-export class OidcBrowserClient extends ImsOidcClient implements IFrontendAuthorizationClient {
+export class OidcBrowserClient extends ImsOidcClient implements FrontendAuthorizationClient {
     constructor(_configuration: OidcFrontendClientConfiguration);
     // (undocumented)
     protected _accessToken?: AccessToken;
@@ -5574,7 +5573,7 @@ export class OidcBrowserClient extends ImsOidcClient implements IFrontendAuthori
     }
 
 // @alpha
-export class OidcDesktopClientRenderer implements IFrontendAuthorizationClient {
+export class OidcDesktopClientRenderer implements FrontendAuthorizationClient {
     constructor(clientConfiguration: OidcDesktopClientConfiguration);
     dispose(): void;
     getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;

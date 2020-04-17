@@ -4,21 +4,21 @@
 
 ```ts
 
-import { AccessToken } from '@bentley/imodeljs-clients';
-import { AuthorizedClientRequestContext } from '@bentley/imodeljs-clients';
-import { CancelRequest } from '@bentley/imodeljs-clients';
+import { AccessToken } from '@bentley/itwin-client';
+import { AuthorizationClient } from '@bentley/itwin-client';
+import { AuthorizedClientRequestContext } from '@bentley/itwin-client';
+import { CancelRequest } from '@bentley/itwin-client';
 import { Client } from 'openid-client';
 import { ClientRequestContext } from '@bentley/bentleyjs-core';
-import { FileHandler } from '@bentley/imodeljs-clients';
+import { FileHandler } from '@bentley/itwin-client';
 import * as https from 'https';
-import { IAuthorizationClient } from '@bentley/imodeljs-clients';
-import { ImsOidcClient } from '@bentley/imodeljs-clients';
+import { ImsOidcClient } from '@bentley/itwin-client';
 import { Issuer } from 'openid-client';
-import { ProgressCallback } from '@bentley/imodeljs-clients';
+import { ProgressCallback } from '@bentley/itwin-client';
 import { TokenSet } from 'openid-client';
 import { Transform } from 'stream';
 import { TransformCallback } from 'stream';
-import { UserInfo } from '@bentley/imodeljs-clients';
+import { UserInfo } from '@bentley/itwin-client';
 
 // @internal
 export class AzureFileHandler implements FileHandler {
@@ -45,7 +45,6 @@ export class BufferedStream extends Transform {
 export enum ClientsBackendLoggerCategory {
     IModelHub = "imodelhub-client.iModelHub",
     OidcAgentClient = "imodeljs-clients-backend.OidcAgentClient",
-    OidcDesktopClient = "imodeljs-clients.OidcDesktopClient",
     OidcDeviceClient = "imodeljs-clients-backend.OidcDeviceClient"
 }
 
@@ -64,7 +63,7 @@ export class IOSAzureFileHandler implements FileHandler {
 }
 
 // @beta
-export class OidcAgentClient extends OidcBackendClient implements IAuthorizationClient {
+export class OidcAgentClient extends OidcBackendClient implements AuthorizationClient {
     constructor(agentConfiguration: OidcAgentClientConfiguration);
     getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
     // @deprecated

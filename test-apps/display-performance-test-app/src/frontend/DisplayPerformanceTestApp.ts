@@ -4,9 +4,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Id64, Id64Arg, Id64String, OpenMode, StopWatch, ClientRequestContext } from "@bentley/bentleyjs-core";
-import { AccessToken } from "@bentley/imodeljs-clients";
+import { AccessToken } from "@bentley/itwin-client";
 import { Project } from "@bentley/context-registry-client";
-import { BrowserAuthorizationClient, IFrontendAuthorizationClient, BrowserAuthorizationClientConfiguration } from "@bentley/frontend-authorization-client";
+import { BrowserAuthorizationClient, FrontendAuthorizationClient, BrowserAuthorizationClientConfiguration } from "@bentley/frontend-authorization-client";
 import { ProjectShareClient, ProjectShareFile, ProjectShareFileQuery, ProjectShareFolderQuery } from "@bentley/projectshare-client";
 import {
   BackgroundMapProps, BackgroundMapType, BentleyCloudRpcManager, DisplayStyleProps, ElectronRpcConfiguration, ElectronRpcManager, IModelReadRpcInterface,
@@ -829,7 +829,7 @@ async function openView(state: SimpleViewState, viewSize: ViewSize) {
   }
 }
 
-async function createOidcClient(requestContext: ClientRequestContext): Promise<IFrontendAuthorizationClient> {
+async function createOidcClient(requestContext: ClientRequestContext): Promise<FrontendAuthorizationClient> {
   const scope = "openid email profile organization imodelhub context-registry-service:read-only reality-data:read product-settings-service projectwise-share urlps-third-party";
 
   if (ElectronRpcConfiguration.isElectron) {
@@ -858,7 +858,7 @@ async function createOidcClient(requestContext: ClientRequestContext): Promise<I
 // @return Promise that resolves to true only after signIn is complete. Resolves to false until then.
 async function signIn(): Promise<boolean> {
   const requestContext = new FrontendRequestContext();
-  const oidcClient: IFrontendAuthorizationClient = await createOidcClient(requestContext);
+  const oidcClient: FrontendAuthorizationClient = await createOidcClient(requestContext);
 
   IModelApp.authorizationClient = oidcClient;
   if (oidcClient.isAuthorized)

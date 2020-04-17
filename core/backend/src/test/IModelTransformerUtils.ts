@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { DbResult, Guid, GuidString, Id64, Id64String } from "@bentley/bentleyjs-core";
 import { Box, LineString3d, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Transform, Vector3d, YawPitchRollAngles, Cone } from "@bentley/geometry-core";
-import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import {
   AuxCoordSystem2dProps, BisCodeSpec, CategorySelectorProps, Code, CodeScopeSpec, CodeSpec, ColorDef, ElementAspectProps, ElementProps, FontProps, FontType,
   GeometricElement2dProps, GeometricElement3dProps, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamIterator, GeometryStreamProps,

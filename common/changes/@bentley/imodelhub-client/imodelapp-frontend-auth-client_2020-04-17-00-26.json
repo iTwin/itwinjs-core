@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodelhub-client",
+      "comment": "react to changes in imodeljs-clients",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodelhub-client",
+  "email": "evan.preslar@bentley.com"
+}

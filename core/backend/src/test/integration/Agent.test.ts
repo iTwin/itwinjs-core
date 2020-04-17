@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { ClientRequestContext, Config } from "@bentley/bentleyjs-core";
-import { AccessToken } from "@bentley/imodeljs-clients";
+import { AccessToken } from "@bentley/itwin-client";
 import { OidcAgentClient, OidcAgentClientConfiguration } from "@bentley/imodeljs-clients-backend";
 import { IModelVersion, MobileRpcConfiguration } from "@bentley/imodeljs-common";
 import { assert } from "chai";

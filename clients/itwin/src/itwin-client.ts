@@ -5,7 +5,7 @@
 export * from "./AuthorizationClient";
 export * from "./AuthorizedClientRequestContext";
 export * from "./Client";
-export * from "./ClientsLoggerCategory";
+export * from "./iTwinClientLoggerCategory";
 export * from "./ECJsonTypeMap";
 export * from "./FileHandler";
 export * from "./ImsOidcClient";
@@ -15,16 +15,14 @@ export * from "./UserInfo";
 export * from "./WsgClient";
 export * from "./WsgQuery";
 
-export * from "./oidc/OidcFrontendClient";
-
 /** @docs-package-description
- * The imodeljs-clients package allows sending requests to various CONNECT services.
+ * The itwin-client package allows sending requests to various CONNECT services.
  *
  * It works both on [backend]($docs/learning/backend/index.md) and [frontend]($docs/learning/frontend/index.md).
  */
 /**
  * @docs-group-description Authentication
- * Classes for managing [AccessToken]($clients) used for all requests in other classes.
+ * Classes for managing [AccessToken] used for all requests in other classes.
  */
 /**
  * @docs-group-description iTwinServiceClients

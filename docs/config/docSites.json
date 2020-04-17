@@ -54,7 +54,7 @@
       "backend": "imodeljs-backend",
       "bentley": "bentleyjs-core",
       "clients-backend": "imodeljs-clients-backend",
-      "clients": "imodeljs-clients",
+      "itwin-client": "itwin-client",
       "common": "imodeljs-common",
       "context-registry-client": "context-registry-client",
       "extension-client": "extension-client",

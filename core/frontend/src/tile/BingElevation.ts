@@ -13,7 +13,7 @@ import { DisplayParams } from "../render/primitives/DisplayParams";
 import { Triangle } from "../render/primitives/Primitives";
 import { VertexKey } from "../render/primitives/VertexKey";
 import { MeshParams } from "../render/primitives/VertexTable";
-import { request, Response, RequestOptions } from "@bentley/imodeljs-clients";
+import { request, Response, RequestOptions } from "@bentley/itwin-client";
 import { IModelConnection } from "../IModelConnection";
 import { RenderGraphic } from "../render/RenderGraphic";
 import { RenderSystem } from "../render/RenderSystem";

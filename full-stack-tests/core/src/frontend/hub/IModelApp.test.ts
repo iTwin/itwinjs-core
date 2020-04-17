@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { ClientRequestContext, ClientRequestContextProps } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { IModelApp, AuthorizedFrontendRequestContext } from "@bentley/imodeljs-frontend";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
 import { TestAuthorizationClient, TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";

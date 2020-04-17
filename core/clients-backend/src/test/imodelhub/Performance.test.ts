@@ -5,7 +5,7 @@
 import { Logger, Id64, GuidString } from "@bentley/bentleyjs-core";
 import {
   AccessToken, ResponseError, AuthenticationError, AuthorizedClientRequestContext,
-} from "@bentley/imodeljs-clients";
+} from "@bentley/itwin-client";
 import * as utils from "./TestUtils";
 import { IModelClient, Briefcase, HubCode, CodeState, CodeQuery, Lock, LockLevel, LockType, LockQuery } from "@bentley/imodelhub-client";
 

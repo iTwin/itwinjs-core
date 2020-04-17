@@ -6,7 +6,7 @@
 import { IModelApp, Extension, Tool, Marker, ScreenViewport, Cluster, MarkerSet, DecorateContext, imageElementFromUrl, ViewState3d, BeButton, BeButtonEvent, InputSource, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
-import { request, Response, RequestOptions } from "@bentley/imodeljs-clients";
+import { request, Response, RequestOptions } from "@bentley/itwin-client";
 import { Range2d, Angle, Point2d, Point3d, XYAndZ } from "@bentley/geometry-core";
 import { Cartographic } from "@bentley/imodeljs-common";
 

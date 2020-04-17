@@ -6,7 +6,7 @@
  * @module RealityData
  */
 import { ClientRequestContext, Config, Guid } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext, ECJsonTypeMap, request, RequestOptions, RequestQueryOptions, WsgClient, WsgInstance } from "@bentley/imodeljs-clients";
+import { AuthorizedClientRequestContext, ECJsonTypeMap, request, RequestOptions, RequestQueryOptions, WsgClient, WsgInstance } from "@bentley/itwin-client";
 import { URL } from "url";
 
 /** RealityData

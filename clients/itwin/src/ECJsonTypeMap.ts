@@ -162,7 +162,7 @@
 // @todo Update example with property type conversions once that's available.
 
 import { assert, Logger } from "@bentley/bentleyjs-core";
-import { ClientsLoggerCategory } from "./ClientsLoggerCategory";
+import { ClientsLoggerCategory } from "./iTwinClientLoggerCategory";
 
 /** @internal */
 export type ConstructorType = new () => any;

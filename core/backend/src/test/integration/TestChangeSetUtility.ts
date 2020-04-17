@@ -4,7 +4,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { GuidString } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { ColorDef, IModel, IModelVersion, SubCategoryAppearance } from "@bentley/imodeljs-common";
 import { SpatialCategory } from "../../Category";
 import { ConcurrencyControl } from "../../ConcurrencyControl";

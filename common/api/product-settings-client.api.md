@@ -4,9 +4,9 @@
 
 ```ts
 
-import { AuthorizedClientRequestContext } from '@bentley/imodeljs-clients';
-import { Client } from '@bentley/imodeljs-clients';
-import { Response } from '@bentley/imodeljs-clients';
+import { AuthorizedClientRequestContext } from '@bentley/itwin-client';
+import { Client } from '@bentley/itwin-client';
+import { Response } from '@bentley/itwin-client';
 
 // @internal
 export class ConnectSettingsClient extends Client implements SettingsAdmin {

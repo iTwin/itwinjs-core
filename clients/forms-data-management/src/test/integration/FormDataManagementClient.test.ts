@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
 import { FormDataManagementClient, FormDefinition, FormInstanceData } from "../../FormDataManagementClient";
-import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { TestConfig } from "../TestConfig";
 
 chai.should();

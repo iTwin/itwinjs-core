@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { ContextRegistryClient, ContextRegistryRequestQueryOptions, Project } from "@bentley/context-registry-client";
-import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
 import { expect } from "chai";
 import { IModelHubPermission, Permission, RbacClient } from "../../RbacClient";

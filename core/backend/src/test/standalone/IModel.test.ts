@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { BeEvent, ClientRequestContext, DbResult, GetMetaDataFunction, Guid, GuidString, Id64, Id64String, Logger, LogLevel, OpenMode, using } from "@bentley/bentleyjs-core";
 import { GeometryQuery, LineString3d, Loop, Matrix4d, Point3d, PolyfaceBuilder, Range3d, StrokeOptions, Transform, YawPitchRollAngles } from "@bentley/geometry-core";
-import { AccessToken, IAuthorizationClient } from "@bentley/imodeljs-clients";
+import { AccessToken, AuthorizationClient } from "@bentley/itwin-client";
 import {
   AxisAlignedBox3d, Code, CodeScopeSpec, CodeSpec, ColorByName, ElementProps, EntityMetaData, EntityProps, FilePropertyProps, FontMap,
   FontType, GeometricElementProps, IModel, IModelError, IModelStatus, PrimitiveTypeCode, RelatedElement, SubCategoryAppearance,
@@ -1608,7 +1608,7 @@ describe("iModel", () => {
       },
     };
 
-    const authorizationClient: IAuthorizationClient = {
+    const authorizationClient: AuthorizationClient = {
       getAccessToken: async (_requestContext: ClientRequestContext): Promise<AccessToken> => {
         const fakeAccessToken2 = {} as AccessToken;
         return fakeAccessToken2;

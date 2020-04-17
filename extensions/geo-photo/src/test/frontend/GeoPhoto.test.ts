@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { GuidString, OpenMode, StopWatch } from "@bentley/bentleyjs-core";
 import { HubIModel } from "@bentley/imodelhub-client";
-import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { IModelVersion } from "@bentley/imodeljs-common";
 import { BriefcaseConnection, IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
 import { TestAuthorizationClient } from "@bentley/oidc-signin-tool/lib/TestUsers";

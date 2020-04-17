@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import { OpenMode, Logger } from "@bentley/bentleyjs-core";
 import { Range3d } from "@bentley/geometry-core";
-import { AccessToken } from "@bentley/imodeljs-clients";
+import { AccessToken } from "@bentley/itwin-client";
 import { Briefcase as HubBriefcase, BriefcaseQuery } from "@bentley/imodelhub-client";
 import { BriefcaseConnection, IModelApp, IModelConnection, AuthorizedFrontendRequestContext } from "@bentley/imodeljs-frontend";
 import { assert, expect } from "chai";
-import { AuthorizationClient } from "./setup/AuthorizationClient";
+import { BasicAuthorizationClient } from "./setup/BasicAuthorizationClient";
 import { TestContext } from "./setup/TestContext";
 
 describe("IModel Read/Write Connection", () => {
@@ -22,7 +22,7 @@ describe("IModel Read/Write Connection", () => {
       this.skip();
 
     accessToken = testContext.adminUserAccessToken;
-    (IModelApp.authorizationClient as AuthorizationClient).setAccessToken(accessToken);
+    (IModelApp.authorizationClient as BasicAuthorizationClient).setAccessToken(accessToken);
   });
 
   after(async function () {

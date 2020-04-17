@@ -6,7 +6,7 @@
 import { assert } from "chai";
 import { OpenMode, GuidString, Logger, LogLevel, BriefcaseStatus, ClientRequestContext, IModelStatus } from "@bentley/bentleyjs-core";
 import { IModelVersion, IModelError, IModelRpcProps } from "@bentley/imodeljs-common";
-import { AuthorizedClientRequestContext, ProgressInfo, UserCancelledError } from "@bentley/imodeljs-clients";
+import { AuthorizedClientRequestContext, ProgressInfo, UserCancelledError } from "@bentley/itwin-client";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { IModelTestUtils, TestIModelInfo } from "../IModelTestUtils";
 import {

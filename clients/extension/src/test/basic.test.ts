@@ -5,7 +5,7 @@
 
 import { Config, ExtensionStatus, Guid, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { ContextRegistryClient } from "@bentley/context-registry-client";
-import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { getAccessTokenFromBackend, TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
 import * as chai from "chai";
 import { ExtensionProps } from "../ExtensionProps";

@@ -27,7 +27,7 @@ import {
   XYZ,
   YawPitchRollAngles,
 } from "@bentley/geometry-core";
-import { AccessToken, getArrayBuffer, getJson } from "@bentley/imodeljs-clients";
+import { AccessToken, getArrayBuffer, getJson } from "@bentley/itwin-client";
 import { RealityData, RealityDataClient } from "@bentley/reality-data-client";
 import {
   BatchedTileIdMap,

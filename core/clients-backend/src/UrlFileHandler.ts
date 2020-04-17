@@ -6,7 +6,7 @@
  * @module Utils
  */
 import { BriefcaseStatus, Logger } from "@bentley/bentleyjs-core";
-import { FileHandler, AuthorizedClientRequestContext, CancelRequest, ProgressCallback, UserCancelledError } from "@bentley/imodeljs-clients";
+import { FileHandler, AuthorizedClientRequestContext, CancelRequest, ProgressCallback, UserCancelledError } from "@bentley/itwin-client";
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as https from "https";

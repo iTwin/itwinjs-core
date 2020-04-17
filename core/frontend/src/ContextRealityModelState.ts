@@ -7,7 +7,7 @@
  */
 import { ContextRealityModelProps, CartographicRange, OrbitGtBlobProps } from "@bentley/imodeljs-common";
 import { Angle } from "@bentley/geometry-core";
-import { AccessToken } from "@bentley/imodeljs-clients";
+import { AccessToken } from "@bentley/itwin-client";
 import { RealityData, RealityDataClient } from "@bentley/reality-data-client";
 import { DisplayStyleState } from "./DisplayStyleState";
 import { AuthorizedFrontendRequestContext } from "./FrontendRequestContext";

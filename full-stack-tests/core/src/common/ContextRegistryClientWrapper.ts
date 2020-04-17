@@ -2,9 +2,9 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients/lib/imodeljs-clients";
-import { Project, ContextRegistryClient, Asset } from "@bentley/context-registry-client";
+import { Asset, ContextRegistryClient, Project } from "@bentley/context-registry-client";
 import { ContextManagerClient } from "@bentley/imodelhub-client";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 
 /** An implementation of IModelProjectAbstraction backed by a iModelHub/Connect project */
 export class ContextRegistryClientWrapper implements ContextManagerClient {

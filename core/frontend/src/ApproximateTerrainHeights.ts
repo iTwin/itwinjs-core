@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Views */
 
-import { getJson } from "@bentley/imodeljs-clients";
+import { getJson } from "@bentley/itwin-client";
 import { FrontendRequestContext } from "./FrontendRequestContext";
 import { Cartographic } from "@bentley/imodeljs-common";
 import { Point2d, Range1d, Range2d } from "@bentley/geometry-core";

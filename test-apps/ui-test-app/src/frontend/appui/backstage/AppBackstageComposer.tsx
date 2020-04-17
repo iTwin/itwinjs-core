@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { connect } from "react-redux";
-import { AccessToken } from "@bentley/imodeljs-clients";
+import { AccessToken } from "@bentley/itwin-client";
 import { UserProfileBackstageItem, BackstageComposer } from "@bentley/ui-framework";
 import { RootState } from "../..";
 import { AppBackstageItemProvider } from "./AppBackstageItemProvider";

@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { executeBackendCallback } from "@bentley/certa/lib/utils/CallbackUtils";
-import { AccessToken, IncludePrefix, UserInfo } from "@bentley/imodeljs-clients";
+import { AccessToken, IncludePrefix, UserInfo } from "@bentley/itwin-client";
 import { TestOidcConfiguration, TestUserCredentials } from "../TestUsers";
 
 // Shared by both the frontend and backend side of the tests

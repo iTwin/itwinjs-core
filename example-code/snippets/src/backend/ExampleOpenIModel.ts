@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { EnvMacroSubst, OpenMode, ClientRequestContext, Config } from "@bentley/bentleyjs-core";
 import { BriefcaseDb, ConcurrencyControl, OpenParams } from "@bentley/imodeljs-backend";
-import { AccessToken, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { IModelError, IModelStatus, IModelVersion } from "@bentley/imodeljs-common";
 import { TestUserCredentials, TestUtility } from "@bentley/oidc-signin-tool";
 

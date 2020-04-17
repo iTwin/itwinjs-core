@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { AccessToken } from "@bentley/imodeljs-clients";
+import { AccessToken } from "@bentley/itwin-client";
 import { CommonProps, getUserColor } from "@bentley/ui-core";
 import { UserProfile as NZ_UserProfile } from "@bentley/ui-ninezone";
 import { SignOutModalFrontstage } from "../oidc/SignOut";

@@ -6,7 +6,7 @@
  * @module Features
  */
 import { Logger } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { FeatureLogEntry, UsageLoggingClient, UsageLoggingClientLoggerCategory } from "@bentley/usage-logging-client";
 
 const loggerCategory: string = UsageLoggingClientLoggerCategory.Client;

@@ -4,11 +4,11 @@
 
 ```ts
 
-import { AuthorizedClientRequestContext } from '@bentley/imodeljs-clients';
+import { AuthorizedClientRequestContext } from '@bentley/itwin-client';
 import { GuidString } from '@bentley/bentleyjs-core';
-import { WsgClient } from '@bentley/imodeljs-clients';
-import { WsgInstance } from '@bentley/imodeljs-clients';
-import { WsgQuery } from '@bentley/imodeljs-clients';
+import { WsgClient } from '@bentley/itwin-client';
+import { WsgInstance } from '@bentley/itwin-client';
+import { WsgQuery } from '@bentley/itwin-client';
 
 // @alpha
 export class ProjectShareClient extends WsgClient {

@@ -8,7 +8,7 @@ import * as utils from "./TestUtils";
 import { GuidString, Guid, IModelHubStatus, Id64 } from "@bentley/bentleyjs-core";
 import {
   AccessToken, AuthorizedClientRequestContext,
-} from "@bentley/imodeljs-clients";
+} from "@bentley/itwin-client";
 import { TestUsers } from "@bentley/oidc-signin-tool";
 import { TestConfig } from "../TestConfig";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";

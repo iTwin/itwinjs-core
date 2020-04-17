@@ -17,7 +17,7 @@ import { Gradient, ColorDef, ThematicGradientSettings, ThematicGradientColorSche
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { UiItemsManager } from "@bentley/ui-abstract";
 import { ClientRequestContext, Id64String } from "@bentley/bentleyjs-core";
-import { request, Response, RequestOptions } from "@bentley/imodeljs-clients";
+import { request, Response, RequestOptions } from "@bentley/itwin-client";
 
 import { IotUiProvider } from "./ui/IotUiProvider";
 import { IoTDeviceType, AnimationType } from "./IoTDefinitions";

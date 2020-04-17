@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { AuthStatus, BentleyError, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
 import { IModelHost, OidcDesktopClient } from "@bentley/imodeljs-backend";
-import { AccessToken } from "@bentley/imodeljs-clients";
+import { AccessToken } from "@bentley/itwin-client";
 import { OidcDesktopClientConfiguration } from "@bentley/imodeljs-common";
 import * as electron from "electron";
 import { ElectronManagerLoggerCategory } from "./ElectronManagerLoggerCategory";

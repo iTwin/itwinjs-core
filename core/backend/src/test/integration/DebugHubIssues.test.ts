@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { ChangeSetApplyOption, ChangeSetStatus, GuidString, Logger, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
-import { RequestGlobalOptions } from "@bentley/imodeljs-clients";
+import { RequestGlobalOptions } from "@bentley/itwin-client";
 import { RequestHost } from "@bentley/imodeljs-clients-backend";
 import { IModel, IModelVersion } from "@bentley/imodeljs-common";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";

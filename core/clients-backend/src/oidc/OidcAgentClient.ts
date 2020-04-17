@@ -7,7 +7,7 @@
  */
 
 import { GrantParams, TokenSet } from "openid-client";
-import { AccessToken, IAuthorizationClient } from "@bentley/imodeljs-clients";
+import { AccessToken, AuthorizationClient } from "@bentley/itwin-client";
 import { AuthStatus, BentleyError, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
 import { OidcBackendClientConfiguration, OidcBackendClient } from "./OidcBackendClient";
 import { ClientsBackendLoggerCategory } from "../ClientsBackendLoggerCategory";
@@ -32,7 +32,7 @@ export type OidcAgentClientConfiguration = OidcBackendClientConfiguration;
  * with the appropriate role that includes the required access permissions.
  * @beta
  */
-export class OidcAgentClient extends OidcBackendClient implements IAuthorizationClient {
+export class OidcAgentClient extends OidcBackendClient implements AuthorizationClient {
   private _accessToken?: AccessToken;
 
   constructor(agentConfiguration: OidcAgentClientConfiguration) {

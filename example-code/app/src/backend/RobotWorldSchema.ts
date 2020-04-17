@@ -13,7 +13,7 @@ import * as _schemaNames from "../common/RobotWorldSchema";
 import * as robots from "./RobotElement";
 import * as obstacles from "./BarrierElement";
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 // ... other modules ...
 
 /** An example of defining a class that represents a schema.

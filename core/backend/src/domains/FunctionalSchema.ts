@@ -7,7 +7,7 @@
  */
 
 import { AuthStatus, ClientRequestContext, DbResult, Logger } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { IModelError } from "@bentley/imodeljs-common";
 import * as path from "path";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";

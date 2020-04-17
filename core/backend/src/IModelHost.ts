@@ -7,7 +7,7 @@
  */
 
 import { AuthStatus, BeEvent, BentleyError, ClientRequestContext, Guid, GuidString, IModelStatus, Logger, Config } from "@bentley/bentleyjs-core";
-import { AccessToken, AuthorizedClientRequestContext, IAuthorizationClient, UrlDiscoveryClient, UserInfo } from "@bentley/imodeljs-clients";
+import { AccessToken, AuthorizedClientRequestContext, AuthorizationClient, UrlDiscoveryClient, UserInfo } from "@bentley/itwin-client";
 import { BentleyStatus, IModelError, MobileRpcConfiguration, RpcConfiguration, SerializedRpcRequest } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import * as os from "os";
@@ -198,7 +198,7 @@ export class IModelHostConfiguration {
  * @public
  */
 export class IModelHost {
-  private static _authorizationClient?: IAuthorizationClient;
+  private static _authorizationClient?: AuthorizationClient;
   private static _nativeAppBackend: boolean;
   public static backendVersion = "";
   private static _platform?: typeof IModelJsNative;
@@ -231,10 +231,10 @@ export class IModelHost {
   /** The optional [[FileNameResolver]] that resolves keys and partial file names for snapshot iModels. */
   public static snapshotFileNameResolver?: FileNameResolver;
 
-  /** Implementation of [[IAuthorizationClient]] to supply the authorization information for this session - only required for backend applications */
-  /** Implementation of [[IAuthorizationClient]] to supply the authorization information for this session - only required for agent applications, or backends that want to override access tokens passed from the frontend */
-  public static get authorizationClient(): IAuthorizationClient | undefined { return IModelHost._authorizationClient; }
-  public static set authorizationClient(authorizationClient: IAuthorizationClient | undefined) { IModelHost._authorizationClient = authorizationClient; }
+  /** Implementation of [[AuthorizationClient]] to supply the authorization information for this session - only required for backend applications */
+  /** Implementation of [[AuthorizationClient]] to supply the authorization information for this session - only required for agent applications, or backends that want to override access tokens passed from the frontend */
+  public static get authorizationClient(): AuthorizationClient | undefined { return IModelHost._authorizationClient; }
+  public static set authorizationClient(authorizationClient: AuthorizationClient | undefined) { IModelHost._authorizationClient = authorizationClient; }
 
   /** Get the active authorization/access token for use with various services
    * @throws [[BentleyError]] if the access token cannot be obtained

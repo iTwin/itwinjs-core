@@ -7,7 +7,7 @@
  */
 
 import { Config } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext, ECJsonTypeMap, WsgClient, WsgInstance } from "@bentley/imodeljs-clients";
+import { AuthorizedClientRequestContext, ECJsonTypeMap, WsgClient, WsgInstance } from "@bentley/itwin-client";
 
 /** FormDefinition
  * @internal

@@ -8,7 +8,7 @@
 
 import { ArgumentCheck } from "./Errors";
 import { GuidString } from "@bentley/bentleyjs-core";
-import { WsgQuery, RequestQueryOptions } from "@bentley/imodeljs-clients";
+import { WsgQuery, RequestQueryOptions } from "@bentley/itwin-client";
 
 /** Query for instances with string based instance ids.
  * @beta

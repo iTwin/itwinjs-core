@@ -115,6 +115,10 @@
       "allowedCategories": [ "extensions", "frontend", "internal", "tools" ]
     },
     {
+      "name": "@bentley/itwin-client",
+      "allowedCategories": [ "backend", "common", "extensions", "frontend", "internal", "tools" ]
+    },
+    {
       "name": "@bentley/logger-config",
       "allowedCategories": [ "internal" ]
     },

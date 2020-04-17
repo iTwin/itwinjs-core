@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { AccessToken, UserInfo } from "@bentley/imodeljs-clients";
+import { AccessToken, UserInfo } from "@bentley/itwin-client";
 import { AuthorizedFrontendRequestContext, IModelApp } from "@bentley/imodeljs-frontend";
 import { IModelBankFileSystemContextClient, IModelBankClient } from "@bentley/imodelhub-client";
 import { Project } from "@bentley/context-registry-client";

@@ -3,7 +3,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { RequestGlobalOptions } from "@bentley/imodeljs-clients";
+import { RequestGlobalOptions } from "@bentley/itwin-client";
 import HttpsProxyAgent = require("https-proxy-agent");
 import * as http from "http";
 import * as https from "https";

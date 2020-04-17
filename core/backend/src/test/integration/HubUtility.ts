@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, ChangeSetApplyOption, ChangeSetStatus, GuidString, Logger, OpenMode, PerfLogger } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import * as os from "os";
 import * as path from "path";
 import { BriefcaseManager, ChangeSetToken, IModelDb, IModelJsFs, ReservedBriefcaseId, StandaloneDb, IModelHost } from "../../imodeljs-backend";

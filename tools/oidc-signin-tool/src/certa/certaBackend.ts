@@ -6,7 +6,7 @@
 import { Config } from "@bentley/bentleyjs-core";
 import { registerBackendCallback } from "@bentley/certa/lib/utils/CallbackUtils";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
-import { AccessToken } from "@bentley/imodeljs-clients";
+import { AccessToken } from "@bentley/itwin-client";
 import { TestOidcConfiguration, TestUserCredentials } from "../TestUsers";
 import { TestUtility } from "../TestUtility";
 import { getTokenCallbackName, serializeToken } from "./certaCommon";

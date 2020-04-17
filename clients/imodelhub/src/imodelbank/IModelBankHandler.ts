@@ -6,7 +6,7 @@
  * @module iModelBankClient
  */
 import { assert, ClientRequestContext } from "@bentley/bentleyjs-core";
-import { FileHandler } from "@bentley/imodeljs-clients";
+import { FileHandler } from "@bentley/itwin-client";
 import { IModelBaseHandler } from "../imodelhub/BaseHandler";
 
 /**

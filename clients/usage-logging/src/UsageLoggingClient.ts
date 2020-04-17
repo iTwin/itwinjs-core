@@ -6,7 +6,7 @@
  * @module UsageLogging
  */
 import { BentleyStatus, Guid, GuidString, Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext, Client, IncludePrefix, request, RequestOptions, Response } from "@bentley/imodeljs-clients";
+import { AuthorizedClientRequestContext, Client, IncludePrefix, request, RequestOptions, Response } from "@bentley/itwin-client";
 import { FeatureLogEntryJson, LogEntryConverter } from "./LogEntryConverter";
 import { UsageLoggingClientLoggerCategory } from "./UsageLoggingClientLoggerCategories";
 

@@ -7,7 +7,7 @@ import { GuidString, Guid } from "@bentley/bentleyjs-core";
 import {
   AccessToken, AuthorizedClientRequestContext,
   RequestGlobalOptions, RequestTimeoutOptions,
-} from "@bentley/imodeljs-clients";
+} from "@bentley/itwin-client";
 import { TestUsers } from "@bentley/oidc-signin-tool";
 import { TestConfig } from "../TestConfig";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";

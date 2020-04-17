@@ -4,10 +4,11 @@
 
 ```ts
 
-import { AccessToken } from '@bentley/imodeljs-clients';
+import { AccessToken } from '@bentley/itwin-client';
 import { AnalysisStyleProps } from '@bentley/imodeljs-common';
 import { Angle } from '@bentley/geometry-core';
-import { AuthorizedClientRequestContext } from '@bentley/imodeljs-clients';
+import { AuthorizationClient } from '@bentley/itwin-client';
+import { AuthorizedClientRequestContext } from '@bentley/itwin-client';
 import { AuxCoordSystem2dProps } from '@bentley/imodeljs-common';
 import { AuxCoordSystem3dProps } from '@bentley/imodeljs-common';
 import { AuxCoordSystemProps } from '@bentley/imodeljs-common';
@@ -17,7 +18,7 @@ import { BeEvent } from '@bentley/bentleyjs-core';
 import { BriefcaseRpcProps } from '@bentley/imodeljs-common';
 import { CalloutProps } from '@bentley/imodeljs-common';
 import { Camera } from '@bentley/imodeljs-common';
-import { CancelRequest } from '@bentley/imodeljs-clients';
+import { CancelRequest } from '@bentley/itwin-client';
 import { CategoryProps } from '@bentley/imodeljs-common';
 import { CategorySelectorProps } from '@bentley/imodeljs-common';
 import { ChangeData } from '@bentley/imodeljs-common';
@@ -64,6 +65,7 @@ import { ExternalSourceAspectProps } from '@bentley/imodeljs-common';
 import { FilePropertyProps } from '@bentley/imodeljs-common';
 import { FontMap } from '@bentley/imodeljs-common';
 import { FontProps } from '@bentley/imodeljs-common';
+import { FrontendAuthorizationClient } from '@bentley/frontend-authorization-client';
 import { FunctionalElementProps } from '@bentley/imodeljs-common';
 import { GeoCoordinatesResponseProps } from '@bentley/imodeljs-common';
 import { GeometricElement2dProps } from '@bentley/imodeljs-common';
@@ -76,13 +78,11 @@ import { GeometryPartProps } from '@bentley/imodeljs-common';
 import { GeometryStreamProps } from '@bentley/imodeljs-common';
 import { GuidString } from '@bentley/bentleyjs-core';
 import { HubCode } from '@bentley/imodelhub-client';
-import { IAuthorizationClient } from '@bentley/imodeljs-clients';
 import { Id64Arg } from '@bentley/bentleyjs-core';
 import { Id64Array } from '@bentley/bentleyjs-core';
 import { Id64Set } from '@bentley/bentleyjs-core';
 import { Id64String } from '@bentley/bentleyjs-core';
 import { IDisposable } from '@bentley/bentleyjs-core';
-import { IFrontendAuthorizationClient } from '@bentley/frontend-authorization-client';
 import { ImageSourceFormat } from '@bentley/imodeljs-common';
 import { IModel } from '@bentley/imodeljs-common';
 import { IModelClient } from '@bentley/imodelhub-client';
@@ -93,7 +93,7 @@ import { IModelJsNative } from '@bentley/imodeljs-native';
 import { IModelRpcProps } from '@bentley/imodeljs-common';
 import { IModelStatus } from '@bentley/imodeljs-common';
 import { IModelVersion } from '@bentley/imodeljs-common';
-import { ImsOidcClient } from '@bentley/imodeljs-clients';
+import { ImsOidcClient } from '@bentley/itwin-client';
 import { InformationPartitionElementProps } from '@bentley/imodeljs-common';
 import { InternetConnectivityStatus } from '@bentley/imodeljs-common';
 import { LightLocationProps } from '@bentley/imodeljs-common';
@@ -124,7 +124,7 @@ import { Placement2d } from '@bentley/imodeljs-common';
 import { Placement3d } from '@bentley/imodeljs-common';
 import { Point2d } from '@bentley/geometry-core';
 import { Point3d } from '@bentley/geometry-core';
-import { ProgressCallback } from '@bentley/imodeljs-clients';
+import { ProgressCallback } from '@bentley/itwin-client';
 import { PropertyCallback } from '@bentley/imodeljs-common';
 import { QueryLimit } from '@bentley/imodeljs-common';
 import { QueryParams } from '@bentley/imodeljs-common';
@@ -2483,8 +2483,8 @@ export class IModelHost {
     static get appAssetsDir(): string | undefined;
     static applicationId: string;
     static applicationVersion: string;
-    static get authorizationClient(): IAuthorizationClient | undefined;
-    static set authorizationClient(authorizationClient: IAuthorizationClient | undefined);
+    static get authorizationClient(): AuthorizationClient | undefined;
+    static set authorizationClient(authorizationClient: AuthorizationClient | undefined);
     // (undocumented)
     static backendVersion: string;
     // @internal
@@ -3242,7 +3242,7 @@ export class NativeAppBackend {
 }
 
 // @alpha
-export class OidcDesktopClient extends ImsOidcClient implements IFrontendAuthorizationClient {
+export class OidcDesktopClient extends ImsOidcClient implements FrontendAuthorizationClient {
     constructor(clientConfiguration: OidcDesktopClientConfiguration);
     dispose(): void;
     getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;

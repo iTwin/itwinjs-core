@@ -8,11 +8,12 @@
  */
 
 import { assert, AuthStatus, BeEvent, BentleyError, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
-import { AccessToken, IAuthorizationClient, ImsOidcClient, UserInfo } from "@bentley/imodeljs-clients";
+import { AccessToken, AuthorizationClient, ImsOidcClient, UserInfo } from "@bentley/itwin-client";
 import { User, UserManager, UserManagerSettings } from "oidc-client";
-import { IFrontendAuthorizationClient } from "../../IFrontendAuthorizationClient";
+import { FrontendAuthorizationClient } from "../../FrontendAuthorizationClient";
 import { BrowserAuthorizationBase } from "./BrowserAuthorizationBase";
 import { BrowserAuthorizationClientRedirectState } from "./BrowserAuthorizationClientRedirectState";
+import { FrontendAuthorizationClientLoggerCategory } from "../../FrontendAuthorizationClientLoggerCategory";
 
 /**
  * @beta
@@ -38,19 +39,17 @@ export interface BrowserAuthorizationClientConfiguration {
   readonly responseType?: "code" | "id_token" | "id_token token" | "code id_token" | "code token" | "code id_token token" | string;
 }
 
-/** IOidcFrontendClient type guard.
+/** FrontendAuthorization type guard.
  * @beta
  */
-export const isBrowserAuthorizationClient = (client: IAuthorizationClient | undefined): client is IFrontendAuthorizationClient => {
-  return client !== undefined && (client as IFrontendAuthorizationClient).signIn !== undefined && (client as IFrontendAuthorizationClient).signOut !== undefined;
+export const isBrowserAuthorizationClient = (client: AuthorizationClient | undefined): client is FrontendAuthorizationClient => {
+  return client !== undefined && (client as FrontendAuthorizationClient).signIn !== undefined && (client as FrontendAuthorizationClient).signOut !== undefined;
 };
 
 /**
  * @beta
  */
-export class BrowserAuthorizationClient extends BrowserAuthorizationBase<BrowserAuthorizationClientConfiguration> implements IFrontendAuthorizationClient {
-  public static readonly loggerCategory: string = "imodeljs-clients.BrowserAuthorizationClient";
-
+export class BrowserAuthorizationClient extends BrowserAuthorizationBase<BrowserAuthorizationClientConfiguration> implements FrontendAuthorizationClient {
   public readonly onUserStateChanged = new BeEvent<(token: AccessToken | undefined) => void>();
 
   protected _accessToken?: AccessToken;
@@ -128,7 +127,7 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
   }
 
   /**
-   * Alias for signInRedirect needed to satisfy [[IFrontendAuthorizationClient]]
+   * Alias for signInRedirect needed to satisfy [[FrontendAuthorizationClient]]
    * @param requestContext
    */
   public async signIn(requestContext: ClientRequestContext): Promise<void> {
@@ -212,7 +211,7 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
       user = await userManager.signinSilent(); // calls events
       return user;
     } catch (err) {
-      Logger.logInfo(BrowserAuthorizationClient.loggerCategory, "Silent sign-in failed");
+      Logger.logInfo(FrontendAuthorizationClientLoggerCategory.Authorization, "Silent sign-in failed");
       return undefined;
     }
   }
@@ -282,7 +281,7 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
       return this._accessToken;
     if (requestContext)
       requestContext.enter();
-    throw new BentleyError(AuthStatus.Error, "Not signed in.", Logger.logError, BrowserAuthorizationClient.loggerCategory);
+    throw new BentleyError(AuthStatus.Error, "Not signed in.", Logger.logError, FrontendAuthorizationClientLoggerCategory.Authorization);
   }
 
   /**
@@ -311,7 +310,7 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
     try {
       this.onUserStateChanged.raiseEvent(this._accessToken);
     } catch (err) {
-      Logger.logError(BrowserAuthorizationClient.loggerCategory, "Error thrown when handing OidcBrowserClient.onUserStateChanged event", () => ({ message: err.message }));
+      Logger.logError(FrontendAuthorizationClientLoggerCategory.Authorization, "Error thrown when handing OidcBrowserClient.onUserStateChanged event", () => ({ message: err.message }));
     }
   }
 

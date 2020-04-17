@@ -11,6 +11,7 @@ import { assert, Logger } from "@bentley/bentleyjs-core";
 import { UserManager, UserManagerSettings } from "oidc-client";
 import { BrowserAuthorizationClientRedirectState } from "./BrowserAuthorizationClientRedirectState";
 import { BrowserAuthorizationBase } from "./BrowserAuthorizationBase";
+import { FrontendAuthorizationClientLoggerCategory } from "../../FrontendAuthorizationClientLoggerCategory";
 
 /**
  * @beta
@@ -43,8 +44,6 @@ export enum OidcCallbackResponseMode {
  * @beta
  */
 export class BrowserAuthorizationCallbackHandler extends BrowserAuthorizationBase<BrowserAuthorizationCallbackHandlerConfiguration> {
-  protected static readonly _loggerCategory: string = "imodeljs-clients.OidcUserManagerCallbackClient";
-
   private constructor(configuration: BrowserAuthorizationCallbackHandlerConfiguration = {}) {
     super(configuration);
   }
@@ -103,7 +102,7 @@ export class BrowserAuthorizationCallbackHandler extends BrowserAuthorizationBas
       }
     } catch (err) {
       const message = `SigninCallback error - failed to process signin request in callback: ${err.message}`;
-      Logger.logError(BrowserAuthorizationCallbackHandler._loggerCategory, message);
+      Logger.logError(FrontendAuthorizationClientLoggerCategory.Authorization, message);
       throw new Error(message);
     }
   }

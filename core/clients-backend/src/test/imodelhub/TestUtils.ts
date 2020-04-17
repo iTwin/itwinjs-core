@@ -10,7 +10,7 @@ import { GuidString, Guid, Id64, Id64String, ClientRequestContext, Logger, WSSta
 import {
   ECJsonTypeMap, AccessToken, UserInfo, ProgressInfo,
   AuthorizedClientRequestContext, WsgError,
-} from "@bentley/imodeljs-clients";
+} from "@bentley/itwin-client";
 import {
   IModelHubClient, HubCode, CodeState, MultiCode, Briefcase, BriefcaseQuery, ChangeSet, Version,
   Thumbnail, SmallThumbnail, LargeThumbnail, IModelQuery, LockType, LockLevel,

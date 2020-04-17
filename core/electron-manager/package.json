@@ -42,7 +42,7 @@
   "devDependencies": {
     "@bentley/build-tools": "2.0.0-dev.71",
     "@bentley/bentleyjs-core": "2.0.0-dev.71",
-    "@bentley/imodeljs-clients": "2.0.0-dev.71",
+    "@bentley/itwin-client": "2.0.0-dev.71",
     "@bentley/imodeljs-common": "2.0.0-dev.71",
     "@bentley/imodeljs-backend": "2.0.0-dev.71",
     "@types/node": "10.14.1",

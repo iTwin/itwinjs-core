@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { GuidString } from "@bentley/bentleyjs-core";
 import { IModelClient, Thumbnail, ThumbnailQuery, ThumbnailSize, Version } from "@bentley/imodelhub-client";
-import { AccessToken, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { TestUsers } from "@bentley/oidc-signin-tool";
 import * as chai from "chai";
 import { RequestType, ResponseBuilder, ScopeType } from "../ResponseBuilder";

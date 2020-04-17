@@ -7,7 +7,7 @@ import { RpcInterface, RpcManager, IModelRpcProps, Editor3dRpcInterface, Bentley
 import { IModelHost } from "../IModelHost";
 import { GeometricElement3dEditor } from "../ElementEditor";
 import { IModelDb } from "../IModelDb";
-import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { ClientRequestContext, Id64Array, GuidString } from "@bentley/bentleyjs-core";
 import { TransformProps, Point3d, YawPitchRollAngles } from "@bentley/geometry-core";
 

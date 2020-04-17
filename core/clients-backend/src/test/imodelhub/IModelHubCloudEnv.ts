@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
 import { ContextManagerClient, IModelAuthorizationClient, IModelCloudEnvironment } from "@bentley/imodelhub-client";
-import { AccessToken, AuthorizedClientRequestContext, UserInfo } from "@bentley/imodeljs-clients";
+import { AccessToken, AuthorizedClientRequestContext, UserInfo } from "@bentley/itwin-client";
 import { TestUtility } from "@bentley/oidc-signin-tool";
 import { getImodelHubClient } from "./TestUtils";
 import { ContextRegistryClient, Project, Asset } from "@bentley/context-registry-client";

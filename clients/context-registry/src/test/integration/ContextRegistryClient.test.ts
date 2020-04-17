@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import * as chai from "chai";
 import { ContextRegistryClient, ContextRegistryRequestQueryOptions, Project } from "../../ContextRegistryClient";
 import { TestConfig } from "../TestConfig";

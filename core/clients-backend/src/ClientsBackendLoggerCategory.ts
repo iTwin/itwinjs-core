@@ -7,13 +7,13 @@
  */
 
 /** Logger categories used by this package
- * @note All logger categories in this package start with the `imodeljs-clients` prefix.
+ * @note All logger categories in this package start with the `imodeljs-clients-backend` prefix.
  * @see [Logger]($bentley)
  * @public
  */
 export enum ClientsBackendLoggerCategory {
   /** The logger category used for interactions with iModelHub.
-   * @note Should match ClientsBackendLoggerCategory.IModelHub from @bentley/imodeljs-clients.
+   * @note Should match ClientsBackendLoggerCategory.IModelHub from @bentley/imodelhub-client.
    */
   IModelHub = "imodelhub-client.iModelHub",
 
@@ -22,7 +22,4 @@ export enum ClientsBackendLoggerCategory {
 
   /** The logger category used by OidcAgentClient */
   OidcAgentClient = "imodeljs-clients-backend.OidcAgentClient",
-
-  /** The logger category used by OidcDesktopClient */
-  OidcDesktopClient = "imodeljs-clients.OidcDesktopClient",
 }

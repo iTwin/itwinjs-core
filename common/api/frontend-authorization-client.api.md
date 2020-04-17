@@ -4,10 +4,10 @@
 
 ```ts
 
-import { AccessToken } from '@bentley/imodeljs-clients';
+import { AccessToken } from '@bentley/itwin-client';
+import { AuthorizationClient } from '@bentley/itwin-client';
 import { BeEvent } from '@bentley/bentleyjs-core';
 import { ClientRequestContext } from '@bentley/bentleyjs-core';
-import { IAuthorizationClient } from '@bentley/imodeljs-clients';
 import { IDisposable } from '@bentley/bentleyjs-core';
 import { User } from 'oidc-client';
 import { UserManager } from 'oidc-client';
@@ -19,8 +19,6 @@ export class BrowserAuthorizationCallbackHandler extends BrowserAuthorizationBas
     protected getUserManager(): Promise<UserManager>;
     protected getUserManagerSettings(basicSettings: BrowserAuthorizationCallbackHandlerConfiguration, advancedSettings?: UserManagerSettings): Promise<UserManagerSettings>;
     static handleSigninCallback(redirectUrl?: string): Promise<void>;
-    // (undocumented)
-    protected static readonly _loggerCategory: string;
 }
 
 // @beta (undocumented)
@@ -29,7 +27,7 @@ export interface BrowserAuthorizationCallbackHandlerConfiguration {
 }
 
 // @beta (undocumented)
-export class BrowserAuthorizationClient extends BrowserAuthorizationBase<BrowserAuthorizationClientConfiguration> implements IFrontendAuthorizationClient {
+export class BrowserAuthorizationClient extends BrowserAuthorizationBase<BrowserAuthorizationClientConfiguration> implements FrontendAuthorizationClient {
     constructor(configuration: BrowserAuthorizationClientConfiguration);
     // (undocumented)
     protected _accessToken?: AccessToken;
@@ -49,8 +47,6 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
     // (undocumented)
     get isAuthorized(): boolean;
     protected loadUser(requestContext: ClientRequestContext): Promise<User | undefined>;
-    // (undocumented)
-    static readonly loggerCategory: string;
     protected nonInteractiveSignIn(requestContext: ClientRequestContext): Promise<User | undefined>;
     protected _onAccessTokenExpired: () => void;
     protected _onAccessTokenExpiring: () => Promise<void>;
@@ -84,14 +80,14 @@ export interface BrowserAuthorizationClientConfiguration {
 }
 
 // @beta (undocumented)
-export interface IFrontendAuthorizationClient extends IDisposable, IAuthorizationClient {
+export interface FrontendAuthorizationClient extends IDisposable, AuthorizationClient {
     readonly onUserStateChanged: BeEvent<(token: AccessToken | undefined) => void>;
     signIn(requestContext: ClientRequestContext): Promise<void>;
     signOut(requestContext: ClientRequestContext): Promise<void>;
 }
 
 // @beta
-export const isBrowserAuthorizationClient: (client: IAuthorizationClient | undefined) => client is IFrontendAuthorizationClient;
+export const isBrowserAuthorizationClient: (client: AuthorizationClient | undefined) => client is FrontendAuthorizationClient;
 
 // @beta (undocumented)
 export enum OidcCallbackResponseMode {

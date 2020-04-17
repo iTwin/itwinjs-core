@@ -7,10 +7,10 @@ import * as ReactDOM from "react-dom";
 import { Store } from "redux";  // createStore,
 import { Provider, connect } from "react-redux";
 import { Id64String, OpenMode, Logger, LogLevel, isElectronRenderer, ClientRequestContext, Config } from "@bentley/bentleyjs-core";
-import { AccessToken } from "@bentley/imodeljs-clients";
+import { AccessToken } from "@bentley/itwin-client";
 import {
   BrowserAuthorizationCallbackHandler, BrowserAuthorizationClientConfiguration,
-  BrowserAuthorizationClient, isBrowserAuthorizationClient, IFrontendAuthorizationClient,
+  BrowserAuthorizationClient, isBrowserAuthorizationClient, FrontendAuthorizationClient,
 } from "@bentley/frontend-authorization-client";
 import {
   RpcConfiguration, RpcOperation, IModelRpcProps, ElectronRpcManager,
@@ -583,7 +583,7 @@ async function handleOidcCallback(oidcConfiguration: BrowserAuthorizationClientC
   }
 }
 
-async function createOidcClient(requestContext: ClientRequestContext, oidcConfiguration: BrowserAuthorizationClientConfiguration | OidcDesktopClientConfiguration): Promise<IFrontendAuthorizationClient> {
+async function createOidcClient(requestContext: ClientRequestContext, oidcConfiguration: BrowserAuthorizationClientConfiguration | OidcDesktopClientConfiguration): Promise<FrontendAuthorizationClient> {
   if (isElectronRenderer) {
     const desktopClient = new OidcDesktopClientRenderer(oidcConfiguration as OidcDesktopClientConfiguration);
     await desktopClient.initialize(requestContext);

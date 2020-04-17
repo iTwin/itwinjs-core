@@ -23,7 +23,7 @@ import { Store, createStore } from "redux";
 import { TestContentControl } from "./frontstage/FrontstageTestUtils";
 import { ToolUiManager } from "../ui-framework/zones/toolsettings/ToolUiManager";
 import { SyncUiEventDispatcher } from "../ui-framework/syncui/SyncUiEventDispatcher";
-import { AccessToken, UserInfo } from "@bentley/imodeljs-clients";
+import { AccessToken, UserInfo } from "@bentley/itwin-client";
 
 // tslint:disable: completed-docs
 

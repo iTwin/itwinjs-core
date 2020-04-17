@@ -213,23 +213,38 @@ Previously, the default tslint configuration reported [usage of deprecated APIs]
 
 With a new major version of the iModel.js library come breaking API changes. The majority of those changes result from the removal of previously deprecated APIs. In addition, the following APIs have changed in ways that may require calling code to be adjusted:
 
+### iTwin client packages
+
+the `imodeljs-clients` package has been split into the following packages, all of which are hosted in the `/clients/` directory alongside the existing `extension-client`:
+- `context-registry-client`
+- `forms-data-management`
+- `frontend-authorization`
+- `imodelhub-client`
+- `itwin-client`
+- `product-settings-client`
+- `projectshare-client`
+- `rbac-client`
+- `reality-data-client`
+- `usage-logging-client`
+
 ### Authorization
 
 * The deprecated SAML based authentication utilities, ImsActiveSecureTokenClient and ImsDelegationSecureTokenClient have now been removed. All authentication must be done using OIDC.
 * The deprecated OidcAgentClientV1 for SAML based authentication of agents has been removed.
+* The `IAuthorizationClient` interface has been renamed to [AuthorizationClient]($itwin-client)
 
 #### OidcBrowserClient
 
 OIDC functionality in the browser has been overhauled to better support iModel.js Extensions that might require the user to authenticate with other services.
 
-- [IOidcFrontendClient]($clients) has been supplanted by [IFrontendAuthorizationClient]($frontend-authorization-client)
-  - All existing classes which previously implemented [IOidcFrontendClient]($clients), now implement [IFrontendAuthorizationClient]($frontend-authorization-client)
+- [IOidcFrontendClient]($clients) has been supplanted by [FrontendAuthorizationClient]($frontend-authorization-client)
+  - All existing classes which previously implemented [IOidcFrontendClient]($clients), now implement [FrontendAuthorizationClient]($frontend-authorization-client)
     - [OidcDesktopClient]($backend)
     - [OidcDesktopClientRenderer]($frontend)
     - [OidcIOSClient]($frontend)
 - [OidcBrowserClient]($frontend) has been marked as `@deprecated` and split into the following classes:
   - [BrowserAuthorizationClient]($frontend-authorization-client)
-    - implements [IFrontendAuthorizationClient]($frontend-authorization-client)
+    - implements [FrontendAuthorizationClient]($frontend-authorization-client)
     - used to `signIn()` and `signOut()` the user, in a similar manner to [OidcBrowserClient]($frontend)
   - [BrowserAuthorizationCallbackHandler]($frontend-authorization-client)
     - handles (via `handleSigninCallback()`) all OIDC callbacks received as a result of `signIn()` / `signOut()` calls made by [BrowserAuthorizationClient]($frontend-authorization-client)
@@ -265,7 +280,7 @@ await browserClient.signIn();
 Notably, unlike [OidcBrowserClient]($frontend), [BrowserAuthorizationClient]($frontend-authorization-client) does not require a call to `initialize()` before calling `signIn()`. Once the class instance has been constructed, `signIn()` may be called at any point.
 However, because [OidcBrowserClient]($frontend))`.initialize()` was where the OIDC callback was being handled before, [BrowserAuthorizationCallbackHandler]($frontend-authorization-client) must be used in conjunction with [BrowserAuthorizationClient]($frontend-authorization-client) to now complete an OIDC signin.
 
-Aside from the `signIn()` function supported by all [IFrontendAuthorizationClient]($frontend-authorization-client) implementations, there are also three new functions specific to [BrowserAuthorizationClient]($frontend-authorization-client) — `signInSilent()`, `signInPopup()`, and `signInRedirect()` (which is an alias of `signIn()`) — allowing more flexibility in how the signin is performed.
+Aside from the `signIn()` function supported by all [FrontendAuthorizationClient]($frontend-authorization-client) implementations, there are also three new functions specific to [BrowserAuthorizationClient]($frontend-authorization-client) — `signInSilent()`, `signInPopup()`, and `signInRedirect()` (which is an alias of `signIn()`) — allowing more flexibility in how the signin is performed.
 
 For situations where a signin is delayed until after app startup, `signInPopup()` is encouraged as a way to direct the user towards a login page without redirecting them away from their current UI state.
 
@@ -388,7 +403,7 @@ The signatures of several `ViewState` methods have been modified to accept a `Vi
 
 ### iModelJs Config
 
-[Config]($bentley) has been relocated to `bentleyjs-core` from `imodeljs-clients`
+[Config]($bentley) has been relocated to `bentleyjs-core` from `itwin-client`
 
 ### PropertyRecord classes moved to `ui-abstract` package
 

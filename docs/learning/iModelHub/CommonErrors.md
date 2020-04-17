@@ -9,8 +9,8 @@
 
 [IModelHubClientError]($imodelhub-client) with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if one of the required arguments is undefined or has an invalid value.
 
-[WsgError]($clients) is thrown for errors that were returned from the Web Service itself and didn't reach iModel Hub.
+[WsgError]($itwin-client) is thrown for errors that were returned from the Web Service itself and didn't reach iModel Hub.
 
-[AuthenticationError]($clients) is thrown when request is redirected to a login page. This occurs when access token is invalid or expired.
+[AuthenticationError]($itwin-client) is thrown when request is redirected to a login page. This occurs when access token is invalid or expired.
 
-[ResponseError]($clients) is thrown when error could not be parsed. This can occur when error happened on the client side or web service could not return a json response.
+[ResponseError]($itwin-client) is thrown when error could not be parsed. This can occur when error happened on the client side or web service could not return a json response.

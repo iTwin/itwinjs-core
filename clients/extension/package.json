@@ -34,7 +34,7 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "@bentley/imodeljs-clients": "2.0.0-dev.71",
+    "@bentley/itwin-client": "2.0.0-dev.71",
     "@bentley/imodeljs-common": "2.0.0-dev.71",
     "@bentley/bentleyjs-core": "2.0.0-dev.71"
   },

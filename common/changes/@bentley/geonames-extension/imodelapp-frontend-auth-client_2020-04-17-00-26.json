@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/geonames-extension",
+      "comment": "react to changes in imodeljs-clients",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/geonames-extension",
+  "email": "evan.preslar@bentley.com"
+}

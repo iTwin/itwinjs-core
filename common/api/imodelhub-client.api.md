@@ -4,32 +4,32 @@
 
 ```ts
 
-import { AccessToken } from '@bentley/imodeljs-clients';
+import { AccessToken } from '@bentley/itwin-client';
 import { Asset } from '@bentley/context-registry-client';
-import { AuthorizedClientRequestContext } from '@bentley/imodeljs-clients';
-import { CancelRequest } from '@bentley/imodeljs-clients';
+import { AuthorizationClient } from '@bentley/itwin-client';
+import { AuthorizedClientRequestContext } from '@bentley/itwin-client';
+import { CancelRequest } from '@bentley/itwin-client';
 import { ClientRequestContext } from '@bentley/bentleyjs-core';
 import { ContextType } from '@bentley/context-registry-client';
-import { FileHandler } from '@bentley/imodeljs-clients';
+import { FileHandler } from '@bentley/itwin-client';
 import { GetMetaDataFunction } from '@bentley/bentleyjs-core';
 import { GuidString } from '@bentley/bentleyjs-core';
 import { HttpStatus } from '@bentley/bentleyjs-core';
-import { IAuthorizationClient } from '@bentley/imodeljs-clients';
 import { Id64String } from '@bentley/bentleyjs-core';
 import { IModelHubStatus } from '@bentley/bentleyjs-core';
 import { LogFunction } from '@bentley/bentleyjs-core';
-import { ProgressCallback } from '@bentley/imodeljs-clients';
+import { ProgressCallback } from '@bentley/itwin-client';
 import { Project } from '@bentley/context-registry-client';
-import { RequestOptions } from '@bentley/imodeljs-clients';
-import { RequestQueryOptions } from '@bentley/imodeljs-clients';
-import { Response } from '@bentley/imodeljs-clients';
-import { ResponseError } from '@bentley/imodeljs-clients';
-import { UserInfo } from '@bentley/imodeljs-clients';
-import { WsgClient } from '@bentley/imodeljs-clients';
-import { WsgError } from '@bentley/imodeljs-clients';
-import { WsgInstance } from '@bentley/imodeljs-clients';
-import { WsgQuery } from '@bentley/imodeljs-clients';
-import { WsgRequestOptions } from '@bentley/imodeljs-clients';
+import { RequestOptions } from '@bentley/itwin-client';
+import { RequestQueryOptions } from '@bentley/itwin-client';
+import { Response } from '@bentley/itwin-client';
+import { ResponseError } from '@bentley/itwin-client';
+import { UserInfo } from '@bentley/itwin-client';
+import { WsgClient } from '@bentley/itwin-client';
+import { WsgError } from '@bentley/itwin-client';
+import { WsgInstance } from '@bentley/itwin-client';
+import { WsgQuery } from '@bentley/itwin-client';
+import { WsgRequestOptions } from '@bentley/itwin-client';
 
 // @internal
 export function addSelectApplicationData(query: RequestQueryOptions): void;
@@ -534,7 +534,7 @@ export class HubUserInfo extends WsgInstance {
 }
 
 // @internal
-export interface IModelAuthorizationClient extends IAuthorizationClient {
+export interface IModelAuthorizationClient extends AuthorizationClient {
     // (undocumented)
     authorizeUser(requestContext: ClientRequestContext, userInfo: UserInfo | undefined, userCredentials: any): Promise<AccessToken>;
 }

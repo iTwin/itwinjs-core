@@ -4,12 +4,12 @@
 
 ```ts
 
-import { AuthorizedClientRequestContext } from '@bentley/imodeljs-clients';
+import { AuthorizedClientRequestContext } from '@bentley/itwin-client';
 import { ClientRequestContext } from '@bentley/bentleyjs-core';
-import { RequestQueryOptions } from '@bentley/imodeljs-clients';
+import { RequestQueryOptions } from '@bentley/itwin-client';
 import { URL } from 'url';
-import { WsgClient } from '@bentley/imodeljs-clients';
-import { WsgInstance } from '@bentley/imodeljs-clients';
+import { WsgClient } from '@bentley/itwin-client';
+import { WsgInstance } from '@bentley/itwin-client';
 
 // @internal
 export class FileAccessKey extends WsgInstance {

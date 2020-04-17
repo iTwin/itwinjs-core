@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
 import { IModelHubStatus, GuidString } from "@bentley/bentleyjs-core";
-import { AccessToken, UserInfo, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { AccessToken, UserInfo, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { TestUsers } from "@bentley/oidc-signin-tool";
 import { ResponseBuilder, ScopeType, RequestType } from "../ResponseBuilder";
 import { TestConfig } from "../TestConfig";

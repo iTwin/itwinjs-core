@@ -7,7 +7,7 @@
  */
 
 import { Logger } from "@bentley/bentleyjs-core";
-import { FileHandler, AuthorizedClientRequestContext, ProgressCallback } from "@bentley/imodeljs-clients";
+import { FileHandler, AuthorizedClientRequestContext, ProgressCallback } from "@bentley/itwin-client";
 import { ClientsBackendLoggerCategory } from "../ClientsBackendLoggerCategory";
 import * as https from "https";
 import * as pathLib from "path";

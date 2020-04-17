@@ -5,7 +5,7 @@
 import { BentleyError, BentleyStatus, ClientRequestContext, ClientRequestContextProps, Config } from "@bentley/bentleyjs-core";
 import { IModelQuery, IModelBankClient } from "@bentley/imodelhub-client";
 import { BriefcaseDb, BriefcaseManager, ChangeSummaryExtractOptions, ChangeSummaryManager, IModelDb, IModelHost, IModelJsFs } from "@bentley/imodeljs-backend";
-import { AuthorizedClientRequestContext, AuthorizedClientRequestContextProps } from "@bentley/imodeljs-clients";
+import { AuthorizedClientRequestContext, AuthorizedClientRequestContextProps } from "@bentley/itwin-client";
 import { IModelRpcProps, RpcInterface, RpcManager } from "@bentley/imodeljs-common";
 import { CloudEnvProps, TestRpcInterface } from "../common/RpcInterfaces";
 import { CloudEnv } from "./cloudEnv";

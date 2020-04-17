@@ -38,13 +38,13 @@
   },
   "peerDependencies": {
     "@bentley/bentleyjs-core": "^2.0.0-dev.71",
-    "@bentley/imodeljs-clients": "^2.0.0-dev.71"
+    "@bentley/itwin-client": "^2.0.0-dev.71"
   },
   "devDependencies": {
     "@bentley/build-tools": "2.0.0-dev.71",
     "@bentley/certa": "2.0.0-dev.71",
     "@bentley/config-loader": "2.0.0-dev.71",
-    "@bentley/imodeljs-clients": "2.0.0-dev.71",
+    "@bentley/itwin-client": "2.0.0-dev.71",
     "@bentley/oidc-signin-tool": "2.0.0-dev.71",
     "@types/chai": "^4.1.4",
     "@types/deep-assign": "^0.1.0",

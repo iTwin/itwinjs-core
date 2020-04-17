@@ -12,7 +12,7 @@ import { AccessToken } from "./Token";
 /** Interface to provide authorization information for various API
  * @beta
  */
-export interface IAuthorizationClient {
+export interface AuthorizationClient {
   /** Set to true if there's a current authorized user or client (in the case of agent applications).
    * Set to true if signed in and the access token has not expired, and false otherwise.
    */

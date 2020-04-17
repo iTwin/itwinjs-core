@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { BentleyStatus, Config, Guid, GuidString } from "@bentley/bentleyjs-core";
-import { AccessToken, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { getAccessTokenFromBackend, TestOidcConfiguration, TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
 import { assert } from "chai";
 import * as os from "os";

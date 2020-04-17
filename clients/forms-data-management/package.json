@@ -34,7 +34,7 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/imodeljs-clients": "^2.0.0-dev.71"
+    "@bentley/itwin-client": "^2.0.0-dev.71"
   },
   "dependencies": {
     "@bentley/bentleyjs-core": "2.0.0-dev.71"
@@ -43,7 +43,7 @@
     "@bentley/build-tools": "2.0.0-dev.71",
     "@bentley/certa": "2.0.0-dev.71",
     "@bentley/config-loader": "2.0.0-dev.71",
-    "@bentley/imodeljs-clients": "2.0.0-dev.71",
+    "@bentley/itwin-client": "2.0.0-dev.71",
     "@bentley/oidc-signin-tool": "2.0.0-dev.71",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",

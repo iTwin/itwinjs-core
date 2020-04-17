@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { GuidString, StopWatch } from "@bentley/bentleyjs-core";
 import { Point3d, Range3d } from "@bentley/geometry-core";
-import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { ProjectShareClient, ProjectShareFile, ProjectShareFileQuery, ProjectShareFolder, ProjectShareFolderQuery } from "@bentley/projectshare-client";
 import * as chai from "chai";
 import { ImageTags, JpegTagReader } from "../../JpegTagReader";

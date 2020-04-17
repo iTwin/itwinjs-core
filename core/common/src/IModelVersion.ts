@@ -8,7 +8,7 @@
 
 import { BentleyStatus, GuidString } from "@bentley/bentleyjs-core";
 import { ChangeSet, ChangeSetQuery, IModelClient, VersionQuery } from "@bentley/imodelhub-client";
-import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { IModelError } from "./IModelError";
 
 /** Option to specify the version of the iModel to be acquired and used

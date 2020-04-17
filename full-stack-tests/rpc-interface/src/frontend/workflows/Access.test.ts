@@ -6,7 +6,7 @@ import { OpenMode } from "@bentley/bentleyjs-core";
 import { Range3d } from "@bentley/geometry-core";
 import { IModelError } from "@bentley/imodeljs-common";
 import { BriefcaseConnection, IModelApp } from "@bentley/imodeljs-frontend";
-import { AuthorizationClient } from "../setup/AuthorizationClient";
+import { BasicAuthorizationClient } from "../setup/BasicAuthorizationClient";
 import { TestContext } from "../setup/TestContext";
 
 import * as chai from "chai";
@@ -28,7 +28,7 @@ describe("Access", () => {
     const openMode = OpenMode.Readonly;
 
     const accessToken = testContext.adminUserAccessToken;
-    (IModelApp.authorizationClient as AuthorizationClient).setAccessToken(accessToken);
+    (IModelApp.authorizationClient as BasicAuthorizationClient).setAccessToken(accessToken);
     const iModel = await BriefcaseConnection.open(contextId, iModelId, openMode);
 
     await expect(iModel.saveChanges(), "Expected writing to iModel in read mode to fail").to.be.rejectedWith(IModelError);
@@ -41,7 +41,7 @@ describe("Access", () => {
     const contextId = testContext.iModelWithChangesets!.contextId;
     const openMode = OpenMode.ReadWrite;
     const accessToken = testContext.adminUserAccessToken;
-    (IModelApp.authorizationClient as AuthorizationClient).setAccessToken(accessToken);
+    (IModelApp.authorizationClient as BasicAuthorizationClient).setAccessToken(accessToken);
     await expect(BriefcaseConnection.open(contextId, iModelId, openMode), "Expected opening iModel for write to fail").to.be.rejectedWith(IModelError);
   });
 

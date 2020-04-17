@@ -11,7 +11,7 @@ import * as sha256 from "fast-sha256";
 import { ExtensionClient } from "@bentley/extension-client";
 import { IModelHost } from "@bentley/imodeljs-backend";
 import { BentleyError, ExtensionStatus } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { IModelError } from "@bentley/imodeljs-common";
 import { signIn } from "./signIn";
 

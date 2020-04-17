@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { RequestGlobalOptions } from "@bentley/imodeljs-clients";
+import { RequestGlobalOptions } from "@bentley/itwin-client";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
 
 const NATIVE_XHR = Symbol.for("NATIVE_XHR");

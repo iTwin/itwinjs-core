@@ -9,6 +9,7 @@
 
 import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { Log as OidcClientLog, Logger as IOidcClientLogger } from "oidc-client";
+import { FrontendAuthorizationClientLoggerCategory } from "../../FrontendAuthorizationClientLoggerCategory";
 
 /**
  * Utility to forward oidc-client logs to the Bentley logger
@@ -16,25 +17,23 @@ import { Log as OidcClientLog, Logger as IOidcClientLogger } from "oidc-client";
  * Thus, the best we can do is tie all logs originating from the library to a single logging category (derived from the name of this class).
  */
 export class BrowserAuthorizationLogger implements IOidcClientLogger {
-  protected static readonly _loggerCategory: string = "imodeljs-clients.BrowserAuthorizationLogger";
-
   private constructor() {
   }
 
   public debug(message?: any, ...optionalParams: any[]): void {
-    Logger.logTrace(BrowserAuthorizationLogger._loggerCategory, message, () => optionalParams);
+    Logger.logTrace(FrontendAuthorizationClientLoggerCategory.Authorization, message, () => optionalParams);
   }
 
   public info(message?: any, ...optionalParams: any[]): void {
-    Logger.logInfo(BrowserAuthorizationLogger._loggerCategory, message, () => optionalParams);
+    Logger.logInfo(FrontendAuthorizationClientLoggerCategory.Authorization, message, () => optionalParams);
   }
 
   public warn(message?: any, ...optionalParams: any[]): void {
-    Logger.logWarning(BrowserAuthorizationLogger._loggerCategory, message, () => optionalParams);
+    Logger.logWarning(FrontendAuthorizationClientLoggerCategory.Authorization, message, () => optionalParams);
   }
 
   public error(message?: any, ...optionalParams: any[]): void {
-    Logger.logError(BrowserAuthorizationLogger._loggerCategory, message, () => optionalParams);
+    Logger.logError(FrontendAuthorizationClientLoggerCategory.Authorization, message, () => optionalParams);
   }
 
   protected static getLogLevel(loggerCategory: string): number {
@@ -57,7 +56,7 @@ export class BrowserAuthorizationLogger implements IOidcClientLogger {
 
   /** Initializes forwarding of OidcClient logs to the Bentley Logger */
   public static initializeLogger() {
-    const logLevel = BrowserAuthorizationLogger.getLogLevel(BrowserAuthorizationLogger._loggerCategory);
+    const logLevel = BrowserAuthorizationLogger.getLogLevel(FrontendAuthorizationClientLoggerCategory.Authorization);
     if (!OidcClientLog.logger) {
       OidcClientLog.logger = new BrowserAuthorizationLogger();
     }

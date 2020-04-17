@@ -11,7 +11,7 @@ import { EventSinkManager, EmitStrategy } from "./EventSink";
 import * as path from "path";
 import * as os from "os";
 import { IModelJsFs } from "./IModelJsFs";
-import { RequestGlobalOptions } from "@bentley/imodeljs-clients";
+import { RequestGlobalOptions } from "@bentley/itwin-client";
 
 /**
  * Used by desktop/mobile native application

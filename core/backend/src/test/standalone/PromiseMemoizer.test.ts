@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { IModelVersion } from "@bentley/imodeljs-common";
-import { AuthorizedClientRequestContext, AccessToken } from "@bentley/imodeljs-clients";
+import { AuthorizedClientRequestContext, AccessToken } from "@bentley/itwin-client";
 import { OpenParams, AuthorizedBackendRequestContext } from "../../imodeljs-backend";
 import { PromiseMemoizer, QueryablePromise } from "../../PromiseMemoizer";
 import { TestMemoizer, testFn } from "./TestMemoizer";

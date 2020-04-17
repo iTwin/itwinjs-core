@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/projectshare-client",
+      "comment": "react to renaming of imodeljs-clients",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/projectshare-client",
+  "email": "evan.preslar@bentley.com"
+}

@@ -6,7 +6,7 @@ import { RpcInterfaceDefinition, RpcManager, IModelReadRpcInterface, IModelWrite
 import { BriefcaseDb, IModelDb, IModelHost, Element, ECSqlStatement, IModelHostConfiguration, KnownLocations, Platform } from "@bentley/imodeljs-backend";
 import { DbResult, Id64String, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { Point3d, Angle, YawPitchRollAngles } from "@bentley/geometry-core";
-import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { RobotWorld } from "./RobotWorldSchema";
 import { Robot } from "./RobotElement";
 import * as path from "path";

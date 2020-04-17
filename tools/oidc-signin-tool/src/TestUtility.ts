@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { AccessToken, AuthorizedClientRequestContext, IAuthorizationClient } from "@bentley/imodeljs-clients";
+import { AccessToken, AuthorizedClientRequestContext, AuthorizationClient } from "@bentley/itwin-client";
 import { TestOidcClient } from "./TestOidcClient";
 import { TestOidcConfiguration, TestUserCredentials, TestUsers } from "./TestUsers";
 
@@ -12,7 +12,7 @@ import { TestOidcConfiguration, TestUserCredentials, TestUsers } from "./TestUse
  * @internal
  */
 export class TestUtility {
-  private static _clients = new Map<string, IAuthorizationClient>();
+  private static _clients = new Map<string, AuthorizationClient>();
 
   /**
    * Gets the authorization client for the specified iModel.js test user.
@@ -22,7 +22,7 @@ export class TestUtility {
    * @param oidcConfig Test oidc coniguration to use for the provided user
    * @internal
    */
-  public static getAuthorizationClient(user: TestUserCredentials, oidcConfig?: TestOidcConfiguration): IAuthorizationClient {
+  public static getAuthorizationClient(user: TestUserCredentials, oidcConfig?: TestOidcConfiguration): AuthorizationClient {
     let client = this._clients.get(user.email);
     if (client !== undefined)
       return client;

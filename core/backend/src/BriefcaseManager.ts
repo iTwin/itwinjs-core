@@ -10,7 +10,7 @@ import {
   Briefcase as HubBriefcase, IModelHubClient, ChangeSet, ChangesType, Briefcase, HubCode, IModelHubError,
   CheckpointQuery, Checkpoint, BriefcaseQuery, ChangeSetQuery, ConflictingCodesError, IModelClient, HubIModel, IModelBankClient,
 } from "@bentley/imodelhub-client";
-import { AuthorizedClientRequestContext, CancelRequest, ProgressCallback, UserCancelledError } from "@bentley/imodeljs-clients";
+import { AuthorizedClientRequestContext, CancelRequest, ProgressCallback, UserCancelledError } from "@bentley/itwin-client";
 import { AzureFileHandler, IOSAzureFileHandler } from "@bentley/imodeljs-clients-backend";
 import {
   ChangeSetApplyOption, BeEvent, DbResult, OpenMode, assert, Logger, ChangeSetStatus,

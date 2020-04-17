@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { GuidString, Config } from "@bentley/bentleyjs-core";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
-import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { IModelClient, IModelHubClient, IModelQuery, HubIModel } from "@bentley/imodelhub-client";
 import { ContextRegistryClient, Project } from "@bentley/context-registry-client";
 

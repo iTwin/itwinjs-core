@@ -22,7 +22,7 @@ import {
   SnapshotIModelRpcInterface,
   TileContentIdentifier,
 } from "@bentley/imodeljs-common";
-import { AccessToken } from "@bentley/imodeljs-clients";
+import { AccessToken } from "@bentley/itwin-client";
 import { BrowserAuthorizationClientConfiguration, BrowserAuthorizationClient, BrowserAuthorizationCallbackHandler } from "@bentley/frontend-authorization-client";
 import {
   FrontendRequestContext,

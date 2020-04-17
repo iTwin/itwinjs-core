@@ -6,12 +6,12 @@
  * @module Authorization
  */
 import { BeEvent, ClientRequestContext, IDisposable } from "@bentley/bentleyjs-core";
-import { IAuthorizationClient, AccessToken } from "@bentley/imodeljs-clients";
+import { AuthorizationClient, AccessToken } from "@bentley/itwin-client";
 
 /**
  * @beta
  */
-export interface IFrontendAuthorizationClient extends IDisposable, IAuthorizationClient {
+export interface FrontendAuthorizationClient extends IDisposable, AuthorizationClient {
   /** Called to start the sign-in process. Subscribe to onUserStateChanged to be notified when sign-in completes */
   signIn(requestContext: ClientRequestContext): Promise<void>;
 
