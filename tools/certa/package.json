@@ -38,7 +38,7 @@
     "lodash": "^4.17.10",
     "mocha": "^5.2.0",
     "nyc": "^14.0.0",
-    "puppeteer": "latest",
+    "puppeteer": "chrome-80",
     "source-map-support": "^0.5.6",
     "uuid": "~3.3.2",
     "yargs": "^15.0.0"

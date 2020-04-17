@@ -36,7 +36,7 @@
     "@bentley/frontend-authorization-client": "2.0.0-dev.70",
     "@bentley/imodeljs-clients": "2.0.0-dev.70",
     "openid-client": "^3.7.2",
-    "puppeteer": "latest"
+    "puppeteer": "chrome-80"
   },
   "devDependencies": {
     "@bentley/build-tools": "2.0.0-dev.70",
