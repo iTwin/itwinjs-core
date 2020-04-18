@@ -43,6 +43,8 @@ import { ContextRealityModelProps } from '@bentley/imodeljs-common';
 import { ContextRegistryClient } from '@bentley/context-registry-client';
 import { CreateEmptySnapshotIModelProps } from '@bentley/imodeljs-common';
 import { CreateIModelProps } from '@bentley/imodeljs-common';
+import { CreatePolyfaceRequestProps } from '@bentley/imodeljs-common';
+import { CreatePolyfaceResponseProps } from '@bentley/imodeljs-common';
 import { CreateSnapshotIModelProps } from '@bentley/imodeljs-common';
 import { DbOpcode } from '@bentley/bentleyjs-core';
 import { DbResult } from '@bentley/bentleyjs-core';
@@ -2268,6 +2270,8 @@ export abstract class IModelDb extends IModel {
     get codeSpecs(): CodeSpecs;
     constructEntity<T extends Entity>(props: EntityProps): T;
     containsClass(classFullName: string): boolean;
+    // @internal (undocumented)
+    createPolyfaceFromElement(requestContext: ClientRequestContext, requestProps: CreatePolyfaceRequestProps): Promise<CreatePolyfaceResponseProps>;
     // (undocumented)
     static readonly defaultLimit = 1000;
     deleteFileProperty(prop: FilePropertyProps): DbResult;
@@ -2336,7 +2340,6 @@ export abstract class IModelDb extends IModel {
     requestSnap(requestContext: ClientRequestContext, sessionId: string, props: SnapRequestProps): Promise<SnapResponseProps>;
     saveChanges(description?: string): void;
     saveFileProperty(prop: FilePropertyProps, strValue: string | undefined, blobVal?: Uint8Array): DbResult;
-    setGuid(guid: GuidString): DbResult;
     // (undocumented)
     readonly tiles: IModelDb.Tiles;
     static tryFindByKey(key: string): IModelDb | undefined;
@@ -3500,16 +3503,12 @@ export class RepositoryModel extends DefinitionModel {
 export enum ReservedBriefcaseId {
     // @beta
     CheckpointSnapshot = 0,
-    // @internal
-    FutureStandalone = 16777214,
     Illegal = 4294967295,
     // @internal
-    LegacyMaster = 0,
-    // @internal
-    LegacyStandalone = 1,
-    // @internal
     MaxRepo = 16777216,
-    Snapshot = 1
+    Snapshot = 1,
+    // @internal
+    Standalone = 16777214
 }
 
 // @public

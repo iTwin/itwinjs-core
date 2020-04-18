@@ -439,7 +439,7 @@ export class ChangeSetHandler {
    * @throws [IModelHubStatus.AnotherUserPushing]($bentley) if another user is currently uploading a ChangeSet.
    * @throws [IModelHubStatus.PullIsRequired]($bentley) if there are newer ChangeSets on iModelHub, that need to be downloaded and merged, before upload is possible.
    * @throws [IModelHubStatus.ChangeSetAlreadyExists]($bentley) if a ChangeSet with this id already exists. This usually happens if previous upload attempt has succeeded.
-   * @throws [IModelHubStatus.ChangeSetPointsToBadSeed]($bentley) if changeSet.seedFileId is not set to the correct file id. That file id should match to the value written to the Briefcase file. See [IModelDb.setGuid]($backend).
+   * @throws [IModelHubStatus.ChangeSetPointsToBadSeed]($bentley) if changeSet.seedFileId is not set to the correct file id. That file id should match to the value written to the Briefcase file.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
   public async create(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, changeSet: ChangeSet, path: string, progressCallback?: ProgressCallback): Promise<ChangeSet> {

@@ -9,7 +9,7 @@ import { Code, ColorDef, GeometricElementProps, GeometryStreamProps, IModel, Sub
 import { Reporter } from "@bentley/perf-tools/lib/Reporter";
 import { assert } from "chai";
 import * as path from "path";
-import { BackendRequestContext, ECSqlStatement, IModelDb, IModelJsFs, SnapshotDb, SpatialCategory } from "../imodeljs-backend";
+import { BackendRequestContext, ECSqlStatement, IModelDb, IModelJsFs, SnapshotDb, SpatialCategory, ReservedBriefcaseId } from "../imodeljs-backend";
 import { IModelTestUtils } from "../test/IModelTestUtils";
 import { KnownTestLocations } from "../test/KnownTestLocations";
 
@@ -136,7 +136,7 @@ describe("SchemaDesignPerf Polymorphic query", () => {
         let spatialCategoryId = SpatialCategory.queryCategoryIdByName(seedIModel, IModel.dictionaryId, "MySpatialCategory");
         if (undefined === spatialCategoryId)
           spatialCategoryId = SpatialCategory.insert(seedIModel, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
-        const result: DbResult = seedIModel.nativeDb.setAsMaster();
+        const result: DbResult = seedIModel.nativeDb.resetBriefcaseId(ReservedBriefcaseId.CheckpointSnapshot);
         assert.equal(DbResult.BE_SQLITE_OK, result);
         assert.isDefined(seedIModel.getMetaData("TestPolySchema:TestElement"), "Base Class is not present in iModel.");
         // create base class elements
@@ -174,7 +174,7 @@ describe("SchemaDesignPerf Polymorphic query", () => {
       let spatialCategoryId = SpatialCategory.queryCategoryIdByName(seedIModel2, IModel.dictionaryId, "MySpatialCategory");
       if (undefined === spatialCategoryId)
         spatialCategoryId = SpatialCategory.insert(seedIModel2, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
-      const result: DbResult = seedIModel2.nativeDb.setAsMaster();
+      const result: DbResult = seedIModel2.nativeDb.resetBriefcaseId(ReservedBriefcaseId.CheckpointSnapshot);
       assert.equal(DbResult.BE_SQLITE_OK, result);
       assert.isDefined(seedIModel2.getMetaData("TestPolySchema:TestElement"), "Base Class is not present in iModel.");
       // create base class elements

@@ -1358,7 +1358,8 @@ describe("iModel", () => {
   });
 
   it("should create link table relationship instances", () => {
-    const testImodel = imodel1;
+    const snapshotFile2: string = IModelTestUtils.prepareOutputFile("IModel", "CreateLinkTable.bim");
+    const testImodel = SnapshotDb.createFrom(imodel1, snapshotFile2);
     const elements = testImodel.elements;
 
     testImodel.nativeDb.enableTxnTesting();
@@ -1426,7 +1427,7 @@ describe("iModel", () => {
 
     ede1.delete();
     testImodel.saveChanges("step 4");
-
+    testImodel.close();
   });
 
   it("should set EC properties of various types", async () => {
@@ -1779,7 +1780,7 @@ describe("iModel", () => {
     assert.isTrue(standaloneDb1.isStandaloneDb());
     assert.isTrue(standaloneDb1.isStandalone);
     assert.isFalse(standaloneDb1.isReadonly, "Expect standalone iModels to be read-write during create");
-    assert.equal(standaloneDb1.getBriefcaseId(), ReservedBriefcaseId.FutureStandalone);
+    assert.equal(standaloneDb1.getBriefcaseId(), ReservedBriefcaseId.Standalone);
     assert.equal(standaloneDb1.filePath, standaloneFile1);
     assert.equal(standaloneDb1, StandaloneDb.tryFindByKey(standaloneFile1), "Should be in the list of open StandaloneDbs");
     assert.isUndefined(SnapshotDb.tryFindByKey(standaloneFile1), "Should not be in the list of open SnapshotDbs");
@@ -1815,6 +1816,9 @@ describe("iModel", () => {
     assert.isTrue(snapshotDb1.isSnapshot);
     assert.isTrue(snapshotDb2.isSnapshot);
     assert.isTrue(snapshotDb3.isSnapshot);
+    assert.isFalse(snapshotDb1.txns.hasPendingTxns);
+    assert.isFalse(snapshotDb2.txns.hasPendingTxns);
+    assert.isFalse(snapshotDb3.txns.hasPendingTxns);
     assert.isFalse(snapshotDb1.isReadonly, "Expect snapshots to be read-write during create");
     assert.isFalse(snapshotDb2.isReadonly, "Expect snapshots to be read-write during create");
     assert.isFalse(snapshotDb3.isReadonly, "Expect snapshots to be read-write during create");
