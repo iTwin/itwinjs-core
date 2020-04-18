@@ -43,6 +43,8 @@ import { ConnectClient } from '@bentley/imodeljs-clients';
 import { ContextRealityModelProps } from '@bentley/imodeljs-common';
 import { CreateEmptySnapshotIModelProps } from '@bentley/imodeljs-common';
 import { CreateIModelProps } from '@bentley/imodeljs-common';
+import { CreatePolyfaceRequestProps } from '@bentley/imodeljs-common';
+import { CreatePolyfaceResponseProps } from '@bentley/imodeljs-common';
 import { CreateSnapshotIModelProps } from '@bentley/imodeljs-common';
 import { DbOpcode } from '@bentley/bentleyjs-core';
 import { DbResult } from '@bentley/bentleyjs-core';
@@ -2269,6 +2271,8 @@ export abstract class IModelDb extends IModel {
     get codeSpecs(): CodeSpecs;
     constructEntity<T extends Entity>(props: EntityProps): T;
     containsClass(classFullName: string): boolean;
+    // @internal (undocumented)
+    createPolyfaceFromElement(requestContext: ClientRequestContext, requestProps: CreatePolyfaceRequestProps): Promise<CreatePolyfaceResponseProps>;
     // (undocumented)
     static readonly defaultLimit = 1000;
     deleteFileProperty(prop: FilePropertyProps): DbResult;

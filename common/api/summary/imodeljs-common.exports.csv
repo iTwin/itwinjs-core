@@ -73,6 +73,9 @@ internal;class ContentIdProvider
 public;ContextRealityModelProps
 beta;CreateEmptySnapshotIModelProps = CreateIModelProps & CreateSnapshotIModelProps
 public;CreateIModelProps 
+internal;CreatePolyfaceRequestProps
+internal;CreatePolyfaceResponseProps
+internal;CreatePolyfaceResponseResult
 beta;CreateSnapshotIModelProps 
 internal;CURRENT_INVOCATION: unique symbol
 internal;CURRENT_REQUEST: unique symbol
