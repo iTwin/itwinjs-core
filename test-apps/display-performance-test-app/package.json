@@ -62,7 +62,7 @@
     "chrome-launcher": "^0.10.5",
     "cross-env": "^5.1.4",
     "cpx": "^1.5.0",
-    "electron": "^8.0.0",
+    "electron": "^8.2.1",
     "express": "^4.16.3",
     "npm-run-all": "^4.1.5",
     "null-loader": "^0.1.1",

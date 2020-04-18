@@ -27,7 +27,7 @@
     "@bentley/imodeljs-frontend": "2.0.0-dev.72",
     "body-parser": "^1.18.2",
     "chai": "^4.1.2",
-    "electron": "^8.0.0",
+    "electron": "^8.2.1",
     "express": "^4.16.3",
     "fs-extra": "^8.1.0",
     "fuse.js": "^3.3.0",

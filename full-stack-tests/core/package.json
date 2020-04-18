@@ -32,7 +32,7 @@
     "@bentley/imodeljs-markup": "2.0.0-dev.72",
     "chai": "^4.1.2",
     "fs-extra": "^8.1.0",
-    "electron": "^8.0.0"
+    "electron": "^8.2.1"
   },
   "devDependencies": {
     "@bentley/certa": "2.0.0-dev.72",
