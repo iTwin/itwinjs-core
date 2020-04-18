@@ -994,7 +994,8 @@ export abstract class IModelDb extends IModel {
   /**
    * @internal
    */
-  public createPolyfaceFromElement(requestProps: CreatePolyfaceRequestProps): CreatePolyfaceResponseProps {
+  public async createPolyfaceFromElement(requestContext: ClientRequestContext, requestProps: CreatePolyfaceRequestProps): Promise<CreatePolyfaceResponseProps> {
+    requestContext.enter();
     return this.nativeDb.createPolyfaceFromElement(requestProps);
   }
 
