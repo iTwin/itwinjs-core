@@ -34,6 +34,8 @@ import {
   CodeSpec,
   CreateEmptySnapshotIModelProps,
   CreateIModelProps,
+  CreatePolyfaceRequestProps,
+  CreatePolyfaceResponseProps,
   CreateSnapshotIModelProps,
   DisplayStyleProps,
   EcefLocation,
@@ -987,6 +989,13 @@ export abstract class IModelDb extends IModel {
     requestContext.enter();
     const resultString: string = this.nativeDb.getGeoCoordinatesFromIModelCoordinates(props);
     return JSON.parse(resultString) as GeoCoordinatesResponseProps;
+  }
+
+  /**
+   * @internal
+   */
+  public createPolyfaceFromElement(requestProps: CreatePolyfaceRequestProps): CreatePolyfaceResponseProps {
+    return this.nativeDb.createPolyfaceFromElement(requestProps);
   }
 
   /** Export meshes suitable for graphics APIs from arbitrary geometry in elements in this IModelDb.
