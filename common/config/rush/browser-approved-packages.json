@@ -83,10 +83,6 @@
       "allowedCategories": [ "backend", "extensions", "internal", "tools" ]
     },
     {
-      "name": "@bentley/imodeljs-clients",
-      "allowedCategories": [ "backend", "common", "extensions", "frontend", "internal", "tools" ]
-    },
-    {
       "name": "@bentley/imodeljs-clients-backend",
       "allowedCategories": [ "backend", "internal", "tools" ]
     },

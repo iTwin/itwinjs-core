@@ -3,7 +3,7 @@ dependencies:
   '@babel/core': 7.7.4
   '@bentley/icons-generic': 1.0.5
   '@bentley/icons-generic-webfont': 1.0.5
-  '@bentley/imodeljs-native': 2.0.23
+  '@bentley/imodeljs-native': 2.0.24
   '@bentley/oidc-signin-tool': 2.0.0-dev.71
   '@bentley/react-scripts': 3.4.1-dev.27_a4f1093162180b0de057e31a5d2c1cc3
   '@microsoft/api-extractor': 7.7.3
@@ -2157,11 +2157,11 @@ packages:
       '@bentley/bentleyjs-core': ^2.0.0-dev.71
     resolution:
       integrity: sha1-jXkrtdz8VrQBkotT5vpoPPnNb54=
-  /@bentley/imodeljs-native/2.0.23:
+  /@bentley/imodeljs-native/2.0.24:
     dev: false
     requiresBuild: true
     resolution:
-      integrity: sha1-ZQQV4mZVcWHEiJWbU2L7LPtqFdY=
+      integrity: sha1-hDVWxy6Sg44jtFV/x9vH/tpYAhw=
   /@bentley/oidc-signin-tool/2.0.0-dev.71:
     dependencies:
       '@bentley/bentleyjs-core': 2.0.0-dev.71
@@ -19426,7 +19426,7 @@ packages:
   'file:projects/imodeljs-backend.tgz':
     dependencies:
       '@azure/storage-blob': 10.4.0
-      '@bentley/imodeljs-native': 2.0.23
+      '@bentley/imodeljs-native': 2.0.24
       '@openid/appauth': 1.2.7
       '@types/chai': 4.2.11
       '@types/deep-assign': 0.1.1
@@ -19465,7 +19465,7 @@ packages:
     dev: false
     name: '@rush-temp/imodeljs-backend'
     resolution:
-      integrity: sha512-J9RCyf0BqlIk4Pb0hFXrWrHdINtn7d4V8YUCSqfQOJQbt56lHhHu++78OGZ21qnba4sXVkI/RChwP96QFE/MkA==
+      integrity: sha512-hrrS+JExSS04D5p3kyRYM/A3rUuwljqkobHG+eXSWvfUSGZz+t7uQvllFSfit8/M1yRQFgWa2UCBuZ4dLEAhxg==
       tarball: 'file:projects/imodeljs-backend.tgz'
     version: 0.0.0
   'file:projects/imodeljs-clients-backend.tgz':
@@ -20775,7 +20775,7 @@ specifiers:
   '@babel/core': 7.7.4
   '@bentley/icons-generic': ^1.0.5
   '@bentley/icons-generic-webfont': ^1.0.5
-  '@bentley/imodeljs-native': 2.0.23
+  '@bentley/imodeljs-native': 2.0.24
   '@bentley/oidc-signin-tool': 2.0.0-dev.71
   '@bentley/react-scripts': 3.4.1-dev.27
   '@microsoft/api-extractor': 7.7.3
