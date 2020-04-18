@@ -81,6 +81,7 @@
     "@bentley/presentation-common": "2.0.0-dev.71",
     "@bentley/presentation-components": "2.0.0-dev.71",
     "@bentley/presentation-frontend": "2.0.0-dev.71",
+    "@bentley/projectshare-client": "2.0.0-dev.71",
     "@bentley/ui-abstract": "2.0.0-dev.71",
     "@bentley/ui-core": "2.0.0-dev.71",
     "@bentley/ui-components": "2.0.0-dev.71",
