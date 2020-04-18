@@ -1358,7 +1358,8 @@ describe("iModel", () => {
   });
 
   it("should create link table relationship instances", () => {
-    const testImodel = imodel1;
+    const snapshotFile2: string = IModelTestUtils.prepareOutputFile("IModel", "CreateLinkTable.bim");
+    const testImodel = SnapshotDb.createFrom(imodel1, snapshotFile2);
     const elements = testImodel.elements;
 
     testImodel.nativeDb.enableTxnTesting();
@@ -1426,7 +1427,7 @@ describe("iModel", () => {
 
     ede1.delete();
     testImodel.saveChanges("step 4");
-
+    testImodel.close();
   });
 
   it("should set EC properties of various types", async () => {
