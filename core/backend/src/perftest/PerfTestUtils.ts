@@ -5,7 +5,7 @@
 import { Code, ColorDef, DbResult, IModel, SubCategoryAppearance } from "@bentley/imodeljs-common";
 import { assert } from "chai";
 import * as path from "path";
-import { BackendRequestContext, IModelJsFs, SnapshotDb, SpatialCategory } from "../imodeljs-backend";
+import { BackendRequestContext, IModelJsFs, SnapshotDb, SpatialCategory, ReservedBriefcaseId } from "../imodeljs-backend";
 import { IModelTestUtils } from "../test/IModelTestUtils";
 
 export class PerfTestDataMgr {
@@ -38,7 +38,7 @@ export class PerfTestDataMgr {
       if (undefined === this.catId) {
         this.catId = SpatialCategory.insert(this.db, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
       }
-      const result: DbResult = this.db.nativeDb.setAsMaster();
+      const result: DbResult = this.db.nativeDb.resetBriefcaseId(ReservedBriefcaseId.CheckpointSnapshot);
       assert.equal(DbResult.BE_SQLITE_OK, result);
       this.db.saveChanges();
     }

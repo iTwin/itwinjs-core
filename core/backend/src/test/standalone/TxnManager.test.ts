@@ -17,7 +17,7 @@ describe("TxnManager", () => {
 
   const performUpgrade = (pathname: string): DbResult => {
     const nativeDb = new IModelHost.platform.DgnDb();
-    const res = nativeDb.openIModel(pathname, OpenMode.ReadWrite, IModelJsNative.UpgradeOptions.Upgrade);
+    const res = nativeDb.openIModel(pathname, OpenMode.ReadWrite, IModelJsNative.UpgradeMode.Domain);
     if (DbResult.BE_SQLITE_OK === res)
       nativeDb.closeIModel();
     return res;
@@ -87,6 +87,9 @@ describe("TxnManager", () => {
     assert.isFalse(txns.hasUnsavedChanges);
     assert.isTrue(txns.hasPendingTxns);
     assert.isTrue(txns.hasLocalChanges);
+
+    model = models.getModel(modelId);
+    assert.isDefined(model.geometryGuid);
 
     txns.reverseSingleTxn();
     assert.isFalse(txns.hasPendingTxns, "should not have pending txns if they all are reversed");

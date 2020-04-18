@@ -68,9 +68,9 @@ describe("ChangeMerging", () => {
     const secondDb = StandaloneDb.openFile(secondFileName, OpenMode.ReadWrite);
     const neutralDb = StandaloneDb.openFile(neutralFileName, OpenMode.ReadWrite);
     assert.isTrue(firstDb !== secondDb);
-    firstDb.nativeDb.setBriefcaseId(ReservedBriefcaseId.FutureStandalone);
-    secondDb.nativeDb.setBriefcaseId(ReservedBriefcaseId.FutureStandalone);
-    neutralDb.nativeDb.setBriefcaseId(ReservedBriefcaseId.FutureStandalone);
+    firstDb.nativeDb.resetBriefcaseId(ReservedBriefcaseId.Standalone);
+    secondDb.nativeDb.resetBriefcaseId(ReservedBriefcaseId.Standalone);
+    neutralDb.nativeDb.resetBriefcaseId(ReservedBriefcaseId.Standalone);
 
     firstDb.nativeDb.setBriefcaseManagerOptimisticConcurrencyControlPolicy(new ConcurrencyControl.OptimisticPolicy().conflictResolution);
     secondDb.nativeDb.setBriefcaseManagerOptimisticConcurrencyControlPolicy(new ConcurrencyControl.OptimisticPolicy().conflictResolution);

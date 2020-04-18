@@ -34,6 +34,8 @@ import {
   CodeSpec,
   CreateEmptySnapshotIModelProps,
   CreateIModelProps,
+  CreatePolyfaceRequestProps,
+  CreatePolyfaceResponseProps,
   CreateSnapshotIModelProps,
   DisplayStyleProps,
   EcefLocation,
@@ -639,9 +641,6 @@ export abstract class IModelDb extends IModel {
   /** Get the GUID of this iModel.  */
   public getGuid(): GuidString { return this.nativeDb.getDbGuid(); }
 
-  /** Set the GUID of this iModel. */
-  public setGuid(guid: GuidString): DbResult { return this.nativeDb.setDbGuid(guid); }
-
   /** Update the project extents for this iModel.
    * <p><em>Example:</em>
    * ``` ts
@@ -990,6 +989,14 @@ export abstract class IModelDb extends IModel {
     requestContext.enter();
     const resultString: string = this.nativeDb.getGeoCoordinatesFromIModelCoordinates(props);
     return JSON.parse(resultString) as GeoCoordinatesResponseProps;
+  }
+
+  /**
+   * @internal
+   */
+  public async createPolyfaceFromElement(requestContext: ClientRequestContext, requestProps: CreatePolyfaceRequestProps): Promise<CreatePolyfaceResponseProps> {
+    requestContext.enter();
+    return this.nativeDb.createPolyfaceFromElement(requestProps);
   }
 
   /** Export meshes suitable for graphics APIs from arbitrary geometry in elements in this IModelDb.
@@ -2498,7 +2505,7 @@ export class SnapshotDb extends IModelDb {
     if (DbResult.BE_SQLITE_OK !== status) {
       throw new IModelError(status, "Could not create snapshot iModel", Logger.logError, loggerCategory, () => ({ filePath }));
     }
-    status = nativeDb.setBriefcaseId(ReservedBriefcaseId.Snapshot, optionsString); // setBriefcaseId can close/reopen nativeDb, so must pass encryption props
+    status = nativeDb.resetBriefcaseId(ReservedBriefcaseId.Snapshot);
     if (DbResult.BE_SQLITE_OK !== status) {
       throw new IModelError(status, "Could not set briefcaseId for snapshot iModel", Logger.logError, loggerCategory, () => ({ filePath }));
     }
@@ -2522,6 +2529,7 @@ export class SnapshotDb extends IModelDb {
     if (iModelDb.nativeDb.isEncrypted()) {
       throw new IModelError(DbResult.BE_SQLITE_MISUSE, "Cannot create a snapshot from an encrypted iModel", Logger.logError, loggerCategory);
     }
+
     IModelJsFs.copySync(iModelDb.nativeDb.getFilePath(), snapshotFile);
     const optionsString: string | undefined = options ? JSON.stringify(options) : undefined;
     if (options?.password) {
@@ -2536,30 +2544,22 @@ export class SnapshotDb extends IModelDb {
       }
     }
     const nativeDb = new IModelHost.platform.DgnDb();
-    const result: DbResult = nativeDb.openIModel(snapshotFile, OpenMode.ReadWrite, undefined, optionsString);
-    if (DbResult.BE_SQLITE_OK !== result) {
+    const result = nativeDb.openIModel(snapshotFile, OpenMode.ReadWrite, undefined, optionsString);
+    if (DbResult.BE_SQLITE_OK !== result)
       throw new IModelError(result, "Could not open standalone iModel", Logger.logError, loggerCategory, () => ({ snapshotFile }));
-    }
-    const briefcaseId: BriefcaseId = nativeDb.getBriefcaseId();
-    const isSeedFileMaster: boolean = ReservedBriefcaseId.LegacyMaster === briefcaseId;
-    const isSeedFileSnapshot: boolean = ReservedBriefcaseId.Snapshot === briefcaseId;
-    // Replace iModelId if seedFile is a master or snapshot, preserve iModelId if seedFile is an iModelHub-managed briefcase
-    let iModelId: GuidString = nativeDb.getDbGuid();
-    if ((isSeedFileMaster) || (isSeedFileSnapshot)) {
-      iModelId = Guid.createValue();
-    }
+
+    const briefcaseId = nativeDb.getBriefcaseId();
+
+    // Replace iModelId if seedFile is a snapshot, preserve iModelId if seedFile is an iModelHub-managed briefcase
+    if (ReservedBriefcaseId.Snapshot === briefcaseId || ReservedBriefcaseId.CheckpointSnapshot === briefcaseId)
+      nativeDb.setDbGuid(Guid.createValue());
+
+    nativeDb.resetBriefcaseId(ReservedBriefcaseId.Snapshot);
+
     const snapshotDb = new SnapshotDb(nativeDb, OpenParams.createSnapshot()); // WIP: clean up copied file on error?
-    if (isSeedFileMaster) {
-      snapshotDb.setGuid(iModelId);
-    } else {
-      if (DbResult.BE_SQLITE_OK !== snapshotDb.nativeDb.setAsMaster(iModelId)) {
-        throw new IModelError(IModelStatus.SQLiteError, "Error creating snapshot", Logger.logWarning, loggerCategory);
-      }
-    }
-    snapshotDb.nativeDb.setBriefcaseId(ReservedBriefcaseId.Snapshot, optionsString);
-    if (options?.createClassViews) {
+    if (options?.createClassViews)
       snapshotDb._createClassViewsOnClose = true; // save flag that will be checked when close() is called
-    }
+
     return snapshotDb;
   }
 
@@ -2640,11 +2640,12 @@ export class StandaloneDb extends IModelDb {
     const filePath: string = nativeDb.getFilePath();
     const iModelRpcProps: IModelRpcProps = { key: filePath, iModelId: nativeDb.getDbGuid(), openMode: openParams.openMode };
     super(nativeDb, iModelRpcProps, openParams);
-    const briefcaseId: BriefcaseId = this.getBriefcaseId();
+    const briefcaseId = this.getBriefcaseId();
     switch (briefcaseId) {
-      case ReservedBriefcaseId.FutureStandalone:
-      case ReservedBriefcaseId.LegacyStandalone: // WIP: temporarily allow this
-      case ReservedBriefcaseId.LegacyMaster: // WIP: temporarily allow this
+      case ReservedBriefcaseId.Standalone:
+      case ReservedBriefcaseId.CheckpointSnapshot: // WIP to be removed.
+      case ReservedBriefcaseId.Snapshot:  // WIP to be removed.
+
         break;
       default:
         throw new IModelError(IModelStatus.BadRequest, "Not a standalone iModel", Logger.logError, loggerCategory);
@@ -2663,7 +2664,7 @@ export class StandaloneDb extends IModelDb {
     if (DbResult.BE_SQLITE_OK !== status) {
       throw new IModelError(status, "Could not create standalone iModel", Logger.logError, loggerCategory, () => ({ filePath }));
     }
-    status = nativeDb.setBriefcaseId(ReservedBriefcaseId.FutureStandalone);
+    status = nativeDb.resetBriefcaseId(ReservedBriefcaseId.Standalone);
     if (DbResult.BE_SQLITE_OK !== status) {
       throw new IModelError(status, "Could not set briefcaseId for standalone iModel", Logger.logError, loggerCategory, () => ({ filePath }));
     }
