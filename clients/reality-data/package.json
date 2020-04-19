@@ -13,8 +13,8 @@
   "scripts": {
     "build": "tsc 1>&2",
     "clean": "rimraf lib .rush",
-    "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=reality-data-client",
-    "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --includes=../../generated-docs/extract --json=../../generated-docs/clients/reality-data-client/file.json --tsIndexFile=reality-data-client.ts --onlyJson %TYPEDOC_THEME%",
+    "extract-api": "betools extract-api --entry=reality-data-client",
+    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/clients/reality-data-client/file.json --tsIndexFile=reality-data-client.ts --onlyJson",
     "lint": "tslint --project . 1>&2",
     "webpackTests": "webpack --config ./src/test/utils/webpack.config.js 1>&2",
     "test": "",

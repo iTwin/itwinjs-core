@@ -17,11 +17,11 @@
     "build:watch": "tsc --w",
     "clean": "rimraf lib .rush",
     "cover": "nyc npm test",
-    "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --includes=../../generated-docs/extract --json=../../generated-docs/ui/ui-framework/file.json --tsIndexFile=./ui-framework.ts --onlyJson %TYPEDOC_THEME%",
+    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/ui/ui-framework/file.json --tsIndexFile=./ui-framework.ts --onlyJson",
     "lint": "npm run tslint && npm run eslint",
     "eslint": "eslint src --ext .ts,.tsx,.js,.jsx",
     "tslint": "tslint --project . 1>&2",
-    "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=ui-framework",
+    "extract-api": "betools extract-api --entry=ui-framework",
     "test": "mocha --opts ../mocha.opts \"./lib/test/**/*.test.js\"",
     "test:watch": "npm test -- --reporter min --watch-extensions ts,tsx --watch"
   },

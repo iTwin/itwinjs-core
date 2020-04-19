@@ -8,8 +8,8 @@
   "scripts": {
     "build": "tsc 1>&2",
     "clean": "rimraf lib .rush",
-    "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --includes=../../generated-docs/extract --json=../../generated-docs/core/webgl-compatibility/file.json --tsIndexFile=./webgl-compatibility.ts --onlyJson %TYPEDOC_THEME%",
-    "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=webgl-compatibility",
+    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/webgl-compatibility/file.json --tsIndexFile=./webgl-compatibility.ts --onlyJson",
+    "extract-api": "betools extract-api --entry=webgl-compatibility",
     "lint": "tslint --project . 1>&2",
     "test": "npm run webpackTests && node ./node_modules/@bentley/certa/bin/certa.js -r chrome",
     "cover": "npm test -- --cover",

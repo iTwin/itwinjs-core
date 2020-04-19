@@ -14,7 +14,7 @@
     "clean": "rimraf lib .rush",
     "lint": "tslint --project . 1>&2",
     "test": "",
-    "test:integration": "node ./node_modules/@bentley/build-tools/scripts/test.js",
+    "test:integration": "betools test",
     "docs": "",
     "cover": ""
   },

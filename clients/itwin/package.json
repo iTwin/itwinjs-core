@@ -9,13 +9,13 @@
   "scripts": {
     "build": "tsc 1>&2",
     "clean": "rimraf lib .rush",
-    "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=itwin-client",
-    "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --includes=../../generated-docs/extract --json=../../generated-docs/core/itwin-client/file.json --tsIndexFile=itwin-client.ts --onlyJson %TYPEDOC_THEME%",
+    "extract-api": "betools extract-api --entry=itwin-client",
+    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/itwin-client/file.json --tsIndexFile=itwin-client.ts --onlyJson",
     "lint": "tslint --project . 1>&2",
     "webpackTests": "webpack --config ./src/test/utils/webpack.config.js 1>&2",
-    "test": "node ./node_modules/@bentley/build-tools/scripts/test.js --offline=\"mock\" --grep=\"#integration\" --invert",
+    "test": "betools test --offline=\"mock\"",
     "test:integration": "",
-    "cover": "npm test -- --cover"
+    "cover": "nyc npm test"
   },
   "repository": {
     "type": "git",

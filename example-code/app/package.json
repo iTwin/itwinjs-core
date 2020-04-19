@@ -9,10 +9,10 @@
     "extract-assets": "cpx \"./src/backend/assets/**/*\" ../../generated-docs/extract",
     "copy:backend-assets": "cpx \"./src/backend/assets/**/*\" ./lib/backend/assets",
     "copy:test-backend-assets": "cpx \"./src/backend/test/assets/**/*\" ./lib/backend/test/assets",
-    "extract": "node ./node_modules/@bentley/build-tools/scripts/extract.js --fileExt=ts --extractFrom=./src --recursive --out=../../generated-docs/extract",
+    "extract": "betools extract --fileExt=ts --extractFrom=./src --recursive --out=../../generated-docs/extract",
     "docs": "npm run extract && npm run extract-assets",
     "lint": "tslint --project . 1>&2",
-    "test": "npm run copy:test-backend-assets && npm run copy:backend-assets && node ./node_modules/@bentley/build-tools/scripts/test.js --defineWindow --testDir=\"./lib/backend/test\"",
+    "test": "npm run copy:test-backend-assets && npm run copy:backend-assets && betools test --defineWindow --testDir=\"./lib/backend/test\"",
     "cover": "npm test"
   },
   "repository": {},

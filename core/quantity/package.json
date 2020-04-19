@@ -13,10 +13,10 @@
   "scripts": {
     "build": "tsc 1>&2",
     "clean": "rimraf lib .rush .nyc_output",
-    "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=imodeljs-quantity",
+    "extract-api": "betools extract-api --entry=imodeljs-quantity",
     "lint": "tslint --project . 1>&2",
-    "test": "node ./node_modules/@bentley/build-tools/scripts/test-tsnode.js --testDir=./test/",
-    "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-quantity/file.json --tsIndexFile=./imodeljs-quantity.ts --onlyJson %TYPEDOC_THEME%",
+    "test": "betools test-tsnode --testDir=./test/",
+    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-quantity/file.json --tsIndexFile=./imodeljs-quantity.ts --onlyJson",
     "cover": "nyc npm test",
     "start": "npm run lint && npm run clean && npm run build && npm run test & npm run cover & npm run docs"
   },

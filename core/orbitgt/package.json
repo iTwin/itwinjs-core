@@ -10,10 +10,10 @@
     "build": "tsc 1>&2 && npm run copy:test-assets",
     "clean": "rimraf lib .rush",
     "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/test/assets",
-    "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-orbitgt/file.json --tsIndexFile=./imodeljs-orbitgt.ts --onlyJson %TYPEDOC_THEME%",
-    "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=imodeljs-orbitgt",
+    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-orbitgt/file.json --tsIndexFile=./imodeljs-orbitgt.ts --onlyJson",
+    "extract-api": "betools extract-api --entry=imodeljs-orbitgt",
     "lint": "tslint --project . 1>&2",
-    "test": "node ./node_modules/@bentley/build-tools/scripts/test.js",
+    "test": "betools test",
     "cover": ""
   },
   "iModelJs": {

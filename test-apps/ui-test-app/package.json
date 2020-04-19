@@ -17,7 +17,7 @@
     "start:webserver": "npm run pseudolocalize && cross-env BROWSER=none react-scripts start",
     "start:backend": "node --max-http-header-size=16000 lib/backend/main.js",
     "start:servers": "run-p \"start:webserver\" \"start:backend\"",
-    "pseudolocalize": "node ./node_modules/@bentley/build-tools/scripts/pseudolocalize.js --englishDir ./public/locales/en --out ./build/public/locales/en-PSEUDO",
+    "pseudolocalize": "betools pseudolocalize --englishDir ./public/locales/en --out ./build/public/locales/en-PSEUDO",
     "test": "",
     "cover": "",
     "docs": ""

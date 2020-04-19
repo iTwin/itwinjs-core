@@ -18,7 +18,7 @@
     "copy:assets": "cpx \"./assets/**/*\" ./lib/assets",
     "clean": "rimraf lib .rush",
     "docs": "npm run extract",
-    "extract": "node ./node_modules/@bentley/build-tools/scripts/extract.js --fileExt=ts,tsx --extractFrom=./src --recursive --out=../../generated-docs/extract",
+    "extract": "betools extract --fileExt=ts,tsx --extractFrom=./src --recursive --out=../../generated-docs/extract",
     "lint": "tslint -p ./tsconfig.json 1>&2",
     "electron": "run-p start:webserver start:electron",
     "start:electron": "electron ./lib/backend/main.js",

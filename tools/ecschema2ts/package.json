@@ -15,10 +15,10 @@
     "build": "tsc 1>&2 && npm run copy:test-assets",
     "clean": "rimraf lib .rush",
     "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/test/assets",
-    "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=ecschema2ts",
+    "extract-api": "betools extract-api --entry=ecschema2ts",
     "lint": "tslint --project . 1>&2",
     "docs": "",
-    "test": "node ./node_modules/@bentley/build-tools/scripts/test.js",
+    "test": "betools test",
     "test:watch": "betools test-tsnode --watch",
     "cli:dev": "npm run clean & npm run build & npm link",
     "cover": "nyc npm test"
