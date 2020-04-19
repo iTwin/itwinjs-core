@@ -18,9 +18,9 @@
     "lint": "tslint --project . 1>&2",
     "webpackTests": "webpack --config ./src/test/utils/webpack.config.js 1>&2",
     "test": "",
-    "test:integration": "",
-    "test:integration:chrome": "node --max-http-header-size=16000 ./node_modules/@bentley/certa/bin/certa.js -r chrome --grep \"#integration\"",
-    "test:integration:electron": "node ./node_modules/@bentley/certa/bin/certa.js -r electron --grep \"#integration\"",
+    "test:integration": "echo All tests are skipped",
+    "test:integration:chrome": "certa -r chrome --grep \"#integration\"",
+    "test:integration:electron": "certa -r electron --grep \"#integration\"",
     "cover": ""
   },
   "keywords": [

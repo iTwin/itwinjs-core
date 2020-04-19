@@ -892,7 +892,7 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": [
         "run-script",
-        "debug:tests"
+        "test:debug"
       ],
       "protocol": "inspector",
       "outputCapture": "std",
@@ -918,7 +918,7 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": [
         "run-script",
-        "debug:tests"
+        "test:debug"
       ],
       "protocol": "inspector",
       "outputCapture": "std",

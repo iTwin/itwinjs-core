@@ -20,7 +20,6 @@
     "lint": "npm run tslint && npm run eslint",
     "eslint": "eslint src --ext .ts,.tsx,.js,.jsx",
     "tslint": "tslint --project . 1>&2",
-    "pack": "node ../../scripts/pack.js",
     "extract-api": "betools extract-api --entry=ui-core",
     "test": "mocha --opts ../mocha.opts \"./lib/test/**/*.test.js\"",
     "test:watch": "npm test -- --reporter min --watch-extensions ts,tsx --watch"

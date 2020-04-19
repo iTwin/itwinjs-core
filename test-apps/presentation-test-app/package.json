@@ -16,7 +16,7 @@
     "build:backend": "npm run copy:assets && tsc -p tsconfig.backend.json",
     "build:frontend": "cross-env GENERATE_SOURCEMAP=false USE_FAST_SASS=true react-scripts build",
     "copy:assets": "cpx \"./assets/**/*\" ./lib/assets",
-    "clean": "rimraf lib .rush",
+    "clean": "rimraf build lib .rush",
     "docs": "npm run extract",
     "extract": "betools extract --fileExt=ts,tsx --extractFrom=./src --recursive --out=../../generated-docs/extract",
     "lint": "tslint -p ./tsconfig.json 1>&2",

@@ -24,11 +24,11 @@
     "cover": "",
     "docs": "",
     "lint": "tslint --project . 1>&2",
-    "optest": "node ./node_modules/@bentley/certa/bin/certa.js -r chrome --fgrep \"Operational: \"",
+    "optest": "certa -r chrome --fgrep \"Operational: \"",
     "start:backend": "node ./lib/test/backend.js",
     "test": "",
     "test:integration": "npm-run-all -r -p start:backend test:integration:chrome",
-    "test:integration:chrome": "node ./node_modules/@bentley/certa/bin/certa.js -r chrome",
+    "test:integration:chrome": "certa -r chrome",
     "webpack:frontend": "webpack --config webpack.config.js 1>&2"
   },
   "dependencies": {

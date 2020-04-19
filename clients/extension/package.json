@@ -18,9 +18,9 @@
     "lint": "tslint --project . 1>&2",
     "test": "",
     "test:integration": "npm run webpackTests && npm run test:integration:chrome",
-    "test:integration:chrome": "node ./node_modules/@bentley/certa/bin/certa.js -r chrome",
-    "test:integration:electron": "node ./node_modules/@bentley/certa/bin/certa.js -r electron",
-    "test:integration:node": "node ./node_modules/@bentley/certa/bin/certa.js -r node",
+    "test:integration:chrome": "certa -r chrome",
+    "test:integration:electron": "certa -r electron",
+    "test:integration:node": "certa -r node",
     "webpackTests": "webpack --config ./src/test/utils/webpack.config.js 1>&2"
   },
   "keywords": [

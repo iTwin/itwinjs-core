@@ -13,15 +13,15 @@
   "scripts": {
     "build": "tsc 1>&2",
     "clean": "rimraf lib .rush",
+    "cover": "",
     "extract-api": "betools extract-api --entry=rbac-client",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/clients/rbac-client/file.json --tsIndexFile=rbac-client.ts --onlyJson",
     "lint": "tslint --project . 1>&2",
-    "webpackTests": "webpack --config ./src/test/utils/webpack.config.js 1>&2",
     "test": "",
-    "test:integration": "",
-    "test:integration:chrome": "node --max-http-header-size=16000 ./node_modules/@bentley/certa/bin/certa.js -r chrome --grep \"#integration\"",
-    "test:integration:electron": "node ./node_modules/@bentley/certa/bin/certa.js -r electron --grep \"#integration\"",
-    "cover": ""
+    "test:integration": "echo All tests are currently skipped",
+    "test:integration:chrome": "certa -r chrome --grep \"#integration\"",
+    "test:integration:electron": "certa -r electron --grep \"#integration\"",
+    "webpackTests": "webpack --config ./src/test/utils/webpack.config.js 1>&2"
   },
   "keywords": [
     "Bentley",
