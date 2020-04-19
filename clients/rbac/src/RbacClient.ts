@@ -27,7 +27,7 @@ export class Permission extends WsgInstance {
   public categoryId?: number;
 }
 
-/** iModel Hub Permission
+/** iModelHub Permission
  * @internal
  */
 export enum IModelHubPermission {

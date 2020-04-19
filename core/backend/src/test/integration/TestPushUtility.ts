@@ -4,14 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 import { GuidString, Id64String } from "@bentley/bentleyjs-core";
 import { Point3d, Range3d, YawPitchRollAngles } from "@bentley/geometry-core";
-import { Code, CodeScopeSpec, ColorDef, GeometricElement3dProps, IModel, IModelVersion } from "@bentley/imodeljs-common";
+import { Code, CodeScopeSpec, ColorDef, GeometricElement3dProps, IModel, IModelVersion, SyncMode } from "@bentley/imodeljs-common";
 import { TestUsers, TestUtility, TestUserCredentials } from "@bentley/oidc-signin-tool";
 import * as fs from "fs";
 import * as path from "path";
-import { AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseManager, CategorySelector, ConcurrencyControl, DisplayStyle3d, GeometricElement, IModelDb, ModelSelector, OpenParams, OrthographicViewDefinition, PhysicalModel, SnapshotDb, SpatialCategory } from "../../imodeljs-backend";
+import { AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseManager, CategorySelector, ConcurrencyControl, DisplayStyle3d, GeometricElement, IModelDb, ModelSelector, OrthographicViewDefinition, PhysicalModel, SnapshotDb, SpatialCategory } from "../../imodeljs-backend";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { HubUtility } from "./HubUtility";
 import { IModelWriter } from "./IModelWriter";
+import { IModelTestUtils } from "../IModelTestUtils";
 
 const pause = async (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -44,7 +45,7 @@ export class TestPushUtility {
 
   /** Pushes new change sets to the Hub periodically and sets up named versions */
   public async pushTestChangeSetsAndVersions(count: number) {
-    this._iModelDb = await BriefcaseDb.open(this._requestContext!, this._projectId!, this._iModelId!.toString(), OpenParams.pullAndPush(), IModelVersion.latest());
+    this._iModelDb = await IModelTestUtils.downloadAndOpenBriefcaseDb(this._requestContext!, this._projectId!, this._iModelId!.toString(), SyncMode.PullAndPush, IModelVersion.latest());
     if (this._iModelDb.isBriefcaseDb()) {
       this._iModelDb.concurrencyControl.setPolicy(ConcurrencyControl.OptimisticPolicy); // don't want to bother with locks.
     }

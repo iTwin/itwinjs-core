@@ -4,18 +4,19 @@ Every iModelHub operation requires that user would be authorized to perform it. 
 
 iModelHub uses 6 permissions:
 
-1. [Create iModel](#create-imodel)
-2. [Delete iModel](#delete-imodel)
-3. [Read iModel](#read-imodel)
-4. [Modify iModel](#modify-imodel)
-5. [Manage iModel Resources](#manage-imodel-resources)
-6. [Manage iModel Versions](#manage-imodel-resources)
+- [Permissions](#permissions)
+  - [Create iModel](#create-imodel)
+  - [Delete iModel](#delete-imodel)
+  - [Read iModel](#read-imodel)
+  - [Modify iModel](#modify-imodel)
+  - [Manage iModel Resources](#manage-imodel-resources)
+  - [Manage iModel Versions](#manage-imodel-versions)
 
 ## Create iModel
 
 Permissions automatically included: _Read iModel_, _Modify iModel_
 
-Create iModel permission allows creating iModels. See [BriefcaseDb.create]($backend) and [IModelHandler.create]($imodelhub-client).
+Create iModel permission allows creating iModels. See [BriefcaseManager.create]($backend) and [IModelHandler.create]($imodelhub-client).
 
 ## Delete iModel
 

@@ -58,7 +58,7 @@ public;BeWheelEventProps
 internal;BingElevationProvider
 beta;BlankConnection 
 beta;BlankConnectionProps
-public;BriefcaseConnection 
+public;class BriefcaseConnection 
 internal;CachedIModelCoordinatesResponseProps
 internal;calculateEcefToDb(iModel: IModelConnection, bimElevationBias: number): Promise
 public;CanvasDecoration
@@ -104,7 +104,6 @@ internal;DevTools
 public;DisplayStyle2dState 
 public;DisplayStyle3dState 
 public;class DisplayStyleState 
-internal;DownloadBriefcaseToken
 alpha;DrawClipOptions
 public;DrawingModelState 
 public;DrawingViewState 
@@ -234,6 +233,7 @@ internal;KeyinStatus
 beta;LengthDescription 
 internal;linePlaneIntersect(outP: Point3d, linePt: Point3d, lineNormal: Vector3d | undefined, planePt: Point3d, planeNormal: Vector3d, perpendicular: boolean): void
 internal;LoadedExtensionProps
+internal;LocalBriefcaseConnection 
 public;LocateAction
 public;LocateFilterStatus
 public;LocateOptions
@@ -322,6 +322,7 @@ internal;class RealityTileLoader
 internal;RealityTileParams 
 internal;RealityTileTree 
 internal;RealityTileTreeParams 
+public;RemoteBriefcaseConnection 
 beta;class RenderClipVolume 
 public;RenderContext
 internal;RenderDiagnostics

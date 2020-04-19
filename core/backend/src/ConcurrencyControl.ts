@@ -8,18 +8,18 @@
 
 import { assert, DbOpcode, DbResult, Id64String, Logger, RepositoryStatus } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { CodeProps, ElementProps, IModelError, IModelStatus, IModelWriteRpcInterface, ModelProps } from "@bentley/imodeljs-common";
+import { CodeProps, ElementProps, IModelError, IModelStatus, IModelWriteRpcInterface, ModelProps, SyncMode } from "@bentley/imodeljs-common";
+import { CodeQuery, CodeState, HubCode, Lock, LockLevel, LockQuery, LockType } from "@bentley/imodelhub-client";
 import * as deepAssign from "deep-assign";
 import * as path from "path";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { ECDb, ECDbOpenMode } from "./ECDb";
 import { Element } from "./Element";
-import { BriefcaseDb, SyncMode } from "./IModelDb";
+import { BriefcaseDb } from "./IModelDb";
 import { IModelJsFs } from "./IModelJsFs";
 import { Model } from "./Model";
 import { RelationshipProps } from "./Relationship";
-import { CodeQuery, CodeState, HubCode, Lock, LockLevel, LockQuery, LockType } from "@bentley/imodelhub-client";
 
 const loggerCategory: string = BackendLoggerCategory.ConcurrencyControl;
 
@@ -221,7 +221,7 @@ export class ConcurrencyControl {
    * @internal
    */
   public onElementWrite(elementClass: typeof Element, element: ElementProps, opcode: DbOpcode): void {
-    if (this._iModel.openParams.syncMode !== SyncMode.PullAndPush) {
+    if (!this._iModel.isPushEnabled) {
       throw new IModelError(IModelStatus.ReadOnly, "iModel is read-only - changes cannot be pushed to the iModelHub", Logger.logError, loggerCategory);
     }
     const resourcesNeeded = new ConcurrencyControl.Request();
@@ -413,7 +413,7 @@ export class ConcurrencyControl {
   }
 
   public async onOpened(requestContext: AuthorizedClientRequestContext): Promise<void> {
-    if (this._iModel.openParams.syncMode !== SyncMode.PullAndPush)
+    if (!this._iModel.isPushEnabled)
       return;
 
     assert(!this._iModel.concurrencyControl._cache.isOpen, "BriefcaseDb.onOpened should be raised only once");
@@ -423,7 +423,7 @@ export class ConcurrencyControl {
     return this.openOrCreateCache(requestContext);
   }
 
-  public async onClose(_requestContext: AuthorizedClientRequestContext): Promise<void> {
+  public onClose() {
     this._iModel.txns.onCommitted.removeListener(this.emitOnSavedChangesEvent, this);
     this._cache.close(true);
   }
@@ -976,12 +976,12 @@ export namespace ConcurrencyControl {
 
     private mustHaveBriefcase() {
       if (this.concurrencyControl.iModel === undefined || this.concurrencyControl.iModel.briefcase === undefined
-        || this.concurrencyControl.iModel.openParams.syncMode !== SyncMode.PullAndPush)
+        || this.concurrencyControl.iModel.syncMode !== SyncMode.PullAndPush)
         throw new IModelError(IModelStatus.NotOpenForWrite, "not a briefcase that can be used to push changes to the IModel Hub", Logger.logError, loggerCategory, () => this.concurrencyControl.iModel.briefcase.getDebugInfo());
     }
 
     private mustBeOpenAndWriteable() {
-      if (this.concurrencyControl.iModel.openParams.syncMode !== SyncMode.PullAndPush)
+      if (!this.concurrencyControl.iModel.isPushEnabled)
         throw new IModelError(IModelStatus.NotOpenForWrite, "not a briefcase that can be used to push changes to the IModel Hub", Logger.logError, loggerCategory, () => this.concurrencyControl.iModel.briefcase.getDebugInfo());
       if (!this.isOpen)
         throw new IModelError(IModelStatus.NotOpen, "not open", Logger.logError, loggerCategory, () => this.computeCacheFileName());

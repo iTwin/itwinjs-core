@@ -188,19 +188,6 @@ function enableAndConfigureThematicDisplay(viewport: Viewport): boolean {
 ![Thematic height mode with a smooth "sea mountain" color gradient applied to surfaces](assets/ThematicDisplay_HeightSmooth.png)
 <p align="center">Thematic height mode with a smooth "sea mountain" color gradient applied to surfaces</p>
 
-## Opening iModels
-
-The API now allows opening iModels (briefcases) at the backend with a new [SyncMode.pullOnly]($backend) option. e.g.,
-```ts
-const iModel = await BriefcaseDb.open(requestContext, projectId, iModelId, OpenParams.pullOnly());
-```
-* Opening with this new option establishes a local briefcase that allows change sets to be pulled from the iModel Hub and merged in. e.g.,
-  ```ts
-  iModel.pullAndMergeChanges(requestContext, IModelVersion.latest());
-  ```
-*  Upon open a new briefcase is *acquired* from the iModel Hub and is meant for exclusive use by that user.
-* The briefcase is opened ReadWrite to allow merging of change sets even if no changes can be made to it.
-
 ## Solar Calculation APIs
 
 The solar calculation functions [calculateSolarAngles]($common), [calculateSolarDirection]($common), and [calculateSunriseOrSunset]($common) have moved from imodeljs-frontend to imodeljs-common.
@@ -305,20 +292,69 @@ And the following method has been renamed/refactored to *find* based on a key:
 
 ### Briefcase iModels
 
-The methods for working with Briefcase iModels (those that are synchronized with iModelHub) have been moved into a new [BriefcaseDb]($backend) class, which is a breaking change.
-The following methods have been moved from (the now abstract) [IModelDb]($backend) class:
+The methods for working with Briefcase iModels (those that are synchronized with the iModelHub) have been refactored. At the backend many of the methods have been moved from (the now abstract) [IModelDb]($backend) class to the [BriefcaseDb]($backend) class. At the frontend, the methods have been moved from (the now abstract) [IModelConnection]($frontend) class to the [RemoteBriefcaseConnection]($frontend) class. More details below -
 
-* `IModelDb.open` --> [BriefcaseDb.open]($backend)
-* `IModelDb.create` --> [BriefcaseDb.create]($backend)
-* `IModelDb.pullAndMergeChanges` --> [BriefcaseDb.pullAndMergeChanges]($backend)
-* `IModelDb.pushChanges` --> [BriefcaseDb.pushChanges]($backend)
-* `IModelDb.reverseChanges` --> [BriefcaseDb.reverseChanges]($backend)
-* `IModelDb.reinstateChanges` --> [BriefcaseDb.reinstateChanges]($backend)
-* `IModelDb.concurrencyControl` --> [BriefcaseDb.concurrencyControl]($backend)
+#### Managing Briefcases at the Backend
+* Opening an iModel from iModel Hub at the backend involves two steps - downloading a briefcase of the iModel, and then opening that briefcase. These two operations have been separated out now, and require two different API calls - await the asynchronous call to [BriefcaseManager.download]($backend) to complete the download, and open the briefcase with a synchronous call to [BriefcaseDb.open]($backend).
+  * Before change:
+    ```ts
+    const iModelDb = await IModelDb.open(requestContext, projectId, iModelId, OpenParams.fixedVersion(), IModelVersion.latest());
+    ```
+  * After change:
+    ```ts
+      const downloadOptions: DownloadOptions = {syncMode: FixedVersion};
+      const briefcaseProps: BriefcaseProps = await BriefcaseManager.download(requestContext, contextId, iModelId, downloadOptions, version);
+      requestContext.enter();
 
-Corresponding changes have been made to the frontend. The following methods have been moved from (the now abstract) [IModelConnection]($frontend) class:
+      const briefcaseDb = BriefcaseDb.open(requestContext, briefcaseProps.key);
+    ```
+* The parameter OpenParams to the open call has been removed, and instead replaced with  [OpenBriefcaseOptions]($common). The download call takes [DownloadBriefcaseOptions]($common). See above example. Also, the [SyncMode]($common) option that's part of [DownloadBriefcaseOptions]($common) has been moved from the imodeljs-backend package to imodeljs-common package. Update your imports like below -
+  ```ts
+  import {SyncMode} from "@bentley/imodeljs-common";
+  ```
+* The API now allows downloading briefcases at the backend with a new [SyncMode.PullOnly]($common) option. e.g.,
+  ```ts
+  const downloadOptions: DownloadOptions = {syncMode: FixedVersion};
+  const briefcaseProps: BriefcaseProps = await BriefcaseManager.download(requestContext, projectId, iModelId, downloadOptions);
+  requestContext.enter();
 
-* `IModelConnection.open` --> [BriefcaseConnection.open]($frontend)
+  const briefcaseDb = BriefcaseDb.open(requestContext, briefcaseProps.key);
+  ```
+  * Downloading iModels with this new option establishes a local briefcase that allows change sets to be pulled from the iModel Hub and merged in, but disallows pushes back to the iModel Hub. e.g.,
+    ```ts
+    briefcaseDb.pullAndMergeChanges(requestContext, IModelVersion.latest());
+    ```
+  *  Upon open, a new briefcase is acquired from the iModel Hub and is meant for exclusive use by that user.
+  * The briefcase is opened ReadWrite to allow merging of change sets even if no changes can be made to it.
+* [BriefcaseDb.onOpen]($backend) and [BriefcaseDb.onOpened]($backend) events pass a context that may or may not include an AccessToken. i.e., they take [AuthorizedClientRequestContext]($clients) | [ClientRequestContext]($bentleyjs-core) as a parameter instead of [AuthorizedClientRequestContext]($clients)
+
+* Removed the option to delete the briefcase on close (i.e., KeepBriefcase). Very similar to the open, it should be done in two separate steps, with the close being a synchronous operation now.
+  * Before change:
+    ```ts
+    await iModelDb.close(requestContext, KeepBriefcase.No);
+    ```
+  * After change:
+    ```
+    briefcaseDb.close();
+    await BriefcaseManager.delete(requestContext, briefcaseDb.key);
+    ```
+
+* The following methods have been moved from (the now abstract) [IModelDb]($backend) class to the [BriefcaseDb]($backend):
+  * `IModelDb.pullAndMergeChanges` --> [BriefcaseDb.pullAndMergeChanges]($backend)
+  * `IModelDb.pushChanges` --> [BriefcaseDb.pushChanges]($backend)
+  * `IModelDb.reverseChanges` --> [BriefcaseDb.reverseChanges]($backend)
+  * `IModelDb.reinstateChanges` --> [BriefcaseDb.reinstateChanges]($backend)
+  * `IModelDb.concurrencyControl` --> [BriefcaseDb.concurrencyControl]($backend)
+
+* The following methods have been moved from [IModelDb]($backend) to [BriefcaseManager]($backend)
+  * `IModelDb.create` --> [BriefcaseManager.create]($backend)
+
+#### Managing Briefcases at the Frontend
+
+Similar to the backend, at the frontend, the following method has been moved from (the now abstract) [IModelConnection]($frontend) class:
+* `IModelConnection.open` --> [RemoteBriefcaseConnection.open]($frontend)
+
+Like before this causes the briefcase to be downloaded at the backend (if necessary) before opening it.
 
 ### Snapshot iModels
 

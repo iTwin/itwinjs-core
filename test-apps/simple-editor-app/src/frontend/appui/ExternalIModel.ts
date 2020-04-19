@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Id64String, OpenMode } from "@bentley/bentleyjs-core";
-import { AuthorizedFrontendRequestContext, BriefcaseConnection, IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
+import { AuthorizedFrontendRequestContext, RemoteBriefcaseConnection, IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
 import { ContextRegistryClient, Project } from "@bentley/context-registry-client";
 import { IModelQuery } from "@bentley/imodelhub-client";
 
@@ -21,7 +21,7 @@ export class ExternalIModel {
     const info = await this.getIModelInfo();
 
     if (info.projectId && info.imodelId) {
-      this.iModelConnection = await BriefcaseConnection.open(info.projectId, info.imodelId, OpenMode.ReadWrite);
+      this.iModelConnection = await RemoteBriefcaseConnection.open(info.projectId, info.imodelId, OpenMode.ReadWrite);
       this.viewId = await this.onIModelSelected(this.iModelConnection);
     }
   }

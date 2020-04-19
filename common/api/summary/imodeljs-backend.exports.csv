@@ -29,7 +29,7 @@ public;BisCoreSchema
 public;BriefcaseDb 
 internal;BriefcaseEntry
 public;BriefcaseId = number
-internal;BriefcaseManager
+beta;BriefcaseManager
 public;CachedECSqlStatement
 internal;CachedSqliteStatement
 public;class Callout 
@@ -195,7 +195,6 @@ public;InformationRecordPartition
 public;class InformationReferenceElement 
 beta;InstanceChange
 beta;IReferentReferencesElement 
-public;KeepBriefcase
 public;KnownLocations
 internal;LightLocation 
 beta;LinearElement
@@ -287,7 +286,6 @@ public;SubCategory
 public;Subject 
 public;SubjectOwnsPartitionElements 
 public;SubjectOwnsSubjects 
-public;SyncMode
 beta;TemplateModelCloner 
 internal;TemplateRecipe2d 
 beta;TemplateRecipe3d 

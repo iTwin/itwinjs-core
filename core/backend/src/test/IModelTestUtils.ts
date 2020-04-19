@@ -2,25 +2,21 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
-import { DbResult, IModelStatus, Logger, OpenMode, Id64, Id64String, IDisposable, BeEvent, LogLevel, BentleyLoggerCategory, Config } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext, ClientsLoggerCategory } from "@bentley/itwin-client";
-import { IModelError, Code, ElementProps, RpcManager, GeometricElement3dProps, IModel, IModelReadRpcInterface, RelatedElement, RpcConfiguration, CodeProps } from "@bentley/imodeljs-common";
-import {
-  IModelHostConfiguration, IModelHost, BriefcaseManager, IModelDb, Model, Element,
-  InformationPartitionElement, SpatialCategory, IModelJsFs, PhysicalPartition, PhysicalModel, SubjectOwnsPartitionElements,
-  IModelJsNative, NativeLoggerCategory, SnapshotDb,
-} from "../imodeljs-backend";
-import { BackendLoggerCategory as BackendLoggerCategory } from "../BackendLoggerCategory";
-import { KnownTestLocations } from "./KnownTestLocations";
-import { HubUtility } from "./integration/HubUtility";
-import * as path from "path";
-import { Schema, Schemas } from "../Schema";
-import { ElementDrivesElement, RelationshipProps } from "../Relationship";
-import { PhysicalElement } from "../Element";
-import { ClassRegistry } from "../ClassRegistry";
+import { BeEvent, BentleyLoggerCategory, ChangeSetStatus, DbResult, GuidString, Id64, Id64String, IDisposable, IModelStatus, Logger, LogLevel, OpenMode, Config } from "@bentley/bentleyjs-core";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
-import { ChangeSet, IModelHubClientLoggerCategory } from "@bentley/imodelhub-client";
+import { IModelHubClientLoggerCategory, ChangeSet } from "@bentley/imodelhub-client";
+import { AuthorizedClientRequestContext, ClientsLoggerCategory } from "@bentley/itwin-client";
+import { BriefcaseProps, Code, CodeProps, ElementProps, GeometricElement3dProps, IModel, IModelError, IModelReadRpcInterface, IModelVersion, RelatedElement, RpcConfiguration, RpcManager, SyncMode } from "@bentley/imodeljs-common";
+import { assert } from "chai";
+import * as path from "path";
+import { BackendLoggerCategory as BackendLoggerCategory } from "../BackendLoggerCategory";
+import { ClassRegistry } from "../ClassRegistry";
+import { PhysicalElement } from "../Element";
+import { BriefcaseDb, BriefcaseManager, Element, IModelDb, IModelHost, IModelHostConfiguration, IModelJsFs, IModelJsNative, InformationPartitionElement, Model, NativeLoggerCategory, PhysicalModel, PhysicalPartition, SnapshotDb, SpatialCategory, SubjectOwnsPartitionElements } from "../imodeljs-backend";
+import { ElementDrivesElement, RelationshipProps } from "../Relationship";
+import { Schema, Schemas } from "../Schema";
+import { HubUtility } from "./integration/HubUtility";
+import { KnownTestLocations } from "./KnownTestLocations";
 
 /** Class for simple test timing */
 export class Timer {
@@ -130,6 +126,19 @@ export class TestPhysicalObject extends PhysicalElement implements TestPhysicalO
 }
 
 export class IModelTestUtils {
+  /** Helper to open a briefcase db */
+  public static async downloadAndOpenBriefcaseDb(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelId: GuidString, syncMode: SyncMode, version: IModelVersion = IModelVersion.latest()): Promise<BriefcaseDb> {
+    requestContext.enter();
+    const briefcaseProps: BriefcaseProps = await BriefcaseManager.download(requestContext, contextId, iModelId, { syncMode }, version);
+    requestContext.enter();
+    return BriefcaseDb.open(requestContext, briefcaseProps.key);
+  }
+
+  public static async closeAndDeleteBriefcaseDb(requestContext: AuthorizedClientRequestContext, briefcaseDb: BriefcaseDb) {
+    briefcaseDb.close();
+    await BriefcaseManager.delete(requestContext, briefcaseDb.briefcaseKey);
+  }
+
   public static async getTestModelInfo(requestContext: AuthorizedClientRequestContext, testProjectId: string, iModelName: string): Promise<TestIModelInfo> {
     const iModelInfo = new TestIModelInfo(iModelName);
     iModelInfo.id = await HubUtility.queryIModelIdByName(requestContext, testProjectId, iModelInfo.name);
@@ -327,6 +336,7 @@ export class IModelTestUtils {
       Logger.configureLevels(require(loggingConfigFile));
     }
   }
+
   public static init() {
     // dummy method to get this script included
   }
@@ -367,6 +377,17 @@ export class IModelTestUtils {
 
       return rows;
     });
+  }
+
+  /** Flushes the Txns in the TxnTable - this allows importing of schemas */
+  public static flushTxns(iModelDb: IModelDb): boolean {
+    const res: IModelJsNative.ErrorStatusOrResult<ChangeSetStatus, string> = iModelDb.nativeDb.startCreateChangeSet();
+    if (res.error)
+      return false;
+    const status = iModelDb.nativeDb.finishCreateChangeSet();
+    if (ChangeSetStatus.Success !== status)
+      return false;
+    return true;
   }
 }
 

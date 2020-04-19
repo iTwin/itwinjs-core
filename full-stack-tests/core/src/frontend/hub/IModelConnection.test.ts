@@ -5,7 +5,7 @@
 import { Id64, Logger, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
 import { Range3d, Transform, XYAndZ } from "@bentley/geometry-core";
 import { BisCodeSpec, CodeSpec, IModelVersion, NavigationValue, RelatedElement } from "@bentley/imodeljs-common";
-import { BriefcaseConnection, CategorySelectorState, DisplayStyle2dState, DisplayStyle3dState, DrawingViewState, IModelApp, IModelConnection, MockRender, ModelSelectorState, OrthographicViewState, ViewState } from "@bentley/imodeljs-frontend";
+import { RemoteBriefcaseConnection, CategorySelectorState, DisplayStyle2dState, DisplayStyle3dState, DrawingViewState, IModelApp, IModelConnection, MockRender, ModelSelectorState, OrthographicViewState, ViewState } from "@bentley/imodeljs-frontend";
 import { TestAuthorizationClient, TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
 import { assert, expect } from "chai";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
@@ -36,7 +36,7 @@ describe("IModelConnection (#integration)", () => {
     const testProjectId = await TestUtility.getTestProjectId("iModelJsIntegrationTest");
     const testIModelId = await TestUtility.getTestIModelId(testProjectId, "ConnectionReadTest");
 
-    iModel = await BriefcaseConnection.open(testProjectId, testIModelId);
+    iModel = await RemoteBriefcaseConnection.open(testProjectId, testIModelId);
   });
 
   after(async () => {
@@ -131,13 +131,13 @@ describe("IModelConnection (#integration)", () => {
   it("should be able to open an IModel with no versions", async () => {
     const projectId = await TestUtility.getTestProjectId("iModelJsIntegrationTest");
     const iModelId = await TestUtility.getTestIModelId(projectId, "NoVersionsTest");
-    const noVersionsIModel = await BriefcaseConnection.open(projectId, iModelId, OpenMode.Readonly, IModelVersion.latest());
+    const noVersionsIModel = await RemoteBriefcaseConnection.open(projectId, iModelId, OpenMode.Readonly, IModelVersion.latest());
     assert.isNotNull(noVersionsIModel);
 
-    const noVersionsIModel2 = await BriefcaseConnection.open(projectId, iModelId, OpenMode.Readonly, IModelVersion.first());
+    const noVersionsIModel2 = await RemoteBriefcaseConnection.open(projectId, iModelId, OpenMode.Readonly, IModelVersion.first());
     assert.isNotNull(noVersionsIModel2);
 
-    const noVersionsIModel3 = await BriefcaseConnection.open(projectId, iModelId, OpenMode.Readonly, IModelVersion.asOfChangeSet(""));
+    const noVersionsIModel3 = await RemoteBriefcaseConnection.open(projectId, iModelId, OpenMode.Readonly, IModelVersion.asOfChangeSet(""));
     assert.isNotNull(noVersionsIModel3);
   });
 
@@ -145,13 +145,13 @@ describe("IModelConnection (#integration)", () => {
     const projectId = await TestUtility.getTestProjectId("iModelJsIntegrationTest");
     const iModelId = await TestUtility.getTestIModelId(projectId, "ReadOnlyTest");
 
-    const readOnlyTest = await BriefcaseConnection.open(projectId, iModelId, OpenMode.Readonly, IModelVersion.latest());
+    const readOnlyTest = await RemoteBriefcaseConnection.open(projectId, iModelId, OpenMode.Readonly, IModelVersion.latest());
     assert.isNotNull(readOnlyTest);
 
     const promises = new Array<Promise<void>>();
     let n = 0;
     while (++n < 25) {
-      const promise = BriefcaseConnection.open(projectId, iModelId, OpenMode.Readonly, IModelVersion.latest())
+      const promise = RemoteBriefcaseConnection.open(projectId, iModelId, OpenMode.Readonly, IModelVersion.latest())
         .then((readOnlyTest2: IModelConnection) => {
           assert.isNotNull(readOnlyTest2);
           assert.isTrue(readOnlyTest.getRpcProps().key === readOnlyTest2.getRpcProps().key);
@@ -164,13 +164,13 @@ describe("IModelConnection (#integration)", () => {
 
   it("should reuse open briefcases for exclusive access", async () => {
     // Repeatedly opening a Readonly or ReadWrite connection should result in the same briefcase
-    // Note that the IModelDb is opened with OpenParams.FixedVersion(AccessMode.Shared) in the case of ReadOnly connections, and
-    // OpenParams.PullAndPush(AccessMode.Exclusive) in the case of ReadWrite connections.
+    // Note that the IModelDb is opened with SyncMode = FixedVersion in the case of ReadOnly connections, and
+    // SyncMode = PullAndPush in the case of ReadWrite connections.
     const testProjectId = await TestUtility.getTestProjectId("iModelJsIntegrationTest");
     const testIModelId = await TestUtility.getTestIModelId(testProjectId, "ConnectionReadTest");
     const openModes: OpenMode[] = [OpenMode.Readonly, OpenMode.ReadWrite];
     for (const openMode of openModes) {
-      const iModel1 = await BriefcaseConnection.open(testProjectId, testIModelId, openMode, IModelVersion.latest());
+      const iModel1 = await RemoteBriefcaseConnection.open(testProjectId, testIModelId, openMode, IModelVersion.latest());
       assert.isNotNull(iModel1);
       assert.isTrue(iModel1.isOpen);
       assert.isFalse(iModel1.isClosed);
@@ -179,7 +179,7 @@ describe("IModelConnection (#integration)", () => {
       assert.equal(iModel1.openMode, openMode);
       let n = 0;
       while (++n < 5) {
-        const iModel2 = await BriefcaseConnection.open(testProjectId, testIModelId, openMode, IModelVersion.latest());
+        const iModel2 = await RemoteBriefcaseConnection.open(testProjectId, testIModelId, openMode, IModelVersion.latest());
         assert.isNotNull(iModel2);
         assert.equal(iModel2.getRpcProps().key, iModel1.getRpcProps().key);
       }
@@ -192,7 +192,7 @@ describe("IModelConnection (#integration)", () => {
   it("should be able to request tiles from an IModelConnection", async () => {
     const testProjectId = await TestUtility.getTestProjectId("iModelJsIntegrationTest");
     const testIModelId = await TestUtility.getTestIModelId(testProjectId, "ConnectionReadTest");
-    iModel = await BriefcaseConnection.open(testProjectId, testIModelId);
+    iModel = await RemoteBriefcaseConnection.open(testProjectId, testIModelId);
 
     const modelProps = await iModel.models.queryProps({ from: "BisCore.PhysicalModel" });
     expect(modelProps.length).to.equal(1);

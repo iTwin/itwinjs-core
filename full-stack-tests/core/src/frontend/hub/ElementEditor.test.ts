@@ -5,7 +5,7 @@
 import { Id64String, OpenMode } from "@bentley/bentleyjs-core";
 import { IModelJson, LineSegment3d, Point3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import { Code } from "@bentley/imodeljs-common";
-import { BeButtonEvent, BriefcaseConnection, ElementEditor3d, IModelApp, IModelAppOptions, IModelConnection, Viewport } from "@bentley/imodeljs-frontend";
+import { BeButtonEvent, RemoteBriefcaseConnection, ElementEditor3d, IModelApp, IModelAppOptions, IModelConnection, Viewport } from "@bentley/imodeljs-frontend";
 import { TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
 import { assert } from "chai";
 import { PlacementTestTool } from "./TestPrimitiveTools";
@@ -49,7 +49,7 @@ describe("Element editor tests (#integration)", async () => {
     assert.isTrue(imodelId !== undefined);
     assert.isTrue(imodelId !== "");
 
-    iModel = await BriefcaseConnection.open(contextId, imodelId, OpenMode.ReadWrite);
+    iModel = await RemoteBriefcaseConnection.open(contextId, imodelId, OpenMode.ReadWrite);
   });
 
   after(async () => {

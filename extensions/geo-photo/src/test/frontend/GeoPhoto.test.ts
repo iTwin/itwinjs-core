@@ -6,7 +6,7 @@ import { GuidString, OpenMode, StopWatch } from "@bentley/bentleyjs-core";
 import { HubIModel } from "@bentley/imodelhub-client";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { IModelVersion } from "@bentley/imodeljs-common";
-import { BriefcaseConnection, IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
+import { RemoteBriefcaseConnection, IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
 import { TestAuthorizationClient } from "@bentley/oidc-signin-tool/lib/TestUsers";
 import { ProjectShareClient } from "@bentley/projectshare-client";
 import * as chai from "chai";
@@ -133,7 +133,7 @@ describe("GeoPhoto (#integration)", () => {
     projectId = project.wsgId;
 
     const hubIModel: HubIModel = await TestConfig.queryIModel(requestContext, projectId, "PhotoTest");
-    iModel = await BriefcaseConnection.open(projectId, hubIModel.wsgId, OpenMode.Readonly, IModelVersion.latest());
+    iModel = await RemoteBriefcaseConnection.open(projectId, hubIModel.wsgId, OpenMode.Readonly, IModelVersion.latest());
 
     const treeHandler = new ProjectShareHandler(requestContext, undefined as any, iModel, undefined);
     geoPhotoTest = new GeoPhotoTest(requestContext, iModel, treeHandler);

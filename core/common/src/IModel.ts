@@ -234,11 +234,10 @@ export abstract class IModel implements IModelProps {
     return this.getConnectionProps();
   }
 
-  /** A key used by RPC operations to identify this iModel across the frontend and backend.
-   * @see [[getRpcProps]]
+  /** A key used to identify this iModel across the frontend and backend.
    * @internal
    */
-  protected _rpcKey: string;
+  protected _fileKey: string;
   /** The Guid that identifies the *context* that owns this iModel. */
   public get contextId(): GuidString | undefined { return this._contextId; }
   /** @internal */
@@ -261,7 +260,7 @@ export abstract class IModel implements IModelProps {
       throw new IModelError(IModelStatus.BadRequest, "Could not generate valid IModelRpcProps", Logger.logError);
     }
     return {
-      key: this._rpcKey,
+      key: this._fileKey,
       contextId: this.contextId,
       iModelId: this.iModelId,
       changeSetId: this.changeSetId,
@@ -271,11 +270,11 @@ export abstract class IModel implements IModelProps {
 
   /** @internal */
   protected constructor(tokenProps: IModelRpcProps | undefined, openMode: OpenMode) {
-    this._rpcKey = tokenProps?.key ?? "";
+    this._fileKey = tokenProps?.key ?? "";
     this._contextId = tokenProps?.contextId;
     this._iModelId = tokenProps?.iModelId;
     this._changeSetId = tokenProps?.changeSetId;
-    this.openMode = openMode;
+    this.openMode = openMode; // Note: The open mode passed through the RPC layer is ignored in the case of IModelDb-s
   }
 
   /** @internal */

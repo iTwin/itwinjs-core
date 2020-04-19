@@ -4,12 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import { Id64String } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { ElementAspectProps, IModel, IModelVersion, SubCategoryAppearance } from "@bentley/imodeljs-common";
+import { ElementAspectProps, IModel, IModelVersion, SubCategoryAppearance, SyncMode } from "@bentley/imodeljs-common";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { Reporter } from "@bentley/perf-tools/lib/Reporter";
 import { assert } from "chai";
 import * as path from "path";
-import { BriefcaseDb, DictionaryModel, ElementAspect, IModelDb, IModelJsFs, OpenParams, SnapshotDb, SpatialCategory } from "../imodeljs-backend";
+import { BriefcaseDb, DictionaryModel, ElementAspect, IModelDb, IModelJsFs, SnapshotDb, SpatialCategory } from "../imodeljs-backend";
 import { IModelTestUtils } from "../test/IModelTestUtils";
 import { KnownTestLocations } from "../test/KnownTestLocations";
 import { IModelHubError } from "@bentley/imodelhub-client";
@@ -48,7 +48,7 @@ describe("ElementAspectPerformance", () => {
     const imodelId = configData.aspectIModelId;
 
     requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
-    iModelDbHub = await BriefcaseDb.open(requestContext, projectId, imodelId, OpenParams.fixedVersion(), IModelVersion.latest());
+    iModelDbHub = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, projectId, imodelId, SyncMode.FixedVersion, IModelVersion.latest());
     assert.exists(iModelDbHub);
   });
 
@@ -56,7 +56,7 @@ describe("ElementAspectPerformance", () => {
     const csvPath = path.join(KnownTestLocations.outputDir, "ElementAspectPerfTests.csv");
     reporter.exportCSV(csvPath);
 
-    await iModelDbHub.close(requestContext);
+    iModelDbHub.close();
   });
 
   it("SimpleElement-Insert-Update-Delete-Read", async () => {

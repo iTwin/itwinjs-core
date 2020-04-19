@@ -8,12 +8,15 @@
 
 import { DbResult, GuidString, IDisposable, OpenMode } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { ChangeSet, ChangesType } from "@bentley/imodelhub-client";
 import { ChangeData, ChangedElements, ChangedModels, IModelError, IModelStatus } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import * as path from "path";
 import { IModelHost } from "./IModelHost";
-import { BriefcaseDb, BriefcaseManager, ChangeSetToken, ChangeSummaryExtractContext, ChangeSummaryManager, ECDbOpenMode, IModelDb } from "./imodeljs-backend";
-import { ChangeSet, ChangesType } from "@bentley/imodelhub-client";
+import { BriefcaseDb, IModelDb } from "./IModelDb";
+import { BriefcaseManager, ChangeSetToken } from "./BriefcaseManager";
+import { ECDbOpenMode } from "./ECDb";
+import { ChangeSummaryManager, ChangeSummaryExtractContext } from "./ChangeSummaryManager";
 
 /** An ChangedElementsDb file
  * @internal

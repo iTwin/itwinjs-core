@@ -8,14 +8,14 @@ import { RobotWorldEngine } from "../RobotWorldEngine";
 import { Angle, AngleProps, Point3d, Range3d, XYZProps } from "@bentley/geometry-core";
 import { Robot } from "../RobotElement";
 import { Barrier } from "../BarrierElement";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { Project } from "@bentley/context-registry-client";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 // __PUBLISH_EXTRACT_START__ Bridge.imports.example-code
 import { Id64String } from "@bentley/bentleyjs-core";
-import { BriefcaseDb, BriefcaseManager, CategorySelector, ConcurrencyControl, DefinitionModel, DisplayStyle3d, IModelDb, IModelHost, ModelSelector, OpenParams, OrthographicViewDefinition, PhysicalModel, SpatialCategory, Subject } from "@bentley/imodeljs-backend";
-import { ColorByName, IModel } from "@bentley/imodeljs-common";
-import { IModelHubClient, HubIModel, IModelQuery } from "@bentley/imodelhub-client";
+import { HubIModel, IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
+import { BriefcaseDb, BriefcaseManager, CategorySelector, ConcurrencyControl, DefinitionModel, DisplayStyle3d, IModelDb, IModelHost, ModelSelector, OrthographicViewDefinition, PhysicalModel, SpatialCategory, Subject } from "@bentley/imodeljs-backend";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { BriefcaseProps, ColorByName, IModel, SyncMode } from "@bentley/imodeljs-common";
 // __PUBLISH_EXTRACT_END__
 
 // __PUBLISH_EXTRACT_START__ Bridge.source-data.example-code
@@ -83,7 +83,13 @@ async function runBridgeFirstTime(requestContext: AuthorizedClientRequestContext
   // Start the IModelHost
   IModelHost.startup();
 
-  const briefcase = await BriefcaseDb.open(requestContext, projectId, iModelId, OpenParams.pullAndPush());
+  requestContext.enter();
+
+  const briefcaseProps: BriefcaseProps = await BriefcaseManager.download(requestContext, projectId, iModelId, { syncMode: SyncMode.PullAndPush });
+  requestContext.enter();
+  const briefcase: BriefcaseDb = await BriefcaseDb.open(requestContext, briefcaseProps.key);
+  requestContext.enter();
+
   briefcase.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
 
   // I. Import the schema.

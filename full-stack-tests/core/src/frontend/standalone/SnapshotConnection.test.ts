@@ -53,9 +53,13 @@ describe("SnapshotConnection", () => {
     assert.isFalse(snapshotR2.isBriefcase);
     assert.isFalse(snapshotF1.isBriefcase);
 
-    assert.isFalse(snapshotR1.isBriefcaseConnection());
-    assert.isFalse(snapshotR2.isBriefcaseConnection());
-    assert.isFalse(snapshotF1.isBriefcaseConnection());
+    assert.isFalse(snapshotR1.isLocalBriefcaseConnection());
+    assert.isFalse(snapshotR2.isLocalBriefcaseConnection());
+    assert.isFalse(snapshotF1.isLocalBriefcaseConnection());
+
+    assert.isFalse(snapshotR1.isRemoteBriefcaseConnection());
+    assert.isFalse(snapshotR2.isRemoteBriefcaseConnection());
+    assert.isFalse(snapshotF1.isRemoteBriefcaseConnection());
 
     const elementPropsR1: ElementProps[] = await snapshotR1.elements.getProps(IModel.rootSubjectId);
     assert.equal(1, elementPropsR1.length);
