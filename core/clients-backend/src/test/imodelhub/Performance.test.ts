@@ -1,14 +1,13 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Logger, Id64, GuidString } from "@bentley/bentleyjs-core";
 import {
-  AccessToken, ResponseError, AuthenticationError, IModelClient,
-  Briefcase, HubCode, CodeState, CodeQuery, Lock, LockLevel, LockType, LockQuery,
-  AuthorizedClientRequestContext,
-} from "@bentley/imodeljs-clients";
+  AccessToken, ResponseError, AuthenticationError, AuthorizedClientRequestContext,
+} from "@bentley/itwin-client";
 import * as utils from "./TestUtils";
+import { IModelClient, Briefcase, HubCode, CodeState, CodeQuery, Lock, LockLevel, LockType, LockQuery } from "@bentley/imodelhub-client";
 
 describe.skip("iModelHub Performance tests", () => {
   let imodelId: GuidString;

@@ -1,13 +1,13 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { SizeProps } from "@bentley/ui-core";
 import { offsetAndContainInContainer, Tooltip } from "../../ui-ninezone";
-import { createRect } from "../Utils";
+import { createBoundingClientRect } from "../Utils";
 
 describe("<Tooltip />", () => {
   it("should render", () => {
@@ -30,7 +30,7 @@ describe("<Tooltip />", () => {
       />,
     );
     const element = sut.getDOMNode() as HTMLElement;
-    sinon.stub(element, "getBoundingClientRect").returns(createRect(10, 1, 50, 22));
+    sinon.stub(element, "getBoundingClientRect").returns(createBoundingClientRect(10, 1, 50, 22));
 
     sut.setProps({
       position: {

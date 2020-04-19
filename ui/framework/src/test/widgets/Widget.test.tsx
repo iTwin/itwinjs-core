@@ -1,11 +1,14 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { mount } from "enzyme";
+
+import { WidgetState } from "@bentley/ui-abstract";
+
 import TestUtils from "../TestUtils";
-import { Widget, WidgetState } from "../../ui-framework";
+import { Widget } from "../../ui-framework";
 
 describe("Widget", () => {
 

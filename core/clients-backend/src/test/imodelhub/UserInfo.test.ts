@@ -1,14 +1,15 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
 import { IModelHubStatus, GuidString } from "@bentley/bentleyjs-core";
-import { AccessToken, UserInfoQuery, HubUserInfo, UserInfo, IModelHubClientError, IModelClient, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { AccessToken, UserInfo, AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { TestUsers } from "@bentley/oidc-signin-tool";
 import { ResponseBuilder, ScopeType, RequestType } from "../ResponseBuilder";
 import { TestConfig } from "../TestConfig";
-import { TestUsers } from "../TestUsers";
 import * as utils from "./TestUtils";
+import { HubUserInfo, IModelClient, UserInfoQuery, IModelHubClientError } from "@bentley/imodelhub-client";
 
 function mockGetUserInfo(imodelId: GuidString, userInfo: HubUserInfo[], query?: string) {
   if (!TestConfig.enableMocks)
@@ -86,9 +87,10 @@ describe("iModelHubClient UserInfoHandler", () => {
       mockGetUserInfo(imodelId, mockedUsersInfo);
     }
 
-    const query = new UserInfoQuery().byIds(
-      [requestContexts[0].accessToken.getUserInfo()!.id,
-      requestContexts[1].accessToken.getUserInfo()!.id]);
+    const query = new UserInfoQuery().byIds([
+      requestContexts[0].accessToken.getUserInfo()!.id,
+      requestContexts[1].accessToken.getUserInfo()!.id,
+    ]);
     const userInfo = (await imodelHubClient.users.get(requestContexts[0], imodelId, query));
     userInfo.sort((a: HubUserInfo, b: HubUserInfo) => a.id!.localeCompare(b.id!));
     chai.assert(userInfo);

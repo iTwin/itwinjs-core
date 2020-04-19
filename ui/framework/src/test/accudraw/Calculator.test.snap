@@ -38,7 +38,7 @@ exports[`Calculator renders correctly 1`] = `
       className="uifw-calculator-large-button uifw-calculator-cancel-button"
       onClick={[Function]}
     >
-      <Component
+      <Icon
         iconSpec="icon-remove"
       />
     </Button>
@@ -47,7 +47,7 @@ exports[`Calculator renders correctly 1`] = `
       className="uifw-calculator-large-button uifw-calculator-ok-button"
       onClick={[Function]}
     >
-      <Component
+      <Icon
         iconSpec="icon-checkmark"
       />
     </Button>

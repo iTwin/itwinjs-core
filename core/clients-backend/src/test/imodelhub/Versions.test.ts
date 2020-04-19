@@ -1,18 +1,18 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
 import { GuidString, Guid } from "@bentley/bentleyjs-core";
 import {
-  AccessToken, Version, VersionQuery, Briefcase, ChangeSet, Thumbnail,
-  ThumbnailQuery, ThumbnailSize, IModelClient, AuthorizedClientRequestContext,
-  RequestGlobalOptions, RequestTimeoutOptions, IModelQuery,
-} from "@bentley/imodeljs-clients";
+  AccessToken, AuthorizedClientRequestContext,
+  RequestGlobalOptions, RequestTimeoutOptions,
+} from "@bentley/itwin-client";
+import { TestUsers } from "@bentley/oidc-signin-tool";
 import { TestConfig } from "../TestConfig";
-import { TestUsers } from "../TestUsers";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import * as utils from "./TestUtils";
+import { Version, VersionQuery, Briefcase, ChangeSet, Thumbnail, ThumbnailQuery, ThumbnailSize, IModelClient, IModelQuery } from "@bentley/imodelhub-client";
 
 function getSelectStatement(thumbnailSizes: ThumbnailSize[]) {
   let selectStatement: string = "*";
@@ -40,13 +40,13 @@ function mockGetVersionsByNameWithThumbnails(imodelId: GuidString, name: string,
 }
 
 async function createNamedVersionWithThumbnail(requestContext: AuthorizedClientRequestContext, imodelClient: IModelClient, imodelId: GuidString, versionName: string) {
-  const changeSetCount = (await imodelClient.changeSets.get(requestContext, imodelId)).length;
+  const changeSets = (await imodelClient.changeSets.get(requestContext, imodelId));
   const briefcase2 = (await utils.getBriefcases(requestContext, imodelId, 1))[0];
   let changeSet: ChangeSet;
-  if (changeSetCount === 0 || changeSetCount > 9) {
+  if (changeSets.length === 0 || changeSets.length > 9) {
     changeSet = (await utils.createChangeSets(requestContext, imodelId, briefcase2, 0, 1))[0];
   } else {
-    changeSet = (await imodelClient.changeSets.get(requestContext, imodelId))[0];
+    changeSet = changeSets[0];
   }
   const version: Version = await imodelClient.versions.create(requestContext, imodelId, changeSet.id!, versionName);
 

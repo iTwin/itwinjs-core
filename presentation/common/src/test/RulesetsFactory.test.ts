@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
@@ -66,7 +66,7 @@ describe("RulesetsFactory", () => {
       typeName: "navigation",
     });
 
-    it("creates a valid ruleset for string record", () => {
+    it("creates a valid ruleset for string record", async () => {
       const recordClass: ClassInfo = {
         id: createRandomId(),
         name: "MySchema:MyClass",
@@ -84,7 +84,7 @@ describe("RulesetsFactory", () => {
         "My Property", createStringTypeDescription(), true, 1, [property]);
       const record = new Item([], faker.random.word(), "", recordClass,
         { MyProperty: `test value with double "quotes"` }, { MyProperty: "test display value" }, []);
-      const result = factory.createSimilarInstancesRuleset(field, record);
+      const result = await factory.createSimilarInstancesRuleset(field, record);
       const expectedRules: Rule[] = [{
         ruleType: RuleTypes.Content,
         specifications: [{
@@ -99,7 +99,7 @@ describe("RulesetsFactory", () => {
       expect(result.description).to.eq(`[My Class].[My Property] = test display value`);
     });
 
-    it("creates a valid ruleset for boolean `true` record", () => {
+    it("creates a valid ruleset for boolean `true` record", async () => {
       const recordClass: ClassInfo = {
         id: createRandomId(),
         name: "MySchema:MyClass",
@@ -117,7 +117,7 @@ describe("RulesetsFactory", () => {
         "My Property", createBooleanTypeDescription(), true, 1, [property]);
       const record = new Item([], faker.random.word(), "", recordClass,
         { MyProperty: true }, { MyProperty: "True" }, []);
-      const result = factory.createSimilarInstancesRuleset(field, record);
+      const result = await factory.createSimilarInstancesRuleset(field, record);
       const expectedRules: Rule[] = [{
         ruleType: RuleTypes.Content,
         specifications: [{
@@ -132,7 +132,7 @@ describe("RulesetsFactory", () => {
       expect(result.description).to.eq(`[My Class].[My Property] = True`);
     });
 
-    it("creates a valid ruleset for boolean `false` record", () => {
+    it("creates a valid ruleset for boolean `false` record", async () => {
       const recordClass: ClassInfo = {
         id: createRandomId(),
         name: "MySchema:MyClass",
@@ -150,7 +150,7 @@ describe("RulesetsFactory", () => {
         "My Property", createBooleanTypeDescription(), true, 1, [property]);
       const record = new Item([], faker.random.word(), "", recordClass,
         { MyProperty: false }, { MyProperty: "False" }, []);
-      const result = factory.createSimilarInstancesRuleset(field, record);
+      const result = await factory.createSimilarInstancesRuleset(field, record);
       const expectedRules: Rule[] = [{
         ruleType: RuleTypes.Content,
         specifications: [{
@@ -165,7 +165,7 @@ describe("RulesetsFactory", () => {
       expect(result.description).to.eq(`[My Class].[My Property] = False`);
     });
 
-    it("creates a valid ruleset for int record", () => {
+    it("creates a valid ruleset for int record", async () => {
       const recordClass: ClassInfo = {
         id: createRandomId(),
         name: "MySchema:MyClass",
@@ -183,7 +183,7 @@ describe("RulesetsFactory", () => {
         "My Property", createIntTypeDescription(), true, 1, [property]);
       const record = new Item([], faker.random.word(), "", recordClass,
         { MyProperty: 123 }, { MyProperty: "123" }, []);
-      const result = factory.createSimilarInstancesRuleset(field, record);
+      const result = await factory.createSimilarInstancesRuleset(field, record);
       const expectedRules: Rule[] = [{
         ruleType: RuleTypes.Content,
         specifications: [{
@@ -198,7 +198,7 @@ describe("RulesetsFactory", () => {
       expect(result.description).to.eq(`[My Class].[My Property] = 123`);
     });
 
-    it("creates a valid ruleset for double record", () => {
+    it("creates a valid ruleset for double record", async () => {
       const recordClass: ClassInfo = {
         id: createRandomId(),
         name: "MySchema:MyClass",
@@ -216,7 +216,7 @@ describe("RulesetsFactory", () => {
         "My Property", createDoubleTypeDescription(), true, 1, [property]);
       const record = new Item([], faker.random.word(), "", recordClass,
         { MyProperty: 123.456 }, { MyProperty: "123.46" }, []);
-      const result = factory.createSimilarInstancesRuleset(field, record);
+      const result = await factory.createSimilarInstancesRuleset(field, record);
       const expectedRules: Rule[] = [{
         ruleType: RuleTypes.Content,
         specifications: [{
@@ -231,7 +231,7 @@ describe("RulesetsFactory", () => {
       expect(result.description).to.eq(`[My Class].[My Property] = 123.46`);
     });
 
-    it("creates a valid ruleset for datetime record", () => {
+    it("creates a valid ruleset for datetime record", async () => {
       const recordClass: ClassInfo = {
         id: createRandomId(),
         name: "MySchema:MyClass",
@@ -249,7 +249,7 @@ describe("RulesetsFactory", () => {
         "My Property", createDateTimeTypeDescription(), true, 1, [property]);
       const record = new Item([], faker.random.word(), "", recordClass,
         { MyProperty: "2007-07-13T07:18:07.000" }, { MyProperty: "633199078870000000" }, []);
-      const result = factory.createSimilarInstancesRuleset(field, record);
+      const result = await factory.createSimilarInstancesRuleset(field, record);
       const expectedRules: Rule[] = [{
         ruleType: RuleTypes.Content,
         specifications: [{
@@ -264,7 +264,7 @@ describe("RulesetsFactory", () => {
       expect(result.description).to.eq(`[My Class].[My Property] = 633199078870000000`);
     });
 
-    it("creates a valid ruleset for point2d record", () => {
+    it("creates a valid ruleset for point2d record", async () => {
       const recordClass: ClassInfo = {
         id: createRandomId(),
         name: "MySchema:MyClass",
@@ -282,7 +282,7 @@ describe("RulesetsFactory", () => {
         "My Property", createPoint2dTypeDescription(), true, 1, [property]);
       const record = new Item([], faker.random.word(), "", recordClass,
         { MyProperty: { x: 1, y: 2 } }, { MyProperty: "1, 2" }, []);
-      const result = factory.createSimilarInstancesRuleset(field, record);
+      const result = await factory.createSimilarInstancesRuleset(field, record);
       const expectedRules: Rule[] = [{
         ruleType: RuleTypes.Content,
         specifications: [{
@@ -297,7 +297,7 @@ describe("RulesetsFactory", () => {
       expect(result.description).to.eq(`[My Class].[My Property] = 1, 2`);
     });
 
-    it("creates a valid ruleset for point3d record", () => {
+    it("creates a valid ruleset for point3d record", async () => {
       const recordClass: ClassInfo = {
         id: createRandomId(),
         name: "MySchema:MyClass",
@@ -315,7 +315,7 @@ describe("RulesetsFactory", () => {
         "My Property", createPoint3dTypeDescription(), true, 1, [property]);
       const record = new Item([], faker.random.word(), "", recordClass,
         { MyProperty: { x: 1, y: 2, z: 3 } }, { MyProperty: "1, 2, 3" }, []);
-      const result = factory.createSimilarInstancesRuleset(field, record);
+      const result = await factory.createSimilarInstancesRuleset(field, record);
       const expectedRules: Rule[] = [{
         ruleType: RuleTypes.Content,
         specifications: [{
@@ -330,7 +330,7 @@ describe("RulesetsFactory", () => {
       expect(result.description).to.eq(`[My Class].[My Property] = 1, 2, 3`);
     });
 
-    it("creates a valid ruleset for point3d record when z value is 0", () => {
+    it("creates a valid ruleset for point3d record when z value is 0", async () => {
       const recordClass: ClassInfo = {
         id: createRandomId(),
         name: "MySchema:MyClass",
@@ -348,7 +348,7 @@ describe("RulesetsFactory", () => {
         "My Property", createPoint3dTypeDescription(), true, 1, [property]);
       const record = new Item([], faker.random.word(), "", recordClass,
         { MyProperty: { x: 1, y: 2, z: 0 } }, { MyProperty: "1, 2, 0" }, []);
-      const result = factory.createSimilarInstancesRuleset(field, record);
+      const result = await factory.createSimilarInstancesRuleset(field, record);
       const expectedRules: Rule[] = [{
         ruleType: RuleTypes.Content,
         specifications: [{
@@ -363,7 +363,7 @@ describe("RulesetsFactory", () => {
       expect(result.description).to.eq(`[My Class].[My Property] = 1, 2, 0`);
     });
 
-    it("creates a valid ruleset for null record", () => {
+    it("creates a valid ruleset for null record", async () => {
       const recordClass: ClassInfo = {
         id: createRandomId(),
         name: "MySchema:MyClass",
@@ -381,7 +381,7 @@ describe("RulesetsFactory", () => {
         "My Property", createStringTypeDescription(), true, 1, [property]);
       const record = new Item([], faker.random.word(), "", recordClass,
         { MyProperty: undefined }, { MyProperty: "" }, []);
-      const result = factory.createSimilarInstancesRuleset(field, record);
+      const result = await factory.createSimilarInstancesRuleset(field, record);
       const expectedRules: Rule[] = [{
         ruleType: RuleTypes.Content,
         specifications: [{
@@ -396,7 +396,7 @@ describe("RulesetsFactory", () => {
       expect(result.description).to.eq(`[My Class].[My Property] = NULL`);
     });
 
-    it("creates a valid ruleset for navigation property record", () => {
+    it("creates a valid ruleset for navigation property record", async () => {
       const recordClass: ClassInfo = {
         id: createRandomId(),
         name: "MySchema:MyClass",
@@ -414,7 +414,7 @@ describe("RulesetsFactory", () => {
         "My Property", createNavigationPropertyTypeDescription(), true, 1, [property]);
       const record = new Item([], faker.random.word(), "", recordClass,
         { MyProperty: "0x16" }, { MyProperty: "test display value" }, []);
-      const result = factory.createSimilarInstancesRuleset(field, record);
+      const result = await factory.createSimilarInstancesRuleset(field, record);
       const expectedRules: Rule[] = [{
         ruleType: RuleTypes.Content,
         specifications: [{
@@ -429,7 +429,7 @@ describe("RulesetsFactory", () => {
       expect(result.description).to.eq(`[My Class].[My Property] = test display value`);
     });
 
-    it("creates a valid ruleset for one-step forward related nested content record", () => {
+    it("creates a valid ruleset for one-step forward related nested content record", async () => {
       const recordClass: ClassInfo = {
         id: createRandomId(),
         name: "MySchema:PrimaryClass",
@@ -481,7 +481,7 @@ describe("RulesetsFactory", () => {
         [field.name]: undefined,
       };
       const record = new Item([], faker.random.words(), "", recordClass, values, displayValues, []);
-      const result = factory.createSimilarInstancesRuleset(field, record);
+      const result = await factory.createSimilarInstancesRuleset(field, record);
       const expectedRules: Rule[] = [{
         ruleType: RuleTypes.Content,
         specifications: [{
@@ -489,9 +489,11 @@ describe("RulesetsFactory", () => {
           classes: { schemaName: "MySchema", classNames: ["PrimaryClass"] },
           arePolymorphic: true,
           relatedInstances: [{
-            relationship: { schemaName: "MySchema", className: "MyRelationship" },
-            class: { schemaName: "MySchema", className: "RelatedClass" },
-            requiredDirection: RelationshipDirection.Forward,
+            relationshipPath: [{
+              relationship: { schemaName: "MySchema", className: "MyRelationship" },
+              direction: RelationshipDirection.Forward,
+              targetClass: { schemaName: "MySchema", className: "RelatedClass" },
+            }],
             isRequired: true,
             alias: "related_0",
           }],
@@ -502,7 +504,7 @@ describe("RulesetsFactory", () => {
       expect(result.description).to.eq(`[Related Class].[Related Property] = test display value`);
     });
 
-    it("creates a valid ruleset for one-step backward related nested content record", () => {
+    it("creates a valid ruleset for one-step backward related nested content record", async () => {
       const recordClass: ClassInfo = {
         id: createRandomId(),
         name: "MySchema:PrimaryClass",
@@ -514,8 +516,8 @@ describe("RulesetsFactory", () => {
         label: "Related Class",
       };
       const relationshipPath: RelatedClassInfo[] = [{
-        sourceClassInfo: recordClass,
-        targetClassInfo: propertyClass,
+        sourceClassInfo: propertyClass,
+        targetClassInfo: recordClass,
         relationshipInfo: {
           id: createRandomId(),
           name: "MySchema:MyRelationship",
@@ -554,7 +556,7 @@ describe("RulesetsFactory", () => {
         [field.name]: undefined,
       };
       const record = new Item([], faker.random.words(), "", recordClass, values, displayValues, []);
-      const result = factory.createSimilarInstancesRuleset(field, record);
+      const result = await factory.createSimilarInstancesRuleset(field, record);
       const expectedRules: Rule[] = [{
         ruleType: RuleTypes.Content,
         specifications: [{
@@ -562,9 +564,11 @@ describe("RulesetsFactory", () => {
           classes: { schemaName: "MySchema", classNames: ["PrimaryClass"] },
           arePolymorphic: true,
           relatedInstances: [{
-            relationship: { schemaName: "MySchema", className: "MyRelationship" },
-            class: { schemaName: "MySchema", className: "RelatedClass" },
-            requiredDirection: RelationshipDirection.Backward,
+            relationshipPath: [{
+              relationship: { schemaName: "MySchema", className: "MyRelationship" },
+              direction: RelationshipDirection.Backward,
+              targetClass: { schemaName: "MySchema", className: "RelatedClass" },
+            }],
             isRequired: true,
             alias: "related_0",
           }],
@@ -575,62 +579,101 @@ describe("RulesetsFactory", () => {
       expect(result.description).to.eq(`[Related Class].[Related Property] = test display value`);
     });
 
-    it("creates a valid ruleset for one-step forward related property record", () => {
-      const recordClass: ClassInfo = {
+    it("creates a valid ruleset for multi-step related nested content record", async () => {
+      const selectClass: ClassInfo = {
         id: createRandomId(),
-        name: "MySchema:PrimaryClass",
-        label: "Primary Class",
+        name: "MySchema:SelectClass",
+        label: "Select Class",
+      };
+      const intermediateClass: ClassInfo = {
+        id: createRandomId(),
+        name: "MySchema:SomeClass",
+        label: "Some Class",
       };
       const propertyClass: ClassInfo = {
         id: createRandomId(),
-        name: "MySchema:RelatedClass",
-        label: "Related Class",
+        name: "MySchema:PropertyClass",
+        label: "Property Class",
       };
       const relationshipPath: RelatedClassInfo[] = [{
         sourceClassInfo: propertyClass,
-        targetClassInfo: recordClass,
+        targetClassInfo: intermediateClass,
         relationshipInfo: {
           id: createRandomId(),
-          name: "MySchema:MyRelationship",
-          label: "My Relationship",
+          name: "MySchema:MyRelationship1",
+          label: "My Relationship 1",
         },
         isForwardRelationship: false,
+        isPolymorphicRelationship: true,
+      }, {
+        sourceClassInfo: intermediateClass,
+        targetClassInfo: selectClass,
+        relationshipInfo: {
+          id: createRandomId(),
+          name: "MySchema:MyRelationship2",
+          label: "My Relationship 2",
+        },
+        isForwardRelationship: true,
         isPolymorphicRelationship: true,
       }];
       const property: Property = {
         property: {
           classInfo: propertyClass,
           type: "string",
-          name: "RelatedProperty",
+          name: "MyProperty",
         },
-        relatedClassPath: relationshipPath,
+        relatedClassPath: [],
       };
-      const field = new PropertiesField(createRandomCategory(), "RelatedProperty",
+      const field = new PropertiesField(createRandomCategory(), faker.random.word(),
         "Related Property", createStringTypeDescription(), true, 1, [property]);
-      const record = new Item([], faker.random.words(), "", recordClass,
-        { RelatedProperty: "test value" }, { RelatedProperty: "test display value" }, []);
-      const result = factory.createSimilarInstancesRuleset(field, record);
+      const parentField = new NestedContentField(createRandomCategory(), faker.random.word(),
+        faker.random.words(), createRandomPrimitiveTypeDescription(), faker.random.boolean(),
+        faker.random.number(), createRandomECClassInfo(), relationshipPath, [field], undefined, faker.random.boolean());
+      field.rebuildParentship(parentField);
+      const values = {
+        [parentField.name]: [{
+          primaryKeys: [],
+          values: {
+            [field.name]: "test value",
+          },
+          displayValues: {
+            [field.name]: "test display value",
+          },
+          mergedFieldNames: [],
+        }] as NestedContentValue[],
+      };
+      const displayValues = {
+        [field.name]: undefined,
+      };
+      const record = new Item([], faker.random.words(), "", selectClass, values, displayValues, []);
+      const result = await factory.createSimilarInstancesRuleset(field, record);
       const expectedRules: Rule[] = [{
         ruleType: RuleTypes.Content,
         specifications: [{
           specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
-          classes: { schemaName: "MySchema", classNames: ["PrimaryClass"] },
+          classes: { schemaName: "MySchema", classNames: ["SelectClass"] },
           arePolymorphic: true,
           relatedInstances: [{
-            relationship: { schemaName: "MySchema", className: "MyRelationship" },
-            class: { schemaName: "MySchema", className: "RelatedClass" },
-            requiredDirection: RelationshipDirection.Forward,
+            relationshipPath: [{
+              relationship: { schemaName: "MySchema", className: "MyRelationship2" },
+              direction: RelationshipDirection.Backward,
+              targetClass: { schemaName: "MySchema", className: "SomeClass" },
+            }, {
+              relationship: { schemaName: "MySchema", className: "MyRelationship1" },
+              direction: RelationshipDirection.Forward,
+              targetClass: { schemaName: "MySchema", className: "PropertyClass" },
+            }],
             isRequired: true,
             alias: "related_0",
           }],
-          instanceFilter: `related_0.RelatedProperty = "test value"`,
+          instanceFilter: `related_0.MyProperty = "test value"`,
         }],
       }];
       expect(result.ruleset.rules).to.deep.eq(expectedRules);
-      expect(result.description).to.eq(`[Related Class].[Related Property] = test display value`);
+      expect(result.description).to.eq(`[Property Class].[Related Property] = test display value`);
     });
 
-    it("creates a valid ruleset for one-step backward related property record", () => {
+    it("creates a valid ruleset for one-step forward related property record", async () => {
       const recordClass: ClassInfo = {
         id: createRandomId(),
         name: "MySchema:PrimaryClass",
@@ -664,7 +707,7 @@ describe("RulesetsFactory", () => {
         "Related Property", createStringTypeDescription(), true, 1, [property]);
       const record = new Item([], faker.random.words(), "", recordClass,
         { RelatedProperty: "test value" }, { RelatedProperty: "test display value" }, []);
-      const result = factory.createSimilarInstancesRuleset(field, record);
+      const result = await factory.createSimilarInstancesRuleset(field, record);
       const expectedRules: Rule[] = [{
         ruleType: RuleTypes.Content,
         specifications: [{
@@ -672,9 +715,11 @@ describe("RulesetsFactory", () => {
           classes: { schemaName: "MySchema", classNames: ["PrimaryClass"] },
           arePolymorphic: true,
           relatedInstances: [{
-            relationship: { schemaName: "MySchema", className: "MyRelationship" },
-            class: { schemaName: "MySchema", className: "RelatedClass" },
-            requiredDirection: RelationshipDirection.Backward,
+            relationshipPath: [{
+              relationship: { schemaName: "MySchema", className: "MyRelationship" },
+              direction: RelationshipDirection.Forward,
+              targetClass: { schemaName: "MySchema", className: "RelatedClass" },
+            }],
             isRequired: true,
             alias: "related_0",
           }],
@@ -685,7 +730,140 @@ describe("RulesetsFactory", () => {
       expect(result.description).to.eq(`[Related Class].[Related Property] = test display value`);
     });
 
-    it("creates a valid ruleset when related property record is based on multiple properties", () => {
+    it("creates a valid ruleset for one-step backward related property record", async () => {
+      const recordClass: ClassInfo = {
+        id: createRandomId(),
+        name: "MySchema:PrimaryClass",
+        label: "Primary Class",
+      };
+      const propertyClass: ClassInfo = {
+        id: createRandomId(),
+        name: "MySchema:RelatedClass",
+        label: "Related Class",
+      };
+      const relationshipPath: RelatedClassInfo[] = [{
+        sourceClassInfo: recordClass,
+        targetClassInfo: propertyClass,
+        relationshipInfo: {
+          id: createRandomId(),
+          name: "MySchema:MyRelationship",
+          label: "My Relationship",
+        },
+        isForwardRelationship: false,
+        isPolymorphicRelationship: true,
+      }];
+      const property: Property = {
+        property: {
+          classInfo: propertyClass,
+          type: "string",
+          name: "RelatedProperty",
+        },
+        relatedClassPath: relationshipPath,
+      };
+      const field = new PropertiesField(createRandomCategory(), "RelatedProperty",
+        "Related Property", createStringTypeDescription(), true, 1, [property]);
+      const record = new Item([], faker.random.words(), "", recordClass,
+        { RelatedProperty: "test value" }, { RelatedProperty: "test display value" }, []);
+      const result = await factory.createSimilarInstancesRuleset(field, record);
+      const expectedRules: Rule[] = [{
+        ruleType: RuleTypes.Content,
+        specifications: [{
+          specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
+          classes: { schemaName: "MySchema", classNames: ["PrimaryClass"] },
+          arePolymorphic: true,
+          relatedInstances: [{
+            relationshipPath: [{
+              relationship: { schemaName: "MySchema", className: "MyRelationship" },
+              direction: RelationshipDirection.Backward,
+              targetClass: { schemaName: "MySchema", className: "RelatedClass" },
+            }],
+            isRequired: true,
+            alias: "related_0",
+          }],
+          instanceFilter: `related_0.RelatedProperty = "test value"`,
+        }],
+      }];
+      expect(result.ruleset.rules).to.deep.eq(expectedRules);
+      expect(result.description).to.eq(`[Related Class].[Related Property] = test display value`);
+    });
+
+    it("creates a valid ruleset for multi-step related property record", async () => {
+      const selectClass: ClassInfo = {
+        id: createRandomId(),
+        name: "MySchema:SelectClass",
+        label: "Select Class",
+      };
+      const intermediateClass: ClassInfo = {
+        id: createRandomId(),
+        name: "MySchema:IntermediateClass",
+        label: "Intermediate Class",
+      };
+      const propertyClass: ClassInfo = {
+        id: createRandomId(),
+        name: "MySchema:PropertyClass",
+        label: "Property Class",
+      };
+      const relationshipPath: RelatedClassInfo[] = [{
+        sourceClassInfo: selectClass,
+        targetClassInfo: intermediateClass,
+        relationshipInfo: {
+          id: createRandomId(),
+          name: "MySchema:MyRelationship1",
+          label: "My Relationship 1",
+        },
+        isForwardRelationship: true,
+        isPolymorphicRelationship: true,
+      }, {
+        sourceClassInfo: intermediateClass,
+        targetClassInfo: propertyClass,
+        relationshipInfo: {
+          id: createRandomId(),
+          name: "MySchema:MyRelationship2",
+          label: "My Relationship 2",
+        },
+        isForwardRelationship: false,
+        isPolymorphicRelationship: true,
+      }];
+      const property: Property = {
+        property: {
+          classInfo: propertyClass,
+          type: "string",
+          name: "RelatedProperty",
+        },
+        relatedClassPath: relationshipPath,
+      };
+      const field = new PropertiesField(createRandomCategory(), "RelatedProperty",
+        "Related Property", createStringTypeDescription(), true, 1, [property]);
+      const record = new Item([], faker.random.words(), "", selectClass,
+        { RelatedProperty: "test value" }, { RelatedProperty: "test display value" }, []);
+      const result = await factory.createSimilarInstancesRuleset(field, record);
+      const expectedRules: Rule[] = [{
+        ruleType: RuleTypes.Content,
+        specifications: [{
+          specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
+          classes: { schemaName: "MySchema", classNames: ["SelectClass"] },
+          arePolymorphic: true,
+          relatedInstances: [{
+            relationshipPath: [{
+              relationship: { schemaName: "MySchema", className: "MyRelationship1" },
+              direction: RelationshipDirection.Forward,
+              targetClass: { schemaName: "MySchema", className: "IntermediateClass" },
+            }, {
+              relationship: { schemaName: "MySchema", className: "MyRelationship2" },
+              direction: RelationshipDirection.Backward,
+              targetClass: { schemaName: "MySchema", className: "PropertyClass" },
+            }],
+            isRequired: true,
+            alias: "related_0",
+          }],
+          instanceFilter: `related_0.RelatedProperty = "test value"`,
+        }],
+      }];
+      expect(result.ruleset.rules).to.deep.eq(expectedRules);
+      expect(result.description).to.eq(`[Property Class].[Related Property] = test display value`);
+    });
+
+    it("creates a valid ruleset when related property record is based on multiple properties", async () => {
       // not sure if this is really a valid case, we can still handle it
       const recordClass: ClassInfo = {
         id: createRandomId(),
@@ -698,14 +876,14 @@ describe("RulesetsFactory", () => {
         label: "Related Class 1",
       };
       const relationshipPath1: RelatedClassInfo[] = [{
-        sourceClassInfo: propertyClass1,
-        targetClassInfo: recordClass,
+        sourceClassInfo: recordClass,
+        targetClassInfo: propertyClass1,
         relationshipInfo: {
           id: createRandomId(),
           name: "MySchema:MyRelationship",
           label: "My Relationship",
         },
-        isForwardRelationship: false,
+        isForwardRelationship: true,
         isPolymorphicRelationship: true,
       }];
       const property1: Property = {
@@ -722,8 +900,8 @@ describe("RulesetsFactory", () => {
         label: "Related Class 2",
       };
       const relationshipPath2: RelatedClassInfo[] = [{
-        sourceClassInfo: propertyClass2,
-        targetClassInfo: recordClass,
+        sourceClassInfo: recordClass,
+        targetClassInfo: propertyClass2,
         relationshipInfo: {
           id: createRandomId(),
           name: "MySchema:MyRelationship",
@@ -744,7 +922,7 @@ describe("RulesetsFactory", () => {
         "Related Property", createStringTypeDescription(), true, 1, [property1, property2]);
       const record = new Item([], faker.random.words(), "", recordClass,
         { RelatedProperty: "test value" }, { RelatedProperty: "test display value" }, []);
-      const result = factory.createSimilarInstancesRuleset(field, record);
+      const result = await factory.createSimilarInstancesRuleset(field, record);
       const expectedRules: Rule[] = [{
         ruleType: RuleTypes.Content,
         specifications: [{
@@ -752,15 +930,19 @@ describe("RulesetsFactory", () => {
           classes: { schemaName: "MySchema", classNames: ["PrimaryClass"] },
           arePolymorphic: true,
           relatedInstances: [{
-            relationship: { schemaName: "MySchema", className: "MyRelationship" },
-            class: { schemaName: "MySchema", className: "RelatedClass1" },
-            requiredDirection: RelationshipDirection.Forward,
+            relationshipPath: [{
+              relationship: { schemaName: "MySchema", className: "MyRelationship" },
+              direction: RelationshipDirection.Forward,
+              targetClass: { schemaName: "MySchema", className: "RelatedClass1" },
+            }],
             isRequired: true,
             alias: "related_0",
           }, {
-            relationship: { schemaName: "MySchema", className: "MyRelationship" },
-            class: { schemaName: "MySchema", className: "RelatedClass2" },
-            requiredDirection: RelationshipDirection.Forward,
+            relationshipPath: [{
+              relationship: { schemaName: "MySchema", className: "MyRelationship" },
+              direction: RelationshipDirection.Backward,
+              targetClass: { schemaName: "MySchema", className: "RelatedClass2" },
+            }],
             isRequired: true,
             alias: "related_1",
           }],
@@ -771,9 +953,150 @@ describe("RulesetsFactory", () => {
       expect(result.description).to.eq(`[Related Class 1].[Related Property] = test display value OR [Related Class 2].[Related Property] = test display value`);
     });
 
+    it("creates a valid ruleset when related property is contained inside nested content record", async () => {
+      const recordClass: ClassInfo = {
+        id: createRandomId(),
+        name: "MySchema:RecordClass",
+        label: "Record Class",
+      };
+      const nestedContentClass: ClassInfo = {
+        id: createRandomId(),
+        name: "MySchema:NestedContentClass",
+        label: "Nested Content Class",
+      };
+      const propertyClass: ClassInfo = {
+        id: createRandomId(),
+        name: "MySchema:PropertyClass",
+        label: "Property Class",
+      };
+      const propertyRelationshipPath: RelatedClassInfo[] = [{
+        sourceClassInfo: nestedContentClass,
+        targetClassInfo: propertyClass,
+        relationshipInfo: {
+          id: createRandomId(),
+          name: "MySchema:MyRelationship1",
+          label: "My Relationship 1",
+        },
+        isForwardRelationship: false,
+        isPolymorphicRelationship: true,
+      }];
+      const property: Property = {
+        property: {
+          classInfo: propertyClass,
+          type: "string",
+          name: "MyProperty",
+        },
+        relatedClassPath: propertyRelationshipPath,
+      };
+      const field = new PropertiesField(createRandomCategory(), faker.random.word(),
+        property.property.name, createStringTypeDescription(), true, 1, [property]);
+      const nestedContentRelationshipPath: RelatedClassInfo[] = [{
+        sourceClassInfo: nestedContentClass,
+        targetClassInfo: recordClass,
+        relationshipInfo: {
+          id: createRandomId(),
+          name: "MySchema:MyRelationship2",
+          label: "My Relationship 2",
+        },
+        isForwardRelationship: true,
+        isPolymorphicRelationship: true,
+      }];
+      const parentField = new NestedContentField(createRandomCategory(), faker.random.word(),
+        faker.random.words(), createRandomPrimitiveTypeDescription(), faker.random.boolean(),
+        faker.random.number(), nestedContentClass, nestedContentRelationshipPath, [field], undefined, faker.random.boolean());
+      field.rebuildParentship(parentField);
+      const values = {
+        [parentField.name]: [{
+          primaryKeys: [],
+          values: {
+            [field.name]: "test value",
+          },
+          displayValues: {
+            [field.name]: "test display value",
+          },
+          mergedFieldNames: [],
+        }] as NestedContentValue[],
+      };
+      const displayValues = {
+        [field.name]: undefined,
+      };
+      const record = new Item([], faker.random.words(), "", recordClass, values, displayValues, []);
+      const result = await factory.createSimilarInstancesRuleset(field, record);
+      const expectedRules: Rule[] = [{
+        ruleType: RuleTypes.Content,
+        specifications: [{
+          specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
+          classes: { schemaName: "MySchema", classNames: ["RecordClass"] },
+          arePolymorphic: true,
+          relatedInstances: [{
+            relationshipPath: [{
+              relationship: { schemaName: "MySchema", className: "MyRelationship2" },
+              direction: RelationshipDirection.Backward,
+              targetClass: { schemaName: "MySchema", className: "NestedContentClass" },
+            }, {
+              relationship: { schemaName: "MySchema", className: "MyRelationship1" },
+              direction: RelationshipDirection.Backward,
+              targetClass: { schemaName: "MySchema", className: "PropertyClass" },
+            }],
+            isRequired: true,
+            alias: "related_0",
+          }],
+          instanceFilter: `related_0.MyProperty = "test value"`,
+        }],
+      }];
+      expect(result.ruleset.rules).to.deep.eq(expectedRules);
+      expect(result.description).to.eq(`[Property Class].[MyProperty] = test display value`);
+    });
+
+    it("uses supplied `computeDisplayValue` callback to calculate display value for description", async () => {
+      const recordClass: ClassInfo = {
+        id: createRandomId(),
+        name: "MySchema:MyClass",
+        label: "My Class",
+      };
+      const property: Property = {
+        property: {
+          classInfo: recordClass,
+          type: "string",
+          name: "MyProperty",
+        },
+        relatedClassPath: [],
+      };
+      const field = new PropertiesField(createRandomCategory(), "MyProperty",
+        "My Property", createStringTypeDescription(), true, 1, [property]);
+      const record = new Item([], faker.random.word(), "", recordClass,
+        { MyProperty: "test value" }, { MyProperty: "test display value" }, []);
+      const callback = sinon.fake(() => "TEST");
+      const result = await factory.createSimilarInstancesRuleset(field, record, callback);
+      expect(callback).to.be.calledOnceWithExactly(field.type.typeName, "test value", "test display value");
+      expect(result.description).to.eq(`[My Class].[My Property] = TEST`);
+    });
+
+    it("uses record display value as display value for description if `computeDisplayValue` callback is not supplied", async () => {
+      const recordClass: ClassInfo = {
+        id: createRandomId(),
+        name: "MySchema:MyClass",
+        label: "My Class",
+      };
+      const property: Property = {
+        property: {
+          classInfo: recordClass,
+          type: "string",
+          name: "MyProperty",
+        },
+        relatedClassPath: [],
+      };
+      const field = new PropertiesField(createRandomCategory(), "MyProperty",
+        "My Property", createStringTypeDescription(), true, 1, [property]);
+      const record = new Item([], faker.random.word(), "", recordClass,
+        { MyProperty: "test value" }, { MyProperty: "test display value" }, []);
+      const result = await factory.createSimilarInstancesRuleset(field, record);
+      expect(result.description).to.eq(`[My Class].[My Property] = test display value`);
+    });
+
     describe("invalid conditions", () => {
 
-      it("throws when record contains invalid value", () => {
+      it("throws when record contains invalid value", async () => {
         const recordClass: ClassInfo = {
           id: createRandomId(),
           name: "MySchema:MyClass",
@@ -791,10 +1114,10 @@ describe("RulesetsFactory", () => {
           faker.random.word(), createBooleanTypeDescription(), true, 1, [property]);
         const record = new Item([], faker.random.word(), "", recordClass,
           { MyProperty: [] }, { MyProperty: "" }, []);
-        expect(() => factory.createSimilarInstancesRuleset(field, record)).to.throw();
+        await expect(factory.createSimilarInstancesRuleset(field, record)).to.eventually.be.rejectedWith("Can only create 'similar instances' ruleset for primitive values");
       });
 
-      it("throws when properties field contains no properties", () => {
+      it("throws when properties field contains no properties", async () => {
         const recordClass: ClassInfo = {
           id: createRandomId(),
           name: "MySchema:MyClass",
@@ -804,54 +1127,10 @@ describe("RulesetsFactory", () => {
           faker.random.word(), createBooleanTypeDescription(), true, 1, []);
         const record = new Item([], faker.random.word(), "", recordClass,
           { MyProperty: "test value" }, { MyProperty: "test display value" }, []);
-        expect(() => factory.createSimilarInstancesRuleset(field, record)).to.throw();
+        await expect(factory.createSimilarInstancesRuleset(field, record)).to.eventually.be.rejectedWith("Invalid properties' field with no properties");
       });
 
-      it("throws when nested content record doesn't have path to primary class", () => {
-        const recordClass: ClassInfo = {
-          id: createRandomId(),
-          name: "MySchema:PrimaryClass",
-          label: "Primary Class",
-        };
-        const propertyClass: ClassInfo = {
-          id: createRandomId(),
-          name: "MySchema:RelatedClass",
-          label: "Related Class",
-        };
-        const property: Property = {
-          property: {
-            classInfo: propertyClass,
-            type: "string",
-            name: "MyProperty",
-          },
-          relatedClassPath: [],
-        };
-        const field = new PropertiesField(createRandomCategory(), faker.random.word(),
-          faker.random.word(), createStringTypeDescription(), true, 1, [property]);
-        const parentField = new NestedContentField(createRandomCategory(), faker.random.word(),
-          faker.random.words(), createRandomPrimitiveTypeDescription(), faker.random.boolean(),
-          faker.random.number(), createRandomECClassInfo(), [], [field], undefined, faker.random.boolean());
-        field.rebuildParentship(parentField);
-        const values = {
-          [parentField.name]: [{
-            primaryKeys: [],
-            values: {
-              [field.name]: "test value",
-            },
-            displayValues: {
-              [field.name]: "test display value",
-            },
-            mergedFieldNames: [],
-          }] as NestedContentValue[],
-        };
-        const displayValues = {
-          [field.name]: undefined,
-        };
-        const record = new Item([], faker.random.words(), "", recordClass, values, displayValues, []);
-        expect(() => factory.createSimilarInstancesRuleset(field, record)).to.throw();
-      });
-
-      it("throws when nested content record contains invalid value", () => {
+      it("throws when nested content record contains invalid value", async () => {
         const recordClass: ClassInfo = {
           id: createRandomId(),
           name: "MySchema:PrimaryClass",
@@ -894,10 +1173,10 @@ describe("RulesetsFactory", () => {
           [field.name]: undefined,
         };
         const record = new Item([], faker.random.words(), "", recordClass, values, displayValues, []);
-        expect(() => factory.createSimilarInstancesRuleset(field, record)).to.throw();
+        await expect(factory.createSimilarInstancesRuleset(field, record)).to.eventually.be.rejectedWith("Invalid record value");
       });
 
-      it("throws when point2d record has invalid value", () => {
+      it("throws when point2d record has invalid value", async () => {
         const recordClass: ClassInfo = {
           id: createRandomId(),
           name: "MySchema:MyClass",
@@ -915,71 +1194,21 @@ describe("RulesetsFactory", () => {
           "My Property", createPoint2dTypeDescription(), true, 1, [property]);
         const record = new Item([], faker.random.word(), "", recordClass,
           { MyProperty: "should be {x,y} object" }, { MyProperty: "1, 2" }, []);
-        expect(() => factory.createSimilarInstancesRuleset(field, record)).to.throw();
+        await expect(factory.createSimilarInstancesRuleset(field, record)).to.eventually.be.rejectedWith("Expecting point values to be supplied as objects");
       });
 
     });
 
     describe("unsupported conditions", () => {
 
-      it("throws when field is not a properties field", () => {
+      it("throws when field is not a properties field", async () => {
         const field = new Field(createRandomCategory(), faker.random.word(),
           faker.random.word(), createRandomPrimitiveTypeDescription(), true, 1);
         const record = new Item([], faker.random.word(), "", undefined, {}, {}, []);
-        expect(() => factory.createSimilarInstancesRuleset(field, record)).to.throw();
+        await expect(factory.createSimilarInstancesRuleset(field, record)).to.eventually.be.rejectedWith("Can only create 'similar instances' ruleset for properties-based records");
       });
 
-      it("throws when properties field is of point2d type", () => {
-        const property: Property = {
-          property: {
-            classInfo: createRandomECClassInfo(),
-            name: faker.random.word(),
-            type: faker.database.type(),
-          },
-          relatedClassPath: [],
-        };
-        const typeDescription: PrimitiveTypeDescription = {
-          valueFormat: PropertyValueFormat.Primitive,
-          typeName: "point2d",
-        };
-        const field = new PropertiesField(createRandomCategory(), faker.random.word(),
-          faker.random.word(), typeDescription, true, 1, [property]);
-        const values = {
-          [field.name]: { x: 1, y: 2 },
-        };
-        const displayValues = {
-          [field.name]: { x: "one", y: "two" },
-        };
-        const record = new Item([], faker.random.word(), "", undefined, values, displayValues, []);
-        expect(() => factory.createSimilarInstancesRuleset(field, record)).to.throw();
-      });
-
-      it("throws when properties field is of point3d type", () => {
-        const property: Property = {
-          property: {
-            classInfo: createRandomECClassInfo(),
-            name: faker.random.word(),
-            type: faker.database.type(),
-          },
-          relatedClassPath: [],
-        };
-        const typeDescription: PrimitiveTypeDescription = {
-          valueFormat: PropertyValueFormat.Primitive,
-          typeName: "point3d",
-        };
-        const field = new PropertiesField(createRandomCategory(), faker.random.word(),
-          faker.random.word(), typeDescription, true, 1, [property]);
-        const values = {
-          [field.name]: { x: 1, y: 2, z: 3 },
-        };
-        const displayValues = {
-          [field.name]: { x: "one", y: "two", z: "three" },
-        };
-        const record = new Item([], faker.random.word(), "", undefined, values, displayValues, []);
-        expect(() => factory.createSimilarInstancesRuleset(field, record)).to.throw();
-      });
-
-      it("throws when properties field is of array type", () => {
+      it("throws when properties field is of array type", async () => {
         const property: Property = {
           property: {
             classInfo: createRandomECClassInfo(),
@@ -1002,10 +1231,10 @@ describe("RulesetsFactory", () => {
           [field.name]: ["some display value 1", "some display value 2"],
         };
         const record = new Item([], faker.random.word(), "", undefined, values, displayValues, []);
-        expect(() => factory.createSimilarInstancesRuleset(field, record)).to.throw();
+        await expect(factory.createSimilarInstancesRuleset(field, record)).to.eventually.be.rejectedWith("Can only create 'similar instances' ruleset for primitive properties");
       });
 
-      it("throws when properties field is of struct type", () => {
+      it("throws when properties field is of struct type", async () => {
         const property: Property = {
           property: {
             classInfo: createRandomECClassInfo(),
@@ -1036,10 +1265,10 @@ describe("RulesetsFactory", () => {
           },
         };
         const record = new Item([], faker.random.word(), "", undefined, values, displayValues, []);
-        expect(() => factory.createSimilarInstancesRuleset(field, record)).to.throw();
+        await expect(factory.createSimilarInstancesRuleset(field, record)).to.eventually.be.rejectedWith("Can only create 'similar instances' ruleset for primitive properties");
       });
 
-      it("throws when record is merged", () => {
+      it("throws when record is merged", async () => {
         const property: Property = {
           property: {
             classInfo: {
@@ -1056,10 +1285,10 @@ describe("RulesetsFactory", () => {
           faker.random.word(), createStringTypeDescription(), true, 1, [property]);
         const record = new Item([], faker.random.word(), "", undefined,
           { MyProperty: "test value" }, { MyProperty: "test value" }, ["MyProperty"]);
-        expect(() => factory.createSimilarInstancesRuleset(field, record)).to.throw();
+        await expect(factory.createSimilarInstancesRuleset(field, record)).to.eventually.be.rejectedWith("Can't create 'similar instances' ruleset for merged values");
       });
 
-      it("throws when record is based on different classes", () => {
+      it("throws when record is based on different classes", async () => {
         const property: Property = {
           property: {
             classInfo: {
@@ -1077,203 +1306,10 @@ describe("RulesetsFactory", () => {
         const record = new Item([], faker.random.word(), "",
           undefined /* this `undefined` means that record is based on multiple different classes */,
           { MyProperty: "test value" }, { MyProperty: "test display value" }, []);
-        expect(() => factory.createSimilarInstancesRuleset(field, record)).to.throw();
+        await expect(factory.createSimilarInstancesRuleset(field, record)).to.eventually.be.rejectedWith("Can't create 'similar instances' for records based on multiple different ECClass instances");
       });
 
-      it("throws when related property is contained inside nested content record", () => {
-        const recordClass: ClassInfo = {
-          id: createRandomId(),
-          name: "MySchema:PrimaryClass",
-          label: "Primary Class",
-        };
-        const nestedContentClass: ClassInfo = {
-          id: createRandomId(),
-          name: "MySchema:NestedContentClass",
-          label: "Nested Content Class",
-        };
-        const propertyClass: ClassInfo = {
-          id: createRandomId(),
-          name: "MySchema:RelatedClass",
-          label: "Related Class",
-        };
-        const propertyRelationshipPath: RelatedClassInfo[] = [{
-          sourceClassInfo: propertyClass,
-          targetClassInfo: nestedContentClass,
-          relationshipInfo: {
-            id: createRandomId(),
-            name: "MySchema:MyRelationship1",
-            label: "My Relationship 1",
-          },
-          isForwardRelationship: false,
-          isPolymorphicRelationship: true,
-        }];
-        const property: Property = {
-          property: {
-            classInfo: propertyClass,
-            type: "string",
-            name: "MyProperty",
-          },
-          relatedClassPath: propertyRelationshipPath,
-        };
-        const field = new PropertiesField(createRandomCategory(), faker.random.word(),
-          faker.random.word(), createStringTypeDescription(), true, 1, [property]);
-        const nestedContentRelationshipPath: RelatedClassInfo[] = [{
-          sourceClassInfo: nestedContentClass,
-          targetClassInfo: recordClass,
-          relationshipInfo: {
-            id: createRandomId(),
-            name: "MySchema:MyRelationship2",
-            label: "My Relationship 2",
-          },
-          isForwardRelationship: false,
-          isPolymorphicRelationship: true,
-        }];
-        const parentField = new NestedContentField(createRandomCategory(), faker.random.word(),
-          faker.random.words(), createRandomPrimitiveTypeDescription(), faker.random.boolean(),
-          faker.random.number(), nestedContentClass, nestedContentRelationshipPath, [field], undefined, faker.random.boolean());
-        field.rebuildParentship(parentField);
-        const values = {
-          [parentField.name]: [{
-            primaryKeys: [],
-            values: {
-              [field.name]: "test value",
-            },
-            displayValues: {
-              [field.name]: "test display value",
-            },
-            mergedFieldNames: [],
-          }] as NestedContentValue[],
-        };
-        const displayValues = {
-          [field.name]: undefined,
-        };
-        const record = new Item([], faker.random.words(), "", recordClass, values, displayValues, []);
-        expect(() => factory.createSimilarInstancesRuleset(field, record)).to.throw();
-      });
-
-      it("throws when property is related through more than one relationship", () => {
-        const recordClass: ClassInfo = {
-          id: createRandomId(),
-          name: "MySchema:PrimaryClass",
-          label: "Primary Class",
-        };
-        const intermediateClass: ClassInfo = {
-          id: createRandomId(),
-          name: faker.random.word(),
-          label: faker.random.word(),
-        };
-        const propertyClass: ClassInfo = {
-          id: createRandomId(),
-          name: "MySchema:RelatedClass",
-          label: "Related Class",
-        };
-        const relationshipPath: RelatedClassInfo[] = [{
-          sourceClassInfo: propertyClass,
-          targetClassInfo: intermediateClass,
-          relationshipInfo: {
-            id: createRandomId(),
-            name: "MySchema:MyRelationship1",
-            label: "My Relationship 1",
-          },
-          isForwardRelationship: false,
-          isPolymorphicRelationship: true,
-        }, {
-          sourceClassInfo: intermediateClass,
-          targetClassInfo: recordClass,
-          relationshipInfo: {
-            id: createRandomId(),
-            name: "MySchema:MyRelationship 2",
-            label: "My Relationship 2",
-          },
-          isForwardRelationship: false,
-          isPolymorphicRelationship: true,
-        }];
-        const property: Property = {
-          property: {
-            classInfo: propertyClass,
-            type: "string",
-            name: "MyProperty",
-          },
-          relatedClassPath: relationshipPath,
-        };
-        const field = new PropertiesField(createRandomCategory(), "MyProperty",
-          faker.random.word(), createStringTypeDescription(), true, 1, [property]);
-        const record = new Item([], faker.random.words(), "", recordClass,
-          { MyProperty: "test value" }, { MyProperty: "test display value" }, []);
-        expect(() => factory.createSimilarInstancesRuleset(field, record)).to.throw();
-      });
-
-      it("throws when nested content record's path to primary path is longer than 1 step", () => {
-        const recordClass: ClassInfo = {
-          id: createRandomId(),
-          name: "MySchema:PrimaryClass",
-          label: "Primary Class",
-        };
-        const intermediateClass: ClassInfo = {
-          id: createRandomId(),
-          name: faker.random.word(),
-          label: faker.random.word(),
-        };
-        const propertyClass: ClassInfo = {
-          id: createRandomId(),
-          name: "MySchema:RelatedClass",
-          label: "Related Class",
-        };
-        const relationshipPath: RelatedClassInfo[] = [{
-          sourceClassInfo: propertyClass,
-          targetClassInfo: intermediateClass,
-          relationshipInfo: {
-            id: createRandomId(),
-            name: "MySchema:MyRelationship1",
-            label: "My Relationship 1",
-          },
-          isForwardRelationship: false,
-          isPolymorphicRelationship: true,
-        }, {
-          sourceClassInfo: intermediateClass,
-          targetClassInfo: recordClass,
-          relationshipInfo: {
-            id: createRandomId(),
-            name: "MySchema:MyRelationship 2",
-            label: "My Relationship 2",
-          },
-          isForwardRelationship: false,
-          isPolymorphicRelationship: true,
-        }];
-        const property: Property = {
-          property: {
-            classInfo: propertyClass,
-            type: "string",
-            name: "MyProperty",
-          },
-          relatedClassPath: [],
-        };
-        const field = new PropertiesField(createRandomCategory(), faker.random.word(),
-          faker.random.word(), createStringTypeDescription(), true, 1, [property]);
-        const parentField = new NestedContentField(createRandomCategory(), faker.random.word(),
-          faker.random.words(), createRandomPrimitiveTypeDescription(), faker.random.boolean(),
-          faker.random.number(), createRandomECClassInfo(), relationshipPath, [field], undefined, faker.random.boolean());
-        field.rebuildParentship(parentField);
-        const values = {
-          [parentField.name]: [{
-            primaryKeys: [],
-            values: {
-              [field.name]: "test value",
-            },
-            displayValues: {
-              [field.name]: "test display value",
-            },
-            mergedFieldNames: [],
-          }] as NestedContentValue[],
-        };
-        const displayValues = {
-          [field.name]: undefined,
-        };
-        const record = new Item([], faker.random.words(), "", recordClass, values, displayValues, []);
-        expect(() => factory.createSimilarInstancesRuleset(field, record)).to.throw();
-      });
-
-      it("throws when nested content record contains more than one nested record", () => {
+      it("throws when nested content record contains more than one nested record", async () => {
         const recordClass: ClassInfo = {
           id: createRandomId(),
           name: "MySchema:PrimaryClass",
@@ -1334,10 +1370,10 @@ describe("RulesetsFactory", () => {
           [field.name]: undefined,
         };
         const record = new Item([], faker.random.words(), "", recordClass, values, displayValues, []);
-        expect(() => factory.createSimilarInstancesRuleset(field, record)).to.throw();
+        await expect(factory.createSimilarInstancesRuleset(field, record)).to.eventually.be.rejected;
       });
 
-      it("throws when nested content record is merged", () => {
+      it("throws when nested content record is merged", async () => {
         const recordClass: ClassInfo = {
           id: createRandomId(),
           name: "MySchema:PrimaryClass",
@@ -1389,67 +1425,9 @@ describe("RulesetsFactory", () => {
           [field.name]: undefined,
         };
         const record = new Item([], faker.random.words(), "", recordClass, values, displayValues, []);
-        expect(() => factory.createSimilarInstancesRuleset(field, record)).to.throw();
+        await expect(factory.createSimilarInstancesRuleset(field, record)).to.eventually.be.rejectedWith("Can't create 'similar instances' ruleset for merged values");
       });
 
-    });
-
-  });
-
-  describe("createSimilarInstancesRulesetAsync", () => {
-    // note: because `createSimilarInstancesRulesetAsync` basically duplicates
-    // the `createSimilarInstancesRuleset`, majority of its functionality is already
-    // covered by `createSimilarInstancesRuleset` tests
-
-    const createStringTypeDescription = (): PrimitiveTypeDescription => ({
-      valueFormat: PropertyValueFormat.Primitive,
-      typeName: "string",
-    });
-
-    it("uses supplied `computeDisplayValue` callback to calculate display value for description", async () => {
-      const recordClass: ClassInfo = {
-        id: createRandomId(),
-        name: "MySchema:MyClass",
-        label: "My Class",
-      };
-      const property: Property = {
-        property: {
-          classInfo: recordClass,
-          type: "string",
-          name: "MyProperty",
-        },
-        relatedClassPath: [],
-      };
-      const field = new PropertiesField(createRandomCategory(), "MyProperty",
-        "My Property", createStringTypeDescription(), true, 1, [property]);
-      const record = new Item([], faker.random.word(), "", recordClass,
-        { MyProperty: "test value" }, { MyProperty: "test display value" }, []);
-      const callback = sinon.fake(() => "TEST");
-      const result = await factory.createSimilarInstancesRulesetAsync(field, record, callback);
-      expect(callback).to.be.calledOnceWithExactly(field.type.typeName, "test value", "test display value");
-      expect(result.description).to.eq(`[My Class].[My Property] = TEST`);
-    });
-
-    it("uses record display value as display value for description if `computeDisplayValue` callback is not supplied", async () => {
-      const recordClass: ClassInfo = {
-        id: createRandomId(),
-        name: "MySchema:MyClass",
-        label: "My Class",
-      };
-      const property: Property = {
-        property: {
-          classInfo: recordClass,
-          type: "string",
-          name: "MyProperty",
-        },
-        relatedClassPath: [],
-      };
-      const field = new PropertiesField(createRandomCategory(), "MyProperty",
-        "My Property", createStringTypeDescription(), true, 1, [property]);
-      const record = new Item([], faker.random.word(), "", recordClass,
-        { MyProperty: "test value" }, { MyProperty: "test display value" }, []);
-      const result = await factory.createSimilarInstancesRulesetAsync(field, record);
-      expect(result.description).to.eq(`[My Class].[My Property] = test display value`);
     });
 
   });

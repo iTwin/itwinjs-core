@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Backstage */
+/** @packageDocumentation
+ * @module Backstage
+ */
 
 import * as React from "react";
 import { Logger } from "@bentley/bentleyjs-core";
@@ -12,7 +14,7 @@ import { SyncUiEventDispatcher, SyncUiEventArgs } from "../syncui/SyncUiEventDis
 import { PropsHelper } from "../utils/PropsHelper";
 import { WorkflowManager, TaskActivatedEventArgs } from "../workflow/Workflow";
 import { UiFramework } from "../UiFramework";
-import { BackstageItemProps, BackstageItemState } from "./BackstageItem";
+import { BackstageItemProps, BackstageItemState } from "./BackstageItemProps";
 import { Backstage } from "./Backstage";
 import { BackstageItemUtilities } from "./BackstageItemUtilities";
 
@@ -24,7 +26,7 @@ const BackstageItem = withSafeArea(NZ_BackstageItem);
 /** Properties for a [[TaskLaunchBackstageItem]] component
  * @public
  */
-export interface TaskLaunchBackstageItemProps extends BackstageItemProps {
+export interface TaskLaunchBackstageItemProps extends BackstageItemProps { // tslint:disable-line:deprecation
   /** Workflow Id */
   workflowId: string;
   /** Task Id */
@@ -34,10 +36,10 @@ export interface TaskLaunchBackstageItemProps extends BackstageItemProps {
 /** Backstage item that activates a Task
  * @public
  */
-export class TaskLaunchBackstageItem extends React.PureComponent<TaskLaunchBackstageItemProps, BackstageItemState> {
+export class TaskLaunchBackstageItem extends React.PureComponent<TaskLaunchBackstageItemProps, BackstageItemState> { // tslint:disable-line:deprecation
 
   /** @internal */
-  public readonly state: Readonly<BackstageItemState>;
+  public readonly state: Readonly<BackstageItemState>; // tslint:disable-line:deprecation
   private _componentUnmounting = false;  // used to ensure _handleSyncUiEvent callback is not processed after componentWillUnmount is called
   private _stateSyncIds: string[] = [];  // local version of syncId that are lower cased
 
@@ -89,7 +91,7 @@ export class TaskLaunchBackstageItem extends React.PureComponent<TaskLaunchBacks
   }
 
   public execute = (): void => {
-    Backstage.hide();
+    Backstage.hide(); // tslint:disable-line:deprecation
 
     const workflow = WorkflowManager.findWorkflow(this.props.workflowId);
     if (workflow) {

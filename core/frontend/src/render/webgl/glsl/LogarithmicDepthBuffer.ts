@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module WebGL */
+/** @packageDocumentation
+ * @module WebGL
+ */
 
 import {
   assert,
@@ -35,10 +37,11 @@ export function addLogDepth(builder: ProgramBuilder): void {
   const frag = builder.frag;
   frag.addUniform("u_logZ", VariableType.Vec2, (prog) => {
     prog.addProgramUniform("u_logZ", (uniform, params) => {
-      uniform.setUniform2fv(params.target.frustumUniforms.logZ!);
+      uniform.setUniform2fv(params.target.uniforms.frustum.logZ!);
     });
   });
 
-  frag.addExtension("GL_EXT_frag_depth");
+  if (!System.instance.capabilities.isWebGL2)
+    frag.addExtension("GL_EXT_frag_depth");
   frag.set(FragmentShaderComponent.FinalizeDepth, finalizeDepth);
 }

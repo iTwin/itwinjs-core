@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-components",
+      "comment": "Fix nodes loading to correctly handle and load ImmediatelyLoadedTreeNodeItem",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "Saulius.Skliutas@bentley.com"
+}

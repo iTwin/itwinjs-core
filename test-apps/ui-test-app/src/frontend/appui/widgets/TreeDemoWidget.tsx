@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 
@@ -10,7 +10,7 @@ import {
   DragDropLayerManager,
   UiFramework,
 } from "@bentley/ui-framework";
-import { Tree, TreeProps, withTreeDragDrop } from "@bentley/ui-components";
+import { DEPRECATED_Tree, TreeProps, DEPRECATED_withTreeDragDrop } from "@bentley/ui-components";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { demoMutableTreeDataProvider, treeDragProps, treeDropProps, TreeDragTypes, DemoTreeDragDropType } from "./demodataproviders/demoTreeDataProvider";
 import { TableDragTypes } from "./demodataproviders/demoTableDataProvider";
@@ -18,16 +18,16 @@ import { ParentDragLayer } from "./draglayers/ParentDragLayer";
 import { ChildDragLayer } from "./draglayers/ChildDragLayer";
 
 // tslint:disable-next-line:variable-name
-const DragDropTree = withTreeDragDrop<TreeProps, DemoTreeDragDropType>(Tree);
+const DragDropTree = DEPRECATED_withTreeDragDrop<TreeProps, DemoTreeDragDropType>(DEPRECATED_Tree);
 
 export class TreeDemoWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
 
     if (UiFramework.getIModelConnection())
-      this.reactElement = <TreeDemoWidget iModelConnection={UiFramework.getIModelConnection()} />;
+      this.reactNode = <TreeDemoWidget iModelConnection={UiFramework.getIModelConnection()} />;
     else
-      this.reactElement = null;
+      this.reactNode = null;
   }
 }
 

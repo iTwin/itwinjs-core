@@ -1,15 +1,16 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as faker from "faker";
 import {
   createRandomECInstanceKeyJSON, createRandomECClassInfoJSON, createRandomDescriptorJSON,
   createRandomDescriptor,
+  createRandomLabelDefinitionJSON,
 } from "../_helpers/random";
-import { Content, ContentJSON } from "../../content/Content";
-import { Item } from "../../content/Item";
+import { Content, ContentJSON } from "../../presentation-common/content/Content";
+import { Item } from "../../presentation-common/content/Item";
 
 describe("Content", () => {
 
@@ -34,7 +35,7 @@ describe("Content", () => {
         contentSet: [{
           classInfo: createRandomECClassInfoJSON(),
           primaryKeys: [createRandomECInstanceKeyJSON()],
-          label: faker.random.words(),
+          labelDefinition: createRandomLabelDefinitionJSON(),
           imageId: faker.random.uuid(),
           mergedFieldNames: [],
           values: {

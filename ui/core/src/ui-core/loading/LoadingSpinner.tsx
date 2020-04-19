@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Loading */
+/** @packageDocumentation
+ * @module Loading
+ */
 
 import * as React from "react";
 import "./LoadingSpinner.scss";
@@ -19,7 +21,7 @@ export interface LoadingSpinnerProps extends SpinnerProps {
 }
 
 /**
- * A loading spinner component.
+ * A loading spinner component that optionally shows a text message.
  * @beta
  */
 export class LoadingSpinner extends React.PureComponent<LoadingSpinnerProps> {

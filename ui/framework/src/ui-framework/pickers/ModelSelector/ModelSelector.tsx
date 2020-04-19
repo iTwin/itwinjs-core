@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Picker */
+/** @packageDocumentation
+ * @module Picker
+ */
 
 import * as React from "react";
 import * as _ from "lodash";
@@ -42,8 +44,8 @@ export class ModelSelectorWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
 
-    this.reactElement = (
-      <ModelSelectorWidget iModelConnection={options.iModelConnection} />
+    this.reactNode = (
+      <ModelSelectorWidget iModelConnection={options.iModelConnection} /> // tslint:disable-line:deprecation
     );
   }
 }
@@ -111,12 +113,11 @@ export class ModelSelectorWidget extends React.Component<
   private _initModelState = async () => {
     return Presentation.presentation
       .rulesets()
-      .add(require("../../../../rulesets/Models.json")) // tslint:disable-line:no-floating-promises
+      .add(require("../../../../rulesets/Models.json"))
       .then((ruleset: RegisteredRuleset) => {
         this._modelRuleset = ruleset;
 
         this._setViewType(ruleset).then(() => {
-          // tslint:disable-line:no-floating-promises
           this._updateModelsWithViewport(this.state.activeView); // tslint:disable-line:no-floating-promises
         });
       });
@@ -126,12 +127,11 @@ export class ModelSelectorWidget extends React.Component<
   private _initCategoryState = async () => {
     return Presentation.presentation
       .rulesets()
-      .add(require("../../../../rulesets/Categories.json")) // tslint:disable-line:no-floating-promises
+      .add(require("../../../../rulesets/Categories.json"))
       .then((ruleset: RegisteredRuleset) => {
         this._categoryRuleset = ruleset;
 
         this._setViewType(ruleset).then(() => {
-          // tslint:disable-line:no-floating-promises
           this._updateCategoriesWithViewport(this.state.activeView); // tslint:disable-line:no-floating-promises
         });
       });
@@ -360,7 +360,7 @@ export class ModelSelectorWidget extends React.Component<
 
   private _getTabContent = () => {
     return (
-      <CategoryModelTree
+      <CategoryModelTree // tslint:disable-line:deprecation
         key={this.state.activeGroup!.id}
         iModelConnection={this.props.iModelConnection}
         activeGroup={this.state.activeGroup!}

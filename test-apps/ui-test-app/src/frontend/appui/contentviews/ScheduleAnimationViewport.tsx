@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 
@@ -30,9 +30,9 @@ export class ScheduleAnimationViewportControl extends ViewportContentControl {
     const _iModelConnection = UiFramework.getIModelConnection();
 
     if (_iModelConnection)
-      this.reactElement = <ScheduleAnimationViewport iModelConnection={_iModelConnection} viewportRef={(v: ScreenViewport) => { this.viewport = v; }} />;
+      this.reactNode = <ScheduleAnimationViewport iModelConnection={_iModelConnection} viewportRef={(v: ScreenViewport) => { this.viewport = v; }} />;
     else
-      this.reactElement = null;
+      this.reactNode = null;
   }
 }
 
@@ -60,10 +60,6 @@ class ScheduleAnimationViewport extends React.Component<ScheduleAnimationViewpor
   }
 
   public componentWillUnmount() {
-    const activeContentControl = ContentViewManager.getActiveContentControl();
-    if (activeContentControl && activeContentControl.viewport) {
-      activeContentControl.viewport.animationFraction = 0;
-    }
   }
 
   private async _getView() {
@@ -140,7 +136,7 @@ class ScheduleAnimationViewport extends React.Component<ScheduleAnimationViewpor
 
   private _handleRangeChange = ((event: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(event.target.value, 10);
-    this.setState({rangeValue: value});
+    this.setState({ rangeValue: value });
   });
 
   public render(): React.ReactNode {
@@ -173,12 +169,12 @@ class ScheduleAnimationViewport extends React.Component<ScheduleAnimationViewpor
           }
           {this.state.viewId &&
             <UnifiedSelectionViewport viewportRef={this.props.viewportRef}
-              viewDefinitionId={this.state.viewId} imodel={this.props.iModelConnection} ruleset="Default" />
+              viewDefinitionId={this.state.viewId} imodel={this.props.iModelConnection} />
           }
         </div>
         {this.state.dataProvider &&
           <div>
-            <input type="range" min="0" max={this.state.dataProvider.duration} step="1" value={this.state.rangeValue} onChange={this._handleRangeChange}/>
+            <input type="range" min="0" max={this.state.dataProvider.duration} step="1" value={this.state.rangeValue} onChange={this._handleRangeChange} />
             <TimelineComponent
               startDate={this.state.dataProvider.start}
               endDate={this.state.dataProvider.end}

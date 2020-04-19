@@ -1,12 +1,11 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { Id64String } from "@bentley/bentleyjs-core";
-import { ViewQueryParams } from "@bentley/imodeljs-common";
-import { IModelApp, IModelConnection, PropertyRecord } from "@bentley/imodeljs-frontend";
-import { DefaultContentDisplayTypes } from "@bentley/presentation-common";
+import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
+import { PropertyRecord } from "@bentley/ui-abstract";
+import { DefaultContentDisplayTypes, PresentationUnitSystem } from "@bentley/presentation-common";
 import { Presentation, SelectionChangeEventArgs } from "@bentley/presentation-frontend";
 import { ElementSeparator, Orientation } from "@bentley/ui-core";
 import { IPresentationTableDataProvider, IPresentationPropertyDataProvider, DataProvidersFactory } from "@bentley/presentation-components";
@@ -15,24 +14,22 @@ import PropertiesWidget from "../properties-widget/PropertiesWidget";
 import GridWidget from "../grid-widget/GridWidget";
 import FindSimilarWidget from "../find-similar-widget/FindSimilarWidget";
 import RulesetSelector from "../ruleset-selector/RulesetSelector";
-import SelectionScopePicker from "../selection-scope-picker/SelectionScopePicker";
+import UnitSystemSelector from "../unit-system-selector/UnitSystemSelector";
 import ViewportContentControl from "../viewport/ViewportContentControl";
+import { TreeWidget } from "../tree-widget/TreeWidget";
 
 import "./App.css";
 import "@bentley/icons-generic-webfont/dist/bentley-icons-generic-webfont.css";
-import { TreeSelector, TreeType } from "../tree-selector/TreeSelector";
-import { TreeWidget } from "../tree-widget/TreeWidget";
 
 export interface State {
   imodel?: IModelConnection;
   currentRulesetId?: string;
-  currentViewDefinitionId?: Id64String;
-  currentTreeType?: TreeType;
   rightPaneRatio: number;
   rightPaneHeight?: number;
   contentRatio: number;
   contentWidth?: number;
   similarInstancesProvider?: IPresentationTableDataProvider;
+  activeUnitSystem?: PresentationUnitSystem;
 }
 
 export default class App extends React.Component<{}, State> {
@@ -45,6 +42,7 @@ export default class App extends React.Component<{}, State> {
   private _selectionListener!: () => void;
 
   public readonly state: State = {
+    activeUnitSystem: Presentation.presentation.activeUnitSystem,
     rightPaneRatio: 0.5,
     contentRatio: 0.7,
   };
@@ -52,9 +50,7 @@ export default class App extends React.Component<{}, State> {
   // tslint:disable-next-line:naming-convention
   private onIModelSelected = async (imodel: IModelConnection | undefined) => {
     this.tryPreloadHierarchy(imodel, this.state.currentRulesetId);
-
-    const viewDefinitionId = imodel ? await this.getFirstViewDefinitionId(imodel) : undefined;
-    this.setState({ imodel, currentViewDefinitionId: viewDefinitionId });
+    this.setState({ imodel });
   }
 
   // tslint:disable-next-line:naming-convention
@@ -67,25 +63,19 @@ export default class App extends React.Component<{}, State> {
     this.setState({ currentRulesetId: rulesetId });
   }
 
-  // tslint:disable-next-line:naming-convention
-  private onTreeTypeSelected = (treeType: TreeType) => {
-    this.setState({ currentTreeType: treeType });
-  }
-
   private tryPreloadHierarchy(imodel: IModelConnection | undefined, rulesetId: string | undefined) {
     if (!imodel || !rulesetId)
       return;
 
     // no need to wait on this - we just want to queue a request and forget it
-    // tslint:disable-next-line: no-floating-promises
-    Presentation.presentation.loadHierarchy({ imodel, rulesetId });
+    // tslint:disable-next-line:no-floating-promises
+    Presentation.presentation.loadHierarchy({ imodel, rulesetOrId: rulesetId });
   }
 
-  private async getFirstViewDefinitionId(imodel: IModelConnection): Promise<Id64String> {
-    const viewQueryParams: ViewQueryParams = { wantPrivate: false };
-    const viewSpecs = await imodel.views.queryProps(viewQueryParams);
-    const spatialViewSpecs = viewSpecs.filter((spec) => spec.classFullName === "BisCore:SpatialViewDefinition");
-    return spatialViewSpecs.length > 0 ? spatialViewSpecs[0].id! : viewSpecs[0].id!;
+  // tslint:disable-next-line:naming-convention
+  private onUnitSystemSelected = (unitSystem: PresentationUnitSystem | undefined) => {
+    Presentation.presentation.activeUnitSystem = unitSystem;
+    this.setState({ activeUnitSystem: unitSystem });
   }
 
   private _onTreePaneRatioChanged = (ratio: number) => {
@@ -152,7 +142,7 @@ export default class App extends React.Component<{}, State> {
     }
   }
 
-  private renderIModelComponents(imodel: IModelConnection, rulesetId: string, viewDefinitionId: Id64String, treeType: TreeType) {
+  private renderIModelComponents(imodel: IModelConnection, rulesetId: string) {
     return (
       <div
         className="app-content"
@@ -162,8 +152,7 @@ export default class App extends React.Component<{}, State> {
         }}>
         <div className="app-content-left">
           <div className="app-content-left-top">
-            <ViewportContentControl imodel={imodel} rulesetId={rulesetId} viewDefinitionId={viewDefinitionId} />
-            <SelectionScopePicker imodel={imodel} />
+            <ViewportContentControl imodel={imodel} />
           </div>
           <div className="app-content-left-bottom">
             {
@@ -189,7 +178,7 @@ export default class App extends React.Component<{}, State> {
           style={{
             gridTemplateRows: `${this.state.rightPaneRatio * 100}% 30px calc(${(1 - this.state.rightPaneRatio) * 100}% - 30px)`,
           }}>
-          <TreeWidget treeType={treeType} imodel={imodel} rulesetId={rulesetId} />
+          <TreeWidget imodel={imodel} rulesetId={rulesetId} />
           <div className="app-content-right-separator">
             <hr />
             <ElementSeparator
@@ -232,8 +221,8 @@ export default class App extends React.Component<{}, State> {
 
   public render() {
     let imodelComponents = null;
-    if (this.state.imodel && this.state.currentRulesetId && this.state.currentViewDefinitionId && this.state.currentTreeType !== undefined)
-      imodelComponents = this.renderIModelComponents(this.state.imodel, this.state.currentRulesetId, this.state.currentViewDefinitionId, this.state.currentTreeType);
+    if (this.state.imodel && this.state.currentRulesetId)
+      imodelComponents = this.renderIModelComponents(this.state.imodel, this.state.currentRulesetId);
 
     return (
       <div className="app">
@@ -242,7 +231,7 @@ export default class App extends React.Component<{}, State> {
         </div>
         <IModelSelector onIModelSelected={this.onIModelSelected} />
         <RulesetSelector onRulesetSelected={this.onRulesetSelected} />
-        <TreeSelector onTreeTypeSelected={this.onTreeTypeSelected} />
+        <UnitSystemSelector selectedUnitSystem={this.state.activeUnitSystem} onUnitSystemSelected={this.onUnitSystemSelected} />
         {imodelComponents}
       </div>
     );

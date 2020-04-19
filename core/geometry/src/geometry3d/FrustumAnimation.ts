@@ -1,9 +1,11 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module Solid */
+/** @packageDocumentation
+ * @module Solid
+ */
 
 import { Point3d, Vector3d } from "./Point3dVector3d";
 import { Transform } from "./Transform";
@@ -11,6 +13,7 @@ import { Point3dArray } from "./PointHelpers";
 import { Matrix3d } from "./Matrix3d";
 import { AxisOrder, Geometry } from "../Geometry";
 import { Angle } from "./Angle";
+
 /**
  * context for constructing smooth motion a startFrustum and endFrustum.
  * The externally interesting calls are

@@ -1,10 +1,13 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Tree */
+/** @packageDocumentation
+ * @module Tree
+ */
 
 import { CheckBoxState } from "@bentley/ui-core";
+import { PropertyRecord } from "@bentley/ui-abstract";
 import { PageOptions } from "../common/PageOptions";
 import { BeEvent } from "@bentley/bentleyjs-core";
 import { ItemStyle } from "../properties/ItemStyle";
@@ -16,7 +19,7 @@ import { ItemStyle } from "../properties/ItemStyle";
 export interface TreeNodeItem {
   id: string;
   parentId?: string;
-  label: string;
+  label: PropertyRecord;
   description?: string;
   autoExpand?: boolean;
   icon?: string;
@@ -24,8 +27,6 @@ export interface TreeNodeItem {
   isCheckboxDisabled?: boolean;
   checkBoxState?: CheckBoxState;
   isEditable?: boolean;
-  /** Primitive typename. See PropertyRecord.PropertyDescription */
-  typename?: string;
   style?: ItemStyle;
   /**
    * A key-value pairs data structure that can be used by data provider
@@ -67,6 +68,7 @@ export type TreeDataProviderMethod = (node?: TreeNodeItem) => Promise<DelayLoade
  * @public
  */
 export interface ITreeDataProvider {
+  /** @deprecated */
   onTreeNodeChanged?: BeEvent<TreeDataChangesListener>;
   getNodesCount(parent?: TreeNodeItem): Promise<number>;
   getNodes(parent?: TreeNodeItem, page?: PageOptions): Promise<DelayLoadedTreeNodeItem[]>;

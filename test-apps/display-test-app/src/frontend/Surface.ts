@@ -1,30 +1,20 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-
-import {
-  IModelApp,
-  IModelConnection,
-  Tool,
-} from "@bentley/imodeljs-frontend";
-import {
-  KeyinField,
-} from "@bentley/frontend-devtools";
-import {
-  createToolButton,
-  ToolBar,
-} from "./ToolBar";
+import { KeyinField } from "@bentley/frontend-devtools";
+import { Range3d } from "@bentley/geometry-core";
+import { Cartographic } from "@bentley/imodeljs-common";
+import { BlankConnection, IModelApp, SnapshotConnection, Tool } from "@bentley/imodeljs-frontend";
 import { DisplayTestApp } from "./App";
-import { Dock, NamedWindow, NamedWindowProps, Window, WindowProps } from "./Window";
-import { Viewer, ViewerProps } from "./Viewer";
+import { BrowserFileSelector, selectFileName } from "./FileOpen";
+import { FpsMonitor } from "./FpsMonitor";
+import { NotificationsWindow } from "./Notifications";
 import { addSnapModes } from "./SnapModes";
 import { TileLoadIndicator } from "./TileLoadIndicator";
-import { NotificationsWindow } from "./Notifications";
-import { FpsMonitor } from "./FpsMonitor";
-import { selectFileName, BrowserFileSelector } from "./FileOpen";
-import { Cartographic } from "@bentley/imodeljs-common";
-import { Range3d } from "@bentley/geometry-core";
+import { createToolButton, ToolBar } from "./ToolBar";
+import { Viewer, ViewerProps } from "./Viewer";
+import { Dock, NamedWindow, NamedWindowProps, Window, WindowProps } from "./Window";
 
 export class Surface {
   public readonly element: HTMLElement;
@@ -39,6 +29,9 @@ export class Surface {
   public static get instance() { return DisplayTestApp.surface; }
 
   public constructor(surfaceDiv: HTMLElement, toolbarDiv: HTMLElement, browserFileSelector: BrowserFileSelector | undefined) {
+    // Ensure iModel gets closed on page close/reload
+    window.onbeforeunload = () => this.closeAllViewers();
+
     this.element = surfaceDiv;
     this.browserFileSelector = browserFileSelector;
     this._toolbarDiv = toolbarDiv;
@@ -115,12 +108,11 @@ export class Surface {
   }
 
   private createToolBar(): ToolBar {
-    const div = document.createElement("div");
-    div.className = "topdiv";
+    const div = IModelApp.makeHTMLElement("div", { className: "topdiv" });
     const tb = new ToolBar(div);
 
     tb.addItem(createToolButton({
-      className: "bim-icon-briefcases",
+      iconUnicode: "\ue9cc", // "briefcases"
       tooltip: "Open iModel from disk",
       click: () => {
         this.openIModel(); // tslint:disable-line:no-floating-promises
@@ -128,7 +120,7 @@ export class Surface {
     }));
 
     tb.addItem(createToolButton({
-      className: "bim-icon-property-data",
+      iconUnicode: "\ue9d8", // "property-data"
       tooltip: "Open Blank Connection",
       click: () => {
         this.openBlankConnection(); // tslint:disable-line:no-floating-promises
@@ -140,7 +132,7 @@ export class Surface {
 
   // create a new blank connection for testing backgroundMap and reality models.
   private async openBlankConnection() {
-    const iModel = IModelConnection.createBlank({
+    const iModel = BlankConnection.create({
       location: Cartographic.fromDegrees(-75.686694, 40.065757, 0), // near Exton pa
       extents: new Range3d(-1000, -1000, -100, 1000, 1000, 100),
       name: "blank connection test",
@@ -150,13 +142,15 @@ export class Surface {
     viewer.dock(Dock.Full);
   }
 
-  private async openIModel(): Promise<void> {
-    const filename = await selectFileName(this.browserFileSelector);
-    if (undefined === filename)
-      return;
+  private async openIModel(filename?: string): Promise<void> {
+    if (undefined === filename) {
+      filename = await selectFileName(this.browserFileSelector);
+      if (undefined === filename)
+        return;
+    }
 
     try {
-      const iModel = await IModelConnection.openSnapshot(filename);
+      const iModel = await SnapshotConnection.openFile(filename);
       const viewer = await this.createViewer({ iModel });
       viewer.dock(Dock.Full);
     } catch (err) {
@@ -164,6 +158,19 @@ export class Surface {
     }
 
     return Promise.resolve();
+  }
+
+  public get firstViewer(): Viewer | undefined {
+    for (const window of this._windows)
+      if (window instanceof Viewer)
+        return window;
+
+    return undefined;
+  }
+
+  public async openFile(filename?: string): Promise<void> {
+    const viewer = this.firstViewer;
+    return undefined !== viewer ? viewer.openFile(filename) : this.openIModel(filename);
   }
 
   private getKeyboardShortcutHandler(e: KeyboardEvent): (() => void) | undefined {
@@ -248,7 +255,7 @@ export class Surface {
     IModelApp.viewManager.addViewport(viewer.viewport);
   }
 
-  private addWindow(window: Window): void {
+  public addWindow(window: Window): void {
     this._windows.push(window);
     window.ensureInSurface();
     this.updateWindowsUi();
@@ -566,5 +573,41 @@ export class CloneViewportTool extends Tool {
   public parseAndRun(...args: string[]): boolean {
     const viewportId = parseInt(args[0], 10);
     return undefined !== viewportId && !Number.isNaN(viewportId) && this.run(viewportId);
+  }
+}
+
+export class OpenIModelTool extends Tool {
+  public static toolId = "OpenIModel";
+  public static get minArgs() { return 0; }
+  public static get maxArgs() { return 1; }
+
+  public run(filename?: string): boolean {
+    Surface.instance.openFile(filename); // tslint:disable-line:no-floating-promises
+    return true;
+  }
+
+  public parseAndRun(...args: string[]): boolean {
+    return this.run(args[0]);
+  }
+}
+
+export class CloseIModelTool extends Tool {
+  public static toolId = "CloseIModel";
+
+  public run(): boolean {
+    Surface.instance.closeAllViewers();
+    return true;
+  }
+}
+
+export class ReopenIModelTool extends Tool {
+  public static toolId = "ReopenIModel";
+
+  public run(): boolean {
+    const viewer = Surface.instance.firstViewer;
+    if (undefined !== viewer)
+      viewer.openFile(viewer.viewport.iModel.getRpcProps().key); // tslint:disable-line:no-floating-promises
+
+    return true;
   }
 }

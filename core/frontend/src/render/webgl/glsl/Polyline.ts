@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module WebGL */
+/** @packageDocumentation
+ * @module WebGL
+ */
 
 import {
   ProgramBuilder,
@@ -309,8 +311,8 @@ const computePosition = `
     }
 
     miterAdjust = dot(g_windowDir, delta) * dist; // Not actually used for hilite shader but meh.
-    pos.x += dist * delta.x * 2.0 * pos.w / u_viewport.z;
-    pos.y += dist * delta.y * 2.0 * pos.w / u_viewport.w;
+    pos.x += dist * delta.x * 2.0 * pos.w / u_viewport.x;
+    pos.y += dist * delta.y * 2.0 * pos.w / u_viewport.y;
   }
 
   return pos;

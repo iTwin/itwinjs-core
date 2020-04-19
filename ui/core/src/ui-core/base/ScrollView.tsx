@@ -1,17 +1,20 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Base */
+/** @packageDocumentation
+ * @module Base
+ */
 
 import * as React from "react";
 import { CommonDivProps } from "../utils/Props";
 import { Div } from "./Div";
 
-/** Scroll View React functional component
+/** Scroll View React functional component.
+ * Scrolls content vertically and
+ * has the 'overflow-y: auto' CSS property and has a height and width of 100%.
  * @public
  */
-// tslint:disable-next-line:variable-name
-export const ScrollView: React.FunctionComponent<CommonDivProps> = (props: CommonDivProps) => {
+export function ScrollView(props: CommonDivProps) {
   return <Div {...props} mainClassName="uicore-scrollview" />;
-};
+}

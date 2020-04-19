@@ -1,12 +1,15 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module WebGL */
+/** @packageDocumentation
+ * @module WebGL
+ */
 
-import { assert, dispose, IDisposable } from "@bentley/bentleyjs-core";
+import { assert, dispose } from "@bentley/bentleyjs-core";
 import { Range3d, Point3d, Transform } from "@bentley/geometry-core";
-import { InstancedGraphicParams, RenderMemory } from "../System";
+import { InstancedGraphicParams } from "../InstancedGraphicParams";
+import { RenderMemory } from "../RenderMemory";
 import { CachedGeometry, LUTGeometry } from "./CachedGeometry";
 import { Target } from "./Target";
 import { ShaderProgramParams } from "./DrawCommand";
@@ -14,9 +17,10 @@ import { BufferHandle, BufferParameters, BuffersContainer } from "./Handle";
 import { GL } from "./GL";
 import { AttributeMap } from "./AttributeMap";
 import { TechniqueId } from "./TechniqueId";
+import { WebGLDisposable } from "./Disposable";
 
 /** @internal */
-export class InstanceBuffers implements IDisposable {
+export class InstanceBuffers implements WebGLDisposable {
   public readonly numInstances: number;
   public readonly transforms: BufferHandle;
   public readonly featureIds?: BufferHandle;
@@ -109,6 +113,12 @@ export class InstanceBuffers implements IDisposable {
     return this._rtcOnlyTransform;
   }
 
+  public get isDisposed(): boolean {
+    return this.transforms.isDisposed
+      && (undefined === this.featureIds || this.featureIds.isDisposed)
+      && (undefined === this.symbology || this.symbology.isDisposed);
+  }
+
   public dispose() {
     dispose(this.transforms);
     dispose(this.featureIds);
@@ -131,10 +141,8 @@ export class InstanceBuffers implements IDisposable {
 
     this._range = new Range3d();
     const tfs = this._transforms;
-    if (undefined === tfs) {
-      assert(false);
+    if (undefined === tfs)
       return this._range.clone(out);
-    }
 
     this._transforms = undefined;
 
@@ -197,6 +205,7 @@ export class InstancedGeometry extends CachedGeometry {
   public get isEdge() { return this._repr.isEdge; }
   public get hasFeatures() { return this._buffers.hasFeatures; }
   public get techniqueId(): TechniqueId { return this._repr.techniqueId; }
+  public get supportsThematicDisplay() { return this._repr.supportsThematicDisplay; }
 
   public getRenderPass(target: Target) { return this._repr.getRenderPass(target); }
   public wantWoWReversal(params: ShaderProgramParams) { return this._repr.wantWoWReversal(params); }
@@ -229,6 +238,13 @@ export class InstancedGeometry extends CachedGeometry {
       assert(attrFeatureId !== undefined);
       this._buffersContainer.addBuffer(this._buffers.featureIds, [BufferParameters.create(attrFeatureId!.location, 3, GL.DataType.UnsignedByte, false, 0, 0, true)]);
     }
+  }
+
+  public get isDisposed(): boolean {
+    let isReprDisposed = true;
+    if (this._ownsRepr)
+      isReprDisposed = this._repr.isDisposed;
+    return this._buffers.isDisposed && isReprDisposed;
   }
 
   public dispose() {

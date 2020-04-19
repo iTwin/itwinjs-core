@@ -2,6 +2,132 @@
   "name": "@bentley/presentation-components",
   "entries": [
     {
+      "version": "1.13.0",
+      "tag": "@bentley/presentation-components_v1.13.0",
+      "date": "Wed, 04 Mar 2020 16:16:31 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Refatored UnifiedSelectionTreeEventHandler to use inheritance instead of composition"
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.12.0",
+      "tag": "@bentley/presentation-components_v1.12.0",
+      "date": "Wed, 12 Feb 2020 17:45:50 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix nested content records being duplicated if all nested fields have their own category definitions"
+          },
+          {
+            "comment": "PresentationTableDataProvider should create column for display label when display type is 'List'"
+          },
+          {
+            "comment": "Ignore barrel file on docs processing"
+          },
+          {
+            "comment": "Added nodeLoadHandler to usePresentationNodeLoader props"
+          },
+          {
+            "comment": "Avoid handling whole tree model when handling model change event in UnifiedSelectionTreeEventHandler"
+          },
+          {
+            "comment": "Set label and labelDefinition when creating PropertyData and TreeNodeItem"
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.11.0",
+      "tag": "@bentley/presentation-components_v1.11.0",
+      "date": "Wed, 22 Jan 2020 19:24:12 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Create PropertyRecord to represent TreeNodeItem label if node's LabelDefinition is provided"
+          },
+          {
+            "comment": "Upgrade to TypeScript 3.7.2."
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.10.0",
+      "tag": "@bentley/presentation-components_v1.10.0",
+      "date": "Tue, 07 Jan 2020 19:44:01 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Apply unified selection in ControlledTree after selection event is handled."
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.9.0",
+      "tag": "@bentley/presentation-components_v1.9.0",
+      "date": "Tue, 10 Dec 2019 18:08:56 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Exposed UnifiedSelectionTreeEventHandler and made it more customizable"
+          },
+          {
+            "comment": "Handle newly introduced multi-ECInstance nodes"
+          },
+          {
+            "comment": "Added a favorite property data provider."
+          },
+          {
+            "comment": "Make `rulesetId` for PropertyGridDataProvider optional"
+          },
+          {
+            "comment": "Avoid duplicate `PropertyRecord` names when content has multiple `Field`s with the same name nested under different parent fields."
+          },
+          {
+            "comment": "No longer accessing this.state or this.props in setState updater - flagged by lgtm report"
+          },
+          {
+            "comment": "Update sinon version."
+          },
+          {
+            "comment": "Changed ControlledTree specific hooks and HOCs release tags to beta"
+          },
+          {
+            "comment": "Adjusted UnifiedSelectionTreeEventHandler according changes to ControlledTree events"
+          },
+          {
+            "comment": "Added useRulesetRegistration hook and refactores usePresentationNodeLoader hook"
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.8.0",
+      "tag": "@bentley/presentation-components_v1.8.0",
+      "date": "Fri, 22 Nov 2019 14:03:34 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix property data provider failing to create data when content includes empty nested content values"
+          },
+          {
+            "comment": "Tablet responsive UI"
+          },
+          {
+            "comment": "Add usePresentationNodeLoader custom hook"
+          },
+          {
+            "comment": "Added custom hook and HOC that adds filtering support to ControlledTree"
+          }
+        ]
+      }
+    },
+    {
       "version": "1.7.0",
       "tag": "@bentley/presentation-components_v1.7.0",
       "date": "Fri, 01 Nov 2019 13:28:37 GMT",

@@ -1,11 +1,13 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Authentication */
+/** @packageDocumentation
+ * @module Authentication
+ */
 
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
-import { OidcClient, AccessToken, UserInfo } from "@bentley/imodeljs-clients";
+import { AccessToken, UserInfo, ImsOidcClient } from "@bentley/itwin-client";
 import { Issuer, Client as OpenIdClient, ClientConfiguration, TokenSet } from "openid-client";
 import { decode } from "jsonwebtoken";
 
@@ -26,7 +28,7 @@ export interface OidcBackendClientConfiguration {
  * Utility to generate OIDC/OAuth tokens for backend applications
  * @beta
  */
-export abstract class OidcBackendClient extends OidcClient {
+export abstract class OidcBackendClient extends ImsOidcClient {
   protected _configuration: OidcBackendClientConfiguration;
 
   /**

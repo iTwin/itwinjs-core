@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { mount, shallow } from "enzyme";
@@ -9,6 +9,7 @@ import * as moq from "typemoq";
 import * as sinon from "sinon";
 
 import TestUtils from "../TestUtils";
+import { StagePanelLocation } from "@bentley/ui-abstract";
 import { SplitterPaneTarget as NZ_SplitterPaneTarget } from "@bentley/ui-ninezone";
 import {
   StagePanel,
@@ -28,14 +29,14 @@ import {
 import { StagePanelState, StagePanelDef } from "../../ui-framework/stagepanels/StagePanelDef";
 import { UiFramework } from "../../ui-framework/UiFramework";
 import { UiShowHideManager } from "../../ui-framework/utils/UiShowHideManager";
-import { StagePanelLocation, StagePanelRuntimeProps } from "../../ui-framework/stagepanels/StagePanel";
+import { StagePanelRuntimeProps } from "../../ui-framework/stagepanels/StagePanel";
 
 describe("StagePanel", () => {
   class TestWidget extends WidgetControl {
     constructor(info: ConfigurableCreateInfo, options: any) {
       super(info, options);
 
-      this.reactElement = <div />;
+      this.reactNode = <div />;
     }
   }
 
@@ -195,7 +196,7 @@ describe("StagePanel", () => {
     const frontstageProvider = new Frontstage1();
     ConfigurableUiManager.addFrontstageProvider(frontstageProvider);
     expect(frontstageProvider.frontstageDef).to.not.be.undefined;
-    await FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef); // tslint:disable-line:no-floating-promises
+    await FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef);
 
     if (frontstageProvider.frontstageDef) {
       const widgetDef = frontstageProvider.frontstageDef.findWidgetDef("stagePanelWidget");

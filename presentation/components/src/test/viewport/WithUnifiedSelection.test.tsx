@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /* tslint:disable:no-direct-imports */
 
@@ -22,10 +22,9 @@ import {
   Presentation, SelectionManager, SelectionChangeEvent,
   SelectionChangeEventArgs, SelectionChangeType, HiliteSet, SelectionScopesManager,
 } from "@bentley/presentation-frontend";
-import { HILITE_RULESET } from "@bentley/presentation-frontend/lib/selection/HiliteSetProvider";
 import { ViewportComponent } from "@bentley/ui-components";
-import { IUnifiedSelectionComponent } from "../../common/IUnifiedSelectionComponent";
-import { viewWithUnifiedSelection, ViewportSelectionHandler } from "../../viewport/WithUnifiedSelection";
+import { IUnifiedSelectionComponent, viewWithUnifiedSelection } from "../../presentation-components";
+import { ViewportSelectionHandler } from "../../presentation-components/viewport/WithUnifiedSelection";
 
 // tslint:disable-next-line:variable-name naming-convention
 const PresentationViewport = viewWithUnifiedSelection(ViewportComponent);
@@ -79,15 +78,6 @@ describe("Viewport withUnifiedSelection", () => {
     expect(component.imodel).to.equal(imodelMock.object);
   });
 
-  it("uses HILITE_RULESET id", () => {
-    const component = shallow(<PresentationViewport
-      imodel={imodelMock.object}
-      viewDefinitionId={viewDefinitionId}
-      selectionHandler={selectionHandlerMock.object}
-    />).instance() as any as IUnifiedSelectionComponent;
-    expect(component.rulesetId).to.equal(HILITE_RULESET.id);
-  });
-
   it("renders correctly", () => {
     expect(shallow(<PresentationViewport
       imodel={imodelMock.object}
@@ -101,7 +91,7 @@ describe("Viewport withUnifiedSelection", () => {
     it("creates default implementation when not provided through props", () => {
       const selectionManagerMock = moq.Mock.ofType<SelectionManager>();
       selectionManagerMock.setup((x) => x.selectionChange).returns(() => new SelectionChangeEvent());
-      Presentation.selection = selectionManagerMock.object;
+      Presentation.setSelectionManager(selectionManagerMock.object);
 
       const viewport = shallow(<PresentationViewport
         imodel={imodelMock.object}
@@ -173,7 +163,7 @@ describe("ViewportSelectionHandler", () => {
 
   before(() => {
     NoRenderApp.startup();
-    Presentation.selection = new SelectionManager({ scopes: moq.Mock.ofType<SelectionScopesManager>().object });
+    Presentation.setSelectionManager(new SelectionManager({ scopes: moq.Mock.ofType<SelectionScopesManager>().object }));
     const defaultClassName = faker.random.word();
     classNameGenerator = () => defaultClassName;
   });
@@ -184,7 +174,7 @@ describe("ViewportSelectionHandler", () => {
 
   beforeEach(() => {
     mockIModel(imodelMock);
-    handler = new ViewportSelectionHandler(imodelMock.object);
+    handler = new ViewportSelectionHandler({ imodel: imodelMock.object });
   });
 
   afterEach(() => {
@@ -214,36 +204,48 @@ describe("ViewportSelectionHandler", () => {
 
   describe("reacting to unified selection changes", () => {
 
-    let getHiliteSet: sinon.SinonStub;
-    const hiliteSpies = {
-      clear: sinon.spy(),
-      elements: sinon.spy(),
-      models: sinon.spy(),
-      subcategories: sinon.spy(),
-      resetHistory: () => { },
-    };
-    const selectionSetSpies = {
-      emptyAll: sinon.spy(),
-      replace: sinon.spy(),
-      onChanged: sinon.spy(),
-    };
+    interface HiliteSpies {
+      clear: sinon.SinonSpy<[], void>;
+      elements: sinon.SinonSpy<[Id64Arg], void>;
+      models: sinon.SinonSpy<[Id64Arg], void>;
+      subcategories: sinon.SinonSpy<[Id64Arg], void>;
+      resetHistory: () => void;
+    }
+
+    interface SelectionSetSpies {
+      emptyAll: sinon.SinonSpy<[], void>;
+      replace: sinon.SinonSpy<[Id64Arg], void>;
+      onChanged: sinon.SinonSpy<any[], any>;
+    }
+
+    let hiliteSpies: HiliteSpies;
+    let selectionSetSpies: SelectionSetSpies;
+    let getHiliteSet: sinon.SinonStub<[IModelConnection], Promise<HiliteSet>>;
+
     beforeEach(() => {
       // ensure there's something in the selection set
       imodelMock.target.selectionSet.replace(createRandomId());
 
       getHiliteSet = sinon.stub(Presentation.selection, "getHiliteSet").resolves({});
-      hiliteSpies.clear = sinon.spy(imodelMock.target.hilited, "clear");
-      hiliteSpies.elements = sinon.spy(imodelMock.target.hilited.elements, "addIds");
-      hiliteSpies.models = sinon.spy(imodelMock.target.hilited.models, "addIds");
-      hiliteSpies.subcategories = sinon.spy(imodelMock.target.hilited.subcategories, "addIds");
-      hiliteSpies.resetHistory = () => {
-        hiliteSpies.clear.resetHistory();
-        hiliteSpies.elements.resetHistory();
-        hiliteSpies.models.resetHistory();
-        hiliteSpies.subcategories.resetHistory();
+      hiliteSpies = {
+        clear: sinon.spy(imodelMock.target.hilited, "clear"),
+        elements: sinon.spy(imodelMock.target.hilited.elements, "addIds"),
+        models: sinon.spy(imodelMock.target.hilited.models, "addIds"),
+        subcategories: sinon.spy(imodelMock.target.hilited.subcategories, "addIds"),
+        resetHistory: () => {
+          hiliteSpies.clear.resetHistory();
+          hiliteSpies.elements.resetHistory();
+          hiliteSpies.models.resetHistory();
+          hiliteSpies.subcategories.resetHistory();
+        },
       };
-      selectionSetSpies.emptyAll = sinon.spy(imodelMock.target.selectionSet, "emptyAll");
-      selectionSetSpies.replace = sinon.spy(imodelMock.target.selectionSet, "replace");
+
+      selectionSetSpies = {
+        emptyAll: sinon.spy(imodelMock.target.selectionSet, "emptyAll"),
+        replace: sinon.spy(imodelMock.target.selectionSet, "replace"),
+        onChanged: sinon.spy(),
+      };
+
       imodelMock.target.selectionSet.onChanged.addListener(selectionSetSpies.onChanged);
       selectionSetSpies.onChanged.resetHistory();
     });
@@ -388,7 +390,7 @@ describe("ViewportSelectionHandler", () => {
       getHiliteSet.resetBehavior();
       const hiliteSetRequests = [0, 1].map((callIndex) => {
         const result = new ResolvablePromise<HiliteSet>();
-        getHiliteSet.onCall(callIndex).returns(result);
+        getHiliteSet.onCall(callIndex).returns(result as any); // wants Promise<Hilite>, missing catch(), finally(), [Symbol.toStringTag].
         return result;
       });
 

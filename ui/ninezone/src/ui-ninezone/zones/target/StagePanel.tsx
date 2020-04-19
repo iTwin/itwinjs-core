@@ -1,10 +1,12 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Zone */
+/** @packageDocumentation
+ * @module Zone
+ */
 
-import * as classnames from "classnames";
+import classnames from "classnames";
 import * as React from "react";
 import { StagePanelType, StagePanelTypeHelpers } from "../../stage-panels/StagePanel";
 import { SafeAreaInsets, SafeAreaInsetsHelpers } from "../../utilities/SafeAreaInsets";

@@ -1,12 +1,14 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module PropertyEditors */
+/** @packageDocumentation
+ * @module PropertyEditors
+ */
 
 import * as React from "react";
 import classnames from "classnames";
-import { PropertyValueFormat, PrimitiveValue, PropertyValue, EnumerationChoice } from "@bentley/imodeljs-frontend";
+import { PropertyValueFormat, PrimitiveValue, PropertyValue, EnumerationChoice } from "@bentley/ui-abstract";
 import { PropertyEditorManager, PropertyEditorBase } from "./PropertyEditorManager";
 import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
 import "./EnumEditor.scss";
@@ -29,10 +31,6 @@ export class EnumEditor extends React.PureComponent<PropertyEditorProps, EnumEdi
     selectValue: "",
     valueIsNumber: false,
   };
-
-  public getValue(): string | number {
-    return this.state.selectValue;
-  }
 
   public async getPropertyValue(): Promise<PropertyValue | undefined> {
     const record = this.props.propertyRecord;
@@ -117,7 +115,7 @@ export class EnumEditor extends React.PureComponent<PropertyEditorProps, EnumEdi
 
   /** @internal */
   public render() {
-    const className = classnames("cell", "components-cell-editor", "components-enum-editor", this.props.className);
+    const className = classnames("components-cell-editor", "components-enum-editor", this.props.className);
     const { propertyRecord } = this.props;
     const selectValue = this.state.selectValue ? this.state.selectValue.toString() : undefined;
     let choices: EnumerationChoice[] | undefined;
@@ -132,11 +130,16 @@ export class EnumEditor extends React.PureComponent<PropertyEditorProps, EnumEdi
       });
     }
 
+    // set min-width to show about 4 characters + down arrow
+    const minWidthStyle: React.CSSProperties = {
+      minWidth: `${6 * 0.75}em`,
+    };
+
     return (
       <Select
         onBlur={this.props.onBlur}
         className={className}
-        style={this.props.style}
+        style={this.props.style ? this.props.style : minWidthStyle}
         value={selectValue}
         onChange={this._updateSelectValue}
         data-testid="components-select-editor"
@@ -146,12 +149,13 @@ export class EnumEditor extends React.PureComponent<PropertyEditorProps, EnumEdi
   }
 }
 
-/** EnumPropertyEditor React component that uses the [[EnumEditor]] property editor.
+/** Enum Property Button Group Editor registered for the "enum" type name.
+ * It uses the [[EnumEditor]] React component.
  * @beta
  */
 export class EnumPropertyEditor extends PropertyEditorBase {
 
-  public get reactElement(): React.ReactNode {
+  public get reactNode(): React.ReactNode {
     return <EnumEditor />;
   }
 }

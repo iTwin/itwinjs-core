@@ -2,7 +2,7 @@
 
 ECSQL statements can use builtin functions to query and analyze element geometry.
 These functions can be used in SELECT and WHERE clauses. The functions
-that return primtive types can be in expressions with other values.
+that return primitive types can be in expressions with other values.
 
 ## Types
 
@@ -458,7 +458,7 @@ Get a member of a iModel_Point object.
 
 |Return Type|Description
 |---|---
-|double| a coordindate of the point in meters; or an error if  member is out of range or  point is not a point object
+|double| a coordinate of the point in meters; or an error if  member is out of range or  point is not a point object
 
 ### iModel_spatial_overlap_aabb
 

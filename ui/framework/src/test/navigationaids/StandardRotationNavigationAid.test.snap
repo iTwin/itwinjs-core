@@ -22,7 +22,7 @@ exports[`StandardRotationNavigationAid <StandardRotationNavigationAid /> renders
     left={-1}
     offset={0}
     onClose={[Function]}
-    position={5}
+    position={3}
     showArrow={false}
     showShadow={true}
     target={null}

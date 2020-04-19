@@ -1,11 +1,11 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
 import { SpatialClassificationProps } from "@bentley/imodeljs-common";
-import { SpatialClassifiers } from "../SpatialClassification";
+import { SpatialClassifiers } from "../SpatialClassifiers";
 
 describe("SpatialClassifiers", () => {
   it("should construct from JSON", () => {
@@ -35,11 +35,11 @@ describe("SpatialClassifiers", () => {
         isActive: true,
       },
       {
-      modelId: "0x456",
-      expand: 123,
-      flags: new SpatialClassificationProps.Flags(),
-      name: "456",
-      isActive: true,
+        modelId: "0x456",
+        expand: 123,
+        flags: new SpatialClassificationProps.Flags(),
+        name: "456",
+        isActive: true,
       },
     ];
 

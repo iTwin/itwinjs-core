@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Curve */
+/** @packageDocumentation
+ * @module Curve
+ */
 import { Geometry, AxisOrder, BeJSONFunctions, PlaneAltitudeEvaluator } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
 import { XAndY } from "../geometry3d/XYZProps";
@@ -26,6 +28,7 @@ import { Clipper } from "../clipping/ClipUtils";
 import { LineSegment3d } from "./LineSegment3d";
 import { MultiLineStringDataVariant } from "../topology/Triangulation";
 import { PointStreamGrowableXYZArrayCollector, VariantPointDataStream } from "../geometry3d/PointStreaming";
+import { VariantCurveExtendParameter, CurveExtendOptions } from "./CurveExtendMode";
 
 /* tslint:disable:variable-name no-empty*/
 
@@ -787,9 +790,10 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
   }
 
   /** Find the point on the linestring (including its segment interiors) that is closest to spacePoint. */
-  public closestPoint(spacePoint: Point3d, extend: boolean, result?: CurveLocationDetail): CurveLocationDetail {
+  public closestPoint(spacePoint: Point3d, extend: VariantCurveExtendParameter, result?: CurveLocationDetail): CurveLocationDetail {
     result = CurveLocationDetail.create(this, result);
-
+    const extend0 = CurveExtendOptions.resolveVariantCurveExtendParameterToCurveExtendMode(extend, 0);
+    const extend1 = CurveExtendOptions.resolveVariantCurveExtendParameterToCurveExtendMode(extend, 1);
     const numPoints = this._points.length;
     if (numPoints > 0) {
       const lastIndex = numPoints - 1;
@@ -802,10 +806,10 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
         for (let i = 1; i < numPoints; i++) {
           segmentFraction = spacePoint.fractionOfProjectionToLine(this._points.getPoint3dAtUncheckedPointIndex(i - 1), this._points.getPoint3dAtUncheckedPointIndex(i));
           if (segmentFraction < 0) {
-            if (!extend || i > 1)
+            if (!extend0 || i > 1)
               segmentFraction = 0.0;
           } else if (segmentFraction > 1.0) {
-            if (!extend || i < lastIndex)
+            if (!extend1 || i < lastIndex)
               segmentFraction = 1.0;
           }
           this._points.getPoint3dAtUncheckedPointIndex(i - 1).interpolate(segmentFraction, this._points.getPoint3dAtUncheckedPointIndex(i), result.pointQ);
@@ -1245,7 +1249,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
    *   * data with no point is an empty array.
    *   * "deep" data is flattened to a single array of linestrings, losing structure.
    */
-  public static createArrayOfLineString3dFromVariantData(data: MultiLineStringDataVariant): LineString3d[] {
+  public static createArrayOfLineString3d(data: MultiLineStringDataVariant): LineString3d[] {
     const collector = new PointStreamGrowableXYZArrayCollector();
     VariantPointDataStream.streamXYZ(data, collector);
     const growableArrays = collector.claimArrayOfGrowableXYZArray();
@@ -1255,14 +1259,6 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
         result.push(LineString3d.createCapture(points));
     }
     return result;
-  }
-  /**
-   * This method name is deprecated. Use `LineString3d.createArrayOfLineString3dFromVariantData`
-   * @deprecated use LineString3d.createArrayOfLineString3dFromVariantData
-   */
-  public static createArrayOfLineString3d(data: MultiLineStringDataVariant): LineString3d[] {
-    return this.createArrayOfLineString3dFromVariantData(data);
-
   }
 }
 /** An AnnotatedLineString3d is a linestring with additional surface-related data attached to each point

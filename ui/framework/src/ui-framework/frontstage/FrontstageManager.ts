@@ -1,17 +1,22 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Frontstage */
+/** @packageDocumentation
+ * @module Frontstage
+ */
 
 import * as React from "react";
+
+import { Logger } from "@bentley/bentleyjs-core";
+import { IModelConnection, IModelApp, Tool, StartOrResume, InteractiveTool, SelectedViewportChangedArgs } from "@bentley/imodeljs-frontend";
+import { WidgetState } from "@bentley/ui-abstract";
 import { UiEvent } from "@bentley/ui-core";
 import { NineZoneManager } from "@bentley/ui-ninezone";
-import { IModelConnection, IModelApp, Tool, StartOrResume, InteractiveTool, SelectedViewportChangedArgs } from "@bentley/imodeljs-frontend";
-import { Logger } from "@bentley/bentleyjs-core";
+
 import { FrontstageDef } from "./FrontstageDef";
 import { ContentControlActivatedEvent } from "../content/ContentControl";
-import { WidgetDef, WidgetState, WidgetStateChangedEvent } from "../widgets/WidgetDef";
+import { WidgetDef, WidgetStateChangedEvent } from "../widgets/WidgetDef";
 import { ToolInformation } from "../zones/toolsettings/ToolInformation";
 import { FrontstageProvider } from "./FrontstageProvider";
 import { ToolUiManager } from "../zones/toolsettings/ToolUiManager";
@@ -21,6 +26,7 @@ import { UiShowHideManager } from "../utils/UiShowHideManager";
 import { UiFramework } from "../UiFramework";
 import { ContentGroup } from "../content/ContentGroup";
 import { PanelStateChangedEvent } from "../stagepanels/StagePanelDef";
+import { ToolUiProvider } from "../zones/toolsettings/ToolUiProvider";
 
 // -----------------------------------------------------------------------------
 // Frontstage Events
@@ -169,13 +175,13 @@ export class FrontstageManager {
   /** Handles a Viewport change & sets the active view accordingly */
   private static _handleSelectedViewportChanged = (args: SelectedViewportChangedArgs) => {
     // istanbul ignore else
-    if (args.current && FrontstageManager.activeFrontstageDef) {
-      const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
-      activeFrontstageDef.setActiveViewFromViewport(args.current);
+    if (args.current && FrontstageManager.activeFrontstageDef && !FrontstageManager.isLoading) {
+      FrontstageManager.activeFrontstageDef.setActiveViewFromViewport(args.current);
     }
   }
 
   /** @internal */
+  public static get isInitialized(): boolean { return FrontstageManager._initialized; }
   public static set isInitialized(v: boolean) { FrontstageManager._initialized = v; }
 
   /** Returns true if Frontstage is loading its controls. If false the Frontstage content and controls have been created. */
@@ -337,6 +343,10 @@ export class FrontstageManager {
   /** Sets the active tool id */
   public static setActiveToolId(toolId: string): void {
     FrontstageManager._activeToolId = toolId;
+    const toolSettingsProvider = FrontstageManager.activeToolSettingsProvider;
+    // ensure the toolSettingsProvider is initialized before emitting onToolActivatedEvent
+    if (toolSettingsProvider)
+      toolSettingsProvider.initialize();
     FrontstageManager.onToolActivatedEvent.emit({ toolId });
   }
 
@@ -353,15 +363,11 @@ export class FrontstageManager {
 
   /** Gets the Tool Setting React node of the active tool.
    * @return  Tool Setting React node of the active tool, or undefined if there is no active tool or Tool Settings for the active tool.
+   * @internal
    */
-  public static get activeToolSettingsNode(): React.ReactNode | undefined {
+  public static get activeToolSettingsProvider(): ToolUiProvider | undefined {
     const activeToolInformation = FrontstageManager.activeToolInformation;
-    const toolUiProvider = (activeToolInformation) ? activeToolInformation.toolUiProvider : /* istanbul ignore next */ undefined;
-
-    if (toolUiProvider && toolUiProvider.toolSettingsNode)
-      return toolUiProvider.toolSettingsNode;
-
-    return undefined;
+    return (activeToolInformation) ? activeToolInformation.toolUiProvider : /* istanbul ignore next */ undefined;
   }
 
   /** Sets the active layout, content group and active content.

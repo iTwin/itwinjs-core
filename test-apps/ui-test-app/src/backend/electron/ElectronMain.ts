@@ -1,20 +1,26 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
 import * as electron from "electron";
+
 import { RpcInterfaceDefinition, ElectronRpcManager } from "@bentley/imodeljs-common";
-import { IModelJsElectronManager } from "@bentley/electron-manager";
+import { IModelJsElectronManager, WebpackDevServerElectronManager, StandardElectronManager } from "@bentley/electron-manager";
+
 /**
  * Initializes Electron backend
  */
-
-const autoOpenDevTools = false;
+const autoOpenDevTools = (undefined === process.env.SVT_NO_DEV_TOOLS);
+const maximizeWindow = (undefined === process.env.SVT_NO_MAXIMIZE_WINDOW);
 
 export default function initialize(rpcs: RpcInterfaceDefinition[]) {
   (async () => { // tslint:disable-line:no-floating-promises
-    const manager = new IModelJsElectronManager(path.join(__dirname, "..", "..", "webresources"));
+    let manager: StandardElectronManager;
+    if (process.env.NODE_ENV === "production")
+      manager = new IModelJsElectronManager(path.join(__dirname, "..", "..", "..", "build"));
+    else
+      manager = new WebpackDevServerElectronManager(3000); // port should match the port of the local dev server
 
     // Handle custom keyboard shortcuts
     electron.app.on("web-contents-created", (_e, wc) => {
@@ -32,17 +38,24 @@ export default function initialize(rpcs: RpcInterfaceDefinition[]) {
     await manager.initialize({
       width: 800,
       height: 650,
-      autoHideMenuBar: true,
-      show: true,
       webPreferences: {
         nodeIntegration: true,
-        preload: path.join(__dirname, "preload.js"),
+        experimentalFeatures: true, // Needed for CSS Grid support
       },
+      autoHideMenuBar: true,
+      show: !maximizeWindow,
     });
+
     // tell ElectronRpcManager which RPC interfaces to handle
     ElectronRpcManager.initializeImpl({}, rpcs);
-    if (manager.mainWindow && autoOpenDevTools)
-      manager.mainWindow.webContents.toggleDevTools();
 
+    if (manager.mainWindow) {
+      if (maximizeWindow) {
+        manager.mainWindow.maximize(); // maximize before showing to avoid resize event on startup
+        manager.mainWindow.show();
+      }
+      if (autoOpenDevTools)
+        manager.mainWindow.webContents.toggleDevTools();
+    }
   })();
 }

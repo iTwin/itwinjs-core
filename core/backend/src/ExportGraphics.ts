@@ -1,34 +1,12 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module iModels */
+/** @packageDocumentation
+ * @module iModels
+ */
 
 import { Id64Array, Id64String } from "@bentley/bentleyjs-core";
-
-/**
- * @deprecated Use [[ExportPartDisplayInfo]] instead.
- * @beta
- */
-export type ExportPartDisplayProps = ExportPartDisplayInfo;
-
-/**
- * @deprecated Use [[ExportPartInstanceInfo]] instead.
- * @beta
- */
-export type ExportPartInstanceProps = ExportPartInstanceInfo;
-
-/**
- * @deprecated Use [[ExportGraphicsOptions]] instead.
- * @beta
- */
-export type ExportGraphicsProps = ExportGraphicsOptions;
-
-/**
- * @deprecated Use [[ExportPartGraphicsOptions]] instead.
- * @beta
- */
-export type ExportPartGraphicsProps = ExportPartGraphicsOptions;
 
 /** A collection of line segments, suitable for direct use with graphics APIs.
  * The structure of this data matches GL_LINES in OpenGL.
@@ -236,14 +214,6 @@ export interface ExportPartGraphicsOptions {
  * @public
  */
 export namespace ExportGraphics {
-  /** Test if ExportPartDisplayProps have exactly the same values.
-   * @deprecated Use [[ExportGraphics.arePartDisplayInfosEqual]] instead.
-   * @beta
-   */
-  export function areDisplayPropsEqual(lhs: ExportPartDisplayProps, rhs: ExportPartDisplayProps): boolean {
-    return arePartDisplayInfosEqual(lhs, rhs);
-  }
-
   /** Test if ExportPartDisplayInfos have exactly the same values.
    * @public
    */

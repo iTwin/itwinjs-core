@@ -1,21 +1,24 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module WebGL */
+/** @packageDocumentation
+ * @module WebGL
+ */
 
-import { IDisposable, dispose, assert } from "@bentley/bentleyjs-core";
+import { dispose, assert } from "@bentley/bentleyjs-core";
 import { Point3d } from "@bentley/geometry-core";
-import { SurfaceFlags, RenderPass, RenderOrder } from "./RenderFlags";
+import { SurfaceBitIndex, RenderPass, RenderOrder } from "./RenderFlags";
 import { LUTGeometry, PolylineBuffers, CachedGeometry } from "./CachedGeometry";
 import { VertexIndices, SurfaceType, MeshParams, SegmentEdgeParams, SilhouetteParams, TesselatedPolyline } from "../primitives/VertexTable";
 import { LineCode } from "./EdgeOverrides";
 import { ColorInfo } from "./ColorInfo";
-import { Graphic, Batch } from "./Graphic";
+import { Graphic } from "./Graphic";
 import { VertexLUT } from "./VertexLUT";
 import { Primitive } from "./Primitive";
 import { FloatRgba } from "./FloatRGBA";
-import { ShaderProgramParams, RenderCommands } from "./DrawCommand";
+import { ShaderProgramParams } from "./DrawCommand";
+import { RenderCommands } from "./RenderCommands";
 import { Target } from "./Target";
 import { createMaterialInfo, MaterialInfo } from "./Material";
 import { Texture } from "./Texture";
@@ -24,12 +27,14 @@ import { System } from "./System";
 import { BufferHandle, BuffersContainer, BufferParameters } from "./Handle";
 import { GL } from "./GL";
 import { TechniqueId } from "./TechniqueId";
-import { InstancedGraphicParams, RenderMemory } from "../System";
+import { InstancedGraphicParams } from "../InstancedGraphicParams";
+import { RenderMemory } from "../RenderMemory";
 import { InstanceBuffers } from "./InstancedGeometry";
 import { AttributeMap } from "./AttributeMap";
+import { WebGLDisposable } from "./Disposable";
 
 /** @internal */
-export class MeshData implements IDisposable {
+export class MeshData implements WebGLDisposable {
   public readonly edgeWidth: number;
   public readonly hasFeatures: boolean;
   public readonly uniformFeatureId?: number; // Used strictly by BatchPrimitiveCommand.computeisFlashed for flashing volume classification primitives.
@@ -43,6 +48,7 @@ export class MeshData implements IDisposable {
   public readonly hasFixedNormals: boolean;   // Fixed normals will not be flipped to face front (Terrain skirts).
   public readonly lut: VertexLUT;
   public readonly viewIndependentOrigin?: Point3d;
+  private readonly _textureAlwaysDisplayed: boolean;
 
   private constructor(lut: VertexLUT, params: MeshParams, viOrigin: Point3d | undefined) {
     this.lut = lut;
@@ -52,7 +58,14 @@ export class MeshData implements IDisposable {
     if (FeatureIndexType.Uniform === params.vertices.featureIndexType)
       this.uniformFeatureId = params.vertices.uniformFeatureID;
 
-    this.texture = params.surface.texture as Texture;
+    if (undefined !== params.surface.textureMapping) {
+      this.texture = params.surface.textureMapping.texture as Texture;
+      this._textureAlwaysDisplayed = params.surface.textureMapping.alwaysDisplayed;
+    } else {
+      this.texture = undefined;
+      this._textureAlwaysDisplayed = false;
+    }
+
     this.materialInfo = createMaterialInfo(params.surface.material);
 
     this.type = params.surface.type;
@@ -70,11 +83,16 @@ export class MeshData implements IDisposable {
     return undefined !== lut ? new MeshData(lut, params, viOrigin) : undefined;
   }
 
+  public get isDisposed(): boolean { return undefined === this.texture && this.lut.isDisposed; }
+
   public dispose() {
     dispose(this.lut);
     if (this._ownsTexture)
       this.texture!.dispose();
   }
+
+  public get isGlyph() { return undefined !== this.texture && this.texture.isGlyph; }
+  public get isTextureAlwaysDisplayed() { return this.isGlyph || this._textureAlwaysDisplayed; }
 
   // Returns true if no one else owns this texture. Implies that the texture should be disposed when this object is disposed, and the texture's memory should be tracked as belonging to this object.
   private get _ownsTexture(): boolean {
@@ -133,6 +151,8 @@ export class MeshGraphic extends Graphic {
       this.addPrimitive(() => PolylineEdgeGeometry.create(this.meshData, edges.polylines!), instances);
   }
 
+  public get isDisposed(): boolean { return this.meshData.isDisposed && 0 === this._primitives.length; }
+
   public dispose() {
     dispose(this.meshData);
     for (const primitive of this._primitives)
@@ -151,7 +171,7 @@ export class MeshGraphic extends Graphic {
   }
 
   public addCommands(cmds: RenderCommands): void { this._primitives.forEach((prim) => prim.addCommands(cmds)); }
-  public addHiliteCommands(cmds: RenderCommands, batch: Batch, pass: RenderPass): void { this._primitives.forEach((prim) => prim.addHiliteCommands(cmds, batch, pass)); }
+  public addHiliteCommands(cmds: RenderCommands, pass: RenderPass): void { this._primitives.forEach((prim) => prim.addHiliteCommands(cmds, pass)); }
 
   public get surfaceType(): SurfaceType { return this.meshData.type; }
 }
@@ -222,6 +242,12 @@ export class EdgeGeometry extends MeshGeometry {
     return undefined !== indexBuffer && undefined !== endPointBuffer ? new EdgeGeometry(indexBuffer, endPointBuffer, edges.indices.length, mesh) : undefined;
   }
 
+  public get isDisposed(): boolean {
+    return this.buffers.isDisposed
+      && this._indices.isDisposed
+      && this._endPointAndQuadIndices.isDisposed;
+  }
+
   public dispose() {
     dispose(this.buffers);
     dispose(this._indices);
@@ -275,9 +301,11 @@ export class SilhouetteEdgeGeometry extends EdgeGeometry {
     return undefined !== indexBuffer && undefined !== endPointBuffer && undefined !== normalsBuffer ? new SilhouetteEdgeGeometry(indexBuffer, endPointBuffer, normalsBuffer, params.indices.length, mesh) : undefined;
   }
 
+  public get isDisposed(): boolean { return super.isDisposed && this._normalPairs.isDisposed; }
+
   public dispose() {
-    dispose(this._normalPairs);
     super.dispose();
+    dispose(this._normalPairs);
   }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
@@ -307,6 +335,8 @@ export class PolylineEdgeGeometry extends MeshGeometry {
     const buffers = PolylineBuffers.create(polyline);
     return undefined !== buffers ? new PolylineEdgeGeometry(polyline.indices.length, buffers, mesh) : undefined;
   }
+
+  public get isDisposed(): boolean { return this._buffers.isDisposed; }
 
   public dispose() {
     dispose(this._buffers);
@@ -356,6 +386,11 @@ export class SurfaceGeometry extends MeshGeometry {
     return undefined !== indexBuffer ? new SurfaceGeometry(indexBuffer, indices.length, mesh) : undefined;
   }
 
+  public get isDisposed(): boolean {
+    return this._buffers.isDisposed
+      && this._indices.isDisposed;
+  }
+
   public dispose() {
     dispose(this._buffers);
     dispose(this._indices);
@@ -367,9 +402,20 @@ export class SurfaceGeometry extends MeshGeometry {
 
   public get isLit() { return SurfaceType.Lit === this.surfaceType || SurfaceType.TexturedLit === this.surfaceType; }
   public get isTextured() { return SurfaceType.Textured === this.surfaceType || SurfaceType.TexturedLit === this.surfaceType; }
-  public get isGlyph() { return undefined !== this.texture && this.texture.isGlyph; }
+  public get isGlyph() { return this.mesh.isGlyph; }
+  public get alwaysRenderTranslucent() { return this.isGlyph; }
   public get isTileSection() { return undefined !== this.texture && this.texture.isTileSection; }
   public get isClassifier() { return SurfaceType.VolumeClassifier === this.surfaceType; }
+  public get supportsThematicDisplay() {
+    return !this.isGlyph;
+  }
+
+  public get allowColorOverride() {
+    // Text background color should not be overridden by feature symbology overrides - otherwise it becomes unreadable...
+    // We don't actually know if we have text.
+    // We do know that text background color uses blanking fill. So do ImageGraphics, so they're also going to forbid overriding their color.
+    return FillFlags.Blanking !== (this.fillFlags & FillFlags.Blanking);
+  }
 
   public get asSurface() { return this; }
   public get asEdge() { return undefined; }
@@ -396,6 +442,11 @@ export class SurfaceGeometry extends MeshGeometry {
     }
   }
 
+  public wantMixMonochromeColor(target: Target): boolean {
+    // Text relies on white-on-white reversal.
+    return !this.isGlyph && (this.isLitSurface || this.wantTextures(target, this.isTextured));
+  }
+
   public get techniqueId(): TechniqueId { return TechniqueId.Surface; }
   public get isLitSurface() { return this.isLit; }
   public get hasBakedLighting() { return this.mesh.hasBakedLighting; }
@@ -413,7 +464,7 @@ export class SurfaceGeometry extends MeshGeometry {
 
   public getColor(target: Target) {
     if (FillFlags.Background === (this.fillFlags & FillFlags.Background))
-      return ColorInfo.createUniform(target.bgColor);
+      return target.uniforms.style.backgroundColorInfo;
     else
       return this.colorInfo;
   }
@@ -432,7 +483,7 @@ export class SurfaceGeometry extends MeshGeometry {
     const vf = target.currentViewFlags;
 
     // In wireframe, unless fill is explicitly enabled for planar region, surface does not draw
-    if (RenderMode.Wireframe === vf.renderMode) {
+    if (RenderMode.Wireframe === vf.renderMode && !this.mesh.isTextureAlwaysDisplayed) {
       const fillFlags = this.fillFlags;
       const showFill = FillFlags.Always === (fillFlags & FillFlags.Always) || (vf.fill && FillFlags.ByView === (fillFlags & FillFlags.ByView));
       if (!showFill)
@@ -483,56 +534,74 @@ export class SurfaceGeometry extends MeshGeometry {
 
   public get materialInfo(): MaterialInfo | undefined { return this.mesh.materialInfo; }
 
-  public computeSurfaceFlags(params: ShaderProgramParams): SurfaceFlags {
+  public useTexture(params: ShaderProgramParams): boolean {
+    return this.wantTextures(params.target, this.isTextured);
+  }
+
+  public computeSurfaceFlags(params: ShaderProgramParams, flags: Int32Array): void {
     const target = params.target;
     const vf = target.currentViewFlags;
 
     const useMaterial = wantMaterials(vf);
-    let flags = useMaterial ? SurfaceFlags.None : SurfaceFlags.IgnoreMaterial;
+    flags[SurfaceBitIndex.IgnoreMaterial] = useMaterial ? 0 : 1;
+
+    flags[SurfaceBitIndex.ApplyLighting] = 0;
+    flags[SurfaceBitIndex.NoFaceFront] = 0;
+    flags[SurfaceBitIndex.HasColorAndNormal] = 0;
     if (this.isLit) {
-      flags |= SurfaceFlags.HasNormals;
+      flags[SurfaceBitIndex.HasNormals] = 1;
       if (wantLighting(vf)) {
-        flags |= SurfaceFlags.ApplyLighting;
+        flags[SurfaceBitIndex.ApplyLighting] = 1;
         if (this.hasFixedNormals)
-          flags |= SurfaceFlags.NoFaceFront;
+          flags[SurfaceBitIndex.NoFaceFront] = 1;
       }
 
       // Textured meshes store normal in place of color index.
       // Untextured lit meshes store normal where textured meshes would store UV coords.
       // Tell shader where to find normal.
       if (!this.isTextured) {
-        flags |= SurfaceFlags.HasColorAndNormal;
+        flags[SurfaceBitIndex.HasColorAndNormal] = 1;
       }
+    } else {
+      flags[SurfaceBitIndex.HasNormals] = 0;
     }
 
-    if (this.wantTextures(target, this.isTextured)) {
-      flags |= SurfaceFlags.HasTexture;
+    if (this.useTexture(params)) {
+      flags[SurfaceBitIndex.HasTexture] = 1;
       if (useMaterial && undefined !== this.mesh.materialInfo && this.mesh.materialInfo.overridesAlpha && RenderPass.Translucent === params.renderPass)
-        flags |= SurfaceFlags.MultiplyAlpha;
+        flags[SurfaceBitIndex.MultiplyAlpha] = 1;
+      else
+        flags[SurfaceBitIndex.MultiplyAlpha] = 0;
+    } else {
+      flags[SurfaceBitIndex.HasTexture] = 0;
+      flags[SurfaceBitIndex.MultiplyAlpha] = 0;
     }
 
+    flags[SurfaceBitIndex.TransparencyThreshold] = 0;
+    flags[SurfaceBitIndex.BackgroundFill] = 0;
     switch (params.renderPass) {
       // NB: We need this for opaque pass due to SolidFill (must compute transparency, discard below threshold, render opaque at or above threshold)
       case RenderPass.OpaqueLinear:
       case RenderPass.OpaquePlanar:
       case RenderPass.OpaqueGeneral:
-      case RenderPass.Translucent: {
+      case RenderPass.Translucent:
+      case RenderPass.WorldOverlay:
+      case RenderPass.OpaqueLayers:
+      case RenderPass.TranslucentLayers:
+      case RenderPass.OverlayLayers: {
         const mode = vf.renderMode;
         if (!this.isGlyph && (RenderMode.HiddenLine === mode || RenderMode.SolidFill === mode)) {
-          flags |= SurfaceFlags.TransparencyThreshold;
+          flags[SurfaceBitIndex.TransparencyThreshold] = 1;
           if (RenderMode.HiddenLine === mode && FillFlags.Always !== (this.fillFlags & FillFlags.Always)) {
             // fill flags test for text - doesn't render with bg fill in hidden line mode.
-            flags |= SurfaceFlags.BackgroundFill;
+            flags[SurfaceBitIndex.BackgroundFill] = 1;
           }
           break;
         }
       }
     }
 
-    if (params.target.isDrawingShadowMap)
-      flags |= SurfaceFlags.TransparencyThreshold;
-
-    return flags;
+    flags[SurfaceBitIndex.TransparencyThreshold] = params.target.isDrawingShadowMap ? 1 : 0;
   }
 
   private constructor(indices: BufferHandle, numIndices: number, mesh: MeshData) {
@@ -551,8 +620,11 @@ export class SurfaceGeometry extends MeshGeometry {
     if (!surfaceTextureExists)
       return false;
 
-    if (this.isGlyph)
+    if (this.mesh.isTextureAlwaysDisplayed)
       return true;
+
+    if (this.supportsThematicDisplay && target.wantThematicDisplay)
+      return false;
 
     const fill = this.fillFlags;
     const flags = target.currentViewFlags;

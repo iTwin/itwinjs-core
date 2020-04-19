@@ -1,0 +1,62 @@
+{
+  "name": "iot-demo",
+  "version": "1.0.0",
+  "description": "IoT Demonstration",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "prebuild": "npm run pseudolocalize && npm run copy:assets",
+    "build": "npm run prebuild && extension-webpack-tools build -s ./src/iotDemo.ts -o ./lib/extension",
+    "clean": "rimraf lib .rush",
+    "copy:assets": "cpx \"./src/public/**/*\" ./lib/extension/",
+    "cover": "",
+    "docs": "",
+    "lint": "tslint -p . 1>&2",
+    "pseudolocalize": "betools pseudolocalize --englishDir=./src/public/locales/en --out=./lib/extension/locales/en-PSEUDO",
+    "test": ""
+  },
+  "keywords": [
+    "iModel",
+    "BIM",
+    "iot",
+    "extension"
+  ],
+  "author": {
+    "name": "Bentley Systems, Inc.",
+    "url": "http://www.bentley.com"
+  },
+  "devDependencies": {
+    "@bentley/build-tools": "2.0.0-dev.71",
+    "@bentley/extension-webpack-tools": "2.0.0-dev.71",
+    "@types/react": "^16.8.0",
+    "@types/react-dom": "^16.8.0",
+    "@types/react-redux": "^7.0.1",
+    "@types/classnames": "^2.2.3",
+    "cpx": "^1.5.0",
+    "rimraf": "^3.0.2",
+    "tslint": "^5.11.0",
+    "tslint-etc": "^1.5.2",
+    "typescript": "~3.7.4",
+    "svg-baker-runtime": "^1.4.2"
+  },
+  "dependencies": {
+    "@bentley/bentleyjs-core": "2.0.0-dev.71",
+    "@bentley/geometry-core": "2.0.0-dev.71",
+    "@bentley/itwin-client": "2.0.0-dev.71",
+    "@bentley/imodeljs-common": "2.0.0-dev.71",
+    "@bentley/imodeljs-i18n": "2.0.0-dev.71",
+    "@bentley/imodeljs-frontend": "2.0.0-dev.71",
+    "@bentley/imodeljs-quantity": "2.0.0-dev.71",
+    "@bentley/ui-abstract": "2.0.0-dev.71",
+    "@bentley/ui-components": "2.0.0-dev.71",
+    "@bentley/ui-core": "2.0.0-dev.71",
+    "@bentley/ui-framework": "2.0.0-dev.71",
+    "@bentley/ui-ninezone": "2.0.0-dev.71",
+    "classnames": "^2.2.5",
+    "react-dom": "^16.8.0",
+    "react-redux": "^5.0.7",
+    "react": "^16.8.0",
+    "redux": "^4.0.3",
+    "svg-sprite-loader": "4.2.1"
+  }
+}

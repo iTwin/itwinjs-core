@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Color */
+/** @packageDocumentation
+ * @module Color
+ */
 
 import * as React from "react";
 import classnames from "classnames";
@@ -67,7 +69,6 @@ export class HueSlider extends React.PureComponent<HueSliderProps> {
 
     const left = x - (containerLeft + window.pageXOffset);
     const top = y - (containerTop + window.pageYOffset);
-    const newColor = this.props.hsv.clone();
 
     if (!isHorizontal) {
       let h;
@@ -81,10 +82,8 @@ export class HueSlider extends React.PureComponent<HueSliderProps> {
         h = ((360 * percent) / 100);
       }
       // istanbul ignore else
-      if (hsv.h !== h) {
-        newColor.h = h;
-        return newColor;
-      }
+      if (hsv.h !== h)
+        return this.props.hsv.clone(h);
     } else {  // horizontal
       let h;
       // istanbul ignore next
@@ -98,10 +97,8 @@ export class HueSlider extends React.PureComponent<HueSliderProps> {
       }
 
       // istanbul ignore else
-      if (hsv.h !== h) {
-        newColor.h = h;
-        return newColor;
-      }
+      if (hsv.h !== h)
+        return this.props.hsv.clone(h);
     }
     // istanbul ignore next
     return undefined;
@@ -157,12 +154,11 @@ export class HueSlider extends React.PureComponent<HueSliderProps> {
 
     // istanbul ignore else
     if (undefined !== newHue) {
-      const newColor = this.props.hsv.clone();
       // istanbul ignore if
       if (newHue > 360) newHue = 360;
       // istanbul ignore if
       if (newHue < 0) newHue = 0;
-      newColor.h = newHue;
+      const newColor = this.props.hsv.clone(newHue);
       // istanbul ignore else
       if (this.props.onHueChange)
         this.props.onHueChange(newColor);
@@ -188,9 +184,9 @@ export class HueSlider extends React.PureComponent<HueSliderProps> {
     const pointerStyle: React.CSSProperties = this.props.isHorizontal ? {
       left: `${(this.props.hsv.h * 100) / 360}%`,
     } : {
-        left: `0px`,
-        top: `${-((this.props.hsv.h * 100) / 360) + 100}%`,
-      };
+      left: `0px`,
+      top: `${-((this.props.hsv.h * 100) / 360) + 100}%`,
+    };
 
     return (
       <div className={containerClasses} style={this.props.style} data-testid="hue-container">

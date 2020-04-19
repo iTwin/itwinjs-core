@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module WebGL */
+/** @packageDocumentation
+ * @module WebGL
+ */
 // tslint:disable:no-const-enum
 
 /** Ordered list of render passes which produce a rendered frame.
@@ -11,15 +13,18 @@
 export const enum RenderPass {
   None = 0xff,
   Background = 0,
+  OpaqueLayers,       // XY planar models render without depth-testing in order based on priority
   OpaqueLinear,       // Linear geometry that is opaque and needs to be written to the pick data buffers
   OpaquePlanar,       // Planar surface geometry that is opaque and needs to be written to the pick data buffers
   OpaqueGeneral,      // All other opaque geometry (including point clouds and reality meshes) which are not written to the pick data buffers
   Classification,     // Stencil volumes for normal processing of reality data classification.
+  TranslucentLayers,  // like Layers but drawn without depth write, blending with opaque
   Translucent,
   HiddenEdge,
   Hilite,
-  WorldOverlay,
-  ViewOverlay,
+  OverlayLayers,      // Like Layers, but drawn atop all other geometry
+  WorldOverlay,       // Decorations
+  ViewOverlay,        // Decorations
   SkyBox,
   BackgroundMap,
   HiliteClassification,  // Secondary hilite pass for stencil volumes to process hilited classifiers for reality data
@@ -57,6 +62,8 @@ export enum TextureUnit {
   FeatureSymbology = One,
   SurfaceTexture = Two,
   LineCode = Two,
+  TerrainMesh0 = Two,
+  TerrainMesh1 = Five,     // Terrain meshes do not use VertexLUT.
 
   PickFeatureId = Three,
   PickDepthAndOrder = Four,
@@ -83,12 +90,13 @@ export enum TextureUnit {
  */
 export const enum RenderOrder {
   None = 0,
-  BlankingRegion = 1,
-  UnlitSurface = 2, // Distinction only made for whether or not to apply ambient occlusion.
-  LitSurface = 3,
-  Linear = 4,
-  Edge = 5,
-  Silhouette = 6,
+  Background = 1, // i.e., background map drawn without depth
+  BlankingRegion = 2,
+  UnlitSurface = 3, // Distinction only made for whether or not to apply ambient occlusion.
+  LitSurface = 4,
+  Linear = 5,
+  Edge = 6,
+  Silhouette = 7,
 
   PlanarBit = 8,
 
@@ -143,6 +151,24 @@ export const enum SurfaceFlags {
   // For textured meshes, multiplied the texture alpha by v_color's alpha. OverrideAlpha takes precedence if both are set.
   MultiplyAlpha = 1 << 10,
   // MultiplyAlpha must be last -- add additional flags above it, not here.
+}
+
+/** Location in boolean array of SurfaceFlags above.
+ * @internal
+ */
+export const enum SurfaceBitIndex {
+  HasTexture = 0,
+  ApplyLighting = 1,
+  HasNormals = 2,
+  IgnoreMaterial = 3,
+  TransparencyThreshold = 4,
+  BackgroundFill = 5,
+  HasColorAndNormal = 6,
+  OverrideAlpha = 7,
+  OverrideRgb = 8,
+  NoFaceFront = 9,
+  MultiplyAlpha = 10,
+  Count = 11,
 }
 
 /** @internal */

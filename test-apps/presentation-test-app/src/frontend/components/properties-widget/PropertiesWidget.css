@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
 .PropertiesWidget {
@@ -16,4 +16,16 @@
 .PropertiesWidget > .ContentContainer {
   flex: 1 0;
   min-height: 0;
+}
+
+.favorite-action-button {
+  width: fit-content;
+  height: 20px;
+}
+
+.copy-action-button {
+  width: fit-content * 2;
+  height: 15px;
+  padding: 2px;
+  background: lightskyblue;
 }

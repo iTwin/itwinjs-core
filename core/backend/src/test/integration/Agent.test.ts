@@ -1,54 +1,59 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { ClientRequestContext, Config } from "@bentley/bentleyjs-core";
+import { AccessToken } from "@bentley/itwin-client";
+import { OidcAgentClient, OidcAgentClientConfiguration } from "@bentley/imodeljs-clients-backend";
+import { IModelVersion, MobileRpcConfiguration } from "@bentley/imodeljs-common";
 import { assert } from "chai";
-import { ClientRequestContext } from "@bentley/bentleyjs-core";
-import { IModelVersion } from "@bentley/imodeljs-common";
-import { Config, AccessToken } from "@bentley/imodeljs-clients";
-import { OidcAgentClientConfiguration, OidcAgentClient } from "@bentley/imodeljs-clients-backend";
+import { AuthorizedBackendRequestContext, BriefcaseDb, OpenParams } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { IModelDb, OpenParams, AuthorizedBackendRequestContext } from "../../imodeljs-backend";
 import { HubUtility } from "./HubUtility";
 
 describe("Agent (#integration)", () => {
+  // iOS does not support agent test
+  if (!MobileRpcConfiguration.isMobileBackend) {
+    let testProjectId: string;
+    let testReadIModelId: string;
+    let testWriteIModelId: string;
+    let requestContext: AuthorizedBackendRequestContext;
 
-  let agentConfiguration: OidcAgentClientConfiguration;
+    before(async () => {
+      IModelTestUtils.setupLogging();
+      // IModelTestUtils.setupDebugLogLevels();
 
-  before(async () => {
-    IModelTestUtils.setupLogging();
-    // IModelTestUtils.setupDebugLogLevels();
+      const agentConfiguration: OidcAgentClientConfiguration = {
+        clientId: Config.App.getString("imjs_agent_test_client_id"),
+        clientSecret: Config.App.getString("imjs_agent_test_client_secret"),
+        scope: "imodelhub rbac-user:external-client reality-data:read urlps-third-party context-registry-service:read-only imodeljs-backend-2686",
+      };
 
-    agentConfiguration = {
-      clientId: Config.App.getString("imjs_agent_test_client_id"),
-      clientSecret: Config.App.getString("imjs_agent_test_client_secret"),
-      scope: "imodelhub rbac-user:external-client reality-data:read urlps-third-party context-registry-service:read-only imodeljs-backend-2686",
-    };
+      const agentClient = new OidcAgentClient(agentConfiguration);
+      const jwt: AccessToken = await agentClient.getToken(new ClientRequestContext());
+      requestContext = new AuthorizedBackendRequestContext(jwt);
 
-  });
+      testProjectId = await HubUtility.queryProjectIdByName(requestContext, "iModelJsIntegrationTest");
+      testReadIModelId = await HubUtility.queryIModelIdByName(requestContext, testProjectId, "ReadOnlyTest");
+      testWriteIModelId = await HubUtility.queryIModelIdByName(requestContext, testProjectId, "ReadWriteTest");
+    });
 
-  it("Agent should be able to open an iModel Readonly", async () => {
-    const agentClient = new OidcAgentClient(agentConfiguration);
-    const jwt: AccessToken = await agentClient.getToken(new ClientRequestContext());
-    const requestContext = new AuthorizedBackendRequestContext(jwt);
+    after(async () => {
+      // Purge briefcases that are close to reaching the aquire limit
+      await HubUtility.purgeAcquiredBriefcases(requestContext, "iModelJsIntegrationTest", "ReadOnlyTest");
+      await HubUtility.purgeAcquiredBriefcases(requestContext, "iModelJsIntegrationTest", "ReadWriteTest");
+    });
 
-    const testProjectId = await HubUtility.queryProjectIdByName(requestContext, "iModelJsIntegrationTest");
-    const testIModelId = await HubUtility.queryIModelIdByName(requestContext, testProjectId, "ReadOnlyTest");
+    it("Agent should be able to open an iModel Readonly", async () => {
+      const iModelDb = await BriefcaseDb.open(requestContext, testProjectId, testReadIModelId, OpenParams.fixedVersion(), IModelVersion.latest());
+      assert.isDefined(iModelDb);
+    });
 
-    const iModelDb = await IModelDb.open(requestContext, testProjectId, testIModelId, OpenParams.fixedVersion(), IModelVersion.latest());
-    assert.isDefined(iModelDb);
-  });
-
-  it("Agent should be able to open an iModel ReadWrite", async () => {
-    const agentClient = new OidcAgentClient(agentConfiguration);
-    const jwt: AccessToken = await agentClient.getToken(new ClientRequestContext());
-    const requestContext = new AuthorizedBackendRequestContext(jwt);
-
-    const testProjectId = await HubUtility.queryProjectIdByName(requestContext, "iModelJsIntegrationTest");
-    const testIModelId = await HubUtility.queryIModelIdByName(requestContext, testProjectId, "ReadWriteTest");
-
-    const iModelDb = await IModelDb.open(requestContext, testProjectId, testIModelId, OpenParams.pullAndPush(), IModelVersion.latest());
-    assert.isDefined(iModelDb);
-  });
-
+    it("Agent should be able to open an iModel ReadWrite", async () => {
+      const iModelDb = await BriefcaseDb.open(requestContext, testProjectId, testWriteIModelId, OpenParams.pullAndPush(), IModelVersion.latest());
+      assert.isDefined(iModelDb);
+    });
+  } else {
+    it("Agent (#integration) is not supported on iOS", () => { });
+  }
 });

@@ -1,9 +1,11 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module Widgets */
+/** @packageDocumentation
+ * @module Widgets
+ */
 
 import { GLTimerResult, IModelApp, RenderSystemDebugControl } from "@bentley/imodeljs-frontend";
 import { createCheckBox } from "../ui/CheckBox";
@@ -79,10 +81,19 @@ function createTraceFromTimerResults(timerResults: GLTimerResult[]): ChromeTrace
   return { traceEvents };
 }
 
+/** @internal */
+interface GpuProfilerResults {
+  label: string;
+  sum: number;
+  paddingLeft: string;
+  values: number[];
+}
+
 /** @alpha */
 export class GpuProfiler {
   private readonly _div: HTMLDivElement;
   private readonly _resultsDiv: HTMLDivElement;
+  private readonly _results: GpuProfilerResults[];
   private readonly _debugControl: RenderSystemDebugControl;
 
   private readonly _recordButton!: HTMLButtonElement;
@@ -116,6 +127,7 @@ export class GpuProfiler {
     this._recordButton.addEventListener("click", this._clickRecord);
     this._div.appendChild(this._recordButton);
 
+    this._results = [];
     this._resultsDiv = document.createElement("div") as HTMLDivElement;
     this._resultsDiv.style.textAlign = "left";
     this._div.appendChild(this._resultsDiv);
@@ -166,15 +178,41 @@ export class GpuProfiler {
       this._recordedResults.push(result);
 
     const fragment = document.createDocumentFragment();
-
+    const numSavedFrames = 120;
+    let lastValue: string;
+    const changedResults = new Array<boolean>(this._results.length); // default values false
     const printDepth = (depth: number, currentRes: GLTimerResult) => {
-      if (currentRes.nanoseconds < 100) // high-pass filter, empty queries have some noise
-        return;
-
-      const text = document.createElement("text");
-      text.innerText = `${currentRes.label}: ${currentRes.nanoseconds / 1.E6}ms\n`;
-      text.style.paddingLeft = depth + "em";
-      fragment.appendChild(text);
+      const index = this._results.findIndex((res) => res.label === currentRes.label);
+      if (index < 0) { // Add brand new entry
+        const data: GpuProfilerResults = {
+          label: currentRes.label,
+          paddingLeft: depth + "em",
+          sum: currentRes.nanoseconds,
+          values: [currentRes.nanoseconds],
+        };
+        if (lastValue === undefined) {
+          this._results.unshift(data);
+          changedResults.unshift(true);
+        } else if (currentRes.label === "Read Pixels") {
+          this._results.push(data); // Read Pixels should go at the end of the list
+          changedResults.push(true);
+        } else {
+          const prevIndex = this._results.findIndex((res) => res.label === lastValue);
+          this._results.splice(prevIndex + 1, 0, data);
+          changedResults.splice(prevIndex + 1, 0, true);
+        }
+      } else { // Edit old entry
+        let oldVal = 0.0;
+        const savedResults = this._results[index];
+        if (savedResults.values.length >= numSavedFrames) { // keep up to numSavedFrames values to average between
+          oldVal = savedResults.values.shift()!;
+        }
+        const newVal = currentRes.nanoseconds < 100 ? 0.0 : currentRes.nanoseconds; // high-pass filter, empty queries have some noise
+        savedResults.sum += newVal - oldVal;
+        savedResults.values.push(newVal);
+        changedResults[index] = true;
+      }
+      lastValue = currentRes.label;
 
       if (!currentRes.children)
         return;
@@ -183,6 +221,29 @@ export class GpuProfiler {
         printDepth(depth + 1, childRes);
     };
     printDepth(0, result);
+
+    this._results.forEach((value, index) => {
+      if (!changedResults[index]) { // if no data recieved on this item, add a value of 0.0 to the avg.
+        const oldVal = value.values.length >= numSavedFrames ? value.values.shift()! : 0.0;
+        value.sum -= oldVal;
+        value.values.push(0.0);
+      }
+      const div = document.createElement("div");
+      div.style.display = "flex";
+      div.style.width = "75%";
+      const textLabel = document.createElement("text");
+      textLabel.innerText = `${value.label}`;
+      textLabel.style.paddingLeft = value.paddingLeft;
+      div.appendChild(textLabel);
+      const divLine = document.createElement("div");
+      divLine.style.flexGrow = "1";
+      divLine.style.borderBottom = "dotted 1px";
+      div.appendChild(divLine);
+      const textValue = document.createElement("text");
+      textValue.innerText = `${(value.sum / value.values.length / 1.E6).toFixed(3)} ms\n`;
+      div.appendChild(textValue);
+      fragment.appendChild(div);
+    });
 
     this._resultsDiv.innerHTML = "";
     this._resultsDiv.appendChild(fragment);

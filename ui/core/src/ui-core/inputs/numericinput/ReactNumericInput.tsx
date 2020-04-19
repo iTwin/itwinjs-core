@@ -1,8 +1,15 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Inputs */
+/** @packageDocumentation
+ * @module Inputs
+ */
+
+/*---------------------------------------------------------------------------------------------
+* This code has been adapted from
+* [react-numeric-input](https://github.com/vlad-ignatov/react-numeric-input).
+*--------------------------------------------------------------------------------------------*/
 
 import * as React from "react";
 import { CommonProps } from "../../utils/Props";
@@ -71,13 +78,17 @@ function access(object: any, prop: string, defaultValue: any, ...args: any): any
   return result === undefined ? defaultValue : result;
 }
 
-/** @alpha */
+/** Bounds function prototype for [[NumericInput]] component
+ * @beta
+ */
 export type BoundsFunctionProp = number | (() => number | undefined);
 
 /** @internal */
 export type ReactStepFunctionProp = number | ((component: ReactNumericInput, direction: string) => number | undefined);
 
-/** @alpha */
+/** Base properties for the [[NumericInput]] component
+ * @beta
+ */
 export interface ReactNumericInputProps extends Omit<
   React.InputHTMLAttributes<HTMLInputElement>,
   "min" | "max" | "step" | "onChange" | "defaultValue" | "onInvalid">,
@@ -876,12 +887,12 @@ export class ReactNumericInput extends React.Component<ReactNumericInputProps, R
       wrap: {
         style: noStyle ? null : css.wrap,
         className: "react-numeric-input",
-        ref: (e: HTMLSpanElement) => { if (e != null && e !== undefined) { this._refsWrapper = e; } },
+        ref: (e: HTMLSpanElement) => { this._refsWrapper = e; },
         onMouseUp: undefined,
         onMouseLeave: undefined,
       },
       input: {
-        ref: (e: HTMLInputElement) => { if (e != null && e !== undefined) { this.refsInput = e; } },
+        ref: (e: HTMLInputElement) => { this.refsInput = e; },
         type: "text",
         style: noStyle ? null : Object.assign(
           {},

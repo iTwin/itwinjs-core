@@ -1,12 +1,14 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module PropertyEditors */
+/** @packageDocumentation
+ * @module PropertyEditors
+ */
 
 import * as React from "react";
 import classnames from "classnames";
-import { PropertyValueFormat, PrimitiveValue, PropertyValue } from "@bentley/imodeljs-frontend";
+import { PropertyValueFormat, PrimitiveValue, PropertyValue } from "@bentley/ui-abstract";
 import { PropertyEditorManager, PropertyEditorBase } from "./PropertyEditorManager";
 import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
 import "./BooleanEditor.scss";
@@ -27,10 +29,6 @@ export class BooleanEditor extends React.PureComponent<PropertyEditorProps, Bool
   public readonly state: Readonly<BooleanEditorState> = {
     checkboxValue: false,
   };
-
-  public getValue(): boolean {
-    return this.state.checkboxValue;
-  }
 
   public async getPropertyValue(): Promise<PropertyValue | undefined> {
     const record = this.props.propertyRecord;
@@ -77,15 +75,18 @@ export class BooleanEditor extends React.PureComponent<PropertyEditorProps, Bool
     }
   }
 
+  /** @internal */
   public componentDidMount() {
     this._isMounted = true;
     this.setStateFromProps(); // tslint:disable-line:no-floating-promises
   }
 
+  /** @internal */
   public componentWillUnmount() {
     this._isMounted = false;
   }
 
+  /** @internal */
   public componentDidUpdate(prevProps: PropertyEditorProps) {
     if (this.props.propertyRecord !== prevProps.propertyRecord) {
       this.setStateFromProps(); // tslint:disable-line:no-floating-promises
@@ -107,8 +108,9 @@ export class BooleanEditor extends React.PureComponent<PropertyEditorProps, Bool
       this.setState({ checkboxValue });
   }
 
+  /** @internal */
   public render() {
-    const className = classnames("cell", "components-cell-editor", "components-boolean-editor", this.props.className);
+    const className = classnames("components-cell-editor", "components-boolean-editor", this.props.className);
     const checked = this.state.checkboxValue;
 
     return (
@@ -125,12 +127,13 @@ export class BooleanEditor extends React.PureComponent<PropertyEditorProps, Bool
   }
 }
 
-/** BooleanPropertyEditor React component that uses the [[BooleanEditor]] property editor.
+/** Boolean Property Editor registered for the "bool" and "boolean" type names.
+ * It uses the [[BooleanEditor]] React component.
  * @beta
  */
 export class BooleanPropertyEditor extends PropertyEditorBase {
 
-  public get reactElement(): React.ReactNode {
+  public get reactNode(): React.ReactNode {
     return <BooleanEditor />;
   }
 }

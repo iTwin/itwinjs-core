@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
 import * as fs from "fs";
@@ -8,13 +8,16 @@ import * as path from "path";
 import * as deepAssign from "deep-assign";
 import { IModelHubStatus, GuidString } from "@bentley/bentleyjs-core";
 import {
-  AccessToken, IModelClient, IModelHubClient, Briefcase, ChangeSet, ChangeSetQuery,
-  IModelHubClientError, Version, AuthorizedClientRequestContext,
-} from "@bentley/imodeljs-clients";
+  AccessToken, AuthorizedClientRequestContext,
+} from "@bentley/itwin-client";
+import { TestUsers } from "@bentley/oidc-signin-tool";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import { TestConfig } from "../TestConfig";
-import { TestUsers } from "../TestUsers";
 import * as utils from "./TestUtils";
+import {
+  IModelClient, IModelHubClient, Briefcase, ChangeSet, ChangeSetQuery,
+  IModelHubClientError, Version,
+} from "@bentley/imodelhub-client";
 
 chai.should();
 
@@ -61,6 +64,8 @@ describe("iModelHub ChangeSetHandler", () => {
   let briefcase: Briefcase;
   const imodelName = "imodeljs-clients ChangeSets test";
   let requestContext: AuthorizedClientRequestContext;
+  const maxChangeSetCount = 17;
+  const newChangeSetsPerTestSuit = 2; // update this value when adding new tests which create changesets
 
   const cumulativeChangeSetBackwardVersionId = "CumulativeChangeSet-backward-Version.Id";
   const cumulativeChangeSetBackwardChangeSetId = "CumulativeChangeSet-backward-ChangeSet.Id";
@@ -77,7 +82,7 @@ describe("iModelHub ChangeSetHandler", () => {
     iModelClient = utils.getDefaultClient();
     if (!TestConfig.enableMocks) {
       const changeSetCount = (await iModelClient.changeSets.get(requestContext, imodelId)).length;
-      if (changeSetCount > 9) {
+      if (changeSetCount + newChangeSetsPerTestSuit >= maxChangeSetCount) {
         // Recreate iModel if can not create any new changesets
         await utils.createIModel(requestContext, imodelName, undefined, true);
         imodelId = await utils.getIModelId(requestContext, imodelName);
@@ -86,7 +91,7 @@ describe("iModelHub ChangeSetHandler", () => {
     briefcase = (await utils.getBriefcases(requestContext, imodelId, 1))[0];
 
     // Ensure that at least 3 exist
-    await utils.createChangeSets(requestContext, imodelId, briefcase, 0, 3);
+    await utils.createChangeSets(requestContext, imodelId, briefcase, 0, 3, true);
 
     if (!TestConfig.enableMocks) {
       const changesets = (await iModelClient.changeSets.get(requestContext, imodelId));
@@ -138,8 +143,7 @@ describe("iModelHub ChangeSetHandler", () => {
       const fileName: string = changeSet.fileName!;
       chai.expect(fileName.length).to.be.greaterThan(0);
 
-      const downloadUrl: string = changeSet.downloadUrl!;
-      chai.assert(downloadUrl.startsWith("https://") || downloadUrl.startsWith("http://"));
+      chai.assert(utils.doesMatchExpectedUrlScheme(changeSet.downloadUrl), "Returned URL scheme does not match any of the expected ones.");
 
       const changeSet2: ChangeSet = (await iModelClient.changeSets.get(requestContext, imodelId, new ChangeSetQuery().byId(changeSet.id!)))[0];
 
@@ -178,7 +182,7 @@ describe("iModelHub ChangeSetHandler", () => {
   });
 
   it("should download ChangeSets with Buffering (#iModelBank)", async () => {
-    iModelClient.setFileHandler(utils.createFileHanlder(true));
+    iModelClient.setFileHandler(utils.createFileHandler(true));
     utils.mockGetChangeSet(imodelId, true, `&$top=${ChangeSetQuery.defaultPageSize}`, utils.generateChangeSet(), utils.generateChangeSet());
     const changeSets: ChangeSet[] = await iModelClient.changeSets.get(requestContext, imodelId, new ChangeSetQuery().selectDownloadUrl());
 
@@ -196,7 +200,7 @@ describe("iModelHub ChangeSetHandler", () => {
       fs.existsSync(downloadedPathname).should.be.equal(true);
     }
 
-    iModelClient.setFileHandler(utils.createFileHanlder());
+    iModelClient.setFileHandler(utils.createFileHandler());
   });
 
   it("should get ChangeSets skipping the first one (#iModelBank)", async () => {
@@ -210,13 +214,13 @@ describe("iModelHub ChangeSetHandler", () => {
   it("should get latest ChangeSets (#iModelBank)", async () => {
     const mockChangeSets = utils.getMockChangeSets(briefcase);
     utils.mockGetChangeSet(imodelId, false, "?$orderby=Index+desc&$top=2", mockChangeSets[2], mockChangeSets[1]);
-    const changeSets: ChangeSet[] = await iModelClient.changeSets.get(requestContext, imodelId, new ChangeSetQuery().latest().top(2));
+    const changeSets: ChangeSet[] = utils.removeFileUrlExpirationTimes(await iModelClient.changeSets.get(requestContext, imodelId, new ChangeSetQuery().latest().top(2)));
     chai.assert(changeSets);
     chai.expect(changeSets.length).to.be.equal(2);
     chai.expect(parseInt(changeSets[0].index!, 10)).to.be.greaterThan(parseInt(changeSets[1].index!, 10));
     utils.mockGetChangeSet(imodelId, false, "?$orderby=Index+desc&$top=2", mockChangeSets[2], mockChangeSets[1]);
 
-    const changeSets2: ChangeSet[] = await iModelClient.changeSets.get(requestContext, imodelId, new ChangeSetQuery().orderBy("Index+desc").top(2));
+    const changeSets2: ChangeSet[] = utils.removeFileUrlExpirationTimes(await iModelClient.changeSets.get(requestContext, imodelId, new ChangeSetQuery().orderBy("Index+desc").top(2)));
     chai.assert(changeSets);
     chai.expect(changeSets).to.be.deep.equal(changeSets2);
   });
@@ -224,19 +228,19 @@ describe("iModelHub ChangeSetHandler", () => {
   it("should get all ChangeSets in chunks (#iModelBank)", async () => {
     const mockedChangeSets = utils.getMockChangeSets(briefcase).slice(0, 3);
     utils.mockGetChangeSet(imodelId, false, "?$top=1", ...mockedChangeSets);
-    const changeSets: ChangeSet[] = await iModelClient.changeSets.get(requestContext, imodelId, new ChangeSetQuery().pageSize(1));
+    const changeSets: ChangeSet[] = utils.removeFileUrlExpirationTimes(await iModelClient.changeSets.get(requestContext, imodelId, new ChangeSetQuery().pageSize(1)));
     chai.expect(changeSets.length).to.be.greaterThan(2);
 
     utils.mockGetChangeSet(imodelId, false, "?$top=3", ...mockedChangeSets);
-    const changeSets2: ChangeSet[] = await iModelClient.changeSets.get(requestContext, imodelId, new ChangeSetQuery().pageSize(3));
+    const changeSets2: ChangeSet[] = utils.removeFileUrlExpirationTimes(await iModelClient.changeSets.get(requestContext, imodelId, new ChangeSetQuery().pageSize(3)));
     chai.expect(changeSets).to.be.deep.equal(changeSets2);
 
     utils.mockGetChangeSet(imodelId, false, "?$top=7", ...mockedChangeSets);
-    const changeSets3: ChangeSet[] = await iModelClient.changeSets.get(requestContext, imodelId, new ChangeSetQuery().pageSize(7));
+    const changeSets3: ChangeSet[] = utils.removeFileUrlExpirationTimes(await iModelClient.changeSets.get(requestContext, imodelId, new ChangeSetQuery().pageSize(7)));
     chai.expect(changeSets).to.be.deep.equal(changeSets3);
 
     utils.mockGetChangeSet(imodelId, true, "&$top=2", ...mockedChangeSets);
-    const changeSets4: ChangeSet[] = await iModelClient.changeSets.get(requestContext, imodelId, new ChangeSetQuery().selectDownloadUrl().pageSize(2));
+    const changeSets4: ChangeSet[] = utils.removeFileUrlExpirationTimes(await iModelClient.changeSets.get(requestContext, imodelId, new ChangeSetQuery().selectDownloadUrl().pageSize(2)));
     chai.expect(changeSets.length).to.be.equal(changeSets4.length);
 
     let i = 0;
@@ -246,8 +250,7 @@ describe("iModelHub ChangeSetHandler", () => {
       const fileName: string = changeSet.fileName!;
       chai.expect(fileName.length).to.be.greaterThan(0);
 
-      const downloadUrl: string = changeSet.downloadUrl!;
-      chai.assert(downloadUrl.startsWith("https://") || downloadUrl.startsWith("http://"));
+      chai.assert(utils.doesMatchExpectedUrlScheme(changeSet.downloadUrl), "Returned URL scheme does not match any of the expected ones.");
 
       const changeSet2: ChangeSet = (await iModelClient.changeSets.get(requestContext, imodelId, new ChangeSetQuery().byId(changeSet.id!)))[0];
 
@@ -578,5 +581,62 @@ describe("iModelHub ChangeSetHandler", () => {
       chai.assert(changeSets[0].applicationName);
       chai.expect(changeSets[0].applicationName).equals("testApplicationName");
     }
+  });
+
+  it("should query ChangeSet bridge properties", async () => {
+    if (TestConfig.enableMocks) {
+      const mockedChangeSets = utils.getMockChangeSets(briefcase);
+      mockedChangeSets.forEach((changeSet: ChangeSet, i: number) => {
+        const generatedBridgeProperties = utils.generateBridgeProperties(i + 1, i * 2 + 1);
+        changeSet.bridgeJobId = generatedBridgeProperties.jobId;
+        changeSet.bridgeUsers = Array.from(generatedBridgeProperties.users!.values());
+        changeSet.bridgeChangedFiles = Array.from(generatedBridgeProperties.changedFiles!.values());
+      });
+      utils.mockGetChangeSet(imodelId, false, `?$select=*,HasBridgeProperties-forward-BridgeProperties.*&$top=1000`, mockedChangeSets[0], mockedChangeSets[1]);
+    }
+
+    // ChangeSets with bridge properties have been prepared in before function.
+    const changeSets: ChangeSet[] = await iModelClient.changeSets.get(requestContext, imodelId, new ChangeSetQuery().selectBridgeProperties());
+    chai.expect(changeSets.length).to.be.greaterThan(0);
+    let actualChangeSetIndexWithBridgeProperties: number = -1;
+    changeSets.forEach((value: ChangeSet, index: number) => {
+      if (undefined !== value.bridgeJobId)
+        actualChangeSetIndexWithBridgeProperties = index;
+    });
+
+    chai.expect(actualChangeSetIndexWithBridgeProperties, "Changeset with bridge properties not found.").to.be.greaterThan(-1);
+    const actualChangeSet = changeSets[actualChangeSetIndexWithBridgeProperties];
+
+    chai.expect(actualChangeSet.bridgeJobId).to.not.be.undefined;
+    chai.expect(actualChangeSet.bridgeUsers).to.not.be.undefined;
+    chai.expect(actualChangeSet.bridgeChangedFiles).to.not.be.undefined;
+  });
+
+  it("should create a new ChangeSet with bridge properties", async () => {
+    const mockChangeSets = utils.getMockChangeSets(briefcase);
+    mockChangeSets.map((changeSet: ChangeSet, i: number) => {
+      const generatedBridgeProperties = utils.generateBridgeProperties(i + 1, i * 3 + 1);
+      changeSet.bridgeJobId = generatedBridgeProperties.jobId;
+      changeSet.bridgeUsers = Array.from(generatedBridgeProperties.users!.values());
+      changeSet.bridgeChangedFiles = Array.from(generatedBridgeProperties.changedFiles!.values());
+    });
+
+    utils.mockGetChangeSet(imodelId, false, `?$select=*,HasBridgeProperties-forward-BridgeProperties.*&$top=1000`, mockChangeSets[0], mockChangeSets[1]);
+    const changeSets: ChangeSet[] = await iModelClient.changeSets.get(requestContext, imodelId, new ChangeSetQuery().selectBridgeProperties());
+
+    const index = changeSets.length;
+    chai.expect(index, `Reached maximum number of predefined ChangeSets on test iModel: '${maxChangeSetCount}'. Add additional ChangeSets to assets to fix it.`)
+      .to.be.lessThan(maxChangeSetCount);
+    const filePath = utils.getMockChangeSetPath(index, mockChangeSets[index].id!);
+
+    mockCreateChangeSet(imodelId, mockChangeSets[index]);
+    const progressTracker = new utils.ProgressTracker();
+    const newChangeSet = await iModelClient.changeSets.create(requestContext, imodelId, mockChangeSets[index], filePath, progressTracker.track());
+
+    chai.assert(newChangeSet);
+    chai.expect(newChangeSet.bridgeJobId).to.be.equal(mockChangeSets[index].bridgeJobId);
+    chai.expect(newChangeSet.bridgeUsers).to.deep.equal(mockChangeSets[index].bridgeUsers);
+    chai.expect(newChangeSet.bridgeChangedFiles).to.deep.equal(mockChangeSets[index].bridgeChangedFiles);
+    progressTracker.check();
   });
 });

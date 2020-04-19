@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
@@ -11,10 +11,10 @@ import { TestUtils, TestFilterableTable } from "../../TestUtils";
 import {
   DataGridFilterParser, ReactDataGridFilter, FILTER_PARSER_TIMER_TIMEOUT,
   NumericFilterData, NumericFilterType, NumericExactMatchData, NumericGreaterThanData, NumericLessThanData,
+  NumericRangeData,
 } from "../../../ui-components/table/columnfiltering/DataGridFilterParser";
 import { ColumnDescription, RowItem, FilterRenderer, TableDistinctValue } from "../../../ui-components/table/TableDataProvider";
 import { SimpleTableDataProvider } from "../../../ui-components/table/SimpleTableDataProvider";
-import { NumericRangeData } from "../../../ui-components/table/columnfiltering/ColumnFiltering";
 import { TableColumn, ReactDataGridColumn } from "../../../ui-components/table/component/TableColumn";
 
 const columns: ColumnDescription[] = [

@@ -1,6 +1,31 @@
 {
   "tools": {
     "View": {
+      "GlobeSatellite": {
+        "keyin": "view globe satellite",
+        "description": "View a location on the globe from a satellite's perspective; the viewed location is derived from the position of the current camera's eye above the globe",
+        "flyover": "View Globe Satellite"
+      },
+      "GlobeBird": {
+        "keyin": "view globe bird",
+        "description": "View a location on the globe from a bird's eye perspective; the viewed location is derived from the position of the current camera's eye above the globe",
+        "flyover": "View Globe Bird"
+      },
+      "GlobeLocation": {
+        "keyin": "view globe location",
+        "description": "View a location on the globe corresponding to a specified string; this will either look down at the location using a bird's eye height, or, if a range is available, the entire range corresponding to the location will be viewed",
+        "flyover": "View Globe Location"
+      },
+      "GlobeIModel": {
+        "keyin": "view globe imodel",
+        "description": "View the project iModel on the globe so that the extent of the project is visible",
+        "flyover": "View Globe IModel"
+      },
+      "LocalEntities": {
+        "keyin": "view local entities",
+        "description": "View markers representing local entities",
+        "flyover": "View Local Entities"
+      },
       "Pan": {
         "keyin": "pan view",
         "description": "Moves origin of view",
@@ -35,6 +60,26 @@
         "Prompts": {
           "FirstPoint": "Enter point to begin looking around",
           "NextPoint": "Define new view direction"
+        }
+      },
+      "LookAndMove": {
+        "keyin": "navigate view",
+        "description": "Walk around in the design",
+        "flyover": "Walk Around",
+        "Prompts": {
+          "FirstPoint": "Enter point to start walking",
+          "NextPoint": "Enter point to stop walking"
+        },
+        "Inputs": {
+          "AcceptLookPoint": "Accept point to begin looking around",
+          "WalkKeys": "Move forward, backward, left, right",
+          "ElevateKeys": "Move up and down",
+          "SpeedIncrease": "Hold to increase speed over time",
+          "SpeedDecrease": "Hold to decrease speed over time",
+          "TouchZoneLL": "Lower left to move forward, backward, left, right",
+          "TouchZoneLR": "Lower right to look around",
+          "TouchTapLL": "Lower left to toggle up, down, left, right movement",
+          "TouchTapLR": "Lower right to toggle 2x movement speed"
         }
       },
       "Walk": {
@@ -401,9 +446,9 @@
         "Face": "Face"
       }
     },
-    "Plugin": {
-      "keyin": "load plugin",
-      "description": "Loads a plugin module"
+    "Extension": {
+      "keyin": "load extension",
+      "description": "Loads a extension module"
     }
   },
   "touchCursor": {

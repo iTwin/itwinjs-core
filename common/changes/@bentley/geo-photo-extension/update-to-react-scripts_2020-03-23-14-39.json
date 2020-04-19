@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/geo-photo-extension",
+      "comment": "Update to support new iModel.js Extension build system and drop support for the iModel.js module system.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/geo-photo-extension",
+  "email": "31107829+calebmshafer@users.noreply.github.com"
+}

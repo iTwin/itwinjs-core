@@ -1,11 +1,13 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Notification */
+/** @packageDocumentation
+ * @module Notification
+ */
 
 import * as React from "react";
-import * as classnames from "classnames";
+import classnames from "classnames";
 import * as _ from "lodash";
 
 import {
@@ -41,6 +43,7 @@ class MessageBoxCallbacks {
  * @public
  */
 export interface MessageAddedEventArgs {
+  /** Message details for the message added */
   message: NotifyMessageDetails;
 }
 
@@ -48,9 +51,13 @@ export interface MessageAddedEventArgs {
  * @public
  */
 export interface ActivityMessageEventArgs {
+  /** Current message for the activity */
   message: HTMLElement | string;
+  /** Current percentage for the activity */
   percentage: number;
+  /** Message details set by calling NotificationManager.setupActivityMessage */
   details?: ActivityMessageDetails;
+  /** Indicates whether the activity message popup is being restored */
   restored?: boolean;
 }
 
@@ -58,16 +65,21 @@ export interface ActivityMessageEventArgs {
  * @public
  */
 export interface InputFieldMessageEventArgs {
+  /** Target HTML element for the Input Field message */
   target: Element;
+  /** Message to be displayed near the input field */
   messageText: HTMLElement | string;
+  /** Detailed message to be displayed near the input field */
   detailedMessage: HTMLElement | string;
+  /** Priority of the input field message */
   priority: OutputMessagePriority;
 }
 
 /** Tool Assistance Changed event arguments.
- * @alpha
+ * @beta
  */
 export interface ToolAssistanceChangedEventArgs {
+  /** Tool Assistance instructions for the active tool */
   instructions: ToolAssistanceInstructions | undefined;
 }
 
@@ -75,6 +87,11 @@ export interface ToolAssistanceChangedEventArgs {
  * @public
  */
 export class MessageAddedEvent extends UiEvent<MessageAddedEventArgs> { }
+
+/** Messages Updated Event class.
+ * @public
+ */
+export class MessagesUpdatedEvent extends UiEvent<{}> { }
 
 /** Activity Message Added Event class.
  * @public
@@ -97,7 +114,7 @@ export class InputFieldMessageAddedEvent extends UiEvent<InputFieldMessageEventA
 export class InputFieldMessageRemovedEvent extends UiEvent<{}> { }
 
 /** Tool Assistance Changed event class
- * @alpha
+ * @beta
  */
 export class ToolAssistanceChangedEvent extends UiEvent<ToolAssistanceChangedEventArgs> { }
 
@@ -126,6 +143,9 @@ export class MessageManager {
   /** The MessageAddedEvent is fired when a message is added via IModelApp.notifications.outputMessage(). */
   public static readonly onMessageAddedEvent = new MessageAddedEvent();
 
+  /** The MessagesUpdatedEvent is fired when a message is added or the messages are cleared. */
+  public static readonly onMessagesUpdatedEvent = new MessagesUpdatedEvent();
+
   /** The ActivityMessageUpdatedEvent is fired when an Activity message updates via IModelApp.notifications.outputActivityMessage(). */
   public static readonly onActivityMessageUpdatedEvent = new ActivityMessageUpdatedEvent();
 
@@ -139,7 +159,7 @@ export class MessageManager {
   public static readonly onInputFieldMessageRemovedEvent = new InputFieldMessageRemovedEvent();
 
   /** The ToolAssistanceChangedEvent is fired when a tool calls IModelApp.notifications.setToolAssistance().
-   * @alpha
+   * @beta
    */
   public static readonly onToolAssistanceChangedEvent = new ToolAssistanceChangedEvent();
 
@@ -149,6 +169,7 @@ export class MessageManager {
   /** Clear the message list. */
   public static clearMessages(): void {
     this._messages.splice(0);
+    this.onMessagesUpdatedEvent.emit({});
     this._lastMessage = undefined;
   }
 
@@ -182,6 +203,7 @@ export class MessageManager {
    */
   public static addToMessageCenter(message: NotifyMessageDetails): void {
     this._messages.push(message);
+    this.onMessagesUpdatedEvent.emit({});
     this.checkMaxCachedMessages();
   }
 
@@ -190,6 +212,7 @@ export class MessageManager {
     if (this._messages.length > this._maxCachedMessages) {
       const numToErase = this._maxCachedMessages / 4;
       this._messages.splice(0, numToErase);
+      this.onMessagesUpdatedEvent.emit({});
     }
   }
 
@@ -391,7 +414,7 @@ export class MessageManager {
 
   /** Setup tool assistance instructions for a tool. The instructions include the main instruction, which includes the current prompt.
    * @param instructions The tool assistance instructions.
-   * @alpha
+   * @beta
    */
   public static setToolAssistance(instructions: ToolAssistanceInstructions | undefined) {
     MessageManager.onToolAssistanceChangedEvent.emit({ instructions });

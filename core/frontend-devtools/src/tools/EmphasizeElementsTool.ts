@@ -1,9 +1,11 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module Tools */
+/** @packageDocumentation
+ * @module Tools
+ */
 
 import {
   ColorDef,
@@ -52,7 +54,7 @@ export class EmphasizeSelectedElementsTool extends EmphasizeElementsTool {
   private _type = OverrideType.None;
 
   public execute(emph: EmphasizeElements, vp: ScreenViewport): void {
-    if (OverrideType.None === (this._type & OverrideType.Color) || emph.overrideSelectedElements(vp, ColorDef.white.clone(), undefined, true, false)) {
+    if (OverrideType.None === (this._type & OverrideType.Color) || emph.overrideSelectedElements(vp, ColorDef.white, undefined, true, false)) {
       emph.wantEmphasis = OverrideType.None !== (this._type & OverrideType.Emphasis);
       if (emph.emphasizeSelectedElements(vp, undefined, true)) {
         vp.isFadeOutActive = true;

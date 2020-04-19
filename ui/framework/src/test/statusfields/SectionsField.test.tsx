@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { mount } from "enzyme";
@@ -9,9 +9,10 @@ import { expect } from "chai";
 import { Provider } from "react-redux";
 
 import { MockRender } from "@bentley/imodeljs-frontend";
+import { WidgetState } from "@bentley/ui-abstract";
 
 import TestUtils from "../TestUtils";
-import { WidgetState, WidgetDef } from "../../ui-framework/widgets/WidgetDef";
+import { WidgetDef } from "../../ui-framework/widgets/WidgetDef";
 import { ConfigurableUiControlType, ConfigurableCreateInfo } from "../../ui-framework/configurableui/ConfigurableUiControl";
 import { StatusBarWidgetControl, StatusBarWidgetControlArgs } from "../../ui-framework/statusbar/StatusBarWidgetControl";
 import { SectionsStatusField } from "../../ui-framework/statusfields/SectionsField";

@@ -1,9 +1,11 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module Widgets */
+/** @packageDocumentation
+ * @module Widgets
+ */
 
 import {
   IModelApp,
@@ -29,7 +31,7 @@ function computeProgress(vp: Viewport): number {
 }
 
 const statEntries: StatEntry[] = [
-  { getValue: (stats, _vp) => stats.numActiveRequests, label: "Active" },
+  { getValue: (stats, vp) => stats.numActiveRequests + (IModelApp.tileAdmin.getTilesForViewport(vp)?.external.requested ?? 0), label: "Active" },
   { getValue: (stats, _vp) => stats.numPendingRequests, label: "Pending" },
   { getValue: (stats, _vp) => stats.numCanceled, label: "Canceled" },
   { getValue: (stats, _vp) => stats.numActiveRequests + stats.numPendingRequests, label: "Total" },
@@ -44,6 +46,7 @@ const statEntries: StatEntry[] = [
   { getValue: (stats, _vp) => stats.totalElidedTiles, label: "Elided" },
   { getValue: (stats, _vp) => stats.totalCacheMisses, label: "Cache Misses" },
   { getValue: (stats, _vp) => stats.totalDispatchedRequests, label: "Dispatched" },
+  { getValue: (stats, _vp) => stats.totalAbortedRequests, label: "Aborted" },
 ];
 
 const indexOfFirstGlobalStatistic = 7; // "Completed"

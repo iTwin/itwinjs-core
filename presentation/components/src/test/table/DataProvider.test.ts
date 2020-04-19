@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /* tslint:disable:no-direct-imports */
 
@@ -8,6 +8,7 @@ import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment
 import { expect } from "chai";
 import * as sinon from "sinon";
 import * as faker from "faker";
+import * as path from "path";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { createRandomDescriptor, createRandomECInstanceKey } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { PromiseContainer } from "@bentley/presentation-common/lib/test/_helpers/Promises";
@@ -17,11 +18,15 @@ import {
   PresentationError, ValuesDictionary, Content,
   DefaultContentDisplayTypes, Descriptor, Item,
   SortDirection as ContentSortDirection, KeySet,
+  Ruleset, ContentUpdateInfo,
 } from "@bentley/presentation-common";
 import { Presentation, PresentationManager } from "@bentley/presentation-frontend";
-import { PresentationTableDataProvider } from "../../table/DataProvider";
-import { CacheInvalidationProps } from "../../common/ContentDataProvider";
 import { RowItem } from "@bentley/ui-components";
+import { CacheInvalidationProps } from "../../presentation-components/common/ContentDataProvider";
+import { PresentationTableDataProvider } from "../../presentation-components/table/DataProvider";
+import { initializeLocalization } from "../../presentation-components/common/Utils";
+import { I18N } from "@bentley/imodeljs-i18n";
+import { BeEvent } from "@bentley/bentleyjs-core";
 
 /**
  * This is just a helper class to provide public access to
@@ -32,33 +37,36 @@ class Provider extends PresentationTableDataProvider {
   public configureContentDescriptor(descriptor: Descriptor) { return super.configureContentDescriptor(descriptor); }
 }
 
-interface MemoizedCacheSpies {
-  getColumns: sinon.SinonSpy;
-}
-
 describe("TableDataProvider", () => {
 
   let rulesetId: string;
   let provider: Provider;
-  let memoizedCacheSpies: MemoizedCacheSpies;
+  let invalidateCacheSpy: sinon.SinonSpy<[CacheInvalidationProps], void>;
+  let onContentUpdateEvent: BeEvent<(ruleset: Ruleset, info: ContentUpdateInfo) => void>;
   const presentationManagerMock = moq.Mock.ofType<PresentationManager>();
   const imodelMock = moq.Mock.ofType<IModelConnection>();
-  before(() => {
+
+  before(async () => {
     rulesetId = faker.random.word();
-    Presentation.presentation = presentationManagerMock.object;
-  });
-  beforeEach(() => {
-    presentationManagerMock.reset();
-    provider = new Provider({ imodel: imodelMock.object, ruleset: rulesetId });
-    provider.keys = new KeySet([createRandomECInstanceKey()]);
-    memoizedCacheSpies = {
-      getColumns: sinon.spy(provider.getColumns.cache, "clear"),
-    };
+    Presentation.setPresentationManager(presentationManagerMock.object);
+    Presentation.setI18nManager(new I18N("", {
+      urlTemplate: `file://${path.resolve("public/locales")}/{{lng}}/{{ns}}.json`,
+    }));
+    await initializeLocalization();
   });
 
-  const resetMemoizedCacheSpies = () => {
-    memoizedCacheSpies.getColumns.resetHistory();
-  };
+  after(() => {
+    Presentation.terminate();
+  });
+
+  beforeEach(() => {
+    onContentUpdateEvent = new BeEvent();
+    presentationManagerMock.reset();
+    presentationManagerMock.setup((x) => x.onContentUpdate).returns(() => onContentUpdateEvent);
+    provider = new Provider({ imodel: imodelMock.object, ruleset: rulesetId });
+    provider.keys = new KeySet([createRandomECInstanceKey()]);
+    invalidateCacheSpy = sinon.spy(provider, "invalidateCache");
+  });
 
   const createEmptyContentItem = (): Item => {
     return new Item([createRandomECInstanceKey()], faker.random.words(),
@@ -105,18 +113,21 @@ describe("TableDataProvider", () => {
 
     it("resets filtering, sorting, memoized columns and raises onColumnsChanged event when 'descriptor' flag is set", async () => {
       const onColumnsChangedSpy = sinon.spy(provider.onColumnsChanged, "raiseEvent");
-      presentationManagerMock.setup(async (x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetId }, moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
+      presentationManagerMock.setup(async (x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetOrId: rulesetId }, moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
         .returns(async () => createRandomDescriptor());
 
       provider.filterExpression = faker.random.words();
       await provider.sort(0, SortDirection.Descending);
 
-      resetMemoizedCacheSpies();
+      invalidateCacheSpy.resetHistory();
       onColumnsChangedSpy.resetHistory();
 
       provider.invalidateCache({ descriptor: true });
 
-      expect(memoizedCacheSpies.getColumns).to.be.calledOnce;
+      expect(provider.filterExpression).to.be.undefined;
+      expect(provider.sortColumnKey).to.be.undefined;
+      expect(provider.sortDirection).to.eq(SortDirection.NoSort);
+      expect(provider.getColumns.cache.keys).to.be.empty;
       expect(onColumnsChangedSpy).to.be.calledOnce;
     });
 
@@ -125,7 +136,7 @@ describe("TableDataProvider", () => {
 
       provider.invalidateCache({ descriptorConfiguration: true });
 
-      expect(memoizedCacheSpies.getColumns).to.be.calledOnce;
+      expect(provider.getColumns.cache.keys).to.be.empty;
       expect(onColumnsChangedSpy).to.be.calledOnce;
     });
 
@@ -168,7 +179,7 @@ describe("TableDataProvider", () => {
 
     it("sets sorting properties", async () => {
       const source = createRandomDescriptor();
-      presentationManagerMock.setup(async (x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetId }, moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
+      presentationManagerMock.setup(async (x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetOrId: rulesetId }, moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
         .returns(async () => source);
 
       await provider.sort(0, SortDirection.Descending);
@@ -208,21 +219,21 @@ describe("TableDataProvider", () => {
     it("sets a different filterExpression and clears caches", () => {
       provider.filterExpression = "test 1";
       expect(provider.filterExpression).to.eq("test 1");
-      resetMemoizedCacheSpies();
+      invalidateCacheSpy.resetHistory();
 
       provider.filterExpression = "test 2";
       expect(provider.filterExpression).to.eq("test 2");
-      expect(memoizedCacheSpies.getColumns).to.be.calledOnce;
+      expect(invalidateCacheSpy).to.be.calledOnce;
     });
 
     it("doesn't clear caches if setting to the same filterExpression", () => {
       provider.filterExpression = "test";
       expect(provider.filterExpression).to.eq("test");
-      resetMemoizedCacheSpies();
+      invalidateCacheSpy.resetHistory();
 
       provider.filterExpression = "test";
       expect(provider.filterExpression).to.eq("test");
-      expect(memoizedCacheSpies.getColumns).to.not.be.called;
+      expect(invalidateCacheSpy).to.not.be.called;
     });
 
   });
@@ -232,14 +243,14 @@ describe("TableDataProvider", () => {
     it("throws when trying to sort by invalid column", async () => {
       const source = createRandomDescriptor();
       source.fields = [];
-      presentationManagerMock.setup(async (x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetId }, moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
+      presentationManagerMock.setup(async (x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetOrId: rulesetId }, moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
         .returns(async () => source);
       await expect(provider.sort(0, SortDirection.NoSort)).to.eventually.be.rejectedWith(PresentationError);
     });
 
     it("invalidates descriptor configuration and content", async () => {
       const source = createRandomDescriptor();
-      presentationManagerMock.setup(async (x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetId }, moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
+      presentationManagerMock.setup(async (x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetOrId: rulesetId }, moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
         .returns(async () => source);
       const invalidateCacheMock = moq.Mock.ofInstance(provider.invalidateCache);
       provider.invalidateCache = invalidateCacheMock.object;
@@ -249,7 +260,7 @@ describe("TableDataProvider", () => {
 
     it("sets sorting properties", async () => {
       const source = createRandomDescriptor();
-      presentationManagerMock.setup(async (x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetId }, moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
+      presentationManagerMock.setup(async (x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetOrId: rulesetId }, moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
         .returns(async () => source);
       await provider.sort(0, SortDirection.Descending);
       expect(provider.sortColumnKey).to.eq((await provider.getColumns())[0].key);
@@ -266,7 +277,7 @@ describe("TableDataProvider", () => {
 
     it("returns valid sorting column", async () => {
       const source = createRandomDescriptor();
-      presentationManagerMock.setup(async (x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetId }, moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
+      presentationManagerMock.setup(async (x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetOrId: rulesetId }, moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
         .returns(async () => source);
       await provider.sort(0, SortDirection.Descending);
       const sortingColumn = await provider.sortColumn;
@@ -288,6 +299,15 @@ describe("TableDataProvider", () => {
       (provider as any).getContentDescriptor = () => undefined;
       const cols = await provider.getColumns();
       expect(cols).to.deep.eq([]);
+    });
+
+    it("returns one column descriptor when display type is list", async () => {
+      const descriptor = createRandomDescriptor();
+      descriptor.displayType = DefaultContentDisplayTypes.List;
+      (provider as any).getContentDescriptor = () => descriptor;
+      const cols = await provider.getColumns();
+      expect(cols.length).to.be.eq(1);
+      expect(cols).to.matchSnapshot();
     });
 
     it("memoizes result", async () => {
@@ -375,6 +395,18 @@ describe("TableDataProvider", () => {
         values[field.name] = faker.random.word();
         displayValues[field.name] = faker.random.words();
       });
+      const record = new Item([createRandomECInstanceKey()],
+        faker.random.words(), faker.random.word(), undefined, values, displayValues, []);
+      (provider as any).getContent = async () => new Content(descriptor, [record]);
+      const row = await provider.getRow(0);
+      expect(row).to.matchSnapshot();
+    });
+
+    it("returns valid row when display type is list", async () => {
+      const descriptor = createRandomDescriptor();
+      descriptor.displayType = DefaultContentDisplayTypes.List;
+      const values: ValuesDictionary<any> = {};
+      const displayValues: ValuesDictionary<any> = {};
       const record = new Item([createRandomECInstanceKey()],
         faker.random.words(), faker.random.word(), undefined, values, displayValues, []);
       (provider as any).getContent = async () => new Content(descriptor, [record]);

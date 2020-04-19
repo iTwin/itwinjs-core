@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
 import React from "react";
@@ -11,7 +11,7 @@ import { ColorPickerButton } from "../../ui-components/color/ColorPickerButton";
 import { ColorByName, ColorDef } from "@bentley/imodeljs-common";
 
 describe("<ColorPickerButton/>", () => {
-  const colorDef = new ColorDef(ColorByName.blue);
+  const colorDef = ColorDef.create(ColorByName.blue);
 
   afterEach(cleanup);
 

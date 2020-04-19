@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import TestUtils from "../TestUtils";
@@ -85,7 +85,7 @@ class TestNestedFrontstage extends FrontstageProvider {
 class FrontstageToolWidget extends React.Component {
   public render() {
     return (
-      <ToolWidget
+      <ToolWidget // tslint:disable-line:deprecation
         appButton={NestedFrontstage.backToPreviousFrontstageCommand}
       />
     );
@@ -102,6 +102,10 @@ describe("NestedFrontstage", () => {
   before(async () => {
     await TestUtils.initializeUiFramework();
     FrontstageManager.clearFrontstageDefs();
+  });
+
+  after(() => {
+    TestUtils.terminateUiFramework();
   });
 
   it("activeNestedFrontstage should return undefined if none active", () => {

@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Notification */
+/** @packageDocumentation
+ * @module Notification
+ */
 
 import { RelativePosition } from "@bentley/ui-abstract";
 import {
@@ -150,7 +152,7 @@ export class AppNotificationManager extends NotificationManager {
 
   /** Setup tool assistance instructions for a tool. The instructions include the main instruction, which includes the current prompt.
    * @param instructions The tool assistance instructions.
-   * @alpha
+   * @beta
    */
   public setToolAssistance(instructions: ToolAssistanceInstructions | undefined) {
     MessageManager.outputPrompt(instructions ? instructions.mainInstruction.text : "");

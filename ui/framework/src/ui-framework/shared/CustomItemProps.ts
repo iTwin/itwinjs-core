@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Item */
+/** @packageDocumentation
+ * @module Item
+ */
 
 import { ItemProps } from "./ItemProps";
 
@@ -11,5 +13,7 @@ import { ItemProps } from "./ItemProps";
  */
 export interface CustomItemProps extends ItemProps {
   customId?: string;
-  reactElement: React.ReactNode;
+  // @deprecated - use popupPanelNode
+  reactElement?: React.ReactNode;
+  popupPanelNode?: React.ReactNode;
 }

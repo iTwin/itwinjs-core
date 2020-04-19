@@ -1,15 +1,19 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Zone */
+/** @packageDocumentation
+ * @module Zone
+ */
 
 import { Point, PointProps, Rectangle, RectangleProps } from "@bentley/ui-core";
 import { ZonesManagerProps, WidgetZoneId, ZonesManager } from "../zones/manager/Zones";
 import { NineZoneNestedStagePanelsManagerProps, NineZoneNestedStagePanelsManager } from "./NestedStagePanels";
-import { StagePanelType, StagePanelsManager, NestedStagePanelKey, NestedStagePanelsManagerProps } from "../../ui-ninezone";
 import { NineZoneStagePanelManager } from "./StagePanel";
 import { ToolSettingsWidgetMode } from "../zones/manager/Widget";
+import { StagePanelType } from "../stage-panels/StagePanel";
+import { NestedStagePanelKey, NestedStagePanelsManagerProps } from "../stage-panels/manager/NestedStagePanels";
+import { StagePanelsManager } from "../stage-panels/manager/StagePanels";
 
 /** Properties used by [[NineZoneManager]].
  * @alpha

@@ -1,6 +1,53 @@
 # Change Log - @bentley/build-tools
 
-This log was last generated on Fri, 01 Nov 2019 13:28:37 GMT and should not be manually modified.
+This log was last generated on Wed, 04 Mar 2020 16:16:31 GMT and should not be manually modified.
+
+## 1.13.0
+Wed, 04 Mar 2020 16:16:31 GMT
+
+*Version update only*
+
+## 1.12.0
+Wed, 12 Feb 2020 17:45:49 GMT
+
+### Updates
+
+- Support for TypeDoc 0.16.8
+
+## 1.11.0
+Wed, 22 Jan 2020 19:24:11 GMT
+
+### Updates
+
+- Upgrade to TypeScript 3.7.2.
+- Update tests to pass '--inspect' instead of '--debug' to Node to support Node 12.
+
+## 1.10.0
+Tue, 07 Jan 2020 19:44:01 GMT
+
+### Updates
+
+- Added tslint-react-set-state-usage to ThirdPartyNotices.md in tools/build
+
+## 1.9.0
+Tue, 10 Dec 2019 18:08:56 GMT
+
+### Updates
+
+- Upgrade to @microsoft/api-extractor 7.6.2
+- Code analysis related cleanup
+- Add lint rule to enforce two-space indentation.
+- Added TSLint rules for React setState calls
+- Replaced the noUnusedLocals tsc option with no-unused-variable lint rule.
+
+## 1.8.0
+Fri, 22 Nov 2019 14:03:34 GMT
+
+### Updates
+
+- Fix mocha report failing when running in a context without a package.json
+- Fix issue with custom Mocha reporter not correctly outputting mocha file when run in Certa.
+- Update API-extractor to 5.7.4 to consume a fix for Node 12.
 
 ## 1.7.0
 Fri, 01 Nov 2019 13:28:37 GMT

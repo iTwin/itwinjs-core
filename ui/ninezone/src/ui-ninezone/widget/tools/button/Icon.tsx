@@ -1,10 +1,12 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Toolbar */
+/** @packageDocumentation
+ * @module Toolbar
+ */
 
-import * as classnames from "classnames";
+import classnames from "classnames";
 import * as React from "react";
 import { ToolbarButton, ToolbarButtonProps } from "./Button";
 import "./Icon.scss";
@@ -15,6 +17,10 @@ import "./Icon.scss";
 export interface ToolbarIconProps extends ToolbarButtonProps {
   /** Button icon. */
   icon?: React.ReactNode;
+  /** Indicates whether to use a small App button */
+  small?: boolean;
+  /** Mouse proximity to button */
+  mouseProximity?: number;
 }
 
 /** Toolbar button which displays icon. Used in [[Toolbar]] component.
@@ -23,14 +29,16 @@ export interface ToolbarIconProps extends ToolbarButtonProps {
  */
 export class ToolbarIcon extends React.PureComponent<ToolbarIconProps> {
   public render() {
-    const { className, ...props } = this.props;
+    const { className, small, ...props } = this.props;
     const buttonClassName = classnames(
       "nz-toolbar-button-icon",
+      small && "nz-toolbar-button-icon-small",
       className);
 
     return (
       <ToolbarButton
         className={buttonClassName}
+        small={small}
         {...props}
       >
         <div className="nz-icon">

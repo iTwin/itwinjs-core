@@ -1,75 +1,21 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Tools */
+/** @packageDocumentation
+ * @module Tools
+ */
 
-import { BeDuration } from "@bentley/bentleyjs-core";
-import { Point2d, Point3d, PolygonOps, Angle, Constant } from "@bentley/geometry-core";
+import { Point2d, Point3d, PolygonOps, XAndY } from "@bentley/geometry-core";
 import { GeometryStreamProps, IModelError } from "@bentley/imodeljs-common";
 import { I18NNamespace, I18N } from "@bentley/imodeljs-i18n";
 import { LocateFilterStatus, LocateResponse } from "../ElementLocateManager";
 import { FuzzySearch, FuzzySearchResults } from "../FuzzySearch";
 import { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
-import { ToolSettingsPropertyRecord, ToolSettingsPropertySyncItem } from "../properties/ToolSettingsValue";
+import { DialogItem, DialogPropertySyncItem } from "@bentley/ui-abstract";
 import { DecorateContext, DynamicsContext } from "../ViewContext";
-import { ScreenViewport, Viewport } from "../Viewport";
-
-/** Settings that control the behavior of built-in tools. Applications may modify these values.
- * @public
- */
-export class ToolSettings {
-  /** Duration of animations of viewing operations. */
-  public static animationTime = BeDuration.fromMilliseconds(260);
-  /** Two tap must be within this period to be a double tap. */
-  public static doubleTapTimeout = BeDuration.fromMilliseconds(250);
-  /** Two clicks must be within this period to be a double click. */
-  public static doubleClickTimeout = BeDuration.fromMilliseconds(500);
-  /** Number of screen inches of movement allowed between clicks to still qualify as a double-click.  */
-  public static doubleClickToleranceInches = 0.05;
-  /** If true, view rotation tool keeps the up vector (worldZ) aligned with screenY. */
-  public static preserveWorldUp = true;
-  /** Delay with a touch on the surface before a move operation begins. */
-  public static touchMoveDelay = BeDuration.fromMilliseconds(50);
-  /** Delay with the mouse down before a drag operation begins. */
-  public static startDragDelay = BeDuration.fromMilliseconds(110);
-  /** Distance in screen inches a touch point must move before being considered motion. */
-  public static touchMoveDistanceInches = 0.15;
-  /** Distance in screen inches the cursor must move before a drag operation begins. */
-  public static startDragDistanceInches = 0.15;
-  /** Distance in screen inches touch points must move apart to be considered a change in zoom scale. */
-  public static touchZoomChangeThresholdInches = 0.20;
-  /** Radius in screen inches to search for elements that anchor viewing operations. */
-  public static viewToolPickRadiusInches = 0.20;
-  /** Camera angle enforced for walk tool. */
-  public static walkCameraAngle = Angle.createDegrees(75.6);
-  /** Whether the walk tool enforces worldZ be aligned with screenY */
-  public static walkEnforceZUp = false;
-  /** Speed, in meters per second, for the walk tool. */
-  public static walkVelocity = 3.5;
-  /** Scale factor applied for wheel events with "per-line" modifier. */
-  public static wheelLineFactor = 40;
-  /** Scale factor applied for wheel events with "per-page" modifier. */
-  public static wheelPageFactor = 120;
-  /** When the zoom-with-wheel tool (with camera enabled) gets closer than this distance to an obstacle, it "bumps" through. */
-  public static wheelZoomBumpDistance = Constant.oneCentimeter;
-  /** the speed to scroll for the "scroll view" tool (distance per second). */
-  public static scrollSpeed = .75;
-  /** the speed to zoom for the "zoom view" tool (ratio per second). */
-  public static zoomSpeed = 2;
-  /** Scale factor for zooming with mouse wheel. */
-  public static wheelZoomRatio = 1.75;
-  /** Parameters for viewing operations with *inertia* (i.e. they continue briefly if used with a *throwing action*) */
-  public static viewingInertia = {
-    /** Flag to enable inertia. */
-    enabled: true,
-    /** How quickly the inertia decays. The smaller the damping value the faster the inertia decays. Must be less than 1.0 */
-    damping: .9,
-    /** Maximum duration of the inertia operation. Important when frame rates are low. */
-    duration: BeDuration.fromMilliseconds(450),
-  };
-}
+import { ScreenViewport } from "../Viewport";
 
 /** @public */
 export type ToolType = typeof Tool;
@@ -183,6 +129,7 @@ export class BeButtonEvent implements BeButtonEventProps {
   private readonly _point: Point3d = new Point3d();
   private readonly _rawPoint: Point3d = new Point3d();
   private readonly _viewPoint: Point3d = new Point3d();
+  private _movement?: XAndY;
   /** The [[ScreenViewport]] from which this BeButtonEvent was generated. If undefined, this event is invalid. */
   public viewport?: ScreenViewport;
   /** How the coordinate values were generated (either from an action by the user or from a program.) */
@@ -219,6 +166,11 @@ export class BeButtonEvent implements BeButtonEventProps {
    */
   public get viewPoint() { return this._viewPoint; }
   public set viewPoint(pt: Point3d) { this._viewPoint.setFrom(pt); }
+  /** The difference in screen coordinates from previous motion event
+   * @internal
+   */
+  public get movement(): XAndY | undefined { return this._movement; }
+  public set movement(mov: XAndY | undefined) { this._movement = mov; }
 
   /** Mark this BeButtonEvent as invalid. Can only become valid again by calling [[init]] */
   public invalidate() { this.viewport = undefined; }
@@ -336,20 +288,24 @@ export class BeTouchEvent extends BeButtonEvent implements BeTouchEventProps {
  */
 export interface BeWheelEventProps extends BeButtonEventProps {
   wheelDelta?: number;
+  time?: number;
 }
 /** A BeButtonEvent generated by movement of a mouse wheel.
  * @note wheel events include mouse location.
  * @public
  */
 export class BeWheelEvent extends BeButtonEvent implements BeWheelEventProps {
-  public wheelDelta: number = 0;
+  public wheelDelta: number;
+  public time: number;
   public constructor(props?: BeWheelEventProps) {
     super(props);
-    if (props && props.wheelDelta !== undefined) this.wheelDelta = props.wheelDelta;
+    this.wheelDelta = (props && props.wheelDelta !== undefined) ? props.wheelDelta : 0;
+    this.time = (props && props.time) ? props.time : Date.now();
   }
   public setFrom(src: BeWheelEvent): this {
     super.setFrom(src);
     this.wheelDelta = src.wheelDelta;
+    this.time = src.time;
     return this;
   }
 }
@@ -394,7 +350,7 @@ export class Tool {
   /**
    * Register this Tool class with the [[ToolRegistry]].
    * @param namespace optional namespace to supply to [[ToolRegistry.register]]. If undefined, use namespace from superclass.
-   * @param i18n optional internationalization services object (required only for externally hosted plugins). If undefined, use IModelApp.i18n.
+   * @param i18n optional internationalization services object (required only for externally hosted extensions). If undefined, use IModelApp.i18n.
    */
   public static register(namespace?: I18NNamespace, i18n?: I18N) { IModelApp.tools.register(this, namespace, i18n); }
 
@@ -632,7 +588,7 @@ export abstract class InteractiveTool extends Tool {
    */
   public async onTouchTap(_ev: BeTouchEvent): Promise<EventHandled> { return EventHandled.No; }
 
-  public isCompatibleViewport(_vp: Viewport, _isSelectedViewChange: boolean): boolean { return true; }
+  public isCompatibleViewport(_vp: ScreenViewport, _isSelectedViewChange: boolean): boolean { return true; }
   public isValidLocation(_ev: BeButtonEvent, _isButtonEvent: boolean): boolean { return true; }
 
   /**
@@ -640,7 +596,7 @@ export abstract class InteractiveTool extends Tool {
    * @param previous The previously active view.
    * @param current The new active view.
    */
-  public onSelectedViewportChanged(_previous: Viewport | undefined, _current: Viewport | undefined): void { }
+  public onSelectedViewportChanged(_previous: ScreenViewport | undefined, _current: ScreenViewport | undefined): void { }
 
   /**
    * Invoked before the locate tooltip is displayed to retrieve the information about the located element. Allows the tool to override the toolTip.
@@ -716,18 +672,18 @@ export abstract class InteractiveTool extends Tool {
   /** Used to supply list of properties that can be used to generate ToolSettings. If undefined is returned then no ToolSettings will be displayed
    * @beta
    */
-  public supplyToolSettingsProperties(): ToolSettingsPropertyRecord[] | undefined { return undefined; }
+  public supplyToolSettingsProperties(): DialogItem[] | undefined { return undefined; }
 
   /** Used to receive property changes from UI. Return false if there was an error applying updatedValue.
    * @beta
    */
-  public applyToolSettingPropertyChange(_updatedValue: ToolSettingsPropertySyncItem): boolean { return true; }
+  public applyToolSettingPropertyChange(_updatedValue: DialogPropertySyncItem): boolean { return true; }
 
   /** Called by tool to synchronize the UI with property changes made by tool. This is typically used to provide user feedback during tool dynamics.
    * If the syncData contains a quantity value and if the displayValue is not defined, the displayValue will be generated in the UI layer before displaying the value.
    * @beta
    */
-  public syncToolSettingsProperties(syncData: ToolSettingsPropertySyncItem[]) {
+  public syncToolSettingsProperties(syncData: DialogPropertySyncItem[]) {
     IModelApp.toolAdmin.syncToolSettingsProperties(this.toolId, syncData);
   }
 }
@@ -754,6 +710,30 @@ export abstract class InputCollector extends InteractiveTool {
     this.exitTool();
     return EventHandled.Yes;
   }
+}
+
+/** The result type of [[ToolRegistry.parseKeyin]].
+ * @alpha
+ */
+export interface ParsedKeyin {
+  /** If found, the tool that handles the keyin. */
+  tool?: ToolType;
+  /** Arguments to be passed to the tool's `parseAndRun` method. */
+  args: string[];
+}
+
+/** The result type of [[ToolRegistry.parseAndRun]].
+ * @alpha
+ */
+export enum ParseAndRunResult {
+  /** The tool's `parseAndRun` method was invoked and returned `true`. */
+  Success,
+  /** No tool matching the toolId in the keyin is registered. */
+  ToolNotFound,
+  /** The number of arguments supplied does not meet the constraints of the Tool. @see [[Tool.minArgs]] and [[Tool.maxArgs]]. */
+  BadArgumentCount,
+  /** The tool's `parseAndRun` method returned `false`. */
+  FailedToRun,
 }
 
 /** The ToolRegistry holds a mapping between toolIds and their corresponding [[Tool]] class. This provides the mechanism to
@@ -831,6 +811,50 @@ export class ToolRegistry {
     return tool !== undefined && tool.run(...args);
   }
 
+  /** Given a string consisting of a toolId followed by any number of arguments, locate the corresponding Tool and parse the arguments.
+   * @note Only extremely rudimentary argument parsing is currently supported. e.g., arguments cannot contain whitespace.
+   * @param keyin A string consisting of a toolId followed by any number of arguments. The arguments are separated by whitespace.
+   * @returns The tool, if found, along with an array of parsed arguments.
+   * @alpha
+   */
+  public parseKeyin(keyin: string): ParsedKeyin {
+    const tools = this.getToolList();
+    let tool: ToolType | undefined;
+    const args: string[] = [];
+    const findTool = (lowerKeyin: string) => tools.find((x) => x.keyin.toLowerCase() === lowerKeyin || x.englishKeyin.toLowerCase() === lowerKeyin);
+
+    // try the trivial, common case first
+    tool = findTool(keyin.toLowerCase());
+    if (undefined !== tool)
+      return { tool, args };
+
+    // Tokenize to separate keyin from arguments
+    // ###TODO handle quoted arguments
+    // ###TODO there's actually nothing that prevents a Tool from including leading/trailing spaces in its keyin, or sequences of more than one space...we will fail to find such tools if they exist...
+    const tokens = keyin.split(" ").filter((x) => 0 < x.length);
+    if (tokens.length <= 1)
+      return { tool, args };
+
+    // Find the longest starting substring that matches a tool's keyin.
+    for (let i = tokens.length - 2; i >= 0; i--) {
+      let substr = tokens[0];
+      for (let j = 1; j <= i; j++) {
+        substr += " ";
+        substr += tokens[j];
+      }
+
+      tool = findTool(substr.toLowerCase());
+      if (undefined !== tool) {
+        for (let k = i + 1; k < tokens.length; k++)
+          args.push(tokens[k]);
+
+        break;
+      }
+    }
+
+    return { tool, args };
+  }
+
   /** Get a list of Tools currently registered, excluding hidden tools */
   public getToolList(): ToolList {
     if (this._keyinList === undefined) {
@@ -838,6 +862,26 @@ export class ToolRegistry {
       this.tools.forEach((thisTool) => { if (!thisTool.hidden) this._keyinList!.push(thisTool); });
     }
     return this._keyinList;
+  }
+
+  /** Given a string consisting of a toolId followed by any number of arguments, parse the keyin string and invoke the corresponding tool's `parseAndRun` method.
+   * @param keyin A string consisting of a toolId followed by any number of arguments.
+   * @returns A status indicating whether the keyin was successfully parsed and executed.
+   * @see [[parseKeyin]].
+   * @throws any Error thrown by the tool's `parseAndRun` method.
+   * @alpha
+   */
+  public parseAndRun(keyin: string): ParseAndRunResult {
+    const parsed = this.parseKeyin(keyin);
+    if (undefined === parsed.tool)
+      return ParseAndRunResult.ToolNotFound;
+
+    const maxArgs = parsed.tool.maxArgs;
+    if (parsed.args.length < parsed.tool.minArgs || (undefined !== maxArgs && parsed.args.length > maxArgs))
+      return ParseAndRunResult.BadArgumentCount;
+
+    const tool = new parsed.tool();
+    return tool.parseAndRun(...parsed.args) ? ParseAndRunResult.Success : ParseAndRunResult.FailedToRun;
   }
 
   /**

@@ -1,13 +1,15 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Views */
+/** @packageDocumentation
+ * @module Geometry
+ */
 
 import { Id64String, Id64Array } from "@bentley/bentleyjs-core";
 import { XYZProps, Matrix4dProps } from "@bentley/geometry-core";
 import { GeometryStreamProps } from "./geometry/GeometryStream";
-import { GeometryClass } from "./Render";
+import { GeometryClass } from "./GeometryParams";
 
 /** Information required to request a *snap* to a pickable decoration from the front end to the back end.
  * @beta
@@ -31,7 +33,6 @@ export interface SnapRequestProps {
   snapAperture?: number;
   snapDivisor?: number;
   subCategoryId?: Id64String;
-  /** @alpha */
   geometryClass?: GeometryClass;
   intersectCandidates?: Id64Array;
   decorationGeometry?: DecorationGeometryProps[];

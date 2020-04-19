@@ -2,6 +2,234 @@
   "name": "@bentley/ui-framework",
   "entries": [
     {
+      "version": "1.13.0",
+      "tag": "@bentley/ui-framework_v1.13.0",
+      "date": "Wed, 04 Mar 2020 16:16:31 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added ability to customize selection handling in VisibilityWidget's Models tree"
+          },
+          {
+            "comment": "Passing on style props from ui-framework Toolbar to ui-ninezone Toolbar"
+          },
+          {
+            "comment": "Updated ModelTree ruleset to use RelationshipPathSpecification"
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.12.0",
+      "tag": "@bentley/ui-framework_v1.12.0",
+      "date": "Wed, 12 Feb 2020 17:45:50 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Upgraded icons-generic-webfont to ^1.0.0"
+          },
+          {
+            "comment": "#269173 Nav cube arrow controls will no longer turn model sideways."
+          },
+          {
+            "comment": "Avoid handling whole tree model when handling model change event"
+          },
+          {
+            "comment": "Added UiAdmin.showHTMLElement to show information & graphics for markers"
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.11.0",
+      "tag": "@bentley/ui-framework_v1.11.0",
+      "date": "Wed, 22 Jan 2020 19:24:12 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Upgrade to TypeScript 3.7.2."
+          },
+          {
+            "comment": "Made 'show/hide all categories' action be limited by the filter"
+          },
+          {
+            "comment": "Cube navigation aid touch events fix."
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.10.0",
+      "tag": "@bentley/ui-framework_v1.10.0",
+      "date": "Tue, 07 Jan 2020 19:44:01 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fixed lgtm issues in UI folders"
+          },
+          {
+            "comment": "Ui doc & release tag cleanup"
+          },
+          {
+            "comment": "Update to use new BackstageItemManager and PluginStatusBarManager from ui-abstract package. Update StatusbarComposer to show items from plugins."
+          },
+          {
+            "comment": "Remove duplicate StatusBarItemManager from ui-framework and only leave the one in ui-abstract."
+          },
+          {
+            "comment": "Fix for nine-zone sample app not displaying backstage items."
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.9.0",
+      "tag": "@bentley/ui-framework_v1.9.0",
+      "date": "Tue, 10 Dec 2019 18:08:56 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add useActiveIModelConnection hook."
+          },
+          {
+            "comment": "Allow setting App Iconspec."
+          },
+          {
+            "comment": "Setup OidcDesktopClient for Electron use cases. "
+          },
+          {
+            "comment": "Fix styling of footer Indicator to work with Themes."
+          },
+          {
+            "comment": "Disallow plugins from adding tools anywhere but the end of a toolbar."
+          },
+          {
+            "comment": "[ModelsTree] Merge same-label Subject nodes to avoid duplication"
+          },
+          {
+            "comment": "No longer accessing this.state or this.props in setState updater - flagged by lgtm report"
+          },
+          {
+            "comment": "Changed SignIn & SignOut buttons to large. Fixed Dialog component resizing. Reduced default minimum size of Dialog component."
+          },
+          {
+            "comment": "Update sinon version."
+          },
+          {
+            "comment": "Added support for NotifyMessageDetails.displayTime for Toast messages"
+          },
+          {
+            "comment": "Reduce active tab index when tab is removed."
+          },
+          {
+            "comment": "Ability to determine available tool settings width."
+          },
+          {
+            "comment": "Fix code analysis report issues."
+          },
+          {
+            "comment": "Adjusted Categories and Models trees according changes to ControlledTree events"
+          },
+          {
+            "comment": "Added VisibilityWigdet implementation using ControlledTree and ability to switch to it"
+          },
+          {
+            "comment": "Remove content node when WidgetContentRenderer unmounts."
+          },
+          {
+            "comment": "Update overflow GroupItem click action to open the panel."
+          },
+          {
+            "comment": "Prevent frontstage composer rerender on pointer events."
+          },
+          {
+            "comment": "Use exhaustive-deps linter rule."
+          },
+          {
+            "comment": "Ability to opt-in to toolbar drag interaction."
+          },
+          {
+            "comment": "Prevent unnecessary resubscribe in useActiveViewport hook."
+          },
+          {
+            "comment": "Visibility Widget: Treat dictionary model as never private in Categories tree. "
+          },
+          {
+            "comment": "Ability to specify initialWidth for Zone component."
+          },
+          {
+            "comment": "Removed unused React state variables. Removed unsupported setState calls from render() methods."
+          },
+          {
+            "comment": "Code cleanup based on code analysis report from lgtm. Updated status field fade-in/out animation."
+          },
+          {
+            "comment": "Update to allow Sections statusfield to hide/show depending on active view clip."
+          },
+          {
+            "comment": "Added ConditionalField and FooterModeField components. StatusBar responsive changes."
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.8.0",
+      "tag": "@bentley/ui-framework_v1.8.0",
+      "date": "Fri, 22 Nov 2019 14:03:34 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add support for Hide, Isolate, emphasize tools and status bar item to UiFramework."
+          },
+          {
+            "comment": "Fix bug where ToolSettings title was not reset after view undo/redo tool usage."
+          },
+          {
+            "comment": "Initializing OidcBrowserClient before setting it in UiFramework"
+          },
+          {
+            "comment": "Responsive logic in Property Grid to switch to Vertical orientation when too narrow"
+          },
+          {
+            "comment": "Tablet responsive UI"
+          },
+          {
+            "comment": "Added StatusBarComposer, StatusBarItem, StatusBarManager and StatusBarItemsManager"
+          },
+          {
+            "comment": "Added StatusBarItemsManager.setIsVisible & StatusBarItem.isVisible"
+          },
+          {
+            "comment": "Support multiple status bars in the StatusBarManager"
+          },
+          {
+            "comment": "Added tslint-react-hooks to UI packages"
+          },
+          {
+            "comment": "Ensure item uniqueness in BackstageItemsManager and StatusBarItemsManager."
+          },
+          {
+            "comment": "Remove unsupported fit-content CSS value."
+          },
+          {
+            "comment": "Expose stage panel minSize and maxSize props."
+          },
+          {
+            "comment": "Do not show widget resize indicator when widget can not be resized."
+          },
+          {
+            "comment": "Remove history trays."
+          },
+          {
+            "comment": "Open tool panel via drag interaction."
+          },
+          {
+            "comment": "Update TileRendering StatusField width."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.7.0",
       "tag": "@bentley/ui-framework_v1.7.0",
       "date": "Fri, 01 Nov 2019 13:28:37 GMT",

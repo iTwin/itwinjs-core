@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module AzCopy */
+/** @packageDocumentation
+ * @module AzCopy
+ */
 
 import { spawn, execFileSync } from "child_process";
 import * as fs from "fs";
@@ -101,10 +103,8 @@ export interface ProgressEventArgs extends MessageEventArgs {
  */
 export declare interface AzCopy {
   on(event: "azinit", listener: (args: InitEventArgs) => void): this;
-  on(event: "azinfo", listener: (args: StringEventArgs) => void): this;
-  on(event: "azprogress", listener: (args: ProgressEventArgs) => void): this;
-  on(event: "azexit", listener: (args: ProgressEventArgs) => void): this;
-  on(event: "azerror", listener: (args: StringEventArgs) => void): this;
+  on(event: "azinfo" | "azerror", listener: (args: StringEventArgs) => void): this;
+  on(event: "azprogress" | "azexit", listener: (args: ProgressEventArgs) => void): this;
   on(event: "azruntimeerror", listener: (args: string) => void): this;
 }
 

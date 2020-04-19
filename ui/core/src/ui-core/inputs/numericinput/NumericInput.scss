@@ -1,12 +1,13 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-@import "../../index.scss";
+@import "../variables";
 
 .core-numeric-input {
 
   .react-numeric-input {
+    width:                  100%;
 
     input {
       display:                block !important;
@@ -15,7 +16,7 @@
       margin:                 0 0 !important;
       font-family:            $uicore-font-family !important;
       font-size:              $uicore-font-size !important;
-      line-height:            $uicore-line-height !important;
+      line-height:            normal !important;
       color:                  $buic-text-color !important;
       background-color:       $buic-background-control !important;
       background-image:       none !important;

@@ -1,19 +1,20 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Utilities */
+/** @packageDocumentation
+ * @module Utilities
+ */
 
 import * as React from "react";
 import { Badge } from "./Badge";
 import { CommonProps } from "../utils/Props";
 
-import betaBadgeIcon from "./technical-preview-badge.svg";
+import betaBadgeIcon from "./technical-preview-badge.svg?sprite";
 
 /** Beta Badge React component
  * @internal
  */
-// tslint:disable-next-line:variable-name
-export const BetaBadge: React.FunctionComponent<CommonProps> = (props: CommonProps) => {
+export function BetaBadge(props: CommonProps) {
   return <Badge {...props} svg={betaBadgeIcon} />;
-};
+}

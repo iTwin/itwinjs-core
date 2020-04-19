@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/rpcinterface-full-stack-tests",
+      "comment": "Add tests for PresentationRpcInterface new operations getDisplayLabelDefinition and getDisplayLabelsDefinitions to the rpcinterface-integration-test",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/rpcinterface-full-stack-tests",
+  "email": "jason.crow@bentley.com"
+}

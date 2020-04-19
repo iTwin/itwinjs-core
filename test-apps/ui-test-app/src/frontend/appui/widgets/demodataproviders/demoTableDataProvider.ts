@@ -1,9 +1,9 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { SortDirection } from "@bentley/ui-core";
-import { PropertyValue, PropertyDescription, PropertyRecord, PropertyValueFormat } from "@bentley/imodeljs-frontend";
+import { PropertyValue, PropertyDescription, PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
 import {
   TableDataProvider, MutableTableDataProvider,
   RowItem, TableDataChangeEvent, ColumnDescription,
@@ -207,10 +207,10 @@ export const onDropTargetDrop = (args: DropTargetArguments<DemoTableDragDropType
               valueFormat: PropertyValueFormat.Primitive,
               displayValue: label,
             }, {
-            name: "label",
-            displayLabel: "label",
-            typename: "text",
-          }),
+              name: "label",
+              displayLabel: "label",
+              typename: "text",
+            }),
         },
         {
           key: "type", record: new PropertyRecord(
@@ -219,18 +219,17 @@ export const onDropTargetDrop = (args: DropTargetArguments<DemoTableDragDropType
               valueFormat: PropertyValueFormat.Primitive,
               displayValue: type,
             }, {
-            name: "type",
-            displayLabel: "type",
-            typename: "text",
-          }),
+              name: "type",
+              displayLabel: "type",
+              typename: "text",
+            }),
         },
         {
-          key: "description", record: new PropertyRecord(
-            {
-              value: description,
-              valueFormat: PropertyValueFormat.Primitive,
-              displayValue: description,
-            }, {
+          key: "description", record: new PropertyRecord({
+            value: description,
+            valueFormat: PropertyValueFormat.Primitive,
+            displayValue: description,
+          }, {
             name: "description",
             displayLabel: "description",
             typename: "text",

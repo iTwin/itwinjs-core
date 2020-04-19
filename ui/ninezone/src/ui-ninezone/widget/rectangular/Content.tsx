@@ -1,10 +1,12 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Widget */
+/** @packageDocumentation
+ * @module Widget
+ */
 
-import * as classnames from "classnames";
+import classnames from "classnames";
 import * as React from "react";
 import { CommonProps, NoChildrenProps } from "@bentley/ui-core";
 import { HorizontalAnchor, HorizontalAnchorHelpers } from "../Stacked";
@@ -13,7 +15,7 @@ import "./Content.scss";
 /** Properties of [[WidgetContent]] component.
  * @alpha
  */
-export interface WidgetContentProps extends CommonProps, NoChildrenProps {
+export interface WidgetContentProps extends CommonProps, NoChildrenProps { // tslint:disable-line: class-name
   /** Describes to which side the widget of this content is anchored. */
   anchor: HorizontalAnchor;
   /** Content container ref. */

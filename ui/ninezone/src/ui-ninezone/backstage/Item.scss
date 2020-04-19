@@ -1,7 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+@import "~@bentley/ui-core/lib/ui-core/style/breakpoints";
+@import "~@bentley/ui-core/lib/ui-core/style/typography";
+@import "~@bentley/ui-core/lib/ui-core/style/space";
 @import "../prefix";
 @import "../safearea";
 @import "variables";
@@ -50,7 +53,12 @@
     pointer-events: none;
   }
 
-  > .nz-icon {
+  div.nz-icon {
+    display: flex;
+    .core-icons-svgSprite {
+      width: 1rem;
+      height: 1rem;
+    }
     padding-left: $nz-backstage-icon-spacing-left;
     padding-right: $nz-backstage-icon-spacing-right;
   }

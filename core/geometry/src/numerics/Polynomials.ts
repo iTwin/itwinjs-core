@@ -1,12 +1,14 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module Numerics */
+/** @packageDocumentation
+ * @module Numerics
+ */
 
 import { Point2d, Vector2d } from "../geometry3d/Point2dVector2d";
-import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
+import { Point3d, Vector3d, XYZ } from "../geometry3d/Point3dVector3d";
 // import { Angle, AngleSweep, Geometry } from "../Geometry";
 import { Geometry } from "../Geometry";
 import { OptionalGrowableFloat64Array, GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
@@ -16,6 +18,7 @@ import { Range3d, Range1d } from "../geometry3d/Range";
 import { AngleSweep } from "../geometry3d/AngleSweep";
 import { Angle } from "../geometry3d/Angle";
 import { Ray3d } from "../geometry3d/Ray3d";
+import { LongitudeLatitudeNumber } from "../geometry3d/LongitudeLatitudeAltitude";
 // import { Arc3d } from "../curve/Arc3d";
 // cspell:word Cardano
 // cspell:word CCminusSS
@@ -34,6 +37,7 @@ export class Degree2PowerPolynomial {
 
   /**
    * * Return 2 duplicate roots in double root case.
+   * * The solutions are always in algebraic order.
    * @returns 0, 1, or 2 solutions of the usual quadratic (a*x*x + b * x + c = 0)
    */
   public static solveQuadratic(a: number, b: number, c: number): number[] | undefined {
@@ -476,7 +480,7 @@ export class SphereImplicit {
    *    * thetaPhiRadians = sphere longitude and latitude in radians.
    * * For each optional array, caller must of course initialize an array (usually empty)
    */
-  public static intersectSphereRay(center: Point3d, radius: number, ray: Ray3d, rayFractions: number[] | undefined, xyz: Point3d[] | undefined, thetaPhiRadians: Point2d[] | undefined): number {
+  public static intersectSphereRay(center: Point3d, radius: number, ray: Ray3d, rayFractions: number[] | undefined, xyz: Point3d[] | undefined, thetaPhiRadians: LongitudeLatitudeNumber[] | undefined): number {
     const vx = ray.origin.x - center.x;
     const vy = ray.origin.y - center.y;
     const vz = ray.origin.z - center.z;
@@ -507,7 +511,7 @@ export class SphereImplicit {
           xyz.push(point);
         if (thetaPhiRadians !== undefined) {
           const data = sphere.xyzToThetaPhiR(point);
-          thetaPhiRadians.push(Point2d.create(data.thetaRadians, data.phiRadians));
+          thetaPhiRadians.push(LongitudeLatitudeNumber.createRadians(data.thetaRadians, data.phiRadians));
         }
       }
     }
@@ -544,7 +548,20 @@ export class SphereImplicit {
     const sinPhi = Math.sin(phiRadians);
     return Point3d.create(rc * cosPhi, rs * cosPhi, this.radius * sinPhi, result);
   }
-
+  /**
+   * * convert radians to xyz on unit sphere
+   * * Note that there is no radius used -- implicitly radius is 1
+   * * Evaluation is always to a preallocated xyz.
+   */
+  public static radiansToUnitSphereXYZ(thetaRadians: number, phiRadians: number, xyz: XYZ) {
+    const cosTheta = Math.cos(thetaRadians);
+    const sinTheta = Math.sin(thetaRadians);
+    const cosPhi = Math.cos(phiRadians);
+    const sinPhi = Math.sin(phiRadians);
+    xyz.x = cosTheta * cosPhi;
+    xyz.y = sinTheta * cosPhi;
+    xyz.z = sinPhi;
+  }
   /** Compute the derivatives with respect to spherical angles.
    * @param thetaRadians latitude angle
    * @param phiRadians longitude angle
@@ -657,7 +674,7 @@ export class AnalyticRoots {
       let convergenceCounter = 0;
 
       // Loop through applying changes to found root until dx is diminished or counter is hit
-      while (dx !== undefined && dx !== 0.0 && (counter < 10)) {
+      while (dx !== undefined && dx !== 0.0 && (counter < 12)) {
         // consider it converged if two successive iterations satisfy the (not too demanding) tolerance.
         if (Math.abs(dx) < relTol * (1.0 + Math.abs(roots.atUncheckedIndex(i)))) {
           if (++convergenceCounter > 1)
@@ -766,11 +783,62 @@ export class AnalyticRoots {
   private static addConstant(value: number, data: GrowableFloat64Array) {
     for (let i = 0; i < data.length; i++) data.reassign(i, data.atUncheckedIndex(i) + value);
   }
-  /** return roots of a cubic c0 + c1 *x + c2 * x^2 + c2 * x3.
+
+  private static signedCubeRoot(y: number): number {
+    if (y >= 0.0)
+      return Math.pow(y, 1.0 / 3.0);
+    return -Math.pow(-y, 1.0 / 3.0);
+  }
+  /**
+   * RWD Nickalls Cubic solution
+   * The Mathematical Gazette (1993) (vol 77) pp 354-359
+   * * ASSUME a is nonzero.
+   */
+  // Solve full cubic ASSUMING a3 is nonzero.
+  private static appendFullCubicSolutions(a: number, b: number, c: number, d: number, result: GrowableFloat64Array) {
+    const q = b * b - 3.0 * a * c;
+    const aa = a * a;
+    const delta2 = q / (9.0 * aa);
+    const xN = - b / (3.0 * a);
+    const yN = d + xN * (c + xN * (b + xN * a));
+    const yN2 = yN * yN;
+    const h2 = 4.0 * a * a * delta2 * delta2 * delta2;
+    const discriminant = yN2 - h2;
+    if (discriminant > 0) {
+      // 1 real root
+      const r = Math.sqrt(discriminant);
+      const f = 0.5 / a;
+      result.push(xN + this.signedCubeRoot(f * (-yN + r)) + this.signedCubeRoot(f * (-yN - r)));
+    } else if (discriminant < 0) {
+      // 3 real roots
+      let h = Math.sqrt(h2);
+      // I don't see comment in Nickalls about sign of h -- but this sign change is needed ...
+      if (a < 0)
+        h = -h;
+      // sign of h?
+      const thetaRadians = Math.acos(-yN / h) / 3.0;
+      const g = 2.0 * Math.sqrt(delta2);
+      const shift = 2.0 * Math.PI / 3.0;
+      result.push(xN + g * Math.cos(thetaRadians));
+      result.push(xN + g * Math.cos(thetaRadians + shift));
+      result.push(xN + g * Math.cos(thetaRadians - shift));
+    } else {
+      // NOTE: The double-root case is not toleranced.
+      // double root + single root
+      const delta = this.signedCubeRoot(0.5 * yN / a);
+      const minMaxRoot = xN + delta;
+      result.push(xN - 2 * delta);
+      result.push(minMaxRoot);
+      result.push(minMaxRoot);
+    }
+  }
+
+  /* return roots of a cubic c0 + c1 *x + c2 * x^2 + c2 * x3.
    * In the usual case where c0 is non-zero, there are either 1 or 3 roots.
    * But if c0 is zero the (0, 1, or 2) roots of the lower order equation
    */
-  private static appendCubicRootsUnsorted(c: Float64Array | number[], results: GrowableFloat64Array) {
+  /*
+  private static _appendCubicRootsUnsorted(c: Float64Array | number[], results: GrowableFloat64Array) {
     let A: number;
     let B: number;
     let C: number;
@@ -787,18 +855,16 @@ export class AnalyticRoots {
       this.appendQuadraticRoots(c, results);
       return;
     }
-
     // It is a real cubic.  There MUST be at least one real solution . . .
     A = c[2] * scaleFactor;
     B = c[1] * scaleFactor;
     C = c[0] * scaleFactor;
 
-    /*  substitute x = y - A/3 to eliminate quadric term:
-        f = y^3 +3py + 2q = 0
-        f' = 3y^2 + p
-            local min/max at Y = +-sqrt (-p)
-            f(+Y) = -p sqrt(-p) + 3p sqrt (-p) + 2q = 2 p sqrt (-p) + 2q
-    */
+    //  substitute x = y - A/3 to eliminate quadric term:
+    //    f = y^3 +3py + 2q = 0
+    //    f' = 3y^2 + p
+    //        local min/max at Y = +-sqrt (-p)
+    //        f(+Y) = -p sqrt(-p) + 3p sqrt (-p) + 2q = 2 p sqrt (-p) + 2q
     sq_A = A * A;
     p = (3.0 * B - sq_A) / 9.0;
     q = 1.0 / 2 * (2.0 / 27 * A * sq_A - 1.0 / 3 * A * B + C);
@@ -847,12 +913,22 @@ export class AnalyticRoots {
       return;
     }
   }
+  */
   /** Compute roots of cubic 'c[0] + c[1] * x + c[2] * x^2 + c[3] * x^3 */
   public static appendCubicRoots(c: Float64Array | number[], results: GrowableFloat64Array) {
-    this.appendCubicRootsUnsorted(c, results);
+    if (Geometry.conditionalDivideCoordinate(1.0, c[3]) !== undefined) {
+      this.appendFullCubicSolutions(c[3], c[2], c[1], c[0], results);
+      // EDL April 5, 2020 replace classic GraphicsGems solver by RWDNickalls.
+      // Don't know if improveRoots is needed.
+      // Breaks in AnalyticRoots.test.ts checkQuartic suggest it indeed converts many e-16 errors to zero.
+      //  e-13 cases are unaffected
+      this.improveRoots (c, 3, results, false);
+    } else {
+      this.appendQuadraticRoots(c, results);
+    }
+    // this.appendCubicRootsUnsorted(c, results);
     results.sort();
   }
-
   /** Compute roots of quartic 'c[0] + c[1] * x + c[2] * x^2 + c[3] * x^3 + c[4] * x^4 */
   public static appendQuarticRoots(c: Float64Array | number[], results: GrowableFloat64Array) {
     const coffs = new Float64Array(4); // at various times .. coefficients of quadratic an cubic intermediates.
@@ -895,7 +971,7 @@ export class AnalyticRoots {
       coffs[1] = p;
       coffs[2] = 0;
       coffs[3] = 1;
-      this.appendCubicRootsUnsorted(coffs, results);
+      this.appendCubicRoots(coffs, results);
       results.push(0); // APPLY ORIGIN ....
       this.addConstant(origin, results);
       return;
@@ -907,7 +983,7 @@ export class AnalyticRoots {
       coffs[2] = - 1.0 / 2 * p;
       coffs[3] = 1;
 
-      this.appendCubicRootsUnsorted(coffs, tempStack);
+      this.appendCubicRoots(coffs, tempStack);
       const z = this.mostDistantFromMean(tempStack);
 
       // ... to build two quadric equations
@@ -1604,7 +1680,7 @@ export class SmallSystem {
     const detXYZ = Geometry.tripleProduct(axx, ayx, azx, axy, ayy, azy, axz, ayz, azz);
     const detCYZ = Geometry.tripleProduct(cx, cy, cz, axy, ayy, azy, axz, ayz, azz);
     const detXCZ = Geometry.tripleProduct(axx, ayx, azx, cx, cy, cz, axz, ayz, azz);
-    const detXYC = Geometry.tripleProduct(cx, cy, cz, axy, ayy, azy, cx, cy, cz);
+    const detXYC = Geometry.tripleProduct(axx, ayx, azx, axy, ayy, azy, cx, cy, cz);
     const s = Geometry.conditionalDivideFraction(detCYZ, detXYZ);
     const t = Geometry.conditionalDivideFraction(detXCZ, detXYZ);
     const u = Geometry.conditionalDivideFraction(detXYC, detXYZ);
@@ -1742,7 +1818,7 @@ export class SineCosinePolynomial {
   /** Return the range of function values over the entire angle range. */
   public range(result?: Range1d): Range1d {
     const q = Geometry.hypotenuseXY(this.cosineCoff, this.sineCoff);
-    return Range1d.createXX(this.a + q, this.a - q, result);
+    return Range1d.createXX(this.a - q, this.a + q, result);
   }
   /** Return the min and max values of the function over theta range from radians0 to radians1  inclusive. */
   public rangeInStartEndRadians(radians0: number, radians1: number, result?: Range1d): Range1d {

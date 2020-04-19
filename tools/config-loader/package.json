@@ -1,6 +1,6 @@
 {
   "name": "@bentley/config-loader",
-  "version": "1.9.0-dev.6",
+  "version": "2.0.0-dev.71",
   "description": "Configuration loader",
   "license": "MIT",
   "repository": {
@@ -9,8 +9,8 @@
   },
   "typings": "lib/index",
   "scripts": {
-    "build": "tsc 1>&2 && node ./node_modules/@bentley/build-tools/scripts/ignoreargs.js 1>&2",
-    "clean": "rimraf lib .rush package-deps.json",
+    "build": "tsc 1>&2",
+    "clean": "rimraf lib .rush",
     "docs": "",
     "lint": "tslint --project . 1>&2",
     "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=index",
@@ -27,16 +27,16 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "chalk": "^2.4.1",
+    "chalk": "^3.0.0",
     "json5": "^2.1.0"
   },
   "devDependencies": {
-    "@bentley/build-tools": "1.9.0-dev.6",
+    "@bentley/build-tools": "2.0.0-dev.71",
     "@types/json5": "0.0.30",
     "@types/node": "10.14.1",
-    "rimraf": "^2.6.2",
+    "rimraf": "^3.0.2",
     "tslint": "^5.11.0",
     "tslint-etc": "^1.5.2",
-    "typescript": "~3.6.2"
+    "typescript": "~3.7.4"
   }
 }

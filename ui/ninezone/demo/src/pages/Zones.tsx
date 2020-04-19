@@ -1,9 +1,9 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import "@bentley/icons-generic-webfont/dist/bentley-icons-generic-webfont.css";
-import * as classnames from "classnames";
+import classnames from "classnames";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import ReactResizeDetector from "react-resize-detector";
@@ -93,6 +93,7 @@ const NestedToolGroupContained = withContainIn(withOnOutsideClick(NestedGroup, u
 const ItemWithDragInteraction = withDragInteraction(Item);
 // tslint:disable-next-line:variable-name
 const ToolGroupSelectionContext = React.createContext(false);
+ToolGroupSelectionContext.displayName = "nzdemo:ToolGroupSelectionContext";
 
 // tslint:disable-next-line:variable-name
 const BlueButton = (props: ButtonProps & Omit<ButtonProps, "type">) => (
@@ -1169,22 +1170,6 @@ class Widget2Tab1Content extends React.PureComponent<{}, Widget2Tab1ContentState
         >
           Toggle
         </button>
-        {/*ToggleToggleToggleToggleToggleToggleToggleToggle<br />
-        ToggleToggleToggleToggleToggleToggleToggleToggle<br />
-        ToggleToggleToggleToggleToggleToggleToggleToggle<br />
-        ToggleToggleToggleToggleToggleToggleToggleToggle<br />
-        ToggleToggleToggleToggleToggleToggleToggleToggle<br />
-        ToggleToggleToggleToggleToggleToggleToggleToggle<br />
-        ToggleToggleToggleToggleToggleToggleToggleToggle<br />
-        ToggleToggleToggleToggleToggleToggleToggleToggle<br />
-        ToggleToggleToggleToggleToggleToggleToggleToggle<br />
-        ToggleToggleToggleToggleToggleToggleToggleToggle<br />
-        ToggleToggleToggleToggleToggleToggleToggleToggle<br />
-        ToggleToggleToggleToggleToggleToggleToggleToggle<br />
-        ToggleToggleToggleToggleToggleToggleToggleToggle<br />
-        ToggleToggleToggleToggleToggleToggleToggleToggle<br />
-        ToggleToggleToggleToggleToggleToggleToggleToggle<br />
-        ToggleToggleToggleToggleToggleToggleToggleToggle<br />*/}
         <ToolSettingsPopup
           isOpen={this.state.isPopupOpen}
           onClose={this._handleCloseTogglePopup}
@@ -1513,9 +1498,6 @@ class WidgetContentExample extends React.PureComponent<WidgetContentExampleProps
     container.classList.add("nzdemo-measure");
     const measurerBounds = measurer.getBoundingClientRect();
     container.classList.remove("nzdemo-measure");
-
-    // tslint:disable-next-line: no-console
-    console.log("ToolSettings content width: ", measurerBounds.width);
   }
 }
 
@@ -1686,9 +1668,10 @@ interface GroupColumnExpanderProps {
 }
 
 function GroupColumnExpander(props: GroupColumnExpanderProps) {
+  const { onClick, itemId } = props;
   const handleClick = React.useCallback(() => {
-    props.onClick(props.itemId);
-  }, [props.onClick, props.itemId]);
+    onClick(itemId);
+  }, [onClick, itemId]);
   const activateOnPointerUp = React.useContext(ToolGroupSelectionContext);
   return (
     <GroupToolExpander
@@ -1709,9 +1692,10 @@ interface GroupColumnToolProps {
 }
 
 function GroupColumnTool(props: GroupColumnToolProps) {
+  const { onClick, itemId } = props;
   const handleClick = React.useCallback(() => {
-    props.onClick(props.itemId);
-  }, [props.onClick, props.itemId]);
+    onClick(itemId);
+  }, [onClick, itemId]);
   const activateOnPointerUp = React.useContext(ToolGroupSelectionContext);
   return (
     <GroupTool
@@ -2959,6 +2943,17 @@ export default class ZonesPage extends React.PureComponent<{}, ZonesPageState> {
     this.setState((prevState) => ({
       nineZone: this._nineZone.showWidget(2, prevState.nineZone),
     }));
+    this.setState((prevState) => {
+      const manager = this._nineZone.getZonesManager();
+      let zones = manager.setZoneWidth(4, 100, prevState.nineZone.zones);
+      zones = manager.setZoneWidth(6, 100, zones);
+      return {
+        nineZone: {
+          ...prevState.nineZone,
+          zones,
+        },
+      };
+    });
   }
 
   public componentDidUpdate() {

@@ -1,8 +1,9 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as enzyme from "enzyme";
+import * as sinon from "sinon";
 import { I18N } from "@bentley/imodeljs-i18n";
 import {
   UiFramework,
@@ -17,12 +18,12 @@ import {
   combineReducers,
 } from "../ui-framework";
 import { UiComponents } from "@bentley/ui-components";
-import { UiCore } from "@bentley/ui-core";
+import { UiCore, UiSettings, UiSettingsStatus, UiSettingsResult } from "@bentley/ui-core";
 import { Store, createStore } from "redux";
 import { TestContentControl } from "./frontstage/FrontstageTestUtils";
 import { ToolUiManager } from "../ui-framework/zones/toolsettings/ToolUiManager";
 import { SyncUiEventDispatcher } from "../ui-framework/syncui/SyncUiEventDispatcher";
-import { AccessToken, UserInfo } from "@bentley/imodeljs-clients";
+import { AccessToken, UserInfo } from "@bentley/itwin-client";
 
 // tslint:disable: completed-docs
 
@@ -95,7 +96,7 @@ export class TestUtils {
         (window as any).__REDUX_DEVTOOLS_EXTENSION__ && (window as any).__REDUX_DEVTOOLS_EXTENSION__());
 
       if (testAlternateKey)
-        await UiFramework.initialize(this.store, TestUtils.i18n, undefined, "testDifferentFrameworkKey");
+        await UiFramework.initialize(this.store, TestUtils.i18n, "testDifferentFrameworkKey");
       else
         await UiFramework.initialize(this.store, TestUtils.i18n);
 
@@ -247,7 +248,36 @@ export const storageMock = () => {
   };
 };
 
+export class UiSettingsStub implements UiSettings {
+  public async deleteSetting(): Promise<UiSettingsResult> {
+    return {
+      status: UiSettingsStatus.Success,
+      setting: {},
+    };
+  }
+
+  public async getSetting(): Promise<UiSettingsResult> {
+    return {
+      status: UiSettingsStatus.NotFound,
+      setting: {},
+    };
+  }
+
+  public async saveSetting(): Promise<UiSettingsResult> {
+    return {
+      status: UiSettingsStatus.Success,
+      setting: {},
+    };
+  }
+}
+
 export type ReactWrapper<C extends React.Component, P = C["props"], S = C["state"]> = enzyme.ReactWrapper<P, S, C>;
-export type SinonSpy<T extends (...args: any) => any> = sinon.SinonSpy<Parameters<T>, ReturnType<T>>;
+
+declare module "sinon" {
+  interface SinonStubStatic {
+    // tslint:disable-next-line: callable-types
+    <T extends (...args: any) => any>(): sinon.SinonStub<Parameters<T>, ReturnType<T>>;
+  }
+}
 
 export default TestUtils;   // tslint:disable-line: no-default-export

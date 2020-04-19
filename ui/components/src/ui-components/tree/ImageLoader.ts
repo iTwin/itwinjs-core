@@ -1,12 +1,18 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Tree */
+/** @packageDocumentation
+ * @module Tree
+ */
 
 import { IImageLoader, LoadedImage } from "../common/IImageLoader";
 import { TreeNodeItem } from "./TreeDataProvider";
-import { BeInspireTreeNodeITree } from "./component/BeInspireTree";
+import { BeInspireTreeNodeITree } from "./deprecated/component/BeInspireTree";
+
+// tslint:disable:deprecation
+
+// tslint:disable:deprecation
 
 /** Interface for a tree image loader
  * @public
@@ -25,7 +31,7 @@ export class TreeImageLoader implements ITreeImageLoader {
       return undefined;
 
     return {
-      sourceType: "core-icon",
+      sourceType: "webfont-icon",
       value: item.icon,
     };
   }

@@ -1,18 +1,21 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Properties */
+/** @packageDocumentation
+ * @module Properties
+ */
 
 import * as React from "react";
 import _ from "lodash";
 import { Orientation } from "@bentley/ui-core";
-import { PropertyValueFormat, ArrayValue, PropertyRecord } from "@bentley/imodeljs-frontend";
+import { PropertyValueFormat, ArrayValue, PropertyRecord } from "@bentley/ui-abstract";
 import { PropertyValueRendererManager, PropertyValueRendererContext, PropertyContainerType } from "../ValueRendererManager";
 import { PrimitiveRendererProps, PrimitivePropertyRenderer } from "./PrimitivePropertyRenderer";
 import { NonPrimitivePropertyRenderer } from "./NonPrimitivePropertyRenderer";
 import { EditorContainer, PropertyUpdatedArgs } from "../../editors/EditorContainer";
 import { UiComponents } from "../../UiComponents";
+import { ActionButtonRenderer } from "./ActionButtonRenderer";
 
 /** Properties shared by all renderers and PropertyView
  * @public
@@ -42,6 +45,8 @@ export interface SharedRendererProps {
   isSelectable?: boolean;
   /** Width of the whole property element */
   width?: number;
+  /** Array of action button renderers @beta */
+  actionButtonRenderers?: ActionButtonRenderer[];
 }
 
 /** Properties of [[PropertyRenderer]] React component
@@ -52,7 +57,6 @@ export interface PropertyRendererProps extends SharedRendererProps {
   propertyValueRendererManager?: PropertyValueRendererManager;
   /** Multiplier of how much the property is indented to the right */
   indentation?: number;
-
   /** Indicates property is being edited @beta */
   isEditing?: boolean;
   /** Called when property edit is committed. @beta */
@@ -73,8 +77,6 @@ interface PropertyRendererState {
  * @public
  */
 export class PropertyRenderer extends React.Component<PropertyRendererProps, PropertyRendererState> {
-  private _isMounted = false;
-
   /** @internal */
   public readonly state: Readonly<PropertyRendererState> = {
     displayValue: UiComponents.translate("general.loading"),
@@ -91,7 +93,7 @@ export class PropertyRenderer extends React.Component<PropertyRendererProps, Pro
     return indentation * 17;
   }
 
-  private async updateDisplayValue(props: PropertyRendererProps) {
+  private updateDisplayValue(props: PropertyRendererProps) {
     if (props.isEditing) {
       this.updateDisplayValueAsEditor(props);
       return;
@@ -104,17 +106,13 @@ export class PropertyRenderer extends React.Component<PropertyRendererProps, Pro
     let displayValue: React.ReactNode | undefined;
 
     if (this.props.propertyValueRendererManager)
-      displayValue = await this.props.propertyValueRendererManager.render(props.propertyRecord, rendererContext);
+      displayValue = this.props.propertyValueRendererManager.render(props.propertyRecord, rendererContext);
     else
-      displayValue = await PropertyValueRendererManager.defaultManager.render(props.propertyRecord, rendererContext);
+      displayValue = PropertyValueRendererManager.defaultManager.render(props.propertyRecord, rendererContext);
 
     // Align value with label if orientation is vertical
     if (this.props.orientation === Orientation.Vertical)
       displayValue = <span style={{ paddingLeft: PropertyRenderer.getLabelOffset(this.props.indentation) }}>{displayValue}</span>;
-
-    // istanbul ignore next
-    if (!this._isMounted)
-      return;
 
     this.setState({ displayValue });
   }
@@ -131,10 +129,6 @@ export class PropertyRenderer extends React.Component<PropertyRendererProps, Pro
 
   /** Display property record value in an editor */
   public updateDisplayValueAsEditor(props: PropertyRendererProps) {
-    // istanbul ignore next
-    if (!this._isMounted)
-      return;
-
     this.setState({
       displayValue:
         <EditorContainer
@@ -148,20 +142,14 @@ export class PropertyRenderer extends React.Component<PropertyRendererProps, Pro
 
   /** @internal */
   public componentDidMount() {
-    this._isMounted = true;
-    this.updateDisplayValue(this.props); // tslint:disable-line:no-floating-promises
-  }
-
-  /** @internal */
-  public componentWillUnmount() {
-    this._isMounted = false;
+    this.updateDisplayValue(this.props);
   }
 
   /** @internal */
   public componentDidUpdate(prevProps: PropertyRendererProps) {
     if (prevProps.propertyRecord !== this.props.propertyRecord
       || prevProps.isEditing !== this.props.isEditing)
-      this.updateDisplayValue(this.props); // tslint:disable-line:no-floating-promises
+      this.updateDisplayValue(this.props);
   }
 
   /** @internal */

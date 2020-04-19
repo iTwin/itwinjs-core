@@ -1,14 +1,14 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { expect } from "chai";
 import { render, cleanup } from "@testing-library/react";
 
 import TestUtils from "../../TestUtils";
-import { ConfigurableUiManager, FrontstageManager, FrontstageProvider, Frontstage, Zone, Widget, FrontstageProps, CoreTools, ToolUiManager, SyncToolSettingsPropertiesEventArgs } from "../../../ui-framework";
-import { ToolSettingsValue, ToolSettingsPropertyRecord, PrimitiveValue, PropertyDescription, PropertyEditorParamTypes, SuppressLabelEditorParams, ToolSettingsPropertySyncItem, ButtonGroupEditorParams } from "@bentley/imodeljs-frontend";
+import { ConfigurableUiManager, DefaultToolSettingsProvider, FrontstageManager, FrontstageProvider, Frontstage, Zone, Widget, FrontstageProps, CoreTools, ToolUiManager, SyncToolSettingsPropertiesEventArgs } from "../../../ui-framework";
+import { DialogItemValue, DialogItem, PropertyDescription, PropertyEditorParamTypes, SuppressLabelEditorParams, DialogPropertySyncItem, ButtonGroupEditorParams } from "@bentley/ui-abstract";
 
 describe("DefaultToolUiSettingsProvider", () => {
 
@@ -53,8 +53,8 @@ describe("DefaultToolUiSettingsProvider", () => {
         {
           type: PropertyEditorParamTypes.ButtonGroupData,
           buttons: [
-            { iconSpec: "testIconOne"},
-            { iconSpec: "testIconTwo"},
+            { iconSpec: "testIconOne" },
+            { iconSpec: "testIconTwo" },
           ],
         } as ButtonGroupEditorParams,
         {
@@ -65,8 +65,8 @@ describe("DefaultToolUiSettingsProvider", () => {
     },
     enum: {
       choices: [
-        { label: "Choice 1", value: 10},
-        { label: "Choice 2", value: 20},
+        { label: "Choice 1", value: 10 },
+        { label: "Choice 2", value: 20 },
       ],
     },
   };
@@ -81,9 +81,9 @@ describe("DefaultToolUiSettingsProvider", () => {
         {
           type: PropertyEditorParamTypes.ButtonGroupData,
           buttons: [
-            { iconSpec: "plusOne"},
-            { iconSpec: "plusTwo"},
-            { iconSpec: "plusThree"},
+            { iconSpec: "plusOne" },
+            { iconSpec: "plusTwo" },
+            { iconSpec: "plusThree" },
           ],
         } as ButtonGroupEditorParams,
         {
@@ -94,42 +94,42 @@ describe("DefaultToolUiSettingsProvider", () => {
     },
     enum: {
       choices: [
-        { label: "Plus 1", value: 100},
-        { label: "Plus 2", value: 200},
-        { label: "Plus 3", value: 300},
+        { label: "Plus 1", value: 100 },
+        { label: "Plus 2", value: 200 },
+        { label: "Plus 3", value: 300 },
       ],
     },
   };
 
   const methodsDescription: PropertyDescription = {
-      name: "methods",
-      displayLabel: "",
-      typename: "enum",
-      editor: {
-        name: "enum-buttongroup",
-        params: [
-          {
-            type: PropertyEditorParamTypes.ButtonGroupData,
-            buttons: [
-              { iconSpec: "icon-select-single" },
-              { iconSpec: "icon-select-line" },
-              { iconSpec: "icon-select-box" },
-            ],
-          } as ButtonGroupEditorParams,
-          {
-            type: PropertyEditorParamTypes.SuppressEditorLabel,
-            suppressLabelPlaceholder: true,
-          } as SuppressLabelEditorParams,
-        ],
-      },
-      enum: {
-        choices: [
-          { label: "Pick", value: 0 },
-          { label: "Line", value: 1 },
-          { label: "Box", value: 2 },
-        ],
-      },
-    };
+    name: "methods",
+    displayLabel: "",
+    typename: "enum",
+    editor: {
+      name: "enum-buttongroup",
+      params: [
+        {
+          type: PropertyEditorParamTypes.ButtonGroupData,
+          buttons: [
+            { iconSpec: "icon-select-single" },
+            { iconSpec: "icon-select-line" },
+            { iconSpec: "icon-select-box" },
+          ],
+        } as ButtonGroupEditorParams,
+        {
+          type: PropertyEditorParamTypes.SuppressEditorLabel,
+          suppressLabelPlaceholder: true,
+        } as SuppressLabelEditorParams,
+      ],
+    },
+    enum: {
+      choices: [
+        { label: "Pick", value: 0 },
+        { label: "Line", value: 1 },
+        { label: "Box", value: 2 },
+      ],
+    },
+  };
 
   afterEach(cleanup);
 
@@ -169,7 +169,7 @@ describe("DefaultToolUiSettingsProvider", () => {
     const frontstageDef = FrontstageManager.findFrontstageDef("ToolUiProvider-TestFrontstage");
     expect(frontstageDef).to.not.be.undefined;
     if (frontstageDef) {
-      await FrontstageManager.setActiveFrontstageDef(frontstageDef); // tslint:disable-line:no-floating-promises
+      await FrontstageManager.setActiveFrontstageDef(frontstageDef);
 
       FrontstageManager.ensureToolInformationIsSet(firstToolId);
 
@@ -195,22 +195,22 @@ describe("DefaultToolUiSettingsProvider", () => {
     expect(frontstageDef).to.not.be.undefined;
 
     if (frontstageDef) {
-      await FrontstageManager.setActiveFrontstageDef(frontstageDef); // tslint:disable-line:no-floating-promises
+      await FrontstageManager.setActiveFrontstageDef(frontstageDef);
 
-      const toolSettingsProperties: ToolSettingsPropertyRecord[] = [];
-      const useLengthValue = new ToolSettingsValue(false);
-      const lengthValue = new ToolSettingsValue(1.2345, "1.2345");
-      const enumValue = new ToolSettingsValue("1");
-      const methodsValue = new ToolSettingsValue (0);
-      const groupOneValue = new ToolSettingsValue (10);
-      const groupTwoValue = new ToolSettingsValue (100);
+      const toolSettingsProperties: DialogItem[] = [];
+      const useLengthValue: DialogItemValue = { value: false };
+      const lengthValue: DialogItemValue = { value: 1.2345, displayValue: "1.2345" };
+      const enumValue: DialogItemValue = { value: "1" };
+      const methodsValue: DialogItemValue = { value: 0 };
+      const groupOneValue: DialogItemValue = { value: 10 };
+      const groupTwoValue: DialogItemValue = { value: 100 };
 
-      toolSettingsProperties.push(new ToolSettingsPropertyRecord(useLengthValue.clone() as PrimitiveValue, useLengthDescription, { rowPriority: 0, columnIndex: 1 }));
-      toolSettingsProperties.push(new ToolSettingsPropertyRecord(lengthValue.clone() as PrimitiveValue, lengthDescription, { rowPriority: 0, columnIndex: 3 }));
-      toolSettingsProperties.push(new ToolSettingsPropertyRecord(enumValue.clone() as PrimitiveValue, enumDescription, { rowPriority: 1, columnIndex: 3 }));
-      toolSettingsProperties.push(new ToolSettingsPropertyRecord(methodsValue.clone() as PrimitiveValue, methodsDescription, { rowPriority: 2, columnIndex: 1 }));
-      toolSettingsProperties.push(new ToolSettingsPropertyRecord(groupOneValue.clone() as PrimitiveValue, testEnumDescription1, { rowPriority: 3, columnIndex: 1 }));
-      toolSettingsProperties.push(new ToolSettingsPropertyRecord(groupTwoValue.clone() as PrimitiveValue, testEnumDescription2, { rowPriority: 3, columnIndex: 2 }));
+      toolSettingsProperties.push({ value: useLengthValue, property: useLengthDescription, editorPosition: { rowPriority: 0, columnIndex: 1 } });
+      toolSettingsProperties.push({ value: lengthValue, property: lengthDescription, editorPosition: { rowPriority: 0, columnIndex: 3 } });
+      toolSettingsProperties.push({ value: enumValue, property: enumDescription, editorPosition: { rowPriority: 1, columnIndex: 3 } });
+      toolSettingsProperties.push({ value: methodsValue, property: methodsDescription, editorPosition: { rowPriority: 2, columnIndex: 1 } });
+      toolSettingsProperties.push({ value: groupOneValue, property: testEnumDescription1, editorPosition: { rowPriority: 3, columnIndex: 1 } });
+      toolSettingsProperties.push({ value: groupTwoValue, property: testEnumDescription2, editorPosition: { rowPriority: 3, columnIndex: 2 }, isDisabled: true });
       ToolUiManager.initializeToolSettingsData(toolSettingsProperties, testToolId, "testToolLabel", "testToolDescription");
 
       // override the property getter to return the properties needed for the test
@@ -229,15 +229,16 @@ describe("DefaultToolUiSettingsProvider", () => {
       expect(toolInformation).to.not.be.undefined;
 
       if (toolInformation) {
-        const toolUiProvider = toolInformation.toolUiProvider;
-        expect(toolUiProvider).to.not.be.undefined;
+        const toolSettingsProvider = toolInformation.toolUiProvider as DefaultToolSettingsProvider;
+        expect(toolSettingsProvider).to.not.be.undefined;
 
-        if (toolUiProvider) {
-          expect(toolUiProvider.toolSettingsNode).to.not.be.undefined;
+        if (toolSettingsProvider) {
+          const tsNode = toolSettingsProvider.toolSettingsNode;
+          expect(tsNode).to.not.be.undefined;
         }
       }
 
-      const toolSettingsNode = FrontstageManager.activeToolSettingsNode;
+      const toolSettingsNode = FrontstageManager.activeToolSettingsProvider?.toolSettingsNode;
       expect(toolSettingsNode).to.not.be.undefined;
 
       const renderedComponent = render(toolSettingsNode as React.ReactElement<any>);
@@ -271,8 +272,8 @@ describe("DefaultToolUiSettingsProvider", () => {
       expect(buttonGroup2EnumButton).not.to.be.undefined;
 
       // simulate sync from tool
-      const newUseLengthValue = new ToolSettingsValue(false);
-      const syncItem = new ToolSettingsPropertySyncItem(newUseLengthValue, useLengthDescription.name, false);
+      const newUseLengthValue: DialogItemValue = { value: false };
+      const syncItem: DialogPropertySyncItem = { value: newUseLengthValue, propertyName: useLengthDescription.name, isDisabled: false };
       const syncArgs = { toolId: testToolId, syncProperties: [syncItem] } as SyncToolSettingsPropertiesEventArgs;
       ToolUiManager.onSyncToolSettingsProperties.emit(syncArgs);
 
@@ -286,14 +287,14 @@ describe("DefaultToolUiSettingsProvider", () => {
     expect(frontstageDef).to.not.be.undefined;
 
     if (frontstageDef) {
-      await FrontstageManager.setActiveFrontstageDef(frontstageDef); // tslint:disable-line:no-floating-promises
+      await FrontstageManager.setActiveFrontstageDef(frontstageDef);
 
-      const toolSettingsProperties: ToolSettingsPropertyRecord[] = [];
-      const useLengthValue = new ToolSettingsValue(false);
-      const lengthValue = new ToolSettingsValue(1.2345, "1.2345");
+      const toolSettingsProperties: DialogItem[] = [];
+      const useLengthValue: DialogItemValue = { value: false };
+      const lengthValue: DialogItemValue = { value: 1.2345, displayValue: "1.2345" };
 
-      const lockToggle = new ToolSettingsPropertyRecord(useLengthValue.clone() as PrimitiveValue, useLengthDescription, { rowPriority: 0, columnIndex: 1 });
-      toolSettingsProperties.push(new ToolSettingsPropertyRecord(lengthValue.clone() as PrimitiveValue, lengthDescription, { rowPriority: 0, columnIndex: 3 }, false, lockToggle));
+      const lockToggle: DialogItem = { value: useLengthValue, property: useLengthDescription, editorPosition: { rowPriority: 0, columnIndex: 1 } };
+      toolSettingsProperties.push({ value: lengthValue, property: lengthDescription, editorPosition: { rowPriority: 0, columnIndex: 3 }, isDisabled: false, lockProperty: lockToggle });
       ToolUiManager.initializeToolSettingsData(toolSettingsProperties, testToolId, "testToolLabel", "testToolDescription");
 
       // override the property getter to return the properties needed for the test
@@ -317,10 +318,20 @@ describe("DefaultToolUiSettingsProvider", () => {
 
         if (toolUiProvider) {
           expect(toolUiProvider.toolSettingsNode).to.not.be.undefined;
+          // simulate property update
+          const newlengthValue: DialogItemValue = { value: 7.5 };
+          const lengthSyncItem: DialogPropertySyncItem = { value: newlengthValue, propertyName: lengthDescription.name };
+          const newUselengthValue: DialogItemValue = { value: false };
+          const useLengthSyncItem: DialogPropertySyncItem = { value: newUselengthValue, propertyName: useLengthDescription.name };
+          const defaultProvider = toolUiProvider as DefaultToolSettingsProvider;
+          if (defaultProvider) {
+            defaultProvider.applyUiPropertyChange(lengthSyncItem);
+            defaultProvider.applyUiPropertyChange(useLengthSyncItem);
+          }
         }
       }
 
-      const toolSettingsNode = FrontstageManager.activeToolSettingsNode;
+      const toolSettingsNode = FrontstageManager.activeToolSettingsProvider?.toolSettingsNode;
       expect(toolSettingsNode).to.not.be.undefined;
 
       const renderedComponent = render(toolSettingsNode as React.ReactElement<any>);
@@ -339,8 +350,8 @@ describe("DefaultToolUiSettingsProvider", () => {
       expect(textEditor).not.to.be.undefined;
 
       // simulate sync from tool
-      const newUseLengthValue = new ToolSettingsValue(false);
-      const syncItem = new ToolSettingsPropertySyncItem(newUseLengthValue, useLengthDescription.name, false);
+      const newUseLengthValue: DialogItemValue = { value: false };
+      const syncItem: DialogPropertySyncItem = { value: newUseLengthValue, propertyName: useLengthDescription.name, isDisabled: false };
       const syncArgs = { toolId: testToolId, syncProperties: [syncItem] } as SyncToolSettingsPropertiesEventArgs;
       ToolUiManager.onSyncToolSettingsProperties.emit(syncArgs);
 

@@ -1,6 +1,64 @@
 # Change Log - @bentley/ui-core
 
-This log was last generated on Fri, 01 Nov 2019 13:28:37 GMT and should not be manually modified.
+This log was last generated on Wed, 04 Mar 2020 16:16:31 GMT and should not be manually modified.
+
+## 1.13.0
+Wed, 04 Mar 2020 16:16:31 GMT
+
+### Updates
+
+- Placeholder text not supported by Select component
+
+## 1.12.0
+Wed, 12 Feb 2020 17:45:50 GMT
+
+### Updates
+
+- Upgraded icons-generic-webfont to ^1.0.0
+- Added useDisposable hook
+
+## 1.11.0
+Wed, 22 Jan 2020 19:24:12 GMT
+
+### Updates
+
+- Fixed useEffectSkipFirst hook to cleanup properly
+- Upgrade to TypeScript 3.7.2.
+
+## 1.10.0
+Tue, 07 Jan 2020 19:44:01 GMT
+
+### Updates
+
+- Fixed lgtm issues in UI folders
+
+## 1.9.0
+Tue, 10 Dec 2019 18:08:56 GMT
+
+### Updates
+
+- No longer accessing this.state or this.props in setState updater - flagged by lgtm report
+- Changed SignIn & SignOut buttons to large. Fixed Dialog component resizing. Reduced default minimum size of Dialog component.
+- Update sinon version.
+- Use exhaustive-deps linter rule.
+- Removed unused React state variables. Removed unsupported setState calls from render() methods.
+- Code cleanup based on code analysis report from lgtm.
+- Added ConditionalField and FooterModeField components. StatusBar responsive changes.
+
+## 1.8.0
+Fri, 22 Nov 2019 14:03:34 GMT
+
+### Updates
+
+- Update Icon package version
+- Fixed Dialog position after moving or resizing. Fixed sizing on Firefox for different alignments.
+- Implemented more efficient CSS animation for Spinner component
+- Added slight delay before spinner animation. LoadingSpinnner tests in SpinnerTestDialog.
+- Tablet responsive UI
+- Added StatusBarComposer, StatusBarItem, StatusBarManager and StatusBarItemsManager
+- Added tslint-react-hooks to UI packages
+- Add useEffectSkipFirst custom hook
+- Update Statusbar index scss file.
 
 ## 1.7.0
 Fri, 01 Nov 2019 13:28:37 GMT

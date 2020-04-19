@@ -1,90 +1,394 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module StatusBar */
+/** @packageDocumentation
+ * @module StatusBar
+ */
 
 import * as React from "react";
-import { StatusBarSpaceBetween, StatusBarLeftSection, StatusBarCenterSection, StatusBarRightSection } from "./StatusBar";
-import { StatusBarSection, StatusBarItem } from "./StatusBarItem";
-import { StatusBarItemsManager } from "./StatusBarItemsManager";
+import classnames from "classnames";
+import {
+  StatusBarItemsManager, CommonStatusBarItem, isAbstractStatusBarActionItem, AbstractStatusBarActionItem,
+  isAbstractStatusBarLabelItem, AbstractStatusBarLabelItem, StatusBarLabelSide, StatusBarSection, ConditionalStringValue, ConditionalBooleanValue,
+} from "@bentley/ui-abstract";
+import { Icon, useResizeObserver, useRefs, CommonProps, useOnOutsideClick } from "@bentley/ui-core";
+import { FooterIndicator, eqlOverflown } from "@bentley/ui-ninezone";
+import { StatusBarSpaceBetween, StatusBarLeftSection, StatusBarCenterSection, StatusBarRightSection, StatusBarContext } from "./StatusBar";
+import { isStatusBarItem } from "./StatusBarItem";
+import { useDefaultStatusBarItems } from "./useDefaultStatusBarItems";
+import { useUiItemsProviderStatusBarItems } from "./useUiItemsProviderStatusBarItems";
+import { SyncUiEventArgs, SyncUiEventDispatcher } from "../../ui-framework";
+import { Indicator } from "../statusfields/Indicator";
+import { StatusBarOverflow } from "./Overflow";
+import { StatusBarOverflowPanel } from "./OverflowPanel";
+
+/** Private  function to generate a value that will allow the proper order to be maintained when items are placed in overflow panel */
+function getCombinedSectionItemPriority(item: CommonStatusBarItem) {
+  let sectionValue = 0;
+  if (item.section === StatusBarSection.Center)
+    sectionValue = 100000;
+  else if (item.section === StatusBarSection.Context)
+    sectionValue = 200000;
+  else if (item.section === StatusBarSection.Right)
+    sectionValue = 300000;
+  return sectionValue + item.itemPriority;
+}
+
+interface DockedStatusBarEntryContextArg {
+  readonly isOverflown: boolean;
+  readonly onResize: (w: number) => void;
+}
+
+// tslint:disable-next-line: variable-name
+const DockedStatusBarEntryContext = React.createContext<DockedStatusBarEntryContextArg>(null!);
+DockedStatusBarEntryContext.displayName = "nz:DockedStatusBarEntryContext";
+
+/** @internal */
+export function useStatusBarEntry() {
+  return React.useContext(DockedStatusBarEntryContext);
+}
+
+/** Properties of [[DockedStatusBarItem]] component.
+ * @internal future
+ */
+export interface StatusBarItemProps extends CommonProps {
+  /** Tool setting content. */
+  children?: React.ReactNode;
+}
+
+/** Used in [[StatusBarComposer]] component to display a statusbar item.
+ * @internal future
+ */
+export function DockedStatusBarItem(props: StatusBarItemProps) {
+  const { onResize } = useStatusBarEntry();
+  const ref = useResizeObserver<HTMLDivElement>(onResize);
+  const className = classnames(
+    "uifw-statusbar-item-container",
+    props.className,
+  );
+  return (
+    <div
+      className={className}
+      ref={ref}
+      style={props.style}
+    >
+      {props.children}
+    </div>
+  );
+}
+
+interface DockedStatusBarEntryProps {
+  children?: React.ReactNode;
+  entryKey: string;
+  getOnResize: (key: string) => (w: number) => void;
+}
+
+/** Wrapper for status bar entries so their size can be used to determine if the status bar container can display them or if they will need to be placed in an overflow panel. */
+// tslint:disable-next-line: variable-name no-shadowed-variable
+const DockedStatusBarEntry = React.memo<DockedStatusBarEntryProps>(function DockedStatusbarEntry({ children, entryKey, getOnResize }) {
+  const onResize = React.useMemo(() => getOnResize(entryKey), [getOnResize, entryKey]);
+  const entry = React.useMemo<DockedStatusBarEntryContextArg>(() => ({
+    isOverflown: false,
+    onResize,
+  }), [onResize]);
+  return (
+    <DockedStatusBarEntryContext.Provider value={entry}>
+      {children}
+    </DockedStatusBarEntryContext.Provider>
+  );
+});
+
+/** Private function to set up sync event monitoring of statusbar items */
+function useStatusBarItemSyncEffect(itemsManager: StatusBarItemsManager, syncIdsOfInterest: string[]) {
+  React.useEffect(() => {
+    const handleSyncUiEvent = (args: SyncUiEventArgs) => {
+      if (0 === syncIdsOfInterest.length)
+        return;
+
+      // istanbul ignore else
+      if (syncIdsOfInterest.some((value: string): boolean => args.eventIds.has(value))) {
+        // process each item that has interest
+        itemsManager.refreshAffectedItems(args.eventIds);
+      }
+    };
+
+    // Note: that items with conditions have condition run when loaded into the items manager
+    SyncUiEventDispatcher.onSyncUiEvent.addListener(handleSyncUiEvent);
+    return () => {
+      SyncUiEventDispatcher.onSyncUiEvent.removeListener(handleSyncUiEvent);
+    };
+  }, [itemsManager, itemsManager.items, syncIdsOfInterest]);
+}
+
+/** function to produce a StatusBarItem component from an AbstractStatusBarLabelItem */
+function generateActionStatusLabelItem(item: AbstractStatusBarLabelItem, isInFooterMode: boolean): React.ReactNode {
+  const iconPaddingClass = item.labelSide === StatusBarLabelSide.Left ? "nz-icon-padding-right" : "nz-icon-padding-left";
+  return (<FooterIndicator
+    isInFooterMode={isInFooterMode}
+  >
+    {item.icon && <Icon iconSpec={item.icon} />}
+    {item.label && <span className={iconPaddingClass}>{item.label}</span>}
+  </FooterIndicator>
+  );
+}
+
+/** function to produce a StatusBarItem component from an AbstractStatusBarActionItem */
+function generateActionStatusBarItem(item: AbstractStatusBarActionItem, isInFooterMode: boolean): React.ReactNode {
+  return <Indicator toolTip={ConditionalStringValue.getValue(item.tooltip)} opened={false} onClick={item.execute} iconSpec={item.icon}
+    isInFooterMode={isInFooterMode} />;
+}
+
+/** local function to combine items from Stage and from Plugins */
+function combineItems(stageItems: ReadonlyArray<CommonStatusBarItem>, addonItems: ReadonlyArray<CommonStatusBarItem>) {
+  const items: CommonStatusBarItem[] = [];
+  if (stageItems.length)
+    items.push(...stageItems);
+  if (addonItems.length)
+    items.push(...addonItems);
+  return items;
+}
+
+/** local function to ensure a width value is defined for a status bar entries.  */
+function verifiedMapEntries<T>(map: Map<string, T | undefined>) {
+  for (const [, val] of map) {
+    // istanbul ignore next
+    if (val === undefined)
+      return undefined;
+  }
+  return map as Map<string, T>;
+}
+
+/** Returns a subset of docked entry keys that exceed given width and should be placed in overflow panel. */
+function getItemToPlaceInOverflow(width: number, docked: ReadonlyArray<readonly [string, number]>, overflowWidth: number) {
+  let settingsWidth = 0;
+
+  let i = 0;
+  for (; i < docked.length; i++) {
+    const w = docked[i][1];
+    const newSettingsWidth = settingsWidth + w;
+    if (newSettingsWidth > width) {
+      settingsWidth += overflowWidth;
+      break;
+    }
+    settingsWidth = newSettingsWidth;
+  }
+
+  let j = i;
+  for (; j > 0; j--) {
+    if (settingsWidth <= width)
+      break;
+    const w = docked[j][1];
+    settingsWidth -= w;
+  }
+
+  const overflowItems = new Array<string>();
+  for (i = j; i < docked.length; i++) {
+    overflowItems.push(docked[i][0]);
+  }
+  return overflowItems;
+}
+
+function isItemInOverflow(id: string, overflowItemIds: ReadonlyArray<string> | undefined) {
+  if (!overflowItemIds || 0 === overflowItemIds.length)
+    return false;
+  return !!overflowItemIds.find((value) => value === id);
+}
 
 /** Properties for the [[StatusBarComposer]] React components
  * @beta
  */
-export interface StatusBarComposerProps {
-  /** StatusBar items manager containing status fields */
-  itemsManager: StatusBarItemsManager;
+export interface StatusBarComposerProps extends CommonProps {
+  /** Status Bar items */
+  items: CommonStatusBarItem[];
+
+  /** CSS class name override for the overall Status Bar */
+  mainClassName?: string;
+  /** CSS class name override for the left section */
+  leftClassName?: string;
+  /** CSS class name override for the center section */
+  centerClassName?: string;
+  /** CSS class name override for the right section */
+  rightClassName?: string;
 }
 
-/** @internal */
-interface StatusBarComposerState {
-  statusBarItems: ReadonlyArray<StatusBarItem>;
-}
-
-/** StatusBar component composed from [[StatusBarItem]].
+/** Component to load components into the [[StatusBar]].
  * @beta
  */
-export class StatusBarComposer extends React.PureComponent<StatusBarComposerProps, StatusBarComposerState> {
-  /** @internal */
-  public readonly state: StatusBarComposerState = {
-    statusBarItems: [],
-  };
+export function StatusBarComposer(props: StatusBarComposerProps) {
+  const [defaultItemsManager, setDefaultItemsManager] = React.useState(new StatusBarItemsManager(props.items));
+  const [isOverflowPanelOpen, setIsOverflowPanelOpen] = React.useState(false);
+  const containerWidth = React.useRef<number | undefined>(undefined);
 
-  /** @internal */
-  public componentDidMount() {
-    this.props.itemsManager.onItemsChanged.addListener(this._handleStatusBarItemsChanged);
-    this.setState((_, props) => ({ statusBarItems: props.itemsManager.items }));
-  }
-
-  /** @internal */
-  public componentWillUnmount() {
-    this.props.itemsManager.onItemsChanged.removeListener(this._handleStatusBarItemsChanged);
-  }
-
-  /** @internal */
-  public componentDidUpdate(prevProps: StatusBarComposerProps) {
-    if (this.props.itemsManager !== prevProps.itemsManager) {
-      prevProps.itemsManager.onItemsChanged.removeListener(this._handleStatusBarItemsChanged);
-      this.props.itemsManager.onItemsChanged.addListener(this._handleStatusBarItemsChanged);
-      this.setState((_, props) => ({ statusBarItems: props.itemsManager.items }));
+  const isInitialMount = React.useRef(true);
+  React.useEffect(() => {
+    if (isInitialMount.current)
+      isInitialMount.current = false;
+    else {
+      setDefaultItemsManager(new StatusBarItemsManager(props.items));
     }
-  }
+  }, [props.items]);
+  const defaultItems = useDefaultStatusBarItems(defaultItemsManager);
+  const syncIdsOfInterest = React.useMemo(() => StatusBarItemsManager.getSyncIdsOfInterest(defaultItems), [defaultItems]);
+  useStatusBarItemSyncEffect(defaultItemsManager, syncIdsOfInterest);
 
-  private _handleStatusBarItemsChanged = () => {
-    this.setState((_, props) => ({ statusBarItems: props.itemsManager.items }));
-  }
+  const statusBarContext = React.useContext(StatusBarContext);
+  const [addonItemsManager] = React.useState(new StatusBarItemsManager());
+  const addonItems = useUiItemsProviderStatusBarItems(addonItemsManager);
+  const addonSyncIdsOfInterest = React.useMemo(() => StatusBarItemsManager.getSyncIdsOfInterest(addonItems), [addonItems]);
+  useStatusBarItemSyncEffect(addonItemsManager, addonSyncIdsOfInterest);
 
-  private getSectionItems(section: StatusBarSection): React.ReactNode[] {
-    const sectionItems = this.state.statusBarItems
-      .filter((item) => item.section === section && item.isVisible)
+  const statusBarItems = React.useMemo(() => combineItems(defaultItems, addonItems), [defaultItems, addonItems]);
+  const entryWidths = React.useRef(new Map<string, number | undefined>());
+  const overflowWidth = React.useRef<number | undefined>(undefined);
+  const [overflown, setOverflown] = React.useState<ReadonlyArray<string>>();
+
+  const calculateOverflow = React.useCallback(() => {
+    const widths = verifiedMapEntries(entryWidths.current);
+    if (containerWidth.current === undefined ||
+      widths === undefined ||
+      overflowWidth.current === undefined
+    ) {
+      setOverflown(new Array<string>());
+      return;
+    }
+
+    // Calculate overflow.
+    const newOverflown = getItemToPlaceInOverflow(containerWidth.current, [...widths.entries()], overflowWidth.current);
+    if (!eqlOverflown(overflown, newOverflown)) {
+      setOverflown(newOverflown);
+      // istanbul ignore next
+      if (0 === newOverflown.length && isOverflowPanelOpen)
+        setIsOverflowPanelOpen(false);
+    }
+  }, [isOverflowPanelOpen, overflown]);
+
+  const handleOverflowResize = React.useCallback((w: number) => {
+    const calculate = overflowWidth.current !== w;
+    overflowWidth.current = w;
+    calculate && calculateOverflow();
+  }, [calculateOverflow]);
+
+  const handleEntryResize = React.useCallback((key: string) => (w: number) => {
+    const oldW = entryWidths.current.get(key);
+    if ((undefined === oldW) || Math.abs(oldW - w) > 2) {
+      entryWidths.current.set(key, w);
+      calculateOverflow();
+    }
+  }, [calculateOverflow]);
+
+  /** generate a wrapped status bar entry that will report its size. */
+  const getComponent = React.useCallback((item: CommonStatusBarItem, key: string): React.ReactNode => {
+    return (
+      <DockedStatusBarEntry
+        key={key}
+        entryKey={key}
+        getOnResize={handleEntryResize}
+      >
+        <DockedStatusBarItem key={key}>
+          {isStatusBarItem(item) && item.reactNode}
+          {isAbstractStatusBarActionItem(item) && generateActionStatusBarItem(item, statusBarContext.isInFooterMode)}
+          {isAbstractStatusBarLabelItem(item) && generateActionStatusLabelItem(item, statusBarContext.isInFooterMode)}
+        </DockedStatusBarItem>
+      </DockedStatusBarEntry>
+    );
+  }, [statusBarContext.isInFooterMode, handleEntryResize]);
+
+  const getSectionItems = React.useCallback((section: StatusBarSection): React.ReactNode[] => {
+    const sectionItems = statusBarItems
+      .filter((item) => item.section as number === section && !isItemInOverflow(item.id, overflown) && !ConditionalBooleanValue.getValue(item.isHidden))
       .sort((a, b) => a.itemPriority - b.itemPriority);
 
     return sectionItems.map((sectionItem) => (
       <React.Fragment key={sectionItem.id}>
-        {sectionItem.component}
+        {getComponent(sectionItem, sectionItem.id)}
       </React.Fragment>
     ));
-  }
+  }, [statusBarItems, overflown, getComponent]);
 
-  /** @internal */
-  public render() {
-    const leftItems = this.getSectionItems(StatusBarSection.Left);
-    const centerItems = this.getSectionItems(StatusBarSection.Center);
-    const rightItems = this.getSectionItems(StatusBarSection.Right);
+  const getOverflowItems = React.useCallback((): React.ReactNode[] => {
+    const itemsInOverflow = statusBarItems
+      .filter((item) => isItemInOverflow(item.id, overflown) && !ConditionalBooleanValue.getValue(item.isHidden))
+      .sort((a, b) => getCombinedSectionItemPriority(a) - getCombinedSectionItemPriority(b)).reverse();
 
-    return (
-      <StatusBarSpaceBetween>
-        <StatusBarLeftSection>
+    return itemsInOverflow.map((item) => (
+      <React.Fragment key={item.id}>
+        {getComponent(item, item.id)}
+      </React.Fragment>
+    ));
+  }, [statusBarItems, overflown, getComponent]);
+
+  const handleContainerResize = React.useCallback((w: number) => {
+    if ((undefined === containerWidth.current) || Math.abs(containerWidth.current - w) > 2) {
+      containerWidth.current = w;
+      calculateOverflow();
+    }
+  }, [calculateOverflow]);
+
+  const containerRef = React.useRef<HTMLDivElement>(null);
+  const resizeObserverRef = useResizeObserver(handleContainerResize);
+  // allow  both the containerRef and the resize observer function that takes a ref to be processed when the ref is set.
+  const refs = useRefs(containerRef, resizeObserverRef);
+
+  const onOverflowClick = React.useCallback(() => {
+    setIsOverflowPanelOpen((prev) => !prev);
+  }, []);
+  const onOutsideClick = React.useCallback(() => {
+    // istanbul ignore next
+    setIsOverflowPanelOpen(false);
+  }, []);
+  const isOutsideEvent = React.useCallback((e: PointerEvent) => {
+    // istanbul ignore next
+    return !!containerRef.current && (e.target instanceof Node) && !containerRef.current.contains(e.target);
+  }, []);
+  const panelRef = useOnOutsideClick<HTMLDivElement>(onOutsideClick, isOutsideEvent);
+
+  const leftItems = React.useMemo(() => getSectionItems(StatusBarSection.Left), [getSectionItems]);
+  const centerItems = React.useMemo(() => getSectionItems(StatusBarSection.Center), [getSectionItems]);
+  const rightItems = React.useMemo(() => getSectionItems(StatusBarSection.Right), [getSectionItems]);
+  const contextItems = React.useMemo(() => getSectionItems(StatusBarSection.Context), [getSectionItems]);
+  const overflowItems = React.useMemo(() => getOverflowItems(), [getOverflowItems]);
+
+  const className = classnames(
+    "uifw-statusbar-docked",
+    props.className,
+  );
+
+  return (
+    <div
+      className={className}
+      ref={refs}
+      style={props.style}
+    >
+      <StatusBarSpaceBetween className={props.mainClassName}>
+        <StatusBarLeftSection className={props.leftClassName}>
           {leftItems}
         </StatusBarLeftSection>
-        <StatusBarCenterSection>
+        <StatusBarCenterSection className={props.centerClassName}>
           {centerItems}
+          {contextItems}
         </StatusBarCenterSection>
-        <StatusBarRightSection>
+        <StatusBarRightSection className={props.rightClassName}>
           {rightItems}
+          {
+            (!overflown || overflown.length > 0) && (
+              <StatusBarOverflow
+                onClick={onOverflowClick}
+                onResize={handleOverflowResize}
+              />
+            )
+          }
+          {isOverflowPanelOpen &&
+            <StatusBarOverflowPanel
+              ref={panelRef}
+            >
+              <>
+                {overflowItems.map((overflowEntry) => overflowEntry)}
+              </>
+            </StatusBarOverflowPanel>
+          }
         </StatusBarRightSection>
       </StatusBarSpaceBetween>
-    );
-  }
+    </div>
+  );
 }

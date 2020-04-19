@@ -2,6 +2,87 @@
   "name": "@bentley/ui-abstract",
   "entries": [
     {
+      "version": "1.13.0",
+      "tag": "@bentley/ui-abstract_v1.13.0",
+      "date": "Wed, 04 Mar 2020 16:16:31 GMT",
+      "comments": {}
+    },
+    {
+      "version": "1.12.0",
+      "tag": "@bentley/ui-abstract_v1.12.0",
+      "date": "Wed, 12 Feb 2020 17:45:50 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Upgraded icons-generic-webfont to ^1.0.0"
+          },
+          {
+            "comment": "Added UiAdmin.showHTMLElement to show information & graphics for markers"
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.11.0",
+      "tag": "@bentley/ui-abstract_v1.11.0",
+      "date": "Wed, 22 Jan 2020 19:24:12 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Upgrade to TypeScript 3.7.2."
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.10.0",
+      "tag": "@bentley/ui-abstract_v1.10.0",
+      "date": "Tue, 07 Jan 2020 19:44:01 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add PluginUiManager, PluginUiProvider, BackstageItemManager, BackstageItem, PluginStatusBarManager and abstract statusbar item interfaces."
+          },
+          {
+            "comment": "Remove duplicate StatusBarItemManager from ui-framework and only leave the one in ui-abstract."
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.9.0",
+      "tag": "@bentley/ui-abstract_v1.9.0",
+      "date": "Tue, 10 Dec 2019 18:08:56 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Disallow plugins from adding tools anywhere but the end of a toolbar."
+          },
+          {
+            "comment": "Update sinon version."
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.8.0",
+      "tag": "@bentley/ui-abstract_v1.8.0",
+      "date": "Fri, 22 Nov 2019 14:03:34 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update Icon package version"
+          },
+          {
+            "comment": "Added StatusBarComposer, StatusBarItem, StatusBarManager and StatusBarItemsManager"
+          },
+          {
+            "comment": "Added tslint-react-hooks to UI packages"
+          }
+        ]
+      }
+    },
+    {
       "version": "1.7.0",
       "tag": "@bentley/ui-abstract_v1.7.0",
       "date": "Fri, 01 Nov 2019 13:28:37 GMT",

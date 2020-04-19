@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { I18N } from "@bentley/imodeljs-i18n";
 import {
@@ -12,7 +12,7 @@ import {
   CustomFormattedNumberParams,
   BasePropertyEditorParams,
   PropertyEditorInfo,
-} from "@bentley/imodeljs-frontend";
+} from "@bentley/ui-abstract";
 import {
   UiComponents, ColumnDescription, FilterableTable, CompositeFilterDescriptorCollection,
 } from "../ui-components";
@@ -168,19 +168,18 @@ export class TestUtils {
   public static addEnumButtonGroupEditorSpecification(propertyRecord: PropertyRecord) {
     propertyRecord.property.editor = {
       name: "enum-buttongroup",
-      params: [
-        {
-          type: PropertyEditorParamTypes.ButtonGroupData,
-          buttons: [
-            { iconSpec: "icon-yellow" },
-            { iconSpec: "icon-red" },
-            { iconSpec: "icon-green" },
-            {
-              iconSpec: "icon-blue",
-              isEnabledFunction: () => TestUtils.blueEnumValueIsEnabled,
-            },
-          ],
-        } as ButtonGroupEditorParams,
+      params: [{
+        type: PropertyEditorParamTypes.ButtonGroupData,
+        buttons: [
+          { iconSpec: "icon-yellow" },
+          { iconSpec: "icon-red" },
+          { iconSpec: "icon-green" },
+          {
+            iconSpec: "icon-blue",
+            isEnabledFunction: () => TestUtils.blueEnumValueIsEnabled,
+          },
+        ],
+      } as ButtonGroupEditorParams,
       ],
     };
   }

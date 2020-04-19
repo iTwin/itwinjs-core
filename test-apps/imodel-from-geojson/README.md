@@ -1,6 +1,6 @@
 # imodel-from-geojson
 
-Copyright © 2019 Bentley Systems, Incorporated. All rights reserved.
+Copyright © Bentley Systems, Incorporated. All rights reserved.
 
 ## Description
 

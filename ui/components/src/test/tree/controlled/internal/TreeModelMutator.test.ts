@@ -1,9 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as moq from "typemoq";
+import sinon from "sinon";
 import { EMPTY } from "rxjs/internal/observable/empty";
 import { CheckBoxState } from "@bentley/ui-core";
 import { TreeModelMutator } from "../../../../ui-components/tree/controlled/internal/TreeModelMutator";
@@ -33,6 +34,14 @@ describe("TreeModelMutator", () => {
       .setup((x) => x.modifyModel(moq.It.isAny()))
       .callback((func: (model: MutableTreeModel) => void) => func(treeModelMock.object))
       .verifiable(moq.Times.once());
+  });
+
+  describe("modelSource", () => {
+
+    it("returns modelSource", () => {
+      expect(modelMutator.modelSource).to.be.deep.eq(treeModelSourceMock.object);
+    });
+
   });
 
   describe("expandNode", () => {
@@ -197,6 +206,60 @@ describe("TreeModelMutator", () => {
       treeModelMock.setup((x) => x.getNode(node.id)).returns(() => undefined).verifiable(moq.Times.once());
       modelMutator.setCheckboxStates([checkboxStateChange]);
       treeModelMock.verifyAll();
+    });
+
+  });
+
+  describe("activateEditor", () => {
+
+    beforeEach(() => {
+      node.isSelected = true;
+      node.item.isEditable = true;
+    });
+
+    it("sets editing info for selected node", () => {
+      treeModelMock.setup((x) => x.getNode(node.id)).returns(() => node).verifiable(moq.Times.once());
+      modelMutator.activateEditing(node.id, () => { });
+      treeModelMock.verifyAll();
+      expect(node.editingInfo).to.not.be.undefined;
+    });
+
+    it("does not set editing info if node is not editable", () => {
+      node.item.isEditable = false;
+      treeModelMock.setup((x) => x.getNode(node.id)).returns(() => node).verifiable(moq.Times.once());
+      modelMutator.activateEditing(node.id, () => { });
+      treeModelMock.verifyAll();
+      expect(node.editingInfo).to.be.undefined;
+    });
+
+    it("tries to set editing info even if node was removed", () => {
+      node.isSelected = false;
+
+      treeModelMock.setup((x) => x.getNode(node.id)).returns(() => undefined).verifiable(moq.Times.once());
+      modelMutator.activateEditing(node.id, () => { });
+      treeModelMock.verifyAll();
+    });
+
+    describe("nodeEditingInfo callbacks", () => {
+      let onNodeUpdatedSpy: sinon.SinonSpy;
+
+      beforeEach(() => {
+        onNodeUpdatedSpy = sinon.spy();
+        treeModelMock.setup((x) => x.getNode(node.id)).returns(() => node);
+        modelMutator.activateEditing(node.id, onNodeUpdatedSpy);
+      });
+
+      it("closes node editing", () => {
+        node.editingInfo!.onCancel();
+        expect(node.editingInfo).to.be.undefined;
+      });
+
+      it("closes editing and calls onNodeUpdated when changes are committed", () => {
+        node.editingInfo!.onCommit(node, "newValue");
+        expect(onNodeUpdatedSpy).to.be.calledOnceWith(node, "newValue");
+        expect(node.editingInfo).to.be.undefined;
+      });
+
     });
 
   });

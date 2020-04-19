@@ -1,11 +1,14 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module OIDC */
+/** @packageDocumentation
+ * @module OIDC
+ */
 
 import { AuthStatus, BeEvent, BentleyError, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
-import { AccessToken, IOidcFrontendClient, OidcClient, UserInfo } from "@bentley/imodeljs-clients";
+import { AccessToken, UserInfo, ImsOidcClient } from "@bentley/itwin-client";
+import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
 
 const loggerCategory: string = FrontendLoggerCategory.OidcIOSClient;
@@ -13,7 +16,7 @@ const loggerCategory: string = FrontendLoggerCategory.OidcIOSClient;
 /** Utility to provide OIDC/OAuth tokens from native ios app to frontend
  * @alpha
  */
-export class OidcIOSClient extends OidcClient implements IOidcFrontendClient {
+export class OidcIOSClient extends ImsOidcClient implements FrontendAuthorizationClient {
   private _accessToken: AccessToken | undefined;
   public constructor() {
     super();

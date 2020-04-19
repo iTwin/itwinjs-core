@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/frontend-devtools",
+      "comment": "Add keyin 'fdt clip color' to control colorizing of pixels inside or outside clip regions.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/frontend-devtools",
+  "email": "Mark.Schlosser@bentley.com"
+}

@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module UiSettings */
+/** @packageDocumentation
+ * @module UiSettings
+ */
 
 import { UiSettings, UiSettingsResult, UiSettingsStatus } from "./UiSettings";
 
@@ -14,7 +16,7 @@ export class SessionUiSettings implements UiSettings {
 
   constructor(public w: Window = window) { }
 
-  public getSetting = (settingNamespace: string, settingName: string): UiSettingsResult => {
+  public async getSetting(settingNamespace: string, settingName: string): Promise<UiSettingsResult> {
     const setting = this.w.sessionStorage.getItem(`${settingNamespace}.${settingName}`);
     if (setting !== null)
       return { status: UiSettingsStatus.Success, setting: JSON.parse(setting) };
@@ -22,12 +24,12 @@ export class SessionUiSettings implements UiSettings {
       return { status: UiSettingsStatus.NotFound };
   }
 
-  public saveSetting = (settingNamespace: string, settingName: string, setting: any): UiSettingsResult => {
+  public async saveSetting(settingNamespace: string, settingName: string, setting: any): Promise<UiSettingsResult> {
     this.w.sessionStorage.setItem(`${settingNamespace}.${settingName}`, JSON.stringify(setting));
     return { status: UiSettingsStatus.Success };
   }
 
-  public deleteSetting = (settingNamespace: string, settingName: string): UiSettingsResult => {
+  public async deleteSetting(settingNamespace: string, settingName: string): Promise<UiSettingsResult> {
     const name = `${settingNamespace}.${settingName}`;
     const setting = this.w.sessionStorage.getItem(name);
     if (setting === null)

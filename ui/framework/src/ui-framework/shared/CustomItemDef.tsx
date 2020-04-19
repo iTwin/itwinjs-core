@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Item */
+/** @packageDocumentation
+ * @module Item
+ */
 
 import * as React from "react";
 
@@ -10,6 +12,7 @@ import { SizeProps } from "@bentley/ui-core";
 
 import { ActionButtonItemDef } from "./ActionButtonItemDef";
 import { CustomItemProps } from "./CustomItemProps";
+import { ConditionalBooleanValue } from "@bentley/ui-abstract";
 
 /** @internal */
 interface CloneProps {
@@ -24,7 +27,8 @@ export class CustomItemDef extends ActionButtonItemDef {
   private static _sId = 0;
   public static customIdPrefix = "Custom-";
   public customId: string;
-  public reactElement: React.ReactNode;
+  public reactElement?: React.ReactNode;  // prefer to use popupPanelNode
+  public popupPanelNode?: React.ReactNode;
 
   constructor(props: CustomItemProps) {
     super(props);
@@ -37,6 +41,7 @@ export class CustomItemDef extends ActionButtonItemDef {
     }
 
     this.reactElement = props.reactElement;
+    this.popupPanelNode = props.popupPanelNode;
   }
 
   public get id(): string {
@@ -44,13 +49,13 @@ export class CustomItemDef extends ActionButtonItemDef {
   }
 
   public toolbarReactNode(index?: number): React.ReactNode {
-    if (!this.isVisible)
+    if (!this.isVisible || ConditionalBooleanValue.getValue(this.isHidden)) // tslint:disable-line:deprecation
       return null;
 
     let clone: React.ReactNode;
 
     // istanbul ignore else
-    if (React.isValidElement(this.reactElement)) {
+    if (this.reactElement && React.isValidElement(this.reactElement)) {
       const key = this.getKey(index);
       const cloneProps: CloneProps = {
         key,

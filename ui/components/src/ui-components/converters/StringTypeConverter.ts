@@ -1,24 +1,34 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module TypeConverters */
+/** @packageDocumentation
+ * @module TypeConverters
+ */
 
 import { TypeConverter, StandardTypeConverterTypeNames } from "./TypeConverter";
 import { TypeConverterManager } from "./TypeConverterManager";
-import { Primitives } from "@bentley/imodeljs-frontend";
+import { Primitives } from "@bentley/ui-abstract";
 
 /** Operators for string types
  * @public
  */
 export interface StringOperatorProcessor {
+  /** Determines if one string starts with another string */
   startsWith(a: string, b: string, caseSensitive: boolean): boolean;
+  /** Determines if one string ends with another string */
   endsWith(a: string, b: string, caseSensitive: boolean): boolean;
+  /** Determines if one string contains another string */
   contains(a: string, b: string, caseSensitive: boolean): boolean;
+  /** Determines if one string does not contain another string */
   doesNotContain(a: string, b: string, caseSensitive: boolean): boolean;
+  /** Determines if one string is contained within another string */
   isContainedIn(a: string, b: string, caseSensitive: boolean): boolean;
+  /** Determines if one string is not contained within another string */
   isNotContainedIn(a: string, b: string, caseSensitive: boolean): boolean;
+  /** Determines if a string is empty */
   isEmpty(a: string): boolean;
+  /** Determines if a string is not empty */
   isNotEmpty(a: string): boolean;
 }
 

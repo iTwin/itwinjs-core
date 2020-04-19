@@ -1,11 +1,13 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module PropertyEditors */
+/** @packageDocumentation
+ * @module PropertyEditors
+ */
 
 import * as React from "react";
-import { PropertyValue, PropertyRecord, PropertyDescription } from "@bentley/imodeljs-frontend";
+import { PropertyValue, PropertyRecord, PropertyDescription } from "@bentley/ui-abstract";
 import { AsyncValueProcessingResult } from "../converters/TypeConverter";
 import { TextEditor } from "./TextEditor";
 
@@ -23,7 +25,7 @@ export interface DataController {
 export abstract class PropertyEditorBase implements DataController {
   public customDataController: DataController | undefined = undefined;
 
-  public abstract get reactElement(): React.ReactNode;
+  public abstract get reactNode(): React.ReactNode;
 
   public applyEditorParams(_property: PropertyDescription, _record: PropertyRecord): void { }
 
@@ -114,12 +116,13 @@ export class PropertyEditorManager {
   }
 }
 
-/** BasicPropertyEditor React component that uses the [[TextEditor]] property editor.
+/** Basic Property Editor registered for the "text" and "string" type names.
+ * It uses the [[TextEditor]] React component.
  * @beta
  */
 export class BasicPropertyEditor extends PropertyEditorBase {
 
-  public get reactElement(): React.ReactNode {
+  public get reactNode(): React.ReactNode {
     return <TextEditor />;
   }
 }

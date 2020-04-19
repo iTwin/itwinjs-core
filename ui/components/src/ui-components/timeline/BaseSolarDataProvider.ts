@@ -1,12 +1,14 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Timeline */
+/** @packageDocumentation
+ * @module Timeline
+ */
 
-import { Cartographic, ColorDef, ColorByName } from "@bentley/imodeljs-common";
-import { Point3d, Angle } from "@bentley/geometry-core";
-import { IModelConnection, ScreenViewport, calculateSunriseOrSunset } from "@bentley/imodeljs-frontend";
+import { Cartographic, ColorDef, ColorByName, calculateSunriseOrSunset } from "@bentley/imodeljs-common";
+import { Point3d } from "@bentley/geometry-core";
+import { IModelConnection, ScreenViewport } from "@bentley/imodeljs-frontend";
 import {
   SolarDataProvider,
 } from "./interfaces";
@@ -20,14 +22,14 @@ import {
 export class BaseSolarDataProvider implements SolarDataProvider {
   private _day: Date;
   public viewId = ""; // View Id used to determine sunrise and sunset
-  public timeOfDay: Date = new Date(Date.now());
+  public timeOfDay: Date;
   public longitude: number = -75.17035;  // long/lat of Philadelphia
   public latitude: number = 39.954927;
   public supportsTimelineAnimation = false; // set to true when provider determines animation data is available.
   public animationFraction: number = 0; // value from 0.0 to 1.0 that specifies the percentage complete for the animation.
   protected _viewport: ScreenViewport | undefined;
   protected _cartographicCenter: Cartographic;
-  protected _shadowColor = new ColorDef(ColorByName.gray);
+  protected _shadowColor = ColorDef.create(ColorByName.gray);
 
   constructor(viewport?: ScreenViewport, longitude?: number, latitude?: number) {
     this._viewport = viewport;
@@ -39,9 +41,13 @@ export class BaseSolarDataProvider implements SolarDataProvider {
     if (viewport)
       this.viewId = viewport.view.id;
 
+    const now = new Date(Date.now());
+    this.timeOfDay = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate(),
+      now.getHours(), now.getMinutes(), now.getSeconds(), now.getMilliseconds()));
+
     // set day to be start of day
-    const thisDay = new Date(this.timeOfDay);
-    thisDay.setHours(0, 0, 0, 0);
+    const thisDay = new Date(this.timeOfDay.getTime());
+    thisDay.setUTCHours(0, 0, 0, 0);
     this._day = thisDay;
 
     this._cartographicCenter = Cartographic.fromDegrees(this.longitude, this.latitude, 0.0);
@@ -64,8 +70,7 @@ export class BaseSolarDataProvider implements SolarDataProvider {
   }
 
   public set day(dayVal: Date) {
-    const thisDay = new Date(dayVal);
-    thisDay.setHours(0, 0, 0, 0);
+    const thisDay = new Date(Date.UTC(dayVal.getFullYear(), dayVal.getMonth(), dayVal.getDate(), 0, 0, 0, 0));
     this._day = thisDay;
   }
 
@@ -95,16 +100,15 @@ export class BaseSolarDataProvider implements SolarDataProvider {
   }
 
   private getZone(location: Cartographic) {
-    const longitude = Angle.radiansToDegrees(location.longitude);
-    return Math.floor(.5 + longitude / 15.0);
+    return Math.floor(.5 + location.longitudeDegrees / 15.0);
   }
 
   public get sunrise(): Date {
     // return date to nearest minute
     const utcSunrise = calculateSunriseOrSunset(this.day, this._cartographicCenter, true);
     const zone = this.getZone(this._cartographicCenter);
-    utcSunrise.setHours(utcSunrise.getUTCHours() + zone);
-    utcSunrise.setSeconds(0, 0);
+    utcSunrise.setUTCHours(utcSunrise.getUTCHours() + zone);
+    utcSunrise.setUTCSeconds(0, 0);
     return new Date(utcSunrise);
   }
 
@@ -113,8 +117,8 @@ export class BaseSolarDataProvider implements SolarDataProvider {
     // return new Date(calculateSunriseOrSunset(this.day, this._cartographicCenter, false).setSeconds(0, 0));
     const utcSunset = calculateSunriseOrSunset(this.day, this._cartographicCenter, false);
     const zone = this.getZone(this._cartographicCenter);
-    utcSunset.setHours(utcSunset.getUTCHours() + zone);
-    utcSunset.setSeconds(0, 0);
+    utcSunset.setUTCHours(utcSunset.getUTCHours() + zone);
+    utcSunset.setUTCSeconds(0, 0);
     return new Date(utcSunset);
   }
 

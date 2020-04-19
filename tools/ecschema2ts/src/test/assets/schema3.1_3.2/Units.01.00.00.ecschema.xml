@@ -1,0 +1,537 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ECSchema schemaName="Units" alias="u" version="01.00.00" description="Standard Set of Unit definitions for the system" displayLabel="Units" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+    <UnitSystem typeName="SI" />
+    <UnitSystem typeName="CGS" />
+    <UnitSystem typeName="METRIC" />
+    <UnitSystem typeName="IMPERIAL" />
+    <UnitSystem typeName="MARITIME" />
+    <UnitSystem typeName="USSURVEY" />
+    <UnitSystem typeName="INDUSTRIAL" />
+    <UnitSystem typeName="INTERNATIONAL" />
+    <UnitSystem typeName="USCUSTOM" />
+    <UnitSystem typeName="STATISTICS" />
+    <UnitSystem typeName="FINANCE" />
+    <UnitSystem typeName="CONSTANT" />
+    <Phenomenon typeName="APPARENT_POWER" definition="ELECTRIC_POTENTIAL*CURRENT" displayLabel="Apparent Power" />
+    <Phenomenon typeName="AREA" definition="LENGTH(2)" displayLabel="Area" />
+    <Phenomenon typeName="VOLUME" definition="LENGTH(3)" displayLabel="Volume" />
+    <Phenomenon typeName="VELOCITY" definition="LENGTH*TIME(-1)" displayLabel="Velocity" />
+    <Phenomenon typeName="ANGULAR_VELOCITY" definition="ANGLE*TIME(-1)" displayLabel="Angular Velocity" />
+    <Phenomenon typeName="ACCELERATION" definition="LENGTH*TIME(-2)" displayLabel="Acceleration" />
+    <Phenomenon typeName="FORCE" definition="MASS*ACCELERATION" displayLabel="Force" />
+    <Phenomenon typeName="PRESSURE" definition="FORCE*AREA(-1)" displayLabel="Pressure" />
+    <Phenomenon typeName="FORCE_DENSITY" definition="FORCE*VOLUME(-1)" displayLabel="Force Density" />
+    <Phenomenon typeName="PRESSURE_GRADIENT" definition="PRESSURE*LENGTH(-1)" displayLabel="Pressure Gradient" />
+    <Phenomenon typeName="TORQUE" definition="FORCE*LENGTH*ANGLE(-1)" displayLabel="Torque" />
+    <Phenomenon typeName="AREA_MOMENT_INERTIA" definition="LENGTH(4)" displayLabel="Area Moment Inertia" />
+    <Phenomenon typeName="MASS_RATIO" definition="MASS*MASS(-1)" displayLabel="Mass Ratio" />
+    <Phenomenon typeName="DENSITY" definition="MASS*VOLUME(-1)" displayLabel="Density" />
+    <Phenomenon typeName="SPECIFIC_VOLUME" definition="VOLUME*MASS(-1)" displayLabel="Specific Volume" />
+    <Phenomenon typeName="LINEAR_DENSITY" definition="MASS*LENGTH(-1)" displayLabel="Linear Density" />
+    <Phenomenon typeName="SURFACE_DENSITY" definition="MASS*AREA(-1)" displayLabel="Surface Density" />
+    <Phenomenon typeName="WORK" definition="FORCE*LENGTH" displayLabel="Work" />
+    <Phenomenon typeName="POWER" definition="WORK*TIME(-1)" displayLabel="Power" />
+    <Phenomenon typeName="VOLUMETRIC_FLOW" definition="VOLUME*TIME(-1)" displayLabel="Volumetric Flow" />
+    <Phenomenon typeName="FLOW_DENSITY_PER_AREA" definition="VOLUMETRIC_FLOW*AREA(-1)" displayLabel="Flow Density per Area" description="Flow demanded by or discharged to a Water/Sewer network per area." />
+    <Phenomenon typeName="MASS_FLOW" definition="MASS*TIME(-1)" displayLabel="Mass Flow" />
+    <Phenomenon typeName="MOLAR_FLOW" definition="MOLE*TIME(-1)" displayLabel="Molar Flow" />
+    <Phenomenon typeName="DYNAMIC_VISCOSITY" definition="PRESSURE*TIME" displayLabel="Dynamic Viscosity" />
+    <Phenomenon typeName="KINEMATIC_VISCOSITY" definition="DYNAMIC_VISCOSITY*DENSITY(-1)" displayLabel="Kinematic Viscosity" />
+    <Phenomenon typeName="ELECTRIC_CHARGE" definition="CURRENT*TIME" displayLabel="Electric Charge" />
+    <Phenomenon typeName="ELECTRIC_POTENTIAL" definition="POWER*CURRENT(-1)" displayLabel="Electric Potential" />
+    <Phenomenon typeName="LUMINOUS_FLUX" definition="LUMINOSITY*SOLIDANGLE" displayLabel="Luminous Flux" />
+    <Phenomenon typeName="ILLUMINANCE" definition="LUMINOUS_FLUX*LENGTH(-2)" displayLabel="Illuminance" />
+    <Phenomenon typeName="ROTATIONAL_SPRING_CONSTANT" definition="TORQUE*ANGLE(-1)" displayLabel="Rotational Spring Constant" />
+    <Phenomenon typeName="LINEAR_ROTATIONAL_SPRING_CONSTANT" definition="FORCE*ANGLE(-1)" displayLabel="Linear Rotational Spring Constant" />
+    <Phenomenon typeName="PIPE_DIAMETER_LENGTH" definition="LENGTH*LENGTH" displayLabel="Pipe Diameter-Length" description="The diameter of a pipe multiplied by its length, used as a coefficient for pipe-infiltration calculations." />
+    <Phenomenon typeName="THERMAL_CONDUCTIVITY" definition="POWER*LENGTH(-1)*TEMPERATURE_CHANGE(-1)" displayLabel="Thermal Conductivity" />
+    <Phenomenon typeName="THERMAL_INSULANCE" definition="AREA*TEMPERATURE_CHANGE*POWER(-1)" displayLabel="Thermal Resistance" />
+    <Phenomenon typeName="TEMPERATURE_GRADIENT" definition="TEMPERATURE_CHANGE*LENGTH(-1)" displayLabel="Temperature Gradient" />
+    <Phenomenon typeName="MOLAR_VOLUME" definition="VOLUME*MOLE(-1)" displayLabel="Molar Volume" />
+    <Phenomenon typeName="MOLAR_CONCENTRATION" definition="MOLE*VOLUME(-1)" displayLabel="Molar Concentration" />
+    <Phenomenon typeName="SLOPE" definition="LENGTH*LENGTH(-1)" displayLabel="Slope" />
+    <Phenomenon typeName="HEAT_TRANSFER" definition="POWER*AREA(-1)*TEMPERATURE_CHANGE(-1)" displayLabel="Heat Transfer" description="https://en.wikipedia.org/wiki/Heat_transfer_coefficient" />
+    <Phenomenon typeName="HEAT_FLUX_DENSITY" definition="POWER*AREA(-1)" displayLabel="Heat Flux Density" description="https://en.wikipedia.org/wiki/Heat_flux see description of heat flux density" />
+    <Phenomenon typeName="TORSIONAL_WARPING_CONSTANT" definition="LENGTH(6)" displayLabel="Torsional Warping Constant" />
+    <Phenomenon typeName="POPULATION_DENSITY" definition="CAPITA*AREA(-1)" displayLabel="Population Density" />
+    <Phenomenon typeName="FREQUENCY" definition="TIME(-1)" displayLabel="Frequency" />
+    <Phenomenon typeName="LINEAR_LOAD" definition="FORCE*LENGTH(-1)" displayLabel="Linear Load" />
+    <Phenomenon typeName="ENERGY_DENSITY" definition="WORK*VOLUME(-1)" displayLabel="Energy Density" />
+    <Phenomenon typeName="SPECIFIC_ENERGY" definition="WORK*MASS(-1)" displayLabel="Specific Energy" />
+    <Phenomenon typeName="SPECIFIC_HEAT_CAPACITY" definition="WORK*MASS(-1)*TEMPERATURE_CHANGE(-1)" displayLabel="Specific_heat Capacity" />
+    <Phenomenon typeName="SPECIFIC_HEAT_CAPACITY_MOLAR" definition="WORK*MOLE(-1)*TEMPERATURE_CHANGE(-1)" displayLabel="Specific_heat Capacity Molar" />
+    <Phenomenon typeName="PERCENTAGE" definition="NUMBER" displayLabel="Percentage" />
+    <Phenomenon typeName="LINEAR_RATE" definition="NUMBER*LENGTH(-1)" displayLabel="Linear Rate" />
+    <Phenomenon typeName="LINEAR_COEFFICIENT_OF_THERMAL_EXPANSION" definition="LENGTH*LENGTH(-1)*TEMPERATURE_CHANGE(-1)" displayLabel="Linear Coefficient Of Thermal Expansion" />
+    <Phenomenon typeName="VOLUME_RATIO" definition="VOLUME*VOLUME(-1)" displayLabel="Volume Ratio" />
+    <Phenomenon typeName="LENGTH_RATIO" definition="LENGTH*LENGTH(-1)" />
+    <Phenomenon typeName="LENGTH" definition="LENGTH" displayLabel="Length" />
+    <Phenomenon typeName="MASS" definition="MASS" displayLabel="Mass" />
+    <Phenomenon typeName="TIME" definition="TIME" displayLabel="Time" />
+    <Phenomenon typeName="TEMPERATURE" definition="TEMPERATURE" displayLabel="Temperature" />
+    <Phenomenon typeName="TEMPERATURE_CHANGE" definition="TEMPERATURE_CHANGE" displayLabel="Temperature Change" />
+    <Phenomenon typeName="CURRENT" definition="CURRENT" displayLabel="Current" />
+    <Phenomenon typeName="MOLE" definition="MOLE" displayLabel="Mole" />
+    <Phenomenon typeName="LUMINOSITY" definition="LUMINOSITY" displayLabel="Luminosity" />
+    <Phenomenon typeName="ANGLE" definition="ANGLE" displayLabel="Angle" />
+    <Phenomenon typeName="SOLIDANGLE" definition="SOLIDANGLE" displayLabel="Solid Angle" />
+    <Phenomenon typeName="CURRENCY" definition="CURRENCY" />
+    <Phenomenon typeName="CAPITA" definition="CAPITA" displayLabel="Capita" />
+    <Phenomenon typeName="NUMBER" definition="NUMBER" displayLabel="Number" />
+    <Phenomenon typeName="THREAD_PITCH" definition="LENGTH*ANGLE(-1)" displayLabel="Thread Pitch" />
+    <Constant typeName="PI" phenomenon="LENGTH_RATIO" definition="ONE" numerator="3.1415926535897932384626433832795" displayLabel="Pi"/>
+    <Constant typeName="QUARTER_PI" phenomenon="LENGTH_RATIO" definition="PI" numerator="1.0" denominator="4.0" displayLabel="Pi/4"/>
+    <Constant typeName="HALF_PI" phenomenon="LENGTH_RATIO" definition="PI" numerator="1.0" denominator="2.0" displayLabel="Pi/2"/>
+    <Constant typeName="TWO_PI" phenomenon="LENGTH_RATIO" definition="PI" numerator="2" displayLabel="2Pi"/>
+    <Constant typeName="DEG360" phenomenon="ANGLE" definition="ARC_DEG" numerator="360" displayLabel="360°"/>
+    <Constant typeName="STD_G" phenomenon="ACCELERATION" definition="M*S(-2)" numerator="9.80665" displayLabel="ɡ0"/>
+    <Constant typeName="DECI" phenomenon="NUMBER" definition="ONE" numerator="1.0e-1" displayLabel="deci"/>
+    <Constant typeName="CENTI" phenomenon="NUMBER" definition="ONE" numerator="1.0e-2" displayLabel="centi"/>
+    <Constant typeName="MILLI" phenomenon="NUMBER" definition="ONE" numerator="1.0e-3" displayLabel="milli"/>
+    <Constant typeName="MICRO" phenomenon="NUMBER" definition="ONE" numerator="1.0e-6" displayLabel="micro"/>
+    <Constant typeName="NANO" phenomenon="NUMBER" definition="ONE" numerator="1.0e-9" displayLabel="nano"/>
+    <Constant typeName="PICO" phenomenon="NUMBER" definition="ONE" numerator="1.0e-12" displayLabel="pico"/>
+    <Constant typeName="FEMTO" phenomenon="NUMBER" definition="ONE" numerator="1.0e-15" displayLabel="femto"/>
+    <Constant typeName="ATTO" phenomenon="NUMBER" definition="ONE" numerator="1.0e-18" displayLabel="atto"/>
+    <Constant typeName="ZEPTO" phenomenon="NUMBER" definition="ONE" numerator="1.0e-21" displayLabel="zepto"/>
+    <Constant typeName="YOCTO" phenomenon="NUMBER" definition="ONE" numerator="1.0e-24" displayLabel="yocto"/>
+    <Constant typeName="DECA" phenomenon="NUMBER" definition="ONE" numerator="1.0e1"/>
+    <Constant typeName="HECTO" phenomenon="NUMBER" definition="ONE" numerator="1.0e2" displayLabel="hecto"/>
+    <Constant typeName="KILO" phenomenon="NUMBER" definition="ONE" numerator="1.0e3" displayLabel="kilo"/>
+    <Constant typeName="MEGA" phenomenon="NUMBER" definition="ONE" numerator="1.0e6" displayLabel="mega"/>
+    <Constant typeName="GIGA" phenomenon="NUMBER" definition="ONE" numerator="1.0e9" displayLabel="giga"/>
+    <Constant typeName="TERA" phenomenon="NUMBER" definition="ONE" numerator="1.0e12" displayLabel="tera"/>
+    <Constant typeName="PETA" phenomenon="NUMBER" definition="ONE" numerator="1.0e15" displayLabel="peta"/>
+    <Constant typeName="EXA" phenomenon="NUMBER" definition="ONE" numerator="1.0e18" displayLabel="exa"/>
+    <Constant typeName="ZETTA" phenomenon="NUMBER" definition="ONE" numerator="1.0e21" displayLabel="zetta"/>
+    <Constant typeName="YOTTA" phenomenon="NUMBER" definition="ONE" numerator="1.0e24" displayLabel="yotta"/>
+    <Unit typeName="MM" phenomenon="LENGTH" unitSystem="METRIC" definition="[MILLI]*M" displayLabel="mm" />
+    <Unit typeName="CM" phenomenon="LENGTH" unitSystem="METRIC" definition="[CENTI]*M" displayLabel="cm" />
+    <Unit typeName="DM" phenomenon="LENGTH" unitSystem="METRIC" definition="[DECI]*M" displayLabel="dm" />
+    <Unit typeName="KM" phenomenon="LENGTH" unitSystem="METRIC" definition="[KILO]*M" displayLabel="km" />
+    <Unit typeName="UM" phenomenon="LENGTH" unitSystem="METRIC" definition="[MICRO]*M" displayLabel="µm" />
+    <Unit typeName="MILLIINCH" phenomenon="LENGTH" unitSystem="USCUSTOM" definition="[MILLI]*IN" displayLabel="mil" />
+    <Unit typeName="MICROINCH" phenomenon="LENGTH" unitSystem="USCUSTOM" definition="[MICRO]*IN" displayLabel="µin" />
+    <Unit typeName="MILLIFOOT" phenomenon="LENGTH" unitSystem="USCUSTOM" definition="[MILLI]*FT" displayLabel="mft" />
+    <Unit typeName="IN" phenomenon="LENGTH" unitSystem="USCUSTOM" definition="MM" numerator="25.4" displayLabel="in" description="Exact, http://www.nist.gov/pml/wmd/pubs/upload/hb44-15-web-final.pdf, Appendix B. Section 3.1, Page B-10" />
+    <Unit typeName="FT" phenomenon="LENGTH" unitSystem="USCUSTOM" definition="IN" numerator="12.0" displayLabel="ft" description="Exact, http://www.nist.gov/pml/wmd/pubs/upload/hb44-15-web-final.pdf, Appendix C. Section 2, Page C-4" />
+    <Unit typeName="YRD" phenomenon="LENGTH" unitSystem="USCUSTOM" definition="FT" numerator="3.0" displayLabel="yd" description="Exact, http://www.nist.gov/pml/wmd/pubs/upload/hb44-15-web-final.pdf, Appendix C. Section 2, Page C-4" />
+    <Unit typeName="CHAIN" phenomenon="LENGTH" unitSystem="USCUSTOM" definition="FT" numerator="66.0" displayLabel="chain" description="Exact, http://www.nist.gov/pml/wmd/pubs/upload/hb44-15-web-final.pdf, Appendix C. Section 4, Page C-8" />
+    <Unit typeName="MILE" phenomenon="LENGTH" unitSystem="USCUSTOM" definition="YRD" numerator="1760.0" displayLabel="mi" description="Exact, http://www.nist.gov/pml/wmd/pubs/upload/hb44-15-web-final.pdf, Appendix C. Section 4, Page C-8" />
+    <Unit typeName="US_SURVEY_IN" phenomenon="LENGTH" unitSystem="USSURVEY" definition="M" numerator="100.0" denominator="3937.0" displayLabel="in (US Survey)" description="100/3937 Derived from the definition of us survey foot in terms of meters.  Exact, http://www.nist.gov/pml/wmd/pubs/upload/hb44-15-web-final.pdf, Appendix C. Section 4, Page C-9" />
+    <Unit typeName="US_SURVEY_FT" phenomenon="LENGTH" unitSystem="USSURVEY" definition="US_SURVEY_IN" numerator="12.0" displayLabel="ft (US Survey)" description="Exact, http://www.nist.gov/pml/wmd/pubs/upload/hb44-15-web-final.pdf, Appendix C. Section 2, Page C-4" />
+    <Unit typeName="US_SURVEY_YRD" phenomenon="LENGTH" unitSystem="USSURVEY" definition="US_SURVEY_FT" numerator="3.0" displayLabel="yrd (US Survey)" description="Exact, http://www.nist.gov/pml/wmd/pubs/upload/hb44-15-web-final.pdf, Appendix C. Section 2, Page C-4" />
+    <Unit typeName="US_SURVEY_CHAIN" phenomenon="LENGTH" unitSystem="USSURVEY" definition="US_SURVEY_FT" numerator="66.0" displayLabel="chain (US Survey)" description="Exact, http://www.nist.gov/pml/wmd/pubs/upload/hb44-15-web-final.pdf, Appendix C. Section 4, Page C-8" />
+    <Unit typeName="US_SURVEY_MILE" phenomenon="LENGTH" unitSystem="USSURVEY" definition="US_SURVEY_YRD" numerator="1760.0" displayLabel="mi (US Survey)" description="Exact, http://www.nist.gov/pml/wmd/pubs/upload/hb44-15-web-final.pdf, Appendix C. Section 4, Page C-8" />
+    <Unit typeName="NAUT_MILE" phenomenon="LENGTH" unitSystem="MARITIME" definition="M" numerator="1852.0" displayLabel="nmi" description="International Nautical Mile.  Exact, http://www.nist.gov/pml/wmd/pubs/upload/hb44-15-web-final.pdf, Appendix C. Section 2, Page C-4" />
+    <Unit typeName="G" phenomenon="MASS" unitSystem="METRIC" definition="[MILLI]*KG" displayLabel="g" />
+    <Unit typeName="MG" phenomenon="MASS" unitSystem="METRIC" definition="[MILLI]*G" displayLabel="mg" />
+    <Unit typeName="MKG" phenomenon="MASS" unitSystem="METRIC" definition="[MICRO]*G" displayLabel="µg" />
+    <Unit typeName="NG" phenomenon="MASS" unitSystem="METRIC" definition="[NANO]*G" displayLabel="ng" />
+    <Unit typeName="MEGAGRAM" phenomenon="MASS" unitSystem="METRIC" definition="[MEGA]*G" displayLabel="Mg" />
+    <Unit typeName="TONNE" phenomenon="MASS" unitSystem="METRIC" definition="[KILO]*KG" displayLabel="tonne" description="Also known as a metric ton http://phyMETRICcs.nist.gov/cuu/pdf/sp811.pdf, Appendix B." />
+    <Unit typeName="LBM" phenomenon="MASS" unitSystem="USCUSTOM" definition="KG" numerator="0.45359237" displayLabel="lb" description="Is Avoirdupois Pound.  Exact, http://physics.nist.gov/cuu/pdf/sp811.pdf, Appendix B. Footnote 22" />
+    <Unit typeName="SLUG" phenomenon="MASS" unitSystem="USCUSTOM" definition="LBF*S(2)*FT(-1)" displayLabel="slug" />
+    <Unit typeName="GRM" phenomenon="MASS" unitSystem="USCUSTOM" definition="LBM" denominator="7000.0" displayLabel="gr" description="Exact, http://www.nist.gov/pml/wmd/pubs/upload/hb44-15-web-final.pdf, Appendix B. Section 3.2, Page B-10" />
+    <Unit typeName="SHORT_TON_MASS" phenomenon="MASS" unitSystem="USCUSTOM" definition="LBM" numerator="2000" displayLabel="tn (short)" description="Exact, http://physics.nist.gov/cuu/pdf/sp811.pdf, Appendix B." />
+    <Unit typeName="LONG_TON_MASS" phenomenon="MASS" unitSystem="USCUSTOM" definition="LBM" numerator="2240" displayLabel="tn (long)" description="Exact, http://physics.nist.gov/cuu/pdf/sp811.pdf, Appendix B." />
+    <Unit typeName="KIPM" phenomenon="MASS" unitSystem="USCUSTOM" definition="[KILO]*LBM" displayLabel="kipm" description="Exact, http://physics.nist.gov/cuu/pdf/sp811.pdf, Appendix B." />
+    <Unit typeName="OZM" phenomenon="MASS" unitSystem="USCUSTOM" definition="LBM" denominator="16.0" displayLabel="oz" description="1/16 Exact, https://en.wikipedia.org/wiki/Ounce" />
+    <Unit typeName="MIN" phenomenon="TIME" unitSystem="INTERNATIONAL" definition="S" numerator="60.0" displayLabel="min" />
+    <Unit typeName="HR" phenomenon="TIME" unitSystem="INTERNATIONAL" definition="MIN" numerator="60.0" displayLabel="h" />
+    <Unit typeName="DAY" phenomenon="TIME" unitSystem="INTERNATIONAL" definition="HR" numerator="24.0" displayLabel="days" />
+    <Unit typeName="WEEK" phenomenon="TIME" unitSystem="INTERNATIONAL" definition="DAY" numerator="7.0" displayLabel="week" />
+    <Unit typeName="YR" phenomenon="TIME" unitSystem="INTERNATIONAL" definition="DAY" numerator="365" displayLabel="years" description="http://physics.nist.gov/cuu/pdf/sp811.pdf, Appendix B. Year is 3.1536 E+07 seconds which is equal to 365 * 24 * 60 * 60" />
+    <Unit typeName="YEAR_SIDEREAL" phenomenon="TIME" unitSystem="INTERNATIONAL" definition="S" numerator="3.155815e7" displayLabel="Year (Sidereal)" description="http://physics.nist.gov/cuu/pdf/sp811.pdf, Appendix B." />
+    <Unit typeName="YEAR_TROPICAL" phenomenon="TIME" unitSystem="INTERNATIONAL" definition="S" numerator="3.155693e7" displayLabel="Year (Tropical)" description="http://physics.nist.gov/cuu/pdf/sp811.pdf, Appendix B." />
+    <Unit typeName="MS" phenomenon="TIME" unitSystem="INTERNATIONAL" definition="[MILLI]*S" displayLabel="ms" />
+    <Unit typeName="MKS" phenomenon="TIME" unitSystem="INTERNATIONAL" definition="[MICRO]*S" displayLabel="µs" />
+    <Unit typeName="CELSIUS" phenomenon="TEMPERATURE" unitSystem="METRIC" definition="K" offset="273.15" displayLabel="°C" />
+    <Unit typeName="FAHRENHEIT" phenomenon="TEMPERATURE" unitSystem="USCUSTOM" definition="CELSIUS" numerator="5.0" denominator="9.0" offset="-32" displayLabel="°F" description="Factor is 5/9" />
+    <Unit typeName="RANKINE" phenomenon="TEMPERATURE" unitSystem="USCUSTOM" definition="K" numerator="5.0" denominator="9.0" displayLabel="°R" description="Factor is 5/9" />
+    <Unit typeName="DELTA_CELSIUS" phenomenon="TEMPERATURE_CHANGE" unitSystem="METRIC" definition="DELTA_KELVIN" displayLabel="Δ°C" />
+    <Unit typeName="DELTA_FAHRENHEIT" phenomenon="TEMPERATURE_CHANGE" unitSystem="USCUSTOM" definition="DELTA_CELSIUS" numerator="5.0" denominator="9.0" displayLabel="Δ°F" description="Factor is 5/9" />
+    <Unit typeName="DELTA_RANKINE" phenomenon="TEMPERATURE_CHANGE" unitSystem="USCUSTOM" definition="DELTA_KELVIN" numerator="5.0" denominator="9.0" displayLabel="Δ°R" description="Factor is 5/9" />
+    <Unit typeName="KELVIN_PER_M" phenomenon="TEMPERATURE_GRADIENT" unitSystem="SI" definition="DELTA_KELVIN*M(-1)" displayLabel="ΔK/m" />
+    <Unit typeName="STRAIN_PER_KELVIN" phenomenon="LINEAR_COEFFICIENT_OF_THERMAL_EXPANSION" unitSystem="SI" definition="DELTA_KELVIN(-1)" displayLabel="1/ΔK" />
+    <Unit typeName="STRAIN_PER_CELSIUS" phenomenon="LINEAR_COEFFICIENT_OF_THERMAL_EXPANSION" unitSystem="METRIC" definition="DELTA_CELSIUS(-1)" displayLabel="1/Δ°C" />
+    <Unit typeName="STRAIN_PER_FAHRENHEIT" phenomenon="LINEAR_COEFFICIENT_OF_THERMAL_EXPANSION" unitSystem="USCUSTOM" definition="DELTA_FAHRENHEIT(-1)" displayLabel="1/Δ°F" />
+    <Unit typeName="STRAIN_PER_RANKINE" phenomenon="LINEAR_COEFFICIENT_OF_THERMAL_EXPANSION" unitSystem="USCUSTOM" definition="DELTA_RANKINE(-1)" displayLabel="1/Δ°R" />
+    <Unit typeName="LUMEN" phenomenon="LUMINOUS_FLUX" unitSystem="SI" definition="CD*STERAD" displayLabel="lm" />
+    <Unit typeName="LUX" phenomenon="ILLUMINANCE" unitSystem="SI" definition="LUMEN*M(-2)" displayLabel="lx" />
+    <Unit typeName="LUMEN_PER_SQ_FT" phenomenon="ILLUMINANCE" unitSystem="USCUSTOM" definition="LUMEN*FT(-2)" displayLabel="lm/ft²" />
+    <Unit typeName="KMOL" phenomenon="MOLE" unitSystem="METRIC" definition="[KILO]*MOL" displayLabel="kmol" />
+    <Unit typeName="LB_MOL" phenomenon="MOLE" unitSystem="USCUSTOM" definition="MOL" numerator="453.59237" displayLabel="lb-mol" description="ASTM SI 10 standard SI1-.phhc8328.pdf page 29, 35 and http://en.wikipedia.org/wiki/Mole_%28unit%29" />
+    <Unit typeName="HUNDRED_PERSON" phenomenon="CAPITA" unitSystem="STATISTICS" definition="[HECTO]*PERSON" />
+    <Unit typeName="THOUSAND_PERSON" phenomenon="CAPITA" unitSystem="STATISTICS" definition="[KILO]*PERSON" />
+    <Unit typeName="N_M_PER_RAD" phenomenon="ROTATIONAL_SPRING_CONSTANT" unitSystem="SI" definition="N_M*RAD(-1)" displayLabel="N·m/rad" />
+    <Unit typeName="N_M_PER_DEG" phenomenon="ROTATIONAL_SPRING_CONSTANT" unitSystem="METRIC" definition="N_M*ARC_DEG(-1)" displayLabel="N·m/deg" />
+    <Unit typeName="N_PER_RAD" phenomenon="LINEAR_ROTATIONAL_SPRING_CONSTANT" unitSystem="SI" definition="N*RAD(-1)" displayLabel="N/rad" />
+    <Unit typeName="M_PER_SEC_SQ" phenomenon="ACCELERATION" unitSystem="SI" definition="M*S(-2)" displayLabel="m/sec²" />
+    <Unit typeName="CM_PER_SEC_SQ" phenomenon="ACCELERATION" unitSystem="METRIC" definition="CM*S(-2)" displayLabel="cm/sec²" />
+    <Unit typeName="FT_PER_SEC_SQ" phenomenon="ACCELERATION" unitSystem="USCUSTOM" definition="FT*S(-2)" displayLabel="ft/sec²" />
+    <Unit typeName="ARC_DEG" phenomenon="ANGLE" unitSystem="METRIC" definition="[PI]*RAD" denominator="180.0" displayLabel="°" description="1/180" />
+    <Unit typeName="ARC_MINUTE" phenomenon="ANGLE" unitSystem="METRIC" definition="ARC_DEG" denominator="60.0" displayLabel="'" description="1/60" />
+    <Unit typeName="ARC_SECOND" phenomenon="ANGLE" unitSystem="METRIC" definition="ARC_DEG" denominator="3600.0" displayLabel="''" description="1/3600" />
+    <Unit typeName="ARC_QUADRANT" phenomenon="ANGLE" unitSystem="METRIC" definition="[HALF_PI]*RAD" displayLabel="quadrants" />
+    <Unit typeName="GRAD" phenomenon="ANGLE" unitSystem="METRIC" definition="[PI]*RAD" denominator="200.0" displayLabel="grad" description="1/200" />
+    <Unit typeName="REVOLUTION" phenomenon="ANGLE" unitSystem="METRIC" definition="[TWO_PI]*RAD" displayLabel="r" />
+    <Unit typeName="SQ_M" phenomenon="AREA" unitSystem="SI" definition="M(2)" displayLabel="m²" />
+    <Unit typeName="SQ_UM" phenomenon="AREA" unitSystem="METRIC" definition="UM(2)" displayLabel="um²" />
+    <Unit typeName="SQ_MM" phenomenon="AREA" unitSystem="METRIC" definition="MM(2)" displayLabel="mm²" />
+    <Unit typeName="SQ_CM" phenomenon="AREA" unitSystem="METRIC" definition="CM(2)" displayLabel="cm²" />
+    <Unit typeName="SQ_DM" phenomenon="AREA" unitSystem="METRIC" definition="DM(2)" displayLabel="dm²" />
+    <Unit typeName="SQ_KM" phenomenon="AREA" unitSystem="METRIC" definition="KM(2)" displayLabel="km²" />
+    <Unit typeName="ARE" phenomenon="AREA" unitSystem="METRIC" definition="[HECTO]*M(2)" displayLabel="are" />
+    <Unit typeName="HECTARE" phenomenon="AREA" unitSystem="METRIC" definition="[HECTO]*ARE" displayLabel="ha" />
+    <Unit typeName="SQ_IN" phenomenon="AREA" unitSystem="USCUSTOM" definition="IN(2)" displayLabel="in²" />
+    <Unit typeName="SQ_FT" phenomenon="AREA" unitSystem="USCUSTOM" definition="FT(2)" displayLabel="ft²" />
+    <Unit typeName="THOUSAND_SQ_FT" phenomenon="AREA" unitSystem="USCUSTOM" definition="[KILO]*FT(2)" displayLabel="thousand ft²" />
+    <Unit typeName="SQ_YRD" phenomenon="AREA" unitSystem="USCUSTOM" definition="YRD(2)" displayLabel="yd²" />
+    <Unit typeName="SQ_MILE" phenomenon="AREA" unitSystem="USCUSTOM" definition="MILE(2)" displayLabel="mi²" />
+    <Unit typeName="SQ_CHAIN" phenomenon="AREA" unitSystem="USCUSTOM" definition="CHAIN(2)" displayLabel="chain²" />
+    <Unit typeName="ACRE" phenomenon="AREA" unitSystem="USCUSTOM" definition="CHAIN(2)" numerator="10.0" displayLabel="acres" description="Exact, http://www.nist.gov/pml/wmd/pubs/upload/hb44-15-web-final.pdf, Appendix C. Section 4, Page C-9" />
+    <Unit typeName="SQ_US_SURVEY_IN" phenomenon="AREA" unitSystem="USSURVEY" definition="US_SURVEY_IN(2)" displayLabel="in² (US Survey)" />
+    <Unit typeName="SQ_US_SURVEY_FT" phenomenon="AREA" unitSystem="USSURVEY" definition="US_SURVEY_FT(2)" displayLabel="ft² (US Survey)" />
+    <Unit typeName="SQ_US_SURVEY_YRD" phenomenon="AREA" unitSystem="USSURVEY" definition="US_SURVEY_YRD(2)" displayLabel="yrd² (US Survey)" />
+    <Unit typeName="SQ_US_SURVEY_MILE" phenomenon="AREA" unitSystem="USSURVEY" definition="US_SURVEY_MILE(2)" displayLabel="mile² (US Survey)" />
+    <Unit typeName="SQ_US_SURVEY_CHAIN" phenomenon="AREA" unitSystem="USSURVEY" definition="US_SURVEY_CHAIN(2)" displayLabel="chain² (US Survey)" />
+    <Unit typeName="US_SURVEY_ACRE" phenomenon="AREA" unitSystem="USSURVEY" definition="US_SURVEY_CHAIN(2)" numerator="10.0" displayLabel="acre (US Survey)" description="Exact, http://www.nist.gov/pml/wmd/pubs/upload/hb44-15-web-final.pdf, Appendix C. Section 4, Page C-9" />
+    <Unit typeName="IN_MILE" phenomenon="PIPE_DIAMETER_LENGTH" unitSystem="INDUSTRIAL" definition="IN*MILE" displayLabel="in·mi" />
+    <Unit typeName="FT_MILE" phenomenon="PIPE_DIAMETER_LENGTH" unitSystem="INDUSTRIAL" definition="FT*MILE" displayLabel="ft·mi" />
+    <Unit typeName="FT_FT" phenomenon="PIPE_DIAMETER_LENGTH" unitSystem="INDUSTRIAL" definition="FT*FT" displayLabel="ft·ft" />
+    <Unit typeName="IN_FT" phenomenon="PIPE_DIAMETER_LENGTH" unitSystem="INDUSTRIAL" definition="IN*FT" displayLabel="in·ft" />
+    <Unit typeName="IN_M" phenomenon="PIPE_DIAMETER_LENGTH" unitSystem="INDUSTRIAL" definition="IN*M" displayLabel="in·m" />
+    <Unit typeName="MM_KM" phenomenon="PIPE_DIAMETER_LENGTH" unitSystem="INDUSTRIAL" definition="MM*KM" displayLabel="mm·km" />
+    <Unit typeName="MM_M" phenomenon="PIPE_DIAMETER_LENGTH" unitSystem="INDUSTRIAL" definition="MM*M" displayLabel="mm·m" />
+    <Unit typeName="MM_MILE" phenomenon="PIPE_DIAMETER_LENGTH" unitSystem="INDUSTRIAL" definition="MM*MILE" displayLabel="mm·mi" />
+    <Unit typeName="M_KM" phenomenon="PIPE_DIAMETER_LENGTH" unitSystem="INDUSTRIAL" definition="M*KM" displayLabel="m·km" />
+    <Unit typeName="M_M" phenomenon="PIPE_DIAMETER_LENGTH" unitSystem="SI" definition="M*M" displayLabel="m·m" />
+    <Unit typeName="KG_PER_CUB_M" phenomenon="DENSITY" unitSystem="SI" definition="KG*M(-3)" displayLabel="kg/m³" />
+    <Unit typeName="KG_PER_CUB_CM" phenomenon="DENSITY" unitSystem="METRIC" definition="KG*CM(-3)" displayLabel="kg/cm³" />
+    <Unit typeName="KG_PER_LITRE" phenomenon="DENSITY" unitSystem="METRIC" definition="KG*DM(-3)" displayLabel="kg/dm³" />
+    <Unit typeName="G_PER_CUB_CM" phenomenon="DENSITY" unitSystem="METRIC" definition="G*CM(-3)" displayLabel="g/cm³" />
+    <Unit typeName="MKG_PER_LITRE" phenomenon="DENSITY" unitSystem="METRIC" definition="MKG*DM(-3)" displayLabel="µg/L" />
+    <Unit typeName="MG_PER_LITRE" phenomenon="DENSITY" unitSystem="METRIC" definition="MG*DM(-3)" displayLabel="mg/L" />
+    <Unit typeName="LBM_PER_CUB_FT" phenomenon="DENSITY" unitSystem="USCUSTOM" definition="LBM*FT(-3)" displayLabel="lb/ft³" />
+    <Unit typeName="LBM_PER_GALLON" phenomenon="DENSITY" unitSystem="USCUSTOM" definition="LBM*GALLON(-1)" displayLabel="lb/gal" />
+    <Unit typeName="LBM_PER_GALLON_IMPERIAL" phenomenon="DENSITY" unitSystem="IMPERIAL" definition="LBM*GALLON_IMPERIAL(-1)" displayLabel="lb/gal (imp)" />
+    <Unit typeName="LBM_PER_CUB_IN" phenomenon="DENSITY" unitSystem="USCUSTOM" definition="LBM*IN(-3)" displayLabel="lb/in³" />
+    <Unit typeName="LBM_PER_MILLION_GALLON" phenomenon="DENSITY" unitSystem="USCUSTOM" definition="LBM*[MEGA](-1)*GALLON(-1)" displayLabel="lb/million gal" />
+    <Unit typeName="SLUG_PER_CUB_FT" phenomenon="DENSITY" unitSystem="USCUSTOM" definition="SLUG*FT(-3)" displayLabel="slug/ft³" />
+    <Unit typeName="KIP_PER_CUB_FT" phenomenon="DENSITY" unitSystem="USCUSTOM" definition="KIPM*FT(-3)" displayLabel="kip/ft³" />
+    <Unit typeName="SHORT_TON_PER_CUB_FT" phenomenon="DENSITY" unitSystem="USCUSTOM" definition="SHORT_TON_MASS*FT(-3)" displayLabel="tn (short)/ft³" />
+    <Unit typeName="N_PER_CUB_M" phenomenon="FORCE_DENSITY" unitSystem="SI" definition="N*M(-3)" displayLabel="N/m³" />
+    <Unit typeName="KN_PER_CUB_M" phenomenon="FORCE_DENSITY" unitSystem="METRIC" definition="[KILO]*N*M(-3)" displayLabel="kN/m³" />
+    <Unit typeName="N_PER_CUB_FT" phenomenon="FORCE_DENSITY" unitSystem="USCUSTOM" definition="N*FT(-3)" displayLabel="N/ft³" />
+    <Unit typeName="KN_PER_CUB_FT" phenomenon="FORCE_DENSITY" unitSystem="USCUSTOM" definition="[KILO]*N*FT(-3)" displayLabel="kN/ft³" />
+    <Unit typeName="PERSON_PER_SQ_M" phenomenon="POPULATION_DENSITY" unitSystem="SI" definition="PERSON*M(-2)" displayLabel="p/m²" />
+    <Unit typeName="PERSON_PER_HECTARE" phenomenon="POPULATION_DENSITY" unitSystem="METRIC" definition="PERSON*HECTARE(-1)" displayLabel="p/ha" />
+    <Unit typeName="PERSON_PER_SQ_KM" phenomenon="POPULATION_DENSITY" unitSystem="METRIC" definition="PERSON*KM(-2)" displayLabel="p/km²" />
+    <Unit typeName="PERSON_PER_ACRE" phenomenon="POPULATION_DENSITY" unitSystem="USCUSTOM" definition="PERSON*ACRE(-1)" displayLabel="p/acre" />
+    <Unit typeName="PERSON_PER_SQ_FT" phenomenon="POPULATION_DENSITY" unitSystem="USCUSTOM" definition="PERSON*FT(-2)" displayLabel="p/ft²" />
+    <Unit typeName="PERSON_PER_SQ_MILE" phenomenon="POPULATION_DENSITY" unitSystem="USCUSTOM" definition="PERSON*MILE(-2)" displayLabel="p/mi²" />
+    <Unit typeName="KILOAMPERE" phenomenon="CURRENT" unitSystem="METRIC" definition="[KILO]*A" displayLabel="KA" />
+    <Unit typeName="MILLIAMPERE" phenomenon="CURRENT" unitSystem="METRIC" definition="[MILLI]*A" displayLabel="mA" />
+    <Unit typeName="MICROAMPERE" phenomenon="CURRENT" unitSystem="METRIC" definition="[MICRO]*A" displayLabel="µA" />
+    <Unit typeName="COULOMB" phenomenon="ELECTRIC_CHARGE" unitSystem="SI" definition="A*S" displayLabel="C" />
+    <Unit typeName="VOLT" phenomenon="ELECTRIC_POTENTIAL" unitSystem="SI" definition="N*M*COULOMB(-1)" displayLabel="V" />
+    <Unit typeName="KILOVOLT" phenomenon="ELECTRIC_POTENTIAL" unitSystem="METRIC" definition="[KILO]*VOLT" displayLabel="KV" />
+    <Unit typeName="MEGAVOLT" phenomenon="ELECTRIC_POTENTIAL" unitSystem="METRIC" definition="[MEGA]*VOLT" displayLabel="MV" />
+    <Unit typeName="J" phenomenon="WORK" unitSystem="SI" definition="N*M" />
+    <Unit typeName="KJ" phenomenon="WORK" unitSystem="METRIC" definition="[KILO]*J" displayLabel="kJ" />
+    <Unit typeName="MEGAJ" phenomenon="WORK" unitSystem="METRIC" definition="[MEGA]*J" displayLabel="MJ" />
+    <Unit typeName="GJ" phenomenon="WORK" unitSystem="METRIC" definition="[GIGA]*J" />
+    <Unit typeName="FT_PDL" phenomenon="WORK" unitSystem="USCUSTOM" definition="PDL*FT" displayLabel="ft*pdl" />
+    <Unit typeName="BTU" phenomenon="WORK" unitSystem="INTERNATIONAL" definition="J" numerator="1.05505585262e3" displayLabel="Btu" description="Is IT BTU.  http://physics.nist.gov/cuu/pdf/sp811.pdf, Appendix B.  See foot note #9: " />
+    <Unit typeName="KILOBTU" phenomenon="WORK" unitSystem="USCUSTOM" definition="[KILO]*BTU" displayLabel="kBtu" />
+    <Unit typeName="WATT_SECOND" phenomenon="WORK" unitSystem="INTERNATIONAL" definition="W*S" displayLabel="Ws" />
+    <Unit typeName="KWH" phenomenon="WORK" unitSystem="INTERNATIONAL" definition="KW*HR" displayLabel="kW·h" />
+    <Unit typeName="MEGAWH" phenomenon="WORK" unitSystem="INTERNATIONAL" definition="MEGAW*HR" displayLabel="MWh" />
+    <Unit typeName="GWH" phenomenon="WORK" unitSystem="INTERNATIONAL" definition="GW*HR" displayLabel="GWh" />
+    <Unit typeName="J_PER_CUB_M" phenomenon="ENERGY_DENSITY" unitSystem="SI" definition="J*M(-3)" displayLabel="J/m³" />
+    <Unit typeName="KJ_PER_CUB_M" phenomenon="ENERGY_DENSITY" unitSystem="METRIC" definition="KJ*M(-3)" displayLabel="kJ/m³" />
+    <Unit typeName="KWH_PER_CUB_M" phenomenon="ENERGY_DENSITY" unitSystem="METRIC" definition="KWH*M(-3)" displayLabel="kW·h/m³" />
+    <Unit typeName="KWH_PER_CUB_FT" phenomenon="ENERGY_DENSITY" unitSystem="USCUSTOM" definition="KWH*FT(-3)" displayLabel="kWh/ft³" />
+    <Unit typeName="KWH_PER_MILLION_GALLON" phenomenon="ENERGY_DENSITY" unitSystem="USCUSTOM" definition="KWH*[MEGA](-1)*GALLON(-1)" displayLabel="kW·h/million gal" />
+    <Unit typeName="J_PER_KG" phenomenon="SPECIFIC_ENERGY" unitSystem="SI" definition="J*KG(-1)" displayLabel="J/kg" />
+    <Unit typeName="KJ_PER_KG" phenomenon="SPECIFIC_ENERGY" unitSystem="METRIC" definition="KJ*KG(-1)" displayLabel="kJ/kg" />
+    <Unit typeName="MEGAJ_PER_KG" phenomenon="SPECIFIC_ENERGY" unitSystem="METRIC" definition="MEGAJ*KG(-1)" displayLabel="MJ/kg" />
+    <Unit typeName="BTU_PER_LBM" phenomenon="SPECIFIC_ENERGY" unitSystem="USCUSTOM" definition="BTU*LBM(-1)" displayLabel="Btu/lb" />
+    <Unit typeName="J_PER_KG_K" phenomenon="SPECIFIC_HEAT_CAPACITY" unitSystem="SI" definition="J*KG(-1)*DELTA_KELVIN(-1)" displayLabel="J/(kg·ΔK)" />
+    <Unit typeName="BTU_PER_LBM_RANKINE" phenomenon="SPECIFIC_HEAT_CAPACITY" unitSystem="USCUSTOM" definition="BTU*LBM(-1)*DELTA_RANKINE(-1)" displayLabel="Btu/(lbm·Δ°R)" />
+    <Unit typeName="J_PER_MOL_K" phenomenon="SPECIFIC_HEAT_CAPACITY_MOLAR" unitSystem="SI" definition="J*MOL(-1)*DELTA_KELVIN(-1)" displayLabel="J/(mol*K)" />
+    <Unit typeName="J_PER_KMOL_K" phenomenon="SPECIFIC_HEAT_CAPACITY_MOLAR" unitSystem="METRIC" definition="J*KMOL(-1)*DELTA_KELVIN(-1)" displayLabel="J/(kmol·ΔK)" />
+    <Unit typeName="KJ_PER_KMOL_K" phenomenon="SPECIFIC_HEAT_CAPACITY_MOLAR" unitSystem="METRIC" definition="KJ*KMOL(-1)*DELTA_KELVIN(-1)" displayLabel="kJ/(kmol·ΔK)" />
+    <Unit typeName="BTU_PER_LB_MOL_RANKINE" phenomenon="SPECIFIC_HEAT_CAPACITY_MOLAR" unitSystem="USCUSTOM" definition="BTU*LB_MOL(-1)*DELTA_RANKINE(-1)" displayLabel="Btu/(lb-mol·Δ°R)" />
+    <Unit typeName="CUB_M_PER_SEC" phenomenon="VOLUMETRIC_FLOW" unitSystem="SI" definition="M(3)*S(-1)" displayLabel="m³/s" />
+    <Unit typeName="CUB_M_PER_MIN" phenomenon="VOLUMETRIC_FLOW" unitSystem="METRIC" definition="M(3)*MIN(-1)" displayLabel="m³/min" />
+    <Unit typeName="CUB_M_PER_HR" phenomenon="VOLUMETRIC_FLOW" unitSystem="METRIC" definition="M(3)*HR(-1)" displayLabel="m³/h" />
+    <Unit typeName="CUB_M_PER_DAY" phenomenon="VOLUMETRIC_FLOW" unitSystem="METRIC" definition="M(3)*DAY(-1)" displayLabel="m³/day" />
+    <Unit typeName="LITRE_PER_SEC" phenomenon="VOLUMETRIC_FLOW" unitSystem="METRIC" definition="LITRE*S(-1)" displayLabel="L/s" />
+    <Unit typeName="LITRE_PER_MIN" phenomenon="VOLUMETRIC_FLOW" unitSystem="METRIC" definition="LITRE*MIN(-1)" displayLabel="L/min" />
+    <Unit typeName="LITRE_PER_HR" phenomenon="VOLUMETRIC_FLOW" unitSystem="METRIC" definition="LITRE*HR(-1)" displayLabel="L/h" />
+    <Unit typeName="LITRE_PER_DAY" phenomenon="VOLUMETRIC_FLOW" unitSystem="METRIC" definition="LITRE*DAY(-1)" displayLabel="L/day" />
+    <Unit typeName="CUB_IN_PER_SEC" phenomenon="VOLUMETRIC_FLOW" unitSystem="USCUSTOM" definition="CUB_IN*S(-1)" displayLabel="in³/sec" />
+    <Unit typeName="CUB_IN_PER_MIN" phenomenon="VOLUMETRIC_FLOW" unitSystem="USCUSTOM" definition="CUB_IN*MIN(-1)" displayLabel="in³/min" />
+    <Unit typeName="CUB_FT_PER_SEC" phenomenon="VOLUMETRIC_FLOW" unitSystem="USCUSTOM" definition="CUB_FT*S(-1)" displayLabel="ft³/s" />
+    <Unit typeName="CUB_FT_PER_MIN" phenomenon="VOLUMETRIC_FLOW" unitSystem="USCUSTOM" definition="CUB_FT*MIN(-1)" displayLabel="ft³/min" />
+    <Unit typeName="CUB_FT_PER_DAY" phenomenon="VOLUMETRIC_FLOW" unitSystem="USCUSTOM" definition="CUB_FT*DAY(-1)" displayLabel="ft³/day" />
+    <Unit typeName="ACRE_FT_PER_DAY" phenomenon="VOLUMETRIC_FLOW" unitSystem="USCUSTOM" definition="ACRE_FT*DAY(-1)" displayLabel="acre·ft/day" />
+    <Unit typeName="ACRE_FT_PER_HR" phenomenon="VOLUMETRIC_FLOW" unitSystem="USCUSTOM" definition="ACRE_FT*HR(-1)" displayLabel="acre·ft/h" />
+    <Unit typeName="ACRE_FT_PER_MIN" phenomenon="VOLUMETRIC_FLOW" unitSystem="USCUSTOM" definition="ACRE_FT*MIN(-1)" displayLabel="acre·ft/min" />
+    <Unit typeName="ACRE_IN_PER_DAY" phenomenon="VOLUMETRIC_FLOW" unitSystem="USCUSTOM" definition="ACRE_IN*DAY(-1)" displayLabel="acre_in/day" />
+    <Unit typeName="ACRE_IN_PER_HR" phenomenon="VOLUMETRIC_FLOW" unitSystem="USCUSTOM" definition="ACRE_IN*HR(-1)" displayLabel="acre·in/h" />
+    <Unit typeName="ACRE_IN_PER_MIN" phenomenon="VOLUMETRIC_FLOW" unitSystem="USCUSTOM" definition="ACRE_IN*MIN(-1)" displayLabel="acre·in/min" />
+    <Unit typeName="GALLON_IMPERIAL_PER_SEC" phenomenon="VOLUMETRIC_FLOW" unitSystem="IMPERIAL" definition="GALLON_IMPERIAL*S(-1)" displayLabel="gal (imp)/s" />
+    <Unit typeName="GALLON_IMPERIAL_PER_MIN" phenomenon="VOLUMETRIC_FLOW" unitSystem="IMPERIAL" definition="GALLON_IMPERIAL*MIN(-1)" displayLabel="gal (imp)/min" />
+    <Unit typeName="GALLON_IMPERIAL_PER_DAY" phenomenon="VOLUMETRIC_FLOW" unitSystem="IMPERIAL" definition="GALLON_IMPERIAL*DAY(-1)" displayLabel="gal (imp)/day" />
+    <Unit typeName="GALLON_PER_SEC" phenomenon="VOLUMETRIC_FLOW" unitSystem="USCUSTOM" definition="GALLON*S(-1)" displayLabel="gal/s" />
+    <Unit typeName="GALLON_PER_MIN" phenomenon="VOLUMETRIC_FLOW" unitSystem="USCUSTOM" definition="GALLON*MIN(-1)" displayLabel="gal/min" />
+    <Unit typeName="GALLON_PER_DAY" phenomenon="VOLUMETRIC_FLOW" unitSystem="USCUSTOM" definition="GALLON*DAY(-1)" displayLabel="gal/day" />
+    <Unit typeName="HZ" phenomenon="FREQUENCY" unitSystem="SI" definition="S(-1)" displayLabel="Hz" />
+    <Unit typeName="KHZ" phenomenon="FREQUENCY" unitSystem="METRIC" definition="[KILO]*S(-1)" displayLabel="KHz" />
+    <Unit typeName="MHZ" phenomenon="FREQUENCY" unitSystem="METRIC" definition="[MEGA]*S(-1)" displayLabel="MHz" />
+    <Unit typeName="CUB_M_PER_SQ_M_SEC" phenomenon="FLOW_DENSITY_PER_AREA" unitSystem="SI" definition="M*S(-1)" displayLabel="m³/(m²*sec)" />
+    <Unit typeName="CUB_M_PER_SQ_M_DAY" phenomenon="FLOW_DENSITY_PER_AREA" unitSystem="METRIC" definition="M*DAY(-1)" displayLabel="m³/(m²·day)" />
+    <Unit typeName="CUB_M_PER_HECTARE_DAY" phenomenon="FLOW_DENSITY_PER_AREA" unitSystem="METRIC" definition="CUB_M*HECTARE(-1)*DAY(-1)" displayLabel="m³/(ha·day)" />
+    <Unit typeName="CUB_M_PER_SQ_KM_DAY" phenomenon="FLOW_DENSITY_PER_AREA" unitSystem="METRIC" definition="CUB_M*KM(-2)*DAY(-1)" displayLabel="m³/(km²·day)" />
+    <Unit typeName="LITRE_PER_SQ_M_SEC" phenomenon="FLOW_DENSITY_PER_AREA" unitSystem="METRIC" definition="LITRE*M(-2)*S(-1)" displayLabel="L/(m²·s)" />
+    <Unit typeName="CUB_FT_PER_SQ_FT_MIN" phenomenon="FLOW_DENSITY_PER_AREA" unitSystem="USCUSTOM" definition="FT*MIN(-1)" displayLabel="ft³/(ft²·min)" />
+    <Unit typeName="CUB_FT_PER_SQ_FT_SEC" phenomenon="FLOW_DENSITY_PER_AREA" unitSystem="USCUSTOM" definition="FT*S(-1)" displayLabel="ft³/(ft²·s)" />
+    <Unit typeName="CUB_FT_PER_SQ_MILE_SEC" phenomenon="FLOW_DENSITY_PER_AREA" unitSystem="USCUSTOM" definition="FT(3)*MILE(-2)*S(-1)" displayLabel="ft³/(mi²·s)" />
+    <Unit typeName="CUB_FT_PER_ACRE_SEC" phenomenon="FLOW_DENSITY_PER_AREA" unitSystem="USCUSTOM" definition="FT(3)*ACRE(-1)*S(-1)" displayLabel="ft³/(acres·s)" />
+    <Unit typeName="GALLON_PER_ACRE_DAY" phenomenon="FLOW_DENSITY_PER_AREA" unitSystem="USCUSTOM" definition="GALLON*DAY(-1)*ACRE(-1)" displayLabel="gal/(acre·day)" />
+    <Unit typeName="GALLON_PER_ACRE_MIN" phenomenon="FLOW_DENSITY_PER_AREA" unitSystem="USCUSTOM" definition="GALLON*MIN(-1)*ACRE(-1)" displayLabel="gal/(acre·min)" />
+    <Unit typeName="GALLON_PER_SQ_FT_MIN" phenomenon="FLOW_DENSITY_PER_AREA" unitSystem="USCUSTOM" definition="GALLON*MIN(-1)*FT(-2)" displayLabel="gal/(ft²·min)" />
+    <Unit typeName="GALLON_PER_SQ_FT_DAY" phenomenon="FLOW_DENSITY_PER_AREA" unitSystem="USCUSTOM" definition="GALLON*DAY(-1)*FT(-2)" displayLabel="gal/(ft²·day)" />
+    <Unit typeName="GALLON_PER_SQ_MILE_MIN" phenomenon="FLOW_DENSITY_PER_AREA" unitSystem="USCUSTOM" definition="GALLON*MIN(-1)*MILE(-2)" displayLabel="gal/(mi²·min)" />
+    <Unit typeName="GALLON_PER_SQ_MILE_DAY" phenomenon="FLOW_DENSITY_PER_AREA" unitSystem="USCUSTOM" definition="GALLON*DAY(-1)*MILE(-2)" displayLabel="gal/(mi²·day)" />
+    <Unit typeName="KG_PER_KG" phenomenon="MASS_RATIO" unitSystem="SI" definition="KG*KG(-1)" displayLabel="kg/kg" />
+    <Unit typeName="GRM_PER_LBM" phenomenon="MASS_RATIO" unitSystem="USCUSTOM" definition="GRM*LBM(-1)" displayLabel="gr/lb" />
+    <Unit typeName="KG_PER_SEC" phenomenon="MASS_FLOW" unitSystem="SI" definition="KG*S(-1)" displayLabel="kg/s" />
+    <Unit typeName="KG_PER_MIN" phenomenon="MASS_FLOW" unitSystem="METRIC" definition="KG*MIN(-1)" displayLabel="kg/min" />
+    <Unit typeName="KG_PER_HR" phenomenon="MASS_FLOW" unitSystem="METRIC" definition="KG*HR(-1)" displayLabel="kg/h" />
+    <Unit typeName="KG_PER_DAY" phenomenon="MASS_FLOW" unitSystem="METRIC" definition="KG*DAY(-1)" displayLabel="kg/day" />
+    <Unit typeName="G_PER_SEC" phenomenon="MASS_FLOW" unitSystem="METRIC" definition="G*S(-1)" displayLabel="g/s" />
+    <Unit typeName="G_PER_MIN" phenomenon="MASS_FLOW" unitSystem="METRIC" definition="G*MIN(-1)" displayLabel="g/min" />
+    <Unit typeName="G_PER_HR" phenomenon="MASS_FLOW" unitSystem="METRIC" definition="G*HR(-1)" displayLabel="g/h" />
+    <Unit typeName="MG_PER_SEC" phenomenon="MASS_FLOW" unitSystem="METRIC" definition="MG*S(-1)" displayLabel="mg/s" />
+    <Unit typeName="MG_PER_MIN" phenomenon="MASS_FLOW" unitSystem="METRIC" definition="MG*MIN(-1)" displayLabel="mg/min" />
+    <Unit typeName="MG_PER_HR" phenomenon="MASS_FLOW" unitSystem="METRIC" definition="MG*HR(-1)" displayLabel="mg/h" />
+    <Unit typeName="MG_PER_DAY" phenomenon="MASS_FLOW" unitSystem="METRIC" definition="MG*DAY(-1)" displayLabel="mg/day" />
+    <Unit typeName="MKG_PER_SEC" phenomenon="MASS_FLOW" unitSystem="METRIC" definition="MKG*S(-1)" displayLabel="µg/s" />
+    <Unit typeName="MKG_PER_MIN" phenomenon="MASS_FLOW" unitSystem="METRIC" definition="MKG*MIN(-1)" displayLabel="µg/min" />
+    <Unit typeName="MKG_PER_HR" phenomenon="MASS_FLOW" unitSystem="METRIC" definition="MKG*HR(-1)" displayLabel="µg/h" />
+    <Unit typeName="MKG_PER_DAY" phenomenon="MASS_FLOW" unitSystem="METRIC" definition="MKG*DAY(-1)" displayLabel="µg/day" />
+    <Unit typeName="TONNE_PER_HR" phenomenon="MASS_FLOW" unitSystem="METRIC" definition="TONNE*HR(-1)" displayLabel="tph" />
+    <Unit typeName="LBM_PER_SEC" phenomenon="MASS_FLOW" unitSystem="USCUSTOM" definition="LBM*S(-1)" displayLabel="lb/s" />
+    <Unit typeName="LBM_PER_MIN" phenomenon="MASS_FLOW" unitSystem="USCUSTOM" definition="LBM*MIN(-1)" displayLabel="lb/min" />
+    <Unit typeName="LBM_PER_HR" phenomenon="MASS_FLOW" unitSystem="USCUSTOM" definition="LBM*HR(-1)" displayLabel="lb/h" />
+    <Unit typeName="LBM_PER_DAY" phenomenon="MASS_FLOW" unitSystem="USCUSTOM" definition="LBM*DAY(-1)" displayLabel="lb/day" />
+    <Unit typeName="SHORT_TON_PER_HR" phenomenon="MASS_FLOW" unitSystem="USCUSTOM" definition="SHORT_TON_MASS*HR(-1)" displayLabel="tph" />
+    <Unit typeName="MOL_PER_SEC" phenomenon="MOLAR_FLOW" unitSystem="SI" definition="MOL*S(-1)" displayLabel="mol/s" />
+    <Unit typeName="KMOL_PER_SEC" phenomenon="MOLAR_FLOW" unitSystem="METRIC" definition="[KILO]*MOL*S(-1)" displayLabel="kmol/s" />
+    <Unit typeName="N" phenomenon="FORCE" unitSystem="SI" definition="KG*M*S(-2)" />
+    <Unit typeName="KN" phenomenon="FORCE" unitSystem="METRIC" definition="[KILO]*N" displayLabel="kN" />
+    <Unit typeName="MN" phenomenon="FORCE" unitSystem="METRIC" definition="[MILLI]*N" displayLabel="mN" />
+    <Unit typeName="KGF" phenomenon="FORCE" unitSystem="METRIC" definition="[STD_G]*KG" displayLabel="kgf" />
+    <Unit typeName="DYNE" phenomenon="FORCE" unitSystem="METRIC" definition="G*CM*S(-2)" displayLabel="dyn" />
+    <Unit typeName="PDL" phenomenon="FORCE" unitSystem="USCUSTOM" definition="LBM*FT*S(-2)" displayLabel="pdl" />
+    <Unit typeName="SHORT_TON_FORCE" phenomenon="FORCE" unitSystem="USCUSTOM" definition="[STD_G]*SHORT_TON_MASS" displayLabel="tnf (short)" />
+    <Unit typeName="LONG_TON_FORCE" phenomenon="FORCE" unitSystem="USCUSTOM" definition="[STD_G]*LONG_TON_MASS" displayLabel="tnf (long)" />
+    <Unit typeName="LBF" phenomenon="FORCE" unitSystem="USCUSTOM" definition="[STD_G]*LBM" displayLabel="lbf" />
+    <Unit typeName="OZF" phenomenon="FORCE" unitSystem="USCUSTOM" definition="[STD_G]*OZM" displayLabel="ozf" />
+    <Unit typeName="KPF" phenomenon="FORCE" unitSystem="USCUSTOM" definition="[KILO]*LBF" displayLabel="kpf" />
+    <Unit typeName="W_PER_SQ_M" phenomenon="HEAT_FLUX_DENSITY" unitSystem="SI" definition="W*M(-2)" displayLabel="W/m²" />
+    <Unit typeName="W_PER_SQ_M_K" phenomenon="HEAT_TRANSFER" unitSystem="SI" definition="W*M(-2)*DELTA_KELVIN(-1)" displayLabel="W/(m²·ΔK)" />
+    <Unit typeName="W_PER_SQ_M_CELSIUS" phenomenon="HEAT_TRANSFER" unitSystem="METRIC" definition="W*M(-2)*DELTA_CELSIUS(-1)" displayLabel="W/(m²·Δ°C)" />
+    <Unit typeName="BTU_PER_SQ_FT_HR_FAHRENHEIT" phenomenon="HEAT_TRANSFER" unitSystem="USCUSTOM" definition="BTU*FT(-2)*HR(-1)*DELTA_FAHRENHEIT(-1)" displayLabel="Btu/(ft²·h·Δ°F)" />
+    <Unit typeName="KG_PER_M" phenomenon="LINEAR_DENSITY" unitSystem="SI" definition="KG*M(-1)" displayLabel="kg/m" />
+    <Unit typeName="KG_PER_MM" phenomenon="LINEAR_DENSITY" unitSystem="METRIC" definition="KG*MM(-1)" displayLabel="kg/mm" />
+    <Unit typeName="LBM_PER_FT" phenomenon="LINEAR_DENSITY" unitSystem="USCUSTOM" definition="LBM*FT(-1)" displayLabel="lb/ft" />
+    <Unit typeName="N_PER_M" phenomenon="LINEAR_LOAD" unitSystem="SI" definition="N*M(-1)" displayLabel="N/m" />
+    <Unit typeName="N_PER_MM" phenomenon="LINEAR_LOAD" unitSystem="METRIC" definition="N*MM(-1)" displayLabel="N/mm" />
+    <Unit typeName="LBF_PER_IN" phenomenon="LINEAR_LOAD" unitSystem="USCUSTOM" definition="LBF*IN(-1)" displayLabel="lbf/in" />
+    <Unit typeName="PER_M" phenomenon="LINEAR_RATE" unitSystem="SI" definition="M(-1)" displayLabel="1/m" />
+    <Unit typeName="PER_MM" phenomenon="LINEAR_RATE" unitSystem="METRIC" definition="MM(-1)" displayLabel="1/mm" />
+    <Unit typeName="PER_KM" phenomenon="LINEAR_RATE" unitSystem="METRIC" definition="KM(-1)" displayLabel="1/km" />
+    <Unit typeName="PER_FT" phenomenon="LINEAR_RATE" unitSystem="USCUSTOM" definition="FT(-1)" displayLabel="1/ft" />
+    <Unit typeName="PER_MILE" phenomenon="LINEAR_RATE" unitSystem="USCUSTOM" definition="MILE(-1)" displayLabel="1/mile" />
+    <Unit typeName="PER_THOUSAND_FT" phenomenon="LINEAR_RATE" unitSystem="USCUSTOM" definition="FT(-1)" numerator="1.0e-3" displayLabel="1/1000 ft" />
+    <Unit typeName="N_M" phenomenon="TORQUE" unitSystem="SI" definition="N*M*RAD(-1)" displayLabel="N·m" />
+    <Unit typeName="N_CM" phenomenon="TORQUE" unitSystem="METRIC" definition="N*CM*RAD(-1)" displayLabel="N·cm" />
+    <Unit typeName="LBF_FT" phenomenon="TORQUE" unitSystem="USCUSTOM" definition="LBF*FT*RAD(-1)" displayLabel="lbf·ft" />
+    <Unit typeName="CUB_M_PER_MOL" phenomenon="MOLAR_VOLUME" unitSystem="SI" definition="CUB_M*MOL(-1)" displayLabel="m³/mol" />
+    <Unit typeName="CUB_M_PER_KMOL" phenomenon="MOLAR_VOLUME" unitSystem="METRIC" definition="CUB_M*[KILO](-1)*MOL(-1)" displayLabel="m³/kmol" />
+    <Unit typeName="CUB_FT_PER_LB_MOL" phenomenon="MOLAR_VOLUME" unitSystem="USCUSTOM" definition="CUB_FT*LB_MOL(-1)" displayLabel="ft³/lb-mol" />
+    <Unit typeName="MOL_PER_CUB_M" phenomenon="MOLAR_CONCENTRATION" unitSystem="SI" definition="MOL*CUB_M(-1)" displayLabel="mol/m³" />
+    <Unit typeName="KMOL_PER_CUB_M" phenomenon="MOLAR_CONCENTRATION" unitSystem="METRIC" definition="[KILO]*MOL*CUB_M(-1)" displayLabel="kmol/m³" />
+    <Unit typeName="MOL_PER_CUB_DM" phenomenon="MOLAR_CONCENTRATION" unitSystem="METRIC" definition="MOL*CUB_DM(-1)" displayLabel="mol/dm³" />
+    <Unit typeName="MICROMOL_PER_CUB_DM" phenomenon="MOLAR_CONCENTRATION" unitSystem="METRIC" definition="[MICRO]*MOL*CUB_DM(-1)" displayLabel="µmol/dm³" />
+    <Unit typeName="NMOL_PER_CUB_DM" phenomenon="MOLAR_CONCENTRATION" unitSystem="METRIC" definition="[NANO]*MOL*CUB_DM(-1)" displayLabel="nmol/dm³" />
+    <Unit typeName="PICOMOL_PER_CUB_DM" phenomenon="MOLAR_CONCENTRATION" unitSystem="METRIC" definition="[PICO]*MOL*CUB_DM(-1)" displayLabel="picomol/dm³" />
+    <Unit typeName="MOL_PER_CUB_FT" phenomenon="MOLAR_CONCENTRATION" unitSystem="USCUSTOM" definition="MOL*CUB_FT(-1)" displayLabel="mol/ft³" />
+    <Unit typeName="MM_TO_THE_FOURTH" phenomenon="AREA_MOMENT_INERTIA" unitSystem="METRIC" definition="MM(4)" displayLabel="mm⁴" />
+    <Unit typeName="M_TO_THE_FOURTH" phenomenon="AREA_MOMENT_INERTIA" unitSystem="SI" definition="M(4)" displayLabel="m⁴" />
+    <Unit typeName="CM_TO_THE_FOURTH" phenomenon="AREA_MOMENT_INERTIA" unitSystem="METRIC" definition="CM(4)" displayLabel="cm⁴" />
+    <Unit typeName="IN_TO_THE_FOURTH" phenomenon="AREA_MOMENT_INERTIA" unitSystem="USCUSTOM" definition="IN(4)" displayLabel="in⁴" />
+    <Unit typeName="FT_TO_THE_FOURTH" phenomenon="AREA_MOMENT_INERTIA" unitSystem="USCUSTOM" definition="FT(4)" displayLabel="ft⁴" />
+    <Unit typeName="W" phenomenon="POWER" unitSystem="SI" definition="N*M*S(-1)" />
+    <Unit typeName="KW" phenomenon="POWER" unitSystem="METRIC" definition="[KILO]*W" displayLabel="kW" />
+    <Unit typeName="MEGAW" phenomenon="POWER" unitSystem="METRIC" definition="[MEGA]*W" displayLabel="MW" />
+    <Unit typeName="GW" phenomenon="POWER" unitSystem="METRIC" definition="[GIGA]*W" />
+    <Unit typeName="BTU_PER_HR" phenomenon="POWER" unitSystem="USCUSTOM" definition="BTU*HR(-1)" displayLabel="Btu/h" />
+    <Unit typeName="KILOBTU_PER_HR" phenomenon="POWER" unitSystem="USCUSTOM" definition="[KILO]*BTU*HR(-1)" displayLabel="kBtu/h" />
+    <Unit typeName="HP" phenomenon="POWER" unitSystem="USCUSTOM" definition="LBF*FT*S(-1)" numerator="550.0" displayLabel="hp" description="Exact, See http://physics.nist.gov/cuu/pdf/sp811.pdf Appendix B." />
+    <Unit typeName="PA" phenomenon="PRESSURE" unitSystem="SI" definition="N*M(-2)" displayLabel="N/m²" />
+    <Unit typeName="PA_GAUGE" phenomenon="PRESSURE" unitSystem="INDUSTRIAL" definition="PA" numerator="1" offset="101325" displayLabel="Pa (gauge)" description="Offset is one standard atmosphere in PA.  Offset is exact, See http://physics.nist.gov/cuu/pdf/sp811.pdf Appendix B.  " />
+    <Unit typeName="HECTOPASCAL" phenomenon="PRESSURE" unitSystem="METRIC" definition="[HECTO]*PA" displayLabel="hPa" />
+    <Unit typeName="KILOPASCAL" phenomenon="PRESSURE" unitSystem="METRIC" definition="[KILO]*PA" displayLabel="kPa" />
+    <Unit typeName="KILOPASCAL_GAUGE" phenomenon="PRESSURE" unitSystem="INDUSTRIAL" definition="[KILO]*PA" numerator="1" offset="101325e-3" displayLabel="kPa (Gauge)" description="Offset is one standard atmosphere (101325 PA) converted to kilopascal.  Offset is exact, See http://physics.nist.gov/cuu/pdf/sp811.pdf Appendix B.  " />
+    <Unit typeName="MEGAPASCAL" phenomenon="PRESSURE" unitSystem="METRIC" definition="[MEGA]*PA" displayLabel="MPa" />
+    <Unit typeName="MEGAPASCAL_GAUGE" phenomenon="PRESSURE" unitSystem="INDUSTRIAL" definition="[MEGA]*PA" numerator="1" offset="101325e-6" displayLabel="MPa (Gauge)" description="Offset is one standard atmosphere (101325 PA) converted to megapascal.  Offset is exact, See http://physics.nist.gov/cuu/pdf/sp811.pdf Appendix B.  " />
+    <Unit typeName="AT" phenomenon="PRESSURE" unitSystem="INTERNATIONAL" definition="KGF*CM(-2)" displayLabel="kgf/cm²" description="Exact, See http://physics.nist.gov/cuu/pdf/sp811.pdf Appendix B." />
+    <Unit typeName="AT_GAUGE" phenomenon="PRESSURE" unitSystem="INDUSTRIAL" definition="AT" offset="1.0332274527998859" displayLabel="kgf/cm² (Gauge)" description="Offset is one standard atmosphere (101325 PA) converted to atmosphere-technical (AT).  Offset is exact, See http://physics.nist.gov/cuu/pdf/sp811.pdf Appendix B.  " />
+    <Unit typeName="KGF_PER_SQ_M" phenomenon="PRESSURE" unitSystem="INTERNATIONAL" definition="KGF*M(-2)" displayLabel="kgf/m²" />
+    <Unit typeName="ATM" phenomenon="PRESSURE" unitSystem="METRIC" definition="PA" numerator="101325" displayLabel="atm" description="Standard atmosphere, see AT for atmosphere-technical.  Exact, See http://physics.nist.gov/cuu/pdf/sp811.pdf Appendix B.  " />
+    <Unit typeName="BAR" phenomenon="PRESSURE" unitSystem="METRIC" definition="PA" numerator="1.0e5" displayLabel="bar" description="Exact, See http://physics.nist.gov/cuu/pdf/sp811.pdf Appendix B.  " />
+    <Unit typeName="BAR_GAUGE" phenomenon="PRESSURE" unitSystem="INDUSTRIAL" definition="PA" numerator="1.0e5" offset="1.01325" displayLabel="bar (Gauge)" description="Offset is one standard atmosphere converted to BAR.  Offset is exact, See http://physics.nist.gov/cuu/pdf/sp811.pdf Appendix B.  " />
+    <Unit typeName="MBAR" phenomenon="PRESSURE" unitSystem="METRIC" definition="[MILLI]*BAR" displayLabel="mBar" />
+    <Unit typeName="BARYE" phenomenon="PRESSURE" unitSystem="METRIC" definition="DYNE*CM(-2)" displayLabel="ba" />
+    <Unit typeName="PSI" phenomenon="PRESSURE" unitSystem="USCUSTOM" definition="LBF*IN(-2)" displayLabel="lbf/in²" />
+    <Unit typeName="PSIG" phenomenon="PRESSURE" unitSystem="USCUSTOM" definition="LBF*IN(-2)" numerator="1" offset="14.695948775513449" displayLabel="lbf/in² (Gauge)" description="Offset is one standard atmosphere (101325 PA) converted to PSI" />
+    <Unit typeName="KSI" phenomenon="PRESSURE" unitSystem="USCUSTOM" definition="KPF*IN(-2)" displayLabel="ksi" />
+    <Unit typeName="LBF_PER_SQ_FT" phenomenon="PRESSURE" unitSystem="USCUSTOM" definition="LBF*FT(-2)" displayLabel="lbf/ft²" />
+    <Unit typeName="TORR" phenomenon="PRESSURE" unitSystem="USCUSTOM" definition="PA" numerator="101325.0" denominator="760.0" displayLabel="torr" description="See http://physics.nist.gov/cuu/pdf/sp811.pdf Appendix B. for approx conversion and Table 11 for a reference to the exact conversion" />
+    <Unit typeName="M_H2O" phenomenon="PRESSURE" unitSystem="METRIC" definition="[KILO]*MM_H2O" displayLabel="mH2O (Conv)" description="Meter of H2O Conventional" />
+    <Unit typeName="MM_H2O" phenomenon="PRESSURE" unitSystem="METRIC" definition="PA" numerator="9.80665" displayLabel="mmH2O (Conv)" description="Millimeter of H2O Conventional, See http://physics.nist.gov/cuu/pdf/sp811.pdf Appendix B." />
+    <Unit typeName="MM_HG_AT_32F" phenomenon="PRESSURE" unitSystem="METRIC" definition="PA" numerator="1.33322e2" displayLabel="mmHg@32°F" description="See http://physics.nist.gov/cuu/pdf/sp811.pdf Appendix B.  Used centimeter of mercury (0 C) to pascal" />
+    <Unit typeName="FT_H2O" phenomenon="PRESSURE" unitSystem="USCUSTOM" definition="PA" numerator="2.989067e3" displayLabel="ft H2O (Conv)" description="foot of H2O Conventional, See http://physics.nist.gov/cuu/pdf/sp811.pdf Appendix B." />
+    <Unit typeName="IN_H2O_AT_32F" phenomenon="PRESSURE" unitSystem="USCUSTOM" definition="PA" numerator="249.1083" displayLabel="inH2O@32°F" description="Inch of H2O at 32 Fahrenheit, Water is assumed to be in a liquid state. Equal to water at 0C.  No verified source" />
+    <Unit typeName="IN_H2O_AT_39_2F" phenomenon="PRESSURE" unitSystem="USCUSTOM" definition="PA" numerator="2.49082e2" displayLabel="inH2O@39.2°F" description="See http://physics.nist.gov/cuu/pdf/sp811.pdf Appendix B." />
+    <Unit typeName="IN_H2O_AT_60F" phenomenon="PRESSURE" unitSystem="USCUSTOM" definition="PA" numerator="2.4884e2" displayLabel="inH2O@60°F" description="See http://physics.nist.gov/cuu/pdf/sp811.pdf Appendix B." />
+    <Unit typeName="IN_HG" phenomenon="PRESSURE" unitSystem="USCUSTOM" definition="PA" numerator="3.386389e3" displayLabel="inHg (Conv)" description="Inch of HG conventional, See http://physics.nist.gov/cuu/pdf/sp811.pdf Appendix B." />
+    <Unit typeName="IN_HG_AT_32F" phenomenon="PRESSURE" unitSystem="USCUSTOM" definition="PA" numerator="3.38638e3" displayLabel="inHg@32°F" description="See http://physics.nist.gov/cuu/pdf/sp811.pdf Appendix B." />
+    <Unit typeName="IN_HG_AT_60F" phenomenon="PRESSURE" unitSystem="USCUSTOM" definition="PA" numerator="3.37685e3" displayLabel="inHg@60°F" description="See http://physics.nist.gov/cuu/pdf/sp811.pdf Appendix B." />
+    <Unit typeName="PA_PER_M" phenomenon="PRESSURE_GRADIENT" unitSystem="SI" definition="PA*M(-1)" displayLabel="Pa/m" />
+    <Unit typeName="BAR_PER_KM" phenomenon="PRESSURE_GRADIENT" unitSystem="METRIC" definition="BAR*KM(-1)" displayLabel="bar/km" />
+    <Unit typeName="PERCENT" phenomenon="PERCENTAGE" unitSystem="INTERNATIONAL" definition="ONE" displayLabel="%" />
+    <Unit typeName="DECIMAL_PERCENT" phenomenon="PERCENTAGE" unitSystem="INTERNATIONAL" definition="PERCENT" numerator="100" displayLabel="%" />
+    <Unit typeName="M_PER_M" phenomenon="SLOPE" unitSystem="SI" definition="M*M(-1)" displayLabel="m/m" />
+    <Unit typeName="CM_PER_M" phenomenon="SLOPE" unitSystem="METRIC" definition="CM*M(-1)" displayLabel="cm/m" />
+    <Unit typeName="MM_PER_M" phenomenon="SLOPE" unitSystem="METRIC" definition="MM*M(-1)" displayLabel="mm/m" />
+    <Unit typeName="M_PER_KM" phenomenon="SLOPE" unitSystem="METRIC" definition="M*KM(-1)" displayLabel="m/km" />
+    <Unit typeName="FT_PER_THOUSAND_FOOT" phenomenon="SLOPE" unitSystem="USCUSTOM" definition="FT*[KILO](-1)*FT(-1)" displayLabel="ft/1000ft" />
+    <Unit typeName="FT_PER_FT" phenomenon="SLOPE" unitSystem="USCUSTOM" definition="FT*FT(-1)" displayLabel="ft/ft" />
+    <Unit typeName="IN_PER_FT" phenomenon="SLOPE" unitSystem="USCUSTOM" definition="IN*FT(-1)" displayLabel="in/ft" />
+    <Unit typeName="FT_PER_IN" phenomenon="SLOPE" unitSystem="USCUSTOM" definition="FT*IN(-1)" displayLabel="ft/in" />
+    <Unit typeName="FT_PER_MILE" phenomenon="SLOPE" unitSystem="USCUSTOM" definition="FT*MILE(-1)" displayLabel="ft/mi" />
+    <Unit typeName="VERTICAL_PER_HORIZONTAL" phenomenon="SLOPE" unitSystem="INTERNATIONAL" definition="M_PER_M" displayLabel="slope" />
+    <Unit typeName="PERCENT_SLOPE" phenomenon="SLOPE" unitSystem="INTERNATIONAL" definition="DECIMAL_PERCENT(-1)*M_PER_M" displayLabel="%" />
+    <InvertedUnit typeName="HORIZONTAL_PER_VERTICAL" invertsUnit="VERTICAL_PER_HORIZONTAL" unitSystem="INTERNATIONAL" />
+    <InvertedUnit typeName="FT_HORIZONTAL_PER_FT_VERTICAL" invertsUnit="FT_PER_FT" unitSystem="USCUSTOM" />
+    <InvertedUnit typeName="M_HORIZONTAL_PER_M_VERTICAL" invertsUnit="M_PER_M" unitSystem="SI" />
+    <Unit typeName="KG_PER_SQ_M" phenomenon="SURFACE_DENSITY" unitSystem="SI" definition="KG*M(-2)" displayLabel="kg/m²" />
+    <Unit typeName="G_PER_SQ_M" phenomenon="SURFACE_DENSITY" unitSystem="METRIC" definition="G*M(-2)" displayLabel="g/m²" />
+    <Unit typeName="KG_PER_HECTARE" phenomenon="SURFACE_DENSITY" unitSystem="METRIC" definition="KG*HECTARE(-1)" displayLabel="kg/ha" />
+    <Unit typeName="LBM_PER_ACRE" phenomenon="SURFACE_DENSITY" unitSystem="USCUSTOM" definition="LBM*ACRE(-1)" displayLabel="lb/acre" />
+    <Unit typeName="W_PER_M_K" phenomenon="THERMAL_CONDUCTIVITY" unitSystem="SI" definition="W*M(-1)*DELTA_KELVIN(-1)" displayLabel="W/(m·K)" />
+    <Unit typeName="W_PER_M_C" phenomenon="THERMAL_CONDUCTIVITY" unitSystem="METRIC" definition="W*M(-1)*DELTA_CELSIUS(-1)" displayLabel="W/(m·Δ°C)" />
+    <Unit typeName="BTU_IN_PER_SQ_FT_HR_FAHRENHEIT" phenomenon="THERMAL_CONDUCTIVITY" unitSystem="USCUSTOM" definition="BTU*IN*FT(-2)*HR(-1)*DELTA_FAHRENHEIT(-1)" displayLabel="Btu·in/(ft²·h·Δ°F)" />
+    <Unit typeName="SQ_M_KELVIN_PER_WATT" phenomenon="THERMAL_INSULANCE" unitSystem="SI" definition="M(2)*DELTA_KELVIN*W(-1)" displayLabel="m²·ΔK/W" />
+    <Unit typeName="SQ_M_CELSIUS_PER_WATT" phenomenon="THERMAL_INSULANCE" unitSystem="METRIC" definition="M(2)*DELTA_CELSIUS*W(-1)" displayLabel="m²·Δ°C/W" />
+    <Unit typeName="SQ_FT_HR_FAHRENHEIT_PER_BTU" phenomenon="THERMAL_INSULANCE" unitSystem="USCUSTOM" definition="FT(2)*HR*DELTA_FAHRENHEIT*BTU(-1)" displayLabel="ft²·h·Δ°F/Btu" />
+    <Unit typeName="M_PER_SEC" phenomenon="VELOCITY" unitSystem="SI" definition="M*S(-1)" displayLabel="m/s" />
+    <Unit typeName="M_PER_MIN" phenomenon="VELOCITY" unitSystem="METRIC" definition="M*MIN(-1)" displayLabel="m/min" />
+    <Unit typeName="M_PER_HR" phenomenon="VELOCITY" unitSystem="METRIC" definition="M*HR(-1)" displayLabel="m/h" />
+    <Unit typeName="M_PER_DAy" phenomenon="VELOCITY" unitSystem="METRIC" definition="M*DAY(-1)" displayLabel="m/day" />
+    <Unit typeName="MM_PER_SEC" phenomenon="VELOCITY" unitSystem="METRIC" definition="MM*S(-1)" displayLabel="mm/sec" />
+    <Unit typeName="MM_PER_MIN" phenomenon="VELOCITY" unitSystem="METRIC" definition="MM*MIN(-1)" displayLabel="mm/min" />
+    <Unit typeName="MM_PER_HR" phenomenon="VELOCITY" unitSystem="METRIC" definition="MM*HR(-1)" displayLabel="mm/h" />
+    <Unit typeName="MM_PER_DAY" phenomenon="VELOCITY" unitSystem="METRIC" definition="MM*DAY(-1)" displayLabel="mm/day" />
+    <Unit typeName="CM_PER_SEC" phenomenon="VELOCITY" unitSystem="METRIC" definition="CM*S(-1)" displayLabel="cm/s" />
+    <Unit typeName="CM_PER_MIN" phenomenon="VELOCITY" unitSystem="METRIC" definition="CM*MIN(-1)" displayLabel="cm/min" />
+    <Unit typeName="CM_PER_HR" phenomenon="VELOCITY" unitSystem="METRIC" definition="CM*HR(-1)" displayLabel="cm/h" />
+    <Unit typeName="CM_PER_DAY" phenomenon="VELOCITY" unitSystem="METRIC" definition="CM*DAY(-1)" displayLabel="cm/day" />
+    <Unit typeName="KM_PER_SEC" phenomenon="VELOCITY" unitSystem="METRIC" definition="KM*S(-1)" displayLabel="km/sec" />
+    <Unit typeName="KM_PER_HR" phenomenon="VELOCITY" unitSystem="METRIC" definition="KM*HR(-1)" displayLabel="km/h" />
+    <Unit typeName="IN_PER_SEC" phenomenon="VELOCITY" unitSystem="USCUSTOM" definition="IN*S(-1)" displayLabel="in/s" />
+    <Unit typeName="IN_PER_MIN" phenomenon="VELOCITY" unitSystem="USCUSTOM" definition="IN*MIN(-1)" displayLabel="in/min" />
+    <Unit typeName="IN_PER_HR" phenomenon="VELOCITY" unitSystem="USCUSTOM" definition="IN*HR(-1)" displayLabel="in/h" />
+    <Unit typeName="IN_PER_DAY" phenomenon="VELOCITY" unitSystem="USCUSTOM" definition="IN*DAY(-1)" displayLabel="in/day" />
+    <Unit typeName="FT_PER_SEC" phenomenon="VELOCITY" unitSystem="USCUSTOM" definition="FT*S(-1)" displayLabel="ft/s" />
+    <Unit typeName="FT_PER_MIN" phenomenon="VELOCITY" unitSystem="USCUSTOM" definition="FT*MIN(-1)" displayLabel="ft/min" />
+    <Unit typeName="FT_PER_HR" phenomenon="VELOCITY" unitSystem="USCUSTOM" definition="FT*HR(-1)" displayLabel="ft/h" />
+    <Unit typeName="FT_PER_DAY" phenomenon="VELOCITY" unitSystem="USCUSTOM" definition="FT*DAY(-1)" displayLabel="ft/day" />
+    <Unit typeName="YRD_PER_SEC" phenomenon="VELOCITY" unitSystem="USCUSTOM" definition="YRD*S(-1)" displayLabel="yrd/sec" />
+    <Unit typeName="MPH" phenomenon="VELOCITY" unitSystem="USCUSTOM" definition="MILE*HR(-1)" displayLabel="mi/h" />
+    <Unit typeName="KNOT_INTERNATIONAL" phenomenon="VELOCITY" unitSystem="MARITIME" definition="NAUT_MILE*HR(-1)" displayLabel="knot (Int.)" />
+    <Unit typeName="RAD_PER_SEC" phenomenon="ANGULAR_VELOCITY" unitSystem="SI" definition="RAD*S(-1)" displayLabel="rad/sec" />
+    <Unit typeName="RAD_PER_MIN" phenomenon="ANGULAR_VELOCITY" unitSystem="METRIC" definition="RAD*MIN(-1)" displayLabel="rad/min" />
+    <Unit typeName="RAD_PER_HR" phenomenon="ANGULAR_VELOCITY" unitSystem="METRIC" definition="RAD*HR(-1)" displayLabel="rad/hr" />
+    <Unit typeName="RPS" phenomenon="ANGULAR_VELOCITY" unitSystem="METRIC" definition="[TWO_PI]*RAD*S(-1)" displayLabel="cycle/sec" />
+    <Unit typeName="RPM" phenomenon="ANGULAR_VELOCITY" unitSystem="METRIC" definition="[TWO_PI]*RAD*MIN(-1)" displayLabel="cycle/min" />
+    <Unit typeName="RPH" phenomenon="ANGULAR_VELOCITY" unitSystem="METRIC" definition="[TWO_PI]*RAD*HR(-1)" displayLabel="cycle/hr" />
+    <Unit typeName="DEG_PER_SEC" phenomenon="ANGULAR_VELOCITY" unitSystem="METRIC" definition="ARC_DEG*S(-1)" displayLabel="deg/sec" />
+    <Unit typeName="DEG_PER_MIN" phenomenon="ANGULAR_VELOCITY" unitSystem="METRIC" definition="ARC_DEG*MIN(-1)" displayLabel="deg/min" />
+    <Unit typeName="DEG_PER_HR" phenomenon="ANGULAR_VELOCITY" unitSystem="METRIC" definition="ARC_DEG*HR(-1)" displayLabel="deg/hr" />
+    <Unit typeName="PA_S" phenomenon="DYNAMIC_VISCOSITY" unitSystem="SI" definition="PA*S" displayLabel="Pa·s" />
+    <Unit typeName="POISE" phenomenon="DYNAMIC_VISCOSITY" unitSystem="METRIC" definition="[DECI]*PA_S" displayLabel="poise" description="Exact, See http://physics.nist.gov/cuu/pdf/sp811.pdf Appendix B." />
+    <Unit typeName="CENTIPOISE" phenomenon="DYNAMIC_VISCOSITY" unitSystem="METRIC" definition="[CENTI]*POISE" displayLabel="cP" />
+    <Unit typeName="LBM_PER_FT_S" phenomenon="DYNAMIC_VISCOSITY" unitSystem="USCUSTOM" definition="LBM*FT(-1)*S(-1)" displayLabel="lbm/(ft*s)" />
+    <Unit typeName="SQ_M_PER_SEC" phenomenon="KINEMATIC_VISCOSITY" unitSystem="SI" definition="M(2)*S(-1)" displayLabel="m²/s" />
+    <Unit typeName="SQ_FT_PER_SEC" phenomenon="KINEMATIC_VISCOSITY" unitSystem="USCUSTOM" definition="FT(2)*S(-1)" displayLabel="ft²/s" />
+    <Unit typeName="STOKE" phenomenon="KINEMATIC_VISCOSITY" unitSystem="METRIC" definition="CM(2)*S(-1)" displayLabel="St" />
+    <Unit typeName="CENTISTOKE" phenomenon="KINEMATIC_VISCOSITY" unitSystem="METRIC" definition="MM(2)*S(-1)" displayLabel="cSt" />
+    <Unit typeName="CUB_M" phenomenon="VOLUME" unitSystem="SI" definition="M(3)" displayLabel="m³" />
+    <Unit typeName="CUB_UM" phenomenon="VOLUME" unitSystem="METRIC" definition="UM(3)" displayLabel="um³" />
+    <Unit typeName="CUB_MM" phenomenon="VOLUME" unitSystem="METRIC" definition="MM(3)" displayLabel="mm³" />
+    <Unit typeName="CUB_CM" phenomenon="VOLUME" unitSystem="METRIC" definition="CM(3)" displayLabel="cm³" />
+    <Unit typeName="CUB_DM" phenomenon="VOLUME" unitSystem="METRIC" definition="DM(3)" displayLabel="dm³" />
+    <Unit typeName="CUB_KM" phenomenon="VOLUME" unitSystem="METRIC" definition="KM(3)" displayLabel="km³" />
+    <Unit typeName="LITRE" phenomenon="VOLUME" unitSystem="METRIC" definition="CUB_DM" displayLabel="L" />
+    <Unit typeName="THOUSAND_LITRE" phenomenon="VOLUME" unitSystem="METRIC" definition="[KILO]*LITRE" displayLabel="thousand L" />
+    <Unit typeName="MILLION_LITRE" phenomenon="VOLUME" unitSystem="METRIC" definition="[MEGA]*LITRE" displayLabel="million L" />
+    <Unit typeName="MICROLITRE" phenomenon="VOLUME" unitSystem="METRIC" definition="[MICRO]*LITRE" displayLabel="µliter" />
+    <Unit typeName="CUB_IN" phenomenon="VOLUME" unitSystem="USCUSTOM" definition="IN(3)" displayLabel="in³" />
+    <Unit typeName="CUB_FT" phenomenon="VOLUME" unitSystem="USCUSTOM" definition="FT(3)" displayLabel="ft³" />
+    <Unit typeName="CUB_YRD" phenomenon="VOLUME" unitSystem="USCUSTOM" definition="YRD(3)" displayLabel="yd³" />
+    <Unit typeName="CUB_MILE" phenomenon="VOLUME" unitSystem="USCUSTOM" definition="MILE(3)" displayLabel="mile³" />
+    <Unit typeName="ACRE_IN" phenomenon="VOLUME" unitSystem="USCUSTOM" definition="ACRE*IN" displayLabel="acre·in" />
+    <Unit typeName="ACRE_FT" phenomenon="VOLUME" unitSystem="USCUSTOM" definition="ACRE*FT" displayLabel="acre·ft" />
+    <Unit typeName="GALLON" phenomenon="VOLUME" unitSystem="USCUSTOM" definition="IN(3)" numerator="231.0" displayLabel="gal" description="Exact, http://www.nist.gov/pml/wmd/pubs/upload/hb44-15-web-final.pdf, Appendix C. Section 4, Page C-11" />
+    <Unit typeName="THOUSAND_GALLON" phenomenon="VOLUME" unitSystem="USCUSTOM" definition="[KILO]*GALLON" displayLabel="thousand gal" />
+    <Unit typeName="MILLION_GALLON" phenomenon="VOLUME" unitSystem="USCUSTOM" definition="[MEGA]*GALLON" displayLabel="million gal" />
+    <Unit typeName="GALLON_IMPERIAL" phenomenon="VOLUME" unitSystem="IMPERIAL" definition="LITRE" numerator="4.54609" displayLabel="gal (imp)" description="Exact, See http://physics.nist.gov/cuu/pdf/sp811.pdf Appendix B." />
+    <Unit typeName="CUB_M_PER_CUB_M" phenomenon="VOLUME_RATIO" unitSystem="SI" definition="M(3)*M(-3)" displayLabel="m³/m³" />
+    <Unit typeName="LITRE_PER_LITRE" phenomenon="VOLUME_RATIO" unitSystem="METRIC" definition="LITRE*LITRE(-1)" displayLabel="liter/liter" />
+    <Unit typeName="CUB_M_PER_KG" phenomenon="SPECIFIC_VOLUME" unitSystem="SI" definition="M(3)*KG(-1)" displayLabel="m³/kg" />
+    <Unit typeName="CUB_FT_PER_LBM" phenomenon="SPECIFIC_VOLUME" unitSystem="USCUSTOM" definition="FT(3)*LBM(-1)" displayLabel="ft³/lm" />
+    <Unit typeName="M_TO_THE_SIXTH" phenomenon="TORSIONAL_WARPING_CONSTANT" unitSystem="SI" definition="M(6)" displayLabel="m⁶" />
+    <Unit typeName="MM_TO_THE_SIXTH" phenomenon="TORSIONAL_WARPING_CONSTANT" unitSystem="METRIC" definition="MM(6)" displayLabel="mm⁶" />
+    <Unit typeName="CM_TO_THE_SIXTH" phenomenon="TORSIONAL_WARPING_CONSTANT" unitSystem="METRIC" definition="CM(6)" displayLabel="cm⁶" />
+    <Unit typeName="IN_TO_THE_SIXTH" phenomenon="TORSIONAL_WARPING_CONSTANT" unitSystem="USCUSTOM" definition="IN(6)" displayLabel="in⁶" />
+    <Unit typeName="FT_TO_THE_SIXTH" phenomenon="TORSIONAL_WARPING_CONSTANT" unitSystem="USCUSTOM" definition="FT(6)" displayLabel="ft⁶" />
+    <Unit typeName="VA" phenomenon="APPARENT_POWER" unitSystem="SI" definition="VOLT*A" />
+    <Unit typeName="KVA" phenomenon="APPARENT_POWER" unitSystem="METRIC" definition="[KILO]*VA" />
+    <Unit typeName="MVA" phenomenon="APPARENT_POWER" unitSystem="METRIC" definition="[MEGA]*VA" />
+    <Unit typeName="M" phenomenon="LENGTH" unitSystem="SI" definition="M" displayLabel="m" />
+    <Unit typeName="KG" phenomenon="MASS" unitSystem="SI" definition="KG" displayLabel="kg" />
+    <Unit typeName="S" phenomenon="TIME" unitSystem="SI" definition="S" displayLabel="s" />
+    <Unit typeName="K" phenomenon="TEMPERATURE" unitSystem="SI" definition="K" />
+    <Unit typeName="DELTA_KELVIN" phenomenon="TEMPERATURE_CHANGE" unitSystem="SI" definition="DELTA_KELVIN" displayLabel="ΔK" />
+    <Unit typeName="A" phenomenon="CURRENT" unitSystem="SI" definition="A" />
+    <Unit typeName="MOL" phenomenon="MOLE" unitSystem="SI" definition="MOL" displayLabel="mol" description="Where mol is the SI gram mol or gmol." />
+    <Unit typeName="CD" phenomenon="LUMINOSITY" unitSystem="SI" definition="CD" displayLabel="cd" />
+    <Unit typeName="RAD" phenomenon="ANGLE" unitSystem="SI" definition="RAD" displayLabel="rad" />
+    <Unit typeName="STERAD" phenomenon="SOLIDANGLE" unitSystem="SI" definition="STERAD" displayLabel="sterad" />
+    <Unit typeName="US_DOLLAR" phenomenon="CURRENCY" unitSystem="FINANCE" definition="US_DOLLAR" displayLabel="$" />
+    <Unit typeName="MONETARY_UNIT" phenomenon="CURRENCY" unitSystem="FINANCE" definition="MONETARY_UNIT" displayLabel="dollar" />
+    <Unit typeName="PERSON" phenomenon="CAPITA" unitSystem="SI" definition="PERSON" displayLabel="person" />
+    <Unit typeName="ONE" phenomenon="NUMBER" unitSystem="INTERNATIONAL" definition="ONE" displayLabel="one" />
+    <Unit typeName="M_PER_REVOLUTION" phenomenon="THREAD_PITCH" unitSystem="INTERNATIONAL" definition="M*REVOLUTION(-1)" displayLabel="m/r" />
+    <Unit typeName="M_PER_RAD" phenomenon="THREAD_PITCH" unitSystem="SI" definition="M*RAD(-1)" displayLabel="m/rad" />
+    <Unit typeName="IN_PER_DEGREE" phenomenon="THREAD_PITCH" unitSystem="USCUSTOM" definition="IN*ARC_DEG(-1)" displayLabel="in/degree" />
+</ECSchema>
+

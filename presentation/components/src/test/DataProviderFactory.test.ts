@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /* tslint:disable:no-direct-imports */
 
@@ -10,28 +10,38 @@ import * as sinon from "sinon";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { createRandomContent, createRandomRuleset, createRandomDescriptor, createRandomPrimitiveField } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { createRandomPropertyRecord } from "./_helpers/UiComponents";
-import { IPresentationPropertyDataProvider, PresentationTableDataProvider } from "../presentation-components";
-import { DataProvidersFactory, DataProvidersFactoryProps } from "../DataProvidersFactory";
-import { RulesetsFactory, Content, Item } from "@bentley/presentation-common";
+import { RulesetsFactory, Content, Item, Ruleset, ContentUpdateInfo } from "@bentley/presentation-common";
 import { Presentation, PresentationManager, RulesetManager } from "@bentley/presentation-frontend";
 import { TypeConverterManager, TypeConverter } from "@bentley/ui-components";
+import {
+  IPresentationPropertyDataProvider, PresentationTableDataProvider,
+  DataProvidersFactory, DataProvidersFactoryProps,
+} from "../presentation-components";
+import { BeEvent } from "@bentley/bentleyjs-core";
 
 describe("DataProvidersFactory", () => {
 
+  let onContentUpdateEvent: BeEvent<(ruleset: Ruleset, info: ContentUpdateInfo) => void>;
   const presentationManagerMock = moq.Mock.ofType<PresentationManager>();
   const propertiesProvider = moq.Mock.ofType<IPresentationPropertyDataProvider>();
   let factory: DataProvidersFactory | undefined;
   let props: DataProvidersFactoryProps | undefined;
 
   before(() => {
-    Presentation.presentation = presentationManagerMock.object;
+    Presentation.setPresentationManager(presentationManagerMock.object);
+  });
+
+  after(() => {
+    Presentation.terminate();
   });
 
   beforeEach(() => {
     props = undefined;
     factory = undefined;
+    onContentUpdateEvent = new BeEvent();
     propertiesProvider.reset();
     presentationManagerMock.reset();
+    presentationManagerMock.setup((x) => x.onContentUpdate).returns(() => onContentUpdateEvent);
     presentationManagerMock.setup((x) => x.rulesets()).returns(() => moq.Mock.ofType<RulesetManager>().object);
   });
 
@@ -85,7 +95,7 @@ describe("DataProvidersFactory", () => {
       const rulesetsFactoryMock = moq.Mock.ofType<RulesetsFactory>();
       props = { rulesetsFactory: rulesetsFactoryMock.object };
       rulesetsFactoryMock
-        .setup(async (x) => x.createSimilarInstancesRulesetAsync(field, contentItem, moq.It.isAny()))
+        .setup(async (x) => x.createSimilarInstancesRuleset(field, contentItem, moq.It.isAny()))
         .returns(async (_f, _c, cb) => ({ ruleset, description: await cb("a", "b", "c") }));
 
       const dataProvider = await getFactory().createSimilarInstancesTableDataProvider(propertiesProvider.object, record, {});
@@ -114,7 +124,7 @@ describe("DataProvidersFactory", () => {
       const rulesetsFactoryMock = moq.Mock.ofType<RulesetsFactory>();
       props = { rulesetsFactory: rulesetsFactoryMock.object };
       rulesetsFactoryMock
-        .setup(async (x) => x.createSimilarInstancesRulesetAsync(field, contentItem, moq.It.isAny()))
+        .setup(async (x) => x.createSimilarInstancesRuleset(field, contentItem, moq.It.isAny()))
         .returns(async (_f, _c, cb) => ({ ruleset, description: await cb("navigation", "b", "c") }));
 
       const dataProvider = await getFactory().createSimilarInstancesTableDataProvider(propertiesProvider.object, record, {});
@@ -141,7 +151,7 @@ describe("DataProvidersFactory", () => {
       const rulesetsFactoryMock = moq.Mock.ofType<RulesetsFactory>();
       props = { rulesetsFactory: rulesetsFactoryMock.object };
       rulesetsFactoryMock
-        .setup(async (x) => x.createSimilarInstancesRulesetAsync(field, contentItem, moq.It.isAny()))
+        .setup(async (x) => x.createSimilarInstancesRuleset(field, contentItem, moq.It.isAny()))
         .returns(async (_f, _c, cb) => ({ ruleset, description: await cb("double", rawValue, displayValue) }));
 
       const dataProvider = await getFactory().createSimilarInstancesTableDataProvider(propertiesProvider.object, record, {});

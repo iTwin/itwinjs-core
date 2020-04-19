@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module LocatingElements */
+/** @packageDocumentation
+ * @module LocatingElements
+ */
 import { Point3d, Vector3d, CurvePrimitive, XYZProps, Transform, Arc3d, LineSegment3d, LineString3d, Path } from "@bentley/geometry-core";
 import { IModelConnection } from "./IModelConnection";
 import { ScreenViewport } from "./Viewport";
@@ -296,8 +298,8 @@ export class SnapDetail extends HitDetail {
       }
 
       const builder = context.createGraphicBuilder(GraphicType.WorldOverlay);
-      const outline = context.viewport.hilite.color.adjustForContrast(context.viewport.view.backgroundColor, 50);
-      const centerLine = context.viewport.hilite.color.adjustForContrast(outline, 175);
+      const outline = context.viewport.hilite.color.adjustedForContrast(context.viewport.view.backgroundColor, 50);
+      const centerLine = context.viewport.hilite.color.adjustedForContrast(outline, 175);
       const path = Path.create(this.getCurvePrimitive(singleSegment)!);
 
       builder.setSymbology(outline, outline, 6);
@@ -337,8 +339,8 @@ export class IntersectDetail extends SnapDetail {
   public draw(context: DecorateContext) {
     if (undefined !== this.primitive && undefined !== this.otherPrimitive) {
       const builder = context.createGraphicBuilder(GraphicType.WorldOverlay);
-      const outline = context.viewport.hilite.color.adjustForContrast(context.viewport.view.backgroundColor, 50);
-      const centerLine = context.viewport.hilite.color.adjustForContrast(outline, 175);
+      const outline = context.viewport.hilite.color.adjustedForContrast(context.viewport.view.backgroundColor, 50);
+      const centerLine = context.viewport.hilite.color.adjustedForContrast(outline, 175);
       const path1 = Path.create(this.primitive);
       const path2 = Path.create(this.otherPrimitive);
 

@@ -1,9 +1,11 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module Curve */
+/** @packageDocumentation
+ * @module Curve
+ */
 import { StrokeOptions } from "./StrokeOptions";
 import { CurvePrimitive } from "./CurvePrimitive";
 import { GeometryQuery } from "./GeometryQuery";
@@ -76,4 +78,16 @@ export class Loop extends CurveChain {
   public dispatchToGeometryHandler(handler: GeometryHandler): any {
     return handler.handleLoop(this);
   }
+}
+
+/** Carrier object for loops characterized by area sign
+ * @public
+ */
+export interface SignedLoops {
+  /** Array of loops that have positive area sign.  (i.e. counterclockwise loops) */
+  positiveAreaLoops: Loop[];
+  /** Array of loops that have negative area sign. (i.e. clockwise loops. */
+  negativeAreaLoops: Loop[];
+  /** slivers where there are coincident sections of input curves. */
+  slivers: Loop[];
 }

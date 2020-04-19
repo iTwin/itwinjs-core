@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module WebGL */
+/** @packageDocumentation
+ * @module WebGL
+ */
 
 import { createViewportQuadBuilder } from "./ViewportQuad";
 import { VariableType, FragmentShaderComponent } from "../ShaderBuilder";
@@ -18,12 +20,12 @@ const assignFragData = `
 `;
 
 /** @internal */
-export function createClearPickAndColorProgram(context: WebGLRenderingContext): ShaderProgram {
+export function createClearPickAndColorProgram(context: WebGLRenderingContext | WebGL2RenderingContext): ShaderProgram {
   const builder = createViewportQuadBuilder(false);
   const frag = builder.frag;
   frag.addUniform("u_bgColor", VariableType.Vec4, (prog) => {
     prog.addProgramUniform("u_bgColor", (uniform, params) => {
-      params.target.bgColor.bind(uniform);
+      params.target.uniforms.style.bindBackgroundRgba(uniform);
     });
   });
 

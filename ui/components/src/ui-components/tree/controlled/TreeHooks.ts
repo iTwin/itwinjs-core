@@ -1,18 +1,24 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Tree */
+/** @packageDocumentation
+ * @module Tree
+ */
 
-import { useState, useEffect, useCallback } from "react";
-import { TreeModelSource, createDefaultNodeLoadHandler } from "./TreeModelSource";
+import { useState, useEffect, useMemo, useCallback } from "react";
+import { useDisposable } from "@bentley/ui-core";
+import { TreeModelSource } from "./TreeModelSource";
 import { VisibleTreeNodes } from "./TreeModel";
 import { TreeDataProvider } from "../TreeDataProvider";
-import { PagedTreeNodeLoader, ITreeNodeLoader, TreeNodeLoader } from "./TreeNodeLoader";
-import { useEffectSkipFirst } from "@bentley/ui-core";
+import { PagedTreeNodeLoader, TreeNodeLoader } from "./TreeNodeLoader";
+import { TreeEventHandler, TreeEventHandlerParams } from "./TreeEventHandler";
 
-/** Custom hook which returns visible nodes from model source and subscribes to onModelChanged event.
- * @alpha
+/**
+ * Custom hook which returns a flat list of visible nodes from given `TreeModelSource` and subscribes
+ * to onModelChanged event to update the list when model changes.
+ *
+ * @beta
  */
 export function useVisibleTreeNodes(modelSource: TreeModelSource): VisibleTreeNodes {
   const [visibleNodes, setVisibleNodes] = useState(modelSource.getVisibleNodes());
@@ -23,67 +29,61 @@ export function useVisibleTreeNodes(modelSource: TreeModelSource): VisibleTreeNo
     };
 
     onModelChanged();
-    modelSource.onModelChanged.addListener(onModelChanged);
-    return () => { modelSource.onModelChanged.removeListener(onModelChanged); };
+    return modelSource.onModelChanged.addListener(onModelChanged);
   }, [modelSource]);
 
   return visibleNodes;
 }
 
-/** Custom hook which creates TreeNodeLoader for supplied dataProvider.
- * @alpha
+/**
+ * Custom hook which creates a nodes' loader using the supplied data provider and model source. The
+ * loader pulls nodes from the data provider and puts them into the model source.
+ *
+ * @beta
  */
-export function useNodeLoader<TDataProvider extends TreeDataProvider>(dataProvider: TDataProvider) {
-  const [nodeLoader, setNodeLoader] = useState(() => new TreeNodeLoader(dataProvider));
-
-  useEffectSkipFirst(() => {
-    setNodeLoader(new TreeNodeLoader(dataProvider));
-  }, [dataProvider]);
-
-  return nodeLoader;
+export function useTreeNodeLoader<TDataProvider extends TreeDataProvider>(dataProvider: TDataProvider, modelSource: TreeModelSource) {
+  const createLoader = useCallback(() => new TreeNodeLoader(dataProvider, modelSource), [dataProvider, modelSource]);
+  return useDisposable(createLoader);
 }
 
-/** Custom hook which creates PagedTreeNodeLoader for supplied dataProvider.
- * @alpha
+/**
+ * Custom hook which creates a paging nodes' loader using the supplied data provider and model source. The
+ * loader pulls nodes from the data provider and puts them into the model source.
+ *
+ * @beta
  */
-export function usePagedNodeLoader<TDataProvider extends TreeDataProvider>(dataProvider: TDataProvider, pageSize: number) {
-  const [nodeLoader, setNodeLoader] = useState(() => new PagedTreeNodeLoader(dataProvider, pageSize));
-
-  useEffectSkipFirst(() => {
-    setNodeLoader(new PagedTreeNodeLoader(dataProvider, pageSize));
-  }, [dataProvider, pageSize]);
-
-  return nodeLoader;
+export function usePagedTreeNodeLoader<TDataProvider extends TreeDataProvider>(dataProvider: TDataProvider, pageSize: number, modelSource: TreeModelSource) {
+  const createLoader = useCallback(() => new PagedTreeNodeLoader(dataProvider, modelSource, pageSize), [dataProvider, modelSource, pageSize]);
+  return useDisposable(createLoader);
 }
 
-/** Custom hook which creates TreeModelSource and modifies model when onNodeLoaded event is emitted.
- * @alpha
+/**
+ * Custom hook which creates a `TreeModelSource`.
+ *
+ * @note The model source has no direct dependency on the data provider, but we want a fresh model
+ * source whenever the data provider changes - that's the reason the hook takes a data provider.
+ *
+ * @beta
  */
-export function useModelSource(nodeLoader: ITreeNodeLoader | undefined) {
-  const [modelSource, setModelSource] = useState(() => nodeLoader ? new TreeModelSource() : undefined);
-  const modifyModel = useCallback(createOnNodeLoadedHandler(modelSource), [modelSource]);
-
-  useEffectSkipFirst(() => {
-    setModelSource(nodeLoader ? new TreeModelSource() : undefined);
-  }, [nodeLoader]);
-
-  useEffect(() => {
-    if (nodeLoader)
-      nodeLoader.onNodeLoaded.addListener(modifyModel);
-    return () => {
-      if (nodeLoader)
-        nodeLoader.onNodeLoaded.removeListener(modifyModel);
-    };
-  }, [nodeLoader, modifyModel]);
-
-  return modelSource;
+export function useTreeModelSource(dataProvider: TreeDataProvider) {
+  // need to create new model source every time data provider changes although it does not need data provider to be created.
+  return useMemo(() => new TreeModelSource(), [dataProvider]); // eslint-disable-line react-hooks/exhaustive-deps
 }
 
-function createOnNodeLoadedHandler(modelSource: TreeModelSource | undefined) {
-  if (!modelSource) {
-    /* istanbul ignore next */
-    return () => { };
-  }
-
-  return createDefaultNodeLoadHandler(modelSource);
+/**
+ * Custom hook which creates and takes care of disposing a TreeEventsHandler. The input is either a factory method
+ * for a custom `TreeEventHandler` implementation or parameters for the default implementation.
+ *
+ * @note Caller must ensure `factoryOrParams` changes only when a new handler needs to be created. `useCallback` or `useMemo` can
+ * be used for that purpose based on whether the input is a factory function or params object.
+ *
+ * @beta
+ */
+export function useTreeEventsHandler<TEventsHandler extends TreeEventHandler>(factoryOrParams: (() => TEventsHandler) | TreeEventHandlerParams) {
+  const factory = useCallback((): TreeEventHandler => {
+    if (typeof factoryOrParams === "function")
+      return factoryOrParams();
+    return new TreeEventHandler(factoryOrParams);
+  }, [factoryOrParams]);
+  return useDisposable(factory);
 }

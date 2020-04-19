@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { expect } from "chai";
@@ -8,41 +8,49 @@ import { expect } from "chai";
 import TestUtils from "../../TestUtils";
 import {
   ConfigurableUiManager, FrontstageManager, FrontstageProvider, Frontstage, Zone, Widget,
-  FrontstageProps, ConfigurableCreateInfo, ToolUiProvider, ContentControl, CoreTools,
+  FrontstageProps, ConfigurableCreateInfo, ToolUiProvider, ContentControl, CoreTools, ToolSettingsEntry, ToolSettingsGrid,
 } from "../../../ui-framework";
 import { ToolInformation } from "../../../ui-framework/zones/toolsettings/ToolInformation";
+import { Slider, Icon, Input } from "@bentley/ui-core";
 
 describe("ToolUiProvider", () => {
 
+  function FancySlider() {
+    const handleSliderChange = React.useCallback((_values: ReadonlyArray<number>) => {
+    }, []);
+    const handleFormatTip = React.useCallback((value: number) => Math.round(value).toString(), []);
+    return (
+      <Slider style={{ minWidth: "160px" }} min={0} max={100} values={[30, 70]} step={5} mode={2}
+        showTicks getTickCount={() => 10}
+        showTooltip formatTooltip={handleFormatTip}
+        onChange={handleSliderChange} />
+    );
+  }
+
+  function BasicSlider() {
+    const handleSliderChange = React.useCallback((_values: ReadonlyArray<number>) => {
+    }, []);
+    return (
+      <Slider style={{ minWidth: "160px" }} min={0} max={100} values={[50]} step={1} showMinMax={true} maxImage={<Icon iconSpec="icon-placeholder" />}
+        showTooltip onChange={handleSliderChange} />
+    );
+  }
   class Tool2UiProvider extends ToolUiProvider {
     constructor(info: ConfigurableCreateInfo, options: any) {
       super(info, options);
 
-      this.toolSettingsNode = <Tool2Settings />;
+      this.toolSettingsNode = <ToolSettingsGrid settings={this.getHorizontalToolSettings()} />;
+      this.horizontalToolSettingNodes = this.getHorizontalToolSettings();
     }
 
-    public execute(): void {
-    }
-  }
-
-  class Tool2Settings extends React.Component {
-    public render(): React.ReactNode {
-      return (
-        <div>
-          <table>
-            <tbody>
-              <tr>
-                <th>Type</th>
-                <th>Input</th>
-              </tr>
-              <tr>
-                <td>Month</td>
-                <td> <input type="month" /> </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      );
+    private getHorizontalToolSettings(): ToolSettingsEntry[] | undefined {
+      return [
+        { labelNode: <label htmlFor="range">Month</label>, editorNode: <input type="month" /> },
+        { labelNode: "Number", editorNode: <input type="number" min="10" max="20" /> },
+        { labelNode: "Slider", editorNode: <BasicSlider /> },
+        { labelNode: "Slider w/ Ticks", editorNode: <FancySlider /> },
+        { labelNode: "Input", editorNode: <Input /> },
+      ];
     }
   }
 
@@ -81,12 +89,12 @@ describe("ToolUiProvider", () => {
     ConfigurableUiManager.registerControl(testToolId, Tool2UiProvider);
   });
 
-  it("starting a tool with tool settings", () => {
+  it("starting a tool with tool settings", async () => {
     const frontstageDef = FrontstageManager.findFrontstageDef("ToolUiProvider-TestFrontstage");
     expect(frontstageDef).to.not.be.undefined;
 
     if (frontstageDef) {
-      FrontstageManager.setActiveFrontstageDef(frontstageDef); // tslint:disable-line:no-floating-promises
+      await FrontstageManager.setActiveFrontstageDef(frontstageDef);
 
       FrontstageManager.ensureToolInformationIsSet(testToolId);
       FrontstageManager.setActiveToolId(testToolId);
@@ -101,11 +109,19 @@ describe("ToolUiProvider", () => {
 
         if (toolUiProvider) {
           expect(toolUiProvider.toolSettingsNode).to.not.be.undefined;
+          expect(toolUiProvider.dataProvider).to.be.undefined;
         }
       }
 
-      const toolSettingsNode = FrontstageManager.activeToolSettingsNode;
+      const toolSettingsProvider = FrontstageManager.activeToolSettingsProvider;
+      expect(toolSettingsProvider).to.not.be.undefined;
+
+      const toolSettingsNode = FrontstageManager.activeToolSettingsProvider?.toolSettingsNode;
       expect(toolSettingsNode).to.not.be.undefined;
+
+      const horizontalToolSettingsNode = FrontstageManager.activeToolSettingsProvider?.horizontalToolSettingNodes;
+      expect(horizontalToolSettingsNode).to.not.be.undefined;
+      expect(horizontalToolSettingsNode!.length).to.eq(5);
     }
   });
 
@@ -113,7 +129,7 @@ describe("ToolUiProvider", () => {
     constructor(info: ConfigurableCreateInfo, options: any) {
       super(info, options);
 
-      this.reactElement = <div />;
+      this.reactNode = <div />;
     }
   }
 

@@ -1,14 +1,24 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { mount, shallow } from "enzyme";
+import { mount, shallow, ReactWrapper } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { WidgetTarget } from "../../../ui-ninezone/zones/target/Target";
+import { WidgetTarget, WidgetTargetProps } from "../../../ui-ninezone/zones/target/Target";
+import * as useTargetedModule from "@bentley/ui-core";
 
 describe("<WidgetTarget />", () => {
   const sandbox = sinon.createSandbox();
+
+  function target(widgetTarget: ReactWrapper) {
+    const targetElement = widgetTarget.find(".nz-zones-target-target");
+    sinon.stub(targetElement.getDOMNode(), "contains").returns(true);
+    const pointerMove = document.createEvent("HTMLEvents");
+    pointerMove.initEvent("pointermove");
+    document.dispatchEvent(pointerMove);
+    widgetTarget.setProps({});
+  }
 
   afterEach(() => {
     sandbox.restore();
@@ -22,56 +32,81 @@ describe("<WidgetTarget />", () => {
     shallow(<WidgetTarget />).should.matchSnapshot();
   });
 
-  it("should invoke onTargetChanged handler when pointer enters", () => {
+  it("renders targeted correctly", () => {
+    sandbox.stub(useTargetedModule, "useTargeted").returns(true);
+    shallow(<WidgetTarget />).should.matchSnapshot();
+  });
+
+  it("should invoke onTargetChanged handler when targeted changes", () => {
     const spy = sinon.spy();
     const sut = mount(<WidgetTarget onTargetChanged={spy} />);
 
-    const target = sut.find(".nz-zones-target-target");
-    sinon.stub(target.getDOMNode(), "contains").returns(true);
-
-    const pointerMove = document.createEvent("HTMLEvents");
-    pointerMove.initEvent("pointermove");
-    document.dispatchEvent(pointerMove);
+    target(sut);
 
     spy.calledOnceWithExactly(true).should.true;
   });
 
-  it("should invoke onTargetChanged handler when pointer leaves", () => {
-    const spy = sinon.spy();
-    const sut = mount<WidgetTarget>(<WidgetTarget onTargetChanged={spy} />);
-    sut.setState({ isTargeted: true });
-
-    const target = sut.find(".nz-zones-target-target");
-    sinon.stub(target.getDOMNode(), "contains").returns(false);
-
-    const pointerMove = document.createEvent("HTMLEvents");
-    pointerMove.initEvent("pointermove");
-    document.dispatchEvent(pointerMove);
-
-    spy.calledOnceWithExactly(false).should.true;
-  });
-
   it("should invoke onTargetChanged handler when component unmounts", () => {
     const spy = sinon.spy();
-    const sut = mount<WidgetTarget>(<WidgetTarget onTargetChanged={spy} />);
-    sut.setState({ isTargeted: true });
+    const sut = mount(<WidgetTarget onTargetChanged={spy} />);
 
+    target(sut);
+
+    spy.resetHistory();
     sut.unmount();
     spy.calledOnceWithExactly(false).should.true;
   });
 
-  it("should add event listeners", () => {
-    const spy = sandbox.spy(document, "addEventListener");
-    mount<WidgetTarget>(<WidgetTarget />);
+  it("should not invoke unmount handler when handler changes", () => {
+    const spy = sinon.spy();
+    const sut = mount<WidgetTargetProps>(<WidgetTarget
+      onTargetChanged={spy}
+    />);
 
-    spy.calledOnceWithExactly("pointermove", sinon.match.any as any).should.true;
+    target(sut);
+
+    spy.resetHistory();
+    sut.setProps({ onTargetChanged: () => { } });
+
+    spy.callCount.should.eq(0);
   });
 
-  it("should remove event listeners", () => {
-    const spy = sandbox.spy(document, "removeEventListener");
-    const sut = mount<WidgetTarget>(<WidgetTarget />);
+  it("should not invoke newly set onTargetChanged handler", () => {
+    const sut = mount<WidgetTargetProps>(<WidgetTarget
+      onTargetChanged={() => { }}
+    />);
+
+    target(sut);
+
+    const onTargetChanged = sinon.spy();
+    sut.setProps({ onTargetChanged });
+
+    onTargetChanged.callCount.should.eq(0);
+  });
+
+  it("should invoke last onTargetChanged handler", () => {
+    const sut = mount<WidgetTargetProps>(<WidgetTarget onTargetChanged={() => { }} />);
+
+    const onTargetChanged = sinon.spy();
+    sut.setProps({ onTargetChanged });
+    target(sut);
+
+    onTargetChanged.calledOnceWithExactly(true).should.true;
+  });
+
+  it("should invoke last onTargetChanged handler on unmount", () => {
+    const sut = mount<WidgetTargetProps>(<WidgetTarget
+      onTargetChanged={() => { }}
+    />);
+
+    target(sut);
+
+    const onTargetChanged = sinon.spy();
+    sut.setProps({ onTargetChanged });
+    onTargetChanged.resetHistory();
     sut.unmount();
 
-    spy.calledOnceWithExactly("pointermove", sinon.match.any as any).should.true;
+    onTargetChanged.callCount.should.eq(1);
+    onTargetChanged.calledOnceWithExactly(false).should.true;
   });
 });

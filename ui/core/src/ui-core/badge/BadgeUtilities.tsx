@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Utilities */
+/** @packageDocumentation
+ * @module Utilities
+ */
 
 import * as React from "react";
 import { BadgeType } from "@bentley/ui-abstract";
@@ -13,11 +15,6 @@ import { NewBadge } from "./NewBadge";
  * @internal
  */
 export class BadgeUtilities {
-  /** Converts optional BetaType & optional betaBadge flag to BadgeType */
-  public static determineBadgeType(badgeType?: BadgeType, betaBadge?: boolean): BadgeType {
-    return badgeType !== undefined ? badgeType : (betaBadge ? BadgeType.TechnicalPreview : BadgeType.None);
-  }
-
   /** Converts BetaType to Badge React component */
   public static getComponentForBadgeType(badgeType?: BadgeType): React.ReactNode {
     if (badgeType === undefined)
@@ -40,8 +37,4 @@ export class BadgeUtilities {
     return component;
   }
 
-  /** Converts optional BetaType & optional betaBadge flag to Badge React component */
-  public static getComponentForBadge(badgeType?: BadgeType, betaBadge?: boolean): React.ReactNode {
-    return BadgeUtilities.getComponentForBadgeType(BadgeUtilities.determineBadgeType(badgeType, betaBadge));
-  }
 }

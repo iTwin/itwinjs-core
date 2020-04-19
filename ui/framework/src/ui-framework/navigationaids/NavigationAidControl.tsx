@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module NavigationAids */
+/** @packageDocumentation
+ * @module NavigationAids
+ */
 
 import * as React from "react";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
@@ -26,16 +28,23 @@ export class NavigationAidActivatedEvent extends UiEvent<NavigationAidActivatedE
  * @public
  */
 export class NavigationAidControl extends ConfigurableUiControl {
-  private _reactElement: React.ReactNode;
+  private _reactNode: React.ReactNode;
 
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
   }
 
-  /** Gets the React element associated with this control */
-  public get reactElement(): React.ReactNode { return this._reactElement; }
-  /** Sets the React element associated with this control */
-  public set reactElement(r: React.ReactNode) { this._reactElement = r; }
+  /** The React element associated with this control */
+  public get reactNode(): React.ReactNode { return this._reactNode; }
+  public set reactNode(r: React.ReactNode) { this._reactNode = r; }
+
+  /** The React element associated with this control
+   * @deprecated use reactNode
+   */
+  // istanbul ignore next
+  public get reactElement(): React.ReactNode { return this.reactNode; }
+  // istanbul ignore next
+  public set reactElement(r: React.ReactNode) { this.reactNode = r; }
 
   /** Default size is "64px". Override to set a different size. */
   public getSize(): string | undefined { return undefined; }

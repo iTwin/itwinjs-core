@@ -2,6 +2,210 @@
   "name": "@bentley/imodeljs-backend",
   "entries": [
     {
+      "version": "1.13.0",
+      "tag": "@bentley/imodeljs-backend_v1.13.0",
+      "date": "Wed, 04 Mar 2020 16:16:31 GMT",
+      "comments": {}
+    },
+    {
+      "version": "1.12.0",
+      "tag": "@bentley/imodeljs-backend_v1.12.0",
+      "date": "Wed, 12 Feb 2020 17:45:50 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix IGeometry roundtripping issue through ECSql.  Fix insert/update binary properties for Element Aspect."
+          },
+          {
+            "comment": "Separated out routines to download and open briefcases. "
+          },
+          {
+            "comment": "bulk mode"
+          },
+          {
+            "comment": "Consolidated sign-in for integration tests"
+          },
+          {
+            "comment": "bulkmode"
+          },
+          {
+            "comment": "iModel write API development"
+          },
+          {
+            "comment": "Prevent reuse of cached tiles after project extents change."
+          },
+          {
+            "comment": "A new optional dependency, ecschema-metadata, allows for retrieval of full Schema information from an iModel using the new IModelSchemaLoader utility class."
+          },
+          {
+            "comment": "Added parameters for ruleset directory and temp cache location for version compare processing"
+          },
+          {
+            "comment": "Add ViewDefinition.getAuxiliaryCoordinateSystemId and ViewDefinition.setAuxiliaryCoordinateSystemId methods"
+          },
+          {
+            "comment": "Add SpatialLocationModel.insert"
+          },
+          {
+            "comment": "Add optional isPlantProjection parameter to PhysicalModel.insert"
+          },
+          {
+            "comment": "VSTS#256133: Fixed issue with reopening connections if the backend crashes. Fixes to integration tests. "
+          },
+          {
+            "comment": "Better documentation of OidcDesktopClient"
+          },
+          {
+            "comment": "Fixed changeset perf test by using another iModel on Hub"
+          },
+          {
+            "comment": "Add ViewDetails to ViewDefinition."
+          },
+          {
+            "comment": "Add support for plan projection models with 3d display priority."
+          },
+          {
+            "comment": "UlasUtilities exported as an module."
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.11.0",
+      "tag": "@bentley/imodeljs-backend_v1.11.0",
+      "date": "Wed, 22 Jan 2020 19:24:12 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Native apps can now cancel tile requests in progress on the backend."
+          },
+          {
+            "comment": "Remove echo test function from devTools"
+          },
+          {
+            "comment": "Allow outline fill to be specified by subcategory appearance."
+          },
+          {
+            "comment": "Upgrade to TypeScript 3.7.2."
+          },
+          {
+            "comment": "Added TypeScript wrapper over the native SaaSClient."
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.10.0",
+      "tag": "@bentley/imodeljs-backend_v1.10.0",
+      "date": "Tue, 07 Jan 2020 19:44:01 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Typescript code for the classes in the Analytical schema."
+          },
+          {
+            "comment": "Return error message from concurrent query manager"
+          },
+          {
+            "comment": "Added support for embedding images in a GeometryStream."
+          },
+          {
+            "comment": "IModelExporter, IModelTransformer, and IModelImporter are now beta and provide low-level functionality needed for iModel transformation and data exchange."
+          },
+          {
+            "comment": "Added IModelDb.isBriefcase() getter."
+          },
+          {
+            "comment": "Implementing LinearlyLocatedBase interface by base LR abstract element-classes."
+          },
+          {
+            "comment": "Moving data-holder structures used during the LinearElement.queryLinearLocations API to imodeljs-common."
+          },
+          {
+            "comment": "Allow events to be sent from backend to frontend"
+          },
+          {
+            "comment": "Add tryGetInstance / tryGetInstanceProps methods to the Relationship class which return undefined rather than throwing an exception when a relationship is not found."
+          },
+          {
+            "comment": "Fix webpack for ios test that were failing due to new dependencies"
+          },
+          {
+            "comment": "VSTS#225894 - Allowed agents to bypass usage logging calls. These cause usage logging errors. "
+          },
+          {
+            "comment": "Add tryGetElement / tryGetElementProps which return undefined rather than throwing an exception when an element is not found."
+          },
+          {
+            "comment": "Add tryGetModel, tryGetModelProps, tryGetSubModel which return undefined instead of throwing exceptions when the model is not found."
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.9.0",
+      "tag": "@bentley/imodeljs-backend_v1.9.0",
+      "date": "Tue, 10 Dec 2019 18:08:56 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Updated to addon 9.1.3"
+          },
+          {
+            "comment": "Added AliCloud tile cache service"
+          },
+          {
+            "comment": "Added framework to run imodeljs-backend test on ios using appcenter"
+          },
+          {
+            "comment": "Setup OidcDesktopClient for Electron use cases. "
+          },
+          {
+            "comment": "fix warnings from static analysis"
+          },
+          {
+            "comment": "Enabling testing code for updating LR aspects after fix in native side."
+          },
+          {
+            "comment": "Addressing typo in a couple of members, making them match the schema properly."
+          },
+          {
+            "comment": "Avoid concurrent tile uploads"
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.8.0",
+      "tag": "@bentley/imodeljs-backend_v1.8.0",
+      "date": "Fri, 22 Nov 2019 14:03:34 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Option to include part references in GeometrySummary output."
+          },
+          {
+            "comment": "Expose isTwoSided flag on ExportGraphicsMesh"
+          },
+          {
+            "comment": "SchemaDesignPerf import tests"
+          },
+          {
+            "comment": "Added missing topic descriptions"
+          },
+          {
+            "comment": "Add experimental Node 12 support"
+          },
+          {
+            "comment": "Change SectionLocationProps.clipGeometry type to string. Add get/set ClipVector methods on SectionLocation."
+          },
+          {
+            "comment": "Add support for view-independent display of geometry streams."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.7.0",
       "tag": "@bentley/imodeljs-backend_v1.7.0",
       "date": "Fri, 01 Nov 2019 13:28:37 GMT",

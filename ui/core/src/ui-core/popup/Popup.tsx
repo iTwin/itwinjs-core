@@ -1,52 +1,44 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Popup */
+/** @packageDocumentation
+ * @module Popup
+ */
 
 // cSpell:ignore focustrap focusable
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import * as classnames from "classnames";
+import classnames from "classnames";
+
+import { RelativePosition } from "@bentley/ui-abstract";
+
 import { CommonProps } from "../utils/Props";
 import { FocusTrap } from "../focustrap/FocusTrap";
+
 import "./Popup.scss";
 
 /** @internal */
-interface Point {
+interface PopupPoint {
   x: number;
   y: number;
-}
-
-/** Position of the popup relative to its target
- * @beta
- */
-export enum Position {
-  TopLeft,
-  TopRight,
-  BottomLeft,
-  BottomRight,
-  Top,
-  Bottom,
-  Left,
-  Right,
 }
 
 /** Properties for the [[Popup]] component
  * @beta
  */
 export interface PopupProps extends CommonProps {
-  /**  show or hide the box shadow */
+  /** Show or hide the box shadow (defaults to true) */
   showShadow: boolean;
-  /** show or hide the arrow */
+  /** Show or hide the arrow (defaults to false) */
   showArrow: boolean;
-  /** indicate if the popup is shown or not */
+  /** Indicates whether the popup is shown or not (defaults to false) */
   isOpen: boolean;
-  /** Direction (relative to the target) to which the popup is expanded */
-  position: Position;
-  /** Top position (absolute positioning) */
+  /** Direction (relative to the target) to which the popup is expanded (defaults to Bottom) */
+  position: RelativePosition;
+  /** Top position (absolute positioning - defaults to 0) */
   top: number;
-  /** Left position (absolute positioning) */
+  /** Left position (absolute positioning - defaults to 0) */
   left: number;
   /** Function called when the popup is opened */
   onOpen?: () => void;
@@ -54,11 +46,11 @@ export interface PopupProps extends CommonProps {
   onOutsideClick?: (e: MouseEvent) => void;
   /** Function called when the popup is closed */
   onClose?: () => void;
-  /* offset from the parent */
+  /** Offset from the parent (defaults to 4) */
   offset: number;
-  /** target element to position popup */
+  /** Target element to position popup */
   target?: HTMLElement | null;
-  /** role - if not specified "dialog" is used */
+  /** Role - if not specified "dialog" is used */
   role?: "dialog" | "alert" | "alertdialog";  // cSpell:ignore alertdialog
   /** accessibility label */
   ariaLabel?: string;
@@ -66,7 +58,7 @@ export interface PopupProps extends CommonProps {
   moveFocus?: boolean;
   /** Element to receive focus, specified by React.RefObject or CSS selector string. If undefined and moveFocus is true then focus is moved to first focusable element. */
   focusTarget?: React.RefObject<HTMLElement> | string;
-  /** Indicates if the popup is pinned. */
+  /** Indicates whether the popup is pinned. */
   isPinned?: boolean;
 }
 
@@ -75,25 +67,28 @@ interface PopupState {
   isOpen: boolean;
   top: number;
   left: number;
-  position: Position;
-  focusTarget?: React.RefObject<HTMLElement> | string;
+  position: RelativePosition;
 }
 
-/** Popup React component
+/** Popup React component displays a popup relative to an optional target element.
  * @beta
  */
 export class Popup extends React.Component<PopupProps, PopupState> {
   private _popup: HTMLElement | null = null;
-  private _isAnimating = true;
 
   constructor(props: PopupProps) {
     super(props);
 
-    this.state = { isOpen: this.props.isOpen, top: 0, left: 0, position: this.props.position, focusTarget: this.props.focusTarget };
+    this.state = {
+      isOpen: this.props.isOpen,
+      top: 0,
+      left: 0,
+      position: this.props.position,
+    };
   }
 
   public static defaultProps: Partial<PopupProps> = {
-    position: Position.Bottom,
+    position: RelativePosition.Bottom,
     showShadow: true,
     showArrow: false,
     isOpen: false,
@@ -113,18 +108,14 @@ export class Popup extends React.Component<PopupProps, PopupState> {
       if (this.props.isOpen) {
         const position = this._toggleRelativePosition();
         const point = this._fitPopup(this._getPosition(position));
-        const focusTarget = this.props.focusTarget;
-
-        if (this.state.left === point.x &&
-          this.state.top === point.y &&
-          this.state.position === position &&
-          this.state.focusTarget === focusTarget)
+        if ((Math.abs(this.state.left - point.x) < 2) &&
+          (Math.abs(this.state.top - point.y) < 2) &&
+          this.state.position === position)
           return;
         this.setState({
           left: point.x,
           top: point.y,
           position,
-          focusTarget,
         });
       }
       return;
@@ -169,6 +160,9 @@ export class Popup extends React.Component<PopupProps, PopupState> {
     if (this._popup && this._popup.contains(event.target as Node))
       return;
 
+    if (this.props.isPinned)
+      return;
+
     if (this.props.onOutsideClick)
       return this.props.onOutsideClick(event);
 
@@ -180,12 +174,18 @@ export class Popup extends React.Component<PopupProps, PopupState> {
   }
 
   private _handleKeyboard = (event: KeyboardEvent): void => {
+    if (this.props.isPinned)
+      return;
+
     if (event.key === "Escape" || event.key === "Enter") {
       this._onClose();
     }
   }
 
   private _hide = () => {
+    if (this.props.isPinned)
+      return;
+
     this._onClose();
   }
 
@@ -201,14 +201,12 @@ export class Popup extends React.Component<PopupProps, PopupState> {
   }
 
   private _onClose() {
-    if (!this.state.isOpen || this.props.isPinned) {
+    if (!this.state.isOpen)
       return;
-    }
 
     this._unBindWindowEvents();
 
     this.setState({ isOpen: false }, () => {
-      this._isAnimating = true;
       if (this.props.onClose)
         this.props.onClose();
     });
@@ -218,24 +216,24 @@ export class Popup extends React.Component<PopupProps, PopupState> {
     return (this.props.top !== -1 && this.props.left !== -1);
   }
 
-  private _getClassNameByPosition(position: Position): string {
+  private _getClassNameByPosition(position: RelativePosition): string {
     if (!this._isPositionAbsolute()) {
       switch (position) {
-        case Position.TopLeft:
+        case RelativePosition.TopLeft:
           return "core-popup-top-left";
-        case Position.TopRight:
+        case RelativePosition.TopRight:
           return "core-popup-top-right";
-        case Position.BottomLeft:
+        case RelativePosition.BottomLeft:
           return "core-popup-bottom-left";
-        case Position.BottomRight:
+        case RelativePosition.BottomRight:
           return "core-popup-bottom-right";
-        case Position.Top:
+        case RelativePosition.Top:
           return "core-popup-top";
-        case Position.Left:
+        case RelativePosition.Left:
           return "core-popup-left";
-        case Position.Right:
+        case RelativePosition.Right:
           return "core-popup-right";
-        case Position.Bottom:
+        case RelativePosition.Bottom:
           return "core-popup-bottom";
       }
     }
@@ -244,40 +242,23 @@ export class Popup extends React.Component<PopupProps, PopupState> {
   }
 
   private _getPopupDimensions(): { popupWidth: number, popupHeight: number } {
-
     let popupWidth = 0;
     let popupHeight = 0;
     // istanbul ignore else
     if (this._popup) {
-      const popupRect = this._popup.getBoundingClientRect();
-      switch (this.props.position) {
-        case Position.Top:
-        case Position.Bottom:
-          popupWidth = popupRect.width;
-          popupHeight = this._isAnimating ? popupRect.height * 2 : popupRect.height;
-          break;
-        case Position.TopLeft:
-        case Position.BottomLeft:
-          popupWidth = this._isAnimating ? popupRect.width * 2 : popupRect.width;
-          popupHeight = this._isAnimating ? popupRect.height * 2 : popupRect.height;
-          break;
-        case Position.TopRight:
-        case Position.BottomRight:
-          popupWidth = this._isAnimating ? popupRect.width * 2 : popupRect.width;
-          popupHeight = this._isAnimating ? popupRect.height * 2 : popupRect.height;
-          break;
-        case Position.Left:
-        case Position.Right:
-          popupWidth = this._isAnimating ? popupRect.width * 2 : popupRect.width;
-          popupHeight = this._isAnimating ? popupRect.height : popupRect.height;
-          break;
-      }
+      const style = window.getComputedStyle(this._popup);
+      const borderLeftWidth = parsePxString(style.borderLeftWidth);
+      const borderRightWidth = parsePxString(style.borderRightWidth);
+      const borderTopWidth = parsePxString(style.borderTopWidth);
+      const borderBottomWidth = parsePxString(style.borderBottomWidth);
+      popupWidth = this._popup.clientWidth + borderLeftWidth + borderRightWidth;
+      popupHeight = this._popup.clientHeight + borderTopWidth + borderBottomWidth;
     }
 
     return { popupWidth, popupHeight };
   }
 
-  private _getPosition = (position: Position) => {
+  private _getPosition = (position: RelativePosition) => {
     const { target, offset, top, left } = this.props;
 
     const offsetArrow = (this.props.showArrow) ? 6 : 0;
@@ -301,42 +282,42 @@ export class Popup extends React.Component<PopupProps, PopupState> {
     const { popupWidth, popupHeight } = this._getPopupDimensions();
 
     switch (position) {
-      case Position.Top:
+      case RelativePosition.Top:
         point.y = scrollY + targetRect.top - popupHeight - offset - offsetArrow;
         point.x = scrollX + targetRect.left + (targetRect.width / 2) - (popupWidth / 2);
         break;
 
-      case Position.TopLeft:
+      case RelativePosition.TopLeft:
         point.y = scrollY + targetRect.top - popupHeight - offset - offsetArrow;
         point.x = scrollX + targetRect.left;
         break;
 
-      case Position.TopRight:
+      case RelativePosition.TopRight:
         point.y = scrollY + targetRect.top - popupHeight - offset - offsetArrow;
         point.x = scrollX + targetRect.right - popupWidth;
         break;
 
-      case Position.Bottom:
+      case RelativePosition.Bottom:
         point.y = scrollY + targetRect.bottom + offset + offsetArrow;
         point.x = scrollX + targetRect.left + (targetRect.width / 2) - (popupWidth / 2);
         break;
 
-      case Position.BottomLeft:
+      case RelativePosition.BottomLeft:
         point.y = scrollY + targetRect.bottom + offset + offsetArrow;
         point.x = scrollX + targetRect.left;
         break;
 
-      case Position.BottomRight:
+      case RelativePosition.BottomRight:
         point.y = scrollY + targetRect.bottom + offset + offsetArrow;
         point.x = scrollX + targetRect.right - popupWidth;
         break;
 
-      case Position.Left:
+      case RelativePosition.Left:
         point.y = scrollY + targetRect.top + (targetRect.height / 2) - (popupHeight / 2);
         point.x = scrollX + targetRect.left - popupWidth - offset - offsetArrow;
         break;
 
-      case Position.Right:
+      case RelativePosition.Right:
         point.y = scrollY + targetRect.top + (targetRect.height / 2) - (popupHeight / 2);
         point.x = scrollX + targetRect.right + offset + offsetArrow;
         break;
@@ -348,7 +329,7 @@ export class Popup extends React.Component<PopupProps, PopupState> {
     return point;
   }
 
-  private _toggleRelativePosition(): Position {
+  private _toggleRelativePosition(): RelativePosition {
     const { target, position, offset } = this.props;
 
     if (!this._popup || !target)
@@ -377,44 +358,44 @@ export class Popup extends React.Component<PopupProps, PopupState> {
     const bottomMargin = containerStyle.marginBottom ? parseFloat(containerStyle.marginBottom) : 0;
     // istanbul ignore else
     if ((targetRect.bottom + popupHeight + bottomMargin + offsetArrow + offset) > viewportRect.bottom) {
-      if (newPosition === Position.Bottom)
-        newPosition = Position.Top;
-      else if (newPosition === Position.BottomLeft)
-        newPosition = Position.TopLeft;
-      else if (newPosition === Position.BottomRight)
-        newPosition = Position.TopRight;
+      if (newPosition === RelativePosition.Bottom)
+        newPosition = RelativePosition.Top;
+      else if (newPosition === RelativePosition.BottomLeft)
+        newPosition = RelativePosition.TopLeft;
+      else if (newPosition === RelativePosition.BottomRight)
+        newPosition = RelativePosition.TopRight;
     }
 
     const topMargin = containerStyle.marginTop ? parseFloat(containerStyle.marginTop) : 0;
     // istanbul ignore else
     if ((targetRect.top - popupHeight - topMargin - offsetArrow - offset) < viewportRect.top) {
-      if (newPosition === Position.Top)
-        newPosition = Position.Bottom;
-      else if (newPosition === Position.TopLeft)
-        newPosition = Position.BottomLeft;
-      else if (newPosition === Position.TopRight)
-        newPosition = Position.BottomRight;
+      if (newPosition === RelativePosition.Top)
+        newPosition = RelativePosition.Bottom;
+      else if (newPosition === RelativePosition.TopLeft)
+        newPosition = RelativePosition.BottomLeft;
+      else if (newPosition === RelativePosition.TopRight)
+        newPosition = RelativePosition.BottomRight;
     }
 
     const leftMargin = containerStyle.marginLeft ? parseFloat(containerStyle.marginLeft) : 0;
     // istanbul ignore else
     if ((targetRect.left - popupWidth - leftMargin - offsetArrow - offset) < viewportRect.left) {
-      if (newPosition === Position.Left)
-        newPosition = Position.Right;
+      if (newPosition === RelativePosition.Left)
+        newPosition = RelativePosition.Right;
     }
 
     const rightMargin = containerStyle.marginRight ? parseFloat(containerStyle.marginRight) : 0;
     // istanbul ignore else
     if ((targetRect.right + popupWidth + rightMargin + offsetArrow + offset) > viewportRect.right) {
-      if (newPosition === Position.Right)
-        newPosition = Position.Left;
+      if (newPosition === RelativePosition.Right)
+        newPosition = RelativePosition.Left;
     }
 
     return newPosition;
   }
 
   // fit the popup within the extents of the view port
-  private _fitPopup = (point: Point) => {
+  private _fitPopup = (point: PopupPoint) => {
     const fittedPoint = point;
 
     if (!this._popup) {
@@ -444,10 +425,6 @@ export class Popup extends React.Component<PopupProps, PopupState> {
     return fittedPoint;
   }
 
-  private _handleAnimationEnd = () => {
-    this._isAnimating = false;
-  }
-
   public render() {
     const className = classnames(
       "core-popup",
@@ -473,7 +450,6 @@ export class Popup extends React.Component<PopupProps, PopupState> {
       (
         <div
           className={className} data-testid="core-popup"
-          onAnimationEnd={this._handleAnimationEnd}
           ref={(element) => { this._popup = element; }}
           style={style}
           role={role}
@@ -481,10 +457,15 @@ export class Popup extends React.Component<PopupProps, PopupState> {
           tabIndex={-1}
           aria-label={this.props.ariaLabel}
         >
-          <FocusTrap active={!!this.props.moveFocus && this.state.isOpen} initialFocusElement={this.state.focusTarget} returnFocusOnDeactivate={true}>
+          <FocusTrap active={!!this.props.moveFocus} initialFocusElement={this.props.focusTarget} returnFocusOnDeactivate={true}>
             {this.props.children}
           </FocusTrap>
         </div>
       ), document.body);
   }
+}
+
+function parsePxString(pxStr: string): number {
+  const parsed = parseInt(pxStr, 10);
+  return parsed || 0;
 }

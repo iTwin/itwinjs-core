@@ -1,8 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as bodyParser from "body-parser";
 import * as express from "express";
 import { Server as HttpServer } from "http";
 import { WebAppRpcProtocol } from "@bentley/imodeljs-common";
@@ -23,8 +22,8 @@ export class IModelJsExpressServer {
   }
 
   protected _configureMiddleware() {
-    this._app.use(bodyParser.text());
-    this._app.use(bodyParser.raw());
+    this._app.use(express.text());
+    this._app.use(express.raw());
   }
 
   protected _configureHeaders() {

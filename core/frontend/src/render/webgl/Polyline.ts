@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module WebGL */
+/** @packageDocumentation
+ * @module WebGL
+ */
 
 import { Point3d } from "@bentley/geometry-core";
 import { FeatureIndexType, QParams3d, RenderMode, PolylineTypeFlags } from "@bentley/imodeljs-common";
@@ -18,7 +20,7 @@ import { GL } from "./GL";
 import { System } from "./System";
 import { ShaderProgramParams } from "./DrawCommand";
 import { dispose } from "@bentley/bentleyjs-core";
-import { RenderMemory } from "../System";
+import { RenderMemory } from "../RenderMemory";
 import { BuffersContainer } from "./Handle";
 
 /** @internal */
@@ -47,6 +49,8 @@ export class PolylineGeometry extends LUTGeometry {
     this.numIndices = params.polyline.indices.length;
     this._buffers = buffers;
   }
+
+  public get isDisposed(): boolean { return this._buffers.isDisposed && this.lut.isDisposed; }
 
   public dispose() {
     dispose(this.lut);

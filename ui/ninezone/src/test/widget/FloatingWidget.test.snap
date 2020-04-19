@@ -1,0 +1,127 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`FloatingWidget should render 1`] = `
+<div
+  class="nz-widget-widget nz-widget-floatingWidget"
+  style="height: 300px; width: 200px; left: 0px; top: 100px;"
+>
+  <div
+    class="nz-widget-titleBar"
+  >
+    <div
+      class="nz-handle"
+    />
+    <div
+      class="nz-widget-tabs"
+    >
+      <div
+        class="nz-widget-overflow nz-hidden"
+      >
+        <div
+          class="nz-button"
+        >
+          <div
+            class="nz-icon"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+  <div
+    class="nz-widget-floatingWidget_handle nz-left"
+  />
+  <div
+    class="nz-widget-floatingWidget_handle nz-top"
+  />
+  <div
+    class="nz-widget-floatingWidget_handle nz-right"
+  />
+  <div
+    class="nz-widget-floatingWidget_handle nz-bottom"
+  />
+</div>
+`;
+
+exports[`FloatingWidget should render dragged 1`] = `
+<div
+  class="nz-widget-widget nz-widget-floatingWidget nz-dragged nz-minimized"
+  style="width: 200px; left: 0px; top: 100px;"
+>
+  <div
+    class="nz-widget-titleBar"
+  >
+    <div
+      class="nz-handle"
+    />
+    <div
+      class="nz-widget-tabs"
+    >
+      <div
+        class="nz-widget-overflow nz-hidden"
+      >
+        <div
+          class="nz-button"
+        >
+          <div
+            class="nz-icon"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+  <div
+    class="nz-widget-floatingWidget_handle nz-left"
+  />
+  <div
+    class="nz-widget-floatingWidget_handle nz-top"
+  />
+  <div
+    class="nz-widget-floatingWidget_handle nz-right"
+  />
+  <div
+    class="nz-widget-floatingWidget_handle nz-bottom"
+  />
+</div>
+`;
+
+exports[`FloatingWidget should render minimized 1`] = `
+<div
+  class="nz-widget-widget nz-widget-floatingWidget nz-minimized"
+  style="width: 200px; left: 0px; top: 100px;"
+>
+  <div
+    class="nz-widget-titleBar"
+  >
+    <div
+      class="nz-handle"
+    />
+    <div
+      class="nz-widget-tabs"
+    >
+      <div
+        class="nz-widget-overflow nz-hidden"
+      >
+        <div
+          class="nz-button"
+        >
+          <div
+            class="nz-icon"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+  <div
+    class="nz-widget-floatingWidget_handle nz-left"
+  />
+  <div
+    class="nz-widget-floatingWidget_handle nz-top"
+  />
+  <div
+    class="nz-widget-floatingWidget_handle nz-right"
+  />
+  <div
+    class="nz-widget-floatingWidget_handle nz-bottom"
+  />
+</div>
+`;

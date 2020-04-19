@@ -1,7 +1,5 @@
 sep=;
 Release Tag;API Item
-public;AllInstanceNodesSpecification 
-public;AllRelatedInstanceNodesSpecification 
 public;ArrayTypeDescription 
 internal;AsyncTasksTracker
 public;BaseNodeKey
@@ -10,7 +8,6 @@ public;CalculatedPropertiesSpecification
 public;CategoryDescription
 public;CheckBoxRule 
 public;ChildNodeRule 
-public;ChildNodeSpecification = AllInstanceNodesSpecification | AllRelatedInstanceNodesSpecification | CustomNodeSpecification | InstanceNodesOfSpecificClassesSpecification | RelatedInstanceNodesSpecification | CustomQueryInstanceNodesSpecification
 public;ChildNodeSpecificationBase
 public;ChildNodeSpecificationTypes
 public;ClassGroup 
@@ -19,26 +16,30 @@ public;ClassInfo
 public;ClassInfo
 internal;fromJSON(json: ClassInfoJSON): ClassInfo
 internal;toJSON(info: ClassInfo): ClassInfoJSON
-internal;ClientStateSyncRequestOptions = PresentationRpcRequestOptions &
 public;ConditionContainer
 public;Content
 public;ContentFlags
 public;ContentInstancesOfSpecificClassesSpecification 
 public;ContentModifier 
 public;ContentModifiersList
-public;ContentRelatedInstancesSpecification 
+public;ContentRelatedInstancesSpecification = DEPRECATED_ContentRelatedInstancesSpecification | ContentRelatedInstancesSpecificationNew
 public;ContentRequestOptions
-public;ContentRpcRequestOptions = PresentationRpcRequestOptions & Omit
+public;ContentRpcRequestOptions = PresentationRpcRequestOptions
 public;ContentRule 
 public;ContentSpecification = ContentInstancesOfSpecificClassesSpecification | ContentRelatedInstancesSpecification | SelectedNodeInstancesSpecification
 public;ContentSpecificationBase 
 public;ContentSpecificationTypes
+alpha;ContentUpdateInfo = typeof UPDATE_FULL
 public;CustomizationRule = InstanceLabelOverride | CheckBoxRule | GroupingRule | ImageIdOverride | LabelOverride | SortingRule | StyleOverride | ExtendedDataRule | NodeArtifactsRule
 public;CustomNodeSpecification 
 public;CustomQueryInstanceNodesSpecification 
-alpha;DEFAULT_KEYS_BATCH_SIZE = 5000
+public;DEFAULT_KEYS_BATCH_SIZE = 5000
 public;DefaultContentDisplayTypes
 public;DefaultGroupingPropertiesContainer
+public;DEPRECATED_AllInstanceNodesSpecification 
+public;DEPRECATED_AllRelatedInstanceNodesSpecification 
+public;DEPRECATED_PropertiesDisplaySpecification
+public;DEPRECATED_PropertyEditorsSpecification 
 public;Descriptor 
 public;DescriptorOverrides
 public;DescriptorSource
@@ -50,8 +51,8 @@ internal;toJSON(value: DisplayValue): DisplayValueJSON
 public;DisplayValuesArray 
 public;DisplayValuesMap 
 public;ECClassGroupingNodeKey 
-public;ECInstanceNodeKey 
 public;ECInstancesNodeKey 
+public;ECInstancesNodeKeyJSON 
 public;ECPropertyGroupingNodeKey 
 public;ECPropertyValueQuerySpecification 
 public;EditorDescription
@@ -66,13 +67,15 @@ public;GroupingSpecification = ClassGroup | PropertyGroup | SameLabelInstanceGro
 public;GroupingSpecificationBase
 public;GroupingSpecificationTypes
 public;HierarchyRequestOptions
-public;HierarchyRpcRequestOptions = PresentationRpcRequestOptions & Omit
+public;HierarchyRpcRequestOptions = PresentationRpcRequestOptions
+alpha;HierarchyUpdateInfo = typeof UPDATE_FULL | Array
 public;ImageIdOverride 
 public;InstanceId = Id64String
 public;InstanceKey
 public;InstanceKey
 internal;fromJSON(json: InstanceKeyJSON):
 internal;toJSON(json: InstanceKey): InstanceKeyJSON
+public;InstanceKeyJSON
 public;InstanceLabelOverride 
 public;InstanceLabelOverrideBriefcaseIdSpecification 
 public;InstanceLabelOverrideClassLabelSpecification 
@@ -80,6 +83,7 @@ public;InstanceLabelOverrideClassNameSpecification
 public;InstanceLabelOverrideCompositeValueSpecification 
 public;InstanceLabelOverrideLocalIdSpecification 
 public;InstanceLabelOverridePropertyValueSpecification 
+public;InstanceLabelOverrideStringValueSpecification 
 public;InstanceLabelOverrideValueSpecification = InstanceLabelOverrideCompositeValueSpecification | InstanceLabelOverridePropertyValueSpecification | InstanceLabelOverrideStringValueSpecification | InstanceLabelOverrideClassNameSpecification | InstanceLabelOverrideClassLabelSpecification | InstanceLabelOverrideBriefcaseIdSpecification | InstanceLabelOverrideLocalIdSpecification
 public;InstanceLabelOverrideValueSpecificationBase
 public;InstanceLabelOverrideValueSpecificationType
@@ -89,11 +93,24 @@ public;Key = Readonly
 public;Key
 public;Keys = ReadonlyArray
 public;KeySet
+public;KeySetJSON
 public;KindOfQuantityInfo
+public;LabelCompositeValue
+public;LabelCompositeValue
+internal;fromJSON(json: LabelCompositeValueJSON): LabelCompositeValue
+internal;toJSON(compositeValue: LabelCompositeValue): LabelCompositeValueJSON
+public;LabelDefinition
+public;LabelDefinition
+internal;fromJSON(json: LabelDefinitionJSON | string): LabelDefinition
+internal;fromLabelString(label: string): LabelDefinitionJSON
+internal;isCompositeDefinition(def: LabelDefinition): def is LabelDefinition &
+internal;reviver(key: string, value: any): any
+internal;toJSON(labelDefinition: LabelDefinition): LabelDefinitionJSON
 public;LabelGroupingNodeKey 
 public;LabelOverride 
+public;LabelRawValue = string | number | boolean | LabelCompositeValue
 public;LabelRequestOptions
-public;LabelRpcRequestOptions = PresentationRpcRequestOptions & Omit
+public;LabelRpcRequestOptions = PresentationRpcRequestOptions
 public;LoggingNamespaces
 public;MultiSchemaClassesSpecification
 public;NavigationRule = RootNodeRule | ChildNodeRule
@@ -111,11 +128,13 @@ internal;listReviver(key: string, value: any): any
 internal;reviver(key: string, value: any): any
 internal;toJSON(node: Node): NodeJSON
 public;NodeArtifactsRule 
-public;NodeKey = BaseNodeKey | ECInstanceNodeKey | ECInstancesNodeKey | ECClassGroupingNodeKey | ECPropertyGroupingNodeKey | LabelGroupingNodeKey
+alpha;NodeDeletionInfo
+alpha;NodeInsertionInfo
+public;NodeKey = BaseNodeKey | ECInstancesNodeKey | ECClassGroupingNodeKey | ECPropertyGroupingNodeKey | LabelGroupingNodeKey
 public;NodeKey
 internal;fromJSON(json: NodeKeyJSON): NodeKey
-deprecated;isInstanceNodeKey(key: NodeKey): key is ECInstanceNodeKey
 internal;toJSON(key: NodeKey): NodeKeyJSON
+public;NodeKeyJSON = BaseNodeKey | ECInstancesNodeKeyJSON | ECClassGroupingNodeKey | ECPropertyGroupingNodeKey | LabelGroupingNodeKey
 public;NodeKeyPath = NodeKey[]
 public;NodePathElement
 public;NodePathElement
@@ -125,16 +144,17 @@ internal;listReviver(key: string, value: any): any
 internal;reviver(key: string, value: any): any
 internal;toJSON(npe: NodePathElement): NodePathElementJSON
 public;NodePathFilteringData
+alpha;NodeUpdateInfo
 public;Omit
 public;Paged
 public;PageOptions
-public;PersistentKeysContainer
 public;PresentationError 
+alpha;PresentationRpcEvents
 public;PresentationRpcInterface 
 public;PresentationRpcRequestOptions
 public;PresentationStatus
+alpha;PresentationUnitSystem
 public;PrimitiveTypeDescription 
-public;PropertiesDisplaySpecification
 public;PropertiesField 
 public;Property
 public;Property
@@ -147,17 +167,17 @@ public;PropertyEditorParametersBase
 public;PropertyEditorParameterTypes
 public;PropertyEditorRangeParameters 
 public;PropertyEditorSliderParameters 
-public;PropertyEditorsSpecification 
+public;PropertyEditorSpecification
 public;PropertyGroup 
 public;PropertyGroupingValue
 public;PropertyInfo
 public;PropertyInfo
 internal;fromJSON(json: PropertyInfoJSON): PropertyInfo
 internal;toJSON(info: PropertyInfo): PropertyInfoJSON
-beta;PropertyOverrides
+public;PropertyOverrides
 public;PropertyRangeGroupSpecification
 public;PropertySortingRule 
-beta;PropertySpecification 
+public;PropertySpecification 
 public;PropertyValueFormat
 public;QuerySpecification = StringQuerySpecification | ECPropertyValueQuerySpecification
 public;QuerySpecificationBase
@@ -167,38 +187,40 @@ public;RelatedClassInfo
 public;RelatedClassInfo
 internal;fromJSON(json: RelatedClassInfoJSON): RelatedClassInfo
 internal;toJSON(info: RelatedClassInfo): RelatedClassInfoJSON
-public;RelatedInstanceNodesSpecification 
-public;RelatedInstanceSpecification
+public;RelatedInstanceNodesSpecification = DEPRECATED_RelatedInstanceNodesSpecification | RelatedInstanceNodesSpecificationNew
+public;RelatedInstanceSpecification = DEPRECATED_RelatedInstanceSpecification | RelatedInstanceSpecificationNew
 public;RelatedPropertiesSpecialValues
-public;RelatedPropertiesSpecification
+public;RelatedPropertiesSpecification = DEPRECATED_RelatedPropertiesSpecification | RelatedPropertiesSpecificationNew
 public;RelationshipDirection
 public;RelationshipMeaning
 public;RelationshipPath = RelatedClassInfo[]
+public;RelationshipPath
+internal;reverse(path: RelationshipPath): RelationshipPath
+public;RelationshipPathSpecification = RelationshipStepSpecification | RelationshipStepSpecification[]
+public;RelationshipStepSpecification
+public;RepeatableRelationshipPathSpecification = RepeatableRelationshipStepSpecification | RepeatableRelationshipStepSpecification[]
+public;RepeatableRelationshipStepSpecification 
 public;RequestOptions
 public;RequestOptionsWithRuleset
-beta;RequestPriority
+public;RequestPriority
 public;RootNodeRule 
 internal;RpcRequestsHandler 
 internal;RpcRequestsHandlerProps
 public;Rule = CustomizationRule | NavigationRule | ContentRule | ContentModifier
 public;RuleBase
 public;Ruleset
-internal;RulesetManagerState = Ruleset[]
-internal;RulesetManagerState
 public;RulesetsFactory
-beta;RulesetVariable
-internal;RulesetVariablesState
-internal;RulesetVariablesState
+public;RulesetVariable
 public;RuleTypes
 public;SameLabelInstanceGroup 
-beta;SameLabelInstanceGroupApplicationStage
+public;SameLabelInstanceGroupApplicationStage
 public;SchemasSpecification
 public;SelectClassInfo
 public;SelectedNodeInstancesSpecification 
 public;SelectionInfo
 public;SelectionScope
 public;SelectionScopeRequestOptions
-public;SelectionScopeRpcRequestOptions = PresentationRpcRequestOptions & Omit
+public;SelectionScopeRpcRequestOptions = PresentationRpcRequestOptions
 public;SingleSchemaClassSpecification
 public;SortDirection
 public;SortingRule = PropertySortingRule | DisabledSortingRule
@@ -212,6 +234,8 @@ public;SubCondition
 public;Subtract
 public;SupplementationInfo
 public;TypeDescription = PrimitiveTypeDescription | ArrayTypeDescription | StructTypeDescription
+alpha;UPDATE_FULL = "FULL"
+alpha;UpdateInfo
 public;Value = string | number | boolean | undefined | ValuesMap | ValuesArray | NestedContentValue[]
 public;Value
 internal;fromJSON(json: ValueJSON): Value
@@ -221,6 +245,6 @@ public;ValuesDictionary
 public;ValuesMap 
 public;Variable
 public;VariablesGroup
-beta;VariableValue = boolean | string | number | number[] | Id64String[]
+public;VariableValue = boolean | string | number | number[] | Id64String[]
 public;VariableValueType
-beta;VariableValueTypes
+public;VariableValueTypes

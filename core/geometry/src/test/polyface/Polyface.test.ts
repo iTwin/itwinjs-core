@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { IndexedPolyface, Polyface, IndexedPolyfaceVisitor } from "../../polyface/Polyface";
 import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
@@ -36,6 +36,8 @@ import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAn
 import { MomentData } from "../../geometry4d/MomentData";
 import { Geometry } from "../../Geometry";
 import { TorusPipe } from "../../solid/TorusPipe";
+import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
+import { Path } from "../../curve/Path";
 /* tslint:disable:no-console */
 
 // @param longEdgeIsHidden true if any edge longer than1/3 of face perimeter is expected to be hidden
@@ -124,7 +126,7 @@ function exercisePolyface(ck: Checker, polyface: Polyface,
             ck.testVector3d(normalA, normalB);
           }
         }
-        */
+     */
 
   }
 
@@ -358,7 +360,7 @@ describe("Polyface.Box", () => {
   });
 });
 
-function writeMeshes(geometry: GeometryQuery[], fileName: string, options?: StrokeOptions, dx0: number = 0, dy0: number = 0) {
+function writeMeshes(ck: Checker, geometry: GeometryQuery[], fileName: string, checkClosure: boolean, options?: StrokeOptions, dx0: number = 0, dy0: number = 0) {
   let fileName1 = fileName.slice() + ".X";
   if (options) {
     if (options.hasMaxEdgeLength) fileName1 = fileName1 + "E";
@@ -422,8 +424,31 @@ function writeMeshes(geometry: GeometryQuery[], fileName: string, options?: Stro
       const isClosedSolid = g.isClosedVolume;
       if (polyface.isEmpty) {
         console.log(fileName1, gCount + " of " + geometry.length + "is empty polyface");
-      } else if (isClosedMesh !== isClosedSolid)
+      } else if (isClosedMesh !== isClosedSolid) {
         console.log(fileName1, gCount + " of " + geometry.length, { isClosedBySolid: isClosedSolid, isClosedByEdgePairing: isClosedMesh });
+        PolyfaceQuery.reorientVertexOrderAroundFacetsForConsistentOrientation(polyface);
+        const isClosedMesh1 = PolyfaceQuery.isPolyfaceClosedByEdgePairing(polyface);
+        // console.log("After Reorient " + fileName1, { isClosedBySolid: isClosedSolid, isClosedByEdgePairing: isClosedMesh, isClosedByEdgePairing1: isClosedMesh1 });
+        if (isClosedSolid !== isClosedMesh1) {
+          if (options.hasMaxEdgeLength) {
+            // hm . we think there is a bug in edge length splits.  Let's see if we can fix it up with TVertex logic ...
+            const polyface2 = PolyfaceQuery.cloneWithTVertexFixup(polyface);
+            PolyfaceQuery.reorientVertexOrderAroundFacetsForConsistentOrientation(polyface2 as IndexedPolyface);
+            const isClosedMesh2 = PolyfaceQuery.isPolyfaceClosedByEdgePairing(polyface2);
+            polyface2.tryTranslateInPlace(0, dyLocal);
+            allMesh.push(polyface2);
+            if (checkClosure)
+              ck.testBoolean(isClosedSolid, isClosedMesh2, "Closure after TVertex Fixup");
+            console.log("After Reorient AND T VERTEX " + fileName1,
+              { isClosedBySolid: isClosedSolid, isClosedByEdgePairing: isClosedMesh, isClosedByEdgePairing2: isClosedMesh2 });
+
+          } else if (checkClosure) {
+            if (!ck.testBoolean(isClosedSolid, isClosedMesh1, " post-fixup solid closure"))
+              console.log("After Reorient " + fileName1,
+                { isClosedBySolid: isClosedSolid, isClosedByEdgePairing: isClosedMesh, isClosedByEdgePairing1: isClosedMesh1 });
+          }
+        }
+      }
       for (const f of [0.0, 0.10, 0.20, 0.25, 0.50, 0.75, 1.0]) {
         const section = g.constantVSection(f);
         if (section) {
@@ -444,13 +469,14 @@ function writeMeshes(geometry: GeometryQuery[], fileName: string, options?: Stro
   if (allMesh.length > 0) {
     GeometryCoreTestIO.saveGeometry(allMesh, "Polyface", fileName1);
   }
-
 }
 // call writeMeshes with multiple options and placements
-function writeAllMeshes(geometry: GeometryQuery[], name: string, options: StrokeOptions[], y0: number, dy: number) {
+function writeAllMeshes(geometry: GeometryQuery[], name: string, checkClosure: boolean, options: StrokeOptions[], y0: number, dy: number) {
+  const ck = new Checker();
   for (let i = 0; i < options.length; i++) {
-    writeMeshes(geometry, name, options[i], 0, y0 + i * dy);
+    writeMeshes(ck, geometry, name, checkClosure, options[i], 0, y0 + i * dy);
   }
+  expect(ck.getNumErrors()).equals(0);
 
 }
 type GeometryData = GeometryQuery | GeometryQuery[];
@@ -498,35 +524,35 @@ describe("Polyface.Facets", () => {
   it("Cones", () => {
     const all = Sample.createCones();
     // writeAllMeshes(all, "ConeE", [optionsP], -y0Cone, optionYStep);
-    writeAllMeshes(all, "Cone", allOptions, y0Cone, optionYStep);
+    writeAllMeshes(all, "Cone", true, allOptions, y0Cone, optionYStep);
   });
   it("Spheres", () => {
     const all = Sample.createSpheres();
     // writeAllMeshes(all, "SphereNN", [optionsN], 0.0, optionYStep);
-    writeAllMeshes(all, "Sphere", allOptions, y0Sphere, optionYStep);
+    writeAllMeshes(all, "Sphere", true, allOptions, y0Sphere, optionYStep);
   });
   it("Boxes", () => {
     const allBox = flattenGeometry(Sample.createBoxes(false), Sample.createBoxes(true));
-    writeAllMeshes(allBox, "Box", allOptions, y0Box, optionYStep);
+    writeAllMeshes(allBox, "Box", true, allOptions, y0Box, optionYStep);
   });
   it("TorusPipes", () => {
     const allBox = Sample.createTorusPipes();
-    writeAllMeshes(allBox, "TorusPipe", allOptions, y0TorusPipe, optionYStep);
+    writeAllMeshes(allBox, "TorusPipe", true, allOptions, y0TorusPipe, optionYStep);
   });
   it("LinearSweeps", () => {
     // writeAllMeshes(Sample.createSimpleLinearSweeps(), "LinearSweepSubset", allEOptions, -y0LinearSweep, optionYStep);
-    writeAllMeshes(Sample.createSimpleLinearSweeps(), "LinearSweep", allOptions, y0LinearSweep, optionYStep);
+    writeAllMeshes(Sample.createSimpleLinearSweeps(), "LinearSweep", true, allOptions, y0LinearSweep, optionYStep);
   });
 
   it("RotationalSweeps", () => {
-    writeAllMeshes(Sample.createSimpleRotationalSweeps(), "RotationalSweep", allOptions, y0RotationalSweep, optionYStep);
+    writeAllMeshes(Sample.createSimpleRotationalSweeps(), "RotationalSweep", true, allOptions, y0RotationalSweep, optionYStep);
     //     writeMeshes(Sample.createSimpleRotationalSweeps(), "RotationalSweep", optionsP, 0, y0LinearSweep + 2 * optionYStep);
     //    writeMeshes(Sample.createSimpleRotationalSweeps(), "RotationalSweep", options0E, 0, y0RotationalSweep);
     //    writeMeshes(Sample.createSimpleRotationalSweeps(), "RotationalSweep", optionsN, 0, y0RotationalSweep + optionYStep);
   });
   it("RuledSweeps", () => {
     const sweepP = Sample.createRuledSweeps(true);
-    writeAllMeshes(sweepP, "RuledSweep", allOptions, y0RuledSweep, optionYStep);
+    writeAllMeshes(sweepP, "RuledSweep", true, allOptions, y0RuledSweep, optionYStep);
 
     //    writeMeshes(sweepP, "RuledSweep", optionsP, 0, y0RuledSweep + 2 * optionYStep);
     //    const sweepB = Sample.createRuledSweeps(true);
@@ -536,10 +562,10 @@ describe("Polyface.Facets", () => {
   });
   it("Samplers", () => {
     const openSweeps = Sample.createClosedSolidSampler(false);
-    writeAllMeshes([openSweeps[4]], "Work", [optionsPNE, optionsPNE], y0OpenSweeps, optionYStep);
-    writeAllMeshes(openSweeps, "OpenSweeps", allOptions, y0OpenSweeps, optionYStep);
+    writeAllMeshes([openSweeps[4]], "Work", true, [optionsPNE, optionsPNE], y0OpenSweeps, optionYStep);
+    writeAllMeshes(openSweeps, "OpenSweeps", true, allOptions, y0OpenSweeps, optionYStep);
     const closedSolids = Sample.createClosedSolidSampler(true);
-    writeAllMeshes(closedSolids, "ClosedSweeps", allOptions, y0ClosedSampler, optionYStep);
+    writeAllMeshes(closedSolids, "ClosedSweeps", false, allOptions, y0ClosedSampler, optionYStep);
   });
 
   it("Moments", () => {
@@ -694,7 +720,7 @@ describe("Polyface.Faces", () => {
     }
     /*  EDL -- this test makes assumptions about normal indices.
         With recent (Feb 2019) optimizations of normal constructions, the normals cannot be accessed this way.
-        // Check normals
+      // Check normals
         for (let idx = 0; idx < polyface.data.normalIndex!.length - 1; idx++) {
           if (idx % 4 === 0) {
             const pointA = polyface.data.point.getPoint3dAt(idx);
@@ -713,7 +739,7 @@ describe("Polyface.Faces", () => {
             ck.testCoordinate(normalArray.atVector3dIndex(idx + 3)!.dotProduct(vecAC), 0, "Normal is perpendicular to grid surface");
           }
         }
-    */
+     */
     expect(ck.getNumErrors()).equals(0);
   });
   // cspell:word dgnjs
@@ -852,10 +878,7 @@ function createGridMeshByCoordinates(numXEdge: number, numYEdge: number, xShiftC
 
   for (let iRow = 0; iRow < numXEdge; iRow++) {
     for (let iColumn = 0; iColumn < numYEdge; iColumn++) {
-      const quad = [Point3d.create(xShift + iRow * spacing, iColumn * spacing, 0.0),
-      Point3d.create(xShift + (iRow + 1) * spacing, iColumn * spacing, 0.0),
-      Point3d.create(xShift + (iRow + 1) * spacing, (iColumn + 1) * spacing, 0.0),
-      Point3d.create(xShift + iRow * spacing, (iColumn + 1) * spacing)];
+      const quad = [Point3d.create(xShift + iRow * spacing, iColumn * spacing, 0.0), Point3d.create(xShift + (iRow + 1) * spacing, iColumn * spacing, 0.0), Point3d.create(xShift + (iRow + 1) * spacing, (iColumn + 1) * spacing, 0.0), Point3d.create(xShift + iRow * spacing, (iColumn + 1) * spacing)];
       builder.addQuadFacet(quad);
     }
   }
@@ -920,9 +943,7 @@ it("SolidPrimitiveBoundary", () => {
   const delta = 10;
   for (const capped of [true, false]) {
     for (const solid of
-      [Box.createRange(Range3d.createXYZXYZ(0, 0, 0, 1, 2, 3), capped)!,
-      TorusPipe.createInFrame(Transform.createIdentity(), 2, 1, Angle.createDegrees(180), capped)!,
-      Cone.createBaseAndTarget(Point3d.create(0, 0, 0), Point3d.create(0, 0, 2), Vector3d.unitX(), Vector3d.unitY(), 2, 1, capped)!]) {
+      [Box.createRange(Range3d.createXYZXYZ(0, 0, 0, 1, 2, 3), capped)!, TorusPipe.createInFrame(Transform.createIdentity(), 2, 1, Angle.createDegrees(180), capped)!, Cone.createBaseAndTarget(Point3d.create(0, 0, 0), Point3d.create(0, 0, 2), Vector3d.unitX(), Vector3d.unitY(), 2, 1, capped)!]) {
       const builder = PolyfaceBuilder.create();
       builder.addGeometryQuery(solid);
       const mesh = builder.claimPolyface();
@@ -931,9 +952,9 @@ it("SolidPrimitiveBoundary", () => {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, x0, y0);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, boundary, x0, y0 + delta);
 
-      PolyfaceQuery.markAllEdgeVisibility (mesh, false);
+      PolyfaceQuery.markAllEdgeVisibility(mesh, false);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, x0, y0 + 2 * delta);
-      PolyfaceQuery.markAllEdgeVisibility (mesh, true);
+      PolyfaceQuery.markAllEdgeVisibility(mesh, true);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, x0, y0 + 3 * delta);
 
       let y1 = y0 + 5 * delta;
@@ -996,6 +1017,20 @@ it("AddTriangleFan", () => {
   expect(ck.getNumErrors()).equals(0);
 });
 
+it("AddSweptLineStrings", () => {
+  const ck = new Checker();
+  const path = Path.create();
+  path.tryAddChild(LineString3d.create([[0, 0, 0], [0, 1, 0], [1, 1, 0]]));
+  path.tryAddChild(LineString3d.create([[1, 1, 0], [0, 1, 0], [0, 2, 0]]));
+  const builder = PolyfaceBuilder.create();
+  builder.addLinearSweepLineStringsXYZOnly(path, Vector3d.create(0, 0, 1));
+  const mesh = builder.claimPolyface();
+  ck.testExactNumber(4, mesh.facetCount);
+
+  builder.applyStrokeCountsToCurvePrimitives(path);
+  expect(ck.getNumErrors()).equals(0);
+});
+
 it("AddTriangles", () => {
   const ck = new Checker();
   const allGeometry: GeometryQuery[] = [];
@@ -1003,6 +1038,7 @@ it("AddTriangles", () => {
   options.needNormals = true;
   options.needParams = true;
   const builder = PolyfaceBuilder.create(options);
+  builder.addTriangleFacet([Point3d.create(0, 1, 2)]);
   const arc = Arc3d.createCircularStartMiddleEnd(Point3d.create(4, 0, 0), Point3d.create(3, 3, 0), Point3d.create(0, 4, 0))!;
   const strokes = LineString3d.create();
   arc.emitStrokes(strokes, options);
@@ -1017,6 +1053,7 @@ it("AddTriangles", () => {
   //  const params = [];
   //  const normals = [];
   const du = 1.0 / strokes.numPoints();
+  const pointA = new GrowableXYZArray();
   for (let i = 1; i < strokes.numPoints(); i++) {
     points.length = 0;
     points.push(coneA);
@@ -1033,12 +1070,12 @@ it("AddTriangles", () => {
     normals.push(normalA);
     builder.addTriangleFacet(points, params, normals);
 
-    // build lower half without params.
-    points.length = 0;
-    points.push(coneB);
-    points.push(strokes.pointAt(i)!);
-    points.push(strokes.pointAt(i - 1)!);
-    builder.addTriangleFacet(points);
+    // build lower half without params, use GrowableArray for coverage . ..
+    pointA.length = 0;
+    pointA.push(coneB);
+    pointA.push(strokes.pointAt(i)!);
+    pointA.push(strokes.pointAt(i - 1)!);
+    builder.addTriangleFacet(pointA);
 
   }
 
@@ -1235,4 +1272,4 @@ it("IndexValidation", () => {
 /*
 public static areIndicesValid(indices: number[] | undefined,
   indexPositionA: number, indexPositionB: number, data: any | undefined, dataLength: number): boolean {
-    */
+ */

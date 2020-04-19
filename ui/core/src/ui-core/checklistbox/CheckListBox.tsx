@@ -1,12 +1,14 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module CheckListBox */
+/** @packageDocumentation
+ * @module CheckListBox
+ */
 
 import * as React from "react";
-import * as classnames from "classnames";
-import { Checkbox } from "../inputs/checkbox/Checkbox";
+import classnames from "classnames";
+import { Checkbox } from "../checkbox/Checkbox";
 import { CommonProps } from "../utils/Props";
 import "./CheckListBox.scss";
 
@@ -43,12 +45,11 @@ export class CheckListBoxItem extends React.PureComponent<CheckListBoxItemProps>
 /** Separator added to a [[CheckListBox]].
  * @beta
  */
-// tslint:disable-next-line:variable-name
-export const CheckListBoxSeparator: React.FunctionComponent = () => {
+export function CheckListBoxSeparator() {
   return (
     <div className="core-chk-listbox-separator" />
   );
-};
+}
 
 /** React component showing a list of Checkbox items.
  * @beta

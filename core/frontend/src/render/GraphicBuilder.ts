@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Rendering */
+/** @packageDocumentation
+ * @module Rendering
+ */
 
 import { IModelConnection } from "../IModelConnection";
 import { Id64String } from "@bentley/bentleyjs-core";
@@ -24,7 +26,7 @@ import {
   Npc,
 } from "@bentley/imodeljs-common";
 import { Viewport } from "../Viewport";
-import { RenderGraphic } from "./System";
+import { RenderGraphic } from "./RenderGraphic";
 
 /**
  * Describes the type of a [[GraphicBuilder]], which defines the coordinate system in which the builder's geometry is defined and

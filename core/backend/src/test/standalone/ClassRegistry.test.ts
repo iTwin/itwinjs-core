@@ -1,16 +1,16 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Code, EntityMetaData } from "@bentley/imodeljs-common";
 import { assert } from "chai";
 import * as path from "path";
-import { BackendRequestContext, DefinitionElement, IModelDb, RepositoryLink, SpatialViewDefinition, UrlLink, ViewDefinition3d } from "../../imodeljs-backend";
+import { BackendRequestContext, DefinitionElement, IModelDb, RepositoryLink, SnapshotDb, SpatialViewDefinition, UrlLink, ViewDefinition3d } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 
 describe("Class Registry", () => {
-  let imodel: IModelDb;
+  let imodel: SnapshotDb;
   const requestContext = new BackendRequestContext();
 
   before(() => {
@@ -22,7 +22,7 @@ describe("Class Registry", () => {
 
   after(() => {
     if (imodel)
-      imodel.closeSnapshot();
+      imodel.close();
   });
 
   it("should verify the Entity metadata of known element subclasses", () => {

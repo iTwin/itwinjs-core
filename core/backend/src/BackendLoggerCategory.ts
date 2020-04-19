@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Logging */
+/** @packageDocumentation
+ * @module Logging
+ */
 
 /** Logger categories used by this package
  * @note All logger categories in this package start with the `imodeljs-backend` prefix.
@@ -10,6 +12,9 @@
  * @public
  */
 export enum BackendLoggerCategory {
+  /** The logger category used by API related to authorization */
+  Authorization = "imodeljs-backend.Authorization",
+
   /** The logger category used by the following classes:
    * - [[CodeSpecs]]
    */
@@ -55,17 +60,17 @@ export enum BackendLoggerCategory {
   IModelHost = "imodeljs-backend.IModelHost",
 
   /** The logger category used by the [IModelExporter]($backend) class.
-   * @alpha
+   * @beta
    */
   IModelExporter = "imodeljs-backend.IModelExporter",
 
   /** The logger category used by the [IModelImporter]($backend) class.
-   * @alpha
+   * @beta
    */
   IModelImporter = "imodeljs-backend.IModelImporter",
 
   /** The logger category used by the [IModelTransformer]($backend) class.
-   * @alpha
+   * @beta
    */
   IModelTransformer = "imodeljs-backend.IModelTransformer",
 
@@ -93,4 +98,20 @@ export enum BackendLoggerCategory {
    * - [[PromiseMemoizer]]
    */
   PromiseMemoizer = "imodeljs-backend.PromiseMemoizer",
+  /** The logger category used by the following classes:
+   * - [[EventSink]]
+   */
+  EventSink = "imodeljs-backend.EventSink",
+
+  /** The logger category used by the following classes:
+   * - [[IModelSchemaLoader]]
+   * @alpha
+   */
+  IModelSchemaLoader = "imodeljs-backend.IModelSchemaLoader",
+
+  /** The logger category used by the following classes:
+   * - [[iModels]]
+   * @alpha
+   */
+  Editing = "imodeljs-backend.Editing",
 }

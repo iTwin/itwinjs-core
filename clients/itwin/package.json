@@ -1,0 +1,79 @@
+{
+  "name": "@bentley/itwin-client",
+  "version": "2.0.0-dev.71",
+  "description": "Base client package for iTwin applications",
+  "main": "lib/itwin-client.js",
+  "typings": "lib/itwin-client",
+  "imodeljsSharedLibrary": true,
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc 1>&2",
+    "clean": "rimraf lib .rush",
+    "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=itwin-client",
+    "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --includes=../../generated-docs/extract --json=../../generated-docs/core/itwin-client/file.json --tsIndexFile=itwin-client.ts --onlyJson %TYPEDOC_THEME%",
+    "lint": "tslint --project . 1>&2",
+    "webpackTests": "webpack --config ./src/test/utils/webpack.config.js 1>&2",
+    "test": "node ./node_modules/@bentley/build-tools/scripts/test.js --offline=\"mock\" --grep=\"#integration\" --invert",
+    "test:integration": "",
+    "cover": "npm test -- --cover"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/imodeljs/imodeljs/tree/master/core/itwin-client"
+  },
+  "keywords": [
+    "IMS Client",
+    "WSG Client",
+    "iTwin Client"
+  ],
+  "author": {
+    "name": "Bentley Systems, Inc.",
+    "url": "http://www.bentley.com"
+  },
+  "peerDependencies": {
+    "@bentley/bentleyjs-core": "^2.0.0-dev.71"
+  },
+  "//devDependencies": [
+    "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
+    "NOTE: All tools used by scripts in this package must be listed as devDependencies"
+  ],
+  "devDependencies": {
+    "@bentley/certa": "2.0.0-dev.71",
+    "@bentley/bentleyjs-core": "2.0.0-dev.71",
+    "@bentley/build-tools": "2.0.0-dev.71",
+    "@bentley/config-loader": "2.0.0-dev.71",
+    "@bentley/geometry-core": "2.0.0-dev.71",
+    "@bentley/oidc-signin-tool": "2.0.0-dev.71",
+    "@types/chai": "^4.1.4",
+    "@types/deep-assign": "^0.1.0",
+    "@types/js-base64": "^2.3.1",
+    "@types/mocha": "^5.2.5",
+    "@types/nock": "^9.1.2",
+    "@types/node": "10.14.1",
+    "@types/qs": "^6.5.0",
+    "@types/superagent": "^3.5.6",
+    "@types/xmldom": "^0.1.29",
+    "chai": "^4.1.2",
+    "mocha": "^5.2.0",
+    "nock": "^9.2.3",
+    "nyc": "^14.0.0",
+    "rimraf": "^3.0.2",
+    "ts-node": "^7.0.1",
+    "tslint": "^5.11.0",
+    "tslint-etc": "^1.5.2",
+    "typescript": "~3.7.4",
+    "webpack": "4.42.0",
+    "source-map-loader": "^0.2.3"
+  },
+  "dependencies": {
+    "deep-assign": "^2.0.0",
+    "js-base64": "^2.4.5",
+    "qs": "^6.5.1",
+    "superagent": "^3.7.0",
+    "xmldom": "^0.1.27",
+    "xpath": "0.0.27"
+  },
+  "nyc": {
+    "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc"
+  }
+}

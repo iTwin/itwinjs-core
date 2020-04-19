@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /* tslint:disable:no-direct-imports */
 
@@ -19,8 +19,8 @@ import {
   SelectionHandler, SelectionManager, SelectionChangeEvent, SelectionChangeType, ISelectionProvider, SelectionChangeEventArgs,
 } from "@bentley/presentation-frontend";
 import { Table, TableProps, ColumnDescription, RowItem, TableDataChangeEvent } from "@bentley/ui-components";
-import { IUnifiedSelectionComponent } from "../../common/IUnifiedSelectionComponent";
-import { PresentationTableDataProvider, tableWithUnifiedSelection } from "../../presentation-components";
+import { IUnifiedSelectionComponent, PresentationTableDataProvider, tableWithUnifiedSelection } from "../../presentation-components";
+import { PresentationTableDataProviderProps } from "../../presentation-components/table/DataProvider";
 
 // tslint:disable-next-line:variable-name naming-convention
 const PresentationTable = tableWithUnifiedSelection(Table);
@@ -28,20 +28,31 @@ const PresentationTable = tableWithUnifiedSelection(Table);
 describe("Table withUnifiedSelection", () => {
 
   let testRulesetId: string;
+  let dataProviderMock: moq.IMock<PresentationTableDataProvider>;
   const imodelMock = moq.Mock.ofType<IModelConnection>();
-  const dataProviderMock = moq.Mock.ofType(PresentationTableDataProvider, undefined, undefined, imodelMock.object, "ruleset_id");
   const selectionHandlerMock = moq.Mock.ofType<SelectionHandler>();
+
   before(() => {
     // https://github.com/Microsoft/TypeScript/issues/14151#issuecomment-280812617
     // tslint:disable-next-line:no-string-literal
     if (Symbol["asyncIterator"] === undefined) ((Symbol as any)["asyncIterator"]) = Symbol.for("asyncIterator");
   });
+
   beforeEach(() => {
     testRulesetId = faker.random.word();
     selectionHandlerMock.reset();
     selectionHandlerMock.setup((x) => x.getSelectionLevels()).returns(() => []);
     selectionHandlerMock.setup((x) => x.getSelection(moq.It.isAnyNumber())).returns(() => new KeySet());
+    dataProviderMock = moq.Mock.ofType(PresentationTableDataProvider, undefined, undefined, {
+      imodel: imodelMock.object,
+      ruleset: "ruleset_id",
+      doNotListenForPresentationUpdates: true,
+    } as PresentationTableDataProviderProps);
     setupDataProvider();
+  });
+
+  afterEach(() => {
+    Presentation.terminate();
   });
 
   const setupDataProvider = (providerMock?: moq.IMock<PresentationTableDataProvider>, imodel?: IModelConnection, rulesetId?: string, columns?: ColumnDescription[], rows?: RowItem[]) => {
@@ -92,14 +103,12 @@ describe("Table withUnifiedSelection", () => {
     />);
   });
 
-  it("uses data provider's imodel and rulesetId", () => {
+  it("uses data provider's imodel", () => {
     const component = shallow(<PresentationTable
       dataProvider={dataProviderMock.object}
       selectionHandler={selectionHandlerMock.object}
     />).instance() as any as IUnifiedSelectionComponent;
-
     expect(component.imodel).to.equal(imodelMock.object);
-    expect(component.rulesetId).to.equal(testRulesetId);
   });
 
   it("creates default implementation for selection handler when not provided through props", () => {
@@ -107,13 +116,13 @@ describe("Table withUnifiedSelection", () => {
     selectionManagerMock.setup((x) => x.selectionChange).returns(() => new SelectionChangeEvent());
     selectionManagerMock.setup((x) => x.getSelectionLevels(imodelMock.object)).returns(() => []);
     selectionManagerMock.setup((x) => x.getSelection(imodelMock.object, moq.It.isAnyNumber())).returns(() => new KeySet());
-    Presentation.selection = selectionManagerMock.object;
+    Presentation.setSelectionManager(selectionManagerMock.object);
 
     const presentationManagerMock = moq.Mock.ofType<PresentationManager>();
     presentationManagerMock
       .setup(async (x) => x.getContentDescriptor(moq.It.isAny(), moq.It.isAnyString(), moq.It.isAny(), moq.It.isAny()))
       .returns(async () => undefined);
-    Presentation.presentation = presentationManagerMock.object;
+    Presentation.setPresentationManager(presentationManagerMock.object);
 
     const component = shallow(<PresentationTable
       dataProvider={dataProviderMock.object}

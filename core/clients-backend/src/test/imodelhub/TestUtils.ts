@@ -1,31 +1,34 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as fs from "fs";
 import * as path from "path";
 import * as chai from "chai";
 import { Base64 } from "js-base64";
-import { GuidString, Guid, Id64, Id64String, ClientRequestContext, Logger, WSStatus } from "@bentley/bentleyjs-core";
+import { GuidString, Guid, Id64, Id64String, ClientRequestContext, Logger, WSStatus, Config } from "@bentley/bentleyjs-core";
 import {
-  ECJsonTypeMap, AccessToken, UserInfo, Project, Asset, ProgressInfo,
+  ECJsonTypeMap, AccessToken, UserInfo, ProgressInfo,
+  AuthorizedClientRequestContext, WsgError,
+} from "@bentley/itwin-client";
+import {
   IModelHubClient, HubCode, CodeState, MultiCode, Briefcase, BriefcaseQuery, ChangeSet, Version,
   Thumbnail, SmallThumbnail, LargeThumbnail, IModelQuery, LockType, LockLevel,
-  MultiLock, Lock, VersionQuery, Config, IModelBaseHandler,
-  IModelBankClient, IModelBankFileSystemContextClient, AuthorizedClientRequestContext,
-  ImsUserCredentials,
-  WsgError,
-} from "@bentley/imodeljs-clients";
+  MultiLock, Lock, VersionQuery, IModelBaseHandler, ChangeSetQuery, IModelCloudEnvironment,
+  IModelBankClient, IModelBankFileSystemContextClient,
+} from "@bentley/imodelhub-client";
+import { TestUsers, TestUserCredentials } from "@bentley/oidc-signin-tool";
 import { AzureFileHandler } from "../../imodelhub/AzureFileHandler";
-import { IModelCloudEnvironment } from "@bentley/imodeljs-clients/lib/IModelCloudEnvironment";
 import { ResponseBuilder, RequestType, ScopeType, UrlDiscoveryMock } from "../ResponseBuilder";
 import { TestConfig } from "../TestConfig";
-import { TestUsers } from "../TestUsers";
 import { TestIModelHubCloudEnv } from "./IModelHubCloudEnv";
 import { getIModelBankCloudEnv } from "./IModelBankCloudEnv";
 import { MobileRpcConfiguration } from "@bentley/imodeljs-common";
 import { IOSAzureFileHandler } from "../../imodelhub/IOSAzureFileHandler";
 import { UrlFileHandler } from "../../UrlFileHandler";
+import { LocalhostHandler } from "../../imodelhub/LocalhostFileHandler";
+import { StorageServiceFileHandler } from "../../StorageServiceFileHandler";
+import { Project, Asset } from "@bentley/context-registry-client";
 
 const loggingCategory = "imodeljs-clients-backend.TestUtils";
 
@@ -43,14 +46,72 @@ function configMockSettings() {
   Config.App.set("imjs_test_manager_user_name", "test");
   Config.App.set("imjs_test_manager_user_password", "test");
 }
-export function createFileHanlder(useDownloadBuffer?: boolean) {
+export function createFileHandler(useDownloadBuffer?: boolean) {
   if (MobileRpcConfiguration.isMobileBackend) {
     return new IOSAzureFileHandler();
   } else if (TestConfig.enableIModelBank && !TestConfig.enableMocks) {
-    return new UrlFileHandler();
+    return createIModelBankFileHandler(useDownloadBuffer);
   }
   return new AzureFileHandler(useDownloadBuffer);
 }
+
+export function createIModelBankFileHandler(useDownloadBuffer?: boolean) {
+  const handler = Config.App.getString("imjs_test_imodel_bank_file_handler", "url");
+  switch (handler.toLowerCase()) {
+    case "azure":
+      return new AzureFileHandler(useDownloadBuffer);
+    case "localhost":
+      return new LocalhostHandler();
+    case "url":
+      return new UrlFileHandler();
+    case "storageservice":
+      return new StorageServiceFileHandler();
+    default:
+      throw new Error(`File handler '${handler}' is not supported.`);
+  }
+}
+
+export function getExpectedFileHandlerUrlSchemes(): string[] {
+  const handler = Config.App.getString("imjs_test_imodel_bank_file_handler", "url");
+  switch (handler.toLowerCase()) {
+    case "localhost":
+      return ["file://"];
+    default:
+      return ["https://", "http://"];
+  }
+}
+
+export function doesMatchExpectedUrlScheme(url?: string) {
+  if (!url)
+    return false;
+
+  const expectedSchemes = getExpectedFileHandlerUrlSchemes();
+  for (const scheme of expectedSchemes)
+    if (url!.startsWith(scheme))
+      return true;
+
+  return false;
+}
+
+export function removeFileUrlExpirationTimes(changesets: ChangeSet[]) {
+  for (const cs of changesets) {
+    cs.downloadUrl = removeFileUrlExpirationTime(cs.downloadUrl);
+    cs.uploadUrl = removeFileUrlExpirationTime(cs.uploadUrl);
+  }
+  return changesets;
+}
+
+function removeFileUrlExpirationTime(url?: string) {
+  if (!url)
+    return url;
+  if (url.toLowerCase().startsWith("http")) {
+    const index = url.indexOf("?");
+    if (index > 0)
+      return url.substring(0, index);
+  }
+  return url;
+}
+
 /** Other services */
 export class MockAccessToken extends AccessToken {
   public constructor() {
@@ -106,17 +167,17 @@ export class RequestBehaviorOptions {
 const requestBehaviorOptions = new RequestBehaviorOptions();
 
 let _imodelHubClient: IModelHubClient;
-function getImodelHubClient() {
+export function getImodelHubClient() {
   if (_imodelHubClient !== undefined)
     return _imodelHubClient;
-  _imodelHubClient = new IModelHubClient(createFileHanlder());
+  _imodelHubClient = new IModelHubClient(createFileHandler());
   if (!TestConfig.enableMocks) {
     _imodelHubClient.requestOptions.setCustomOptions(requestBehaviorOptions.toCustomRequestOptions());
   }
   return _imodelHubClient;
 }
 
-let _imodelBankClient: IModelBankClient;
+let imodelBankClient: IModelBankClient;
 
 export class IModelHubUrlMock {
   public static getUrl(): string {
@@ -134,7 +195,7 @@ export class IModelHubUrlMock {
 
 export function getDefaultClient() {
   IModelHubUrlMock.mockGetUrl();
-  return getCloudEnv().isIModelHub ? getImodelHubClient() : _imodelBankClient;
+  return getCloudEnv().isIModelHub ? getImodelHubClient() : imodelBankClient;
 }
 
 export function getRequestBehaviorOptionsHandler(): RequestBehaviorOptions {
@@ -179,10 +240,9 @@ export async function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-export async function login(userCredentials?: ImsUserCredentials): Promise<AccessToken> {
+export async function login(userCredentials?: TestUserCredentials): Promise<AccessToken> {
   if (TestConfig.enableMocks)
     return new MockAccessToken();
-
   userCredentials = userCredentials || TestUsers.regular;
   return getCloudEnv().authorization.authorizeUser(new ClientRequestContext(), undefined, userCredentials);
 }
@@ -325,13 +385,18 @@ export function mockGetBriefcase(imodelId: GuidString, ...briefcases: Briefcase[
   ResponseBuilder.mockResponse(IModelHubUrlMock.getUrl(), RequestType.Get, requestPath, requestResponse);
 }
 
-export function mockCreateBriefcase(imodelId: GuidString, id: number) {
+export function mockCreateBriefcase(imodelId: GuidString, id?: number, briefcase: Briefcase = ResponseBuilder.generateObject<Briefcase>(Briefcase)) {
   if (!TestConfig.enableMocks)
     return;
 
   const requestPath = createRequestUrl(ScopeType.iModel, imodelId, "Briefcase");
-  const postBody = ResponseBuilder.generatePostBody<Briefcase>(ResponseBuilder.generateObject<Briefcase>(Briefcase));
-  const requestResponse = ResponseBuilder.generatePostResponse<Briefcase>(generateBriefcase(id));
+  const postBody = ResponseBuilder.generatePostBody<Briefcase>(briefcase);
+
+  if (id !== undefined) {
+    briefcase.briefcaseId = id;
+    briefcase.wsgId = id!.toString();
+  }
+  const requestResponse = ResponseBuilder.generatePostResponse<Briefcase>(briefcase);
   ResponseBuilder.mockResponse(IModelHubUrlMock.getUrl(), RequestType.Post, requestPath, requestResponse, 1, postBody);
 }
 
@@ -686,19 +751,43 @@ export async function createIModel(requestContext: AuthorizedClientRequestContex
     }
   }
 
-  const pathName = fromSeedFile ? getMockSeedFilePath() : undefined;
+  const pathName = fromSeedFile && !TestConfig.enableIModelBank ? getMockSeedFilePath() : undefined;
   return client.iModels.create(requestContext, contextId, name, { path: pathName, timeOutInMilliseconds: 240000 });
+}
+
+/**
+ * Java style hash code function
+ */
+function hashCode(value: string) {
+  let hash: number = 0;
+  for (let i = 0; i < value.length; i++)
+    hash = (((hash << 5) - hash) + value.charCodeAt(i)) | 0;
+
+  return hash;
 }
 
 export function getMockChangeSets(briefcase: Briefcase): ChangeSet[] {
   const dir = path.join(assetsPath, "SeedFile");
   const files = fs.readdirSync(dir);
   let parentId = "";
-  return files.filter((value) => value.endsWith(".cs") && value.length === 45).map((file) => {
+  const matchingFileMap = new Map<number, RegExpMatchArray>();
+  return files.filter((value) => {
+    const fileMatch = value.match(/(^\d+)_([a-f0-9]{40})\.cs/);
+    if (fileMatch)
+      matchingFileMap.set(hashCode(value), fileMatch);
+    return fileMatch;
+  }).sort((left: string, right: string) => {
+    const leftMatch = matchingFileMap.get(hashCode(left));
+    const rightMatch = matchingFileMap.get(hashCode(right));
+
+    const leftId = parseInt(leftMatch![1], 10);
+    const rightId = parseInt(rightMatch![1], 10);
+    return leftId - rightId;
+  }).map((file) => {
     const result = new ChangeSet();
-    const fileName = path.basename(file, ".cs");
-    result.id = fileName.substr(2);
-    result.index = fileName.slice(0, 1);
+    const regexMatchValue = matchingFileMap.get(hashCode(file))!;
+    result.id = regexMatchValue[2]; // second regex group contains ChangeSet id
+    result.index = regexMatchValue[1]; // first regex group contains file index
     result.fileSize = fs.statSync(path.join(dir, file)).size.toString();
     result.briefcaseId = briefcase.briefcaseId;
     result.seedFileId = briefcase.fileId;
@@ -709,32 +798,79 @@ export function getMockChangeSets(briefcase: Briefcase): ChangeSet[] {
   });
 }
 
+export function generateBridgeProperties(userCount: number, changedFileCount: number): BridgeProperties {
+  const generatedBridgeProperties = new BridgeProperties();
+  generatedBridgeProperties.jobId = Guid.createValue();
+  if (userCount > 0) {
+    generatedBridgeProperties.users = new Set();
+    for (let i: number = 0; i < userCount; i++) {
+      generatedBridgeProperties.users.add(`TestGeneratedUser_${i}`);
+    }
+  }
+  if (changedFileCount > 0) {
+    generatedBridgeProperties.changedFiles = new Set();
+    for (let i: number = 0; i < changedFileCount; i++) {
+      generatedBridgeProperties.changedFiles.add(`TestGeneratedChangedFile_${i}.ext`);
+    }
+  }
+
+  return generatedBridgeProperties;
+}
+
 export function getMockChangeSetPath(index: number, changeSetId: string) {
   return path.join(assetsPath, "SeedFile", `${index}_${changeSetId!}.cs`);
 }
 
 export async function createChangeSets(requestContext: AuthorizedClientRequestContext, imodelId: GuidString, briefcase: Briefcase,
-  startingId = 0, count = 1): Promise<ChangeSet[]> {
+  startingId = 0, count = 1, atLeastOneChangeSetWithBridgeProperties = false): Promise<ChangeSet[]> {
   if (TestConfig.enableMocks)
     return getMockChangeSets(briefcase).slice(startingId, startingId + count);
 
-  const maxCount = 10;
+  const maxCount = 17;
 
   if (startingId + count > maxCount)
     throw Error(`Only have ${maxCount} changesets generated`);
 
   const client = getDefaultClient();
 
-  const existingChangeSets: ChangeSet[] = await client.changeSets.get(requestContext, imodelId);
+  let bridgePropertiesExist: boolean = false;
+  const changeSetQuery: ChangeSetQuery = new ChangeSetQuery();
+  if (atLeastOneChangeSetWithBridgeProperties)
+    changeSetQuery.selectBridgeProperties();
+
+  const existingChangeSets: ChangeSet[] = await client.changeSets.get(requestContext, imodelId, changeSetQuery);
   const result: ChangeSet[] = existingChangeSets.slice(startingId);
+
+  if (atLeastOneChangeSetWithBridgeProperties && existingChangeSets.length >= startingId + count) {
+    // Requested to generate at least one ChangeSet with bridge properties set.
+    // No no new changesets will be generated if requested ChangeSet count (startingId + count) is less than already exists on the server.
+    existingChangeSets.forEach((existingChangeset: ChangeSet) => {
+      if (undefined !== existingChangeset.bridgeJobId) // need to check if iModel contains ChangeSets with bridge properties
+        bridgePropertiesExist = true;
+    });
+
+    // Last check - if existing ChangeSets do not contain bridge properties check if it is possible to create additional ChangeSet.
+    if (!bridgePropertiesExist && existingChangeSets.length + 1 > maxCount)
+      throw Error(`Not enough prepared ChangeSets to create additional one with bridge properties.`);
+    else if (!bridgePropertiesExist)
+      count++; // Create an extra ChangeSet with generated bridge properties.
+  }
 
   const changeSets = getMockChangeSets(briefcase);
 
   for (let i = existingChangeSets.length; i < startingId + count; ++i) {
     const changeSetPath = getMockChangeSetPath(i, changeSets[i].id!);
+    if (atLeastOneChangeSetWithBridgeProperties) {
+      const generatedBridgeProperties = generateBridgeProperties(i + 1, i * 2 + 1);
+      changeSets[i].bridgeJobId = generatedBridgeProperties.jobId;
+      changeSets[i].bridgeUsers = Array.from(generatedBridgeProperties.users!.values());
+      changeSets[i].bridgeChangedFiles = Array.from(generatedBridgeProperties.changedFiles!.values());
+      bridgePropertiesExist = true;
+    }
     const changeSet = await client.changeSets.create(requestContext, imodelId, changeSets[i], changeSetPath);
     result.push(changeSet);
   }
+
   return result;
 }
 
@@ -771,6 +907,12 @@ export async function createVersions(requestContext: AuthorizedClientRequestCont
   }
 }
 
+export class BridgeProperties {
+  public jobId?: string;
+  public users?: Set<string>;
+  public changedFiles?: Set<string>;
+}
+
 export class ProgressTracker {
   private _loaded: number = 0;
   private _total: number = 0;
@@ -802,14 +944,15 @@ let cloudEnv: IModelCloudEnvironment | undefined;
 if (!TestConfig.enableIModelBank || TestConfig.enableMocks) {
   cloudEnv = new TestIModelHubCloudEnv();
 } else {
-  [cloudEnv, _imodelBankClient] = getIModelBankCloudEnv();
+  cloudEnv = getIModelBankCloudEnv();
+  imodelBankClient = cloudEnv.imodelClient as IModelBankClient;
 }
 if (cloudEnv === undefined)
   throw new Error("could not create cloudEnv");
 
 cloudEnv.startup()
-  .catch((_err) => {
-    Logger.logError(loggingCategory, "Error starting cloudEnv");
+  .catch((err: Error) => {
+    Logger.logException(loggingCategory, err);
   });
 
 // TRICKY! All of the "describe" functions are called first. Many of them call getCloudEnv,

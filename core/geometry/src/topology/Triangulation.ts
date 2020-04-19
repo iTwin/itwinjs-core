@@ -1,9 +1,11 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module Topology */
+/** @packageDocumentation
+ * @module Topology
+ */
 
 import { HalfEdgeMask, HalfEdge, HalfEdgeGraph } from "./Graph";
 import { XAndY, XYAndZ } from "../geometry3d/XYZProps";
@@ -239,22 +241,27 @@ export class Triangulator {
     }
 
     const startingNode = Triangulator.spliceLeftMostNodesOfHoles(graph, maxAreaFace, holeSeeds);
-    Triangulator.triangulateSingleFace(graph, startingNode);
-    return graph;
+    if (startingNode) {
+      if (Triangulator.triangulateSingleFace(graph, startingNode))
+        return graph;
+    }
+    return undefined;
   }
   /**
    * Triangulate all positive area faces of a graph.
    */
-  public static triangulateAllPositiveAreaFaces(graph: HalfEdgeGraph) {
+  public static triangulateAllPositiveAreaFaces(graph: HalfEdgeGraph): boolean {
     const seeds = graph.collectFaceLoops();
+    let numFail = 0;
     for (const face of seeds) {
       if (face.countEdgesAroundFace() > 3) {
         const area = face.signedFaceArea();
         if (area > 0.0)
-          Triangulator.triangulateSingleFace(graph, face);
+          if (!Triangulator.triangulateSingleFace(graph, face))
+            numFail++;
       }
     }
-
+    return numFail === 0;
   }
 
   /**
@@ -293,9 +300,9 @@ export class Triangulator {
     }
     if (!baseNode)
       return graph.splitEdge(baseNode, x, y, z);
-    if (Triangulator.equalXAndYXY(baseNode, x, y))
+    if (Triangulator.isAlmostEqualXAndYXY(baseNode, x, y))
       return baseNode;
-    if (Triangulator.equalXAndYXY(baseNode.faceSuccessor, x, y))
+    if (Triangulator.isAlmostEqualXAndYXY(baseNode.faceSuccessor, x, y))
       return baseNode;
     return graph.splitEdge(baseNode, x, y, z);
   }
@@ -479,22 +486,33 @@ export class Triangulator {
    * *  If not hashed, move on to a separate ear.
    * *  If no ears are currently hashed, attempt to cure self intersections or split the polygon into two before continuing
    */
-  private static triangulateSingleFace(graph: HalfEdgeGraph, ear?: HalfEdge) {
-    if (!ear) return;
+  private static triangulateSingleFace(graph: HalfEdgeGraph, ear?: HalfEdge): boolean {
+    if (!ear) return false;
 
     let next;
     let next2;
+    let pred;
     let maxCandidate = ear.countEdgesAroundFace();
     let numCandidate = 0;
     ear.clearMaskAroundFace(HalfEdgeMask.TRIANGULATED_FACE);
     // iterate through ears, slicing them one by one
     while (!ear.isMaskSet(HalfEdgeMask.TRIANGULATED_FACE)) {
+      pred = ear?.facePredecessor;
       next = ear.faceSuccessor;
       next2 = next.faceSuccessor;
       if (next === ear || next2 === ear || next2.faceSuccessor === ear)
-        break;
+        return true;
+      // earcut does not support self intersections.
+      // BUT  .. maybe if we watch from the simplest case of next2 returning to pred it will catch some . . .
+      // (no need to do flips -- we know it's already a triangle)
+      if (Geometry.isAlmostEqualXAndY(next2, pred)) {
+        HalfEdge.pinch(pred, next2);
+        ear.setMaskAroundFace(HalfEdgeMask.TRIANGULATED_FACE);
+        ear = next2;
+        continue;
+      }
       if (++numCandidate > maxCandidate)
-        break;
+        return false;
       if (Triangulator.isEar(ear)) {
         maxCandidate--;
         numCandidate = 0;
@@ -515,6 +533,7 @@ export class Triangulator {
       }
       ear = next;
     }
+    return true;  // um .. I'm not sure what this state is.
   }
 
   /** Check whether a polygon node forms a valid ear with adjacent nodes */
@@ -539,16 +558,17 @@ export class Triangulator {
   /** link holeLoopNodes[1], holeLoopNodes[2] etc into the outer loop, producing a single-ring polygon without holes
    *
    */
-  private static spliceLeftMostNodesOfHoles(graph: HalfEdgeGraph, outerNode: HalfEdge, leftMostHoleLoopNode: HalfEdge[]) {
+  private static spliceLeftMostNodesOfHoles(graph: HalfEdgeGraph, outerNode: HalfEdge, leftMostHoleLoopNode: HalfEdge[]): HalfEdge | undefined {
 
     leftMostHoleLoopNode.sort(Triangulator.compareX);
-
+    let numFail = 0;
     // process holes from left to right
     for (const holeStart of leftMostHoleLoopNode) {
-      Triangulator.eliminateHole(graph, holeStart, outerNode);
+      if (!Triangulator.eliminateHole(graph, holeStart, outerNode))
+        numFail++;
     }
 
-    return outerNode;
+    return numFail === 0 ? outerNode : undefined;
   }
   /** For use in sorting -- return (signed) difference (a.x - b.x) */
   private static compareX(a: HalfEdge, b: HalfEdge) {
@@ -556,11 +576,12 @@ export class Triangulator {
   }
 
   /** find a bridge between vertices that connects hole with an outer ring and and link it */
-  private static eliminateHole(graph: HalfEdgeGraph, hole: HalfEdge, outerNode: HalfEdge) {
+  private static eliminateHole(graph: HalfEdgeGraph, hole: HalfEdge, outerNode: HalfEdge): boolean {
     const outerNodeA = Triangulator.findHoleBridge(hole, outerNode);
     if (outerNodeA) {
-      Triangulator.splitFace(graph, outerNodeA, hole);
+      return Triangulator.splitFace(graph, outerNodeA, hole) !== undefined;
     }
+    return false;
   }
   // cspell:word Eberly
   /**
@@ -654,8 +675,8 @@ export class Triangulator {
   }
 
   /** check if two points are equal */
-  private static equalXAndYXY(p1: XAndY, x: number, y: number) {
-    return Geometry.isSameCoordinate(p1.x, x) && Geometry.isSameCoordinate(p1.y, y);
+  private static isAlmostEqualXAndYXY(p1: XAndY, x: number, y: number) {
+    return Geometry.isAlmostEqualNumber(p1.x, x) && Geometry.isAlmostEqualNumber(p1.y, y);
   }
 
   /** check if a polygon diagonal is locally inside the polygon */
@@ -672,14 +693,15 @@ export class Triangulator {
    * * "a" and "b" still represent the same physical pieces of edges
    * @returns Returns the (base of) the new half edge, at the "a" end.
    */
-  private static splitFace(graph: HalfEdgeGraph, a: HalfEdge, b: HalfEdge): HalfEdge {
-    const a2 = graph.createEdgeXYZXYZ(a.x, a.y, a.z, a.i, b.x, b.y, b.z, b.i);
-    const b2 = a2.faceSuccessor;
-
-    HalfEdge.pinch(a, a2);
-    HalfEdge.pinch(b, b2);
-
-    return a2;
+  private static splitFace(graph: HalfEdgeGraph, a: HalfEdge, b: HalfEdge): HalfEdge | undefined {
+    if (HalfEdge.isNodeVisibleInSector(a, b) && HalfEdge.isNodeVisibleInSector(b, a)) {
+      const a2 = graph.createEdgeXYZXYZ(a.x, a.y, a.z, a.i, b.x, b.y, b.z, b.i);
+      const b2 = a2.faceSuccessor;
+      HalfEdge.pinch(a, a2);
+      HalfEdge.pinch(b, b2);
+      return a2;
+    }
+    return undefined;
   }
 
   /**
@@ -721,6 +743,8 @@ export class Triangulator {
             && P2 !== P1
             && HalfEdge.crossProductXYAlongChain(P0, P1, P2) > 0) {
             upperSideOfNewEdge = Triangulator.splitFace(graph, P0, P2);
+            if (upperSideOfNewEdge === undefined)
+              return false;
             P0 = upperSideOfNewEdge;
             P1 = P0.faceSuccessor;
             P2 = P1.faceSuccessor;
@@ -738,6 +762,8 @@ export class Triangulator {
         P0 = P1.facePredecessor;
         while (P2.faceSuccessor !== P0 && P0 !== left) {
           upperSideOfNewEdge = Triangulator.splitFace(graph, P0, P2);
+          if (upperSideOfNewEdge === undefined)
+            return false;
           P1 = upperSideOfNewEdge;
           P0 = P1.facePredecessor;
         }
@@ -746,6 +772,8 @@ export class Triangulator {
            topped out */
         if (P2.faceSuccessor !== P0) {
           upperSideOfNewEdge = Triangulator.splitFace(graph, P0, P2);
+          if (upperSideOfNewEdge === undefined)
+            return false;
           P0 = upperSideOfNewEdge;
         }
         start = P0;
@@ -774,6 +802,9 @@ export class Triangulator {
             && P2 !== P1
             && HalfEdge.crossProductXYAlongChain(P0, P1, P2) > 0) {
             upperSideOfNewEdge = Triangulator.splitFace(graph, P0, P2);
+            if (upperSideOfNewEdge === undefined)
+              return false;
+
             P0 = upperSideOfNewEdge.facePredecessor;
             P1 = upperSideOfNewEdge;
           }
@@ -790,6 +821,8 @@ export class Triangulator {
         P2 = P1.faceSuccessor;
         while (P2.faceSuccessor !== P0 && P2 !== right) {
           upperSideOfNewEdge = Triangulator.splitFace(graph, P0, P2);
+          if (upperSideOfNewEdge === undefined)
+            return false;
           P0 = upperSideOfNewEdge;
           // P1 = P2;   // original code (ported from native) carefully maintained P1..P2 relationship.  But code analyzer says P1 is not used again.  So skip it.
           P2 = P2.faceSuccessor;
@@ -798,7 +831,9 @@ export class Triangulator {
            left node to the right, except when already
            topped out */
         if (P2.faceSuccessor !== P0) {
-          Triangulator.splitFace(graph, P0, P2);
+          const newEdge = Triangulator.splitFace(graph, P0, P2);
+          if (newEdge === undefined)
+            return false;
         }
         start = right;
         right = start.faceSuccessor;

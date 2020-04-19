@@ -1,20 +1,25 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Zone */
+/** @packageDocumentation
+ * @module Zone
+ */
 
 import * as React from "react";
+
+import { WidgetState } from "@bentley/ui-abstract";
 import { CommonProps, RectangleProps } from "@bentley/ui-core";
 import {
   ZoneTargetType, ZoneManagerProps, WidgetZoneId, DraggedWidgetManagerProps, WidgetManagerProps, ToolSettingsWidgetManagerProps,
   ToolSettingsWidgetMode, DisabledResizeHandles,
 } from "@bentley/ui-ninezone";
+
 import { ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";
 import { WidgetChangeHandler, TargetChangeHandler, ZoneDefProvider } from "../frontstage/FrontstageComposer";
 import { StatusBarWidgetControl } from "../statusbar/StatusBarWidgetControl";
-import { WidgetProps } from "../widgets/Widget";
-import { WidgetDef, WidgetStateChangedEventArgs, WidgetState, WidgetType } from "../widgets/WidgetDef";
+import { WidgetProps } from "../widgets/WidgetProps";
+import { WidgetDef, WidgetStateChangedEventArgs, WidgetType } from "../widgets/WidgetDef";
 import { WidgetTabs } from "../widgets/WidgetStack";
 import { FrameworkZone } from "./FrameworkZone";
 import { StatusBarZone } from "./StatusBarZone";
@@ -48,6 +53,8 @@ export interface ZoneProps extends CommonProps {
   applicationData?: any;
   /** Indicates with which other zone to merge. */
   mergeWithZone?: ZoneLocation;
+  /** Describes preferred initial width of the zone. */
+  initialWidth?: number;
 
   /** Properties for the Widgets in this Zone. */
   widgets?: Array<React.ReactElement<WidgetProps>>;
@@ -88,14 +95,7 @@ export class Zone extends React.Component<ZoneProps> {
   }
 
   public static initializeZoneDef(zoneDef: ZoneDef, props: ZoneProps): void {
-    if (props.defaultState)
-      zoneDef.zoneState = props.defaultState;
-    if (props.allowsMerging !== undefined)
-      zoneDef.allowsMerging = props.allowsMerging;
-    if (props.applicationData !== undefined)
-      zoneDef.applicationData = props.applicationData;
-    if (props.mergeWithZone !== undefined)
-      zoneDef.mergeWithZone = props.mergeWithZone;
+    zoneDef.initializeFromProps(props);
 
     // istanbul ignore else
     if (props.widgets) {
@@ -157,6 +157,7 @@ export class Zone extends React.Component<ZoneProps> {
           />
         );
       } else if (zoneDef.isStatusBar) {
+        // istanbul ignore next
         if (runtimeProps.zone.id !== 8)
           throw new TypeError();
 
@@ -190,7 +191,7 @@ export class Zone extends React.Component<ZoneProps> {
       } else if (zDef.widgetCount === 1 && zDef.widgetDefs[0].widgetType !== WidgetType.Rectangular) {
         /** Return free-form nzWidgetProps */
         const widgetDef = zDef.widgetDefs[0];
-        widgetElement = (widgetDef.isVisible) ? widgetDef.reactElement : null;
+        widgetElement = (widgetDef.isVisible) ? widgetDef.reactNode : null;
       }
     }
 
@@ -204,6 +205,7 @@ export class Zone extends React.Component<ZoneProps> {
         fillZone={zoneDef.shouldFillZone}
         getWidgetContentRef={runtimeProps.getWidgetContentRef}
         isHidden={runtimeProps.isHidden}
+        isInFooterMode={runtimeProps.isInFooterMode}
         openWidgetId={runtimeProps.openWidgetId}
         style={this.props.style}
         targetedBounds={runtimeProps.ghostOutline}
@@ -218,7 +220,8 @@ export class Zone extends React.Component<ZoneProps> {
   }
 
   private _handleWidgetStateChangedEvent = (args: WidgetStateChangedEventArgs) => {
-    if (!this.props.runtimeProps)
+    const runtimeProps = this.props.runtimeProps;
+    if (!runtimeProps)
       return;
 
     const widgetDef = args.widgetDef;
@@ -226,7 +229,7 @@ export class Zone extends React.Component<ZoneProps> {
     if (!id)
       return;
 
-    const zoneDef = this.props.runtimeProps.zoneDefProvider.getZoneDef(id);
+    const zoneDef = runtimeProps.zoneDefProvider.getZoneDef(id);
     // istanbul ignore else
     if (!zoneDef)
       return;
@@ -234,10 +237,16 @@ export class Zone extends React.Component<ZoneProps> {
     const visibleWidgets = zoneDef.widgetDefs.filter((wd) => wd.isVisible || wd === widgetDef);
     for (let index = 0; index < visibleWidgets.length; index++) {
       const wDef = visibleWidgets[index];
-      if (wDef === widgetDef) {
-        this.props.runtimeProps.widgetChangeHandler.handleWidgetStateChange(id, index, widgetDef.state === WidgetState.Open);
+      if (wDef !== widgetDef)
+        continue;
+
+      if (widgetDef.state === WidgetState.Hidden && index < runtimeProps.activeTabIndex) {
+        // Need to decrease active tab index, since removed tab was rendered before active tab and we want to maintain active tab.
+        runtimeProps.widgetChangeHandler.handleTabClick(id, runtimeProps.activeTabIndex - 1);
         break;
       }
+      runtimeProps.widgetChangeHandler.handleWidgetStateChange(id, index, widgetDef.state === WidgetState.Open);
+      break;
     }
   }
 
@@ -245,17 +254,10 @@ export class Zone extends React.Component<ZoneProps> {
     if (!this.props.runtimeProps)
       return undefined;
 
-    // istanbul ignore else
-    if (this.props.runtimeProps.zone.widgets.length > 0) {
-      for (const wId of this.props.runtimeProps.zone.widgets) {
-        const zoneDef = this.props.runtimeProps.zoneDefProvider.getZoneDef(wId);
-
-        // istanbul ignore else
-        if (zoneDef) {
-          if (zoneDef.widgetDefs.some((wDef: WidgetDef) => wDef === widgetDef))
-            return wId;
-        }
-      }
+    for (const wId of this.props.runtimeProps.zone.widgets) {
+      const zoneDef = this.props.runtimeProps.zoneDefProvider.getZoneDef(wId);
+      if (zoneDef && zoneDef.widgetDefs.some((wDef: WidgetDef) => wDef === widgetDef))
+        return wId;
     }
 
     return undefined;

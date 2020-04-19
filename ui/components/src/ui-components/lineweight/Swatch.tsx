@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module LineWeight */
+/** @packageDocumentation
+ * @module LineWeight
+ */
 
 import * as React from "react";
 import classnames from "classnames";
@@ -61,15 +63,15 @@ export class LineWeightSwatch extends React.PureComponent<LineWeightSwatchProps>
       ...this.props.style,
       color: rgbaString,
     } : {
-        ...this.props.style,
-      };
+      ...this.props.style,
+    };
 
     const svgStyle: React.CSSProperties = colorDef ? {
       height: `${weight}px`,
       background: rgbaString,
     } : {
-        height: `${weight}px`,
-      };
+      height: `${weight}px`,
+    };
 
     const handleClick = (_e: React.MouseEvent) => {
       if (onClick)

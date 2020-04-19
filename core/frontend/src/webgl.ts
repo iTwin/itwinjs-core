@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
 // These are strictly exported for tests - consumers of the imodeljs library
@@ -8,6 +8,7 @@
 // /render/webgl/* which are subject to change at any time.
 
 export * from "./render/webgl/AttributeMap";
+export * from "./render/webgl/BatchUniforms";
 export * from "./render/webgl/BranchState";
 export * from "./render/webgl/CachedGeometry";
 export * from "./render/webgl/ClipVolume";
@@ -15,9 +16,10 @@ export * from "./render/webgl/ColorInfo";
 export * from "./render/webgl/Diagnostics";
 export * from "./render/webgl/DrawCommand";
 export * from "./render/webgl/EdgeOverrides";
-export * from "./render/webgl/FeatureDimensions";
+export * from "./render/webgl/FeatureOverrides";
 export * from "./render/webgl/FloatRGBA";
 export * from "./render/webgl/FrameBuffer";
+export * from "./render/webgl/FrustumUniforms";
 export * from "./render/webgl/GL";
 export * from "./render/webgl/Graphic";
 export * from "./render/webgl/Handle";
@@ -28,14 +30,20 @@ export * from "./render/webgl/PointString";
 export * from "./render/webgl/Polyline";
 export * from "./render/webgl/Primitive";
 export * from "./render/webgl/RenderBuffer";
+export * from "./render/webgl/RenderCommands";
 export * from "./render/webgl/RenderFlags";
 export * from "./render/webgl/RenderState";
 export * from "./render/webgl/ShaderBuilder";
 export * from "./render/webgl/ShaderProgram";
+export * from "./render/webgl/ShadowUniforms";
+export * from "./render/webgl/Sync";
 export * from "./render/webgl/System";
+export * from "./render/webgl/PerformanceMetrics";
 export * from "./render/webgl/Target";
+export * from "./render/webgl/TargetUniforms";
 export * from "./render/webgl/Technique";
 export * from "./render/webgl/TechniqueFlags";
 export * from "./render/webgl/TechniqueId";
 export * from "./render/webgl/Texture";
 export * from "./render/webgl/VertexLUT";
+export * from "./render/webgl/ViewRectUniforms";

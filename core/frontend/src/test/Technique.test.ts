@@ -1,10 +1,11 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect, assert } from "chai";
 import { IModelApp } from "../IModelApp";
-import { ClippingType } from "../render/System";
+import { ClippingType } from "../render/RenderClipVolume";
+import { RenderSystem } from "../render/RenderSystem";
 import {
   AttributeMap,
   DrawParams,
@@ -20,6 +21,7 @@ import {
   VariableType,
   VertexShaderComponent,
   ViewportQuadGeometry,
+  CompileStatus,
 } from "../webgl";
 
 function createPurpleQuadBuilder(): ProgramBuilder {
@@ -83,25 +85,46 @@ describe("Techniques", () => {
     target.techniques.draw(drawParams);
   });
 
-  // NB: this can potentially take a long time, especially on our mac build machines.
-  it("should successfully compile all shader programs", () => {
-    const haveMRT = System.instance.capabilities.supportsDrawBuffers;
+  // NB: compiling all shaders can potentially take a long time, especially on our mac build machines.
+  const compileTimeout = "95000";
+  function compileAllShaders(opts?: RenderSystem.Options): void {
+    if (undefined !== opts) {
+      // Replace current render system with customized one
+      IModelApp.shutdown();
+      IModelApp.startup({ renderSys: opts });
+    }
+
     expect(System.instance.techniques.compileShaders()).to.be.true;
 
-    if (haveMRT) {
-      // Compile the multi-pass versions of the shaders too.
-      IModelApp.shutdown();
-      IModelApp.startup({
-        renderSys: {
-          disabledExtensions: ["WEBGL_draw_buffers"],
-        },
-      });
-
-      expect(System.instance.techniques.compileShaders()).to.be.true;
+    if (undefined !== opts) {
+      // Reset render system to default state
       IModelApp.shutdown();
       IModelApp.startup();
     }
-  }).timeout("160000");
+  }
+
+  let haveWebGL2 = false; // currently we only use webgl 2 if explicitly enabled at startup
+  it("should compile all shader programs with WebGL 1", () => {
+    haveWebGL2 = System.instance.capabilities.isWebGL2;
+    if (!haveWebGL2) {
+      const canvas = document.createElement("canvas");
+      haveWebGL2 = null !== canvas.getContext("webgl2");
+    }
+
+    compileAllShaders({ useWebGL2: false });
+  }).timeout(compileTimeout);
+
+  it("should successfully compile all shader programs with WebGL 2", () => {
+    if (haveWebGL2)
+      compileAllShaders({ useWebGL2: true });
+  }).timeout(compileTimeout);
+
+  it("should compile all shader programs without MRT", () => {
+    if (System.instance.capabilities.supportsDrawBuffers) {
+      // WebGL 2 always supports MRT - must use WebGL 1 context to test.
+      compileAllShaders({ disabledExtensions: ["WEBGL_draw_buffers"], useWebGL2: false });
+    }
+  }).timeout(compileTimeout);
 
   it("should successfully compile surface shader with clipping planes", () => {
     const flags = new TechniqueFlags(true);
@@ -111,7 +134,7 @@ describe("Techniques", () => {
 
     const tech = System.instance.techniques.getTechnique(TechniqueId.Surface);
     const prog = tech.getShader(flags);
-    expect(prog.compile()).to.be.true;
+    expect(prog.compile() === CompileStatus.Success).to.be.true;
   });
 
   it("should produce exception on syntax error", () => {
@@ -122,7 +145,7 @@ describe("Techniques", () => {
     let compiled = false;
     let ex: Error | undefined;
     try {
-      compiled = prog.compile();
+      compiled = prog.compile() === CompileStatus.Success;
     } catch (err) {
       ex = err;
     }
@@ -149,7 +172,7 @@ describe("Techniques", () => {
     let compiled = false;
     let ex: Error | undefined;
     try {
-      compiled = program.compile();
+      compiled = program.compile() === CompileStatus.Success;
     } catch (err) {
       ex = err;
     }

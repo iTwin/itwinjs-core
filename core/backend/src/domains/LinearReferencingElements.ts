@@ -1,14 +1,17 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Elements */
+/** @packageDocumentation
+ * @module Elements
+ */
 
 import { Id64String, assert, DbResult } from "@bentley/bentleyjs-core";
 import {
   ElementProps, GeometricElement3dProps, LinearlyLocatedAttributionProps, LinearlyReferencedAtLocationProps,
   LinearlyReferencedAtLocationAspectProps, LinearlyReferencedFromToLocationProps, LinearlyReferencedFromToLocationAspectProps,
-  ReferentElementProps, RelatedElement, IModelError, Code,
+  ReferentElementProps, RelatedElement, IModelError, Code, LinearLocationReference, QueryParams, ComparisonOption,
+  LinearlyReferencedLocationType,
 } from "@bentley/imodeljs-common";
 import { PhysicalElement, SpatialLocationElement } from "../Element";
 import { ElementAspect } from "../ElementAspect";
@@ -23,7 +26,7 @@ import { ECSqlStatement } from "../ECSqlStatement";
 /** Base class for Spatial Location Element subclasses representing properties whose value is located along a Linear-Element and only applies to a portion of an Element.
  * @beta
  */
-export abstract class LinearlyLocatedAttribution extends SpatialLocationElement implements LinearlyLocatedAttributionProps {
+export abstract class LinearlyLocatedAttribution extends SpatialLocationElement implements LinearlyLocatedAttributionProps, LinearlyLocatedBase {
   /** @internal */
   public static get className(): string { return "LinearlyLocatedAttribution"; }
 
@@ -33,17 +36,25 @@ export abstract class LinearlyLocatedAttribution extends SpatialLocationElement 
     super(props, iModel);
     this.attributedElement = RelatedElement.fromJSON(props.attributedElement);
   }
+
+  public getLinearElementId(): Id64String | undefined {
+    return LinearlyLocated.getLinearElementId(this.iModel, this.id);
+  }
 }
 
 /** Base class for Spatial Location Element implementations that are linearly located along a Linear-Element.
  * @beta
  */
-export abstract class LinearLocationElement extends SpatialLocationElement {
+export abstract class LinearLocationElement extends SpatialLocationElement implements LinearlyLocatedBase {
   /** @internal */
   public static get className(): string { return "LinearLocationElement"; }
 
   public constructor(props: GeometricElement3dProps, iModel: IModelDb) {
     super(props, iModel);
+  }
+
+  public getLinearElementId(): Id64String | undefined {
+    return LinearlyLocated.getLinearElementId(this.iModel, this.id);
   }
 }
 
@@ -107,7 +118,7 @@ export class LinearLocation extends LinearLocationElement {
   }
 }
 
-/** Base class for Physical Elements that are inherintly linearly located along a Linear-Element.
+/** Base class for Physical Elements that are inherently linearly located along a Linear-Element.
  * @beta
  */
 export abstract class LinearPhysicalElement extends PhysicalElement {
@@ -122,7 +133,7 @@ export abstract class LinearPhysicalElement extends PhysicalElement {
 /** Spatial Location Element that can play the role of a Referent (known location along a Linear-Element).
  * @beta
  */
-export abstract class ReferentElement extends SpatialLocationElement implements ReferentElementProps {
+export abstract class ReferentElement extends SpatialLocationElement implements ReferentElementProps, LinearlyLocatedBase {
   /** @internal */
   public static get className(): string { return "ReferentElement"; }
 
@@ -131,6 +142,10 @@ export abstract class ReferentElement extends SpatialLocationElement implements 
   public constructor(props: ReferentElementProps, iModel: IModelDb) {
     super(props, iModel);
     this.referencedElement = RelatedElement.fromJSON(props.referencedElement);
+  }
+
+  public getLinearElementId(): Id64String | undefined {
+    return LinearlyLocated.getLinearElementId(this.iModel, this.id);
   }
 }
 
@@ -167,39 +182,6 @@ export class Referent extends ReferentElement {
 
   public insertAt(iModel: IModelDb, linearElementId: Id64String, atPosition: LinearlyReferencedAtLocationProps): Id64String {
     return LinearlyLocated.insertAt(iModel, this, linearElementId, atPosition);
-  }
-}
-
-/** @beta */
-export class LinearLocationReference {
-  public constructor(
-    public readonly startDistanceAlong: number,
-    public readonly stopDistanceAlong: number,
-    public readonly linearlyLocatedId: Id64String,
-    public readonly linearlyLocatedClassFullName: string,
-    public readonly locationAspectId: Id64String) {
-  }
-}
-
-/** Enum capturing range-comparison options for from/to distanceAlong in QueryParams
- * @beta
- */
-export enum ComparisonOption { Inclusive, Exclusive }
-
-/** Enum enabling LinearElement.queryLinearLocations performance optimization when the target Linearly-Located classes are all either At or FromTo.
- * @beta
- */
-export enum LinearlyReferencedLocationType { At, FromTo, Any }
-
-/** @beta */
-export class QueryParams {
-  public constructor(
-    public fromDistanceAlong?: number,
-    public fromComparisonOption?: ComparisonOption,
-    public toDistanceAlong?: number,
-    public toComparisonOption?: ComparisonOption,
-    public linearlyReferencedLocationTypeFilter?: LinearlyReferencedLocationType,
-    public linearlyLocatedClassFullNames?: string[]) {
   }
 }
 
@@ -385,7 +367,7 @@ class QueryLinearLocationsECSQLGen {
       "WHERE Along.TargetECInstanceId = ?) LinearlyLocated ON meta.ECClassDef.ECInstanceId = LinearlyLocated.ClassId ";
   }
 
-  private _addFromClause(impl: ECSQLGenImpl/*bvector<double>& bindVals*/): void {
+  private _addFromClause(impl: ECSQLGenImpl/* bvector<double>& bindVals */): void {
     let from = "FROM ";
     from += this._genLinearlyLocated();
     from += impl.genFromJoin();
@@ -687,7 +669,7 @@ export class LinearlyLocated {
   }
 }
 
-/** Base interface to optionally be implemented by Elements inherintly Linearly-Located. Implementors should choose the
+/** Base interface to optionally be implemented by Elements inherently Linearly-Located. Implementors should choose the
  * appropriate sub-interface rather than implementing LinearlyLocatedBase directly.
  * @beta
  */
@@ -695,7 +677,7 @@ export interface LinearlyLocatedBase {
   getLinearElementId(): Id64String | undefined;
 }
 
-/** Interface to optionally be implemented by Elements inherintly Linearly-Located whose linear-locations are always a single at-position.
+/** Interface to optionally be implemented by Elements inherently Linearly-Located whose linear-locations are always a single at-position.
  * It also provides convenient APIs for callers to reach Linear-Referencing data stored on aspects. Classes implementing this interface should
  * make use of the services provided by [LinearlyLocated]($backend).
  * @beta
@@ -705,7 +687,7 @@ export interface LinearlyLocatedSingleAt extends LinearlyLocatedBase {
   updateAtLocation(linearLocation: LinearlyReferencedAtLocationProps, aspectId?: Id64String): void;
 }
 
-/** Interface to optionally be implemented by Elements inherintly Linearly-Located whose linear-locations are always at-positions.
+/** Interface to optionally be implemented by Elements inherently Linearly-Located whose linear-locations are always at-positions.
  * It also provides convenient APIs for callers to reach Linear-Referencing data stored on aspects. Classes implementing this interface should
  * make use of the services provided by [LinearlyLocated]($backend).
  * @beta
@@ -715,7 +697,7 @@ export interface LinearlyLocatedMultipleAt extends LinearlyLocatedBase {
   updateAtLocation(linearLocation: LinearlyReferencedAtLocationProps, aspectId: Id64String): void;
 }
 
-/** Interface to optionally be implemented by Elements inherintly Linearly-Located whose linear-locations are always a single from-to-position.
+/** Interface to optionally be implemented by Elements inherently Linearly-Located whose linear-locations are always a single from-to-position.
  * It also provides convenient APIs for callers to reach Linear-Referencing data stored on aspects. Classes implementing this interface should
  * make use of the services provided by [LinearlyLocated]($backend).
  * @beta
@@ -725,7 +707,7 @@ export interface LinearlyLocatedSingleFromTo extends LinearlyLocatedBase {
   updateFromToLocation(linearLocation: LinearlyReferencedFromToLocationProps, aspectId?: Id64String): void;
 }
 
-/** Interface to optionally be implemented by Elements inherintly Linearly-Located whose linear-locations are always from-to-positions.
+/** Interface to optionally be implemented by Elements inherently Linearly-Located whose linear-locations are always from-to-positions.
  * It also provides convenient APIs for callers to reach Linear-Referencing data stored on aspects. Classes implementing this interface should
  * make use of the services provided by [LinearlyLocated]($backend).
  * @beta

@@ -1,30 +1,40 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Rendering */
+/** @packageDocumentation
+ * @module Rendering
+ */
 
 import { Id64String } from "@bentley/bentleyjs-core";
-import { ConvexClipPlaneSet, Geometry, Matrix3d, Point2d, Point3d, Transform, Vector2d, Vector3d, XAndY, Plane3dByOriginAndUnitNormal, ClipUtilities, ClipPlane, Loop, LineString3d, Range3d, GrowableXYZArray, Ray3d } from "@bentley/geometry-core";
+import { ConvexClipPlaneSet, Geometry, Matrix3d, Point2d, Point3d, Transform, Vector2d, Vector3d, XAndY, Plane3dByOriginAndUnitNormal, ClipUtilities, ClipPlane, Loop, LineString3d, Range3d, GrowableXYZArray, Ray3d, Range1d } from "@bentley/geometry-core";
 import { ColorDef, Frustum, FrustumPlanes, LinePixels, SpatialClassificationProps, ViewFlags } from "@bentley/imodeljs-common";
 import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
+import { CanvasDecoration } from "./render/CanvasDecoration";
+import { Decorations } from "./render/Decorations";
 import {
-  CanvasDecoration,
-  Decorations,
   GraphicBranch,
   GraphicBranchOptions,
+} from "./render/GraphicBranch";
+import {
   GraphicList,
   RenderGraphic,
-  RenderTarget,
-  RenderPlanarClassifier,
-  RenderTextureDrape,
-} from "./render/System";
-import { ScreenViewport, Viewport, ViewFrustum } from "./Viewport";
-import { Tile } from "./tile/Tile";
-import { TileTree } from "./tile/TileTree";
+} from "./render/RenderGraphic";
+import { RenderTarget } from "./render/RenderTarget";
+import { RenderPlanarClassifier } from "./render/RenderPlanarClassifier";
+import { RenderTextureDrape } from "./render/RenderSystem";
+import { ScreenViewport, Viewport } from "./Viewport";
+import { ViewingSpace } from "./ViewingSpace";
+import {
+  Tile,
+  TileGraphicType,
+  TileLoadStatus,
+  TileTreeReference,
+} from "./tile/internal";
 import { IModelApp } from "./IModelApp";
+import { Scene } from "./render/Scene";
 
-const gridConstants = { minSeparation: 20, maxRefLines: 80, gridTransparency: 220, refTransparency: 150, planeTransparency: 225 };
+const gridConstants = { minSeparation: 20, maxRefLines: 100, gridTransparency: 220, refTransparency: 150, planeTransparency: 225 };
 
 /** Provides context for producing [[RenderGraphic]]s for drawing within a [[Viewport]].
  * @public
@@ -47,22 +57,30 @@ export class RenderContext {
   }
 
   /** Given a point in world coordinates, determine approximately how many pixels it occupies on screen based on this context's frustum. */
-  public getPixelSizeAtPoint(inPoint?: Point3d): number { return this.viewport.viewFrustum.getPixelSizeAtPoint(inPoint); }
+  public getPixelSizeAtPoint(inPoint?: Point3d): number {
+    return this.viewport.viewingSpace.getPixelSizeAtPoint(inPoint);
+  }
 
   /** @internal */
   public get target(): RenderTarget { return this.viewport.target; }
 
   /** @internal */
-  protected _createGraphicBuilder(type: GraphicType, transform?: Transform, id?: Id64String): GraphicBuilder { return this.target.createGraphicBuilder(type, this.viewport, transform, id); }
+  protected _createGraphicBuilder(type: GraphicType, transform?: Transform, id?: Id64String): GraphicBuilder {
+    return this.target.createGraphicBuilder(type, this.viewport, transform, id);
+  }
 
   /** Create a builder for creating a [[GraphicType.Scene]] [[RenderGraphic]] for rendering within this context's [[Viewport]].
    * @param transform the local-to-world transform in which the builder's geometry is to be defined.
    * @returns A builder for creating a [[GraphicType.Scene]] [[RenderGraphic]] for rendering within this context's [[Viewport]].
    */
-  public createSceneGraphicBuilder(transform?: Transform): GraphicBuilder { return this._createGraphicBuilder(GraphicType.Scene, transform); }
+  public createSceneGraphicBuilder(transform?: Transform): GraphicBuilder {
+    return this._createGraphicBuilder(GraphicType.Scene, transform);
+  }
 
   /** @internal */
-  public createGraphicBranch(branch: GraphicBranch, location: Transform, opts?: GraphicBranchOptions): RenderGraphic { return this.target.renderSystem.createGraphicBranch(branch, location, opts); }
+  public createGraphicBranch(branch: GraphicBranch, location: Transform, opts?: GraphicBranchOptions): RenderGraphic {
+    return this.target.renderSystem.createGraphicBranch(branch, location, opts);
+  }
 
   /** Create a [[RenderGraphic]] which groups a set of graphics into a node in a scene graph, applying to each a transform and optional clip volume and symbology overrides.
    * @param branch Contains the group of graphics and the symbology overrides.
@@ -88,21 +106,20 @@ export class DynamicsContext extends RenderContext {
   }
 
   /** @internal */
-  public changeDynamics(): void { this.viewport!.changeDynamics(this._dynamics); }
+  public changeDynamics(): void {
+    this.viewport!.changeDynamics(this._dynamics);
+  }
 }
 
 /** Provides context for a [[Decorator]] to add [[Decorations]] to be rendered within a [[Viewport]].
  * @public
  */
 export class DecorateContext extends RenderContext {
-  /** The HTMLDivElement which overlays the [[Viewport]]'s HTMLCanvasElement, to which HTML decorations are added. */
-  public decorationDiv: HTMLDivElement;
   /** The [[ScreenViewport]] in which this context's [[Decorations]] will be drawn. */
   public get screenViewport(): ScreenViewport { return this.viewport as ScreenViewport; }
   /** @internal */
   constructor(vp: ScreenViewport, private readonly _decorations: Decorations) {
     super(vp);
-    this.decorationDiv = vp.decorationDiv;
   }
 
   /** Create a builder for creating a [[RenderGraphic]] of the specified type appropriate for rendering within this context's [[Viewport]].
@@ -112,16 +129,20 @@ export class DecorateContext extends RenderContext {
    * @returns A builder for creating a [[RenderGraphic]] of the specified type appropriate for rendering within this context's [[Viewport]].
    * @see [[IModelConnection.transientIds]] for obtaining an ID for a pickable decoration.
    */
-  public createGraphicBuilder(type: GraphicType, transform?: Transform, id?: Id64String): GraphicBuilder { return this._createGraphicBuilder(type, transform, id); }
+  public createGraphicBuilder(type: GraphicType, transform?: Transform, id?: Id64String): GraphicBuilder {
+    return this._createGraphicBuilder(type, transform, id);
+  }
 
   /** Calls [[GraphicBuilder.finish]] on the supplied builder to obtain a [[RenderGraphic]], then adds the graphic to the appropriate list of
    * [[Decorations]].
    * @param builder The builder from which to extract the graphic.
    * @note The builder should not be used after calling this method.
    */
-  public addDecorationFromBuilder(builder: GraphicBuilder) { this.addDecoration(builder.type, builder.finish()); }
+  public addDecorationFromBuilder(builder: GraphicBuilder) {
+    this.addDecoration(builder.type, builder.finish());
+  }
 
-  /** Adds a graphic to the set of [[Decorations]] to be drawn in this context's [[Viewport]].
+  /** Adds a graphic to the set of [[Decorations]] to be drawn in this context's [[ScreenViewport]].
    * @param The type of the graphic, which determines to which list of decorations it is added.
    * @param decoration The decoration graphic to add.
    * @note The type must match the type with which the [[RenderGraphic]]'s [[GraphicBuilder]] was constructed.
@@ -159,7 +180,7 @@ export class DecorateContext extends RenderContext {
     }
   }
 
-  /** Add a [[CanvasDecoration]] to be drawn in this context's [[Viewport]]. */
+  /** Add a [[CanvasDecoration]] to be drawn in this context's [[ScreenViewport]]. */
   public addCanvasDecoration(decoration: CanvasDecoration, atFront = false) {
     if (undefined === this._decorations.canvasDecorations)
       this._decorations.canvasDecorations = [];
@@ -171,12 +192,14 @@ export class DecorateContext extends RenderContext {
       list.unshift(decoration);
   }
 
-  /** Add an HTMLElement to be drawn as a decoration in this context's [[Viewport]]. */
-  public addHtmlDecoration(decoration: HTMLElement) { this.decorationDiv.appendChild(decoration); }
+  /** Add an HTMLElement to be drawn as a decoration in this context's [[ScreenViewport]]. */
+  public addHtmlDecoration(decoration: HTMLElement) {
+    this.screenViewport.decorationDiv.appendChild(decoration);
+  }
 
   private getClippedGridPlanePoints(vp: Viewport, plane: Plane3dByOriginAndUnitNormal, loopPt: Point3d): Point3d[] | undefined {
-    const frus = vp.getFrustum();
-    const geom = ClipUtilities.loopsOfConvexClipPlaneIntersectionWithRange(ConvexClipPlaneSet.createPlanes([ClipPlane.createPlane(plane)]), frus.toRange(), true, false, true);
+    const frust = vp.getFrustum();
+    const geom = ClipUtilities.loopsOfConvexClipPlaneIntersectionWithRange(ConvexClipPlaneSet.createPlanes([ClipPlane.createPlane(plane)]), frust.toRange(), true, false, true);
     if (undefined === geom || 1 !== geom.length)
       return undefined;
     const loop = geom[0];
@@ -188,7 +211,7 @@ export class DecorateContext extends RenderContext {
 
     const work = new GrowableXYZArray();
     const finalPoints = new GrowableXYZArray();
-    const convexSet = frus.getRangePlanes(false, false, 0);
+    const convexSet = frust.getRangePlanes(false, false, 0);
     convexSet.polygonClip(child.points, finalPoints, work);
     if (finalPoints.length < 4)
       return undefined;
@@ -255,7 +278,7 @@ export class DecorateContext extends RenderContext {
     const gridOffset = Point3d.create(viewZ.x * meterPerPixel, viewZ.y * meterPerPixel, viewZ.z * meterPerPixel); // Avoid z fighting with coincident geometry
     const builder = this.createGraphicBuilder(GraphicType.WorldDecoration, Transform.createTranslation(gridOffset));
     const color = vp.getContrastToBackgroundColor();
-    const planeColor = eyeDot < 0.0 ? ColorDef.red.clone() : color.clone(); planeColor.setTransparency(gridConstants.planeTransparency);
+    const planeColor = (eyeDot < 0.0 ? ColorDef.red : color).withTransparency(gridConstants.planeTransparency);
 
     builder.setBlankingFill(planeColor);
     builder.addShape(shapePoints);
@@ -278,7 +301,7 @@ export class DecorateContext extends RenderContext {
 
       let nGridRepetitionsX = nRefRepetitionsX;
       let nGridRepetitionsY = nRefRepetitionsY;
-      const drawGridLines = (gridsPerRef > 1 && !((spacing.x / meterPerPixel) < gridConstants.minSeparation || (spacing.y / meterPerPixel) < gridConstants.minSeparation));
+
       const dirPoints: Point3d[] = [Point3d.create(minX, minY), Point3d.create(minX, minY + refSpacing.y), Point3d.create(minX + refSpacing.x, minY)];
       transform.multiplyPoint3dArrayInPlace(dirPoints);
 
@@ -304,73 +327,82 @@ export class DecorateContext extends RenderContext {
       const thisPt1 = Point3d.create();
       const thisRay = Ray3d.createZero();
 
-      const refColor = color.clone(); refColor.setTransparency(gridConstants.refTransparency);
+      let refColor = color.withTransparency(gridConstants.refTransparency);
       const linePat = eyeDot < 0.0 ? LinePixels.Code2 : LinePixels.Solid;
-      builder.setSymbology(refColor, planeColor, 1, linePat);
 
-      for (let xRef = 0, refY = reverseX ? maxY : minY, doFadeX = false, xFade = 0; xRef <= nRefRepetitionsX && xFade < fadeRefSteps; ++xRef, refY += refStepY) {
-        const linePoints: Point3d[] = [Point3d.create(minX, refY), Point3d.create(maxX, refY)];
-        transform.multiplyPoint3dArrayInPlace(linePoints);
+      const drawRefX = (nRefRepetitionsX < gridConstants.maxRefLines || (vp.isCameraOn && unambiguousX));
+      const drawRefY = (nRefRepetitionsY < gridConstants.maxRefLines || (vp.isCameraOn && unambiguousY));
+      const drawGridLines = drawRefX && drawRefY && (gridsPerRef > 1 && !((spacing.x / meterPerPixel) < gridConstants.minSeparation || (spacing.y / meterPerPixel) < gridConstants.minSeparation));
 
-        vp.worldToView(linePoints[0], thisPt0); thisPt0.z = 0.0;
-        vp.worldToView(linePoints[1], thisPt1); thisPt1.z = 0.0;
+      if (drawRefX) {
+        builder.setSymbology(refColor, planeColor, 1, linePat);
 
-        if (doFadeX) {
-          refColor.setTransparency(gridConstants.refTransparency + (fadeRefTransparencyStep * ++xFade));
-          builder.setSymbology(refColor, planeColor, 1, linePat);
-        } else if (xRef > 0 && nRefRepetitionsX > 10) {
-          if (xRef > gridConstants.maxRefLines) {
-            doFadeX = true;
-          } else if (unambiguousX && (vp.isCameraOn || 1 === xRef)) {
-            const thisDist = this.getCurrentGridRefSeparation(lastPt, thisPt0, thisPt1, thisPt, thisRay, planeX, planeY);
-            if (thisDist < gridConstants.minSeparation)
-              doFadeX = (vp.isCameraOn ? (xRef > 1 && thisDist < lastDist) : true);
-            lastDist = thisDist;
+        for (let xRef = 0, refY = reverseX ? maxY : minY, doFadeX = false, xFade = 0; xRef <= nRefRepetitionsX && xFade < fadeRefSteps; ++xRef, refY += refStepY) {
+          const linePoints: Point3d[] = [Point3d.create(minX, refY), Point3d.create(maxX, refY)];
+          transform.multiplyPoint3dArrayInPlace(linePoints);
+
+          vp.worldToView(linePoints[0], thisPt0); thisPt0.z = 0.0;
+          vp.worldToView(linePoints[1], thisPt1); thisPt1.z = 0.0;
+
+          if (doFadeX) {
+            refColor = refColor.withTransparency(gridConstants.refTransparency + (fadeRefTransparencyStep * ++xFade));
+            builder.setSymbology(refColor, planeColor, 1, linePat);
+          } else if (xRef > 0 && nRefRepetitionsX > 10) {
+            if (xRef > gridConstants.maxRefLines) {
+              doFadeX = true;
+            } else if (unambiguousX && vp.isCameraOn) {
+              const thisDist = this.getCurrentGridRefSeparation(lastPt, thisPt0, thisPt1, thisPt, thisRay, planeX, planeY);
+              if (thisDist < gridConstants.minSeparation)
+                doFadeX = (vp.isCameraOn ? (xRef > 1 && thisDist < lastDist) : true);
+              lastDist = thisDist;
+            }
+            if (doFadeX) nGridRepetitionsX = xRef;
           }
-          if (doFadeX) nGridRepetitionsX = xRef;
-        }
 
-        thisPt0.interpolate(0.5, thisPt1, lastPt);
-        builder.addLineString(linePoints);
+          thisPt0.interpolate(0.5, thisPt1, lastPt);
+          builder.addLineString(linePoints);
+        }
       }
 
-      refColor.setTransparency(gridConstants.refTransparency);
-      builder.setSymbology(refColor, planeColor, 1, linePat);
+      if (drawRefY) {
+        refColor = refColor.withTransparency(gridConstants.refTransparency);
+        builder.setSymbology(refColor, planeColor, 1, linePat);
 
-      for (let yRef = 0, refX = reverseY ? maxX : minX, doFadeY = false, yFade = 0; yRef <= nRefRepetitionsY && yFade < fadeRefSteps; ++yRef, refX += refStepX) {
-        const linePoints: Point3d[] = [Point3d.create(refX, minY), Point3d.create(refX, maxY)];
-        transform.multiplyPoint3dArrayInPlace(linePoints);
+        for (let yRef = 0, refX = reverseY ? maxX : minX, doFadeY = false, yFade = 0; yRef <= nRefRepetitionsY && yFade < fadeRefSteps; ++yRef, refX += refStepX) {
+          const linePoints: Point3d[] = [Point3d.create(refX, minY), Point3d.create(refX, maxY)];
+          transform.multiplyPoint3dArrayInPlace(linePoints);
 
-        vp.worldToView(linePoints[0], thisPt0); thisPt0.z = 0.0;
-        vp.worldToView(linePoints[1], thisPt1); thisPt1.z = 0.0;
+          vp.worldToView(linePoints[0], thisPt0); thisPt0.z = 0.0;
+          vp.worldToView(linePoints[1], thisPt1); thisPt1.z = 0.0;
 
-        if (doFadeY) {
-          refColor.setTransparency(gridConstants.refTransparency + (fadeRefTransparencyStep * ++yFade));
-          builder.setSymbology(refColor, planeColor, 1, linePat);
-        } else if (yRef > 0 && nRefRepetitionsY > 10) {
-          if (yRef > gridConstants.maxRefLines) {
-            doFadeY = true;
-          } else if (unambiguousY && (vp.isCameraOn || 1 === yRef)) {
-            const thisDist = this.getCurrentGridRefSeparation(lastPt, thisPt0, thisPt1, thisPt, thisRay, planeX, planeY);
-            if (thisDist < gridConstants.minSeparation)
-              doFadeY = (vp.isCameraOn ? (yRef > 1 && thisDist < lastDist) : true);
-            lastDist = thisDist;
+          if (doFadeY) {
+            refColor = refColor.withTransparency(gridConstants.refTransparency + (fadeRefTransparencyStep * ++yFade));
+            builder.setSymbology(refColor, planeColor, 1, linePat);
+          } else if (yRef > 0 && nRefRepetitionsY > 10) {
+            if (yRef > gridConstants.maxRefLines) {
+              doFadeY = true;
+            } else if (unambiguousY && vp.isCameraOn) {
+              const thisDist = this.getCurrentGridRefSeparation(lastPt, thisPt0, thisPt1, thisPt, thisRay, planeX, planeY);
+              if (thisDist < gridConstants.minSeparation)
+                doFadeY = (vp.isCameraOn ? (yRef > 1 && thisDist < lastDist) : true);
+              lastDist = thisDist;
+            }
+            if (doFadeY) nGridRepetitionsY = yRef;
           }
-          if (doFadeY) nGridRepetitionsY = yRef;
-        }
 
-        thisPt0.interpolate(0.5, thisPt1, lastPt);
-        builder.addLineString(linePoints);
+          thisPt0.interpolate(0.5, thisPt1, lastPt);
+          builder.addLineString(linePoints);
+        }
       }
 
       if (drawGridLines) {
         const gridStepX = refStepX / gridsPerRef;
         const gridStepY = refStepY / gridsPerRef;
-        const gridColor = color.clone();
+        let gridColor = color;
         const fadeGridTransparencyStep = (255 - gridConstants.gridTransparency) / (gridsPerRef + 2);
 
         if (nGridRepetitionsX > 1) {
-          gridColor.setTransparency(gridConstants.gridTransparency);
+          gridColor = gridColor.withTransparency(gridConstants.gridTransparency);
           builder.setSymbology(gridColor, planeColor, 1);
 
           for (let xRef = 0, refY = reverseX ? maxY : minY; xRef < nGridRepetitionsX; ++xRef, refY += refStepY) {
@@ -379,7 +411,7 @@ export class DecorateContext extends RenderContext {
               const gridPoints: Point3d[] = [Point3d.create(minX, gridY), Point3d.create(maxX, gridY)];
               transform.multiplyPoint3dArrayInPlace(gridPoints);
               if (doFadeX) {
-                gridColor.setTransparency(gridConstants.gridTransparency + (fadeGridTransparencyStep * yGrid));
+                gridColor = gridColor.withTransparency(gridConstants.gridTransparency + (fadeGridTransparencyStep * yGrid));
                 builder.setSymbology(gridColor, planeColor, 1);
               }
               builder.addLineString(gridPoints);
@@ -388,7 +420,7 @@ export class DecorateContext extends RenderContext {
         }
 
         if (nGridRepetitionsY > 1) {
-          gridColor.setTransparency(gridConstants.gridTransparency);
+          gridColor = gridColor.withTransparency(gridConstants.gridTransparency);
           builder.setSymbology(gridColor, planeColor, 1);
 
           for (let yRef = 0, refX = reverseY ? maxX : minX; yRef < nGridRepetitionsY; ++yRef, refX += refStepX) {
@@ -397,7 +429,7 @@ export class DecorateContext extends RenderContext {
               const gridPoints: Point3d[] = [Point3d.create(gridX, minY), Point3d.create(gridX, maxY)];
               transform.multiplyPoint3dArrayInPlace(gridPoints);
               if (doFadeY) {
-                gridColor.setTransparency(gridConstants.gridTransparency + (fadeGridTransparencyStep * xGrid));
+                gridColor = gridColor.withTransparency(gridConstants.gridTransparency + (fadeGridTransparencyStep * xGrid));
                 builder.setSymbology(gridColor, planeColor, 1);
               }
               builder.addLineString(gridPoints);
@@ -413,45 +445,51 @@ export class DecorateContext extends RenderContext {
   /** Display skyBox graphic that encompasses entire scene and rotates with camera.
    * @see [[RenderSystem.createSkyBox]].
    */
-  public setSkyBox(graphic: RenderGraphic) { this._decorations.skyBox = graphic; }
+  public setSkyBox(graphic: RenderGraphic) {
+    this._decorations.skyBox = graphic;
+  }
 
-  /** Set the graphic to be displayed behind all other geometry as the background of this context's [[Viewport]]. */
-  public setViewBackground(graphic: RenderGraphic) { this._decorations.viewBackground = graphic; }
+  /** Set the graphic to be displayed behind all other geometry as the background of this context's [[ScreenViewport]]. */
+  public setViewBackground(graphic: RenderGraphic) {
+    this._decorations.viewBackground = graphic;
+  }
 }
 
 /** Context used to create the scene for a [[Viewport]]. The scene consists of a set of [[RenderGraphic]]s produced by the
- * [[TileTree]]s visible within the viewport. Creating the scene may result in the enqueueing of [[TileRequest]]s for [[Tile]]s which
+ * [[TileTree]]s visible within the viewport. Creating the scene may result in the enqueueing of requests for [[Tile]]s which
  * should be displayed in the viewport but are not yet loaded.
- * @internal
+ * @beta
  */
 export class SceneContext extends RenderContext {
-  public readonly graphics: RenderGraphic[] = [];
-  public readonly backgroundGraphics: RenderGraphic[] = [];
-  public readonly overlayGraphics: RenderGraphic[] = [];
+  /** The graphics comprising the scene. */
+  public readonly scene = new Scene();
+  /** @internal */
   public readonly missingTiles = new Set<Tile>();
+  /** @internal */
   public hasMissingTiles = false; // ###TODO for asynchronous loading of child nodes...turn those into requests too.
+  /** @internal */
   public readonly modelClassifiers = new Map<Id64String, Id64String>();    // Model id to classifier model Id.
-  public readonly planarClassifiers = new Map<Id64String, RenderPlanarClassifier>(); // Classifier model id to planar classifier.
-  public readonly textureDrapes = new Map<Id64String, RenderTextureDrape>();
-  private _viewFrustum?: ViewFrustum;
-  private _graphicType: TileTree.GraphicType = TileTree.GraphicType.Scene;
-  private _activeVolumeClassifierProps?: SpatialClassificationProps.Classifier;
-  private _activeVolumeClassifierModelId?: Id64String;
+  private _viewingSpace?: ViewingSpace;
+  private _graphicType: TileGraphicType = TileGraphicType.Scene;
 
   public constructor(vp: Viewport, frustum?: Frustum) {
     super(vp, frustum);
   }
 
-  public get viewFrustum(): ViewFrustum {
-    return undefined !== this._viewFrustum ? this._viewFrustum : this.viewport.viewFrustum;
+  public get viewingSpace(): ViewingSpace {
+    return undefined !== this._viewingSpace ? this._viewingSpace : this.viewport.viewingSpace;
   }
 
+  /** @internal */
+  public get graphicType() { return this._graphicType; }
+
+  /** @internal */
   public outputGraphic(graphic: RenderGraphic): void {
     switch (this._graphicType) {
-      case TileTree.GraphicType.BackgroundMap:
+      case TileGraphicType.BackgroundMap:
         this.backgroundGraphics.push(graphic);
         break;
-      case TileTree.GraphicType.Overlay:
+      case TileGraphicType.Overlay:
         this.overlayGraphics.push(graphic);
         break;
       default:
@@ -460,21 +498,24 @@ export class SceneContext extends RenderContext {
     }
   }
 
+  /** Indicate that the specified tile is desired for the scene but is not yet ready. A request to load its contents will later be enqueued. */
   public insertMissingTile(tile: Tile): void {
     switch (tile.loadStatus) {
-      case Tile.LoadStatus.NotLoaded:
-      case Tile.LoadStatus.Queued:
-      case Tile.LoadStatus.Loading:
+      case TileLoadStatus.NotLoaded:
+      case TileLoadStatus.Queued:
+      case TileLoadStatus.Loading:
         this.missingTiles.add(tile);
         break;
     }
   }
 
+  /** @internal */
   public requestMissingTiles(): void {
     IModelApp.tileAdmin.requestTiles(this.viewport, this.missingTiles);
   }
 
-  public addPlanarClassifier(props: SpatialClassificationProps.Classifier, tileTree: TileTree, classifiedTree: TileTree): RenderPlanarClassifier | undefined {
+  /** @internal */
+  public addPlanarClassifier(props: SpatialClassificationProps.Classifier, tileTree: TileTreeReference, classifiedTree: TileTreeReference): RenderPlanarClassifier | undefined {
     // Have we already seen this classifier before?
     const id = props.modelId;
     let classifier = this.planarClassifiers.get(id);
@@ -494,12 +535,19 @@ export class SceneContext extends RenderContext {
 
     return classifier;
   }
+
+  /** @internal */
   public getPlanarClassifierForModel(modelId: Id64String) {
     const classifierId = this.modelClassifiers.get(modelId);
     return undefined === classifierId ? undefined : this.planarClassifiers.get(classifierId);
   }
 
-  public addBackgroundDrapedModel(drapedTree: TileTree): RenderTextureDrape | undefined {
+  /** @internal */
+  public addBackgroundDrapedModel(drapedTreeRef: TileTreeReference, _heightRange: Range1d | undefined): RenderTextureDrape | undefined {
+    const drapedTree = drapedTreeRef.treeOwner.tileTree;
+    if (undefined === drapedTree)
+      return undefined;
+
     const id = drapedTree.modelId;
     let drape = this.getTextureDrapeForModel(id);
     if (undefined !== drape)
@@ -507,38 +555,42 @@ export class SceneContext extends RenderContext {
 
     drape = this.viewport.target.getTextureDrape(id);
     if (undefined === drape)
-      drape = this.viewport.target.renderSystem.createBackgroundMapDrape(drapedTree, this.viewport.displayStyle.backgroundDrapeMap);
+      drape = this.viewport.target.renderSystem.createBackgroundMapDrape(drapedTreeRef, this.viewport.displayStyle.backgroundDrapeMap);
 
     if (undefined !== drape)
       this.textureDrapes.set(id, drape);
 
     return drape;
   }
+
+  /** @internal */
   public getTextureDrapeForModel(modelId: Id64String) {
     return this.textureDrapes.get(modelId);
   }
 
-  public getActiveVolumeClassifierProps(): SpatialClassificationProps.Classifier | undefined { return this._activeVolumeClassifierProps; }
-  public setActiveVolumeClassifierProps(properties: SpatialClassificationProps.Classifier | undefined) { this._activeVolumeClassifierProps = properties; }
-
-  public getActiveVolumeClassifierModelId(): Id64String | undefined { return this._activeVolumeClassifierModelId; }
-  public setActiveVolumeClassifierModelId(modelId: Id64String | undefined) { this._activeVolumeClassifierModelId = modelId; }
-
-  public withGraphicTypeAndPlane(type: TileTree.GraphicType, plane: Plane3dByOriginAndUnitNormal | undefined, func: () => void): void {
-    const frust = undefined !== plane ? ViewFrustum.createFromViewportAndPlane(this.viewport, plane) : undefined;
-    this.withGraphicTypeAndFrustum(type, frust, func);
-  }
-
-  public withGraphicTypeAndFrustum(type: TileTree.GraphicType, frustum: ViewFrustum | undefined, func: () => void): void {
+  /** @internal */
+  public withGraphicType(type: TileGraphicType, func: () => void): void {
     const prevType = this._graphicType;
-    const prevFrust = this._viewFrustum;
-
     this._graphicType = type;
-    this._viewFrustum = frustum;
 
     func();
 
     this._graphicType = prevType;
-    this._viewFrustum = prevFrust;
+  }
+
+  /** @internal */
+  public get graphics() { return this.scene.foreground; }
+  /** @internal */
+  public get backgroundGraphics() { return this.scene.background; }
+  /** @internal */
+  public get overlayGraphics() { return this.scene.overlay; }
+  /** @internal */
+  public get planarClassifiers() { return this.scene.planarClassifiers; }
+  /** @internal */
+  public get textureDrapes() { return this.scene.textureDrapes; }
+
+  /** @internal */
+  public setVolumeClassifier(classifier: SpatialClassificationProps.Classifier, modelId: Id64String): void {
+    this.scene.volumeClassifier = { classifier, modelId };
   }
 }

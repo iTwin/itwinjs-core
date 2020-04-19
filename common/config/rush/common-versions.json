@@ -3,6 +3,12 @@
     "@types/react": "^16.8.0",
     "event-stream": "~4.0.1",
     "ssri": "^6.0.1",
-    "typescript": "~3.6.2"
+    "typescript": "~3.7.4",
+    "object-is": "1.0.2"
+  },
+  "allowedAlternativeVersions": {
+    "openid-client": [
+      "^3.7.2"
+    ]
   }
 }

@@ -1,10 +1,12 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
 import * as fs from "fs";
 import { app, BrowserWindow, BrowserWindowConstructorOptions, protocol } from "electron";
+import { OidcDesktopClientMain } from "./OidcDesktopClientMain";
+import { BeDuration } from "@bentley/bentleyjs-core";
 
 /**
  * A helper class that simplifies the creation of basic single-window desktop applications
@@ -18,7 +20,7 @@ export abstract class StandardElectronManager {
   private openMainWindow(options: BrowserWindowConstructorOptions) {
     this._mainWindow = new BrowserWindow({ ...this._defaultWindowOptions, ...options });
     this._mainWindow.on("closed", () => this._mainWindow = undefined);
-    this._mainWindow.loadURL(this.frontendURL);
+    this._mainWindow.loadURL(this.frontendURL); // tslint:disable-line:no-floating-promises
   }
 
   /** The URL the main BrowserWindow should load on application initialization. */
@@ -52,6 +54,9 @@ export abstract class StandardElectronManager {
       await new Promise((resolve) => app.on("ready", resolve));
 
     this.openMainWindow(windowOptions);
+
+    // Setup handlers for IPC calls to support Authorization
+    OidcDesktopClientMain.initializeIpc(this.mainWindow!);
   }
 }
 
@@ -64,7 +69,7 @@ export class IModelJsElectronManager extends StandardElectronManager {
   public frontendURL: string;
   public appIconPath: string;
 
-  constructor(webResourcesPath: string = `${__dirname}/public`) {
+  constructor(webResourcesPath: string = `${__dirname}/`) {
     super();
     this._webResourcesPath = webResourcesPath;
 
@@ -87,7 +92,7 @@ export class IModelJsElectronManager extends StandardElectronManager {
       assetPath = "index.html";
     assetPath = assetPath.replace(/(#|\?).*$/, "");
 
-    // FIXME: Should this really be hard-coded?
+    // NEEDS_WORK: Remove this after migration to OidcDesktopClient
     assetPath = assetPath.replace("signin-callback", "index.html");
     assetPath = path.normalize(`${this._webResourcesPath}/${assetPath}`);
 
@@ -110,7 +115,10 @@ export class IModelJsElectronManager extends StandardElectronManager {
   }
 
   public async initialize(windowOptions?: BrowserWindowConstructorOptions): Promise<void> {
-    protocol.registerStandardSchemes(["electron"], {});
+    protocol.registerSchemesAsPrivileged([
+      { scheme: "electron", privileges: { standard: true, secure: true } },
+    ]);
+
     await new Promise((resolve) => app.on("ready", resolve));
 
     // Also handle any "electron://" requests and redirect them to "file://" URLs
@@ -121,7 +129,7 @@ export class IModelJsElectronManager extends StandardElectronManager {
 }
 
 /**
- * A StandardElectronManager that adds some reasonable defaults for applications built with @bentley/webpack-tools running in "development" mode.
+ * A StandardElectronManager that adds some reasonable defaults for applications built with @bentley/react-scripts running in "development" mode.
  * @beta
  */
 export class WebpackDevServerElectronManager extends StandardElectronManager {
@@ -141,5 +149,25 @@ export class WebpackDevServerElectronManager extends StandardElectronManager {
       autoHideMenuBar: true,
       icon: this.appIconPath,
     };
+  }
+
+  public async initialize(windowOptions?: BrowserWindowConstructorOptions): Promise<void> {
+    protocol.registerSchemesAsPrivileged([
+      { scheme: "electron", privileges: { standard: true, secure: true } },
+    ]);
+
+    // Occasionally, the electron backend may start before the webpack devserver has even started.
+    // If this happens, we'll just retry and keep reloading the page.
+    app.on("web-contents-created", (_e, webcontents) => {
+      webcontents.on("did-fail-load", async (_event, errorCode, _errorDescription, _validatedURL, isMainFrame) => {
+        // errorCode -102 is CONNECTION_REFUSED - see https://cs.chromium.org/chromium/src/net/base/net_error_list.h
+        if (isMainFrame && errorCode === -102) {
+          await BeDuration.wait(100);
+          webcontents.reload();
+        }
+      });
+    });
+
+    return super.initialize(windowOptions);
   }
 }

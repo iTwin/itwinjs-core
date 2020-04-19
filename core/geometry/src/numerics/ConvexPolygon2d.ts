@@ -1,9 +1,11 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module Numerics */
+/** @packageDocumentation
+ * @module Numerics
+ */
 
 import { Point2d, Vector2d } from "../geometry3d/Point2dVector2d";
 import { Range1d } from "../geometry3d/Range";
@@ -55,12 +57,12 @@ export class Ray2d {
     return new Ray2d(this._origin, this._direction.rotate90CWXY());
   }
   /** Normalize the direction vector in place. */
-  public normalizeDirectionInPlace(): boolean {
+  public normalizeDirectionInPlace(defaultX: number = 1, defaultY: number = 0): boolean {
     if (this._direction.normalize(this._direction)) {
       return true;
     } else {
-      this._direction.x = 1.0;
-      this._direction.y = 0.0;
+      this._direction.x = defaultX;
+      this._direction.y = defaultY;
       // magnitude = 0.0;
       return false;
     }
@@ -112,13 +114,16 @@ export class Ray2d {
  */
 export class ConvexPolygon2d {
   // hull points in CCW order, WITHOUT final duplicate...
+  // REMARK: In degenerate case with 0,1,or 2 points the array is still there.
   private _hullPoints: Point2d[];
 
-  constructor(points: Point2d[]) {
+  constructor(points: Point2d[] | undefined) {
     this._hullPoints = [];
     // Deep copy of points array given
-    for (const point of points) {
-      this._hullPoints.push(point);
+    if (points) {
+      for (const point of points) {
+        this._hullPoints.push(point);
+      }
     }
   }
 
@@ -292,11 +297,11 @@ export class ConvexPolygon2d {
   /** Computes the hull of a convex polygon from points given. Returns the hull as a new Point2d array.
    *  Returns an empty hull if less than 3 points are given.
    */
-  public static computeConvexHull(points: Point2d[]): Point2d[] {
+  public static computeConvexHull(points: Point2d[]): Point2d[] | undefined {
     const hull: Point2d[] = [];
     const n = points.length;
     if (n < 3)
-      return hull;
+      return undefined;
     // Get deep copy
     const xy1: Point2d[] = points.slice(0, n);
     xy1.sort(Geometry.lexicalXYLessThan);

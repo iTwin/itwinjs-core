@@ -1,14 +1,17 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Properties */
+/** @packageDocumentation
+ * @module Properties
+ */
 
+import * as React from "react";
 import { IPropertyValueRenderer, PropertyValueRendererContext } from "../../ValueRendererManager";
-import { PropertyRecord, PropertyValueFormat, PrimitiveValue } from "@bentley/imodeljs-frontend";
+import { PropertyRecord, PropertyValueFormat, PrimitiveValue } from "@bentley/ui-abstract";
 import { TypeConverterManager } from "../../../converters/TypeConverterManager";
 import { withContextStyle } from "./WithContextStyle";
-import { withLinks } from "../../LinkHandler";
+import { LinksRenderer } from "../../LinkHandler";
 
 /** Default Double Property Renderer
  * @public
@@ -33,6 +36,13 @@ export class DoublePropertyValueRenderer implements IPropertyValueRenderer {
       stringValue = TypeConverterManager.getConverter(record.property.typename).convertPropertyToString(record.property, primitive.value);
     }
 
-    return withContextStyle(withLinks(record, stringValue), context);
+    return withContextStyle(
+      <LinksRenderer
+        value={stringValue}
+        record={record}
+        highlighter={context?.textHighlighter}
+        defaultValue={context?.defaultValue} />,
+      context,
+    );
   }
 }

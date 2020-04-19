@@ -1,12 +1,12 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { DbResult, Id64String, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { BisCodeSpec, ColorDef, DisplayStyleProps, DisplayStyleSettingsProps, IModel, RenderMode, ViewFlags } from "@bentley/imodeljs-common";
 import { expect } from "chai";
 import * as path from "path";
-import { BackendRequestContext, DictionaryModel, DisplayStyle3d, ECSqlStatement, Element, IModelDb, NativeLoggerCategory } from "../../imodeljs-backend";
+import { BackendRequestContext, DictionaryModel, DisplayStyle3d, ECSqlStatement, Element, NativeLoggerCategory, SnapshotDb, StandaloneDb } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { HubUtility } from "../integration/HubUtility";
 import { KnownTestLocations } from "../KnownTestLocations";
@@ -14,10 +14,10 @@ import { KnownTestLocations } from "../KnownTestLocations";
 // spell-checker: disable
 
 describe("ExcludedElements", () => {
-  let imodel1: IModelDb;
-  let imodel2: IModelDb;
-  let imodel4: IModelDb;
-  let imodel5: IModelDb;
+  let imodel1: SnapshotDb;
+  let imodel2: SnapshotDb;
+  let imodel4: SnapshotDb;
+  let imodel5: SnapshotDb;
   const requestContext = new BackendRequestContext();
 
   before(async () => {
@@ -32,16 +32,16 @@ describe("ExcludedElements", () => {
   });
 
   after(() => {
-    imodel1.closeSnapshot();
-    imodel2.closeSnapshot();
-    imodel4.closeSnapshot();
-    imodel5.closeSnapshot();
+    imodel1.close();
+    imodel2.close();
+    imodel4.close();
+    imodel5.close();
   });
 
   it.skip("dump cs file", () => {
     Logger.setLevel(NativeLoggerCategory.DgnCore, LogLevel.Trace);
     Logger.setLevel(NativeLoggerCategory.Changeset, LogLevel.Trace);
-    const db = IModelDb.openStandalone("D:\\dgn\\problem\\83927\\EAP_TT_001\\seed\\EAP_TT_001.bim");
+    const db = StandaloneDb.openFile("D:\\dgn\\problem\\83927\\EAP_TT_001\\seed\\EAP_TT_001.bim");
     HubUtility.dumpChangeSetFile(db, "D:\\dgn\\problem\\83927\\EAP_TT_001", "9fd0e30f88e93bec72532f6f1e05688e2c2408cd");
   });
 
@@ -56,7 +56,7 @@ describe("ExcludedElements", () => {
     let model = imodel1.models.getModel(IModel.dictionaryId) as DictionaryModel;
     expect(model).not.to.be.undefined;
     let settings: DisplayStyleSettingsProps = {
-      backgroundColor: ColorDef.blue,
+      backgroundColor: ColorDef.blue.toJSON(),
       excludedElements: undefined,
       viewflags: ViewFlags.fromJSON({
         renderMode: RenderMode.SolidFill,
@@ -91,7 +91,7 @@ describe("ExcludedElements", () => {
     model = imodel2.models.getModel(IModel.dictionaryId) as DictionaryModel;
     expect(model).not.to.be.undefined;
     settings = {
-      backgroundColor: ColorDef.blue,
+      backgroundColor: ColorDef.blue.toJSON(),
       excludedElements: undefined,
       viewflags: ViewFlags.fromJSON({
         renderMode: RenderMode.SolidFill,
@@ -126,7 +126,7 @@ describe("ExcludedElements", () => {
     model = imodel4.models.getModel(IModel.dictionaryId) as DictionaryModel;
     expect(model).not.to.be.undefined;
     settings = {
-      backgroundColor: ColorDef.blue,
+      backgroundColor: ColorDef.blue.toJSON(),
       excludedElements: undefined,
       viewflags: ViewFlags.fromJSON({
         renderMode: RenderMode.SolidFill,
@@ -161,7 +161,7 @@ describe("ExcludedElements", () => {
     model = imodel5.models.getModel(IModel.dictionaryId) as DictionaryModel;
     expect(model).not.to.be.undefined;
     settings = {
-      backgroundColor: ColorDef.blue,
+      backgroundColor: ColorDef.blue.toJSON(),
       excludedElements: undefined,
       viewflags: ViewFlags.fromJSON({
         renderMode: RenderMode.SolidFill,
@@ -199,7 +199,7 @@ describe("ExcludedElements", () => {
     let model = imodel1.models.getModel(IModel.dictionaryId) as DictionaryModel;
     expect(model).not.to.be.undefined;
     let settings: DisplayStyleSettingsProps = {
-      backgroundColor: ColorDef.blue,
+      backgroundColor: ColorDef.blue.toJSON(),
       excludedElements: [elementIds[0], elementIds[2]],
       viewflags: ViewFlags.fromJSON({
         renderMode: RenderMode.SolidFill,
@@ -236,7 +236,7 @@ describe("ExcludedElements", () => {
     model = imodel2.models.getModel(IModel.dictionaryId) as DictionaryModel;
     expect(model).not.to.be.undefined;
     settings = {
-      backgroundColor: ColorDef.blue,
+      backgroundColor: ColorDef.blue.toJSON(),
       excludedElements: [elementIds[elementIds.length - 1], elementIds[elementIds.length - 2]],
       viewflags: ViewFlags.fromJSON({
         renderMode: RenderMode.SolidFill,
@@ -272,7 +272,7 @@ describe("ExcludedElements", () => {
     model = imodel4.models.getModel(IModel.dictionaryId) as DictionaryModel;
     expect(model).not.to.be.undefined;
     settings = {
-      backgroundColor: ColorDef.blue,
+      backgroundColor: ColorDef.blue.toJSON(),
       excludedElements: [elementIds[2], elementIds[1]],
       viewflags: ViewFlags.fromJSON({
         renderMode: RenderMode.SolidFill,
@@ -308,7 +308,7 @@ describe("ExcludedElements", () => {
     model = imodel5.models.getModel(IModel.dictionaryId) as DictionaryModel;
     expect(model).not.to.be.undefined;
     settings = {
-      backgroundColor: ColorDef.blue,
+      backgroundColor: ColorDef.blue.toJSON(),
       excludedElements: [elementIds[0], elementIds[elementIds.length - 1]],
       viewflags: ViewFlags.fromJSON({
         renderMode: RenderMode.SolidFill,

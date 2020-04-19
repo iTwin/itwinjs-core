@@ -7,5 +7,8 @@
   },
   "property-grid": {
     "too-many-elements-selected": "Too many elements selected"
+  },
+  "general": {
+    "display-label": "Label"
   }
 }

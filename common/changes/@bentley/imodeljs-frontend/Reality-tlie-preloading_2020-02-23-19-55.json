@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-frontend",
+      "comment": "Add mechanism to preload reality tiles included in an expanded frustum. Support display of ellipsoidal map tiles without depth buffering.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "ray.bentley@bentley.com"
+}

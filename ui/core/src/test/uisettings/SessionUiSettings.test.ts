@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module UiSettings */
+/** @packageDocumentation
+ * @module UiSettings
+ */
 
 import { expect } from "chai";
 import { SessionUiSettings, UiSettingsStatus } from "../../ui-core";
@@ -34,37 +36,39 @@ describe("SessionUiSettings", () => {
   });
   describe("saveSetting", () => {
     const sessionSettings = new SessionUiSettings({ sessionStorage: storageMock() } as Window);
-    it("Should save setting correctly", () => {
-      const result = sessionSettings.saveSetting("Testing", "TestData", { test123: "4567" });
+    it("Should save setting correctly", async () => {
+      const result = await sessionSettings.saveSetting("Testing", "TestData", { test123: "4567" });
       expect(result.status).to.equal(UiSettingsStatus.Success);
     });
   });
-  describe("getSetting", () => {
+  describe("getSetting", async () => {
     const sessionSettings = new SessionUiSettings({ sessionStorage: storageMock() } as Window);
-    sessionSettings.saveSetting("Testing", "TestData", { test123: "4567" });
-    it("Should load setting correctly", () => {
-      const result = sessionSettings.getSetting("Testing", "TestData");
+    await sessionSettings.saveSetting("Testing", "TestData", { test123: "4567" });
+
+    it("Should load setting correctly", async () => {
+      const result = await sessionSettings.getSetting("Testing", "TestData");
       expect(result.status).to.equal(UiSettingsStatus.Success);
       expect(result.setting).to.not.be.null;
       expect(result.setting.test123).to.equal("4567");
     });
-    it("Should return error result if setting not found", () => {
-      const result = sessionSettings.getSetting("Testing", "InvalidTestData");
+    it("Should return error result if setting not found", async () => {
+      const result = await sessionSettings.getSetting("Testing", "InvalidTestData");
       expect(result.status).to.equal(UiSettingsStatus.NotFound);
     });
   });
-  describe("deleteSetting", () => {
+  describe("deleteSetting", async () => {
     const sessionSettings = new SessionUiSettings({ sessionStorage: storageMock() } as Window);
-    sessionSettings.saveSetting("Testing", "TestData", { test123: "4567" });
-    it("Should remove setting correctly", () => {
-      const result = sessionSettings.deleteSetting("Testing", "TestData");
+    await sessionSettings.saveSetting("Testing", "TestData", { test123: "4567" });
+
+    it("Should remove setting correctly", async () => {
+      const result = await sessionSettings.deleteSetting("Testing", "TestData");
       expect(result.status).to.equal(UiSettingsStatus.Success);
-      const result2 = sessionSettings.deleteSetting("Testing", "TestData");
+      const result2 = await sessionSettings.deleteSetting("Testing", "TestData");
       expect(result2.status).to.equal(UiSettingsStatus.NotFound);
       expect(result2.setting).to.be.undefined;
     });
-    it("Should return error result if setting not found", () => {
-      const result = sessionSettings.deleteSetting("Testing", "InvalidTestData");
+    it("Should return error result if setting not found", async () => {
+      const result = await sessionSettings.deleteSetting("Testing", "InvalidTestData");
       expect(result.status).to.equal(UiSettingsStatus.NotFound);
     });
   });

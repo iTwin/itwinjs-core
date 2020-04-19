@@ -1,18 +1,21 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Views */
-import { ContextRealityModelProps, CartographicRange } from "@bentley/imodeljs-common";
-import { IModelConnection } from "./IModelConnection";
-import { IModelApp } from "./IModelApp";
-import { AuthorizedFrontendRequestContext } from "./FrontendRequestContext";
-import { SpatialModelState } from "./ModelState";
-import { TileTree } from "./tile/TileTree";
-import { createRealityTileTreeReference, RealityModelTileClient, RealityModelTileUtils, RealityModelTileTree } from "./tile/RealityModelTileTree";
-import { RealityDataServicesClient, RealityData, AccessToken } from "@bentley/imodeljs-clients";
-import { SpatialClassifiers } from "./SpatialClassification";
+/** @packageDocumentation
+ * @module Views
+ */
+import { ContextRealityModelProps, CartographicRange, OrbitGtBlobProps } from "@bentley/imodeljs-common";
+import { Angle } from "@bentley/geometry-core";
+import { AccessToken } from "@bentley/itwin-client";
+import { RealityData, RealityDataClient } from "@bentley/reality-data-client";
 import { DisplayStyleState } from "./DisplayStyleState";
+import { AuthorizedFrontendRequestContext } from "./FrontendRequestContext";
+import { IModelApp } from "./IModelApp";
+import { IModelConnection } from "./IModelConnection";
+import { SpatialModelState } from "./ModelState";
+import { SpatialClassifiers } from "./SpatialClassifiers";
+import { createRealityTileTreeReference, RealityModelTileClient, RealityModelTileTree, RealityModelTileUtils, TileTreeReference, createOrbitGtTileTreeReference } from "./tile/internal";
 
 async function getAccessToken(): Promise<AccessToken | undefined> {
   if (!IModelApp.authorizationClient || !IModelApp.authorizationClient.hasSignedIn)
@@ -33,30 +36,43 @@ export class ContextRealityModelState {
   private readonly _treeRef: RealityModelTileTree.Reference;
   public readonly name: string;
   public readonly url: string;
+  public readonly orbitGtBlob?: OrbitGtBlobProps;
   public readonly description: string;
   public readonly iModel: IModelConnection;
 
   public constructor(props: ContextRealityModelProps, iModel: IModelConnection, displayStyle: DisplayStyleState) {
     this.url = props.tilesetUrl;
+    this.orbitGtBlob = props.orbitGtBlob;
     this.name = undefined !== props.name ? props.name : "";
     this.description = undefined !== props.description ? props.description : "";
     this.iModel = iModel;
 
-    this._treeRef = createRealityTileTreeReference({
-      iModel,
-      source: displayStyle,
-      url: props.tilesetUrl,
-      name: props.name,
-      classifiers: new SpatialClassifiers(props),
-    });
+    const classifiers = new SpatialClassifiers(props);
+    this._treeRef = (undefined === props.orbitGtBlob) ?
+      createRealityTileTreeReference({
+        iModel,
+        source: displayStyle,
+        url: props.tilesetUrl,
+        name: props.name,
+        classifiers,
+      }) :
+      createOrbitGtTileTreeReference({
+        iModel,
+        orbitGtBlob: props.orbitGtBlob,
+        name: props.name,
+        classifiers,
+        displayStyle,
+      });
+
   }
 
-  public get treeRef(): TileTree.Reference { return this._treeRef; }
+  public get treeRef(): TileTreeReference { return this._treeRef; }
   public get classifiers(): SpatialClassifiers | undefined { return this._treeRef.classifiers; }
 
   public toJSON(): ContextRealityModelProps {
     return {
       tilesetUrl: this.url,
+      orbitGtBlob: this.orbitGtBlob,
       name: 0 > this.name.length ? this.name : undefined,
       description: 0 > this.description.length ? this.description : undefined,
     };
@@ -73,7 +89,7 @@ export class ContextRealityModelState {
     if (!accessToken)
       return false;
 
-    const client = new RealityModelTileClient(this.url, accessToken);
+    const client = new RealityModelTileClient(this.url, accessToken, this.iModel.contextId);
     const json = await client.getRootDocument(this.url);
     let tileTreeRange, tileTreeTransform;
     if (json === undefined ||
@@ -126,12 +142,15 @@ export async function findAvailableUnattachedRealityModels(projectid: string, iM
   const requestContext = await AuthorizedFrontendRequestContext.create();
   requestContext.enter();
 
-  const client = new RealityDataServicesClient();
+  const client = new RealityDataClient();
 
   let realityData: RealityData[];
   if (modelCartographicRange) {
     const iModelRange = modelCartographicRange.getLongitudeLatitudeBoundingBox();
-    realityData = await client.getRealityDataInProjectOverlapping(requestContext, projectid, iModelRange);
+    realityData = await client.getRealityDataInProjectOverlapping(requestContext, projectid, Angle.radiansToDegrees(iModelRange.low.x),
+      Angle.radiansToDegrees(iModelRange.high.x),
+      Angle.radiansToDegrees(iModelRange.low.y),
+      Angle.radiansToDegrees(iModelRange.high.y));
   } else {
     realityData = await client.getRealityDataInProject(requestContext, projectid);
   }
@@ -158,7 +177,7 @@ export async function findAvailableUnattachedRealityModels(projectid: string, iM
       realityDataName = currentRealityData.name as string;
     } else if (currentRealityData.rootDocument) {
       // In case root document contains a relative path we only keep the filename
-      const rootDocParts = (currentRealityData.rootDocumentb as string).split("/");
+      const rootDocParts = (currentRealityData.rootDocument as string).split("/");
       realityDataName = rootDocParts[rootDocParts.length - 1];
     } else {
       // This case would not occur normally but if it does the RD is considered invalid

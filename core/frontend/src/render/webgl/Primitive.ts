@@ -1,19 +1,24 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module WebGL */
+/** @packageDocumentation
+ * @module WebGL
+ */
 
 import { Target } from "./Target";
-import { Graphic, Batch } from "./Graphic";
+import { Graphic } from "./Graphic";
 import { CachedGeometry, LUTGeometry, SkySphereViewportQuadGeometry } from "./CachedGeometry";
 import { RenderPass, RenderOrder } from "./RenderFlags";
 import { ShaderProgramExecutor } from "./ShaderProgram";
-import { DrawParams, RenderCommands, DrawCommand } from "./DrawCommand";
+import { DrawParams, PrimitiveCommand } from "./DrawCommand";
+import { RenderCommands } from "./RenderCommands";
 import { TechniqueId } from "./TechniqueId";
 import { assert, dispose } from "@bentley/bentleyjs-core";
+import { InstancedGraphicParams } from "../InstancedGraphicParams";
+import { PrimitiveVisibility } from "../RenderTarget";
+import { RenderMemory } from "../RenderMemory";
 import { System } from "./System";
-import { InstancedGraphicParams, RenderMemory, PrimitiveVisibility } from "../System";
 import { InstancedGeometry, InstanceBuffers } from "./InstancedGeometry";
 
 /** @internal */
@@ -47,6 +52,8 @@ export class Primitive extends Graphic {
     return undefined !== geom ? new this(geom) : undefined;
   }
 
+  public get isDisposed(): boolean { return this.cachedGeometry.isDisposed; }
+
   public dispose() {
     dispose(this.cachedGeometry);
   }
@@ -77,12 +84,11 @@ export class Primitive extends Graphic {
 
   public addCommands(commands: RenderCommands): void { commands.addPrimitive(this); }
 
-  public addHiliteCommands(commands: RenderCommands, batch: Batch, pass: RenderPass): void {
+  public addHiliteCommands(commands: RenderCommands, pass: RenderPass): void {
     // Edges do not contribute to hilite pass.
     // Note that IsEdge() does not imply geom->ToEdge() => true...polylines can be edges too...
-    if (!this.isEdge) {
-      commands.getCommands(pass).push(DrawCommand.createForPrimitive(this, batch));
-    }
+    if (!this.isEdge)
+      commands.getCommands(pass).push(new PrimitiveCommand(this));
   }
 
   public get hasAnimation(): boolean { return this.cachedGeometry.hasAnimation; }
@@ -104,7 +110,7 @@ export class Primitive extends Graphic {
       Primitive._drawParams = new DrawParams();
 
     const drawParams = Primitive._drawParams;
-    drawParams.init(shader.params, this.cachedGeometry, shader.target.currentTransform);
+    drawParams.init(shader.params, this.cachedGeometry);
     shader.draw(drawParams);
   }
 

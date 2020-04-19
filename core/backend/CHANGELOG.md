@@ -1,6 +1,92 @@
 # Change Log - @bentley/imodeljs-backend
 
-This log was last generated on Fri, 01 Nov 2019 13:28:37 GMT and should not be manually modified.
+This log was last generated on Wed, 04 Mar 2020 16:16:31 GMT and should not be manually modified.
+
+## 1.13.0
+Wed, 04 Mar 2020 16:16:31 GMT
+
+*Version update only*
+
+## 1.12.0
+Wed, 12 Feb 2020 17:45:50 GMT
+
+### Updates
+
+- Fix IGeometry roundtripping issue through ECSql.  Fix insert/update binary properties for Element Aspect.
+- Separated out routines to download and open briefcases. 
+- bulk mode
+- Consolidated sign-in for integration tests
+- bulkmode
+- iModel write API development
+- Prevent reuse of cached tiles after project extents change.
+- A new optional dependency, ecschema-metadata, allows for retrieval of full Schema information from an iModel using the new IModelSchemaLoader utility class.
+- Added parameters for ruleset directory and temp cache location for version compare processing
+- Add ViewDefinition.getAuxiliaryCoordinateSystemId and ViewDefinition.setAuxiliaryCoordinateSystemId methods
+- Add SpatialLocationModel.insert
+- Add optional isPlantProjection parameter to PhysicalModel.insert
+- VSTS#256133: Fixed issue with reopening connections if the backend crashes. Fixes to integration tests. 
+- Better documentation of OidcDesktopClient
+- Fixed changeset perf test by using another iModel on Hub
+- Add ViewDetails to ViewDefinition.
+- Add support for plan projection models with 3d display priority.
+- UlasUtilities exported as an module.
+
+## 1.11.0
+Wed, 22 Jan 2020 19:24:12 GMT
+
+### Updates
+
+- Native apps can now cancel tile requests in progress on the backend.
+- Remove echo test function from devTools
+- Allow outline fill to be specified by subcategory appearance.
+- Upgrade to TypeScript 3.7.2.
+- Added TypeScript wrapper over the native SaaSClient.
+
+## 1.10.0
+Tue, 07 Jan 2020 19:44:01 GMT
+
+### Updates
+
+- Typescript code for the classes in the Analytical schema.
+- Return error message from concurrent query manager
+- Added support for embedding images in a GeometryStream.
+- IModelExporter, IModelTransformer, and IModelImporter are now beta and provide low-level functionality needed for iModel transformation and data exchange.
+- Added IModelDb.isBriefcase() getter.
+- Implementing LinearlyLocatedBase interface by base LR abstract element-classes.
+- Moving data-holder structures used during the LinearElement.queryLinearLocations API to imodeljs-common.
+- Allow events to be sent from backend to frontend
+- Add tryGetInstance / tryGetInstanceProps methods to the Relationship class which return undefined rather than throwing an exception when a relationship is not found.
+- Fix webpack for ios test that were failing due to new dependencies
+- VSTS#225894 - Allowed agents to bypass usage logging calls. These cause usage logging errors. 
+- Add tryGetElement / tryGetElementProps which return undefined rather than throwing an exception when an element is not found.
+- Add tryGetModel, tryGetModelProps, tryGetSubModel which return undefined instead of throwing exceptions when the model is not found.
+
+## 1.9.0
+Tue, 10 Dec 2019 18:08:56 GMT
+
+### Updates
+
+- Updated to addon 9.1.3
+- Added AliCloud tile cache service
+- Added framework to run imodeljs-backend test on ios using appcenter
+- Setup OidcDesktopClient for Electron use cases. 
+- fix warnings from static analysis
+- Enabling testing code for updating LR aspects after fix in native side.
+- Addressing typo in a couple of members, making them match the schema properly.
+- Avoid concurrent tile uploads
+
+## 1.8.0
+Fri, 22 Nov 2019 14:03:34 GMT
+
+### Updates
+
+- Option to include part references in GeometrySummary output.
+- Expose isTwoSided flag on ExportGraphicsMesh
+- SchemaDesignPerf import tests
+- Added missing topic descriptions
+- Add experimental Node 12 support
+- Change SectionLocationProps.clipGeometry type to string. Add get/set ClipVector methods on SectionLocation.
+- Add support for view-independent display of geometry streams.
 
 ## 1.7.0
 Fri, 01 Nov 2019 13:28:37 GMT

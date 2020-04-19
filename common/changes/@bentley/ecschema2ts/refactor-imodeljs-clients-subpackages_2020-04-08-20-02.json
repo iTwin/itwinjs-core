@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ecschema2ts",
+      "comment": "Import Config from bentleyjs-core instead of imodeljs-clients",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ecschema2ts",
+  "email": "evan.preslar@bentley.com"
+}

@@ -1,0 +1,49 @@
+{
+  "name": "@bentley/frontend-authorization-client",
+  "version": "2.0.0-dev.71",
+  "description": "iModel.js Frontend Authorization Client",
+  "main": "lib/frontend-authorization-client.js",
+  "typings": "lib/frontend-authorization-client",
+  "imodeljsSharedLibrary": true,
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/imodeljs/imodeljs/tree/master/clients/frontend-authorization"
+  },
+  "scripts": {
+    "build": "tsc 1>&2",
+    "clean": "rimraf lib .rush",
+    "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=frontend-authorization-client",
+    "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --includes=../../generated-docs/extract --json=../../generated-docs/clients/frontend-authorization-client/file.json --tsIndexFile=frontend-authorization-client.ts --onlyJson %TYPEDOC_THEME%",
+    "lint": "tslint --project . 1>&2",
+    "test": "",
+    "test:integration": "",
+    "cover": ""
+  },
+  "keywords": [
+    "Bentley",
+    "BIM",
+    "iModel",
+    "Frontend Authorization Client"
+  ],
+  "author": {
+    "name": "Bentley Systems, Inc.",
+    "url": "http://www.bentley.com"
+  },
+  "dependencies": {
+    "oidc-client": "^1.9.1"
+  },
+  "peerDependencies": {
+    "@bentley/bentleyjs-core": "^2.0.0-dev.71",
+    "@bentley/itwin-client": "^2.0.0-dev.71"
+  },
+  "devDependencies": {
+    "@bentley/bentleyjs-core": "2.0.0-dev.71",
+    "@bentley/build-tools": "2.0.0-dev.71",
+    "@bentley/itwin-client": "2.0.0-dev.71",
+    "@types/node": "10.14.1",
+    "rimraf": "^3.0.2",
+    "tslint": "^5.11.0",
+    "typescript": "~3.7.4"
+  }
+}

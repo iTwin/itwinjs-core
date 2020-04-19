@@ -1,0 +1,7 @@
+sep=;
+Release Tag;API Item
+internal;FileAccessKey 
+internal;RealityData 
+internal;RealityDataClient 
+internal;RealityDataRelationship 
+internal;RealityDataRequestQueryOptions 

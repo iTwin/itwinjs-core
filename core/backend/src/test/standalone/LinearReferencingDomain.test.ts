@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import * as path from "path";
@@ -11,7 +11,7 @@ import {
 } from "@bentley/imodeljs-common";
 import {
   BackendRequestContext, LinearReferencingSchema,
-  PhysicalModel, IModelDb, SpatialCategory, PhysicalPartition, SubjectOwnsPartitionElements, LinearlyReferencedFromToLocation, Schema, Schemas, ClassRegistry,
+  PhysicalModel, IModelDb, SpatialCategory, PhysicalPartition, SubjectOwnsPartitionElements, LinearlyReferencedFromToLocation, Schema, Schemas, ClassRegistry, SnapshotDb,
 } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { LinearElement, LinearlyLocated, LinearlyLocatedAttribution, LinearlyLocatedSingleFromTo } from "../../domains/LinearReferencingElements";
@@ -48,10 +48,6 @@ class TestLinearlyLocatedAttribution extends LinearlyLocatedAttribution implemen
     return props;
   }
 
-  public getLinearElementId(): Id64String | undefined {
-    return LinearlyLocated.getLinearElementId(this.iModel, this.id);
-  }
-
   public getFromToLocation(): LinearlyReferencedFromToLocation | undefined {
     return LinearlyLocated.getFromToLocation(this.iModel, this.id);
   }
@@ -70,7 +66,7 @@ describe("LinearReferencing Domain", () => {
   const requestContext = new BackendRequestContext();
 
   it("should create elements exercising the LinearReferencing domain", async () => {
-    const iModelDb: IModelDb = IModelDb.createSnapshot(IModelTestUtils.prepareOutputFile("LinearReferencingDomain", "LinearReferencingTest.bim"), {
+    const iModelDb = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("LinearReferencingDomain", "LinearReferencingTest.bim"), {
       rootSubject: { name: "LinearReferencingTest", description: "Test of the LinearReferencing domain schema." },
       client: "LinearReferencing",
       globalOrigin: { x: 0, y: 0 },
@@ -135,7 +131,7 @@ describe("LinearReferencing Domain", () => {
 
     // Create a Test LinearlyLocatedAttribution element
     let linearFromToPosition: LinearlyReferencedFromToLocationProps = {
-      fromPosition: { distanceAlongFromStart: 10.0 },
+      fromPosition: { distanceAlongFromStart: 0.0 },
       toPosition: { distanceAlongFromStart: 70.0 },
     };
 
@@ -149,23 +145,25 @@ describe("LinearReferencing Domain", () => {
 
     let linearLocationAspect = LinearlyLocated.getFromToLocation(iModelDb, linearlyLocatedAttributionId);
     assert.isFalse(linearLocationAspect === undefined);
-    assert.equal(linearLocationAspect!.fromPosition.distanceAlongFromStart, 10.0);
+    assert.equal(linearLocationAspect!.fromPosition.distanceAlongFromStart, 0.0);
     assert.equal(linearLocationAspect!.toPosition.distanceAlongFromStart, 70.0);
 
     const linearlyLocatedAttribution = iModelDb.elements.getElement<TestLinearlyLocatedAttribution>(linearlyLocatedAttributionId);
     linearLocationAspect = linearlyLocatedAttribution.getFromToLocation();
-    assert.equal(linearLocationAspect!.fromPosition.distanceAlongFromStart, 10.0);
+    assert.equal(linearLocationAspect!.fromPosition.distanceAlongFromStart, 0.0);
     assert.equal(linearLocationAspect!.toPosition.distanceAlongFromStart, 70.0);
     assert.equal(linearlyLocatedAttribution.getLinearElementId(), linearElementId);
 
-    // TODO: Enable testing of updateFromToLocation below once iModel.elements.updateAspect is fixed.
-    // It currently doesn't work with LinearReferencing aspects since its schema declares handlers.
-    // linearFromToPosition.fromPosition.distanceAlongFromStart = 10.0;
-    // linearlyLocatedAttribution.updateFromToLocation(linearFromToPosition, linearLocationAspect!.id);
+    linearFromToPosition.fromPosition.distanceAlongFromStart = 10.0;
+    linearFromToPosition.fromPosition.lateralOffsetFromILinearElement = 5.0;
+    linearFromToPosition.fromPosition.verticalOffsetFromILinearElement = 15.0;
+    linearlyLocatedAttribution.updateFromToLocation(linearFromToPosition, linearLocationAspect!.id);
 
-    // linearLocationAspect = linearlyLocatedAttribution.getFromToLocation();
-    // assert.equal(linearLocationAspect!.fromPosition.distanceAlongFromStart, 10.0);
-    // assert.equal(linearLocationAspect!.toPosition.distanceAlongFromStart, 70.0);
+    linearLocationAspect = linearlyLocatedAttribution.getFromToLocation();
+    assert.equal(linearLocationAspect!.fromPosition.distanceAlongFromStart, 10.0);
+    assert.equal(linearLocationAspect!.fromPosition.lateralOffsetFromILinearElement, 5.0);
+    assert.equal(linearLocationAspect!.fromPosition.verticalOffsetFromILinearElement, 15.0);
+    assert.equal(linearLocationAspect!.toPosition.distanceAlongFromStart, 70.0);
 
     // Create a Test PhysicalLinear element
     const testPhysicalLinarProps: GeometricElement3dProps = {
@@ -215,6 +213,6 @@ describe("LinearReferencing Domain", () => {
 
     iModelDb.saveChanges("Insert Test LinearReferencing elements");
 
-    iModelDb.closeSnapshot();
+    iModelDb.close();
   });
 });

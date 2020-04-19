@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
 import {
@@ -10,13 +10,14 @@ import {
 } from "@bentley/bentleyjs-core";
 import {
   BRepEntity,
+  GeometricElement3dProps,
   GeometryParams,
   GeometryStreamIterator,
   GeometrySummaryRequestProps,
   GeometrySummaryVerbosity,
   IModelError,
-  TextString,
-  GeometricElement3dProps,
+  ImagePrimitive,
+  TextStringPrimitive,
 } from "@bentley/imodeljs-common";
 import { IModelDb } from "./IModelDb";
 import {
@@ -115,7 +116,8 @@ class ResponseGenerator {
         const prim = entry.primitive;
         switch (prim.type) {
           case "textString":
-            this.summarizeTextString(lines, prim.textString);
+          case "image":
+            this.summarizePrimitive(lines, prim);
             break;
           case "brep":
             this.summarizeBRep(lines, prim.brep);
@@ -179,14 +181,14 @@ class ResponseGenerator {
     return "SubGraphicRange: " + this.stringify(range);
   }
 
-  public summarizeTextString(lines: string[], text: TextString): void {
-    const summary = "textString";
+  public summarizePrimitive(lines: string[], primitive: TextStringPrimitive | ImagePrimitive): void {
+    const summary = primitive.type;
     if (GeometrySummaryVerbosity.Basic >= this.verbosity) {
       lines.push(summary);
       return;
     }
 
-    const json = this.stringify(text);
+    const json = this.stringify(primitive.type === "textString" ? primitive.textString : primitive.image);
     if (GeometrySummaryVerbosity.Detailed >= this.verbosity) {
       lines.push(summary + ": " + json);
       return;
@@ -285,17 +287,17 @@ class ResponseGenerator {
         return summary + " numPoints: " + query.points.length;
       case "bsurf":
         return summary
-        + " poleDimension: " + query.poleDimension
-        + " numPolesTotal: " + query.numPolesTotal()
-        + " degree[U,V]: " + JSON.stringify([query.degreeUV(UVSelect.uDirection), query.degreeUV(UVSelect.VDirection)])
-        + " order[U,V]: " + JSON.stringify([query.orderUV(UVSelect.uDirection), query.orderUV(UVSelect.VDirection)])
-        + " numSpan[U,V]: " + JSON.stringify([query.numSpanUV(UVSelect.uDirection), query.numSpanUV(UVSelect.VDirection)])
-        + " numPoles[U,V]: " + JSON.stringify([query.numPolesUV(UVSelect.uDirection), query.numPolesUV(UVSelect.VDirection)])
-        + " poleStep[U,V]: " + JSON.stringify([query.poleStepUV(UVSelect.uDirection), query.poleStepUV(UVSelect.VDirection)]);
+          + " poleDimension: " + query.poleDimension
+          + " numPolesTotal: " + query.numPolesTotal()
+          + " degree[U,V]: " + JSON.stringify([query.degreeUV(UVSelect.uDirection), query.degreeUV(UVSelect.VDirection)])
+          + " order[U,V]: " + JSON.stringify([query.orderUV(UVSelect.uDirection), query.orderUV(UVSelect.VDirection)])
+          + " numSpan[U,V]: " + JSON.stringify([query.numSpanUV(UVSelect.uDirection), query.numSpanUV(UVSelect.VDirection)])
+          + " numPoles[U,V]: " + JSON.stringify([query.numPolesUV(UVSelect.uDirection), query.numPolesUV(UVSelect.VDirection)])
+          + " poleStep[U,V]: " + JSON.stringify([query.poleStepUV(UVSelect.uDirection), query.poleStepUV(UVSelect.VDirection)]);
       case "polyface": {
         const data = query.data;
         summary = summary + " pointCount: " + data.point.length
-        + " pointIndexCount: " + data.pointIndex.length;
+          + " pointIndexCount: " + data.pointIndex.length;
         if (query.twoSided)
           summary = summary + " (two-sided)";
         if (undefined !== data.normal)
@@ -348,10 +350,10 @@ class ResponseGenerator {
           + " sweepAngle: " + rotationalSweep.getSweep().degrees;
       case "ruledSweep":
         const ruledSweep: RuledSweep = solid as RuledSweep;
-        const summariedCollection = ruledSweep.cloneContours().map((curveCollection) => this.summarizeCurveCollection(curveCollection));
+        const summarizedCollection = ruledSweep.cloneContours().map((curveCollection) => this.summarizeCurveCollection(curveCollection));
         return summary
           + " isClosedVolume" + ruledSweep.isClosedVolume
-          + " contours: " + JSON.stringify(summariedCollection);
+          + " contours: " + JSON.stringify(summarizedCollection);
       case "torusPipe":
         const torusPipe: TorusPipe = solid as TorusPipe;
         const vectorX = torusPipe.cloneVectorX();
@@ -376,7 +378,7 @@ class ResponseGenerator {
     switch (curve.curvePrimitiveType) {
       case "arc":
         const arc: Arc3d = curve as Arc3d;
-        summary =  summary + " center: " + JSON.stringify(arc.center.toJSON());
+        summary = summary + " center: " + JSON.stringify(arc.center.toJSON());
         if (undefined !== arc.circularRadius)
           summary = summary + " radius: " + arc.circularRadius();
         summary = summary

@@ -16,7 +16,7 @@ The heart of an Infrastructure Digital Twin is a relational database — known a
 <b>Open for Business and Innovation</b>
 <br/>
 iModel.js was designed to be both flexible and open, so that it can be easily used and integrated with other systems. It makes use of standard cloud and web technologies chosen to reduce input impedance with your codebase, and to preserve flexibility over time. A primary reason for open-sourcing the iModel.js platform is to foster innovation and novel uses of the technology. The opportunities for connecting infrastructure digital twins are vast and diverse, and we strongly encourage your involvement and suggestions for enhancing iModel.js and the iModel.js community.",
-        video: [{url: "https://www.youtube.com/embed/5iglYhQmv6U"}, {url: "https://www.youtube.com/embed/-e4T-otv-QA"}]
+        video: [{url: "landing-page/assets/landing_image_a.svg"}, {url: "landing-page/assets/landing_image_b.svg"}]
     }
 ]
 features:

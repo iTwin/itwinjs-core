@@ -1,9 +1,11 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module Numerics */
+/** @packageDocumentation
+ * @module Numerics
+ */
 
 import { Geometry } from "../Geometry";
 import { Point3d } from "../geometry3d/Point3dVector3d";
@@ -26,7 +28,7 @@ export class TriDiagonalSystem {
   private _aRight: Float64Array;
   // Main diagonal, indexed by rows
   private _aDiag: Float64Array;
-  // Right sude vector
+  // Right side vector
   private _b: Float64Array;
   // Solution vector
   private _x: Float64Array;
@@ -78,7 +80,7 @@ export class TriDiagonalSystem {
   public setX(row: number, xx: number) {
     this._x[row] = xx;
   }
-  /** Access data frin the solution (X) vector */
+  /** Access data from the solution (X) vector */
   public getX(row: number): number {
     return this._x[row];
   }
@@ -187,7 +189,7 @@ export class TriDiagonalSystem {
     // Eliminate in subdiagonal.
     for (let i = 0; i < n1; i++) {
       const r = Geometry.conditionalDivideFraction(this._aLeft[i + 1], this._aDiag[i]);
-      if (!r)
+      if (r === undefined)
         return false;
       this._aLeft[i + 1] = r;
       this._aDiag[i + 1] -= r * this._aRight[i];
@@ -202,7 +204,7 @@ export class TriDiagonalSystem {
     if (!this.factor())
       return false;
 
-    // Apply Linv to B, same sequence as was done to A:
+    // Apply L inverse to B, same sequence as was done to A:
     for (let i = 0; i < n; i++) {
       this._x[i] = this._b[i];
     }
@@ -210,8 +212,8 @@ export class TriDiagonalSystem {
       this._x[i] -= this._aLeft[i] * this._x[i - 1];
     }
 
-    // Print ("LU  LinvB B");
-    // overwrite X with solution of U * X = Linv B, where RHS is already in X...
+    // Print ("LU  L Inverse B B");
+    // overwrite X with solution of U * X = L inverse B, where RHS is already in X...
     // All diagonals are known to be nonzero. Really.  Really???
     this._x[n1] /= this._aDiag[n1];
 
@@ -234,7 +236,7 @@ export class TriDiagonalSystem {
     if (!this.factor())
       return false;
 
-    // Apply Linv to B, same sequence as was done to A:
+    // Apply L inverse to B, same sequence as was done to A:
     if (vectorB !== vectorX) {
       for (let i = 0; i < n; i++) {
         vectorX[i].setFrom(vectorB[i]);
@@ -250,8 +252,8 @@ export class TriDiagonalSystem {
       vectorX[i].z -= a * vectorX[i - 1].z;
     }
 
-    // Print ("LU  LinvB B");
-    // overwrite X with solution of U * X = Linv B, where RHS is already in X...
+    // Print ("LU  L inverse B");
+    // overwrite X with solution of U * X = L inverse B, where RHS is already in X...
     // All diagonals are known to be nonzero. Really.  Really???
     b = 1.0 / this._aDiag[n1];
     vectorX[n1].x *= b;

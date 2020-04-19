@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { render } from "@testing-library/react";
@@ -8,7 +8,8 @@ import * as React from "react";
 import * as sinon from "sinon";
 import TestUtils from "../../../TestUtils";
 import { DoublePropertyValueRenderer } from "../../../../ui-components/properties/renderers/value/DoublePropertyValueRenderer";
-import { PrimitiveValue } from "@bentley/imodeljs-frontend";
+import { PrimitiveValue } from "@bentley/ui-abstract";
+import { PropertyValueRendererContext } from "../../../../ui-components/properties/ValueRendererManager";
 
 function createDoubleProperty(value: number, displayValue?: string) {
   const property = TestUtils.createPrimitiveStringProperty("Length", "", displayValue);
@@ -39,17 +40,32 @@ describe("DoublePropertyValueRenderer", () => {
       elementRender.getByText("0.45");
     });
 
-    it("renders navigation property wrapped in an anchored tag when property record has it", () => {
+    it("renders double property wrapped in an anchored tag when property record has it", () => {
       const renderer = new DoublePropertyValueRenderer();
-      const stringProperty = TestUtils.createPrimitiveStringProperty("Label", "Test property");
-      stringProperty.links = { onClick: sinon.spy() };
+      const property = createDoubleProperty(0.45, "zero point forty five meters");
+      property.links = { onClick: sinon.spy() };
 
-      const element = renderer.render(stringProperty);
+      const element = renderer.render(property);
       const renderedElement = render(<>{element}</>);
 
-      renderedElement.getByText("Test property");
+      renderedElement.getByText("zero point forty five meters");
 
       expect(renderedElement.container.getElementsByClassName("core-underlined-button")).to.not.be.empty;
+    });
+
+    it("renders double property with highlighting", () => {
+      const renderer = new DoublePropertyValueRenderer();
+      const property = createDoubleProperty(0.45, "zero point forty five meters");
+
+      const highlightNode = (text: string) => <span>{text + " Highlighted"}</span>;
+      const renderContext: PropertyValueRendererContext = {
+        textHighlighter: highlightNode,
+      };
+
+      const element = renderer.render(property, renderContext);
+      const renderedElement = render(<>{element}</>);
+
+      renderedElement.getByText("zero point forty five meters Highlighted");
     });
 
     it("throws when trying to render array property", () => {

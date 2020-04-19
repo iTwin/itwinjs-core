@@ -1,10 +1,12 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Toolbar */
+/** @packageDocumentation
+ * @module Toolbar
+ */
 
-import * as classnames from "classnames";
+import classnames from "classnames";
 import * as React from "react";
 import { CommonProps } from "@bentley/ui-core";
 import "./Panel.scss";
@@ -38,7 +40,9 @@ export class Panel extends React.PureComponent<PanelProps> {
     );
   }
 
-  /** Determines if an expandable group panel is open. */
+  /** Determines if an expandable group panel is open.
+   * @deprecated
+   */
   public static get isPanelOpen(): boolean {
     return (document.getElementsByClassName(Panel._groupPanelClassName).length > 0);
   }

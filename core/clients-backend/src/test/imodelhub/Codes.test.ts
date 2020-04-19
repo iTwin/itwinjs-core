@@ -1,18 +1,21 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
 import * as utils from "./TestUtils";
 
 import { IModelHubStatus, Id64, GuidString } from "@bentley/bentleyjs-core";
 import {
-  AccessToken, IModelClient, CodeState, HubCode, AggregateResponseError, ConflictingCodesError, CodeQuery,
-  IModelHubClientError, CodeSequence, CodeSequenceType, AuthorizedClientRequestContext,
-} from "@bentley/imodeljs-clients";
+  AccessToken, AuthorizedClientRequestContext,
+} from "@bentley/itwin-client";
+import { TestUsers } from "@bentley/oidc-signin-tool";
 import { ResponseBuilder } from "../ResponseBuilder";
 import { TestConfig } from "../TestConfig";
-import { TestUsers } from "../TestUsers";
+import {
+  IModelClient, CodeState, HubCode, AggregateResponseError, ConflictingCodesError, CodeQuery,
+  IModelHubClientError, CodeSequence, CodeSequenceType,
+} from "@bentley/imodelhub-client";
 chai.should();
 
 function containsCode(codes: HubCode[], wantCode: HubCode) {
@@ -174,8 +177,10 @@ describe("iModelHub CodeHandler", () => {
   });
 
   it("should get codes in chunks (#iModelBank)", async () => {
-    const mockedCodes = [utils.randomCode(briefcaseId), utils.randomCode(briefcaseId), utils.randomCode(briefcaseId),
-    utils.randomCode(briefcaseId), utils.randomCode(briefcaseId), utils.randomCode(briefcaseId)];
+    const mockedCodes = [
+      utils.randomCode(briefcaseId), utils.randomCode(briefcaseId), utils.randomCode(briefcaseId),
+      utils.randomCode(briefcaseId), utils.randomCode(briefcaseId), utils.randomCode(briefcaseId),
+    ];
 
     utils.mockGetCodes(imodelId, `?$top=${CodeQuery.defaultPageSize}`, ...mockedCodes);
     const codes = await iModelClient.codes.get(requestContext, imodelId, new CodeQuery());
@@ -292,9 +297,7 @@ describe("iModelHub CodeHandler", () => {
 
   it("should get unavailable codes (#iModelBank)", async () => {
     if (TestConfig.enableMocks) {
-      const mockedCodes = [utils.randomCode(briefcaseId2),
-      utils.randomCode(briefcaseId2)];
-
+      const mockedCodes = [utils.randomCode(briefcaseId2), utils.randomCode(briefcaseId2)];
       const filter = `?$filter=BriefcaseId+ne+${briefcaseId}`;
       utils.mockGetCodes(imodelId, filter + `&$top=${CodeQuery.defaultPageSize}`, ...mockedCodes);
     }

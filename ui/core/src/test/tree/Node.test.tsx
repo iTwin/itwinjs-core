@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { mount, shallow } from "enzyme";
@@ -8,7 +8,7 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { ExpansionToggle } from "../../ui-core/tree/ExpansionToggle";
 import { TreeNode as Node } from "../../ui-core/tree/Node";
-import { Checkbox } from "../../ui-core/inputs/checkbox/Checkbox";
+import { Checkbox } from "../../ui-core/checkbox/Checkbox";
 import { CheckBoxState } from "../../ui-core/enums/CheckBoxState";
 
 describe("<Node />", () => {

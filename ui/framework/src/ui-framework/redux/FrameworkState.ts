@@ -1,12 +1,14 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module State */
+/** @packageDocumentation
+ * @module State
+ */
 
 import { ConfigurableUiState, ConfigurableUiReducer } from "../configurableui/state";
 import { SessionState, SessionStateReducer } from "./SessionState";
-import { combineReducers } from "../utils/redux-ts";
+import { combineReducers } from "./redux-ts";
 
 /** Interface combining all the Framework state interfaces.
  * @beta

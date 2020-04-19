@@ -1,13 +1,15 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Rendering */
+/** @packageDocumentation
+ * @module Rendering
+ */
 
 import { FeatureOverrideProvider, Viewport } from "./Viewport";
 import { ColorDef, ColorDefProps, RgbColor } from "@bentley/imodeljs-common";
 import { Id64Set, Id64Arg, Id64Array, Id64 } from "@bentley/bentleyjs-core";
-import { FeatureSymbology } from "./rendering";
+import { FeatureSymbology } from "./render/FeatureSymbology";
 
 /** Whether override includes both color and alpha, only color, or only alpha.
  * @beta
@@ -97,23 +99,28 @@ export class EmphasizeElements implements FeatureOverrideProvider {
   }
 
   /** Get color and override type for the given key. */
-  public getOverrideFromKey(key: number, color: ColorDef): FeatureOverrideType {
+  public getOverrideFromKey(key: number): { overrideType: FeatureOverrideType, color: ColorDef } {
+    let overrideType;
+    let color;
+
     if (key < 0) {
-      color.setFrom(ColorDef.from(0, 0, 0, 255 * Math.abs(key)));
-      return FeatureOverrideType.AlphaOnly;
+      color = ColorDef.from(0, 0, 0, 255 * Math.abs(key));
+      overrideType = FeatureOverrideType.AlphaOnly;
+    } else {
+      color = ColorDef.fromJSON(key);
+      if (0 === color.getAlpha()) {
+        color = color.withAlpha(255);
+        overrideType = FeatureOverrideType.ColorOnly;
+      } else {
+        overrideType = FeatureOverrideType.ColorAndAlpha;
+      }
     }
-    color.setFrom(ColorDef.fromJSON(key));
-    if (0 === color.getAlpha()) {
-      color.setAlpha(255);
-      return FeatureOverrideType.ColorOnly;
-    }
-    return FeatureOverrideType.ColorAndAlpha;
+
+    return { overrideType, color };
   }
 
-  /** Get the current default appearance such as used by emphasizeElements. */
+  /** The current default appearance for use with overrideElements when not using emphasizeElements. */
   public get defaultAppearance(): FeatureSymbology.Appearance | undefined { return this._defaultAppearance; }
-
-  /** Set the current default appearance for use with overrideElements when not using emphasizeElements. */
   public set defaultAppearance(appearance: FeatureSymbology.Appearance | undefined) { this._defaultAppearance = appearance; }
 
   /** Create default appearance to use for emphasizeElements when not supplied by caller. */
@@ -473,11 +480,10 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     const overriddenElements = this.getOverriddenElements();
     if (undefined !== overriddenElements) {
       const appearanceOverride: AppearanceOverrideProps[] = [];
-      const color = new ColorDef();
       for (const [key, ovrIds] of overriddenElements) {
-        const overrideType = this.getOverrideFromKey(key, color);
+        const { color, overrideType } = { ...this.getOverrideFromKey(key) };
         const ids = [...ovrIds];
-        appearanceOverride.push({ overrideType, color, ids });
+        appearanceOverride.push({ overrideType, color: color.toJSON(), ids });
       }
 
       props.appearanceOverride = appearanceOverride;

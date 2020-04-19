@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Utils */
+/** @packageDocumentation
+ * @module Utils
+ */
 
 /** A duration of time. Can be either positive (towards future) or negative (in the past).
  * BeDurations are immutable.
@@ -41,6 +43,22 @@ export class BeDuration {
    */
   public static async wait(ms: number): Promise<void> {
     return new Promise<void>((resolve: any) => setTimeout(resolve, ms));
+  }
+
+  /** Utility function to wait for either the specified time or a promise, whichever resolves first
+   * @param ms Maximum duration in milliseconds to wait
+   * @param promise A pending promise to wait for
+   * @return Promise that resolves after the specified wait period or the provided promise resolves, whichever comes first
+   */
+  public static async race<T>(ms: number, promise: PromiseLike<T>): Promise<T | void> {
+    let timeout: any;
+    const waitPromise = new Promise<void>((resolve) => {
+      timeout = setTimeout(resolve, ms);
+    });
+    return Promise.race([waitPromise, promise]).finally(() => {
+      if (timeout)
+        clearTimeout(timeout);
+    });
   }
 
   /** Utility function to just wait for the specified time

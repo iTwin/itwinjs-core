@@ -1,32 +1,16 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 @import "variables";
 
 .nz-toolbar-item-expandable-group-nested {
   position: relative;
 
-  .nz-back-arrow-container {
-    width: 15px;
-    height: 20px;
+  .nz-back {
     position: absolute;
     left: 10px;
     top: 8px;
-
-    &:hover {
-      cursor: pointer;
-
-      > * {
-        color: $buic-foreground-primary;
-      }
-    }
-
-    > * {
-      position: relative;
-      left: 3px;
-      top: 3px;
-    }
   }
 
   > .nz-toolbar-item-expandable-group-title {

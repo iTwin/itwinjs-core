@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
 import React from "react";
@@ -11,10 +11,7 @@ import { HueSlider } from "../../ui-components/color/HueSlider";
 import { HSVColor } from "@bentley/imodeljs-common";
 
 describe("<HueSlider />", () => {
-  const hsv = new HSVColor();
-  hsv.h = 60;
-  hsv.s = 100;
-  hsv.v = 50;
+  const hsv = new HSVColor(60, 100, 50);
 
   const createBubbledEvent = (type: string, props = {}) => {
     const event = new Event(type, { bubbles: true });

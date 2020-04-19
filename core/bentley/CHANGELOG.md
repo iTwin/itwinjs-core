@@ -1,6 +1,46 @@
 # Change Log - @bentley/bentleyjs-core
 
-This log was last generated on Fri, 01 Nov 2019 13:28:37 GMT and should not be manually modified.
+This log was last generated on Wed, 04 Mar 2020 16:16:31 GMT and should not be manually modified.
+
+## 1.13.0
+Wed, 04 Mar 2020 16:16:31 GMT
+
+*Version update only*
+
+## 1.12.0
+Wed, 12 Feb 2020 17:45:49 GMT
+
+*Version update only*
+
+## 1.11.0
+Wed, 22 Jan 2020 19:24:11 GMT
+
+### Updates
+
+- VSS$257397: Temporary fix for checking electron renderer. 
+- Upgrade to TypeScript 3.7.2.
+
+## 1.10.0
+Tue, 07 Jan 2020 19:44:01 GMT
+
+### Updates
+
+- Added ByteStream class.
+
+## 1.9.0
+Tue, 10 Dec 2019 18:08:56 GMT
+
+### Updates
+
+- Setup OidcDesktopClient for Electron use cases. 
+- Added non-static wait and executeAfter to BeDuration
+- fix warnings from static analysis
+- Added `BeDuration.race` for common timeout operations.
+
+## 1.8.0
+Fri, 22 Nov 2019 14:03:34 GMT
+
+*Version update only*
 
 ## 1.7.0
 Fri, 01 Nov 2019 13:28:37 GMT

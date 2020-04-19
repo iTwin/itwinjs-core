@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Notification */
+/** @packageDocumentation
+ * @module Notification
+ */
 
 import * as React from "react";
 import classnames from "classnames";
@@ -13,37 +15,40 @@ import {
   ToolAssistanceInstructions, ToolAssistanceInstruction, ToolAssistanceSection, ToolAssistanceImage,
   ToolAssistanceKeyboardInfo, ToolAssistanceInputMethod,
 } from "@bentley/imodeljs-frontend";
+import { IconSpecUtilities } from "@bentley/ui-abstract";
 import {
   SvgSprite, FillCentered, LocalUiSettings, UiSettingsStatus, UiSettings,
-  HorizontalTabs, UiCore, LabeledToggle, Icon,
+  HorizontalTabs, UiCore, LabeledToggle, Icon, UiSettingsResult,
 } from "@bentley/ui-core";
 import {
   ToolAssistance, ToolAssistanceDialog, FooterPopup,
   ToolAssistanceInstruction as NZ_ToolAssistanceInstruction, ToolAssistanceSeparator, ToolAssistanceItem, TitleBarButton,
 } from "@bentley/ui-ninezone";
 
-import {
-  UiFramework, StatusFieldProps, StatusBarFieldId, MessageManager,
-  FrontstageManager, ToolAssistanceChangedEventArgs, ToolIconChangedEventArgs, CursorPrompt,
-} from "../../../ui-framework";
+import { StatusFieldProps } from "../StatusFieldProps";
+import { CursorPrompt } from "../../cursor/cursorprompt/CursorPrompt";
+import { MessageManager, ToolAssistanceChangedEventArgs } from "../../messages/MessageManager";
+import { FrontstageManager, ToolIconChangedEventArgs } from "../../frontstage/FrontstageManager";
+import { StatusBarFieldId } from "../../statusbar/StatusBarWidgetControl";
+import { UiFramework } from "../../UiFramework";
 
 import "./ToolAssistanceField.scss";
-import acceptPointIcon from "./accept-point.svg";
-import cursorClickIcon from "./cursor-click.svg";
-import clickLeftIcon from "./mouse-click-left.svg";
-import clickRightIcon from "./mouse-click-right.svg";
-import mouseWheelClickIcon from "./mouse-click-wheel.svg";
-import clickLeftDragIcon from "./mouse-click-left-drag.svg";
-import clickRightDragIcon from "./mouse-click-right-drag.svg";
-import clickMouseWheelDragIcon from "./mouse-click-wheel-drag.svg";
-import oneTouchTapIcon from "./gesture-one-finger-tap.svg";
-import oneTouchDoubleTapIcon from "./gesture-one-finger-tap-double.svg";
-import oneTouchDragIcon from "./gesture-one-finger-drag.svg";
-import twoTouchTapIcon from "./gesture-two-finger-tap.svg";
-import twoTouchDragIcon from "./gesture-two-finger-drag.svg";
-import twoTouchPinchIcon from "./gesture-pinch.svg";
-import touchCursorTapIcon from "./touch-cursor-point.svg";
-import touchCursorDragIcon from "./touch-cursor-pan.svg";
+import acceptPointIcon from "./accept-point.svg?sprite";
+import cursorClickIcon from "./cursor-click.svg?sprite";
+import clickLeftIcon from "./mouse-click-left.svg?sprite";
+import clickRightIcon from "./mouse-click-right.svg?sprite";
+import mouseWheelClickIcon from "./mouse-click-wheel.svg?sprite";
+import clickLeftDragIcon from "./mouse-click-left-drag.svg?sprite";
+import clickRightDragIcon from "./mouse-click-right-drag.svg?sprite";
+import clickMouseWheelDragIcon from "./mouse-click-wheel-drag.svg?sprite";
+import oneTouchTapIcon from "./gesture-one-finger-tap.svg?sprite";
+import oneTouchDoubleTapIcon from "./gesture-one-finger-tap-double.svg?sprite";
+import oneTouchDragIcon from "./gesture-one-finger-drag.svg?sprite";
+import twoTouchTapIcon from "./gesture-two-finger-tap.svg?sprite";
+import twoTouchDragIcon from "./gesture-two-finger-drag.svg?sprite";
+import twoTouchPinchIcon from "./gesture-pinch.svg?sprite";
+import touchCursorTapIcon from "./touch-cursor-point.svg?sprite";
+import touchCursorDragIcon from "./touch-cursor-pan.svg?sprite";
 
 /** Properties of [[ToolAssistanceField]] component.
  * @beta
@@ -79,7 +84,6 @@ interface ToolAssistanceFieldState {
   showTouchInstructions: boolean;
   mouseTouchTabIndex: number;
   isPinned: boolean;
-  target: HTMLElement | null;
 }
 
 /** Tool Assistance Field React component.
@@ -89,9 +93,11 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
   private static _toolAssistanceKey = "ToolAssistance";
   private static _showPromptAtCursorKey = "showPromptAtCursor";
   private static _mouseTouchTabIndexKey = "mouseTouchTabIndex";
+  private _target: HTMLElement | null = null;
   private _className: string;
   private _indicator = React.createRef<HTMLDivElement>();
   private _cursorPrompt: CursorPrompt;
+  private _isMounted = false;
 
   /** @internal */
   public static readonly defaultProps: ToolAssistanceFieldDefaultProps = {
@@ -113,7 +119,7 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
     this.state = {
       instructions: undefined,
       toolIconSpec: "",
-      showPromptAtCursor: false,
+      showPromptAtCursor: p.defaultPromptAtCursor,
       includeMouseInstructions: !mobile,
       includeTouchInstructions: true,
       showMouseTouchTabs: false,
@@ -121,38 +127,52 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
       showTouchInstructions: false,
       mouseTouchTabIndex: 0,
       isPinned: false,
-      target: null,
     };
 
     this._cursorPrompt = new CursorPrompt(this.props.cursorPromptTimeout, this.props.fadeOutCursorPrompt);
   }
 
   /** @internal */
-  public componentDidMount() {
+  public async componentDidMount() {
+    this._isMounted = true;
     MessageManager.onToolAssistanceChangedEvent.addListener(this._handleToolAssistanceChangedEvent);
     FrontstageManager.onToolIconChangedEvent.addListener(this._handleToolIconChangedEvent);
 
-    let showPromptAtCursor = this.props.defaultPromptAtCursor;
-    let result = this.props.uiSettings.getSetting(ToolAssistanceField._toolAssistanceKey, ToolAssistanceField._showPromptAtCursorKey);
-
-    // istanbul ignore else
-    if (result.status === UiSettingsStatus.Success)
-      showPromptAtCursor = result.setting as boolean;
-
-    let mouseTouchTabIndex = 0;
-    result = this.props.uiSettings.getSetting(ToolAssistanceField._toolAssistanceKey, ToolAssistanceField._mouseTouchTabIndexKey);
-
-    // istanbul ignore else
-    if (result.status === UiSettingsStatus.Success)
-      mouseTouchTabIndex = result.setting as number;
-
-    this.setState({ showPromptAtCursor, mouseTouchTabIndex });
+    await this.restoreSettings();
   }
 
   /** @internal */
   public componentWillUnmount() {
+    this._isMounted = false;
     MessageManager.onToolAssistanceChangedEvent.removeListener(this._handleToolAssistanceChangedEvent);
     FrontstageManager.onToolIconChangedEvent.removeListener(this._handleToolIconChangedEvent);
+  }
+
+  private async restoreSettings() {
+    let getShowPromptAtCursor: Promise<UiSettingsResult> | undefined;
+    // istanbul ignore else
+    if (this.props.includePromptAtCursor) {
+      getShowPromptAtCursor = this.props.uiSettings.getSetting(ToolAssistanceField._toolAssistanceKey, ToolAssistanceField._showPromptAtCursorKey);
+    }
+    const getMouseTouchTabIndex = this.props.uiSettings.getSetting(ToolAssistanceField._toolAssistanceKey, ToolAssistanceField._mouseTouchTabIndexKey);
+    const [showPromptAtCursorResult, mouseTouchTabIndexResult] = await Promise.all([
+      getShowPromptAtCursor,
+      getMouseTouchTabIndex,
+    ]);
+
+    // istanbul ignore else
+    if (showPromptAtCursorResult !== undefined && showPromptAtCursorResult.status === UiSettingsStatus.Success) {
+      // istanbul ignore else
+      if (this._isMounted)
+        this.setState({ showPromptAtCursor: showPromptAtCursorResult.setting });
+    }
+
+    // istanbul ignore else
+    if (mouseTouchTabIndexResult.status === UiSettingsStatus.Success) {
+      // istanbul ignore else
+      if (this._isMounted)
+        this.setState({ mouseTouchTabIndex: mouseTouchTabIndexResult.setting });
+    }
   }
 
   private _handleToolAssistanceChangedEvent = (args: ToolAssistanceChangedEventArgs): void => {
@@ -180,17 +200,19 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
       }
     }
 
-    this.setState(
-      {
-        instructions: args.instructions,
-        showMouseTouchTabs,
-        showMouseInstructions,
-        showTouchInstructions,
-      },
-      () => {
-        this._showCursorPrompt();
-      },
-    );
+    // istanbul ignore else
+    if (this._isMounted)
+      this.setState(
+        {
+          instructions: args.instructions,
+          showMouseTouchTabs,
+          showMouseInstructions,
+          showTouchInstructions,
+        },
+        () => {
+          this._showCursorPrompt();
+        },
+      );
   }
 
   private _isBothInstruction = (instruction: ToolAssistanceInstruction) => {
@@ -202,12 +224,14 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
   private _isTouchInstruction = (instruction: ToolAssistanceInstruction) => instruction.inputMethod === ToolAssistanceInputMethod.Touch;
 
   private _handleToolIconChangedEvent = (args: ToolIconChangedEventArgs): void => {
-    this.setState(
-      { toolIconSpec: args.iconSpec },
-      () => {
-        this._showCursorPrompt();
-      },
-    );
+    // istanbul ignore else
+    if (this._isMounted)
+      this.setState(
+        { toolIconSpec: args.iconSpec },
+        () => {
+          this._showCursorPrompt();
+        },
+      );
 
   }
 
@@ -232,17 +256,18 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
     return displayableInstructions;
   }
 
-  private _handleMouseTouchTab = (index: number) => {
-    this.props.uiSettings.saveSetting(ToolAssistanceField._toolAssistanceKey, ToolAssistanceField._mouseTouchTabIndexKey, index);
-
+  private _handleMouseTouchTab = async (index: number) => {
     const showMouseInstructions = index === 0;
     const showTouchInstructions = index === 1;
 
-    this.setState({
-      mouseTouchTabIndex: index,
-      showMouseInstructions,
-      showTouchInstructions,
-    });
+    // istanbul ignore else
+    if (this._isMounted)
+      this.setState({
+        mouseTouchTabIndex: index,
+        showMouseInstructions,
+        showTouchInstructions,
+      });
+    await this.props.uiSettings.saveSetting(ToolAssistanceField._toolAssistanceKey, ToolAssistanceField._mouseTouchTabIndexKey, index);
   }
 
   /** @internal */
@@ -335,7 +360,8 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
               </>
             }
             indicatorRef={this._indicator}
-            className="uifw-statusFields-toolassistance"
+            className={classnames("uifw-statusFields-toolassistance", this.props.className)}
+            style={this.props.style}
             isInFooterMode={this.props.isInFooterMode}
             onClick={this._handleToolAssistanceIndicatorClick}
           >
@@ -346,7 +372,7 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
           isOpen={this.props.openWidget === this._className}
           onClose={this._handleClose}
           onOutsideClick={this._handleOutsideClick}
-          target={this.state.target}
+          target={this._target}
           isPinned={this.state.isPinned}
         >
           <ToolAssistanceDialog
@@ -374,13 +400,15 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
   }
 
   private _handleTargetRef = (target: HTMLElement | null) => {
-    this.setState({ target });
+    this._target = target;
   }
 
-  private _onPromptAtCursorChange = (checked: boolean) => {
-    this.props.uiSettings.saveSetting(ToolAssistanceField._toolAssistanceKey, ToolAssistanceField._showPromptAtCursorKey, checked);
+  private _onPromptAtCursorChange = async (checked: boolean) => {
+    // istanbul ignore else
+    if (this._isMounted)
+      this.setState({ showPromptAtCursor: checked });
 
-    this.setState({ showPromptAtCursor: checked });
+    await this.props.uiSettings.saveSetting(ToolAssistanceField._toolAssistanceKey, ToolAssistanceField._showPromptAtCursorKey, checked);
   }
 
   private _handleClose = () => {
@@ -402,19 +430,18 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
   private _handleToolAssistanceIndicatorClick = () => {
     const isOpen = this.props.openWidget === this._className;
     if (isOpen) {
-      if (this.state.isPinned)
-        this.setState({ isPinned: false });
       this.setOpenWidget(null);
     } else
       this.setOpenWidget(this._className);
   }
 
   private _handlePinButtonClick = () => {
-    this.setState({ isPinned: true });
+    // istanbul ignore else
+    if (this._isMounted)
+      this.setState({ isPinned: true });
   }
 
   private _handleCloseButtonClick = () => {
-    this.setState({ isPinned: false });
     this._handleClose();
   }
 
@@ -422,6 +449,12 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
     // istanbul ignore else
     if (this.props.onOpenWidget)
       this.props.onOpenWidget(openWidget);
+
+    if (!openWidget && this.state.isPinned) {
+      // istanbul ignore else
+      if (this._isMounted)
+        this.setState({ isPinned: false });
+    }
   }
 
   /** @internal */
@@ -445,8 +478,11 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
         Logger.logError(UiFramework.loggerCategory(this), `getInstructionImage: Invalid keyboardInfo provided with image`);
       }
     } else if (typeof instruction.image === "string") {
-      if (instruction.image)
-        image = <div className="uifw-toolassistance-icon-large"><Icon iconSpec={instruction.image} /></div>;
+      if (instruction.image.length > 0) {
+        const svgSource = IconSpecUtilities.getSvgSource(instruction.image);
+        const className = (svgSource !== undefined) ? "uifw-toolassistance-svg" : "uifw-toolassistance-icon-large";
+        image = <div className={className}><Icon iconSpec={instruction.image} /></div>;
+      }
     } else if (instruction.image === ToolAssistanceImage.Keyboard) {
       if (instruction.keyboardInfo) {
         image = ToolAssistanceField.getInstructionKeyboardImage(instruction.keyboardInfo);

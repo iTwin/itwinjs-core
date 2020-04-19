@@ -1,12 +1,14 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module State */
+/** @packageDocumentation
+ * @module State
+ */
 
-import { createAction, ActionsUnion } from "../utils/redux-ts";
+import { createAction, ActionsUnion } from "../redux/redux-ts";
 import { SnapMode } from "@bentley/imodeljs-frontend";
-import { COLOR_THEME_DEFAULT } from "../theme/ThemeManager";
+import { COLOR_THEME_DEFAULT, WIDGET_OPACITY_DEFAULT } from "../theme/ThemeManager";
 
 // cSpell:ignore configurableui snapmode toolprompt
 
@@ -36,7 +38,7 @@ const initialState: ConfigurableUiState = {
   snapMode: SnapMode.NearestKeypoint as number,
   toolPrompt: "",
   theme: COLOR_THEME_DEFAULT,
-  widgetOpacity: 0.90,
+  widgetOpacity: WIDGET_OPACITY_DEFAULT,
 };
 
 /** An object with a function that creates each ConfigurableUiReducer that can be handled by our reducer.

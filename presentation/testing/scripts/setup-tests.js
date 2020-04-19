@@ -1,9 +1,16 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 const chai = require("chai");
 const chaiJestSnapshot = require("chai-jest-snapshot");
+
+// Fix node's module loader to strip ?sprite from SVG imports
+const m = require("module");
+const origLoader = m._load;
+m._load = (request, parent, isMain) => {
+  return origLoader(request.replace("?sprite", ""), parent, isMain);
+};
 
 chai.use(chaiJestSnapshot);
 

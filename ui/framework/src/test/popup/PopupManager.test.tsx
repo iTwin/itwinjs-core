@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { mount } from "enzyme";
@@ -19,6 +19,7 @@ import { Calculator } from "../../ui-framework/accudraw/Calculator";
 import { TestUtils } from "../TestUtils";
 import { PopupManager, PopupRenderer } from "../../ui-framework/popup/PopupManager";
 import { MenuItemProps } from "../../ui-framework/shared/MenuItem";
+import { AccuDrawPopupManager } from "../../ui-framework/accudraw/AccuDrawPopupManager";
 
 describe("PopupManager", () => {
 
@@ -40,12 +41,12 @@ describe("PopupManager", () => {
     it("showMenuButton should add menuButton", () => {
       const menuItemProps: MenuItemProps[] = [
         {
-          id: "test", item: { label: "test label", iconSpec: "icon-placeholder", execute: () => { } },
+          id: "test", item: { label: "test label", icon: "icon-placeholder", execute: () => { } },
         },
       ];
       const doc = new DOMParser().parseFromString("<div>xyz</div>", "text/html");
 
-      PopupManager.showMenuButton("test1", doc.documentElement, new Point(150, 250), menuItemProps);
+      AccuDrawPopupManager.showMenuButton("test1", doc.documentElement, new Point(150, 250), menuItemProps);
 
       expect(PopupManager.popupCount).to.eq(1);
       let popup = PopupManager.popups[0];
@@ -53,7 +54,7 @@ describe("PopupManager", () => {
       expect(popup.pt.x).to.eq(150);
       expect(popup.pt.y).to.eq(250);
 
-      PopupManager.showMenuButton("test1", doc.documentElement, new Point(100, 200), menuItemProps);
+      AccuDrawPopupManager.showMenuButton("test1", doc.documentElement, new Point(100, 200), menuItemProps);
 
       expect(PopupManager.popupCount).to.eq(1);
       popup = PopupManager.popups[0];
@@ -62,29 +63,29 @@ describe("PopupManager", () => {
       expect(popup.pt.y).to.eq(200);
     });
 
-    it("removeMenuButton should remove menuButton", () => {
+    it("hideMenuButton should hide menuButton", () => {
       const menuItemProps: MenuItemProps[] = [
         {
-          id: "test", item: { label: "test label", iconSpec: "icon-placeholder", execute: () => { } },
+          id: "test", item: { label: "test label", icon: "icon-placeholder", execute: () => { } },
         },
       ];
       const doc = new DOMParser().parseFromString("<div>xyz</div>", "text/html");
 
-      PopupManager.showMenuButton("test1", doc.documentElement, new Point(150, 250), menuItemProps);
+      AccuDrawPopupManager.showMenuButton("test1", doc.documentElement, new Point(150, 250), menuItemProps);
 
       expect(PopupManager.popupCount).to.eq(1);
       const popup = PopupManager.popups[0];
       expect(popup.id).to.eq("test1");
 
-      PopupManager.removeMenuButton("test1");
+      AccuDrawPopupManager.hideMenuButton("test1");
 
       expect(PopupManager.popupCount).to.eq(0);
     });
 
-    it("removeMenuButton should log error when invalid id passed", () => {
+    it("hideMenuButton should log error when invalid id passed", () => {
       const spyMethod = sinon.spy(Logger, "logError");
 
-      PopupManager.removeMenuButton("invalid-id");
+      AccuDrawPopupManager.hideMenuButton("invalid-id");
 
       spyMethod.calledOnce.should.true;
       (Logger.logError as any).restore();
@@ -95,14 +96,14 @@ describe("PopupManager", () => {
       const spyOk = sinon.spy();
       const spyCancel = sinon.spy();
 
-      PopupManager.showCalculator(doc.documentElement, new Point(150, 250), 100, "icon-placeholder", spyOk, spyCancel);
+      AccuDrawPopupManager.showCalculator(doc.documentElement, new Point(150, 250), 100, "icon-placeholder", spyOk, spyCancel);
 
       expect(PopupManager.popupCount).to.eq(1);
       let popup = PopupManager.popups[0];
       expect(popup.pt.x).to.eq(150);
       expect(popup.pt.y).to.eq(250);
 
-      PopupManager.showCalculator(doc.documentElement, new Point(100, 200), 100, "icon-placeholder", spyOk, spyCancel);
+      AccuDrawPopupManager.showCalculator(doc.documentElement, new Point(100, 200), 100, "icon-placeholder", spyOk, spyCancel);
 
       expect(PopupManager.popupCount).to.eq(1);
       popup = PopupManager.popups[0];
@@ -110,16 +111,16 @@ describe("PopupManager", () => {
       expect(popup.pt.y).to.eq(200);
     });
 
-    it("removeCalculator should remove Calculator", () => {
+    it("hideCalculator should hide Calculator", () => {
       const doc = new DOMParser().parseFromString("<div>xyz</div>", "text/html");
       const spyOk = sinon.spy();
       const spyCancel = sinon.spy();
 
-      PopupManager.showCalculator(doc.documentElement, new Point(150, 250), 100, "icon-placeholder", spyOk, spyCancel);
+      AccuDrawPopupManager.showCalculator(doc.documentElement, new Point(150, 250), 100, "icon-placeholder", spyOk, spyCancel);
 
       expect(PopupManager.popupCount).to.eq(1);
 
-      PopupManager.removeCalculator();
+      AccuDrawPopupManager.hideCalculator();
 
       expect(PopupManager.popupCount).to.eq(0);
     });
@@ -129,21 +130,21 @@ describe("PopupManager", () => {
       const spyCommit = sinon.spy();
       const spyCancel = sinon.spy();
 
-      PopupManager.showAngleEditor(doc.documentElement, new Point(150, 250), 123, spyCommit, spyCancel);
+      AccuDrawPopupManager.showAngleEditor(doc.documentElement, new Point(150, 250), 123, spyCommit, spyCancel);
 
       expect(PopupManager.popupCount).to.eq(1);
       let popup = PopupManager.popups[0];
       expect(popup.pt.x).to.eq(150);
       expect(popup.pt.y).to.eq(250);
 
-      PopupManager.showLengthEditor(doc.documentElement, new Point(100, 200), 123, spyCommit, spyCancel);
+      AccuDrawPopupManager.showLengthEditor(doc.documentElement, new Point(100, 200), 123, spyCommit, spyCancel);
 
       expect(PopupManager.popupCount).to.eq(1);
       popup = PopupManager.popups[0];
       expect(popup.pt.x).to.eq(100);
       expect(popup.pt.y).to.eq(200);
 
-      PopupManager.showHeightEditor(doc.documentElement, new Point(200, 300), 256, spyCommit, spyCancel);
+      AccuDrawPopupManager.showHeightEditor(doc.documentElement, new Point(200, 300), 256, spyCommit, spyCancel);
 
       expect(PopupManager.popupCount).to.eq(1);
       popup = PopupManager.popups[0];
@@ -151,7 +152,7 @@ describe("PopupManager", () => {
       expect(popup.pt.y).to.eq(300);
     });
 
-    it("removeInputEditor should remove editor", () => {
+    it("hideInputEditor should hide editor", () => {
       const doc = new DOMParser().parseFromString("<div>xyz</div>", "text/html");
       const spyCommit = sinon.spy();
       const spyCancel = sinon.spy();
@@ -160,7 +161,7 @@ describe("PopupManager", () => {
 
       expect(PopupManager.popupCount).to.eq(1);
 
-      PopupManager.removeInputEditor();
+      PopupManager.hideInputEditor();
 
       expect(PopupManager.popupCount).to.eq(0);
     });
@@ -187,13 +188,11 @@ describe("PopupManager", () => {
       const wrapper = mount(<PopupRenderer />);
 
       const menuItemProps: MenuItemProps[] = [
-        {
-          id: "test", item: { label: "test label", iconSpec: "icon-placeholder", execute: () => { } },
-        },
+        { id: "test", item: { label: "test label", icon: "icon-placeholder", execute: () => { } } },
       ];
       const doc = new DOMParser().parseFromString("<div>xyz</div>", "text/html");
 
-      PopupManager.showMenuButton("test1", doc.documentElement, new Point(150, 250), menuItemProps);
+      AccuDrawPopupManager.showMenuButton("test1", doc.documentElement, new Point(150, 250), menuItemProps);
 
       wrapper.update();
       expect(wrapper.find(MenuButton).length).to.eq(1);
@@ -208,7 +207,7 @@ describe("PopupManager", () => {
       const spyOk = sinon.spy();
       const spyCancel = sinon.spy();
 
-      PopupManager.showCalculator(doc.documentElement, new Point(150, 250), 100, "icon-placeholder", spyOk, spyCancel);
+      AccuDrawPopupManager.showCalculator(doc.documentElement, new Point(150, 250), 100, "icon-placeholder", spyOk, spyCancel);
 
       wrapper.update();
       expect(wrapper.find(Calculator).length).to.eq(1);
@@ -242,9 +241,8 @@ describe("PopupManager", () => {
 
       const toolbarProps: AbstractToolbarProps = {
         items: [
-          { label: "Mode 1", iconSpec: "icon-placeholder", badgeType: BadgeType.New, execute: () => { } },
-          { label: "Mode 2", iconSpec: "icon-placeholder", isVisible: false, execute: () => { } },
-          { conditionalId: "c1", items: [{ label: "Test 1", iconSpec: "icon-placeholder", execute: () => { } }] },
+          { id: "Mode-1", itemPriority: 10, label: "Mode 1", icon: "icon-placeholder", badgeType: BadgeType.New, execute: () => { } },
+          { id: "Mode-2", itemPriority: 20, label: "Mode 2", icon: "icon-placeholder", execute: () => { } },
         ],
       };
 
@@ -262,6 +260,22 @@ describe("PopupManager", () => {
       buttonNodes.at(0).simulate("keyDown", { key: "Escape" });
       await TestUtils.flushAsyncOperations();
       expect(spyCancel.calledOnce).to.be.true;
+
+      wrapper.unmount();
+    });
+
+    it("PopupRenderer should render HTMLElement", async () => {
+      const wrapper = mount(<PopupRenderer />);
+
+      const html = "<div class='test-element'>Hello World!</div>";
+      const display = new DOMParser().parseFromString(html, "text/html");
+
+      const doc = new DOMParser().parseFromString("<div>xyz</div>", "text/html");
+      const spyCancel = sinon.spy();
+
+      PopupManager.showHTMLElement(display.documentElement, doc.documentElement, new Point(150, 250), new Point(8, 8), spyCancel, RelativePosition.TopRight);
+      wrapper.update();
+      wrapper.should.matchSnapshot();
 
       wrapper.unmount();
     });

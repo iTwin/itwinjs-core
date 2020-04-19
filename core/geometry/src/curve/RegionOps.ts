@@ -1,9 +1,11 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module Curve */
+/** @packageDocumentation
+ * @module Curve
+ */
 
 import { AnyRegion, AnyCurve } from "./CurveChain";
 import { MomentData } from "../geometry4d/MomentData";
@@ -17,12 +19,13 @@ import { HalfEdgeGraphMerge } from "../topology/Merging";
 import { HalfEdgeGraphSearch } from "../topology/HalfEdgeGraphSearch";
 import { Polyface } from "../polyface/Polyface";
 import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
-import { PolygonWireOffsetContext, JointOptions, CurveChainWireOffsetContext } from "./PolygonOffsetContext";
+import { PolygonWireOffsetContext, JointOptions, CurveChainWireOffsetContext } from "./internalContexts/PolygonOffsetContext";
+import { SortablePolygon } from "../geometry3d/SortablePolygon";
 import { CurveCollection, BagOfCurves, CurveChain, ConsolidateAdjacentCurvePrimitivesOptions } from "./CurveCollection";
 import { CurveWireMomentsXYZ } from "./CurveWireMomentsXYZ";
 import { Geometry } from "../Geometry";
 import { CurvePrimitive } from "./CurvePrimitive";
-import { Loop } from "./Loop";
+import { Loop, SignedLoops } from "./Loop";
 import { Path } from "./Path";
 import { PointInOnOutContext } from "./Query/InOutTests";
 import { CurveSplitContext } from "./Query/CurveSplitContext";
@@ -33,6 +36,9 @@ import { Point3dArrayCarrier } from "../geometry3d/Point3dArrayCarrier";
 import { PolylineCompressionContext } from "../geometry3d/PolylineCompressionByEdgeOffset";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { ConsolidateAdjacentCurvePrimitivesContext } from "./Query/ConsolidateAdjacentPrimitivesContext";
+import { CurveCurve } from "./CurveCurve";
+import { PlanarSubdivision } from "./Query/PlanarSubdivision";
+import { Range3d } from "../geometry3d/Range";
 /**
  * * `properties` is a string with special characters indicating
  *   * "U" -- contains unmerged stick data
@@ -208,18 +214,18 @@ function faceToFaceSearchFromOuterLoop(_graph: HalfEdgeGraph,
  *   * sort edges around vertices
  *   * add regularization edges so holes are connected to their parent.
  */
-function doPolygonBoolean(loopsA: MultiLineStringDataVariant, loopsB: MultiLineStringDataVariant, faceSelectFunction: (inA: boolean, inB: boolean) => boolean, graphCheckPoint?: GraphCheckPointFunction): Polyface | undefined {
+function doPolygonBoolean(loopsA: MultiLineStringDataVariant, loopsB: MultiLineStringDataVariant, faceSelectFunction: (inA: boolean, inB: boolean) => boolean, graphCheckPoint?: GraphCheckPointFunction): HalfEdgeGraph | undefined {
   const graph = new HalfEdgeGraph();
   const baseMask = HalfEdgeMask.BOUNDARY_EDGE | HalfEdgeMask.PRIMARY_EDGE;
   const seedA = RegionOps.addLoopsWithEdgeTagToGraph(graph, loopsA, baseMask, 1);
   const seedB = RegionOps.addLoopsWithEdgeTagToGraph(graph, loopsB, baseMask, 2);
   if (graphCheckPoint)
     graphCheckPoint("unmerged loops", graph, "U");
-  if (seedA && seedB) {
+  if (seedA || seedB) {
     // split edges where they cross . . .
     HalfEdgeGraphMerge.splitIntersectingEdges(graph);
     if (graphCheckPoint)
-      graphCheckPoint("After splitIntersectingEdges", graph, "U");
+      graphCheckPoint("After splitIntersectingEdges", graph, "S");
     // sort radially around vertices.
     HalfEdgeGraphMerge.clusterAndMergeXYTheta(graph);
     if (graphCheckPoint)
@@ -246,7 +252,7 @@ function doPolygonBoolean(loopsA: MultiLineStringDataVariant, loopsB: MultiLineS
       graphCheckPoint("After faceToFaceSearchFromOuterLoop", graph, "MRX");
     graph.dropMask(faceVisitedMask);
     graph.dropMask(nodeVisitedMask);
-    return PolyfaceBuilder.graphToPolyface(graph);
+    return graph;
   }
   return undefined;
 }
@@ -276,6 +282,21 @@ export class RegionOps {
     }
     return undefined;
   }
+
+  /**
+   * Return an xy area for a loop, parity region, or union region.
+   * * If `rawMomentData` is the MomentData returned by computeXYAreaMoments, convert to principal axes and moments with
+   *    call `principalMomentData = MomentData.inertiaProductsToPrincipalAxes (rawMomentData.origin, rawMomentData.sums);`
+   * @param root any Loop, ParityRegion, or UnionRegion.
+   */
+  public static computeXYArea(root: AnyRegion): number | undefined {
+    const handler = new RegionMomentsXY();
+    const result = root.dispatchToGeometryHandler(handler);
+    if (result instanceof MomentData) {
+      return result.quantitySum;
+    }
+    return undefined;
+  }
   /** Return MomentData with the sums of wire moments.
    * * If `rawMomentData` is the MomentData returned by computeXYAreaMoments, convert to principal axes and moments with
    *    call `principalMomentData = MomentData.inertiaProductsToPrincipalAxes (rawMomentData.origin, rawMomentData.sums);`
@@ -299,7 +320,7 @@ export class RegionOps {
         announceIsolatedLoop(graph, loopSeed);
     } else if (Array.isArray(data)) {
       if (data.length > 0) {
-        if (Point3d.isXAndY(data[0])) {
+        if (Point3d.isAnyImmediatePointType(data[0])) {
           const loopSeed = Triangulator.directCreateFaceLoopFromCoordinates(graph, data as LineStringDataVariant);
           if (loopSeed !== undefined)
             announceIsolatedLoop(graph, loopSeed);
@@ -330,7 +351,23 @@ export class RegionOps {
       return loopSeeds;
     return undefined;
   }
-
+/**
+ * Given a graph just produced by booleans, convert to a polyface
+ * * "just produced" implies exterior face markup.
+ *
+ * @param graph
+ * @param triangulate
+ */
+  private static finishGraphToPolyface(graph: HalfEdgeGraph | undefined, triangulate: boolean): Polyface | undefined {
+    if (graph) {
+      if (triangulate) {
+        Triangulator.triangulateAllPositiveAreaFaces(graph);
+        Triangulator.flipTriangles(graph);
+      }
+      return PolyfaceBuilder.graphToPolyface(graph);
+    }
+    return undefined;
+  }
   /**
    * return a polyface containing the area union of two XY regions.
    * * Within each region, in and out is determined by parity rules.
@@ -339,10 +376,11 @@ export class RegionOps {
    * @param loopsA first set of loops
    * @param loopsB second set of loops
    */
-  public static polygonXYAreaIntersectLoopsToPolyface(loopsA: MultiLineStringDataVariant, loopsB: MultiLineStringDataVariant): Polyface | undefined {
-    return doPolygonBoolean(loopsA, loopsB,
+  public static polygonXYAreaIntersectLoopsToPolyface(loopsA: MultiLineStringDataVariant, loopsB: MultiLineStringDataVariant, triangulate: boolean = false): Polyface | undefined {
+    const graph = doPolygonBoolean(loopsA, loopsB,
       (inA: boolean, inB: boolean) => (inA && inB),
       this._graphCheckPointFunction);
+    return this.finishGraphToPolyface(graph, triangulate);
   }
 
   /**
@@ -353,10 +391,11 @@ export class RegionOps {
    * @param loopsA first set of loops
    * @param loopsB second set of loops
    */
-  public static polygonXYAreaUnionLoopsToPolyface(loopsA: MultiLineStringDataVariant, loopsB: MultiLineStringDataVariant): Polyface | undefined {
-    return doPolygonBoolean(loopsA, loopsB,
+  public static polygonXYAreaUnionLoopsToPolyface(loopsA: MultiLineStringDataVariant, loopsB: MultiLineStringDataVariant, triangulate: boolean = false): Polyface | undefined {
+    const graph = doPolygonBoolean(loopsA, loopsB,
       (inA: boolean, inB: boolean) => (inA || inB),
       this._graphCheckPointFunction);
+    return this.finishGraphToPolyface(graph, triangulate);
   }
   /**
    * return a polyface containing the area difference of two XY regions.
@@ -366,10 +405,11 @@ export class RegionOps {
    * @param loopsA first set of loops
    * @param loopsB second set of loops
    */
-  public static polygonXYAreaDifferenceLoopsToPolyface(loopsA: MultiLineStringDataVariant, loopsB: MultiLineStringDataVariant): Polyface | undefined {
-    return doPolygonBoolean(loopsA, loopsB,
+  public static polygonXYAreaDifferenceLoopsToPolyface(loopsA: MultiLineStringDataVariant, loopsB: MultiLineStringDataVariant, triangulate: boolean = false): Polyface | undefined {
+    const graph = doPolygonBoolean(loopsA, loopsB,
       (inA: boolean, inB: boolean) => (inA && !inB),
       this._graphCheckPointFunction);
+    return this.finishGraphToPolyface(graph, triangulate);
   }
 
   /** Construct a wire (not area!!) that is offset from given polyline or polygon.
@@ -465,7 +505,7 @@ export class RegionOps {
    * @param curves
    */
   public static splitToPathsBetweenFlagBreaks(source: CurveCollection | CurvePrimitive | undefined,
-    makeClones: boolean): BagOfCurves | Path | CurvePrimitive | undefined {
+    makeClones: boolean): BagOfCurves | Path | CurvePrimitive | Loop | undefined {
     if (source === undefined)
       return undefined;
     if (source instanceof CurvePrimitive)
@@ -572,7 +612,7 @@ export class RegionOps {
    *   * collect all points
    *   * eliminate duplicated points
    *   * eliminate points colinear with surrounding points.
-   *  * Contigous concentric circular or elliptic arcs
+   *  * Contiguous concentric circular or elliptic arcs
    *   * combine angular ranges
    * @param curves Path or loop (or larger collection containing paths and loops) to be simplified
    * @param options options for tolerance and selective simplification.
@@ -580,6 +620,97 @@ export class RegionOps {
   public static consolidateAdjacentPrimitives(curves: CurveCollection, options?: ConsolidateAdjacentCurvePrimitivesOptions) {
     const context = new ConsolidateAdjacentCurvePrimitivesContext(options);
     curves.dispatchToGeometryHandler(context);
+  }
+  /**
+   * If reverse loops as necessary to make them all have CCW orientation for given outward normal.
+   * * Return an array of arrays which capture the input pointers.
+   * * In each first level array:
+   *    * The first loop is an outer loop.
+   *    * all subsequent loops are holes
+   *    * The outer loop is CCW
+   *    * The holes are CW.
+   * * Call PolygonOps.sortOuterAndHoleLoopsXY to have the result returned as an array of arrays of polygons.
+   * @param loops multiple loops to sort and reverse.
+   */
+  public static sortOuterAndHoleLoopsXY(loops: Array<Loop | IndexedXYZCollection>): AnyRegion {
+    const loopAndArea: SortablePolygon[] = [];
+    for (const candidate of loops) {
+      if (candidate instanceof Loop)
+        SortablePolygon.pushLoop(loopAndArea, candidate);
+      else if (candidate instanceof IndexedXYZCollection) {
+        const loop = Loop.createPolygon(candidate);
+        SortablePolygon.pushLoop(loopAndArea, loop);
+      }
+    }
+    return SortablePolygon.sortAsAnyRegion(loopAndArea);
+  }
+  /**
+   * Find all areas bounded by the unstructured, possibly intersection curves.
+   * * In `curvesAndRegions`, Loop/ParityRegion/UnionRegion contribute curve primitives.
+   * @param curvesAndRegions Any collection of curves.
+   * @alpha
+   */
+  public static constructAllXYRegionLoops(curvesAndRegions: AnyCurve | AnyCurve[]): SignedLoops[] {
+    const primitivesA = RegionOps.collectCurvePrimitives(curvesAndRegions, undefined, true);
+    const primitivesB = this.expandLineStrings(primitivesA);
+    const range = this.curveArrayRange(primitivesB);
+    const intersections = CurveCurve.allIntersectionsAmongPrimitivesXY(primitivesB);
+    const graph = PlanarSubdivision.assembleHalfEdgeGraph(primitivesB, intersections);
+    return PlanarSubdivision.collectSignedLoopSetsInHalfEdgeGraph(graph, 1.0e-12 * range.xLength() * range.yLength());
+  }
+
+  /**
+   * collect all `CurvePrimitives` in loosely typed input.
+   * * This (always) recurses into primitives within collections (Path, Loop, ParityRegion, UnionRegion)
+   * * It (optionally) recurses to hidden primitives within primitives (i.e. CurveChainWithDistanceIndex)
+   * @param candidates array of various CurvePrimitive and CurveCollection
+   * @param smallestPossiblePrimitives if false, leave CurveChainWithDistanceIndex as single primitives.  If true, recurse to their children.
+   */
+  public static collectCurvePrimitives(candidates: AnyCurve | AnyCurve[], collectorArray?: CurvePrimitive[], smallestPossiblePrimitives: boolean = false): CurvePrimitive[] {
+    const results: CurvePrimitive[] = collectorArray === undefined ? [] : collectorArray;
+    if (candidates instanceof CurvePrimitive) {
+      candidates.collectCurvePrimitives(results, smallestPossiblePrimitives);
+    } else if (candidates instanceof CurveCollection) {
+      candidates.collectCurvePrimitives(results, smallestPossiblePrimitives);
+    } else if (Array.isArray(candidates)) {
+      for (const c of candidates) {
+        this.collectCurvePrimitives(c, results, smallestPossiblePrimitives);
+      }
+    }
+    return results;
+  }
+  /**
+   * Copy primitive pointers from candidates to result array.
+   * * replace LineString3d by individual LineSegment3d.
+   * * all others unchanged.
+   * @param candidates
+   */
+  public static expandLineStrings(candidates: CurvePrimitive[]): CurvePrimitive[] {
+    const result: CurvePrimitive[] = [];
+    for (const c of candidates) {
+      if (c instanceof LineString3d) {
+        for (let i = 0; i + 1 < c.packedPoints.length; i++) {
+          const q = c.getIndexedSegment(i);
+          if (q !== undefined)
+            result.push(q);
+        }
+      } else {
+        result.push(c);
+      }
+    }
+    return result;
+  }
+  /**
+   * Return the overall range of given curves.
+   * @param curves candidate curves
+   */
+  public static curveArrayRange(curves: AnyCurve[]): Range3d {
+    const range = Range3d.create();
+    for (const c of curves) {
+      if (c)
+        range.extendRange(c.range());
+    }
+    return range;
   }
 }
 

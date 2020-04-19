@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as moq from "typemoq";
@@ -49,6 +49,14 @@ describe("TreeEventHandler", () => {
       const spy = sinon.spy(subject, "next");
       eventHandler.dispose();
       expect(spy).to.be.called;
+    });
+
+  });
+
+  describe("modelSource", () => {
+
+    it("returns modelSource", () => {
+      expect(eventHandler.modelSource).to.be.deep.eq(modelSourceMock.object);
     });
 
   });
@@ -125,6 +133,25 @@ describe("TreeEventHandler", () => {
       const spy = sinon.spy(modelMutator, "setCheckboxStates");
       eventHandler.onCheckboxStateChanged({ stateChanges: from([changes]) });
       expect(spy).to.be.calledWith(changes);
+    });
+
+  });
+
+  describe("onDelayedNodeClick", () => {
+
+    it("calls TreeMutator activateEditing", () => {
+      const onNodeUpdated = () => { };
+      const eventHandlerWithEditing = new TreeEventHandler({ ...params, editingParams: { onNodeUpdated } });
+      const modelMutatorWithEditing = (eventHandlerWithEditing as any)._modelMutator;
+      const spy = sinon.spy(modelMutatorWithEditing, "activateEditing");
+      eventHandlerWithEditing.onDelayedNodeClick({ nodeId: testNode.id });
+      expect(spy).to.be.calledWith(testNode.id, onNodeUpdated);
+    });
+
+    it("does not call TreeMutator activateEditing if editing params are not set", () => {
+      const spy = sinon.spy(modelMutator, "activateEditing");
+      eventHandler.onDelayedNodeClick({ nodeId: testNode.id });
+      expect(spy).to.not.be.called;
     });
 
   });

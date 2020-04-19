@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /* tslint:disable:no-direct-imports */
 
@@ -19,22 +19,30 @@ import {
   Presentation,
   SelectionHandler, SelectionManager, SelectionChangeEvent, SelectionChangeType, ISelectionProvider, PresentationManager,
 } from "@bentley/presentation-frontend";
+import { PropertyRecord } from "@bentley/ui-abstract";
 import { Orientation } from "@bentley/ui-core";
 import { PropertyGrid, PropertyGridProps, PropertyData, PropertyDataChangeEvent } from "@bentley/ui-components";
-import { IUnifiedSelectionComponent } from "../../common/IUnifiedSelectionComponent";
-import { propertyGridWithUnifiedSelection } from "../../presentation-components";
-import { IPresentationPropertyDataProvider } from "../../propertygrid/DataProvider";
+import {
+  IPresentationPropertyDataProvider, IUnifiedSelectionComponent,
+  propertyGridWithUnifiedSelection,
+} from "../../presentation-components";
+import { initializeLocalization } from "../../presentation-components/common/Utils";
 
 // tslint:disable-next-line:variable-name naming-convention
 const PresentationPropertyGrid = propertyGridWithUnifiedSelection(PropertyGrid);
 
 describe("PropertyGrid withUnifiedSelection", () => {
 
-  before(() => {
-    Presentation.presentation = moq.Mock.ofType<PresentationManager>().object;
-    Presentation.i18n = new I18N("", {
+  before(async () => {
+    Presentation.setPresentationManager(moq.Mock.ofType<PresentationManager>().object);
+    Presentation.setI18nManager(new I18N("", {
       urlTemplate: `file://${path.resolve("public/locales")}/{{lng}}/{{ns}}.json`,
-    });
+    }));
+    await initializeLocalization();
+  });
+
+  after(() => {
+    Presentation.terminate();
   });
 
   let testRulesetId: string;
@@ -58,7 +66,7 @@ describe("PropertyGrid withUnifiedSelection", () => {
       rulesetId = testRulesetId;
     if (!propertyData) {
       propertyData = {
-        label: faker.random.word(),
+        label: PropertyRecord.fromString(faker.random.word()),
         description: faker.random.words(),
         categories: [],
         records: {},
@@ -79,15 +87,13 @@ describe("PropertyGrid withUnifiedSelection", () => {
       selectionHandler={selectionHandlerMock.object} />);
   });
 
-  it("uses data provider's imodel and rulesetId", () => {
+  it("uses data provider's imodel", () => {
     const component = shallow(<PresentationPropertyGrid
       orientation={Orientation.Horizontal}
       dataProvider={dataProviderMock.object}
       selectionHandler={selectionHandlerMock.object}
     />).instance() as any as IUnifiedSelectionComponent;
-
     expect(component.imodel).to.equal(imodelMock.object);
-    expect(component.rulesetId).to.equal(testRulesetId);
   });
 
   it("creates default implementation for selection handler when not provided through props", () => {
@@ -95,7 +101,7 @@ describe("PropertyGrid withUnifiedSelection", () => {
     selectionManagerMock.setup((x) => x.selectionChange).returns(() => new SelectionChangeEvent());
     selectionManagerMock.setup((x) => x.getSelectionLevels(imodelMock.object)).returns(() => []);
     selectionManagerMock.setup((x) => x.getSelection(imodelMock.object, moq.It.isAnyNumber())).returns(() => new KeySet());
-    Presentation.selection = selectionManagerMock.object;
+    Presentation.setSelectionManager(selectionManagerMock.object);
 
     const component = shallow(<PresentationPropertyGrid
       orientation={Orientation.Vertical}

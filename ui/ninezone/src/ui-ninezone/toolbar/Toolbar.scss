@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-@import "@bentley/ui-core/lib/ui-core/z-index";
+@import "~@bentley/ui-core/lib/ui-core/z-index";
 @import "variables";
 
 .nz-toolbar-toolbar {
@@ -12,16 +12,6 @@
 
   > .nz-panels {
     @include uicore-z-index(toolbar-panels);
-  }
-
-  > .nz-histories {
-    @include uicore-z-index(toolbar-histories);
-
-    > .nz-item > div {
-      > * > * {
-        pointer-events: auto;
-      }
-    }
   }
 
   > .nz-expanded {
@@ -82,6 +72,9 @@
     }
 
     &.nz-panel-alignment-end {
+      display: flex;
+      justify-content: flex-end;
+
       > .nz-panels {
         > * > * {
           justify-content: end;

@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Rendering */
+/** @packageDocumentation
+ * @module Rendering
+ */
 
 import { assert } from "@bentley/bentleyjs-core";
 import {
@@ -228,7 +230,7 @@ export class PrimitivePolyfaceGeometry extends Geometry {
   protected _getPolyfaces(_facetOptions: StrokeOptions): PolyfacePrimitiveList | undefined {
     if (!this.hasTexture) { // clear parameters
       if (this.polyface.data.param) {
-          this.polyface.data.param.clear();
+        this.polyface.data.param.clear();
       }
       if (this.polyface.data.paramIndex) {
         this.polyface.data.paramIndex = [];

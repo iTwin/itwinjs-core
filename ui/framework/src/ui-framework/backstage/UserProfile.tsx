@@ -1,11 +1,13 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Backstage */
+/** @packageDocumentation
+ * @module Backstage
+ */
 
 import * as React from "react";
-import { AccessToken } from "@bentley/imodeljs-clients";
+import { AccessToken } from "@bentley/itwin-client";
 import { CommonProps, getUserColor } from "@bentley/ui-core";
 import { UserProfile as NZ_UserProfile } from "@bentley/ui-ninezone";
 import { SignOutModalFrontstage } from "../oidc/SignOut";
@@ -70,7 +72,7 @@ export class UserProfileBackstageItem extends React.PureComponent<UserProfileBac
   }
 
   private _onOpenSignOut = () => {
-    Backstage.hide();
+    Backstage.hide(); // tslint:disable-line:deprecation
 
     const manager = UiFramework.backstageManager;
     manager.close();

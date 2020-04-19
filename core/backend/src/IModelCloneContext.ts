@@ -1,8 +1,11 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Id64String } from "@bentley/bentleyjs-core";
+/** @packageDocumentation
+ * @module iModels
+ */
+import { Id64, Id64String } from "@bentley/bentleyjs-core";
 import { CodeScopeSpec, CodeSpec, ElementProps, IModel, PropertyMetaData, RelatedElement } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { Element } from "./Element";
@@ -10,7 +13,7 @@ import { IModelDb } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 
 /** The context for transforming a *source* Element to a *target* Element and remapping internal identifiers to the target iModel.
- * @alpha
+ * @beta
  */
 export class IModelCloneContext {
   /** The source IModelDb. */
@@ -34,9 +37,12 @@ export class IModelCloneContext {
   public get isBetweenIModels(): boolean { return this.sourceDb !== this.targetDb; }
 
   /** Dispose any native resources associated with this IModelCloneContext. */
-  public dispose(): void {
-    this._nativeContext.dispose();
-  }
+  public dispose(): void { this._nativeContext.dispose(); }
+
+  /** Debugging aid that dumps the Id remapping details and other information to the specified output file.
+   * @internal
+   */
+  public dump(outputFileName: string): void { this._nativeContext.dump(outputFileName); }
 
   /** Add a rule that remaps the specified source [CodeSpec]($common) to the specified target [CodeSpec]($common).
    * @param sourceCodeSpecName The name of the CodeSpec from the source iModel.
@@ -63,6 +69,9 @@ export class IModelCloneContext {
    * @returns the target CodeSpecId or [Id64.invalid]($bentley) if a mapping not found.
    */
   public findTargetCodeSpecId(sourceId: Id64String): Id64String {
+    if (Id64.invalid === sourceId) {
+      return Id64.invalid;
+    }
     return this._nativeContext.findCodeSpecId(sourceId);
   }
 
@@ -70,6 +79,9 @@ export class IModelCloneContext {
    * @returns the target ElementId or [Id64.invalid]($bentley) if a mapping not found.
    */
   public findTargetElementId(sourceElementId: Id64String): Id64String {
+    if (Id64.invalid === sourceElementId) {
+      return Id64.invalid;
+    }
     return this._nativeContext.findElementId(sourceElementId);
   }
 

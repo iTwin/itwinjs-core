@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
 import { expect, assert } from "chai";
@@ -269,7 +269,7 @@ describe("GeometryA", () => {
     expect(ck.getNumErrors()).equals(0);
   });
   /*
-    it.only("Hypot", () => {
+    it("Hypot", () => {
       for (const outerMultiplier of [1, 0.12312, 1.3284723423489789789789789, -0.892734238742384723, 1.23218987987929232323423e10]) {
         console.log();
         console.log("Outer multiplier", outerMultiplier);

@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Breadcrumb */
+/** @packageDocumentation
+ * @module Breadcrumb
+ */
 
 import * as React from "react";
 import classnames from "classnames";
@@ -13,9 +15,12 @@ import { Table, TableProps } from "../../table/component/Table";
 import { BreadcrumbTreeUtils, DataRowItem } from "../BreadcrumbTreeUtils";
 import { TreeNodeItem, isTreeDataProviderInterface, DelayLoadedTreeNodeItem, ImmediatelyLoadedTreeNodeItem } from "../../tree/TreeDataProvider";
 import { BreadcrumbPath, BreadcrumbUpdateEventArgs } from "../BreadcrumbPath";
-import { BeInspireTree, BeInspireTreeEvent, BeInspireTreeNodes, BeInspireTreeNode, toNodes, BeInspireTreeNodeConfig, MapPayloadToInspireNodeCallback } from "../../tree/component/BeInspireTree";
+import { BeInspireTree, BeInspireTreeEvent, BeInspireTreeNodes, BeInspireTreeNode, toNodes, BeInspireTreeNodeConfig, MapPayloadToInspireNodeCallback } from "../../tree/deprecated/component/BeInspireTree";
 import { UiComponents } from "../../UiComponents";
+import { getPropertyRecordAsString } from "../../common/getPropertyRecordAsString";
 import { CommonProps } from "@bentley/ui-core";
+
+// tslint:disable:deprecation
 
 /** Properties for the [[BreadcrumbDetails]] component
  * @beta
@@ -153,7 +158,7 @@ export class BreadcrumbDetails extends React.Component<BreadcrumbDetailsProps, B
   }
 
   private _onTreeNodeChanged = (_items: Array<TreeNodeItem | undefined>) => {
-    using((this._tree as any).pauseRendering(), async () => { // tslint:disable-line:no-floating-promises
+    using((this._tree as any).pauseRendering(), async () => {
       await this._tree.reload();
     });
   }
@@ -161,7 +166,7 @@ export class BreadcrumbDetails extends React.Component<BreadcrumbDetailsProps, B
   private static inspireNodeFromTreeNodeItem(item: TreeNodeItem, remapper: MapPayloadToInspireNodeCallback<TreeNodeItem>): BeInspireTreeNodeConfig {
     const node: BeInspireTreeNodeConfig = {
       id: item.id,
-      text: item.label,
+      text: getPropertyRecordAsString(item.label),
       itree: {
         state: { collapsed: false },
       },

@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Table */
+/** @packageDocumentation
+ * @module Table
+ */
 
 import { memoize } from "lodash";
 import * as React from "react";
@@ -12,10 +14,9 @@ import classnames from "classnames";
 // Matches how react-data-grid is exported
 // https://github.com/Microsoft/TypeScript-Handbook/blob/master/pages/Modules.md#export--and-import--require
 import ReactDataGrid = require("react-data-grid");
-import ReactDataGridAddons = require("react-data-grid-addons");
 
 import { DisposableList, Guid, GuidString } from "@bentley/bentleyjs-core";
-import { PropertyValueFormat, PrimitiveValue } from "@bentley/imodeljs-frontend";
+import { PropertyValueFormat, PrimitiveValue } from "@bentley/ui-abstract";
 import {
   SortDirection, Dialog,
   LocalUiSettings, UiSettings, UiSettingsStatus, CommonProps,
@@ -42,17 +43,14 @@ import { TableFilterDescriptorCollection } from "../columnfiltering/TableFilterD
 
 import "./Table.scss";
 import "../columnfiltering/ColumnFiltering.scss";
+import { NumericFilter } from "../columnfiltering/data-grid-addons/NumericFilter";
+import { MultiSelectFilter } from "../columnfiltering/data-grid-addons/MultiSelectFilter";
+import { SingleSelectFilter } from "../columnfiltering/data-grid-addons/SingleSelectFilter";
 
 // cspell:ignore Overscan
 
 const TABLE_ROW_HEIGHT = 27;
 const TABLE_FILTER_ROW_HEIGHT = 32;
-
-const {
-  NumericFilter,
-  MultiSelectFilter,
-  SingleSelectFilter,
-} = ReactDataGridAddons.Filters;
 
 /**
  * Specifies table selection target.
@@ -72,7 +70,7 @@ enum SCROLL_DIRECTION {
   NONE = "none",
 }
 
-/** Scroll ScrollState  */
+/** Scroll State  */
 interface ScrollState {
   height: number;
   scrollTop: number;
@@ -96,7 +94,7 @@ interface ScrollState {
 export interface TableProps extends CommonProps {
   /** Data provider for the Table */
   dataProvider: TableDataProvider;
-  /** Amount of rows per page */
+  /** Amount of rows per page. The default is 100. */
   pageAmount?: number;
 
   /** Called when rows are loaded */
@@ -116,9 +114,9 @@ export interface TableProps extends CommonProps {
   /** Callback for when cells are deselected */
   onCellsDeselected?: (cellIterator: AsyncIterableIterator<[RowItem, CellItem]>) => Promise<boolean>;
 
-  /** Specifies the selection target. */
+  /** Specifies the selection target. The default is Row. */
   tableSelectionTarget?: TableSelectionTarget;
-  /** Specifies the selection mode. */
+  /** Specifies the selection mode. The default is Single. */
   selectionMode?: SelectionMode;
 
   /** Callback for when properties are being edited @beta */
@@ -280,7 +278,7 @@ const enum UpdateStatus {
 }
 
 /**
- * Table React component
+ * Table React component that displays rows and columns in a grid along with a header
  * @public
  */
 export class Table extends React.Component<TableProps, TableState> {
@@ -485,16 +483,16 @@ export class Table extends React.Component<TableProps, TableState> {
     let dataGridColumns = columnDescriptions.map(this._columnDescriptionToReactDataGridColumn);
     if (this.props.settingsIdentifier) {
       const uiSettings: UiSettings = this.props.uiSettings || new LocalUiSettings();
-      const reorderResult = uiSettings.getSetting(this.props.settingsIdentifier, "ColumnReorder");
+      const reorderResult = await uiSettings.getSetting(this.props.settingsIdentifier, "ColumnReorder");
       if (reorderResult.status === UiSettingsStatus.Success) {
         const setting = reorderResult.setting as string[];
         // map columns according to the keys in columns, in the order of the loaded array of keys
         dataGridColumns = setting.map((key) => dataGridColumns.filter((col) => col.key === key)[0]);
       } else if (reorderResult.status === UiSettingsStatus.NotFound) {
         const keys = columnDescriptions.map((col) => col.key);
-        uiSettings.saveSetting(this.props.settingsIdentifier, "ColumnReorder", keys);
+        await uiSettings.saveSetting(this.props.settingsIdentifier, "ColumnReorder", keys);
       }
-      const showhideResult = uiSettings.getSetting(this.props.settingsIdentifier, "ColumnShowHideHiddenColumns");
+      const showhideResult = await uiSettings.getSetting(this.props.settingsIdentifier, "ColumnShowHideHiddenColumns");
       if (showhideResult.status === UiSettingsStatus.Success) {
         const hiddenColumns = showhideResult.setting as string[];
         this.setState({ hiddenColumns });
@@ -1174,7 +1172,7 @@ export class Table extends React.Component<TableProps, TableState> {
     if (this.props.settingsIdentifier) {
       const uiSettings: UiSettings = this.props.uiSettings || new LocalUiSettings();
       const keys = cols.map((col) => col.key);
-      uiSettings.saveSetting(this.props.settingsIdentifier, "ColumnReorder", keys);
+      uiSettings.saveSetting(this.props.settingsIdentifier, "ColumnReorder", keys); // tslint:disable-line: no-floating-promises
     }
     this.setState({ columns: [] }, () => { // fix react-data-grid update issues
       this.setState({ columns: cols });
@@ -1298,7 +1296,7 @@ export class Table extends React.Component<TableProps, TableState> {
     this.setState({ hiddenColumns: cols });
     if (this.props.settingsIdentifier) {
       const uiSettings: UiSettings = this.props.uiSettings || new LocalUiSettings();
-      uiSettings.saveSetting(this.props.settingsIdentifier, "ColumnShowHideHiddenColumns", cols);
+      uiSettings.saveSetting(this.props.settingsIdentifier, "ColumnShowHideHiddenColumns", cols); // tslint:disable-line: no-floating-promises
     }
     return true;
   }
@@ -1363,12 +1361,7 @@ export class Table extends React.Component<TableProps, TableState> {
     // istanbul ignore else
     if (tableColumn) {
       setTimeout(async () => {
-        if (filter.filterTerm) {
-          await DataGridFilterParser.handleFilterChange(filter, tableColumn.columnFilterDescriptor, tableColumn.columnDescription, this._applyFilter);
-        } else {
-          tableColumn.columnFilterDescriptor.clear();
-          await this._applyFilter();
-        }
+        await DataGridFilterParser.handleFilterChange(filter, tableColumn.columnFilterDescriptor, tableColumn.columnDescription, this._applyFilter);
       });
     }
   }

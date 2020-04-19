@@ -1,14 +1,17 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module WebGL */
+/** @packageDocumentation
+ * @module WebGL
+ */
 
-import { IDisposable, assert } from "@bentley/bentleyjs-core";
+import { assert } from "@bentley/bentleyjs-core";
 import { TextureHandle } from "./Texture";
 import { RenderBuffer } from "./RenderBuffer";
 import { GL } from "./GL";
 import { System } from "./System";
+import { WebGLDisposable } from "./Disposable";
 
 /** @internal */
 export type DepthBuffer = RenderBuffer | TextureHandle;
@@ -23,7 +26,7 @@ export const enum FrameBufferBindState {
 }
 
 /** @internal */
-export class FrameBuffer implements IDisposable {
+export class FrameBuffer implements WebGLDisposable {
   private _fbo?: WebGLFramebuffer;
   private _bindState: FrameBufferBindState = FrameBufferBindState.Unbound;
   private readonly _colorTextures: TextureHandle[] = [];
@@ -41,7 +44,7 @@ export class FrameBuffer implements IDisposable {
 
   private constructor(fbo: WebGLFramebuffer, colorTextures: TextureHandle[], depthBuffer?: DepthBuffer) {
     this._fbo = fbo;
-    const gl: WebGLRenderingContext = System.instance.context;
+    const gl = System.instance.context;
 
     this.bind(false);
 
@@ -96,7 +99,7 @@ export class FrameBuffer implements IDisposable {
     if (undefined === this._fbo)
       return false;
 
-    const gl: WebGLRenderingContext = System.instance.context;
+    const gl = System.instance.context;
 
     gl.bindFramebuffer(GL.FrameBuffer.TARGET, this._fbo);
 

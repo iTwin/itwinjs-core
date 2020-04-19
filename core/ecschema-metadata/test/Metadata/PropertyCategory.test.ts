@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
@@ -46,7 +46,7 @@ describe("PropertyCategory", () => {
     });
   });
 
-  describe("toJson", () => {
+  describe("toJSON", () => {
     it("fully defined", async () => {
       const testSchema = {
         $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
@@ -71,7 +71,35 @@ describe("PropertyCategory", () => {
 
       const propCat = item as PropertyCategory;
       assert.isDefined(propCat);
-      const propCatSerialization = propCat.toJson(true, true);
+      const propCatSerialization = propCat.toJSON(true, true);
+      expect(propCatSerialization.priority).equal(5);
+    });
+    it("fully defined, JSON stringy serialization", async () => {
+      const testSchema = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        name: "TestSchema",
+        version: "1.2.3",
+        items: {
+          TestPropertyCategory: {
+            schemaItemType: "PropertyCategory",
+            type: "string",
+            typeName: "test",
+            priority: 5,
+          },
+        },
+      };
+
+      const ecSchema = await Schema.fromJson(testSchema, new SchemaContext());
+      assert.isDefined(ecSchema);
+
+      const item = await ecSchema.getItem("TestPropertyCategory");
+      assert.isDefined(item);
+      assert.isTrue(item instanceof PropertyCategory);
+
+      const propCat = item as PropertyCategory;
+      assert.isDefined(propCat);
+      const json = JSON.stringify(propCat);
+      const propCatSerialization = JSON.parse(json);
       expect(propCatSerialization.priority).equal(5);
     });
   });

@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { ClassRegistry, Schema, Schemas, IModelDb, SpatialCategory, IModelHost } from "@bentley/imodeljs-backend";
 import { IModelError, IModelStatus, SubCategoryAppearance, ColorByName } from "@bentley/imodeljs-common";
@@ -13,7 +13,7 @@ import * as _schemaNames from "../common/RobotWorldSchema";
 import * as robots from "./RobotElement";
 import * as obstacles from "./BarrierElement";
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 // ... other modules ...
 
 /** An example of defining a class that represents a schema.
@@ -51,7 +51,7 @@ export class RobotWorld extends Schema {
     // Must import the schema. The schema must be installed alongside the app in its
     // assets directory. Note that, for portability, make sure the case of
     // the filename is correct!
-    await iModelDb.importSchema(requestContext, path.join(IModelHost.appAssetsDir!, "RobotWorld.ecschema.xml"));
+    await iModelDb.importSchemas(requestContext, [path.join(IModelHost.appAssetsDir!, "RobotWorld.ecschema.xml")]);
     requestContext.enter();
 
     // This is the right time to create definitions, such as Categories, that will

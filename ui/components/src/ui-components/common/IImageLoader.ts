@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Common */
+/** @packageDocumentation
+ * @module Common
+ */
 
 /**
  * Type of loaded image source:
@@ -10,9 +12,10 @@
  * * "url" will render a simple img tag with __url__ as it's source
  * * "binary" expects a HEX string for the value and will render raw image
  * * "core-icon" will render an icon bundled with @bentley/ui-core
+ * * "webfont-icon" will render web font icon from provided font-family. When no font-family given, defaults to "bentley-icons-generic-webfont".
  * @public
  */
-export type ImageSourceType = "svg" | "url" | "binary" | "core-icon";
+export type ImageSourceType = "svg" | "url" | "binary" | "core-icon" | "webfont-icon";
 
 /** Type of raw image format
  * @public

@@ -1,25 +1,36 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { IModelHost, IModelHostConfiguration } from "@bentley/imodeljs-backend";
-import { Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface, MobileRpcConfiguration } from "@bentley/imodeljs-common";
+import { Logger, LogLevel, Config } from "@bentley/bentleyjs-core";
+import {
+  IModelReadRpcInterface,
+  IModelTileRpcInterface,
+  MobileRpcConfiguration,
+  NativeAppRpcInterface,
+  RpcInterfaceDefinition,
+  SnapshotIModelRpcInterface,
+} from "@bentley/imodeljs-common";
 import * as fs from "fs";
 import * as path from "path";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
-import { IModelBankClient, Config } from "@bentley/imodeljs-clients";
 import { UrlFileHandler } from "@bentley/imodeljs-clients-backend";
 import { SVTConfiguration } from "../common/SVTConfiguration";
 import "./SVTRpcImpl"; // just to get the RPC implementation registered
 import SVTRpcInterface from "../common/SVTRpcInterface";
 import { FakeTileCacheService } from "./FakeTileCacheService";
+import { IModelBankClient } from "@bentley/imodelhub-client";
 
 IModelJsConfig.init(true /* suppress exception */, true /* suppress error message */, Config.App);
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // (needed temporarily to use self-signed cert to communicate with iModelBank via https)
 
-export function getRpcInterfaces() {
-  return [IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface, SVTRpcInterface];
+export function getRpcInterfaces(appType: "native" | "browser"): RpcInterfaceDefinition[] {
+  const intfcs: RpcInterfaceDefinition[] = [IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface, SVTRpcInterface];
+  if ("native" === appType)
+    intfcs.push(NativeAppRpcInterface);
+
+  return intfcs;
 }
 
 function setupStandaloneConfiguration(): SVTConfiguration {
@@ -43,17 +54,38 @@ function setupStandaloneConfiguration(): SVTConfiguration {
   if (undefined !== process.env.SVT_DISABLE_INSTANCING)
     configuration.disableInstancing = true;
 
+  if (undefined !== process.env.SVT_NO_IMPROVED_ELISION)
+    configuration.enableImprovedElision = false;
+
+  if (undefined !== process.env.SVT_IGNORE_AREA_PATTERNS)
+    configuration.ignoreAreaPatterns = true;
+
   if (undefined !== process.env.SVT_DISABLE_MAGNIFICATION)
     configuration.disableMagnification = true;
 
-  configuration.useProjectExtents = undefined !== process.env.SVT_USE_PROJECT_EXTENTS;
-  const treeExpiration = process.env.SVT_TILETREE_EXPIRATION_SECONDS;
-  if (undefined !== treeExpiration)
-    try {
-      configuration.tileTreeExpirationSeconds = Number.parseInt(treeExpiration, 10);
-    } catch (_) {
-      //
-    }
+  if (undefined !== process.env.SVT_DISABLE_IDLE_WORK)
+    configuration.doIdleWork = false;
+
+  configuration.useProjectExtents = undefined === process.env.SVT_NO_USE_PROJECT_EXTENTS;
+
+  const parseSeconds = (key: string) => {
+    const env = process.env[key];
+    if (!env)
+      return undefined;
+
+    const val = Number.parseInt(env, 10);
+    return Number.isNaN(val) ? undefined : val;
+  };
+
+  configuration.tileTreeExpirationSeconds = parseSeconds("SVT_TILETREE_EXPIRATION_SECONDS");
+  configuration.tileExpirationSeconds = parseSeconds("SVT_TILE_EXPIRATION_SECONDS");
+
+  const maxToSkipVar = process.env.SVT_MAX_TILES_TO_SKIP;
+  if (undefined !== maxToSkipVar) {
+    const maxToSkip = Number.parseInt(maxToSkipVar, 10);
+    if (!Number.isNaN(maxToSkip))
+      configuration.maxTilesToSkip = maxToSkip;
+  }
 
   if (undefined !== process.env.SVT_DISABLE_LOG_Z)
     configuration.logarithmicZBuffer = false;
@@ -70,13 +102,21 @@ function setupStandaloneConfiguration(): SVTConfiguration {
   if (undefined !== process.env.SVT_DISABLE_DPI_AWARE_VIEWPORTS)
     configuration.dpiAwareViewports = false;
 
+  if (undefined !== process.env.SVT_NO_CANCEL_TILE_REQUESTS)
+    configuration.cancelBackendTileRequests = false;
+
+  if (undefined !== process.env.SVT_USE_WEBGL2)
+    configuration.useWebGL2 = true;
+
   const extensions = process.env.SVT_DISABLED_EXTENSIONS;
   if (undefined !== extensions)
     configuration.disabledExtensions = extensions.split(";");
 
   configuration.useFakeCloudStorageTileCache = undefined !== process.env.SVT_FAKE_CLOUD_STORAGE;
 
-  const configPathname = path.normalize(path.join(__dirname, "../webresources", "configuration.json"));
+  configuration.disableEdges = undefined !== process.env.SVT_DISABLE_EDGE_DISPLAY;
+
+  const configPathname = path.normalize(path.join(__dirname, "..", "..", "build", "configuration.json"));
   fs.writeFileSync(configPathname, JSON.stringify(configuration), "utf8");
 
   return configuration;
@@ -112,5 +152,5 @@ export function initializeBackend() {
   Logger.setLevel("SVT", LogLevel.Trace);
 
   if (svtConfig.useFakeCloudStorageTileCache)
-    IModelHost.tileCacheService = new FakeTileCacheService(path.normalize(path.join(__dirname, "../webresources", "tiles/")));
+    IModelHost.tileCacheService = new FakeTileCacheService(path.normalize(path.join(__dirname, "..", "..", "build", "tiles")));
 }

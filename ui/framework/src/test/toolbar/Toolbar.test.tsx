@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 
@@ -8,11 +8,13 @@ import { render, cleanup } from "@testing-library/react";
 import { expect } from "chai";
 import TestUtils from "../TestUtils";
 import {
-  Toolbar, CommandItemDef, BaseItemState, GroupItemDef, ConditionalItemDef, SyncUiEventDispatcher, CustomItemDef, PopupButton,
+  Toolbar, CommandItemDef, BaseItemState, GroupItemDef, SyncUiEventDispatcher, CustomItemDef, PopupButton,
 } from "../../ui-framework";
 import { Direction, ToolbarPanelAlignment } from "@bentley/ui-ninezone";
 import { ItemList } from "../../ui-framework/shared/ItemMap";
 import { Orientation } from "@bentley/ui-core";
+
+// tslint:disable: deprecation
 
 describe("<Toolbar  />", async () => {
 
@@ -102,13 +104,6 @@ describe("<Toolbar  />", async () => {
     ),
   });
 
-  const conditional1 = new ConditionalItemDef({
-    items: [tool1b, tool2b],
-    isEnabled: false,
-    stateSyncIds: [testItemEventId],
-    stateFunc: testItemStateFunc,
-  });
-
   const group2 = new GroupItemDef({
     groupId: "test.group2",
     label: "Tool_Group_2",
@@ -149,10 +144,22 @@ describe("<Toolbar  />", async () => {
           tool1,
           tool2,
           group1,
-          conditional1,
           custom1,
-        ])} />);
+        ])}
+      />);
     expect(renderedComponent).not.to.be.undefined;
+    expect(renderedComponent.queryByTitle("Tool_1")).not.to.be.null;
+    renderedComponent.rerender(
+      <Toolbar
+        orientation={Orientation.Vertical}
+        expandsTo={Direction.Right}
+        panelAlignment={ToolbarPanelAlignment.End}
+        items={new ItemList([
+          tool2,
+          group1,
+        ])}
+      />);
+    expect(renderedComponent.queryByTitle("Tool_1")).to.be.null;
   });
 
   it("should render with only items", async () => {
@@ -163,7 +170,6 @@ describe("<Toolbar  />", async () => {
           tool1,
           tool2,
           group1,
-          conditional1,
           custom1,
         ])} />);
     expect(renderedComponent).not.to.be.undefined;
@@ -180,13 +186,13 @@ describe("<Toolbar  />", async () => {
       />);
     expect(renderedComponent).not.to.be.undefined;
 
-    expect(tool1.isEnabled).to.be.false;
-    expect(tool2.isEnabled).to.be.true;
+    expect(tool1.isEnabled).to.be.false; // tslint:disable-line:deprecation
+    expect(tool2.isEnabled).to.be.true; // tslint:disable-line:deprecation
 
     SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(testItemEventId);
 
-    expect(tool1.isEnabled).to.be.false;
-    expect(tool2.isEnabled).to.be.true;
+    expect(tool1.isEnabled).to.be.false; // tslint:disable-line:deprecation
+    expect(tool2.isEnabled).to.be.true; // tslint:disable-line:deprecation
   });
 
   it("sync event should refresh updated items", () => {
@@ -194,31 +200,30 @@ describe("<Toolbar  />", async () => {
       <Toolbar
         orientation={Orientation.Horizontal}
         items={new ItemList([
-          tool1,
-          tool2,
-          group1,
+          tool1b,
+          tool2b,
           group2,
-          conditional1,
-          custom1,
+          tool1c,
+          tool1d,
         ])}
       />);
     expect(renderedComponent).not.to.be.undefined;
 
-    expect(tool1b.isEnabled).to.be.false;
-    expect(tool2b.isEnabled).to.be.true;
+    expect(tool1b.isEnabled).to.be.false; // tslint:disable-line:deprecation
+    expect(tool2b.isEnabled).to.be.true; // tslint:disable-line:deprecation
 
-    expect(group2.isEnabled).to.be.false;
-    expect(tool1c.isEnabled).to.be.false;
-    expect(tool1d.isEnabled).to.be.false;
+    expect(group2.isEnabled).to.be.false; // tslint:disable-line:deprecation
+    expect(tool1c.isEnabled).to.be.false; // tslint:disable-line:deprecation
+    expect(tool1d.isEnabled).to.be.false; // tslint:disable-line:deprecation
 
     SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(testItemEventId);
 
-    expect(tool1b.isEnabled).to.be.true;
-    expect(tool2b.isEnabled).to.be.true;
+    expect(tool1b.isEnabled).to.be.false; // tslint:disable-line:deprecation
+    expect(tool2b.isEnabled).to.be.true; // tslint:disable-line:deprecation
 
-    expect(group2.isEnabled).to.be.true;
-    expect(tool1c.isEnabled).to.be.true;
-    expect(tool1d.isEnabled).to.be.true;
+    expect(group2.isEnabled).to.be.true; // tslint:disable-line:deprecation
+    expect(tool1c.isEnabled).to.be.true; // tslint:disable-line:deprecation
+    expect(tool1d.isEnabled).to.be.true; // tslint:disable-line:deprecation
   });
 
 });

@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { BeDuration } from "@bentley/bentleyjs-core";
 import { PromiseMemoizer, QueryablePromise, MemoizeFnType, GenerateKeyFnType } from "../../PromiseMemoizer";
@@ -37,8 +37,7 @@ export class TestMemoizer extends PromiseMemoizer<string> {
 
     const testQP = memoizeTestFn(param, waitTime);
 
-    const waitPromise = BeDuration.wait(this._pendingWaitTime);
-    await Promise.race([testQP.promise, waitPromise]); // This resolves as soon as either the fn is completed or the wait time has expired. Prevents waiting un-necessarily if the open has already completed.
+    await BeDuration.race(this._pendingWaitTime, testQP.promise); // This resolves as soon as either the fn is completed or the wait time has expired. Prevents waiting un-necessarily if the open has already completed.
     if (testQP.isPending)
       return "Pending";
 

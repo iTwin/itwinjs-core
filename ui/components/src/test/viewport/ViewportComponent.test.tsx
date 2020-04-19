@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { expect } from "chai";
@@ -22,7 +22,7 @@ describe("ViewportComponent", () => {
 
   before(async () => {
     ViewportComponentEvents.terminate();
-    TestUtils.initializeUiComponents(); // tslint:disable-line:no-floating-promises
+    await TestUtils.initializeUiComponents();
     MockRender.App.startup();
   });
 

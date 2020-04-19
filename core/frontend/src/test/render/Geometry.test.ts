@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
 import { expect, assert } from "chai";
@@ -45,8 +45,8 @@ describe("GeometryPrimitives tests", () => {
     expect(loopRange).to.not.be.null;
 
     const gfParams: GraphicParams = new GraphicParams();
-    gfParams.setLineColor(ColorDef.white);
-    gfParams.setFillColor(ColorDef.black); // forces region outline flag
+    gfParams.lineColor = ColorDef.white;
+    gfParams.fillColor = ColorDef.black; // forces region outline flag
     const displayParams: DisplayParams = DisplayParams.createForMesh(gfParams);
 
     const loopGeom = Geometry.createFromLoop(loop, Transform.createIdentity(), loopRange, displayParams, false);
@@ -107,7 +107,7 @@ describe("GeometryPrimitives tests", () => {
     expect(pathRange).to.not.be.null;
 
     const gfParams: GraphicParams = new GraphicParams();
-    gfParams.setLineColor(ColorDef.white);
+    gfParams.lineColor = ColorDef.white;
     const displayParams: DisplayParams = DisplayParams.createForLinear(gfParams);
 
     const pathGeom = Geometry.createFromPath(pth, Transform.createIdentity(), pathRange, displayParams, false);

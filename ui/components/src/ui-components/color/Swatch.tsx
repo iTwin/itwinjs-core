@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Color */
+/** @packageDocumentation
+ * @module Color
+ */
 
 import * as React from "react";
 import classnames from "classnames";
@@ -24,11 +26,10 @@ export interface ColorSwatchProps extends React.ButtonHTMLAttributes<HTMLButtonE
   round?: boolean;
 }
 
-/** ColorSwatch Functional component
+/** ColorSwatch Functional component displays a color swatch in a button
  * @beta
  */
-// tslint:disable-next-line:variable-name
-export const ColorSwatch: React.FunctionComponent<ColorSwatchProps> = (props) => {
+export function ColorSwatch(props: ColorSwatchProps) {
   const { b, g, r, t } = props.colorDef.colors as any;
 
   const rgbaString = `rgb(${r},${g},${b},${(255 - t) / 255})`;
@@ -55,4 +56,4 @@ export const ColorSwatch: React.FunctionComponent<ColorSwatchProps> = (props) =>
   } = props as any;
 
   return <button {...otherProps} style={colorStyle} className={classes} onClick={handleClick} />;
-};
+}

@@ -1,9 +1,11 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module CartesianGeometry */
+/** @packageDocumentation
+ * @module CartesianGeometry
+ */
 // cspell:word JSONXY
 // cspell:word CWXY
 
@@ -36,8 +38,8 @@ export class XY implements XAndY {
       this.x = 0; this.y = 0;
     }
   }
-  /** Freeze this instance (and its deep content) so it can be considered read-only */
-  public freeze() { Object.freeze(this); }
+  /** Freeze this instance so it is read-only */
+  public freeze(): Readonly<this> { return Object.freeze(this); }
 
   /** Returns true if this and other have equal x,y parts within Geometry.smallMetricDistance. */
   public isAlmostEqual(other: XAndY, tol?: number): boolean { return Geometry.isSameCoordinate(this.x, other.x, tol) && Geometry.isSameCoordinate(this.y, other.y, tol); }
@@ -311,7 +313,7 @@ export class Vector2d extends XY implements BeJSONFunctions {
   }
   /** Return a new Vector2d extending from point0 to point1 */
   public static createStartEnd(point0: XAndY, point1: XAndY, result?: Vector2d): Vector2d {
-    return Vector2d.create (point1.x - point0.x, point1.y - point0.y, result);
+    return Vector2d.create(point1.x - point0.x, point1.y - point0.y, result);
   }
   /**
    * Return a vector that bisects the angle between two normals and extends to the intersection of two offset lines

@@ -1,19 +1,16 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { Guid, GuidString, IModelHubStatus } from "@bentley/bentleyjs-core";
+import { HubIModel, IModelClient, IModelHubClient, IModelHubClientError, IModelHubError, IModelQuery, InitializationState, SeedFile } from "@bentley/imodelhub-client";
+import { AccessToken, AuthorizedClientRequestContext, RequestGlobalOptions, RequestTimeoutOptions, WsgError } from "@bentley/itwin-client";
+import { TestUsers } from "@bentley/oidc-signin-tool";
 import * as chai from "chai";
 import * as fs from "fs";
 import * as path from "path";
-
-import { Guid, GuidString, IModelHubStatus } from "@bentley/bentleyjs-core";
-import {
-  AccessToken, WsgError, IModelQuery, IModelClient, InitializationState, RequestGlobalOptions, RequestTimeoutOptions,
-  IModelHubClient, HubIModel, SeedFile, IModelHubError, IModelHubClientError, AuthorizedClientRequestContext,
-} from "@bentley/imodeljs-clients";
+import { RequestType, ResponseBuilder, ScopeType } from "../ResponseBuilder";
 import { TestConfig } from "../TestConfig";
-import { TestUsers } from "../TestUsers";
-import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import * as utils from "./TestUtils";
 
 function mockGetIModelByName(contextId: string, name: string, description = "", imodelId?: GuidString, initialized = true) {
@@ -336,7 +333,7 @@ describe("iModelHub iModelsHandler", () => {
     chai.expect(error!.errorNumber).to.be.equal(IModelHubStatus.iModelAlreadyExists);
   });
 
-  it("should create iModel and upload SeedFile (#iModelBank)", async function () {
+  it("should create iModel and upload SeedFile", async function () {
     const filePath = utils.assetsPath + "LargerSeedFile.bim";
     const description = "Test iModel created by imodeljs-clients tests";
     mockCreateiModel(projectId, Guid.createValue(), createIModelName, description, filePath, 2);
@@ -396,7 +393,7 @@ describe("iModelHub iModelsHandler", () => {
   });
 
   it("should download a Seed File with Buffering (#iModelBank)", async () => {
-    imodelClient.setFileHandler(utils.createFileHanlder(true));
+    imodelClient.setFileHandler(utils.createFileHandler(true));
     mockGetSeedFile(imodelId, true);
     const downloadToPathname: string = path.join(utils.workDir, imodelId.toString());
     utils.mockFileResponse();
@@ -406,7 +403,7 @@ describe("iModelHub iModelsHandler", () => {
     progressTracker.check();
     fs.existsSync(downloadToPathname).should.be.equal(true);
 
-    imodelClient.setFileHandler(utils.createFileHanlder());
+    imodelClient.setFileHandler(utils.createFileHandler());
   });
 
   it("should fail downloading the Seed File with no file handler", async () => {

@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module WebGL */
+/** @packageDocumentation
+ * @module WebGL
+ */
 
 import { ShaderProgram } from "../ShaderProgram";
 import { FragmentShaderComponent } from "../ShaderBuilder";
@@ -18,7 +20,7 @@ const assignFragData = `
 const assignFragColor = `FragColor = vec4(0.0, 0.0, 0.0, 1.0);`;
 
 /** @internal */
-export function createClearTranslucentProgram(context: WebGLRenderingContext): ShaderProgram {
+export function createClearTranslucentProgram(context: WebGLRenderingContext | WebGL2RenderingContext): ShaderProgram {
   const builder = createViewportQuadBuilder(false);
   const frag = builder.frag;
   frag.set(FragmentShaderComponent.ComputeBaseColor, computeBaseColor);

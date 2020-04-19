@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Item */
+/** @packageDocumentation
+ * @module Item
+ */
 
 import * as React from "react";
 
@@ -17,11 +19,16 @@ import { ItemProps } from "./ItemProps";
  * @public
  */
 export abstract class ActionButtonItemDef extends ItemDefBase {
-  protected _commandHandler?: CommandHandler;
-  public parameters?: any;
-  public size?: SizeProps;
-  public static defaultButtonSize = 42;
   private _onItemExecuted?: OnItemExecutedFunc;
+
+  /** Command Handler for the action button */
+  protected _commandHandler?: CommandHandler;
+  /** Parameters passed to the Command Handler */
+  public parameters?: any;
+  /** Size of the action button, as set by handleSizeKnown */
+  public size?: SizeProps;
+  /** The default button size for all action buttons */
+  public static defaultButtonSize = 42;
 
   constructor(itemProps: ItemProps, onItemExecuted?: OnItemExecutedFunc) {
     super(itemProps);
@@ -30,6 +37,7 @@ export abstract class ActionButtonItemDef extends ItemDefBase {
     this._onItemExecuted = onItemExecuted;
   }
 
+  /** Called when the action button is invoked by a click or touch */
   public execute(): void {
     if (this._commandHandler && this._commandHandler.execute) {
       if (this._commandHandler.getCommandArgs)
@@ -43,10 +51,12 @@ export abstract class ActionButtonItemDef extends ItemDefBase {
       this._onItemExecuted(this);
   }
 
+  /** Called when the size of the action button is initialized and the size is known */
   public handleSizeKnown = (size: SizeProps) => {
     this.size = size;
   }
 
+  /** Determines the dimension in a given orientation */
   public getDimension(orientation: Orientation): number {
     let dimension = ActionButtonItemDef.defaultButtonSize;
     if (this.size)
@@ -66,8 +76,9 @@ export abstract class ActionButtonItemDef extends ItemDefBase {
     return key;
   }
 
+  /** @internal */
   public toolbarReactNode(index?: number): React.ReactNode {
-    if (!this.isVisible)
+    if (!this.isVisible) // tslint:disable-line:deprecation
       return null;
 
     const key = this.getKey(index);

@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
 import {
@@ -9,20 +9,25 @@ import {
   SceneContext,
   SpatialModelState,
   TiledGraphicsProvider,
-  TileTree,
+  TileTreeReference,
   Viewport,
+  SnapshotConnection,
 } from "@bentley/imodeljs-frontend";
 import { DisplayTestApp } from "./App";
 
 /** A reference to a TileTree originating from a different IModelConnection than the one the user opened. */
-class ExternalTreeRef extends TileTree.Reference {
-  private readonly _ref: TileTree.Reference;
+class ExternalTreeRef extends TileTreeReference {
+  private readonly _ref: TileTreeReference;
   private readonly _ovrs: FeatureSymbology.Overrides;
 
-  public constructor(ref: TileTree.Reference, ovrs: FeatureSymbology.Overrides) {
+  public constructor(ref: TileTreeReference, ovrs: FeatureSymbology.Overrides) {
     super();
     this._ref = ref;
     this._ovrs = ovrs;
+  }
+
+  public get castsShadows() {
+    return this._ref.castsShadows;
   }
 
   public get treeOwner() { return this._ref.treeOwner; }
@@ -33,17 +38,20 @@ class ExternalTreeRef extends TileTree.Reference {
       return;
 
     // ###TODO transform
-    const args = tree.createDrawArgs(context);
+    const args = this.createDrawArgs(context);
+    if (undefined === args)
+      return;
+
     tree.draw(args);
 
     args.graphics.symbologyOverrides = this._ovrs;
-    const branch = context.createBranch(args.graphics, tree.location);
+    const branch = context.createBranch(args.graphics, args.location);
     context.outputGraphic(branch);
   }
 }
 
 class Provider implements TiledGraphicsProvider {
-  private readonly _refs: TileTree.Reference[] = [];
+  private readonly _refs: TileTreeReference[] = [];
   public readonly iModel: IModelConnection;
 
   private constructor(vp: Viewport, iModel: IModelConnection, ovrs: FeatureSymbology.Overrides) {
@@ -90,7 +98,7 @@ class Provider implements TiledGraphicsProvider {
     return new Provider(vp, iModel, ovrs);
   }
 
-  public forEachTileTreeRef(_vp: Viewport, func: (ref: TileTree.Reference) => void): void {
+  public forEachTileTreeRef(_vp: Viewport, func: (ref: TileTreeReference) => void): void {
     for (const ref of this._refs)
       func(ref);
   }
@@ -104,7 +112,7 @@ export async function toggleExternalTiledGraphicsProvider(vp: Viewport): Promise
   if (undefined !== existing) {
     vp.dropTiledGraphicsProvider(existing);
     providersByViewport.delete(vp);
-    await existing.iModel.closeSnapshot();
+    await existing.iModel.close();
     return;
   }
 
@@ -114,7 +122,7 @@ export async function toggleExternalTiledGraphicsProvider(vp: Viewport): Promise
 
   let iModel;
   try {
-    iModel = await IModelConnection.openSnapshot(filename);
+    iModel = await SnapshotConnection.openFile(filename);
     const provider = await Provider.create(vp, iModel);
     providersByViewport.set(vp, provider);
     vp.addTiledGraphicsProvider(provider);

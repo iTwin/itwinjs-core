@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** Parameters for starting display-test-app with a specified initial configuration */
 export interface SVTConfiguration {
@@ -15,13 +15,21 @@ export interface SVTConfiguration {
   enableDiagnostics?: boolean; // If true, all RenderDiagnostics will be enabled (assertions, debug output, GL state checks).
   disabledExtensions?: string[]; // An array of names of WebGL extensions to be disabled
   disableInstancing?: boolean; // default false
+  enableImprovedElision?: boolean; // default true
+  ignoreAreaPatterns?: boolean; // default false
   disableMagnification?: boolean;
   preserveShaderSourceCode?: boolean;
-  useProjectExtents?: boolean;
+  useProjectExtents?: boolean; // default ON
+  maxTilesToSkip?: number;
   tileTreeExpirationSeconds?: number;
+  tileExpirationSeconds?: number;
   logarithmicZBuffer?: boolean; // default ON (if extension supported)
   filterMapTextures?: boolean;  // default OFF
   filterMapDrapeTextures?: boolean; // default ON (if extension supported)
   useFakeCloudStorageTileCache?: boolean; // default OFF
   dpiAwareViewports?: boolean; // default ON
+  cancelBackendTileRequests?: boolean; // default ON
+  disableEdges?: boolean; // default OFF
+  useWebGL2?: boolean; // default OFF
+  doIdleWork?: boolean; // default ON
 }

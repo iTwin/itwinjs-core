@@ -1,14 +1,14 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { GuidString, Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { IModelVersion } from "@bentley/imodeljs-common";
+import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { assert } from "chai";
 import * as path from "path";
-import { AuthorizedBackendRequestContext, IModelDb, NativeLoggerCategory, KnownLocations, OpenParams } from "../../imodeljs-backend";
-import { IModelTestUtils } from "../IModelTestUtils";
+import { AuthorizedBackendRequestContext, BriefcaseDb, KnownLocations, NativeLoggerCategory, OpenParams } from "../../imodeljs-backend";
 import { HubUtility } from "./HubUtility";
 
 // Useful utilities to download/upload test cases from/to the iModel Hub
@@ -28,7 +28,7 @@ describe("ApplyChangeSets (#integration)", () => {
   };
 
   const testOpen = async (requestContext: AuthorizedClientRequestContext, projectId: string, iModelId: string) => {
-    const iModelDb = await IModelDb.open(requestContext, projectId, iModelId, OpenParams.fixedVersion(), IModelVersion.latest());
+    const iModelDb = await BriefcaseDb.open(requestContext, projectId, iModelId, OpenParams.fixedVersion(), IModelVersion.latest());
     assert(!!iModelDb);
   };
 
@@ -40,7 +40,7 @@ describe("ApplyChangeSets (#integration)", () => {
   it("should test all change set operations after downloading iModel from the hub  (#integration)", async () => {
     console.log(`Downloading/Uploading iModels to/from ${iModelRootDir}`); // tslint:disable-line:no-console
 
-    const requestContext: AuthorizedBackendRequestContext = await IModelTestUtils.getTestUserRequestContext();
+    const requestContext: AuthorizedBackendRequestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
 
     let projectName = "iModelJsIntegrationTest"; let iModelName = "ReadOnlyTest";
     let projectId = await HubUtility.queryProjectIdByName(requestContext, projectName);

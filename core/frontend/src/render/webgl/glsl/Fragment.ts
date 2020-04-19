@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module WebGL */
+/** @packageDocumentation
+ * @module WebGL
+ */
 
 import { FragmentShaderBuilder, VariableType, FragmentShaderComponent, SourceBuilder } from "../ShaderBuilder";
 import { encodeDepthRgb } from "./Decode";
@@ -15,9 +17,7 @@ export function addWindowToTexCoords(frag: FragmentShaderBuilder) {
   frag.addFunction(windowCoordsToTexCoords);
   frag.addUniform("u_invScreenSize", VariableType.Vec2, (prog) => {
     prog.addProgramUniform("u_invScreenSize", (uniform, params) => {
-      const rect = params.target.viewRect;
-      const invScreenSize = [1.0 / rect.width, 1.0 / rect.height];
-      uniform.setUniform2fv(invScreenSize);
+      params.target.uniforms.viewRect.bindInverseDimensions(uniform);
     });
   });
 }
@@ -26,8 +26,8 @@ export function addWindowToTexCoords(frag: FragmentShaderBuilder) {
 export function addWhiteOnWhiteReversal(frag: FragmentShaderBuilder) {
   frag.addUniform("u_reverseWhiteOnWhite", VariableType.Float, (prog) => {
     prog.addGraphicUniform("u_reverseWhiteOnWhite", (uniform, params) => {
-      const bgColor = params.target.bgColor;
-      const doReversal = (bgColor.isWhite && params.geometry.wantWoWReversal(params.programParams)) ? 1.0 : 0.0;
+      const isWhite = params.target.uniforms.style.isWhiteBackground;
+      const doReversal = (isWhite && params.geometry.wantWoWReversal(params.programParams)) ? 1.0 : 0.0;
       uniform.setUniform1f(doReversal);
     });
   });

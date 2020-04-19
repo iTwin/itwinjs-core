@@ -1,9 +1,11 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module Numerics */
+/** @packageDocumentation
+ * @module Numerics
+ */
 
 import { Range1d } from "../geometry3d/Range";
 import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
@@ -183,29 +185,29 @@ export class Range1dArray {
 
     data.sort(compareRange1dLexicalLowHigh);
 
-    let currIdx = 0;
-    let toInsert = false;
-    for (let i = 0; i < data.length; i++) {
-      if (i === data.length - 1) {
-        if (toInsert) {
-          if (!removeZeroLengthRanges || data[i].low !== data[i].high)
-            data[currIdx++] = data[i];
-        }
-        break;
-      }
-
-      if (data[i + 1].low > data[i].high) {
-        if (!removeZeroLengthRanges || data[i].low !== data[i].high)
-          data[currIdx++] = data[i];
-        continue;
+    let currentIndex = 0;   // last accepted interval
+    for (let i = 1; i < data.length; i++) {
+      if (data[i].low <= data[currentIndex].high) {
+        // extend the current range
+        if (data[i].high > data[currentIndex].high)
+          data[currentIndex].high = data[i].high;
       } else {
-        data[i + 1].low = data[i].low;
-        data[i + 1].high = Math.max(data[i].high, data[i + 1].high);
-        toInsert = true;
+        // data[i] is a new entry.
+        currentIndex++;
+        data[currentIndex].setFrom(data[i]);
       }
     }
 
-    data.length = currIdx;
+    data.length = currentIndex + 1;
+    if (removeZeroLengthRanges) {
+      currentIndex = -1;
+      for (let i = 0; i < data.length; i++) {
+        if (data[i].low < data[i].high) {
+          if (currentIndex < i)
+            data[++currentIndex].setFrom(data[i]);
+        }
+      }
+    }
   }
 
   /** Apply parity logic among ranges which are not pre-sorted. */

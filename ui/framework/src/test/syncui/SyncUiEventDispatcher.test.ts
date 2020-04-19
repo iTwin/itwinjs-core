@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
@@ -26,7 +26,7 @@ import {
 } from "../../ui-framework";
 import TestUtils from "../TestUtils";
 
-import { IModelToken } from "@bentley/imodeljs-common";
+import { IModelRpcProps } from "@bentley/imodeljs-common";
 import { IModelConnection, SelectionSet, MockRender, IModelApp, ScreenViewport } from "@bentley/imodeljs-frontend";
 import { RpcRequestsHandler, InstanceKey } from "@bentley/presentation-common";
 import { Presentation, SelectionManager, SelectionScopesManager, SelectionScopesManagerProps } from "@bentley/presentation-frontend";
@@ -211,7 +211,7 @@ describe("SyncUiEventDispatcher", () => {
     expect(handleSyncUiEvent.calledOnce).to.be.true;
 
     handleSyncUiEvent.resetHistory();
-    Backstage.onBackstageEvent.emit({} as BackstageEventArgs);
+    Backstage.onBackstageEvent.emit({} as BackstageEventArgs); // tslint:disable-line:deprecation
     await TestUtils.tick(timeToWaitForUiSyncCallback);
     expect(handleSyncUiEvent.calledOnce).to.be.true;
 
@@ -235,7 +235,7 @@ describe("SyncUiEventDispatcher", () => {
 
   describe("ConnectionEvents", () => {
 
-    const imodelToken = new IModelToken();
+    const imodelToken: IModelRpcProps = { key: "" };
     const imodelMock = moq.Mock.ofType<IModelConnection>();
     const rpcRequestsHandlerMock = moq.Mock.ofType<RpcRequestsHandler>();
     const source: string = "test";
@@ -260,7 +260,7 @@ describe("SyncUiEventDispatcher", () => {
 
     beforeEach(() => {
       imodelMock.reset();
-      imodelMock.setup((x) => x.iModelToken).returns(() => imodelToken);
+      imodelMock.setup((x) => x.getRpcProps()).returns(() => imodelToken);
 
       ss = new SelectionSet(imodelMock.object);
       imodelMock.setup((x) => x.selectionSet).returns(() => ss);
@@ -279,7 +279,7 @@ describe("SyncUiEventDispatcher", () => {
 
       baseSelection = generateSelection();
 
-      Presentation.selection = new SelectionManager({ scopes: getManager() });
+      Presentation.setSelectionManager(new SelectionManager({ scopes: getManager() }));
     });
 
     it("clearConnectionEvents with no intervening initializeConnectionEvents", () => {

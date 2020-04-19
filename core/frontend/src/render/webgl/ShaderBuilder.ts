@@ -1,12 +1,14 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module WebGL */
+/** @packageDocumentation
+ * @module WebGL
+ */
 
 import { assert } from "@bentley/bentleyjs-core";
-import { ClippingType } from "../System";
-import { ShaderProgram } from "./ShaderProgram";
+import { ClippingType } from "../RenderClipVolume";
+import { ShaderProgram, CompileStatus } from "./ShaderProgram";
 import { System } from "./System";
 import { ClipDef } from "./TechniqueFlags";
 import { vertexDiscard, earlyVertexDiscard, lateVertexDiscard, addPosition } from "./glsl/Vertex";
@@ -31,6 +33,7 @@ export const enum VariableType {
   Mat4, // mat4
   Sampler2D, // sampler2D
   SamplerCube, // samplerCube
+  Uint, // uint
 
   COUNT,
 }
@@ -72,14 +75,20 @@ namespace Convert {
       case VariableType.Mat4: return "mat4";
       case VariableType.Sampler2D: return "sampler2D";
       case VariableType.SamplerCube: return "samplerCube";
+      case VariableType.Uint: return "uint";
       default: assert(false); return "undefined";
     }
   }
 
-  export function scopeToString(scope: VariableScope): string {
+  export function scopeToString(scope: VariableScope, isVertexShader: boolean): string {
     switch (scope) {
       case VariableScope.Global: return "";
-      case VariableScope.Varying: return "varying";
+      case VariableScope.Varying: {
+        if (System.instance.capabilities.isWebGL2)
+          return (isVertexShader ? "out" : "in");
+        else
+          return "varying";
+      }
       case VariableScope.Uniform: return "uniform";
       default: assert(false); return "undefined";
     }
@@ -115,8 +124,9 @@ export class ShaderVariable {
   public readonly scope: VariableScope;
   public readonly precision: VariablePrecision;
   public readonly isConst: boolean = false; // for global variables only
+  public readonly length: number; // for uniform arrays only
 
-  private constructor(name: string, type: VariableType, scope: VariableScope, precision: VariablePrecision, isConst: boolean, addBinding?: AddVariableBinding, value?: string) {
+  private constructor(name: string, type: VariableType, scope: VariableScope, precision: VariablePrecision, isConst: boolean, addBinding?: AddVariableBinding, value?: string, length: number = 0) {
     this._addBinding = addBinding;
     this.name = name;
     this.value = value;
@@ -124,10 +134,15 @@ export class ShaderVariable {
     this.scope = scope;
     this.precision = precision;
     this.isConst = isConst;
+    this.length = length;
   }
 
   public static create(name: string, type: VariableType, scope: VariableScope, addBinding?: AddVariableBinding, precision: VariablePrecision = VariablePrecision.Default): ShaderVariable {
     return new ShaderVariable(name, type, scope, precision, false, addBinding, undefined);
+  }
+
+  public static createArray(name: string, type: VariableType, length: number, scope: VariableScope, addBinding?: AddVariableBinding, precision: VariablePrecision = VariablePrecision.Default): ShaderVariable {
+    return new ShaderVariable(name, type, scope, precision, false, addBinding, undefined, length);
   }
 
   public static createGlobal(name: string, type: VariableType, value?: string, isConst: boolean = false) {
@@ -141,16 +156,16 @@ export class ShaderVariable {
   }
 
   public get typeName(): string { return Convert.typeToString(this.type); }
-  public get scopeName(): string { return Convert.scopeToString(this.scope); }
+  public getScopeName(isVertexShader: boolean): string { return Convert.scopeToString(this.scope, isVertexShader); }
   public get precisionName(): string { return Convert.precisionToString(this.precision); }
 
   /** Constructs the single-line declaration of this variable */
-  public buildDeclaration(): string {
+  public buildDeclaration(isVertexShader: boolean): string {
     const parts = new Array<string>();
     if (this.isConst)
       parts.push("const");
 
-    const scopeName = this.scopeName;
+    const scopeName = this.getScopeName(isVertexShader);
     if (0 < scopeName.length)
       parts.push(scopeName);
 
@@ -159,7 +174,11 @@ export class ShaderVariable {
       parts.push(precisionName);
 
     parts.push(this.typeName);
-    parts.push(this.name);
+
+    if (this.length > 0)
+      parts.push(this.name + "[" + this.length.toFixed(0) + "]");
+    else
+      parts.push(this.name);
 
     if (undefined !== this.value && 0 < this.value.length) {
       parts.push("=");
@@ -210,11 +229,18 @@ export class ShaderVariables {
     this.addGlobal(name, type, value, true);
   }
 
+  public addBitFlagConstant(name: string, value: number) {
+    if (System.instance.capabilities.isWebGL2)
+      this.addGlobal(name, VariableType.Uint, (2 ** value).toFixed(0) + "u", true);
+    else
+      this.addGlobal(name, VariableType.Float, (1.0 / (2 ** (value + 1))).toExponential(7), true);
+  }
+
   /** Constructs the lines of glsl code declaring all of the variables. */
-  public buildDeclarations(): string {
+  public buildDeclarations(isVertexShader: boolean): string {
     let decls = "";
     for (const v of this._list) {
-      decls += v.buildDeclaration() + "\n";
+      decls += v.buildDeclaration(isVertexShader) + "\n";
     }
 
     return decls;
@@ -439,6 +465,8 @@ export class ShaderBuilder extends ShaderVariables {
   protected _functions: string[] = [];
   protected _extensions: string[] = [];
   protected _macros: string[] = [];
+  protected _fragOutputs: string[] = [];
+  protected _version: string = "";
   public headerComment: string = "";
   protected readonly _flags: ShaderBuilderFlags;
   protected _initializers: string[] = new Array<string>();
@@ -455,9 +483,15 @@ export class ShaderBuilder extends ShaderVariables {
     super();
     this._components.length = maxComponents;
     this._flags = flags;
-    this.addMacro("#version 100");
-    this.addDefine("TEXTURE", "texture2D");
-    this.addDefine("TEXTURE_CUBE", "textureCube");
+    if (System.instance.capabilities.isWebGL2) {
+      this._version = "#version 300 es";
+      this.addDefine("TEXTURE", "texture");
+      this.addDefine("TEXTURE_CUBE", "texture");
+    } else {
+      this._version = "#version 100";
+      this.addDefine("TEXTURE", "texture2D");
+      this.addDefine("TEXTURE_CUBE", "textureCube");
+    }
   }
 
   protected addComponent(index: number, component: string): void {
@@ -516,8 +550,24 @@ export class ShaderBuilder extends ShaderVariables {
     this.addMacro(macro);
   }
 
-  protected buildPreludeCommon(attrMap: Map<string, AttributeDetails> | undefined): SourceBuilder {
+  public clearFragOutput(): void {
+    while (this._fragOutputs.length > 0)
+      this._fragOutputs.pop();
+  }
+
+  public addFragOutput(name: string, value: number): void {
+    if (-1 === value) {
+      this._fragOutputs.push("out vec4 FragColor;");
+      return;
+    }
+    this._fragOutputs.push("layout(location = " + value + ") out vec4 " + name + ";");
+  }
+
+  protected buildPreludeCommon(attrMap: Map<string, AttributeDetails> | undefined, isVertexShader: boolean): SourceBuilder {
     const src = new SourceBuilder();
+
+    // Version number (must be first thing for GLSL 300)
+    src.addline(this._version);
 
     // Header comment
     src.newline();
@@ -540,14 +590,22 @@ export class ShaderBuilder extends ShaderVariables {
     src.newline();
 
     // Variable declarations
-    src.add(this.buildDeclarations());
+    src.add(this.buildDeclarations(isVertexShader));
 
     // Attribute declarations
     if (attrMap !== undefined) {
+      const webGL2 = System.instance.capabilities.isWebGL2;
       attrMap.forEach((attr: AttributeDetails, key: string) => {
-        src.addline("attribute " + Convert.typeToString(attr.type) + " " + key + ";");
+        if (webGL2)
+          src.addline("in " + Convert.typeToString(attr.type) + " " + key + ";");
+        else
+          src.addline("attribute " + Convert.typeToString(attr.type) + " " + key + ";");
       });
     }
+
+    // Layouts (WebGL2 only)
+    for (const layout of this._fragOutputs)
+      src.addline(layout);
 
     // Functions
     for (const func of this._functions) {
@@ -560,6 +618,7 @@ export class ShaderBuilder extends ShaderVariables {
   }
 
   protected copyCommon(src: ShaderBuilder): void {
+    this._version = src._version;
     this.headerComment = src.headerComment;
     this._initializers = [...src._initializers];
     this._components = [...src._components];
@@ -567,6 +626,7 @@ export class ShaderBuilder extends ShaderVariables {
     this._extensions = [...src._extensions];
     this._list = [...src._list];
     this._macros = [...src._macros];
+    this._fragOutputs = [...src._fragOutputs];
   }
 }
 
@@ -619,7 +679,7 @@ export const enum VertexShaderComponent {
 export class VertexShaderBuilder extends ShaderBuilder {
   private _computedVarying: string[] = new Array<string>();
 
-  private buildPrelude(attrMap?: Map<string, AttributeDetails>): SourceBuilder { return this.buildPreludeCommon(attrMap); }
+  private buildPrelude(attrMap?: Map<string, AttributeDetails>): SourceBuilder { return this.buildPreludeCommon(attrMap, true); }
 
   public constructor(flags: ShaderBuilderFlags) {
     super(VertexShaderComponent.COUNT, flags);
@@ -629,15 +689,12 @@ export class VertexShaderBuilder extends ShaderBuilder {
       addInstancedModelMatrixRTC(this);
       this.addDefine("MAT_MV", "g_mv");
       this.addDefine("MAT_MVP", "g_mvp");
-      this.addDefine("MAT_MODEL", "g_instancedModelMatrix");
     } else {
       this.addDefine("MAT_MV", "u_mv");
       this.addDefine("MAT_MVP", "u_mvp");
-      this.addDefine("MAT_MODEL", "u_modelMatrix");
     }
 
     addPosition(this, this.usesVertexTable);
-
   }
 
   public get(id: VertexShaderComponent): string | undefined { return this.getComponent(id); }
@@ -769,12 +826,15 @@ export const enum FragmentShaderComponent {
   // (Optional) Return true if the alpha value is not suitable for the current render pass
   // bool discardByAlpha(float alpha)
   DiscardByAlpha,
-  // (Optional) Apply lighting to base color
-  // vec4 applyLighting(vec4 baseColor)
-  ApplyLighting,
   // (Optional) Apply monochrome overrides to base color
   // vec4 applyMonochrome(vec4 baseColor)
   ApplyMonochrome,
+  // (Optional) Apply thematic display to base color. This happens before lighting and can alter the fragment color that is lit.
+  // vec4 applyThematicDisplay(vec4 baseColor)
+  ApplyThematicDisplay,
+  // (Optional) Apply lighting to base color
+  // vec4 applyLighting(vec4 baseColor)
+  ApplyLighting,
   // (Optional) Apply white-on-white reversal to base color
   ReverseWhiteOnWhite,
   // (Optional) Discard if outside any clipping planes
@@ -828,7 +888,10 @@ export class FragmentShaderBuilder extends ShaderBuilder {
   public constructor(flags: ShaderBuilderFlags) {
     super(FragmentShaderComponent.COUNT, flags);
 
-    this.addDefine("FragColor", "gl_FragColor");
+    if (System.instance.capabilities.isWebGL2)
+      this.addFragOutput("FragColor", -1);
+    else
+      this.addDefine("FragColor", "gl_FragColor");
   }
 
   public get(id: FragmentShaderComponent): string | undefined { return this.getComponent(id); }
@@ -836,10 +899,16 @@ export class FragmentShaderBuilder extends ShaderBuilder {
   public unset(id: FragmentShaderComponent) { this.removeComponent(id); }
 
   public addDrawBuffersExtension(): void {
-    assert(System.instance.capabilities.supportsDrawBuffers, "WEBGL_draw_buffers unsupported");
-    this.addExtension("GL_EXT_draw_buffers");
-    for (let i = 0; i < 4; i++)
-      this.addDefine("FragColor" + i, "gl_FragData[" + i + "]");
+    if (System.instance.capabilities.isWebGL2) {
+      this.clearFragOutput();
+      for (let i = 0; i < 4; i++)
+        this.addFragOutput("FragColor" + i, i);
+    } else {
+      assert(System.instance.capabilities.supportsDrawBuffers, "WEBGL_draw_buffers unsupported");
+      this.addExtension("GL_EXT_draw_buffers");
+      for (let i = 0; i < 4; i++)
+        this.addDefine("FragColor" + i, "gl_FragData[" + i + "]");
+    }
   }
 
   public buildSource(): string {
@@ -867,70 +936,89 @@ export class FragmentShaderBuilder extends ShaderBuilder {
       main.addline("  if (checkForEarlyDiscard()) { discard; return; }");
     }
 
-    const applyClipping = this.get(FragmentShaderComponent.ApplyClipping);
-    if (undefined !== applyClipping) {
-      prelude.addFunction("void applyClipping()", applyClipping);
-      main.addline("  applyClipping();");
-    }
-
     main.addline("  vec4 baseColor = computeBaseColor();");
-
-    const applyMaterialOverrides = this.get(FragmentShaderComponent.ApplyMaterialOverrides);
-    if (undefined !== applyMaterialOverrides) {
-      prelude.addFunction("vec4 applyMaterialOverrides(vec4 baseColor)", applyMaterialOverrides);
-      main.addline("  baseColor = applyMaterialOverrides(baseColor);");
-    }
 
     const finalizeDepth = this.get(FragmentShaderComponent.FinalizeDepth);
     if (undefined !== finalizeDepth) {
       prelude.addFunction("float finalizeDepth()", finalizeDepth);
       main.addline("  float finalDepth = finalizeDepth();");
-      main.addline("  gl_FragDepthEXT = finalDepth;");
+      if (System.instance.capabilities.isWebGL2)
+        main.addline("  gl_FragDepth = finalDepth;");
+      else
+        main.addline("  gl_FragDepthEXT = finalDepth;");
+    }
+
+    let clipIndent = "";
+    const applyClipping = this.get(FragmentShaderComponent.ApplyClipping);
+    if (undefined !== applyClipping) {
+      prelude.addline("vec3 g_clipColor;");
+      prelude.addFunction("bool applyClipping(vec4 baseColor)", applyClipping);
+      main.addline("  bool hasClipColor = applyClipping(baseColor);");
+      main.addline("  if (hasClipColor) { baseColor.rgb = g_clipColor; } else {");
+      clipIndent = "  ";
+    }
+
+    const applyMaterialOverrides = this.get(FragmentShaderComponent.ApplyMaterialOverrides);
+    if (undefined !== applyMaterialOverrides) {
+      prelude.addFunction("vec4 applyMaterialOverrides(vec4 baseColor)", applyMaterialOverrides);
+      main.addline(clipIndent + "  baseColor = applyMaterialOverrides(baseColor);");
+    }
+
+    const applyThematicDisplay = this.get(FragmentShaderComponent.ApplyThematicDisplay);
+    if (undefined !== applyThematicDisplay) {
+      prelude.addFunction("vec4 applyThematicDisplay(vec4 baseColor)", applyThematicDisplay);
+      main.addline(clipIndent + "  if (u_renderPass != kRenderPass_PlanarClassification)");
+      main.addline(clipIndent + "    baseColor = applyThematicDisplay(baseColor);");
     }
 
     const applyPlanarClassifier = this.get(FragmentShaderComponent.ApplyPlanarClassifier);
     if (undefined !== applyPlanarClassifier) {
       if (undefined === finalizeDepth) {
         if (this.findFunction(volClassOpaqueColor))
-          main.addline("  float finalDepth = gl_FragCoord.z;");
+          main.addline(clipIndent + "  float finalDepth = gl_FragCoord.z;");
         else
-          main.addline("  float finalDepth = 1.0;");
+          main.addline(clipIndent + "  float finalDepth = 1.0;");
       }
       prelude.addFunction("vec4 applyPlanarClassifications(vec4 baseColor, float depth)", applyPlanarClassifier);
-      main.addline("  baseColor = applyPlanarClassifications(baseColor, finalDepth);");
+      main.addline(clipIndent + "  baseColor = applyPlanarClassifications(baseColor, finalDepth);");
     }
+
     const applySolarShadowMap = this.get(FragmentShaderComponent.ApplySolarShadowMap);
     if (undefined !== applySolarShadowMap) {
       prelude.addFunction("vec4 applySolarShadowMap(vec4 baseColor)", applySolarShadowMap);
-      main.addline("  baseColor = applySolarShadowMap(baseColor);");
+      main.addline(clipIndent + "  baseColor = applySolarShadowMap(baseColor);");
     }
+
     const finalize = this.get(FragmentShaderComponent.FinalizeBaseColor);
     if (undefined !== finalize) {
       prelude.addFunction("vec4 finalizeBaseColor(vec4 baseColor)", finalize);
-      main.addline("  baseColor = finalizeBaseColor(baseColor);");
+      main.addline(clipIndent + "  baseColor = finalizeBaseColor(baseColor);");
     }
 
     const checkForDiscard = this.get(FragmentShaderComponent.CheckForDiscard);
     if (undefined !== checkForDiscard) {
       prelude.addFunction("bool checkForDiscard(vec4 baseColor)", checkForDiscard);
-      main.addline("  if (checkForDiscard(baseColor)) { discard; return; }");
+      main.addline(clipIndent + "  if (checkForDiscard(baseColor)) { discard; return; }");
     }
 
     const discardByAlpha = this.get(FragmentShaderComponent.DiscardByAlpha);
     if (undefined !== discardByAlpha) {
       prelude.addFunction("bool discardByAlpha(float alpha)", discardByAlpha);
-      main.addline("  if (discardByAlpha(baseColor.a)) { discard; return; }");
+      main.addline(clipIndent + "  if (discardByAlpha(baseColor.a)) { discard; return; }");
     }
 
-    if (undefined !== applyLighting) {
-      prelude.addFunction("vec4 applyLighting(vec4 baseColor)", applyLighting);
-      main.addline("  baseColor = applyLighting(baseColor);");
-    }
+    if (undefined !== applyClipping)
+      main.addline("  }");
 
     const applyMonochrome = this.get(FragmentShaderComponent.ApplyMonochrome);
     if (undefined !== applyMonochrome) {
       prelude.addFunction("vec4 applyMonochrome(vec4 baseColor)", applyMonochrome);
       main.addline("  baseColor = applyMonochrome(baseColor);");
+    }
+
+    if (undefined !== applyLighting) {
+      prelude.addFunction("vec4 applyLighting(vec4 baseColor)", applyLighting);
+      main.addline("  baseColor = applyLighting(baseColor);");
     }
 
     const reverseWoW = this.get(FragmentShaderComponent.ReverseWhiteOnWhite);
@@ -963,7 +1051,7 @@ export class FragmentShaderBuilder extends ShaderBuilder {
   }
 
   private buildPrelude(attrMap: Map<string, AttributeDetails> | undefined): SourceBuilder {
-    return this.buildPreludeCommon(attrMap);
+    return this.buildPreludeCommon(attrMap, false);
   }
 
   public copyFrom(src: FragmentShaderBuilder): void {
@@ -980,7 +1068,7 @@ export class ClippingShaders {
   public shaders: ShaderProgram[] = [];
   public maskShader?: ShaderProgram;
 
-  public constructor(prog: ProgramBuilder, context: WebGLRenderingContext, wantMask: boolean) {
+  public constructor(prog: ProgramBuilder, context: WebGLRenderingContext | WebGL2RenderingContext, wantMask: boolean) {
     this.builder = prog.clone();
     addClipping(this.builder, ClipDef.forPlanes(6));
 
@@ -993,7 +1081,7 @@ export class ClippingShaders {
   }
 
   public compileShaders(): boolean {
-    return undefined === this.maskShader || this.maskShader.compile();
+    return undefined === this.maskShader || this.maskShader.compile() === CompileStatus.Success;
   }
 
   private static roundUpToNearestMultipleOf(value: number, factor: number): number {
@@ -1074,6 +1162,9 @@ export class ProgramBuilder {
   public addUniform(name: string, type: VariableType, binding: AddVariableBinding, which: ShaderType = ShaderType.Both) {
     this.addVariable(ShaderVariable.create(name, type, VariableScope.Uniform, binding), which);
   }
+  public addUniformArray(name: string, type: VariableType, length: number, binding: AddVariableBinding, which: ShaderType = ShaderType.Both) {
+    this.addVariable(ShaderVariable.createArray(name, type, length, VariableScope.Uniform, binding), which);
+  }
   public addVarying(name: string, type: VariableType) {
     this.addVariable(ShaderVariable.create(name, type, VariableScope.Varying), ShaderType.Both);
   }
@@ -1099,7 +1190,7 @@ export class ProgramBuilder {
   }
 
   /** Assembles the vertex and fragment shader code and returns a ready-to-compile shader program */
-  public buildProgram(gl: WebGLRenderingContext): ShaderProgram {
+  public buildProgram(gl: WebGLRenderingContext | WebGL2RenderingContext): ShaderProgram {
     const vertSource = this.vert.buildSource(this._attrMap);
     const fragSource = this.frag.buildSource(); // NB: frag has no need to specify attributes, only vertex does.
     const checkMaxVarying = true;

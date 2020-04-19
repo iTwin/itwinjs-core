@@ -1,14 +1,17 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 @import "./style/index";
 
 @import "./base/classes";
-@import "./inputs/classes";
-@import "./text/classes";
 @import "./button/classes";
+@import "./checkbox/classes";
 @import "./expandable/classes";
 @import "./icons/classes";
+@import "./inputs/classes";
+@import "./radio/classes";
+@import "./select/classes";
 @import "./tabs/classes";
+@import "./text/classes";
 @import "./tiles/classes";

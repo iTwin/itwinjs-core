@@ -1,6 +1,75 @@
 # Change Log - @bentley/geometry-core
 
-This log was last generated on Fri, 01 Nov 2019 13:28:37 GMT and should not be manually modified.
+This log was last generated on Wed, 04 Mar 2020 16:16:31 GMT and should not be manually modified.
+
+## 1.13.0
+Wed, 04 Mar 2020 16:16:31 GMT
+
+### Updates
+
+- Polyface clip to union of convex sets
+
+## 1.12.0
+Wed, 12 Feb 2020 17:45:50 GMT
+
+### Updates
+
+- Implement generic boolean tree of `Clipper` objects (for Feature 269514)
+- Arc3d precise range; BSpline1dNd interval recursion bug; BooleanClip unit tests
+- MomentData quantity sign controls principal direction orientation.
+- BooleanClipFactory enhancements
+- New method ellipsoide.silhouette (eyePoint: Point4d):Arc3d
+- Correct extended geometry handling in LineString3d.closestPoint
+- (a) Control Triangulation of area booleans, (b) methods to find and purge duplicate facets
+- Improve error handling for triangulation and merge of bad input"
+- iModel write API development
+
+## 1.11.0
+Wed, 22 Jan 2020 19:24:12 GMT
+
+### Updates
+
+- Detect "end to end" connection of colinear line segments during curve-curve intersection methods.
+- RegionOps planar subdivision support.
+- #1.11.0-dev.5_4384: XY linework and Region cleanup methods
+- Upgrade to TypeScript 3.7.2.
+
+## 1.10.0
+Tue, 07 Jan 2020 19:44:01 GMT
+
+### Updates
+
+- `CurveCurve.intersectionPairsXY` returns details of line-line and arc-arc coincident geometry
+- Add method for mesh orientation fixup.
+- Path-on-Ellipsoid support
+- New method RegionOps.sortOuterAndHoleLoopsXY
+- BUG: Fix inverseState management in MatrixMatrix multliplies with preallocated result and/or aliasing
+- Added Matrix4d.isExactEqual()
+
+## 1.9.0
+Tue, 10 Dec 2019 18:08:56 GMT
+
+### Updates
+
+- EllipsoidPatch support:  patch.projectPointToSurface, ellipsoid.constantLatitudeArc, ellipsoid.constantLongitudeArc
+- Great Circle extraction on Ellipsoid
+- Correct bug in z part of Vector3d spherical construction.   New method to split mesh by eyevector
+- BUG#220063 linearSystem3d z term
+- Code cleanup from codeQL hits
+- Ellipsoid and EllipsoidPatch classes with range and intersectRay support
+
+## 1.8.0
+Fri, 22 Nov 2019 14:03:34 GMT
+
+### Updates
+
+- PolyfaceQuery services: PolyfaceQuery.markAllEdgeVisibility PolyfaceQuery.markPairedEdgesInvisible PolyfaceQuery.setSingleEdgeVisibility PolyfaceQuery.computeFacetUnitNormal 
+- BUG#211602 Correct sectioning of meshes with (a) nonconvex facets and (b) multicomponent plane intersections
+- Feature#211247 Intersect Ray with Sphere
+- Spherical patch range; optional result in range3d.corners()
+- Refactor analysis of range of a+b sin(theta) + c sin(theta)
+- Added missing topic descriptions
+- Added earthRadiusWGS84 constants
 
 ## 1.7.0
 Fri, 01 Nov 2019 13:28:37 GMT

@@ -1,0 +1,464 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Hierarchies Counting instances of selected nodes correctly counts instances when key set contains grouping node keys 1`] = `
+Array [
+  Object {
+    "description": "A container for persisting definition elements.",
+    "hasChildren": true,
+    "key": Object {
+      "className": "BisCore:DefinitionModel",
+      "groupedInstancesCount": 1,
+      "pathFromRoot": Array [
+        "851bf7b261cc7fe7421475441e4e1b20",
+      ],
+      "type": "ECClassGroupingNode",
+    },
+    "label": Object {
+      "displayValue": "Definition Model",
+      "rawValue": "Definition Model",
+      "typeName": "string",
+    },
+  },
+  Object {
+    "description": "The singleton container for repository-specific definition elements.",
+    "hasChildren": true,
+    "key": Object {
+      "className": "BisCore:DictionaryModel",
+      "groupedInstancesCount": 1,
+      "pathFromRoot": Array [
+        "96989c2a849b374d693e051e2e99a1f2",
+      ],
+      "type": "ECClassGroupingNode",
+    },
+    "label": Object {
+      "displayValue": "Dictionary Model",
+      "rawValue": "Dictionary Model",
+      "typeName": "string",
+    },
+  },
+  Object {
+    "description": "Contains a list of document elements.",
+    "hasChildren": true,
+    "key": Object {
+      "className": "BisCore:DocumentListModel",
+      "groupedInstancesCount": 2,
+      "pathFromRoot": Array [
+        "8919efb29e1b6e218bb4254cdf8a53c6",
+      ],
+      "type": "ECClassGroupingNode",
+    },
+    "label": Object {
+      "displayValue": "Document List",
+      "rawValue": "Document List",
+      "typeName": "string",
+    },
+  },
+  Object {
+    "hasChildren": true,
+    "key": Object {
+      "className": "Generic:GroupModel",
+      "groupedInstancesCount": 1,
+      "pathFromRoot": Array [
+        "6262de971bde6729bd04cecec9d7b802",
+      ],
+      "type": "ECClassGroupingNode",
+    },
+    "label": Object {
+      "displayValue": "Group Model",
+      "rawValue": "Group Model",
+      "typeName": "string",
+    },
+  },
+  Object {
+    "description": "A container for persisting link elements.",
+    "hasChildren": true,
+    "key": Object {
+      "className": "BisCore:LinkModel",
+      "groupedInstancesCount": 1,
+      "pathFromRoot": Array [
+        "70e01c48fea080390154e5920a8025e8",
+      ],
+      "type": "ECClassGroupingNode",
+    },
+    "label": Object {
+      "displayValue": "Link Model",
+      "rawValue": "Link Model",
+      "typeName": "string",
+    },
+  },
+  Object {
+    "description": "A container for persisting physical elements that model physical space.",
+    "hasChildren": true,
+    "key": Object {
+      "className": "BisCore:PhysicalModel",
+      "groupedInstancesCount": 1,
+      "pathFromRoot": Array [
+        "92a67755a54843895852bfb646db1fd1",
+      ],
+      "type": "ECClassGroupingNode",
+    },
+    "label": Object {
+      "displayValue": "Physical Model",
+      "rawValue": "Physical Model",
+      "typeName": "string",
+    },
+  },
+  Object {
+    "description": "The singleton container of repository-related information elements.",
+    "hasChildren": true,
+    "key": Object {
+      "className": "BisCore:RepositoryModel",
+      "groupedInstancesCount": 1,
+      "pathFromRoot": Array [
+        "61beb3c378f7696c0ede9a111ed149d3",
+      ],
+      "type": "ECClassGroupingNode",
+    },
+    "label": Object {
+      "displayValue": "Repository Model",
+      "rawValue": "Repository Model",
+      "typeName": "string",
+    },
+  },
+]
+`;
+
+exports[`Hierarchies Getting node paths gets filtered node paths 1`] = `
+Array [
+  Object {
+    "children": Array [
+      Object {
+        "children": Array [],
+        "filteringData": Object {
+          "childMatchesCount": 0,
+          "matchesCount": 1,
+        },
+        "index": 0,
+        "isMarked": false,
+        "node": Object {
+          "key": Object {
+            "pathFromRoot": Array [
+              "1de420478da4173c2e11a1c9c46f6ba7",
+              "23f42679eb85674391c066f5542a1d84",
+            ],
+            "type": "nodeType",
+          },
+          "label": Object {
+            "displayValue": "filter ch1",
+            "rawValue": "filter ch1",
+            "typeName": "string",
+          },
+        },
+      },
+      Object {
+        "children": Array [
+          Object {
+            "children": Array [],
+            "filteringData": Object {
+              "childMatchesCount": 0,
+              "matchesCount": 1,
+            },
+            "index": 0,
+            "isMarked": false,
+            "node": Object {
+              "key": Object {
+                "pathFromRoot": Array [
+                  "1de420478da4173c2e11a1c9c46f6ba7",
+                  "bd8d127d003e34aad9bb7443ddb966c8",
+                  "09f92be79c4a98951226eb06074a9617",
+                ],
+                "type": "nodeType",
+              },
+              "label": Object {
+                "displayValue": "filter ch4",
+                "rawValue": "filter ch4",
+                "typeName": "string",
+              },
+            },
+          },
+        ],
+        "filteringData": Object {
+          "childMatchesCount": 1,
+          "matchesCount": 0,
+        },
+        "index": 1,
+        "isMarked": false,
+        "node": Object {
+          "hasChildren": true,
+          "key": Object {
+            "pathFromRoot": Array [
+              "1de420478da4173c2e11a1c9c46f6ba7",
+              "bd8d127d003e34aad9bb7443ddb966c8",
+            ],
+            "type": "nodeType",
+          },
+          "label": Object {
+            "displayValue": "other ch3",
+            "rawValue": "other ch3",
+            "typeName": "string",
+          },
+        },
+      },
+    ],
+    "filteringData": Object {
+      "childMatchesCount": 2,
+      "matchesCount": 1,
+    },
+    "index": 0,
+    "isMarked": false,
+    "node": Object {
+      "hasChildren": true,
+      "key": Object {
+        "pathFromRoot": Array [
+          "1de420478da4173c2e11a1c9c46f6ba7",
+        ],
+        "type": "nodeType",
+      },
+      "label": Object {
+        "displayValue": "filter r1",
+        "rawValue": "filter r1",
+        "typeName": "string",
+      },
+    },
+  },
+  Object {
+    "children": Array [
+      Object {
+        "children": Array [],
+        "filteringData": Object {
+          "childMatchesCount": 0,
+          "matchesCount": 1,
+        },
+        "index": 0,
+        "isMarked": false,
+        "node": Object {
+          "key": Object {
+            "pathFromRoot": Array [
+              "58c6693cd33e65d23383a480c2ab12f1",
+              "8ca6607e95824e4400e35f89a6160d73",
+            ],
+            "type": "nodeType",
+          },
+          "label": Object {
+            "displayValue": "filter ch6",
+            "rawValue": "filter ch6",
+            "typeName": "string",
+          },
+        },
+      },
+    ],
+    "filteringData": Object {
+      "childMatchesCount": 1,
+      "matchesCount": 0,
+    },
+    "index": 1,
+    "isMarked": false,
+    "node": Object {
+      "hasChildren": true,
+      "key": Object {
+        "pathFromRoot": Array [
+          "58c6693cd33e65d23383a480c2ab12f1",
+        ],
+        "type": "nodeType",
+      },
+      "label": Object {
+        "displayValue": "other r3",
+        "rawValue": "other r3",
+        "typeName": "string",
+      },
+    },
+  },
+]
+`;
+
+exports[`Hierarchies Getting node paths gets node paths based on instance key paths 1`] = `
+Array [
+  Object {
+    "children": Array [
+      Object {
+        "children": Array [
+          Object {
+            "children": Array [
+              Object {
+                "children": Array [],
+                "filteringData": Object {
+                  "childMatchesCount": 0,
+                  "matchesCount": 0,
+                },
+                "index": 0,
+                "isMarked": false,
+                "node": Object {
+                  "key": Object {
+                    "instanceKeys": Array [
+                      Object {
+                        "className": "BisCore:DefinitionPartition",
+                        "id": "0x10",
+                      },
+                    ],
+                    "pathFromRoot": Array [
+                      "066902d6baf274eca605cd4f58d6af1e",
+                      "afc60d6b140f93529367e6f17e4eb7d5",
+                      "df4a80c4b8398b7d500d5242742563bb",
+                      "4c608e20d5a7517ade4a100abcf81f1c",
+                      "9d3f3c1039db4b2eb60399253bc9355e",
+                    ],
+                    "type": "ECInstancesNode",
+                  },
+                  "label": Object {
+                    "displayValue": "BisCore.DictionaryModel",
+                    "rawValue": "BisCore.DictionaryModel",
+                    "typeName": "string",
+                  },
+                },
+              },
+            ],
+            "filteringData": Object {
+              "childMatchesCount": 0,
+              "matchesCount": 0,
+            },
+            "index": 0,
+            "isMarked": false,
+            "node": Object {
+              "description": "A Definition Partition element indicates that there is a definition-related modeling perspective within the overall DgnDb information hierarchy. A Definition Partition is always parented to a Subject and broken down by a Definition Model.",
+              "hasChildren": true,
+              "key": Object {
+                "className": "BisCore:DefinitionPartition",
+                "groupedInstancesCount": 1,
+                "pathFromRoot": Array [
+                  "066902d6baf274eca605cd4f58d6af1e",
+                  "afc60d6b140f93529367e6f17e4eb7d5",
+                  "df4a80c4b8398b7d500d5242742563bb",
+                  "4c608e20d5a7517ade4a100abcf81f1c",
+                ],
+                "type": "ECClassGroupingNode",
+              },
+              "label": Object {
+                "displayValue": "Definition Partition",
+                "rawValue": "Definition Partition",
+                "typeName": "string",
+              },
+            },
+          },
+          Object {
+            "children": Array [
+              Object {
+                "children": Array [],
+                "filteringData": Object {
+                  "childMatchesCount": 0,
+                  "matchesCount": 0,
+                },
+                "index": 0,
+                "isMarked": true,
+                "node": Object {
+                  "key": Object {
+                    "instanceKeys": Array [
+                      Object {
+                        "className": "BisCore:LinkPartition",
+                        "id": "0xe",
+                      },
+                    ],
+                    "pathFromRoot": Array [
+                      "066902d6baf274eca605cd4f58d6af1e",
+                      "afc60d6b140f93529367e6f17e4eb7d5",
+                      "df4a80c4b8398b7d500d5242742563bb",
+                      "587d489b7d1ad050cd3ffc14f910a001",
+                      "5c60b2e522262eb138e93e760146b6b9",
+                    ],
+                    "type": "ECInstancesNode",
+                  },
+                  "label": Object {
+                    "displayValue": "BisCore.RealityDataSources",
+                    "rawValue": "BisCore.RealityDataSources",
+                    "typeName": "string",
+                  },
+                },
+              },
+            ],
+            "filteringData": Object {
+              "childMatchesCount": 0,
+              "matchesCount": 0,
+            },
+            "index": 1,
+            "isMarked": false,
+            "node": Object {
+              "description": "A Link Partition element indicates that there is a link-related modeling perspective within the overall DgnDb information hierarchy. A Link Partition is always parented to a Subject and broken down by a Link Model.",
+              "hasChildren": true,
+              "key": Object {
+                "className": "BisCore:LinkPartition",
+                "groupedInstancesCount": 1,
+                "pathFromRoot": Array [
+                  "066902d6baf274eca605cd4f58d6af1e",
+                  "afc60d6b140f93529367e6f17e4eb7d5",
+                  "df4a80c4b8398b7d500d5242742563bb",
+                  "587d489b7d1ad050cd3ffc14f910a001",
+                ],
+                "type": "ECClassGroupingNode",
+              },
+              "label": Object {
+                "displayValue": "Link Partition",
+                "rawValue": "Link Partition",
+                "typeName": "string",
+              },
+            },
+          },
+        ],
+        "filteringData": Object {
+          "childMatchesCount": 0,
+          "matchesCount": 0,
+        },
+        "index": 0,
+        "isMarked": false,
+        "node": Object {
+          "hasChildren": true,
+          "key": Object {
+            "instanceKeys": Array [
+              Object {
+                "className": "BisCore:Subject",
+                "id": "0x1",
+              },
+            ],
+            "pathFromRoot": Array [
+              "066902d6baf274eca605cd4f58d6af1e",
+              "afc60d6b140f93529367e6f17e4eb7d5",
+              "df4a80c4b8398b7d500d5242742563bb",
+            ],
+            "type": "ECInstancesNode",
+          },
+          "label": Object {
+            "displayValue": "DgnV8Bridge",
+            "rawValue": "DgnV8Bridge",
+            "typeName": "string",
+          },
+        },
+      },
+    ],
+    "filteringData": Object {
+      "childMatchesCount": 0,
+      "matchesCount": 0,
+    },
+    "index": 0,
+    "isMarked": false,
+    "node": Object {
+      "hasChildren": true,
+      "key": Object {
+        "instanceKeys": Array [
+          Object {
+            "className": "BisCore:RepositoryModel",
+            "id": "0x1",
+          },
+        ],
+        "pathFromRoot": Array [
+          "066902d6baf274eca605cd4f58d6af1e",
+          "afc60d6b140f93529367e6f17e4eb7d5",
+        ],
+        "type": "ECInstancesNode",
+      },
+      "label": Object {
+        "displayValue": "DgnV8Bridge",
+        "rawValue": "DgnV8Bridge",
+        "typeName": "string",
+      },
+    },
+  },
+]
+`;

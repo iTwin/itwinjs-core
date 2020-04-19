@@ -1,11 +1,13 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Notification */
+/** @packageDocumentation
+ * @module Notification
+ */
 
 import * as React from "react";
-import * as classnames from "classnames";
+import classnames from "classnames";
 
 import { UiEvent, CommonProps, PointProps, SizeProps, Rectangle, Point } from "@bentley/ui-core";
 import { Tooltip, offsetAndContainInContainer } from "@bentley/ui-ninezone";
@@ -134,6 +136,7 @@ export class ElementTooltip extends React.Component<CommonProps, ElementTooltipS
     this.setState((prevState) => {
       if (!this._element)
         return null;
+      // istanbul ignore next
       if (!this._position)
         return null;
 

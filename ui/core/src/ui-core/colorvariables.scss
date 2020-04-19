@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
 :root {
@@ -25,9 +25,11 @@
 
   --buic-foreground-body:         rgba(var(--buic-foreground-body-rgb), 0.85);
   --buic-foreground-body-reverse: rgba(var(--buic-foreground-body-reverse-rgb), 0.85);
-  --buic-foreground-muted:        rgba(var(--buic-foreground-body-rgb), 0.55);
-  --buic-foreground-disabled:     rgba(var(--buic-foreground-body-rgb), 0.44);
+  --buic-foreground-muted:        rgba(var(--buic-foreground-body-rgb), 0.65);
+  --buic-foreground-disabled:     rgba(var(--buic-foreground-body-rgb), 0.45);
   --buic-foreground-activehover:  rgba(var(--buic-foreground-body-rgb), 1.00);
+
+  --buic-foreground-primary:      rgb(var(--buic-foreground-primary-rgb));
 
   /** background.5 */
   --buic-background-titlebar:                 var(--buic-background-5);
@@ -35,6 +37,7 @@
   --buic-background-widget-stroke:            var(--buic-background-5);
   --buic-background-control-stroke:           var(--buic-background-5);
   --buic-background-panel-stroke:             var(--buic-background-5);
+  --buic-background-toolbutton-stroke:        var(--buic-background-5);
 
   /** background.4 */
   --buic-background-titlebar-outoffocus:      var(--buic-background-4);
@@ -49,6 +52,7 @@
   --buic-background-toolbutton-inactive:      var(--buic-background-3);
   --buic-background-context-menu:             var(--buic-background-3);
   --buic-background-panel:                    var(--buic-background-3);
+  --buic-background-widget-panel:             var(--buic-background-3);
   --buic-background-placeholder:              var(--buic-background-3);
 
   /** background.2 */
@@ -56,11 +60,12 @@
   --buic-background-dialog:                   var(--buic-background-2);
   --buic-background-widget:                   var(--buic-background-2);
   --buic-background-window:                   var(--buic-background-2);
+  --buic-background-toolbar:                  var(--buic-background-2);
 
   /** background.1 */
   --buic-background-card:                     var(--buic-background-1);
   --buic-background-control:                  var(--buic-background-1);
 
   /** Widget Opacity */
-  --buic-widget-opacity:    0.90;
+  --buic-widget-opacity:                      0.90;
 }

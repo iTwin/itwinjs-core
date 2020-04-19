@@ -4,49 +4,84 @@ exports[`FilteredTreeDataProvider getNodes returns child nodes 1`] = `
 Array [
   Object {
     "__presentation-components/key": Object {
-      "instanceKey": Object {
-        "className": "sticky",
-        "id": "0x1d01000000f5fb",
-      },
-      "pathFromRoot": Array [
-        "8a0214f5-9431-442b-a3f9-5f0db34739fd",
-        "e2c0a107-d9c9-4758-b192-6883bea7421c",
+      "instanceKeys": Array [
+        Object {
+          "className": "proactive",
+          "id": "0x2f660000003be5",
+        },
+        Object {
+          "className": "Program",
+          "id": "0x29fd00000165f8",
+        },
       ],
-      "type": "ECInstanceNode",
+      "pathFromRoot": Array [
+        "c39b08a0-214f-4594-b142-b23f95f0db34",
+        "739fde2c-0a10-47d9-8975-8f1926883bea",
+      ],
+      "type": "ECInstancesNode",
     },
-    "description": "Ex quaerat explicabo.",
-    "id": "e2c0a107-d9c9-4758-b192-6883bea7421c/8a0214f5-9431-442b-a3f9-5f0db34739fd",
+    "checkBoxState": 1,
+    "icon": "orchid",
+    "id": "739fde2c-0a10-47d9-8975-8f1926883bea/c39b08a0-214f-4594-b142-b23f95f0db34",
     "isCheckboxVisible": true,
-    "label": "A-2-1",
+    "label": PropertyRecord {
+      "property": Object {
+        "displayLabel": "Label",
+        "name": "node_label",
+        "typename": "string",
+      },
+      "value": Object {
+        "displayValue": "A-2-1",
+        "value": "A-2-1",
+        "valueFormat": 0,
+      },
+    },
     "parentId": "c80a28cf-09ee-4827-aec6-682ae559cab2/2801ae3e-4479-4099-92f9-4b3186fb7680",
     "style": Object {
       "colorOverrides": Object {
-        "color": 1051299327,
+        "backgroundColor": 416163071,
+        "color": 834803199,
       },
     },
   },
   Object {
     "__presentation-components/key": Object {
-      "instanceKey": Object {
-        "className": "Vermont",
-        "id": "0x5e54000001574b",
-      },
-      "pathFromRoot": Array [
-        "ea063b9c-f6fe-483e-8ae6-4729087ece56",
-        "9f025212-b800-47ff-9507-21582ec854f5",
+      "instanceKeys": Array [
+        Object {
+          "className": "Handmade Soft Hat",
+          "id": "0x11fd10000012da1",
+        },
+        Object {
+          "className": "Corporate",
+          "id": "0x10c610000016c0d",
+        },
       ],
-      "type": "ECInstanceNode",
+      "pathFromRoot": Array [
+        "063b9cf6-fe83-4e0a-a647-29087ece569f",
+        "025212b8-007f-4fd5-8721-582ec854f59e",
+      ],
+      "type": "ECInstancesNode",
     },
     "autoExpand": true,
-    "description": "In quis consequuntur quos hic animi ipsam perferendis tenetur.",
     "hasChildren": true,
-    "id": "9f025212-b800-47ff-9507-21582ec854f5/ea063b9c-f6fe-483e-8ae6-4729087ece56",
-    "isCheckboxVisible": true,
-    "label": "A-2-2",
+    "id": "025212b8-007f-4fd5-8721-582ec854f59e/063b9cf6-fe83-4e0a-a647-29087ece569f",
+    "label": PropertyRecord {
+      "property": Object {
+        "displayLabel": "Label",
+        "name": "node_label",
+        "typename": "string",
+      },
+      "value": Object {
+        "displayValue": "A-2-2",
+        "value": "A-2-2",
+        "valueFormat": 0,
+      },
+    },
     "parentId": "c80a28cf-09ee-4827-aec6-682ae559cab2/2801ae3e-4479-4099-92f9-4b3186fb7680",
     "style": Object {
       "colorOverrides": Object {
-        "color": 1674400767,
+        "backgroundColor": 2113116671,
+        "color": 1750897919,
       },
     },
   },
@@ -57,49 +92,77 @@ exports[`FilteredTreeDataProvider getNodes returns root nodes 1`] = `
 Array [
   Object {
     "__presentation-components/key": Object {
-      "instanceKey": Object {
-        "className": "bandwidth",
-        "id": "0xa0da000001762c",
-      },
-      "pathFromRoot": Array [
-        "6fbe024f-2316-4265-a6e8-d65a837e308a",
-        "e67862f3-ccbf-4c51-b8ed-ed1d0420ea19",
+      "instanceKeys": Array [
+        Object {
+          "className": "methodologies",
+          "id": "0x16c470000011960",
+        },
+        Object {
+          "className": "Music",
+          "id": "0x186400000007619",
+        },
       ],
-      "type": "ECInstanceNode",
+      "pathFromRoot": Array [
+        "2316265a-6e8d-465a-837e-308ae67862f3",
+        "ccbfc51b-8ede-4d1d-8420-ea196af683b4",
+      ],
+      "type": "ECInstancesNode",
     },
     "autoExpand": true,
-    "description": "Repellendus fugiat velit sit aperiam placeat fuga doloribus.",
     "hasChildren": true,
-    "id": "e67862f3-ccbf-4c51-b8ed-ed1d0420ea19/6fbe024f-2316-4265-a6e8-d65a837e308a",
-    "isCheckboxDisabled": true,
-    "isCheckboxVisible": true,
-    "label": "A-1",
-    "style": Object {
-      "colorOverrides": Object {
-        "backgroundColor": 1198705407,
+    "icon": "Books",
+    "id": "ccbfc51b-8ede-4d1d-8420-ea196af683b4/2316265a-6e8d-465a-837e-308ae67862f3",
+    "label": PropertyRecord {
+      "property": Object {
+        "displayLabel": "Label",
+        "name": "node_label",
+        "typename": "string",
+      },
+      "value": Object {
+        "displayValue": "A-1",
+        "value": "A-1",
+        "valueFormat": 0,
       },
     },
   },
   Object {
     "__presentation-components/key": Object {
-      "instanceKey": Object {
-        "className": "SMS",
-        "id": "0xfd06000000f39f",
-      },
+      "instanceKeys": Array [
+        Object {
+          "className": "Loop",
+          "id": "0x259100000162eb",
+        },
+        Object {
+          "className": "transitional",
+          "id": "0x2ead0000007069",
+        },
+      ],
       "pathFromRoot": Array [
         "2801ae3e-4479-4099-92f9-4b3186fb7680",
         "c80a28cf-09ee-4827-aec6-682ae559cab2",
       ],
-      "type": "ECInstanceNode",
+      "type": "ECInstancesNode",
     },
     "autoExpand": true,
     "hasChildren": true,
-    "icon": "XSS",
+    "icon": "enterprise",
     "id": "c80a28cf-09ee-4827-aec6-682ae559cab2/2801ae3e-4479-4099-92f9-4b3186fb7680",
-    "label": "A-2",
+    "label": PropertyRecord {
+      "property": Object {
+        "displayLabel": "Label",
+        "name": "node_label",
+        "typename": "string",
+      },
+      "value": Object {
+        "displayValue": "A-2",
+        "value": "A-2",
+        "valueFormat": 0,
+      },
+    },
     "style": Object {
       "colorOverrides": Object {
-        "color": -1483662081,
+        "backgroundColor": -1451253761,
+        "color": 1590095871,
       },
     },
   },

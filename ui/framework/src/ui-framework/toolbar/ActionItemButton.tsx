@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Item */
+/** @packageDocumentation
+ * @module Item
+ */
 
 import * as React from "react";
 
@@ -16,12 +18,15 @@ import { SyncUiEventDispatcher, SyncUiEventArgs, SyncUiEventId } from "../syncui
 import { PropsHelper } from "../utils/PropsHelper";
 import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
 
-/** Properties that must be specified for a ActionItemButton component
+/** Properties that must be specified for an [[ActionItemButton]] component
  * @public
  */
 export interface ActionItemButtonProps extends CommonProps {
+  /** Action Button item definition containing the action information */
   actionItem: ActionButtonItemDef;
+  /** Indicates whether the button is enabled or disabled */
   isEnabled?: boolean;
+  /** Called when the button is initialized and the size is known */
   onSizeKnown?: (size: SizeProps) => void;
 }
 
@@ -30,8 +35,8 @@ const getItemStateFromProps = (props: ActionItemButtonProps): BaseItemState => {
 
   // Parent Component can only modify the isEnable state if the actionItem.isEnabled value is set to true.
   return {
-    isEnabled: undefined !== props.isEnabled ? props.isEnabled && props.actionItem.isEnabled : props.actionItem.isEnabled,
-    isVisible: props.actionItem.isVisible,
+    isEnabled: undefined !== props.isEnabled ? props.isEnabled && props.actionItem.isEnabled : props.actionItem.isEnabled, // tslint:disable-line:deprecation
+    isVisible: props.actionItem.isVisible, // tslint:disable-line:deprecation
     isActive: undefined !== props.actionItem.isActive ? props.actionItem.isActive : false,
   };
 };
@@ -65,18 +70,18 @@ export class ActionItemButton extends React.Component<ActionItemButtonProps, Bas
       refreshState = true;
     }
 
-    if (!refreshState && this.props.actionItem.stateSyncIds && this.props.actionItem.stateSyncIds.length > 0)
-      refreshState = this.props.actionItem.stateSyncIds.some((value: string): boolean => args.eventIds.has(value));
+    if (!refreshState && this.props.actionItem.stateSyncIds && this.props.actionItem.stateSyncIds.length > 0) // tslint:disable-line:deprecation
+      refreshState = this.props.actionItem.stateSyncIds.some((value: string): boolean => args.eventIds.has(value)); // tslint:disable-line:deprecation
 
     if (refreshState) {
-      if (this.props.actionItem.stateFunc)
-        newState = this.props.actionItem.stateFunc(newState);
+      if (this.props.actionItem.stateFunc) // tslint:disable-line:deprecation
+        newState = this.props.actionItem.stateFunc(newState); // tslint:disable-line:deprecation
 
       if ((this.state.isActive !== newState.isActive) || (this.state.isEnabled !== newState.isEnabled) || (this.state.isVisible !== newState.isVisible)) {
         // update actionItem as it hold the 'truth' for all state
         /* istanbul ignore else */
-        if (undefined !== newState.isVisible)
-          this.props.actionItem.isVisible = newState.isVisible;
+        if (undefined !== newState.isVisible) // tslint:disable-line:deprecation
+          this.props.actionItem.isVisible = newState.isVisible; // tslint:disable-line:deprecation
 
         /* istanbul ignore else */
         if (undefined !== newState.isActive)
@@ -101,10 +106,12 @@ export class ActionItemButton extends React.Component<ActionItemButtonProps, Bas
     return null;
   }
 
+  /** @internal */
   public componentDidMount() {
     SyncUiEventDispatcher.onSyncUiEvent.addListener(this._handleSyncUiEvent);
   }
 
+  /** @internal */
   public componentWillUnmount() {
     this._componentUnmounting = true;
     SyncUiEventDispatcher.onSyncUiEvent.removeListener(this._handleSyncUiEvent);
@@ -124,13 +131,14 @@ export class ActionItemButton extends React.Component<ActionItemButtonProps, Bas
     }
   }
 
+  /** @internal */
   public render(): React.ReactNode {
     if (!this.state.isVisible)
       return null;
 
     const { actionItem, ...props } = this.props;
     const icon = <Icon iconSpec={actionItem.iconSpec} />;
-    const badge = BadgeUtilities.getComponentForBadge(actionItem.badgeType, actionItem.betaBadge);  // tslint:disable-line: deprecation
+    const badge = BadgeUtilities.getComponentForBadgeType(actionItem.badgeType);
 
     return (
       <Item

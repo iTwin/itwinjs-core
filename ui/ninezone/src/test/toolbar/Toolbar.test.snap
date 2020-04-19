@@ -2,10 +2,9 @@
 
 exports[`<Toolbar /> renders correctly 1`] = `
 <ContextProvider
-  value={3}
+  value={4}
 >
   <PanelsProvider
-    histories={null}
     panels={null}
   >
     <Component />
@@ -18,16 +17,57 @@ exports[`<Toolbar /> renders with expandsTo 1`] = `
   className="nz-toolbar-toolbar nz-direction-right nz-vertical nz-panel-alignment-start"
 >
   <div
-    className="nz-expanded nz-histories"
-  />
-  <div
     className="nz-expanded nz-panels"
   />
-  <Items
-    className="nz-items"
-    direction={0}
-  />
 </div>
+`;
+
+exports[`<Toolbar /> renders with item 1`] = `
+<Toolbar
+  expandsTo={3}
+  items={
+    <UNDEFINED>
+      <Item />
+    </UNDEFINED>
+  }
+  panelAlignment={0}
+>
+  <PanelsProvider
+    items={
+      <UNDEFINED>
+        <Item />
+      </UNDEFINED>
+    }
+    panels={
+      <div
+        class="nz-expanded nz-panels"
+      />
+    }
+  >
+    <div
+      className="nz-toolbar-toolbar nz-direction-right nz-vertical nz-panel-alignment-start"
+    >
+      <div
+        className="nz-expanded nz-panels"
+      />
+      <Items
+        className="nz-items"
+        direction={0}
+      >
+        <div
+          className="nz-toolbar-items nz-vertical nz-items"
+        >
+          <Item
+            key=".$.0"
+            toolbarItemRef={[Function]}
+          >
+            <div />
+          </Item>
+        </div>
+      </Items>
+    </div>
+  </PanelsProvider>
+</Toolbar>
 `;
 
 exports[`<Toolbar /> renders with panelAlignment 1`] = `
@@ -35,14 +75,7 @@ exports[`<Toolbar /> renders with panelAlignment 1`] = `
   className="nz-toolbar-toolbar nz-direction-bottom nz-horizontal nz-panel-alignment-end"
 >
   <div
-    className="nz-expanded nz-histories"
-  />
-  <div
     className="nz-expanded nz-panels"
-  />
-  <Items
-    className="nz-items"
-    direction={1}
   />
 </div>
 `;

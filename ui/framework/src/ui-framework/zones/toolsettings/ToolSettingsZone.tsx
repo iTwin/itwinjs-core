@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module ToolSettings */
+/** @packageDocumentation
+ * @module ToolSettings
+ */
 
 import * as React from "react";
 import { CommonProps, RectangleProps, PointProps } from "@bentley/ui-core";

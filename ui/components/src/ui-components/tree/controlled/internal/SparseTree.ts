@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Tree */
+/** @packageDocumentation
+ * @module Tree
+ */
 
 import { immerable } from "immer";
 import { compareNumbers, lowerBound } from "@bentley/bentleyjs-core";
@@ -12,9 +14,14 @@ export interface Node {
   readonly id: string;
 }
 
-/** @internal */
+/**
+ * Structure for sparse tree storage.
+ * It uses SparseArray to store children ids for parent. This allows
+ * having tree structure with some nodes missing in the tree branch.
+ * @internal
+ */
 export class SparseTree<T extends Node> {
-  public static [immerable] = true;
+  public [immerable] = true;
 
   private _rootNodes = new SparseArray<string>();
   private _parentToChildren: Record<string, SparseArray<string>> = {};
@@ -109,24 +116,30 @@ export class SparseTree<T extends Node> {
  * The main advantage of this class over the standard javascript array is that
  * this class does not need to check each index when iterating values that are
  * stored in the array.
- * @alpha
+ * @public
  */
 export class SparseArray<T> implements Iterable<T | undefined> {
-  public static [immerable] = true;
+  public [immerable] = true;
 
   private _length = 0;
   private _array: Array<[T, number]> = [];
 
+  /** Returns length of array including intermediate 'undefined' values */
   public getLength(): number {
     return this._length;
   }
 
+  /** Sets length of array. */
   public setLength(length: number) {
     const { index } = this.lowerBound(length);
     this._array.length = index;
     this._length = length;
   }
 
+  /** Returns index of supplied value.
+   *
+   * @returns index of value or undefined if value is not found.
+   */
   public getIndex(lookupValue: T): number | undefined {
     for (const [value, index] of this._array) {
       if (value === lookupValue)
@@ -135,17 +148,23 @@ export class SparseArray<T> implements Iterable<T | undefined> {
     return undefined;
   }
 
+  /** Returns value at specific position.
+   *
+   * @returns stored value or undefined.
+   */
   public get(index: number): T | undefined {
     const { index: i, equal } = this.lowerBound(index);
     return equal ? this._array[i][0] : undefined;
   }
 
+  /** Sets value at specific position. Overrides any existing value. */
   public set(index: number, value: T) {
     const { index: i, equal } = this.lowerBound(index);
     this._array.splice(i, equal ? 1 : 0, [value, index]);
     this._length = Math.max(this._length, index + 1);
   }
 
+  /** Inserts value at specific position. Increases array length by 1. */
   public insert(index: number, value: T) {
     const { index: i } = this.lowerBound(index);
     this._array.splice(i, 0, [value, index]);
@@ -157,6 +176,7 @@ export class SparseArray<T> implements Iterable<T | undefined> {
     this._length = Math.max(this._length + 1, index + 1);
   }
 
+  /** Removes value at specific position. It could remove stored value or intermediate 'undefined' value. */
   public remove(index: number) {
     const { index: i, equal } = this.lowerBound(index);
     this._array.splice(i, equal ? 1 : 0);
@@ -175,7 +195,7 @@ export class SparseArray<T> implements Iterable<T | undefined> {
     return this._array[Symbol.iterator]();
   }
 
-  // Iterates the array with all intermediate `undefined` values
+  /** Iterates the array with all intermediate `undefined` values */
   public [Symbol.iterator](): IterableIterator<T | undefined> {
     const array = this._array;
     const length = this._length;

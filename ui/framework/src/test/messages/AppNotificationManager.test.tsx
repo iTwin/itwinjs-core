@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
 import * as React from "react";
@@ -9,12 +9,16 @@ import { mount } from "enzyme";
 import * as sinon from "sinon";
 import TestUtils from "../TestUtils";
 import { AppNotificationManager, MessageManager, ElementTooltip, ModalDialogManager, ModalDialogRenderer } from "../../ui-framework";
-import { NotifyMessageDetails, OutputMessagePriority, MessageBoxType, MessageBoxIconType, ActivityMessageDetails, ActivityMessageEndReason, OutputMessageType, OutputMessageAlert } from "@bentley/imodeljs-frontend";
+import { NotifyMessageDetails, OutputMessagePriority, MessageBoxType, MessageBoxIconType, ActivityMessageDetails, ActivityMessageEndReason, OutputMessageType, OutputMessageAlert, MessageBoxValue } from "@bentley/imodeljs-frontend";
 
 describe("AppNotificationManager", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
+  });
+
+  after(() => {
+    TestUtils.terminateUiFramework();
   });
 
   let notifications: AppNotificationManager;
@@ -83,12 +87,12 @@ describe("AppNotificationManager", () => {
     expect(spyMethod3.calledOnce).to.be.true;
   });
 
-  it("openMessageBox", () => {
+  it("openMessageBox", async () => {
     const wrapper = mount(<ModalDialogRenderer />);
 
     const spyMethod = sinon.spy(MessageManager, "openMessageBox");
     expect(ModalDialogManager.dialogCount).to.eq(0);
-    notifications.openMessageBox(MessageBoxType.OkCancel, "Message string", MessageBoxIconType.Information); // tslint:disable-line:no-floating-promises
+    const boxResult = notifications.openMessageBox(MessageBoxType.OkCancel, "Message string", MessageBoxIconType.Information);
 
     expect(spyMethod.calledOnce).to.be.true;
     expect(ModalDialogManager.dialogCount).to.eq(1);
@@ -97,6 +101,8 @@ describe("AppNotificationManager", () => {
     wrapper.find("button.dialog-button-ok").simulate("click");
     expect(ModalDialogManager.dialogCount).to.eq(0);
 
+    const boxValue = await boxResult;
+    expect(boxValue).to.eq(MessageBoxValue.Ok);
     wrapper.unmount();
   });
 

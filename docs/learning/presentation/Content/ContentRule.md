@@ -4,7 +4,7 @@ Content rules are used to define content that is displayed for specific type of 
 
 Selection consists of either instances or nodes and to make things
 simpler everything is considered a node - instances get converted to
-ECInstance nodes (thus the `SelectedNode` symbol in [`condition` ECExpression](ECExpressions.md#rule-condition)).
+ECInstance nodes (thus the `SelectedNode` symbol in [`condition` ECExpression](./ECExpressions.md#rule-condition)).
 
 ## Attributes
 

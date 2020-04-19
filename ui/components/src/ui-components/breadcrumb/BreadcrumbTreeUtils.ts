@@ -1,12 +1,17 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Breadcrumb */
+/** @packageDocumentation
+ * @module Breadcrumb
+ */
 import { TreeNodeItem, ImmediatelyLoadedTreeNodeItem, DelayLoadedTreeNodeItem, TreeDataProvider, hasChildren } from "../tree/TreeDataProvider";
 import { TableDataProvider, TableDataChangeEvent, RowItem, CellItem, ColumnDescription } from "../table/TableDataProvider";
-import { PropertyRecord, PropertyValueFormat } from "@bentley/imodeljs-frontend";
+import { PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
 import { UiComponents } from "../UiComponents";
+import { getPropertyRecordAsString } from "../common/getPropertyRecordAsString";
+
+// tslint:disable:deprecation
 
 /**
  * Utility class for tree searching and manipulation in the Breadcrumb component.
@@ -34,17 +39,7 @@ export class BreadcrumbTreeUtils {
   private static createLabel(node: TreeNodeItem): CellItem {
     return {
       key: "label",
-      record: new PropertyRecord(
-        {
-          value: node.label,
-          valueFormat: PropertyValueFormat.Primitive,
-          displayValue: node.label,
-        },
-        {
-          name: "label",
-          displayLabel: UiComponents.translate("breadcrumb.name"),
-          typename: "text",
-        }),
+      record: node.label,
     };
   }
 
@@ -117,7 +112,7 @@ export class BreadcrumbTreeUtils {
         }
         node.extendedData = node.extendedData || {};
         node.extendedData.id = node.id;
-        node.extendedData.label = node.label;
+        node.extendedData.label = getPropertyRecordAsString(node.label);
         node.extendedData.description = node.description;
         if ((node as DelayLoadedTreeNodeItem).hasChildren !== undefined)
           node.extendedData.hasChildren = (node as DelayLoadedTreeNodeItem).hasChildren;

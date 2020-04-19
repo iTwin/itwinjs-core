@@ -1,6 +1,174 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Fri, 01 Nov 2019 13:28:37 GMT and should not be manually modified.
+This log was last generated on Wed, 04 Mar 2020 16:16:31 GMT and should not be manually modified.
+
+## 1.13.0
+Wed, 04 Mar 2020 16:16:31 GMT
+
+### Updates
+
+- #275962 Fix EmphasizeElements.toJSON for color overrides
+
+## 1.12.0
+Wed, 12 Feb 2020 17:45:50 GMT
+
+### Updates
+
+- #269169 Cancel drag operations when button is released outside of view. Suspend view tool animation when cursor moves out of view.
+- Option to omit area patterns from tiles.
+- Ignore ReadPixels calls when using GpuProfiler
+- iModel write API development
+- Fix broken links
+- Fix regression causing background map to be affected by view's symbology overrides.
+- Added support for backward slashes in erroneous URLs of Reality Data in PW Context Share
+- Prevent reuse of cached tiles after project extents change.
+- VSTS#256133: Fixed issue with reopening connections if the backend crashes. Fixes to integration tests. 
+- Fix incorrect aspect ratio for 3d view attachments.
+- Overriding transparency of a textured surface or raster text multiplies the texture alpha by the override rather than replacing it.
+- Better documentation of OidcDesktopClient/IOidcFrontendClient
+- Consolidate ViewState code shared with backend's ViewDefinition using ViewDetails.
+- Add support for plan projection models with 3d display priority.
+- Customizable display of plan projection models.
+- Break up System.ts into modular files.
+- Fix setAuxiliaryCoordinateSystem
+- Reduced the number of tiles that must be loaded before a zoomed-in view is complete.
+- Resolve circular dependencies between tile-related types.
+- Support for TypeDoc 0.16.8
+- Mark as deprecated classes and interfaces that have moved to bentley/ui-abstract.
+- Change feature tracking API for plugins as requested by Design Review. 
+- EN: #124601 - Initial implementation of WebGL2
+
+## 1.11.0
+Wed, 22 Jan 2020 19:24:12 GMT
+
+### Updates
+
+- For fit, adjust the aspect ratio so that one dimension is increased rather than just adjusting Y.
+- Fixed minor typo on RealityData rootDocument property
+- TileAdmin.Props.useProjectExtents now defaults to true for better performance.
+- Ensure ViewState3d's with camera enabled always have the eyepoint centered when they're created
+- Fix aspect ratio adjustment bug in camera views
+- Small fix for Fit when aspectRatioSkew isn't 1.0.
+- Fix shadows not updating after clearing emphasized/isolated elements.
+- Simplify iterator for GeometryList.
+- Fix shadow rendering on MacOS Safari and any other unknown client that could fail in the same way.
+- Native apps can now cancel tile requests in progress on the backend.
+- Reduce tile level-of-detail (thereby improving FPS and memory usage) for models that are small relative to the project extents.
+- Remvoe echo test function from devTools
+- #258853 Fix for pickDepthPoint
+- Add isSpatiallyLocated and isPlanProjection to GeometricModel3dState.
+- Added primitive composite value.
+- Make hilite and flash target syncing not depend on BeTimePoint.
+- Upgrade to TypeScript 3.7.2.
+- Add a FeatureToggleClient to iModelApp.
+- Gracefully handle an invalid acs id
+- ViewZoom not sets focus from depth point.
+- #257813 Rest zoom and look tools is mouse wheel is used to zoom.
+
+## 1.10.0
+Tue, 07 Jan 2020 19:44:01 GMT
+
+### Updates
+
+- Clear reality tile children loading flag when selecting. 
+- Animate change view operations
+- Average the gpu profiler times for the last 120 frames instead of updating each frame; also simplify PerformnaceMetrics
+- Implement tile availability testing for Cesium World Terrain.
+- Return error message from concurrent query manager
+- Fixed some bugs associated with device pixel ratio.
+- Fix flickering view when zooming in/out while a section clip is applied.
+- Adjust focus plane when zooming with mouse wheel.
+- Prevent analysis style from overriding texture image for non-animated surfaces.
+- Do not force unload of children on reality tile trees as these may be shared among viewports.
+- Added support for displaying images embedded in a GeometryStream.
+- Added IModelConnection.onOpen event."
+- Regenerate shadow map when feature symbology overrides change.
+- Use parent if reality tile children are loading.
+- Allow events to be sent from backend to frontend
+- Fixed Viewport.turnCameraOn() having no effect if the contents of the viewport have uniform depth.
+- Set focus distance from depth point for viewing tools.
+- Start of new walk tool using mouse + keyboard and touch controls.
+- Reduce redundancy between CPU and GPU timers, creating a single interface for this; update display performance tests to save both CPU and GPU data (if available)
+- Use pointerlockchange event to make sure it's supported.
+- Reduced CPU overhead of computing uniform variable values.
+- Moved tile IO-related APIs from frontend to common.
+- #254280 #254276 Address "jump" when starting touch viewing operations.
+- Add features prop to iModelApp and specify a default implementation for FeatureTrackingManager.
+- Move PluginUiManager and PluginUiProvider to ui-abstract package.
+- Use onTouchMoveStart for control sticks. Fix issue with key transiton.
+- LookAndMoveTool change to use mouse look instead of treating mouse like a control stick.
+- Add setting to easily disable pointer lock for walk tool.
+- Fix walk tool pan when is 2d or camera is off
+- Fix edges of surfaces in 2d views sometimes showing through surfaces in front of them.
+
+## 1.9.0
+Tue, 10 Dec 2019 18:08:56 GMT
+
+### Updates
+
+- Logo dialog is now modal.
+- Animate mouse wheel zooms
+- Align cartesian coordinates when attaching reality models.
+- Animate applying saved views
+- Code quality report fixes
+- Make iModel.js viewports adhere to DPI of a host display.
+- code cleanup from codeQL hits
+- Setup OidcDesktopClient for Electron use cases. 
+- Don't execute our event loop if there is no need
+- Fix regression causing animation to be uneven.
+- fix warnings from static analysis
+- Don't use map tiles until reprojection is complete.
+- #34206 Volume Clasify reality data only
+- Don't fade grid refs when camera is off, draw based on count. Simplify modal dialog auto close.
+- Treat half-floats and full-floats the same.
+- added WebGLDisposable interface with defined 'isDisposed' member
+- Fix regression in EmphasizeElements.overrideElements() when both color and alpha are overridden.
+- Prevent touch events from firing mouse events when modal dialog is up.
+- Fix unintentional darkening of views
+- Only align reality models if near same height.
+- Added ability to adjust tile size modifier for Viewports to trade quality for performance or vice-versa.
+- Add QuantityTypes LengthSurvey and LengthEngineering to provide more formatting options and support for Survey Feet.
+- Change zoom view handle to set zoom ratio based on y distance from anchor point.
+
+## 1.8.0
+Fri, 22 Nov 2019 14:03:34 GMT
+
+### Updates
+
+- Added iModel.js logo in lower right corner of views.
+- Touch move event should not clear viewport animator. Put a time limit on what's considered a touch tap.
+- Clip low resolution terrain tiles to their displayable children ranges.
+- Fix bing tile attribution.  Optimize map reprojection.
+- Logo card link opens in a new tab/window.
+- Fix whitespace
+- Update PluginAdmin.loadPlugin to accept a plugin path with a url scheme already defined.
+- optimized ReadPixels call for when volumes classifiers are in use
+- Flashed element wasn't being cleared after a tentative.
+- Limit map tile loading in orthographic views.
+- Add css styles in IModelApp.ts
+- Open logo card on touch start.
+- Allow zoom handle to move through depth point.
+- Added measure area by points tool. Measure and clip tool decoration improvements.
+- Added missing topic descriptions
+- When rendering transparent objects during opaque pass, ensure alpha is set to 1.
+- Report unsuported snap mode for view independent geometry when not using origin snap instead of unsnappable subcategory
+- Rework reality model loading to preload tiles.
+- Added method to Plugin that allows a Plugin to control whether the "loaded" message appears on repeated loads of same Plugin.
+- When a reality tile is not present use higher resolution tiles if ready.
+- Fix excessive number of tile requests when solar shadows are enabled.
+- Change shadow bias to 0.1
+- Ensure only surfaces cast shadows.
+- Tweak map and terrain tile loading.
+- Improve user experience by not displaying underresolved tiles.
+- Add support for view-independent display.
+- View target center handle now uses depth preview point instead of AccuSnap.
+- Added depth point preview for rotate, pan, and zoom tools.
+- When depth point is from an element hit, flash the element too.
+- Depth preview refinement and new view tool cursors.
+- Simplify walk tool by using Viewport Animator interface
+- Add walk cursor
+- Fix shadows failing to draw after resizing a viewport.
+- Use Viewport.animate for zoom and scroll tools
 
 ## 1.7.0
 Fri, 01 Nov 2019 13:28:37 GMT

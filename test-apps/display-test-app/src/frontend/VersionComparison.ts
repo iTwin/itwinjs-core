@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import {
   assert,
@@ -16,14 +16,15 @@ import {
   FeatureSymbology,
   IModelApp,
   IModelConnection,
-  SceneContext,
   SpatialModelState,
   SpatialModelTileTrees,
   SpatialViewState,
-  TiledGraphicsProvider,
   TileTree,
+  TiledGraphicsProvider,
+  TileTreeReference,
   Tool,
   Viewport,
+  SnapshotConnection,
 } from "@bentley/imodeljs-frontend";
 
 interface ChangedElems {
@@ -83,7 +84,7 @@ class Trees extends SpatialModelTileTrees {
 
   protected get _iModel() { return this._provider.iModel; }
 
-  protected createTileTreeReference(model: SpatialModelState): TileTree.Reference | undefined {
+  protected createTileTreeReference(model: SpatialModelState): TileTreeReference | undefined {
     // ###TODO: If model contains no deleted elements, ignore
     return new Reference(model.createTileTreeReference(this._provider.viewport.view), this._provider);
   }
@@ -126,7 +127,7 @@ class Provider implements TiledGraphicsProvider, FeatureOverrideProvider {
     // closing the iModel will do this - but let's not wait.
     this.iModel.tiles.purge(BeTimePoint.now());
 
-    this.iModel.closeSnapshot(); // tslint:disable-line no-floating-promises
+    this.iModel.close(); // tslint:disable-line no-floating-promises
   }
 
   public static async create(vp: Viewport): Promise<Provider | undefined> {
@@ -135,8 +136,8 @@ class Provider implements TiledGraphicsProvider, FeatureOverrideProvider {
       assert(view.isSpatialView());
 
       // Open the "revision" iModel.
-      const filename = vp.iModel.iModelToken.key! + ".rev";
-      const iModel = await IModelConnection.openSnapshot(filename);
+      const filename = vp.iModel.getRpcProps().key + ".rev";
+      const iModel = await SnapshotConnection.openFile(filename);
 
       // ###TODO determine which model(s) contain the deleted elements - don't need tiles for any others.
       await iModel.models.load(view.modelSelector.models);
@@ -150,7 +151,7 @@ class Provider implements TiledGraphicsProvider, FeatureOverrideProvider {
     }
   }
 
-  public forEachTileTreeRef(_vp: Viewport, func: (ref: TileTree.Reference) => void): void {
+  public forEachTileTreeRef(_vp: Viewport, func: (ref: TileTreeReference) => void): void {
     this._trees.forEach(func);
   }
 
@@ -212,27 +213,25 @@ class Provider implements TiledGraphicsProvider, FeatureOverrideProvider {
   }
 }
 
-/** A proxy reference to a TileTree.Reference originating from the secondary IModelConnection. */
-class Reference extends TileTree.Reference {
-  private readonly _ref: TileTree.Reference;
+/** A proxy reference to a TileTreeReference originating from the secondary IModelConnection. */
+class Reference extends TileTreeReference {
+  private readonly _ref: TileTreeReference;
   private readonly _provider: Provider;
 
-  public constructor(ref: TileTree.Reference, provider: Provider) {
+  public constructor(ref: TileTreeReference, provider: Provider) {
     super();
     this._ref = ref;
     this._provider = provider;
   }
 
+  public get castsShadows() {
+    return this._ref.castsShadows;
+  }
+
   public get treeOwner() { return this._ref.treeOwner; }
 
-  public addToScene(context: SceneContext): void {
-    const tree = this.treeOwner.load();
-    if (undefined === tree)
-      return;
-
-    const args = tree.createDrawArgs(context);
-    args.graphics.symbologyOverrides = this._provider.overrides;
-    tree.draw(args);
+  protected getSymbologyOverrides(_tree: TileTree) {
+    return this._provider.overrides;
   }
 }
 
@@ -279,7 +278,7 @@ export async function disableVersionComparison(vp: Viewport): Promise<void> {
   const existing = vp.featureOverrideProvider;
   if (undefined !== existing && existing instanceof Provider) {
     existing.dispose();
-    await existing.iModel.closeSnapshot();
+    await existing.iModel.close();
   }
 }
 

@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module ContentView */
+/** @packageDocumentation
+ * @module ContentView
+ */
 
 import * as React from "react";
 import { Id64String } from "@bentley/bentleyjs-core";
@@ -16,12 +18,13 @@ import { ViewportContentControl } from "./ViewportContentControl";
 import { DefaultViewOverlay } from "./DefaultViewOverlay";
 import { UiFramework } from "../UiFramework";
 import { connectIModelConnectionAndViewState } from "../redux/connectIModel";
+import { FrontstageManager } from "../../ui-framework";
 
 // create a HOC viewport component that supports unified selection
 // tslint:disable-next-line:variable-name
 const UnifiedSelectionViewport = viewWithUnifiedSelection(ViewportComponent);
 
-/** ViewSelector that is connected to the IModelConnection property in the Redux store. The application must set up the Redux store and include the FrameworkReducer.
+/** Viewport that is connected to the IModelConnection property in the Redux store. The application must set up the Redux store and include the FrameworkReducer.
  * @beta
  */
 export const IModelConnectedViewport = connectIModelConnectionAndViewState(null, null)(UnifiedSelectionViewport); // tslint:disable-line:variable-name
@@ -68,12 +71,12 @@ export class IModelViewportControl extends ViewportContentControl {
     const iModelConnection = (typeof options.iModelConnection === "function") ? options.iModelConnection() : options.iModelConnection;
 
     if (this._viewState && iModelConnection) {
-      this.reactElement = this.getImodelViewportReactElement(iModelConnection, this._viewState);
+      this.reactNode = this.getImodelViewportReactElement(iModelConnection, this._viewState);
     } else {
       if (UiFramework.getIModelConnection() && UiFramework.getDefaultViewState()) {
-        this.reactElement = this.getImodelConnectedViewportReactElement();
+        this.reactNode = this.getImodelConnectedViewportReactElement();
       } else {
-        this.reactElement = this.getNoContentReactElement(options);
+        this.reactNode = this.getNoContentReactElement(options);
         this.setIsReady();
       }
     }
@@ -87,6 +90,8 @@ export class IModelViewportControl extends ViewportContentControl {
         // for convenience, if window defined bind viewport to window
         if (undefined !== window)
           (window as any).viewport = v;
+        if (!FrontstageManager.isLoading)
+          FrontstageManager.activeFrontstageDef?.setActiveViewFromViewport(v);
       }}
       getViewOverlay={this._getViewOverlay}
     />;
@@ -102,6 +107,8 @@ export class IModelViewportControl extends ViewportContentControl {
         // for convenience, if window defined bind viewport to window
         if (undefined !== window)
           (window as any).viewport = v;
+        if (!FrontstageManager.isLoading)
+          FrontstageManager.activeFrontstageDef?.setActiveViewFromViewport(v);
       }}
       getViewOverlay={this._getViewOverlay}
     />;

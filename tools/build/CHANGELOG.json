@@ -2,6 +2,93 @@
   "name": "@bentley/build-tools",
   "entries": [
     {
+      "version": "1.13.0",
+      "tag": "@bentley/build-tools_v1.13.0",
+      "date": "Wed, 04 Mar 2020 16:16:31 GMT",
+      "comments": {}
+    },
+    {
+      "version": "1.12.0",
+      "tag": "@bentley/build-tools_v1.12.0",
+      "date": "Wed, 12 Feb 2020 17:45:49 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Support for TypeDoc 0.16.8"
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.11.0",
+      "tag": "@bentley/build-tools_v1.11.0",
+      "date": "Wed, 22 Jan 2020 19:24:11 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Upgrade to TypeScript 3.7.2."
+          },
+          {
+            "comment": "Update tests to pass '--inspect' instead of '--debug' to Node to support Node 12."
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.10.0",
+      "tag": "@bentley/build-tools_v1.10.0",
+      "date": "Tue, 07 Jan 2020 19:44:01 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added tslint-react-set-state-usage to ThirdPartyNotices.md in tools/build"
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.9.0",
+      "tag": "@bentley/build-tools_v1.9.0",
+      "date": "Tue, 10 Dec 2019 18:08:56 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Upgrade to @microsoft/api-extractor 7.6.2"
+          },
+          {
+            "comment": "Code analysis related cleanup"
+          },
+          {
+            "comment": "Add lint rule to enforce two-space indentation."
+          },
+          {
+            "comment": "Added TSLint rules for React setState calls"
+          },
+          {
+            "comment": "Replaced the noUnusedLocals tsc option with no-unused-variable lint rule."
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.8.0",
+      "tag": "@bentley/build-tools_v1.8.0",
+      "date": "Fri, 22 Nov 2019 14:03:34 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix mocha report failing when running in a context without a package.json"
+          },
+          {
+            "comment": "Fix issue with custom Mocha reporter not correctly outputting mocha file when run in Certa."
+          },
+          {
+            "comment": "Update API-extractor to 5.7.4 to consume a fix for Node 12."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.7.0",
       "tag": "@bentley/build-tools_v1.7.0",
       "date": "Fri, 01 Nov 2019 13:28:37 GMT",

@@ -1,16 +1,19 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module WebGL */
+/** @packageDocumentation
+ * @module WebGL
+ */
 
-import { assert, IDisposable, dispose } from "@bentley/bentleyjs-core";
+import { assert, dispose } from "@bentley/bentleyjs-core";
 import { ImageBuffer, ImageBufferFormat, isPowerOfTwo, nextHighestPowerOfTwo, RenderTexture } from "@bentley/imodeljs-common";
 import { GL } from "./GL";
 import { System } from "./System";
 import { UniformHandle } from "./Handle";
 import { TextureUnit, OvrFlags } from "./RenderFlags";
 import { imageBufferToPngDataUrl, openImageDataUrlInNewWindow } from "../../ImageUtil";
+import { WebGLDisposable } from "./Disposable";
 
 type CanvasOrImage = HTMLCanvasElement | HTMLImageElement;
 
@@ -43,27 +46,37 @@ function loadTexture2DImageData(handle: TextureHandle, params: Texture2DCreatePa
   gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
 
   // Bind the texture object; make sure we do not interfere with other active textures
-  System.instance.bindTexture2d(TextureUnit.Zero, tex);
+  System.instance.activateTexture2d(TextureUnit.Zero, tex);
+
+  // Figure out the internal format.  For all but WebGL2 float/half-float datatypes it is just same as format.
+  // TODO: probably need to just support internal format types in Texture2DCreateParams.
+  let internalFormat = params.format;
+  if (System.instance.capabilities.isWebGL2) {
+    const context2 = System.instance.context as WebGL2RenderingContext;
+    if (GL.Texture.Format.Rgba === params.format) {
+      if (GL.Texture.DataType.Float === params.dataType)
+        internalFormat = context2.RGBA32F;
+      else if (context2.HALF_FLOAT === params.dataType)
+        internalFormat = context2.RGBA16F;
+    } else if (GL.Texture.Format.DepthStencil === params.format)
+      internalFormat = context2.DEPTH24_STENCIL8;
+  }
 
   // send the texture data
   if (undefined !== element) {
-    gl.texImage2D(gl.TEXTURE_2D, 0, params.format, params.format, params.dataType, element);
+    gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, params.format, params.dataType, element);
   } else {
     const pixelData = undefined !== bytes ? bytes : null;
-    gl.texImage2D(gl.TEXTURE_2D, 0, params.format, params.width, params.height, 0, params.format, params.dataType, pixelData);
+    gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, params.width, params.height, 0, params.format, params.dataType, pixelData);
   }
 
   if (params.useMipMaps) {
     gl.generateMipmap(gl.TEXTURE_2D);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-    if (params.anisotropicFilter) {
-      const ext = System.instance.capabilities.queryExtensionObject<EXT_texture_filter_anisotropic>("EXT_texture_filter_anisotropic");
-      if (undefined !== ext) {
-        const max = Math.min(params.anisotropicFilter, gl.getParameter(ext.MAX_TEXTURE_MAX_ANISOTROPY_EXT));
-        gl.texParameterf(gl.TEXTURE_2D, ext.TEXTURE_MAX_ANISOTROPY_EXT, max);
-      }
-    }
+
+    if (params.anisotropicFilter)
+      System.instance.setMaxAnisotropy(params.anisotropicFilter);
   } else {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, params.interpolate ? gl.LINEAR : gl.NEAREST);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, params.interpolate ? gl.LINEAR : gl.NEAREST);
@@ -88,7 +101,7 @@ function loadTextureCubeImageData(handle: TextureHandle, params: TextureCubeCrea
   gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
 
   // Bind the texture object; make sure we do not interfere with other active textures
-  System.instance.bindTextureCubeMap(TextureUnit.Zero, tex);
+  System.instance.activateTextureCubeMap(TextureUnit.Zero, tex);
 
   const cubeTargets: number[] = [GL.Texture.Target.CubeMapPositiveX, GL.Texture.Target.CubeMapNegativeX, GL.Texture.Target.CubeMapPositiveY, GL.Texture.Target.CubeMapNegativeY, GL.Texture.Target.CubeMapPositiveZ, GL.Texture.Target.CubeMapNegativeZ];
 
@@ -121,7 +134,7 @@ interface TextureImageProperties {
 /** Wrapper class for a WebGL texture handle and parameters specific to an individual texture.
  * @internal
  */
-export class Texture extends RenderTexture {
+export class Texture extends RenderTexture implements WebGLDisposable {
   public readonly texture: TextureHandle;
 
   public get bytesUsed(): number { return this.texture.bytesUsed; }
@@ -130,6 +143,8 @@ export class Texture extends RenderTexture {
     super(params);
     this.texture = texture;
   }
+
+  public get isDisposed(): boolean { return this.texture.isDisposed; }
 
   /** Free this object in the WebGL wrapper. */
   public dispose() {
@@ -267,7 +282,7 @@ class TextureCubeCreateParams {
 /** Wraps a WebGLTextureHandle
  * @internal
  */
-export abstract class TextureHandle implements IDisposable {
+export abstract class TextureHandle implements WebGLDisposable {
   protected _glTexture?: WebGLTexture;
   protected _bytesUsed = 0;
 
@@ -417,7 +432,7 @@ export class Texture2DHandle extends TextureHandle {
     gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
 
     // Go through System to ensure we don't interfere with currently-bound textures!
-    System.instance.bindTexture2d(TextureUnit.Zero, tex);
+    System.instance.activateTexture2d(TextureUnit.Zero, tex);
     gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, this.width, this.height, this._format, this._dataType, data);
     System.instance.bindTexture2d(TextureUnit.Zero, undefined);
 

@@ -1,11 +1,19 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+/**
+ * @beta
+ */
 export type AnyPropertyProps = PrimitivePropertyProps | StructPropertyProps | PrimitiveArrayPropertyProps | StructArrayPropertyProps | NavigationPropertyProps;
-
+/**
+ * @beta
+ */
 export type AnyClassProps = EntityClassProps | MixinProps | CustomAttributeClassProps | RelationshipClassProps;
+/**
+ * @beta
+ */
 export type AnySchemaItemProps = AnyClassProps | EnumerationProps | KindOfQuantityProps | PropertyCategoryProps | UnitProps | InvertedUnitProps | ConstantProps | PhenomenonProps | FormatProps;
 
 /**
@@ -19,6 +27,8 @@ export interface SchemaProps {
   readonly label?: string;
   readonly description?: string;
   readonly references?: SchemaReferenceProps[];
+  readonly items?: { [name: string]: SchemaItemProps };
+  readonly customAttributes?: Array<{ [value: string]: any }>;
 }
 
 /**
@@ -34,11 +44,14 @@ export interface SchemaReferenceProps {
  */
 export interface SchemaItemProps {
   // NEEDSWORK: Still need to clarify how single-item deserialization works...
+  readonly $schema?: string;
   readonly schema?: string;  // conditionally required
   readonly schemaVersion?: string;
+  readonly name?: string;
   readonly schemaItemType?: string;
   readonly label?: string;
   readonly description?: string;
+  readonly customAttributes?: Array<{ [value: string]: any }>;
 }
 
 /**
@@ -47,6 +60,7 @@ export interface SchemaItemProps {
 export interface ClassProps extends SchemaItemProps {
   readonly modifier?: string;
   readonly baseClass?: string;
+  readonly properties?: PropertyProps[];
 }
 
 /**
@@ -144,6 +158,7 @@ export interface PropertyProps {
   readonly priority?: number;
   readonly inherited?: boolean;
   readonly kindOfQuantity?: string;
+  readonly customAttributes?: Array<{ [value: string]: any }>;
 }
 
 /**
@@ -240,7 +255,7 @@ export interface FormatProps extends SchemaItemProps {
     readonly units: Array<{
       readonly name: string;
       readonly label?: string;
-    }>
+    }>;
   };
 }
 

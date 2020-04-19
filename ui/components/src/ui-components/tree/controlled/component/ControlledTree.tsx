@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Tree */
+/** @packageDocumentation
+ * @module Tree
+ */
 
 import * as React from "react";
 // tslint:disable-next-line: no-duplicate-imports
@@ -22,27 +24,42 @@ import { TreeImageLoader } from "../../ImageLoader";
 
 /**
  * Properties for [[ControlledTree]]
- * @alpha
+ * @beta
  */
 export interface ControlledTreeProps extends CommonProps {
+  /** Flat list of nodes to be rendered in tree. */
   visibleNodes: VisibleTreeNodes;
+  /** Node loader used to load root nodes and placeholder nodes. */
   nodeLoader: ITreeNodeLoader;
+  /** Tree events handler. */
   treeEvents: TreeEvents;
+  /** Mode of nodes' selection in tree. */
   selectionMode: SelectionMode;
+  /** Specifies whether to show node description or not. It is used in default node renderer and to determine node height.
+   * If custom node renderer and node height callbacks are used it does nothing.
+   */
   descriptionsEnabled?: boolean;
+  /** Specifies whether to show node icon or not. It is used in default node renderer.
+   * If custom node renderer is used it does nothing.
+   */
   iconsEnabled?: boolean;
+  /** Used to highlight matches when filtering tree.
+   * It is passed to treeRenderer.
+   */
   nodeHighlightingProps?: HighlightableTreeProps;
+  /** Custom renderer to be used to render a tree. */
   treeRenderer?: (props: TreeRendererProps) => React.ReactElement;
+  /** Custom renderer to be used while root nodes is loading. */
   spinnerRenderer?: () => React.ReactElement;
+  /** Custom renderer to be used when there is no data to show in tree. */
   noDataRenderer?: () => React.ReactElement;
 }
 
 /**
  * React tree component which rendering is fully controlled from outside.
- * @alpha
+ * @beta
  */
-// tslint:disable-next-line: variable-name
-export const ControlledTree: React.FC<ControlledTreeProps> = (props: ControlledTreeProps) => {
+export function ControlledTree(props: ControlledTreeProps) {
   const nodeHeight = useNodeHeight(!!props.descriptionsEnabled);
   const imageLoader = useMemo(() => new TreeImageLoader(), []);
   const nodeRenderer = useCallback((nodeProps: TreeNodeRendererProps) => (
@@ -71,7 +88,7 @@ export const ControlledTree: React.FC<ControlledTreeProps> = (props: ControlledT
       {props.treeRenderer ? props.treeRenderer(treeProps) : <TreeRenderer {...treeProps} />}
     </Loader>
   );
-};
+}
 
 function useRootNodeLoader(visibleNodes: VisibleTreeNodes, nodeLoader: ITreeNodeLoader): boolean {
   useEffect(() => {
@@ -106,8 +123,7 @@ interface LoaderProps {
   children: JSX.Element;
 }
 
-// tslint:disable-next-line: variable-name
-const Loader: React.FC<LoaderProps> = (props) => {
+function Loader(props: LoaderProps) {
   if (props.loading) {
     return props.spinnerRenderer
       ? props.spinnerRenderer()
@@ -128,7 +144,7 @@ const Loader: React.FC<LoaderProps> = (props) => {
   }
 
   return props.children;
-};
+}
 
 function useNodeHeight(
   descriptionsEnabled: boolean,

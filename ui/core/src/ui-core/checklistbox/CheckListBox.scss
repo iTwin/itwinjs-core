@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-@import "../inputs/index.scss";
+@import "../checkbox/index.scss";
 
 .core-chk-listbox {
   margin: 0;
@@ -17,7 +17,7 @@
 
   > .core-chk-listbox-separator {
     height: 1px;
-    background: $buic-background-divider;
+    background: $buic-inputs-border;
     margin: 4px 0;
     pointer-events: none;
   }

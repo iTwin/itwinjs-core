@@ -3,12 +3,12 @@
 exports[`Backstage <FrontstageLaunchBackstageItem /> FrontstageLaunchBackstageItem renders correctly when active 1`] = `
 <WithSafeArea
   icon={
-    <Unknown
+    <Icon
       iconSpec="icon-placeholder"
     />
   }
   isActive={true}
-  isDisabled={false}
+  isDisabled={true}
   key="Test1"
   onClick={[Function]}
   subtitle=""
@@ -20,12 +20,12 @@ exports[`Backstage <FrontstageLaunchBackstageItem /> FrontstageLaunchBackstageIt
 exports[`Backstage <FrontstageLaunchBackstageItem /> FrontstageLaunchBackstageItem renders correctly when inactive 1`] = `
 <WithSafeArea
   icon={
-    <Unknown
+    <Icon
       iconSpec="icon-placeholder"
     />
   }
   isActive={false}
-  isDisabled={false}
+  isDisabled={true}
   key="Test1"
   onClick={[Function]}
   subtitle=""

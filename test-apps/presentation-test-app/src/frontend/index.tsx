@@ -1,23 +1,19 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import { Logger, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
+import { Logger, LogLevel, OpenMode, Config } from "@bentley/bentleyjs-core";
 import { IModelApp } from "@bentley/imodeljs-frontend";
-import { Config } from "@bentley/imodeljs-clients";
 import {
   BentleyCloudRpcManager, BentleyCloudRpcParams,
   ElectronRpcManager, ElectronRpcConfiguration,
-  RpcOperation, IModelToken, RpcConfiguration,
+  RpcOperation, IModelRpcProps, RpcConfiguration,
 } from "@bentley/imodeljs-common";
 // __PUBLISH_EXTRACT_START__ Presentation.Frontend.Imports
-import {
-  Presentation, FavoritePropertiesManager,
-  IFavoritePropertiesStorage, FavoriteProperties,
-} from "@bentley/presentation-frontend";
+import { Presentation } from "@bentley/presentation-frontend";
 // __PUBLISH_EXTRACT_END__
 import { UiCore } from "@bentley/ui-core";
 import { UiComponents } from "@bentley/ui-components";
@@ -25,6 +21,7 @@ import { MyAppFrontend } from "./api/MyAppFrontend";
 import rpcs from "../common/Rpcs";
 import App from "./components/app/App";
 import "./index.css";
+import { PresentationUnitSystem } from "@bentley/presentation-common";
 
 // initialize logging
 Logger.initializeToConsole();
@@ -36,12 +33,13 @@ Logger.setLevelDefault(LogLevel.Warning);
   if (ElectronRpcConfiguration.isElectron) {
     ElectronRpcManager.initializeClient({}, rpcs);
   } else {
+    const testToken: IModelRpcProps = { key: "test", contextId: "test", iModelId: "test", changeSetId: "test", openMode: OpenMode.Readonly };
     const rpcParams: BentleyCloudRpcParams = { info: { title: "presentation-test-app", version: "v1.0" }, uriPrefix: "http://localhost:3001" };
     // __PUBLISH_EXTRACT_START__ Presentation.Frontend.RpcInterface
     const rpcConfiguration = BentleyCloudRpcManager.initializeClient(rpcParams, rpcs);
     // __PUBLISH_EXTRACT_END__
     for (const def of rpcConfiguration.interfaces())
-      RpcOperation.forEach(def, (operation) => operation.policy.token = (request) => (request.findTokenPropsParameter() || new IModelToken("test", "test", "test", "test", OpenMode.Readonly)));
+      RpcOperation.forEach(def, (operation) => operation.policy.token = (request) => (request.findTokenPropsParameter() || testToken));
   }
 })();
 
@@ -58,42 +56,34 @@ export class SampleApp {
     if (process.env.NODE_ENV === "development")
       Config.App.set("imjs_dev_cors_proxy_server", `http://${window.location.hostname}:3001`); // By default, this will run on port 3001
 
-    setCustomFavoritePropertiesManager();
+    readyPromises.push(this.initializePresentation());
+    readyPromises.push(UiCore.initialize(IModelApp.i18n));
+    readyPromises.push(UiComponents.initialize(IModelApp.i18n));
+    this._ready = Promise.all(readyPromises).then(() => { });
+  }
 
+  private static async initializePresentation() {
     // __PUBLISH_EXTRACT_START__ Presentation.Frontend.Initialization
-    Presentation.initialize({
+    await Presentation.initialize({
       // specify `clientId` so Presentation framework can share caches
       // between sessions for the same clients
       clientId: MyAppFrontend.getClientId(),
 
       // specify locale for localizing presentation data
       activeLocale: IModelApp.i18n.languageList()[0],
+
+      // specify the preferred unit system
+      activeUnitSystem: PresentationUnitSystem.Metric,
     });
     // __PUBLISH_EXTRACT_END__
 
     // __PUBLISH_EXTRACT_START__ Presentation.Frontend.SetSelectionScope
     Presentation.selection.scopes.activeScope = "top-assembly";
     // __PUBLISH_EXTRACT_END__
-
-    readyPromises.push(UiCore.initialize(IModelApp.i18n));
-    readyPromises.push(UiComponents.initialize(IModelApp.i18n));
-    this._ready = Promise.all(readyPromises).then(() => { });
   }
 
   public static get ready(): Promise<void> { return this._ready; }
 }
-
-const setCustomFavoritePropertiesManager = () => {
-  const storage: IFavoritePropertiesStorage = {
-    loadProperties: async (_?: string, __?: string) => ({
-      nestedContentInfos: new Set<string>(),
-      propertyInfos: new Set<string>(),
-      baseFieldInfos: new Set<string>(),
-    }),
-    async saveProperties(_: FavoriteProperties, __?: string, ___?: string) { },
-  };
-  Presentation.favoriteProperties = new FavoritePropertiesManager({ storage });
-};
 
 SampleApp.startup();
 

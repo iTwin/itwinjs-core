@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { mount } from "enzyme";
@@ -13,8 +13,8 @@ import { getPropertyKey } from "../../../ui-components/propertygrid/component/Pr
 describe("SelectablePropertyBlock", () => {
   let props: SelectablePropertyBlockProps;
 
-  before(() => {
-    TestUtils.initializeUiComponents(); // tslint:disable-line:no-floating-promises
+  before(async () => {
+    await TestUtils.initializeUiComponents();
   });
 
   beforeEach(() => {

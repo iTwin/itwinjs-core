@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/geo-photo-extension",
+      "comment": "Refactor UiDataProvider to use the new DialogItem interfaces.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/geo-photo-extension",
+  "email": "Nancy.McCall@Bentley.com"
+}

@@ -1,58 +1,84 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Tree */
+/** @packageDocumentation
+ * @module Tree
+ */
 
 import { Subject } from "rxjs/internal/Subject";
 import { from } from "rxjs/internal/observable/from";
 import { takeUntil } from "rxjs/internal/operators/takeUntil";
+import { IDisposable } from "@bentley/bentleyjs-core";
 import {
-  TreeEvents, TreeNodeEvent, TreeCheckboxStateChangeEvent,
-  TreeSelectionModificationEvent, TreeSelectionReplacementEvent,
+  TreeEvents, TreeNodeEventArgs, TreeCheckboxStateChangeEventArgs,
+  TreeSelectionModificationEventArgs, TreeSelectionReplacementEventArgs,
 } from "./TreeEvents";
 import { TreeModelMutator } from "./internal/TreeModelMutator";
 import { Subscription } from "./Observable";
 import { ITreeNodeLoader } from "./TreeNodeLoader";
 import { TreeModelSource } from "./TreeModelSource";
+import { TreeModelNode } from "./TreeModel";
+
+/**
+ * Params used for tree node editing.
+ * @beta
+ */
+export interface TreeEditingParams {
+  /** Callback that is called when node is updated. */
+  onNodeUpdated: (node: TreeModelNode, newValue: string) => void;
+}
 
 /**
  * Data structure that describes tree event handler params.
- * @alpha
+ * @beta
  */
 export interface TreeEventHandlerParams {
+  /** Model source used to modify tree model while handling events. */
   modelSource: TreeModelSource;
+  /** Node loader used to load children when node is expanded. */
   nodeLoader: ITreeNodeLoader;
+  /** Specifies whether children should be disposed when parent node is collapsed or not. */
   collapsedChildrenDisposalEnabled?: boolean;
+  /** Parameters used for node editing. */
+  editingParams?: TreeEditingParams;
 }
 
 /**
  * Default tree event handler.
- * @alpha
+ * @beta
  */
-export class TreeEventHandler implements TreeEvents {
+export class TreeEventHandler implements TreeEvents, IDisposable {
   private _modelMutator: TreeModelMutator;
+  private _editingParams?: TreeEditingParams;
 
   private _disposed = new Subject();
   private _selectionReplaced = new Subject();
 
   constructor(params: TreeEventHandlerParams) {
     this._modelMutator = new TreeModelMutator(params.modelSource, params.nodeLoader, !!params.collapsedChildrenDisposalEnabled);
+    this._editingParams = params.editingParams;
   }
 
+  /** Disposes tree event handler. */
   public dispose() {
     this._disposed.next();
   }
 
-  public onNodeExpanded({ nodeId }: TreeNodeEvent) {
+  public get modelSource() { return this._modelMutator.modelSource; }
+
+  /** Expands node and starts loading children. */
+  public onNodeExpanded({ nodeId }: TreeNodeEventArgs) {
     from(this._modelMutator.expandNode(nodeId)).pipe(takeUntil(this._disposed)).subscribe();
   }
 
-  public onNodeCollapsed({ nodeId }: TreeNodeEvent) {
+  /** Collapses node */
+  public onNodeCollapsed({ nodeId }: TreeNodeEventArgs) {
     this._modelMutator.collapseNode(nodeId);
   }
 
-  public onSelectionModified({ modifications }: TreeSelectionModificationEvent): Subscription | undefined {
+  /** Selects and deselects nodes until event is handled, handler is disposed or selection replaced event occurs. */
+  public onSelectionModified({ modifications }: TreeSelectionModificationEventArgs): Subscription | undefined {
     return from(modifications)
       .pipe(
         takeUntil(this._disposed),
@@ -65,7 +91,8 @@ export class TreeEventHandler implements TreeEvents {
       });
   }
 
-  public onSelectionReplaced({ replacements }: TreeSelectionReplacementEvent): Subscription | undefined {
+  /** Replaces currently selected nodes until event is handled, handler is disposed or another selection replaced event occurs. */
+  public onSelectionReplaced({ replacements }: TreeSelectionReplacementEventArgs): Subscription | undefined {
     this._selectionReplaced.next();
 
     let firstEmission = true;
@@ -86,7 +113,16 @@ export class TreeEventHandler implements TreeEvents {
       });
   }
 
-  public onCheckboxStateChanged({ stateChanges }: TreeCheckboxStateChangeEvent): Subscription | undefined {
+  /** Changes nodes checkbox states. */
+  public onCheckboxStateChanged({ stateChanges }: TreeCheckboxStateChangeEventArgs): Subscription | undefined {
     return stateChanges.subscribe((changes) => this._modelMutator.setCheckboxStates(changes));
+  }
+
+  /** Activates node editing if editing parameters is supplied and node is editable. */
+  public onDelayedNodeClick({ nodeId }: TreeNodeEventArgs) {
+    if (this._editingParams === undefined)
+      return;
+
+    this._modelMutator.activateEditing(nodeId, this._editingParams.onNodeUpdated);
   }
 }

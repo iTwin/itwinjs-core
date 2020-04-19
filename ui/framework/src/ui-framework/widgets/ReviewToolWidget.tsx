@@ -1,14 +1,16 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Widget */
+/** @packageDocumentation
+ * @module Widget
+ */
 
 import * as React from "react";
 import { ToolWidget } from "./ToolWidget";
 import { CoreTools } from "../CoreToolDefinitions";
 import { ItemList } from "../shared/ItemMap";
-import { Backstage } from "../../ui-framework";
+import { Backstage } from "../backstage/Backstage";
 import { SelectionContextToolDefinitions } from "../selection/SelectionContextItemDef";
 import { IconSpec } from "@bentley/ui-core";
 
@@ -37,16 +39,18 @@ export interface ReviewToolWidgetProps {
 export class ReviewToolWidget extends React.Component<ReviewToolWidgetProps, any> {
 
   private _horizontalToolbarItems = this.props.showCategoryAndModelsContextTools ?
-    new ItemList([CoreTools.clearSelectionItemDef,
-    SelectionContextToolDefinitions.hideSectionToolGroup,
-    SelectionContextToolDefinitions.isolateSelectionToolGroup,
-    SelectionContextToolDefinitions.emphasizeElementsItemDef,
+    new ItemList([
+      CoreTools.clearSelectionItemDef,
+      SelectionContextToolDefinitions.hideSectionToolGroup,
+      SelectionContextToolDefinitions.isolateSelectionToolGroup,
+      SelectionContextToolDefinitions.emphasizeElementsItemDef,
     ])
     :
-    new ItemList([CoreTools.clearSelectionItemDef,
-    SelectionContextToolDefinitions.hideElementsItemDef,
-    SelectionContextToolDefinitions.isolateElementsItemDef,
-    SelectionContextToolDefinitions.emphasizeElementsItemDef,
+    new ItemList([
+      CoreTools.clearSelectionItemDef,
+      SelectionContextToolDefinitions.hideElementsItemDef,
+      SelectionContextToolDefinitions.isolateElementsItemDef,
+      SelectionContextToolDefinitions.emphasizeElementsItemDef,
     ]);
 
   private _verticalToolbarItems = new ItemList([
@@ -56,9 +60,9 @@ export class ReviewToolWidget extends React.Component<ReviewToolWidgetProps, any
   ]);
 
   public render() {
-    let appButtonCommandItemDef = Backstage.backstageToggleCommand;
+    let appButtonCommandItemDef = Backstage.backstageToggleCommand; // tslint:disable-line:deprecation
     if (this.props.iconSpec) {
-      appButtonCommandItemDef = Backstage.getBackstageToggleCommand(this.props.iconSpec);
+      appButtonCommandItemDef = Backstage.getBackstageToggleCommand(this.props.iconSpec); // tslint:disable-line:deprecation
     }
 
     const horizontalToolbarItems = new ItemList();
@@ -78,7 +82,7 @@ export class ReviewToolWidget extends React.Component<ReviewToolWidgetProps, any
     if (this.props.suffixVerticalItems) verticalToolbarItems.addItems(this.props.suffixVerticalItems);
 
     return (
-      <ToolWidget
+      <ToolWidget // tslint:disable-line:deprecation
         appButton={appButtonCommandItemDef}
         horizontalItems={horizontalToolbarItems}
         verticalItems={verticalToolbarItems}

@@ -1,28 +1,27 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { Id64 } from "@bentley/bentleyjs-core";
+import { Angle, AngleSweep, Arc3d, LineString3d, Point3d, YawPitchRollAngles } from "@bentley/geometry-core";
+import { SnapshotDb } from "@bentley/imodeljs-backend";
+import { Code, ElementProps, GeometricElement3dProps, GeometryStreamBuilder, IModel, ModelProps, Placement3dProps } from "@bentley/imodeljs-common";
 import { assert, expect } from "chai";
-import { Id64, OpenMode } from "@bentley/bentleyjs-core";
-import { Arc3d, Point3d, AngleSweep, Angle, LineString3d, YawPitchRollAngles } from "@bentley/geometry-core";
-import { ElementProps, GeometricElement3dProps, GeometryStreamBuilder, IModel, ModelProps, Placement3dProps, Code } from "@bentley/imodeljs-common";
-import { IModelDb } from "@bentley/imodeljs-backend";
 import { IModelTestUtils } from "./IModelTestUtils";
 
-/**
- * Example code organized as tests to make sure that it builds and runs successfully.
+/** Example code organized as tests to make sure that it builds and runs successfully.
  * > Note: these snippets get included by `docs/learning/WireFormat.md`
  */
 describe("Wire Format Snippets", () => {
-  let iModel: IModelDb;
+  let iModel: SnapshotDb;
 
   before(() => {
-    iModel = IModelTestUtils.openIModel("test.bim", { copyFilename: "wire-format.bim", openMode: OpenMode.ReadWrite });
+    iModel = IModelTestUtils.openSnapshotFromSeed("test.bim", { copyFilename: "wire-format.bim" });
   });
 
   after(() => {
-    iModel.closeStandalone();
+    iModel.close();
   });
 
   it("Root Subject", () => {

@@ -1,9 +1,11 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module Utility */
+/** @packageDocumentation
+ * @module Utility
+ */
 
 // REMARK:
 // The docs-group-description comments are followed by empty classes with names corresponding to the doc-group.
@@ -33,6 +35,7 @@
  * * Angles
  *   * Angle -- a strongly typed angle object whose method names make it clear whether input and outputs are degrees or radians.
  *   * AngleSweep -- an angular interval
+ *   * LatitudeLongitudeNumber -- carrier for position and altitude on sphere or ellipsoid
  *   * YawPitchAndRollAngles -- 3 angles that define a rotated coordinate system.
  * * Utility classes
  *   * FrameBuilder -- construction of coordinate frames from mixed data sources.
@@ -119,8 +122,10 @@
  */
 export * from "./geometry3d/Angle";
 export * from "./geometry3d/AngleSweep";
+export * from "./geometry3d/LongitudeLatitudeAltitude";
 export * from "./geometry3d/BarycentricTriangle";
 export * from "./geometry3d/BilinearPatch";
+export * from "./geometry3d/Ellipsoid";
 export * from "./geometry3d/FrameBuilder";
 export * from "./geometry3d/FrustumAnimation";
 export * from "./geometry3d/GeometryHandler";
@@ -151,6 +156,7 @@ export * from "./geometry3d/YawPitchRollAngles";
 
 export * from "./Geometry";
 export * from "./Constant";
+export * from "./clipping/BooleanClipFactory";
 export * from "./clipping/ClipPlane";
 export * from "./clipping/ConvexClipPlaneSet";
 export * from "./clipping/UnionOfConvexClipPlaneSets";
@@ -197,7 +203,7 @@ export * from "./curve/ParityRegion";
 export * from "./curve/Path";
 export * from "./curve/RegionMomentsXY";
 export * from "./curve/RegionOps";
-export * from "./curve/PolygonOffsetContext";
+export * from "./curve/internalContexts/PolygonOffsetContext";
 export * from "./curve/PointString3d";
 export * from "./curve/StrokeOptions";
 export * from "./curve/TransitionSpiral";
@@ -234,11 +240,3 @@ export * from "./topology/Triangulation";
 export * from "./serialization/IModelJsonSchema";
 export * from "./serialization/DeepCompare";
 export * from "./serialization/GeometrySamples";
-
-// Set the version number so it can be found at runtime. BUILD_SEMVER is replaced at build time by the webpack DefinePlugin.
-declare var BUILD_SEMVER: string;
-if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") && window) {
-  if (!(window as any).iModelJsVersions)
-    (window as any).iModelJsVersions = new Map<string, string>();
-  (window as any).iModelJsVersions.set("geometry-core", BUILD_SEMVER);
-}

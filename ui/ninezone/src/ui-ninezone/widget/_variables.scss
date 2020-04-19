@@ -1,9 +1,9 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-@import "@bentley/ui-core/lib/ui-core/style/breakpoints";
-@import "@bentley/ui-core/lib/ui-core/style/themecolors";
+@import "~@bentley/ui-core/lib/ui-core/style/breakpoints";
+@import "~@bentley/ui-core/lib/ui-core/style/themecolors";
 
 $nz-tab-height: 60px;
 $nz-tab-width: 32px;
@@ -38,3 +38,10 @@ $nz-widget-min-size: $nz-tab-height + 10px;
     #{$property}: -$nz-resize-grip-size-large / 2;
   }
 }
+
+// 2.0
+$nz-widget-tab-font-size: 0.9em;
+$nz-widget-tab-height: 2em;
+$nz-widget-tab-border-radius: 2px;
+
+$nz-dragged-widget-opacity: 0.6;

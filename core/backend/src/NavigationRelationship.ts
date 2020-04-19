@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Relationships */
+/** @packageDocumentation
+ * @module Relationships
+ */
 
 // NOTE: A NavigationRelationship is not an Entity, so is not registered in the ClassRegistry.
 // NOTE: It does, however, have a classFullName property for consistency with Entity subclasses.

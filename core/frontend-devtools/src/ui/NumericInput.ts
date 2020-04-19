@@ -1,9 +1,11 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module Controls */
+/** @packageDocumentation
+ * @module Controls
+ */
 
 /** @alpha */
 export type NumericInputHandler = (value: number, input: HTMLInputElement) => void;
@@ -32,7 +34,8 @@ export function createNumericInput(props: NumericInputProps, useFloat: boolean =
   input.onchange = () => {
     try {
       const value = useFloat ? parseFloat(input.value) : parseInt(input.value, 10);
-      props.handler(value, input);
+      if (!Number.isNaN(value))
+        props.handler(value, input);
     } catch (_ex) {
       //
     }

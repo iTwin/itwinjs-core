@@ -1,6 +1,70 @@
 # Change Log - @bentley/ui-ninezone
 
-This log was last generated on Fri, 01 Nov 2019 13:28:37 GMT and should not be manually modified.
+This log was last generated on Wed, 04 Mar 2020 16:16:31 GMT and should not be manually modified.
+
+## 1.13.0
+Wed, 04 Mar 2020 16:16:31 GMT
+
+### Updates
+
+- Fix safe area insets for bottom zones w/o footer.
+
+## 1.12.0
+Wed, 12 Feb 2020 17:45:50 GMT
+
+### Updates
+
+- Upgraded icons-generic-webfont to ^1.0.0
+
+## 1.11.0
+Wed, 22 Jan 2020 19:24:12 GMT
+
+### Updates
+
+- Upgrade to TypeScript 3.7.2.
+- Docked tool settings component.
+
+## 1.10.0
+Tue, 07 Jan 2020 19:44:01 GMT
+
+### Updates
+
+- Fix widget target infinite set state issue.
+- Add css option to pad between icon and label in Label StatusBar Indicator.
+
+## 1.9.0
+Tue, 10 Dec 2019 18:08:56 GMT
+
+### Updates
+
+- Invoke onTargetChanged when component unmounts.
+- No longer accessing this.state or this.props in setState updater - flagged by lgtm report
+- Update sinon version.
+- Added support for NotifyMessageDetails.displayTime for Toast messages
+- Ability to determine available tool settings width.
+- Fix code analysis report issues.
+- Use exhaustive-deps linter rule.
+- Expandable group touch support.
+- Use typescript as webpack configuration language.
+- Ability to set zone width from zones manager.
+- Removed unused React state variables. Removed unsupported setState calls from render() methods.
+- Added ConditionalField and FooterModeField components. StatusBar responsive changes.
+
+## 1.8.0
+Fri, 22 Nov 2019 14:03:34 GMT
+
+### Updates
+
+- Update Icon package version.
+- Tablet responsive UI
+- Added StatusBarComposer, StatusBarItem, StatusBarManager and StatusBarItemsManager
+- Added tslint-react-hooks to UI packages
+- Remove unsupported fit-content CSS value.
+- Fix flex CSS rule shorthand issue in stage panel splitter.
+- Touch support for widget drag, widget resize and stage panel splitter.
+- Add disabled resize handles option to widget.
+- Deprecate history tray components.
+- Open tool panel via drag interaction.
 
 ## 1.7.0
 Fri, 01 Nov 2019 13:28:37 GMT

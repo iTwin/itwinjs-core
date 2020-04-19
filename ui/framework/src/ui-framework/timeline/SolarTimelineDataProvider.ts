@@ -1,15 +1,17 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Timeline */
+/** @packageDocumentation
+ * @module Timeline
+ */
 
 import {
   BaseSolarDataProvider,
 } from "@bentley/ui-components";
 
 import { ScreenViewport, DisplayStyle3dState, ViewState } from "@bentley/imodeljs-frontend";
-import { Cartographic, ColorDef, ColorByName } from "@bentley/imodeljs-common";
+import { Cartographic, ColorDef, ColorByName, SolarShadowSettings } from "@bentley/imodeljs-common";
 
 // the interface and class are in alpha state - it may change after usability testing - test coverage not complete
 /* istanbul ignore file */
@@ -52,7 +54,7 @@ export class SolarTimelineDataProvider extends BaseSolarDataProvider {
       const displayStyle = this._viewport.view.displayStyle as DisplayStyle3dState;
       if (displayStyle) {
         displayStyle.setSunTime(time.getTime());
-        this._viewport.sync.invalidateScene();
+        this._viewport.invalidateScene();
       }
     }
   }
@@ -61,19 +63,31 @@ export class SolarTimelineDataProvider extends BaseSolarDataProvider {
     if (this._viewport) {
       const displayStyle = this._viewport.view.displayStyle as DisplayStyle3dState;
       if (displayStyle) {
-        return displayStyle.settings.solarShadowsSettings.color;
+        return displayStyle.settings.solarShadows.color.toColorDef();
       }
     }
-    return new ColorDef(ColorByName.gray);
+    return ColorDef.create(ColorByName.gray);
   }
 
   public set shadowColor(color: ColorDef) {
-    if (this._viewport) {
-      const displayStyle = this._viewport.view.displayStyle as DisplayStyle3dState;
-      if (displayStyle && color !== displayStyle.settings.solarShadowsSettings.color) {
-        displayStyle.settings.solarShadowsSettings.color = color;
-        this._viewport.sync.invalidateScene();
-      }
-    }
+    if (!this._viewport)
+      return;
+
+    const displayStyle = this._viewport.view.displayStyle as DisplayStyle3dState;
+    if (!displayStyle)
+      return;
+
+    const prevColor = displayStyle.settings.solarShadows.color;
+    const newColor = color.colors;
+    if (prevColor.r === newColor.r && prevColor.g === newColor.g && prevColor.b === newColor.b)
+      return;
+
+    const newSettings = displayStyle.settings.solarShadows.toJSON();
+    if (!newSettings)
+      return;
+
+    newSettings.color = color.tbgr;
+    displayStyle.settings.solarShadows = SolarShadowSettings.fromJSON(newSettings);
+    this._viewport.invalidateScene();
   }
 }

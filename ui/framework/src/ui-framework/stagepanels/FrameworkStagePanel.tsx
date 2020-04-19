@@ -1,11 +1,14 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Frontstage */
+/** @packageDocumentation
+ * @module Frontstage
+ */
 
 import * as React from "react";
-import * as classnames from "classnames";
+import classnames from "classnames";
+import { StagePanelLocation } from "@bentley/ui-abstract";
 import {
   StagePanel as NZ_StagePanel,
   StagePanelTypeHelpers,
@@ -22,9 +25,9 @@ import { WidgetStack, WidgetTabs } from "../widgets/WidgetStack";
 import { StagePanelChangeHandler, WidgetChangeHandler } from "../frontstage/FrontstageComposer";
 import { ZoneLocation } from "../zones/Zone";
 import { SafeAreaContext } from "../safearea/SafeAreaContext";
-import { StagePanelLocation, getStagePanelType, getNestedStagePanelKey } from "./StagePanel";
+import { getStagePanelType, getNestedStagePanelKey } from "./StagePanel";
+import { FrontstageManager } from "../frontstage/FrontstageManager";
 import "./FrameworkStagePanel.scss";
-import { FrontstageManager } from "../../ui-framework";
 
 /** Properties of a [[FrameworkStagePanel]] component
  * @internal

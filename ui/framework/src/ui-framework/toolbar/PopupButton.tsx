@@ -1,13 +1,15 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Item */
+/** @packageDocumentation
+ * @module Item
+ */
 
 import * as React from "react";
 import classnames from "classnames";
 
-import { StringGetter } from "@bentley/ui-abstract";
+import { StringGetter, ConditionalBooleanValue, ConditionalStringValue } from "@bentley/ui-abstract";
 import { withOnOutsideClick, CommonProps, SizeProps, Icon, BadgeUtilities } from "@bentley/ui-core";
 import { ExpandableItem, Item } from "@bentley/ui-ninezone";
 
@@ -21,6 +23,9 @@ import "./PopupButton.scss";
 import { ItemProps } from "../shared/ItemProps";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { ToolbarDragInteractionContext } from "./DragInteraction";
+import { PropsHelper } from "../utils/PropsHelper";
+
+// tslint:disable: deprecation
 
 // cSpell:ignore popupbutton
 
@@ -29,6 +34,7 @@ const DivWithOnOutsideClick = withOnOutsideClick((props: React.HTMLProps<HTMLDiv
 
 /** Arguments of [[PopupButtonChildrenRenderProp]].
  * @public
+ * @deprecated use PopupItem in ToolbarWithOverflow or popupPanelNode in CustomItemDef
  */
 export interface PopupButtonChildrenRenderPropArgs {
   closePanel: () => void;
@@ -36,11 +42,13 @@ export interface PopupButtonChildrenRenderPropArgs {
 
 /** Type of [[PopupButtonProps.children]] when used as render prop.
  * @public
+ * @deprecated use PopupItem in ToolbarWithOverflow or popupPanelNode in CustomItemDef
  */
 export type PopupButtonChildrenRenderProp = (args: PopupButtonChildrenRenderPropArgs) => React.ReactNode;
 
 /** Properties for the [[PopupButton]] React component
  * @public
+ * @deprecated use PopupItem in ToolbarWithOverflow or popupPanelNode in CustomItemDef
  */
 export interface PopupButtonProps extends ItemProps, CommonProps {
   children?: React.ReactNode | PopupButtonChildrenRenderProp;
@@ -58,9 +66,10 @@ const isFunction = <T extends (...args: any) => any>(node: React.ReactNode): nod
 /**
  * Used to provide custom popup button in toolbar.
  * @public
+ * @deprecated use PopupItem in ToolbarWithOverflow or popupPanelNode in CustomItemDef
  */
 export class PopupButton extends React.Component<PopupButtonProps, BaseItemState> {
-  private _label: string | StringGetter = "";
+  private _label: string | StringGetter | ConditionalStringValue = "";
   private _componentUnmounting = false;
   private _closeOnPanelOpened = true;
   private _ref = React.createRef<HTMLDivElement>();
@@ -76,20 +85,15 @@ export class PopupButton extends React.Component<PopupButtonProps, BaseItemState
       this._label = UiFramework.i18n.translate(props.labelKey);
 
     this.state = {
-      isVisible: undefined !== props.isVisible ? props.isVisible : true,
-      isEnabled: undefined !== props.isEnabled ? props.isEnabled : true,
+      isVisible: undefined !== props.isVisible ? props.isVisible : true, // tslint:disable-line:deprecation
+      isEnabled: undefined !== props.isEnabled ? props.isEnabled : true, // tslint:disable-line:deprecation
       isActive: undefined !== props.isActive ? props.isActive : false,
       isPressed: undefined !== props.isPressed ? props.isPressed : false,
     };
   }
 
   public get label(): string {
-    let label = "";
-    if (typeof this._label === "string")
-      label = this._label;
-    else
-      label = this._label();
-    return label;
+    return PropsHelper.getStringFromSpec(this._label);
   }
 
   /** Minimizes the expandable component. */
@@ -108,14 +112,14 @@ export class PopupButton extends React.Component<PopupButtonProps, BaseItemState
     let newState: BaseItemState = { ...this.state };
 
     // istanbul ignore else
-    if (!refreshState && this.props.stateSyncIds && this.props.stateSyncIds.length > 0)
-      refreshState = this.props.stateSyncIds.some((value: string): boolean => args.eventIds.has(value));
+    if (this.props.stateSyncIds && this.props.stateSyncIds.length > 0) // tslint:disable-line:deprecation
+      refreshState = this.props.stateSyncIds.some((value: string): boolean => args.eventIds.has(value)); // tslint:disable-line:deprecation
 
     // istanbul ignore else
     if (refreshState) {
       // istanbul ignore else
-      if (this.props.stateFunc)
-        newState = this.props.stateFunc(newState);
+      if (this.props.stateFunc) // tslint:disable-line:deprecation
+        newState = this.props.stateFunc(newState); // tslint:disable-line:deprecation
       // istanbul ignore next
       if ((this.state.isActive !== newState.isActive) || (this.state.isEnabled !== newState.isEnabled) || (this.state.isVisible !== newState.isVisible)) {
         if (this._isMounted)
@@ -157,14 +161,16 @@ export class PopupButton extends React.Component<PopupButtonProps, BaseItemState
       return null;
 
     const icon = <Icon iconSpec={this.props.iconSpec} />;
-    const badge = BadgeUtilities.getComponentForBadge(this.props.badgeType, this.props.betaBadge);  // tslint:disable-line: deprecation
+    const badge = BadgeUtilities.getComponentForBadgeType(this.props.badgeType);
+    const { isDisabled, ...otherProps } = this.props;
     return (
       <ToolbarDragInteractionContext.Consumer>
-        {(isEnabled) => {
+        {(isDragEnabled) => {
           return (
             <ExpandableItem
-              {...this.props}
-              hideIndicator={isEnabled}
+              {...otherProps}
+              isDisabled={ConditionalBooleanValue.getValue(isDisabled)}
+              hideIndicator={isDragEnabled}
               panel={this.getExpandedContent()}
             >
               <div ref={this._ref}>

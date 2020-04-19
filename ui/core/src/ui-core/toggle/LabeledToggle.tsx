@@ -1,11 +1,13 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Inputs */
+/** @packageDocumentation
+ * @module Toggle
+ */
 
 import * as React from "react";
-import * as classnames from "classnames";
+import classnames from "classnames";
 import { ToggleProps, Toggle } from "./Toggle";
 import "./LabeledToggle.scss";
 
@@ -31,12 +33,12 @@ export class LabeledToggle extends React.PureComponent<LabeledToggleProps> {
     return (
       <label style={this.props.style} className={classnames(
         "core-inputs-labeled-toggle",
-        this.props.disabled && "disabled",
+        this.props.disabled && "uicore-disabled",
         this.props.className,
       )}>
         <Toggle className={className} style={style} {...props} />
         {label &&
-          <div className={classnames("label", labelClassName)}>{label}</div>
+          <div className={classnames("uicore-label", labelClassName)}>{label}</div>
         }
       </label>
     );

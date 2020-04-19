@@ -1,8 +1,16 @@
 sep=;
 Release Tag;API Item
+internal;AdditionalFeatureData
 beta;AliCloudStorageService 
+beta;class AnalyticalElement 
+beta;class AnalyticalModel 
+beta;AnalyticalPartition 
+beta;AnalyticalSchema 
+beta;AnalyticalSimulatesSpatialElement 
+beta;class AnalyticalType 
 public;AnnotationElement2d 
 beta;AppActivityMonitor
+alpha;ApplicationType
 public;AuthorizedBackendRequestContext 
 beta;AutoPush
 beta;AutoPushEventHandler = (etype: AutoPushEventType, autoPush: AutoPush) => void
@@ -18,8 +26,9 @@ beta;BackendActivityMonitor
 public;BackendLoggerCategory
 public;BackendRequestContext 
 public;BisCoreSchema 
+public;BriefcaseDb 
 internal;BriefcaseEntry
-public;BriefcaseId
+public;BriefcaseId = number
 internal;BriefcaseManager
 public;CachedECSqlStatement
 internal;CachedSqliteStatement
@@ -28,7 +37,6 @@ public;Category
 public;CategoryOwnsSubCategories 
 public;CategorySelector 
 internal;ChangedElementsDb 
-public;ChangeSetDescriber = (endTxnId: TxnIdString) => string
 internal;ChangeSetToken
 beta;ChangeSummary
 beta;ChangeSummaryExtractContext
@@ -37,11 +45,12 @@ beta;ChangeSummaryManager
 public;ClassRegistry
 beta;class CloudStorageService
 beta;CloudStorageServiceCredentials
+internal;CloudStorageTileUploader
 beta;CloudStorageUploadOptions
 public;CodeSpecs
-beta;ComparisonOption
 beta;ConcurrencyControl
 beta;ConcurrencyControl
+internal;StateCache
 alpha;CrashReportingConfig
 alpha;CrashReportingConfigNameValuePair
 public;class DefinitionElement 
@@ -99,29 +108,30 @@ public;ElementRefersToElements
 public;ElementUniqueAspect 
 public;ElevationCallout 
 public;EmbeddedFileLink 
+internal;EmitOptions
+internal;EmitStrategy
 public;Entity 
+internal;EventSink
+internal;EventSinkManager
+internal;EventSinkOptions
 public;ExportGraphics
-beta;areDisplayPropsEqual(lhs: ExportPartDisplayProps, rhs: ExportPartDisplayProps): boolean
 public;ExportGraphicsFunction = (info: ExportGraphicsInfo) => void
 public;ExportGraphicsInfo
 public;ExportGraphicsLines
 public;ExportGraphicsMesh
 public;ExportGraphicsOptions
-beta;ExportGraphicsProps = ExportGraphicsOptions
 public;ExportLinesFunction = (info: ExportLinesInfo) => void
 public;ExportLinesInfo
 public;ExportPartDisplayInfo
-beta;ExportPartDisplayProps = ExportPartDisplayInfo
 public;ExportPartFunction = (info: ExportPartInfo) => void
 public;ExportPartGraphicsOptions
-beta;ExportPartGraphicsProps = ExportPartGraphicsOptions
 public;ExportPartInfo
 public;ExportPartInstanceInfo
-beta;ExportPartInstanceProps = ExportPartInstanceInfo
 public;ExportPartLinesFunction = (info: ExportPartLinesInfo) => void
 public;ExportPartLinesInfo
 public;ExternalSourceAspect 
 public;ExternalSourceAspect
+public;class FileNameResolver
 public;class FunctionalBreakdownElement 
 public;class FunctionalComponentElement 
 public;FunctionalComposite 
@@ -159,22 +169,22 @@ beta;ILinearElementProvidedBySource
 beta;ILinearLocationLocatesElement 
 beta;ILinearlyLocatedAlongILinearElement 
 beta;ILinearlyLocatedAttributesElement 
-alpha;IModelCloneContext
-public;IModelDb 
+beta;IModelCloneContext
+public;class IModelDb 
 public;IModelDb
 internal;TileContentState
 internal;Tiles
-alpha;IModelExporter
-alpha;class IModelExportHandler
-alpha;IModelExportOptions
+beta;IModelExporter
+beta;class IModelExportHandler
 public;IModelHost
 public;IModelHostConfiguration
-alpha;IModelImporter
-alpha;IModelImportOptions
+beta;IModelImporter
+beta;IModelImportOptions
+internal;IModelJsAdditionalFeatureData 
 public;IModelJsFs
 public;IModelJsFsStats
-alpha;IModelTransformer 
-alpha;IModelTransformOptions
+beta;IModelTransformer 
+beta;IModelTransformOptions
 internal;class InformationCarrierElement 
 public;class InformationContentElement 
 public;class InformationModel 
@@ -191,7 +201,6 @@ internal;LightLocation
 beta;LinearElement
 beta;LinearLocation 
 beta;class LinearLocationElement 
-beta;LinearLocationReference
 beta;LinearlyLocated
 beta;class LinearlyLocatedAttribution 
 beta;LinearlyLocatedBase
@@ -204,7 +213,6 @@ beta;LinearlyReferencedAtPositionRefersToReferent
 beta;LinearlyReferencedFromPositionRefersToReferent 
 beta;LinearlyReferencedFromToLocation 
 beta;LinearlyReferencedLocation 
-beta;LinearlyReferencedLocationType
 beta;LinearlyReferencedToPositionRefersToReferent 
 beta;class LinearPhysicalElement 
 beta;LinearReferencingSchema 
@@ -216,6 +224,8 @@ public;LinkPartition
 internal;MetaDataRegistry
 public;Model 
 public;ModelSelector 
+internal;NativeAppBackend
+alpha;OidcDesktopClient 
 public;OpenParams
 public;OrthographicViewDefinition 
 public;class PhysicalElement 
@@ -228,8 +238,7 @@ public;PhysicalPartition
 public;class PhysicalType 
 public;PlanCallout 
 public;Platform
-beta;QueryParams
-internal;class RecipeDefinitionElement 
+beta;class RecipeDefinitionElement 
 beta;Referent 
 beta;class ReferentElement 
 public;Relationship 
@@ -240,6 +249,7 @@ public;RenderMaterialElement
 public;RenderMaterialOwnsRenderMaterials 
 public;RepositoryLink 
 public;RepositoryModel 
+public;ReservedBriefcaseId
 public;class RoleElement 
 public;RoleModel 
 public;Schema
@@ -255,6 +265,7 @@ public;SheetBorderTemplate
 public;SheetModel 
 public;SheetTemplate 
 public;SheetViewDefinition 
+public;SnapshotDb 
 public;SourceAndTarget
 public;SpatialCategory 
 public;class SpatialElement 
@@ -270,14 +281,16 @@ internal;SqliteStatement
 internal;SqliteStatementCache
 internal;SqliteValue
 internal;SqliteValueType
+internal;StandaloneDb 
 internal;StringParam
 public;SubCategory 
 public;Subject 
 public;SubjectOwnsPartitionElements 
 public;SubjectOwnsSubjects 
 public;SyncMode
+beta;TemplateModelCloner 
 internal;TemplateRecipe2d 
-internal;TemplateRecipe3d 
+beta;TemplateRecipe3d 
 internal;TemplateViewDefinition2d 
 internal;TemplateViewDefinition3d 
 public;TextAnnotation2d 
@@ -290,6 +303,7 @@ beta;TxnManager
 public;class TypeDefinitionElement 
 public;UpdateModelOptions 
 public;UrlLink 
+internal;UsageLoggingUtilities
 beta;ValidationError
 public;ViewAttachment 
 public;ViewAttachmentLabel 

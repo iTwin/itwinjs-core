@@ -2,6 +2,159 @@
   "name": "@bentley/geometry-core",
   "entries": [
     {
+      "version": "1.13.0",
+      "tag": "@bentley/geometry-core_v1.13.0",
+      "date": "Wed, 04 Mar 2020 16:16:31 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Polyface clip to union of convex sets"
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.12.0",
+      "tag": "@bentley/geometry-core_v1.12.0",
+      "date": "Wed, 12 Feb 2020 17:45:50 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Implement generic boolean tree of `Clipper` objects (for Feature 269514)"
+          },
+          {
+            "comment": "Arc3d precise range; BSpline1dNd interval recursion bug; BooleanClip unit tests"
+          },
+          {
+            "comment": "MomentData quantity sign controls principal direction orientation."
+          },
+          {
+            "comment": "BooleanClipFactory enhancements"
+          },
+          {
+            "comment": "New method ellipsoide.silhouette (eyePoint: Point4d):Arc3d"
+          },
+          {
+            "comment": "Correct extended geometry handling in LineString3d.closestPoint"
+          },
+          {
+            "comment": "(a) Control Triangulation of area booleans, (b) methods to find and purge duplicate facets"
+          },
+          {
+            "comment": "Improve error handling for triangulation and merge of bad input\""
+          },
+          {
+            "comment": "iModel write API development"
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.11.0",
+      "tag": "@bentley/geometry-core_v1.11.0",
+      "date": "Wed, 22 Jan 2020 19:24:12 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Detect \"end to end\" connection of colinear line segments during curve-curve intersection methods."
+          },
+          {
+            "comment": "RegionOps planar subdivision support."
+          },
+          {
+            "comment": "#1.11.0-dev.5_4384: XY linework and Region cleanup methods"
+          },
+          {
+            "comment": "Upgrade to TypeScript 3.7.2."
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.10.0",
+      "tag": "@bentley/geometry-core_v1.10.0",
+      "date": "Tue, 07 Jan 2020 19:44:01 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "`CurveCurve.intersectionPairsXY` returns details of line-line and arc-arc coincident geometry"
+          },
+          {
+            "comment": "Add method for mesh orientation fixup."
+          },
+          {
+            "comment": "Path-on-Ellipsoid support"
+          },
+          {
+            "comment": "New method RegionOps.sortOuterAndHoleLoopsXY"
+          },
+          {
+            "comment": "BUG: Fix inverseState management in MatrixMatrix multliplies with preallocated result and/or aliasing"
+          },
+          {
+            "comment": "Added Matrix4d.isExactEqual()"
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.9.0",
+      "tag": "@bentley/geometry-core_v1.9.0",
+      "date": "Tue, 10 Dec 2019 18:08:56 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "EllipsoidPatch support:  patch.projectPointToSurface, ellipsoid.constantLatitudeArc, ellipsoid.constantLongitudeArc"
+          },
+          {
+            "comment": "Great Circle extraction on Ellipsoid"
+          },
+          {
+            "comment": "Correct bug in z part of Vector3d spherical construction.   New method to split mesh by eyevector"
+          },
+          {
+            "comment": "BUG#220063 linearSystem3d z term"
+          },
+          {
+            "comment": "Code cleanup from codeQL hits"
+          },
+          {
+            "comment": "Ellipsoid and EllipsoidPatch classes with range and intersectRay support"
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.8.0",
+      "tag": "@bentley/geometry-core_v1.8.0",
+      "date": "Fri, 22 Nov 2019 14:03:34 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "PolyfaceQuery services: PolyfaceQuery.markAllEdgeVisibility PolyfaceQuery.markPairedEdgesInvisible PolyfaceQuery.setSingleEdgeVisibility PolyfaceQuery.computeFacetUnitNormal "
+          },
+          {
+            "comment": "BUG#211602 Correct sectioning of meshes with (a) nonconvex facets and (b) multicomponent plane intersections"
+          },
+          {
+            "comment": "Feature#211247 Intersect Ray with Sphere"
+          },
+          {
+            "comment": "Spherical patch range; optional result in range3d.corners()"
+          },
+          {
+            "comment": "Refactor analysis of range of a+b sin(theta) + c sin(theta)"
+          },
+          {
+            "comment": "Added missing topic descriptions"
+          },
+          {
+            "comment": "Added earthRadiusWGS84 constants"
+          }
+        ]
+      }
+    },
+    {
       "version": "1.7.0",
       "tag": "@bentley/geometry-core_v1.7.0",
       "date": "Fri, 01 Nov 2019 13:28:37 GMT",

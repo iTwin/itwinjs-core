@@ -1,13 +1,15 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Rendering */
+/** @packageDocumentation
+ * @module DisplayStyles
+ */
 
 import { Id64String } from "@bentley/bentleyjs-core";
 
 /**
- * A schedule (or script)  for controlling the visibility, position and symbology of a series of elements over a perid of time.
+ * A schedule (or script)  for controlling the visibility, position and symbology of a series of elements over a period of time.
  * A schedule script is exposed through [[DisplayStyleSettingsProps]].
  * @beta
  */
@@ -17,7 +19,7 @@ export namespace RenderSchedule {
    * Properties included in each property entry.
    */
   export interface TimelineEntryProps {
-    /** The time in Unix Epoch (POSIX) milliseconds */
+    /** The time in Unix Epoch (POSIX) seconds */
     time: number;
     /** Interpolation value from synchro.  2 is linear, else currently treated as step.  */
     interpolation: number;

@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Utils */
+/** @packageDocumentation
+ * @module Utils
+ */
 
 /** Interface adopted by a type which has deterministic cleanup logic.
  * For example:
@@ -24,6 +26,14 @@ export interface IDisposable {
    * @note The object is generally considered unusable after it has been disposed of.
    */
   dispose(): void;
+}
+
+/**
+ * A type guard that checks whether the given argument implements `IDisposable` interface
+ * @public
+ */
+export function isIDisposable(obj: unknown): obj is IDisposable {
+  return !!obj && (obj instanceof Object) && !!(obj as IDisposable).dispose && (typeof (obj as IDisposable).dispose === "function");
 }
 
 /** Convenience function for disposing of a disposable object that may be undefined.

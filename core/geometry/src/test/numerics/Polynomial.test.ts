@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
@@ -28,6 +28,7 @@ import { Sphere } from "../../solid/Sphere";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { Transform } from "../../geometry3d/Transform";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
+import { LongitudeLatitudeNumber } from "../../geometry3d/LongitudeLatitudeAltitude";
 
 function testBezier(ck: Checker, bezier: BezierCoffs) {
   for (const f of [0, 0.25, 0.75]) {
@@ -272,8 +273,8 @@ describe("ImplicitSurface", () => {
     ck.testCoordinate(0, sphere.evaluateImplicitFunction(0, 0, r), "evaluate sphere");
 
     for (const xyz of [Point3d.create(1, 2, 4),
-    Point3d.create(0, 0, 0),
-    Point3d.create(r, 0, 0)]) {
+      Point3d.create(0, 0, 0),
+      Point3d.create(r, 0, 0)]) {
       const w = 4.2;
       ck.testCoordinate(
         sphere.evaluateImplicitFunction(xyz.x, xyz.y, xyz.z) * w * w,
@@ -321,8 +322,8 @@ describe("ImplicitSurface", () => {
     ck.testCoordinate(0, torus.evaluateImplicitFunctionXYZ(rA, 0, -rB), "evaluate torus");
 
     for (const xyz of [Point3d.create(1, 2, 4),
-    Point3d.create(0, 0, 9),
-    Point3d.create(rA, 0, 0)]) {
+      Point3d.create(0, 0, 9),
+      Point3d.create(rA, 0, 0)]) {
       const w = 2.0;
       const fOfX = torus.evaluateImplicitFunctionXYZ(xyz.x, xyz.y, xyz.z);
       const f = torus.evaluateImplicitFunctionPoint(xyz);
@@ -622,7 +623,7 @@ describe("LinearSystems", () => {
     const radius = 5.0;
     const rayFractions: number[] = [];
     const xyzIntersections: Point3d[] = [];
-    const thetaPhiRadians: Point2d[] = [];
+    const thetaPhiRadians: LongitudeLatitudeNumber[] = [];
     let x0 = 0;
     let y0;
     const b = 2.5 * radius; // distance for displaying the ray
@@ -630,9 +631,9 @@ describe("LinearSystems", () => {
       y0 = 0;
       const sphere = Sphere.createCenterRadius(center, radius);
       for (const ray0 of [Ray3d.createXAxis(),
-      Ray3d.create(center, Vector3d.create(1, 2, 3)),
-      Ray3d.createXYZUVW(1, 2, 3, 0.5, 0.2, 0.8),
-      Ray3d.createXYZUVW(2, 0, 8, 1, 0, 0.2)]) {
+        Ray3d.create(center, Vector3d.create(1, 2, 3)),
+        Ray3d.createXYZUVW(1, 2, 3, 0.5, 0.2, 0.8),
+        Ray3d.createXYZUVW(2, 0, 8, 1, 0, 0.2)]) {
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, sphere, x0, y0);
         ray0.tryNormalizeInPlaceWithAreaWeight(1);
         const frame = Transform.createOriginAndMatrix(ray0.origin, Matrix3d.createRigidHeadsUp(ray0.direction));

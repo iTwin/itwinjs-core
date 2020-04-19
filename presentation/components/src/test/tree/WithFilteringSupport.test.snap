@@ -4,7 +4,7 @@ exports[`Tree withFilteringSupport render renders with overlay if \`state.inProg
 <div
   className="filteredTree"
 >
-  <Tree
+  <DEPRECATED_Tree
     dataProvider={null}
     nodeHighlightingProps={undefined}
     selectionMode={1}
@@ -19,7 +19,7 @@ exports[`Tree withFilteringSupport render renders without overlay if \`state.inP
 <div
   className="filteredTree"
 >
-  <Tree
+  <DEPRECATED_Tree
     dataProvider={null}
     nodeHighlightingProps={undefined}
     selectionMode={1}

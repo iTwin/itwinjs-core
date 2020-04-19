@@ -1,9 +1,9 @@
 
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { RequestGlobalOptions } from "@bentley/imodeljs-clients";
+import { RequestGlobalOptions } from "@bentley/itwin-client";
 import HttpsProxyAgent = require("https-proxy-agent");
 import * as http from "http";
 import * as https from "https";
@@ -31,7 +31,7 @@ export class RequestHost {
     const isProxyReachable = await RequestHost.isHostReachable(proxyUrl);
     if (!isProxyReachable) {
       if (errorIfUnreachable)
-        console.log(`Unable to reach proxy server defined by HTTPS_PROXY: ${process.env.HTTPS_PROXY}. Proxy server not setup!`);
+        console.log(`Unable to reach proxy server defined by HTTPS_PROXY: ${process.env.HTTPS_PROXY}. Proxy server not setup!`); // tslint:disable-line:no-console
       return false;
     }
 

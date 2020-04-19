@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Logging */
+/** @packageDocumentation
+ * @module Logging
+ */
 
 import { GetMetaDataFunction, IModelStatus, BentleyError } from "./BentleyError";
 import { IDisposable } from "./Disposable";
@@ -69,6 +71,31 @@ export class Logger {
     Logger.turnOffCategories();
   }
 
+  /**
+   * Gets raw callbacks which can be use to forward logging
+   * @internal
+   */
+  public static logRaw(level: LogLevel, category: string, message: string, getMetaData?: GetMetaDataFunction): void {
+    switch (level) {
+      case LogLevel.Error:
+        if (this._logError)
+          this._logError(category, message, getMetaData);
+        break;
+      case LogLevel.Info:
+        if (this._logInfo)
+          this._logInfo(category, message, getMetaData);
+        break;
+      case LogLevel.Trace:
+        if (this._logTrace)
+          this._logTrace(category, message, getMetaData);
+        break;
+      case LogLevel.Warning:
+        if (this._logWarning)
+          this._logWarning(category, message, getMetaData);
+        break;
+    }
+  }
+
   /** Initialize the logger streams to the console. Should be called at application initialization time. */
   public static initializeToConsole(): void {
     // tslint:disable:no-console
@@ -106,7 +133,6 @@ export class Logger {
     }
   }
 
-  /** Should the callstack be included when an exception is logged?  */
   public static set logExceptionCallstacks(b: boolean) {
     Logger._logExceptionCallstacks = b;
   }

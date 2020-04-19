@@ -1,15 +1,18 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Relationships */
+/** @packageDocumentation
+ * @module Relationships
+ */
 
 import { DbOpcode, DbResult, Id64, Id64String, Logger } from "@bentley/bentleyjs-core";
 import { EntityProps, IModelError, IModelStatus } from "@bentley/imodeljs-common";
+import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
-import { BackendLoggerCategory } from "./BackendLoggerCategory";
+import { BinaryPropertyTypeConverter } from "./BinaryPropertyTypeConverter";
 
 const loggerCategory = BackendLoggerCategory.Relationship;
 
@@ -64,11 +67,14 @@ export class Relationship extends Entity implements RelationshipProps {
 
   public static getInstance<T extends Relationship>(iModel: IModelDb, criteria: Id64String | SourceAndTarget): T { return iModel.relationships.getInstance(this.classFullName, criteria); }
 
-  /**
-   * Add a request for the locks that would be needed to carry out the specified operation.
+  /** Add a request for the locks that would be needed to carry out the specified operation.
    * @param opcode The operation that will be performed on the Relationship instance.
    */
-  public buildConcurrencyControlRequest(opcode: DbOpcode): void { this.iModel.concurrencyControl.buildRequestForRelationship(this, opcode); }
+  public buildConcurrencyControlRequest(opcode: DbOpcode): void {
+    if (this.iModel.isBriefcaseDb()) {
+      this.iModel.concurrencyControl.buildRequestForRelationship(this, opcode);
+    }
+  }
 }
 
 /**A Relationship where one Element refers to another Element
@@ -192,7 +198,7 @@ export class Relationships {
    * @throws [[IModelError]] if unable to insert the relationship instance.
    */
   public insertInstance(props: RelationshipProps): Id64String {
-    const val = this._iModel.briefcase.nativeDb.insertLinkTableRelationship(JSON.stringify(props));
+    const val = this._iModel.nativeDb.insertLinkTableRelationship(JSON.stringify(props, BinaryPropertyTypeConverter.createReplacerCallback(false)));
     if (val.error)
       throw new IModelError(val.error.status, "Error inserting relationship instance", Logger.logWarning, loggerCategory);
 
@@ -205,7 +211,7 @@ export class Relationships {
    * @throws [[IModelError]] if unable to update the relationship instance.
    */
   public updateInstance(props: RelationshipProps): void {
-    const error = this._iModel.briefcase.nativeDb.updateLinkTableRelationship(JSON.stringify(props));
+    const error = this._iModel.nativeDb.updateLinkTableRelationship(JSON.stringify(props, BinaryPropertyTypeConverter.createReplacerCallback(false)));
     if (error !== DbResult.BE_SQLITE_OK)
       throw new IModelError(error, "Error updating relationship instance", Logger.logWarning, loggerCategory);
   }
@@ -215,36 +221,71 @@ export class Relationships {
    * @throws [[IModelError]]
    */
   public deleteInstance(props: RelationshipProps): void {
-    const error = this._iModel.briefcase.nativeDb.deleteLinkTableRelationship(JSON.stringify(props));
+    const error = this._iModel.nativeDb.deleteLinkTableRelationship(JSON.stringify(props));
     if (error !== DbResult.BE_SQLITE_DONE)
       throw new IModelError(error, "", Logger.logWarning, loggerCategory);
   }
 
-  /** Get the props of a Relationship instance */
-  public getInstanceProps<T extends RelationshipProps>(relClassSqlName: string, criteria: Id64String | SourceAndTarget): T {
-    let props: T;
+  /** Get the props of a Relationship instance
+   * @param relClassFullName The full class name of the relationship in the form of "schema:class"
+   * @param criteria Either the relationship instanceId or the source and target Ids
+   * @throws [IModelError]($common) if the relationship is not found or cannot be loaded.
+   * @see tryGetInstanceProps
+   */
+  public getInstanceProps<T extends RelationshipProps>(relClassFullName: string, criteria: Id64String | SourceAndTarget): T {
+    const relationshipProps: T | undefined = this.tryGetInstanceProps(relClassFullName, criteria);
+    if (undefined === relationshipProps) {
+      throw new IModelError(IModelStatus.NotFound, "Relationship not found", Logger.logWarning, loggerCategory);
+    }
+    return relationshipProps;
+  }
+
+  /** Get the props of a Relationship instance
+   * @param relClassFullName The full class name of the relationship in the form of "schema:class"
+   * @param criteria Either the relationship instanceId or the source and target Ids
+   * @returns The RelationshipProps or `undefined` if the relationship is not found.
+   * @note Useful for cases when a relationship may or may not exist and throwing an `Error` would be overkill.
+   * @see getInstanceProps
+   */
+  public tryGetInstanceProps<T extends RelationshipProps>(relClassFullName: string, criteria: Id64String | SourceAndTarget): T | undefined {
+    let props: T | undefined;
     if (typeof criteria === "string") {
-      props = this._iModel.withPreparedStatement(`SELECT * FROM ${relClassSqlName} WHERE ecinstanceid=?`, (stmt: ECSqlStatement) => {
+      props = this._iModel.withPreparedStatement(`SELECT * FROM ${relClassFullName} WHERE ecinstanceid=?`, (stmt: ECSqlStatement) => {
         stmt.bindId(1, criteria);
-        if (DbResult.BE_SQLITE_ROW !== stmt.step())
-          throw new IModelError(IModelStatus.NotFound, "Relationship not found", Logger.logWarning, loggerCategory);
-        return stmt.getRow() as T;
+        return DbResult.BE_SQLITE_ROW === stmt.step() ? stmt.getRow() as T : undefined;
       });
     } else {
-      props = this._iModel.withPreparedStatement("SELECT * FROM " + relClassSqlName + " WHERE SourceECInstanceId=? AND TargetECInstanceId=?", (stmt: ECSqlStatement) => {
+      props = this._iModel.withPreparedStatement(`SELECT * FROM ${relClassFullName} WHERE SourceECInstanceId=? AND TargetECInstanceId=?`, (stmt: ECSqlStatement) => {
         stmt.bindId(1, criteria.sourceId);
         stmt.bindId(2, criteria.targetId);
-        if (DbResult.BE_SQLITE_ROW !== stmt.step())
-          throw new IModelError(IModelStatus.NotFound, "Relationship not found", Logger.logWarning, loggerCategory);
-        return stmt.getRow() as T;
+        return DbResult.BE_SQLITE_ROW === stmt.step() ? stmt.getRow() as T : undefined;
       });
     }
-    props.classFullName = (props as any).className.replace(".", ":");
+    if (undefined !== props) {
+      props.classFullName = (props as any).className.replace(".", ":");
+    }
     return props;
   }
 
-  /** Get a Relationship instance */
+  /** Get a Relationship instance
+   * @param relClassFullName The full class name of the relationship in the form of "schema:class"
+   * @param criteria Either the relationship instanceId or the source and target Ids
+   * @throws [IModelError]($common) if the relationship is not found or cannot be loaded.
+   * @see tryGetInstance
+   */
   public getInstance<T extends Relationship>(relClassSqlName: string, criteria: Id64String | SourceAndTarget): T {
     return this._iModel.constructEntity<T>(this.getInstanceProps(relClassSqlName, criteria));
+  }
+
+  /** Get a Relationship instance
+   * @param relClassFullName The full class name of the relationship in the form of "schema:class"
+   * @param criteria Either the relationship instanceId or the source and target Ids
+   * @returns The relationship or `undefined` if the relationship is not found.
+   * @note Useful for cases when a relationship may or may not exist and throwing an `Error` would be overkill.
+   * @see getInstance
+   */
+  public tryGetInstance<T extends Relationship>(relClassFullName: string, criteria: Id64String | SourceAndTarget): T | undefined {
+    const relationshipProps: T | undefined = this.tryGetInstanceProps(relClassFullName, criteria);
+    return undefined !== relationshipProps ? this._iModel.constructEntity<T>(relationshipProps) : undefined;
   }
 }

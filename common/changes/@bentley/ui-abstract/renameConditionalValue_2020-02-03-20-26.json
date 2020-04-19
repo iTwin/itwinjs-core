@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "",
+      "type": "none",
+      "packageName": "@bentley/ui-abstract"
+    }
+  ],
+  "packageName": "@bentley/ui-abstract",
+  "email": "bill.steinbock@bentley.com"
+}

@@ -1,13 +1,14 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
 import { GL } from "../render/webgl/GL";
 import { RenderState } from "../render/webgl/RenderState";
-import { System, DepthType } from "../render/webgl/System";
+import { System } from "../render/webgl/System";
 import { IModelApp } from "../IModelApp";
+import { DepthType } from "@bentley/webgl-compatibility";
 
 function withinTolerance(x: number, y: number): boolean {
   const tol: number = 0.1e-6;
@@ -248,7 +249,7 @@ describe("RenderState", () => {
     }
 
     // A default-constructed RenderState object should match the initial state of a newly-created WebGLRenderingContext.
-    const gl: WebGLRenderingContext = System.instance.context;
+    const gl = System.instance.context;
     const rs = new RenderState();
 
     type TestCase = [number, number | boolean];
@@ -301,7 +302,7 @@ describe("RenderState", () => {
       return;
     }
 
-    const gl: WebGLRenderingContext = System.instance.context;
+    const gl = System.instance.context;
 
     const prevState = new RenderState();
     const newState = new RenderState();

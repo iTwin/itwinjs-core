@@ -9,7 +9,7 @@ export class AbandonedError extends Error {
 }
 
 // @beta
-export function assert(condition: boolean, msg?: string): void;
+export function assert(condition: boolean, msg?: string): asserts condition;
 
 // @alpha
 export class AsyncMutex {
@@ -37,14 +37,15 @@ export class BeDuration {
     executeAfter<T>(fn: (...args: any[]) => T, scope?: any, ...args: any[]): Promise<T>;
     static fromMilliseconds(milliseconds: number): BeDuration;
     static fromSeconds(seconds: number): BeDuration;
-    readonly isTowardsFuture: boolean;
-    readonly isTowardsPast: boolean;
-    readonly isZero: boolean;
-    readonly milliseconds: number;
+    get isTowardsFuture(): boolean;
+    get isTowardsPast(): boolean;
+    get isZero(): boolean;
+    get milliseconds(): number;
     minus(other: BeDuration): BeDuration;
     plus(other: BeDuration): BeDuration;
+    static race<T>(ms: number, promise: PromiseLike<T>): Promise<T | void>;
     // (undocumented)
-    readonly seconds: number;
+    get seconds(): number;
     static wait(ms: number): Promise<void>;
     wait(): Promise<void>;
 }
@@ -55,7 +56,7 @@ export class BeEvent<T extends Listener> {
     addOnce(listener: T, scope?: any): () => void;
     clear(): void;
     has(listener: T, scope?: any): boolean;
-    readonly numberOfListeners: number;
+    get numberOfListeners(): number;
     raiseEvent(...args: any[]): void;
     removeListener(listener: T, scope?: any): boolean;
 }
@@ -72,7 +73,7 @@ export class BentleyError extends Error {
     // (undocumented)
     errorNumber: number;
     getMetaData(): any;
-    readonly hasMetaData: boolean;
+    get hasMetaData(): boolean;
     protected _initName(): string;
 }
 
@@ -95,9 +96,9 @@ export class BeTimePoint {
     before(other: BeTimePoint): boolean;
     static beforeNow(val: BeDuration): BeTimePoint;
     static fromNow(val: BeDuration): BeTimePoint;
-    readonly isInFuture: boolean;
-    readonly isInPast: boolean;
-    readonly milliseconds: number;
+    get isInFuture(): boolean;
+    get isInPast(): boolean;
+    get milliseconds(): number;
     minus(duration: BeDuration): BeTimePoint;
     static now(): BeTimePoint;
     plus(duration: BeDuration): BeTimePoint;
@@ -125,8 +126,37 @@ export enum BriefcaseStatus {
     // (undocumented)
     CannotUpload = 131074,
     // (undocumented)
+    DownloadCancelled = 131079,
+    // (undocumented)
     VersionNotFound = 131077
 }
+
+// @beta
+export class ByteStream {
+    constructor(buffer: ArrayBuffer | SharedArrayBuffer, subView?: {
+        byteOffset: number;
+        byteLength: number;
+    });
+    advance(numBytes: number): boolean;
+    get arrayBuffer(): ArrayBuffer | SharedArrayBuffer;
+    get curPos(): number;
+    set curPos(pos: number);
+    get isPastTheEnd(): boolean;
+    get length(): number;
+    nextBytes(numBytes: number): Uint8Array;
+    get nextFloat32(): number;
+    get nextFloat64(): number;
+    get nextId64(): Id64String;
+    get nextInt32(): number;
+    get nextUint16(): number;
+    get nextUint32(): number;
+    // (undocumented)
+    nextUint32s(numUint32s: number): Uint32Array;
+    get nextUint8(): number;
+    readBytes(readPos: number, numBytes: number): Uint8Array;
+    reset(): void;
+    rewind(numBytes: number): boolean;
+    }
 
 // @public
 export enum ChangeSetApplyOption {
@@ -175,7 +205,7 @@ export class ClientRequestContext implements ClientRequestContextProps {
     readonly activityId: GuidString;
     readonly applicationId: string;
     readonly applicationVersion: string;
-    static readonly current: ClientRequestContext;
+    static get current(): ClientRequestContext;
     // (undocumented)
     protected static _current: ClientRequestContext;
     enter(): this;
@@ -183,7 +213,8 @@ export class ClientRequestContext implements ClientRequestContextProps {
     // @internal (undocumented)
     toJSON(): ClientRequestContextProps;
     // (undocumented)
-    useContextForRpc: boolean;
+    get useContextForRpc(): boolean;
+    set useContextForRpc(value: boolean);
     }
 
 // @public
@@ -220,6 +251,22 @@ export function compareWithTolerance(a: number, b: number, tolerance?: number): 
 
 // @public (undocumented)
 export type ComputePriorityFunction<T> = (value: T) => number;
+
+// @public
+export class Config {
+    static get App(): Config;
+    get(varName: string, defaultVal?: boolean | string | number): any;
+    getBoolean(name: string, defaultVal?: boolean): boolean;
+    getContainer(): any;
+    getNumber(name: string, defaultVal?: number): number;
+    getString(name: string, defaultVal?: string): string;
+    getVars(): string[];
+    has(varName: string): boolean;
+    merge(source: any): void;
+    query(varName: string): any;
+    remove(varName: string): void;
+    set(varName: string, value: boolean | string | number): void;
+}
 
 // @public
 export enum DbOpcode {
@@ -397,7 +444,7 @@ export class Dictionary<K, V> implements Iterable<DictionaryEntry<K, V>> {
         equal: boolean;
     };
     set(key: K, value: V): void;
-    readonly size: number;
+    get size(): number;
     // (undocumented)
     protected _values: V[];
 }
@@ -424,6 +471,9 @@ export function disposeArray(list?: IDisposable[]): undefined;
 
 // @public
 export type DisposeFunc = () => void;
+
+// @internal
+export const electronRenderer: any;
 
 // @public
 export class Entry<K, V> {
@@ -460,6 +510,28 @@ export class EnvMacroSubst {
     static containsEnvvars(str: string): boolean;
     static replace(str: string, defaultValues?: any): string;
     static replaceInProperties(obj: any, recurse: boolean, defaultValues?: any): void;
+}
+
+// @beta
+export enum ExtensionStatus {
+    // (undocumented)
+    BadExtension = 143364,
+    // (undocumented)
+    BadRequest = 143362,
+    // (undocumented)
+    DownloadError = 143367,
+    // (undocumented)
+    ExtensionAlreadyExists = 143365,
+    // (undocumented)
+    ExtensionNotFound = 143363,
+    // (undocumented)
+    EXTENSIONSTATUS_BASE = 143360,
+    // (undocumented)
+    Success = 0,
+    // (undocumented)
+    UnknownError = 143361,
+    // (undocumented)
+    UploadError = 143366
 }
 
 // @public
@@ -516,12 +588,12 @@ export namespace Id64 {
         forEach(func: (lo: number, hi: number, value: T) => void): void;
         get(low: number, high: number): T | undefined;
         getById(id: Id64String): T | undefined;
-        readonly isEmpty: boolean;
+        get isEmpty(): boolean;
         // (undocumented)
         protected readonly _map: Map<number, Map<number, T>>;
         set(low: number, high: number, value: T): void;
         setById(id: Id64String, value: T): void;
-        readonly size: number;
+        get size(): number;
     }
     export interface Uint32Pair {
         lower: number;
@@ -539,10 +611,10 @@ export namespace Id64 {
         forEach(func: (lo: number, hi: number) => void): void;
         has(low: number, high: number): boolean;
         hasId(id: Id64String): boolean;
-        readonly isEmpty: boolean;
+        get isEmpty(): boolean;
         // (undocumented)
         protected readonly _map: Map<number, Set<number>>;
-        readonly size: number;
+        get size(): number;
         toId64Array(): Id64Array;
         toId64Set(): Id64Set;
     }
@@ -591,6 +663,8 @@ export enum IModelHubStatus {
     CodeStateInvalid = 102429,
     // (undocumented)
     ConflictsAggregate = 102441,
+    // (undocumented)
+    ContextDoesNotExist = 102447,
     // (undocumented)
     DatabaseOperationFailed = 102443,
     // (undocumented)
@@ -844,9 +918,9 @@ export class IndexMap<T> {
     protected readonly _compareValues: OrderedComparator<T>;
     indexOf(value: T): number;
     insert(value: T, onInsert?: (value: T) => any): number;
-    readonly isEmpty: boolean;
-    readonly isFull: boolean;
-    readonly length: number;
+    get isEmpty(): boolean;
+    get isFull(): boolean;
+    get length(): number;
     // (undocumented)
     protected lowerBound(value: T): {
         index: number;
@@ -855,6 +929,12 @@ export class IndexMap<T> {
     // (undocumented)
     protected readonly _maximumSize: number;
 }
+
+// @internal
+export const isElectronRenderer: boolean;
+
+// @public
+export function isIDisposable(obj: unknown): obj is IDisposable;
 
 // @public
 export namespace JsonUtils {
@@ -888,8 +968,11 @@ export class Logger {
     static isEnabled(category: string, level: LogLevel): boolean;
     static logError(category: string, message: string, metaData?: GetMetaDataFunction): void;
     static logException(category: string, err: Error, log?: LogFunction, metaData?: GetMetaDataFunction): void;
-    static logExceptionCallstacks: boolean;
+    static set logExceptionCallstacks(b: boolean);
+    static get logExceptionCallstacks(): boolean;
     static logInfo(category: string, message: string, metaData?: GetMetaDataFunction): void;
+    // @internal
+    static logRaw(level: LogLevel, category: string, message: string, getMetaData?: GetMetaDataFunction): void;
     static logTrace(category: string, message: string, metaData?: GetMetaDataFunction): void;
     static logWarning(category: string, message: string, metaData?: GetMetaDataFunction): void;
     static makeMetaData(getMetaData?: GetMetaDataFunction): any;
@@ -1021,11 +1104,11 @@ export class PriorityQueue<T> implements Iterable<T> {
     protected readonly _clone: CloneFunction<T>;
     // (undocumented)
     protected readonly _compare: OrderedComparator<T>;
-    readonly front: T | undefined;
+    get front(): T | undefined;
     // (undocumented)
     protected _heapify(index: number): void;
-    readonly isEmpty: boolean;
-    readonly length: number;
+    get isEmpty(): boolean;
+    get length(): number;
     protected _peek(index: number): T | undefined;
     pop(): T | undefined;
     protected _pop(index: number): T | undefined;
@@ -1033,6 +1116,35 @@ export class PriorityQueue<T> implements Iterable<T> {
     sort(): void;
     // (undocumented)
     protected _swap(a: number, b: number): void;
+}
+
+// @public
+export class ReadonlySortedArray<T> implements Iterable<T> {
+    [Symbol.iterator](): Iterator<T>;
+    protected constructor(compare: OrderedComparator<T>, allowDuplicates?: boolean, clone?: CloneFunction<T>);
+    // (undocumented)
+    protected readonly _allowDuplicates: boolean;
+    // (undocumented)
+    protected _array: T[];
+    protected _clear(): void;
+    // (undocumented)
+    protected readonly _clone: CloneFunction<T>;
+    // (undocumented)
+    protected readonly _compare: OrderedComparator<T>;
+    contains(value: T): boolean;
+    protected _extractArray(): T[];
+    findEqual(value: T): T | undefined;
+    forEach(func: (value: T) => void): void;
+    get(index: number): T | undefined;
+    indexOf(value: T): number;
+    protected _insert(value: T, onInsert?: (value: T) => any): number;
+    get isEmpty(): boolean;
+    get length(): number;
+    protected lowerBound(value: T): {
+        index: number;
+        equal: boolean;
+    };
+    protected _remove(value: T): number;
 }
 
 // @beta
@@ -1084,31 +1196,11 @@ export interface SerializedClientRequestContext {
 export function shallowClone<T>(value: T): T;
 
 // @public
-export class SortedArray<T> implements Iterable<T> {
-    [Symbol.iterator](): Iterator<T>;
+export class SortedArray<T> extends ReadonlySortedArray<T> {
     constructor(compare: OrderedComparator<T>, allowDuplicates?: boolean, clone?: CloneFunction<T>);
-    // (undocumented)
-    protected readonly _allowDuplicates: boolean;
-    // (undocumented)
-    protected _array: T[];
     clear(): void;
-    // (undocumented)
-    protected readonly _clone: CloneFunction<T>;
-    // (undocumented)
-    protected readonly _compare: OrderedComparator<T>;
-    contains(value: T): boolean;
     extractArray(): T[];
-    findEqual(value: T): T | undefined;
-    forEach(func: (value: T) => void): void;
-    get(index: number): T | undefined;
-    indexOf(value: T): number;
     insert(value: T, onInsert?: (value: T) => any): number;
-    readonly isEmpty: boolean;
-    readonly length: number;
-    protected lowerBound(value: T): {
-        index: number;
-        equal: boolean;
-    };
     remove(value: T): number;
 }
 
@@ -1123,12 +1215,12 @@ export interface StatusCodeWithMessage<ErrorCodeType> {
 // @public
 export class StopWatch {
     constructor(description?: string | undefined, startImmediately?: boolean);
-    readonly current: BeDuration;
-    readonly currentSeconds: number;
+    get current(): BeDuration;
+    get currentSeconds(): number;
     // (undocumented)
     description?: string | undefined;
-    readonly elapsed: BeDuration;
-    readonly elapsedSeconds: number;
+    get elapsed(): BeDuration;
+    get elapsedSeconds(): number;
     reset(): void;
     start(): void;
     stop(): BeDuration;
@@ -1136,7 +1228,7 @@ export class StopWatch {
 
 // @public
 export class TransientIdSequence {
-    readonly next: Id64String;
+    get next(): Id64String;
 }
 
 // @public

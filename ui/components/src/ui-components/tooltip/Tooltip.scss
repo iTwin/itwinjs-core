@@ -1,0 +1,12 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+.components-element-tooltip {
+  max-width:600px;
+}
+
+.components-element-tooltip > .components-property-list--horizontal > .components-property-record--horizontal > .components-property-record-label {
+  font-weight:bold;
+  text-align:right;
+}

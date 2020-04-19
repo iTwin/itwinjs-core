@@ -1,22 +1,24 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Backstage */
+/** @packageDocumentation
+ * @module Backstage
+ */
 
 import * as React from "react";
 
 import { BackstageSeparator as NZ_BackstageSeparator } from "@bentley/ui-ninezone";
-import { BackstageItemProps } from "./BackstageItem";
+import { BackstageItemProps } from "./BackstageItemProps";
 
 /** Separator Backstage item.
  * @public
  */
-export class SeparatorBackstageItem extends React.PureComponent<BackstageItemProps> {
+export class SeparatorBackstageItem extends React.PureComponent<BackstageItemProps> { // tslint:disable-line:deprecation
   private static _sSeparatorBackstageItemKey: number;
   private _key: number;
 
-  constructor(separatorBackstageItemDef: BackstageItemProps) {
+  constructor(separatorBackstageItemDef: BackstageItemProps) { // tslint:disable-line:deprecation
     super(separatorBackstageItemDef);
 
     SeparatorBackstageItem._sSeparatorBackstageItemKey++;

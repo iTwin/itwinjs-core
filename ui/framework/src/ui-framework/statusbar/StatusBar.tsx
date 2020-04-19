@@ -1,13 +1,15 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module StatusBar */
+/** @packageDocumentation
+ * @module StatusBar
+ */
 
 import * as React from "react";
 import classnames from "classnames";
 
-import { MessageContainer, MessageSeverity, SmallText, CommonProps, CommonDivProps, Div } from "@bentley/ui-core";
+import { MessageContainer, MessageSeverity, SmallText, CommonProps, CommonDivProps, Div, UiCore } from "@bentley/ui-core";
 import {
   Footer,
   Toast as ToastMessage,
@@ -126,10 +128,12 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
         <SafeAreaContext.Consumer>
           {(safeAreaInsets) => (
             <Footer
+              className={this.props.className}
               messages={this.getFooterMessage()}
               isInFooterMode={this.props.isInFooterMode}
               onMouseEnter={UiShowHideManager.handleWidgetMouseEnter}
               safeAreaInsets={safeAreaInsets}
+              style={this.props.style}
             >
               {footerSections}
             </Footer>
@@ -208,7 +212,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
           <ToastMessage
             animateOutTo={this.state.toastTarget}
             onAnimatedOut={() => this._hideMessages()}
-            timeout={2500}
+            timeout={this.state.messageDetails.displayTime.milliseconds}
             content={
               <Message
                 status={StatusBar.severityToStatus(severity)}
@@ -269,6 +273,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
 
     const messageDetails = this.state.activityMessageInfo.details;
     const percentComplete = UiFramework.translate("activityCenter.percentComplete");
+    const cancelMessage = UiCore.translate("dialog.cancel");
     return (
       <Message
         status={Status.Information}
@@ -280,7 +285,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
           buttons={
             (messageDetails && messageDetails.supportsCancellation) ?
               <div>
-                <MessageHyperlink onClick={this._cancelActivityMessage}>Cancel</MessageHyperlink>
+                <MessageHyperlink onClick={this._cancelActivityMessage}>{cancelMessage}</MessageHyperlink>
                 <span>&nbsp;</span>
                 <MessageButton onClick={this._dismissActivityMessage}>
                   <i className="icon icon-close" />
@@ -352,34 +357,34 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
 /** StatusBar With Space Between Items React functional component
  * @beta
  */
-// tslint:disable-next-line:variable-name
-export const StatusBarSpaceBetween: React.FunctionComponent<CommonDivProps> = (props: CommonDivProps) => {
-  return <Div {...props} mainClassName="uifw-statusbar-space-between" />;
-};
+export function StatusBarSpaceBetween(props: CommonDivProps) {
+  const { className, ...divProps } = props;
+  return <Div {...divProps} mainClassName={className ? className : "uifw-statusbar-space-between"} />;
+}
 
 /** StatusBar Left Section React functional component
  * @beta
  */
-// tslint:disable-next-line:variable-name
-export const StatusBarLeftSection: React.FunctionComponent<CommonDivProps> = (props: CommonDivProps) => {
-  return <Div {...props} mainClassName="uifw-statusbar-left" />;
-};
+export function StatusBarLeftSection(props: CommonDivProps) {
+  const { className, ...divProps } = props;
+  return <Div {...divProps} mainClassName={className ? className : "uifw-statusbar-left"} />;
+}
 
 /** StatusBar Center Section React functional component
  * @beta
  */
-// tslint:disable-next-line:variable-name
-export const StatusBarCenterSection: React.FunctionComponent<CommonDivProps> = (props: CommonDivProps) => {
-  return <Div {...props} mainClassName="uifw-statusbar-center" />;
-};
+export function StatusBarCenterSection(props: CommonDivProps) {
+  const { className, ...divProps } = props;
+  return <Div {...divProps} mainClassName={className ? className : "uifw-statusbar-center"} />;
+}
 
 /** StatusBar Right Section React functional component
  * @beta
  */
-// tslint:disable-next-line:variable-name
-export const StatusBarRightSection: React.FunctionComponent<CommonDivProps> = (props: CommonDivProps) => {
-  return <Div {...props} mainClassName="uifw-statusbar-right" />;
-};
+export function StatusBarRightSection(props: CommonDivProps) {
+  const { className, ...divProps } = props;
+  return <Div {...divProps} mainClassName={className ? className : "uifw-statusbar-right"} />;
+}
 
 /** Context providing values for StatusFieldProps and MessageCenterFieldProps
  *  @internal

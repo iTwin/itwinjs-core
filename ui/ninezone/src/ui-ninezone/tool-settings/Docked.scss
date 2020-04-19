@@ -1,0 +1,20 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+@import "~@bentley/ui-core/lib/ui-core/style/colors";
+@import "~@bentley/ui-core/lib/ui-core/style/themecolors";
+
+.nz-toolSettings-docked {
+  height: 2.5em;
+  width: 100%;
+
+  display: flex;
+  position: relative;
+  background: $buic-background-1;
+  border: 1px solid $uicore-gray-a;
+
+  > .nz-container {
+    display: flex;
+  }
+}

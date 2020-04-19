@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
@@ -87,10 +87,12 @@ describe("LineString3d", () => {
 
   it("createXY", () => {
     const ck = new Checker();
-    const xyArray = [Point2d.create(1, 1),
-    Point2d.create(4, 1),
-    Point2d.create(4, 2),
-    Point2d.create(0, 2)];
+    const xyArray = [
+      Point2d.create(1, 1),
+      Point2d.create(4, 1),
+      Point2d.create(4, 2),
+      Point2d.create(0, 2),
+    ];
     const jsArrayXY = [];
     const jsArrayXYZ = [];
     const dz = 10.0;

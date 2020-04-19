@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
@@ -12,10 +12,10 @@ import TestBackend from "react-dnd-test-backend";
 import { DragDropContext } from "react-dnd";
 
 import { BeDuration } from "@bentley/bentleyjs-core";
-import { LocalUiSettings } from "@bentley/ui-core";
+import { LocalUiSettings, HorizontalAlignment } from "@bentley/ui-core";
 import {
   PropertyRecord, PropertyValue, PropertyValueFormat, PropertyDescription, PrimitiveValue,
-} from "@bentley/imodeljs-frontend";
+} from "@bentley/ui-abstract";
 
 import TestUtils from "../../TestUtils";
 import {
@@ -221,7 +221,7 @@ describe("Table", () => {
           cells: [{
             key: "1",
             record: testRecord(),
-            alignment: "right",
+            alignment: HorizontalAlignment.Right,
             style: {
               isBold: true,
               isItalic: true,
@@ -238,7 +238,7 @@ describe("Table", () => {
           cells: [{
             key: "1",
             record: testRecord(),
-            alignment: "justify",
+            alignment: HorizontalAlignment.Justify,
             style: {
               isBold: true,
               isItalic: true,

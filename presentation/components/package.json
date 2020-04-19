@@ -1,7 +1,10 @@
 {
   "name": "@bentley/presentation-components",
-  "version": "1.9.0-dev.6",
+  "version": "2.0.0-dev.71",
   "description": "React components based on iModel.js Presentation library",
+  "main": "lib/presentation-components.js",
+  "typings": "lib/presentation-components",
+  "imodeljsSharedLibrary": true,
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -20,78 +23,54 @@
     "name": "Bentley Systems, Inc.",
     "url": "http://www.bentley.com"
   },
-  "main": "lib/presentation-components.js",
-  "typings": "lib/presentation-components",
   "scripts": {
-    "build": "npm run extract && buildIModelJsModule",
-    "build:watch": "tsc -b ./src/test -w",
-    "clean": "rimraf lib .rush package-deps.json",
+    "copy:locale": "cpx \"../common/assets/**/*\" ./lib/public && cpx \"./public/**/*\" ./lib/public",
+    "copy:assets": "cpx \"./src/**/*.{scss,json}\" ./lib",
+    "build": "npm run copy:assets && npm run copy:locale && npm run pseudolocalize && npm run extract && tsc 1>&2",
+    "build:watch": "tsc -w",
+    "clean": "rimraf lib .rush",
     "cover": "nyc npm test",
     "docs": "npm run docs:reference && npm run docs:changelog",
-    "docs:changelog": "cpx \"./CHANGELOG.md\" ../../generated-docs/presentation/presentation-components",
-    "docs:reference": "node ./node_modules/@bentley/build-tools/scripts/docs.js --includes=../../generated-docs/extract --json=../../generated-docs/presentation/presentation-components/file.json --tsIndexFile=presentation-components.ts --onlyJson %TYPEDOC_THEME%",
+    "docs:changelog": "cpx ./CHANGELOG.md ../../generated-docs/presentation/presentation-components",
+    "docs:reference": "node ./node_modules/@bentley/build-tools/scripts/docs.js --includes=../../generated-docs/extract --json=../../generated-docs/presentation/presentation-components/file.json --tsIndexFile=presentation-components.ts --onlyJson %TYPEDOC_THEME%  --excludeGlob=**/presentation-components.ts",
     "extract": "node ./node_modules/@bentley/build-tools/scripts/extract.js --fileExt=ts --extractFrom=./src/test --recursive --out=../../generated-docs/extract",
-    "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=presentation-components --isPresentation",
-    "lint": "tslint -p ./src 1>&2",
+    "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=presentation-components",
+    "lint": "npm run tslint && npm run eslint",
+    "eslint": "eslint src --ext .ts,.tsx,.js,.jsx",
+    "tslint": "tslint --project . 1>&2",
+    "pseudolocalize": "node ./node_modules/@bentley/build-tools/scripts/pseudolocalize.js --englishDir ./lib/public/locales/en --out ./lib/public/locales/en-PSEUDO",
     "test": "mocha --opts ../mocha.opts -r ignore-styles -r jsdom-global/register --file ./lib/test/index.test.js \"./lib/test/**/*.test.js\"",
     "test:watch": "npm test -- --reporter min --watch-extensions ts,tsx --watch"
   },
-  "iModelJs": {
-    "buildModule": {
-      "type": "system",
-      "tscOptions": "-b ./src/test",
-      "sourceResources": [
-        {
-          "source": "./src/**/*.json",
-          "dest": "./lib"
-        },
-        {
-          "source": "./src/**/*.scss",
-          "dest": "./lib"
-        },
-        {
-          "source": "./public/**/*",
-          "dest": "./lib/public"
-        }
-      ],
-      "webpack": {
-        "dest": "./lib/module",
-        "entry": "./lib/presentation-components.js",
-        "bundleName": "presentation-components",
-        "styleSheets": true
-      },
-      "pseudoLocalize": {
-        "source": "./lib/public/locales/en",
-        "dest": "./lib/public/locales/en-PSEUDO"
-      }
-    }
-  },
   "dependencies": {
     "lodash": "^4.17.10",
+    "micro-memoize": "^4.0.9",
     "react": "^16.8.0",
-    "react-dom": "^16.8.0"
+    "react-dom": "^16.8.0",
+    "rxjs": "^6.5.2"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^1.9.0-dev.6",
-    "@bentley/imodeljs-i18n": "^1.9.0-dev.6",
-    "@bentley/imodeljs-common": "^1.9.0-dev.6",
-    "@bentley/imodeljs-frontend": "^1.9.0-dev.6",
-    "@bentley/presentation-common": "^1.9.0-dev.6",
-    "@bentley/presentation-frontend": "^1.9.0-dev.6",
-    "@bentley/ui-core": "^1.9.0-dev.6",
-    "@bentley/ui-components": "^1.9.0-dev.6"
+    "@bentley/bentleyjs-core": "^2.0.0-dev.71",
+    "@bentley/imodeljs-i18n": "^2.0.0-dev.71",
+    "@bentley/imodeljs-common": "^2.0.0-dev.71",
+    "@bentley/imodeljs-frontend": "^2.0.0-dev.71",
+    "@bentley/presentation-common": "^2.0.0-dev.71",
+    "@bentley/presentation-frontend": "^2.0.0-dev.71",
+    "@bentley/ui-core": "^2.0.0-dev.71",
+    "@bentley/ui-components": "^2.0.0-dev.71",
+    "@bentley/ui-abstract": "^2.0.0-dev.71"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "1.9.0-dev.6",
-    "@bentley/build-tools": "1.9.0-dev.6",
-    "@bentley/imodeljs-i18n": "1.9.0-dev.6",
-    "@bentley/imodeljs-common": "1.9.0-dev.6",
-    "@bentley/imodeljs-frontend": "1.9.0-dev.6",
-    "@bentley/presentation-common": "1.9.0-dev.6",
-    "@bentley/presentation-frontend": "1.9.0-dev.6",
-    "@bentley/ui-core": "1.9.0-dev.6",
-    "@bentley/ui-components": "1.9.0-dev.6",
-    "@bentley/webpack-tools": "1.9.0-dev.6",
+    "@bentley/bentleyjs-core": "2.0.0-dev.71",
+    "@bentley/build-tools": "2.0.0-dev.71",
+    "@bentley/imodeljs-i18n": "2.0.0-dev.71",
+    "@bentley/imodeljs-common": "2.0.0-dev.71",
+    "@bentley/imodeljs-frontend": "2.0.0-dev.71",
+    "@bentley/presentation-common": "2.0.0-dev.71",
+    "@bentley/presentation-frontend": "2.0.0-dev.71",
+    "@bentley/ui-core": "2.0.0-dev.71",
+    "@bentley/ui-components": "2.0.0-dev.71",
+    "@bentley/ui-abstract": "2.0.0-dev.71",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/chai-jest-snapshot": "^1.3.0",
@@ -102,8 +81,9 @@
     "@types/react": "^16.8.0",
     "@types/react-dom": "^16.8.0",
     "@types/testing-library__react-hooks": "^3.1.0",
-    "@types/sinon": "^5.0.5",
+    "@types/sinon": "^7.5.1",
     "@types/sinon-chai": "^3.2.0",
+    "@typescript-eslint/parser": "2.22.0",
     "chai": "^4.1.2",
     "chai-as-promised": "^7",
     "chai-jest-snapshot": "^2.0.0",
@@ -112,18 +92,22 @@
     "enzyme": "^3.4.0",
     "enzyme-adapter-react-16": "1.12.1",
     "enzyme-to-json": "^3.3.4",
+    "eslint": "^6.7.2",
+    "eslint-plugin-react-hooks": "^2.3.0",
     "faker": "^4.1.0",
     "ignore-styles": "^5.0.1",
+    "jsdom-global": "3.0.2",
     "mocha": "^5.2.0",
     "nyc": "^14.0.0",
     "@testing-library/react-hooks": "^3.2.1",
-    "rimraf": "^2.6.2",
-    "sinon": "^7.1.1",
+    "react-test-renderer": "^16.13.1",
+    "rimraf": "^3.0.2",
+    "sinon": "^7.5.0",
     "sinon-chai": "^3.2.0",
     "tslint": "^5.11.0",
     "tslint-etc": "^1.5.2",
     "typemoq": "^2.1.0",
-    "typescript": "~3.6.2",
+    "typescript": "~3.7.4",
     "xmlhttprequest": "^1.8.0"
   },
   "nyc": {

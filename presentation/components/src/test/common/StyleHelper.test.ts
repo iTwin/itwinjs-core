@@ -1,20 +1,20 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /* tslint:disable:no-direct-imports */
 
 import { expect } from "chai";
 import * as faker from "faker";
-import { Node } from "@bentley/presentation-common";
-import { createRandomECInstanceNodeKey } from "@bentley/presentation-common/lib/test/_helpers/random";
-import { StyleHelper } from "../../common/StyleHelper";
+import { Node, LabelDefinition } from "@bentley/presentation-common";
+import { createRandomECInstancesNodeKey } from "@bentley/presentation-common/lib/test/_helpers/random";
+import { StyleHelper } from "../../presentation-components/common/StyleHelper";
 
 describe("StyleHelper", () => {
 
   const createNodeBase = (): Node => ({
-    label: faker.random.word(),
-    key: createRandomECInstanceNodeKey(),
+    label: LabelDefinition.fromLabelString(faker.random.word()),
+    key: createRandomECInstancesNodeKey(),
   });
 
   describe("isBold", () => {

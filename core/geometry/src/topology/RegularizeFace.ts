@@ -1,9 +1,11 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module Topology */
+/** @packageDocumentation
+ * @module Topology
+ */
 
 import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "./Graph";
 import { HalfEdgeGraphOps } from "./Merging";
@@ -236,11 +238,32 @@ export class RegularizationContext {
       connectTo = this.updateMaxNode(connectTo, upPeakConnection, upFunction);
     return connectTo;
   }
-  private joinNodes(nodeA: HalfEdge, nodeB: HalfEdge): HalfEdge {
+  /** Search around the vertex of nodeA for a nodeA1 such that nodeB is visible in the sector at nodeA1 */
+  private findVisibleSector(nodeA: HalfEdge, nodeB: HalfEdge): HalfEdge | undefined {
+    let nodeA1 = nodeA;
+    do {
+      if (HalfEdge.isNodeVisibleInSector(nodeB, nodeA1))
+        return nodeA1;
+      nodeA1 = nodeA1.vertexSuccessor;
+    } while (nodeA1 !== nodeA);
+    return undefined;
+  }
+  /**
+   * Create an edge from (some node around the vertex of) nodeA to (some node around the vertex of) nodeB.
+   * * looking around the vertex for alternate insertion corrects cusp insertion errors.
+   * @param nodeA
+   * @param nodeB
+   */
+  private joinNodes(nodeA: HalfEdge, nodeB: HalfEdge): HalfEdge | undefined {
     const nodeC = this.graph.createEdgeXYZXYZ(nodeA.x, nodeA.y, nodeA.z, 0, nodeB.x, nodeB.y, nodeB.z, 0);
-    HalfEdge.pinch(nodeA, nodeC);
-    HalfEdge.pinch(nodeB, nodeC.edgeMate);
-    return nodeC;
+    const nodeA1 = this.findVisibleSector(nodeA, nodeB);
+    const nodeB1 = this.findVisibleSector(nodeB, nodeA);
+    if (nodeA1 !== undefined && nodeB1 !== undefined) {
+      HalfEdge.pinch(nodeA1, nodeC);
+      HalfEdge.pinch(nodeB1, nodeC.edgeMate);
+      return nodeC;
+    }
+    return undefined;
   }
   /**
    * Regularize a single face.

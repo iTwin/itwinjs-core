@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { MeshParams } from "../render/primitives/VertexTable";
@@ -44,6 +44,7 @@ function expectMeshParams(args: MeshArgs, colorIndex: ColorIndex, vertexBytes: n
 class FakeTexture extends RenderTexture {
   public constructor() { super(RenderTexture.Params.defaults); }
   public dispose() { }
+  public get bytesUsed(): number { return 0; }
 }
 
 describe("VertexLUT", () => {

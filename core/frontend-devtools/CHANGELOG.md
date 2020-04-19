@@ -1,6 +1,57 @@
 # Change Log - @bentley/frontend-devtools
 
-This log was last generated on Fri, 01 Nov 2019 13:28:37 GMT and should not be manually modified.
+This log was last generated on Wed, 04 Mar 2020 16:16:31 GMT and should not be manually modified.
+
+## 1.13.0
+Wed, 04 Mar 2020 16:16:31 GMT
+
+*Version update only*
+
+## 1.12.0
+Wed, 12 Feb 2020 17:45:50 GMT
+
+### Updates
+
+- Ignore ReadPixels calls when using GpuProfiler
+- Tools for interacting with plan projection models.
+- Add tools for operating on plan projection models.
+- Added a tool for visualizing tile tree bounding boxes.
+
+## 1.11.0
+Wed, 22 Jan 2020 19:24:12 GMT
+
+### Updates
+
+- TileStatisticsTracker now reports number of aborted requests for the session.
+- Upgrade to TypeScript 3.7.2.
+
+## 1.10.0
+Tue, 07 Jan 2020 19:44:01 GMT
+
+### Updates
+
+- Average the gpu profiler times for the last 120 frames instead of updating each frame; also simplify PerformanceMetrics
+
+## 1.9.0
+Tue, 10 Dec 2019 18:08:56 GMT
+
+### Updates
+
+- Add tool for attaching a reality model.
+- Added keyins for adjusting tile size modifiers.
+
+## 1.8.0
+Fri, 22 Nov 2019 14:03:34 GMT
+
+### Updates
+
+- Key-in for selecting elements by Id; option to include part references in InspectElementTool output.
+- Fixed missing exports.
+- Stop the keypress and keydown events in the frontend-devtools keyin field from propagating to other elements.
+- Inspect element key-in now accepts any number of elemnent Ids as a comma-separated list.
+- Key-in for compiling all registered shader programs.
+- Added missing topic descriptions
+- Remove manipulator and marker test code from project extents debug decoration.
 
 ## 1.7.0
 Fri, 01 Nov 2019 13:28:37 GMT

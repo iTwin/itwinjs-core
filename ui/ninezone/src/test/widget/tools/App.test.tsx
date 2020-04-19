@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
@@ -13,5 +13,13 @@ describe("<AppButton  />", () => {
 
   it("renders correctly", () => {
     shallow(<AppButton />).should.matchSnapshot();
+  });
+
+  it("Small AppButton should render", () => {
+    mount(<AppButton small />);
+  });
+
+  it("Small AppButton renders correctly", () => {
+    shallow(<AppButton small />).should.matchSnapshot();
   });
 });

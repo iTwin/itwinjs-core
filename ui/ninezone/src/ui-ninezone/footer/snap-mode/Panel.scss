@@ -1,11 +1,11 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-@import "@bentley/ui-core/lib/ui-core/style/themecolors";
-@import "@bentley/ui-core/lib/ui-core/z-index";
+@import "~@bentley/ui-core/lib/ui-core/style/themecolors";
+@import "~@bentley/ui-core/lib/ui-core/z-index";
 @import "../variables";
-@import "../../typography";
+@import "~@bentley/ui-core/lib/ui-core/typography";
 
 .nz-footer-snapMode-panel {
   min-width: $nz-footer-popup-min-width;

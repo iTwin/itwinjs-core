@@ -1,31 +1,34 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Viewport, ViewRect } from "../Viewport";
+import { Viewport } from "../Viewport";
+import { ViewRect } from "../ViewRect";
+import { Decorations } from "./Decorations";
 import {
-  Decorations,
   GraphicBranch,
   GraphicBranchOptions,
+} from "./GraphicBranch";
+import {
   GraphicList,
-  PackedFeatureTable,
-  Pixel,
   RenderGraphic,
-  RenderMemory,
-  RenderPlan,
-  RenderSystem,
-  RenderTarget,
-} from "./System";
+} from "./RenderGraphic";
+import { Pixel } from "./Pixel";
+import { RenderTarget } from "./RenderTarget";
+import { RenderMemory } from "./RenderMemory";
+import { RenderSystem } from "./RenderSystem";
+import { RenderPlan } from "./RenderPlan";
 import { GraphicType } from "./GraphicBuilder";
 import { IModelApp, IModelAppOptions } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { PrimitiveBuilder } from "./primitives/geometry/GeometryListBuilder";
 import { MeshParams, PolylineParams, PointStringParams } from "./primitives/VertexTable";
 import { PointCloudArgs } from "./primitives/PointCloudPrimitive";
-import { ElementAlignedBox3d } from "@bentley/imodeljs-common";
+import { ElementAlignedBox3d, PackedFeatureTable } from "@bentley/imodeljs-common";
 import { Transform } from "@bentley/geometry-core";
 import { Id64String, dispose } from "@bentley/bentleyjs-core";
+import { Scene } from "./Scene";
 
 /** Contains extensible mock implementations of the various components of a RenderSystem, intended for use in tests.
  * Use these for tests instead of the default RenderSystem wherever possible because:
@@ -44,13 +47,10 @@ export namespace MockRender {
     protected constructor(private readonly _system: System) { super(); }
 
     public get renderSystem(): RenderSystem { return this._system; }
-    public get cameraFrustumNearScaleLimit() { return 0; }
     public get wantInvertBlackBackground() { return false; }
-    public get animationFraction() { return 0; }
-    public set animationFraction(_fraction: number) { }
-    public changeScene(_scene: GraphicList) { }
-    public changeBackgroundMap(_backgroundMap: GraphicList) { }
-    public changeOverlayGraphics(_overlayGraphics: GraphicList) { }
+    public get analysisFraction() { return 0; }
+    public set analysisFraction(_fraction: number) { }
+    public changeScene(_scene: Scene) { }
     public changeDynamics(_dynamics?: GraphicList) { }
     public changeDecorations(_decs: Decorations) { }
     public changeRenderPlan(_plan: RenderPlan) { }
@@ -125,6 +125,8 @@ export namespace MockRender {
     public get maxTextureSize() { return 4096; }
 
     public constructor() { super(); }
+
+    public doIdleWork(): boolean { return false; }
 
     public createTarget(canvas: HTMLCanvasElement) { return new OnScreenTarget(this, canvas); }
     public createOffscreenTarget(rect: ViewRect): RenderTarget { return new OffScreenTarget(this, rect); }

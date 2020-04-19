@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
@@ -8,13 +8,13 @@ import * as moq from "typemoq";
 
 import { Logger } from "@bentley/bentleyjs-core";
 import { MockRender, SpatialViewState, ScreenViewport, IModelApp } from "@bentley/imodeljs-frontend";
+import { WidgetState } from "@bentley/ui-abstract";
 
 import {
   FrontstageManager,
-  WidgetState,
   CoreTools,
 } from "../../ui-framework";
-import { TestFrontstage } from "./FrontstageTestUtils";
+import { TestFrontstage, TestFrontstage2 } from "./FrontstageTestUtils";
 import TestUtils, { storageMock } from "../TestUtils";
 
 const mySessionStorage = storageMock();
@@ -38,13 +38,14 @@ describe("FrontstageManager", () => {
 
   after(() => {
     MockRender.App.shutdown();
+    TestUtils.terminateUiFramework();
 
     // restore the overriden property getter
     Object.defineProperty(window, "sessionStorage", propertyDescriptorToRestore);
   });
 
   it("findWidget should return undefined when no active frontstage", async () => {
-    await FrontstageManager.setActiveFrontstageDef(undefined); // tslint:disable-line:no-floating-promises
+    await FrontstageManager.setActiveFrontstageDef(undefined);
     expect(FrontstageManager.findWidget("xyz")).to.be.undefined;
   });
 
@@ -78,6 +79,22 @@ describe("FrontstageManager", () => {
       expect(widgetDef.isVisible).to.eq(true);
       expect(FrontstageManager.setWidgetState("widget1", WidgetState.Hidden)).to.be.true;
       expect(widgetDef.isVisible).to.eq(false);
+    }
+  });
+
+  it("setActiveFrontstage2 should set active frontstage", async () => {
+    const frontstageProvider = new TestFrontstage2();
+    FrontstageManager.addFrontstageProvider(frontstageProvider);
+    expect(frontstageProvider.frontstageDef).to.not.be.undefined;
+    const frontstageDef = frontstageProvider.frontstageDef;
+    if (frontstageDef) {
+      // make sure zones defined by new names are properly placed into the proper spot in frontstageDef
+      expect(frontstageDef.getZoneDef(1)).not.to.be.undefined;
+      expect(frontstageDef.getZoneDef(2)).not.to.be.undefined;
+      expect(frontstageDef.getZoneDef(8)).not.to.be.undefined;
+      expect(frontstageDef.getZoneDef(3)).to.be.undefined;
+      await FrontstageManager.setActiveFrontstage(frontstageDef.id);
+      expect(FrontstageManager.activeFrontstageId).to.eq(frontstageDef.id);
     }
   });
 

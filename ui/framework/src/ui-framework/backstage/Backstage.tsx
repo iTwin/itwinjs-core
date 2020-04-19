@@ -1,22 +1,24 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Backstage */
+/** @packageDocumentation
+ * @module Backstage
+ */
 
 import * as React from "react";
 import { UiEvent, CommonProps, IconSpec } from "@bentley/ui-core";
 import { Backstage as NZ_Backstage } from "@bentley/ui-ninezone";
-import { AccessToken } from "@bentley/imodeljs-clients";
-import { CommandItemDef } from "../shared/CommandItemDef";
+import { AccessToken } from "@bentley/itwin-client";
 import { SafeAreaContext } from "../safearea/SafeAreaContext";
 import { UserProfileBackstageItem } from "./UserProfile";
 import { UiFramework } from "../UiFramework";
+import { BackstageManager } from "./BackstageManager";
 
 // cSpell:ignore safearea
 
 /** [[BackstageEvent]] arguments.
- * @public
+ * @public @deprecated use BackstageComposer.
  */
 export interface BackstageEventArgs {
   isVisible: boolean;
@@ -25,10 +27,10 @@ export interface BackstageEventArgs {
 /** Backstage Event class.
  * @public
  */
-export class BackstageEvent extends UiEvent<BackstageEventArgs> { }
+export class BackstageEvent extends UiEvent<BackstageEventArgs> { } // tslint:disable-line:deprecation
 
 /** Properties for the [[Backstage]] React component.
- * @public
+ * @public @deprecated use BackstageComposer.
  */
 export interface BackstageProps extends CommonProps {
   accessToken?: AccessToken;
@@ -46,9 +48,9 @@ interface BackstageState {
 }
 
 /** Backstage React component.
- * @public
+ * @public @deprecated use BackstageComposer.
  */
-export class Backstage extends React.Component<BackstageProps, BackstageState> {
+export class Backstage extends React.Component<BackstageProps, BackstageState> { // tslint:disable-line:deprecation
 
   public static readonly onBackstageEvent = new BackstageEvent();
   public static isBackstageVisible: boolean;
@@ -65,14 +67,7 @@ export class Backstage extends React.Component<BackstageProps, BackstageState> {
 
   /** Get CommandItemDef that will toggle display of Backstage and allow iconSpec to be overridden */
   public static getBackstageToggleCommand(overrideIconSpec?: IconSpec) {
-    return new CommandItemDef({
-      commandId: "UiFramework.openBackstage",
-      iconSpec: overrideIconSpec ? overrideIconSpec : "icon-home",
-      labelKey: "UiFramework:commands.openBackstage",
-      execute: () => {
-        UiFramework.backstageManager.toggle();
-      },
-    });
+    return BackstageManager.getBackstageToggleCommand(overrideIconSpec);
   }
 
   /** Command that toggles the Backstage */
@@ -83,7 +78,7 @@ export class Backstage extends React.Component<BackstageProps, BackstageState> {
   /** @internal */
   public readonly state: BackstageState;
 
-  constructor(props: BackstageProps) {
+  constructor(props: BackstageProps) { // tslint:disable-line:deprecation
     super(props);
 
     this.setIsOpen(!!this.props.isVisible);
@@ -93,18 +88,18 @@ export class Backstage extends React.Component<BackstageProps, BackstageState> {
   }
 
   public componentDidMount() {
-    Backstage.onBackstageEvent.addListener(this._handleBackstageEvent);
+    Backstage.onBackstageEvent.addListener(this._handleBackstageEvent); // tslint:disable-line:deprecation
   }
 
   public componentWillUnmount() {
-    Backstage.onBackstageEvent.removeListener(this._handleBackstageEvent);
+    Backstage.onBackstageEvent.removeListener(this._handleBackstageEvent); // tslint:disable-line:deprecation
   }
 
-  private _handleBackstageEvent = (args: BackstageEventArgs) => {
+  private _handleBackstageEvent = (args: BackstageEventArgs) => { // tslint:disable-line:deprecation
     this.setState({ isVisible: args.isVisible });
   }
 
-  public componentDidUpdate(prevProps: BackstageProps) {
+  public componentDidUpdate(prevProps: BackstageProps) { // tslint:disable-line:deprecation
     if (this.props.isVisible !== prevProps.isVisible)
       this.setIsOpen(!!this.props.isVisible);
   }
@@ -118,7 +113,7 @@ export class Backstage extends React.Component<BackstageProps, BackstageState> {
   }
 
   private _onClose = () => {
-    Backstage.hide();
+    Backstage.hide(); // tslint:disable-line:deprecation
 
     /* istanbul ignore else */
     if (this.props.onClose)
@@ -126,7 +121,7 @@ export class Backstage extends React.Component<BackstageProps, BackstageState> {
   }
 
   public render(): React.ReactNode {
-    Backstage.isBackstageVisible = this.state.isVisible;
+    Backstage.isBackstageVisible = this.state.isVisible; // tslint:disable-line:deprecation
 
     let header: React.ReactNode = null;
 

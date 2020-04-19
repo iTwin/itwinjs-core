@@ -1,11 +1,13 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module AccuDraw */
+/** @packageDocumentation
+ * @module AccuDraw
+ */
 
 import * as React from "react";
-import * as classnames from "classnames";
+import classnames from "classnames";
 
 import { OnNumberCommitFunc, OnCancelFunc } from "@bentley/ui-abstract";
 import { CommonProps, Button, ButtonType, SvgSprite, Omit, Input, IconInput, Icon } from "@bentley/ui-core";
@@ -14,8 +16,7 @@ import { SquareButton, SquareButtonProps } from "./SquareButton";
 import { CalculatorOperator, CalculatorEngine } from "./CalculatorEngine";
 
 import "./Calculator.scss";
-
-import backspaceIcon from "./backspace.svg";
+import backspaceIcon from "./backspace.svg?sprite";
 
 // cSpell:ignore plusmn
 

@@ -1,15 +1,22 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Frontstage */
+/** @packageDocumentation
+ * @module Frontstage
+ */
 
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 
 import { Logger } from "@bentley/bentleyjs-core";
+import { StagePanelLocation, WidgetState } from "@bentley/ui-abstract";
 import { CommonProps, Rectangle } from "@bentley/ui-core";
-import { Zones as NZ_Zones, WidgetZoneId, StagePanels, StagePanelsManager, widgetZoneIds, HorizontalAnchor, ToolSettingsWidgetMode, ZoneManagerProps, ZonesManagerProps } from "@bentley/ui-ninezone";
+import {
+  Zones as NZ_Zones, WidgetZoneId, StagePanels, StagePanelsManager, widgetZoneIds,
+  HorizontalAnchor, ToolSettingsWidgetMode, ZoneManagerProps, ZonesManagerProps,
+} from "@bentley/ui-ninezone";
+
 import { ContentLayoutDef, ContentLayout } from "../content/ContentLayout";
 import { ContentGroup } from "../content/ContentGroup";
 import { FrontstageRuntimeProps, ZoneDefProvider } from "./FrontstageComposer";
@@ -18,12 +25,13 @@ import { ToolItemDef } from "../shared/ToolItemDef";
 import { ZoneDef } from "../zones/ZoneDef";
 import { Zone, ZoneProps, ZoneRuntimeProps, ZoneLocation, isToolSettingsWidgetManagerProps } from "../zones/Zone";
 import { UiFramework, UiVisibilityEventArgs } from "../UiFramework";
-import { StagePanelProps, StagePanel, StagePanelLocation, StagePanelRuntimeProps, getNestedStagePanelKey } from "../stagepanels/StagePanel";
+import { StagePanelProps, StagePanel, StagePanelRuntimeProps, getNestedStagePanelKey } from "../stagepanels/StagePanel";
 import { StagePanelDef } from "../stagepanels/StagePanelDef";
 import { UiShowHideManager } from "../utils/UiShowHideManager";
-import { WidgetDef, WidgetStateChangedEventArgs, WidgetState } from "../widgets/WidgetDef";
+import { WidgetDef, WidgetStateChangedEventArgs } from "../widgets/WidgetDef";
 import { FrontstageManager, FrontstageActivatedEventArgs } from "./FrontstageManager";
 import { ToolSettingsContent } from "../widgets/ToolSettingsContent";
+import { WidgetsChangedEventArgs, WidgetProvidersChangedEventArgs } from "../widgets/WidgetManager";
 
 /** Properties for a [[Frontstage]] component.
  * @public
@@ -43,23 +51,36 @@ export interface FrontstageProps extends CommonProps {
   isInFooterMode?: boolean;                     // Default - true
   /** Any application data to attach to this Frontstage. */
   applicationData?: any;
+  /** Usage type for this Frontstage. */
+  usage?: string;
+  /** Frontstage version. Used to force saved layout reinitialization after changes to frontstage. */
+  version?: number;
 
-  /** The Zone in the top-left corner. */
+  /** The Zone in the top-left corner. @deprecated Use 'contentManipulationTools' property. */
   topLeft?: React.ReactElement<ZoneProps>;
-  /** The Zone along the top-center edge. */
+  /** The Zone along the top-center edge. @deprecated Use 'toolSettings' property. */
   topCenter?: React.ReactElement<ZoneProps>;
-  /** The Zone in the top-right corner. */
+  /** The Zone in the top-right corner. @deprecated Use 'viewNavigationTools' property. */
   topRight?: React.ReactElement<ZoneProps>;
-  /** The Zone along the center-left edge. */
+  /** The Zone along the center-left edge. @deprecated Place widgets in appropriate stage panel zone. */
   centerLeft?: React.ReactElement<ZoneProps>;
-  /** The Zone along the center-right edge. */
+  /** The Zone along the center-right edge.  @deprecated  Place widgets in appropriate stage panel zone. */
   centerRight?: React.ReactElement<ZoneProps>;
-  /** The Zone in the bottom-left corner. */
+  /** The Zone in the bottom-left corner.  @deprecated Place widgets in appropriate stage panel zone.  */
   bottomLeft?: React.ReactElement<ZoneProps>;
-  /** The Zone along the bottom-center edge. */
+  /** The Zone along the bottom-center edge. @deprecated use statusBar property */
   bottomCenter?: React.ReactElement<ZoneProps>;
-  /** The Zone in the bottom-right corner. */
+  /** The Zone in the bottom-right corner.  @deprecated Place widgets in appropriate stage panel zone. */
   bottomRight?: React.ReactElement<ZoneProps>;
+
+  /** The Zone in the top-left corner that shows tools typically used to query and modify content. To be used in place of deprecated topLeft zone definition.  @alpha */
+  contentManipulationTools?: React.ReactElement<ZoneProps>;
+  /** The Zone the that shows settings for the active tool. To be used in place of deprecated topCenter zone definition. @alpha */
+  toolSettings?: React.ReactElement<ZoneProps>;
+  /** The Zone in the top-right corner that shows view navigation tools. To be used in place of deprecated topRight zone definition.  @alpha */
+  viewNavigationTools?: React.ReactElement<ZoneProps>;
+  /** The status bar Zone shown as the application footer. To be used in place of deprecated bottomCenter zone definition.  @alpha */
+  statusBar?: React.ReactElement<ZoneProps>;
 
   /** The StagePanel on the top of the 9-zone area. @alpha */
   topPanel?: React.ReactElement<StagePanelProps>;
@@ -111,11 +132,12 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
   }
 
   /** React lifecycle method.
-   * Added listener for UiFramework.onUiVisibilityChanged.
    * @internal
    */
   public async componentDidMount() {
     UiFramework.onUiVisibilityChanged.addListener(this._uiVisibilityChanged);
+    UiFramework.widgetManager.onWidgetsChanged.addListener(this._handleWidgetsChanged);
+    UiFramework.widgetManager.onWidgetProvidersChanged.addListener(this._handleWidgetProvidersChanged);
   }
 
   public componentDidUpdate() {
@@ -126,62 +148,47 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
   }
 
   /** React lifecycle method.
-   * Removed listener for UiFramework.onUiVisibilityChanged.
    * @internal
    */
   public componentWillUnmount() {
     UiFramework.onUiVisibilityChanged.removeListener(this._uiVisibilityChanged);
+    UiFramework.widgetManager.onWidgetsChanged.removeListener(this._handleWidgetsChanged);
+    UiFramework.widgetManager.onWidgetProvidersChanged.removeListener(this._handleWidgetProvidersChanged);
   }
 
   private _uiVisibilityChanged = (args: UiVisibilityEventArgs): void => {
     this.setState({ isUiVisible: args.visible });
   }
 
-  /** Initializes a FrontstageDef from FrontstageProps */
-  public static initializeFrontstageDef(frontstageDef: FrontstageDef, props: FrontstageProps): void {
-    frontstageDef.id = props.id;
-
-    frontstageDef.defaultTool = props.defaultTool;
-
-    if (props.defaultContentId !== undefined)
-      frontstageDef.defaultContentId = props.defaultContentId;
-
-    if (typeof props.defaultLayout === "string")
-      frontstageDef.defaultLayoutId = props.defaultLayout;
-    else
-      frontstageDef.defaultLayout = props.defaultLayout;
-
-    if (typeof props.contentGroup === "string")
-      frontstageDef.contentGroupId = props.contentGroup;
-    else
-      frontstageDef.contentGroup = props.contentGroup;
-
-    if (props.isInFooterMode !== undefined)
-      frontstageDef.isInFooterMode = props.isInFooterMode;
-    if (props.applicationData !== undefined)
-      frontstageDef.applicationData = props.applicationData;
-
-    frontstageDef.topLeft = Frontstage.createZoneDef(props.topLeft, ZoneLocation.TopLeft, props);
-    frontstageDef.topCenter = Frontstage.createZoneDef(props.topCenter, ZoneLocation.TopCenter, props);
-    frontstageDef.topRight = Frontstage.createZoneDef(props.topRight, ZoneLocation.TopRight, props);
-    frontstageDef.centerLeft = Frontstage.createZoneDef(props.centerLeft, ZoneLocation.CenterLeft, props);
-    frontstageDef.centerRight = Frontstage.createZoneDef(props.centerRight, ZoneLocation.CenterRight, props);
-    frontstageDef.bottomLeft = Frontstage.createZoneDef(props.bottomLeft, ZoneLocation.BottomLeft, props);
-    frontstageDef.bottomCenter = Frontstage.createZoneDef(props.bottomCenter, ZoneLocation.BottomCenter, props);
-    frontstageDef.bottomRight = Frontstage.createZoneDef(props.bottomRight, ZoneLocation.BottomRight, props);
-
-    frontstageDef.topPanel = Frontstage.createStagePanelDef(props.topPanel, StagePanelLocation.Top, props);
-    frontstageDef.topMostPanel = Frontstage.createStagePanelDef(props.topMostPanel, StagePanelLocation.TopMost, props);
-    frontstageDef.leftPanel = Frontstage.createStagePanelDef(props.leftPanel, StagePanelLocation.Left, props);
-    frontstageDef.rightPanel = Frontstage.createStagePanelDef(props.rightPanel, StagePanelLocation.Right, props);
-    frontstageDef.bottomPanel = Frontstage.createStagePanelDef(props.bottomPanel, StagePanelLocation.Bottom, props);
-    frontstageDef.bottomMostPanel = Frontstage.createStagePanelDef(props.bottomMostPanel, StagePanelLocation.BottomMost, props);
+  private _handleWidgetsChanged = (_args: WidgetsChangedEventArgs): void => {
+    this.updateWidgetDefs();
   }
 
-  private static createZoneDef(zoneNode: React.ReactElement<ZoneProps> | undefined, zoneLocation: ZoneLocation, props: FrontstageProps): ZoneDef | undefined {
+  private _handleWidgetProvidersChanged = (_args: WidgetProvidersChangedEventArgs): void => {
+    this.updateWidgetDefs();
+  }
+
+  private updateWidgetDefs() {
+    if (!this.props.runtimeProps)
+      return;
+
+    const frontstageDef = this.props.runtimeProps.frontstageDef;
+    frontstageDef.updateWidgetDefs();
+    this.forceUpdate();
+  }
+
+  /** Initializes a FrontstageDef from FrontstageProps */
+  public static initializeFrontstageDef(frontstageDef: FrontstageDef, props: FrontstageProps): void {
+    frontstageDef.initializeFromProps(props);
+  }
+
+  /** @internal */
+  public static createZoneDef(zoneNode: React.ReactElement<ZoneProps> | undefined, zoneLocation: ZoneLocation, props: FrontstageProps): ZoneDef | undefined {
     if (zoneNode) {
       const zoneDef = new ZoneDef();
       const zoneElement = Frontstage.getZoneElement(zoneLocation, props);
+
+      zoneDef.zoneLocation = zoneLocation;
 
       // istanbul ignore else
       if (zoneElement && React.isValidElement(zoneElement)) {
@@ -194,44 +201,31 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
   }
 
   private static getZoneElement(zoneId: WidgetZoneId, props: FrontstageProps): React.ReactElement<ZoneProps> | undefined {
-    let zoneElement: React.ReactElement<ZoneProps> | undefined;
-
     switch (zoneId) {
       case ZoneLocation.TopLeft:
-        zoneElement = props.topLeft;
-        break;
+        return props.contentManipulationTools ? props.contentManipulationTools : props.topLeft;
       case ZoneLocation.TopCenter:
-        zoneElement = props.topCenter;
-        break;
+        return props.toolSettings ? props.toolSettings : props.topCenter;
       case ZoneLocation.TopRight:
-        zoneElement = props.topRight;
-        break;
+        return props.viewNavigationTools ? props.viewNavigationTools : props.topRight;
       case ZoneLocation.CenterLeft:
-        zoneElement = props.centerLeft;
-        break;
+        return props.centerLeft;
       case ZoneLocation.CenterRight:
-        zoneElement = props.centerRight;
-        break;
+        return props.centerRight;
       case ZoneLocation.BottomLeft:
-        zoneElement = props.bottomLeft;
-        break;
+        return props.bottomLeft;
       case ZoneLocation.BottomCenter:
-        zoneElement = props.bottomCenter;
-        break;
+        return props.statusBar ? props.statusBar : props.bottomCenter;
       case ZoneLocation.BottomRight:
-        zoneElement = props.bottomRight;
-        break;
-      // istanbul ignore next
-      default:
-        throw new RangeError();
+        return props.bottomRight;
     }
 
     // Zones can be undefined in a Frontstage
-
-    return zoneElement;
+    return undefined;
   }
 
-  private static createStagePanelDef(panelNode: React.ReactElement<StagePanelProps> | undefined, panelLocation: StagePanelLocation, props: FrontstageProps): StagePanelDef | undefined {
+  /** @internal */
+  public static createStagePanelDef(panelNode: React.ReactElement<StagePanelProps> | undefined, panelLocation: StagePanelLocation, props: FrontstageProps): StagePanelDef | undefined {
     if (panelNode) {
       const panelDef = new StagePanelDef();
       const panelElement = Frontstage.getStagePanelElement(panelLocation, props);
@@ -239,7 +233,6 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
       // istanbul ignore else
       if (panelElement && React.isValidElement(panelElement)) {
         StagePanel.initializeStagePanelDef(panelDef, panelElement.props, panelLocation);
-        panelDef.location = panelLocation;
         return panelDef;
       }
     }
@@ -357,7 +350,7 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
 
   private cloneZoneElements(zoneIds: ReadonlyArray<WidgetZoneId>, runtimeProps: FrontstageRuntimeProps): React.ReactNode[] {
     return zoneIds.map((zoneId: WidgetZoneId) => {
-      const zoneElement = Frontstage.getZoneElement(zoneId, this.props) as React.ReactElement<ZoneProps>;
+      const zoneElement = Frontstage.getZoneElement(zoneId, this.props);
       if (!zoneElement || !React.isValidElement(zoneElement))
         return null;
 
@@ -439,7 +432,7 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
           key={`${widget.id}_${widget.tabIndex}`}
           renderTo={this.state.widgetIdToContent[widget.id]}
           toolSettingsMode={isToolSettingsWidgetManagerProps(nzWidget) ? nzWidget.mode : undefined}
-          widget={widget.def}
+          widgetDef={widget.def}
         />
       );
     });
@@ -501,7 +494,7 @@ interface WidgetContentRendererProps {
   isHidden: boolean;
   renderTo: HTMLDivElement | undefined;
   toolSettingsMode: ToolSettingsWidgetMode | undefined;
-  widget: WidgetDef;
+  widgetDef: WidgetDef;
 }
 
 interface WidgetContentRendererState {
@@ -539,14 +532,17 @@ class WidgetContentRenderer extends React.PureComponent<WidgetContentRendererPro
     if (!this.props.renderTo || prevProps.renderTo === this.props.renderTo)
       return;
 
-    this.props.widget.widgetControl && this.props.widget.widgetControl.saveTransientState();
+    this.props.widgetDef.saveTransientState();
     this.props.renderTo.appendChild(this._content);
 
-    const shouldRemount = this.props.widget.widgetControl ? !this.props.widget.widgetControl.restoreTransientState() : true;
+    const shouldRemount = this.props.widgetDef.restoreTransientState();
+    // const shouldRemount = this.props.widgetDef.widgetControl ? !this.props.widgetDef.widgetControl.restoreTransientState() : true;
+
     shouldRemount && this.setState((prevState) => ({ widgetKey: prevState.widgetKey + 1 }));
   }
 
   public componentWillUnmount() {
+    this._content.parentNode && this._content.parentNode.removeChild(this._content);
     FrontstageManager.onWidgetStateChangedEvent.removeListener(this._handleWidgetStateChangedEvent);
     FrontstageManager.onToolActivatedEvent.removeListener(this._handleToolActivatedEvent);
   }
@@ -559,24 +555,24 @@ class WidgetContentRenderer extends React.PureComponent<WidgetContentRendererPro
           key={this.state.widgetKey}
           mode={this.props.toolSettingsMode}
         >
-          {FrontstageManager.activeToolSettingsNode}
+          {FrontstageManager.activeToolSettingsProvider && FrontstageManager.activeToolSettingsProvider.toolSettingsNode}
         </ToolSettingsContent>
       ), this._content);
     }
 
-    if (this.props.widget.state === WidgetState.Unloaded)
+    if (this.props.widgetDef.state === WidgetState.Unloaded)
       return null;
     return ReactDOM.createPortal((
       <React.Fragment
         key={this.state.widgetKey}
       >
-        {this.props.widget.reactElement}
+        {this.props.widgetDef.reactNode}
       </React.Fragment>
     ), this._content);
   }
 
   private _handleWidgetStateChangedEvent = (args: WidgetStateChangedEventArgs) => {
-    if (this.props.widget !== args.widgetDef)
+    if (this.props.widgetDef !== args.widgetDef)
       return;
     this.forceUpdate();
   }
@@ -622,15 +618,22 @@ export const getExtendedZone = (zoneId: WidgetZoneId, zones: ZonesManagerProps, 
  * @beta
  */
 export const useActiveFrontstageId = () => {
-  const [id, setId] = React.useState(FrontstageManager.activeFrontstageId);
+  const def = useActiveFrontstageDef();
+  const id = React.useMemo(() => def ? def.id : "", [def]);
+  return id;
+};
+
+/** @internal */
+export function useActiveFrontstageDef() {
+  const [def, setDef] = React.useState(FrontstageManager.activeFrontstageDef);
   React.useEffect(() => {
     const handleActivated = (args: FrontstageActivatedEventArgs) => {
-      setId(args.activatedFrontstageDef.id);
+      setDef(args.activatedFrontstageDef);
     };
     FrontstageManager.onFrontstageActivatedEvent.addListener(handleActivated);
     return () => {
       FrontstageManager.onFrontstageActivatedEvent.removeListener(handleActivated);
     };
   }, []);
-  return id;
-};
+  return def;
+}

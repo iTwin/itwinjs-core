@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module WebGL */
+/** @packageDocumentation
+ * @module WebGL
+ */
 
 import { dispose, assert } from "@bentley/bentleyjs-core";
 import { Point3d } from "@bentley/geometry-core";
@@ -17,7 +19,7 @@ import { BufferHandle, BuffersContainer, BufferParameters } from "./Handle";
 import { GL } from "./GL";
 import { System } from "./System";
 import { ShaderProgramParams } from "./DrawCommand";
-import { RenderMemory } from "../System";
+import { RenderMemory } from "../RenderMemory";
 import { AttributeMap } from "./AttributeMap";
 
 /** @internal */
@@ -74,6 +76,12 @@ export class PointStringGeometry extends LUTGeometry {
 
     const hasFeatures = FeatureIndexType.Empty !== params.vertices.featureIndexType;
     return new PointStringGeometry(indices, params.indices.length, lut, params.vertices.qparams, params.weight, hasFeatures, viOrigin);
+  }
+
+  public get isDisposed(): boolean {
+    return this.buffers.isDisposed
+      && this.lut.isDisposed
+      && this.indices.isDisposed;
   }
 
   public dispose() {

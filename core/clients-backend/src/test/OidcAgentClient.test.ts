@@ -1,12 +1,12 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
 import * as chai from "chai";
 import { Issuer } from "openid-client";
-import { ClientRequestContext, BeDuration } from "@bentley/bentleyjs-core";
-import { AccessToken, Config, IncludePrefix } from "@bentley/imodeljs-clients";
+import { ClientRequestContext, BeDuration, Config } from "@bentley/bentleyjs-core";
+import { AccessToken, IncludePrefix } from "@bentley/itwin-client";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 import { OidcAgentClient, OidcAgentClientConfiguration } from "../imodeljs-clients-backend";
 import { HubAccessTestValidator } from "./HubAccessTestValidator";

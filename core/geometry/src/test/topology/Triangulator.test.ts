@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Checker } from "../Checker";
@@ -23,7 +23,7 @@ import { GeometryQuery } from "../../curve/GeometryQuery";
 import { Geometry } from "../../Geometry";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { GraphChecker } from "./Graph.test";
-import { HalfEdgeMask } from "../../topology/Graph";
+import { HalfEdgeMask, HalfEdgeGraph } from "../../topology/Graph";
 import { HalfEdgeGraphSearch } from "../../topology/HalfEdgeGraphSearch";
 import { PolygonOps } from "../../geometry3d/PolygonOps";
 import { StrokeOptions } from "../../curve/StrokeOptions";
@@ -39,27 +39,25 @@ function rotateArray(data: Point3d[], index0: number) {
 
 /* tslint:disable: no-console */
 describe("Triangulation", () => {
-  const ck = new Checker();
+  it("NullTriangulations", () => {
+    const ck = new Checker();
+    ck.testUndefined(Triangulator.createTriangulatedGraphFromPoints([Point3d.create(0, 0, 0)]));
+    ck.testUndefined(Triangulator.createTriangulatedGraphFromLoops([]));
 
+    expect(ck.getNumErrors()).equals(0);
+  });
   it("TriangulateLoops", () => {
+    const ck = new Checker();
     let yShift = 0;
     const dx = 40.0;
     const dy = 30.0;
     const allGeometry: GeometryQuery[] = [];
     for (const myLoops of [
-      [[
-        // Outer
-        Point3d.create(0, 0, 0),
-        Point3d.create(3, -2, 0),
-        Point3d.create(6, 2, 0),
-        Point3d.create(5, 5, 0),
-        Point3d.create(4, 2, 0),
-        Point3d.create(1, 3, 0)],
-      [
-        // Hole
-        Point3d.create(1, 1, 0),
-        Point3d.create(2, 2, 0),
-        Point3d.create(3, 1, 0)]],
+      [[Point3d.create(1, -1, 0), Point3d.create(2, -1, 0), Point3d.create(2, 1, 0)]],
+      // outer
+      [[Point3d.create(0, 0, 0), Point3d.create(3, -2, 0), Point3d.create(6, 2, 0), Point3d.create(5, 5, 0), Point3d.create(4, 2, 0), Point3d.create(1, 3, 0)],
+      // hole
+      [Point3d.create(1, 1, 0), Point3d.create(2, 2, 0), Point3d.create(3, 1, 0)]],
       // triangle with one hole
       [[Point3d.create(0, 0, 0), Point3d.create(5, -5, 0), Point3d.create(5, 5, 0)],
       [Point3d.create(2, 1, 0), Point3d.create(3, 1, 0), Point3d.create(3, 0, 0)]],
@@ -81,35 +79,39 @@ describe("Triangulation", () => {
       let xShift = 0;
       for (const loop of myLoops) {
         const g = LineString3d.create(loop);
-        g.tryTranslateInPlace(xShift, yShift, 0);
-        allGeometry.push(g);
+        GeometryCoreTestIO.captureGeometry(allGeometry, g, xShift, yShift);
       }
       xShift += dx;
       // triangulate and flip in the outer loop only . . .
       const graph1 = Triangulator.createTriangulatedGraphFromSingleLoop(myLoops[0]);
-      const unflippedOuter = PolyfaceBuilder.graphToPolyface(graph1);
-      unflippedOuter.tryTranslateInPlace(xShift, yShift, 0);
-      allGeometry.push(unflippedOuter);
-      xShift += dx;
+      if (graph1) {
+        const unflippedOuter = PolyfaceBuilder.graphToPolyface(graph1);
+        unflippedOuter.tryTranslateInPlace(xShift, yShift, 0);
+        allGeometry.push(unflippedOuter);
+        xShift += dx;
 
-      Triangulator.flipTriangles(graph1);
-      const flippedOuter = PolyfaceBuilder.graphToPolyface(graph1);
-      flippedOuter.tryTranslateInPlace(xShift, yShift, 0);
-      allGeometry.push(flippedOuter);
-      xShift += 2 * dx;
-
+        Triangulator.flipTriangles(graph1);
+        const flippedOuter = PolyfaceBuilder.graphToPolyface(graph1);
+        flippedOuter.tryTranslateInPlace(xShift, yShift, 0);
+        allGeometry.push(flippedOuter);
+        xShift += 2 * dx;
+      } else
+        xShift += 3 * dx;
       // triangulate with the hole
       const graph2 = Triangulator.createTriangulatedGraphFromLoops(myLoops)!;
-      const unflipped2 = PolyfaceBuilder.graphToPolyface(graph2);
-      unflipped2.tryTranslateInPlace(xShift, yShift, 0);
-      allGeometry.push(unflipped2);
-      xShift += dx;
+      if (graph2) {
+        const unflipped2 = PolyfaceBuilder.graphToPolyface(graph2);
+        unflipped2.tryTranslateInPlace(xShift, yShift, 0);
+        allGeometry.push(unflipped2);
+        xShift += dx;
 
-      Triangulator.flipTriangles(graph2);
-      const flipped2 = PolyfaceBuilder.graphToPolyface(graph2);
-      flipped2.tryTranslateInPlace(xShift, yShift, 0);
-      allGeometry.push(flipped2);
-      xShift += dx;
+        Triangulator.flipTriangles(graph2);
+        const flipped2 = PolyfaceBuilder.graphToPolyface(graph2);
+        flipped2.tryTranslateInPlace(xShift, yShift, 0);
+        allGeometry.push(flipped2);
+        xShift += dx;
+      } else
+        xShift += 3 * dx;
 
       yShift += dy;
     }
@@ -118,7 +120,56 @@ describe("Triangulation", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
+  it("TriangulateBadLoops", () => {
+    const ck = new Checker();
+
+    let yShift = 0;
+    const dx = 40.0;
+    const dy = 30.0;
+    const allGeometry: GeometryQuery[] = [];
+    for (const myLoops of [
+      // rectangle with hole not fully contained
+      [[Point3d.create(0, 0, 0), Point3d.create(5, 0, 0), Point3d.create(5, 5, 0), Point3d.create(0, 5, 0)],
+      [Point3d.create(1, -1, 0), Point3d.create(2, -1, 0), Point3d.create(2, 1, 0)]],
+      // Edge-Edge contact from hole to parent along lower edge.
+      [[Point3d.create(0, 0, 0), Point3d.create(4, 0, 0), Point3d.create(8, 0, 0), Point3d.create(10, 0, 0), Point3d.create(10, 5, 0), Point3d.create(0, 5, 0)],
+      [Point3d.create(4, 0, 0), Point3d.create(8, 0, 0), Point3d.create(8, 2, 0), Point3d.create(4, 2, 0)]],
+      // Edge-Edge contact from hole to parent along right edge.
+      [[Point3d.create(10, 0, 0), Point3d.create(10, 4), Point3d.create(10, 8), Point3d.create(10, 10, 0), Point3d.create(0, 10, 0), Point3d.create(0, 0, 0)],
+      [Point3d.create(10, 4), Point3d.create(10, 8), Point3d.create(6, 8)]],
+    ]) {
+
+      let xShift = 0;
+      for (const loop of myLoops) {
+        const g = LineString3d.create(loop);
+        GeometryCoreTestIO.captureGeometry(allGeometry, g, xShift, yShift);
+      }
+      xShift += dx;
+      // triangulate with the hole
+      const graph2 = Triangulator.createTriangulatedGraphFromLoops(myLoops)!;
+      if (graph2) {
+        const unflipped2 = PolyfaceBuilder.graphToPolyface(graph2);
+        unflipped2.tryTranslateInPlace(xShift, yShift, 0);
+        allGeometry.push(unflipped2);
+        xShift += dx;
+
+        Triangulator.flipTriangles(graph2);
+        const flipped2 = PolyfaceBuilder.graphToPolyface(graph2);
+        flipped2.tryTranslateInPlace(xShift, yShift, 0);
+        allGeometry.push(flipped2);
+        xShift += dx;
+      } else
+        xShift += 3 * dx;
+
+      yShift += dy;
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Graph", "TriangulateBadLoops");
+    ck.checkpoint("TriangulateAndFlip");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
   it("SquareWaves", () => {
+    const ck = new Checker();
     let degreeCount = 0;
     const allGeometry: GeometryQuery[] = [];
     let x0 = 0;
@@ -670,6 +721,70 @@ describe("Triangulation", () => {
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Triangulation", "FlexQuad");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("PinchedTriangulation", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let dx = -960;
+    const dy = -3616;
+    const loops = [];
+    // A single pinch point:
+    for (const dy14 of [0, 1, -1]) {
+      loops.push([
+        { x: 960, y: 3616 },
+        // { x: 961, y: 3616 },
+        { x: 968, y: 3612 + dy14 },
+        // { x: 969, y: 3612 + dy14 },
+        { x: 972, y: 3608 },
+        { x: 968, y: 3608 },
+        { x: 968, y: 3612 + dy14 },
+        { x: 960, y: 3612 },
+        { x: 960, y: 3616 },
+        { x: 960, y: 3616 }]);
+    }
+    // multiple pinch points:
+    const x0 = 960;
+    const y0 = 3616;
+    for (const touchAllPointsOnReturn  of [true, false]) {
+      for (const numPinch of [2, 3, 5]) {
+        const points = [];
+        points.push({ x: x0, y: y0 });
+        let x1 = x0;
+        const y1 = y0 - 2;
+        // walk out in sawtooth steps
+        for (let i = 0; i < numPinch; i++) {
+          points.push({ x: x1 + 1, y: y1 });
+          points.push({ x: x1 + 2, y: y0 });
+          x1 += 2;
+        }
+        if (touchAllPointsOnReturn) {
+          // walk back in each interval
+          for (let i = 0; i < numPinch; i++) {
+            points.push({ x: x1, y: y0 });
+            x1 -= 2;
+          }
+        }
+        loops.push(points);
+      }
+    }
+    for (const points of loops) {
+      const graph = Triangulator.createTriangulatedGraphFromSingleLoop(points);
+      GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(points), dx, dy);
+      GraphChecker.captureAnnotatedGraph(allGeometry, graph, dx, dy + 10);
+      GraphChecker.verifyMaskAroundFaces(ck, graph, HalfEdgeMask.EXTERIOR);
+      const polyface = PolyfaceBuilder.graphToPolyface(graph);
+      GeometryCoreTestIO.captureGeometry(allGeometry, polyface, dx, dy + 20);
+
+      const graph1 = Triangulator.createTriangulatedGraphFromLoops([points]);
+      if (graph1) {
+        const polyface1 = PolyfaceBuilder.graphToPolyface(graph1);
+        GeometryCoreTestIO.captureGeometry(allGeometry, polyface1, dx, dy + 30);
+      }
+      dx += 20;
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Triangulation", "PinchedTriangulation");
     expect(ck.getNumErrors()).equals(0);
   });
 

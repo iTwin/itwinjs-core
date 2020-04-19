@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module ContentView */
+/** @packageDocumentation
+ * @module ContentView
+ */
 
 import { ScreenViewport, IModelApp, IModelConnection, ViewState, SpatialViewState, OrthographicViewState, DrawingViewState, SheetViewState } from "@bentley/imodeljs-frontend";
 import { Id64String } from "@bentley/bentleyjs-core";
@@ -11,9 +13,9 @@ import { ConfigurableUiControlType, ConfigurableCreateInfo } from "../configurab
 import { ContentControl, SupportsViewSelectorChange } from "./ContentControl";
 import { ViewUtilities } from "../utils/ViewUtilities";
 import { ContentViewManager } from "./ContentViewManager";
+import { CubeNavigationAidControl } from "../navigationaids/CubeNavigationAidControl";
+import { DrawingNavigationAidControl } from "../navigationaids/DrawingNavigationAidControl";
 import { SheetNavigationAidControl } from "../navigationaids/SheetNavigationAid";
-import { DrawingNavigationAidControl } from "../navigationaids/DrawingNavigationAid";
-import { CubeNavigationAidControl } from "../navigationaids/CubeNavigationAid";
 
 /** The base class for Frontstage Viewport content controls.
  * @public
@@ -40,9 +42,9 @@ export class ViewportContentControl extends ContentControl implements SupportsVi
 
   /** Returns true if this control is a Viewport control. */
   public get isViewport(): boolean { return true; }
-  /** Gets the ScreenViewport */
+
+  /** The underlying ScreenViewport */
   public get viewport(): ScreenViewport | undefined { return this._viewport; }
-  /** Sets the ScreenViewport */
   public set viewport(v: ScreenViewport | undefined) {
     this._viewport = v;
     this.setIsReady();
@@ -113,9 +115,9 @@ export class ViewportContentControl extends ContentControl implements SupportsVi
       if (IModelApp.viewManager && this.viewport === IModelApp.viewManager.selectedView)
         this.viewport.changeView(viewState);
     } else {
-      this.reactElement = this.getReactElementForViewSelectorChange(iModel, viewDefinitionId, viewState, name);
-      ContentViewManager.refreshActiveContent(this.reactElement);
+      this.reactNode = this.getReactElementForViewSelectorChange(iModel, viewDefinitionId, viewState, name);
     }
+    ContentViewManager.refreshActiveContent(this.reactNode);
   }
 
   /** Get the React.Element for a ViewSelector change. */

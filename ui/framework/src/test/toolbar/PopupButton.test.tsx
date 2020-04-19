@@ -1,12 +1,14 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { mount, shallow, ReactWrapper } from "enzyme";
 import { render, cleanup, fireEvent } from "@testing-library/react";
 import { expect } from "chai";
 import * as sinon from "sinon";
+
+// tslint:disable: deprecation
 
 import TestUtils from "../TestUtils";
 import {

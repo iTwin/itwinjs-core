@@ -1,12 +1,20 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 export * from "./ui-ninezone/backstage/Backstage";
 export * from "./ui-ninezone/backstage/Item";
 export * from "./ui-ninezone/backstage/Separator";
 export * from "./ui-ninezone/backstage/UserProfile";
 
+export * from "./ui-ninezone/base/assert";
+export * from "./ui-ninezone/base/DragHandle";
+export * from "./ui-ninezone/base/DragManager";
+export * from "./ui-ninezone/base/Ellipsis";
+export * from "./ui-ninezone/base/Event";
+export * from "./ui-ninezone/base/NineZone";
+export * from "./ui-ninezone/base/NineZoneState";
+export * from "./ui-ninezone/base/PointerCaptor";
 export * from "./ui-ninezone/base/WithContainIn";
 
 export * from "./ui-ninezone/footer/dialog/Button";
@@ -57,6 +65,12 @@ export * from "./ui-ninezone/stage-panels/manager/NestedStagePanels";
 export * from "./ui-ninezone/stage-panels/manager/StagePanel";
 export * from "./ui-ninezone/stage-panels/manager/StagePanels";
 
+export * from "./ui-ninezone/tool-settings/Docked";
+export * from "./ui-ninezone/tool-settings/Handle";
+export * from "./ui-ninezone/tool-settings/Overflow";
+export * from "./ui-ninezone/tool-settings/Panel";
+export * from "./ui-ninezone/tool-settings/Setting";
+
 export * from "./ui-ninezone/toolbar/item/Item";
 export * from "./ui-ninezone/toolbar/item/Overflow";
 export * from "./ui-ninezone/toolbar/item/expandable/Expandable";
@@ -73,10 +87,6 @@ export * from "./ui-ninezone/toolbar/item/expandable/group/Title";
 export * from "./ui-ninezone/toolbar/item/expandable/group/tool/Expander";
 export * from "./ui-ninezone/toolbar/item/expandable/group/tool/Tool";
 
-export * from "./ui-ninezone/toolbar/item/expandable/history/Icon";
-export * from "./ui-ninezone/toolbar/item/expandable/history/Item";
-export * from "./ui-ninezone/toolbar/item/expandable/history/Tray";
-
 export * from "./ui-ninezone/toolbar/Items";
 export * from "./ui-ninezone/toolbar/Toolbar";
 
@@ -86,9 +96,27 @@ export * from "./ui-ninezone/utilities/Direction";
 export * from "./ui-ninezone/utilities/DisabledResizeHandles";
 export * from "./ui-ninezone/utilities/SafeAreaInsets";
 
+export * from "./ui-ninezone/widget/Content";
+export * from "./ui-ninezone/widget/ContentContainer";
+export * from "./ui-ninezone/widget/ContentManager";
+export * from "./ui-ninezone/widget/ContentRenderer";
+export * from "./ui-ninezone/widget/FloatingTab";
+export * from "./ui-ninezone/widget/FloatingWidget";
+export * from "./ui-ninezone/widget/FloatingWidgets";
+export * from "./ui-ninezone/widget/Menu";
+export * from "./ui-ninezone/widget/Overflow";
+export * from "./ui-ninezone/widget/PanelWidget";
 export * from "./ui-ninezone/widget/Stacked";
+export * from "./ui-ninezone/widget/Tab";
+export * from "./ui-ninezone/widget/Tabs";
+export * from "./ui-ninezone/widget/TabTarget";
+export * from "./ui-ninezone/widget/TitleBar";
 export * from "./ui-ninezone/widget/Tools";
+export * from "./ui-ninezone/widget/ToolsArea";
+export * from "./ui-ninezone/widget/NavigationArea";
 export * from "./ui-ninezone/widget/ToolSettings";
+export * from "./ui-ninezone/widget/Widget";
+export * from "./ui-ninezone/widget/WidgetTarget";
 
 export * from "./ui-ninezone/widget/tools/button/App";
 export * from "./ui-ninezone/widget/tools/button/Back";
@@ -108,6 +136,15 @@ export * from "./ui-ninezone/widget/tool-settings/Popup";
 export * from "./ui-ninezone/widget/tool-settings/Scrollable";
 export * from "./ui-ninezone/widget/tool-settings/Tab";
 
+export * from "./ui-ninezone/widget-panels/AppContent";
+export * from "./ui-ninezone/widget-panels/CenterContent";
+export * from "./ui-ninezone/widget-panels/Content";
+export * from "./ui-ninezone/widget-panels/CursorOverlay";
+export * from "./ui-ninezone/widget-panels/Grip";
+export * from "./ui-ninezone/widget-panels/Panel";
+export * from "./ui-ninezone/widget-panels/Panels";
+export * from "./ui-ninezone/widget-panels/PanelTarget";
+
 export * from "./ui-ninezone/zones/Outline";
 export * from "./ui-ninezone/zones/Zone";
 export * from "./ui-ninezone/zones/Zones";
@@ -121,15 +158,6 @@ export * from "./ui-ninezone/zones/target/Merge";
 export * from "./ui-ninezone/zones/target/Splitter";
 export * from "./ui-ninezone/zones/target/SplitterPane";
 export * from "./ui-ninezone/zones/target/StagePanel";
-
-// Set the version number so it can be found at runtime. BUILD_SEMVER is replaced at build time by the webpack DefinePlugin.
-declare var BUILD_SEMVER: string;
-/* istanbul ignore next */
-if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") && window) {
-  if (!(window as any).iModelJsVersions)
-    (window as any).iModelJsVersions = new Map<string, string>();
-  (window as any).iModelJsVersions.set("ui-ninezone", BUILD_SEMVER);
-}
 
 /** @docs-package-description
  * The ui-ninezone package contains React components for application user interface layouts following the Bentley 9-Zone pattern.
@@ -182,6 +210,10 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
 /**
  * @docs-group-description Widget
  * Classes for working a Widget
+ */
+/**
+ * @docs-group-description WidgetPanels
+ * Classes for working with widget panels
  */
 /**
  * @docs-group-description Zone

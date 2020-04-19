@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
 /* tslint:disable: no-console */
@@ -18,7 +18,7 @@ import { RegionOps } from "../../curve/RegionOps";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 
 import { Range3d, Range2d } from "../../geometry3d/Range";
-import { PolygonWireOffsetContext } from "../../curve/PolygonOffsetContext";
+import { PolygonWireOffsetContext } from "../../curve/internalContexts/PolygonOffsetContext";
 import { PolylineOps } from "../../geometry3d/PolylineOps";
 import { HalfEdgeGraph } from "../../topology/Graph";
 import { GraphChecker } from "./Graph.test";
@@ -37,11 +37,52 @@ import { Arc3d } from "../../curve/Arc3d";
 import { Plane3dByOriginAndVectors } from "../../geometry3d/Plane3dByOriginAndVectors";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { AnyRegion, AnyCurve } from "../../curve/CurveChain";
-import { BagOfCurves, CurveCollection } from "../../curve/CurveCollection";
+import { BagOfCurves, CurveCollection, CurveChain } from "../../curve/CurveCollection";
 import { Path } from "../../curve/Path";
 import { CurvePrimitive } from "../../curve/CurvePrimitive";
 import { CurveFactory } from "../../curve/CurveFactory";
 import { Point3dArray } from "../../geometry3d/PointHelpers";
+import { ChainCollectorContext } from "../../curve/ChainCollectorContext";
+import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
+import { IModelJson } from "../../serialization/IModelJsonSchema";
+
+const diegoPathA = [
+  {
+    lineSegment: [[9.475113484165819, -13.519605207518564, 0], [13.203035410431951, -14.269123503051588, 0]],
+  }, {
+    arc: {
+      center: [13.005924613981659, -15.249504721722534, 0],
+      vectorX: [0.1971107964502951, 0.9803812186709463, 0],
+      vectorY: [0.9803812186709463, -0.1971107964502951, 0],
+      sweepStartEnd:
+        [0, 72.830637847867],
+    },
+  }, { lineSegment: [[14.000803020390693, -15.148425760207218, 0], [14.34957401104505, -18.58123435046298, 0]] }, {
+    lineSegment: [[14.34957401104505, -18.58123435046298, 0], [12.673764076933416, -20.859772802822125, 0]],
+  }, {
+    arc: {
+      center: [11.868182928857742, -20.2672873482622, 0],
+      vectorX: [0.8055811480756748, -0.5924854545599226, 0],
+      vectorY: [-0.5924854545599226, -0.8055811480756748, 0],
+      sweepStartEnd: [0, 71.45442290504732],
+    },
+  }, {
+    lineSegment: [
+      [11.562686951204984, -21.21948071498872, 0],
+      [8.527182927305319, -20.245587909330848, 0]],
+  }, {
+    lineSegment: [[8.527182927305319, -20.245587909330848, 0], [7.111360097008944, -16.594638869216595, 0]],
+  }, {
+    arc: {
+      center: [8.043708604295633, -16.2330780016434, 0],
+      vectorX: [-0.9323485072866892, -0.3615608675731971, 0],
+      vectorY: [-0.3615608675731971, 0.9323485072866892, 0],
+      sweepStartEnd: [0, 68.03218413297601],
+    },
+  },
+  {
+    lineSegment: [[7.359620917079077, -15.503678223607576, 0], [9.47511348416582, -13.519605207518566, 0]],
+  }];
 
 class PolygonBooleanTests {
   public allGeometry: GeometryQuery[] = [];
@@ -633,6 +674,143 @@ describe("CloneSplitCurves", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
+  it("ChainCollector", () => {
+    const ck = new Checker();
+    const chainCollector = new ChainCollectorContext(true);
+    const segment1 = LineSegment3d.createXYZXYZ(1, 2, 3, 4, 2, 1);
+    const segment2 = LineSegment3d.createXYZXYZ(4, 2, 1, 5, 2, 6);
+    segment2.startCut = CurveLocationDetail.createCurveFractionPoint(segment1, 1, segment1.endPoint());
+    ck.testUndefined(chainCollector.grabResult());
+    chainCollector.announceCurvePrimitive(segment1);
+    const singleton = chainCollector.grabResult();
+    chainCollector.announceCurvePrimitive(segment1);
+    chainCollector.announceCurvePrimitive(segment2);
+    ck.testTrue(singleton instanceof LineSegment3d);
+
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("ChainCollectorBreaks", () => {
+    const ck = new Checker();
+    const pointA0 = Point3d.create(0, 0, 0);
+    const pointB0 = Point3d.create(1, 0, 0);
+    const pointB1 = Point3d.create(1, 0, 1);
+    const pointC1 = Point3d.create(2, 0, 1);
+
+    const segmentA0B0 = LineSegment3d.create(pointA0, pointB0);
+    const segmentB0C1 = LineSegment3d.create(pointB0, pointC1);
+    const segmentB1C1 = LineSegment3d.create(pointB1, pointC1);
+    ck.testFalse(ChainCollectorContext.needBreakBetweenPrimitives(segmentA0B0, segmentB0C1), "A0B0..B0C1");
+    ck.testTrue(ChainCollectorContext.needBreakBetweenPrimitives(undefined, segmentB0C1), "undefined..B0C1");
+    ck.testTrue(ChainCollectorContext.needBreakBetweenPrimitives(segmentA0B0, undefined), "A0B0..undefined");
+    ck.testTrue(ChainCollectorContext.needBreakBetweenPrimitives(segmentA0B0, segmentB1C1), "A0B0..B1C1");
+    ck.testFalse(ChainCollectorContext.needBreakBetweenPrimitives(segmentA0B0, segmentB1C1, true), "A0B0..B0C1XY");
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("GeneralChainA", () => {
+    const allGeometry: GeometryQuery[] = [];
+    const ck = new Checker();
+    const segments = [
+      LineSegment3d.create(
+        Point3d.createFrom({ x: 22.213935902760078, y: 6.72335636194596, z: 0 }),
+        Point3d.createFrom({ x: 19.126382295715867, y: 7.030119101735917, z: 0 })),
+      LineSegment3d.create(
+        Point3d.createFrom({ x: 18.480825764734846, y: 3.237105594599584, z: 0 }),
+        Point3d.createFrom({ x: 22.213935902760074, y: 6.72335636194596, z: 0 })),
+      LineSegment3d.create(
+        Point3d.createFrom({ x: 16.68697627970194, y: 5.084431827079689, z: 0 }),
+        Point3d.createFrom({ x: 18.48082576473485, y: 3.2371055945995857, z: 0 })),
+      LineSegment3d.create(
+        Point3d.createFrom({ x: 13.954141275010276, y: 6.64077838793302, z: 0 }),
+        Point3d.createFrom({ x: 16.68697627970194, y: 5.0844318270796895, z: 0 })),
+      LineSegment3d.create(
+        Point3d.createFrom({ x: 15.253988532688888, y: 8.496059229639044, z: 0 }),
+        Point3d.createFrom({ x: 13.954141275010276, y: 6.64077838793302, z: 0 })),
+      LineSegment3d.create(
+        Point3d.createFrom({ x: 15.253988532688888, y: 8.496059229639043, z: 0 }),
+        Point3d.createFrom({ x: 17.707917522590943, y: 9.036828096780024, z: 0 })),
+      LineSegment3d.create(
+        Point3d.createFrom({ x: 19.126382295715864, y: 7.030119101735919, z: 0 }),
+        Point3d.createFrom({ x: 17.70791752259094, y: 9.03682809678002, z: 0 })),
+    ];
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, segments, 0, 0, 0);
+    const collector = new ChainCollectorContext(false);
+    for (const s of segments) {
+      collector.announceCurvePrimitive(s, true);
+    }
+    const chains = collector.grabResult(true);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, chains, 20, 0, 0);
+    GeometryCoreTestIO.saveGeometry(allGeometry, "RegionOps", "GeneralChainA");
+
+    expect(ck.getNumErrors()).equals(0);
+
+  });
+  it("GeneralChainB", () => {
+    const allGeometry: GeometryQuery[] = [];
+    const ck = new Checker();
+    const segments = [
+      LineSegment3d.create(
+        Point3d.createFrom({ x: 22.213935902760078, y: 6.72335636194596, z: 0 }),
+        Point3d.createFrom({ x: 19.126382295715867, y: 7.030119101735917, z: 0 })),
+      LineSegment3d.create(
+        Point3d.createFrom({ x: 18.480825764734846, y: 3.237105594599584, z: 0 }),
+        Point3d.createFrom({ x: 22.213935902760074, y: 6.72335636194596, z: 0 })),
+      LineSegment3d.create(
+        Point3d.createFrom({ x: 16.68697627970194, y: 5.084431827079689, z: 0 }),
+        Point3d.createFrom({ x: 18.48082576473485, y: 3.2371055945995857, z: 0 })),
+      LineSegment3d.create(
+        Point3d.createFrom({ x: 13.954141275010276, y: 6.64077838793302, z: 0 }),
+        Point3d.createFrom({ x: 16.68697627970194, y: 5.0844318270796895, z: 0 })),
+      LineSegment3d.create(
+        Point3d.createFrom({ x: 15.253988532688888, y: 8.496059229639044, z: 0 }),
+        Point3d.createFrom({ x: 13.954141275010276, y: 6.64077838793302, z: 0 })),
+      LineSegment3d.create(
+        Point3d.createFrom({ x: 17.707917522590943, y: 9.036828096780024, z: 0 }),
+        Point3d.createFrom({ x: 15.253988532688888, y: 8.496059229639043, z: 0 })),
+      LineSegment3d.create(
+        Point3d.createFrom({ x: 19.126382295715864, y: 7.030119101735919, z: 0 }),
+        Point3d.createFrom({ x: 17.70791752259094, y: 9.03682809678002, z: 0 })),
+    ];
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, segments, 0, 0, 0);
+    const collector = new ChainCollectorContext(false);
+    for (const s of segments) {
+      collector.announceCurvePrimitive(s, true);
+    }
+    const chains = collector.grabResult(true);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, chains, 20, 0, 0);
+    GeometryCoreTestIO.saveGeometry(allGeometry, "RegionOps", "GeneralChainB");
+
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("GeneralPathC", () => {
+    const allGeometry: GeometryQuery[] = [];
+    const ck = new Checker();
+    const pathA = IModelJson.Reader.parse(diegoPathA);
+    if (ck.testDefined(pathA, "Parsed geometry") && (pathA instanceof CurveChain || Array.isArray(pathA))) {
+      const collector = new ChainCollectorContext(false);
+      if (Array.isArray(pathA)) {
+        for (const s of pathA) {
+          collector.announceCurvePrimitive(s, true);
+        }
+      } else {
+        for (const s of pathA.children) {
+          collector.announceCurvePrimitive(s, true);
+        }
+      }
+      const loopA = collector.grabResult(true);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, pathA, 0, 0);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, loopA, 0, 20);
+      if (loopA instanceof Loop) {
+        const loopAOffset = RegionOps.constructCurveXYOffset(loopA, 0.2);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, loopA, 0, 40);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, loopAOffset, 0, 40, -0.1);
+      }
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "RegionOps", "ChainAndOffset");
+
+    expect(ck.getNumErrors()).equals(0);
+
+  });
   it("InOutSplits", () => {
     const allGeometry: GeometryQuery[] = [];
     const ck = new Checker();

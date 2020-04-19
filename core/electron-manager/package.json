@@ -1,16 +1,16 @@
 {
   "name": "@bentley/electron-manager",
-  "version": "1.9.0-dev.6",
+  "version": "2.0.0-dev.71",
   "description": "iModel.js electron utilities",
   "main": "lib/ElectronManager.js",
   "typings": "lib/ElectronManager",
   "license": "MIT",
   "engines": {
-    "node": ">=10.11.0 <13.0"
+    "node": ">=10.16.0 <13.0"
   },
   "scripts": {
-    "build": "tsc 1>&2 && node ./node_modules/@bentley/build-tools/scripts/ignoreargs.js 1>&2",
-    "clean": "rimraf lib .rush package-deps.json",
+    "build": "tsc 1>&2",
+    "clean": "rimraf lib .rush",
     "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --includes=../../generated-docs/extract --json=../../generated-docs/core/electron-manager/file.json --tsIndexFile=./ElectronManager.ts --onlyJson %TYPEDOC_THEME%",
     "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=ElectronManager",
     "lint": "tslint --project . 1>&2",
@@ -31,20 +31,26 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "electron": "^4.1.0"
+    "electron": "^8.0.0",
+    "@bentley/bentleyjs-core": "^2.0.0-dev.71",
+    "@bentley/imodeljs-backend": "^2.0.0-dev.71"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/build-tools": "1.9.0-dev.6",
+    "@bentley/build-tools": "2.0.0-dev.71",
+    "@bentley/bentleyjs-core": "2.0.0-dev.71",
+    "@bentley/itwin-client": "2.0.0-dev.71",
+    "@bentley/imodeljs-common": "2.0.0-dev.71",
+    "@bentley/imodeljs-backend": "2.0.0-dev.71",
     "@types/node": "10.14.1",
-    "electron": "^4.1.0",
-    "rimraf": "^2.6.2",
+    "electron": "^8.0.0",
+    "rimraf": "^3.0.2",
     "tslint": "^5.11.0",
     "tslint-etc": "^1.5.2",
-    "typescript": "~3.6.2"
+    "typescript": "~3.7.4"
   },
   "dependencies": {}
 }

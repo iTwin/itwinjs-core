@@ -1,14 +1,16 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module WebGL */
+/** @packageDocumentation
+ * @module WebGL
+ */
 
 import { FragmentShaderComponent, VariableType, ShaderBuilder, VertexShaderComponent, ProgramBuilder } from "../ShaderBuilder";
 import { ShaderProgram } from "../ShaderProgram";
 import { assignFragColor } from "./Fragment";
 import { createViewportQuadBuilder } from "./ViewportQuad";
-import { FloatRgba } from "../FloatRGBA";
+import { FloatRgb, FloatRgba } from "../FloatRGBA";
 import { ColorDef, SpatialClassificationProps } from "@bentley/imodeljs-common";
 import { SingleTexturedViewportQuadGeometry, VolumeClassifierGeometry, BoundaryType, ScreenPointsGeometry } from "../CachedGeometry";
 import { Texture2DHandle } from "../Texture";
@@ -16,6 +18,7 @@ import { TextureUnit } from "../RenderFlags";
 import { AttributeMap } from "../AttributeMap";
 import { TechniqueId } from "../TechniqueId";
 import { unquantizeVertexPosition } from "./Vertex";
+import { System } from "../System";
 
 const computehiliteColor = "return vec4(u_hilite_color.rgb, 1.0);";
 
@@ -56,7 +59,7 @@ function addBoundaryTypeConstants(builder: ShaderBuilder): void {
 }
 
 /** @internal */
-function setScratchColor(display: SpatialClassificationProps.Display, hilite: FloatRgba, hAlpha: number): void {
+function setScratchColor(display: SpatialClassificationProps.Display, hilite: FloatRgb, hAlpha: number): void {
   switch (display) {
     case SpatialClassificationProps.Display.Dimmed:
       scratchColor.set(0.0, 0.0, 0.0, 0.3);
@@ -74,7 +77,7 @@ function setScratchColor(display: SpatialClassificationProps.Display, hilite: Fl
 }
 
 /** @internal */
-export function createVolClassColorUsingStencilProgram(context: WebGLRenderingContext): ShaderProgram {
+export function createVolClassColorUsingStencilProgram(context: WebGLRenderingContext | WebGL2RenderingContext): ShaderProgram {
   const builder = createViewportQuadBuilder(true); // TODO: I think this should pass in false since there are no textures being used.
   const frag = builder.frag;
   frag.set(FragmentShaderComponent.ComputeBaseColor, computehiliteColor);
@@ -83,7 +86,7 @@ export function createVolClassColorUsingStencilProgram(context: WebGLRenderingCo
     prog.addGraphicUniform("u_hilite_color", (uniform, params) => {
       const useLighting = params.geometry.getFlashMode(params);
       if (useLighting) {
-        const hiliteColor = params.target.hiliteColor;
+        const hiliteColor = params.target.uniforms.hilite.hiliteColor;
         scratchColor.set(hiliteColor.red, hiliteColor.green, hiliteColor.blue, 1.0);
       } else
         scratchColor.set(1.0, 1.0, 1.0, 0.0);
@@ -94,7 +97,7 @@ export function createVolClassColorUsingStencilProgram(context: WebGLRenderingCo
 }
 
 /** @internal */
-export function createVolClassCopyZProgram(context: WebGLRenderingContext): ShaderProgram {
+export function createVolClassCopyZProgram(context: WebGLRenderingContext | WebGL2RenderingContext): ShaderProgram {
   const builder = createViewportQuadBuilder(true);
 
   builder.addInlineComputedVarying("v_texCoord", VariableType.Vec2, computeTexCoord); // TODO: I think this is not necessary because it's already added from the create above
@@ -117,14 +120,15 @@ export function createVolClassCopyZProgram(context: WebGLRenderingContext): Shad
     });
   });
 
-  frag.addExtension("GL_EXT_frag_depth");
+  if (!System.instance.capabilities.isWebGL2)
+    frag.addExtension("GL_EXT_frag_depth");
   frag.set(FragmentShaderComponent.FinalizeDepth, depthFromTexture);
 
   return builder.buildProgram(context);
 }
 
 /** @internal */
-export function createVolClassCopyZUsingPointsProgram(context: WebGLRenderingContext): ShaderProgram {
+export function createVolClassCopyZUsingPointsProgram(context: WebGLRenderingContext | WebGL2RenderingContext): ShaderProgram {
   const attrMap = AttributeMap.findAttributeMap(TechniqueId.VolClassCopyZ, false);
   const builder = new ProgramBuilder(attrMap);
 
@@ -153,7 +157,7 @@ export function createVolClassCopyZUsingPointsProgram(context: WebGLRenderingCon
 }
 
 /** @internal */
-export function createVolClassSetBlendProgram(context: WebGLRenderingContext): ShaderProgram {
+export function createVolClassSetBlendProgram(context: WebGLRenderingContext | WebGL2RenderingContext): ShaderProgram {
   const builder = createViewportQuadBuilder(true);
 
   builder.addInlineComputedVarying("v_texCoord", VariableType.Vec2, computeTexCoord);
@@ -174,8 +178,8 @@ export function createVolClassSetBlendProgram(context: WebGLRenderingContext): S
   frag.addUniform("u_blend_color", VariableType.Vec4, (prog) => {
     prog.addGraphicUniform("u_blend_color", (uniform, params) => {
       const geom = params.geometry as VolumeClassifierGeometry;
-      const hiliteColor = params.target.hiliteColor;
-      const hiliteAlpha = params.target.hiliteSettings.visibleRatio;
+      const hiliteColor = params.target.uniforms.hilite.hiliteColor;
+      const hiliteAlpha = params.target.uniforms.hilite.hiliteSettings.visibleRatio;
       switch (geom.boundaryType) {
         case BoundaryType.Outside:
           setScratchColor(params.target.activeVolumeClassifierProps!.flags.outside, hiliteColor, hiliteAlpha);
@@ -203,7 +207,7 @@ export function createVolClassSetBlendProgram(context: WebGLRenderingContext): S
 }
 
 /** @internal */
-export function createVolClassBlendProgram(context: WebGLRenderingContext): ShaderProgram {
+export function createVolClassBlendProgram(context: WebGLRenderingContext | WebGL2RenderingContext): ShaderProgram {
   const builder = createViewportQuadBuilder(true);
 
   builder.addInlineComputedVarying("v_texCoord", VariableType.Vec2, computeTexCoord);

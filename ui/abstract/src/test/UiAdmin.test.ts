@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
@@ -34,8 +34,8 @@ describe("UiAdmin", () => {
 
   it("showContextMenu should return false by default", () => {
     const menuItemProps: AbstractMenuItemProps[] = [
-      { id: "test", item: { commandId: "command", label: "test label", iconSpec: "icon-placeholder", execute: () => { } } },
-      { id: "test2", item: { label: "test label", iconSpec: "icon-placeholder", execute: () => { } } },
+      { id: "test", item: { label: "test label", icon: "icon-placeholder", execute: () => { } } },
+      { id: "test2", item: { label: "test label", icon: "icon-placeholder", execute: () => { } } },
     ];
     const doc = new DOMParser().parseFromString("<div>xyz</div>", "text/html");
 
@@ -46,9 +46,9 @@ describe("UiAdmin", () => {
     const toolbarProps: AbstractToolbarProps = {
       toolbarId: "test",
       items: [
-        { toolId: "tool", label: "tool label", iconSpec: "icon-placeholder", execute: () => { } },
-        { commandId: "command", label: "command label", iconSpec: "icon-placeholder", execute: () => { } },
-        { label: "command label", iconSpec: "icon-placeholder", execute: () => { } },
+        { id: "tool", itemPriority: 10, label: "tool label", icon: "icon-placeholder", execute: () => { } },
+        { id: "command", itemPriority: 20, label: "command label", icon: "icon-placeholder", execute: () => { } },
+        { id: "command2", itemPriority: 30, label: "command label", icon: "icon-placeholder", execute: () => { } },
       ],
     };
     const doc = new DOMParser().parseFromString("<div>xyz</div>", "text/html");
@@ -61,8 +61,8 @@ describe("UiAdmin", () => {
 
   it("showMenuButton should return false by default", () => {
     const menuItemProps: AbstractMenuItemProps[] = [
-      { id: "test", item: { commandId: "command", label: "test label", iconSpec: "icon-placeholder", execute: () => { } } },
-      { id: "test2", item: { label: "test label", iconSpec: "icon-placeholder", execute: () => { } } },
+      { id: "test", item: { label: "test label", icon: "icon-placeholder", execute: () => { } } },
+      { id: "test2", item: { label: "test label", icon: "icon-placeholder", execute: () => { } } },
     ];
     const doc = new DOMParser().parseFromString("<div>xyz</div>", "text/html");
 
@@ -109,6 +109,16 @@ describe("UiAdmin", () => {
     expect(uiAdmin.showHeightEditor(100, uiAdmin.createXAndY(150, 250), spyCommit, spyCancel, doc.documentElement)).to.be.false;
     expect(uiAdmin.showHeightEditor(100, uiAdmin.createXAndY(150, 250), spyCommit, spyCancel)).to.be.false;
     expect(uiAdmin.hideInputEditor()).to.be.false;
+  });
+
+  it("showHTMLElement should return false by default", () => {
+    const html = '<div style="width: 120px; height: 50px; display: flex; justify-content: center; align-items: center; background-color: aqua;">Hello World!</div>';
+    const display = new DOMParser().parseFromString(html, "text/html");
+    const doc = new DOMParser().parseFromString("<div>xyz</div>", "text/html");
+    const spyCancel = sinon.fake();
+
+    expect(uiAdmin.showHTMLElement(display.documentElement, uiAdmin.createXAndY(150, 250), uiAdmin.createXAndY(8, 8), spyCancel, RelativePosition.BottomRight, doc.documentElement)).to.be.false;
+    expect(uiAdmin.hideHTMLElement()).to.be.false;
   });
 
 });

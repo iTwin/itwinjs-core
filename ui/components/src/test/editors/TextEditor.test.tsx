@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
 import * as React from "react";
@@ -8,7 +8,7 @@ import { mount, shallow } from "enzyme";
 import { expect } from "chai";
 import { TextEditor } from "../../ui-components/editors/TextEditor";
 import TestUtils from "../TestUtils";
-import { PropertyEditorParamTypes, InputEditorSizeParams, IconEditorParams, PropertyEditorInfo } from "@bentley/imodeljs-frontend";
+import { PropertyEditorParamTypes, InputEditorSizeParams, IconEditorParams, PropertyEditorInfo } from "@bentley/ui-abstract";
 
 describe("<TextEditor />", () => {
   it("should render", () => {
@@ -24,8 +24,8 @@ describe("<TextEditor />", () => {
     const wrapper = mount(<TextEditor propertyRecord={record} />);
 
     await TestUtils.flushAsyncOperations();
-    const textEditor = wrapper.instance() as TextEditor;
-    expect(textEditor.getValue()).to.equal("MyValue");
+    const editor = wrapper.instance() as TextEditor;
+    expect(editor.state.inputValue).to.equal("MyValue");
 
     wrapper.unmount();
   });
@@ -33,7 +33,7 @@ describe("<TextEditor />", () => {
   it("HTML input onChange updates value", () => {
     const record = TestUtils.createPrimitiveStringProperty("Test1", "MyValue");
     const wrapper = mount(<TextEditor propertyRecord={record} />);
-    const textEditor = wrapper.instance() as TextEditor;
+    const editor = wrapper.instance() as TextEditor;
     const inputNode = wrapper.find("input");
 
     expect(inputNode.length).to.eq(1);
@@ -41,7 +41,7 @@ describe("<TextEditor />", () => {
       const testValue = "My new value";
       inputNode.simulate("change", { target: { value: testValue } });
       wrapper.update();
-      expect(textEditor.getValue()).to.equal(testValue);
+      expect(editor.state.inputValue).to.equal(testValue);
     }
   });
 
@@ -50,14 +50,14 @@ describe("<TextEditor />", () => {
     const wrapper = mount(<TextEditor propertyRecord={record} />);
 
     await TestUtils.flushAsyncOperations();
-    const textEditor = wrapper.instance() as TextEditor;
-    expect(textEditor.getValue()).to.equal("MyValue");
+    const editor = wrapper.instance() as TextEditor;
+    expect(editor.state.inputValue).to.equal("MyValue");
 
     const testValue = "MyNewValue";
     const newRecord = TestUtils.createPrimitiveStringProperty("Test", testValue);
     wrapper.setProps({ propertyRecord: newRecord });
     await TestUtils.flushAsyncOperations();
-    expect(textEditor.getValue()).to.equal(testValue);
+    expect(editor.state.inputValue).to.equal(testValue);
 
     wrapper.unmount();
   });

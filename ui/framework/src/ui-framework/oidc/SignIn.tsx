@@ -1,24 +1,27 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module OIDC */
+/** @packageDocumentation
+ * @module OIDC
+ */
 
 import * as React from "react";
 
-import { ClientRequestContext } from "@bentley/bentleyjs-core";
-import { IOidcFrontendClient } from "@bentley/imodeljs-clients";
+import { ClientRequestContext, isElectronRenderer } from "@bentley/bentleyjs-core";
+import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { CommonProps } from "@bentley/ui-core";
 import { SignIn as SignInBase } from "@bentley/ui-components";
+import { UiFramework } from "../UiFramework";
 
 /** Properties for the [[SignIn]] component
  * @public
  */
 export interface SignInProps extends CommonProps {
   /** Oidc Frontend Client object */
-  oidcClient?: IOidcFrontendClient;
+  oidcClient?: FrontendAuthorizationClient;
   /** Handler called after sign-in has completed */
-  onSignedIn: () => void;
+  onSignedIn?: () => void;
   /** Handler for the Register link */
   onRegister?: () => void;
   /** Handler for the Offline link */
@@ -41,8 +44,9 @@ export class SignIn extends React.PureComponent<SignInProps> {
 
   public componentDidMount() {
     // istanbul ignore next
-    if (this.props.oidcClient)
-      this.props.oidcClient.onUserStateChanged.addListener(this._onUserStateChanged);
+    const isAuthorized = this.props.oidcClient && this.props.oidcClient.isAuthorized;
+    if (isAuthorized)
+      this.props.oidcClient!.onUserStateChanged.addListener(this._onUserStateChanged);
   }
 
   private _onUserStateChanged() {
@@ -68,9 +72,27 @@ export class SignIn extends React.PureComponent<SignInProps> {
   }
 
   public render() {
+
+    /*
+     * Note: In the case of electron, the signin happens in a disconnected web browser. We therefore show
+     * a message to direc the user to the browser. Also, since we cannot capture the errors in the browser,
+     * to clear the state of the signin UI, we instead allow signin button to be clicked multiple times.
+     * See https://authguidance.com/2018/01/11/desktop-apps-overview/ for the pattern
+     */
+    let disableSignInOnClick = true;
+    let signingInMessage: string | undefined;
+    if (isElectronRenderer) {
+      disableSignInOnClick = false;
+      const signingInMessageStringId = `UiFramework:signIn.signingInMessage`;
+      signingInMessage = UiFramework.i18n.translate(signingInMessageStringId);
+    }
+
     return <SignInBase className={this.props.className} style={this.props.style}
       onSignIn={this._onStartSignin}
       onRegister={this.props.onRegister}
-      onOffline={this.props.onOffline} />;
+      onOffline={this.props.onOffline}
+      disableSignInOnClick={disableSignInOnClick}
+      signingInMessage={signingInMessage}
+    />;
   }
 }

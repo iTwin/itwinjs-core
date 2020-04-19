@@ -1,14 +1,16 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Tree */
+/** @packageDocumentation
+ * @module Tree
+ */
 
 import { CheckBoxState } from "@bentley/ui-core";
 
 /**
  * Tree actions that can be performed on tree.
- * @alpha
+ * @beta
  */
 export interface TreeActions {
   onNodeCheckboxClicked: (nodeId: string, newState: CheckBoxState) => void;

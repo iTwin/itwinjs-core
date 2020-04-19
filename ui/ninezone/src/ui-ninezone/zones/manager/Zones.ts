@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Zone */
+/** @packageDocumentation
+ * @module Zone
+ */
 
 import { Point, PointProps, Rectangle, RectangleProps } from "@bentley/ui-core";
 import { CellProps, Cell } from "../../utilities/Cell";
@@ -291,7 +293,7 @@ export class ZonesManager {
                 },
                 stackId: this._lastStackId++,
               },
-            } : {},
+            } : undefined,
             bounds: mergedZone.bounds,
             widgets: [id],
           },
@@ -662,6 +664,25 @@ export class ZonesManager {
       return ZoneTargetType.Merge;
 
     return undefined;
+  }
+
+  public setZoneWidth(zoneId: WidgetZoneId, width: number, props: ZonesManagerProps) {
+    const manager = this.getZoneManager(zoneId);
+    const minWidth = manager.windowResize.minWidth;
+    const initialBounds = Rectangle.create(this.getInitialBounds(zoneId, props));
+    const maxWidth = initialBounds.getWidth();
+    width = Math.min(Math.max(width, minWidth), maxWidth);
+
+    const zone = props.zones[zoneId];
+    let bounds = Rectangle.create(zone.bounds);
+    bounds = bounds.setWidth(width);
+    if ((zoneId === 3) || (zoneId === 6) || (zoneId === 9)) {
+      const offset = zone.bounds.right - bounds.right;
+      bounds = bounds.offsetX(offset);
+    }
+    props = this.setZoneBounds(zoneId, bounds, props);
+    this.saveWindowSettings(zoneId, props);
+    return props;
   }
 
   /** @internal */

@@ -2,6 +2,168 @@
   "name": "@bentley/imodeljs-common",
   "entries": [
     {
+      "version": "1.13.0",
+      "tag": "@bentley/imodeljs-common_v1.13.0",
+      "date": "Wed, 04 Mar 2020 16:16:31 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "MobileRpc throw exception"
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.12.0",
+      "tag": "@bentley/imodeljs-common_v1.12.0",
+      "date": "Wed, 12 Feb 2020 17:45:50 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Bump tile format version."
+          },
+          {
+            "comment": "iModel write API development"
+          },
+          {
+            "comment": "Fix issue with constructing the tile cache URL() on Safari."
+          },
+          {
+            "comment": "Prevent reuse of cached tiles after project extents change."
+          },
+          {
+            "comment": "VSTS#256133: Fixed issue with reopening connections if the backend crashes. Fixes to integration tests. "
+          },
+          {
+            "comment": "Define ViewDetails for manipulating optional detail settings of ViewDefinition and ViewState."
+          },
+          {
+            "comment": "Add support for plan projection models with 3d display priority."
+          },
+          {
+            "comment": "Add settings to control display of plan projection models."
+          },
+          {
+            "comment": "Add PlanProjectionSettings.enforceDisplayPriority."
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.11.0",
+      "tag": "@bentley/imodeljs-common_v1.11.0",
+      "date": "Wed, 22 Jan 2020 19:24:12 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Simplify iterator for QPoint3dList."
+          },
+          {
+            "comment": "Native apps can now cancel tile requests in progress on the backend."
+          },
+          {
+            "comment": "Remove echo test function from devTools"
+          },
+          {
+            "comment": "Clean up documentation modules; add PlanProjectionSettings for display styles."
+          },
+          {
+            "comment": "Allow outline fill to be specified by subcategory appearance."
+          },
+          {
+            "comment": "Upgrade to TypeScript 3.7.2."
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.10.0",
+      "tag": "@bentley/imodeljs-common_v1.10.0",
+      "date": "Tue, 07 Jan 2020 19:44:01 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added support for embedding images in a GeometryStream."
+          },
+          {
+            "comment": "Moving data-holder structures used during the LinearElement.queryLinearLocations API to imodeljs-common."
+          },
+          {
+            "comment": "Allow events to be sent from backend to frontend"
+          },
+          {
+            "comment": "Renamed EventSourceRpcInterface to NativeAppRpcInterface"
+          },
+          {
+            "comment": "Moved tile IO-related APIs from frontend to common."
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.9.0",
+      "tag": "@bentley/imodeljs-common_v1.9.0",
+      "date": "Tue, 10 Dec 2019 18:08:56 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added Tween.js code"
+          },
+          {
+            "comment": "Added AliCloud tile cache service"
+          },
+          {
+            "comment": "Code quality report fixes"
+          },
+          {
+            "comment": "fix warnings from static analysis"
+          },
+          {
+            "comment": "Add PropertyMetaData.isNavigation"
+          },
+          {
+            "comment": "Addressing typo in a couple of members, making them match the schema properly."
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.8.0",
+      "tag": "@bentley/imodeljs-common_v1.8.0",
+      "date": "Fri, 22 Nov 2019 14:03:34 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Option to include part references in GeometrySummary output."
+          },
+          {
+            "comment": "Added missing topic descriptions"
+          },
+          {
+            "comment": "Fix defect where isMobileBackend return true on windows"
+          },
+          {
+            "comment": "Change terrain lighting default to off."
+          },
+          {
+            "comment": "Change SectionLocationProps.clipGeometry type to string. Add get/set ClipVector methods on SectionLocation."
+          },
+          {
+            "comment": "mark bias as alpha"
+          },
+          {
+            "comment": "Update to allow Node 12"
+          },
+          {
+            "comment": "Add support for view-independent display of geometry streams."
+          },
+          {
+            "comment": "Fixed camera.equals"
+          }
+        ]
+      }
+    },
+    {
       "version": "1.7.0",
       "tag": "@bentley/imodeljs-common_v1.7.0",
       "date": "Fri, 01 Nov 2019 13:28:37 GMT",

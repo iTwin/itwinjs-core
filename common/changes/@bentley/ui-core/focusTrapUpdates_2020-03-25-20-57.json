@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-core",
+      "comment": "Convert FocusTrap to internal FunctionComponent and ensure no focus processing is done when the trap is not active.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-core",
+  "email": "bill.steinbock@bentley.com"
+}

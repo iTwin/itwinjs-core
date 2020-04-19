@@ -1,9 +1,11 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module ArraysAndInterfaces */
+/** @packageDocumentation
+ * @module ArraysAndInterfaces
+ */
 
 import { Geometry, PlaneAltitudeEvaluator } from "../Geometry";
 import { XYAndZ } from "./XYZProps";
@@ -41,12 +43,9 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
     this._xyzInUse = 0;
     this._xyzCapacity = numPoints;
   }
-  /** Return the number of points in use. */
-  public get length() { return this._xyzInUse; }
 
-  /** Set number of points.
-   * Pad zeros if length grows.
-   */
+  /** The number of points in use. When the length is increased, the array is padded with zeroes. */
+  public get length() { return this._xyzInUse; }
   public set length(newLength: number) {
     let oldLength = this.length;
     if (newLength < oldLength) {
@@ -762,20 +761,6 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
     return undefined;
   }
 
-  /** Return the distance between two points in the array.
-   * @deprecated use distanceIndexIndex
-   */
-  public distance(i: number, j: number): number | undefined {
-    if (i >= 0 && i < this._xyzInUse && j >= 0 && j <= this._xyzInUse) {
-      const i0 = 3 * i;
-      const j0 = 3 * j;
-      return Geometry.hypotenuseXYZ(
-        this._data[j0] - this._data[i0],
-        this._data[j0 + 1] - this._data[i0 + 1],
-        this._data[j0 + 2] - this._data[i0 + 2]);
-    }
-    return undefined;
-  }
   /** Return the distance between an array point and the input point. */
   public distanceIndexToPoint(i: number, spacePoint: XYAndZ): number | undefined {
     if (i >= 0 && i < this._xyzInUse) {

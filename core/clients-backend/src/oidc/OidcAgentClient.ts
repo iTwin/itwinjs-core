@@ -1,11 +1,13 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Authentication */
+/** @packageDocumentation
+ * @module Authentication
+ */
 
 import { GrantParams, TokenSet } from "openid-client";
-import { AccessToken, IAuthorizationClient } from "@bentley/imodeljs-clients";
+import { AccessToken, AuthorizationClient } from "@bentley/itwin-client";
 import { AuthStatus, BentleyError, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
 import { OidcBackendClientConfiguration, OidcBackendClient } from "./OidcBackendClient";
 import { ClientsBackendLoggerCategory } from "../ClientsBackendLoggerCategory";
@@ -22,15 +24,15 @@ export type OidcAgentClientConfiguration = OidcBackendClientConfiguration;
 /**
  * Utility to generate OIDC/OAuth tokens for agent or service applications
  * * The application must register a client using the
- * [self service registration page]{@link https://imodeljs.github.io/iModelJs-docs-output/getting-started/registration-dashboard/}.
+ * [self service registration page](https://imodeljs.org/getting-started/registration-dashboard/).
  * * The client type must be "Agent"
  * * Use the Client Id/Client Secret/Scopes to create the agent configuration that's passed in.
  * * Ensure the application can access the Connect Project/Asset - in production environments, this is done by
- * using the connect project portal to add add the email **{Client Id}@apps.imsoidc.bentley.com** as an authorized user
+ * using the connect project portal to add add the email **`{Client Id}@apps.imsoidc.bentley.com`** as an authorized user
  * with the appropriate role that includes the required access permissions.
  * @beta
  */
-export class OidcAgentClient extends OidcBackendClient implements IAuthorizationClient {
+export class OidcAgentClient extends OidcBackendClient implements AuthorizationClient {
   private _accessToken?: AccessToken;
 
   constructor(agentConfiguration: OidcAgentClientConfiguration) {

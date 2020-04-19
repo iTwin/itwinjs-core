@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module CartesianGeometry */
+/** @packageDocumentation
+ * @module CartesianGeometry
+ */
 
 import { Point3d } from "../geometry3d/Point3dVector3d";
 import { Segment1d } from "../geometry3d/Segment1d";
@@ -225,7 +227,7 @@ export class UnionOfConvexClipPlaneSets implements Clipper {
         clipPlane.appendIntersectionRadians(arc, breaks);
       }
     }
-    arc.sweep.radiansArraytoPositivePeriodicFractions(breaks);
+    arc.sweep.radiansArrayToPositivePeriodicFractions(breaks);
     return ClipUtilities.selectIntervals01(arc, breaks, this, announce);
   }
 

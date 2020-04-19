@@ -1,21 +1,21 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ExportGraphicsInfo, IModelHost, IModelDb, ECSqlStatement, Texture } from "@bentley/imodeljs-backend";
 import { DbResult, Id64Array, Id64String, Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { ColorDef, ImageSourceFormat } from "@bentley/imodeljs-common";
 import { Angle } from "@bentley/geometry-core";
+import { ECSqlStatement, ExportGraphicsInfo, IModelHost, SnapshotDb, Texture } from "@bentley/imodeljs-backend";
+import { ColorDef, ImageSourceFormat } from "@bentley/imodeljs-common";
 import * as fs from "fs";
-import * as Yargs from "yargs";
 import * as path from "path";
+import * as Yargs from "yargs";
 
 function doExport(iModelName: string, objName: string, mtlName: string) {
   IModelHost.startup();
   Logger.initializeToConsole();
   Logger.setLevelDefault(LogLevel.Error);
 
-  const iModel: IModelDb = IModelDb.openSnapshot(iModelName);
+  const iModel = SnapshotDb.openFile(iModelName);
   process.stdout.write(`Opened ${iModelName} successfully.\n`);
 
   const objFile = fs.openSync(objName, "w");
@@ -88,7 +88,7 @@ function doExport(iModelName: string, objName: string, mtlName: string) {
 
   materialMap.forEach((materialName: string, color: number) => {
     fs.appendFileSync(mtlFile, `newmtl ${materialName}\n`);
-    const rawColors = new ColorDef(color).colors;
+    const rawColors = ColorDef.getColors(color);
     fs.appendFileSync(mtlFile, `Kd ${(rawColors.r / 255).toFixed(2)} ${(rawColors.g / 255).toFixed(2)} ${(rawColors.b / 255).toFixed(2)}\n`);
     if (rawColors.t !== 0)
       fs.appendFileSync(mtlFile, `Tr ${(rawColors.t / 255).toFixed(2)}\n`);

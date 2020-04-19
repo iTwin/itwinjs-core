@@ -1,9 +1,11 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module CartesianGeometry */
+/** @packageDocumentation
+ * @module CartesianGeometry
+ */
 
 // import { Point2d } from "./Geometry2d";
 /* tslint:disable:variable-name jsdoc-format no-empty*/
@@ -179,6 +181,8 @@ export class Geometry {
    * * But note that the "allowed" result value is vastly larger than 1.
    */
   public static readonly largeFractionResult = 1.0e10;
+  /** numeric value that may considered zero  0..1 fractions. */
+  public static readonly smallFraction = 1.0e-10;
   /** numeric value that may considered huge for numbers expected to be coordinates.
    * * This allows larger results than `largeFractionResult`.
    */
@@ -323,6 +327,15 @@ export class Geometry {
     const sumAbs = 1.0 + Math.abs(a) + Math.abs(b);
     return Math.abs(a - b) <= Geometry.smallAngleRadians * sumAbs;
   }
+  /** Toleranced equality test, using tolerance `smallAngleRadians * ( 1 + abs(a) + (abs(b)))`
+   * * Effectively an absolute tolerance of `smallAngleRadians`, with tolerance increasing for larger values of a and b.
+  */
+  public static isAlmostEqualXAndY(a: XAndY, b: XAndY): boolean {
+    const sumAbs = 1.0 + Math.abs(a.x) + Math.abs(b.x) + Math.abs(a.y) + Math.abs(b.y);
+    const tolerance = Geometry.smallAngleRadians * sumAbs;
+    return Math.abs(a.x - b.x) <= tolerance && Math.abs(a.y - b.y) <= tolerance;
+  }
+
   /** Toleranced equality test, using caller-supplied tolerance. */
   public static isDistanceWithinTol(distance: number, tol: number): boolean {
     return Math.abs(distance) <= Math.abs(tol);

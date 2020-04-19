@@ -1,9 +1,11 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module CartesianGeometry */
+/** @packageDocumentation
+ * @module CartesianGeometry
+ */
 
 import { AngleProps, Geometry } from "../Geometry";
 import { Angle } from "./Angle";
@@ -57,7 +59,7 @@ export class YawPitchRollAngles {
     this.roll = roll;
   }
   /** Freeze this YawPitchRollAngles */
-  public freeze() { Object.freeze(this.yaw); Object.freeze(this.pitch); Object.freeze(this.roll); }
+  public freeze(): Readonly<this> { this.yaw.freeze(); this.pitch.freeze(); this.roll.freeze(); return Object.freeze(this); }
   /** constructor for YawPitchRollAngles with angles in degrees. */
   public static createDegrees(yawDegrees: number, pitchDegrees: number, rollDegrees: number): YawPitchRollAngles {
     return new YawPitchRollAngles(Angle.createDegrees(yawDegrees), Angle.createDegrees(pitchDegrees), Angle.createDegrees(rollDegrees));

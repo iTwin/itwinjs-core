@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Curve */
+/** @packageDocumentation
+ * @module Curve
+ */
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Ray3d } from "../geometry3d/Ray3d";
 import { CurvePrimitive } from "./CurvePrimitive";
@@ -79,6 +81,10 @@ export class CurveLocationDetail {
    * * e.g. CurvePrimitive.moveSignedDistanceFromFraction
    */
   public curveSearchStatus?: CurveSearchStatus;
+  /** (optional) second fraction, e.g. end of interval of coincident curves */
+  public fraction1?: number;
+  /** (optional) second point, e.g. end of interval of coincident curves */
+  public point1?: Point3d;
   /** A context-specific additional point */
   public pointQ: Point3d;  // extra point for use in computations
 
@@ -92,11 +98,49 @@ export class CurveLocationDetail {
   public setIntervalRole(value: CurveIntervalRole): void {
     this.intervalRole = value;
   }
+  /** Set the (optional) fraction1 and point1, using direct assignment (capture!) to point1 */
+  public captureFraction1Point1(fraction1: number, point1: Point3d): void {
+    this.fraction1 = fraction1;
+    this.point1 = point1;
+  }
+
+  /** test if this pair has fraction1 defined */
+  public get hasFraction1(): boolean {
+    return this.fraction1 !== undefined;
+  }
+
   /** test if this is an isolated point. This is true if intervalRole is any of (undefined, isolated, isolatedAtVertex) */
   public get isIsolated(): boolean {
     return this.intervalRole === undefined
       || this.intervalRole === CurveIntervalRole.isolated
       || this.intervalRole === CurveIntervalRole.isolatedAtVertex;
+  }
+
+  /** return the fraction delta. (0 if no fraction1) */
+  public get fractionDelta(): number {
+    return this.fraction1 !== undefined ? this.fraction1 - this.fraction : 0.0;
+  }
+
+  /** If (fraction1, point1) are defined, make them the primary (and only) data.
+   * * No action if undefined.
+   */
+  public collapseToEnd() {
+    if (this.fraction1 !== undefined) {
+      this.fraction = this.fraction1;
+      this.fraction1 = undefined;
+    }
+    if (this.point1) {
+      this.point = this.point1;
+      this.point1 = undefined;
+    }
+  }
+
+  /** make (fraction, point) the primary (and only) data.
+   * * No action if undefined.
+   */
+  public collapseToStart() {
+    this.fraction1 = undefined;
+    this.point1 = undefined;
   }
 
   /** Return a complete copy, WITH CAVEATS . . .
@@ -109,6 +153,8 @@ export class CurveLocationDetail {
     result = result ? result : new CurveLocationDetail();
     result.curve = this.curve;
     result.fraction = this.fraction;
+    result.fraction1 = this.fraction1;
+    result.point1 = this.point1;
     result.point.setFromPoint3d(this.point);
     result.vectorInCurveLocationDetail = optionalVectorUpdate(this.vectorInCurveLocationDetail, result.vectorInCurveLocationDetail);
     result.a = this.a;
@@ -155,7 +201,7 @@ export class CurveLocationDetail {
   /** create with a CurvePrimitive pointer but no coordinate data.
    */
   public static create(
-    curve: CurvePrimitive,
+    curve?: CurvePrimitive,
     result?: CurveLocationDetail): CurveLocationDetail {
     result = result ? result : new CurveLocationDetail();
     result.curve = curve;
@@ -165,7 +211,7 @@ export class CurveLocationDetail {
   /** create with CurvePrimitive pointer, fraction, and point coordinates.
    */
   public static createCurveFractionPoint(
-    curve: CurvePrimitive,
+    curve: CurvePrimitive | undefined,
     fraction: number,
     point: Point3d,
     result?: CurveLocationDetail): CurveLocationDetail {
@@ -192,7 +238,7 @@ export class CurveLocationDetail {
   /** create with CurvePrimitive pointer, fraction, and point coordinates
    */
   public static createCurveFractionPointDistanceCurveSearchStatus(
-    curve: CurvePrimitive,
+    curve: CurvePrimitive | undefined,
     fraction: number,
     point: Point3d,
     distance: number,
@@ -241,7 +287,7 @@ export class CurveLocationDetail {
     return result;
   }
 
-  /** create with CurvePrimitive pointer, fraction, and point coordinates.
+  /** create with CurvePrimitive pointer and fraction for evaluation.
    */
   public static createCurveEvaluatedFraction(
     curve: CurvePrimitive,
@@ -256,6 +302,25 @@ export class CurveLocationDetail {
     result.a = 0.0;
     return result;
   }
+  /** create with CurvePrimitive pointer and 2 fractions for evaluation.
+   */
+  public static createCurveEvaluatedFractionFraction(
+    curve: CurvePrimitive,
+    fraction0: number,
+    fraction1: number,
+    result?: CurveLocationDetail): CurveLocationDetail {
+    result = result ? result : new CurveLocationDetail();
+    result.curve = curve;
+    result.fraction = fraction0;
+    result.point = curve.fractionToPoint(fraction0);
+    result.fraction1 = fraction1;
+    result.point1 = curve.fractionToPoint(fraction1);
+    result.vectorInCurveLocationDetail = undefined;
+    result.curveSearchStatus = undefined;
+    result.a = 0.0;
+    return result;
+  }
+
   /** create with CurvePrimitive pointer, fraction, and point coordinates.
    */
   public static createCurveFractionPointDistance(
@@ -291,7 +356,28 @@ export class CurveLocationDetail {
     CurveLocationDetail.createCurveFractionPointDistance(curve, fraction, point, a, this);
     return true;
   }
-
+  /**
+   * * Exchange the (fraction,fraction1) and (point, point1) pairs.
+   * * (Skip each swap if its "1" value is undefined)
+   */
+  public swapFractionsAndPoints() {
+    if (this.fraction1 !== undefined) {
+      const f = this.fraction; this.fraction = this.fraction1; this.fraction1 = f;
+    }
+    if (this.point1 !== undefined) {
+      const p = this.point; this.point = this.point1; this.point1 = p;
+    }
+  }
+  /**
+   * * return the fraction where f falls between fraction and fraction1.
+   * * ASSUME fraction1 defined
+   */
+  public inverseInterpolateFraction(f: number, defaultFraction: number = 0): number {
+    const a = Geometry.inverseInterpolate01(this.fraction, this.fraction1!, f);
+    if (a === undefined)
+      return defaultFraction;
+    return a;
+  }
 }
 /** Enumeration of configurations for intersections and min/max distance-between-curve
  * @public
@@ -340,4 +426,5 @@ export class CurveLocationDetailPair {
     result.approachType = this.approachType;
     return result;
   }
+
 }

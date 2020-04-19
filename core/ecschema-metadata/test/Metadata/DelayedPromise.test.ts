@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
@@ -29,7 +29,7 @@ describe("DelayedPromise", () => {
   it("should not start until a resolution callback is attached", async () => {
     const asyncOp = sinon.spy(async () => 20);
     const promise = new DelayedPromise(asyncOp);
-    const callback = sinon.spy(() => "foo");
+    const callback = sinon.spy((_: number) => "foo");
 
     expect(asyncOp.notCalled).to.be.true;
     expect(await promise.then(callback)).to.equal("foo");
@@ -43,7 +43,7 @@ describe("DelayedPromise", () => {
     const error = new Error("I like to throw things");
     const asyncOp = sinon.spy(async () => { throw error; });
     const promise = new DelayedPromise(asyncOp);
-    const callback = sinon.spy(() => "bar");
+    const callback = sinon.spy((_: Error) => "bar");
 
     expect(asyncOp.notCalled).to.be.true;
     expect(await promise.catch(callback)).to.equal("bar");

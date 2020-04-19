@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /* tslint:disable:no-direct-imports */
 
@@ -8,7 +8,7 @@ import { expect } from "chai";
 import * as sinon from "sinon";
 import * as faker from "faker";
 import { createRandomRuleset } from "@bentley/presentation-common/lib/test/_helpers/random";
-import { RulesetManagerImpl } from "../RulesetManager";
+import { RulesetManagerImpl } from "../presentation-frontend/RulesetManager";
 
 describe("RulesetManager", () => {
 
@@ -46,7 +46,7 @@ describe("RulesetManager", () => {
     it("allows registering 2 rulesets with the same id", async () => {
       const rulesetId = faker.random.uuid();
       const rulesets = [await createRandomRuleset(), await createRandomRuleset()];
-      await Promise.all(rulesets.map((r) => {
+      await Promise.all(rulesets.map(async (r) => {
         r.id = rulesetId;
         return manager.add(r);
       }));

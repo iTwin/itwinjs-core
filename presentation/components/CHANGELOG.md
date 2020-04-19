@@ -1,6 +1,66 @@
 # Change Log - @bentley/presentation-components
 
-This log was last generated on Fri, 01 Nov 2019 13:28:37 GMT and should not be manually modified.
+This log was last generated on Wed, 04 Mar 2020 16:16:31 GMT and should not be manually modified.
+
+## 1.13.0
+Wed, 04 Mar 2020 16:16:31 GMT
+
+### Updates
+
+- Refatored UnifiedSelectionTreeEventHandler to use inheritance instead of composition
+
+## 1.12.0
+Wed, 12 Feb 2020 17:45:50 GMT
+
+### Updates
+
+- Fix nested content records being duplicated if all nested fields have their own category definitions
+- PresentationTableDataProvider should create column for display label when display type is 'List'
+- Ignore barrel file on docs processing
+- Added nodeLoadHandler to usePresentationNodeLoader props
+- Avoid handling whole tree model when handling model change event in UnifiedSelectionTreeEventHandler
+- Set label and labelDefinition when creating PropertyData and TreeNodeItem
+
+## 1.11.0
+Wed, 22 Jan 2020 19:24:12 GMT
+
+### Updates
+
+- Create PropertyRecord to represent TreeNodeItem label if node's LabelDefinition is provided
+- Upgrade to TypeScript 3.7.2.
+
+## 1.10.0
+Tue, 07 Jan 2020 19:44:01 GMT
+
+### Updates
+
+- Apply unified selection in ControlledTree after selection event is handled.
+
+## 1.9.0
+Tue, 10 Dec 2019 18:08:56 GMT
+
+### Updates
+
+- Exposed UnifiedSelectionTreeEventHandler and made it more customizable
+- Handle newly introduced multi-ECInstance nodes
+- Added a favorite property data provider.
+- Make `rulesetId` for PropertyGridDataProvider optional
+- Avoid duplicate `PropertyRecord` names when content has multiple `Field`s with the same name nested under different parent fields.
+- No longer accessing this.state or this.props in setState updater - flagged by lgtm report
+- Update sinon version.
+- Changed ControlledTree specific hooks and HOCs release tags to beta
+- Adjusted UnifiedSelectionTreeEventHandler according changes to ControlledTree events
+- Added useRulesetRegistration hook and refactores usePresentationNodeLoader hook
+
+## 1.8.0
+Fri, 22 Nov 2019 14:03:34 GMT
+
+### Updates
+
+- Fix property data provider failing to create data when content includes empty nested content values
+- Tablet responsive UI
+- Add usePresentationNodeLoader custom hook
+- Added custom hook and HOC that adds filtering support to ControlledTree
 
 ## 1.7.0
 Fri, 01 Nov 2019 13:28:37 GMT

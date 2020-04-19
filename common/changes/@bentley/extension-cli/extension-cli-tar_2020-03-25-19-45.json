@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/extension-cli",
+      "comment": "Add archiving suppport - will now archive the files itself, input is a directory",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/extension-cli",
+  "email": "paulius.valiunas@bentley.com"
+}

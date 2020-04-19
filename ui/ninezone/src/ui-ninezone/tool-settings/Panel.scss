@@ -1,0 +1,24 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+@import "~@bentley/ui-core/lib/ui-core/z-index";
+@import "~@bentley/ui-core/lib/ui-core/style/themecolors";
+
+.nz-toolSettings-panel {
+  @include uicore-z-index(tool-settings-popup);
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: $buic-background-1;
+  border-color: $buic-background-5;
+  border-width: 1px;
+  border-style: solid;
+  border-radius: 3px;
+  padding: 0.5em;
+  align-items: flex-start;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  row-gap: 4px;
+  column-gap: 4px;
+}

@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { PlaneByOriginAndVectors4d } from "../../geometry4d/PlaneByOriginAndVectors4d";
 import { Map4d } from "../../geometry4d/Map4d";
@@ -401,8 +401,10 @@ describe("Matrix4d", () => {
       8, 3, -15, 2,
       9, 1, 2, 11);
     const scale = 1.25;
-    const allMatrices = [Matrix4d.createZero(),
-    Matrix4d.createIdentity()];
+    const allMatrices = [
+      Matrix4d.createZero(),
+      Matrix4d.createIdentity(),
+    ];
     for (let i = 0; i < 4; i++) {
       for (let j = 0; j < 4; j++) {
         const matrix = Matrix4d.createZero();
@@ -644,8 +646,10 @@ function suppressNearZero(value: number): number {
   return value;
 }
 function prettyMap(map: Map4d): any {
-  return prettyPrint([map.transform0.rowArrays(suppressNearZero),
-  map.transform0.rowArrays(suppressNearZero)]);
+  return prettyPrint([
+    map.transform0.rowArrays(suppressNearZero),
+    map.transform0.rowArrays(suppressNearZero),
+  ]);
 }
 function verifySandwich(ck: bsiChecker.Checker, meat: Map4d, bread: Map4d) {
   const inverseMeat = meat.clone();

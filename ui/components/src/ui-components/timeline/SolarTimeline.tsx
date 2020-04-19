@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Timeline */
+/** @packageDocumentation
+ * @module Timeline
+ */
 
 // component is in alpha state - it may change after usability testing - test coverage not complete
 /* istanbul ignore file */
@@ -12,8 +14,10 @@ import classnames from "classnames";
 import { PlayButton } from "./PlayerButton";
 import { Slider, Rail, Handles, Ticks, SliderItem, GetHandleProps } from "react-compound-slider";
 import ReactResizeDetector from "react-resize-detector";
+import { RelativePosition } from "@bentley/ui-abstract";
+import { Popup, CommonProps } from "@bentley/ui-core";
+
 import { DayPicker } from "./DayPicker";
-import { Popup, Position, CommonProps } from "@bentley/ui-core";
 import { SolarDataProvider } from "./interfaces";
 import { SpeedTimeline } from "./SpeedTimeline";
 import { SaturationPicker } from "../color/SaturationPicker";
@@ -342,14 +346,14 @@ export class SolarTimeline extends React.PureComponent<SolarTimelineComponentPro
   private _amLabel = UiComponents.i18n.translate("UiComponents:time.am");
   private _pmLabel = UiComponents.i18n.translate("UiComponents:time.pm");
   private readonly _presetColors = [
-    new ColorDef(ColorByName.grey),
-    new ColorDef(ColorByName.lightGrey),
-    new ColorDef(ColorByName.darkGrey),
-    new ColorDef(ColorByName.lightBlue),
-    new ColorDef(ColorByName.lightGreen),
-    new ColorDef(ColorByName.darkGreen),
-    new ColorDef(ColorByName.tan),
-    new ColorDef(ColorByName.darkBrown),
+    ColorDef.create(ColorByName.grey),
+    ColorDef.create(ColorByName.lightGrey),
+    ColorDef.create(ColorByName.darkGrey),
+    ColorDef.create(ColorByName.lightBlue),
+    ColorDef.create(ColorByName.lightGreen),
+    ColorDef.create(ColorByName.darkGreen),
+    ColorDef.create(ColorByName.tan),
+    ColorDef.create(ColorByName.darkBrown),
   ];
 
   constructor(props: SolarTimelineComponentProps) {
@@ -508,7 +512,7 @@ export class SolarTimeline extends React.PureComponent<SolarTimelineComponentPro
     const date = new Date(dayStartMs + this.state.currentTimeOffsetMs);
 
     // update the date (time)
-    date.setHours(hours, minutes);
+    date.setUTCHours(hours, minutes);
 
     // notify the provider
     if (this.props.dataProvider.onTimeChanged) {
@@ -597,15 +601,15 @@ export class SolarTimeline extends React.PureComponent<SolarTimelineComponentPro
 
   private _formatTime = (millisec: number) => {
     const date = new Date(millisec);
-    let hours = date.getHours();
-    const minutes = addZero(date.getMinutes());
+    let hours = date.getUTCHours();
+    const minutes = addZero(date.getUTCMinutes());
     const abbrev = (hours < 12) ? this._amLabel : (hours === 24) ? this._amLabel : this._pmLabel;
     hours = (hours > 12) ? hours - 12 : hours;
     return `${hours}:${minutes} ${abbrev}`;
   }
 
   private _formatDate = (date: Date) => {
-    return this._months[date.getMonth()] + ", " + date.getDate();
+    return this._months[date.getUTCMonth()] + ", " + date.getUTCDate();
   }
 
   private _onPresetColorPick = (shadowColor: ColorDef) => {
@@ -614,7 +618,8 @@ export class SolarTimeline extends React.PureComponent<SolarTimelineComponentPro
 
   private _handleHueOrSaturationChange = (hueOrSaturation: HSVColor) => {
     if (hueOrSaturation.s === 0)  // for a ColorDef to be created from hsv s can't be 0
-      hueOrSaturation.s = 0.5;
+      hueOrSaturation = hueOrSaturation.clone(undefined, 0.5);
+
     const shadowColor = hueOrSaturation.toColorDef();
     this.setState({ shadowColor }, () => this.props.dataProvider.shadowColor = shadowColor);
   }
@@ -651,8 +656,8 @@ export class SolarTimeline extends React.PureComponent<SolarTimelineComponentPro
             <span>{formattedTime}</span>
             <span className="icon icon-calendar" />
           </button>
-          <Popup style={{ border: "none" }} offset={11} target={this._datePicker} isOpen={this.state.isDateOpened} onClose={this._onCloseDayPicker} position={Position.Top}>
-            <DayPicker active={this.props.dataProvider.day} hours={currentDate.getHours()} minutes={currentDate.getMinutes()}
+          <Popup style={{ border: "none" }} offset={11} target={this._datePicker} isOpen={this.state.isDateOpened} onClose={this._onCloseDayPicker} position={RelativePosition.Top}>
+            <DayPicker active={this.props.dataProvider.day} hours={currentDate.getUTCHours()} minutes={currentDate.getUTCMinutes()}
               onTimeChange={this._onTimeChanged} onDayChange={this._onDayClick} />
           </Popup>
           <Timeline className="solar-timeline"
@@ -672,7 +677,7 @@ export class SolarTimeline extends React.PureComponent<SolarTimelineComponentPro
           <button data-testid="shadow-settings-button" title={this._settingLabel} className="shadow-settings-button" ref={(element) => this._settings = element} onClick={this._onOpenSettingsPopup}>
             <span className="icon icon-settings" />
           </button>
-          <Popup className="shadow-settings-popup" target={this._settings} offset={11} isOpen={this.state.isSettingsOpened} onClose={this._onCloseSettingsPopup} position={Position.Top}>
+          <Popup className="shadow-settings-popup" target={this._settings} offset={11} isOpen={this.state.isSettingsOpened} onClose={this._onCloseSettingsPopup} position={RelativePosition.Top}>
             <div className="shadow-settings-popup-container" >
               <div className="shadow-settings-header">{this._settingsPopupTitle}</div>
               <div className="shadow-settings-color">

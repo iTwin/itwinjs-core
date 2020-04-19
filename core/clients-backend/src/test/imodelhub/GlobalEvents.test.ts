@@ -1,20 +1,21 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
 
-import { Guid } from "@bentley/bentleyjs-core";
-import {
-  AccessToken, IModelClient, HubIModel, GlobalEventSubscription, GlobalEventSAS, GlobalEventType,
-  SoftiModelDeleteEvent, HardiModelDeleteEvent, IModelCreatedEvent, ChangeSetCreatedEvent,
-  NamedVersionCreatedEvent, IModelHubGlobalEvent, GetEventOperationType, AuthorizedClientRequestContext,
-  ContextType,
-} from "@bentley/imodeljs-clients";
+import { Guid, Config } from "@bentley/bentleyjs-core";
+import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { TestUserCredentials } from "@bentley/oidc-signin-tool";
 import { TestConfig } from "../TestConfig";
-import { TestUsers } from "../TestUsers";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import * as utils from "./TestUtils";
+import {
+  IModelClient, HubIModel, GlobalEventSubscription, GlobalEventSAS, GlobalEventType,
+  SoftiModelDeleteEvent, HardiModelDeleteEvent, IModelCreatedEvent, ChangeSetCreatedEvent,
+  NamedVersionCreatedEvent, IModelHubGlobalEvent, GetEventOperationType,
+} from "@bentley/imodelhub-client";
+import { ContextType } from "@bentley/context-registry-client";
 chai.should();
 
 function mockGetGlobalEvent(subscriptionId: string, eventBody: object, eventType?: string, timeout?: number, responseCode?: number, delay?: number) {
@@ -122,12 +123,18 @@ describe("iModelHub GlobalEventHandler (#unit)", () => {
   const imodelHubClient: IModelClient = utils.getDefaultClient();
   let requestContext: AuthorizedClientRequestContext;
   let serviceAccountRequestContext: AuthorizedClientRequestContext;
+  let serviceAccount1: TestUserCredentials;
 
   before(async () => {
     const accessToken: AccessToken = await utils.login();
     requestContext = new AuthorizedClientRequestContext(accessToken);
     projectId = await utils.getProjectId(requestContext);
-    const serviceAccountAccessToken = await utils.login(TestUsers.serviceAccount1);
+
+    serviceAccount1 = {
+      email: Config.App.getString("imjs_test_serviceAccount1_user_name"),
+      password: Config.App.getString("imjs_test_serviceAccount1_user_password"),
+    };
+    const serviceAccountAccessToken = await utils.login(serviceAccount1);
     serviceAccountRequestContext = new AuthorizedClientRequestContext(serviceAccountAccessToken);
 
     await utils.deleteIModelByName(requestContext, projectId, imodelName);
@@ -200,7 +207,7 @@ describe("iModelHub GlobalEventHandler (#unit)", () => {
 
     let receivedEventsCount = 0;
     const deleteListener = imodelHubClient.globalEvents.createListener(requestContext, async () => {
-      return utils.login(TestUsers.serviceAccount1);
+      return utils.login(serviceAccount1);
     }, globalEventSubscription.wsgId, (receivedEvent: IModelHubGlobalEvent) => {
       if (receivedEvent instanceof SoftiModelDeleteEvent)
         receivedEventsCount++;

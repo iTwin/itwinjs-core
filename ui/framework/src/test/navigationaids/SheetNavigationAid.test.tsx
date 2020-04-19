@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { mount, shallow } from "enzyme";
@@ -13,7 +13,6 @@ import {
   AnyWidgetProps,
   NavigationWidgetDef,
   ConfigurableUiManager,
-  WidgetDefFactory,
 } from "../../ui-framework";
 import TestUtils from "../TestUtils";
 import { IModelConnection, MockRender } from "@bentley/imodeljs-frontend";
@@ -57,16 +56,16 @@ describe("SheetNavigationAid", () => {
 
     it("SheetNavigationAidControl creates SheetNavigationAid", () => {
 
-      const widgetDef = WidgetDefFactory.create(widgetProps);
-      expect(widgetDef).to.be.instanceof(NavigationWidgetDef);
+      const widgetDef = new NavigationWidgetDef(widgetProps); // tslint:disable-line:deprecation
+      expect(widgetDef).to.be.instanceof(NavigationWidgetDef); // tslint:disable-line:deprecation
 
-      const navigationWidgetDef = widgetDef as NavigationWidgetDef;
+      const navigationWidgetDef = widgetDef as NavigationWidgetDef; // tslint:disable-line:deprecation
 
-      const reactElement = navigationWidgetDef.reactElement;
-      expect(reactElement).to.not.be.undefined;
-
-      const reactNode = navigationWidgetDef.renderCornerItem();
+      const reactNode = navigationWidgetDef.reactNode;
       expect(reactNode).to.not.be.undefined;
+
+      const cornerNode = navigationWidgetDef.renderCornerItem();
+      expect(cornerNode).to.not.be.undefined;
     });
 
   });

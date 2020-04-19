@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
 import { executeRegisteredCallback } from "../../utils/CallbackUtils";
@@ -46,10 +46,9 @@ export class ElectronTestRunner {
     });
 
     ipcMain.on("certa-callback", async (event: any, msg: any) => {
-      event.returnValue = executeRegisteredCallback(msg.name, msg.args);
+      event.returnValue = await executeRegisteredCallback(msg.name, msg.args);
     });
 
-    rendererWindow.loadFile(path.join(__dirname, "../../../public/index.html"));
     rendererWindow.webContents.once("did-finish-load", async () => {
       const initScriptPath = require.resolve("./initElectronTests.js");
       const startTests = async () => rendererWindow.webContents.executeJavaScript(`
@@ -67,5 +66,6 @@ export class ElectronTestRunner {
 
       await startTests();
     });
+    await rendererWindow.loadFile(path.join(__dirname, "../../../public/index.html"));
   }
 }

@@ -6,12 +6,13 @@ iModel.js **backends** are built and tested on the following:
 
 - Debian 9 "Stretch"
 - Windows 10 version 1803 (or greater)
+- MacOS 10.15 (or greater)
 
 In addition, **backends** are deployed on:
 
 - Windows Server 2016 Datacenter version 1607
 
-They should run on most Windows and Linux platforms with [Tier 1 support](https://github.com/nodejs/node/blob/master/BUILDING.md#platform-list) from NodeJs. However, regular testing only occurs on the platforms listed above.
+They should run on most Windows, Linux and MacOS versions with [Tier 1 support](https://github.com/nodejs/node/blob/master/BUILDING.md#platform-list) from NodeJs. However, regular testing only occurs on the platforms listed above.
 
 ### Backend Prerequisites
 
@@ -29,7 +30,7 @@ iModel.js strives to support as many modern browsers as possible, though it requ
 - Firefox
 - Safari
 - Opera
-- "New" [Chromium-based](https://www.microsoftedgeinsider.com) Edge
+- "New" [Chromium-based](https://www.microsoft.com/edge) Edge
 
 > Note: Internet Explorer and "Old" Edge are **not** supported
 

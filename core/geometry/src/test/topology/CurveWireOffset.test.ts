@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
 /* tslint:disable: no-console */
@@ -13,7 +13,7 @@ import { Sample } from "../../serialization/GeometrySamples";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 
-import { JointOptions } from "../../curve/PolygonOffsetContext";
+import { JointOptions } from "../../curve/internalContexts/PolygonOffsetContext";
 import { Loop } from "../../curve/Loop";
 import { AnyCurve } from "../../curve/CurveChain";
 import { Path } from "../../curve/Path";

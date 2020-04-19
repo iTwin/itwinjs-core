@@ -2,11 +2,16 @@
 
 exports[`<TextEditor /> renders correctly 1`] = `
 <Input
-  className="cell components-cell-editor components-text-editor"
+  className="components-cell-editor components-text-editor"
   data-testid="components-text-editor"
   defaultValue=""
   onChange={[Function]}
   readOnly={false}
+  style={
+    Object {
+      "minWidth": "6em",
+    }
+  }
   type="text"
 />
 `;

@@ -28,7 +28,7 @@
     "logo": "landing-page/assets/imodeljs-logo.svg",
     "smallLogo": "landing-page/assets/imodeljs-icon.svg",
     "sponsoredByLogo": "landing-page/assets/bentley.svg",
-    "favicon": "landing-page/assets/imodeljs_16.png",
+    "favicon": "landing-page/assets/imodeljs_favicon_16.png",
     "docSiteOrder": [
       "landing-page",
       "getting-started",
@@ -42,17 +42,27 @@
       "BIS": "bis",
       "Learning": "learning",
       "API Reference": "reference",
-      "v1.7.0": "changehistory"
+      "v1.13.0": "changehistory"
     },
+    "archivedVersions": [
+      {
+        "version": "v1.13.0",
+        "archivedPath": "/v1"
+      }
+    ],
     "packageAliases": {
       "backend": "imodeljs-backend",
       "bentley": "bentleyjs-core",
       "clients-backend": "imodeljs-clients-backend",
-      "clients": "imodeljs-clients",
+      "itwin-client": "itwin-client",
       "common": "imodeljs-common",
+      "context-registry-client": "context-registry-client",
+      "extension-client": "extension-client",
       "frontend": "imodeljs-frontend",
+      "frontend-authorization-client": "frontend-authorization-client",
       "geometry": "geometry-core",
       "i18n": "imodeljs-i18n",
+      "imodelhub-client": "imodelhub-client",
       "markup": "imodeljs-markup",
       "quantity": "imodeljs-quantity",
       "frontend-devtools": "frontend-devtools",
@@ -64,7 +74,13 @@
       "presentation-backend": "presentation-backend",
       "presentation-common": "presentation-common",
       "presentation-components": "presentation-components",
-      "presentation-frontend": "presentation-frontend"
+      "presentation-frontend": "presentation-frontend",
+      "product-settings-client": "product-settings-client",
+      "projectshare-client": "projectshare-client",
+      "rbac-client": "rbac-client",
+      "reality-data-client": "reality-data-client",
+      "usage-logging-client": "usage-logging-client",
+      "webgl-compatibility": "webgl-compatibility"
     },
     "headerHTML": "<meta property=\"og:description\" content=\"Create Immersive Connections with your Infrastructure Digital Twin.\"><meta property=\"og:url\" content=\"imodeljs.org\"><meta name=\"twitter:card\" content=\"summary_large_image\">",
     "ogShareImage": "landing-page/assets/twitter-share.png"

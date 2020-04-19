@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Breadcrumb */
+/** @packageDocumentation
+ * @module Breadcrumb
+ */
 
 import * as React from "react";
 import classnames from "classnames";
@@ -11,11 +13,15 @@ import "./Breadcrumb.scss";
 import * as _ from "lodash";
 import { using } from "@bentley/bentleyjs-core";
 import { SplitButton, withOnOutsideClick, MessageSeverity, DialogButtonType, MessageBox, ContextMenu, ContextMenuItem, CommonProps } from "@bentley/ui-core";
+import { PropertyRecord } from "@bentley/ui-abstract";
 import { TreeDataProvider, TreeNodeItem, isTreeDataProviderInterface, DelayLoadedTreeNodeItem, ImmediatelyLoadedTreeNodeItem } from "../tree/TreeDataProvider";
 import { BreadcrumbPath, BreadcrumbUpdateEventArgs } from "./BreadcrumbPath";
-import { BeInspireTree, BeInspireTreeNode, BeInspireTreeNodeConfig, MapPayloadToInspireNodeCallback, BeInspireTreeEvent, BeInspireTreeNodes, toNodes } from "../tree/component/BeInspireTree";
+import { BeInspireTree, BeInspireTreeNode, BeInspireTreeNodeConfig, MapPayloadToInspireNodeCallback, BeInspireTreeEvent, BeInspireTreeNodes, toNodes } from "../tree/deprecated/component/BeInspireTree";
 import { UiComponents } from "../UiComponents";
+import { getPropertyRecordAsString } from "../common/getPropertyRecordAsString";
+import { PropertyValueRendererManager } from "../properties/ValueRendererManager";
 
+// tslint:disable:deprecation
 // cspell:ignore itree autocompleting
 
 /** @internal */
@@ -297,7 +303,7 @@ export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState
   private static inspireNodeFromTreeNodeItem(item: TreeNodeItem, remapper: MapPayloadToInspireNodeCallback<TreeNodeItem>): BeInspireTreeNodeConfig {
     const node: BeInspireTreeNodeConfig = {
       id: item.id,
-      text: item.label,
+      text: getPropertyRecordAsString(item.label),
       itree: {
         state: { collapsed: false },
       },
@@ -554,7 +560,7 @@ export class BreadcrumbInput extends React.Component<BreadcrumbInputProps, Bread
 
   private _findChildUserInput = async (p: string): Promise<BeInspireTreeNode<TreeNodeItem> | undefined> => {
     const delimiter = this.props.delimiter!;
-    if (p.lastIndexOf(delimiter) === p.length - delimiter.length) // strip last delimiter if at end
+    if (p.endsWith(delimiter)) // strip last delimiter if at end
       p = p.substr(0, p.length - delimiter.length);
     const root = this.props.tree.nodes();
     for (const node of root) {
@@ -811,7 +817,7 @@ class BreadcrumbDropdownNode extends React.Component<BreadcrumbDropdownNodeProps
       if (p)
         parent = p.payload;
     }
-    const label = n && n.label ? n.label : " ";
+    const label = n && n.label ? n.label : PropertyRecord.fromString("");
     const icon = n && n.icon ? n.icon : "icon-browse";
     const renderNode = this.props.renderNode ? this.props.renderNode : this.renderNode;
     if (this.props.parentsOnly)
@@ -840,7 +846,7 @@ class BreadcrumbDropdownNode extends React.Component<BreadcrumbDropdownNodeProps
                 onSelect={(_event) => {
                   this.props.onNodeSelected(child.payload);
                 }}>
-                {child.payload!.label}
+                {PropertyValueRendererManager.defaultManager.render(child.payload!.label)}
               </ContextMenuItem>
             );
           })}
@@ -868,7 +874,7 @@ export interface BreadcrumbNodeProps {
   /** Icon class string */
   icon: string;
   /** Node label */
-  label: string;
+  label: PropertyRecord;
   /** @internal */
   onRender?: () => void;
 }
@@ -883,7 +889,7 @@ export class BreadcrumbNode extends React.Component<BreadcrumbNodeProps> {
 
   public render(): React.ReactNode {
     const { icon, label } = this.props;
-    return <span data-testid="components-breadcrumb-node"><span className={classnames("icon", icon)} /> {label}</span>;
+    return <span data-testid="components-breadcrumb-node"><span className={classnames("icon", icon)} />{PropertyValueRendererManager.defaultManager.render(label)}</span>;
   }
 
   public componentDidMount() {

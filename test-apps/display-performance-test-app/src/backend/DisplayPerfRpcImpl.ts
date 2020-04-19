@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import { IModelHost, IModelJsFs } from "@bentley/imodeljs-backend";
@@ -65,10 +65,26 @@ export default class DisplayPerfRpcImpl extends DisplayPerfRpcInterface {
       if (process.env.browser) {
         rowObject.browser = process.env.browser;
       }
-      const totalTime = rowObject["Total Time"] as number;
-      const fps = rowObject["Effective FPS"] as number;
-      this._reporter.addEntry("DisplayTests", testName, "Total time", totalTime, rowObject);
-      this._reporter.addEntry("DisplayTests", testName, "Effective FPS", fps, rowObject);
+      const cpuTotalTime = rowObject["CPU Total Time"] as number;
+      this._reporter.addEntry("DisplayTests", testName, "CPU Total Time", cpuTotalTime, rowObject);
+      const niTotalTime = rowObject["Non-Interactive Total Time"] as number;
+      const nifps = rowObject["Non-Interactive FPS"] as number;
+      if (niTotalTime !== undefined && nifps !== undefined) {
+        this._reporter.addEntry("DisplayTests", testName, "Non-Interactive Total Time", niTotalTime, rowObject);
+        this._reporter.addEntry("DisplayTests", testName, "Non-Interactive FPS", nifps, rowObject);
+      }
+      const gpuTotalTime = rowObject["GPU Total Time"] as number;
+      const eTotalTime = rowObject["Effective Total Time"] as number;
+      const efps = rowObject["Effective FPS"] as number;
+      if (gpuTotalTime !== undefined && eTotalTime !== undefined && efps !== undefined) {
+        this._reporter.addEntry("DisplayTests", testName, "GPU Total Time", gpuTotalTime, rowObject);
+        this._reporter.addEntry("DisplayTests", testName, "Effective Total Time", eTotalTime, rowObject);
+        this._reporter.addEntry("DisplayTests", testName, "Effective FPS", efps, rowObject);
+      }
+      const aTotalTime = rowObject["Actual Total Time"] as number;
+      const afps = rowObject["Actual FPS"] as number;
+      this._reporter.addEntry("DisplayTests", testName, "Actual Total Time", aTotalTime, rowObject);
+      this._reporter.addEntry("DisplayTests", testName, "Actual FPS", afps, rowObject);
     }
   }
 

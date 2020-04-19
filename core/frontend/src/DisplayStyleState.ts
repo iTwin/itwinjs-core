@@ -1,40 +1,44 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Views */
+/** @packageDocumentation
+ * @module Views
+ */
 import {
-  ViewFlags,
-  ColorDef,
-  DisplayStyleProps,
-  RenderTexture,
-  SubCategoryOverride,
-  SkyBoxProps,
-  SkyBoxImageType,
-  SkyCubeProps,
-  EnvironmentProps,
-  GroundPlane,
-  DisplayStyleSettings,
-  DisplayStyle3dSettings,
   BackgroundMapProps,
   BackgroundMapSettings,
-  AnalysisStyle,
-  ContextRealityModelProps,
   Cartographic,
+  ColorDef,
+  ContextRealityModelProps,
+  DisplayStyle3dSettings,
+  DisplayStyleProps,
+  DisplayStyleSettings,
+  EnvironmentProps,
+  GlobeMode,
+  GroundPlane,
+  LightSettings,
+  RenderTexture,
+  SkyBoxImageType,
+  SkyBoxProps,
+  SkyCubeProps,
+  SolarShadowSettings,
+  SubCategoryOverride,
+  ViewFlags,
+  calculateSolarDirection,
 } from "@bentley/imodeljs-common";
 import { ElementState } from "./EntityState";
 import { IModelConnection } from "./IModelConnection";
 import { JsonUtils, Id64, Id64String, assert } from "@bentley/bentleyjs-core";
-import { RenderSystem, TextureImage, AnimationBranchStates } from "./render/System";
-import { BackgroundMapTileTreeReference } from "./tile/WebMapTileTree";
-import { BackgroundTerrainTileTreeReference } from "./tile/BackgroundTerrainTileTree";
-import { TileTree } from "./tile/TileTree";
-import { Plane3dByOriginAndUnitNormal, Vector3d, Point3d } from "@bentley/geometry-core";
+import { AnimationBranchStates } from "./render/GraphicBranch";
+import { RenderSystem, TextureImage } from "./render/RenderSystem";
+import { BackgroundMapTileTreeReference, BackgroundTerrainTileTreeReference, TileTreeReference, MapTileTree } from "./tile/internal";
 import { ContextRealityModelState } from "./ContextRealityModelState";
 import { RenderScheduleState } from "./RenderScheduleState";
 import { Viewport, ScreenViewport } from "./Viewport";
-import { calculateSolarDirection } from "./SolarCalculate";
 import { IModelApp } from "./IModelApp";
+import { BackgroundMapGeometry } from "./BackgroundMapGeometry";
+import { Vector3d, Point3d } from "@bentley/geometry-core";
 
 type BackgroundMapOrTerrainTileTreeReference = BackgroundMapTileTreeReference | BackgroundTerrainTileTreeReference;
 
@@ -48,9 +52,8 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   /** @internal */
   public static get className() { return "DisplayStyle"; }
   private _backgroundMap: BackgroundMapOrTerrainTileTreeReference;
-  private readonly _backgroundDrapeMap: BackgroundMapTileTreeReference;       // We currently drape terrain models with the active map.  At some point the setting should perhaps move to that model itself and be removed from the display style.
+  private readonly _backgroundDrapeMap: BackgroundMapTileTreeReference;
   private readonly _contextRealityModels: ContextRealityModelState[] = [];
-  private _analysisStyle?: AnalysisStyle;
   private _scheduleScript?: RenderScheduleState.Script;
 
   /** The container for this display style's settings. */
@@ -63,37 +66,24 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   constructor(props: DisplayStyleProps, iModel: IModelConnection) {
     super(props, iModel);
     const styles = this.jsonProperties.styles;
-    const backgroundMap = undefined !== styles ? styles.backgroundMap : undefined;
-    const mapProps = undefined !== backgroundMap ? backgroundMap : {};
-    const mapSettings = BackgroundMapSettings.fromJSON(mapProps);
+    const mapSettings = BackgroundMapSettings.fromJSON(styles?.backgroundMap || {});
 
     this._backgroundMap = mapSettings.applyTerrain ? new BackgroundTerrainTileTreeReference(mapSettings, iModel) : new BackgroundMapTileTreeReference(mapSettings, iModel);
-    this._backgroundDrapeMap = new BackgroundMapTileTreeReference(mapSettings, iModel, true);    // The drape map can not also include terrain. -- drape and background map share trees if terrain not on.
+    this._backgroundDrapeMap = new BackgroundMapTileTreeReference(mapSettings, iModel, false, true);
 
     if (styles) {
       if (styles.contextRealityModels)
         for (const contextRealityModel of styles.contextRealityModels)
           this._contextRealityModels.push(new ContextRealityModelState(contextRealityModel, this.iModel, this));
 
-      if (styles.analysisStyle)
-        this._analysisStyle = AnalysisStyle.fromJSON(styles.analysisStyle);
       if (styles.scheduleScript)
-        this._scheduleScript = RenderScheduleState.Script.fromJSON(this.id, this.iModel, styles.scheduleScript);
+        this._scheduleScript = RenderScheduleState.Script.fromJSON(this.id, styles.scheduleScript);
     }
   }
 
-  /** Modify the background map display settings.
-   * @param mapProps JSON representation of the new settings.
-   * @see [[ViewFlags.backgroundMap]] for toggling display of the map.
-   * @see [[DisplayStyleState.backgroundMapSettings]] and [[DisplayStyleState.changeBackgroundMapProps]] for a more convenient API, particularly when you want to change only a subset of the map settings.
-   * @note Currently the behavior of this method is not ideal.
-   *  - If this display style is associated with a Viewport, you must call Viewport.invalidateScene for the view to display the new map.
-   *  - Any properties omitted from `mapProps` will be reset to their defaults.
-   *  - All loaded tiles will be discarded and new ones will be requested, even if only changing the groundBias.
-   * @deprecated
-   */
-  public setBackgroundMap(mapProps: BackgroundMapProps): void {
-    this.changeBackgroundMapProps(BackgroundMapSettings.fromJSON(mapProps));
+  /** @internal */
+  public get displayTerrain() {
+    return this.viewFlags.backgroundMap && this.settings.backgroundMap.applyTerrain;
   }
 
   /** @internal */
@@ -102,16 +92,17 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   /** @internal */
   public get backgroundDrapeMap(): BackgroundMapTileTreeReference { return this._backgroundDrapeMap; }
 
+  /** @internal */
+  public get globeMode(): GlobeMode { return this.settings.backgroundMap.globeMode; }
+
   /** The settings controlling how a background map is displayed within a view.
    * @see [[ViewFlags.backgroundMap]] for toggling display of the map on or off.
    * @note If this display style is associated with a [[Viewport]], prefer to use [[Viewport.backgroundMapSettings]] to change the settings to ensure the Viewport's display updates immediately.
    * @beta
    */
   public get backgroundMapSettings(): BackgroundMapSettings { return this._backgroundMap.settings; }
-  /** @beta */
   public set backgroundMapSettings(settings: BackgroundMapSettings) {
     this._backgroundMap.settings = settings;
-    this._backgroundDrapeMap.settings = settings;
     this.settings.backgroundMap = settings;
   }
 
@@ -130,7 +121,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     this.backgroundMapSettings = this.backgroundMapSettings.clone(props);
     if (props.terrainSettings !== undefined && props.terrainSettings.providerName !== undefined || props.applyTerrain !== undefined)
       this._backgroundMap = ("CesiumWorldTerrain" === this.backgroundMapSettings.terrainSettings.providerName && this.backgroundMapSettings.applyTerrain) ? new BackgroundTerrainTileTreeReference(this.backgroundMapSettings, this.iModel) : new BackgroundMapTileTreeReference(this.backgroundMapSettings, this.iModel);
-
   }
 
   /** @internal */
@@ -140,12 +130,12 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   }
 
   /** @internal */
-  public forEachRealityTileTreeRef(func: (ref: TileTree.Reference) => void): void {
+  public forEachRealityTileTreeRef(func: (ref: TileTreeReference) => void): void {
     this.forEachRealityModel((model) => func(model.treeRef));
   }
 
   /** @internal */
-  public forEachTileTreeRef(func: (ref: TileTree.Reference) => void): void {
+  public forEachTileTreeRef(func: (ref: TileTreeReference) => void): void {
     this.forEachRealityTileTreeRef(func);
     if (this.viewFlags.backgroundMap)
       func(this._backgroundMap);
@@ -165,34 +155,18 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   /** The name of this DisplayStyle */
   public get name(): string { return this.code.getValue(); }
 
-  /** Settings controlling display of analytical models.
-   * @note Do not modify the style in place. Clone it and pass the clone to the setter.
-   */
-  public get analysisStyle(): AnalysisStyle | undefined { return this._analysisStyle; }
-  public set analysisStyle(style: AnalysisStyle | undefined) {
-    if (undefined === style) {
-      this._analysisStyle = undefined;
-    } else {
-      if (undefined === this._analysisStyle)
-        this._analysisStyle = AnalysisStyle.fromJSON(style);
-      else
-        this._analysisStyle.copyFrom(style);
-    }
-
-    this.jsonProperties.analysisStyle = this._analysisStyle;
-  }
-
   /** @internal */
   public get scheduleScript(): RenderScheduleState.Script | undefined { return this._scheduleScript; }
-
-  /** @internal  */
   public set scheduleScript(script: RenderScheduleState.Script | undefined) {
-    if (undefined === script) {
-      this._scheduleScript = undefined;
-    } else {
-      this._scheduleScript = RenderScheduleState.Script.fromJSON(this.id, this.iModel, script.modelTimelines);
+    let json;
+    let newScript;
+    if (script) {
+      json = script.toJSON();
+      newScript = RenderScheduleState.Script.fromJSON(this.id, json);
     }
-    this.jsonProperties.scheduleScript = this._scheduleScript;
+
+    this.settings.scheduleScriptProps = json;
+    this._scheduleScript = newScript;
   }
 
   /** @internal */
@@ -252,8 +226,34 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   public get monochromeColor(): ColorDef { return this.settings.monochromeColor; }
   public set monochromeColor(val: ColorDef) { this.settings.monochromeColor = val; }
 
+  private _backgroundMapGeometry?: {
+    bimElevationBias: number;
+    geometry: BackgroundMapGeometry;
+    globeMode: GlobeMode;
+    mapTree: MapTileTree;
+  };
+
   /** @internal */
-  public get backgroundMapPlane(): Plane3dByOriginAndUnitNormal | undefined { return (this.viewFlags.backgroundMap && this.backgroundMap instanceof BackgroundMapTileTreeReference) ? (this._backgroundMap as BackgroundMapTileTreeReference).plane : undefined; }
+  public getBackgroundMapGeometry(): BackgroundMapGeometry | undefined {
+    if (!this.viewFlags.backgroundMap || undefined === this.iModel.ecefLocation)
+      return undefined;
+
+    let bimElevationBias = this.backgroundMapSettings.groundBias;
+    const mapTree = this.backgroundMap.treeOwner.load() as MapTileTree;
+    let ecefToDb = this.iModel.ecefLocation.getTransform().inverse()!;
+
+    if (mapTree !== undefined) {
+      ecefToDb = mapTree.ecefToDb;
+      bimElevationBias = mapTree.bimElevationBias;
+    }
+
+    const globeMode = this.globeMode;
+    if (undefined === this._backgroundMapGeometry || this._backgroundMapGeometry.globeMode !== globeMode || this._backgroundMapGeometry.bimElevationBias !== bimElevationBias || this._backgroundMapGeometry.mapTree) {
+      const geometry = new BackgroundMapGeometry(ecefToDb, bimElevationBias, globeMode, this.iModel);
+      this._backgroundMapGeometry = { bimElevationBias, geometry, globeMode, mapTree };
+    }
+    return this._backgroundMapGeometry.geometry;
+  }
 
   /** Returns true if this is a 3d display style. */
   public is3d(): this is DisplayStyle3dState { return this instanceof DisplayStyle3dState; }
@@ -286,7 +286,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   public getSubCategoryOverride(id: Id64String): SubCategoryOverride | undefined { return this.settings.getSubCategoryOverride(id); }
 
   /** @internal */
-  public getAttribution(div: HTMLDivElement, vp: ScreenViewport): void {
+  public getAttribution(div: HTMLTableElement, vp: ScreenViewport): void {
     if (this.viewFlags.backgroundMap)
       this._backgroundMap.addLogoCards(div, vp);
   }
@@ -611,7 +611,7 @@ export class SkyCube extends SkyBox implements SkyCubeProps {
 /** Describes the [[SkyBox]] and [[GroundPlane]] associated with a [[DisplayStyle3dState]].
  * @public
  */
-export class Environment implements EnvironmentProps {
+export class Environment {
   public readonly sky: SkyBox;
   public readonly ground: GroundPlane;
 
@@ -683,6 +683,10 @@ export class DisplayStyle3dState extends DisplayStyleState {
     }
   }
 
+  /** @alpha */
+  public get lights(): LightSettings { return this.settings.lights; }
+  public set lights(lights: LightSettings) { this.settings.lights = lights; }
+
   private onLoadSkyBoxParams(params?: SkyBox.CreateParams, vp?: Viewport): void {
     this._skyBoxParams = params;
     this._skyBoxParamsLoaded = true;
@@ -707,9 +711,11 @@ export class DisplayStyle3dState extends DisplayStyleState {
     return this._skyBoxParams;
   }
   /** @beta */
-  public get sunDirection(): Vector3d | undefined { return this.settings.sunDir; }
+  public get sunDirection(): Readonly<Vector3d> {
+    return this.settings.lights.solar.direction;
+  }
 
-  /** set the solar direction based on time value
+  /** Set the solar direction based on time value
    * @param time The time in unix time milliseconds.
    * @beta
    */
@@ -723,7 +729,16 @@ export class DisplayStyle3dState extends DisplayStyleState {
       cartoCenter = Cartographic.fromDegrees(-75.17035, 39.954927, 0.0);
     }
 
-    this.settings.sunDir = calculateSolarDirection(new Date(time), cartoCenter);
+    this.settings.lights = this.settings.lights.clone({ solar: { direction: calculateSolarDirection(new Date(time), cartoCenter) } });
+  }
 
+  /** Settings controlling shadow display.
+   * @beta
+   */
+  public get solarShadows(): SolarShadowSettings {
+    return this.settings.solarShadows;
+  }
+  public set solarShadows(settings: SolarShadowSettings) {
+    this.settings.solarShadows = settings;
   }
 }

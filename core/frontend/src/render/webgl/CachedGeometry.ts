@@ -1,13 +1,15 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module WebGL */
+/** @packageDocumentation
+ * @module WebGL
+ */
 
-import { QPoint3dList, QParams3d, RenderTexture, RenderMode, Frustum, Npc, QPoint2dList, QParams2d } from "@bentley/imodeljs-common";
+import { QPoint3dList, QParams3d, RenderTexture, RenderMode, Npc, QPoint2dList, QParams2d } from "@bentley/imodeljs-common";
 import { TesselatedPolyline } from "../primitives/VertexTable";
-import { assert, IDisposable, dispose } from "@bentley/bentleyjs-core";
-import { Point3d, Range3d, Vector2d, Point2d } from "@bentley/geometry-core";
+import { assert, dispose } from "@bentley/bentleyjs-core";
+import { Point3d, Range3d, Vector2d, Point2d, Vector3d, Angle } from "@bentley/geometry-core";
 import { BufferHandle, QBufferHandle3d, BuffersContainer, BufferParameters, QBufferHandle2d } from "./Handle";
 import { Target } from "./Target";
 import { DrawParams, ShaderProgramParams } from "./DrawCommand";
@@ -16,7 +18,7 @@ import { RenderPass, RenderOrder, CompositeFlags, FlashMode } from "./RenderFlag
 import { LineCode } from "./EdgeOverrides";
 import { GL } from "./GL";
 import { System } from "./System";
-import { RenderMemory } from "../System";
+import { RenderMemory } from "../RenderMemory";
 import { ColorInfo } from "./ColorInfo";
 import { VertexLUT } from "./VertexLUT";
 import { TextureHandle } from "./Texture";
@@ -24,12 +26,24 @@ import { MaterialInfo } from "./Material";
 import { SkyBox } from "../../DisplayStyleState";
 import { InstancedGeometry } from "./InstancedGeometry";
 import { SurfaceGeometry, MeshGeometry, EdgeGeometry, SilhouetteEdgeGeometry } from "./Mesh";
+import { TerrainMeshGeometry } from "./TerrainMesh";
 import { AttributeMap } from "./AttributeMap";
+import { WebGLDisposable } from "./Disposable";
+import { fromSumOf, FrustumUniformType } from "./FrustumUniforms";
+import { PointCloudGeometry } from "./PointCloud";
+
+const scratchVec3a = new Vector3d();
+const scratchVec3b = new Vector3d();
+const scratchVec3c = new Vector3d();
+const scratchPoint3a = new Point3d();
+const scratchPoint3b = new Point3d();
+const scratchPoint3c = new Point3d();
+const scratchPoint3d = new Point3d();
 
 /** Represents a geometric primitive ready to be submitted to the GPU for rendering.
  * @internal
  */
-export abstract class CachedGeometry implements IDisposable, RenderMemory.Consumer {
+export abstract class CachedGeometry implements WebGLDisposable, RenderMemory.Consumer {
   protected _range?: Range3d;
   /**
    * Functions for obtaining a subclass of CachedGeometry.
@@ -41,9 +55,13 @@ export abstract class CachedGeometry implements IDisposable, RenderMemory.Consum
   public get asSurface(): SurfaceGeometry | undefined { return undefined; }
   public get asMesh(): MeshGeometry | undefined { return undefined; }
   public get asEdge(): EdgeGeometry | undefined { return undefined; }
+  public get asTerrainMesh(): TerrainMeshGeometry | undefined { return undefined; }
   public get asSilhouette(): SilhouetteEdgeGeometry | undefined { return undefined; }
   public get asInstanced(): InstancedGeometry | undefined { return undefined; }
   public get isInstanced() { return undefined !== this.asInstanced; }
+  public get asPointCloud(): PointCloudGeometry | undefined { return undefined; }
+  public get alwaysRenderTranslucent(): boolean { return false; }
+  public get allowColorOverride(): boolean { return true; }
 
   // Returns true if white portions of this geometry should render as black on white background
   protected abstract _wantWoWReversal(_target: Target): boolean;
@@ -52,6 +70,7 @@ export abstract class CachedGeometry implements IDisposable, RenderMemory.Consum
   // Returns the edge/line pattern used to render this geometry
   protected _getLineCode(_params: ShaderProgramParams): number { return LineCode.solid; }
 
+  public abstract get isDisposed(): boolean;
   // Returns the Id of the Technique used to render this geometry
   public abstract get techniqueId(): TechniqueId;
   // Returns the pass in which to render this geometry. RenderPass.None indicates it should not be rendered.
@@ -87,6 +106,8 @@ export abstract class CachedGeometry implements IDisposable, RenderMemory.Consum
   public get viewIndependentOrigin(): Point3d | undefined { return undefined; }
   public get isViewIndependent(): boolean { return undefined !== this.viewIndependentOrigin; }
 
+  public get supportsThematicDisplay() { return false; }
+
   public get isEdge(): boolean {
     switch (this.renderOrder) {
       case RenderOrder.Edge:
@@ -99,7 +120,7 @@ export abstract class CachedGeometry implements IDisposable, RenderMemory.Consum
     }
   }
   public wantWoWReversal(params: ShaderProgramParams): boolean {
-    return !params.isOverlayPass && this._wantWoWReversal(params.target);
+    return params.target.currentViewFlags.whiteOnWhiteReversal && this._wantWoWReversal(params.target);
   }
   public getLineCode(params: ShaderProgramParams): number {
     return params.target.currentViewFlags.styles ? this._getLineCode(params) : LineCode.solid;
@@ -128,6 +149,8 @@ export abstract class CachedGeometry implements IDisposable, RenderMemory.Consum
 
     return vf.lighting ? FlashMode.Brighten : FlashMode.MixHiliteColor;
   }
+
+  public wantMixMonochromeColor(_target: Target): boolean { return false; }
 
   public abstract collectStatistics(stats: RenderMemory.Statistics): void;
 
@@ -181,7 +204,7 @@ export abstract class LUTGeometry extends CachedGeometry {
 /** Parameters used to construct an IndexedGeometry
  * @internal
  */
-export class IndexedGeometryParams implements IDisposable {
+export class IndexedGeometryParams implements WebGLDisposable {
   public readonly buffers: BuffersContainer;
   public readonly positions: QBufferHandle3d;
   public readonly indices: BufferHandle;
@@ -210,6 +233,12 @@ export class IndexedGeometryParams implements IDisposable {
     return IndexedGeometryParams.create(positions.toTypedArray(), positions.params, indices);
   }
 
+  public get isDisposed(): boolean {
+    return this.buffers.isDisposed
+      && this.positions.isDisposed
+      && this.indices.isDisposed;
+  }
+
   public dispose() {
     dispose(this.buffers);
     dispose(this.positions);
@@ -227,6 +256,8 @@ export abstract class IndexedGeometry extends CachedGeometry {
     super();
     this._params = params;
   }
+
+  public get isDisposed(): boolean { return this._params.isDisposed; }
 
   public dispose() {
     dispose(this._params);
@@ -336,7 +367,7 @@ class SkyBoxQuads {
 /** Parameters used to construct an SkyBox
  * @internal
  */
-export class SkyBoxGeometryParams implements IDisposable {
+export class SkyBoxGeometryParams implements WebGLDisposable {
   public readonly buffers: BuffersContainer;
   public readonly positions: QBufferHandle3d;
 
@@ -355,6 +386,8 @@ export class SkyBoxGeometryParams implements IDisposable {
 
     return new SkyBoxGeometryParams(posBuf);
   }
+
+  public get isDisposed(): boolean { return this.buffers.isDisposed && this.positions.isDisposed; }
 
   public dispose() {
     dispose(this.buffers);
@@ -408,6 +441,8 @@ export class SkyBoxQuadsGeometry extends CachedGeometry {
 
   public get qOrigin() { return this._params.positions.origin; }
   public get qScale() { return this._params.positions.scale; }
+
+  public get isDisposed(): boolean { return this._params.isDisposed; }
 
   public dispose() {
     dispose(this._params);
@@ -524,31 +559,91 @@ export class SkySphereViewportQuadGeometry extends ViewportQuadGeometry {
       return;
 
     this._isWorldPosSet = true;
-    this._setPointsFromFrustum(target.planFrustum);
+    this._setPointsFromFrustum(target);
     this._worldPosBuff.bindData(this.worldPos, GL.Buffer.Usage.StreamDraw);
     const attrWorldPos = AttributeMap.findAttribute("a_worldPos", TechniqueId.SkySphereGradient, false);
     assert(attrWorldPos !== undefined);
     this._params.buffers.addBuffer(this._worldPosBuff, [BufferParameters.create(attrWorldPos!.location, 3, GL.DataType.Float, false, 0, 0, false)]);
   }
 
-  private _setPointsFromFrustum(frustum: Frustum) {
+  private _setPointsFromFrustum(target: Target) {
+    const frustum = target.planFrustum;
     const wp = this.worldPos;
-    let mid = frustum.getCorner(Npc.LeftBottomRear).interpolate(0.5, frustum.getCorner(Npc.LeftBottomFront));
-    wp[0] = mid.x;
-    wp[1] = mid.y;
-    wp[2] = mid.z;
-    mid = frustum.getCorner(Npc.RightBottomRear).interpolate(0.5, frustum.getCorner(Npc.RightBottomFront));
-    wp[3] = mid.x;
-    wp[4] = mid.y;
-    wp[5] = mid.z;
-    mid = frustum.getCorner(Npc.RightTopRear).interpolate(0.5, frustum.getCorner(Npc.RightTopFront));
-    wp[6] = mid.x;
-    wp[7] = mid.y;
-    wp[8] = mid.z;
-    mid = frustum.getCorner(Npc.LeftTopRear).interpolate(0.5, frustum.getCorner(Npc.LeftTopFront));
-    wp[9] = mid.x;
-    wp[10] = mid.y;
-    wp[11] = mid.z;
+
+    const lb = frustum.getCorner(Npc.LeftBottomRear).interpolate(0.5, frustum.getCorner(Npc.LeftBottomFront), scratchPoint3a);
+    const rb = frustum.getCorner(Npc.RightBottomRear).interpolate(0.5, frustum.getCorner(Npc.RightBottomFront), scratchPoint3b);
+    const rt = frustum.getCorner(Npc.RightTopRear).interpolate(0.5, frustum.getCorner(Npc.RightTopFront), scratchPoint3c);
+    if (!target.plan.backgroundMapOn || !target.plan.isGlobeMode3D) {
+      wp[0] = lb.x;
+      wp[1] = lb.y;
+      wp[2] = lb.z;
+      wp[3] = rb.x;
+      wp[4] = rb.y;
+      wp[5] = rb.z;
+      wp[6] = rt.x;
+      wp[7] = rt.y;
+      wp[8] = rt.z;
+      const lt = frustum.getCorner(Npc.LeftTopRear).interpolate(0.5, frustum.getCorner(Npc.LeftTopFront), scratchPoint3d);
+      wp[9] = lt.x;
+      wp[10] = lt.y;
+      wp[11] = lt.z;
+    } else {
+      // Need to fake a different frustum to orient the 4 corners properly.
+      // First find true frustum center & size.
+      const fCenter = lb.interpolate(0.5, rt, scratchPoint3d);
+      const upScreen = Vector3d.createStartEnd(rb, rt, scratchVec3a);
+      let rightScreen = Vector3d.createStartEnd(lb, rb, scratchVec3b);
+      const halfWidth = upScreen.magnitude() * 0.5;
+      const halfHeight = rightScreen.magnitude() * 0.5;
+      // Find the projection of the globe up onto the frustum plane.
+      upScreen.normalizeInPlace();
+      rightScreen.normalizeInPlace();
+      const projUp = target.plan.upVector.dotProduct(upScreen);
+      const projRt = target.plan.upVector.dotProduct(rightScreen);
+      // Find camera position (create one for ortho).
+      let camPos: Point3d;
+      if (FrustumUniformType.Perspective === target.uniforms.frustum.type) {
+        const farLowerLeft = frustum.getCorner(Npc.LeftBottomRear);
+        const nearLowerLeft = frustum.getCorner(Npc.LeftBottomFront);
+        const scale = 1.0 / (1.0 - target.planFraction);
+        const zVec = Vector3d.createStartEnd(farLowerLeft, nearLowerLeft, scratchVec3c);
+        camPos = fromSumOf(farLowerLeft, zVec, scale, scratchPoint3a);
+      } else {
+        const delta = Vector3d.createStartEnd(frustum.getCorner(Npc.LeftBottomRear), frustum.getCorner(Npc.LeftBottomFront), scratchVec3c);
+        const pseudoCameraHalfAngle = 22.5;
+        const diagonal = frustum.getCorner(Npc.LeftBottomRear).distance(frustum.getCorner(Npc.RightTopRear));
+        const focalLength = diagonal / (2 * Math.atan(pseudoCameraHalfAngle * Angle.radiansPerDegree));
+        let zScale = focalLength / delta.magnitude();
+        if (zScale < 1.000001)
+          zScale = 1.000001; // prevent worldEye front being on or inside the frustum front plane
+        camPos = Point3d.createAdd3Scaled(frustum.getCorner(Npc.LeftBottomRear), .5, frustum.getCorner(Npc.RightTopRear), .5, delta, zScale, scratchPoint3a);
+      }
+      // Compute the distance from the camera to the frustum center.
+      const camDist = camPos.distance(fCenter);
+      // Now use a fixed camera direction and compute a new frustum center.
+      const camDir = Vector3d.create(0.0, 1.0, 0.0, scratchVec3c);
+      fCenter.setFromPoint3d(camPos);
+      fCenter.addScaledInPlace(camDir, camDist);
+      // Create an up vector that mimics the projection of the globl up onto the real frustum.
+      upScreen.set(projRt, 0.0, projUp);
+      upScreen.normalizeInPlace();
+      // Compute a new right vector and then compute the 4 points for the sky.
+      rightScreen = upScreen.crossProduct(camDir, scratchVec3b);
+      upScreen.scaleInPlace(halfHeight);
+      rightScreen.scaleInPlace(halfWidth);
+      wp[0] = fCenter.x - rightScreen.x - upScreen.x; // left bottom
+      wp[1] = fCenter.y - rightScreen.y - upScreen.y;
+      wp[2] = fCenter.z - rightScreen.z - upScreen.z;
+      wp[3] = fCenter.x + rightScreen.x - upScreen.x; // right bottom
+      wp[4] = fCenter.y + rightScreen.y - upScreen.y;
+      wp[5] = fCenter.z + rightScreen.z - upScreen.z;
+      wp[6] = fCenter.x + rightScreen.x + upScreen.x; // right top
+      wp[7] = fCenter.y + rightScreen.y + upScreen.y;
+      wp[8] = fCenter.z + rightScreen.z + upScreen.z;
+      wp[9] = fCenter.x - rightScreen.x + upScreen.x; // left top
+      wp[10] = fCenter.y - rightScreen.y + upScreen.y;
+      wp[11] = fCenter.z - rightScreen.z + upScreen.z;
+    }
   }
 
   protected constructor(params: IndexedGeometryParams, skybox: SkyBox.CreateParams, techniqueId: TechniqueId) {
@@ -626,7 +721,10 @@ export class SkySphereViewportQuadGeometry extends ViewportQuadGeometry {
     return new SkySphereViewportQuadGeometry(params, skybox, technique);
   }
 
+  public get isDisposed(): boolean { return super.isDisposed && this._worldPosBuff.isDisposed; }
+
   public dispose() {
+    super.dispose();
     dispose(this._worldPosBuff);
   }
 }
@@ -878,6 +976,8 @@ export class ScreenPointsGeometry extends CachedGeometry {
     this.buffers.unbind();
   }
 
+  public get isDisposed(): boolean { return this.buffers.isDisposed && this._positions.isDisposed; }
+
   public dispose() {
     dispose(this.buffers);
     dispose(this._positions);
@@ -896,7 +996,7 @@ export class ScreenPointsGeometry extends CachedGeometry {
 }
 
 /** @internal */
-export class PolylineBuffers implements IDisposable {
+export class PolylineBuffers implements WebGLDisposable {
   public buffers: BuffersContainer;
   public indices: BufferHandle;
   public prevIndices: BufferHandle;
@@ -934,6 +1034,13 @@ export class PolylineBuffers implements IDisposable {
 
   public collectStatistics(stats: RenderMemory.Statistics, type: RenderMemory.BufferType): void {
     stats.addBuffer(type, this.indices.bytesUsed + this.prevIndices.bytesUsed + this.nextIndicesAndParams.bytesUsed);
+  }
+
+  public get isDisposed(): boolean {
+    return this.buffers.isDisposed
+      && this.indices.isDisposed
+      && this.prevIndices.isDisposed
+      && this.nextIndicesAndParams.isDisposed;
   }
 
   public dispose() {

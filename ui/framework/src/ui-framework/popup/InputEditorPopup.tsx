@@ -1,20 +1,21 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Popup */
+/** @packageDocumentation
+ * @module Popup
+ */
 
 import * as React from "react";
 
-import { OnCancelFunc, OnNumberCommitFunc } from "@bentley/ui-abstract";
+import { OnCancelFunc, OnNumberCommitFunc, PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
 import { DivWithOutsideClick, SizeProps, Size } from "@bentley/ui-core";
 import { EditorContainer, PropertyUpdatedArgs } from "@bentley/ui-components";
 
 import { PositionPopup, PositionPopupContent } from "./PositionPopup";
 import { PopupManager, PopupPropsBase } from "./PopupManager";
-import { PropertyRecord, PropertyValueFormat } from "@bentley/imodeljs-frontend";
 
-/** @internal */
+/** @alpha */
 export class InputEditorCommitHandler {
   constructor(
     public readonly onCommit: OnNumberCommitFunc,

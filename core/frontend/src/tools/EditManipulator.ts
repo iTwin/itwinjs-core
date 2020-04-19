@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Tools */
+/** @packageDocumentation
+ * @module Tools
+ */
 
 import { BeButtonEvent, InputCollector, BeButton, EventHandled, BeTouchEvent, InputSource, Tool, CoordinateLockOverrides } from "./Tool";
 import { DecorateContext } from "../ViewContext";
@@ -265,7 +267,7 @@ export namespace EditManipulator {
         return undefined;
 
       const pixelSize = vp.pixelsFromInches(sizeInches);
-      const scale = vp.viewFrustum.getPixelSizeAtPoint(base) * pixelSize;
+      const scale = vp.viewingSpace.getPixelSizeAtPoint(base) * pixelSize;
       const matrix = Matrix3d.createRigidFromColumns(direction, boresite.direction, AxisOrder.XZY);
       if (undefined === matrix)
         return undefined;

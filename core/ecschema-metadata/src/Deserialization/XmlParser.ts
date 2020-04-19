@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "@bentley/bentleyjs-core";
@@ -23,7 +23,7 @@ import { ECClass, StructClass } from "../Metadata/Class";
 import { Enumeration } from "../Metadata/Enumeration";
 
 const NON_ITEM_SCHEMA_ELEMENTS = ["ECSchemaReference", "ECCustomAttributes"];
-const ECXML_URI = "http://www.bentley.com/schemas/Bentley.ECXML";
+const ECXML_URI = "http://www\\.bentley\\.com/schemas/Bentley\\.ECXML";
 
 type PrimitiveArray = PrimitiveValue[];
 type PrimitiveValue = string | number | boolean | Date;
@@ -295,7 +295,7 @@ export class XmlParser extends AbstractParser<Element> {
 
     // TODO: This shouldn't be verified here.  It's for the deserialize method to handle.  The only reason it's currently done here so that the xml
     // value can be put in the correct type, number or string.
-    let tempBackingType: PrimitiveType = PrimitiveType.Integer;
+    let tempBackingType: PrimitiveType;
     if (/int/i.test(enumType))
       tempBackingType = PrimitiveType.Integer;
     else if (/string/i.test(enumType))
@@ -303,8 +303,10 @@ export class XmlParser extends AbstractParser<Element> {
     else
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this._currentItemFullName} has an invalid 'backingTypeName' attribute. It should be either "int" or "string".`);
 
-    const _isStrict = this.getRequiredAttribute(xmlElement, "isStrict",
-      `The Enumeration ${this._currentItemFullName} is missing the required 'isStrict' attribute.`);
+    let _isStrict: string | undefined = this.getOptionalAttribute(xmlElement, "isStrict");
+    if (_isStrict === undefined)
+      _isStrict = "true";
+
     const isStrict = this.parseBoolean(_isStrict,
       `The Enumeration ${this._currentItemFullName} has an invalid 'isStrict' attribute. It should either be "true" or "false".`);
 
@@ -670,7 +672,7 @@ export class XmlParser extends AbstractParser<Element> {
     if ("*" === tagName)
       return children;
 
-    let result = new Array<Element>();
+    let result: Element[];
     if (typeof tagName === "string") {
       result = children.filter((child) => {
         return tagName.toLowerCase() === child.nodeName.toLowerCase();
@@ -1092,10 +1094,8 @@ export class XmlParser extends AbstractParser<Element> {
     // for now.  Need to review with IModelJs.
     switch (primitiveType) {
       case PrimitiveType.String:
-      /** TODO - Currently treated as strings */
-      case PrimitiveType.Binary:
-      /** TODO - Currently treated as strings */
-      case PrimitiveType.IGeometry:
+      case PrimitiveType.Binary: /** TODO - Currently treated as strings */
+      case PrimitiveType.IGeometry: /** TODO - Currently treated as strings */
         return propElement.textContent;
       case PrimitiveType.DateTime:
         return this.getDatePropertyValue(propElement.textContent, propElement.tagName);
@@ -1196,7 +1196,7 @@ export class XmlParser extends AbstractParser<Element> {
   }
 
   private parseXmlNamespace(xmlNamespace: string): ECXmlVersion | undefined {
-    const regEx = new RegExp("^" + ECXML_URI + ".([0-9]+).([0-9]+)$");
+    const regEx = new RegExp("^" + ECXML_URI + "\\.([0-9]+)\\.([0-9]+)$");
     const match = xmlNamespace.match(regEx);
     if (!match)
       return;

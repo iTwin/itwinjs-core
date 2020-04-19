@@ -1,9 +1,11 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module CartesianGeometry */
+/** @packageDocumentation
+ * @module CartesianGeometry
+ */
 
 import { Geometry, AxisOrder, BeJSONFunctions } from "../Geometry";
 import { Point4d } from "../geometry4d/Point4d";
@@ -47,8 +49,8 @@ export class Transform implements BeJSONFunctions {
 
     return this._identity;
   }
-  /** Freeze this instance (and its deep content) so it can be considered read-only */
-  public freeze() { Object.freeze(this); Object.freeze(this._origin); this._matrix.freeze(); }
+  /** Freeze this instance (and its members) so it is read-only */
+  public freeze(): Readonly<this> { this._origin.freeze(); this._matrix.freeze(); return Object.freeze(this); }
   /**
    * Copy contents from other Transform into this Transform
    * @param other source transform
@@ -135,7 +137,9 @@ export class Transform implements BeJSONFunctions {
     return new Transform(this.origin.cloneAsPoint3d(), axes0);
   }
   /** Create a copy with the given origin and matrix captured as the Transform origin and Matrix3d. */
-  public static createRefs(origin: XYZ, matrix: Matrix3d, result?: Transform): Transform {
+  public static createRefs(origin: XYZ | undefined, matrix: Matrix3d, result?: Transform): Transform {
+    if (!origin)
+      origin = Point3d.createZero();
     if (result) {
       result._origin = origin;
       result._matrix = matrix;
@@ -210,6 +214,11 @@ export class Transform implements BeJSONFunctions {
    * Note there is a closely related createFixedPointAndMatrix whose point input is the fixed point of the global-to-global transformation.
    */
   public static createOriginAndMatrix(origin: XYZ | undefined, matrix: Matrix3d | undefined, result?: Transform): Transform {
+    if (result) {
+      result._origin.setFromPoint3d(origin);
+      result._matrix.setFrom(matrix);
+      return result;
+    }
     return Transform.createRefs(
       origin ? origin.cloneAsPoint3d() : Point3d.createZero(),
       matrix === undefined ? Matrix3d.createIdentity() : matrix.clone(), result);
@@ -223,6 +232,25 @@ export class Transform implements BeJSONFunctions {
       result = Transform.createRefs(Vector3d.createFrom(origin), Matrix3d.createColumns(vectorX, vectorY, vectorZ));
     return result;
   }
+  /** Create by with matrix from Matrix3d.createRigidFromColumns.
+   * * Has careful logic for building up optional result without allocations.
+   */
+  public static createRigidFromOriginAndColumns(origin: XYZ | undefined, vectorX: Vector3d, vectorY: Vector3d, axisOrder: AxisOrder, result?: Transform): Transform | undefined {
+    const matrix = Matrix3d.createRigidFromColumns(vectorX, vectorY, axisOrder,
+      result ? result._matrix : undefined);
+    if (!matrix)
+      return undefined;
+    if (result) {
+      // The matrix was already defined !!!
+      result._origin.setFrom(origin);
+      return result;
+    }
+    // cleanly capture the matrix and then the point ..
+    result = Transform.createRefs(undefined, matrix);
+    result._origin.setFromPoint3d(origin);
+    return result;
+  }
+
   /** Reinitialize by directly installing origin and columns of the matrix
    */
   public setOriginAndMatrixColumns(origin: XYZ | undefined, vectorX: Vector3d | undefined, vectorY: Vector3d | undefined, vectorZ: Vector3d | undefined) {
@@ -234,9 +262,12 @@ export class Transform implements BeJSONFunctions {
   /** Create a transform with the specified matrix. Compute an origin (different from the given fixedPoint)
    * so that the fixedPoint maps back to itself.
    */
-  public static createFixedPointAndMatrix(fixedPoint: XYAndZ, matrix: Matrix3d, result?: Transform): Transform {
-    const origin = Matrix3d.xyzMinusMatrixTimesXYZ(fixedPoint, matrix, fixedPoint);
-    return Transform.createRefs(origin, matrix.clone(), result);
+  public static createFixedPointAndMatrix(fixedPoint: XYAndZ | undefined, matrix: Matrix3d, result?: Transform): Transform {
+    if (fixedPoint) {
+      const origin = Matrix3d.xyzMinusMatrixTimesXYZ(fixedPoint, matrix, fixedPoint);
+      return Transform.createRefs(origin, matrix.clone(), result);
+    }
+    return Transform.createRefs(undefined, matrix.clone());
   }
   /** Create a transform with the specified matrix, acting on any `pointX `via
    * `pointY = matrix * (pointX - pointA) + pointB`
@@ -334,6 +365,19 @@ export class Transform implements BeJSONFunctions {
       point.z - this._origin.z,
       result);
   }
+  /** Inverse transform the input homogeneous point.
+   * * Return as a new point or in the optional result.
+   * * returns undefined if the matrix part if this Transform is singular.
+   */
+  public multiplyInversePoint4d(weightedPoint: Point4d, result?: Point4d): Point4d | undefined {
+    const w = weightedPoint.w;
+    return this._matrix.multiplyInverseXYZW(
+      weightedPoint.x - w * this.origin.x,
+      weightedPoint.y - w * this.origin.y,
+      weightedPoint.z - w * this.origin.z,
+      w, result);
+  }
+
   /** Return product of the transform's inverse times a point (point given as x,y,z) */
   public multiplyInverseXYZ(x: number, y: number, z: number, result?: Point3d): Point3d | undefined {
     return this._matrix.multiplyInverseXYZAsPoint3d(

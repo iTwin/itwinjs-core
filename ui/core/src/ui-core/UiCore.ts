@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Utilities */
+/** @packageDocumentation
+ * @module Utilities
+ */
 
 import { I18N, TranslationOptions } from "@bentley/imodeljs-i18n";
 import { UiError, getClassName, UiAbstract } from "@bentley/ui-abstract";
@@ -12,8 +14,7 @@ import "./colorthemes.scss";
 import "./classes.scss";
 
 /**
- * Entry point for static initialization required by various
- * components used in the package.
+ * Manages the I18N service for the ui-core package.
  * @public
  */
 export class UiCore {

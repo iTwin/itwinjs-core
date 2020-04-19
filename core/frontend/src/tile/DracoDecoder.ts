@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Tile */
+/** @packageDocumentation
+ * @module Tiles
+ */
 import { createDecoderModule } from "draco3d";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { QPoint3dList/*, QParams3d, QParams2d, QPoint2dList */ } from "@bentley/imodeljs-common";

@@ -9,7 +9,7 @@ RUN \
   apt-get update \
   && apt-get install -y curl \
   && curl -sL https://deb.nodesource.com/setup_10.x | bash - \
-  && apt-get install -y git nodejs libnss3 libxss1 libatk-bridge2.0-0 libgtk-3-0 libasound2 locales zsh \
+  && apt-get install -y git nodejs libnss3 libxss1 libatk-bridge2.0-0 libgtk-3-0 libasound2 locales zsh procps \
   && npm install -g @microsoft/rush \
   && localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
 

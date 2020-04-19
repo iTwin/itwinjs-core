@@ -1,6 +1,49 @@
 # Change Log - @bentley/presentation-backend
 
-This log was last generated on Fri, 01 Nov 2019 13:28:37 GMT and should not be manually modified.
+This log was last generated on Wed, 04 Mar 2020 16:16:31 GMT and should not be manually modified.
+
+## 1.13.0
+Wed, 04 Mar 2020 16:16:31 GMT
+
+### Updates
+
+- Fix functional scopes for `BisCore.GeometricElement3d` elements
+
+## 1.12.0
+Wed, 12 Feb 2020 17:45:50 GMT
+
+### Updates
+
+- Add new hidden 'functional' selection scopes: 'functional-element', 'functional-assembly', 'functional-top-assembly'
+- Update 'functional' hilite rules up to the latest requirements, including recursive lookup both at functional and graphical part of the relationship path
+- Ignore invalid IDs when computing element selection instead of failing the whole operation
+
+## 1.11.0
+Wed, 22 Jan 2020 19:24:12 GMT
+
+### Updates
+
+- Changed node label type from string to LabelDefinition
+- Upgrade to TypeScript 3.7.2.
+
+## 1.10.0
+Tue, 07 Jan 2020 19:44:01 GMT
+
+*Version update only*
+
+## 1.9.0
+Tue, 10 Dec 2019 18:08:56 GMT
+
+### Updates
+
+- Update sinon version.
+
+## 1.8.0
+Fri, 22 Nov 2019 14:03:34 GMT
+
+### Updates
+
+- Add BisCore supplemental rules to create 'Source File Information' group for BisCore:Elements
 
 ## 1.7.0
 Fri, 01 Nov 2019 13:28:37 GMT

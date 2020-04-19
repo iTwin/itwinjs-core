@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Picker */
+/** @packageDocumentation
+ * @module Picker
+ */
 
 import * as _ from "lodash";
 import {
@@ -121,14 +123,17 @@ export interface CategoryModelTreeState {
  * data in [[CategoryModelTree]]
  * @internal
  */
-export class ModelSelectorDataProvider
-  implements IPresentationTreeDataProvider {
+export class ModelSelectorDataProvider implements IPresentationTreeDataProvider {
   private _baseProvider: PresentationTreeDataProvider;
 
   /** @internal */
   constructor(imodel: IModelConnection, rulesetId: string) {
-    this._baseProvider = new PresentationTreeDataProvider(imodel, rulesetId);
+    this._baseProvider = new PresentationTreeDataProvider({ imodel, ruleset: rulesetId });
     this._baseProvider.pagingSize = 5;
+  }
+
+  public dispose() {
+    this._baseProvider.dispose();
   }
 
   /** Id of the ruleset used by this data provider */

@@ -1,11 +1,13 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module SearchBox */
+/** @packageDocumentation
+ * @module SearchBox
+ */
 
 import * as React from "react";
-import * as classnames from "classnames";
+import classnames from "classnames";
 import { CommonProps } from "../utils/Props";
 import { UiCore } from "../UiCore";
 
@@ -21,7 +23,7 @@ export interface SearchBoxProps extends CommonProps {
   placeholder?: string;
   /** triggered when the content of SearchBox is changed */
   onValueChanged: (value: string) => void;
-  /** frequency to poll for changes in value */
+  /** frequency to poll for changes in value, in milliseconds */
   valueChangedDelay?: number;
   /** listens for <Enter> keypress */
   onEnterPressed?: () => void;

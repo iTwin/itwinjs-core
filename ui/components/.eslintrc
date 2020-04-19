@@ -1,0 +1,3 @@
+{
+  "extends": "./node_modules/@bentley/ui-core/.eslintrc"
+}

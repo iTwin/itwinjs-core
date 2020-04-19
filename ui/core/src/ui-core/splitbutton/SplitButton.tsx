@@ -1,14 +1,17 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module SplitButton */
+/** @packageDocumentation
+ * @module SplitButton
+ */
 
 import * as React from "react";
 import classnames from "classnames";
 
 import { ContextMenu } from "../contextmenu/ContextMenu";
 import { CommonProps } from "../utils/Props";
+import { IconSpec, Icon } from "../icons/IconComponent";
 
 import "./SplitButton.scss";
 
@@ -27,8 +30,10 @@ export interface SplitButtonProps extends CommonProps {
   label: string | React.ReactNode;
   /** Listens for click events on button area */
   onClick?: (event: any) => any;
-  /** specifies icon for Splitbutton component */
-  icon?: string;
+  /** Specifies icon for Splitbutton component */
+  icon?: IconSpec;
+  /** Indicates whether to draw a border around the button */
+  drawBorder?: boolean;
 }
 
 /** @internal */
@@ -37,7 +42,7 @@ interface SplitButtonState {
 }
 
 /**
- * SplitButton with a button on the left and a context menu on the right.
+ * SplitButton with an action button on the left and an arrow button that displays a context menu on the right.
  * @beta
  */
 export class SplitButton extends React.Component<SplitButtonProps, SplitButtonState> {
@@ -56,15 +61,23 @@ export class SplitButton extends React.Component<SplitButtonProps, SplitButtonSt
     let icon = (<></>);
     if (this.props.icon !== undefined) {
       icon = (
-        <span className={classnames("icon", this.props.icon)} />
+        <Icon iconSpec={this.props.icon} />
       );
     }
+
+    const classNames = classnames(
+      "core-split-button",
+      this.props.className,
+      this.state.expanded && "expanded",
+      this.props.drawBorder && "core-split-button-border");
+
     return (
       <div data-testid="core-split-button-root"
-        className={classnames("core-split-button", this.props.className, { expanded: this.state.expanded })}
+        className={classNames}
         style={this.props.style}
       >
         <div data-testid="core-split-button-label" onClick={this.props.onClick} className={"core-split-button-label"}>{icon} {this.props.label}</div>
+        <div className={classnames("core-split-button-divider", this.props.drawBorder && "core-split-button-border")} />
         <div className={"core-split-button-arrow"} ref={(el) => { this._arrowElement = el; }} onClick={this._handleClick} tabIndex={0} onKeyUp={this._handleKeyUp}>
           <div className={classnames("core-split-button-arrow-icon", "icon", "icon-chevron-down")} >
           </div>
@@ -91,10 +104,12 @@ export class SplitButton extends React.Component<SplitButtonProps, SplitButtonSt
   }
 
   private _open = () => {
+    // istanbul ignore else
     if (!this.state.expanded && !this._closing) {
       this.setState(
         { expanded: true },
         () => {
+          // istanbul ignore else
           if (this._menu && this.state.expanded)
             this._menu.focus();
         });
@@ -113,6 +128,7 @@ export class SplitButton extends React.Component<SplitButtonProps, SplitButtonSt
   }
 
   private _handleClose = (event: any) => {
+    // istanbul ignore else
     if (this._arrowElement) {
       if (this.state.expanded && "target" in event && this._arrowElement.contains(event.target))
         this._closing = true;

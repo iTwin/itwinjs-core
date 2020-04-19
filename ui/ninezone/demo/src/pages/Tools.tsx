@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { Panel } from "@src/toolbar/item/expandable/group/Panel";
@@ -19,10 +19,11 @@ import { AppButton } from "@src/widget/tools/button/App";
 import { BackButton } from "@src/widget/tools/button/Back";
 import { ExpandableButton } from "@src/widget/tools/button/Expandable";
 import { ToolbarIcon } from "@src/widget/tools/button/Icon";
-import { Popup, Position as PopupDirection } from "@bentley/ui-core";
+import { Popup } from "@bentley/ui-core";
+import { RelativePosition } from "@bentley/ui-abstract";
 
 interface State {
-  direction: PopupDirection;
+  direction: RelativePosition;
   expandableButton: HTMLDivElement | null;
   isPanelVisible: boolean;
   onBackCount: number;
@@ -39,7 +40,7 @@ export const cols2: React.CSSProperties = {
 
 export default class Tools extends React.PureComponent<{}, State> {
   public readonly state: Readonly<State> = {
-    direction: PopupDirection.Right,
+    direction: RelativePosition.Right,
     expandableButton: null,
     isPanelVisible: false,
     onBackCount: 0,
@@ -150,7 +151,7 @@ export default class Tools extends React.PureComponent<{}, State> {
           columns={path}
           onBack={this._handleBackClick}
         />
-      </div >
+      </div>
     );
   }
 
@@ -243,20 +244,20 @@ export default class Tools extends React.PureComponent<{}, State> {
     this.setState((prevState) => {
       let direction = prevState.direction;
       switch (direction) {
-        case PopupDirection.Left: {
-          direction = PopupDirection.Top;
+        case RelativePosition.Left: {
+          direction = RelativePosition.Top;
           break;
         }
-        case PopupDirection.Top: {
-          direction = PopupDirection.Right;
+        case RelativePosition.Top: {
+          direction = RelativePosition.Right;
           break;
         }
-        case PopupDirection.Right: {
-          direction = PopupDirection.Bottom;
+        case RelativePosition.Right: {
+          direction = RelativePosition.Bottom;
           break;
         }
-        case PopupDirection.Bottom: {
-          direction = PopupDirection.Left;
+        case RelativePosition.Bottom: {
+          direction = RelativePosition.Left;
           break;
         }
       }

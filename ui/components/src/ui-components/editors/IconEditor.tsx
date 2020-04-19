@@ -1,15 +1,17 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module PropertyEditors */
+/** @packageDocumentation
+ * @module PropertyEditors
+ */
 
 import * as React from "react";
 import classnames from "classnames";
 import {
   PropertyValueFormat, PropertyValue, PrimitiveValue, PropertyRecord, IconListEditorParams,
   PropertyEditorParams, PropertyEditorParamTypes,
-} from "@bentley/imodeljs-frontend";
+} from "@bentley/ui-abstract";
 import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
 import { IconPickerButton } from "../iconpicker/IconPickerButton";
 import { PropertyEditorManager, PropertyEditorBase } from "./PropertyEditorManager";
@@ -58,11 +60,6 @@ export class IconEditor extends React.PureComponent<PropertyEditorProps, IconEdi
     this.state = { icon, icons, numColumns, readonly };
   }
 
-  // istanbul ignore next
-  public getValue(): string {
-    return this.state.icon;
-  }
-
   public async getPropertyValue(): Promise<PropertyValue | undefined> {
     const record = this.props.propertyRecord;
     let propertyValue: PropertyValue | undefined;
@@ -103,15 +100,18 @@ export class IconEditor extends React.PureComponent<PropertyEditorProps, IconEdi
     });
   }
 
+  /** @internal */
   public componentDidMount() {
     this._isMounted = true;
     this.setStateFromProps(); // tslint:disable-line:no-floating-promises
   }
 
+  /** @internal */
   public componentWillUnmount() {
     this._isMounted = false;
   }
 
+  /** @internal */
   public componentDidUpdate(prevProps: PropertyEditorProps) {
     if (this.props.propertyRecord !== prevProps.propertyRecord) {
       this.setStateFromProps(); // tslint:disable-line:no-floating-promises
@@ -142,6 +142,7 @@ export class IconEditor extends React.PureComponent<PropertyEditorProps, IconEdi
       );
   }
 
+  /** @internal */
   public render() {
     const { icon, icons, numColumns } = this.state;
     return (
@@ -159,12 +160,13 @@ export class IconEditor extends React.PureComponent<PropertyEditorProps, IconEdi
   }
 }
 
-/** IconPropertyEditor returns React component [[IconEditor]] to select an icon (string).
+/** Icon Property Editor registered for the "text" and "string" type names and the "icon-picker" editor name.
+ * It uses the [[IconEditor]] React component.
  * @alpha
  */
 // istanbul ignore next
 export class IconPropertyEditor extends PropertyEditorBase {
-  public get reactElement(): React.ReactNode {
+  public get reactNode(): React.ReactNode {
     return <IconEditor />;
   }
 }

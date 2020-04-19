@@ -1,13 +1,13 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as moq from "typemoq";
 import { Presentation } from "@bentley/presentation-frontend";
 import { IModelApp, IModelConnection, ViewState } from "@bentley/imodeljs-frontend";
 import { Id64String } from "@bentley/bentleyjs-core";
-import { initializeAsync as initializePresentationTesting, terminate as terminatePresentationTesting } from "@bentley/presentation-testing";
+import { initialize as initializePresentationTesting, terminate as terminatePresentationTesting } from "@bentley/presentation-testing";
 import TestUtils, { MockAccessToken } from "./TestUtils";
 import { UiFramework, ColorTheme, CursorMenuData } from "../ui-framework";
 import { DefaultIModelServices } from "../ui-framework/clientservices/DefaultIModelServices";
@@ -122,9 +122,6 @@ describe("UiFramework", () => {
     UiFramework.setAccessToken(mockToken);    // tslint:disable-line: deprecation
     expect(UiFramework.getAccessToken()!.getUserInfo()!.id).to.eq(mockToken.getUserInfo()!.id); // tslint:disable-line: deprecation
 
-    UiFramework.setDefaultRulesetId("TestRuleSet");
-    expect(UiFramework.getDefaultRulesetId()).to.eq("TestRuleSet");
-
     UiFramework.setDefaultIModelViewportControlId("DefaultIModelViewportControlId");
     expect(UiFramework.getDefaultIModelViewportControlId()).to.eq("DefaultIModelViewportControlId");
 
@@ -146,9 +143,6 @@ describe("UiFramework", () => {
     const viewState = moq.Mock.ofType<ViewState>();
     UiFramework.setDefaultViewState(viewState.object);
     expect(UiFramework.getDefaultViewState()).not.to.be.undefined;
-
-    UiFramework.oidcClient = undefined;
-    expect(UiFramework.oidcClient).to.be.undefined;
   });
 
 });

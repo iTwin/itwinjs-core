@@ -1,24 +1,25 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { ClientRequestContext, Logger, LogLevel, Config } from "@bentley/bentleyjs-core";
+import { IModelBaseHandler } from "@bentley/imodelhub-client";
+import { UrlDiscoveryClient, ClientsLoggerCategory } from "@bentley/itwin-client";
+import { assert, should } from "chai";
 import * as fs from "fs";
 import * as path from "path";
-import { assert, should } from "chai";
-import { ClientRequestContext, Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { IModelBaseHandler, UrlDiscoveryClient, ClientsLoggerCategory, Config } from "@bentley/imodeljs-clients";
 
 export const whitelistRelPath: string = "../assets/whitelist.txt";
 
 should();
 const logFilePath = path.join(__dirname, "./iModelClientsTests.log");
 const logFileStream = fs.createWriteStream(logFilePath, { flags: "a" });
-console.log("Log File created at: " + logFilePath);
+// console.log("Log File created at: " + logFilePath);
 
 // The Request URLs are captured separate. The log file is used by the Hub URL whitelist validation.
 const urlLogPath = path.join(__dirname, "./requesturls.log");
 const urlLogFileStream = fs.createWriteStream(urlLogPath, { flags: "a" });
-console.log("URL Log file created at: " + urlLogPath);
+// console.log("URL Log file created at: " + urlLogPath);
 
 function logFunction(logLevel: string, category: string, message: string) {
   if (category === ClientsLoggerCategory.Request)

@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { render, cleanup, prettyDOM } from "@testing-library/react";
@@ -77,7 +77,7 @@ describe("Locate Toolbar items", () => {
 
   it("Find item in horizontal and vertical toolbars.", () => {
     const component = render(
-      <ToolWidget
+      <ToolWidget // tslint:disable-line:deprecation
         appButton={backstageToggleCommand}
         horizontalToolbar={horizontalToolbar}
         verticalToolbar={verticalToolbar}

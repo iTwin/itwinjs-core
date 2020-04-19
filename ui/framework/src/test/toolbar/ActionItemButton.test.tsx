@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { mount, shallow } from "enzyme";
@@ -35,7 +35,7 @@ describe("ActionItemButton", () => {
       new CommandItemDef({
         commandId: "command",
         iconSpec: "icon-placeholder",
-        labelKey: "UiFramework:tests.label",
+        label: () => "tests.label",
         isEnabled: false,
         execute: () => { },
       });
@@ -51,13 +51,13 @@ describe("ActionItemButton", () => {
 
   it("hidden renders correctly", () => {
     const myCommand = testCommand;
-    myCommand.isVisible = false;
+    myCommand.isVisible = false; // tslint:disable-line:deprecation
     shallow(<ActionItemButton actionItem={myCommand} />).should.matchSnapshot();
   });
 
   it("enabled renders correctly", () => {
     const myCommand = testCommand;
-    myCommand.isEnabled = true;
+    myCommand.isEnabled = true; // tslint:disable-line:deprecation
     shallow(<ActionItemButton actionItem={myCommand} />).should.matchSnapshot();
   });
 
@@ -149,26 +149,12 @@ describe("ActionItemButton", () => {
 
   it("should handle changing state via props", () => {
     const myCommand = testCommand;
-    myCommand.isEnabled = true;
+    myCommand.isEnabled = true; // tslint:disable-line:deprecation
     const wrapper = mount(<ActionItemButton actionItem={myCommand} isEnabled={false} />);
     expect(wrapper.state("isEnabled")).to.be.false;
     wrapper.setProps({ isEnabled: true });
     expect(wrapper.state("isEnabled")).to.be.true;
   });
-});
-
-it("should render with betaBadge", () => {
-  const myCommand =
-    new CommandItemDef({
-      commandId: "command",
-      iconSpec: "icon-placeholder",
-      betaBadge: true,
-    });
-
-  const wrapper = mount(<ActionItemButton actionItem={myCommand} />);
-  const badge = wrapper.find("div.nz-badge");
-  badge.length.should.eq(1);
-  wrapper.unmount();
 });
 
 it("should render with badgeType", () => {

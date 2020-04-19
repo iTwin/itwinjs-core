@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/hypermodeling-extension",
+      "comment": "New hyper modeling marker images.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/hypermodeling-extension",
+  "email": "Brien.Bastings@bentley.com"
+}

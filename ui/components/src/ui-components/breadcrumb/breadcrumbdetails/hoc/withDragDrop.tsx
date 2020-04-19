@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Breadcrumb */
+/** @packageDocumentation
+ * @module Breadcrumb
+ */
 
 import * as React from "react";
 
@@ -13,6 +15,8 @@ import { Table, TableProps } from "../../../table/component/Table";
 import { BreadcrumbDetailsProps } from "../BreadcrumbDetails";
 import { TableDataProvider } from "../../../table/TableDataProvider";
 import { TreeNodeItem } from "../../../tree/TreeDataProvider";
+
+// tslint:disable:deprecation
 
 /**
  * Type for drag and drop,

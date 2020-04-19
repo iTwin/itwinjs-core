@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module WebGL */
+/** @packageDocumentation
+ * @module WebGL
+ */
 
 import { CompositeFlags } from "./RenderFlags";
 import { assert } from "@bentley/bentleyjs-core";
@@ -21,6 +23,7 @@ export const enum TechniqueId {
   PointString,
   Edge,
   SilhouetteEdge,
+  TerrainMesh,
 
   // Techniques with a single associated shader that operates on the entire image
   CompositeHilite,

@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
 import * as React from "react";
@@ -13,7 +13,7 @@ import "./FindSimilarWidget.css";
 const SampleTable = tableWithUnifiedSelection(Table);
 
 export interface Props {
-  dataProvider: IPresentationTableDataProvider;
+  dataProvider: IPresentationTableDataProvider & { dispose?: () => void };
   onDismissed?: () => void;
 }
 
@@ -23,10 +23,11 @@ export default class FindSimilarWidget extends React.PureComponent<Props> {
     this.state = { prevProps: props };
   }
   public componentWillUnmount() {
-    this.props.dataProvider.dispose();
+    if (this.props.dataProvider.dispose)
+      this.props.dataProvider.dispose();
   }
   public componentDidUpdate(prevProps: Props) {
-    if (this.props.dataProvider !== prevProps.dataProvider)
+    if (this.props.dataProvider !== prevProps.dataProvider && prevProps.dataProvider.dispose)
       prevProps.dataProvider.dispose();
   }
   private _onDismissClicked = () => {

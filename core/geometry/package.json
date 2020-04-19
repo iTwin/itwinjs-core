@@ -1,13 +1,14 @@
 {
   "name": "@bentley/geometry-core",
-  "version": "1.9.0-dev.6",
-  "license": "MIT",
+  "version": "2.0.0-dev.71",
   "description": "Bentley Core Geometry library",
   "main": "lib/geometry-core.js",
   "typings": "lib/geometry-core",
+  "imodeljsSharedLibrary": true,
+  "license": "MIT",
   "scripts": {
-    "build": "buildIModelJsModule",
-    "clean": "rimraf lib .rush ./src/test/output package-deps.json",
+    "build": "tsc 1>&2",
+    "clean": "rimraf lib .rush ./src/test/output",
     "watch": "tsc --watch",
     "test": "node ./node_modules/@bentley/build-tools/scripts/test.js",
     "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=geometry-core",
@@ -16,16 +17,6 @@
     "cover": "nyc npm test",
     "cover:docs": "node ./node_modules/@bentley/build-tools/scripts/docscoverage.js",
     "lint": "tslint --project . 1>&2"
-  },
-  "iModelJs": {
-    "buildModule": {
-      "type": "system",
-      "webpack": {
-        "dest": "./lib/module",
-        "entry": "./lib/geometry-core.js",
-        "bundleName": "geometry-core"
-      }
-    }
   },
   "repository": {
     "type": "git",
@@ -40,26 +31,24 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^1.9.0-dev.6"
+    "@bentley/bentleyjs-core": "^2.0.0-dev.71"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "1.9.0-dev.6",
-    "@bentley/build-tools": "1.9.0-dev.6",
-    "@bentley/webpack-tools": "1.9.0-dev.6",
+    "@bentley/bentleyjs-core": "2.0.0-dev.71",
+    "@bentley/build-tools": "2.0.0-dev.71",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
     "@types/node": "10.14.1",
     "chai": "^4.1.2",
-    "cpx": "^1.5.0",
     "debug": "^2.6.9",
     "mocha": "^5.2.0",
     "nyc": "^14.0.0",
-    "rimraf": "^2.6.2",
+    "rimraf": "^3.0.2",
     "semver": "^5.5.0",
     "ts-node": "^7.0.1",
     "tslint": "^5.11.0",
     "tslint-etc": "^1.5.2",
-    "typescript": "~3.6.2"
+    "typescript": "~3.7.4"
   },
   "dependencies": {},
   "nyc": {

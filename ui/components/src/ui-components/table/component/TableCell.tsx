@@ -1,13 +1,15 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Table */
+/** @packageDocumentation
+ * @module Table
+ */
 
 import * as React from "react";
 import classnames from "classnames";
 
-import { Omit, CommonProps } from "@bentley/ui-core";
+import { Omit, CommonProps, Icon } from "@bentley/ui-core";
 
 import { ItemStyleProvider } from "../../properties/ItemStyle";
 import { EditorContainerProps, EditorContainer } from "../../editors/EditorContainer";
@@ -190,6 +192,6 @@ export interface TableIconCellContentProps {
 export class TableIconCellContent extends React.PureComponent<TableIconCellContentProps> {
   /** @internal */
   public render() {
-    return <div className={`icon ${this.props.iconName}`} />;
+    return <Icon iconSpec={this.props.iconName} />;
   }
 }

@@ -1,10 +1,13 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module iModelHub */
-import { Logger } from "@bentley/bentleyjs-core";
-import { ArgumentCheck, AuthorizedClientRequestContext, FileHandler, request, RequestOptions } from "@bentley/imodeljs-clients";
+/** @packageDocumentation
+ * @module iModelHub
+ */
+import { Logger, BriefcaseStatus } from "@bentley/bentleyjs-core";
+import { ArgumentCheck } from "@bentley/imodelhub-client";
+import { AuthorizedClientRequestContext, FileHandler, request, RequestOptions, ProgressCallback, UserCancelledError, CancelRequest } from "@bentley/itwin-client";
 import * as fs from "fs";
 import * as path from "path";
 import { ClientsBackendLoggerCategory } from "../ClientsBackendLoggerCategory";
@@ -46,7 +49,7 @@ export class IOSAzureFileHandler implements FileHandler {
    * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) if one of the arguments is undefined or empty.
    */
 
-  public async downloadFile(requestContext: AuthorizedClientRequestContext, downloadUrl: string, downloadToPathname: string): Promise<void> {
+  public async downloadFile(requestContext: AuthorizedClientRequestContext, downloadUrl: string, downloadToPathname: string, _fileSize?: number, progressCallback?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void> {
     requestContext.enter();
     if (!IOSAzureFileHandler._isMobile) {
       Logger.logError(loggerCategory, "Expecting this code to run on a mobile device");
@@ -66,6 +69,9 @@ export class IOSAzureFileHandler implements FileHandler {
         const xhr = new XMLHttpRequest();
         xhr.open("GET", downloadUrl);
         xhr.onload = () => {
+          if (cancelRequest !== undefined) {
+            cancelRequest.cancel = () => false;
+          }
           if (xhr.status >= 200 && xhr.status < 300) {
             resolve();
           } else {
@@ -73,8 +79,22 @@ export class IOSAzureFileHandler implements FileHandler {
           }
         };
         xhr.onerror = () => {
-          reject();
+          if (xhr.status === 5000)
+            reject(new UserCancelledError(BriefcaseStatus.DownloadCancelled, "User cancelled download", Logger.logWarning));
+          else
+            reject();
         };
+        if (progressCallback) {
+          (xhr as any).onprogress = (doneBytes: number, totalBytes: number) => {
+            progressCallback({ loaded: doneBytes, total: totalBytes, percent: Number(((doneBytes / totalBytes) * 100).toFixed(2)) });
+          };
+        }
+        if (cancelRequest !== undefined) {
+          cancelRequest.cancel = () => {
+            (xhr as any).cancel();
+            return true;
+          };
+        }
         // iOS implementation knows about this method
         (xhr as any).downloadFile(downloadToPathname);
       });

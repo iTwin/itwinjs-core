@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Curve */
+/** @packageDocumentation
+ * @module Curve
+ */
 
 import { GeometryQuery } from "./GeometryQuery";
 import { Matrix4d } from "../geometry4d/Matrix4d";
@@ -16,19 +18,6 @@ import { CurveLocationDetailPair } from "./CurveLocationDetail";
  * @public
  */
 export class CurveCurve {
-  /**
-   * Return xy intersections of 2 curves.
-   * @param geometryA second geometry
-   * @param extendA true to allow geometryA to extend
-   * @param geometryB second geometry
-   * @param extendB true to allow geometryB to extend
-   * @deprecated Use CurveCurve.intersectionXYPairs (..) to get results in preferred directly paired form.
-   */
-  public static intersectionXY(geometryA: GeometryQuery, extendA: boolean, geometryB: GeometryQuery, extendB: boolean): CurveLocationDetailArrayPair {
-    const handler = new CurveCurveIntersectXY(undefined, geometryA, extendA, geometryB, extendB);
-    geometryA.dispatchToGeometryHandler(handler);
-    return handler.grabResults();
-  }
   /**
    * Return xy intersections of 2 curves.
    * @param geometryA second geometry
@@ -56,10 +45,10 @@ export class CurveCurve {
    * @param geometryB second geometry
    * @param extendB true to allow geometryB to extend
    */
-  public static intersectionProjectedXY(worldToLocal: Matrix4d, geometryA: GeometryQuery, extendA: boolean, geometryB: GeometryQuery, extendB: boolean): CurveLocationDetailArrayPair {
+  public static intersectionProjectedXYPairs(worldToLocal: Matrix4d, geometryA: GeometryQuery, extendA: boolean, geometryB: GeometryQuery, extendB: boolean): CurveLocationDetailPair [] {
     const handler = new CurveCurveIntersectXY(worldToLocal, geometryA, extendA, geometryB, extendB);
     geometryA.dispatchToGeometryHandler(handler);
-    return handler.grabResults();
+    return handler.grabPairedResults();
   }
   /**
    * Return full 3d xyz intersections of 2 curves.
@@ -75,6 +64,24 @@ export class CurveCurve {
     const handler = new CurveCurveIntersectXYZ(geometryA, extendA, geometryB, extendB);
     geometryA.dispatchToGeometryHandler(handler);
     return handler.grabResults();
+  }
+  /**
+   * Return xy intersections of 2 curves.
+   * @param geometryA second geometry
+   * @param extendA true to allow geometryA to extend
+   * @param geometryB second geometry
+   * @param extendB true to allow geometryB to extend
+   */
+  public static allIntersectionsAmongPrimitivesXY(primitives: CurvePrimitive[]): CurveLocationDetailPair[] {
+    const handler = new CurveCurveIntersectXY(undefined, undefined, false, undefined, false);
+    for (let i = 0; i < primitives.length; i++) {
+      const geometryA = primitives[i];
+      for (let j = i + 1; j < primitives.length; j++) {
+        handler.resetGeometry(geometryA, false, primitives[j], false);
+        geometryA.dispatchToGeometryHandler (handler);
+      }
+    }
+    return handler.grabPairedResults();
   }
 
 }

@@ -1,14 +1,16 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Codes */
+/** @packageDocumentation
+ * @module Codes
+ */
 
 import { DbResult, Id64, Id64String, Logger } from "@bentley/bentleyjs-core";
 import { CodeScopeSpec, CodeSpec, IModelError, IModelStatus } from "@bentley/imodeljs-common";
+import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { IModelDb } from "./IModelDb";
-import { BackendLoggerCategory } from "./BackendLoggerCategory";
 
 const loggerCategory = BackendLoggerCategory.CodeSpecs;
 
@@ -21,7 +23,9 @@ export class CodeSpecs {
 
   constructor(imodel: IModelDb) {
     this._imodel = imodel;
-    imodel.onChangesetApplied.addListener(() => this._loadedCodeSpecs.length = 0);
+    if (imodel.isBriefcaseDb()) {
+      imodel.onChangesetApplied.addListener(() => this._loadedCodeSpecs.length = 0);
+    }
   }
 
   /** Look up the Id of the CodeSpec with the specified name. */

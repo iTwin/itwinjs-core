@@ -1,12 +1,13 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Widget */
+/** @packageDocumentation
+ * @module Widget
+ */
 
 import * as React from "react";
 
-import { PluginUiManager, UiProviderRegisteredEventArgs } from "@bentley/imodeljs-frontend";
 import { CommonProps, Icon } from "@bentley/ui-core";
 import { AppButton, Tools as NZ_ToolsWidget, Direction } from "@bentley/ui-ninezone";
 
@@ -16,12 +17,12 @@ import { CommandItemDef } from "../shared/CommandItemDef";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { UiShowHideManager } from "../utils/UiShowHideManager";
 
-/** A Tool Widget normally displayed in the top left zone in the 9-Zone Layout system.
- * @public
+/** Definition of a Tool Widget normally displayed in the top left zone in the 9-Zone Layout system.
+ *  @public @deprecated use ToolWidgetComposer instead
  */
 export class ToolWidgetDef extends ToolbarWidgetDefBase {
   private _appButton: CommandItemDef | undefined;
-  private _reactElement: React.ReactNode;
+  private _reactNode: React.ReactNode;
 
   constructor(props: ToolWidgetProps) {
     super(props);
@@ -35,12 +36,18 @@ export class ToolWidgetDef extends ToolbarWidgetDefBase {
     this.widgetBaseName = `[${activeStageName}]ToolWidget`;
   }
 
-  public get reactElement(): React.ReactNode {
+  public get reactNode(): React.ReactNode {
     // istanbul ignore else
-    if (!this._reactElement)
-      this._reactElement = <ToolWidgetWithDef toolWidgetDef={this} />;
+    if (!this._reactNode)
+      this._reactNode = <ToolWidgetWithDef toolWidgetDef={this} />;
 
-    return this._reactElement;
+    return this._reactNode;
+  }
+
+  /** @deprecated use reactNode */
+  // istanbul ignore next
+  public get reactElement(): React.ReactNode {
+    return this.reactNode;
   }
 
   public renderCornerItem(): React.ReactNode | undefined {
@@ -60,7 +67,7 @@ export class ToolWidgetDef extends ToolbarWidgetDefBase {
 }
 
 /** Properties for the [[ToolWidget]] React component.
- * @public
+ *  @public @deprecated use ToolWidgetComposer instead
  */
 export interface ToolWidgetPropsEx extends ToolWidgetProps, CommonProps {
   button?: React.ReactNode;
@@ -72,26 +79,26 @@ export interface ToolWidgetPropsEx extends ToolWidgetProps, CommonProps {
  * @internal
  */
 interface ToolWidgetState {
-  toolWidgetDef: ToolWidgetDef;
+  toolWidgetDef: ToolWidgetDef; // tslint:disable-line:deprecation
 }
 
 /** ToolWidget React component.
- * @public
+ *  @public @deprecated use ToolWidgetComposer instead
  */
-export class ToolWidget extends React.Component<ToolWidgetPropsEx, ToolWidgetState> {
+export class ToolWidget extends React.Component<ToolWidgetPropsEx, ToolWidgetState> { // tslint:disable-line:deprecation
 
   /** @internal */
   public readonly state: Readonly<ToolWidgetState>;
 
-  constructor(props: ToolWidgetPropsEx) {
+  constructor(props: ToolWidgetPropsEx) { // tslint:disable-line:deprecation
     super(props);
 
-    this.state = { toolWidgetDef: new ToolWidgetDef(props) };
+    this.state = { toolWidgetDef: new ToolWidgetDef(props) }; // tslint:disable-line:deprecation
   }
 
-  public componentDidUpdate(prevProps: ToolWidgetPropsEx, _prevState: ToolWidgetState) {
+  public componentDidUpdate(prevProps: ToolWidgetPropsEx, _prevState: ToolWidgetState) { // tslint:disable-line:deprecation
     if (this.props !== prevProps) {
-      this.setState((_, props) => ({ toolWidgetDef: new ToolWidgetDef(props) }));
+      this.setState((_, props) => ({ toolWidgetDef: new ToolWidgetDef(props) })); // tslint:disable-line:deprecation
     }
   }
 
@@ -112,7 +119,7 @@ export class ToolWidget extends React.Component<ToolWidgetPropsEx, ToolWidgetSta
 /** Properties for the Tool Widget React component.
  */
 interface Props extends CommonProps {
-  toolWidgetDef: ToolWidgetDef;
+  toolWidgetDef: ToolWidgetDef; // tslint:disable-line:deprecation
   button?: React.ReactNode;
   horizontalToolbar?: React.ReactNode;
   verticalToolbar?: React.ReactNode;
@@ -130,10 +137,6 @@ class ToolWidgetWithDef extends React.Component<Props, ToolWidgetWithDefState> {
   constructor(props: Props) {
     super(props);
 
-    if (PluginUiManager.hasRegisteredProviders) {
-      this.props.toolWidgetDef.generateMergedItemLists();
-    }
-
     const horizontalToolbar = (this.props.horizontalToolbar) ? this.props.horizontalToolbar : this.props.toolWidgetDef.renderHorizontalToolbar();
     const verticalToolbar = (this.props.verticalToolbar) ? this.props.verticalToolbar : this.props.toolWidgetDef.renderVerticalToolbar();
     const cornerItem = (this.props.button !== undefined) ? this.props.button : this.props.toolWidgetDef.renderCornerItem();
@@ -144,20 +147,6 @@ class ToolWidgetWithDef extends React.Component<Props, ToolWidgetWithDefState> {
     const horizontalToolbar = (this.props.horizontalToolbar) ? this.props.horizontalToolbar : this.props.toolWidgetDef.renderHorizontalToolbar();
     const verticalToolbar = (this.props.verticalToolbar) ? this.props.verticalToolbar : this.props.toolWidgetDef.renderVerticalToolbar();
     this.setState({ horizontalToolbar, verticalToolbar });
-  }
-
-  private _handleUiProviderRegisteredEvent = (_args: UiProviderRegisteredEventArgs): void => {
-    // create, merge, and cache ItemList from plugins
-    this.props.toolWidgetDef.generateMergedItemLists();
-    this.reloadToolbars();
-  }
-
-  public componentDidMount() {
-    PluginUiManager.onUiProviderRegisteredEvent.addListener(this._handleUiProviderRegisteredEvent);
-  }
-
-  public componentWillUnmount() {
-    PluginUiManager.onUiProviderRegisteredEvent.removeListener(this._handleUiProviderRegisteredEvent);
   }
 
   public componentDidUpdate(prevProps: Props) {

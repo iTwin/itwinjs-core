@@ -1,17 +1,19 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Base */
+/** @packageDocumentation
+ * @module Base
+ */
 
 import * as React from "react";
 import { CommonDivProps } from "../utils/Props";
 import { Div } from "./Div";
 
-/** Full height & width and centered React functional component
+/** Full height & width and centered React functional component.
+ * Displays content centered vertically and horizontally and has a height and width of 100%.
  * @public
  */
-// tslint:disable-next-line:variable-name
-export const FillCentered: React.FunctionComponent<CommonDivProps> = (props: CommonDivProps) => {
+export function FillCentered(props: CommonDivProps) {
   return <Div {...props} mainClassName="uicore-fill-centered" />;
-};
+}

@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /* tslint:disable:no-direct-imports */
 
@@ -11,13 +11,15 @@ import { shallow, ShallowWrapper } from "enzyme";
 import * as faker from "faker";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { waitForPendingAsyncs } from "@bentley/presentation-common/lib/test/_helpers/PendingAsyncsHelper";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { Tree, ActiveMatchInfo } from "@bentley/ui-components";
-import { treeWithFilteringSupport, TreeWithFilteringSupportProps } from "../../tree/WithFilteringSupport";
-import { FilteredPresentationTreeDataProvider } from "../../tree/FilteredDataProvider";
-import { IPresentationTreeDataProvider } from "../../tree/IPresentationTreeDataProvider";
 import { ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises";
+import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { DEPRECATED_Tree as Tree, ActiveMatchInfo } from "@bentley/ui-components";
 import { NodePathElement } from "@bentley/presentation-common";
+import { DEPRECATED_treeWithFilteringSupport as treeWithFilteringSupport, TreeWithFilteringSupportProps } from "../../presentation-components/tree/WithFilteringSupport";
+import { FilteredPresentationTreeDataProvider } from "../../presentation-components/tree/FilteredDataProvider";
+import { IPresentationTreeDataProvider } from "../../presentation-components/tree/IPresentationTreeDataProvider";
+
+// tslint:disable:deprecation
 
 // tslint:disable-next-line:variable-name naming-convention
 const FilteredTree = treeWithFilteringSupport(Tree);

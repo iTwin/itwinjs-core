@@ -1,9 +1,11 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module Tools */
+/** @packageDocumentation
+ * @module Tools
+ */
 
 import {
   ColorDef,
@@ -11,7 +13,7 @@ import {
 } from "@bentley/imodeljs-common";
 import {
   IModelApp,
-  Tile,
+  TileBoundingBoxes,
   Tool,
   Viewport,
 } from "@bentley/imodeljs-frontend";
@@ -61,20 +63,20 @@ export class ShowTileVolumesTool extends Tool {
   public static get minArgs() { return 0; }
   public static get maxArgs() { return 1; }
 
-  public run(boxes?: Tile.DebugBoundingBoxes): boolean {
+  public run(boxes?: TileBoundingBoxes): boolean {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined === vp)
       return true;
 
     if (undefined === boxes)
-      boxes = Tile.DebugBoundingBoxes.Volume;
+      boxes = TileBoundingBoxes.Volume;
 
     vp.debugBoundingBoxes = boxes;
     return true;
   }
 
   public parseAndRun(...args: string[]): boolean {
-    let boxes: Tile.DebugBoundingBoxes | undefined;
+    let boxes: TileBoundingBoxes | undefined;
     if (0 !== args.length) {
       const arg = args[0].toLowerCase();
       for (let i = 0; i < boundingVolumeNames.length; i++) {
@@ -105,7 +107,7 @@ export class SetAspectRatioSkewTool extends Tool {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined !== vp) {
       vp.view.setAspectRatioSkew(skew);
-      vp.synchWithView(false);
+      vp.synchWithView();
     }
 
     return true;
@@ -293,5 +295,26 @@ export class ViewportTileSizeModifierTool extends Tool {
     const arg = args[0].toLowerCase();
     const modifier = "reset" === arg ? undefined : Number.parseFloat(args[0]);
     return this.run(modifier);
+  }
+}
+
+/** Sets or clears the tile size modifier override for the selected viewport.
+ * @alpha
+ */
+export class ViewportAddRealityModel extends Tool {
+  public static toolId = "ViewportAddRealityModel";
+  public static get minArgs() { return 1; }
+  public static get maxArgs() { return 1; }
+
+  public run(url: string): boolean {
+    const vp = IModelApp.viewManager.selectedView;
+    if (undefined !== vp)
+      vp.displayStyle.attachRealityModel({ tilesetUrl: url });
+
+    return true;
+  }
+
+  public parseAndRun(...args: string[]): boolean {
+    return this.run(args[0]);
   }
 }

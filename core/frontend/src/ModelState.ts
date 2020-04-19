@@ -1,20 +1,26 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module ModelState */
+/** @packageDocumentation
+ * @module ModelState
+ */
 
-import { compareBooleans, compareStrings, Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
+import { Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import { Point2d, Range3d } from "@bentley/geometry-core";
-import { BatchType, GeometricModel2dProps, ModelProps, GeometricModelProps, RelatedElement } from "@bentley/imodeljs-common";
+import {
+  GeometricModel2dProps,
+  GeometricModel3dProps,
+  GeometricModelProps,
+  ModelProps,
+  RelatedElement,
+} from "@bentley/imodeljs-common";
 import { EntityState } from "./EntityState";
 import { IModelConnection } from "./IModelConnection";
-import { IModelTile } from "./tile/IModelTile";
-import { createRealityTileTreeReference } from "./tile/RealityModelTileTree";
-import { TileTree } from "./tile/TileTree";
+import { createPrimaryTileTreeReference, createRealityTileTreeReference, TileTreeReference } from "./tile/internal";
 import { HitDetail } from "./HitDetail";
 import { ViewState } from "./ViewState";
-import { SpatialClassifiers } from "./SpatialClassification";
+import { SpatialClassifiers } from "./SpatialClassifiers";
 
 /** Represents the front-end state of a [Model]($backend).
  * @public
@@ -110,7 +116,7 @@ export abstract class GeometricModelState extends ModelState implements Geometri
   }
 
   /** @internal */
-  public createTileTreeReference(view: ViewState): TileTree.Reference {
+  public createTileTreeReference(view: ViewState): TileTreeReference {
     // If this is a reality model, its tile tree is obtained from reality data service URL.
     const url = this.jsonProperties.tilesetUrl;
     if (undefined !== url) {
@@ -125,95 +131,9 @@ export abstract class GeometricModelState extends ModelState implements Geometri
       });
     }
 
-    return new PrimaryTreeReference(view, this);
+    return createPrimaryTileTreeReference(view, this);
   }
 }
-
-interface PrimaryTreeId {
-  readonly treeId: IModelTile.PrimaryTreeId;
-  readonly modelId: Id64String;
-  readonly is3d: boolean;
-  readonly guid: string | undefined;
-}
-
-class PrimaryTreeSupplier implements TileTree.Supplier {
-  public compareTileTreeIds(lhs: PrimaryTreeId, rhs: PrimaryTreeId): number {
-    // NB: We intentionally do not compare the guids. They are expected to be equal if the modelIds are equal.
-    let cmp = compareStrings(lhs.modelId, rhs.modelId);
-    if (0 === cmp) {
-      cmp = compareBooleans(lhs.is3d, rhs.is3d);
-      if (0 === cmp) {
-        cmp = IModelTile.compareTreeIds(lhs.treeId, rhs.treeId);
-      }
-    }
-
-    return cmp;
-  }
-
-  public async createTileTree(id: PrimaryTreeId, iModel: IModelConnection): Promise<TileTree | undefined> {
-    const treeId = id.treeId;
-    const idStr = IModelTile.treeIdToString(id.modelId, treeId);
-    const props = await iModel.tiles.getTileTreeProps(idStr);
-
-    const allowInstancing = undefined === treeId.animationId;
-    const edgesRequired = treeId.edgesRequired;
-
-    const loader = new IModelTile.Loader(iModel, props.formatVersion, BatchType.Primary, edgesRequired, allowInstancing, id.guid);
-    props.rootTile.contentId = loader.rootContentId;
-    const params = TileTree.paramsFromJSON(props, iModel, id.is3d, loader, id.modelId);
-    return new TileTree(params);
-  }
-
-  public getOwner(id: PrimaryTreeId, iModel: IModelConnection): TileTree.Owner {
-    return iModel.tiles.getTileTreeOwner(id, this);
-  }
-}
-
-const primaryTreeSupplier = new PrimaryTreeSupplier();
-
-class PrimaryTreeReference extends TileTree.Reference {
-  private readonly _view: ViewState;
-  private readonly _model: GeometricModelState;
-  private _id: PrimaryTreeId;
-  private _owner: TileTree.Owner;
-
-  public constructor(view: ViewState, model: GeometricModelState) {
-    super();
-    this._view = view;
-    this._model = model;
-    this._id = {
-      modelId: model.id,
-      is3d: model.is3d,
-      treeId: PrimaryTreeReference.createTreeId(view, model.id),
-      guid: model.geometryGuid,
-    };
-    this._owner = primaryTreeSupplier.getOwner(this._id, model.iModel);
-  }
-
-  public get treeOwner(): TileTree.Owner {
-    const newId = PrimaryTreeReference.createTreeId(this._view, this._id.modelId);
-    if (0 !== IModelTile.compareTreeIds(newId, this._id.treeId)) {
-      this._id = {
-        modelId: this._id.modelId,
-        is3d: this._id.is3d,
-        treeId: newId,
-        guid: this._id.guid,
-      };
-
-      this._owner = primaryTreeSupplier.getOwner(this._id, this._model.iModel);
-    }
-
-    return this._owner;
-  }
-
-  private static createTreeId(view: ViewState, modelId: Id64String): IModelTile.PrimaryTreeId {
-    const script = view.scheduleScript;
-    const animationId = undefined !== script ? script.getModelAnimationId(modelId) : undefined;
-    const edgesRequired = view.viewFlags.edgesRequired();
-    return { type: BatchType.Primary, edgesRequired, animationId };
-  }
-}
-
 /** Represents the front-end state of a [GeometricModel2d]($backend).
  * @public
  */
@@ -246,10 +166,42 @@ export class GeometricModel2dState extends GeometricModelState implements Geomet
 export class GeometricModel3dState extends GeometricModelState {
   /** @internal */
   public static get className() { return "GeometricModel3d"; }
+
+  constructor(props: GeometricModel3dProps, iModel: IModelConnection, state?: GeometricModel3dState) {
+    super(props, iModel, state);
+    this.isNotSpatiallyLocated = JsonUtils.asBool(props.isNotSpatiallyLocated);
+    this.isPlanProjection = JsonUtils.asBool(props.isPlanProjection);
+  }
+
+  /** @internal */
+  public toJSON(): GeometricModel3dProps {
+    const val = super.toJSON() as GeometricModel3dProps;
+    if (this.isNotSpatiallyLocated)
+      val.isNotSpatiallyLocated = true;
+
+    if (this.isPlanProjection)
+      val.isPlanProjection = true;
+
+    return val;
+  }
+
   /** @internal */
   public get is3d(): boolean { return true; }
   /** @internal */
   public get asGeometricModel3d(): GeometricModel3dState { return this; }
+
+  /** If true, then the elements in this GeometricModel3dState are expected to be in an XY plane.
+   * @note The associated ECProperty was added to the BisCore schema in version 1.0.8
+   */
+  public readonly isPlanProjection: boolean;
+
+  /** If true, then the elements in this GeometricModel3dState are not in real-world coordinates and will not be in the spatial index.
+   * @note The associated ECProperty was added to the BisCore schema in version 1.0.8
+   */
+  public readonly isNotSpatiallyLocated: boolean;
+
+  /** If true, then the elements in this GeometricModel3dState are in real-world coordinates and will be in the spatial index. */
+  public get iSpatiallyLocated(): boolean { return !this.isNotSpatiallyLocated; }
 }
 
 /** Represents the front-end state of a [SheetModel]($backend).

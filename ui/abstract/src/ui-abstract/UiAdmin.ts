@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Admin */
+/** @packageDocumentation
+ * @module UiAdmin
+ */
 
 import { XAndY } from "@bentley/geometry-core";
 import { AbstractMenuItemProps } from "./items/AbstractMenuItemProps";
@@ -124,5 +126,23 @@ export class UiAdmin {
 
   /** Hides the input editor. */
   public hideInputEditor(): boolean { return false; }
+
+  /** Show an HTML element at a particular location.
+   * @param _displayElement The HTMLElement to display
+   * @param _location Location of the display element, relative to the origin of htmlElement or the window
+   * @param _offset Offset of the display element from the location
+   * @param _onCancel Function invoked when the Escape key is pressed or a click occurs outside the display element
+   * @param _relativePosition Position relative to the given location. Defaults to TopRight.
+   * @param _anchorElement The HTMLElement that anchors the display element. If undefined, the location is relative to the overall window.
+   * @return true if the display element was displayed, false if the display element could not be displayed.
+   */
+  public showHTMLElement(
+    _displayElement: HTMLElement, _location: XAndY, _offset: XAndY, _onCancel: OnCancelFunc,
+    _relativePosition?: RelativePosition, _htmlElement?: HTMLElement): boolean {
+    return false;
+  }
+
+  /** Hides the HTML Element. */
+  public hideHTMLElement(): boolean { return false; }
 
 }

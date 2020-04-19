@@ -1,6 +1,6 @@
 {
   "name": "@bentley/perf-tools",
-  "version": "1.9.0-dev.6",
+  "version": "2.0.0-dev.71",
   "description": "Tools for collecting and reporting performance data",
   "license": "MIT",
   "repository": {
@@ -8,8 +8,8 @@
     "url": "https://github.com/imodeljs/imodeljs/tree/master/tools/perf-tools"
   },
   "scripts": {
-    "build": "tsc 1>&2 && node ./node_modules/@bentley/build-tools/scripts/ignoreargs.js 1>&2",
-    "clean": "rimraf lib .rush package-deps.json",
+    "build": "tsc 1>&2",
+    "clean": "rimraf lib .rush",
     "lint": "tslint --project . 1>&2",
     "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=Reporter",
     "test": "",
@@ -27,14 +27,14 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "fs-extra": "^6.0.1"
+    "fs-extra": "^8.1.0"
   },
   "devDependencies": {
-    "@bentley/build-tools": "1.9.0-dev.6",
+    "@bentley/build-tools": "2.0.0-dev.71",
     "@types/fs-extra": "^4.0.7",
-    "rimraf": "^2.6.2",
+    "rimraf": "^3.0.2",
     "tslint": "^5.11.0",
     "tslint-etc": "^1.5.2",
-    "typescript": "~3.6.2"
+    "typescript": "~3.7.4"
   }
 }

@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Item */
+/** @packageDocumentation
+ * @module Item
+ */
 
 import { UiError } from "@bentley/ui-abstract";
 
@@ -38,14 +40,10 @@ export class ToolInformation {
           throw new UiError(UiFramework.loggerCategory(this), "toolUiProvider: toolId '" + this.toolId + "' is registered to a control that is NOT a ToolUiProvider");
         }
 
-        provider.initialize();
         this._toolUiProvider = provider;
       }
-    } else {
-      // if the tool settings are coming from tool, reinitialize provider so latest properties published from tool are displayed in UI
-      if (ToolUiManager.useDefaultToolSettingsProvider && this._toolUiProvider)
-        this._toolUiProvider.initialize();
     }
+
     return this._toolUiProvider;
   }
 }

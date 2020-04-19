@@ -1,34 +1,24 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module RpcInterface */
+/** @packageDocumentation
+ * @module RpcInterface
+ */
 
 import { BentleyStatus } from "@bentley/bentleyjs-core";
 import { IModelError } from "../../IModelError";
 import { RpcInterface, RpcInterfaceDefinition } from "../../RpcInterface";
-import { RpcProtocol, SerializedRpcRequest } from "../core/RpcProtocol";
-import { RpcRegistry } from "../core/RpcRegistry";
+import { RpcProtocol } from "../core/RpcProtocol";
 import { ElectronRpcConfiguration } from "./ElectronRpcManager";
 import { ElectronRpcRequest } from "./ElectronRpcRequest";
+import { ElectronIpcTransport, IpcTransportMessage, initializeIpc } from "./ElectronIpcTransport";
 
 /** RPC interface protocol for an Electron-based application.
  * @beta
  */
 export class ElectronRpcProtocol extends RpcProtocol {
   public static instances: Map<string, ElectronRpcProtocol> = new Map();
-
-  public static obtainInstance(request: SerializedRpcRequest) {
-    const interfaceName = request.operation.interfaceDefinition;
-
-    let protocol = ElectronRpcProtocol.instances.get(interfaceName) as ElectronRpcProtocol;
-    if (!protocol) {
-      RpcRegistry.instance.lookupImpl(interfaceName);
-      protocol = ElectronRpcProtocol.instances.get(interfaceName) as ElectronRpcProtocol;
-    }
-
-    return protocol;
-  }
 
   /** The RPC request class for this protocol. */
   public readonly requestType = ElectronRpcRequest;
@@ -39,9 +29,17 @@ export class ElectronRpcProtocol extends RpcProtocol {
   /** @internal */
   public requests: Map<string, ElectronRpcRequest> = new Map();
 
+  /** @internal */
+  public readonly transport: ElectronIpcTransport<IpcTransportMessage, IpcTransportMessage>;
+
   /** Constructs an Electron protocol. */
   public constructor(configuration: ElectronRpcConfiguration) {
     super(configuration);
+    const transport = initializeIpc(this);
+    if (!transport)
+      throw new IModelError(BentleyStatus.ERROR, `Failed to initialize electron IPC.`);
+
+    this.transport = transport;
   }
 
   /** @internal */

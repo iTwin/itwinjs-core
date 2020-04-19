@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Bspline */
+/** @packageDocumentation
+ * @module Bspline
+ */
 
 import { Point2d } from "../geometry3d/Point2dVector2d";
 import { Point3d } from "../geometry3d/Point3dVector3d";
@@ -327,7 +329,7 @@ export class Bezier1dNd {
     if (Geometry.isAlmostEqualNumber(fraction0, fraction1))
       return false;
     if (fraction1 < fraction0) {
-      this.subdivideToIntervalInPlace(fraction0, fraction1);
+      this.subdivideToIntervalInPlace(fraction1, fraction0);
       this.reverseInPlace();
       return true;
     }

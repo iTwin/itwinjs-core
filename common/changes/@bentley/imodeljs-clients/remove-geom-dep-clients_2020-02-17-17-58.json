@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-clients",
+      "comment": "Remove the @bentley/geometry-core dependency.  Update the RealitDataServicesClient.getRealityDataInProjectOverlapping() signature to take lat and long instead of a Range2d.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-clients",
+  "email": "31107829+calebmshafer@users.noreply.github.com"
+}

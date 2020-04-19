@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
 import { AnyClass } from "../../src/Interfaces";
@@ -56,7 +56,7 @@ export const TestDiagnosticCodes = {
   FailingUnitSystemDiagnostic: getCode(18),
   FailingPhenomenonDiagnostic: getCode(19),
   FailingConstantDiagnostic: getCode(20),
-}
+};
 
 // tslint:disable-next-line:variable-name
 export const TestDiagnostics = {
@@ -102,340 +102,340 @@ export const TestDiagnostics = {
     "Failed with param {0} {1}"),
 };
 
-export async function* failingSchemaRule(schema: Schema): AsyncIterable<Diagnostics.SchemaDiagnostic<[string, string]>> | undefined {
+export async function* failingSchemaRule(schema: Schema): AsyncIterable<Diagnostics.SchemaDiagnostic<[string, string]>> {
   yield new TestDiagnostics.FailingSchemaDiagnostic(schema, ["Param1", "Param2"]);
 }
 
-export async function* passingSchemaRule(_schema: Schema): AsyncIterable<Diagnostics.SchemaDiagnostic<any[]>> | undefined {
+export async function* passingSchemaRule(_schema: Schema): AsyncIterable<Diagnostics.SchemaDiagnostic<any[]>> {
   return undefined;
 }
 
-export async function* failingSchemaItemRule(schemaItem: SchemaItem): AsyncIterable<Diagnostics.SchemaItemDiagnostic<SchemaItem, [string, string]>> | undefined {
+export async function* failingSchemaItemRule(schemaItem: SchemaItem): AsyncIterable<Diagnostics.SchemaItemDiagnostic<SchemaItem, [string, string]>> {
   yield new TestDiagnostics.FailingSchemaItemDiagnostic(schemaItem, ["Param1", "Param2"]);
 }
 
-export async function* passingSchemaItemRule(_schemaItem: SchemaItem): AsyncIterable<Diagnostics.SchemaItemDiagnostic<SchemaItem, any[]>> | undefined {
+export async function* passingSchemaItemRule(_schemaItem: SchemaItem): AsyncIterable<Diagnostics.SchemaItemDiagnostic<SchemaItem, any[]>> {
   return undefined;
 }
 
-export async function* failingClassRule(ecClass: AnyClass): AsyncIterable<Diagnostics.ClassDiagnostic<[string, string]>> | undefined {
+export async function* failingClassRule(ecClass: AnyClass): AsyncIterable<Diagnostics.ClassDiagnostic<[string, string]>> {
   yield new TestDiagnostics.FailingClassDiagnostic(ecClass, ["Param1", "Param2"]);
 }
 
-export async function* passingClassRule(_ecClass: AnyClass): AsyncIterable<Diagnostics.ClassDiagnostic<any[]>> | undefined {
+export async function* passingClassRule(_ecClass: AnyClass): AsyncIterable<Diagnostics.ClassDiagnostic<any[]>> {
   return undefined;
 }
 
-export async function* failingPropertyRule(property: AnyProperty): AsyncIterable<Diagnostics.PropertyDiagnostic<[string, string]>> | undefined {
+export async function* failingPropertyRule(property: AnyProperty): AsyncIterable<Diagnostics.PropertyDiagnostic<[string, string]>> {
   yield new TestDiagnostics.FailingPropertyDiagnostic(property, ["Param1", "Param2"]);
 }
 
-export async function* passingPropertyRule(_relationship: RelationshipClass): AsyncIterable<Diagnostics.SchemaItemDiagnostic<RelationshipClass, any[]>> | undefined {
+export async function* passingPropertyRule(_property: AnyProperty): AsyncIterable<Diagnostics.PropertyDiagnostic<any[]>> {
   return undefined;
 }
 
-export async function* failingEntityClassRule(entityClass: EntityClass): AsyncIterable<Diagnostics.SchemaItemDiagnostic<EntityClass, [string, string]>> | undefined {
+export async function* failingEntityClassRule(entityClass: EntityClass): AsyncIterable<Diagnostics.SchemaItemDiagnostic<EntityClass, [string, string]>> {
   yield new TestDiagnostics.FailingEntityClassDiagnostic(entityClass, ["Param1", "Param2"]);
 }
 
-export async function* passingEntityClassRule(_entityClass: EntityClass): AsyncIterable<Diagnostics.SchemaItemDiagnostic<EntityClass, any[]>> | undefined {
+export async function* passingEntityClassRule(_entityClass: EntityClass): AsyncIterable<Diagnostics.SchemaItemDiagnostic<EntityClass, any[]>> {
   return undefined;
 }
 
-export async function* failingStructClassRule(structClass: StructClass): AsyncIterable<Diagnostics.SchemaItemDiagnostic<StructClass, [string, string]>> | undefined {
+export async function* failingStructClassRule(structClass: StructClass): AsyncIterable<Diagnostics.SchemaItemDiagnostic<StructClass, [string, string]>> {
   yield new TestDiagnostics.FailingStructClassDiagnostic(structClass, ["Param1", "Param2"]);
 }
 
-export async function* passingStructClassRule(_structClass: StructClass): AsyncIterable<Diagnostics.SchemaItemDiagnostic<StructClass, any[]>> | undefined {
+export async function* passingStructClassRule(_structClass: StructClass): AsyncIterable<Diagnostics.SchemaItemDiagnostic<StructClass, any[]>> {
   return undefined;
 }
 
-export async function* failingMixinRule(mixin: Mixin): AsyncIterable<Diagnostics.SchemaItemDiagnostic<Mixin, [string, string]>> | undefined {
+export async function* failingMixinRule(mixin: Mixin): AsyncIterable<Diagnostics.SchemaItemDiagnostic<Mixin, [string, string]>> {
   yield new TestDiagnostics.FailingMixinDiagnostic(mixin, ["Param1", "Param2"]);
 }
 
-export async function* passingMixinRule(_mixin: Mixin): AsyncIterable<Diagnostics.SchemaItemDiagnostic<Mixin, any[]>> | undefined {
+export async function* passingMixinRule(_mixin: Mixin): AsyncIterable<Diagnostics.SchemaItemDiagnostic<Mixin, any[]>> {
   return undefined;
 }
 
-export async function* failingRelationshipRule(relationship: RelationshipClass): AsyncIterable<Diagnostics.SchemaItemDiagnostic<RelationshipClass, [string, string]>> | undefined {
+export async function* failingRelationshipRule(relationship: RelationshipClass): AsyncIterable<Diagnostics.SchemaItemDiagnostic<RelationshipClass, [string, string]>> {
   yield new TestDiagnostics.FailingRelationshipDiagnostic(relationship, ["Param1", "Param2"]);
 }
 
-export async function* passingRelationshipRule(_relationship: RelationshipClass): AsyncIterable<Diagnostics.SchemaItemDiagnostic<RelationshipClass, any[]>> | undefined {
+export async function* passingRelationshipRule(_relationship: RelationshipClass): AsyncIterable<Diagnostics.SchemaItemDiagnostic<RelationshipClass, any[]>> {
   return undefined;
 }
 
-export async function* failingRelationshipConstraintRule(constraint: RelationshipConstraint): AsyncIterable<Diagnostics.RelationshipConstraintDiagnostic<[string, string]>> | undefined {
+export async function* failingRelationshipConstraintRule(constraint: RelationshipConstraint): AsyncIterable<Diagnostics.RelationshipConstraintDiagnostic<[string, string]>> {
   yield new TestDiagnostics.FailingRelationshipConstraintDiagnostic(constraint, ["Param1", "Param2"]);
 }
 
-export async function* passingRelationshipConstraintRule(_constraint: RelationshipConstraint): AsyncIterable<Diagnostics.RelationshipConstraintDiagnostic<any[]>> | undefined {
+export async function* passingRelationshipConstraintRule(_constraint: RelationshipConstraint): AsyncIterable<Diagnostics.RelationshipConstraintDiagnostic<any[]>> {
   return undefined;
 }
 
-export async function* failingCustomAttributeClassRule(customAttributeClass: CustomAttributeClass): AsyncIterable<Diagnostics.SchemaItemDiagnostic<CustomAttributeClass, [string, string]>> | undefined {
+export async function* failingCustomAttributeClassRule(customAttributeClass: CustomAttributeClass): AsyncIterable<Diagnostics.SchemaItemDiagnostic<CustomAttributeClass, [string, string]>> {
   yield new TestDiagnostics.FailingCustomAttributeClassDiagnostic(customAttributeClass, ["Param1", "Param2"]);
 }
 
-export async function* passingCustomAttributeClassRule(_customAttributeClass: CustomAttributeClass): AsyncIterable<Diagnostics.SchemaItemDiagnostic<CustomAttributeClass, any[]>> | undefined {
+export async function* passingCustomAttributeClassRule(_customAttributeClass: CustomAttributeClass): AsyncIterable<Diagnostics.SchemaItemDiagnostic<CustomAttributeClass, any[]>> {
   return undefined;
 }
 
-export async function* failingCustomAttributeContainerRule(container: CustomAttributeContainerProps): AsyncIterable<Diagnostics.CustomAttributeContainerDiagnostic<[string, string]>> | undefined {
+export async function* failingCustomAttributeContainerRule(container: CustomAttributeContainerProps): AsyncIterable<Diagnostics.CustomAttributeContainerDiagnostic<[string, string]>> {
   yield new TestDiagnostics.FailingCustomAttributeContainerDiagnostic(container, ["Param1", "Param2"]);
 }
 
-export async function* passingCustomAttributeContainerRule(_container: CustomAttributeContainerProps): AsyncIterable<Diagnostics.CustomAttributeContainerDiagnostic<any[]>> | undefined {
+export async function* passingCustomAttributeContainerRule(_container: CustomAttributeContainerProps): AsyncIterable<Diagnostics.CustomAttributeContainerDiagnostic<any[]>> {
   return undefined;
 }
 
-export async function* failingCustomAttributeRule(container: CustomAttributeContainerProps, _customAttribute: CustomAttribute): AsyncIterable<Diagnostics.CustomAttributeContainerDiagnostic<[string, string]>> | undefined {
+export async function* failingCustomAttributeRule(container: CustomAttributeContainerProps, _customAttribute: CustomAttribute): AsyncIterable<Diagnostics.CustomAttributeContainerDiagnostic<[string, string]>> {
   yield new TestDiagnostics.FailingCustomAttributeContainerDiagnostic(container, ["Param1", "Param2"]);
 }
 
-export async function* passingCustomAttributeRule(_container: CustomAttributeContainerProps, _customAttribute: CustomAttribute): AsyncIterable<Diagnostics.CustomAttributeContainerDiagnostic<any[]>> | undefined {
+export async function* passingCustomAttributeRule(_container: CustomAttributeContainerProps, _customAttribute: CustomAttribute): AsyncIterable<Diagnostics.CustomAttributeContainerDiagnostic<any[]>> {
   return undefined;
 }
 
-export async function* failingEnumerationRule(enumeration: Enumeration): AsyncIterable<Diagnostics.SchemaItemDiagnostic<Enumeration, [string, string]>> | undefined {
+export async function* failingEnumerationRule(enumeration: Enumeration): AsyncIterable<Diagnostics.SchemaItemDiagnostic<Enumeration, [string, string]>> {
   yield new TestDiagnostics.FailingEnumerationDiagnostic(enumeration, ["Param1", "Param2"]);
 }
 
-export async function* passingEnumerationRule(_enumeration: Enumeration): AsyncIterable<Diagnostics.SchemaItemDiagnostic<Enumeration, any[]>> | undefined {
+export async function* passingEnumerationRule(_enumeration: Enumeration): AsyncIterable<Diagnostics.SchemaItemDiagnostic<Enumeration, any[]>> {
   return undefined;
 }
 
-export async function* failingKindOfQuantityRule(kindOfQuantity: KindOfQuantity): AsyncIterable<Diagnostics.SchemaItemDiagnostic<KindOfQuantity, [string, string]>> | undefined {
+export async function* failingKindOfQuantityRule(kindOfQuantity: KindOfQuantity): AsyncIterable<Diagnostics.SchemaItemDiagnostic<KindOfQuantity, [string, string]>> {
   yield new TestDiagnostics.FailingKindOfQuantityDiagnostic(kindOfQuantity, ["Param1", "Param2"]);
 }
 
-export async function* passingKindOfQuantityRule(_kindOfQuantity: KindOfQuantity): AsyncIterable<Diagnostics.SchemaItemDiagnostic<KindOfQuantity, any[]>> | undefined {
+export async function* passingKindOfQuantityRule(_kindOfQuantity: KindOfQuantity): AsyncIterable<Diagnostics.SchemaItemDiagnostic<KindOfQuantity, any[]>> {
   return undefined;
 }
 
-export async function* failingPropertyCategoryRule(propertyCategory: PropertyCategory): AsyncIterable<Diagnostics.SchemaItemDiagnostic<PropertyCategory, [string, string]>> | undefined {
+export async function* failingPropertyCategoryRule(propertyCategory: PropertyCategory): AsyncIterable<Diagnostics.SchemaItemDiagnostic<PropertyCategory, [string, string]>> {
   yield new TestDiagnostics.FailingPropertyCategoryDiagnostic(propertyCategory, ["Param1", "Param2"]);
 }
 
-export async function* passingPropertyCategoryRule(_propertyCategory: PropertyCategory): AsyncIterable<Diagnostics.SchemaItemDiagnostic<PropertyCategory, any[]>> | undefined {
+export async function* passingPropertyCategoryRule(_propertyCategory: PropertyCategory): AsyncIterable<Diagnostics.SchemaItemDiagnostic<PropertyCategory, any[]>> {
   return undefined;
 }
 
-export async function* failingFormatRule(format: Format): AsyncIterable<Diagnostics.SchemaItemDiagnostic<Format, [string, string]>> | undefined {
+export async function* failingFormatRule(format: Format): AsyncIterable<Diagnostics.SchemaItemDiagnostic<Format, [string, string]>> {
   yield new TestDiagnostics.FailingFormatDiagnostic(format, ["Param1", "Param2"]);
 }
 
-export async function* passingFormatRule(_format: Format): AsyncIterable<Diagnostics.SchemaItemDiagnostic<Format, any[]>> | undefined {
+export async function* passingFormatRule(_format: Format): AsyncIterable<Diagnostics.SchemaItemDiagnostic<Format, any[]>> {
   return undefined;
 }
 
-export async function* failingUnitRule(unit: Unit): AsyncIterable<Diagnostics.SchemaItemDiagnostic<Unit, [string, string]>> | undefined {
+export async function* failingUnitRule(unit: Unit): AsyncIterable<Diagnostics.SchemaItemDiagnostic<Unit, [string, string]>> {
   yield new TestDiagnostics.FailingUnitDiagnostic(unit, ["Param1", "Param2"]);
 }
 
-export async function* passingUnitRule(_unit: Unit): AsyncIterable<Diagnostics.SchemaItemDiagnostic<Unit, any[]>> | undefined {
+export async function* passingUnitRule(_unit: Unit): AsyncIterable<Diagnostics.SchemaItemDiagnostic<Unit, any[]>> {
   return undefined;
 }
 
-export async function* failingInvertedUnitRule(invertedUnit: InvertedUnit): AsyncIterable<Diagnostics.SchemaItemDiagnostic<InvertedUnit, [string, string]>> | undefined {
+export async function* failingInvertedUnitRule(invertedUnit: InvertedUnit): AsyncIterable<Diagnostics.SchemaItemDiagnostic<InvertedUnit, [string, string]>> {
   yield new TestDiagnostics.FailingInvertedUnitFormatDiagnostic(invertedUnit, ["Param1", "Param2"]);
 }
 
-export async function* passingInvertedUnitRule(_invertedUnit: InvertedUnit): AsyncIterable<Diagnostics.SchemaItemDiagnostic<InvertedUnit, any[]>> | undefined {
+export async function* passingInvertedUnitRule(_invertedUnit: InvertedUnit): AsyncIterable<Diagnostics.SchemaItemDiagnostic<InvertedUnit, any[]>> {
   return undefined;
 }
 
-export async function* failingUnitSystemRule(unitSystem: UnitSystem): AsyncIterable<Diagnostics.SchemaItemDiagnostic<UnitSystem, [string, string]>> | undefined {
+export async function* failingUnitSystemRule(unitSystem: UnitSystem): AsyncIterable<Diagnostics.SchemaItemDiagnostic<UnitSystem, [string, string]>> {
   yield new TestDiagnostics.FailingUnitSystemDiagnostic(unitSystem, ["Param1", "Param2"]);
 }
 
-export async function* passingUnitSystemRule(_format: UnitSystem): AsyncIterable<Diagnostics.SchemaItemDiagnostic<UnitSystem, any[]>> | undefined {
+export async function* passingUnitSystemRule(_format: UnitSystem): AsyncIterable<Diagnostics.SchemaItemDiagnostic<UnitSystem, any[]>> {
   return undefined;
 }
 
-export async function* failingPhenomenonRule(phenomenon: Phenomenon): AsyncIterable<Diagnostics.SchemaItemDiagnostic<Phenomenon, [string, string]>> | undefined {
+export async function* failingPhenomenonRule(phenomenon: Phenomenon): AsyncIterable<Diagnostics.SchemaItemDiagnostic<Phenomenon, [string, string]>> {
   yield new TestDiagnostics.FailingPhenomenonDiagnostic(phenomenon, ["Param1", "Param2"]);
 }
 
-export async function* passingPhenomenonRule(_phenomenon: Phenomenon): AsyncIterable<Diagnostics.SchemaItemDiagnostic<Phenomenon, any[]>> | undefined {
+export async function* passingPhenomenonRule(_phenomenon: Phenomenon): AsyncIterable<Diagnostics.SchemaItemDiagnostic<Phenomenon, any[]>> {
   return undefined;
 }
 
-export async function* failingConstantRule(constant: Constant): AsyncIterable<Diagnostics.SchemaItemDiagnostic<Constant, [string, string]>> | undefined {
+export async function* failingConstantRule(constant: Constant): AsyncIterable<Diagnostics.SchemaItemDiagnostic<Constant, [string, string]>> {
   yield new TestDiagnostics.FailingConstantDiagnostic(constant, ["Param1", "Param2"]);
 }
 
-export async function* passingConstantRule(_constant: Constant): AsyncIterable<Diagnostics.SchemaItemDiagnostic<Constant, any[]>> | undefined {
+export async function* passingConstantRule(_constant: Constant): AsyncIterable<Diagnostics.SchemaItemDiagnostic<Constant, any[]>> {
   return undefined;
 }
 
 // Suppression Rules
-export async function ignoreSchemaSuppression(_schema: Schema): Promise<boolean> {
+export async function ignoreSchemaSuppression(_diagnostic: Diagnostics.AnyDiagnostic, _schema: Schema): Promise<boolean> {
   return false;
 }
 
-export async function applySchemaSuppression(_schema: Schema): Promise<boolean> {
+export async function applySchemaSuppression(_diagnostic: Diagnostics.AnyDiagnostic, _schema: Schema): Promise<boolean> {
   return true;
 }
 
-export async function ignoreSchemaItemSuppression(_schemaItem: SchemaItem): Promise<boolean> {
+export async function ignoreSchemaItemSuppression(_diagnostic: Diagnostics.AnyDiagnostic, _schemaItem: SchemaItem): Promise<boolean> {
   return false;
 }
 
-export async function applySchemaItemSuppression(_schemaItem: SchemaItem): Promise<boolean> {
+export async function applySchemaItemSuppression(_diagnostic: Diagnostics.AnyDiagnostic, _schemaItem: SchemaItem): Promise<boolean> {
   return true;
 }
 
-export async function ignoreClassSuppression(_ecClass: AnyClass): Promise<boolean> {
+export async function ignoreClassSuppression(_diagnostic: Diagnostics.AnyDiagnostic, _ecClass: AnyClass): Promise<boolean> {
   return false;
 }
 
-export async function applyClassSuppression(_ecClass: AnyClass): Promise<boolean> {
+export async function applyClassSuppression(_diagnostic: Diagnostics.AnyDiagnostic, _ecClass: AnyClass): Promise<boolean> {
   return true;
 }
 
-export async function ignorePropertySuppression(_property: AnyProperty): Promise<boolean> {
+export async function ignorePropertySuppression(_diagnostic: Diagnostics.AnyDiagnostic, _property: AnyProperty): Promise<boolean> {
   return false;
 }
 
-export async function applyPropertySuppression(_property: AnyProperty): Promise<boolean> {
+export async function applyPropertySuppression(_diagnostic: Diagnostics.AnyDiagnostic, _property: AnyProperty): Promise<boolean> {
   return true;
 }
 
-export async function ignoreEntityClassSuppression(_entityClass: EntityClass): Promise<boolean> {
+export async function ignoreEntityClassSuppression(_diagnostic: Diagnostics.AnyDiagnostic, _entityClass: EntityClass): Promise<boolean> {
   return false;
 }
 
-export async function applyEntityClassSuppression(_entityClass: EntityClass): Promise<boolean> {
+export async function applyEntityClassSuppression(_diagnostic: Diagnostics.AnyDiagnostic, _entityClass: EntityClass): Promise<boolean> {
   return true;
 }
 
-export async function ignoreStructClassSuppression(_structClass: StructClass): Promise<boolean> {
+export async function ignoreStructClassSuppression(_diagnostic: Diagnostics.AnyDiagnostic, _structClass: StructClass): Promise<boolean> {
   return false;
 }
 
-export async function applyStructClassSuppression(_structClass: StructClass): Promise<boolean> {
+export async function applyStructClassSuppression(_diagnostic: Diagnostics.AnyDiagnostic, _structClass: StructClass): Promise<boolean> {
   return true;
 }
 
-export async function ignoreMixinSuppression(_mixin: Mixin): Promise<boolean> {
+export async function ignoreMixinSuppression(_diagnostic: Diagnostics.AnyDiagnostic, _mixin: Mixin): Promise<boolean> {
   return false;
 }
 
-export async function applyMixinSuppression(_mixin: Mixin): Promise<boolean> {
+export async function applyMixinSuppression(_diagnostic: Diagnostics.AnyDiagnostic, _mixin: Mixin): Promise<boolean> {
   return true;
 }
 
-export async function ignoreRelationshipClassSuppression(_relationship: RelationshipClass): Promise<boolean> {
+export async function ignoreRelationshipClassSuppression(_diagnostic: Diagnostics.AnyDiagnostic, _relationship: RelationshipClass): Promise<boolean> {
   return false;
 }
 
-export async function applyRelationshipClassSuppression(_relationship: RelationshipClass): Promise<boolean> {
+export async function applyRelationshipClassSuppression(_diagnostic: Diagnostics.AnyDiagnostic, _relationship: RelationshipClass): Promise<boolean> {
   return true;
 }
 
-export async function ignoreRelationshipConstraintSuppression(_constraint: RelationshipConstraint): Promise<boolean> {
+export async function ignoreRelationshipConstraintSuppression(_diagnostic: Diagnostics.AnyDiagnostic, _constraint: RelationshipConstraint): Promise<boolean> {
   return false;
 }
 
-export async function applyRelationshipConstraintSuppression(_constraint: RelationshipConstraint): Promise<boolean> {
+export async function applyRelationshipConstraintSuppression(_diagnostic: Diagnostics.AnyDiagnostic, _constraint: RelationshipConstraint): Promise<boolean> {
   return true;
 }
 
-export async function ignoreCustomAttributeClassSuppression(_customAttributeClass: CustomAttributeClass): Promise<boolean> {
+export async function ignoreCustomAttributeClassSuppression(_diagnostic: Diagnostics.AnyDiagnostic, _customAttributeClass: CustomAttributeClass): Promise<boolean> {
   return false;
 }
 
-export async function applyCustomAttributeClassSuppression(_customAttributeClass: CustomAttributeClass): Promise<boolean> {
+export async function applyCustomAttributeClassSuppression(_diagnostic: Diagnostics.AnyDiagnostic, _customAttributeClass: CustomAttributeClass): Promise<boolean> {
   return true;
 }
 
-export async function ignoreCustomAttributeContainerSuppression(_container: CustomAttributeContainerProps): Promise<boolean> {
+export async function ignoreCustomAttributeContainerSuppression(_diagnostic: Diagnostics.AnyDiagnostic, _container: CustomAttributeContainerProps): Promise<boolean> {
   return false;
 }
 
-export async function applyCustomAttributeContainerSuppression(_container: CustomAttributeContainerProps): Promise<boolean> {
+export async function applyCustomAttributeContainerSuppression(_diagnostic: Diagnostics.AnyDiagnostic, _container: CustomAttributeContainerProps): Promise<boolean> {
   return true;
 }
 
-export async function ignoreCustomAttributeInstanceSuppression(_container: CustomAttributeContainerProps, _customAttribute: CustomAttribute): Promise<boolean> {
+export async function ignoreCustomAttributeInstanceSuppression(_diagnostic: Diagnostics.AnyDiagnostic, _container: CustomAttributeContainerProps, _customAttribute: CustomAttribute): Promise<boolean> {
   return false;
 }
 
-export async function applyCustomAttributeInstanceSuppression(_container: CustomAttributeContainerProps, _customAttribute: CustomAttribute): Promise<boolean> {
+export async function applyCustomAttributeInstanceSuppression(_diagnostic: Diagnostics.AnyDiagnostic, _container: CustomAttributeContainerProps, _customAttribute: CustomAttribute): Promise<boolean> {
   return true;
 }
 
-export async function ignoreEnumerationSuppression(_enumeration: Enumeration): Promise<boolean> {
+export async function ignoreEnumerationSuppression(_diagnostic: Diagnostics.AnyDiagnostic, _enumeration: Enumeration): Promise<boolean> {
   return false;
 }
 
-export async function applyEnumerationSuppression(_enumeration: Enumeration): Promise<boolean> {
+export async function applyEnumerationSuppression(_diagnostic: Diagnostics.AnyDiagnostic, _enumeration: Enumeration): Promise<boolean> {
   return true;
 }
 
-export async function ignoreKindofQuantitySuppression(_kindOfQuantity: KindOfQuantity): Promise<boolean> {
+export async function ignoreKindofQuantitySuppression(_diagnostic: Diagnostics.AnyDiagnostic, _kindOfQuantity: KindOfQuantity): Promise<boolean> {
   return false;
 }
 
-export async function applyKindOfQuantitySuppression(_kindOfQuantity: KindOfQuantity): Promise<boolean> {
+export async function applyKindOfQuantitySuppression(_diagnostic: Diagnostics.AnyDiagnostic, _kindOfQuantity: KindOfQuantity): Promise<boolean> {
   return true;
 }
 
-export async function ignorePropertyCategorySuppression(_propertyCategory: PropertyCategory): Promise<boolean> {
+export async function ignorePropertyCategorySuppression(_diagnostic: Diagnostics.AnyDiagnostic, _propertyCategory: PropertyCategory): Promise<boolean> {
   return false;
 }
 
-export async function applyPropertyCategorySuppression(_propertyCategory: PropertyCategory): Promise<boolean> {
+export async function applyPropertyCategorySuppression(_diagnostic: Diagnostics.AnyDiagnostic, _propertyCategory: PropertyCategory): Promise<boolean> {
   return true;
 }
 
-export async function ignoreFormatSuppression(_format: Format): Promise<boolean> {
+export async function ignoreFormatSuppression(_diagnostic: Diagnostics.AnyDiagnostic, _format: Format): Promise<boolean> {
   return false;
 }
 
-export async function applyFormatSuppression(_format: Format): Promise<boolean> {
+export async function applyFormatSuppression(_diagnostic: Diagnostics.AnyDiagnostic, _format: Format): Promise<boolean> {
   return true;
 }
 
-export async function ignoreUnitSuppression(_unit: Unit): Promise<boolean> {
+export async function ignoreUnitSuppression(_diagnostic: Diagnostics.AnyDiagnostic, _unit: Unit): Promise<boolean> {
   return false;
 }
 
-export async function applyUnitSuppression(_unit: Unit): Promise<boolean> {
+export async function applyUnitSuppression(_diagnostic: Diagnostics.AnyDiagnostic, _unit: Unit): Promise<boolean> {
   return true;
 }
 
-export async function ignoreInvertedUnitSuppression(_invertedUnit: InvertedUnit): Promise<boolean> {
+export async function ignoreInvertedUnitSuppression(_diagnostic: Diagnostics.AnyDiagnostic, _invertedUnit: InvertedUnit): Promise<boolean> {
   return false;
 }
 
-export async function applyInvertedUnitSuppression(_invertedUnit: InvertedUnit): Promise<boolean> {
+export async function applyInvertedUnitSuppression(_diagnostic: Diagnostics.AnyDiagnostic, _invertedUnit: InvertedUnit): Promise<boolean> {
   return true;
 }
 
-export async function ignoreUnitSystemSuppression(_unitSystem: UnitSystem): Promise<boolean> {
+export async function ignoreUnitSystemSuppression(_diagnostic: Diagnostics.AnyDiagnostic, _unitSystem: UnitSystem): Promise<boolean> {
   return false;
 }
 
-export async function applyUnitSystemSuppression(_unitSystem: UnitSystem): Promise<boolean> {
+export async function applyUnitSystemSuppression(_diagnostic: Diagnostics.AnyDiagnostic, _unitSystem: UnitSystem): Promise<boolean> {
   return true;
 }
 
-export async function ignorePhenomenonSuppression(_phenomenon: Phenomenon): Promise<boolean> {
+export async function ignorePhenomenonSuppression(_diagnostic: Diagnostics.AnyDiagnostic, _phenomenon: Phenomenon): Promise<boolean> {
   return false;
 }
 
-export async function applyPhenomenonSuppression(_phenomenon: Phenomenon): Promise<boolean> {
+export async function applyPhenomenonSuppression(_diagnostic: Diagnostics.AnyDiagnostic, _phenomenon: Phenomenon): Promise<boolean> {
   return true;
 }
 
-export async function ignoreConstantSuppression(_constant: Constant): Promise<boolean> {
+export async function ignoreConstantSuppression(_diagnostic: Diagnostics.AnyDiagnostic, _constant: Constant): Promise<boolean> {
   return false;
 }
 
-export async function applyConstantSuppression(_constant: Constant): Promise<boolean> {
+export async function applyConstantSuppression(_diagnostic: Diagnostics.AnyDiagnostic, _constant: Constant): Promise<boolean> {
   return true;
 }
 

@@ -1,9 +1,11 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module Polyface */
+/** @packageDocumentation
+ * @module Polyface
+ */
 
 import { IndexedPolyface, PolyfaceVisitor } from "./Polyface";
 import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
@@ -460,14 +462,6 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     }
     return undefined;
 
-  }
-  // cspell:word Normaln
-  /**
-   * This is a misspelling of findOrAddNormalInLineString
-   * @deprecated
-   */
-  public findOrAddNormalnLineString(ls: LineString3d, index: number, transform?: Transform, priorIndexA?: number, priorIndexB?: number): number | undefined {
-    return this.findOrAddNormalInLineString(ls, index, transform, priorIndexA, priorIndexB);
   }
 
   /**
@@ -1332,27 +1326,29 @@ export class PolyfaceBuilder extends NullGeometryHandler {
    *
    * * Add points to the polyface
    * * indices are added (in reverse order if indicated by the builder state)
-   * @param points array of points.  This may contain extra points not to be used in the polygon
-   * @param numPointsToUse number of points to use.
+   * * Arrays with 2 or fewer points are ignored.
+   * @param points array of points. Trailing closure points are ignored.
    */
   public addPolygonGrowableXYZArray(points: GrowableXYZArray) {
     // don't use trailing points that match start point.
     let numPointsToUse = points.length;
     while (numPointsToUse > 1 && Geometry.isSmallMetricDistance(points.distanceIndexIndex(0, numPointsToUse - 1)!))
       numPointsToUse--;
-    let index = 0;
-    if (!this._reversed) {
-      for (let i = 0; i < numPointsToUse; i++) {
-        index = this.findOrAddPointInGrowableXYZArray(points, i)!;
-        this._polyface.addPointIndex(index);
+    if (numPointsToUse > 2) {
+      let index = 0;
+      if (!this._reversed) {
+        for (let i = 0; i < numPointsToUse; i++) {
+          index = this.findOrAddPointInGrowableXYZArray(points, i)!;
+          this._polyface.addPointIndex(index);
+        }
+      } else {
+        for (let i = numPointsToUse; --i >= 0;) {
+          index = this.findOrAddPointInGrowableXYZArray(points, i)!;
+          this._polyface.addPointIndex(index);
+        }
       }
-    } else {
-      for (let i = numPointsToUse; --i >= 0;) {
-        index = this.findOrAddPointInGrowableXYZArray(points, i)!;
-        this._polyface.addPointIndex(index);
-      }
+      this._polyface.terminateFacet();
     }
-    this._polyface.terminateFacet();
   }
   /** Add a polygon to the evolving facets.
    *
@@ -1372,7 +1368,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     if (params && params.length < numPointsToUse)
       params = undefined;
     if (colors && colors.length < numPointsToUse)
-    colors = undefined;
+      colors = undefined;
     if (!this._reversed) {
       for (let i = 0; i < numPointsToUse; i++) {
         index = this.findOrAddPointInGrowableXYZArray(points, i)!;
@@ -1461,7 +1457,8 @@ export class PolyfaceBuilder extends NullGeometryHandler {
    * * Rely on the builder's compress step to find common vertex coordinates
    * @internal
    */
-  public addGraph(graph: HalfEdgeGraph, needParams: boolean, acceptFaceFunction: HalfEdgeToBooleanFunction = HalfEdge.testNodeMaskNotExterior) {
+  public addGraph(graph: HalfEdgeGraph, needParams: boolean, acceptFaceFunction: HalfEdgeToBooleanFunction = HalfEdge.testNodeMaskNotExterior,
+    isEdgeVisibleFunction: HalfEdgeToBooleanFunction | undefined = HalfEdge.testMateMaskExterior) {
     let index = 0;
     const needNormals = this._options.needNormals;
     let normalIndex = 0;
@@ -1474,7 +1471,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
           let node = seed;
           do {
             index = this.findOrAddPointXYZ(node.x, node.y, node.z);
-            this._polyface.addPointIndex(index);
+            this._polyface.addPointIndex(index, isEdgeVisibleFunction === undefined ? true : isEdgeVisibleFunction(node));
             if (needParams) {
               index = this.findOrAddParamXY(node.x, node.y);
               this._polyface.addParamIndex(index);

@@ -1,9 +1,11 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module Tools */
+/** @packageDocumentation
+ * @module Tools
+ */
 
 import { Id64, Id64Array, Id64String } from "@bentley/bentleyjs-core";
 import { copyStringToClipboard } from "../ClipboardUtilities";
@@ -149,7 +151,7 @@ export class InspectElementTool extends PrimitiveTool {
     };
     let messageDetails: NotifyMessageDetails;
     try {
-      const str = await IModelReadRpcInterface.getClient().getGeometrySummary(this.iModel.iModelToken.toJSON(), request);
+      const str = await IModelReadRpcInterface.getClient().getGeometrySummary(this.iModel.getRpcProps(), request);
       if (this._doCopy)
         copyStringToClipboard(str);
 

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/extension-webpack-tools",
+      "comment": "Revert back to using svg-sprite-loader and sprite resourceQuery.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/extension-webpack-tools",
+  "email": "bill.steinbock@bentley.com"
+}

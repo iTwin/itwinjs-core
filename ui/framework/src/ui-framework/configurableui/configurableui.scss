@@ -1,9 +1,11 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-@import "@bentley/ui-core/lib/ui-core/index";
-@import "@bentley/ui-ninezone/lib/ui-ninezone/footer/_variables";
+@import "~@bentley/ui-core/lib/ui-core/base/base";
+@import "~@bentley/ui-core/lib/ui-core/style/typography";
+@import "~@bentley/ui-core/lib/ui-core/z-index";
+@import "~@bentley/ui-ninezone/lib/ui-ninezone/footer/variables";
 @import "../variables";
 
 #uifw-configurableui-wrapper {
@@ -37,7 +39,7 @@
   cursor: grabbing;
   position: fixed;
   pointer-events: none;
-  z-index: 9999;
+  @include uicore-z-index(dragdrop);
   left: 0;
   top: 0;
   height: 100%;
@@ -67,4 +69,8 @@
       width: $uifw-popup-border-width;
       }
   }
+}
+
+.uifw-app-button-small {
+  margin-bottom: 6px;
 }

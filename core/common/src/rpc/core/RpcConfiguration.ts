@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module RpcInterface */
+/** @packageDocumentation
+ * @module RpcInterface
+ */
 import { ClientRequestContext, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
 import { RpcInterface, RpcInterfaceDefinition } from "../../RpcInterface";
 import { RpcManager } from "../../RpcManager";
@@ -33,8 +35,8 @@ export abstract class RpcConfiguration {
   public static strictMode: boolean = false;
 
   /**
-   * Whether to throw an error when the IModelToken in the operation parameter list differs from the token in the URL.
-   * @note By default, a warning is loggged and the operation is allowed to proceed.
+   * Whether to throw an error when the IModelRpcProps in the operation parameter list differs from the token in the URL.
+   * @note By default, a warning is logged and the operation is allowed to proceed.
    * @note The parameter token is always replaced by the url token (unless RpcOperationPolicy.allowTokenMismatch is set).
    */
   public static throwOnTokenMismatch = false;
@@ -57,7 +59,7 @@ export abstract class RpcConfiguration {
   public static requestContext: RpcRequestContext = {
     getId: (_request: RpcRequest): string => "",
     serialize: async (_request: RpcRequest): Promise<SerializedClientRequestContext> => ({
-      id: "",
+      id: _request.id,
       applicationId: "",
       applicationVersion: "",
       sessionId: "",

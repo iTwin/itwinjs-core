@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from 'chai';
@@ -34,9 +34,6 @@ import * as Unit from '../src/Metadata/Unit';
 import * as UnitSystem from '../src/Metadata/UnitSystem';
 import * as PropertyCategory from '../src/Metadata/PropertyCategory';
 import * as Property from '../src/Metadata/Property';
-import * as SchemaXMLFileLocater from '../src/Deserialization/SchemaXmlFileLocater';
-import * as SchemaJsonFileLocater from '../src/Deserialization/SchemaJsonFileLocater';
-import * as SchemaFileLocater from '../src/Deserialization/SchemaFileLocater';
 import * as SchemaGraphUtil from '../src/Deserialization/SchemaGraphUtil';
 
 // new type with specified index signature
@@ -77,9 +74,6 @@ const moduleImports: Dict = {
   ...UnitSystem,
   ...PropertyCategory,
   ...Property,
-  ...SchemaXMLFileLocater,
-  ...SchemaJsonFileLocater,
-  ...SchemaFileLocater,
   ...SchemaGraphUtil,
 };
 

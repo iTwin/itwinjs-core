@@ -1,18 +1,25 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module OIDC */
+/** @packageDocumentation
+ * @module OIDC
+ */
 
 import { AuthStatus, BeEvent, BentleyError, ClientRequestContext, Logger, LogLevel, assert } from "@bentley/bentleyjs-core";
-import { AccessToken, IOidcFrontendClient, OidcClient, OidcFrontendClientConfiguration, UserInfo } from "@bentley/imodeljs-clients";
+import { AccessToken, UserInfo, ImsOidcClient } from "@bentley/itwin-client";
 import { User, UserManager, UserManagerSettings, WebStorageStateStore, Log as OidcClientLog, Logger as IOidcClientLogger } from "oidc-client";
 import { FrontendRequestContext } from "../FrontendRequestContext";
 import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
+import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
+import { OidcFrontendClientConfiguration } from "./OidcFrontendClient";
 
-const loggerCategory: string = FrontendLoggerCategory.OidcBrowserClient;
+const loggerCategory: string = FrontendLoggerCategory.Authorization;
 
-/** Utility to forward oidc-client logs to the Bentley logger */
+/** Utility to forward oidc-client logs to the Bentley logger
+ * @beta
+ * @deprecated Use [[BrowserAuthorizationClient]] and related utilities instead
+ */
 class OidcClientLogger implements IOidcClientLogger {
   private constructor() {
   }
@@ -57,7 +64,7 @@ class OidcClientLogger implements IOidcClientLogger {
 
   /** Initializes forwarding of OidcClient logs to the Bentley Logger */
   public static initializeLogger() {
-    OidcClientLog.logger = new OidcClientLogger();
+    OidcClientLog.logger = new OidcClientLogger(); // tslint:disable-line:deprecation
     this.initializeLevel();
   }
 
@@ -68,26 +75,26 @@ class OidcClientLogger implements IOidcClientLogger {
 }
 
 /**
- * Utility to generate OIDC/OAuth tokens for frontend applications
+ * Utility to generate OIDC/OAuth tokens for Single Page Applications (running in the Browser)
  * @beta
+ * @deprecated Use [[BrowserAuthorizationClient]] instead
  */
-export class OidcBrowserClient extends OidcClient implements IOidcFrontendClient {
+export class OidcBrowserClient extends ImsOidcClient implements FrontendAuthorizationClient {
   private _userManager?: UserManager;
-  private _accessToken?: AccessToken;
+  protected _accessToken?: AccessToken;
   private _redirectPath: string;
 
   /** Constructor */
-  public constructor(private _configuration: OidcFrontendClientConfiguration) {
+  public constructor(private _configuration: OidcFrontendClientConfiguration) { // tslint:disable-line:deprecation
     super();
     const redirectUri: URL = new URL(this._configuration.redirectUri);
     this._redirectPath = redirectUri.pathname;
   }
 
   /**
-   * Used to initialize the client - must be awaited before any other methods are called
-   * @throws [[Error]] in some cases of authorization failure
-   * - if the login times out without the user providing the necessary input, or
-   * - if the user hasn't consented to the scopes.
+   * Used to initialize the client - must be awaited before any other methods are called.
+   * Attempts a non-interactive sign in by loading the authenticated state from a previous
+   * sign-in, or through a silent sign in with the authorization provider.
    */
   public async initialize(requestContext: FrontendRequestContext): Promise<void> {
     /*
@@ -100,7 +107,7 @@ export class OidcBrowserClient extends OidcClient implements IOidcFrontendClient
 
     // Initialize user manager and logging
     await this.createUserManager(requestContext);
-    OidcClientLogger.initializeLogger();
+    OidcClientLogger.initializeLogger(); // tslint:disable-line:deprecation
 
     if (this.getIsRedirecting()) {
       // Handle redirection to extract the accessToken
@@ -152,7 +159,7 @@ export class OidcBrowserClient extends OidcClient implements IOidcFrontendClient
    * @return Resolves to authenticated user if the silent sign in succeeded
    * @throws [[Error]] If the silent sign in fails
    */
-  private async signInSilent(requestContext: ClientRequestContext): Promise<User> {
+  protected async signInSilent(requestContext: ClientRequestContext): Promise<User> {
     requestContext.enter();
     assert(!!this._userManager, "OidcBrowserClient not initialized");
 
@@ -203,8 +210,13 @@ export class OidcBrowserClient extends OidcClient implements IOidcFrontendClient
    * Start the sign-in process
    * - calls the onUserStateChanged() call back after the authorization completes
    * or if there is an error.
-   * - redirects application to the redirectUri specified in the configuration and then
-   * redirects back to root when sign-in is complete.
+   * - will attempt in order:
+   *   (i) load any existing authorized user from local storage,
+   *   (ii) a silent sign in with the authorization provider, and if all else fails,
+   *   (iii) an interactive signin that requires user input.
+   * - if an interactive or silent signin is required with the authorization provider, it will
+   * redirect application to the redirectUri specified in the configuration, and then redirect
+   * back to specified successRedirectUri when the sign-in is complete.
    */
   public async signIn(requestContext: ClientRequestContext, successRedirectUrl?: string): Promise<void> {
     requestContext.enter();
@@ -221,7 +233,7 @@ export class OidcBrowserClient extends OidcClient implements IOidcFrontendClient
       data: {
         successRedirectUrl: successRedirectUrl || window.location.href,
       },
-    }); // tslint:disable-line:no-floating-promises
+    });
   }
 
   /**
@@ -233,10 +245,13 @@ export class OidcBrowserClient extends OidcClient implements IOidcFrontendClient
    */
   public async signOut(requestContext: ClientRequestContext): Promise<void> {
     requestContext.enter();
-    await this._userManager!.signoutRedirect(); // tslint:disable-line:no-floating-promises
+    await this._userManager!.signoutRedirect();
   }
 
-  /** Event called when the user's sign-in state changes - this may be due to calls to signIn(), signOut() or simply because the token expired */
+  /**
+   * Event called when the user's sign-in state changes - this may be due to calls to signIn(), signOut(), if the token
+   * expired, or if the token was silently refreshed.
+   */
   public readonly onUserStateChanged = new BeEvent<(token: AccessToken | undefined) => void>();
 
   /**
@@ -253,16 +268,16 @@ export class OidcBrowserClient extends OidcClient implements IOidcFrontendClient
   }
 
   /**
-   * Set to true if there's a current authorized user or client (in the case of agent applications).
-   * Set to true if signed in and the access token has not expired, and false otherwise.
+   * Set to true if there's a current authorized user. i.e., the user has signed in,
+   * and the access token has not expired.
    */
   public get isAuthorized(): boolean {
-    return !!this._accessToken;
+    return !!this._accessToken; // Note: The accessToken maintained by this client is always silently refreshed if possible.
   }
 
   /** Set to true if the user has signed in, but the token has expired and requires a refresh */
   public get hasExpired(): boolean {
-    return !this._accessToken; // Always silently refreshed
+    return !this._accessToken; // Note: the token in this client is always silently refreshed if possible.
   }
 
   /** Set to true if signed in - the accessToken may be active or may have expired and require a refresh */
@@ -280,7 +295,7 @@ export class OidcBrowserClient extends OidcClient implements IOidcFrontendClient
     this._userManager.events.removeUserUnloaded(this._onUserUnloaded);
     this._userManager.events.removeSilentRenewError(this._onSilentRenewError);
     this._userManager.events.removeUserSignedOut(this._onUserSignedOut);
-    OidcClientLogger.reset();
+    OidcClientLogger.reset(); // tslint:disable-line:deprecation
     this._userManager = undefined;
   }
 
@@ -396,4 +411,5 @@ export class OidcBrowserClient extends OidcClient implements IOidcFrontendClient
   private _onUserSignedOut = () => {
     this._onUserStateChanged(undefined);
   }
+
 }

@@ -1,9 +1,9 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { BentleyStatus, Id64, Id64String } from "@bentley/bentleyjs-core";
-import { Angle, Arc3d, Box, Geometry, LineSegment3d, LineString3d, Loop, Point2d, Point3d, Range3d, Transform, YawPitchRollAngles } from "@bentley/geometry-core";
+import { BentleyStatus, Id64, Id64String, IModelStatus } from "@bentley/bentleyjs-core";
+import { Angle, Arc3d, Box, Geometry, LineSegment3d, LineString3d, Loop, Point2d, Point3d, Range3d, Transform, YawPitchRollAngles, IModelJson } from "@bentley/geometry-core";
 import {
   AreaPattern,
   BackgroundFill,
@@ -30,13 +30,19 @@ import {
   MassPropertiesRequestProps,
   TextString,
   TextStringProps,
+  CreatePolyfaceRequestProps,
+  CreatePolyfaceResponseProps,
 } from "@bentley/imodeljs-common";
 import { assert, expect } from "chai";
-import { BackendRequestContext, GeometricElement, GeometryPart, IModelDb, LineStyleDefinition, PhysicalObject, Platform } from "../../imodeljs-backend";
+import { BackendRequestContext, GeometricElement, GeometryPart, LineStyleDefinition, PhysicalObject, Platform, SnapshotDb } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
+function assertTrue(expr: boolean): asserts expr {
+  assert.isTrue(expr);
+}
+
 describe("GeometryStream", () => {
-  let imodel: IModelDb;
+  let imodel: SnapshotDb;
 
   before(() => {
     const seedFileName = IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim");
@@ -45,7 +51,7 @@ describe("GeometryStream", () => {
   });
 
   after(() => {
-    imodel.closeSnapshot();
+    imodel.close();
   });
 
   it("create GeometricElement3d using line codes 1-7", async () => {
@@ -120,7 +126,6 @@ describe("GeometryStream", () => {
     const lsStylesUsed: Id64String[] = [];
     const it = new GeometryStreamIterator(value.geom!, value.category);
     for (const entry of it) {
-      assert.isDefined(entry.geometryQuery);
       assert.equal(entry.primitive.type, "geometryQuery");
       lsStylesUsed.push(entry.geomParams.styleInfo ? entry.geomParams.styleInfo.styleId : Id64.invalid);
     }
@@ -201,7 +206,6 @@ describe("GeometryStream", () => {
     const widthsUsed: number[] = [];
     const it = new GeometryStreamIterator(value.geom!, value.category);
     for (const entry of it) {
-      assert.isDefined(entry.geometryQuery);
       assert.equal(entry.primitive.type, "geometryQuery");
       assert.isDefined(entry.geomParams.styleInfo);
       stylesUsed.push(entry.geomParams.styleInfo!.styleId);
@@ -402,8 +406,8 @@ describe("GeometryStream", () => {
     params.gradient = new Gradient.Symb();
     params.gradient.mode = Gradient.Mode.Linear;
     params.gradient.flags = Gradient.Flags.Invert;
-    params.gradient.keys.push(new Gradient.KeyColor({ value: 0.0, color: ColorDef.blue }));
-    params.gradient.keys.push(new Gradient.KeyColor({ value: 0.5, color: ColorDef.red }));
+    params.gradient.keys.push(new Gradient.KeyColor({ value: 0.0, color: ColorDef.blue.toJSON() }));
+    params.gradient.keys.push(new Gradient.KeyColor({ value: 0.5, color: ColorDef.red.toJSON() }));
     builder.appendGeometryParamsChange(params);
     shape.tryTransformInPlace(xOffset);
     builder.appendGeometry(shape);
@@ -434,7 +438,6 @@ describe("GeometryStream", () => {
     let iShape = 0;
     const itLocal = new GeometryStreamIterator(value.geom!, value.category);
     for (const entry of itLocal) {
-      assert.isDefined(entry.geometryQuery);
       assert.equal(entry.primitive.type, "geometryQuery");
       switch (iShape++) {
         case 0:
@@ -490,7 +493,7 @@ describe("GeometryStream", () => {
     const shape = Loop.create(LineString3d.create(Point3d.create(0, 0, 0), Point3d.create(1, 0, 0), Point3d.create(1, 1, 0), Point3d.create(0, 1, 0), Point3d.create(0, 0, 0)));
 
     // Hatch w/o overrides
-    params.lineColor = new ColorDef(ColorByName.yellow);
+    params.lineColor = ColorDef.create(ColorByName.yellow);
     params.weight = 5;
     params.pattern = new AreaPattern.Params();
     params.pattern.space1 = 0.05;
@@ -579,7 +582,6 @@ describe("GeometryStream", () => {
     const itLocal = new GeometryStreamIterator(value.geom!, value.category);
     for (const entry of itLocal) {
       assert.equal(entry.primitive.type, "geometryQuery");
-      assert.isDefined(entry.geometryQuery);
       assert.isDefined(entry.geomParams.pattern);
       switch (iShape++) {
         case 0:
@@ -681,18 +683,16 @@ describe("GeometryStream", () => {
 
     const itLocal = new GeometryStreamIterator(value.geom!, value.category);
     for (const entry of itLocal) {
-      assert.equal(entry.primitive.type, "textString");
-      assert.isDefined(entry.textString);
-      assert.isTrue(entry.textString!.origin.isAlmostZero);
-      assert.isTrue(entry.textString!.rotation.isIdentity());
+      assertTrue(entry.primitive.type === "textString");
+      assert.isTrue(entry.primitive.textString.origin.isAlmostZero);
+      assert.isTrue(entry.primitive.textString.rotation.isIdentity());
     }
 
     const itWorld = GeometryStreamIterator.fromGeometricElement3d(value);
     for (const entry of itWorld) {
-      assert.equal(entry.primitive.type, "textString");
-      assert.isDefined(entry.textString);
-      assert.isTrue(entry.textString!.origin.isAlmostEqual(testOrigin));
-      assert.isTrue(entry.textString!.rotation.isAlmostEqual(testAngles));
+      assertTrue(entry.primitive.type === "textString");
+      assert.isTrue(entry.primitive.textString.origin.isAlmostEqual(testOrigin));
+      assert.isTrue(entry.primitive.textString.rotation.isAlmostEqual(testAngles));
     }
   });
 
@@ -732,9 +732,9 @@ describe("GeometryStream", () => {
     const geomArrayOut: Arc3d[] = [];
     const itLocal = GeometryStreamIterator.fromGeometryPart(value as GeometryPartProps);
     for (const entry of itLocal) {
-      assert.equal(entry.primitive.type, "geometryQuery");
-      assert.isDefined(entry.geometryQuery && entry.geometryQuery instanceof Arc3d);
-      geomArrayOut.push(entry.geometryQuery! as Arc3d);
+      assertTrue(entry.primitive.type === "geometryQuery");
+      assertTrue(entry.primitive.geometry instanceof Arc3d);
+      geomArrayOut.push(entry.primitive.geometry);
     }
 
     assert.isTrue(geomArrayOut.length === geomArray.length);
@@ -781,9 +781,9 @@ describe("GeometryStream", () => {
     const geomArrayOut: Arc3d[] = [];
     const itLocal = new GeometryStreamIterator(value.geom!, value.category);
     for (const entry of itLocal) {
-      assert.equal(entry.primitive.type, "geometryQuery");
-      assert.isDefined(entry.geometryQuery && entry.geometryQuery instanceof Arc3d);
-      geomArrayOut.push(entry.geometryQuery! as Arc3d);
+      assertTrue(entry.primitive.type === "geometryQuery");
+      assertTrue(entry.primitive.geometry instanceof Arc3d);
+      geomArrayOut.push(entry.primitive.geometry);
     }
 
     assert.isTrue(geomArrayOut.length === geomArray.length);
@@ -826,7 +826,6 @@ describe("GeometryStream", () => {
     const itLocal = new GeometryStreamIterator(value.geom!, value.category);
     for (const entry of itLocal) {
       assert.equal(entry.primitive.type, "geometryQuery");
-      assert.isDefined(entry.geometryQuery);
       assert.isTrue(FillDisplay.ByView === entry.geomParams.fillDisplay);
     }
 
@@ -869,8 +868,8 @@ describe("GeometryStream", () => {
 
     // This brep has a face symbology attribute attached to one face, make it green.
     const faceSymb: BRepEntity.FaceSymbologyProps[] = [
-      { color: params.lineColor }, // base symbology should match appearance...
-      { color: ColorDef.green, transparency: 0.5 },
+      { color: params.lineColor.toJSON() }, // base symbology should match appearance...
+      { color: ColorDef.green.toJSON(), transparency: 0.5 },
     ];
 
     const brepProps: BRepEntity.DataProps = {
@@ -902,13 +901,11 @@ describe("GeometryStream", () => {
     const itLocal = new GeometryStreamIterator(value.geom!, value.category);
     for (const entry of itLocal) {
       assert.equal(entry.primitive.type, "brep");
-      assert.isDefined(entry.brep);
     }
 
     const itWorld = GeometryStreamIterator.fromGeometricElement3d(value as GeometricElement3dProps);
     for (const entry of itWorld) {
       assert.equal(entry.primitive.type, "brep");
-      assert.isDefined(entry.brep);
     }
   });
 
@@ -962,8 +959,8 @@ describe("GeometryStream", () => {
   });
 });
 
-describe("Mass Properties", () => {
-  let imodel: IModelDb;
+describe("createPolyfaceFromElement", () => {
+  let imodel: SnapshotDb;
 
   before(() => {
     const seedFileName = IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim");
@@ -972,7 +969,61 @@ describe("Mass Properties", () => {
   });
 
   after(() => {
-    imodel.closeSnapshot();
+    imodel.close();
+  });
+
+  it("verify basic functionality", async () => {
+    // Set up element to be placed in iModel
+    const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
+    assert.exists(seedElement);
+    assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
+
+    const box = Box.createRange(Range3d.create(Point3d.createZero(), Point3d.create(1.0, 1.0, 1.0)), true);
+    assert.isFalse(undefined === box);
+
+    const builder = new GeometryStreamBuilder();
+    builder.appendGeometry(box!);
+
+    const elementProps: GeometricElement3dProps = {
+      classFullName: PhysicalObject.classFullName,
+      model: seedElement.model,
+      category: seedElement.category,
+      code: Code.createEmpty(),
+      userLabel: "UserLabel-" + 1,
+      geom: builder.geometryStream,
+    };
+
+    const testElem = imodel.elements.createElement(elementProps);
+    const newId = imodel.elements.insertElement(testElem);
+    imodel.saveChanges();
+
+    const requestProps: CreatePolyfaceRequestProps = {
+      elementId: newId,
+    };
+
+    const requestContext = new BackendRequestContext();
+    const response: CreatePolyfaceResponseProps = await imodel.createPolyfaceFromElement(requestContext, requestProps);
+    assert.isTrue(IModelStatus.Success === response.status);
+    assert.isTrue(response.results && response.results.length === 1);
+    assert.isTrue(ColorDef.white.tbgr === response.results![0].fillColor);
+    assert.isTrue(ColorDef.white.tbgr === response.results![0].lineColor);
+    const polyface = IModelJson.Reader.parseIndexedMesh(response.results![0].indexedMesh);
+    assert.isTrue(polyface !== undefined);
+    assert.isTrue(polyface!.facetCount === 12);
+  });
+});
+
+describe("Mass Properties", () => {
+  let imodel: SnapshotDb;
+
+  before(() => {
+    const seedFileName = IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim");
+    const testFileName = IModelTestUtils.prepareOutputFile("GeometryStream", "GeometryStreamTest.bim");
+    imodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
+  });
+
+  after(() => {
+    imodel.close();
   });
 
   it("volume", async () => {

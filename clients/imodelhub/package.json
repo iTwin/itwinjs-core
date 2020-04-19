@@ -1,0 +1,54 @@
+{
+  "name": "@bentley/imodelhub-client",
+  "version": "2.0.0-dev.71",
+  "description": "iModel.js iModelHub Client",
+  "main": "lib/imodelhub-client.js",
+  "typings": "lib/imodelhub-client",
+  "imodeljsSharedLibrary": true,
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/imodeljs/imodeljs/tree/master/clients/imodelhub"
+  },
+  "scripts": {
+    "build": "tsc 1>&2",
+    "clean": "rimraf lib .rush",
+    "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=imodelhub-client",
+    "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --includes=../../generated-docs/extract --json=../../generated-docs/clients/imodelhub-client/file.json --tsIndexFile=imodelhub-client.ts --onlyJson %TYPEDOC_THEME%",
+    "lint": "tslint --project . 1>&2",
+    "test": "",
+    "test:integration": "",
+    "cover": ""
+  },
+  "keywords": [
+    "Bentley",
+    "BIM",
+    "iModel",
+    "iModelHub Client",
+    "iModelBank Client"
+  ],
+  "author": {
+    "name": "Bentley Systems, Inc.",
+    "url": "http://www.bentley.com"
+  },
+  "dependencies": {
+    "@bentley/context-registry-client": "2.0.0-dev.71",
+    "deep-assign": "^2.0.0",
+    "js-base64": "^2.4.5"
+  },
+  "peerDependencies": {
+    "@bentley/bentleyjs-core": "^2.0.0-dev.71",
+    "@bentley/itwin-client": "^2.0.0-dev.71"
+  },
+  "devDependencies": {
+    "@bentley/bentleyjs-core": "2.0.0-dev.71",
+    "@bentley/build-tools": "2.0.0-dev.71",
+    "@bentley/itwin-client": "2.0.0-dev.71",
+    "@types/deep-assign": "^0.1.0",
+    "@types/js-base64": "^2.3.1",
+    "@types/node": "10.14.1",
+    "rimraf": "^3.0.2",
+    "tslint": "^5.11.0",
+    "typescript": "~3.7.4"
+  }
+}

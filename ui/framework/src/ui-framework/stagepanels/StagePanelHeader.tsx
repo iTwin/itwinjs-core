@@ -1,14 +1,16 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Frontstage */
+/** @packageDocumentation
+ * @module Frontstage
+ */
 
-import * as classnames from "classnames";
+import classnames from "classnames";
 import * as React from "react";
+import { StagePanelLocation } from "@bentley/ui-abstract";
 import { CommonProps } from "@bentley/ui-core";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
-import { StagePanelLocation } from "./StagePanel";
 import { StagePanelState } from "./StagePanelDef";
 import "./StagePanelHeader.scss";
 

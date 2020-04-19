@@ -1,10 +1,11 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { IModelHubClient, AccessToken, ChangeSet, Version, VersionQuery, SmallThumbnail, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
-import { GuidString, Guid } from "@bentley/bentleyjs-core";
+import { Guid, GuidString } from "@bentley/bentleyjs-core";
+import { ChangeSet, IModelHubClient, SmallThumbnail, Version, VersionQuery } from "@bentley/imodelhub-client";
+import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 
 class MockAccessToken extends AccessToken {
   public constructor() { super(); this._samlAssertion = ""; }

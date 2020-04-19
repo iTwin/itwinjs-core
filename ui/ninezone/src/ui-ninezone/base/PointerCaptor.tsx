@@ -1,12 +1,14 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Base */
+/** @packageDocumentation
+ * @module Base
+ */
 
-import * as classnames from "classnames";
+import classnames from "classnames";
 import * as React from "react";
-import { CommonProps } from "@bentley/ui-core";
+import { CommonProps, useRefEffect } from "@bentley/ui-core";
 import "./PointerCaptor.scss";
 
 /** Properties of [[PointerCaptor]] component.
@@ -73,3 +75,46 @@ export class PointerCaptor extends React.PureComponent<PointerCaptorProps> {
     this.props.onPointerMove && this.props.onPointerMove(e);
   }
 }
+
+/** Captures pointer events of an element. Used in drag or resize interactions.
+ * @internal
+ */
+export const usePointerCaptor = <T extends HTMLElement>(
+  onPointerDown?: (e: PointerEvent) => void,
+  onPointerMove?: (e: PointerEvent) => void,
+  onPointerUp?: (e: PointerEvent) => void,
+  captured?: boolean,
+) => {
+  const isDown = React.useRef(false);
+  React.useEffect(() => {
+    const handlePointerMove = (e: PointerEvent) => {
+      (isDown.current || captured) && onPointerMove && onPointerMove(e);
+    };
+    document.addEventListener("pointermove", handlePointerMove);
+    return () => {
+      document.removeEventListener("pointermove", handlePointerMove);
+    };
+  }, [captured, onPointerMove]);
+  React.useEffect(() => {
+    const handlePointerUp = (e: PointerEvent) => {
+      (isDown.current || captured) && onPointerUp && onPointerUp(e);
+      isDown.current = false;
+    };
+    document.addEventListener("pointerup", handlePointerUp);
+    return () => {
+      document.removeEventListener("pointerup", handlePointerUp);
+    };
+  }, [captured, onPointerUp]);
+  const setRef = useRefEffect((instance: T | null) => {
+    const handlePointerDown = (e: PointerEvent) => {
+      e.preventDefault();
+      onPointerDown && onPointerDown(e);
+      isDown.current = true;
+    };
+    instance && instance.addEventListener("pointerdown", handlePointerDown);
+    return () => {
+      instance && instance.removeEventListener("pointerdown", handlePointerDown);
+    };
+  }, [onPointerDown]);
+  return setRef;
+};

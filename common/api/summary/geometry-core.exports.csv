@@ -36,6 +36,7 @@ internal;BezierPolynomialAlgebra
 internal;BilinearPatch 
 internal;BilinearPolynomial
 public;BlockComparisonFunction = (data: Float64Array, blockSize: number, index0: number, index1: number) => number
+public;BooleanClipFactory
 public;Box 
 internal;BoxTopology
 public;BSpline1dNd
@@ -48,6 +49,7 @@ public;BSplineSurface3dH
 public;BSplineSurface3dQuery
 public;BSplineWrapMode
 public;ClipMaskXYZRangePlanes
+public;ClippedPolyfaceBuilders
 public;Clipper
 public;ClipPlane 
 public;ClipPlaneContainment
@@ -92,10 +94,15 @@ internal;DeepCompare
 internal;Degree2PowerPolynomial
 internal;Degree3PowerPolynomial
 internal;Degree4PowerPolynomial
+public;DuplicateFacetClusterSelector
+public;Ellipsoid 
+public;EllipsoidPatch 
 public;FacetFaceData
 public;FacetProjectedVolumeSums
 public;FrameBuilder
 internal;GaussMapper
+public;GeodesicPathPoint
+public;GeodesicPathSolver
 public;Geometry
 public;class GeometryHandler
 public;class GeometryQuery
@@ -129,6 +136,7 @@ public;LinearSweep
 public;LineSegment3d 
 public;LineString3d 
 public;LineStringDataVariant = IndexedXYZCollection | XYAndZ[] | XAndY[] | number[][]
+public;LongitudeLatitudeNumber 
 public;Loop 
 public;LowAndHighXY = Readonly
 public;LowAndHighXYZ = Readonly
@@ -155,6 +163,7 @@ internal;Order3Bezier
 internal;Order4Bezier 
 internal;Order5Bezier 
 alpha;OrderedRotationAngles
+internal;PackedMatrix3dOps
 public;PackedPointGrid
 public;ParityRegion 
 internal;PascalCoefficients
@@ -206,6 +215,7 @@ public;RotationalSweep
 public;RuledSweep 
 alpha;Sample
 public;Segment1d
+public;SignedLoops
 internal;SineCosinePolynomial
 public;SmallSystem
 public;SmoothTransformBetweenFrusta

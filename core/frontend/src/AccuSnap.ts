@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module LocatingElements */
+/** @packageDocumentation
+ * @module LocatingElements
+ */
 
 import { Point3d, Point2d, XAndY, Vector3d, CurveCurve, CurvePrimitive, GeometryQuery, IModelJson as GeomJson } from "@bentley/geometry-core";
 import { Viewport, ScreenViewport } from "./Viewport";
@@ -15,7 +17,9 @@ import { IModelApp } from "./IModelApp";
 import { BeDuration } from "@bentley/bentleyjs-core";
 import { Decorator } from "./ViewManager";
 import { SnapRequestProps } from "@bentley/imodeljs-common";
-import { CanvasDecoration } from "./rendering";
+import { CanvasDecoration } from "./render/CanvasDecoration";
+
+// cspell:ignore dont primitivetools
 
 /** Virtual cursor for using AccuSnap with touch input.
  * @internal
@@ -581,17 +585,17 @@ export class AccuSnap implements Decorator {
       return undefined;
 
     const worldToView = second.viewport.worldToViewMap.transform0;
-    const detail = CurveCurve.intersectionProjectedXY(worldToView, tpSegment, true, segment, true);
-    if (0 === detail.dataA.length)
+    const detail = CurveCurve.intersectionProjectedXYPairs(worldToView, tpSegment, true, segment, true);
+    if (0 === detail.length)
       return undefined;
 
     let closeIndex = 0;
-    if (detail.dataA.length > 1) {
+    if (detail.length > 1) {
       const snapPt = worldToView.multiplyPoint3d(HitGeomType.Point === tpSnap.geomType && HitGeomType.Point !== second.geomType ? second.getPoint() : tpSnap.getPoint(), 1); // Don't check distance from arc centers...
       let lastDist: number | undefined;
 
-      for (let i = 0; i < detail.dataA.length; i++) {
-        const testPt = worldToView.multiplyPoint3d(detail.dataA[i].point, 1);
+      for (let i = 0; i < detail.length; i++) {
+        const testPt = worldToView.multiplyPoint3d(detail[i].detailA.point, 1);
         const testDist = snapPt.realDistanceXY(testPt);
 
         if (undefined !== testDist && (undefined === lastDist || testDist < lastDist)) {
@@ -601,7 +605,7 @@ export class AccuSnap implements Decorator {
       }
     }
 
-    const intersect = new IntersectDetail(tpSnap, SnapHeat.InRange, detail.dataA[closeIndex].point, segment, second.sourceId); // Should be ok to share hit detail with tentative...
+    const intersect = new IntersectDetail(tpSnap, SnapHeat.InRange, detail[closeIndex].detailA.point, segment, second.sourceId); // Should be ok to share hit detail with tentative...
     intersect.primitive = tpSegment; // Just save single segment that was intersected for line strings/shapes...
 
     return intersect;
@@ -725,7 +729,7 @@ export class AccuSnap implements Decorator {
     if (undefined === thisHit)
       return undefined;
 
-    const filterStatus = (this.isLocateEnabled ? IModelApp.locateManager.filterHit(thisHit, LocateAction.AutoLocate, out) : LocateFilterStatus.Accept);
+    const filterStatus: LocateFilterStatus = (this.isLocateEnabled ? await IModelApp.locateManager.filterHit(thisHit, LocateAction.AutoLocate, out) : LocateFilterStatus.Accept);
     if (LocateFilterStatus.Accept !== filterStatus) {
       out.snapStatus = SnapStatus.FilteredByApp;
       return undefined;
@@ -818,16 +822,22 @@ export class AccuSnap implements Decorator {
 
     const thisList = this.aSnapHits!;
     let thisHit: HitDetail | undefined;
-    const ignore = new LocateResponse();
+    let firstRejected;
+    const filterResponse = new LocateResponse();
+
     // keep looking through hits until we find one that is accu-snappable.
     while (undefined !== (thisHit = thisList.getNextHit())) {
-      if (LocateFilterStatus.Accept === await IModelApp.locateManager.filterHit(thisHit, LocateAction.AutoLocate, out))
+      if (LocateFilterStatus.Accept === await IModelApp.locateManager.filterHit(thisHit, LocateAction.AutoLocate, filterResponse))
         return thisHit;
-
       // we only care about the status of the first hit.
-      out.snapStatus = SnapStatus.FilteredByApp;
-      out = ignore;
+      if (undefined !== firstRejected)
+        continue;
+      firstRejected = filterResponse.clone();
+      firstRejected.snapStatus = SnapStatus.FilteredByApp;
     }
+
+    if (undefined !== firstRejected)
+      out.setFrom(firstRejected);
 
     // Reset current hit index to go back to first hit on next AccuSnap reset event...
     thisList.resetCurrentHit();
@@ -892,11 +902,9 @@ export class AccuSnap implements Decorator {
     if (hit || this.currHit)
       this.setCurrHit(hit);
 
-    if (hit)
-      this.displayToolTip(ev.viewPoint, ev.viewport!, ev.rawPoint);
-
-    // indicate errors
+    // set up active error before calling displayToolTip to indicate error or show locate message...
     this.showSnapError(out, ev);
+    this.displayToolTip(ev.viewPoint, ev.viewport!, ev.rawPoint);
 
     if (undefined !== this.touchCursor && InputSource.Mouse === ev.inputSource) {
       this.touchCursor = undefined;
@@ -944,7 +952,7 @@ export class AccuSnap implements Decorator {
     }
 
     const hit = IModelApp.tentativePoint.getCurrSnap();
-    if (hit)
+    if (hit && !hit.isModelHit) // Don't hilite reality models.
       hit.draw(context);
   }
 

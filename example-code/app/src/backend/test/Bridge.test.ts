@@ -1,19 +1,21 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
 import { KnownTestLocations } from "./KnownTestLocations";
-import { IModelTestUtils, TestUsers } from "./Utils";
 import { RobotWorldEngine } from "../RobotWorldEngine";
 import { Angle, AngleProps, Point3d, Range3d, XYZProps } from "@bentley/geometry-core";
 import { Robot } from "../RobotElement";
 import { Barrier } from "../BarrierElement";
-import { HubIModel, Project, IModelHubClient, IModelQuery, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { Project } from "@bentley/context-registry-client";
+import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 // __PUBLISH_EXTRACT_START__ Bridge.imports.example-code
-import { Id64String, ClientRequestContext } from "@bentley/bentleyjs-core";
-import { BriefcaseManager, CategorySelector, ConcurrencyControl, DefinitionModel, DisplayStyle3d, IModelDb, IModelHost, ModelSelector, OpenParams, OrthographicViewDefinition, PhysicalModel, SpatialCategory, Subject } from "@bentley/imodeljs-backend";
-import { ColorByName, ColorDef, IModel } from "@bentley/imodeljs-common";
+import { Id64String } from "@bentley/bentleyjs-core";
+import { BriefcaseDb, BriefcaseManager, CategorySelector, ConcurrencyControl, DefinitionModel, DisplayStyle3d, IModelDb, IModelHost, ModelSelector, OpenParams, OrthographicViewDefinition, PhysicalModel, SpatialCategory, Subject } from "@bentley/imodeljs-backend";
+import { ColorByName, IModel } from "@bentley/imodeljs-common";
+import { IModelHubClient, HubIModel, IModelQuery } from "@bentley/imodelhub-client";
 // __PUBLISH_EXTRACT_END__
 
 // __PUBLISH_EXTRACT_START__ Bridge.source-data.example-code
@@ -81,17 +83,17 @@ async function runBridgeFirstTime(requestContext: AuthorizedClientRequestContext
   // Start the IModelHost
   IModelHost.startup();
 
-  const briefcase = await IModelDb.open(requestContext, projectId, iModelId, OpenParams.pullAndPush());
+  const briefcase = await BriefcaseDb.open(requestContext, projectId, iModelId, OpenParams.pullAndPush());
   briefcase.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
 
   // I. Import the schema.
-  await briefcase.importSchema(requestContext, path.join(assetsDir, "RobotWorld.ecschema.xml"));
+  await briefcase.importSchemas(requestContext, [path.join(assetsDir, "RobotWorld.ecschema.xml")]);
   //    You must acquire all locks reserve all Codes used before saving or pushing.
   await briefcase.concurrencyControl.request(requestContext);
   //    You *must* push this to the iModel right now.
   briefcase.saveChanges();
   await briefcase.pullAndMergeChanges(requestContext);
-  await briefcase.pushChanges(requestContext);
+  await briefcase.pushChanges(requestContext, "bridge test");
 
   // II. Import data
 
@@ -103,8 +105,8 @@ async function runBridgeFirstTime(requestContext: AuthorizedClientRequestContext
   const defModelId = DefinitionModel.insert(briefcase, jobSubjectId, "definitions");
 
   //  Create the spatial categories that will be used by the Robots and Barriers that will be imported.
-  SpatialCategory.insert(briefcase, defModelId, Robot.classFullName, { color: new ColorDef(ColorByName.silver) });
-  SpatialCategory.insert(briefcase, defModelId, Barrier.classFullName, { color: new ColorDef(ColorByName.brown) });
+  SpatialCategory.insert(briefcase, defModelId, Robot.classFullName, { color: ColorByName.silver });
+  SpatialCategory.insert(briefcase, defModelId, Barrier.classFullName, { color: ColorByName.brown });
 
   // 2. Convert elements, aspects, etc.
 
@@ -145,7 +147,7 @@ async function runBridgeFirstTime(requestContext: AuthorizedClientRequestContext
   //    Note that you pull and merge first, in case another user has pushed.
   briefcase.saveChanges();
   await briefcase.pullAndMergeChanges(requestContext);
-  await briefcase.pushChanges(requestContext);
+  await briefcase.pushChanges(requestContext, "bridge test");
 }
 // __PUBLISH_EXTRACT_END__
 
@@ -158,10 +160,8 @@ describe.skip("Bridge", async () => {
 
   before(async () => {
     IModelHost.startup();
-    const accessToken = await IModelTestUtils.getAccessToken(new ClientRequestContext(), TestUsers.superManager);
-    requestContext = new AuthorizedClientRequestContext(accessToken);
-
-    testProjectId = (await queryProjectIdByName(requestContext, "iModelJsTest")).wsgId;
+    requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.superManager);
+    testProjectId = (await queryProjectIdByName(requestContext, "iModelJsIntegrationTest")).wsgId;
     seedPathname = path.join(KnownTestLocations.assetsDir, "empty.bim");
     imodelRepository = await createIModel(requestContext, testProjectId, "BridgeTest", seedPathname);
     IModelHost.shutdown();

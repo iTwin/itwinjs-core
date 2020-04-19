@@ -1,9 +1,11 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module Tools */
+/** @packageDocumentation
+ * @module Tools
+ */
 
 import {
   ColorDef,
@@ -47,10 +49,10 @@ class TileRequestDecoration {
 
     const map = new Map<TileTree, GraphicBuilder>();
     for (const tile of tiles) {
-      let builder = map.get(tile.root);
+      let builder = map.get(tile.tree);
       if (undefined === builder) {
-        builder = context.createGraphicBuilder(GraphicType.WorldDecoration, tile.root.location);
-        map.set(tile.root, builder);
+        builder = context.createGraphicBuilder(GraphicType.WorldDecoration, tile.tree.iModelTransform);
+        map.set(tile.tree, builder);
       }
 
       let color = ColorDef.white;

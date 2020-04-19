@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module CloudStorage */
+/** @packageDocumentation
+ * @module CloudStorage
+ */
 
 /** @beta */
 export enum CloudStorageProvider {
@@ -83,7 +85,8 @@ export abstract class CloudStorageCache<TContentId, TContentType> {
   }
 
   protected async requestResource(container: CloudStorageContainerUrl, id: TContentId): Promise<Response> {
-    const url = new URL(container.url, this.supplyUrlBase(container, id));
+    const base = this.supplyUrlBase(container, id);
+    const url = (undefined === base || "" === base) ? new URL(container.url) : new URL(container.url, base);
 
     if (!container.bound) {
       url.pathname += `/${this.formResourceName(id)}`;

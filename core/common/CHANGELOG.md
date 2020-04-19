@@ -1,6 +1,78 @@
 # Change Log - @bentley/imodeljs-common
 
-This log was last generated on Fri, 01 Nov 2019 13:28:37 GMT and should not be manually modified.
+This log was last generated on Wed, 04 Mar 2020 16:16:31 GMT and should not be manually modified.
+
+## 1.13.0
+Wed, 04 Mar 2020 16:16:31 GMT
+
+### Updates
+
+- MobileRpc throw exception
+
+## 1.12.0
+Wed, 12 Feb 2020 17:45:50 GMT
+
+### Updates
+
+- Bump tile format version.
+- iModel write API development
+- Fix issue with constructing the tile cache URL() on Safari.
+- Prevent reuse of cached tiles after project extents change.
+- VSTS#256133: Fixed issue with reopening connections if the backend crashes. Fixes to integration tests. 
+- Define ViewDetails for manipulating optional detail settings of ViewDefinition and ViewState.
+- Add support for plan projection models with 3d display priority.
+- Add settings to control display of plan projection models.
+- Add PlanProjectionSettings.enforceDisplayPriority.
+
+## 1.11.0
+Wed, 22 Jan 2020 19:24:12 GMT
+
+### Updates
+
+- Simplify iterator for QPoint3dList.
+- Native apps can now cancel tile requests in progress on the backend.
+- Remove echo test function from devTools
+- Clean up documentation modules; add PlanProjectionSettings for display styles.
+- Allow outline fill to be specified by subcategory appearance.
+- Upgrade to TypeScript 3.7.2.
+
+## 1.10.0
+Tue, 07 Jan 2020 19:44:01 GMT
+
+### Updates
+
+- Added support for embedding images in a GeometryStream.
+- Moving data-holder structures used during the LinearElement.queryLinearLocations API to imodeljs-common.
+- Allow events to be sent from backend to frontend
+- Renamed EventSourceRpcInterface to NativeAppRpcInterface
+- Moved tile IO-related APIs from frontend to common.
+
+## 1.9.0
+Tue, 10 Dec 2019 18:08:56 GMT
+
+### Updates
+
+- Added Tween.js code
+- Added AliCloud tile cache service
+- Code quality report fixes
+- fix warnings from static analysis
+- Add PropertyMetaData.isNavigation
+- Addressing typo in a couple of members, making them match the schema properly.
+
+## 1.8.0
+Fri, 22 Nov 2019 14:03:34 GMT
+
+### Updates
+
+- Option to include part references in GeometrySummary output.
+- Added missing topic descriptions
+- Fix defect where isMobileBackend return true on windows
+- Change terrain lighting default to off.
+- Change SectionLocationProps.clipGeometry type to string. Add get/set ClipVector methods on SectionLocation.
+- mark bias as alpha
+- Update to allow Node 12
+- Add support for view-independent display of geometry streams.
+- Fixed camera.equals
 
 ## 1.7.0
 Fri, 01 Nov 2019 13:28:37 GMT

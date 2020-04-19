@@ -36,18 +36,6 @@
     "isoLeft": "Iso Left",
     "isoRight": "Iso Right"
   },
-  "cube": {
-    "front": "FRONT",
-    "back": "BACK",
-    "top": "TOP",
-    "bottom": "BOTTOM",
-    "left": "LEFT",
-    "right": "RIGHT"
-  },
-  "drawing": {
-    "unrotate": "Un-Rotate",
-    "rotateStyle": "Toggle background-rotate"
-  },
   "messageCenter": {
     "messages": "Messages",
     "all": "All",
@@ -129,6 +117,9 @@
     "signout": "Sign Out",
     "signoutprompt": "Do you want to sign out?"
   },
+  "signIn": {
+    "signingInMessage": "Sign In has started - please switch to your browser and enter your credentials"
+  },
   "buttons": {
     "yes": "Yes",
     "no": "No",
@@ -206,7 +197,7 @@
     "visibilityTree": "Visibility Tree",
     "noImodelConnection": "No data to display since there is no available iModel Connection."
   },
-  "visibilityTree": {
+  "modelTree": {
     "status": {
       "visible": "Visible",
       "hidden": "Hidden",
@@ -235,7 +226,13 @@
         "hiddenDueToOtherElementsExclusivelyAlwaysDrawn": "Other elements in \"exclusively always drawn\" list",
         "hiddenThroughCategory": "Category not displayed"
       }
-    }
+    },
+    "noModelFound": "No model found.",
+    "noMatchingModelNames": "There are no model names matching your search."
+  },
+  "categoriesTree": {
+    "noCategoryFound": "No category found.",
+    "noMatchingCategoryNames": "There are no category names matching your search."
   },
   "toolAssistance": {
     "title": "Tool Assistance",

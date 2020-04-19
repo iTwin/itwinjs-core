@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Tree */
+/** @packageDocumentation
+ * @module Tree
+ */
 
 import * as React from "react";
 // tslint:disable-next-line: no-duplicate-imports
@@ -15,7 +17,6 @@ import { timer } from "rxjs/internal/observable/timer";
 import { EMPTY } from "rxjs/internal/observable/empty";
 import { UiError, getClassName } from "@bentley/ui-abstract";
 import { Tree as CoreTree, TreeNodePlaceholder } from "@bentley/ui-core";
-import { CellEditingEngine } from "./CellEditingEngine";
 import { TreeActions } from "../TreeActions";
 import { ITreeNodeLoader } from "../TreeNodeLoader";
 import { TreeNodeRenderer, TreeNodeRendererProps } from "./TreeNodeRenderer";
@@ -30,58 +31,86 @@ const NODE_LOAD_DELAY = 500;
 
 /**
  * Properties for [[TreeRenderer]] component.
- * @alpha
+ * @beta
  */
 export interface TreeRendererProps {
-  cellEditing?: CellEditingEngine;
   treeActions: TreeActions;
   nodeLoader: ITreeNodeLoader;
+
+  /** Callback that is used to determine node height. */
   nodeHeight: (node: TreeModelNode | TreeModelNodePlaceholder, index: number) => number;
+
+  /** Flat list of nodes to be rendered. */
   visibleNodes: VisibleTreeNodes;
+
+  /** Callback to render custom node.  */
   nodeRenderer?: (props: TreeNodeRendererProps) => React.ReactNode;
+
+  /** Properties used to highlight nodes and scroll to active match while filtering. */
   nodeHighlightingProps?: HighlightableTreeProps;
 }
 
-function getNodeKey(node: TreeModelNode | TreeModelNodePlaceholder): string {
-  if (isTreeModelNode(node)) {
-    return node.id;
-  }
-
-  return `${node.parentId || ""}-${node.childIndex}`;
-}
-
-interface TreeRendererContext {
+/**
+ * Context of [[TreeRenderer]] component.
+ * @beta
+ */
+export interface TreeRendererContext {
+  /** Callback to render custom node. */
   nodeRenderer: (props: TreeNodeRendererProps) => React.ReactNode;
+
   treeActions: TreeActions;
   nodeLoader: ITreeNodeLoader;
+
+  /** Flat list of nodes to be rendered. */
   visibleNodes: VisibleTreeNodes;
-  onLabelRendered?: (node: TreeModelNode) => void;
+
+  /** Engine used to created node highlighting properties. */
   highlightingEngine?: HighlightingEngine;
+
+  /**
+   * Callback used detect when label is rendered. It is used by TreeRenderer for scrolling to active match.
+   * @internal
+   */
+  onLabelRendered?: (node: TreeModelNode) => void;
 }
 
+/**
+ * [[TreeRenderer]] context provider, consumer and custom hook.
+ * @beta
+ */
 export const [
-  /** @alpha */
+  /**
+   * Context of [[TreeRenderer]] provider.
+   * @beta
+   */
   // tslint:disable-next-line: variable-name
   TreeRendererContextProvider,
 
-  /** @alpha */
+  /**
+   * Context of [[TreeRenderer]] consumer.
+   * @beta
+   */
   // tslint:disable-next-line: variable-name
   TreeRendererContextConsumer,
 
-  /** @alpha */
+  /**
+   * Custom hook to use [[TreeRenderer]] context.
+   * @beta
+   */
   useTreeRendererContext,
 ] = createContextWithMandatoryProvider<TreeRendererContext>("TreeRendererContext");
 
 /**
  * Default component for rendering tree.
- * @alpha
+ * @beta
  */
-// tslint:disable-next-line: variable-name
-export const TreeRenderer: React.FC<TreeRendererProps> = (props) => {
+export function TreeRenderer(props: TreeRendererProps) {
   const coreTreeRef = useRef<CoreTree>(null);
   const previousVisibleNodes = usePrevious(props.visibleNodes);
+  const previousNodeHeight = usePrevious(props.nodeHeight);
   const variableSizeListRef = useRef<VariableSizeList>(null);
-  if (previousVisibleNodes !== undefined && previousVisibleNodes !== props.visibleNodes) {
+  if ((previousVisibleNodes !== undefined && previousVisibleNodes !== props.visibleNodes)
+    || (previousNodeHeight !== undefined && previousNodeHeight !== props.nodeHeight)) {
     /* istanbul ignore else */
     if (variableSizeListRef.current) {
       variableSizeListRef.current.resetAfterIndex(0, false);
@@ -98,32 +127,34 @@ export const TreeRenderer: React.FC<TreeRendererProps> = (props) => {
     visibleNodes: props.visibleNodes,
     onLabelRendered,
     highlightingEngine,
-  }), [props.nodeRenderer, props.treeActions, props.visibleNodes, onLabelRendered, highlightingEngine]);
+  }), [props.nodeRenderer, props.treeActions, props.nodeLoader, props.visibleNodes, onLabelRendered, highlightingEngine]);
 
   const itemKey = useCallback(
     (index: number) => getNodeKey(props.visibleNodes.getAtIndex(index)!),
     [props.visibleNodes],
   );
 
+  const { nodeHeight, visibleNodes } = props;
   const itemSize = useCallback(
-    (index: number) => props.nodeHeight(props.visibleNodes.getAtIndex(index)!, index),
-    [props.nodeHeight, props.visibleNodes],
+    (index: number) => nodeHeight(visibleNodes.getAtIndex(index)!, index),
+    [nodeHeight, visibleNodes],
   );
 
+  const { nodeHighlightingProps } = props;
   useEffect(() => {
-    const highlightedNodeId = getHighlightedNodeId(props.nodeHighlightingProps);
+    const highlightedNodeId = getHighlightedNodeId(nodeHighlightingProps);
     if (!highlightedNodeId || !variableSizeListRef.current)
       return;
 
     let index = 0;
-    for (const node of props.visibleNodes) {
+    for (const node of visibleNodes) {
       if (isTreeModelNode(node) && node.id === highlightedNodeId)
         break;
 
       index++;
     }
     variableSizeListRef.current!.scrollToItem(index);
-  }, [props.nodeHighlightingProps]);
+  }, [nodeHighlightingProps]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <TreeRendererContextProvider value={rendererContext}>
@@ -148,10 +179,16 @@ export const TreeRenderer: React.FC<TreeRendererProps> = (props) => {
       </CoreTree>
     </TreeRendererContextProvider>
   );
-};
+}
 
-// tslint:disable-next-line: variable-name
-const Node = React.memo<React.FC<ListChildComponentProps>>(
+function getNodeKey(node: TreeModelNode | TreeModelNodePlaceholder): string {
+  if (isTreeModelNode(node)) {
+    return node.id;
+  }
+  return `${node.parentId || ""}-${node.childIndex}`;
+}
+
+const Node = React.memo<React.FC<ListChildComponentProps>>( // tslint:disable-line: variable-name
   (props: ListChildComponentProps) => {
     const { index, style } = props;
 
@@ -180,7 +217,7 @@ const Node = React.memo<React.FC<ListChildComponentProps>>(
       }
 
       return () => { };
-    }, [node, nodeLoader]);
+    }, [node, nodeLoader]); // eslint-disable-line react-hooks/exhaustive-deps
 
     return (
       <div className={className} style={style}>
@@ -230,7 +267,7 @@ function useScrollToActiveMatch(treeRef: React.RefObject<CoreTree>, highlightabl
       const scrollTo = [...treeRef.current.getElementsByClassName(HighlightingEngine.ACTIVE_CLASS_NAME)];
       if (scrollTo.length > 0 && scrollTo[0].scrollIntoView)
         scrollTo[0].scrollIntoView({ behavior: "auto", block: "nearest", inline: "end" });
-    }, [highlightableTreeProps]);
+    }, [highlightableTreeProps, treeRef]);
 
   return onLabelRendered;
 }
@@ -253,9 +290,7 @@ function createContextWithMandatoryProvider<T>(
         `'${getClassName(ConsumingComponent)}' expects to be wrapped by a '${contextName}' provider.`,
       );
     }
-
     return value;
   }
-
   return [context.Provider, context.Consumer, useContextWithoutDefaultValue];
 }

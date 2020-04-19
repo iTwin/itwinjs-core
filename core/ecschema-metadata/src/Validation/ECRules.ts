@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
 import { ECStringConstants } from "../Constants";
@@ -64,6 +64,7 @@ export const DiagnosticCodes = {
 
   // CA Container Rule Codes (500-599)
   CustomAttributeNotOfConcreteClass: getCode(500),
+  CustomAttributeSchemaMustBeReferenced: getCode(501),
 
   // Enumeration Rule Codes (700-799)
   EnumerationTypeUnsupported: getCode(700),
@@ -112,6 +113,13 @@ export const Diagnostics = {
    */
   CustomAttributeNotOfConcreteClass: createCustomAttributeContainerDiagnosticClass<[string, string]>(DiagnosticCodes.CustomAttributeNotOfConcreteClass,
     "The CustomAttribute container '{0}' has a CustomAttribute with the class '{1}' which is not a concrete class."),
+
+  /**
+   * EC-501
+   * Required message parameters: CustomAttribute container name, CustomAttributeClass name, CustomAttributeClass Schema name.
+   */
+  CustomAttributeSchemaMustBeReferenced: createCustomAttributeContainerDiagnosticClass<[string, string]>(DiagnosticCodes.CustomAttributeSchemaMustBeReferenced,
+    "The CustomAttribute container '{0}' has a CustomAttribute with the class '{1}' whose schema is not referenced by the container's Schema."),
 
   /**
    * EC-700
@@ -216,6 +224,7 @@ export const ECRuleSet: IRuleSet = { // tslint:disable-line:variable-name
   ],
   customAttributeInstanceRules: [
     customAttributeNotOfConcreteClass,
+    customAttributeSchemaMustBeReferenced,
   ],
 };
 
@@ -342,7 +351,7 @@ export async function* incompatibleUnitPropertyOverride(property: AnyProperty): 
       return;
 
     return new Diagnostics.IncompatibleUnitPropertyOverride(property, [property.class.fullName, property.name, baseClass.fullName,
-    baseKoq.fullName, baseUnit.fullName, unit.fullName, koq.fullName]);
+      baseKoq.fullName, baseUnit.fullName, unit.fullName, koq.fullName]);
   }
 
   for await (const baseClass of property.class.getAllBaseClasses()) {
@@ -419,7 +428,7 @@ function propertyTypesMatch(propertyA: Property, propertyB: Property) {
 }
 
 function getPrimitiveType(property: Property): PrimitiveType | undefined {
-  if (property.isPrimitive)
+  if (property.isPrimitive())
     return (property as PrimitiveProperty).primitiveType;
 
   return undefined;
@@ -459,6 +468,16 @@ export async function* customAttributeNotOfConcreteClass(container: CustomAttrib
     return;
 
   yield new Diagnostics.CustomAttributeNotOfConcreteClass(container, [container.fullName, caClass.fullName]);
+}
+
+/** EC Rule: CustomAttribute Schema must be referenced by the container's Schema. */
+export async function* customAttributeSchemaMustBeReferenced(container: CustomAttributeContainerProps, customAttribute: CustomAttribute): AsyncIterable<CustomAttributeContainerDiagnostic<any[]>> {
+  const schema = container.schema;
+  const caSchema = customAttribute.className.split(".")[0];
+  if (schema.references.some((s) => s.name === caSchema))
+    return;
+
+  yield new Diagnostics.CustomAttributeSchemaMustBeReferenced(container, [container.fullName, customAttribute.className]);
 }
 
 async function applyAbstractConstraintMustNarrowBaseConstraints(ecClass: RelationshipClass, constraint: RelationshipConstraint, baseRelationship: RelationshipClass): Promise<SchemaItemDiagnostic<RelationshipClass, any[]> | undefined> {

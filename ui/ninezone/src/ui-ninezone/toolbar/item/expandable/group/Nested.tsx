@@ -1,10 +1,12 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Toolbar */
+/** @packageDocumentation
+ * @module Toolbar
+ */
 
-import * as classnames from "classnames";
+import classnames from "classnames";
 import * as React from "react";
 import { Panel } from "./Panel";
 import { GroupProps } from "./Group";
@@ -34,13 +36,11 @@ export class NestedGroup extends React.PureComponent<NestedGroupProps> {
 
     return (
       <Panel className={className} style={this.props.style}>
-        <div
-          className="nz-back-arrow-container"
+        <BackArrow
+          className="nz-back"
           onClick={this.props.onBack}
           onPointerUp={this.props.onBackPointerUp}
-        >
-          <BackArrow />
-        </div>
+        />
         <Title>
           {this.props.title}
         </Title>

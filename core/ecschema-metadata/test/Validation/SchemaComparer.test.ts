@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
@@ -225,8 +225,8 @@ describe("Schema comparison tests", () => {
       await comparer.compareSchemas(schemaA, schemaB);
 
       expect(reporter.diagnostics.length).to.equal(2, "Expected 2 differences.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.SchemaReferenceMissing, DiagnosticType.Schema, schemaA, [refSchemaA], schemaA);
-      validateDiagnostic(reporter.diagnostics[1], SchemaCompareCodes.SchemaReferenceMissing, DiagnosticType.Schema, schemaB, [refSchemaA2], schemaB);
+      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.SchemaReferenceDelta, DiagnosticType.Schema, schemaA, [refSchemaA, "01.00.00", "02.00.00"], schemaA);
+      validateDiagnostic(reporter.diagnostics[1], SchemaCompareCodes.SchemaReferenceDelta, DiagnosticType.Schema, schemaB, [refSchemaA2, "02.00.00", "01.00.00"], schemaB);
     });
 
     it("Reference missing from Schema B, diagnostic reported", async () => {
@@ -340,6 +340,30 @@ describe("Schema comparison tests", () => {
 
       expect(reporter.diagnostics.length).to.equal(1, "Expected 1 difference.");
       validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.SchemaItemDelta, DiagnosticType.SchemaItem, itemA, ["label", "labelA", "labelB"], itemA.schema);
+    });
+
+    it("Undefined and empty label are considered equivalent, diagnostic not reported", async () => {
+      const aItems = {
+        TestClassA: {
+          schemaItemType: "EntityClass",
+        },
+      };
+      const bItems = {
+        TestClassA: {
+          schemaItemType: "EntityClass",
+          label: "",
+        },
+      };
+      const aJson = getSchemaJsonWithItems(schemaAJson, aItems);
+      const bJson = getSchemaJsonWithItems(schemaAJson, bItems);
+      const schemaA = await Schema.fromJson(aJson, contextA);
+      const schemaB = await Schema.fromJson(bJson, contextB);
+      await schemaA.getItem("TestClassA") as ECClass;
+
+      const comparer = new SchemaComparer(reporter);
+      await comparer.compareSchemas(schemaA, schemaB);
+
+      expect(reporter.diagnostics.length).to.equal(0, "Expected no difference.");
     });
 
     it("Different description, diagnostic reported", async () => {
@@ -949,6 +973,45 @@ describe("Schema comparison tests", () => {
 
       expect(reporter.diagnostics.length).to.equal(1, "Expected 1 difference.");
       validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.PropertyDelta, DiagnosticType.Property, itemAProp, ["label", "labelA", "labelB"], itemA.schema);
+    });
+
+    it("Undefined and empty label are considered equivalent, diagnostic not reported", async () => {
+      const aItems = {
+        TestClassA: {
+          schemaItemType: "EntityClass",
+          properties: [
+            {
+              name: "PropertyA",
+              type: "PrimitiveProperty",
+              typeName: "string",
+            },
+          ],
+        },
+      };
+      const bItems = {
+        TestClassA: {
+          schemaItemType: "EntityClass",
+          properties: [
+            {
+              name: "PropertyA",
+              type: "PrimitiveProperty",
+              typeName: "string",
+              label: "",
+            },
+          ],
+        },
+      };
+      const aJson = getSchemaJsonWithItems(schemaAJson, aItems);
+      const bJson = getSchemaJsonWithItems(schemaAJson, bItems);
+      const schemaA = await Schema.fromJson(aJson, contextA);
+      const schemaB = await Schema.fromJson(bJson, contextB);
+      const itemA = await schemaA.getItem("TestClassA") as ECClass;
+      const itemAProp = await itemA.getProperty("PropertyA") as AnyProperty;
+
+      const comparer = new SchemaComparer(reporter);
+      await comparer.compareSchemas(schemaA, schemaB);
+
+      expect(reporter.diagnostics.length).to.equal(0, "Expected no difference.");
     });
 
     it("Different description, diagnostic reported", async () => {
@@ -3454,6 +3517,45 @@ describe("Schema comparison tests", () => {
 
       expect(reporter.diagnostics.length).to.equal(1, "Expected 1 difference.");
       validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.EnumeratorDelta, DiagnosticType.SchemaItem, itemA, [itemA.enumerators[0], "label", "A", "B"], itemA.schema);
+    });
+
+    it("Undefined and empty label are considered equivalent, diagnostic not reported", async () => {
+      const aItems = {
+        TestEnumeration: {
+          schemaItemType: "Enumeration",
+          type: "string",
+          enumerators: [
+            {
+              name: "EnumA",
+              value: "A",
+            },
+          ],
+        },
+      };
+      const bItems = {
+        TestEnumeration: {
+          schemaItemType: "Enumeration",
+          type: "string",
+          enumerators: [
+            {
+              name: "EnumA",
+              value: "A",
+              label: "",
+            },
+          ],
+        },
+      };
+      const aJson = getSchemaJsonWithItems(schemaAJson, aItems);
+      const bJson = getSchemaJsonWithItems(schemaAJson, bItems);
+      const schemaA = await Schema.fromJson(aJson, contextA);
+      const schemaB = await Schema.fromJson(bJson, contextB);
+
+      const comparer = new SchemaComparer(reporter);
+      await comparer.compareSchemas(schemaA, schemaB);
+
+      const itemA = await schemaA.getItem("TestEnumeration") as Enumeration;
+
+      expect(reporter.diagnostics.length).to.equal(0, "Expected no difference.");
     });
 
     it("Different enumerator value, diagnostic reported", async () => {

@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
 import React from "react";
@@ -9,7 +9,7 @@ import * as sinon from "sinon";
 import { expect } from "chai";
 import { mount } from "enzyme";
 
-import { PropertyRecord, PrimitiveValue, PropertyEditorParamTypes, InputEditorSizeParams, IconEditorParams } from "@bentley/imodeljs-frontend";
+import { PropertyRecord, PrimitiveValue, PropertyEditorParamTypes, InputEditorSizeParams, IconEditorParams } from "@bentley/ui-abstract";
 import { EditorContainer, PropertyUpdatedArgs } from "../../ui-components/editors/EditorContainer";
 
 import { CustomNumberEditor } from "../../ui-components/editors/CustomNumberEditor";

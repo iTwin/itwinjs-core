@@ -1,9 +1,11 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module CartesianGeometry */
+/** @packageDocumentation
+ * @module CartesianGeometry
+ */
 
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Transform } from "../geometry3d/Transform";
@@ -11,7 +13,7 @@ import { Matrix3d } from "../geometry3d/Matrix3d";
 import { Matrix4d } from "../geometry4d/Matrix4d";
 import { Geometry } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
-import { PolygonOps } from "../geometry3d/PolygonOps";
+import { PolygonOps, IndexedXYZCollectionPolygonOps } from "../geometry3d/PolygonOps";
 import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
 import { Arc3d } from "../curve/Arc3d";
 import { ClipPlane } from "./ClipPlane";
@@ -20,6 +22,7 @@ import { AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive";
 import { Range3d, Range1d } from "../geometry3d/Range";
 import { Ray3d } from "../geometry3d/Ray3d";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
+import { GrowableXYZArrayCache } from "../geometry3d/ReusableObjectCache";
 
 /**
  * A ConvexClipPlaneSet is a collection of ClipPlanes, often used for bounding regions of space.
@@ -350,7 +353,7 @@ export class ConvexClipPlaneSet implements Clipper {
     for (const plane of this._planes) {
       const hA = - plane.altitude(pointA);
       const hB = - plane.altitude(pointB);
-      fraction = Geometry.safeDivideFraction(-hA, (hB - hA), 0.0);
+      fraction = Geometry.conditionalDivideFraction(-hA, (hB - hA));
       if (fraction === undefined) {
         // LIne parallel to the plane.  If positive, it is all OUT
         if (hA > 0.0)
@@ -389,7 +392,7 @@ export class ConvexClipPlaneSet implements Clipper {
     for (const clipPlane of this.planes) {
       clipPlane.appendIntersectionRadians(arc, breaks);
     }
-    arc.sweep.radiansArraytoPositivePeriodicFractions(breaks);
+    arc.sweep.radiansArrayToPositivePeriodicFractions(breaks);
     return ClipUtilities.selectIntervals01(arc, breaks, this, announce);
   }
   /** Find the parts of the (unbounded) line segment  (if any) that is within the convex clip volume.
@@ -423,7 +426,50 @@ export class ConvexClipPlaneSet implements Clipper {
         return;
     }
   }
-
+  /** Clip a convex polygon to (a single) inside part and (possibly many) outside parts.
+   * @param xyz input polygon.
+   * @param outsideFragments an array to receive (via push, with no preliminary clear) outside fragments
+   * @param arrayCache cache for work arrays.
+   * @return the surviving inside part (if any)
+   */
+  public clipInsidePushOutside(xyz: GrowableXYZArray,
+    outsideFragments: GrowableXYZArray[],
+    arrayCache: GrowableXYZArrayCache): GrowableXYZArray | undefined {
+    const perpendicularRange = Range1d.createNull();
+    let newInside = arrayCache.grabFromCache();
+    let newOutside = arrayCache.grabFromCache();
+    let insidePart = arrayCache.grabFromCache();  // this is empty ...
+    insidePart.pushFrom(xyz);
+    // While looping through planes . .
+    // the outside part for the current plane is definitely outside and can be stashed to the final outside
+    // the inside part for the current plane passes forward to be further split by the remaining planes.
+    for (const plane of this._planes) {
+      IndexedXYZCollectionPolygonOps.splitConvexPolygonInsideOutsidePlane(plane, insidePart, newInside, newOutside, perpendicularRange);
+      if (newOutside.length > 0) {
+        // the newOutside fragment is definitely outside the ConvexClipPlaneSet
+        outsideFragments.push(newOutside);    // save the definitely outside part as return data.
+        newOutside = arrayCache.grabFromCache();
+        if (newInside.length === 0) {
+          insidePart.length = 0;
+          break;
+        }
+        // insideWork is changed ... swap it with insidePart
+        arrayCache.dropToCache(insidePart);
+        insidePart = newInside;
+        newInside = arrayCache.grabFromCache();
+      }
+      // outside clip was empty .. insideWork is identical to insidePart .. let insidePart feed through to the next clipper.
+    }
+    // at break or fall out ...
+    // ALWAYS drop `newInside` and `newOutside` to the cache
+    arrayCache.dropToCache(newInside);
+    arrayCache.dropToCache(newOutside);
+    // if `insidePart` is alive, return it to caller.  Otherwise drop it to cache and return undefined.
+    if (insidePart.length > 0)
+      return insidePart;
+    arrayCache.dropToCache(insidePart);
+    return undefined;
+  }
   /** Returns 1, 2, or 3 based on whether point array is strongly inside, ambiguous, or strongly outside respectively.
    * * This has a peculiar expected use case as a very fast pre-filter for more precise clipping.
    * * The expected point set is for a polygon.
@@ -463,7 +509,7 @@ export class ConvexClipPlaneSet implements Clipper {
    * @param upVector primary sweep direction, as applied by ClipPlane.createEdgeAndUpVector
    * @param tiltAngle angle to tilt sweep planes away from the sweep direction.
    */
-  public static createSweptPolyline(points: Point3d[], upVector: Vector3d, tiltAngle: Angle): ConvexClipPlaneSet | undefined {
+  public static createSweptPolyline(points: Point3d[], upVector: Vector3d, tiltAngle?: Angle): ConvexClipPlaneSet | undefined {
     const result = ConvexClipPlaneSet.createEmpty();
     let reverse = false;
     if (points.length > 3 && points[0].isAlmostEqual(points[points.length - 1])) {

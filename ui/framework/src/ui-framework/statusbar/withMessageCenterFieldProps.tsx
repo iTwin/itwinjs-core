@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module StatusBar */
+/** @packageDocumentation
+ * @module StatusBar
+ */
 
 import * as React from "react";
 
@@ -16,7 +18,8 @@ export const withMessageCenterFieldProps = <P extends MessageCenterFieldProps, C
   // tslint:disable-next-line: variable-name
   Component: React.JSXElementConstructor<P> & C,
 ) => {
-  type Props = JSX.LibraryManagedAttributes<C, Omit<P, keyof MessageCenterFieldProps>>;
+  type InjectedProps = Pick<MessageCenterFieldProps, "isInFooterMode" | "onOpenWidget" | "openWidget" | "targetRef">;
+  type Props = JSX.LibraryManagedAttributes<C, Omit<P, keyof InjectedProps>>;
   return function WithMessageCenterFieldProps(props: Props) {
     const statusBarContext = React.useContext(StatusBarContext);
     const { toastTargetRef, ...args } = statusBarContext;

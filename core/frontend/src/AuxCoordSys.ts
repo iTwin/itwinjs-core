@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Views */
+/** @packageDocumentation
+ * @module Views
+ */
 
 import { AuxCoordSystemProps, AuxCoordSystem2dProps, AuxCoordSystem3dProps, BisCodeSpec, Code, IModel, Npc, ColorDef, LinePixels } from "@bentley/imodeljs-common";
 import { Angle, Point3d, Point2d, Vector3d, YawPitchRollAngles, XYAndZ, XAndY, Matrix3d, Transform, Arc3d, AngleSweep } from "@bentley/geometry-core";
@@ -147,25 +149,21 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
   }
 
   private getAdjustedColor(inColor: ColorDef, isFill: boolean, viewport: Viewport, options: ACSDisplayOptions): ColorDef {
-    const color = new ColorDef();
-
+    let color;
     if ((options & ACSDisplayOptions.Hilite) !== ACSDisplayOptions.None) {
-      color.setFrom(viewport.hilite.color);
+      color = viewport.hilite.color;
     } else if ((options & ACSDisplayOptions.Active) !== ACSDisplayOptions.None) {
-      color.setFrom(inColor.equals(ColorDef.white) ? viewport.getContrastToBackgroundColor() : inColor);
+      color = inColor.equals(ColorDef.white) ? viewport.getContrastToBackgroundColor() : inColor;
     } else {
-      color.colors.r = 150;
-      color.colors.g = 150;
-      color.colors.b = 150;
-      color.colors.t = 0;
+      color = ColorDef.from(150, 150, 150, 0);
     }
 
-    color.adjustForContrast(viewport.view.backgroundColor);
+    color = color.adjustedForContrast(viewport.view.backgroundColor);
 
     if (isFill)
-      color.setTransparency((options & (ACSDisplayOptions.Deemphasized | ACSDisplayOptions.Dynamics)) !== ACSDisplayOptions.None ? 225 : 200);
+      color = color.withTransparency((options & (ACSDisplayOptions.Deemphasized | ACSDisplayOptions.Dynamics)) !== ACSDisplayOptions.None ? 225 : 200);
     else
-      color.setTransparency((options & ACSDisplayOptions.Deemphasized) !== ACSDisplayOptions.None ? 150 : 75);
+      color = color.withTransparency((options & ACSDisplayOptions.Deemphasized) !== ACSDisplayOptions.None ? 150 : 75);
 
     return color;
   }
@@ -267,11 +265,11 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
     else if ((options & ACSDisplayOptions.Active) !== ACSDisplayOptions.None)
       pixelSize *= 0.9;
 
-    const exagg = context.viewport.view.getAspectRatioSkew();
+    const exaggerate = context.viewport.view.getAspectRatioSkew();
     const scale = context.getPixelSizeAtPoint(drawOrigin) * pixelSize;
     const rMatrix = this.getRotation();
     rMatrix.inverse(rMatrix);
-    rMatrix.scaleRows(scale, scale / exagg, scale, rMatrix);
+    rMatrix.scaleRows(scale, scale / exaggerate, scale, rMatrix);
     const transform = Transform.createOriginAndMatrix(drawOrigin, rMatrix);
 
     const builder = context.createGraphicBuilder(GraphicType.WorldOverlay, transform);

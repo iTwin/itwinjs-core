@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module RpcInterface */
+/** @packageDocumentation
+ * @module RpcInterface
+ */
 
 import { RpcInterface } from "../../RpcInterface";
 import { RpcManager, RpcInterfaceEndpoints } from "../../RpcManager";
@@ -10,7 +12,7 @@ import { RpcConfiguration } from "./RpcConfiguration";
 import { RpcInvocation } from "./RpcInvocation";
 import { RpcOperation } from "./RpcOperation";
 import { RpcRegistry } from "./RpcRegistry";
-import { IModelToken } from "../../IModel";
+import { IModelRpcProps } from "../../IModel";
 import { IModelError } from "../../IModelError";
 import { BentleyStatus } from "@bentley/bentleyjs-core";
 
@@ -125,7 +127,8 @@ export class RpcControlChannel {
     }
 
     this._clientActive = true;
-    RpcOperation.forEach(this._channelInterface, (operation) => operation.policy.token = (_request) => RpcOperation.fallbackToken || new IModelToken("none", "none", "none", "none", undefined));
+    const token: IModelRpcProps = { key: "none", contextId: "none", iModelId: "none", changeSetId: "none" };
+    RpcOperation.forEach(this._channelInterface, (operation) => operation.policy.token = (_request) => RpcOperation.fallbackToken ?? token);
     const client = RpcManager.getClientForInterface(this._channelInterface);
     this._describeEndpoints = async () => client.describeEndpoints();
   }

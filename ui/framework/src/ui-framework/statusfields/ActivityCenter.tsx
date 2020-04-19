@@ -1,17 +1,19 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Notification */
+/** @packageDocumentation
+ * @module Notification
+ */
 
 import * as React from "react";
 import classnames from "classnames";
 
+import { Centered } from "@bentley/ui-core";
 import { Status, MessageLayout, MessageProgress } from "@bentley/ui-ninezone";
 import { MessageManager, ActivityMessageEventArgs } from "../messages/MessageManager";
 import { UiFramework } from "../UiFramework";
 import { StatusFieldProps } from "./StatusFieldProps";
-import { Centered } from "@bentley/ui-core";
 
 /** State for the [[ActivityCenterField]] component
  * @internal

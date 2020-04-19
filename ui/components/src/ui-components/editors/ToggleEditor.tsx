@@ -1,12 +1,14 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module PropertyEditors */
+/** @packageDocumentation
+ * @module PropertyEditors
+ */
 
 import * as React from "react";
 import classnames from "classnames";
-import { PropertyValueFormat, PrimitiveValue, PropertyValue } from "@bentley/imodeljs-frontend";
+import { PropertyValueFormat, PrimitiveValue, PropertyValue } from "@bentley/ui-abstract";
 import { PropertyEditorManager, PropertyEditorBase } from "./PropertyEditorManager";
 import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
 import { Toggle } from "@bentley/ui-core";
@@ -27,10 +29,6 @@ export class ToggleEditor extends React.PureComponent<PropertyEditorProps, Toggl
   public readonly state: Readonly<ToggleEditorState> = {
     toggleValue: false,
   };
-
-  public getValue(): boolean {
-    return this.state.toggleValue;
-  }
 
   public async getPropertyValue(): Promise<PropertyValue | undefined> {
     const record = this.props.propertyRecord;
@@ -101,7 +99,7 @@ export class ToggleEditor extends React.PureComponent<PropertyEditorProps, Toggl
 
   /** @internal */
   public render() {
-    const className = classnames("cell", "components-cell-editor", this.props.className);
+    const className = classnames("components-cell-editor", this.props.className);
     const inOn = this.state.toggleValue;
 
     return (
@@ -117,12 +115,13 @@ export class ToggleEditor extends React.PureComponent<PropertyEditorProps, Toggl
   }
 }
 
-/** TogglePropertyEditor React component that uses the [[ToggleEditor]] property editor.
+/** Toggle Property Editor registered for the "bool" and "boolean" type names and "toggle" editor name.
+ * It uses the [[ToggleEditor]] React component.
  * @beta
  */
 export class TogglePropertyEditor extends PropertyEditorBase {
 
-  public get reactElement(): React.ReactNode {
+  public get reactNode(): React.ReactNode {
     return <ToggleEditor />;
   }
 }

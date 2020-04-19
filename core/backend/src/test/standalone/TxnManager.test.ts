@@ -1,28 +1,36 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { IModelStatus, OpenMode, BeDuration } from "@bentley/bentleyjs-core";
-import { Code, ColorByName, IModel, IModelError, SubCategoryAppearance, GeometryStreamBuilder } from "@bentley/imodeljs-common";
-import { Point3d, YawPitchRollAngles, LineSegment3d } from "@bentley/geometry-core";
+import { BeDuration, DbResult, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
+import { LineSegment3d, Point3d, YawPitchRollAngles } from "@bentley/geometry-core";
+import { Code, ColorByName, GeometryStreamBuilder, IModel, IModelError, SubCategoryAppearance } from "@bentley/imodeljs-common";
 import { assert, expect } from "chai";
-import { IModelDb, IModelJsFs, PhysicalModel, SpatialCategory, TxnAction, BackendRequestContext } from "../../imodeljs-backend";
+import { BackendRequestContext, IModelHost, IModelJsFs, IModelJsNative, PhysicalModel, SpatialCategory, StandaloneDb, TxnAction, UpdateModelOptions } from "../../imodeljs-backend";
 import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject, TestPhysicalObjectProps } from "../IModelTestUtils";
-import { UpdateModelOptions } from "../../IModelDb";
 
 describe("TxnManager", () => {
-  let imodel: IModelDb;
+  let imodel: StandaloneDb;
   let props: TestPhysicalObjectProps;
+  let testFileName: string;
   const requestContext = new BackendRequestContext();
+
+  const performUpgrade = (pathname: string): DbResult => {
+    const nativeDb = new IModelHost.platform.DgnDb();
+    const res = nativeDb.openIModel(pathname, OpenMode.ReadWrite, IModelJsNative.UpgradeMode.Domain);
+    if (DbResult.BE_SQLITE_OK === res)
+      nativeDb.closeIModel();
+    return res;
+  };
 
   before(async () => {
     IModelTestUtils.registerTestBimSchema();
-    const testFileName = IModelTestUtils.prepareOutputFile("TxnManager", "TxnManagerTest.bim");
+    testFileName = IModelTestUtils.prepareOutputFile("TxnManager", "TxnManagerTest.bim");
     const seedFileName = IModelTestUtils.resolveAssetFile("test.bim");
     const schemaFileName = IModelTestUtils.resolveAssetFile("TestBim.ecschema.xml");
     IModelJsFs.copySync(seedFileName, testFileName);
-    assert.equal(IModelDb.performUpgrade(testFileName), 0);
-    imodel = IModelDb.openStandalone(testFileName, OpenMode.ReadWrite);
+    assert.equal(performUpgrade(testFileName), 0);
+    imodel = StandaloneDb.openFile(testFileName, OpenMode.ReadWrite);
     await imodel.importSchemas(requestContext, [schemaFileName]); // will throw an exception if import fails
 
     const builder = new GeometryStreamBuilder();
@@ -45,7 +53,7 @@ describe("TxnManager", () => {
     imodel.nativeDb.enableTxnTesting();
   });
 
-  after(() => imodel.closeStandalone());
+  after(() => imodel.close());
 
   it("Undo/Redo", async () => {
     const models = imodel.models;
@@ -57,7 +65,7 @@ describe("TxnManager", () => {
 
     assert.isDefined(imodel.getMetaData("TestBim:TestPhysicalObject"), "TestPhysicalObject is present");
 
-    const txns = imodel.txns;
+    let txns = imodel.txns;
     assert.isFalse(txns.hasPendingTxns);
 
     const change1Msg = "change 1";
@@ -79,6 +87,17 @@ describe("TxnManager", () => {
     assert.isFalse(txns.hasUnsavedChanges);
     assert.isTrue(txns.hasPendingTxns);
     assert.isTrue(txns.hasLocalChanges);
+
+    model = models.getModel(modelId);
+    assert.isDefined(model.geometryGuid);
+
+    txns.reverseSingleTxn();
+    assert.isFalse(txns.hasPendingTxns, "should not have pending txns if they all are reversed");
+    assert.isFalse(txns.hasLocalChanges);
+    txns.reinstateTxn();
+    assert.isTrue(txns.hasPendingTxns, "now there should be pending txns again");
+    assert.isTrue(txns.hasLocalChanges);
+    beforeUndo = afterUndo = 0; // reset this for tests below
 
     model = models.getModel(modelId);
     assert.isDefined(model.geometryGuid);
@@ -191,7 +210,8 @@ describe("TxnManager", () => {
     toModify.placement.origin.x += 1;
     toModify.placement.origin.y += 1;
     toModify.update();
-    imodel.saveChanges("save update to modify guid");
+    const saveUpdateMsg = "save update to modify guid";
+    imodel.saveChanges(saveUpdateMsg);
     model = models.getModel(modelId);
     assert.notEqual(guid2, model.geometryGuid, "update placement should change guid");
 
@@ -215,12 +235,42 @@ describe("TxnManager", () => {
     await BeDuration.wait(300); // for lastMod...
     const guid4 = model.geometryGuid;
     toModify.delete();
-    imodel.saveChanges("save deletion of element");
+    const deleteTxnMsg = "save deletion of element";
+    imodel.saveChanges(deleteTxnMsg);
     assert.throws(() => elements.getElement(modifyId));
     model = models.getModel(modelId);
     expect(model.geometryGuid).not.to.equal(guid4);
     const lastMod3 = models.queryLastModifiedTime(modelId);
     expect(lastMod3).not.to.equal(lastMod2);
+
+    assert.isTrue(txns.isUndoPossible);
+    assert.isTrue(txns.checkUndoPossible(true));
+    assert.isTrue(txns.checkUndoPossible(false));
+    assert.isTrue(txns.checkUndoPossible());
+
+    // test the ability to undo/redo from previous sessions
+    imodel.close();
+    imodel = StandaloneDb.openFile(testFileName, OpenMode.ReadWrite);
+    imodel.nativeDb.enableTxnTesting();
+    txns = imodel.txns;
+
+    assert.isFalse(txns.isUndoPossible);
+    assert.isTrue(txns.checkUndoPossible(true));
+    assert.isFalse(txns.checkUndoPossible(false));
+    assert.isFalse(txns.checkUndoPossible());
+    assert.equal(deleteTxnMsg, txns.getUndoString(true));
+    assert.equal("", txns.getUndoString());
+
+    assert.equal(IModelStatus.Success, txns.reverseTxns(1, true), "reverse from previous session");
+    assert.equal(saveUpdateMsg, txns.getUndoString(true));
+    assert.equal(deleteTxnMsg, txns.getRedoString());
+    assert.equal(IModelStatus.Success, txns.reinstateTxn());
+    assert.equal(IModelStatus.Success, txns.cancelTo(txns.queryFirstTxnId(true), true), "cancel all committed txns");
+    assert.isFalse(txns.checkUndoPossible(true));
+    assert.isFalse(txns.isRedoPossible);
+    assert.isFalse(txns.isUndoPossible);
+    assert.isFalse(txns.hasUnsavedChanges);
+    assert.isFalse(txns.hasPendingTxns);
   });
 
   it("Element drives element events", async () => {

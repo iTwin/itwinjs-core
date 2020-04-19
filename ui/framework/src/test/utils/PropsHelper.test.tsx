@@ -1,10 +1,11 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import TestUtils from "../TestUtils";
 import { PropsHelper } from "../../ui-framework";
+import { ConditionalStringValue } from "@bentley/ui-abstract";
 
 describe("PropsHelper", () => {
   before(async () => {
@@ -78,6 +79,21 @@ describe("PropsHelper", () => {
     outString = PropsHelper.getStringFromSpec(undefinedStringAndKeySpec);
     expect(outString).not.to.be.undefined;
     expect(outString).to.eq("snapModeField.snapMode"); // since test are not setting up localization we get string without namespace.
+  });
+
+  it("Use ConditionalStringValue for label", () => {
+    const conditionalStringSpec = PropsHelper.getStringSpec(new ConditionalStringValue(() => "HelloWorld", ["dummy"]));
+    expect(conditionalStringSpec).not.to.be.undefined;
+    outString = undefined;
+    outString = PropsHelper.getStringFromSpec(conditionalStringSpec);
+    expect(outString).not.to.be.undefined;
+    expect(outString).to.eq("HelloWorld");
+  });
+
+  it("Get Icon from ConditionalStringValue", () => {
+    const iconTest = PropsHelper.getIcon(new ConditionalStringValue(() => "conditional-icon", ["dummy"]));
+    expect(iconTest).not.to.be.undefined;
+    expect(iconTest!.props.iconSpec).to.eq("conditional-icon");
   });
 
 });

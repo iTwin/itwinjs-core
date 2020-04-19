@@ -1,26 +1,18 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Node, NodeJSON } from "../../hierarchy/Node";
 import {
-  createRandomECInstanceNode, createRandomECInstanceNodeKey,
-  createRandomECInstanceKeyJSON,
+  createRandomECInstancesNode, createRandomECInstancesNodeKeyJSON, createRandomLabelDefinitionJSON,
 } from "../_helpers/random";
-import { ECInstanceNodeKeyJSON } from "../../hierarchy/Key";
-
-const createRandomECInstanceNodeKeyJSON = (): ECInstanceNodeKeyJSON => {
-  return {
-    ...createRandomECInstanceNodeKey(),
-    instanceKey: createRandomECInstanceKeyJSON(),
-  };
-};
+import { Node, NodeJSON } from "../../presentation-common/hierarchy/Node";
 
 const createRandomNodeJSON = (): NodeJSON => {
   return {
-    ...createRandomECInstanceNode(),
-    key: createRandomECInstanceNodeKeyJSON(),
+    ...createRandomECInstancesNode(),
+    key: createRandomECInstancesNodeKeyJSON(),
+    labelDefinition: createRandomLabelDefinitionJSON(),
   };
 };
 
@@ -29,7 +21,7 @@ describe("Node", () => {
   describe("toJSON", () => {
 
     it("serializes Node", () => {
-      const node = createRandomECInstanceNode();
+      const node = createRandomECInstancesNode();
       const json = Node.toJSON(node);
       expect(json).to.matchSnapshot();
     });

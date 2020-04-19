@@ -1,13 +1,16 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
+
+import { WidgetState } from "@bentley/ui-abstract";
 import { Rectangle } from "@bentley/ui-core";
 import { getDefaultZoneManagerProps, ToolSettings, ResizeHandle } from "@bentley/ui-ninezone";
+
 import {
   ConfigurableUiManager,
   ToolUiProvider,
@@ -24,7 +27,6 @@ import {
   ToolSettingsZoneProps,
 } from "../../../ui-framework";
 import { Tool1 } from "../../tools/Tool1";
-import { WidgetState } from "../../../ui-framework/widgets/WidgetDef";
 import TestUtils, { ReactWrapper } from "../../TestUtils";
 
 describe("ToolSettingsZone", () => {
@@ -254,7 +256,7 @@ describe("ToolSettingsZone", () => {
     const initialPosition = { x: 2, y: 4 };
     toolSettings.prop("onDragStart")!(initialPosition);
 
-    expect(spy.calledOnceWithExactly(2, 0, sinon.match(initialPosition) as any, sinon.match(widgetBounds) as any)).to.true;
+    expect(spy.calledOnceWithExactly(2, 0, sinon.match(initialPosition), sinon.match(widgetBounds))).to.true;
   });
 
   it("should not handle drag start with unset ref", () => {

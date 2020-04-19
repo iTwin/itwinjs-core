@@ -1,13 +1,16 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Tools */
+/** @packageDocumentation
+ * @module Tools
+ */
 
 import { IModelApp } from "@bentley/imodeljs-frontend";
-import { BaseItemState } from "@bentley/ui-abstract";
+import { ConditionalBooleanValue } from "@bentley/ui-abstract";
 import { SelectionContextUtilities } from "./SelectionContextUtilities";
 import { CommandItemDef } from "../shared/CommandItemDef";
+import { BaseItemState } from "../shared/ItemDefBase";
 import { GroupItemDef } from "../toolbar/GroupItem";
 import { SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
 import { ContentViewManager } from "../content/ContentViewManager";
@@ -17,10 +20,29 @@ import { UiFramework } from "../UiFramework";
 /** return SyncEventIds that trigger selection state function refresh.
  * @beta
  */
-// istanbul ignore next
 export function getSelectionContextSyncEventIds(): string[] {
-  return [SyncUiEventId.SelectionSetChanged, SyncUiEventId.ActiveContentChanged, SyncUiEventId.ActiveViewportChanged,
-  SessionStateActionId.SetNumItemsSelected];
+  return [SyncUiEventId.SelectionSetChanged, SyncUiEventId.ActiveContentChanged, SyncUiEventId.ActiveViewportChanged, SessionStateActionId.SetNumItemsSelected];
+}
+
+/** return SyncEventIds that trigger selection state function refresh.
+ * @beta
+ */
+export function isNoSelectionActive(): boolean {
+  const activeContentControl = ContentViewManager.getActiveContentControl();
+  let selectionCount = 0;
+  if (!UiFramework.frameworkStateKey)
+    selectionCount = UiFramework.store.getState()[UiFramework.frameworkStateKey].frameworkState.sessionState.numItemsSelected;
+
+  if (activeContentControl && activeContentControl.viewport && (activeContentControl.viewport.view.iModel.selectionSet.size > 0 || selectionCount > 0))
+    return false;
+  return true;
+}
+
+/** return ConditionalBooleanValue object used to show items if selection set is active.
+ * @beta
+ */
+export function getIsHiddenIfSelectionNotActive(): ConditionalBooleanValue {
+  return new ConditionalBooleanValue(isNoSelectionActive, getSelectionContextSyncEventIds());
 }
 
 /** return state with isVisible set to true is SectionSet is active.
@@ -83,6 +105,7 @@ export class SelectionContextToolDefinitions {
       labelKey: "UiFramework:tools.isolateSelected",
       stateSyncIds: getSelectionContextSyncEventIds(),
       stateFunc: selectionContextStateFunc,
+      isHidden: getIsHiddenIfSelectionNotActive(),
       execute: () => {
         const vp = IModelApp.viewManager.selectedView;
         if (!vp)
@@ -99,6 +122,7 @@ export class SelectionContextToolDefinitions {
       iconSpec: "icon-isolate",
       stateSyncIds: getSelectionContextSyncEventIds(),
       stateFunc: selectionContextStateFunc,
+      isHidden: getIsHiddenIfSelectionNotActive(),
       items: [this.isolateElementsItemDef, this.isolateCategoriesInSelectionItemDef, this.isolateModelsInSelectionItemDef],
       itemsInColumn: 3,
     });
@@ -139,6 +163,7 @@ export class SelectionContextToolDefinitions {
       commandId: "UiFramework.HideSelected",
       iconSpec: "icon-asset-classification-hide",
       labelKey: "UiFramework:tools.hideSelected",
+      isHidden: getIsHiddenIfSelectionNotActive(),
       stateSyncIds: getSelectionContextSyncEventIds(),
       stateFunc: selectionContextStateFunc,
       execute: () => {
@@ -156,6 +181,7 @@ export class SelectionContextToolDefinitions {
       groupId: "UiFramework.HideSelectionGroup",
       labelKey: "UiFramework:tools.hide",
       iconSpec: "icon-visibility-hide-2",
+      isHidden: getIsHiddenIfSelectionNotActive(),
       stateSyncIds: getSelectionContextSyncEventIds(),
       stateFunc: selectionContextStateFunc,
       items: [this.hideElementsItemDef, this.hideCategoriesInSelectionItemDef, this.hideModelsInSelectionItemDef],
@@ -168,6 +194,7 @@ export class SelectionContextToolDefinitions {
       commandId: "UiFramework.EmphasizeSelected",
       iconSpec: "icon-visibility-semi-transparent",
       labelKey: "UiFramework:tools.emphasizeSelected",
+      isHidden: getIsHiddenIfSelectionNotActive(),
       stateSyncIds: getSelectionContextSyncEventIds(),
       stateFunc: selectionContextStateFunc,
       execute: async () => {

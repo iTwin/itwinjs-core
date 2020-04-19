@@ -1,9 +1,11 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module Curve */
+/** @packageDocumentation
+ * @module Curve
+ */
 
 import { Loop } from "../Loop";
 import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
@@ -99,9 +101,9 @@ export class PointInOnOutContext {
   }
   public static testPointInOnOutUnionRegionXY(parent: UnionRegion, x: number, y: number): number {
     for (const loop of parent.children) {
-        const classify = this.testPointInOnOutRegionXY(loop, x, y);
-        if (classify >= 0)
-          return classify;
+      const classify = this.testPointInOnOutRegionXY(loop, x, y);
+      if (classify >= 0)
+        return classify;
     }
     return -1;
   }

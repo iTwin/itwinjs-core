@@ -1,16 +1,19 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module PropertyGrid */
+/** @packageDocumentation
+ * @module PropertyGrid
+ */
 
 import * as React from "react";
 import classnames from "classnames";
 
 import { Orientation, CommonProps } from "@bentley/ui-core";
-import { PropertyRecord, PropertyValueFormat } from "@bentley/imodeljs-frontend";
+import { PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
 
 import { PropertyRenderer } from "../../properties/renderers/PropertyRenderer";
+import { ActionButtonRenderer } from "../../properties/renderers/ActionButtonRenderer";
 import { PropertyCategory } from "../PropertyDataProvider";
 import { PropertyValueRendererManager } from "../../properties/ValueRendererManager";
 import { PropertyUpdatedArgs } from "../../editors/EditorContainer";
@@ -38,6 +41,8 @@ export interface PropertyListProps extends CommonProps {
   isPropertySelectionEnabled?: boolean;
   /** Enables/disables property right click selection */
   isPropertyRightClickSelectionEnabled?: boolean;
+  /** Array of action button renderers */
+  actionButtonRenderers?: ActionButtonRenderer[];
 }
 
 /**
@@ -122,6 +127,7 @@ export class PropertyList extends React.Component<PropertyListProps, PropertyLis
               onEditCommit={this._onEditCommit}
               onEditCancel={this.props.onEditCancel}
               width={this.state.width}
+              actionButtonRenderers={this.props.actionButtonRenderers}
             />);
         })}
       </div>

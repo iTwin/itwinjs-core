@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Geometry */
+/** @packageDocumentation
+ * @module Symbology
+ */
 
 import { Point2d, Point3d, YawPitchRollAngles, Matrix3d, Transform, YawPitchRollProps, XYZProps, AngleProps, XYProps, Angle, Geometry } from "@bentley/geometry-core";
 import { ColorDef, ColorDefProps } from "../ColorDef";
@@ -73,7 +75,7 @@ export namespace AreaPattern {
   }
 
   /** Defines a hatch, cross hatch, or area pattern. */
-  export class Params implements ParamsProps {
+  export class Params {
     public origin?: Point3d;
     public rotation?: YawPitchRollAngles;
     public space1?: number;
@@ -113,8 +115,15 @@ export namespace AreaPattern {
       return result;
     }
 
+    public toJSON(): ParamsProps {
+      return {
+        ...this,
+        color: this.color?.toJSON(),
+      };
+    }
+
     public clone(): Params {
-      return Params.fromJSON(this);
+      return Params.fromJSON(this.toJSON());
     }
 
     public equals(other: Params): boolean {

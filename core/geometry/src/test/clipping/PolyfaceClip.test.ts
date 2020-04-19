@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
@@ -11,7 +11,7 @@ import { Sample } from "../../serialization/GeometrySamples";
 
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
-import { PolyfaceClip } from "../../polyface/PolyfaceClip";
+import { PolyfaceClip, ClippedPolyfaceBuilders } from "../../polyface/PolyfaceClip";
 import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { ConvexClipPlaneSet } from "../../clipping/ConvexClipPlaneSet";
@@ -28,9 +28,16 @@ import { Transform } from "../../geometry3d/Transform";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Angle } from "../../geometry3d/Angle";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
-import { Polyface } from "../../polyface/Polyface";
+import { Polyface, IndexedPolyface } from "../../polyface/Polyface";
 import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
-
+import * as fs from "fs";
+import { Geometry } from "../../Geometry";
+import { Arc3d } from "../../curve/Arc3d";
+import { LineString3d } from "../../curve/LineString3d";
+import { UnionOfConvexClipPlaneSets } from "../../clipping/UnionOfConvexClipPlaneSets";
+import { ClipUtilities } from "../../clipping/ClipUtils";
+import { SweepContour } from "../../solid/SweepContour";
+/* tslint:disable:no-console */
 describe("PolyfaceClip", () => {
   it("ClipPlane", () => {
     const ck = new Checker();
@@ -52,32 +59,116 @@ describe("PolyfaceClip", () => {
 
   });
 
+  it("EdgeInClipPlane", () => {
+    const ck = new Checker();
+    const polyface = Sample.createTriangularUnitGridPolyface(Point3d.create(0, 0, 0), Vector3d.unitX(), Vector3d.unitY(), 3, 2);
+    const clipper = ClipPlane.createNormalAndPointXYZXYZ(1, 0, 0, 1, 0, 0)!;
+
+    const leftClip = PolyfaceClip.clipPolyface(polyface, clipper)!;
+    const rightClip = PolyfaceClip.clipPolyfaceClipPlane(polyface, clipper, false)!;
+    const area = PolyfaceQuery.sumFacetAreas(polyface);
+    const areaLeft = PolyfaceQuery.sumFacetAreas(leftClip);
+    const areaRight = PolyfaceQuery.sumFacetAreas(rightClip);
+    const allGeometry: GeometryQuery[] = [];
+    GeometryCoreTestIO.captureGeometry(allGeometry, polyface, 0, 0, 0);
+    GeometryCoreTestIO.captureGeometry(allGeometry, leftClip, 0, 10, 0);
+    GeometryCoreTestIO.captureGeometry(allGeometry, rightClip, 0, 10, 0);
+    ck.testCoordinate(area, areaLeft + areaRight);
+    GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceClip", "EdgeInClipPlane");
+    expect(ck.getNumErrors()).equals(0);
+
+  });
+
   it("ConvexClipPlaneSet", () => {
     const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
     const vectorU = Vector3d.create(1, -1, 0);
     const vectorV = Vector3d.create(1, 2, 0);
     const singleFacetArea = vectorU.crossProductMagnitude(vectorV);
     const xEdges = 4;
     const yEdges = 5;
-    const polyface = Sample.createTriangularUnitGridPolyface(Point3d.create(0, 0, 0), vectorU, vectorV, xEdges + 1, yEdges + 1);
-    const x0 = 2;
-    const y0 = 0.5;
+    const polyface = Sample.createTriangularUnitGridPolyface(Point3d.create(0, 0, 0.5), vectorU, vectorV, xEdges + 1, yEdges + 1);
+    const clipX0 = 2;
+    const clipY0 = 0.5;
     const ax = 1.0;
     const ay = 2.0;
-    const clipper = ConvexClipPlaneSet.createXYBox(x0, y0, x0 + ax, y0 + ay);
+    const clipper = ConvexClipPlaneSet.createXYBox(clipX0, clipY0, clipX0 + ax, clipY0 + ay);
+    const displayRange = Range3d.createXYZXYZ(0, 0, -2, 10, 10, 2);
+    const clipperEdges = ClipUtilities.loopsOfConvexClipPlaneIntersectionWithRange(clipper, displayRange);
+    const x0 = 0;
+    const outputStep = 20.0;
+    const y0 = 0;
+    const y1 = y0 + outputStep;
 
-    // The mesh should be big enough to completely contain the clip -- hence output area is known .....
-    const insidePart = PolyfaceClip.clipPolyface(polyface, clipper)!;
+    const clippedOutput = PolyfaceClip.clipPolyface(polyface, clipper)!;
     const area = PolyfaceQuery.sumFacetAreas(polyface);
-    const insideArea = PolyfaceQuery.sumFacetAreas(insidePart);
     ck.testCoordinate(xEdges * yEdges * singleFacetArea, area);
-    const allGeometry: GeometryQuery[] = [];
-    GeometryCoreTestIO.captureGeometry(allGeometry, polyface, 0, 0, 0);
-    GeometryCoreTestIO.captureGeometry(allGeometry, insidePart.clone()!, 0, 0, 0);
-    GeometryCoreTestIO.captureGeometry(allGeometry, insidePart, 0, 10, 0);
-
-    ck.testCoordinate(ax * ay, insideArea);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface, x0, y0, 0);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, clippedOutput, x0, y1, 0);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, clipperEdges, x0, y0);
     GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceClip", "ConvexClipPlaneSet");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("UnionOfConvexClipPlaneSet.Disjoint", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const edgeLength = 2.0;
+    const vectorU = Vector3d.create(edgeLength, 0, 0);
+    const vectorV = Vector3d.create(0, edgeLength, 0);
+    let x0 = 0;
+    const y0 = 0;
+    const xEdges = 4;
+    const yEdges = 5;
+    const polyfaceP3 = Sample.createTriangularUnitGridPolyface(Point3d.create(0, 0, 0), vectorU, vectorV, xEdges + 1, yEdges + 1);
+    const polyfaceP4 = Sample.createTriangularUnitGridPolyface(Point3d.create(0, 0, 0), vectorU, vectorV, xEdges + 1, yEdges + 1, false, false, false, false);
+    const polyfaceQ3 = Sample.createTriangularUnitGridPolyface(Point3d.create(0, 0, 0), vectorU.scale(xEdges), vectorV.scale(yEdges), 2, 2);
+    const polyfaceQ4 = Sample.createTriangularUnitGridPolyface(Point3d.create(0, 0, 0), vectorU.scale(xEdges), vectorV.scale(yEdges), 2, 2, false, false, false, false);
+    for (const polyface of [polyfaceP3, polyfaceQ3, polyfaceP4, polyfaceQ4]) {
+      const range = polyface.range();
+      const dY = range.yLength() * 1.5;
+      const dX = range.xLength() * 2;
+      const dZ = 0.2;
+      const ax = 1.0;
+      const ay = 2.0;
+      const clipperX0 = 2;
+      const clipperY0 = 0.5;
+      const clipperX2 = clipperX0 + 2 * ax;
+      const clipPlane = ClipPlane.createNormalAndPointXYZXYZ(clipperX0, clipperY0, 0, 2, 1, 1)!;
+      const clipper0 = ConvexClipPlaneSet.createXYBox(clipperX0, clipperY0, clipperX0 + ax, clipperY0 + ay);
+      const clipper2 = ConvexClipPlaneSet.createXYBox(clipperX2, clipperY0, clipperX2 + ax, clipperY0 + ay);
+      const clipper02 = UnionOfConvexClipPlaneSets.createConvexSets([clipper2, clipper0]);
+      const clippers: Array<ClipPlane | ConvexClipPlaneSet | UnionOfConvexClipPlaneSets> = [clipper0, clipper2, clipper02, clipPlane];
+      for (const clipper of clippers) {
+        const clipperEdges = ClipUtilities.loopsOfConvexClipPlaneIntersectionWithRange(clipper, range);
+        // The mesh should be big enough to completely contain the clip -- hence output area is known .....
+        const builders = ClippedPolyfaceBuilders.create(true, true);
+        PolyfaceClip.clipPolyfaceInsideOutside(polyface, clipper, builders);
+        const area = PolyfaceQuery.sumFacetAreas(polyface);
+        const polyfaceA = builders.claimPolyface(0, true);
+        const polyfaceB = builders.claimPolyface(1, true);
+        const areaA = PolyfaceQuery.sumFacetAreas(polyfaceA);
+        const areaB = PolyfaceQuery.sumFacetAreas(polyfaceB);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface, x0, y0, 0);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, clipperEdges, x0, y0, 0);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyfaceA, x0, y0 + dY, 0);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyfaceB, x0, y0 + 2 * dY, 0);
+        const boundaryB = PolyfaceQuery.boundaryEdges(polyfaceB);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, boundaryB, x0, y0 + 2 * dY, dZ);
+        if (polyfaceB) {
+          const polyfaceB1 = PolyfaceQuery.cloneWithTVertexFixup(polyfaceB);
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyfaceB1, x0, y0 + 3 * dY, 0);
+          const boundaryB1 = PolyfaceQuery.boundaryEdges(polyfaceB1);
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, boundaryB1, x0, y0 + 3 * dY, dZ);
+
+        }
+        ck.testCoordinate(area, areaA + areaB, " sum of inside and outside clip areas");
+        x0 += dX;
+      }
+      x0 += dX;
+    }
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceClip", "UnionOfConvexClipPlaneSet.Disjoint");
     expect(ck.getNumErrors()).equals(0);
   });
 
@@ -180,7 +271,7 @@ describe("PolyfaceClip", () => {
         const clipPlanePoints = clipPlane.intersectRange(range)!;
         const frame = clipPlane.getFrame();
         const section = PolyfaceClip.sectionPolyfaceClipPlane(facets, clipPlane);
-        const clippedPolyface = PolyfaceClip.clipPolyfaceClipPlaneWithClosureFace(facets, clipPlane, insideClip, true);
+        const clippedPolyface = PolyfaceClip.clipPolyfaceClipPlaneWithClosureFace(facets, clipPlane, insideClip);
         const cutPlane = PolyfaceBuilder.polygonToTriangulatedPolyface(clipPlanePoints.getPoint3dArray());
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, facets, x0, y0, 0);
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, cutPlane, x0, y0, 0);
@@ -207,6 +298,7 @@ describe("PolyfaceClip", () => {
     builder.addBox(Box.createRange(Range3d.create(Point3d.create(-1, -1, -1), Point3d.create(1, 1, 1)), true)!);
     const facets = builder.claimPolyface();
     const range = facets.range();
+    range.expandInPlace(0.5);
     const allGeometry: GeometryQuery[] = [];
     let x0 = 0;
     const y0 = 0;
@@ -221,13 +313,16 @@ describe("PolyfaceClip", () => {
       const y1 = y0 + dy;
       const y2 = y1 + dy;
       const y3 = y2 + dy;
+      const y4 = y3 + dy;
       const section = PolyfaceClip.sectionPolyfaceClipPlane(facets, clipPlane);
-      const clippedPolyface = PolyfaceClip.clipPolyfaceClipPlaneWithClosureFace(facets, clipPlane, true, true);
+      const insideClip = PolyfaceClip.clipPolyfaceClipPlaneWithClosureFace(facets, clipPlane, true, true);
+      const outsideClip = PolyfaceClip.clipPolyfaceClipPlaneWithClosureFace(facets, clipPlane, false, true);
       const cutPlane = PolyfaceBuilder.polygonToTriangulatedPolyface(clipPlanePoints.getPoint3dArray());
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, facets, x0, y0, 0);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, cutPlane, x0, y0, 0);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, section, x0, y1, 0);
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, clippedPolyface, x0, y3, 0);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, insideClip, x0, y3, 0);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, outsideClip, x0, y4, 0);
       for (const s of section) {
         if (s.isPhysicallyClosed) {
           const region = PolyfaceBuilder.polygonToTriangulatedPolyface(s.packedPoints.getPoint3dArray(), frame);
@@ -559,9 +654,9 @@ describe("PolyfaceClip", () => {
       for (const transform of Sample.createRigidTransforms(1.0)) {
         y0 = 0.0;
         for (const clipPlane of [ClipPlane.createNormalAndDistance(Vector3d.create(0, 0, -1), -0.8221099398657934)!,
-        ClipPlane.createNormalAndDistance(Vector3d.create(0, -1, 0), -0.4221099398657934)!,
-        ClipPlane.createNormalAndDistance(Vector3d.create(-1, 0, 0), -0.8221099398657934)!,
-        ClipPlane.createNormalAndDistance(vectorA, -0.8221099398657934)!]) {
+          /* */ ClipPlane.createNormalAndDistance(Vector3d.create(0, -1, 0), -0.4221099398657934)!,
+          /* */ ClipPlane.createNormalAndDistance(Vector3d.create(-1, 0, 0), -0.8221099398657934)!,
+          /* */ ClipPlane.createNormalAndDistance(vectorA, -0.8221099398657934)!]) {
           const clipPlaneA = clipPlane.clone();
           clipPlaneA.transformInPlace(transform);
           const polyfaceA = polyface.cloneTransformed(transform) as Polyface;
@@ -583,4 +678,263 @@ describe("PolyfaceClip", () => {
 
   });
 
+  it("CutFill", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const sideAngle = Angle.createDegrees(0.001);
+    const meshA = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/iModelJsonSamples/polyface/ArnoldasEarthWorks/meshA.imjs", "utf8")));
+    if (ck.testTrue(meshA instanceof IndexedPolyface, "Expected one indexed polyface in meshA") && meshA instanceof IndexedPolyface) {
+      ck.testFalse(PolyfaceQuery.isPolyfaceClosedByEdgePairing(meshA), " expect this input to have boundary issue");
+      const boundaries = PolyfaceQuery.boundaryEdges(meshA, true, true, true);
+      const range = meshA.range();
+      const rv = raggedVolume(meshA);
+      console.log("Volume estimate", rv);
+
+      const dz = range.zLength() * 2.0;
+      const dzFront = 4 * dz;
+      const dzSide = 3 * dz;
+      const dzRear = 2 * dz;
+      const dx = 2.0 * range.xLength();
+      const x1 = dx;
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, meshA, 0, 0);
+      GeometryCoreTestIO.captureRangeEdges(allGeometry, range, 0, 0, 0);
+      GeometryCoreTestIO.captureRangeEdges(allGeometry, range, 0, 0, dz);
+      GeometryCoreTestIO.captureRangeEdges(allGeometry, range, 0, 0, dzFront);
+      GeometryCoreTestIO.captureRangeEdges(allGeometry, range, 0, 0, dzSide);
+      GeometryCoreTestIO.captureRangeEdges(allGeometry, range, 0, 0, dzRear);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, boundaries, 0, 0, dz);
+
+      const partitionedIndices = PolyfaceQuery.partitionFacetIndicesByVisibilityVector(meshA, Vector3d.unitZ(), sideAngle);
+      const meshes = PolyfaceQuery.clonePartitions(meshA, partitionedIndices);
+      GeometryCoreTestIO.captureRangeEdges(allGeometry, range, 0, 0, dzFront);
+      PolyfaceQuery.markPairedEdgesInvisible(meshes[0] as IndexedPolyface, Angle.createDegrees(5));
+      PolyfaceQuery.markPairedEdgesInvisible(meshes[1] as IndexedPolyface, Angle.createDegrees(5));
+
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, meshes[0], 0, 0, dzFront);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, meshes[2], 0, 0, dzSide);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, meshes[1], 0, 0, dzRear);
+      const front = meshes[0] as IndexedPolyface;
+      const rear = meshes[1] as IndexedPolyface;
+      rear.reverseIndices();
+      const cutFill = PolyfaceClip.computeCutFill(front, rear);
+
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, cutFill.meshAUnderB, x1, 0, 0);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, cutFill.meshAOverB, x1, 0, dz);
+
+      GeometryCoreTestIO.saveGeometry(allGeometry, "ArnoldasEarthWorks", "meshA");
+    }
+    expect(ck.getNumErrors()).equals(0);
+
+  });
+  it("BoxClosure", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const builder = PolyfaceBuilder.create();
+    builder.addBox(Box.createRange(Range3d.create(Point3d.create(-1, -1, -1), Point3d.create(1, 1, 1)), true)!);
+    const facets = builder.claimPolyface();
+    const planes = [];
+    planes.push(ClipPlane.createNormalAndPointXYZXYZ(1, 0, 0, 0.5, 0, 0)!);
+    planes.push(ClipPlane.createNormalAndPointXYZXYZ(2, 3, 2, 0.5, 0, 0)!);
+    planes.push(ClipPlane.createNormalAndPointXYZXYZ(-1, -0.5, -0.5, 1, 0.8, 0.8)!);
+    let x0 = 0;
+    for (const interior of [false, true]) {
+      const clipper = ConvexClipPlaneSet.createEmpty();
+      for (const p of planes) {
+        p.setFlags(interior, interior);
+        clipper.planes.push(p);
+        const clipBuilders = ClippedPolyfaceBuilders.create(true, true, true);
+        PolyfaceClip.clipPolyfaceInsideOutside(facets, clipper, clipBuilders);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, facets, x0, 0);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, clipBuilders.claimPolyface(0, true), x0, 5);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, clipBuilders.claimPolyface(1, true), x0, 10);
+        x0 += 10.0;
+      }
+      x0 += 10;
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceClip", "BoxClosure");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("BoxClosureNonConvex", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const builder = PolyfaceBuilder.create();
+    const boxZ0 = 0.01;
+    const boxZ1 = 0.3;
+    builder.addBox(Box.createRange(Range3d.create(Point3d.create(-1, -1, boxZ0), Point3d.create(1, 1, boxZ1)), true)!);
+    const facets = builder.claimPolyface();
+    const xA = 0.2;
+    const xB = 0.4;
+    const xC = 1.2;
+    const yA = -0.3;
+    const yB = -0.1;
+    const yC = 1.2;
+    const yD = 0.4;
+    const clipData = [];
+    const contourP0 = SweepContour.createForPolygon(
+      [Point3d.create(xA, yA), Point3d.create(xB, yA), Point3d.create(xA, yB), Point3d.create(xA, yA)])!;
+    const clipperP0 = contourP0.sweepToUnionOfConvexClipPlaneSets()!;
+    const contourP1 = SweepContour.createForPolygon(
+      [Point3d.create(xA, yA), Point3d.create(xC, yA), Point3d.create(xA, yC), Point3d.create(xA, yA)])!;
+    const clipperP1 = contourP1.sweepToUnionOfConvexClipPlaneSets()!;
+
+    const dxB = 0.3;
+    const contourQ0 = SweepContour.createForPolygon(
+      [Point3d.create(xA, yA), Point3d.create(xC, yA), Point3d.create(xC, yB), Point3d.create(xB + dxB, yB), Point3d.create(xB, yC), Point3d.create(xA, yC), Point3d.create(xA, yA)])!;
+    const clipperQ0 = contourQ0.sweepToUnionOfConvexClipPlaneSets()!;
+
+    const contourQ1 = SweepContour.createForPolygon(
+      [Point3d.create(xA, yA), Point3d.create(xC, yA), Point3d.create(xC, yB), Point3d.create(xB + dxB, yB), Point3d.create(xB, yD), Point3d.create(xA, yD), Point3d.create(xA, yA)])!;
+    const clipperQ1 = contourQ1.sweepToUnionOfConvexClipPlaneSets()!;
+
+    let x0 = 0;
+    clipData.push([contourP0, clipperP0]);
+    clipData.push([contourP1, clipperP1]);
+    clipData.push([contourQ0, clipperQ0]);
+    clipData.push([contourQ1, clipperQ1]);
+
+    for (const cd of clipData) {
+      const clipper = cd[1] as UnionOfConvexClipPlaneSets;
+      const sweepContour = cd[0] as SweepContour;
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, sweepContour.curves, x0, 0, boxZ1 + 0.01);
+      const clipBuilders = ClippedPolyfaceBuilders.create(true, true, true);
+      PolyfaceClip.clipPolyfaceInsideOutside(facets, clipper, clipBuilders);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, facets, x0, 0);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, clipBuilders.claimPolyface(0, true), x0, 3);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, clipBuilders.claimPolyface(1, true), x0, 6);
+      x0 += 5;
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceClip", "BoxClosureNonConvex");
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("PolyfaceClip", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    expect(ck.getNumErrors()).equals(0);
+    const meshData = {
+      indexedMesh: {
+        point: [
+          [-47.37304994184524, -491.3657047697343, -0.320753981533926],
+          [-47.37675585504621, -491.3664080584422, -0.2828410894726403],
+          [-47.40868372656405, -487.70353786600754, -0.30898173157765996],
+          [-47.41238963953219, -487.7042411547154, -0.27106883950182237],
+          [-43.71249747485854, -491.3038417249918, -0.25523604593763594],
+          [-43.71620338782668, -491.3045450136997, -0.21732315386179835],
+          [-47.410502686863765, -486.3654011632316, -0.3046578628855059],
+          [-47.41420860006474, -486.36610445193946, -0.2667449708242202],
+          [-43.747635680483654, -487.6862194132991, -0.2442416615667753],
+          [-43.7513415934518, -487.686922702007, -0.20632876950548962],
+          [-43.7494085803628, -486.3643588316627, -0.24021521456597839],
+          [-43.75311449333094, -486.36506212037057, -0.2023023224901408],
+          [-47.364242404000834, -481.3650494045578, -0.2884034485759912],
+          [-47.36794831696898, -481.3657526932657, -0.25049055651470553],
+          [-47.35331786912866, -480.7779169315472, -0.2864855175430421],
+          [-47.3570237820968, -480.77862021978945, -0.2485726254672045],
+          [-43.70361571526155, -481.4248265787028, -0.22513469854311552],
+          [-43.70732162822969, -481.42552986741066, -0.18722180648182984],
+          [-47.25060150329955, -476.8523820149712, -0.2736169950949261],
+          [-47.25430741626769, -476.8530853036791, -0.23570410303364042],
+          [-43.692812270717695, -480.8448353074491, -0.2233610739640426],
+          [-43.69651818368584, -480.845538596157, -0.18544818190275691],
+          [-47.23427976411767, -476.36603803373873, -0.27201753927511163],
+          [-47.23798567708582, -476.3667413224466, -0.23410464719927404],
+          [-47.13739399355836, -473.8551799589768, -0.2637437052180758],
+          [-47.141099906526506, -473.8558832476847, -0.22583081314223818],
+          [-43.591263198526576, -476.96704542357475, -0.21149232835159637],
+          [-43.59496911172755, -476.9677487122826, -0.17357943627575878],
+          [-43.57535727042705, -476.48665985185653, -0.2076899910462089],
+          [-43.57906318339519, -476.4873631405644, -0.1697770989703713],
+          [-47.02064847340807, -471.3697551796213, -0.255529179572477],
+          [-47.02435438637622, -471.37045846832916, -0.21761628751119133],
+          [-43.48077054461464, -474.00656314985827, -0.18805605440866202],
+          [-43.48447645758279, -474.00726643856615, -0.15014316234737635],
+          [-46.890834543482995, -469.15438479636924, -0.248182242072877],
+          [-46.89454045644919, -469.15508808504393, -0.21026935000420527],
+          [-43.36655237781815, -471.5515877753496, -0.1686169594322564],
+          [-43.37025829101913, -471.5522910640575, -0.13070406735641882],
+          [-43.239302208178145, -469.36335787194645, -0.15128906038398932],
+          [-43.2430081212604, -469.36406116061477, -0.11337616830783828]],
+        pointIndex: [39, 40, 38, 37, 0, 40, 36, 32, 38, 0, 36, 35, 31, 32, 0, 35, 39, 37, 31, 0, 37, 38, 34, 33, 0,
+          38, 32, 26, 34, 0, 32, 31, 25, 26, 0, 31, 37, 33, 25, 0, 33, 34, 30, 29, 0, 34, 26, 24, 30, 0,
+          26, 25, 23, 24, 0, 25, 33, 29, 23, 0, 29, 30, 28, 27, 0, 30, 24, 20, 28, 0, 24, 23, 19, 20, 0,
+          23, 29, 27, 19, 0, 27, 28, 22, 21, 0, 28, 20, 16, 22, 0, 20, 19, 15, 16, 0, 19, 27, 21, 15, 0,
+          21, 22, 18, 17, 0, 22, 16, 14, 18, 0, 16, 15, 13, 14, 0, 15, 21, 17, 13, 0, 17, 18, 12, 11, 0,
+          18, 14, 8, 12, 0, 14, 13, 7, 8, 0, 13, 17, 11, 7, 0, 11, 12, 10, 9, 0, 12, 8, 4, 10, 0,
+          8, 7, 3, 4, 0, 7, 11, 9, 3, 0, 9, 10, 6, 5, 0, 10, 4, 2, 6, 0, 4, 3, 1, 2, 0,
+          3, 9, 5, 1, 0, 5, 6, 2, 1, 0, 35, 40, 39, 0, 35, 36, 40, 0],
+      },
+    };
+    if (Checker.noisy.isolateFacetsOnClipPlane) {
+      // trim out facets not contained in known problem range . . .
+      const edgeIndices = [33, 34, 25, 26];
+      const pointIndex1 = [];
+      const pointIndex = meshData.indexedMesh.pointIndex;
+      for (let i0 = 0; i0 < meshData.indexedMesh.pointIndex.length;) {
+        // i0 is first index of a new facet.
+        let i1;
+        let hits = 0;
+        for (i1 = i0; pointIndex[i1] > 0; i1++) {
+          if (edgeIndices.includes(pointIndex[i1]))
+            hits++;
+        }
+        if (hits > 0) {
+          for (let i = i0; i <= i1; i++) {
+            pointIndex1.push(pointIndex[i]);
+          }
+        }
+        i0 = i1 + 1;
+      }
+      meshData.indexedMesh.pointIndex = pointIndex1;
+    }
+    const polyface = IModelJson.Reader.parse(meshData) as Polyface;
+    if (ck.testDefined(polyface) && polyface) {
+
+      const pointA = polyface.data.point.getPoint3dAtUncheckedPointIndex(33);
+      const pointB = polyface.data.point.getPoint3dAtUncheckedPointIndex(25);
+      const edgeVector = Vector3d.createStartEnd(pointA, pointB);
+      const stepFactor = 2.0;
+      const basePoint = pointA.clone();
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface, basePoint.x, basePoint.y, basePoint.z);
+      for (const shiftDistance of [0, 0.1, -0.01]) {
+        const plane = ClipPlane.createNormalAndDistance(Vector3d.create(0.040888310883825336, 0.998909753725443, 0.022526649667507826), -475.2718707964355 + shiftDistance);
+        if (ck.testDefined(plane) && plane) {
+          const inside = PolyfaceClip.clipPolyfaceClipPlaneWithClosureFace(polyface, plane, true, true);
+          const outside = PolyfaceClip.clipPolyfaceClipPlaneWithClosureFace(polyface, plane, false, true);
+          const plane1 = plane.getPlane3d();
+          basePoint.addScaledInPlace(edgeVector, stepFactor);
+          if (plane1) {
+            const centerA = plane1.projectPointToPlane(pointA);
+            const centerB = plane1.projectPointToPlane(pointB);
+            const arc1 = Arc3d.createCenterNormalRadius(centerA, plane1.getNormalRef(), 0.2);
+            const arc2 = Arc3d.createCenterNormalRadius(centerB, plane1.getNormalRef(), 0.2);
+            GeometryCoreTestIO.captureCloneGeometry(allGeometry, arc1, basePoint.x, basePoint.y, basePoint.z);
+            GeometryCoreTestIO.captureCloneGeometry(allGeometry, arc2, basePoint.x, basePoint.y, basePoint.z);
+            GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(arc1.fractionToPoint(0.8), arc2.fractionToPoint(0.2)), basePoint.x, basePoint.y, basePoint.z);
+          }
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, inside, basePoint.x, basePoint.y, basePoint.z);
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, outside, basePoint.x, basePoint.y, basePoint.z);
+        }
+      }
+      GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceClip", "CutOnEdge");
+    }
+    expect(ck.getNumErrors()).equals(0);
+  });
+
 });
+/** Estimate a volume for a mesh that may be missing side faces.
+ * * Compute volume "between" the mesh facets and the bottom plane of the mesh range
+ * * Compute volume "between" the mesh facets and the top plane of the mesh range.
+ * * The return structure contains
+ *    * a volume estimate
+ *    * a relative error estimate based on the difference between upper and lower volumes.
+ *
+ */
+function raggedVolume(mesh: Polyface): { volume: number, volumeDifferenceRelativeError: number } {
+  const range = mesh.range();
+  const xyPlane0 = Plane3dByOriginAndUnitNormal.createXYPlane(range.low);
+  const xyPlane1 = Plane3dByOriginAndUnitNormal.createXYPlane(range.high);
+  const volume0 = PolyfaceQuery.sumVolumeBetweenFacetsAndPlane(mesh, xyPlane0);
+  const volume1 = PolyfaceQuery.sumVolumeBetweenFacetsAndPlane(mesh, xyPlane1);
+  const volumeDifference = Math.abs(volume1.volume - volume0.volume);
+  return { volume: volume0.volume, volumeDifferenceRelativeError: Geometry.safeDivideFraction(volumeDifference, Math.abs(volume0.volume), 1000.0) };
+}

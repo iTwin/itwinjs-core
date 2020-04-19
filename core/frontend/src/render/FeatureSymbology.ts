@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Rendering */
+/** @packageDocumentation
+ * @module Rendering
+ */
 
 import {
   BatchType,
@@ -25,6 +27,8 @@ function copyIdSetToUint32Set(dst: Id64.Uint32Set, src?: Set<string>): void {
       dst.addId(id);
   }
 }
+
+// cspell:ignore subcat subcats
 
 /** Contains types that enable an application to customize how [Feature]($common)s are drawn within a [[Viewport]].
  * @public
@@ -215,7 +219,7 @@ export namespace FeatureSymbology {
     public isAlwaysDrawnExclusive = false;
     /** If true, the always-drawn elements are drawn even if their subcategories are not visible.
      * @see [[setAlwaysDrawn]]
-     * @alpha
+     * @beta
      */
     public alwaysDrawnIgnoresSubCategory = true;
 
@@ -238,6 +242,8 @@ export namespace FeatureSymbology {
     protected readonly _subCategoryOverrides = new Id64.Uint32Map<Appearance>();
     /** The set of displayed subcategories. Geometry belonging to subcategories not included in this set will not be drawn. @internal */
     protected readonly _visibleSubCategories = new Id64.Uint32Set();
+    /** Display priorities assigned to subcategories, possibly overridden by display style. Only applicable for plan projection models. @internal */
+    protected readonly _subCategoryPriorities = new Id64.Uint32Map<number>();
 
     /** Per-model, a set of subcategories whose visibility should be inverted for elements within that model.
      * Populated by Viewport.
@@ -469,17 +475,24 @@ export namespace FeatureSymbology {
     /** Specify overrides for all geometry originating from the specified animation node.
      * @param id The Id of the animation node.
      * @param app The symbology overrides.
-     * @note These overides do not take precedence over element overrides.
+     * @note These overrides do not take precedence over element overrides.
      */
     public overrideAnimationNode(id: number, app: Appearance): void { this.animationNodeOverrides.set(id, app); }
 
     /** Defines a default Appearance to be applied to any [Feature]($common) *not* explicitly overridden.
-     * @param appearance The symbology overides.
+     * @param appearance The symbology overrides.
      * @param replaceExisting Specifies whether to replace the current default overrides if they are already defined.
      */
     public setDefaultOverrides(appearance: Appearance, replaceExisting: boolean = true): void {
       if (replaceExisting || !appearance.overridesSymbology)
         this._defaultOverrides = appearance;
+    }
+
+    /** Get the display priority of a subcategory. This is only relevant when using [PlanProjectionSettings]($common).
+     * @internal
+     */
+    public getSubCategoryPriority(idLo: number, idHi: number): number {
+      return this._subCategoryPriorities.get(idLo, idHi) ?? 0;
     }
 
     /** Initialize these Overrides based on a specific view.
@@ -502,9 +515,6 @@ export namespace FeatureSymbology {
 
       if (undefined !== viewport.alwaysDrawn)
         this.setAlwaysDrawnSet(viewport.alwaysDrawn, viewport.isAlwaysDrawnExclusive);
-
-      if (undefined !== view.scheduleScript)
-        view.scheduleScript.getSymbologyOverrides(this, viewport.scheduleTime);
 
       if (undefined !== viewport.featureOverrideProvider)
         viewport.featureOverrideProvider.addFeatureOverrides(this, viewport);
@@ -542,8 +552,29 @@ export namespace FeatureSymbology {
             const idLo = Id64.getLowerUint32(subCategoryId);
             const idHi = Id64.getUpperUint32(subCategoryId);
             this._visibleSubCategories.add(idLo, idHi);
+
+            const app = view.iModel.subcategories.getSubCategoryAppearance(subCategoryId);
+            if (undefined !== app)
+              this._subCategoryPriorities.set(idLo, idHi, app.priority);
           }
         }
+      }
+
+      const style = view.displayStyle;
+      const script = style.scheduleScript;
+      if (script)
+        script.getSymbologyOverrides(this, style.settings.timePoint ?? 0);
+
+      if (!view.is3d())
+        return;
+
+      const planProjectionSettings = view.getDisplayStyle3d().settings.planProjectionSettings;
+      if (undefined === planProjectionSettings)
+        return;
+
+      for (const [modelId, projSettings] of planProjectionSettings) {
+        if (undefined !== projSettings.transparency)
+          this.overrideModel(modelId, Appearance.fromJSON({ transparency: projSettings.transparency }));
       }
     }
 
@@ -555,6 +586,9 @@ export namespace FeatureSymbology {
           const app = Appearance.fromSubCategoryOverride(ovr);
           if (app.overridesSymbology)
             this._subCategoryOverrides.set(idLo, idHi, app);
+
+          if (undefined !== ovr.priority)
+            this._subCategoryPriorities.set(idLo, idHi, ovr.priority);
         }
       };
 

@@ -1,10 +1,12 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Utilities */
+/** @packageDocumentation
+ * @module Utilities
+ */
 
-/** Various IconSpec utilities.
+/** Creates an IconSpec with an SVG source and gets the SVG source from an IconSpec.
  * @beta
  */
 export class IconSpecUtilities {
@@ -18,12 +20,10 @@ export class IconSpecUtilities {
 
   /** Get the SVG Source from an IconSpec */
   public static getSvgSource(iconSpec: string): string | undefined {
-    let svgSource: string | undefined;
-
     if (iconSpec.startsWith(IconSpecUtilities.SVG_PREFIX) && iconSpec.length > 4) {
-      svgSource = iconSpec.slice(4);
+      return iconSpec.slice(4);
     }
 
-    return svgSource;
+    return undefined;
   }
 }

@@ -1,19 +1,18 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-import { expect } from "chai";
-import { render, cleanup } from "@testing-library/react";
-
-import { HierarchyBuilder, initializeAsync, terminate } from "@bentley/presentation-testing";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
 import { Ruleset } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
-
-import TestUtils from "../TestUtils";
-import { ModelSelectorWidget, ModelSelectorWidgetControl, WidgetProps, WidgetDef, ConfigurableUiControlType } from "../../ui-framework";
+import { HierarchyBuilder, initialize, terminate } from "@bentley/presentation-testing";
+import { cleanup, render } from "@testing-library/react";
+import { expect } from "chai";
+import * as path from "path";
+import * as React from "react";
+import { ConfigurableUiControlType, ModelSelectorWidget, ModelSelectorWidgetControl, WidgetDef, WidgetProps } from "../../ui-framework";
 import { ModelSelectorDataProvider } from "../../ui-framework/pickers/ModelSelector/ModelSelectorDefinitions";
+import TestUtils from "../TestUtils";
 
 describe("ModelSelector", () => {
 
@@ -23,7 +22,11 @@ describe("ModelSelector", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
-    await initializeAsync();
+    await initialize({
+      backendProps: {
+        cacheDirectory: path.join("lib", "test", "cache"),
+      },
+    });
   });
 
   after(() => {
@@ -32,12 +35,12 @@ describe("ModelSelector", () => {
   });
 
   beforeEach(async () => {
-    imodel = await IModelConnection.openSnapshot(testIModelPath);
-    hierarchyBuilder = new HierarchyBuilder(imodel);
+    imodel = await SnapshotConnection.openFile(testIModelPath);
+    hierarchyBuilder = new HierarchyBuilder({ imodel });
   });
 
   afterEach(async () => {
-    await imodel.closeSnapshot();
+    await imodel.close();
   });
 
   describe("Model", () => {
@@ -49,7 +52,7 @@ describe("ModelSelector", () => {
     });
 
     it("generates correct models' hierarchy", async () => {
-      const builder = new HierarchyBuilder(imodel);
+      const builder = new HierarchyBuilder({ imodel });
       const hierarchy = await builder.createHierarchy(ruleset);
       expect(hierarchy).to.matchSnapshot();
     });
@@ -87,7 +90,7 @@ describe("ModelSelector", () => {
     afterEach(cleanup);
 
     it("should render", async () => {
-      const component = render(<ModelSelectorWidget iModelConnection={imodel} />);
+      const component = render(<ModelSelectorWidget iModelConnection={imodel} />); // tslint:disable-line:deprecation
       const widget = component.getByTestId("model-selector-widget");
       expect(widget).to.exist;
     });

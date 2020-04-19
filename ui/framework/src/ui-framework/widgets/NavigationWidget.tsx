@@ -1,12 +1,14 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Widget */
+/** @packageDocumentation
+ * @module Widget
+ */
 
 import * as React from "react";
 
-import { IModelConnection, PluginUiManager, UiProviderRegisteredEventArgs } from "@bentley/imodeljs-frontend";
+import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { UiError } from "@bentley/ui-abstract";
 import { CommonProps } from "@bentley/ui-core";
 import { ViewportComponentEvents, ViewClassFullNameChangedEventArgs } from "@bentley/ui-components";
@@ -23,14 +25,14 @@ import { ContentControlActivatedEventArgs } from "../content/ContentControl";
 import { UiShowHideManager } from "../utils/UiShowHideManager";
 import { UiFramework } from "../UiFramework";
 
-/** A Navigation Widget normally displayed in the top right zone in the 9-Zone Layout system.
- * @public
+/** Definition of a Navigation Widget normally displayed in the top right zone in the 9-Zone Layout system.
+ *  @public @deprecated use NavigationWidgetComposer instead
  */
 export class NavigationWidgetDef extends ToolbarWidgetDefBase {
   private _navigationAidId: string;
   private _imodel: IModelConnection | undefined;
   private _navigationAidControl: NavigationAidControl | undefined;
-  private _reactElement: React.ReactNode;
+  private _reactNode: React.ReactNode;
 
   constructor(props: NavigationWidgetProps) {
     super(props);
@@ -44,12 +46,18 @@ export class NavigationWidgetDef extends ToolbarWidgetDefBase {
     this.widgetBaseName = `[${activeStageName}]NavigationWidget`;
   }
 
-  public get reactElement(): React.ReactNode {
+  public get reactNode(): React.ReactNode {
     // istanbul ignore else
-    if (!this._reactElement)
-      this._reactElement = <NavigationWidgetWithDef navigationWidgetDef={this} />;
+    if (!this._reactNode)
+      this._reactNode = <NavigationWidgetWithDef navigationWidgetDef={this} />;
 
-    return this._reactElement;
+    return this._reactNode;
+  }
+
+  /** @deprecated use reactNode */
+  // istanbul ignore next
+  public get reactElement(): React.ReactNode {
+    return this.reactNode;
   }
 
   public renderCornerItem(): React.ReactNode {
@@ -59,7 +67,10 @@ export class NavigationWidgetDef extends ToolbarWidgetDefBase {
 
     // istanbul ignore else
     if (!this._navigationAidControl && this._navigationAidId) {
-      this._navigationAidControl = ConfigurableUiManager.createControl(this._navigationAidId, this._navigationAidId, { imodel: this._imodel }) as NavigationAidControl;
+      const activeContentControl = ContentViewManager.getActiveContentControl();
+      const viewport = activeContentControl ? activeContentControl.viewport : undefined;
+
+      this._navigationAidControl = ConfigurableUiManager.createControl(this._navigationAidId, this._navigationAidId, { imodel: this._imodel, viewport }) as NavigationAidControl;
       if (this._navigationAidControl.getType() !== ConfigurableUiControlType.NavigationAid) {
         throw new UiError(UiFramework.loggerCategory(this), `renderCornerItem: navigationAidId '${this._navigationAidId}' is registered to a control that is NOT a NavigationAid`);
       }
@@ -76,7 +87,7 @@ export class NavigationWidgetDef extends ToolbarWidgetDefBase {
 
       return (
         <div style={divStyle}>
-          {this._navigationAidControl.reactElement}
+          {this._navigationAidControl.reactNode}
         </div>
       );
     }
@@ -92,7 +103,7 @@ export class NavigationWidgetDef extends ToolbarWidgetDefBase {
 }
 
 /** Properties for the [[NavigationWidget]] React component.
- * @public
+ *  @public @deprecated use NavigationWidgetComposer instead
  */
 export interface NavigationWidgetPropsEx extends NavigationWidgetProps, CommonProps {
   iModelConnection?: IModelConnection;
@@ -104,21 +115,21 @@ export interface NavigationWidgetPropsEx extends NavigationWidgetProps, CommonPr
  * @internal
  */
 interface NavigationWidgetState {
-  navigationWidgetDef: NavigationWidgetDef;
+  navigationWidgetDef: NavigationWidgetDef; // tslint:disable-line:deprecation
 }
 
 /** Navigation Widget React component.
- * @public
+ *  @public @deprecated use NavigationWidgetComposer instead
  */
-export class NavigationWidget extends React.Component<NavigationWidgetPropsEx, NavigationWidgetState> {
+export class NavigationWidget extends React.Component<NavigationWidgetPropsEx, NavigationWidgetState> { // tslint:disable-line:deprecation
 
   /** @internal */
   public readonly state: Readonly<NavigationWidgetState>;
 
-  constructor(props: NavigationWidgetPropsEx) {
+  constructor(props: NavigationWidgetPropsEx) { // tslint:disable-line:deprecation
     super(props);
 
-    this.state = { navigationWidgetDef: new NavigationWidgetDef(props) };
+    this.state = { navigationWidgetDef: new NavigationWidgetDef(props) }; // tslint:disable-line:deprecation
   }
 
   /** Adds listeners */
@@ -152,9 +163,9 @@ export class NavigationWidget extends React.Component<NavigationWidgetPropsEx, N
     });
   }
 
-  public componentDidUpdate(prevProps: NavigationWidgetPropsEx, _prevState: NavigationWidgetState) {
+  public componentDidUpdate(prevProps: NavigationWidgetPropsEx, _prevState: NavigationWidgetState) { // tslint:disable-line:deprecation
     if (this.props !== prevProps) {
-      this.setState((_, props) => ({ navigationWidgetDef: new NavigationWidgetDef(props) }));
+      this.setState((_, props) => ({ navigationWidgetDef: new NavigationWidgetDef(props) })); // tslint:disable-line:deprecation
     }
   }
 
@@ -174,7 +185,7 @@ export class NavigationWidget extends React.Component<NavigationWidgetPropsEx, N
 /** Properties for the [[NavigationWidgetWithDef]] component.
  */
 interface Props extends CommonProps {
-  navigationWidgetDef: NavigationWidgetDef;
+  navigationWidgetDef: NavigationWidgetDef; // tslint:disable-line:deprecation
   horizontalToolbar?: React.ReactNode;
   verticalToolbar?: React.ReactNode;
 }
@@ -191,10 +202,6 @@ class NavigationWidgetWithDef extends React.Component<Props, NavigationWidgetWit
 
   constructor(props: Props) {
     super(props);
-
-    if (PluginUiManager.hasRegisteredProviders) {
-      this.props.navigationWidgetDef.generateMergedItemLists();
-    }
 
     const horizontalToolbar = (this.props.horizontalToolbar) ? this.props.horizontalToolbar : this.props.navigationWidgetDef.renderHorizontalToolbar();
     const verticalToolbar = (this.props.verticalToolbar) ? this.props.verticalToolbar : this.props.navigationWidgetDef.renderVerticalToolbar();
@@ -213,20 +220,12 @@ class NavigationWidgetWithDef extends React.Component<Props, NavigationWidgetWit
     this.setState({ cornerItem: navigationAid });
   }
 
-  private _handleUiProviderRegisteredEvent = (_args: UiProviderRegisteredEventArgs): void => {
-    // create, merge, and cache ItemList from plugins
-    this.props.navigationWidgetDef.generateMergedItemLists();
-    this.reloadToolbars();
-  }
-
   public componentDidMount() {
     FrontstageManager.onNavigationAidActivatedEvent.addListener(this._handleNavigationAidActivatedEvent);
-    PluginUiManager.onUiProviderRegisteredEvent.addListener(this._handleUiProviderRegisteredEvent);
   }
 
   public componentWillUnmount() {
     FrontstageManager.onNavigationAidActivatedEvent.removeListener(this._handleNavigationAidActivatedEvent);
-    PluginUiManager.onUiProviderRegisteredEvent.removeListener(this._handleUiProviderRegisteredEvent);
   }
 
   public componentDidUpdate(prevProps: Props) {

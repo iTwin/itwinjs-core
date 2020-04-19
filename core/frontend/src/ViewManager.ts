@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Views */
+/** @packageDocumentation
+ * @module Views
+ */
 import { BentleyStatus, BeEvent, BeTimePoint, BeUiEvent, Id64Arg } from "@bentley/bentleyjs-core";
 import { GeometryStreamProps } from "@bentley/imodeljs-common";
 import { HitDetail } from "./HitDetail";
@@ -12,7 +14,7 @@ import { EventController } from "./tools/EventController";
 import { BeButtonEvent, EventHandled } from "./tools/Tool";
 import { DecorateContext } from "./ViewContext";
 import { ScreenViewport } from "./Viewport";
-import { TileTree, TileTreeSet } from "./tile/TileTree";
+import { TileTree, TileTreeSet } from "./tile/internal";
 
 /** Interface for drawing "decorations" into, or on top of, the active [[Viewport]]s.
  * Decorators generate [[Decorations]].
@@ -84,8 +86,19 @@ export class ViewManager {
   private _selectedView?: ScreenViewport;
   private _invalidateScenes = false;
   private _skipSceneCreation = false;
+  private _doIdleWork = false;
   /** @internal */
   public readonly toolTipProviders: ToolTipProvider[] = [];
+
+  private _beginIdleWork() {
+    const idleWork = () => {
+      if (this._viewports.length > 0)
+        return;
+      if (IModelApp.renderSystem.doIdleWork())
+        setTimeout(idleWork, 1);
+    };
+    setTimeout(idleWork, 1);
+  }
 
   /** @internal */
   public onInitialized() {
@@ -94,6 +107,11 @@ export class ViewManager {
     this.addDecorator(IModelApp.accuDraw);
     this.addDecorator(IModelApp.toolAdmin);
     this.cursor = "default";
+
+    const options = IModelApp.renderSystem.options;
+    this._doIdleWork = true === options.doIdleWork;
+    if (this._doIdleWork)
+      this._beginIdleWork();
   }
 
   /** @internal */
@@ -269,6 +287,9 @@ export class ViewManager {
     if (disposeOfViewport)
       vp.dispose();
 
+    if (this._doIdleWork && this._viewports.length === 0)
+      this._beginIdleWork();
+
     return BentleyStatus.SUCCESS;
   }
 
@@ -280,9 +301,9 @@ export class ViewManager {
   /** @internal */
   public onSelectionSetChanged(_iModel: IModelConnection) { this.forEachViewport((vp) => vp.markSelectionSetDirty()); }
   /** @internal */
-  public invalidateViewportScenes(): void { this.forEachViewport((vp) => vp.sync.invalidateScene()); }
+  public invalidateViewportScenes(): void { this.forEachViewport((vp) => vp.invalidateScene()); }
   /** @internal */
-  public validateViewportScenes(): void { this.forEachViewport((vp) => vp.sync.setValidScene()); }
+  public validateViewportScenes(): void { this.forEachViewport((vp) => vp.setValidScene()); }
 
   /** @internal */
   public invalidateScenes(): void {
@@ -316,6 +337,7 @@ export class ViewManager {
   }
 
   /** Purge TileTrees that haven't been drawn since the specified time point and are not currently in use by any ScreenViewport.
+   * Intended strictly for debugging purposes - TileAdmin takes care of properly purging.
    * @internal
    */
   public purgeTileTrees(olderThan: BeTimePoint): void {

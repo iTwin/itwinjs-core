@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /* tslint:disable:no-direct-imports */
 
@@ -8,13 +8,13 @@ import { expect } from "chai";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import * as faker from "faker";
 import { createRandomTreeNodeItem } from "../_helpers/UiComponents";
-import { createRandomECInstanceNodeKey, createRandomNodePathElement } from "@bentley/presentation-common/lib/test/_helpers/random";
-import { NodePathElement } from "@bentley/presentation-common";
+import { createRandomECInstancesNodeKey, createRandomNodePathElement } from "@bentley/presentation-common/lib/test/_helpers/random";
+import { NodePathElement, LabelDefinition } from "@bentley/presentation-common";
 import { PageOptions } from "@bentley/ui-components";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { FilteredPresentationTreeDataProvider } from "../../tree/FilteredDataProvider";
-import { IPresentationTreeDataProvider } from "../../tree/IPresentationTreeDataProvider";
-import { createTreeNodeItem } from "../../tree/Utils";
+import { FilteredPresentationTreeDataProvider } from "../../presentation-components/tree/FilteredDataProvider";
+import { IPresentationTreeDataProvider } from "../../presentation-components/tree/IPresentationTreeDataProvider";
+import { createTreeNodeItem } from "../../presentation-components/tree/Utils";
 
 describe("FilteredTreeDataProvider", () => {
 
@@ -29,25 +29,25 @@ describe("FilteredTreeDataProvider", () => {
   const nodePaths: NodePathElement[] = [];
 
   nodePaths[0] = createRandomNodePathElement();
-  nodePaths[0].node.label = "A-1";
+  nodePaths[0].node.label = LabelDefinition.fromLabelString("A-1");
 
   nodePaths[1] = createRandomNodePathElement();
-  nodePaths[1].node.label = "A-2";
+  nodePaths[1].node.label = LabelDefinition.fromLabelString("A-2");
 
   nodePaths[0].children = [];
   nodePaths[0].children[0] = createRandomNodePathElement();
-  nodePaths[0].children[0].node.label = "A-1-1";
+  nodePaths[0].children[0].node.label = LabelDefinition.fromLabelString("A-1-1");
 
   nodePaths[1].children = [];
   nodePaths[1].children[0] = createRandomNodePathElement();
-  nodePaths[1].children[0].node.label = "A-2-1";
+  nodePaths[1].children[0].node.label = LabelDefinition.fromLabelString("A-2-1");
 
   nodePaths[1].children[1] = createRandomNodePathElement();
-  nodePaths[1].children[1].node.label = "A-2-2";
+  nodePaths[1].children[1].node.label = LabelDefinition.fromLabelString("A-2-2");
 
   nodePaths[1].children[1].children = [];
   nodePaths[1].children[1].children[0] = createRandomNodePathElement();
-  nodePaths[1].children[1].children[0].node.label = "A-2-2-1";
+  nodePaths[1].children[1].children[0].node.label = LabelDefinition.fromLabelString("A-2-2-1");
 
   let provider: FilteredPresentationTreeDataProvider;
   let filter: string;
@@ -58,7 +58,11 @@ describe("FilteredTreeDataProvider", () => {
   beforeEach(() => {
     parentProviderMock.reset();
     filter = faker.random.word();
-    provider = new FilteredPresentationTreeDataProvider(parentProviderMock.object, filter, nodePaths);
+    provider = new FilteredPresentationTreeDataProvider({
+      parentDataProvider: parentProviderMock.object,
+      filter,
+      paths: nodePaths,
+    });
   });
 
   describe("filter", () => {
@@ -151,7 +155,7 @@ describe("FilteredTreeDataProvider", () => {
   describe("getNodeKey", () => {
 
     it("returns node key", () => {
-      const key = createRandomECInstanceNodeKey();
+      const key = createRandomECInstancesNodeKey();
       const treeNode = createRandomTreeNodeItem(key);
 
       parentProviderMock.setup((x) => x.getNodeKey(treeNode)).returns(() => key);
@@ -165,25 +169,25 @@ describe("FilteredTreeDataProvider", () => {
   const filteredNodePaths: NodePathElement[] = [];
 
   filteredNodePaths[0] = createRandomNodePathElement();
-  filteredNodePaths[0].node.label = "A-1";
+  filteredNodePaths[0].node.label = LabelDefinition.fromLabelString("A-1");
   filteredNodePaths[0].filteringData = { matchesCount: 0, childMatchesCount: 1 };
 
   filteredNodePaths[0].children = [];
   filteredNodePaths[0].children[0] = createRandomNodePathElement();
-  filteredNodePaths[0].children[0].node.label = "A-1-1 test";
+  filteredNodePaths[0].children[0].node.label = LabelDefinition.fromLabelString("A-1-1 test");
   filteredNodePaths[0].children[0].filteringData = { matchesCount: 1, childMatchesCount: 0 };
 
   filteredNodePaths[1] = createRandomNodePathElement();
-  filteredNodePaths[1].node.label = "A-2 test";
+  filteredNodePaths[1].node.label = LabelDefinition.fromLabelString("A-2 test");
   filteredNodePaths[1].filteringData = { matchesCount: 1, childMatchesCount: 0 };
 
   filteredNodePaths[1].children = [];
   filteredNodePaths[1].children[0] = createRandomNodePathElement();
-  filteredNodePaths[1].children[0].node.label = "A-2-1";
+  filteredNodePaths[1].children[0].node.label = LabelDefinition.fromLabelString("A-2-1");
   filteredNodePaths[1].children[0].filteringData = { matchesCount: 0, childMatchesCount: 0 };
 
   filteredNodePaths[1].children[1] = createRandomNodePathElement();
-  filteredNodePaths[1].children[1].node.label = "A-2-2";
+  filteredNodePaths[1].children[1].node.label = LabelDefinition.fromLabelString("A-2-2");
   filteredNodePaths[1].children[1].filteringData = { matchesCount: 0, childMatchesCount: 0 };
 
   describe("countFilteringResults", () => {
@@ -194,14 +198,19 @@ describe("FilteredTreeDataProvider", () => {
     it("doesn't count if node paths don't have filtering data", () => {
       const paths: NodePathElement[] = [];
       paths[0] = createRandomNodePathElement();
-      paths[0].node.label = "A-1";
+      paths[0].node.label = LabelDefinition.fromLabelString("A-1");
+      paths[0].filteringData = undefined;
       expect(provider.countFilteringResults(paths)).to.eq(0);
     });
   });
 
   describe("getActiveMatch", () => {
     it("returns correct match", () => {
-      provider = new FilteredPresentationTreeDataProvider(parentProviderMock.object, constantFilter, filteredNodePaths);
+      provider = new FilteredPresentationTreeDataProvider({
+        parentDataProvider: parentProviderMock.object,
+        filter: constantFilter,
+        paths: filteredNodePaths,
+      });
       const result = provider.getActiveMatch(2);
 
       expect(result).to.not.be.undefined;
@@ -210,7 +219,11 @@ describe("FilteredTreeDataProvider", () => {
     });
 
     it("returns undefined when index is 0 or lower", () => {
-      provider = new FilteredPresentationTreeDataProvider(parentProviderMock.object, constantFilter, filteredNodePaths);
+      provider = new FilteredPresentationTreeDataProvider({
+        parentDataProvider: parentProviderMock.object,
+        filter: constantFilter,
+        paths: filteredNodePaths,
+      });
       const result = provider.getActiveMatch(0);
       expect(result).to.be.undefined;
     });

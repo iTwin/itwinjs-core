@@ -1,37 +1,114 @@
 sep=;
 Release Tag;API Item
-beta;AbstractCommandItemProps 
-beta;AbstractConditionalItemProps 
-beta;AbstractGroupItemProps 
-beta;AbstractIconProps
-beta;AbstractItemProps 
+beta;AbstractActionItemProps 
 beta;AbstractMenuItemProps 
-beta;AbstractToolbarProps 
-beta;AbstractToolItemProps 
-alpha;ActionItemInsertSpec 
-beta;AnyItemProps = AbstractCommandItemProps | AbstractToolItemProps | AbstractGroupItemProps
-beta;AnyToolbarItemProps = AnyItemProps | AbstractConditionalItemProps
+beta;AbstractStatusBarActionItem 
+beta;AbstractStatusBarCustomItem 
+beta;AbstractStatusBarItem 
+beta;AbstractStatusBarItemUtilities
+beta;AbstractStatusBarLabelItem 
+beta;AbstractToolbarProps
+beta;AbstractWidgetProps 
+beta;ActionButton 
+beta;ArrayValue 
+beta;BackstageActionItem 
+beta;BackstageItem = BackstageActionItem | BackstageStageLauncher
+internal;BackstageItemsChangedArgs
+internal;BackstageItemsManager
+beta;BackstageItemType
+beta;BackstageItemUtilities
+beta;BackstageStageLauncher 
 beta;BadgeType
-beta;BaseItemState
+beta;BaseDialogItem
+beta;BasePropertyEditorParams
+beta;BasePropertyValue
+beta;class BaseQuantityDescription 
+beta;ButtonGroupEditorParams 
+beta;ColorEditorParams 
 beta;CommandHandler
-alpha;ConditionalDisplaySpecification
-beta;ConditionalDisplayType
-beta;DescriptionProps
+beta;CommonBackstageItem 
+beta;CommonItemProps
+beta;CommonStatusBarItem = AbstractStatusBarActionItem | AbstractStatusBarLabelItem | AbstractStatusBarCustomItem
+beta;CommonToolbarItem = ActionButton | GroupButton | CustomButtonDefinition
+beta;ConditionalBooleanValue
+beta;ConditionalStringValue
+beta;CustomButtonDefinition 
+beta;CustomFormattedNumberParams 
+beta;DialogItem 
+beta;DialogItemsChangedArgs
+beta;DialogItemsManager 
+beta;DialogItemSyncArgs
+beta;DialogItemValue
+beta;DialogPropertyItem
+beta;DialogPropertySyncItem 
+beta;DialogRow
+beta;EditorPosition
+beta;EnumerationChoice
+beta;EnumerationChoicesInfo
 internal;getClassName: (obj: any) => string
-beta;GroupButtonDirection
-alpha;GroupItemInsertSpec 
+beta;GroupButton 
+beta;IconDefinition
+alpha;IconEditorParams 
+beta;IconListEditorParams 
 beta;IconSpecUtilities
-alpha;InsertSpec
-beta;LabelProps
+beta;InputEditorSizeParams 
+beta;isAbstractStatusBarActionItem: (item: CommonStatusBarItem) => item is AbstractStatusBarActionItem
+beta;isAbstractStatusBarCustomItem: (item: CommonStatusBarItem) => item is AbstractStatusBarCustomItem
+beta;isAbstractStatusBarLabelItem: (item: CommonStatusBarItem) => item is AbstractStatusBarLabelItem
+beta;isActionItem: (item: BackstageItem) => item is BackstageActionItem
+beta;isButtonGroupEditorParams: (item: BasePropertyEditorParams) => item is ButtonGroupEditorParams
+beta;isColorEditorParams: (item: BasePropertyEditorParams) => item is ColorEditorParams
+beta;isCustomFormattedNumberParams: (item: BasePropertyEditorParams) => item is CustomFormattedNumberParams
+beta;isIconListEditorParams: (item: BasePropertyEditorParams) => item is IconListEditorParams
+beta;isInputEditorSizeParams: (item: BasePropertyEditorParams) => item is InputEditorSizeParams
+beta;isStageLauncher: (item: BackstageItem) => item is BackstageStageLauncher
+beta;isSuppressLabelEditorParams: (item: BasePropertyEditorParams) => item is SuppressLabelEditorParams
+beta;LinkElementsInfo
 beta;OnCancelFunc = () => void
 beta;OnItemExecutedFunc = (item: any) => void
 beta;OnNumberCommitFunc = (value: number) => void
+beta;ParseResults
+beta;Primitives
+beta;PrimitiveValue 
+beta;PropertyChangeResult
+beta;PropertyChangeStatus
+beta;PropertyDescription
+beta;PropertyEditorInfo
+beta;PropertyEditorParams = BasePropertyEditorParams
+beta;PropertyEditorParamTypes
+beta;PropertyRecord
+beta;PropertyValue = PrimitiveValue | StructValue | ArrayValue
+beta;PropertyValueFormat
+beta;ProvidedItem
 public;RelativePosition
+beta;StagePanelLocation
+beta;StagePanelSection
+beta;StageUsage
+beta;StatusBarItemId = CommonStatusBarItem["id"]
+internal;StatusBarItemsChangedArgs
+internal;StatusBarItemsManager
+beta;StatusBarLabelSide
+beta;StatusBarSection
 beta;StringGetter = () => string
-beta;SyncUiProps
-alpha;ToolbarItemInsertSpec 
-alpha;ToolbarItemType
-beta;TooltipProps
+beta;StructValue 
+beta;SuppressLabelEditorParams 
+beta;SyncPropertiesChangeEvent 
+beta;SyncPropertiesChangeEventArgs
+beta;ToolbarItem 
+beta;ToolbarItemId = CommonToolbarItem["id"]
+internal;ToolbarItemsChangedArgs
+internal;ToolbarItemsManager
+beta;ToolbarItemUtilities
+beta;ToolbarOrientation
+beta;ToolbarUsage
 public;UiAbstract
 beta;UiAdmin
+beta;class UiDataProvider
 public;UiError 
+beta;UiItemProviderRegisteredEventArgs
+beta;UiItemsApplication
+beta;UiItemsApplicationAction
+beta;UiItemsArbiter
+beta;UiItemsManager
+beta;UiItemsProvider
+beta;WidgetState

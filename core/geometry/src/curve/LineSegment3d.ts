@@ -1,9 +1,11 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module Curve */
+/** @packageDocumentation
+ * @module Curve
+ */
 
 import { Geometry, BeJSONFunctions, PlaneAltitudeEvaluator } from "../Geometry";
 import { Order2Bezier } from "../numerics/BezierPolynomials";
@@ -17,7 +19,7 @@ import { StrokeOptions } from "./StrokeOptions";
 import { CurvePrimitive, AnnounceNumberNumberCurvePrimitive } from "./CurvePrimitive";
 import { CurveExtendOptions, VariantCurveExtendParameter } from "./CurveExtendMode";
 import { GeometryQuery } from "./GeometryQuery";
-import { CurveLocationDetail, CurveIntervalRole } from "./CurveLocationDetail";
+import { CurveLocationDetail, CurveIntervalRole} from "./CurveLocationDetail";
 import { LineString3d } from "./LineString3d";
 import { Clipper } from "../clipping/ClipUtils";
 /* tslint:disable:variable-name no-empty*/
@@ -317,6 +319,6 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
    * @param fractionB [in] end fraction
    */
   public clonePartialCurve(fractionA: number, fractionB: number): CurvePrimitive | undefined {
-    return LineString3d.create(this.fractionToPoint(fractionA), this.fractionToPoint(fractionB));
+    return LineSegment3d.create(this.fractionToPoint(fractionA), this.fractionToPoint(fractionB));
   }
 }

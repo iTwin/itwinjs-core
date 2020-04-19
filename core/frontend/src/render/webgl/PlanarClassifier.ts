@@ -1,59 +1,49 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module WebGL */
+/** @packageDocumentation
+ * @module WebGL
+ */
 import { GL } from "./GL";
-import { dispose, BeTimePoint } from "@bentley/bentleyjs-core";
+import { dispose } from "@bentley/bentleyjs-core";
 import { FrameBuffer } from "./FrameBuffer";
-import { RenderClipVolume, RenderMemory, RenderGraphic, RenderPlanarClassifier } from "../System";
+import { RenderGraphic } from "../RenderGraphic";
+import { RenderPlanarClassifier } from "../RenderPlanarClassifier";
+import { RenderMemory } from "../RenderMemory";
 import { Texture, TextureHandle } from "./Texture";
 import { Target } from "./Target";
 import { SceneContext } from "../../ViewContext";
-import { TileTree } from "../../tile/TileTree";
-import { Tile } from "../../tile/Tile";
+import { GraphicsCollectorDrawArgs, TileTreeReference } from "../../tile/internal";
 import { Frustum, FrustumPlanes, RenderTexture, RenderMode, SpatialClassificationProps, ViewFlags, ColorDef } from "@bentley/imodeljs-common";
 import { ViewportQuadGeometry, CombineTexturesGeometry } from "./CachedGeometry";
-import { Plane3dByOriginAndUnitNormal, Point3d, Vector3d, Transform, Matrix4d, Map4d } from "@bentley/geometry-core";
+import { Plane3dByOriginAndUnitNormal, Point3d, Vector3d, Matrix4d } from "@bentley/geometry-core";
 import { System } from "./System";
 import { TechniqueId } from "./TechniqueId";
 import { getDrawParams } from "./ScratchDrawParams";
 import { BatchState, BranchStack } from "./BranchState";
 import { Batch, Branch } from "./Graphic";
 import { RenderState } from "./RenderState";
-import { DrawCommands, RenderCommands } from "./DrawCommand";
+import { DrawCommands } from "./DrawCommand";
+import { RenderCommands } from "./RenderCommands";
 import { RenderPass } from "./RenderFlags";
 import { ViewState3d } from "../../ViewState";
 import { PlanarTextureProjection } from "./PlanarTextureProjection";
+import { WebGLDisposable } from "./Disposable";
 
-export interface GraphicsCollector {
-  addGraphic(graphic: RenderGraphic): void;
-}
-
-export class GraphicsCollectorDrawArgs extends Tile.DrawArgs {
-  constructor(private _planes: FrustumPlanes, private _worldToViewMap: Map4d, private _collector: GraphicsCollector, context: SceneContext, location: Transform, root: TileTree, now: BeTimePoint, purgeOlderThan: BeTimePoint, clip?: RenderClipVolume) {
-    super(context, location, root, now, purgeOlderThan, clip);
-  }
-  public get frustumPlanes(): FrustumPlanes { return this._planes; }
-  protected get worldToViewMap(): Map4d { return this._worldToViewMap; }
-  public drawGraphics(): void {
-    if (!this.graphics.isEmpty)
-      this._collector.addGraphic(this.context.createBranch(this.graphics, this.location));
-  }
-
-  public static create(context: SceneContext, collector: GraphicsCollector, tileTree: TileTree, planes: FrustumPlanes, worldToViewMap: Map4d) {
-    const now = BeTimePoint.now();
-    const purgeOlderThan = now.minus(tileTree.expirationTime);
-    return new GraphicsCollectorDrawArgs(planes, worldToViewMap, collector, context, tileTree.location.clone(), tileTree, now, purgeOlderThan, tileTree.clipVolume);
-  }
-}
-
-class Textures {
+class Textures implements WebGLDisposable {
   private constructor(
     public readonly color: Texture,
     public readonly feature: Texture,
     public readonly hilite: Texture,
     public readonly combined: Texture) { }
+
+  public get isDisposed(): boolean {
+    return this.color.isDisposed
+      && this.feature.isDisposed
+      && this.hilite.isDisposed
+      && this.combined.isDisposed;
+  }
 
   public dispose(): void {
     dispose(this.color);
@@ -90,12 +80,19 @@ class Textures {
   }
 }
 
-abstract class FrameBuffers {
+abstract class FrameBuffers implements WebGLDisposable {
   protected constructor(
     public readonly textures: Textures,
     private readonly _hilite: FrameBuffer,
     private readonly _combine: FrameBuffer,
     private readonly _combineGeom: CombineTexturesGeometry) { }
+
+  public get isDisposed(): boolean {
+    return this.textures.isDisposed
+      && this._hilite.isDisposed
+      && this._combine.isDisposed
+      && this._combineGeom.isDisposed;
+  }
 
   public dispose(): void {
     dispose(this.textures);
@@ -160,6 +157,12 @@ class MRTFrameBuffers extends FrameBuffers {
     this._clearGeom = geom;
   }
 
+  public get isDisposed(): boolean {
+    return super.isDisposed
+      && this._fbo.isDisposed
+      && this._clearGeom.isDisposed;
+  }
+
   public dispose(): void {
     dispose(this._fbo);
     dispose(this._clearGeom);
@@ -191,6 +194,12 @@ class MPFrameBuffers extends FrameBuffers {
     super(textures, hilite, combine, combineGeom);
     this._color = color;
     this._feature = feature;
+  }
+
+  public get isDisposed(): boolean {
+    return super.isDisposed
+      && this._color.isDisposed
+      && this._feature.isDisposed;
   }
 
   public dispose(): void {
@@ -227,7 +236,7 @@ const scratchPrevRenderState = new RenderState();
 const scratchViewFlags = new ViewFlags();
 
 /** @internal */
-export class PlanarClassifier extends RenderPlanarClassifier implements RenderMemory.Consumer {
+export class PlanarClassifier extends RenderPlanarClassifier implements RenderMemory.Consumer, WebGLDisposable {
   private _buffers?: FrameBuffers;
   private _projectionMatrix = Matrix4d.createIdentity();
   private readonly _graphics: RenderGraphic[] = [];
@@ -253,6 +262,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
   private _doDebugFrustum = false;
   private _debugFrustumGraphic?: RenderGraphic = undefined;
   private _isClassifyingPointCloud?: boolean; // we will detect this the first time we draw
+  private readonly _bgColor = ColorDef.from(0, 0, 0, 255);
 
   private constructor(classifier: SpatialClassificationProps.Classifier, target: Target) {
     super();
@@ -295,6 +305,8 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
       this._buffers.textures.collectStatistics(stats);
   }
 
+  public get isDisposed(): boolean { return undefined === this._buffers; }
+
   public dispose() {
     this._buffers = dispose(this._buffers);
   }
@@ -316,13 +328,17 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
       this.pushBatches(batchState, this._graphics);
   }
 
-  public collectGraphics(context: SceneContext, classifiedTree: TileTree, tileTree: TileTree) {
+  public collectGraphics(context: SceneContext, classifiedRef: TileTreeReference, treeRef: TileTreeReference) {
     this._graphics.length = 0;
-    if (undefined === context.viewFrustum)
+    if (undefined === context.viewingSpace)
       return;
 
-    const viewState = context.viewFrustum!.view as ViewState3d;
+    const viewState = context.viewingSpace!.view as ViewState3d;
     if (undefined === viewState)
+      return;
+
+    const classifiedTree = classifiedRef.treeOwner.load();
+    if (undefined === classifiedTree)
       return;
 
     // TBD - Refine resolution calculation -- increase height based on viewing angle.
@@ -335,7 +351,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     this._width = requiredWidth;
     this._height = requiredHeight;
 
-    const projection = PlanarTextureProjection.computePlanarTextureProjection(this._plane, context.viewFrustum, classifiedTree, tileTree, viewState, this._width, this._height);
+    const projection = PlanarTextureProjection.computePlanarTextureProjection(this._plane, context.viewingSpace, classifiedRef, treeRef, viewState, this._width, this._height);
     if (!projection.textureFrustum || !projection.projectionMatrix || !projection.worldToViewMap)
       return;
 
@@ -343,18 +359,19 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     this._frustum = projection.textureFrustum;
     this._debugFrustum = projection.debugFrustum;
 
-    const drawArgs = GraphicsCollectorDrawArgs.create(context, this, tileTree, new FrustumPlanes(this._frustum), projection.worldToViewMap);
-    tileTree.draw(drawArgs);
+    const drawArgs = GraphicsCollectorDrawArgs.create(context, this, treeRef, new FrustumPlanes(this._frustum), projection.worldToViewMap);
+    if (undefined !== drawArgs)
+      treeRef.draw(drawArgs);
 
     // Shader behaves slightly differently when classifying surfaces vs point clouds.
-    this._isClassifyingPointCloud = classifiedTree.loader.containsPointClouds;
+    this._isClassifyingPointCloud = classifiedTree.isPointCloud;
 
     if (this._doDebugFrustum) {
       this._debugFrustumGraphic = dispose(this._debugFrustumGraphic);
       const builder = context.createSceneGraphicBuilder();
 
       builder.setSymbology(ColorDef.green, ColorDef.green, 1);
-      builder.addFrustum(context.viewFrustum.getFrustum());
+      builder.addFrustum(context.viewingSpace.getFrustum());
       builder.setSymbology(ColorDef.red, ColorDef.red, 1);
       builder.addFrustum(this._debugFrustum!);
       builder.setSymbology(ColorDef.white, ColorDef.white, 1);
@@ -392,12 +409,14 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     system.applyRenderState(this._renderState);
     const prevPlan = target.plan;
 
-    const prevBgColor = target.bgColor.tbgr;
-    target.bgColor.set(0, 0, 0, 0); // Avoid white on white reversal.
+    target.uniforms.style.changeBackgroundColor(this._bgColor); // Avoid white on white reversal. Will be reset in changeRenderPlan below.
 
     target.changeFrustum(this._frustum, this._frustum.getFraction(), true);
-    target.projectionMatrix.setFrom(PlanarClassifier._postProjectionMatrix.multiplyMatrixMatrix(target.projectionMatrix));
-    target.branchStack.setViewFlags(vf);
+
+    const prevProjMatrix = target.uniforms.frustum.projectionMatrix;
+    target.uniforms.frustum.changeProjectionMatrix(PlanarClassifier._postProjectionMatrix.multiplyMatrixMatrix(prevProjMatrix));
+
+    target.uniforms.branch.changeViewFlags(vf);
 
     const renderCommands = this._renderCommands;
     renderCommands.reset(target, this._branchStack, this._batchState);
@@ -432,9 +451,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
 
     // Reset the Target's state.
     this._batchState.reset();
-    target.bgColor.setTbgr(prevBgColor);
-    if (prevPlan)
-      target.changeRenderPlan(prevPlan);
+    target.changeRenderPlan(prevPlan);
 
     system.applyRenderState(prevState);
     system.context.viewport(0, 0, target.viewRect.width, target.viewRect.height);

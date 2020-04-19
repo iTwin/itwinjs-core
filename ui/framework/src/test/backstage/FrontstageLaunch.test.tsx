@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { mount, shallow } from "enzyme";
@@ -21,27 +21,30 @@ import { BackstageItem as NZ_BackstageItem } from "@bentley/ui-ninezone";
 import { CoreTools } from "../../ui-framework/CoreToolDefinitions";
 import { SyncUiEventDispatcher } from "../../ui-framework/syncui/SyncUiEventDispatcher";
 import { Logger } from "@bentley/bentleyjs-core";
+import { NoRenderApp, IModelApp } from "@bentley/imodeljs-frontend";
 
 describe("Backstage", () => {
   const testEventId = "test-state-function-event";
 
   before(async () => {
     await TestUtils.initializeUiFramework();
+    NoRenderApp.startup();
 
-    FrontstageManager.setActiveFrontstageDef(undefined); // tslint:disable-line:no-floating-promises
+    await FrontstageManager.setActiveFrontstageDef(undefined);
   });
 
   after(() => {
     TestUtils.terminateUiFramework();
+    IModelApp.shutdown();
   });
 
   describe("<FrontstageLaunchBackstageItem />", () => {
     it("FrontstageLaunchBackstageItem should render & execute", async () => {
       const spyMethod = sinon.stub();
       let stateFuncRun = false;
-      const stateFunc = (state: Readonly<BackstageItemState>): BackstageItemState => {
+      const stateFunc = (state: Readonly<BackstageItemState>): BackstageItemState => { // tslint:disable-line:deprecation
         stateFuncRun = true;
-        return { ...state, isActive: true } as BackstageItemState;
+        return { ...state, isActive: true } as BackstageItemState; // tslint:disable-line:deprecation
       };
 
       class Frontstage1 extends FrontstageProvider {

@@ -1,10 +1,12 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { RenderSystem, RenderTarget, AnimationBranchStates } from "./rendering";
+import { AnimationBranchStates } from "./render/GraphicBranch";
+import { RenderTarget } from "./render/RenderTarget";
+import { RenderSystem } from "./render/RenderSystem";
 import { IModelApp, IModelAppOptions } from "./IModelApp";
-import { ViewRect } from "./Viewport";
+import { ViewRect } from "./ViewRect";
 
 /**
  * A RenderTarget for applications that must run in environments where WebGL is not present.
@@ -12,10 +14,9 @@ import { ViewRect } from "./Viewport";
  * @internal
  */
 export class NullTarget extends RenderTarget {
-  public get animationFraction(): number { return 0; }
-  public set animationFraction(_fraction: number) { }
+  public get analysisFraction(): number { return 0; }
+  public set analysisFraction(_fraction: number) { }
   public get renderSystem() { return undefined as any; }
-  public get cameraFrustumNearScaleLimit(): number { return 0; }
   public get viewRect(): ViewRect { return new ViewRect(); }
   public get wantInvertBlackBackground(): boolean { return false; }
   public get animationBranches(): AnimationBranchStates | undefined { return undefined; }
@@ -23,8 +24,6 @@ export class NullTarget extends RenderTarget {
   public onDestroy(): void { }
   public reset(): void { }
   public changeScene(): void { }
-  public changeBackgroundMap(): void { }
-  public changeOverlayGraphics(): void { }
   public changeDynamics(): void { }
   public changeDecorations(): void { }
   public changeRenderPlan(): void { }
@@ -48,6 +47,7 @@ export class NullTarget extends RenderTarget {
  */
 export class NullRenderSystem extends RenderSystem {
   public get isValid(): boolean { return false; }
+  public doIdleWork(): boolean { return false; }
   public createTarget() { return new NullTarget(); }
   public createOffscreenTarget() { return new NullTarget(); }
   public createGraphicBuilder() { return undefined as any; }
@@ -68,6 +68,5 @@ export class NoRenderApp {
     opts = opts ? opts : {};
     opts.renderSys = new NullRenderSystem();
     IModelApp.startup(opts);
-
   }
 }

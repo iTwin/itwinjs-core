@@ -1,20 +1,25 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Picker */
+/** @packageDocumentation
+ * @module Picker
+ */
 
 import * as React from "react";
 import { CommonProps, withOnOutsideClick, SizeProps } from "@bentley/ui-core";
+import { PopupItem } from "@bentley/ui-components";
 import {
   Group, Panel, GroupColumn, ExpandableItem, withContainIn, Item, containHorizontally,
 } from "@bentley/ui-ninezone";
-import * as classnames from "classnames";
+import classnames from "classnames";
 import { UiFramework } from "../UiFramework";
 import "@bentley/ui-ninezone/lib/ui-ninezone/toolbar/item/expandable/group/tool/Tool.scss";
-import "./ListPicker.scss";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { ToolbarDragInteractionContext } from "../toolbar/DragInteraction";
+import { FrameworkVersionSwitch } from "../hooks/useFrameworkVersion";
+
+import "./ListPicker.scss";
 
 // tslint:disable-next-line:variable-name
 const ContainedGroup = withOnOutsideClick(withContainIn(Group), undefined, false);
@@ -150,6 +155,65 @@ export class ExpandableSection extends React.PureComponent<ExpandableSectionProp
       </Panel>
     );
   }
+}
+
+function getListPanel(props: ListPickerProps): React.ReactNode {
+  const expandSingleSection = (): boolean => {
+    const populatedContainers = props.items.filter((item: ListItem) => {
+      return (item.type === ListItemType.Container && item.children!.length !== 0);
+    });
+    return populatedContainers.length === 1;
+  };
+
+  const listItemToElement = (item: ListItem, itemIndex: number) => {
+    switch (item.type) {
+      case ListItemType.Item:
+        return (
+          <ListPickerItem
+            {...props}
+            key={itemIndex.toString()}
+            label={item.name}
+            isActive={item.enabled}
+            onClick={() => { props.setEnabled(item, !item.enabled); }}
+          />
+        );
+      case ListItemType.Separator:
+        return (
+          <div key={itemIndex.toString()} className="ListPicker-separator" />
+        );
+      case ListItemType.Container:
+        if (item.children!.length !== 0) {
+          return (
+            <ExpandableSection
+              key={itemIndex.toString()}
+              title={item.name}
+              className="ListPickerInnerContainer"
+              expanded={expandSingleSection()}
+            >
+              <GroupColumn>
+                {item.children!.map(listItemToElement)}
+              </GroupColumn>
+            </ExpandableSection>
+          );
+        } else {
+          return (<div key={itemIndex.toString()} />);
+        }
+      default:
+        return (<div key={itemIndex.toString()} />);
+    }
+  };
+
+  return (
+    <ContainedGroup
+      className="ListPickerContainer"
+      columns={
+        <GroupColumn className="ListPicker-column">
+          {props.items.map(listItemToElement)}
+        </GroupColumn>}
+      containFn={containHorizontally}
+      title={props.title}
+    />
+  );
 }
 
 /**
@@ -332,6 +396,29 @@ export class ListPickerBase extends React.PureComponent<ListPickerProps, ListPic
   }
 }
 
+/**
+ * List picker toolbar popup item.
+ * Used to provide an expandable list of items to enable/disable items.
+ * @beta
+ */
+function ListPickerPopupItem(props: ListPickerProps) {
+  const icon = props.iconSpec ? (typeof props.iconSpec === "string" ? <i className={"icon " + (props.iconSpec)} /> :
+    <i className="icon uifw-item-svg-icon">{props.iconSpec}</i>) : <i className="icon icon-list" />;
+
+  return (
+    <ToolbarDragInteractionContext.Consumer>
+      {(isEnabled) => {
+        return <PopupItem
+          hideIndicator={isEnabled}
+          icon={icon}
+          title={props.title}
+          panel={getListPanel(props)}
+        />;
+      }}
+    </ToolbarDragInteractionContext.Consumer>
+  );
+}
+
 /** Properties for the [[ListPicker]] component
  * @beta
  */
@@ -426,13 +513,27 @@ export class ListPicker extends React.Component<ListPickerPropsExtended> {
     };
 
     return (
-      <ListPickerBase
-        {...this.props}
-        title={this.props.title}
-        setEnabled={setEnabled}
-        onExpanded={this.props.onExpanded}
-        items={this.createItems(this.props.items)}
-        iconSpec={this.props.iconSpec}
+      <FrameworkVersionSwitch
+        v1={
+          <ListPickerBase
+            {...this.props}
+            title={this.props.title}
+            setEnabled={setEnabled}
+            onExpanded={this.props.onExpanded}
+            items={this.createItems(this.props.items)}
+            iconSpec={this.props.iconSpec}
+          />
+        }
+        v2={
+          <ListPickerPopupItem
+            {...this.props}
+            title={this.props.title}
+            setEnabled={setEnabled}
+            onExpanded={this.props.onExpanded}
+            items={this.createItems(this.props.items)}
+            iconSpec={this.props.iconSpec}
+          />
+        }
       />
     );
   }

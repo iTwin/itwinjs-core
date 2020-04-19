@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
 import * as React from "react";
@@ -33,12 +33,11 @@ describe("ConfigurableUiContent", () => {
   });
 
   it("key presses should be handled", () => {
-    const component = render(
-      <Provider store={TestUtils.store} >
-        <ConfigurableUiContent />
-      </Provider>);
+    render(<Provider store={TestUtils.store} >
+      <ConfigurableUiContent />
+    </Provider>);
 
-    const divContainer = component.getByTestId("uifw-configurableui-wrapper");
+    const divContainer = document.getElementById("uifw-configurableui-wrapper")!;
     divContainer.dispatchEvent(new KeyboardEvent("keyup", { bubbles: true, cancelable: true, view: window, key: "a" }));
     divContainer.dispatchEvent(new KeyboardEvent("keyup", { bubbles: true, cancelable: true, view: window, key: "Escape" }));
   });

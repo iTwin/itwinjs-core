@@ -1,19 +1,21 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module StatusBar */
+/** @packageDocumentation
+ * @module StatusBar
+ */
 
 import * as React from "react";
 import classnames from "classnames";
 
 import { Logger } from "@bentley/bentleyjs-core";
 import { ScreenViewport, IModelApp } from "@bentley/imodeljs-frontend";
+import { LoadingBar } from "@bentley/ui-core";
 import { UiFramework } from "../../UiFramework";
 import { StatusFieldProps } from "../StatusFieldProps";
 
 import "./TileLoadingIndicator.scss";
-import { LoadingBar } from "@bentley/ui-core";
 
 let onViewOpen: (vp: ScreenViewport) => void;
 let onRenderUpdate: () => void;
@@ -30,9 +32,8 @@ interface TileLoadingIndicatorState {
 }
 
 /** TileLoadingIndicator React component
- * @internal
+ * @beta
  */
-// istanbul ignore next
 export class TileLoadingIndicator extends React.PureComponent<StatusFieldProps, TileLoadingIndicatorState> {
   constructor(props: StatusFieldProps) {
     super(props);
@@ -47,6 +48,7 @@ export class TileLoadingIndicator extends React.PureComponent<StatusFieldProps, 
     let enabled = this.state.enabled;
     let finished = this.state.finished;
 
+    // istanbul ignore else
     if (!enabled && total !== 0 && pctComplete !== 100)
       enabled = true;
 
@@ -59,6 +61,7 @@ export class TileLoadingIndicator extends React.PureComponent<StatusFieldProps, 
       Logger.logTrace(UiFramework.loggerCategory(this), `Tiles Load Report (tiles finished / tiles requested):  ${ready} / ${total}`);
     }
 
+    // istanbul ignore else
     if (pctComplete !== 100 && finished)
       finished = false;
 
@@ -73,6 +76,7 @@ export class TileLoadingIndicator extends React.PureComponent<StatusFieldProps, 
   }
 
   public componentDidMount() {
+    // istanbul ignore next
     if (!IModelApp.viewManager)
       return;
 
@@ -89,9 +93,11 @@ export class TileLoadingIndicator extends React.PureComponent<StatusFieldProps, 
   }
 
   public componentWillUnmount() {
+    // istanbul ignore next
     if (!IModelApp.viewManager)
       return;
 
+    // istanbul ignore else
     if (onViewOpen)
       IModelApp.viewManager.onViewOpen.removeListener(onViewOpen);
 

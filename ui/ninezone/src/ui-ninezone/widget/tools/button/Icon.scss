@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 @import "variables";
 
@@ -20,6 +20,24 @@
       color: $icon-color;
       filter: $icon-shadow;
       display: inline-block;
+    }
+  }
+
+  &.nz-toolbar-button-icon-small {
+    font-size: $mls-small-button-icon-size;
+    > .nz-icon {
+       > * {
+        width: $mls-small-button-icon-size;
+        height: $mls-small-button-icon-size;
+      }
+    }
+
+    &:active {
+      > .nz-icon {
+        > * {
+          color: $hovered-icon-color;
+        }
+      }
     }
   }
 

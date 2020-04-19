@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module StatusBar */
+/** @packageDocumentation
+ * @module StatusBar
+ */
 
 import * as React from "react";
 
@@ -58,6 +60,7 @@ export class ViewAttributesStatusField extends React.Component<StatusFieldProps,
       this.setOpenWidget(this._className);
   }
 
+  // istanbul ignore next
   private updateState() {
     if (IModelApp.viewManager.selectedView) {
       const viewFlags: ViewFlagProps = { ...IModelApp.viewManager.selectedView.view.viewFlags.toJSON() };
@@ -70,13 +73,13 @@ export class ViewAttributesStatusField extends React.Component<StatusFieldProps,
     }
   }
 
+  // istanbul ignore next
   private _handleViewFlagClick = (flagName: string) => {
     if (IModelApp.viewManager.selectedView) {
       const props: ViewFlagProps = IModelApp.viewManager.selectedView.viewFlags.toJSON();
       (props as any)[flagName] = (props as any)[flagName] === undefined ? true : !(props as any)[flagName];
       const viewFlags = ViewFlags.fromJSON(props);
       IModelApp.viewManager.selectedView.viewFlags = viewFlags;
-      IModelApp.viewManager.selectedView.invalidateRenderPlan();
       this.updateState();
     }
   }
@@ -86,6 +89,7 @@ export class ViewAttributesStatusField extends React.Component<StatusFieldProps,
     this.updateState();
   }
 
+  // istanbul ignore next
   private stylizeName(name: string) {
     name = name.charAt(0).toUpperCase() + name.slice(1);
     name = name.replace(/([A-Z])/g, " $1").trim();

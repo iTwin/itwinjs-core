@@ -1,0 +1,3 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ECSchema schemaName="BasicTest" alias="ts" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+</ECSchema>

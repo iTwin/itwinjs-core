@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-framework",
+      "comment": "Refactor DefaultToolSettingsProvider to use DialogItemsManager and remove duplicate code.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-framework",
+  "email": "Nancy.McCall@Bentley.com"
+}

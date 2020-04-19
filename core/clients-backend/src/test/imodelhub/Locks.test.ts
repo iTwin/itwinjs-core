@@ -1,18 +1,21 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
 import { GuidString, Guid, IModelHubStatus, Id64, Id64String } from "@bentley/bentleyjs-core";
 import {
-  AccessToken, IModelClient, Lock, Briefcase, ChangeSet, LockType, LockLevel, LockQuery,
-  AggregateResponseError, ConflictingLocksError,
-  IModelHubClientError, AuthorizedClientRequestContext,
-} from "@bentley/imodeljs-clients";
+  AccessToken, AuthorizedClientRequestContext,
+} from "@bentley/itwin-client";
+import { TestUsers } from "@bentley/oidc-signin-tool";
 import { TestConfig } from "../TestConfig";
-import { TestUsers } from "../TestUsers";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import * as utils from "./TestUtils";
+import {
+  IModelClient, Lock, Briefcase, ChangeSet, LockType, LockLevel, LockQuery,
+  AggregateResponseError, ConflictingLocksError,
+  IModelHubClientError,
+} from "@bentley/imodelhub-client";
 
 chai.should();
 
@@ -122,8 +125,11 @@ describe("iModelHubClient LockHandler (#iModelBank)", () => {
   });
 
   it("should get Locks in chunks", async () => {
-    const mockedLocks = [utils.generateLock(briefcases[0].briefcaseId), utils.generateLock(briefcases[0].briefcaseId),
-    utils.generateLock(briefcases[0].briefcaseId), utils.generateLock(briefcases[0].briefcaseId), utils.generateLock(briefcases[0].briefcaseId)];
+    const mockedLocks = [
+      utils.generateLock(briefcases[0].briefcaseId), utils.generateLock(briefcases[0].briefcaseId),
+      utils.generateLock(briefcases[0].briefcaseId), utils.generateLock(briefcases[0].briefcaseId),
+      utils.generateLock(briefcases[0].briefcaseId),
+    ];
 
     utils.mockGetLocks(imodelId, `?$top=${LockQuery.defaultPageSize}`, ...mockedLocks);
     const locks: Lock[] = await iModelClient.locks.get(requestContext, imodelId);
@@ -207,8 +213,10 @@ describe("iModelHubClient LockHandler (#iModelBank)", () => {
 
   it("should get locks by instance ids", async () => {
     const fileId: GuidString = Guid.createValue();
-    const mockedLocks = [utils.generateLock(briefcases[0].briefcaseId, undefined, LockType.Model, LockLevel.Shared, fileId, "", "0"),
-    utils.generateLock(briefcases[1].briefcaseId, undefined, LockType.Model, LockLevel.Shared, fileId, "", "0")];
+    const mockedLocks = [
+      utils.generateLock(briefcases[0].briefcaseId, undefined, LockType.Model, LockLevel.Shared, fileId, "", "0"),
+      utils.generateLock(briefcases[1].briefcaseId, undefined, LockType.Model, LockLevel.Shared, fileId, "", "0"),
+    ];
     utils.mockGetLocks(imodelId, `?$filter=BriefcaseId+eq+2&$top=${LockQuery.defaultPageSize}`, ...mockedLocks);
 
     let existingLocks = await iModelClient.locks.get(requestContext, imodelId, new LockQuery().byBriefcaseId(briefcases[0].briefcaseId!));
@@ -230,9 +238,11 @@ describe("iModelHubClient LockHandler (#iModelBank)", () => {
 
   it("should get unavailable locks", async () => {
     if (TestConfig.enableMocks) {
-      const mockedLocks = [utils.generateLock(briefcases[0].briefcaseId, undefined, LockType.Model, LockLevel.Shared),
-      utils.generateLock(briefcases[1].briefcaseId, undefined, LockType.Model, LockLevel.None),
-      utils.generateLock(briefcases[1].briefcaseId, undefined, LockType.Model, LockLevel.None)];
+      const mockedLocks = [
+        utils.generateLock(briefcases[0].briefcaseId, undefined, LockType.Model, LockLevel.Shared),
+        utils.generateLock(briefcases[1].briefcaseId, undefined, LockType.Model, LockLevel.None),
+        utils.generateLock(briefcases[1].briefcaseId, undefined, LockType.Model, LockLevel.None),
+      ];
       utils.mockGetLocks(imodelId, undefined, ...mockedLocks);
 
       const filter = `?$filter=BriefcaseId+ne+${briefcases[0].briefcaseId}+and+(LockLevel+gt+0+or+ReleasedWithChangeSetIndex+gt+${changeSet.index!})`;

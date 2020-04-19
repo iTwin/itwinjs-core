@@ -1,20 +1,24 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as sinon from "sinon";
 import { mount } from "enzyme";
 import { expect } from "chai";
 
+import { StagePanelLocation, WidgetState } from "@bentley/ui-abstract";
 import { Logger } from "@bentley/bentleyjs-core";
 import { NineZoneManagerProps, getDefaultZonesManagerProps, getDefaultNineZoneStagePanelsManagerProps, StagePanelsManager } from "@bentley/ui-ninezone";
 
 import TestUtils from "../TestUtils";
-import { ModalFrontstageInfo, FrontstageManager, FrontstageComposer, WidgetState, ContentLayoutDef, ContentGroup, StagePanelDef } from "../../ui-framework";
+import {
+  ModalFrontstageInfo, FrontstageManager, FrontstageComposer,
+  ContentLayoutDef, ContentGroup, StagePanelDef, CoreTools,
+} from "../../ui-framework";
 import { TestFrontstage, TestContentControl } from "./FrontstageTestUtils";
 import { FrontstageDef } from "../../ui-framework/frontstage/FrontstageDef";
-import { StagePanelLocation, getNestedStagePanelKey } from "../../ui-framework/stagepanels/StagePanel";
+import { getNestedStagePanelKey } from "../../ui-framework/stagepanels/StagePanel";
 import { StagePanelState } from "../../ui-framework/stagepanels/StagePanelDef";
 import { isCollapsedToPanelState } from "../../ui-framework/frontstage/FrontstageComposer";
 
@@ -41,16 +45,20 @@ describe("FrontstageComposer", () => {
     await TestUtils.initializeUiFramework();
   });
 
+  after(() => {
+    TestUtils.terminateUiFramework();
+  });
+
   beforeEach(() => {
-    sandbox.stub(FrontstageManager, "activeToolSettingsNode").get(() => undefined);
+    sandbox.stub(FrontstageManager, "activeToolSettingsProvider").get(() => undefined);
   });
 
   afterEach(() => {
     sandbox.restore();
   });
 
-  it("FrontstageComposer support of ModalFrontstage", () => {
-    FrontstageManager.setActiveFrontstageDef(undefined); // tslint:disable-line:no-floating-promises
+  it("FrontstageComposer support of ModalFrontstage", async () => {
+    await FrontstageManager.setActiveFrontstageDef(undefined);
     const wrapper = mount(<FrontstageComposer />);
 
     const modalFrontstage = new TestModalFrontstage();
@@ -153,24 +161,27 @@ describe("FrontstageComposer", () => {
 
   it("should log error if FrontstageDef has no provider", async () => {
     const wrapper = mount<FrontstageComposer>(<FrontstageComposer />);
-    const frontstageDef: FrontstageDef = new FrontstageDef();
-    frontstageDef.contentGroup = new ContentGroup(
-      {
-        contents: [
-          {
-            classId: TestContentControl,
-            applicationData: { label: "Content 1a", bgColor: "black" },
-          },
-        ],
-      },
-    );
-    frontstageDef.defaultLayout = new ContentLayoutDef(
-      {
-        id: "SingleContent",
-        descriptionKey: "App:ContentLayoutDef.SingleContent",
-        priority: 100,
-      },
-    );
+    const frontstageDef: FrontstageDef = new FrontstageDef({
+      id: "test",
+      defaultTool: CoreTools.selectElementCommand,
+      contentGroup: new ContentGroup(
+        {
+          contents: [
+            {
+              classId: TestContentControl,
+              applicationData: { label: "Content 1a", bgColor: "black" },
+            },
+          ],
+        },
+      ),
+      defaultLayout: new ContentLayoutDef(
+        {
+          id: "SingleContent",
+          descriptionKey: "App:ContentLayoutDef.SingleContent",
+          priority: 100,
+        },
+      ),
+    });
 
     const spyMethod = sinon.spy(Logger, "logError");
 
@@ -230,12 +241,12 @@ describe("FrontstageComposer", () => {
   it("should hide tool settings widget", async () => {
     const wrapper = mount<FrontstageComposer>(<FrontstageComposer />);
 
-    sandbox.stub(FrontstageManager, "activeToolSettingsNode").get(() => undefined);
+    sandbox.stub(FrontstageManager, "activeToolSettingsProvider").get(() => undefined);
     const hideWidgetSpy = sandbox.spy(FrontstageManager.NineZoneManager, "hideWidget");
 
     FrontstageManager.onToolActivatedEvent.emit({ toolId: "" });
 
-    expect(hideWidgetSpy.calledOnceWithExactly(2, sinon.match.any as any)).to.be.true;
+    expect(hideWidgetSpy.calledOnceWithExactly(2, sinon.match.any)).to.be.true;
 
     wrapper.unmount();
   });
@@ -260,6 +271,29 @@ describe("FrontstageComposer", () => {
     composer.simulate("pointerup");
 
     expect(sut.state().allowPointerUpSelection).to.be.false;
+
+    sut.unmount();
+  });
+
+  it("should set zone width based on initialWidth of the zone", async () => {
+    const nineZoneManager = FrontstageManager.NineZoneManager;
+    sandbox.stub(FrontstageManager, "NineZoneManager").returns(nineZoneManager);
+    const sut = mount<FrontstageComposer>(<FrontstageComposer />);
+    const frontstageProvider = new TestFrontstage();
+    FrontstageManager.addFrontstageProvider(frontstageProvider);
+    const frontstageDef = frontstageProvider.frontstageDef!;
+    const zoneDef4 = frontstageDef.getZoneDef(4)!;
+    sandbox.stub(zoneDef4, "initialWidth").get(() => 200);
+
+    const manager = nineZoneManager.getZonesManager();
+    const zones = {
+      ...sut.state().nineZone.zones,
+    };
+    const stub = sandbox.stub(manager, "setZoneWidth").returns(zones);
+    await FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef);
+
+    expect(stub.calledOnceWithExactly(4, 200, sinon.match.any)).to.be.true;
+    expect(sut.state().nineZone.zones).to.eq(zones);
 
     sut.unmount();
   });

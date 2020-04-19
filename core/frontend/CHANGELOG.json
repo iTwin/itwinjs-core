@@ -2,6 +2,456 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "1.13.0",
+      "tag": "@bentley/imodeljs-frontend_v1.13.0",
+      "date": "Wed, 04 Mar 2020 16:16:31 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "#275962 Fix EmphasizeElements.toJSON for color overrides"
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.12.0",
+      "tag": "@bentley/imodeljs-frontend_v1.12.0",
+      "date": "Wed, 12 Feb 2020 17:45:50 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "#269169 Cancel drag operations when button is released outside of view. Suspend view tool animation when cursor moves out of view."
+          },
+          {
+            "comment": "Option to omit area patterns from tiles."
+          },
+          {
+            "comment": "Ignore ReadPixels calls when using GpuProfiler"
+          },
+          {
+            "comment": "iModel write API development"
+          },
+          {
+            "comment": "Fix broken links"
+          },
+          {
+            "comment": "Fix regression causing background map to be affected by view's symbology overrides."
+          },
+          {
+            "comment": "Added support for backward slashes in erroneous URLs of Reality Data in PW Context Share"
+          },
+          {
+            "comment": "Prevent reuse of cached tiles after project extents change."
+          },
+          {
+            "comment": "VSTS#256133: Fixed issue with reopening connections if the backend crashes. Fixes to integration tests. "
+          },
+          {
+            "comment": "Fix incorrect aspect ratio for 3d view attachments."
+          },
+          {
+            "comment": "Overriding transparency of a textured surface or raster text multiplies the texture alpha by the override rather than replacing it."
+          },
+          {
+            "comment": "Better documentation of OidcDesktopClient/IOidcFrontendClient"
+          },
+          {
+            "comment": "Consolidate ViewState code shared with backend's ViewDefinition using ViewDetails."
+          },
+          {
+            "comment": "Add support for plan projection models with 3d display priority."
+          },
+          {
+            "comment": "Customizable display of plan projection models."
+          },
+          {
+            "comment": "Break up System.ts into modular files."
+          },
+          {
+            "comment": "Fix setAuxiliaryCoordinateSystem"
+          },
+          {
+            "comment": "Reduced the number of tiles that must be loaded before a zoomed-in view is complete."
+          },
+          {
+            "comment": "Resolve circular dependencies between tile-related types."
+          },
+          {
+            "comment": "Support for TypeDoc 0.16.8"
+          },
+          {
+            "comment": "Mark as deprecated classes and interfaces that have moved to bentley/ui-abstract."
+          },
+          {
+            "comment": "Change feature tracking API for plugins as requested by Design Review. "
+          },
+          {
+            "comment": "EN: #124601 - Initial implementation of WebGL2"
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.11.0",
+      "tag": "@bentley/imodeljs-frontend_v1.11.0",
+      "date": "Wed, 22 Jan 2020 19:24:12 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "For fit, adjust the aspect ratio so that one dimension is increased rather than just adjusting Y."
+          },
+          {
+            "comment": "Fixed minor typo on RealityData rootDocument property"
+          },
+          {
+            "comment": "TileAdmin.Props.useProjectExtents now defaults to true for better performance."
+          },
+          {
+            "comment": "Ensure ViewState3d's with camera enabled always have the eyepoint centered when they're created"
+          },
+          {
+            "comment": "Fix aspect ratio adjustment bug in camera views"
+          },
+          {
+            "comment": "Small fix for Fit when aspectRatioSkew isn't 1.0."
+          },
+          {
+            "comment": "Fix shadows not updating after clearing emphasized/isolated elements."
+          },
+          {
+            "comment": "Simplify iterator for GeometryList."
+          },
+          {
+            "comment": "Fix shadow rendering on MacOS Safari and any other unknown client that could fail in the same way."
+          },
+          {
+            "comment": "Native apps can now cancel tile requests in progress on the backend."
+          },
+          {
+            "comment": "Reduce tile level-of-detail (thereby improving FPS and memory usage) for models that are small relative to the project extents."
+          },
+          {
+            "comment": "Remvoe echo test function from devTools"
+          },
+          {
+            "comment": "#258853 Fix for pickDepthPoint"
+          },
+          {
+            "comment": "Add isSpatiallyLocated and isPlanProjection to GeometricModel3dState."
+          },
+          {
+            "comment": "Added primitive composite value."
+          },
+          {
+            "comment": "Make hilite and flash target syncing not depend on BeTimePoint."
+          },
+          {
+            "comment": "Upgrade to TypeScript 3.7.2."
+          },
+          {
+            "comment": "Add a FeatureToggleClient to iModelApp."
+          },
+          {
+            "comment": "Gracefully handle an invalid acs id"
+          },
+          {
+            "comment": "ViewZoom not sets focus from depth point."
+          },
+          {
+            "comment": "#257813 Rest zoom and look tools is mouse wheel is used to zoom."
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.10.0",
+      "tag": "@bentley/imodeljs-frontend_v1.10.0",
+      "date": "Tue, 07 Jan 2020 19:44:01 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Clear reality tile children loading flag when selecting. "
+          },
+          {
+            "comment": "Animate change view operations"
+          },
+          {
+            "comment": "Average the gpu profiler times for the last 120 frames instead of updating each frame; also simplify PerformnaceMetrics"
+          },
+          {
+            "comment": "Implement tile availability testing for Cesium World Terrain."
+          },
+          {
+            "comment": "Return error message from concurrent query manager"
+          },
+          {
+            "comment": "Fixed some bugs associated with device pixel ratio."
+          },
+          {
+            "comment": "Fix flickering view when zooming in/out while a section clip is applied."
+          },
+          {
+            "comment": "Adjust focus plane when zooming with mouse wheel."
+          },
+          {
+            "comment": "Prevent analysis style from overriding texture image for non-animated surfaces."
+          },
+          {
+            "comment": "Do not force unload of children on reality tile trees as these may be shared among viewports."
+          },
+          {
+            "comment": "Added support for displaying images embedded in a GeometryStream."
+          },
+          {
+            "comment": "Added IModelConnection.onOpen event.\""
+          },
+          {
+            "comment": "Regenerate shadow map when feature symbology overrides change."
+          },
+          {
+            "comment": "Use parent if reality tile children are loading."
+          },
+          {
+            "comment": "Allow events to be sent from backend to frontend"
+          },
+          {
+            "comment": "Fixed Viewport.turnCameraOn() having no effect if the contents of the viewport have uniform depth."
+          },
+          {
+            "comment": "Set focus distance from depth point for viewing tools."
+          },
+          {
+            "comment": "Start of new walk tool using mouse + keyboard and touch controls."
+          },
+          {
+            "comment": "Reduce redundancy between CPU and GPU timers, creating a single interface for this; update display performance tests to save both CPU and GPU data (if available)"
+          },
+          {
+            "comment": "Use pointerlockchange event to make sure it's supported."
+          },
+          {
+            "comment": "Reduced CPU overhead of computing uniform variable values."
+          },
+          {
+            "comment": "Moved tile IO-related APIs from frontend to common."
+          },
+          {
+            "comment": "#254280 #254276 Address \"jump\" when starting touch viewing operations."
+          },
+          {
+            "comment": "Add features prop to iModelApp and specify a default implementation for FeatureTrackingManager."
+          },
+          {
+            "comment": "Move PluginUiManager and PluginUiProvider to ui-abstract package."
+          },
+          {
+            "comment": "Use onTouchMoveStart for control sticks. Fix issue with key transiton."
+          },
+          {
+            "comment": "LookAndMoveTool change to use mouse look instead of treating mouse like a control stick."
+          },
+          {
+            "comment": "Add setting to easily disable pointer lock for walk tool."
+          },
+          {
+            "comment": "Fix walk tool pan when is 2d or camera is off"
+          },
+          {
+            "comment": "Fix edges of surfaces in 2d views sometimes showing through surfaces in front of them."
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.9.0",
+      "tag": "@bentley/imodeljs-frontend_v1.9.0",
+      "date": "Tue, 10 Dec 2019 18:08:56 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Logo dialog is now modal."
+          },
+          {
+            "comment": "Animate mouse wheel zooms"
+          },
+          {
+            "comment": "Align cartesian coordinates when attaching reality models."
+          },
+          {
+            "comment": "Animate applying saved views"
+          },
+          {
+            "comment": "Code quality report fixes"
+          },
+          {
+            "comment": "Make iModel.js viewports adhere to DPI of a host display."
+          },
+          {
+            "comment": "code cleanup from codeQL hits"
+          },
+          {
+            "comment": "Setup OidcDesktopClient for Electron use cases. "
+          },
+          {
+            "comment": "Don't execute our event loop if there is no need"
+          },
+          {
+            "comment": "Fix regression causing animation to be uneven."
+          },
+          {
+            "comment": "fix warnings from static analysis"
+          },
+          {
+            "comment": "Don't use map tiles until reprojection is complete."
+          },
+          {
+            "comment": "#34206 Volume Clasify reality data only"
+          },
+          {
+            "comment": "Don't fade grid refs when camera is off, draw based on count. Simplify modal dialog auto close."
+          },
+          {
+            "comment": "Treat half-floats and full-floats the same."
+          },
+          {
+            "comment": "added WebGLDisposable interface with defined 'isDisposed' member"
+          },
+          {
+            "comment": "Fix regression in EmphasizeElements.overrideElements() when both color and alpha are overridden."
+          },
+          {
+            "comment": "Prevent touch events from firing mouse events when modal dialog is up."
+          },
+          {
+            "comment": "Fix unintentional darkening of views"
+          },
+          {
+            "comment": "Only align reality models if near same height."
+          },
+          {
+            "comment": "Added ability to adjust tile size modifier for Viewports to trade quality for performance or vice-versa."
+          },
+          {
+            "comment": "Add QuantityTypes LengthSurvey and LengthEngineering to provide more formatting options and support for Survey Feet."
+          },
+          {
+            "comment": "Change zoom view handle to set zoom ratio based on y distance from anchor point."
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.8.0",
+      "tag": "@bentley/imodeljs-frontend_v1.8.0",
+      "date": "Fri, 22 Nov 2019 14:03:34 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added iModel.js logo in lower right corner of views."
+          },
+          {
+            "comment": "Touch move event should not clear viewport animator. Put a time limit on what's considered a touch tap."
+          },
+          {
+            "comment": "Clip low resolution terrain tiles to their displayable children ranges."
+          },
+          {
+            "comment": "Fix bing tile attribution.  Optimize map reprojection."
+          },
+          {
+            "comment": "Logo card link opens in a new tab/window."
+          },
+          {
+            "comment": "Fix whitespace"
+          },
+          {
+            "comment": "Update PluginAdmin.loadPlugin to accept a plugin path with a url scheme already defined."
+          },
+          {
+            "comment": "optimized ReadPixels call for when volumes classifiers are in use"
+          },
+          {
+            "comment": "Flashed element wasn't being cleared after a tentative."
+          },
+          {
+            "comment": "Limit map tile loading in orthographic views."
+          },
+          {
+            "comment": "Add css styles in IModelApp.ts"
+          },
+          {
+            "comment": "Open logo card on touch start."
+          },
+          {
+            "comment": "Allow zoom handle to move through depth point."
+          },
+          {
+            "comment": "Added measure area by points tool. Measure and clip tool decoration improvements."
+          },
+          {
+            "comment": "Added missing topic descriptions"
+          },
+          {
+            "comment": "When rendering transparent objects during opaque pass, ensure alpha is set to 1."
+          },
+          {
+            "comment": "Report unsuported snap mode for view independent geometry when not using origin snap instead of unsnappable subcategory"
+          },
+          {
+            "comment": "Rework reality model loading to preload tiles."
+          },
+          {
+            "comment": "Added method to Plugin that allows a Plugin to control whether the \"loaded\" message appears on repeated loads of same Plugin."
+          },
+          {
+            "comment": "When a reality tile is not present use higher resolution tiles if ready."
+          },
+          {
+            "comment": "Fix excessive number of tile requests when solar shadows are enabled."
+          },
+          {
+            "comment": "Change shadow bias to 0.1"
+          },
+          {
+            "comment": "Ensure only surfaces cast shadows."
+          },
+          {
+            "comment": "Tweak map and terrain tile loading."
+          },
+          {
+            "comment": "Improve user experience by not displaying underresolved tiles."
+          },
+          {
+            "comment": "Add support for view-independent display."
+          },
+          {
+            "comment": "View target center handle now uses depth preview point instead of AccuSnap."
+          },
+          {
+            "comment": "Added depth point preview for rotate, pan, and zoom tools."
+          },
+          {
+            "comment": "When depth point is from an element hit, flash the element too."
+          },
+          {
+            "comment": "Depth preview refinement and new view tool cursors."
+          },
+          {
+            "comment": "Simplify walk tool by using Viewport Animator interface"
+          },
+          {
+            "comment": "Add walk cursor"
+          },
+          {
+            "comment": "Fix shadows failing to draw after resizing a viewport."
+          },
+          {
+            "comment": "Use Viewport.animate for zoom and scroll tools"
+          }
+        ]
+      }
+    },
+    {
       "version": "1.7.0",
       "tag": "@bentley/imodeljs-frontend_v1.7.0",
       "date": "Fri, 01 Nov 2019 13:28:37 GMT",

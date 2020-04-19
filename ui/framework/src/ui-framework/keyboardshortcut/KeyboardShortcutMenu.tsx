@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module KeyboardShortcut */
+/** @packageDocumentation
+ * @module KeyboardShortcut
+ */
 
 import * as React from "react";
 import { GlobalContextMenu, ContextMenuItem, UiEvent, ContextSubMenu, CommonProps } from "@bentley/ui-core";
@@ -23,7 +25,7 @@ export interface KeyboardShortcutMenuState {
  */
 export class KeyboardShortcutMenuEvent extends UiEvent<KeyboardShortcutMenuState> { }
 
-/** Widget State Changed Event class.
+/** React component that displays a context menu at the cursor containing keyboard shortcuts.
  * @public
  */
 export class KeyboardShortcutMenu extends React.PureComponent<CommonProps, KeyboardShortcutMenuState> {

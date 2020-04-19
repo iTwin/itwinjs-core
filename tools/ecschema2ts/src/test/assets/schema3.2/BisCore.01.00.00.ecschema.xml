@@ -1,0 +1,1780 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ECSchema schemaName="BisCore" alias="bis" version="01.00.00" description="The BIS core classes that all other domain schemas extend." displayLabel="BIS Core" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+    <ECSchemaReference name="CoreCustomAttributes" version="01.00.00" alias="CoreCA"/>
+    <ECSchemaReference name="ECDbMap" version="02.00.00" alias="ecdbmap"/>
+    <ECSchemaReference name="ECDbSchemaPolicies" version="01.00.00" alias="ecdbpol"/>
+    <ECCustomAttributes>
+        <NoAdditionalRootEntityClasses xmlns="ECDbSchemaPolicies.01.00.00"/>
+        <NoAdditionalForeignKeyConstraints xmlns="ECDbSchemaPolicies.01.00.00">
+            <Exceptions>
+                <string>Functional:FunctionalElement.TypeDefinition</string>
+            </Exceptions>
+        </NoAdditionalForeignKeyConstraints>
+        <NoAdditionalLinkTables xmlns="ECDbSchemaPolicies.01.00.00"/>
+    </ECCustomAttributes>
+    <ECEnumeration typeName="AutoHandledPropertyStatementType" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="AutoHandledPropertyStatementType3" value="3" displayLabel="ReadOnly = Select|Insert"/>
+        <ECEnumerator name="AutoHandledPropertyStatementType7" value="7" displayLabel="All = Select | Insert | Update"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="CustomHandledPropertyStatementType" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="CustomHandledPropertyStatementType0" value="0" displayLabel="None"/>
+        <ECEnumerator name="CustomHandledPropertyStatementType1" value="1" displayLabel="Select"/>
+        <ECEnumerator name="CustomHandledPropertyStatementType2" value="2" displayLabel="Insert"/>
+        <ECEnumerator name="CustomHandledPropertyStatementType3" value="3" displayLabel="ReadOnly = Select|Insert"/>
+        <ECEnumerator name="CustomHandledPropertyStatementType4" value="4" displayLabel="Update"/>
+        <ECEnumerator name="CustomHandledPropertyStatementType6" value="6" displayLabel="InsertUpdate = Insert | Update"/>
+        <ECEnumerator name="CustomHandledPropertyStatementType7" value="7" displayLabel="All = Select | Insert | Update"/>
+    </ECEnumeration>
+    <ECCustomAttributeClass typeName="CustomHandledProperty" description="Applied to an element's property to indicate that the property's value is handled specially by a C++ class." appliesTo="AnyProperty">
+        <ECProperty propertyName="StatementTypes" typeName="CustomHandledPropertyStatementType"/>
+    </ECCustomAttributeClass>
+    <ECCustomAttributeClass typeName="ClassHasHandler" description="Applied to an ECClass to indicate that a subclass of DgnDomain::Handler will be supplied for it at run-time." appliesTo="Any">
+        <ECArrayProperty propertyName="Restrictions" typeName="string" description="List of actions which are not permitted when the associated handler is not available" minOccurs="0" maxOccurs="unbounded"/>
+    </ECCustomAttributeClass>
+    <ECEntityClass typeName="Element" description="Elements are the smallest individually identifiable building blocks for modeling the real world. Each element represents an entity in the real world. Sets of Elements (contained in Models) are used to model other Elements that represent larger scale real world entities. Using this recursive modeling strategy, Elements can represent entities at any scale. Elements can represent physical things or abstract concepts or simply be information records." modifier="Abstract">
+        <ECCustomAttributes>
+            <ClassMap xmlns="ECDbMap.02.00.00">
+                <MapStrategy>TablePerHierarchy</MapStrategy>
+            </ClassMap>
+            <NotSubclassableInReferencingSchemas xmlns="CoreCustomAttributes.01.00.00"/>
+            <DbIndexList xmlns="ECDbMap.02.00.00">
+                <Indexes>
+                    <DbIndex>
+                        <Name>ix_bis_Element_FederationGuid</Name>
+                        <IsUnique>True</IsUnique>
+                        <Properties>
+                            <string>FederationGuid</string>
+                        </Properties>
+                        <Where>IndexedColumnsAreNotNull</Where>
+                    </DbIndex>
+                    <DbIndex>
+                        <Name>ix_bis_Element_Code</Name>
+                        <IsUnique>True</IsUnique>
+                        <Properties>
+                            <string>CodeSpec.Id</string>
+                            <string>CodeScope.Id</string>
+                            <string>CodeValue</string>
+                        </Properties>
+                    </DbIndex>
+                    <DbIndex>
+                        <Name>ix_bis_Element_UserLabel</Name>
+                        <IsUnique>False</IsUnique>
+                        <Properties>
+                            <string>UserLabel</string>
+                        </Properties>
+                        <Where>IndexedColumnsAreNotNull</Where>
+                    </DbIndex>
+                </Indexes>
+            </DbIndexList>
+            <ClassHasCurrentTimeStampProperty xmlns="CoreCustomAttributes.01.00.00">
+                <PropertyName>LastMod</PropertyName>
+            </ClassHasCurrentTimeStampProperty>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+        <ECNavigationProperty propertyName="Model" description="The Model that contains this element." readOnly="true" relationshipName="ModelContainsElements" direction="backward">
+            <ECCustomAttributes>
+                <CustomHandledProperty xmlns="BisCore.01.00.00">
+                    <StatementTypes>2</StatementTypes>
+                </CustomHandledProperty>
+                <ForeignKeyConstraint xmlns="ECDbMap.02.00.00">
+                    <OnDeleteAction>NoAction</OnDeleteAction>
+                </ForeignKeyConstraint>
+            </ECCustomAttributes>
+        </ECNavigationProperty>
+        <ECProperty propertyName="LastMod" typeName="dateTime" description="The last modified time of the element. This is maintained by the core framework and should not be set directly by applications." displayLabel="Last Modified" readOnly="true">
+            <ECCustomAttributes>
+                <DateTimeInfo xmlns="CoreCustomAttributes.01.00.00">
+                    <DateTimeKind>Utc</DateTimeKind>
+                </DateTimeInfo>
+                <CustomHandledProperty xmlns="BisCore.01.00.00">
+                    <StatementTypes>0</StatementTypes>
+                </CustomHandledProperty>
+                <HiddenProperty xmlns="CoreCustomAttributes.01.00.00"/>
+            </ECCustomAttributes>
+        </ECProperty>
+        <ECNavigationProperty propertyName="CodeSpec" description="The Code Specification used to generate and validate the code for the element. The combination of Code Specification, Code Scope Element, and the Code value must be unique." displayLabel="Code Specification" relationshipName="CodeSpecSpecifiesCode" direction="backward">
+            <ECCustomAttributes>
+                <HiddenProperty xmlns="CoreCustomAttributes.01.00.00"/>
+                <CustomHandledProperty xmlns="BisCore.01.00.00">
+                    <StatementTypes>6</StatementTypes>
+                </CustomHandledProperty>
+                <ForeignKeyConstraint xmlns="ECDbMap.02.00.00">
+                    <OnDeleteAction>NoAction</OnDeleteAction>
+                </ForeignKeyConstraint>
+            </ECCustomAttributes>
+        </ECNavigationProperty>
+        <ECNavigationProperty propertyName="CodeScope" description="Code Scope identifies the element that provides the uniqueness scope for the code value. The combination of Code Specification, Code Scope, and the Code value must be unique." displayLabel="Code Scope" relationshipName="ElementScopesCode" direction="backward">
+            <ECCustomAttributes>
+                <HiddenProperty xmlns="CoreCustomAttributes.01.00.00"/>
+                <CustomHandledProperty xmlns="BisCore.01.00.00">
+                    <StatementTypes>6</StatementTypes>
+                </CustomHandledProperty>
+                <ForeignKeyConstraint xmlns="ECDbMap.02.00.00">
+                    <OnDeleteAction>NoAction</OnDeleteAction>
+                </ForeignKeyConstraint>
+            </ECCustomAttributes>
+        </ECNavigationProperty>
+        <ECProperty propertyName="CodeValue" typeName="string" description="Code is the formal name (business key) for an element. The combination of Code Specification, Code Scope, and the Code value must be unique." displayLabel="Code">
+            <ECCustomAttributes>
+                <PropertyMap xmlns="ECDbMap.02.00.00">
+                    <IsNullable>True</IsNullable>
+                    <Collation>NoCase</Collation>
+                </PropertyMap>
+                <CustomHandledProperty xmlns="BisCore.01.00.00">
+                    <StatementTypes>6</StatementTypes>
+                </CustomHandledProperty>
+            </ECCustomAttributes>
+        </ECProperty>
+        <ECProperty propertyName="UserLabel" typeName="string" description="An optional name given by the user (as opposed to the formal name stored in the Code value)." displayLabel="User Label">
+            <ECCustomAttributes>
+                <PropertyMap xmlns="ECDbMap.02.00.00">
+                    <IsNullable>True</IsNullable>
+                    <IsUnique>False</IsUnique>
+                    <Collation>NoCase</Collation>
+                </PropertyMap>
+                <CustomHandledProperty xmlns="BisCore.01.00.00">
+                    <StatementTypes>6</StatementTypes>
+                </CustomHandledProperty>
+            </ECCustomAttributes>
+        </ECProperty>
+        <ECNavigationProperty propertyName="Parent" description="The parent element that owns this element." relationshipName="ElementOwnsChildElements" direction="backward">
+            <ECCustomAttributes>
+                <HiddenProperty xmlns="CoreCustomAttributes.01.00.00"/>
+                <CustomHandledProperty xmlns="BisCore.01.00.00">
+                    <StatementTypes>6</StatementTypes>
+                </CustomHandledProperty>
+                <ForeignKeyConstraint xmlns="ECDbMap.02.00.00">
+                    <OnDeleteAction>NoAction</OnDeleteAction>
+                </ForeignKeyConstraint>
+            </ECCustomAttributes>
+        </ECNavigationProperty>
+        <ECProperty propertyName="FederationGuid" typeName="binary" description="The GUID used to federate this element across repositories." displayLabel="Federation GUID" extendedTypeName="BeGuid">
+            <ECCustomAttributes>
+                <PropertyMap xmlns="ECDbMap.02.00.00">
+                    <IsNullable>True</IsNullable>
+                    <IsUnique>True</IsUnique>
+                </PropertyMap>
+                <CustomHandledProperty xmlns="BisCore.01.00.00">
+                    <StatementTypes>6</StatementTypes>
+                </CustomHandledProperty>
+                <HiddenProperty xmlns="CoreCustomAttributes.01.00.00"/>
+            </ECCustomAttributes>
+        </ECProperty>
+        <ECProperty propertyName="JsonProperties" typeName="string" description="A string property that users and/or applications can use to persist JSON values." displayLabel="JSON Properties" extendedTypeName="Json">
+            <ECCustomAttributes>
+                <HiddenProperty xmlns="CoreCustomAttributes.01.00.00"/>
+                <CustomHandledProperty xmlns="BisCore.01.00.00">
+                    <StatementTypes>6</StatementTypes>
+                </CustomHandledProperty>
+            </ECCustomAttributes>
+        </ECProperty>
+    </ECEntityClass>
+    <ECEntityClass typeName="GeometricElement" description="Geometric Element is an abstract base class used to model real world entities that intrinsically have geometry." displayLabel="Geometric Element" modifier="Abstract">
+        <BaseClass>Element</BaseClass>
+        <ECCustomAttributes>
+            <JoinedTablePerDirectSubclass xmlns="ECDbMap.02.00.00"/>
+            <NotSubclassableInReferencingSchemas xmlns="CoreCustomAttributes.01.00.00"/>
+        </ECCustomAttributes>
+    </ECEntityClass>
+    <ECEntityClass typeName="GeometricElement2d" description="2D Geometric Element is an abstract base class used to model information entities that intrinsicly have 2D geometry." displayLabel="2D Geometric Element" modifier="Abstract">
+        <BaseClass>GeometricElement</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+            <ShareColumns xmlns="ECDbMap.02.00.00">
+                <ApplyToSubclassesOnly>True</ApplyToSubclassesOnly>
+                <MaxSharedColumnsBeforeOverflow>32</MaxSharedColumnsBeforeOverflow>
+            </ShareColumns>
+        </ECCustomAttributes>
+        <ECNavigationProperty propertyName="Category" description="The Drawing Category used to categorize the 2D Geometric Element" relationshipName="GeometricElement2dIsInCategory" direction="forward">
+            <ECCustomAttributes>
+                <CustomHandledProperty xmlns="BisCore.01.00.00"/>
+                <ForeignKeyConstraint xmlns="ECDbMap.02.00.00">
+                    <OnDeleteAction>NoAction</OnDeleteAction>
+                </ForeignKeyConstraint>
+            </ECCustomAttributes>
+        </ECNavigationProperty>
+        <ECProperty propertyName="Origin" typeName="point2d" description="The placement origin of the Element.">
+            <ECCustomAttributes>
+                <CustomHandledProperty xmlns="BisCore.01.00.00"/>
+            </ECCustomAttributes>
+        </ECProperty>
+        <ECProperty propertyName="Rotation" typeName="double" description="The placement rotation (in degrees) of the Element.">
+            <ECCustomAttributes>
+                <CustomHandledProperty xmlns="BisCore.01.00.00"/>
+            </ECCustomAttributes>
+        </ECProperty>
+        <ECProperty propertyName="BBoxLow" typeName="point2d" description="The 'low' point of the element-aligned bounding box of the Element." displayLabel="Bounding Box Low">
+            <ECCustomAttributes>
+                <CustomHandledProperty xmlns="BisCore.01.00.00"/>
+            </ECCustomAttributes>
+        </ECProperty>
+        <ECProperty propertyName="BBoxHigh" typeName="point2d" description="The 'high' point of the element-aligned bounding box of the Element." displayLabel="Bounding Box High">
+            <ECCustomAttributes>
+                <CustomHandledProperty xmlns="BisCore.01.00.00"/>
+            </ECCustomAttributes>
+        </ECProperty>
+        <ECProperty propertyName="GeometryStream" typeName="binary" description="Binary stream used to persist the geometry of this Element." displayLabel="Geometry Stream" extendedTypeName="GeometryStream">
+            <ECCustomAttributes>
+                <CustomHandledProperty xmlns="BisCore.01.00.00"/>
+                <HiddenProperty xmlns="CoreCustomAttributes.01.00.00"/>
+            </ECCustomAttributes>
+        </ECProperty>
+        <ECNavigationProperty propertyName="TypeDefinition" displayLabel="Type Definition" relationshipName="GeometricElement2dHasTypeDefinition" direction="forward">
+            <ECCustomAttributes>
+                <HiddenProperty xmlns="CoreCustomAttributes.01.00.00"/>
+                <CustomHandledProperty xmlns="BisCore.01.00.00"/>
+                <ForeignKeyConstraint xmlns="ECDbMap.02.00.00"/>
+            </ECCustomAttributes>
+        </ECNavigationProperty>
+    </ECEntityClass>
+    <ECEntityClass typeName="GraphicalElement2d" description="Abstract base class for 2D Geometric Elements that are used to convey information within graphical presentations (like drawings)." displayLabel="2D Graphical Element" modifier="Abstract">
+        <BaseClass>GeometricElement2d</BaseClass>
+    </ECEntityClass>
+    <ECEntityClass typeName="AnnotationElement2d" description="2D element used to annotate drawings and sheets." displayLabel="2D Annotation Element">
+        <BaseClass>GraphicalElement2d</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+    </ECEntityClass>
+    <ECEntityClass typeName="InformationContentElement" description="Information Content Element is an abstract base class for modeling pure information entities. Only the core framework should directly subclass from Information Content Element. Domain and application developers should start with the most appropriate subclass of Information Content Element." displayLabel="Information Content Element" modifier="Abstract">
+        <BaseClass>Element</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+            <JoinedTablePerDirectSubclass xmlns="ECDbMap.02.00.00"/>
+            <NotSubclassableInReferencingSchemas xmlns="CoreCustomAttributes.01.00.00">
+                <Exceptions>
+                    <string>Planning:PlanningElement</string>
+                </Exceptions>
+            </NotSubclassableInReferencingSchemas>
+        </ECCustomAttributes>
+    </ECEntityClass>
+    <ECEntityClass typeName="DefinitionElement" description="A Definition Element holds configuration-related information that is meant to be referenced/shared." displayLabel="Definition Element" modifier="Abstract">
+        <BaseClass>InformationContentElement</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+            <ShareColumns xmlns="ECDbMap.02.00.00">
+                <ApplyToSubclassesOnly>True</ApplyToSubclassesOnly>
+                <MaxSharedColumnsBeforeOverflow>32</MaxSharedColumnsBeforeOverflow>
+            </ShareColumns>
+        </ECCustomAttributes>
+        <ECProperty propertyName="IsPrivate" typeName="boolean" description="If true, this definition should not be displayed in the GUI." displayLabel="Is Private">
+            <ECCustomAttributes>
+                <CustomHandledProperty xmlns="BisCore.01.00.00"/>
+            </ECCustomAttributes>
+        </ECProperty>
+    </ECEntityClass>
+    <ECEntityClass typeName="AnnotationFrameStyle" displayLabel="Annotation Frame Style" modifier="Sealed">
+        <BaseClass>DefinitionElement</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+        <ECProperty propertyName="Description" typeName="string" description="Description of the style">
+            <ECCustomAttributes>
+                <CustomHandledProperty xmlns="BisCore.01.00.00"/>
+            </ECCustomAttributes>
+        </ECProperty>
+        <ECProperty propertyName="Data" typeName="binary" description="Encoded style properties">
+            <ECCustomAttributes>
+                <CustomHandledProperty xmlns="BisCore.01.00.00"/>
+                <HiddenProperty xmlns="CoreCustomAttributes.01.00.00"/>
+            </ECCustomAttributes>
+        </ECProperty>
+    </ECEntityClass>
+    <ECEntityClass typeName="AnnotationLeaderStyle" displayLabel="Annotation Leader Style" modifier="Sealed">
+        <BaseClass>DefinitionElement</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+        <ECProperty propertyName="Description" typeName="string" description="Description of the style">
+            <ECCustomAttributes>
+                <CustomHandledProperty xmlns="BisCore.01.00.00"/>
+            </ECCustomAttributes>
+        </ECProperty>
+        <ECProperty propertyName="Data" typeName="binary" description="Encoded style properties">
+            <ECCustomAttributes>
+                <CustomHandledProperty xmlns="BisCore.01.00.00"/>
+                <HiddenProperty xmlns="CoreCustomAttributes.01.00.00"/>
+            </ECCustomAttributes>
+        </ECProperty>
+    </ECEntityClass>
+    <ECEntityClass typeName="AnnotationTextStyle" displayLabel="Annotation Text Style" modifier="Sealed">
+        <BaseClass>DefinitionElement</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+        <ECProperty propertyName="Description" typeName="string" description="Description of the style">
+            <ECCustomAttributes>
+                <CustomHandledProperty xmlns="BisCore.01.00.00"/>
+            </ECCustomAttributes>
+        </ECProperty>
+        <ECProperty propertyName="Data" typeName="binary" description="Encoded style properties">
+            <ECCustomAttributes>
+                <CustomHandledProperty xmlns="BisCore.01.00.00"/>
+                <HiddenProperty xmlns="CoreCustomAttributes.01.00.00"/>
+            </ECCustomAttributes>
+        </ECProperty>
+    </ECEntityClass>
+    <ECCustomAttributeClass typeName="AutoHandledProperty" description="Applied to an element's property to indicate that select, update, and insert of the property's value are handled automatically by the platform." appliesTo="AnyProperty">
+        <ECProperty propertyName="StatementTypes" typeName="AutoHandledPropertyStatementType"/>
+    </ECCustomAttributeClass>
+    <ECEntityClass typeName="AuxCoordSystem" displayLabel="Auxiliary Coordinate System" modifier="Abstract">
+        <BaseClass>DefinitionElement</BaseClass>
+        <ECCustomAttributes>
+            <NotSubclassableInReferencingSchemas xmlns="CoreCustomAttributes.01.00.00"/>
+        </ECCustomAttributes>
+        <ECProperty propertyName="Type" typeName="int"/>
+        <ECProperty propertyName="Description" typeName="string"/>
+    </ECEntityClass>
+    <ECEntityClass typeName="AuxCoordSystem2d" description="A 2D coordinate system." displayLabel="2D Auxiliary Coordinate System">
+        <BaseClass>AuxCoordSystem</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+        <ECProperty propertyName="Origin" typeName="point2d"/>
+        <ECProperty propertyName="Angle" typeName="double"/>
+    </ECEntityClass>
+    <ECEntityClass typeName="AuxCoordSystem3d" description="A 3D coordinate system." displayLabel="3D Auxiliary Coordinate System">
+        <BaseClass>AuxCoordSystem</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+        <ECProperty propertyName="Origin" typeName="point3d"/>
+        <ECProperty propertyName="Yaw" typeName="double"/>
+        <ECProperty propertyName="Pitch" typeName="double"/>
+        <ECProperty propertyName="Roll" typeName="double"/>
+    </ECEntityClass>
+    <ECEntityClass typeName="AuxCoordSystemSpatial" description="A spatial coordinate system." displayLabel="Spatial Auxiliary Coordinate System">
+        <BaseClass>AuxCoordSystem3d</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+    </ECEntityClass>
+    <ECEntityClass typeName="Model" description="A Model is a container for persisting a collection of related elements." modifier="Abstract">
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00">
+                <Restrictions>
+                    <string>Clone</string>
+                </Restrictions>
+            </ClassHasHandler>
+            <ClassMap xmlns="ECDbMap.02.00.00">
+                <MapStrategy>TablePerHierarchy</MapStrategy>
+            </ClassMap>
+            <ShareColumns xmlns="ECDbMap.02.00.00">
+                <ApplyToSubclassesOnly>True</ApplyToSubclassesOnly>
+                <MaxSharedColumnsBeforeOverflow>32</MaxSharedColumnsBeforeOverflow>
+            </ShareColumns>
+            <NotSubclassableInReferencingSchemas xmlns="CoreCustomAttributes.01.00.00"/>
+        </ECCustomAttributes>
+        <ECNavigationProperty propertyName="ParentModel" description="The Parent Model (which contains the Modeled Element) is above this model in the information hierarchy." displayLabel="Parent Model" readOnly="true" relationshipName="ModelOwnsSubModel" direction="backward">
+            <ECCustomAttributes>
+                <HiddenProperty xmlns="CoreCustomAttributes.01.00.00"/>
+                <ForeignKeyConstraint xmlns="ECDbMap.02.00.00">
+                    <OnDeleteAction>NoAction</OnDeleteAction>
+                </ForeignKeyConstraint>
+            </ECCustomAttributes>
+        </ECNavigationProperty>
+        <ECNavigationProperty propertyName="ModeledElement" description="This Model is modeling (describing or breaking down) this element which is at a higher level of the information hierarchy." displayLabel="Modeled Element" readOnly="true" relationshipName="ModelModelsElement" direction="forward">
+            <ECCustomAttributes>
+                <ForeignKeyConstraint xmlns="ECDbMap.02.00.00">
+                    <OnDeleteAction>NoAction</OnDeleteAction>
+                </ForeignKeyConstraint>
+            </ECCustomAttributes>
+        </ECNavigationProperty>
+        <ECProperty propertyName="IsPrivate" typeName="boolean" description="If IsPrivate is true then this model should not appear in lists shown to the user." displayLabel="Is Private">
+            <ECCustomAttributes>
+                <HiddenProperty xmlns="CoreCustomAttributes.01.00.00"/>
+            </ECCustomAttributes>
+        </ECProperty>
+        <ECProperty propertyName="IsTemplate" typeName="boolean" description="IsTemplate will be true if this Model is used as a template for creating new instances." displayLabel="Is Template">
+            <ECCustomAttributes>
+                <HiddenProperty xmlns="CoreCustomAttributes.01.00.00"/>
+            </ECCustomAttributes>
+        </ECProperty>
+        <ECProperty propertyName="JsonProperties" typeName="string" description="A string property that users and/or applications can use to persist JSON values." displayLabel="JSON Properties" extendedTypeName="Json">
+            <ECCustomAttributes>
+                <HiddenProperty xmlns="CoreCustomAttributes.01.00.00"/>
+            </ECCustomAttributes>
+        </ECProperty>
+    </ECEntityClass>
+    <ECEntityClass typeName="GeometricModel" description="A container for persisting geometric elements." displayLabel="Geometric Model" modifier="Abstract">
+        <BaseClass>Model</BaseClass>
+        <ECCustomAttributes>
+            <NotSubclassableInReferencingSchemas xmlns="CoreCustomAttributes.01.00.00"/>
+        </ECCustomAttributes>
+    </ECEntityClass>
+    <ECEntityClass typeName="GeometricModel2d" description="A container for persisting 2D geometric elements." displayLabel="2D Geometric Model" modifier="Abstract">
+        <BaseClass>GeometricModel</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+        <ECProperty propertyName="GlobalOrigin" typeName="point2d" description="The actual coordinates of (0,0) in Model coordinates. An offest applied to all Model coordinates." displayLabel="Global Origin"/>
+    </ECEntityClass>
+    <ECEntityClass typeName="ViewDefinition" displayLabel="View Definition" modifier="Abstract">
+        <BaseClass>DefinitionElement</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+            <NotSubclassableInReferencingSchemas xmlns="CoreCustomAttributes.01.00.00"/>
+        </ECCustomAttributes>
+        <ECProperty propertyName="Description" typeName="string"/>
+        <ECNavigationProperty propertyName="CategorySelector" displayLabel="Category Selector" relationshipName="ViewDefinitionUsesCategorySelector" direction="forward">
+            <ECCustomAttributes>
+                <CustomHandledProperty xmlns="BisCore.01.00.00"/>
+            </ECCustomAttributes>
+        </ECNavigationProperty>
+        <ECNavigationProperty propertyName="DisplayStyle" displayLabel="Display Style" relationshipName="ViewDefinitionUsesDisplayStyle" direction="forward">
+            <ECCustomAttributes>
+                <CustomHandledProperty xmlns="BisCore.01.00.00"/>
+            </ECCustomAttributes>
+        </ECNavigationProperty>
+    </ECEntityClass>
+    <ECEntityClass typeName="ViewDefinition2d" description="A view of a 2D model that has its own local coordinate system." displayLabel="2D View Definition" modifier="Abstract">
+        <BaseClass>ViewDefinition</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+        <ECNavigationProperty propertyName="BaseModel" displayLabel="Base Model" relationshipName="BaseModelForView2d" direction="backward">
+            <ECCustomAttributes>
+                <CustomHandledProperty xmlns="BisCore.01.00.00"/>
+            </ECCustomAttributes>
+        </ECNavigationProperty>
+        <ECProperty propertyName="Origin" typeName="point2d" description="Lower left corner of the viewed area.">
+            <ECCustomAttributes>
+                <CustomHandledProperty xmlns="BisCore.01.00.00"/>
+            </ECCustomAttributes>
+        </ECProperty>
+        <ECProperty propertyName="Extents" typeName="point2d" description="Size of the view diagonal">
+            <ECCustomAttributes>
+                <CustomHandledProperty xmlns="BisCore.01.00.00"/>
+            </ECCustomAttributes>
+        </ECProperty>
+        <ECProperty propertyName="RotationAngle" typeName="double" description="Rotation angle in degrees of the viewed area." displayLabel="Rotation Angle">
+            <ECCustomAttributes>
+                <CustomHandledProperty xmlns="BisCore.01.00.00"/>
+            </ECCustomAttributes>
+        </ECProperty>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="BaseModelForView2d" modifier="Sealed" strength="referencing">
+        <Source multiplicity="(1..1)" roleLabel="is base model for" polymorphic="true">
+            <Class class="GeometricModel2d"/>
+        </Source>
+        <Target multiplicity="(0..*)" roleLabel="has base" polymorphic="true">
+            <Class class="ViewDefinition2d"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="IParentElement" description="An interface that indicates that this Element is capable of being a parent (owning child Elements). This interface is mutually exclusive with ISubModeledElement." displayLabel="Parent Element" modifier="Abstract">
+        <ECCustomAttributes>
+            <IsMixin xmlns="CoreCustomAttributes.01.00.00">
+                <AppliesToEntityClass>Element</AppliesToEntityClass>
+            </IsMixin>
+        </ECCustomAttributes>
+    </ECEntityClass>
+    <ECEntityClass typeName="Category" modifier="Abstract">
+        <BaseClass>DefinitionElement</BaseClass>
+        <BaseClass>IParentElement</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+            <NotSubclassableInReferencingSchemas xmlns="CoreCustomAttributes.01.00.00"/>
+        </ECCustomAttributes>
+        <ECProperty propertyName="Description" typeName="string" displayLabel="Description">
+            <ECCustomAttributes>
+                <HiddenProperty xmlns="CoreCustomAttributes.01.00.00"/>
+                <CustomHandledProperty xmlns="BisCore.01.00.00"/>
+            </ECCustomAttributes>
+        </ECProperty>
+        <ECProperty propertyName="Rank" typeName="int">
+            <ECCustomAttributes>
+                <HiddenProperty xmlns="CoreCustomAttributes.01.00.00"/>
+                <CustomHandledProperty xmlns="BisCore.01.00.00"/>
+            </ECCustomAttributes>
+        </ECProperty>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsChildElements" modifier="None" strength="embedding">
+        <Source multiplicity="(0..1)" roleLabel="owns child" polymorphic="true">
+            <Class class="Element"/>
+        </Source>
+        <Target multiplicity="(0..*)" roleLabel="is owned by parent" polymorphic="true">
+            <Class class="Element"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="SubCategory" displayLabel="Sub-Category" modifier="Sealed">
+        <BaseClass>DefinitionElement</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+        <ECProperty propertyName="Description" typeName="string">
+            <ECCustomAttributes>
+                <CustomHandledProperty xmlns="BisCore.01.00.00"/>
+            </ECCustomAttributes>
+        </ECProperty>
+        <ECProperty propertyName="Properties" typeName="string" extendedTypeName="Json">
+            <ECCustomAttributes>
+                <CustomHandledProperty xmlns="BisCore.01.00.00"/>
+            </ECCustomAttributes>
+        </ECProperty>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="CategoryOwnsSubCategories" modifier="None" strength="embedding">
+        <BaseClass>ElementOwnsChildElements</BaseClass>
+        <Source multiplicity="(0..1)" roleLabel="owns" polymorphic="true">
+            <Class class="Category"/>
+        </Source>
+        <Target multiplicity="(0..*)" roleLabel="is owned by" polymorphic="false">
+            <Class class="SubCategory"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="CategorySelector" displayLabel="Category Selector">
+        <BaseClass>DefinitionElement</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementRefersToElements" modifier="Abstract" strength="referencing">
+        <ECCustomAttributes>
+            <LinkTableRelationshipMap xmlns="ECDbMap.02.00.00">
+                <CreateForeignKeyConstraints>False</CreateForeignKeyConstraints>
+            </LinkTableRelationshipMap>
+            <ClassMap xmlns="ECDbMap.02.00.00">
+                <MapStrategy>TablePerHierarchy</MapStrategy>
+            </ClassMap>
+            <ShareColumns xmlns="ECDbMap.02.00.00">
+                <ApplyToSubclassesOnly>True</ApplyToSubclassesOnly>
+                <MaxSharedColumnsBeforeOverflow>32</MaxSharedColumnsBeforeOverflow>
+            </ShareColumns>
+        </ECCustomAttributes>
+        <Source multiplicity="(0..*)" roleLabel="refers to" polymorphic="true">
+            <Class class="Element"/>
+        </Source>
+        <Target multiplicity="(0..*)" roleLabel="is referenced by" polymorphic="true">
+            <Class class="Element"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECRelationshipClass typeName="CategorySelectorRefersToCategories" modifier="Sealed" strength="referencing">
+        <BaseClass>ElementRefersToElements</BaseClass>
+        <Source multiplicity="(0..*)" roleLabel="refers to" polymorphic="true">
+            <Class class="CategorySelector"/>
+        </Source>
+        <Target multiplicity="(0..*)" roleLabel="is referenced by" polymorphic="true">
+            <Class class="Category"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="CodeSpec" description="A Code Specification captures the rules for encoding and decoding significant business information into and from a Code (string). This specification is used to generate and validate Codes." displayLabel="Code Specification" modifier="Sealed">
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+        <ECProperty propertyName="Name" typeName="string" description="The unique name of Code Specification. A best practice is to incorporate the domain name into the Code Specification name to ensure uniqueness.">
+            <ECCustomAttributes>
+                <PropertyMap xmlns="ECDbMap.02.00.00">
+                    <IsNullable>False</IsNullable>
+                    <IsUnique>True</IsUnique>
+                    <Collation>NoCase</Collation>
+                </PropertyMap>
+            </ECCustomAttributes>
+        </ECProperty>
+        <ECProperty propertyName="JsonProperties" typeName="string" description="JSON string containing scope and fragment specifications to generate and validate code values" extendedTypeName="Json"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="CodeSpecSpecifiesCode" modifier="Sealed" strength="referencing">
+        <Source multiplicity="(1..1)" roleLabel="specified code for" polymorphic="true">
+            <Class class="CodeSpec"/>
+        </Source>
+        <Target multiplicity="(0..*)" roleLabel="code is specified by" polymorphic="true">
+            <Class class="Element"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="ColorBook" displayLabel="Color Book" modifier="Sealed">
+        <BaseClass>DefinitionElement</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+        <ECProperty propertyName="Description" typeName="string"/>
+    </ECEntityClass>
+    <ECEntityClass typeName="InformationModel" description="A container for persisting information elements." displayLabel="Information Model" modifier="Abstract">
+        <BaseClass>Model</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+    </ECEntityClass>
+    <ECEntityClass typeName="DefinitionModel" description="A container for persisting definition elements." displayLabel="Definition Model">
+        <BaseClass>InformationModel</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+    </ECEntityClass>
+    <ECEntityClass typeName="ISubModeledElement" description="An interface which indicates that an Element can be broken down or described by a (sub) Model.  This interface is mutually exclusive with IParentElement." displayLabel="Modellable Element" modifier="Abstract">
+        <ECCustomAttributes>
+            <IsMixin xmlns="CoreCustomAttributes.01.00.00">
+                <AppliesToEntityClass>Element</AppliesToEntityClass>
+            </IsMixin>
+        </ECCustomAttributes>
+    </ECEntityClass>
+    <ECEntityClass typeName="InformationPartitionElement" description="Information Partition is an abstract base class for elements that indicate that there is a new modeling perspective within the overall DgnDb information hierarchy. An Information Partition is always parented to a Subject and broken down by a Model." displayLabel="Information Partition" modifier="Abstract">
+        <BaseClass>InformationContentElement</BaseClass>
+        <BaseClass>ISubModeledElement</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+            <ShareColumns xmlns="ECDbMap.02.00.00">
+                <ApplyToSubclassesOnly>True</ApplyToSubclassesOnly>
+                <MaxSharedColumnsBeforeOverflow>32</MaxSharedColumnsBeforeOverflow>
+            </ShareColumns>
+        </ECCustomAttributes>
+        <ECProperty propertyName="Description" typeName="string"/>
+    </ECEntityClass>
+    <ECEntityClass typeName="DefinitionPartition" description="A Definition Partition element indicates that there is a definition-related modeling perspective within the overall DgnDb information hierarchy. A Definition Partition is always parented to a Subject and broken down by a Definition Model." displayLabel="Definition Partition" modifier="Sealed">
+        <BaseClass>InformationPartitionElement</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+    </ECEntityClass>
+    <ECEntityClass typeName="DictionaryModel" description="The singleton container for repository-specific definition elements." displayLabel="Dictionary Model" modifier="Sealed">
+        <BaseClass>DefinitionModel</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+    </ECEntityClass>
+    <ECEntityClass typeName="DisplayStyle" displayLabel="Display Style" modifier="Abstract">
+        <BaseClass>DefinitionElement</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+            <NotSubclassableInReferencingSchemas xmlns="CoreCustomAttributes.01.00.00"/>
+        </ECCustomAttributes>
+    </ECEntityClass>
+    <ECEntityClass typeName="DisplayStyle2d" displayLabel="2D Display Style">
+        <BaseClass>DisplayStyle</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+    </ECEntityClass>
+    <ECEntityClass typeName="DisplayStyle3d" displayLabel="3D Display Style">
+        <BaseClass>DisplayStyle</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+    </ECEntityClass>
+    <ECEntityClass typeName="Document" modifier="Abstract">
+        <BaseClass>InformationContentElement</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+            <ShareColumns xmlns="ECDbMap.02.00.00">
+                <ApplyToSubclassesOnly>True</ApplyToSubclassesOnly>
+                <MaxSharedColumnsBeforeOverflow>32</MaxSharedColumnsBeforeOverflow>
+            </ShareColumns>
+        </ECCustomAttributes>
+    </ECEntityClass>
+    <ECEntityClass typeName="InformationCarrierElement" description="An Information Carrier carries information, but is not the information itself. For example, the arrangement of ink on paper or the sequence of electronic bits are information carriers." displayLabel="Information Carrier" modifier="Abstract">
+        <BaseClass>Element</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+            <JoinedTablePerDirectSubclass xmlns="ECDbMap.02.00.00"/>
+            <NotSubclassableInReferencingSchemas xmlns="CoreCustomAttributes.01.00.00"/>
+        </ECCustomAttributes>
+    </ECEntityClass>
+    <ECEntityClass typeName="DocumentCarrier" description="A Document Carrier is an Information Carrier that carries a Document. An electronic file is a good example." displayLabel="Document Carrier" modifier="Abstract">
+        <BaseClass>InformationCarrierElement</BaseClass>
+        <ECCustomAttributes>
+            <ShareColumns xmlns="ECDbMap.02.00.00">
+                <ApplyToSubclassesOnly>True</ApplyToSubclassesOnly>
+                <MaxSharedColumnsBeforeOverflow>32</MaxSharedColumnsBeforeOverflow>
+            </ShareColumns>
+        </ECCustomAttributes>
+    </ECEntityClass>
+    <ECEntityClass typeName="DocumentListModel" description="Contains a list of document elements." displayLabel="Document List">
+        <BaseClass>InformationModel</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+    </ECEntityClass>
+    <ECEntityClass typeName="DocumentPartition" description="A Document Partition element indicates that there is a document-related modeling perspective within the overall DgnDb information hierarchy. A Document Partition is always parented to a Subject and broken down by a Document List Model." displayLabel="Document Partition" modifier="Sealed">
+        <BaseClass>InformationPartitionElement</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+    </ECEntityClass>
+    <ECEntityClass typeName="Drawing">
+        <BaseClass>Document</BaseClass>
+        <BaseClass>ISubModeledElement</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+    </ECEntityClass>
+    <ECEntityClass typeName="DrawingCategory" displayLabel="Drawing Category" modifier="Sealed">
+        <BaseClass>Category</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+    </ECEntityClass>
+    <ECEntityClass typeName="DrawingGraphic" description="2D element used to persist graphics for use in drawings." displayLabel="Drawing Graphic">
+        <BaseClass>GraphicalElement2d</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="DrawingGraphicRepresentsElement" modifier="None" strength="referencing">
+        <BaseClass>ElementRefersToElements</BaseClass>
+        <Source multiplicity="(0..*)" roleLabel="represents" polymorphic="true">
+            <Class class="DrawingGraphic"/>
+        </Source>
+        <Target multiplicity="(0..*)" roleLabel="is represented by" polymorphic="true">
+            <Class class="Element"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="GraphicalModel2d" description="A container for persisting 2D graphical elements." displayLabel="2D Graphical Model" modifier="Abstract">
+        <BaseClass>GeometricModel2d</BaseClass>
+    </ECEntityClass>
+    <ECEntityClass typeName="DrawingModel" description="A container for persisting drawing graphics." displayLabel="Drawing Model">
+        <BaseClass>GraphicalModel2d</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ModelModelsElement" modifier="None" strength="embedding" strengthDirection="backward">
+        <Source multiplicity="(0..1)" roleLabel="models" polymorphic="true">
+            <Class class="Model"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is modeled by" polymorphic="true">
+            <Class class="ISubModeledElement"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECRelationshipClass typeName="DrawingModelBreaksDownDrawing" modifier="None" strength="embedding" strengthDirection="backward">
+        <BaseClass>ModelModelsElement</BaseClass>
+        <Source multiplicity="(0..1)" roleLabel="breaks down" polymorphic="true">
+            <Class class="DrawingModel"/>
+        </Source>
+        <Target multiplicity="(1..1)" roleLabel="is broken down by" polymorphic="true">
+            <Class class="Drawing"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="DrawingViewDefinition" displayLabel="Drawing View Definition">
+        <BaseClass>ViewDefinition2d</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+    </ECEntityClass>
+    <ECEntityClass typeName="DriverBundleElement" description="Element used in conjunction with bis:ElementDrivesElement relationships to bundle multiple inputs before driving the output element." displayLabel="Driver Bundle Element" modifier="Abstract">
+        <BaseClass>InformationContentElement</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+            <ShareColumns xmlns="ECDbMap.02.00.00">
+                <ApplyToSubclassesOnly>True</ApplyToSubclassesOnly>
+                <MaxSharedColumnsBeforeOverflow>32</MaxSharedColumnsBeforeOverflow>
+            </ShareColumns>
+        </ECCustomAttributes>
+    </ECEntityClass>
+    <ECEntityClass typeName="ElementAspect" description="An Element Aspect is a class that defines a set of properties that are related to (and owned by) a single element. Semantically, an Element Aspect can be considered part of the Element. Thus, an Element Aspect is deleted if its owning Element is deleted." displayLabel="Element Aspect" modifier="Abstract">
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+            <NotSubclassableInReferencingSchemas xmlns="CoreCustomAttributes.01.00.00"/>
+        </ECCustomAttributes>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementDrivesElement" modifier="None" strength="referencing">
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+            <ClassMap xmlns="ECDbMap.02.00.00">
+                <MapStrategy>TablePerHierarchy</MapStrategy>
+            </ClassMap>
+            <ShareColumns xmlns="ECDbMap.02.00.00">
+                <ApplyToSubclassesOnly>True</ApplyToSubclassesOnly>
+                <MaxSharedColumnsBeforeOverflow>32</MaxSharedColumnsBeforeOverflow>
+            </ShareColumns>
+            <LinkTableRelationshipMap xmlns="ECDbMap.02.00.00">
+                <CreateForeignKeyConstraints>False</CreateForeignKeyConstraints>
+                <AllowDuplicateRelationships>True</AllowDuplicateRelationships>
+            </LinkTableRelationshipMap>
+        </ECCustomAttributes>
+        <ECProperty propertyName="Status" typeName="int" description="Bits that indicate the status of the dependency. Satisfied=0, Failed=1, Deferred=128. Deferred and Failed bits can be OR'd together."/>
+        <ECProperty propertyName="Priority" typeName="int" description="The priority of this dependency, relative to other EntityDrivesEntity instances. Note that EntityHasChildEntities dependencies always take priority over EntityDrivesEntity dependencies."/>
+        <Source multiplicity="(0..*)" roleLabel="drives" polymorphic="true">
+            <Class class="Element"/>
+        </Source>
+        <Target multiplicity="(0..*)" roleLabel="is driven by" polymorphic="true">
+            <Class class="Element"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECRelationshipClass typeName="ElementEncapsulatesElements" modifier="None" strength="embedding">
+        <BaseClass>ElementOwnsChildElements</BaseClass>
+        <Source multiplicity="(0..1)" roleLabel="encapsulates" polymorphic="true">
+            <Class class="Element"/>
+        </Source>
+        <Target multiplicity="(0..*)" roleLabel="is encapsulated by" polymorphic="true">
+            <Class class="Element"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECRelationshipClass typeName="ElementGroupsMembers" modifier="None" strength="referencing">
+        <BaseClass>ElementRefersToElements</BaseClass>
+        <ECProperty propertyName="MemberPriority" typeName="int" displayLabel="Member Priority"/>
+        <Source multiplicity="(0..*)" roleLabel="groups" polymorphic="true">
+            <Class class="Element"/>
+        </Source>
+        <Target multiplicity="(0..*)" roleLabel="is grouped by" polymorphic="true">
+            <Class class="Element"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="InformationReferenceElement" description="Information Reference is an abstract base class for modeling entities whose main purpose is to reference something else." displayLabel="Information Reference" modifier="Abstract">
+        <BaseClass>InformationContentElement</BaseClass>
+        <ECCustomAttributes>
+            <ShareColumns xmlns="ECDbMap.02.00.00">
+                <ApplyToSubclassesOnly>True</ApplyToSubclassesOnly>
+                <MaxSharedColumnsBeforeOverflow>32</MaxSharedColumnsBeforeOverflow>
+            </ShareColumns>
+        </ECCustomAttributes>
+    </ECEntityClass>
+    <ECEntityClass typeName="LinkElement" description="An information element that specifies a link." displayLabel="Link" modifier="Abstract">
+        <BaseClass>InformationReferenceElement</BaseClass>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementHasLinks" description="Associates links to an element." modifier="None" strength="referencing">
+        <BaseClass>ElementRefersToElements</BaseClass>
+        <Source multiplicity="(1..*)" roleLabel="has" polymorphic="true">
+            <Class class="Element"/>
+        </Source>
+        <Target multiplicity="(0..*)" roleLabel="is referenced by" polymorphic="true">
+            <Class class="LinkElement"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="ElementMultiAspect" description="An Element Multi-Aspect is an Element Aspect where there can be N instances of the Element Aspect class per Element." displayLabel="Element Multi-Aspect" modifier="Abstract">
+        <BaseClass>ElementAspect</BaseClass>
+        <ECCustomAttributes>
+            <ClassMap xmlns="ECDbMap.02.00.00">
+                <MapStrategy>TablePerHierarchy</MapStrategy>
+            </ClassMap>
+            <ShareColumns xmlns="ECDbMap.02.00.00">
+                <ApplyToSubclassesOnly>True</ApplyToSubclassesOnly>
+                <MaxSharedColumnsBeforeOverflow>32</MaxSharedColumnsBeforeOverflow>
+            </ShareColumns>
+        </ECCustomAttributes>
+        <ECNavigationProperty propertyName="Element" description="The owning Element" relationshipName="ElementOwnsMultiAspects" direction="backward">
+            <ECCustomAttributes>
+                <HiddenProperty xmlns="CoreCustomAttributes.01.00.00"/>
+                <ForeignKeyConstraint xmlns="ECDbMap.02.00.00"/>
+            </ECCustomAttributes>
+        </ECNavigationProperty>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsMultiAspects" modifier="None" strength="embedding">
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="Element"/>
+        </Source>
+        <Target multiplicity="(0..*)" roleLabel="is owned by" polymorphic="true">
+            <Class class="ElementMultiAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="ElementUniqueAspect" description="An Element Unique Aspect is an Element Aspect where there can be only zero or one instance of the Element Aspect class per Element." displayLabel="Element Unique Aspect" modifier="Abstract">
+        <BaseClass>ElementAspect</BaseClass>
+        <ECCustomAttributes>
+            <ClassMap xmlns="ECDbMap.02.00.00">
+                <MapStrategy>TablePerHierarchy</MapStrategy>
+            </ClassMap>
+            <ShareColumns xmlns="ECDbMap.02.00.00">
+                <ApplyToSubclassesOnly>True</ApplyToSubclassesOnly>
+                <MaxSharedColumnsBeforeOverflow>32</MaxSharedColumnsBeforeOverflow>
+            </ShareColumns>
+        </ECCustomAttributes>
+        <ECNavigationProperty propertyName="Element" description="The owning Element" relationshipName="ElementOwnsUniqueAspect" direction="backward">
+            <ECCustomAttributes>
+                <HiddenProperty xmlns="CoreCustomAttributes.01.00.00"/>
+                <ForeignKeyConstraint xmlns="ECDbMap.02.00.00"/>
+            </ECCustomAttributes>
+        </ECNavigationProperty>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsUniqueAspect" modifier="None" strength="embedding">
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="Element"/>
+        </Source>
+        <Target multiplicity="(0..*)" roleLabel="is owned by" polymorphic="true">
+            <Class class="ElementUniqueAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECRelationshipClass typeName="ElementScopesCode" modifier="Sealed" strength="referencing">
+        <Source multiplicity="(1..1)" roleLabel="scopes code for" polymorphic="true">
+            <Class class="Element"/>
+        </Source>
+        <Target multiplicity="(0..*)" roleLabel="code is scoped by" polymorphic="true">
+            <Class class="Element"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="EmbeddedFileLink" description="An information element that links to an embedded file." displayLabel="Embedded File Link">
+        <BaseClass>LinkElement</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+            <DbIndexList xmlns="ECDbMap.02.00.00">
+                <Indexes>
+                    <DbIndex>
+                        <Name>ix_bis_EmbeddedFileLink_Name</Name>
+                        <IsUnique>False</IsUnique>
+                        <Properties>
+                            <string>Name</string>
+                        </Properties>
+                    </DbIndex>
+                </Indexes>
+            </DbIndexList>
+        </ECCustomAttributes>
+        <ECProperty propertyName="Name" typeName="string">
+            <ECCustomAttributes>
+                <CustomHandledProperty xmlns="BisCore.01.00.00"/>
+            </ECCustomAttributes>
+        </ECProperty>
+        <ECProperty propertyName="Description" typeName="string">
+            <ECCustomAttributes>
+                <CustomHandledProperty xmlns="BisCore.01.00.00"/>
+            </ECCustomAttributes>
+        </ECProperty>
+    </ECEntityClass>
+    <ECEntityClass typeName="TypeDefinitionElement" description="Defines a set of properties (the 'type') that can be associated with an element." displayLabel="Type Definition" modifier="Abstract">
+        <BaseClass>DefinitionElement</BaseClass>
+        <ECNavigationProperty propertyName="Recipe" relationshipName="TypeDefinitionHasRecipe" direction="forward"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="GeometricElement2dHasTypeDefinition" modifier="Abstract" strength="referencing">
+        <Source multiplicity="(0..*)" roleLabel="has" polymorphic="true">
+            <Class class="GeometricElement2d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="classifies" polymorphic="true">
+            <Class class="TypeDefinitionElement"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECRelationshipClass typeName="GeometricElement2dIsInCategory" description="Element is in Category" modifier="Sealed" strength="referencing" strengthDirection="backward">
+        <Source multiplicity="(0..*)" roleLabel="is in" polymorphic="true">
+            <Class class="GeometricElement2d"/>
+        </Source>
+        <Target multiplicity="(1..1)" roleLabel="categorizes" polymorphic="false">
+            <Class class="DrawingCategory"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="GeometricElement3d" description="3D Geometric Element is an abstract base class used to model real world entities that intrinsically have 3D geometry." displayLabel="3D Geometric Element" modifier="Abstract">
+        <BaseClass>GeometricElement</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+            <ShareColumns xmlns="ECDbMap.02.00.00">
+                <ApplyToSubclassesOnly>True</ApplyToSubclassesOnly>
+                <MaxSharedColumnsBeforeOverflow>32</MaxSharedColumnsBeforeOverflow>
+            </ShareColumns>
+        </ECCustomAttributes>
+        <ECNavigationProperty propertyName="Category" description="The Spatial Category used to categorize the 3D Geometric Element" relationshipName="GeometricElement3dIsInCategory" direction="forward">
+            <ECCustomAttributes>
+                <CustomHandledProperty xmlns="BisCore.01.00.00"/>
+                <ForeignKeyConstraint xmlns="ECDbMap.02.00.00">
+                    <OnDeleteAction>NoAction</OnDeleteAction>
+                </ForeignKeyConstraint>
+            </ECCustomAttributes>
+        </ECNavigationProperty>
+        <ECProperty propertyName="InSpatialIndex" typeName="boolean" description="If true, this element will have an entry in the Spatial Index." displayLabel="In Spatial Index">
+            <ECCustomAttributes>
+                <HiddenProperty xmlns="CoreCustomAttributes.01.00.00"/>
+                <CustomHandledProperty xmlns="BisCore.01.00.00"/>
+            </ECCustomAttributes>
+        </ECProperty>
+        <ECProperty propertyName="Origin" typeName="point3d" description="The placement origin of the Element.">
+            <ECCustomAttributes>
+                <HiddenProperty xmlns="CoreCustomAttributes.01.00.00"/>
+                <CustomHandledProperty xmlns="BisCore.01.00.00"/>
+            </ECCustomAttributes>
+        </ECProperty>
+        <ECProperty propertyName="Yaw" typeName="double" description="The Yaw angle (in degrees) of the orientation of the Element.">
+            <ECCustomAttributes>
+                <HiddenProperty xmlns="CoreCustomAttributes.01.00.00"/>
+                <CustomHandledProperty xmlns="BisCore.01.00.00"/>
+            </ECCustomAttributes>
+        </ECProperty>
+        <ECProperty propertyName="Pitch" typeName="double" description="The Pitch angle (in degrees) of the orientation of the Element.">
+            <ECCustomAttributes>
+                <HiddenProperty xmlns="CoreCustomAttributes.01.00.00"/>
+                <CustomHandledProperty xmlns="BisCore.01.00.00"/>
+            </ECCustomAttributes>
+        </ECProperty>
+        <ECProperty propertyName="Roll" typeName="double" description="The Roll angle (in degrees) of the orientation of the Element.">
+            <ECCustomAttributes>
+                <HiddenProperty xmlns="CoreCustomAttributes.01.00.00"/>
+                <CustomHandledProperty xmlns="BisCore.01.00.00"/>
+            </ECCustomAttributes>
+        </ECProperty>
+        <ECProperty propertyName="BBoxLow" typeName="point3d" description="The 'low' point of the element-aligned bounding box of the Element." displayLabel="Bounding Box Low">
+            <ECCustomAttributes>
+                <HiddenProperty xmlns="CoreCustomAttributes.01.00.00"/>
+                <CustomHandledProperty xmlns="BisCore.01.00.00"/>
+            </ECCustomAttributes>
+        </ECProperty>
+        <ECProperty propertyName="BBoxHigh" typeName="point3d" description="The 'high' point of the element-aligned bounding box of the Element." displayLabel="Bounding Box High">
+            <ECCustomAttributes>
+                <HiddenProperty xmlns="CoreCustomAttributes.01.00.00"/>
+                <CustomHandledProperty xmlns="BisCore.01.00.00"/>
+            </ECCustomAttributes>
+        </ECProperty>
+        <ECProperty propertyName="GeometryStream" typeName="binary" description="Binary stream used to persist the geometry of this Element." displayLabel="Geometry Stream" extendedTypeName="GeometryStream">
+            <ECCustomAttributes>
+                <HiddenProperty xmlns="CoreCustomAttributes.01.00.00"/>
+                <CustomHandledProperty xmlns="BisCore.01.00.00"/>
+            </ECCustomAttributes>
+        </ECProperty>
+        <ECNavigationProperty propertyName="TypeDefinition" displayLabel="Type Definition" relationshipName="GeometricElement3dHasTypeDefinition" direction="forward">
+            <ECCustomAttributes>
+                <HiddenProperty xmlns="CoreCustomAttributes.01.00.00"/>
+                <CustomHandledProperty xmlns="BisCore.01.00.00"/>
+                <ForeignKeyConstraint xmlns="ECDbMap.02.00.00"/>
+            </ECCustomAttributes>
+        </ECNavigationProperty>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="GeometricElement3dHasTypeDefinition" modifier="Abstract" strength="referencing">
+        <Source multiplicity="(0..*)" roleLabel="has" polymorphic="true">
+            <Class class="GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="classifies" polymorphic="true">
+            <Class class="TypeDefinitionElement"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="SpatialCategory" displayLabel="Spatial Category" modifier="Sealed">
+        <BaseClass>Category</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="GeometricElement3dIsInCategory" description="Element is in Category" modifier="Sealed" strength="referencing" strengthDirection="backward">
+        <Source multiplicity="(0..*)" roleLabel="is in" polymorphic="true">
+            <Class class="GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(1..1)" roleLabel="categorizes" polymorphic="false">
+            <Class class="SpatialCategory"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="GeometricModel3d" description="A container for persisting 3D geometric elements." displayLabel="3D Geometric Model" modifier="Abstract">
+        <BaseClass>GeometricModel</BaseClass>
+    </ECEntityClass>
+    <ECEntityClass typeName="GeometryPart" description="A Definition Element that specifies a collection of geometry that is meant to be reused across Geometric Element instances. Leveraging Geometry Parts can help reduce file size and improve display performance." displayLabel="Geometry Part">
+        <BaseClass>DefinitionElement</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+        <ECProperty propertyName="GeometryStream" typeName="binary" displayLabel="Geometry Stream" extendedTypeName="GeometryStream">
+            <ECCustomAttributes>
+                <CustomHandledProperty xmlns="BisCore.01.00.00"/>
+                <HiddenProperty xmlns="CoreCustomAttributes.01.00.00"/>
+            </ECCustomAttributes>
+        </ECProperty>
+        <ECProperty propertyName="BBoxLow" typeName="point3d" displayLabel="Bounding Box Low">
+            <ECCustomAttributes>
+                <CustomHandledProperty xmlns="BisCore.01.00.00"/>
+            </ECCustomAttributes>
+        </ECProperty>
+        <ECProperty propertyName="BBoxHigh" typeName="point3d" displayLabel="Bounding Box High">
+            <ECCustomAttributes>
+                <CustomHandledProperty xmlns="BisCore.01.00.00"/>
+            </ECCustomAttributes>
+        </ECProperty>
+    </ECEntityClass>
+    <ECEntityClass typeName="GraphicalType2d" description="Defines a set of properties (the 'type') that can be associated with a 2D Graphical Element." displayLabel="2D Graphical Type" modifier="Abstract">
+        <BaseClass>TypeDefinitionElement</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="GraphicalElement2dIsOfType" modifier="None" strength="referencing">
+        <BaseClass>GeometricElement2dHasTypeDefinition</BaseClass>
+        <Source multiplicity="(0..*)" roleLabel="is of" polymorphic="true">
+            <Class class="GraphicalElement2d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="defines" polymorphic="true">
+            <Class class="GraphicalType2d"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="GraphicalElement3d" displayLabel="3D Graphical Element" modifier="Abstract">
+        <BaseClass>GeometricElement3d</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+    </ECEntityClass>
+    <ECEntityClass typeName="RecipeDefinitionElement" description="Defines a recipe for generating a type." displayLabel="Recipe Definition" modifier="Abstract">
+        <BaseClass>DefinitionElement</BaseClass>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="TypeDefinitionHasRecipe" modifier="Abstract" strength="referencing">
+        <Source multiplicity="(0..*)" roleLabel="has" polymorphic="true">
+            <Class class="TypeDefinitionElement"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is referenced by" polymorphic="true">
+            <Class class="RecipeDefinitionElement"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="TemplateRecipe2d" description="A recipe that uses a 2D template for creating new instances." displayLabel="2D Template Recipe">
+        <BaseClass>RecipeDefinitionElement</BaseClass>
+        <BaseClass>ISubModeledElement</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="GraphicalType2dHasTemplateRecipe" modifier="None" strength="referencing">
+        <BaseClass>TypeDefinitionHasRecipe</BaseClass>
+        <Source multiplicity="(0..*)" roleLabel="has" polymorphic="true">
+            <Class class="GraphicalType2d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is referenced by" polymorphic="true">
+            <Class class="TemplateRecipe2d"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="GroupInformationElement" description="Group Information is an abstract base class for modeling entities whose main purpose is to reference a group of related elements." displayLabel="Group Information" modifier="Abstract">
+        <BaseClass>InformationReferenceElement</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+    </ECEntityClass>
+    <ECEntityClass typeName="GroupInformationModel" description="A container for persisting group information elements." displayLabel="Group Information Model" modifier="Abstract">
+        <BaseClass>InformationModel</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+    </ECEntityClass>
+    <ECEntityClass typeName="GroupInformationPartition" description="A Group Information Partition element indicates that there is a group-information-related modeling perspective within the overall DgnDb information hierarchy. A Group Information Partition is always parented to a Subject and broken down by a Group Information Model." displayLabel="Group Information Partition" modifier="Sealed">
+        <BaseClass>InformationPartitionElement</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+    </ECEntityClass>
+    <ECEntityClass typeName="InformationRecordElement" description="Information Record Element is an abstract base class for modeling information records. Information Record Element is the default choice if no other subclass of Information Content Element makes sense." displayLabel="Information Record Element" modifier="Abstract">
+        <BaseClass>InformationContentElement</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+            <ShareColumns xmlns="ECDbMap.02.00.00">
+                <ApplyToSubclassesOnly>True</ApplyToSubclassesOnly>
+                <MaxSharedColumnsBeforeOverflow>32</MaxSharedColumnsBeforeOverflow>
+            </ShareColumns>
+        </ECCustomAttributes>
+    </ECEntityClass>
+    <ECEntityClass typeName="InformationRecordModel" description="A container for persisting Information Record Elements" displayLabel="Information Record Model">
+        <BaseClass>InformationModel</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+    </ECEntityClass>
+    <ECEntityClass typeName="InformationRecordPartition" description="A Information Record Partition element indicates that there is an information-record-related modeling perspective within the overall DgnDb information hierarchy. An Information Record Partition is always parented to a Subject and broken down by an Information Record Model." displayLabel="Information Record Partition" modifier="Sealed">
+        <BaseClass>InformationPartitionElement</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+    </ECEntityClass>
+    <ECEntityClass typeName="SpatialElement" description="A Spatial Element occupies real world space." displayLabel="Spatial Element" modifier="Abstract">
+        <BaseClass>GeometricElement3d</BaseClass>
+    </ECEntityClass>
+    <ECEntityClass typeName="SpatialLocationElement" description="A Spatial Location Element identifies a 'tracked' real world location but has no mass and cannot be 'touched'." displayLabel="Spatial Location Element" modifier="Abstract">
+        <BaseClass>SpatialElement</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+    </ECEntityClass>
+    <ECEntityClass typeName="LightLocation" description="The spatial location of a light source" displayLabel="Light Location" modifier="Sealed">
+        <BaseClass>SpatialLocationElement</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+        <ECProperty propertyName="Enabled" typeName="boolean" displayLabel="Is light turned on"/>
+    </ECEntityClass>
+    <ECEntityClass typeName="LineStyle" displayLabel="Line Style" modifier="Sealed">
+        <BaseClass>DefinitionElement</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+        <ECProperty propertyName="Description" typeName="string" description="Description of the style"/>
+        <ECProperty propertyName="Data" typeName="string" description="Encoded style properties" extendedTypeName="Json"/>
+    </ECEntityClass>
+    <ECEntityClass typeName="LinkModel" description="A container for persisting link elements." displayLabel="Link Model">
+        <BaseClass>InformationModel</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+    </ECEntityClass>
+    <ECEntityClass typeName="LinkPartition" description="A Link Partition element indicates that there is a link-related modeling perspective within the overall DgnDb information hierarchy. A Link Partition is always parented to a Subject and broken down by a Link Model." displayLabel="Link Partition" modifier="Sealed">
+        <BaseClass>InformationPartitionElement</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ModelContainsElements" description="Associates Elements with a Model" modifier="Sealed" strength="embedding">
+        <Source multiplicity="(1..1)" roleLabel="contains" polymorphic="true">
+            <Class class="Model"/>
+        </Source>
+        <Target multiplicity="(0..*)" roleLabel="is contained by" polymorphic="true">
+            <Class class="Element"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECRelationshipClass typeName="ModelOwnsSubModel" modifier="Sealed" strength="embedding">
+        <Source multiplicity="(0..1)" roleLabel="owns sub" polymorphic="true">
+            <Class class="Model"/>
+        </Source>
+        <Target multiplicity="(0..*)" roleLabel="is owned by parent" polymorphic="true">
+            <Class class="Model"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="ModelSelector" displayLabel="Model Selector">
+        <BaseClass>DefinitionElement</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ModelSelectorRefersToModels" modifier="Sealed" strength="referencing">
+        <ECCustomAttributes>
+            <LinkTableRelationshipMap xmlns="ECDbMap.02.00.00">
+                <CreateForeignKeyConstraints>False</CreateForeignKeyConstraints>
+            </LinkTableRelationshipMap>
+        </ECCustomAttributes>
+        <Source multiplicity="(0..*)" roleLabel="refers to" polymorphic="true">
+            <Class class="ModelSelector"/>
+        </Source>
+        <Target multiplicity="(0..*)" roleLabel="is referenced by" polymorphic="true">
+            <Class class="Model"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="ViewDefinition3d" displayLabel="3D View Definition" modifier="Abstract">
+        <BaseClass>ViewDefinition</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+        <ECProperty propertyName="Origin" typeName="point3d" description="Origin of the viewed volume on the lower, back, rear">
+            <ECCustomAttributes>
+                <CustomHandledProperty xmlns="BisCore.01.00.00"/>
+            </ECCustomAttributes>
+        </ECProperty>
+        <ECProperty propertyName="Extents" typeName="point3d" description="Size of the view diagonal">
+            <ECCustomAttributes>
+                <CustomHandledProperty xmlns="BisCore.01.00.00"/>
+            </ECCustomAttributes>
+        </ECProperty>
+        <ECProperty propertyName="Yaw" typeName="double" description="Yaw component of the view direction in degrees">
+            <ECCustomAttributes>
+                <CustomHandledProperty xmlns="BisCore.01.00.00"/>
+            </ECCustomAttributes>
+        </ECProperty>
+        <ECProperty propertyName="Pitch" typeName="double" description="Pitch component of the view direction in degrees">
+            <ECCustomAttributes>
+                <CustomHandledProperty xmlns="BisCore.01.00.00"/>
+            </ECCustomAttributes>
+        </ECProperty>
+        <ECProperty propertyName="Roll" typeName="double" description="Roll component of the view direction in degrees">
+            <ECCustomAttributes>
+                <CustomHandledProperty xmlns="BisCore.01.00.00"/>
+            </ECCustomAttributes>
+        </ECProperty>
+        <ECProperty propertyName="IsCameraOn" typeName="boolean" description="Is the camera actually turned on?" displayLabel="Is Camera On">
+            <ECCustomAttributes>
+                <CustomHandledProperty xmlns="BisCore.01.00.00"/>
+            </ECCustomAttributes>
+        </ECProperty>
+        <ECProperty propertyName="EyePoint" typeName="point3d" description="Camera eye point" displayLabel="Eye Point">
+            <ECCustomAttributes>
+                <CustomHandledProperty xmlns="BisCore.01.00.00"/>
+            </ECCustomAttributes>
+        </ECProperty>
+        <ECProperty propertyName="LensAngle" typeName="double" description="Camera lens angle in degrees" displayLabel="Lens Angle">
+            <ECCustomAttributes>
+                <CustomHandledProperty xmlns="BisCore.01.00.00"/>
+            </ECCustomAttributes>
+        </ECProperty>
+        <ECProperty propertyName="FocusDistance" typeName="double" description="Camera focus distance" displayLabel="Focus Distance">
+            <ECCustomAttributes>
+                <CustomHandledProperty xmlns="BisCore.01.00.00"/>
+            </ECCustomAttributes>
+        </ECProperty>
+    </ECEntityClass>
+    <ECEntityClass typeName="SpatialViewDefinition" description="A view of a spatially located volume." displayLabel="Spatial View Definition">
+        <BaseClass>ViewDefinition3d</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+        <ECNavigationProperty propertyName="ModelSelector" displayLabel="Model Selector" relationshipName="SpatialViewDefinitionUsesModelSelector" direction="forward">
+            <ECCustomAttributes>
+                <CustomHandledProperty xmlns="BisCore.01.00.00"/>
+            </ECCustomAttributes>
+        </ECNavigationProperty>
+    </ECEntityClass>
+    <ECEntityClass typeName="OrthographicViewDefinition" description="A spatial view that always show an parallel projection." displayLabel="Orthographic Spatial View">
+        <BaseClass>SpatialViewDefinition</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+    </ECEntityClass>
+    <ECEntityClass typeName="UrlLink" description="An information element that specifies a URL link." displayLabel="URL Link">
+        <BaseClass>LinkElement</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+            <DbIndexList xmlns="ECDbMap.02.00.00">
+                <Indexes>
+                    <DbIndex>
+                        <Name>ix_bis_UrlLink_Url</Name>
+                        <IsUnique>False</IsUnique>
+                        <Properties>
+                            <string>Url</string>
+                        </Properties>
+                    </DbIndex>
+                </Indexes>
+            </DbIndexList>
+        </ECCustomAttributes>
+        <ECProperty propertyName="Url" typeName="string" displayLabel="URL">
+            <ECCustomAttributes>
+                <CustomHandledProperty xmlns="BisCore.01.00.00"/>
+            </ECCustomAttributes>
+        </ECProperty>
+        <ECProperty propertyName="Description" typeName="string">
+            <ECCustomAttributes>
+                <CustomHandledProperty xmlns="BisCore.01.00.00"/>
+            </ECCustomAttributes>
+        </ECProperty>
+    </ECEntityClass>
+    <ECEntityClass typeName="RepositoryLink" description="An information element that links to a repository." displayLabel="Repository Link" modifier="Sealed">
+        <BaseClass>UrlLink</BaseClass>
+        <BaseClass>ISubModeledElement</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+        <ECProperty propertyName="RepositoryGuid" typeName="binary" displayLabel="Repository GUID" extendedTypeName="BeGuid">
+            <ECCustomAttributes>
+                <CustomHandledProperty xmlns="BisCore.01.00.00"/>
+                <HiddenProperty xmlns="CoreCustomAttributes.01.00.00"/>
+            </ECCustomAttributes>
+        </ECProperty>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="PartitionOriginatesFromRepository" modifier="Sealed" strength="referencing">
+        <BaseClass>ElementRefersToElements</BaseClass>
+        <Source multiplicity="(0..*)" roleLabel="originates from" polymorphic="true">
+            <Class class="InformationPartitionElement"/>
+        </Source>
+        <Target multiplicity="(0..*)" roleLabel="is origin of" polymorphic="true">
+            <Class class="RepositoryLink"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="PhysicalElement" description="A Physical Element is spatially located, has mass, and can be 'touched'." displayLabel="Physical Element" modifier="Abstract">
+        <BaseClass>SpatialElement</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="PhysicalElementAssemblesElements" modifier="None" strength="embedding">
+        <BaseClass>ElementOwnsChildElements</BaseClass>
+        <Source multiplicity="(0..1)" roleLabel="assembles" polymorphic="true">
+            <Class class="PhysicalElement"/>
+        </Source>
+        <Target multiplicity="(0..*)" roleLabel="is assembled by" polymorphic="true">
+            <Class class="PhysicalElement"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="PhysicalType" description="Defines a set of properties (the 'type') that can be associated with a Physical Element. A Physical Type has a strong correlation with something that can be ordered from a catalog since all instances share a common set of properties." displayLabel="Physical Type" modifier="Abstract">
+        <BaseClass>TypeDefinitionElement</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="PhysicalElementIsOfType" modifier="None" strength="referencing">
+        <BaseClass>GeometricElement3dHasTypeDefinition</BaseClass>
+        <Source multiplicity="(0..*)" roleLabel="is of" polymorphic="true">
+            <Class class="PhysicalElement"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="classifies" polymorphic="true">
+            <Class class="PhysicalType"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="PhysicalMaterial" displayLabel="Physical Material" modifier="Abstract">
+        <BaseClass>DefinitionElement</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+    </ECEntityClass>
+    <ECEntityClass typeName="SpatialModel" description="A container for persisting 3D geometric elements that are spatially located." displayLabel="Spatial Model" modifier="Abstract">
+        <BaseClass>GeometricModel3d</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+    </ECEntityClass>
+    <ECEntityClass typeName="PhysicalModel" description="A container for persisting physical elements that model physical space." displayLabel="Physical Model">
+        <BaseClass>SpatialModel</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+    </ECEntityClass>
+    <ECEntityClass typeName="PhysicalPortion" description="A Physical Portion represents an arbitrary portion of a larger Physical Element that will be broken down in more detail in a separate (sub) Physical Model." displayLabel="Physical Portion" modifier="Abstract">
+        <BaseClass>PhysicalElement</BaseClass>
+        <BaseClass>ISubModeledElement</BaseClass>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="PhysicalModelBreaksDownPhysicalPortion" modifier="None" strength="embedding" strengthDirection="backward">
+        <BaseClass>ModelModelsElement</BaseClass>
+        <Source multiplicity="(0..1)" roleLabel="breaks down" polymorphic="true">
+            <Class class="PhysicalModel"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is broken down by" polymorphic="true">
+            <Class class="PhysicalPortion"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="PhysicalPartition" description="A Physical Partition element indicates that there is a physical modeling perspective within the overall DgnDb information hierarchy. A Physical Partition is always parented to a Subject and broken down by a Physical Model." displayLabel="Physical Partition" modifier="Sealed">
+        <BaseClass>InformationPartitionElement</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+    </ECEntityClass>
+    <ECEntityClass typeName="TemplateRecipe3d" description="A recipe that uses a 3D template for creating new instances." displayLabel="3D Template Recipe">
+        <BaseClass>RecipeDefinitionElement</BaseClass>
+        <BaseClass>ISubModeledElement</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="PhysicalTypeHasTemplateRecipe" modifier="None" strength="referencing">
+        <BaseClass>TypeDefinitionHasRecipe</BaseClass>
+        <Source multiplicity="(0..*)" roleLabel="has" polymorphic="true">
+            <Class class="PhysicalType"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is referenced by" polymorphic="true">
+            <Class class="TemplateRecipe3d"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="RenderMaterial" displayLabel="Render Material" modifier="Sealed">
+        <BaseClass>DefinitionElement</BaseClass>
+        <BaseClass>IParentElement</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+        <ECProperty propertyName="PaletteName" typeName="string"/>
+        <ECProperty propertyName="Description" typeName="string"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="RenderMaterialOwnsRenderMaterials" modifier="None" strength="embedding">
+        <BaseClass>ElementOwnsChildElements</BaseClass>
+        <Source multiplicity="(0..1)" roleLabel="owns child" polymorphic="false">
+            <Class class="RenderMaterial"/>
+        </Source>
+        <Target multiplicity="(0..*)" roleLabel="is owned by parent" polymorphic="false">
+            <Class class="RenderMaterial"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="RepositoryModel" description="The singleton container of repository-related information elements." displayLabel="Repository Model" modifier="Sealed">
+        <BaseClass>DefinitionModel</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+    </ECEntityClass>
+    <ECEntityClass typeName="RoleElement" description="A real world entity is modeled as a Role Element when a set of external circumstances define an important role (one that is worth tracking) that is not intrinsic to the entity playing the role. For example, a person can play the role of a teacher or a rock can play the role of a boundary marker." displayLabel="Role Element" modifier="Abstract">
+        <BaseClass>Element</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+            <JoinedTablePerDirectSubclass xmlns="ECDbMap.02.00.00"/>
+            <NotSubclassableInReferencingSchemas xmlns="CoreCustomAttributes.01.00.00">
+                <Exceptions>
+                    <string>Functional:FunctionalElement</string>
+                </Exceptions>
+            </NotSubclassableInReferencingSchemas>
+        </ECCustomAttributes>
+    </ECEntityClass>
+    <ECEntityClass typeName="RoleModel" description="A container for persisting role elements." displayLabel="Role Model">
+        <BaseClass>Model</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+    </ECEntityClass>
+    <ECEntityClass typeName="SectionDrawing" displayLabel="Section Drawing">
+        <BaseClass>Drawing</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+    </ECEntityClass>
+    <ECEntityClass typeName="SectionDrawingModel" description="A container for persisting section drawing graphics." displayLabel="Section Drawing Model">
+        <BaseClass>DrawingModel</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+    </ECEntityClass>
+    <ECEntityClass typeName="Sheet">
+        <BaseClass>Document</BaseClass>
+        <BaseClass>ISubModeledElement</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+        <ECProperty propertyName="Scale" typeName="double"/>
+        <ECProperty propertyName="Height" typeName="double"/>
+        <ECProperty propertyName="Width" typeName="double"/>
+        <ECNavigationProperty propertyName="SheetTemplate" displayLabel="Sheet Template" relationshipName="SheetHasSheetTemplate" direction="forward"/>
+    </ECEntityClass>
+    <ECEntityClass typeName="SheetBorder" displayLabel="Sheet Border">
+        <BaseClass>DrawingGraphic</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+        <ECNavigationProperty propertyName="BorderTemplate" displayLabel="Border Template" relationshipName="SheetBorderHasSheetBorderTemplate" direction="forward"/>
+    </ECEntityClass>
+    <ECEntityClass typeName="SheetBorderTemplate" displayLabel="Sheet Border Template">
+        <BaseClass>Document</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+        <ECProperty propertyName="Height" typeName="double"/>
+        <ECProperty propertyName="Width" typeName="double"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="SheetBorderHasSheetBorderTemplate" modifier="Sealed" strength="referencing">
+        <Source multiplicity="(0..*)" roleLabel="has" polymorphic="true">
+            <Class class="SheetBorder"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="defines" polymorphic="true">
+            <Class class="SheetBorderTemplate"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="SheetTemplate" displayLabel="Sheet Template">
+        <BaseClass>Document</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+        <ECProperty propertyName="Height" typeName="double"/>
+        <ECProperty propertyName="Width" typeName="double"/>
+        <ECNavigationProperty propertyName="Border" relationshipName="SheetTemplateHasSheetBorder" direction="forward"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="SheetHasSheetTemplate" modifier="Sealed" strength="referencing">
+        <Source multiplicity="(0..*)" roleLabel="has" polymorphic="true">
+            <Class class="Sheet"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="defines" polymorphic="true">
+            <Class class="SheetTemplate"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="SheetModel" description="A container for persisting sheet views and graphics." displayLabel="Sheet Model">
+        <BaseClass>GraphicalModel2d</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="SheetModelBreaksDownSheet" modifier="None" strength="embedding" strengthDirection="backward">
+        <BaseClass>ModelModelsElement</BaseClass>
+        <Source multiplicity="(0..1)" roleLabel="breaks down" polymorphic="true">
+            <Class class="SheetModel"/>
+        </Source>
+        <Target multiplicity="(1..1)" roleLabel="is broken down by" polymorphic="true">
+            <Class class="Sheet"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECRelationshipClass typeName="SheetTemplateHasSheetBorder" modifier="Sealed" strength="referencing">
+        <Source multiplicity="(0..*)" roleLabel="has" polymorphic="true">
+            <Class class="SheetTemplate"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is referenced by" polymorphic="true">
+            <Class class="SheetBorder"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="SheetViewDefinition" displayLabel="Sheet View Definition">
+        <BaseClass>ViewDefinition2d</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+    </ECEntityClass>
+    <ECEntityClass typeName="SpatialIndex" description="The Spatial Index contains information used to optimize spatial queries. Like other database indices, it is automatically maintained by the system." displayLabel="Spatial Index" modifier="Sealed">
+        <ECCustomAttributes>
+            <ClassMap xmlns="ECDbMap.02.00.00">
+                <MapStrategy>ExistingTable</MapStrategy>
+                <TableName>dgn_SpatialIndex</TableName>
+                <ECInstanceIdColumn>ElementId</ECInstanceIdColumn>
+            </ClassMap>
+        </ECCustomAttributes>
+        <ECProperty propertyName="MinX" typeName="double" description="Minimum X value of the axis-aligned range box that encloses the spatial element" displayLabel="Min X" readOnly="true"/>
+        <ECProperty propertyName="MaxX" typeName="double" description="Maximum X value of the axis-aligned range box that encloses the spatial element" displayLabel="Max X" readOnly="true"/>
+        <ECProperty propertyName="MinY" typeName="double" description="Minimum Y value of the axis-aligned range box that encloses the spatial element" displayLabel="Min Y" readOnly="true"/>
+        <ECProperty propertyName="MaxY" typeName="double" description="Maximum Y value of the axis-aligned range box that encloses the spatial element" displayLabel="Max Y" readOnly="true"/>
+        <ECProperty propertyName="MinZ" typeName="double" description="Minimum Z value of the axis-aligned range box that encloses the spatial element" displayLabel="Min Z" readOnly="true"/>
+        <ECProperty propertyName="MaxZ" typeName="double" description="Maximum Z value of the axis-aligned range box that encloses the spatial element" displayLabel="Max Z" readOnly="true"/>
+    </ECEntityClass>
+    <ECEntityClass typeName="SpatialLocationType" description="Defines a set of properties (the 'type') that can be associated with a Spatial Location." displayLabel="Spatial Location Type" modifier="Abstract">
+        <BaseClass>TypeDefinitionElement</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="SpatialLocationIsOfType" modifier="None" strength="referencing">
+        <BaseClass>GeometricElement3dHasTypeDefinition</BaseClass>
+        <Source multiplicity="(0..*)" roleLabel="is of" polymorphic="true">
+            <Class class="SpatialLocationElement"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="classifies" polymorphic="true">
+            <Class class="SpatialLocationType"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="SpatialLocationModel" description="A container for persisting spatial location elements." displayLabel="Spatial Location Model">
+        <BaseClass>SpatialModel</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+    </ECEntityClass>
+    <ECEntityClass typeName="SpatialLocationPartition" description="A Spatial Location Partition element indicates that there is a spatial-location-related modeling perspective within the overall DgnDb information hierarchy. A Spatial Location Partition is always parented to a Subject and broken down by a Spatial Location Model." displayLabel="Spatial Location Partition" modifier="Sealed">
+        <BaseClass>InformationPartitionElement</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+    </ECEntityClass>
+    <ECEntityClass typeName="SpatialLocationPortion" description="A Spatial Location Portion represents an arbitrary portion of a larger Spatial Location Element that will be broken down in more detail in a separate (sub) Spatial Location Model." displayLabel="Spatial Location Portion" modifier="Abstract">
+        <BaseClass>SpatialLocationElement</BaseClass>
+        <BaseClass>ISubModeledElement</BaseClass>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="SpatialViewDefinitionUsesModelSelector" modifier="Sealed" strength="referencing">
+        <Source multiplicity="(0..*)" roleLabel="uses" polymorphic="true">
+            <Class class="SpatialViewDefinition"/>
+        </Source>
+        <Target multiplicity="(1..1)" roleLabel="is used by" polymorphic="true">
+            <Class class="ModelSelector"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="Subject" description="A Subject is an information element that describes what this repository (or part thereof) is about." modifier="Sealed">
+        <BaseClass>InformationReferenceElement</BaseClass>
+        <BaseClass>IParentElement</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+        <ECProperty propertyName="Description" typeName="string"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="SubjectOwnsPartitionElements" modifier="None" strength="embedding">
+        <BaseClass>ElementOwnsChildElements</BaseClass>
+        <Source multiplicity="(0..1)" roleLabel="owns" polymorphic="false">
+            <Class class="Subject"/>
+        </Source>
+        <Target multiplicity="(0..*)" roleLabel="is owned by" polymorphic="true">
+            <Class class="InformationPartitionElement"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECRelationshipClass typeName="SubjectOwnsSubjects" modifier="None" strength="embedding">
+        <BaseClass>ElementOwnsChildElements</BaseClass>
+        <Source multiplicity="(0..1)" roleLabel="owns child" polymorphic="false">
+            <Class class="Subject"/>
+        </Source>
+        <Target multiplicity="(0..*)" roleLabel="is owned by parent" polymorphic="false">
+            <Class class="Subject"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="TemplateViewDefinition2d" description="A View Definition used to display a 2D template model." displayLabel="2D Template View Definition">
+        <BaseClass>ViewDefinition2d</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+    </ECEntityClass>
+    <ECEntityClass typeName="TemplateViewDefinition3d" description="A View Definition used to display a 3D template model." displayLabel="3D Template View Definition">
+        <BaseClass>ViewDefinition3d</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+    </ECEntityClass>
+    <ECEntityClass typeName="TextAnnotation2d" displayLabel="2D Text Annotation">
+        <BaseClass>AnnotationElement2d</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+    </ECEntityClass>
+    <ECEntityClass typeName="TextAnnotationData" description="The aspect used to store text annotation data for 2D and 3D text annotation elements." displayLabel="Text Annotation Data" modifier="Sealed">
+        <BaseClass>ElementUniqueAspect</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+        <ECProperty propertyName="TextAnnotation" typeName="binary" displayLabel="Text Annotation">
+            <ECCustomAttributes>
+                <HiddenProperty xmlns="CoreCustomAttributes.01.00.00"/>
+            </ECCustomAttributes>
+        </ECProperty>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="TextAnnotation2dOwnsTextAnnotationData" modifier="None" strength="embedding">
+        <BaseClass>ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="TextAnnotation2d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="TextAnnotationData"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="TextAnnotation3d" displayLabel="3D Text Annotation">
+        <BaseClass>GraphicalElement3d</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="TextAnnotation3dOwnsTextAnnotationData" modifier="None" strength="embedding">
+        <BaseClass>ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="TextAnnotation3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="TextAnnotationData"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="TextAnnotationSeed" displayLabel="Text Annotation Seed" modifier="Sealed">
+        <BaseClass>DefinitionElement</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+        <ECProperty propertyName="Description" typeName="string" description="Description of the style">
+            <ECCustomAttributes>
+                <CustomHandledProperty xmlns="BisCore.01.00.00"/>
+            </ECCustomAttributes>
+        </ECProperty>
+        <ECProperty propertyName="Data" typeName="binary" description="Encoded style properties">
+            <ECCustomAttributes>
+                <CustomHandledProperty xmlns="BisCore.01.00.00"/>
+                <HiddenProperty xmlns="CoreCustomAttributes.01.00.00"/>
+            </ECCustomAttributes>
+        </ECProperty>
+    </ECEntityClass>
+    <ECEntityClass typeName="Texture" modifier="Sealed">
+        <BaseClass>DefinitionElement</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+        <ECProperty propertyName="Description" typeName="string">
+            <ECCustomAttributes>
+                <CustomHandledProperty xmlns="BisCore.01.00.00"/>
+            </ECCustomAttributes>
+        </ECProperty>
+        <ECProperty propertyName="Data" typeName="binary" description="Encoded texture data">
+            <ECCustomAttributes>
+                <CustomHandledProperty xmlns="BisCore.01.00.00"/>
+                <HiddenProperty xmlns="CoreCustomAttributes.01.00.00"/>
+            </ECCustomAttributes>
+        </ECProperty>
+        <ECProperty propertyName="Format" typeName="int" description="Format of the encoded texture data">
+            <ECCustomAttributes>
+                <CustomHandledProperty xmlns="BisCore.01.00.00"/>
+            </ECCustomAttributes>
+        </ECProperty>
+        <ECProperty propertyName="Width" typeName="int" displayLabel="Width">
+            <ECCustomAttributes>
+                <CustomHandledProperty xmlns="BisCore.01.00.00"/>
+            </ECCustomAttributes>
+        </ECProperty>
+        <ECProperty propertyName="Height" typeName="int" displayLabel="Height">
+            <ECCustomAttributes>
+                <CustomHandledProperty xmlns="BisCore.01.00.00"/>
+            </ECCustomAttributes>
+        </ECProperty>
+        <ECProperty propertyName="Flags" typeName="int">
+            <ECCustomAttributes>
+                <CustomHandledProperty xmlns="BisCore.01.00.00"/>
+            </ECCustomAttributes>
+        </ECProperty>
+    </ECEntityClass>
+    <ECEntityClass typeName="ViewAttachment" displayLabel="View Attachment">
+        <BaseClass>GraphicalElement2d</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+        <ECNavigationProperty propertyName="View" description="The view that is to be attached" relationshipName="ViewIsAttached" direction="backward"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ViewDefinitionUsesCategorySelector" modifier="Sealed" strength="referencing">
+        <Source multiplicity="(0..*)" roleLabel="uses" polymorphic="true">
+            <Class class="ViewDefinition"/>
+        </Source>
+        <Target multiplicity="(1..1)" roleLabel="is used by" polymorphic="false">
+            <Class class="CategorySelector"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECRelationshipClass typeName="ViewDefinitionUsesDisplayStyle" modifier="Sealed" strength="referencing">
+        <Source multiplicity="(0..*)" roleLabel="uses" polymorphic="true">
+            <Class class="ViewDefinition"/>
+        </Source>
+        <Target multiplicity="(1..1)" roleLabel="is used by" polymorphic="true">
+            <Class class="DisplayStyle"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECRelationshipClass typeName="ViewIsAttached" modifier="Sealed" strength="referencing">
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="ViewDefinition"/>
+        </Source>
+        <Target multiplicity="(0..*)" roleLabel="is owned by" polymorphic="true">
+            <Class class="ViewAttachment"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="VolumeElement" description="A Volume Element is a Spatial Location Element that is restricted to defining a volume." displayLabel="Volume Element">
+        <BaseClass>SpatialLocationElement</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+    </ECEntityClass>
+    <ECEntityClass typeName="WebMercatorModel" displayLabel="Web Mercator Model">
+        <BaseClass>SpatialModel</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+    </ECEntityClass>
+</ECSchema>

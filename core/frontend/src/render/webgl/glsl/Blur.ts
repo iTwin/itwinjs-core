@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module WebGL */
+/** @packageDocumentation
+ * @module WebGL
+ */
 
 import { VariableType, FragmentShaderComponent, VariablePrecision } from "../ShaderBuilder";
 import { TextureUnit } from "../RenderFlags";
@@ -21,7 +23,7 @@ const computeBlur = `
   float texelStepSize = u_blurSettings.z;
 
   vec2 tc = windowCoordsToTexCoords(gl_FragCoord.xy);
-  vec2 step = texelStepSize / u_viewport.zw;
+  vec2 step = texelStepSize / u_viewport;
 
   vec3 gaussian;
   const float twoPi = 6.283185307179586;
@@ -46,7 +48,7 @@ const computeBlur = `
 `;
 
 /** @internal */
-export function createBlurProgram(context: WebGLRenderingContext): ShaderProgram {
+export function createBlurProgram(context: WebGLRenderingContext | WebGL2RenderingContext): ShaderProgram {
   const builder = createViewportQuadBuilder(true);
   const frag = builder.frag;
 

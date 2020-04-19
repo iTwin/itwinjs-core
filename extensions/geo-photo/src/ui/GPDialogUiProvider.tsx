@@ -1,0 +1,231 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+import * as React from "react";
+
+import { StopWatch } from "@bentley/bentleyjs-core";
+import { UiItemsProvider, DialogPropertySyncItem, StageUsage, ToolbarUsage, ToolbarOrientation, CommonToolbarItem, ToolbarItemUtilities, UiDataProvider } from "@bentley/ui-abstract";
+import { UiEvent } from "@bentley/ui-core";
+import { TreeDataProvider } from "@bentley/ui-components";
+import { ModelessDialogManager } from "@bentley/ui-framework";
+
+import { GeoPhotoDialog } from "./GPDialog";
+import geoPhotoButtonSvg from "./geoPhoto-button.svg?sprite";
+import { GeoPhotoExtension, GeoPhotoSettings } from "../geoPhoto";
+import { GPLoadTracker, PhotoTree } from "../PhotoTree";
+
+export interface SyncTreeDataEventArgs {
+  treeData: TreeDataProvider | undefined;
+}
+
+export interface SyncTitleEventArgs {
+  title: string;
+}
+
+export class SyncDataTreeChangeEvent extends UiEvent<SyncTreeDataEventArgs> { }
+
+export class SyncTitleEvent extends UiEvent<SyncTitleEventArgs> { }
+export class SyncShowMarkersEvent extends UiEvent<boolean> { }
+export class SyncSettingsEvent extends UiEvent<GeoPhotoSettings> { }
+
+export class GPDialogUiProvider extends UiDataProvider implements UiItemsProvider, GPLoadTracker {
+  // either 0 while finding the folder and file counts, or 1 if processing the folders/files.
+  public loadPhase: number = 0;
+  public readonly loadPhasePropertyName = "loadPhase";
+
+  // the number of folders in ProjectShare that we are going to process.
+  public folderCount: number = 0;
+  public readonly folderCountPropertyName = "folderCount";
+
+  public folderName: string = "";
+  public readonly folderNamePropertyName = "folderName";
+
+  // the number of files in ProjectShare that we are going to process.
+  public fileCount: number = 0;
+  public readonly fileCountPropertyName = "fileCount";
+
+  // the folder we are currently working on.
+  public currentFolder: number = 0;
+  public readonly currentFolderPropertyName = "currentFolder";
+
+  // the file that we are working on.
+  public currentFile: number = 0;
+  public readonly currentFilePropertyName = "currentFile";
+
+  // the number of photos located so far.
+  public photoCount: number = 0;
+  public readonly photoCountPropertyName = "photoCount";
+
+  // the number of panoramas that we have located so far.
+  public panoramaCount: number = 0;
+  public readonly panoramaCountPropertyName = "panoramaCount";
+
+  public readonly id = "GPDialogUiProvider";
+
+  public photoTree: PhotoTree | undefined = undefined;
+  public onSyncDataTreeEvent = new SyncDataTreeChangeEvent();
+  public onSyncShowMarkersEvent = new SyncShowMarkersEvent();
+  public onSyncSettingsEvent = new SyncSettingsEvent();
+
+  public title: string = this.extension.i18n.translate("geoPhoto:LoadDialog.LoadTitle");
+  public onSyncTitleEvent = new SyncTitleEvent();
+
+  private _reportStopWatch: StopWatch | undefined = undefined;
+  private _nextET: number = 0;
+
+  public constructor(public extension: GeoPhotoExtension) {
+    super();
+  }
+
+  public syncLoadPhaseInUi() {
+    const syncArgs: DialogPropertySyncItem[] = [{ value: { value: this.loadPhase }, propertyName: this.loadPhasePropertyName }];
+    this.onSyncPropertiesChangeEvent.emit({ properties: syncArgs });
+  }
+
+  private syncFolderCountInUi() {
+    const syncArgs: DialogPropertySyncItem[] = [{ value: { value: this.folderCount }, propertyName: this.folderCountPropertyName }];
+    this.onSyncPropertiesChangeEvent.emit({ properties: syncArgs });
+  }
+
+  private syncFolderNameInUi() {
+    const syncArgs: DialogPropertySyncItem[] = [{ value: { value: this.folderName }, propertyName: this.folderNamePropertyName }];
+    this.onSyncPropertiesChangeEvent.emit({ properties: syncArgs });
+  }
+
+  private syncFileCountInUi() {
+    const syncArgs: DialogPropertySyncItem[] = [{ value: { value: this.fileCount }, propertyName: this.folderNamePropertyName }];
+    this.onSyncPropertiesChangeEvent.emit({ properties: syncArgs });
+  }
+
+  // synch the Phase1 Counts (folders, files, photos, and panoramas) every .1 second.
+  private syncPhase1Counts(final: boolean) {
+    if (final) {
+      // discard stopwatch and sync.
+      this._reportStopWatch = undefined;
+    } else {
+      // start stopwatch if not already going.
+      if (!this._reportStopWatch) {
+        this._reportStopWatch = new StopWatch(undefined, true);
+        this._nextET = 0;
+      } else if (this._reportStopWatch.elapsed.milliseconds < this._nextET) {
+        return;
+      }
+      this._nextET += 200;
+    }
+    const syncArgs: DialogPropertySyncItem[] = [
+      { value: { value: this.currentFolder }, propertyName: this.currentFolderPropertyName },
+      { value: { value: this.currentFile }, propertyName: this.currentFilePropertyName },
+      { value: { value: this.photoCount }, propertyName: this.photoCountPropertyName },
+      { value: { value: this.panoramaCount }, propertyName: this.panoramaCountPropertyName },
+    ];
+    this.onSyncPropertiesChangeEvent.emit({ properties: syncArgs });
+  }
+
+  public syncTitle(title: string) {
+    this.title = title;
+    this.onSyncTitleEvent.emit({ title });
+  }
+
+  public syncTreeData(tree: PhotoTree) {
+    this.photoTree = tree;
+    this.onSyncDataTreeEvent.emit({ treeData: tree.dataProvider });
+  }
+
+  public syncShowMarkers() {
+    this.onSyncShowMarkersEvent.emit(this.extension.settings.showMarkers);
+  }
+
+  public syncSettings(newSettings: GeoPhotoSettings) {
+    this.onSyncSettingsEvent.emit(newSettings);
+  }
+
+  public showGeoPhotoDialog = () => {
+    if (!ModelessDialogManager.getDialogInfo(GeoPhotoDialog.id))
+      ModelessDialogManager.openDialog(<GeoPhotoDialog dataProvider={this} />, GeoPhotoDialog.id);
+  }
+
+  // implementation of GPLoadTracker ---------
+  // called when changing from one phase of loading to another.
+  public setLoadPhase(loadPhase: number): void {
+    this.loadPhase = loadPhase;
+    this.syncLoadPhaseInUi();
+  }
+
+  // called when we start to process a folder in the ProjectShare repository
+  public startFolder(folderName: string): void {
+    this.folderName = folderName;
+    this.syncFolderNameInUi();
+  }
+
+  // called when finished processing a folder in the ProjectShare repository
+  public doneFolder(): void {
+    this.folderCount++;
+    this.syncFolderCountInUi();
+  }
+
+  // called when a jpeg file is found in the ProjectShare repository.
+  public foundFile(final: boolean): void {
+    if (!final)
+      this.fileCount++;
+    if (final || (0 === this.fileCount % 5)) {
+      this.syncFileCountInUi();
+    }
+  }
+
+  // called when a file has been discovered to be a geolocated jpeg file while processing the entries in the PhotoTree.
+  public foundPhoto(final: boolean): void {
+    if (!final)
+      this.photoCount++;
+    this.syncPhase1Counts(final);
+  }
+
+  // called when a file has been discovered to be a panorama while processing the entries in the PhotoTree.
+  public foundPanorama(final: boolean): void {
+    if (!final)
+      this.panoramaCount++;
+    this.syncPhase1Counts(final);
+  }
+
+  // called when moving to a new file while processing the entries in the PhotoTree.
+  public nextFile(final: boolean): void {
+    if (!final)
+      this.currentFile++;
+    this.syncPhase1Counts(final);
+  }
+
+  // called when moving to a new folder while processing the entries in the PhotoTree.
+  public nextFolder(): void {
+    this.currentFolder++;
+    this.syncPhase1Counts(false);
+  }
+  // end of implementation of GPLoadTracker ---------
+
+  // called when there has been a change to the selected folders in the dialog.
+  public markerVisibilityChange(changes: Array<{ name: string, visible: boolean }>) {
+    if (!this.photoTree)
+      return;
+
+    changes.forEach((change) => {
+      const entry = this.photoTree!.findEntry(change.name);
+      if (entry)
+        entry.visible = change.visible;
+    });
+    this.extension.visibilityChange().catch((_err) => { });
+  }
+
+  // called when the iModel is closed
+  public removeUi() {
+    if (ModelessDialogManager.getDialogInfo(GeoPhotoDialog.id))
+      ModelessDialogManager.closeDialog(GeoPhotoDialog.id);
+  }
+
+  /** Method called by applications that support extension provided tool buttons.  */
+  public provideToolbarButtonItems(_stageId: string, stageUsage: StageUsage, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation): CommonToolbarItem[] {
+    if (stageUsage === StageUsage.General && toolbarUsage === ToolbarUsage.ContentManipulation && toolbarOrientation === ToolbarOrientation.Horizontal) {
+      const simpleActionSpec = ToolbarItemUtilities.createActionButton("geoPhotoExtension:openDialog", 1000, `svg:${geoPhotoButtonSvg}`, "Show GeoPhoto Markers", this.showGeoPhotoDialog);
+      return [simpleActionSpec];
+    }
+    return [];
+  }
+}

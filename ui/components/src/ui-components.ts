@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
 // cSpell:ignore iconpicker lineweight
@@ -22,6 +22,7 @@ export * from "./ui-components/common/selection/SelectionHandler";
 export * from "./ui-components/common/showhide/ShowHideDialog";
 export * from "./ui-components/common/showhide/ShowHideItem";
 export * from "./ui-components/common/showhide/ShowHideMenu";
+export * from "./ui-components/common/UseAsyncValue";
 
 export * from "./ui-components/converters/TypeConverter";
 export * from "./ui-components/converters/TypeConverterManager";
@@ -33,6 +34,7 @@ export * from "./ui-components/converters/NavigationPropertyTypeConverter";
 export * from "./ui-components/converters/NumericTypeConverter";
 export * from "./ui-components/converters/PointTypeConverter";
 export * from "./ui-components/converters/StringTypeConverter";
+export * from "./ui-components/converters/CompositeTypeConverter";
 
 export * from "./ui-components/converters/valuetypes/ConvertedTypes";
 
@@ -56,14 +58,20 @@ export * from "./ui-components/editors/IconEditor";
 export * from "./ui-components/filtering/FilteringInput";
 export * from "./ui-components/filtering/ResultSelector";
 
+export * from "./ui-components/navigationaids/CubeNavigationAid";
+export * from "./ui-components/navigationaids/DrawingNavigationAid";
+
 export * from "./ui-components/oidc/SignIn";
 
-export * from "./ui-components/properties/ValueRendererManager";
+export * from "./ui-components/selectable-content/SelectableContent";
 
+export * from "./ui-components/properties/ValueRendererManager";
 export * from "./ui-components/properties/renderers/NonPrimitivePropertyRenderer";
 export * from "./ui-components/properties/renderers/PrimitivePropertyRenderer";
 export * from "./ui-components/properties/renderers/PropertyRenderer";
 export * from "./ui-components/properties/renderers/PropertyView";
+export * from "./ui-components/properties/renderers/ActionButtonList";
+export * from "./ui-components/properties/renderers/ActionButtonRenderer";
 
 export * from "./ui-components/timeline/interfaces";
 export * from "./ui-components/timeline/BaseTimelineDataProvider";
@@ -76,6 +84,11 @@ export * from "./ui-components/timeline/TimelineComponent";
 export * from "./ui-components/timeline/DayPicker";
 export * from "./ui-components/timeline/SolarTimeline";
 export * from "./ui-components/timeline/BaseSolarDataProvider";
+
+export * from "./ui-components/toolbar/Toolbar";
+export * from "./ui-components/toolbar/PopupItem";
+export * from "./ui-components/toolbar/PopupItemWithDrag";
+export * from "./ui-components/toolbar/Item";
 
 export * from "./ui-components/properties/renderers/label/NonPrimitivePropertyLabelRenderer";
 export * from "./ui-components/properties/renderers/label/PrimitivePropertyLabelRenderer";
@@ -113,16 +126,17 @@ export * from "./ui-components/table/component/Table";
 export * from "./ui-components/table/component/TableColumn";
 export * from "./ui-components/table/hocs/withDragDrop";
 
-export * from "./ui-components/tree/TreeDataProvider";
-export * from "./ui-components/tree/HighlightingEngine";
-export * from "./ui-components/tree/component/Tree";
-export * from "./ui-components/tree/component/BeInspireTree";
-export * from "./ui-components/tree/component/Node";
-export * from "./ui-components/tree/CellEditingEngine";
-export * from "./ui-components/tree/ImageLoader";
-export * from "./ui-components/tree/hocs/withDragDrop";
-export * from "./ui-components/tree/SimpleTreeDataProvider";
+export * from "./ui-components/tooltip/UITooltipRenderer";
 
+export * from "./ui-components/tree/TreeDataProvider";
+export * from "./ui-components/tree/SimpleTreeDataProvider";
+export * from "./ui-components/tree/HighlightingEngine";
+export * from "./ui-components/tree/ImageLoader";
+export * from "./ui-components/tree/deprecated/component/Tree";
+export * from "./ui-components/tree/deprecated/component/BeInspireTree";
+export * from "./ui-components/tree/deprecated/component/Node";
+export * from "./ui-components/tree/deprecated/CellEditingEngine";
+export * from "./ui-components/tree/deprecated/hocs/withDragDrop";
 export * from "./ui-components/tree/controlled/TreeActions";
 export * from "./ui-components/tree/controlled/TreeEventDispatcher";
 export * from "./ui-components/tree/controlled/TreeEventHandler";
@@ -139,17 +153,9 @@ export * from "./ui-components/tree/controlled/component/TreeRenderer";
 export * from "./ui-components/viewport/ViewportComponent";
 export * from "./ui-components/viewport/ViewportComponentEvents";
 
-// Set the version number so it can be found at runtime. BUILD_SEMVER is replaced at build time by the webpack DefinePlugin.
-declare var BUILD_SEMVER: string;
-// istanbul ignore next
-if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") && window) {
-  if (!(window as any).iModelJsVersions)
-    (window as any).iModelJsVersions = new Map<string, string>();
-  (window as any).iModelJsVersions.set("ui-components", BUILD_SEMVER);
-}
-
 /** @docs-package-description
- * The ui-components package contains React components that are data-oriented, such as PropertyGrid, Table, Tree and Breadcrumb.
+ * The ui-components package contains React components that are data-oriented, such as PropertyGrid, Table, Tree and Viewport.
+ * For more information, see [learning about ui-components]($docs/learning/ui/components/index.md).
  */
 /**
  * @docs-group-description Common
@@ -157,11 +163,11 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
  */
 /**
  * @docs-group-description Breadcrumb
- * Classes for working with a Breadcrumb.
+ * Classes and components for working with a Breadcrumb.
  */
 /**
  * @docs-group-description Color
- * Classes for working with and picking a Color.
+ * Classes and components for working with and picking a Color.
  */
 /**
  * @docs-group-description DragDrop
@@ -169,35 +175,47 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
  */
 /**
  * @docs-group-description Filtering
- * Classes for working with filtering.
+ * Classes and components for working with filtering.
  */
 /**
  * @docs-group-description LineWeight
- * Classes for working with and picking a Line Weight.
+ * Classes and components for working with and picking a Line Weight.
+ */
+/**
+ * @docs-group-description NavigationAids
+ * Classes and components for working with Navigation Aids.
  */
 /**
  * @docs-group-description OIDC
  * Components for working with OIDC and Sign-in.
  */
 /**
+ * @docs-group-description SelectableContent
+ * Classes and components for working with SelectableContent component.
+ */
+/**
  * @docs-group-description Properties
- * Classes for working with Properties.
+ * Classes and components for working with Properties.
  */
 /**
  * @docs-group-description PropertyEditors
- * Classes for working with Property Editors.
+ * Classes and components for working with Property Editors.
  */
 /**
  * @docs-group-description PropertyGrid
- * Classes for working with a PropertyGrid.
+ * Classes and components for working with a PropertyGrid.
  */
 /**
  * @docs-group-description Table
- * Classes for working with a Table.
+ * Classes and components for working with a Table.
+ */
+/**
+ * @docs-group-description Toolbar
+ * Functions and components that provide a Toolbar.
  */
 /**
  * @docs-group-description Tree
- * Classes for working with a Tree.
+ * Classes and components for working with a Tree.
  */
 /**
  * @docs-group-description TypeConverters
@@ -205,5 +223,5 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
  */
 /**
  * @docs-group-description Viewport
- * Classes for working with a Viewport.
+ * Classes and components for working with a Viewport.
  */

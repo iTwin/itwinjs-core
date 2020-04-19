@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module ConfigurableUi */
+/** @packageDocumentation
+ * @module ConfigurableUi
+ */
 
 import { UiError } from "@bentley/ui-abstract";
 
@@ -16,10 +18,10 @@ import { WorkflowManager, WorkflowPropsList, WorkflowProps } from "../workflow/W
 import { KeyboardShortcutManager, KeyboardShortcutProps } from "../keyboardshortcut/KeyboardShortcut";
 import { FrontstageProvider } from "../frontstage/FrontstageProvider";
 import { SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
-import { StandardRotationNavigationAidControl } from "../navigationaids/StandardRotationNavigationAid";
+import { CubeNavigationAidControl } from "../navigationaids/CubeNavigationAidControl";
+import { DrawingNavigationAidControl } from "../navigationaids/DrawingNavigationAidControl";
 import { SheetNavigationAidControl } from "../navigationaids/SheetNavigationAid";
-import { DrawingNavigationAidControl } from "../navigationaids/DrawingNavigationAid";
-import { CubeNavigationAidControl } from "../navigationaids/CubeNavigationAid";
+import { StandardRotationNavigationAidControl } from "../navigationaids/StandardRotationNavigationAid";
 import { ToolUiManager } from "../zones/toolsettings/ToolUiManager";
 import { UiFramework } from "../UiFramework";
 import { ContentLayoutProps } from "../content/ContentLayoutProps";

@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
@@ -132,7 +132,7 @@ describe("Workflow & WorkflowManager", () => {
       expect(WorkflowManager.defaultWorkflowId).to.eq("ExampleWorkflow");
     });
 
-    it("setActiveWorkflowAndTask & isActive", () => {
+    it("setActiveWorkflowAndTask & isActive", async () => {
       const workflow = WorkflowManager.findWorkflow("ExampleWorkflow");
       expect(workflow).to.not.be.undefined;
 
@@ -141,7 +141,7 @@ describe("Workflow & WorkflowManager", () => {
         expect(task1).to.not.be.undefined;
 
         if (task1) {
-          WorkflowManager.setActiveWorkflowAndTask(workflow, task1); // tslint:disable-line:no-floating-promises
+          await WorkflowManager.setActiveWorkflowAndTask(workflow, task1);
           expect(workflow.isActive).to.be.true;
           expect(task1.isActive).to.be.true;
           expect(WorkflowManager.activeWorkflow).to.eq(workflow);

@@ -1,15 +1,19 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Breadcrumb */
+/** @packageDocumentation
+ * @module Breadcrumb
+ */
 
 import * as React from "react";
 import { DndComponentClass } from "react-dnd";
 import classnames from "classnames";
-import { TreeDragDropType } from "../../tree/hocs/withDragDrop";
+import { TreeDragDropType } from "../../tree/deprecated/hocs/withDragDrop";
 import { withDragSource, WithDragSourceProps } from "../../dragdrop/withDragSource";
 import { withDropTarget, WithDropTargetProps } from "../../dragdrop/withDropTarget";
+
+// tslint:disable:deprecation
 
 /** @internal */
 export interface DragDropBreadcrumbNodeProps extends React.AllHTMLAttributes<HTMLSpanElement> {

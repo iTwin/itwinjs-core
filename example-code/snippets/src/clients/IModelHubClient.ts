@@ -1,10 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
 // __PUBLISH_EXTRACT_START__ IModelHubClient.example-code
-import { IModelHubClient } from "@bentley/imodeljs-clients";
+import { IModelHubClient } from "@bentley/imodelhub-client";
 import { AzureFileHandler, IOSAzureFileHandler } from "@bentley/imodeljs-clients-backend";
 import { MobileRpcConfiguration } from "@bentley/imodeljs-common";
 

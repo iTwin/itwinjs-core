@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { mount, shallow } from "enzyme";
@@ -8,7 +8,8 @@ import * as sinon from "sinon";
 import { expect } from "chai";
 import * as moq from "typemoq";
 import TestUtils from "../TestUtils";
-import { BadgeType } from "@bentley/ui-abstract";
+
+import { BadgeType, WidgetState } from "@bentley/ui-abstract";
 import {
   HorizontalAnchor,
   TabMode,
@@ -17,9 +18,9 @@ import {
   Stacked as NZ_WidgetStack,
   ResizeHandle,
 } from "@bentley/ui-ninezone";
+
 import {
   ZoneState,
-  WidgetState,
   ConfigurableUiManager,
   WidgetControl,
   ConfigurableCreateInfo,
@@ -53,6 +54,8 @@ const defaultWidgetTabs = {
 };
 
 describe("WidgetStack", () => {
+  const sandbox = sinon.createSandbox();
+
   before(async () => {
     await TestUtils.initializeUiFramework();
 
@@ -68,7 +71,7 @@ describe("WidgetStack", () => {
     constructor(info: ConfigurableCreateInfo, options: any) {
       super(info, options);
 
-      this.reactElement = (
+      this.reactNode = (
         <div>
           <span>This is the Test Widget 1</span>
         </div>
@@ -80,7 +83,7 @@ describe("WidgetStack", () => {
     constructor(info: ConfigurableCreateInfo, options: any) {
       super(info, options);
 
-      this.reactElement = (
+      this.reactNode = (
         <div>
           <span>This is the Test Widget 2</span>
         </div>
@@ -138,7 +141,6 @@ describe("WidgetStack", () => {
     widgets: [],
     widgetTabs: defaultWidgetTabs,
   };
-  let createRefStub: sinon.SinonStub | undefined;
 
   beforeEach(() => {
     getWidgetContentRef.reset();
@@ -146,7 +148,7 @@ describe("WidgetStack", () => {
   });
 
   afterEach(() => {
-    createRefStub && createRefStub.restore();
+    sandbox.restore();
   });
 
   it("should produce a WidgetStack with 2 widgets", async () => {
@@ -265,7 +267,7 @@ describe("WidgetStack", () => {
       current: null,
     };
     sinon.stub(ref, "current").set(() => { });
-    createRefStub = sinon.stub(React, "createRef").returns(ref);
+    sandbox.stub(React, "createRef").returns(ref);
 
     const sut = mount(<WidgetStack
       {...props}
@@ -339,7 +341,8 @@ describe("WidgetStackTabs", () => {
 describe("WidgetStackTabGroup", () => {
   const onTabClick = moq.Mock.ofType<WidgetStackTabGroupProps["onTabClick"]>();
   const onTabDragStart = moq.Mock.ofType<WidgetStackTabGroupProps["onTabDragStart"]>();
-  let createRefStub: sinon.SinonStub | undefined;
+  const sandbox = sinon.createSandbox();
+
   const props = {
     activeTabIndex: 0,
     draggedWidget: undefined,
@@ -362,7 +365,7 @@ describe("WidgetStackTabGroup", () => {
   });
 
   afterEach(() => {
-    createRefStub && createRefStub.restore();
+    sandbox.restore();
   });
 
   it("should render with draggedWidget", () => {
@@ -379,8 +382,7 @@ describe("WidgetStackTabGroup", () => {
       }}
       tabs={[{
         title: "Tab1",
-      },
-      {
+      }, {
         title: "Tab2",
       }]}
       widgetId={6}
@@ -452,7 +454,7 @@ describe("WidgetStackTabGroup", () => {
       current: null,
     };
     sinon.stub(ref, "current").set(() => { });
-    createRefStub = sinon.stub(React, "createRef").returns(ref);
+    sandbox.stub(React, "createRef").returns(ref);
 
     const sut = mount<WidgetStackTabGroup>(<WidgetStackTabGroup
       {...props}
@@ -472,7 +474,7 @@ describe("WidgetStackTabGroup", () => {
       current: null,
     };
     sinon.stub(ref, "current").set(() => { });
-    createRefStub = sinon.stub(React, "createRef").returns(ref);
+    sandbox.stub(React, "createRef").returns(ref);
 
     const sut = mount<WidgetStackTabGroup>(<WidgetStackTabGroup
       {...props}

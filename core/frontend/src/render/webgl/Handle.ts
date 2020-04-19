@@ -1,15 +1,19 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module WebGL */
+/** @packageDocumentation
+ * @module WebGL
+ */
 
-import { assert, IDisposable } from "@bentley/bentleyjs-core";
+import { assert } from "@bentley/bentleyjs-core";
 import { GL } from "./GL";
 import { QParams3d, QParams2d } from "@bentley/imodeljs-common";
 import { Matrix3, Matrix4 } from "./Matrix";
 import { System } from "./System";
 import { Point3d } from "@bentley/geometry-core";
+import { WebGLDisposable } from "./Disposable";
+import { SyncToken } from "./Sync";
 
 /** @internal */
 export type BufferData = number | Int8Array | Int16Array | Int32Array | Uint8Array | Uint16Array | Uint32Array | Uint8ClampedArray | Float32Array | Float64Array | DataView | ArrayBuffer;
@@ -74,7 +78,7 @@ export class BufferParameters {
  * An abstract class which specifies an interface for binding and unbinding vertex buffers and their associated state.
  * @internal
  */
-export abstract class BuffersContainer implements IDisposable {
+export abstract class BuffersContainer implements WebGLDisposable {
   protected _linkages: BufferHandleLinkage[] = [];
 
   protected constructor() { }
@@ -86,14 +90,19 @@ export abstract class BuffersContainer implements IDisposable {
   public abstract addBuffer(buffer: BufferHandle, params: BufferParameters[]): void;
   public abstract appendLinkages(linkages: BufferHandleLinkage[]): void;
 
-  public dispose() { } // NB: BufferHandle objects contained within BufferHandleLinkage entries are disposed where they are created because they could be shared among multiple BuffersContainer objects.
+  public abstract get isDisposed(): boolean;
+  public abstract dispose(): void; // NB: BufferHandle objects contained within BufferHandleLinkage entries are disposed where they are created because they could be shared among multiple BuffersContainer objects.
 
   public static create(): BuffersContainer {
-    const vaoExt = System.instance.capabilities.queryExtensionObject<OES_vertex_array_object>("OES_vertex_array_object");
-    if (undefined !== vaoExt) {
-      return new VAOContainer(vaoExt);
-    } else {
-      return new VBOContainer();
+    if (System.instance.capabilities.isWebGL2)
+      return new VAOContainerWebGL2(System.instance.context as WebGL2RenderingContext);
+    else {
+      const vaoExt = System.instance.capabilities.queryExtensionObject<OES_vertex_array_object>("OES_vertex_array_object");
+      if (undefined !== vaoExt) {
+        return new VAOContainerWebGL1(vaoExt);
+      } else {
+        return new VBOContainer();
+      }
     }
   }
 }
@@ -102,23 +111,15 @@ export abstract class BuffersContainer implements IDisposable {
  * A BuffersContainer implementation which uses VAOs for binding and unbinding buffer state.
  * @internal
  */
-export class VAOContainer extends BuffersContainer {
-  private _vaoExt: OES_vertex_array_object;
-  private _vao: VertexArrayObjectHandle;
+export abstract class VAOContainer extends BuffersContainer {
 
-  public constructor(vaoExt: OES_vertex_array_object) {
+  public constructor() {
     super();
-    this._vaoExt = vaoExt;
-    this._vao = new VertexArrayObjectHandle(this._vaoExt);
   }
 
-  public bind(): void {
-    this._vao.bind();
-  }
+  public bind(): void { }
 
-  public unbind(): void {
-    VertexArrayObjectHandle.unbind(this._vaoExt);
-  }
+  public unbind(): void { }
 
   public addBuffer(buffer: BufferHandle, params: BufferParameters[]): void {
     const linkage = BufferHandleLinkage.create(buffer, params);
@@ -146,8 +147,65 @@ export class VAOContainer extends BuffersContainer {
     this.unbind();
   }
 
+  public get isDisposed(): boolean { return false; }
+
+  public dispose(): void { }
+}
+
+/**
+ * A BuffersContainer implementation for WebGL1 which uses VAOs for binding and unbinding buffer state.
+ * @internal
+ */
+export class VAOContainerWebGL1 extends VAOContainer {
+  protected _vao: VertexArrayObjectHandle;
+  private _vaoExt: OES_vertex_array_object;
+
+  public constructor(context: OES_vertex_array_object) {
+    super();
+    this._vaoExt = context;
+    this._vao = new VertexArrayObjectHandle(this._vaoExt);
+  }
+
+  public bind(): void {
+    this._vao.bind();
+  }
+
+  public unbind(): void {
+    VertexArrayObjectHandle.unbind(this._vaoExt);
+  }
+
+  public get isDisposed(): boolean { return this._vao.isDisposed; }
+
   public dispose(): void {
-    super.dispose();
+    this._vao.dispose();
+  }
+}
+
+/**
+ * A BuffersContainer implementation for WebGL2 which uses VAOs for binding and unbinding buffer state.
+ * @internal
+ */
+export class VAOContainerWebGL2 extends VAOContainer {
+  protected _vao: VertexArrayObjectHandleWebGL2;
+  private _context: WebGL2RenderingContext;
+
+  public constructor(context: WebGL2RenderingContext) {
+    super();
+    this._context = context;
+    this._vao = new VertexArrayObjectHandleWebGL2(this._context);
+  }
+
+  public bind(): void {
+    this._vao.bind();
+  }
+
+  public unbind(): void {
+    VertexArrayObjectHandleWebGL2.unbind(this._context);
+  }
+
+  public get isDisposed(): boolean { return this._vao.isDisposed; }
+
+  public dispose(): void {
     this._vao.dispose();
   }
 }
@@ -187,6 +245,57 @@ export class VBOContainer extends BuffersContainer {
       this._linkages.push(BufferHandleLinkage.clone(linkage));
     }
   }
+
+  private _isDisposed = false;
+  public get isDisposed(): boolean { return this._isDisposed; }
+  public dispose() { this._isDisposed = true; }
+}
+
+/**
+ * A handle to a WebGLVertexArrayObjectOES for WebGL2.
+ * The WebGLVertexArrayObjectOES is allocated by the constructor and should be freed by a call to dispose().
+ * @internal
+ */
+export class VertexArrayObjectHandleWebGL2 implements WebGLDisposable {
+  private _context: WebGL2RenderingContext;
+  private _arrayObject?: WebGLVertexArrayObjectOES;
+
+  /** Allocates the WebGLVertexArrayObjectOES using the supplied context. Free the WebGLVertexArrayObjectOES using dispose() */
+  public constructor(context: WebGL2RenderingContext) {
+    this._context = context;
+    const arrayObject = this._context.createVertexArray();
+
+    // vaoExt.createVertexArrayOES() returns WebGLVertexArrayObjectOES | null...
+    if (null !== arrayObject) {
+      this._arrayObject = arrayObject;
+    } else {
+      this._arrayObject = undefined;
+    }
+
+    assert(!this.isDisposed);
+  }
+
+  public get isDisposed(): boolean { return this._arrayObject === undefined; }
+
+  /** Frees the WebGL vertex array object */
+  public dispose(): void {
+    if (!this.isDisposed) {
+      this._context.deleteVertexArray(this._arrayObject!);
+      this._arrayObject = undefined;
+    }
+  }
+
+  /** Binds this vertex array object */
+  public bind(): void {
+    if (undefined !== this._arrayObject) {
+      this._context.bindVertexArray(this._arrayObject);
+    }
+  }
+
+  /** Ensures no vertex array object is bound */
+  public static unbind(context: WebGL2RenderingContext): void {
+    context.bindVertexArray(null);
+  }
 }
 
 /**
@@ -194,7 +303,7 @@ export class VBOContainer extends BuffersContainer {
  * The WebGLVertexArrayObjectOES is allocated by the constructor and should be freed by a call to dispose().
  * @internal
  */
-export class VertexArrayObjectHandle implements IDisposable {
+export class VertexArrayObjectHandle implements WebGLDisposable {
   private _vaoExt: OES_vertex_array_object;
   private _arrayObject?: WebGLVertexArrayObjectOES;
 
@@ -241,7 +350,7 @@ export class VertexArrayObjectHandle implements IDisposable {
  * The WebGLBuffer is allocated by the constructor and should be freed by a call to dispose().
  * @internal
  */
-export class BufferHandle implements IDisposable {
+export class BufferHandle implements WebGLDisposable {
   private _target: GL.Buffer.Target;
   private _glBuffer?: WebGLBuffer;
   private _bytesUsed = 0;
@@ -395,7 +504,7 @@ export class QBufferHandle3d extends BufferHandle {
     this.scale = qscale3dToArray(qParams.scale);
   }
 
-  public static create(qParams: QParams3d, data: Uint16Array): QBufferHandle3d | undefined {
+  public static create(qParams: QParams3d, data: Uint16Array | Uint8Array): QBufferHandle3d | undefined {
     const handle = new QBufferHandle3d(qParams);
     if (handle.isDisposed) {
       return undefined;
@@ -416,6 +525,8 @@ const enum DataType {
   Vec3,
   Vec4,
   Int,
+  IntArray,
+  Uint,
 }
 
 /** A handle to the location of a uniform within a shader program
@@ -425,6 +536,7 @@ export class UniformHandle {
   private readonly _location: WebGLUniformLocation;
   private _type: DataType = DataType.Undefined;
   private readonly _data: number[] = [];
+  public syncToken?: SyncToken;
 
   private constructor(location: WebGLUniformLocation) { this._location = location; }
 
@@ -436,8 +548,8 @@ export class UniformHandle {
     return new UniformHandle(location);
   }
 
-  private updateData(type: DataType, data: Float32Array | number[]): boolean {
-    assert(DataType.Undefined !== type && DataType.Int !== type && DataType.Float !== type);
+  private updateData(type: DataType, data: Float32Array | Int32Array | number[]): boolean {
+    assert(DataType.Undefined !== type && DataType.Int !== type && DataType.Float !== type && DataType.Uint !== type);
 
     let updated = this._type !== type;
     if (updated) {
@@ -456,7 +568,7 @@ export class UniformHandle {
   }
 
   private updateDatum(type: DataType, datum: number): boolean {
-    assert(DataType.Int === type || DataType.Float === type);
+    assert(DataType.Int === type || DataType.Uint === type || DataType.Float === type);
 
     // NB: Yes, calling data.length without actually changing the length shows up as a significant performance bottleneck...
     if (this._data.length !== 1)
@@ -477,6 +589,11 @@ export class UniformHandle {
   public setMatrix4(mat: Matrix4) {
     if (this.updateData(DataType.Mat4, mat.data))
       System.instance.context.uniformMatrix4fv(this._location, false, mat.data);
+  }
+
+  public setUniform1iv(data: Int32Array | number[]) {
+    if (this.updateData(DataType.IntArray, data))
+      System.instance.context.uniform1iv(this._location, data);
   }
 
   public setUniform1fv(data: Float32Array | number[]) {
@@ -507,5 +624,17 @@ export class UniformHandle {
   public setUniform1f(data: number) {
     if (this.updateDatum(DataType.Float, data))
       System.instance.context.uniform1f(this._location, data);
+  }
+
+  public setUniform1ui(data: number) {
+    if (this.updateDatum(DataType.Uint, data))
+      (System.instance.context as WebGL2RenderingContext).uniform1ui(this._location, data);
+  }
+
+  public setUniformBitflags(data: number) {
+    if (System.instance.capabilities.isWebGL2)
+      this.setUniform1ui(data);
+    else
+      this.setUniform1f(data);
   }
 }

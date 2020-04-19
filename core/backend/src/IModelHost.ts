@@ -1,34 +1,42 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module IModelHost */
+/** @packageDocumentation
+ * @module IModelHost
+ */
 
-import { AuthStatus, BeEvent, BentleyError, ClientRequestContext, Guid, GuidString, IModelStatus, Logger } from "@bentley/bentleyjs-core";
-import { AccessToken, AuthorizedClientRequestContext, Config, IAuthorizationClient, IModelClient, UrlDiscoveryClient, UserInfo } from "@bentley/imodeljs-clients";
+import { AuthStatus, BeEvent, BentleyError, ClientRequestContext, Guid, GuidString, IModelStatus, Logger, Config } from "@bentley/bentleyjs-core";
+import { AccessToken, AuthorizedClientRequestContext, AuthorizationClient, UrlDiscoveryClient, UserInfo } from "@bentley/itwin-client";
 import { BentleyStatus, IModelError, MobileRpcConfiguration, RpcConfiguration, SerializedRpcRequest } from "@bentley/imodeljs-common";
+import { IModelJsNative } from "@bentley/imodeljs-native";
 import * as os from "os";
 import * as path from "path";
 import * as semver from "semver";
-import { BackendRequestContext } from "./BackendRequestContext";
-import { BisCoreSchema } from "./BisCore";
-import { BriefcaseManager } from "./BriefcaseManager";
-import { FunctionalSchema } from "./domains/Functional";
-import { GenericSchema } from "./domains/Generic";
-import { IModelJsFs } from "./IModelJsFs";
-import { IModelJsNative } from "@bentley/imodeljs-native";
+import { AliCloudStorageService } from "./AliCloudStorageService";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
+import { BackendRequestContext } from "./BackendRequestContext";
+import { BisCoreSchema } from "./BisCoreSchema";
+import { BriefcaseManager } from "./BriefcaseManager";
+import { AzureBlobStorage, CloudStorageService, CloudStorageServiceCredentials, CloudStorageTileUploader } from "./CloudStorageBackend";
+import { Config as ConcurrentQueryConfig } from "./ConcurrentQuery";
+import { FunctionalSchema } from "./domains/FunctionalSchema";
+import { GenericSchema } from "./domains/GenericSchema";
+import { IModelJsFs } from "./IModelJsFs";
+import { DevToolsRpcImpl } from "./rpc-impl/DevToolsRpcImpl";
 import { IModelReadRpcImpl } from "./rpc-impl/IModelReadRpcImpl";
 import { IModelTileRpcImpl } from "./rpc-impl/IModelTileRpcImpl";
 import { IModelWriteRpcImpl } from "./rpc-impl/IModelWriteRpcImpl";
 import { SnapshotIModelRpcImpl } from "./rpc-impl/SnapshotIModelRpcImpl";
+import { NativeAppRpcImpl } from "./rpc-impl/NativeAppRpcImpl";
 import { WipRpcImpl } from "./rpc-impl/WipRpcImpl";
 import { initializeRpcBackend } from "./RpcBackend";
-import { CloudStorageService, CloudStorageServiceCredentials, AzureBlobStorage } from "./CloudStorageBackend";
-import { DevToolsRpcImpl } from "./rpc-impl/DevToolsRpcImpl";
-import { Config as ConcurrentQueryConfig } from "./ConcurrentQuery";
-import { AliCloudStorageService } from "./AliCloudStorageService";
+import { IElementEditor } from "./ElementEditor";
+import { Editor3dRpcImpl } from "./rpc-impl/EditorRpcImpl";
+import { IModelClient } from "@bentley/imodelhub-client";
 const loggerCategory: string = BackendLoggerCategory.IModelHost;
+
+// cspell:ignore nodereport fatalerror apicall alicloud rpcs
 
 /** @alpha */
 export interface CrashReportingConfigNameValuePair {
@@ -62,6 +70,23 @@ export interface CrashReportingConfig {
   /** Upload crash dump and node-reports to Bentley's crash-reporting service? Defaults to false */
   uploadToBentley?: boolean;
 }
+/** Configuration for event sink
+ * @internal
+ */
+export interface EventSinkOptions {
+  maxQueueSize: number;
+  maxNamespace: number;
+}
+
+/**
+ * Type of the backend application
+ * @alpha
+ */
+export enum ApplicationType {
+  WebAgent,
+  WebApplicationBackend,
+  NativeApp,
+}
 
 /** Configuration of imodeljs-backend.
  * @public
@@ -70,17 +95,24 @@ export class IModelHostConfiguration {
   /** The native platform to use -- normally, the app should leave this undefined. [[IModelHost.startup]] will set it to the appropriate nativePlatform automatically. */
   public nativePlatform?: any;
 
-  private _briefcaseCacheDir = path.normalize(path.join(KnownLocations.tmpdir, "Bentley/IModelJs/cache/"));
+  private static getDefaultBriefcaseCacheDir(): string { return path.normalize(path.join(KnownLocations.tmpdir, "Bentley/IModelJs/cache/")); }
+  private static getDefaultNativeAppCacheDir(): string { return path.normalize(path.join(KnownLocations.tmpdir, "Bentley/IModelJs/NativeApp/Cache")); }
+  private _briefcaseCacheDir = IModelHostConfiguration.getDefaultBriefcaseCacheDir();
 
   /** The path where the cache of briefcases are stored. Defaults to `path.join(KnownLocations.tmpdir, "Bentley/IModelJs/cache/iModels/")`
    * If overriding this, ensure it's set to a folder with complete access - it may have to be deleted and recreated.
    */
   public get briefcaseCacheDir(): string { return this._briefcaseCacheDir; }
   public set briefcaseCacheDir(cacheDir: string) { this._briefcaseCacheDir = path.normalize(cacheDir.replace(/\/?$/, path.sep)); }
-
+  public get isDefaultBriefcaseCacheDir(): boolean { return this._briefcaseCacheDir === IModelHostConfiguration.getDefaultBriefcaseCacheDir(); }
+  public get isDefaultNativeAppCacheDir(): boolean { return this.nativeAppCacheDir === IModelHostConfiguration.getDefaultNativeAppCacheDir(); }
   /** The directory where the app's assets are found. */
   public appAssetsDir?: string;
 
+  /** Native app local data
+   * @internal
+   */
+  public nativeAppCacheDir?: string = IModelHostConfiguration.getDefaultNativeAppCacheDir();
   /** The kind of iModel server to use. Defaults to iModelHubClient */
   public imodelClient?: IModelClient;
 
@@ -134,7 +166,10 @@ export class IModelHostConfiguration {
    * @alpha
    */
   public crashReportingConfig?: CrashReportingConfig;
-
+  /** Configuration for event sink
+   * @internal
+   */
+  public eventSinkOptions: EventSinkOptions = { maxQueueSize: 5000, maxNamespace: 255 };
   public concurrentQuery: ConcurrentQueryConfig = {
     concurrent: (os.cpus().length - 1),
     autoExpireTimeForCompletedQuery: 2 * 60, // 2 minutes
@@ -144,12 +179,18 @@ export class IModelHostConfiguration {
     maxQueueSize: (os.cpus().length - 1) * 500,
     pollInterval: 50,
     useSharedCache: false,
-    useUncommitedRead: false,
+    useUncommittedRead: false,
     quota: {
       maxTimeAllowed: 60, // 1 Minute
-      maxMemoryAllowed: 2 * 1024 * 1024, // 2 Mbytes
+      maxMemoryAllowed: 2 * 1024 * 1024, // 2 MB
     },
   };
+
+  /**
+   * Application (host) type
+   * @alpha
+   */
+  public applicationType?: ApplicationType;
 }
 
 /** IModelHost initializes ($backend) and captures its configuration. A backend must call [[IModelHost.startup]] before using any backend classes.
@@ -157,11 +198,14 @@ export class IModelHostConfiguration {
  * @public
  */
 export class IModelHost {
-  private static _authorizationClient?: IAuthorizationClient;
+  private static _authorizationClient?: AuthorizationClient;
+  private static _nativeAppBackend: boolean;
   public static backendVersion = "";
   private static _platform?: typeof IModelJsNative;
   /** @internal */
   public static get platform(): typeof IModelJsNative { return this._platform!; }
+
+  public static get isNativeAppBackend(): boolean { return IModelHost._nativeAppBackend; }
 
   public static configuration?: IModelHostConfiguration;
   /** Event raised just after the backend IModelHost was started */
@@ -179,9 +223,18 @@ export class IModelHost {
   /** The version of this backend application - needs to be set if is an agent application. The applicationVersion will otherwise originate at the frontend. */
   public static applicationVersion: string;
 
-  /** Implementation of [[IAuthorizationClient]] to supply the authorization information for this session - only required for backend applications */
-  public static get authorizationClient(): IAuthorizationClient | undefined { return IModelHost._authorizationClient; }
-  public static set authorizationClient(authorizationClient: IAuthorizationClient | undefined) { IModelHost._authorizationClient = authorizationClient; }
+  /** Active element editors. Each editor is identified by a GUID.
+   * @internal
+   */
+  public static elementEditors = new Map<GuidString, IElementEditor>();
+
+  /** The optional [[FileNameResolver]] that resolves keys and partial file names for snapshot iModels. */
+  public static snapshotFileNameResolver?: FileNameResolver;
+
+  /** Implementation of [[AuthorizationClient]] to supply the authorization information for this session - only required for backend applications */
+  /** Implementation of [[AuthorizationClient]] to supply the authorization information for this session - only required for agent applications, or backends that want to override access tokens passed from the frontend */
+  public static get authorizationClient(): AuthorizationClient | undefined { return IModelHost._authorizationClient; }
+  public static set authorizationClient(authorizationClient: AuthorizationClient | undefined) { IModelHost._authorizationClient = authorizationClient; }
 
   /** Get the active authorization/access token for use with various services
    * @throws [[BentleyError]] if the access token cannot be obtained
@@ -230,7 +283,7 @@ export class IModelHost {
 
   private static getApplicationVersion(): string { return require("../package.json").version; }
 
-  private static _setupRpcRequestContext() {
+  private static setupRpcRequestContext() {
     RpcConfiguration.requestContext.deserialize = async (serializedContext: SerializedRpcRequest): Promise<ClientRequestContext> => {
       // Setup a ClientRequestContext if authorization is NOT required for the RPC operation
       if (!serializedContext.authorization)
@@ -264,6 +317,9 @@ export class IModelHost {
    */
   public static tileCacheService: CloudStorageService;
 
+  /** @internal */
+  public static tileUploader: CloudStorageTileUploader;
+
   /** This method must be called before any iModel.js services are used.
    * @param configuration Host configuration data.
    * Raises [[onAfterStartup]].
@@ -274,7 +330,9 @@ export class IModelHost {
       throw new IModelError(BentleyStatus.ERROR, "startup may only be called once", Logger.logError, loggerCategory, () => (configuration));
 
     IModelHost.sessionId = Guid.createValue();
-
+    if (configuration.applicationType && configuration.applicationType === ApplicationType.NativeApp) {
+      this._nativeAppBackend = true;
+    }
     // Setup a current context for all requests that originate from this backend
     const requestContext = new BackendRequestContext();
     requestContext.enter();
@@ -298,12 +356,7 @@ export class IModelHost {
       }
     }
 
-    // if (configuration.crashReportingConfig === undefined) {
-    //   configuration.crashReportingConfig = {
-    //     crashDir: path.resolve(configuration.briefcaseCacheDir, "..", "Crashes"),
-    //     enableCrashDumps: false,
-    //   };
-    // }
+    this._platform!.setNopBriefcaseManager(); // Tell native code that requests for locks and codes are managed in JS.
 
     if (configuration.crashReportingConfig && configuration.crashReportingConfig.crashDir && this._platform && (Platform.isNodeJs && !Platform.electron)) {
       this._platform.setCrashReporting(configuration.crashReportingConfig);
@@ -321,21 +374,28 @@ export class IModelHost {
       }
     }
 
-    if (configuration.imodelClient)
-      BriefcaseManager.imodelClient = configuration.imodelClient;
+    BriefcaseManager.initialize(configuration.briefcaseCacheDir, configuration.imodelClient);
 
-    IModelHost._setupRpcRequestContext();
+    IModelHost.setupRpcRequestContext();
 
-    IModelReadRpcImpl.register();
-    IModelTileRpcImpl.register();
-    IModelWriteRpcImpl.register();
-    SnapshotIModelRpcImpl.register();
-    WipRpcImpl.register();
-    DevToolsRpcImpl.register();
+    const rpcs = [
+      IModelReadRpcImpl,
+      IModelTileRpcImpl,
+      IModelWriteRpcImpl,
+      SnapshotIModelRpcImpl,
+      WipRpcImpl,
+      DevToolsRpcImpl,
+      Editor3dRpcImpl,
+      NativeAppRpcImpl,
+    ];
+    const schemas = [
+      BisCoreSchema,
+      GenericSchema,
+      FunctionalSchema,
+    ];
 
-    BisCoreSchema.registerSchema();
-    GenericSchema.registerSchema();
-    FunctionalSchema.registerSchema();
+    rpcs.forEach((rpc) => rpc.register()); // register all of the RPC implementations
+    schemas.forEach((schema) => schema.registerSchema()); // register all of the schemas
 
     IModelHost.configuration = configuration;
     IModelHost.setupTileCache();
@@ -398,6 +458,8 @@ export class IModelHost {
     const credentials = config.tileCacheCredentials;
     if (undefined === credentials)
       return;
+
+    IModelHost.tileUploader = new CloudStorageTileUploader();
 
     if (credentials.service === "azure" && !IModelHost.tileCacheService) {
       IModelHost.tileCacheService = new AzureBlobStorage(credentials);
@@ -472,5 +534,47 @@ export class KnownLocations {
   public static get tmpdir(): string {
     const imodeljsMobile = Platform.imodeljsMobile;
     return imodeljsMobile !== undefined ? imodeljsMobile.knownLocations.tempDir : os.tmpdir();
+  }
+}
+
+/** Extend this class to provide custom file name resolution behavior.
+ * @note Only `tryResolveKey` and/or `tryResolveFileName` need to be overridden as the implementations of `resolveKey` and `resolveFileName` work for most purposes.
+ * @see [[IModelHost.snapshotFileNameResolver]]
+ * @public
+ */
+export abstract class FileNameResolver {
+  /** Resolve a file name from the specified key.
+   * @param _fileKey The key that identifies the file name in a `Map` or other similar data structure.
+   * @returns The resolved file name or `undefined` if not found.
+   */
+  public tryResolveKey(_fileKey: string): string | undefined { return undefined; }
+  /** Resolve a file name from the specified key.
+   * @param fileKey The key that identifies the file name in a `Map` or other similar data structure.
+   * @returns The resolved file name.
+   * @throws [[IModelError]] if not found.
+   */
+  public resolveKey(fileKey: string): string {
+    const resolvedFileName: string | undefined = this.tryResolveKey(fileKey);
+    if (undefined === resolvedFileName) {
+      throw new IModelError(IModelStatus.NotFound, `${fileKey} not resolved`, Logger.logWarning, loggerCategory);
+    }
+    return resolvedFileName;
+  }
+  /** Resolve the input file name, which may be a partial name, into a full path file name.
+   * @param inFileName The partial file name.
+   * @returns The resolved full path file name or `undefined` if not found.
+   */
+  public tryResolveFileName(inFileName: string): string | undefined { return inFileName; }
+  /** Resolve the input file name, which may be a partial name, into a full path file name.
+   * @param inFileName The partial file name.
+   * @returns The resolved full path file name.
+   * @throws [[IModelError]] if not found.
+   */
+  public resolveFileName(inFileName: string): string {
+    const resolvedFileName: string | undefined = this.tryResolveFileName(inFileName);
+    if (undefined === resolvedFileName) {
+      throw new IModelError(IModelStatus.NotFound, `${inFileName} not resolved`, Logger.logWarning, loggerCategory);
+    }
+    return resolvedFileName;
   }
 }

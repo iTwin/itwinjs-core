@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
@@ -71,14 +71,11 @@ describe("FloatRgb", () => {
   });
 
   it("should convert to ColorDef", () => {
-    const scratch = new ColorDef();
     const rgb = FloatRgb.fromColorDef(ColorDef.red);
-    expect(rgb.toColorDef().tbgr).to.equal(ColorDef.red.tbgr);
+    expect(rgb.tbgr).to.equal(ColorDef.red.tbgr);
 
     rgb.setColorDef(ColorDef.blue);
-    const def = rgb.toColorDef(scratch);
-    expect(def).to.equal(scratch);
-    expect(scratch.tbgr).to.equal(ColorDef.blue.tbgr);
+    expect(rgb.tbgr).to.equal(ColorDef.blue.tbgr);
   });
 });
 

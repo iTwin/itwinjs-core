@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as sinon from "sinon";
@@ -82,6 +82,25 @@ describe("UiShowHideManager", () => {
       remove();
     });
 
+    it("useProximityOpacity should return default of true", () => {
+      expect(UiShowHideManager.useProximityOpacity).to.be.true;
+    });
+
+    it("useProximityOpacity should set & return correct value", () => {
+      const spyMethod = sinon.spy();
+      const remove = UiFramework.onUiVisibilityChanged.addListener(spyMethod);
+
+      UiShowHideManager.useProximityOpacity = false;
+      expect(UiShowHideManager.useProximityOpacity).to.be.false;
+      spyMethod.calledOnce.should.true;
+
+      UiShowHideManager.useProximityOpacity = true;
+      expect(UiShowHideManager.useProximityOpacity).to.be.true;
+      spyMethod.calledTwice.should.true;
+
+      remove();
+    });
+
     it("inactivityTime should return default", () => {
       expect(UiShowHideManager.inactivityTime).to.eq(INACTIVITY_TIME_DEFAULT);
     });
@@ -115,7 +134,7 @@ describe("UiShowHideManager", () => {
       constructor(info: ConfigurableCreateInfo, options: any) {
         super(info, options);
 
-        this.reactElement = <div>Test</div>;
+        this.reactNode = <div>Test</div>;
       }
     }
 

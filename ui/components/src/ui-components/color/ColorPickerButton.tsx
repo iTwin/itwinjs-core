@@ -1,13 +1,16 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Color */
+/** @packageDocumentation
+ * @module Color
+ */
 
 import * as React from "react";
 import classnames from "classnames";
 import { ColorDef, ColorByName } from "@bentley/imodeljs-common";
-import { Popup, Position, CommonProps } from "@bentley/ui-core";
+import { RelativePosition } from "@bentley/ui-abstract";
+import { Popup, CommonProps } from "@bentley/ui-core";
 import { ColorSwatch } from "./Swatch";
 import "./ColorPickerButton.scss";
 
@@ -57,31 +60,31 @@ export class ColorPickerButton extends React.PureComponent<ColorPickerProps, Col
     super(props);
 
     if (props.colorDefs) {
-      props.colorDefs.forEach((color: ColorDef) => { this._colors.push(color.clone()); });
+      props.colorDefs.forEach((color: ColorDef) => { this._colors.push(color); });
     } else {
-      ColorPickerButton.defaultColors.forEach((color: ColorDef) => { this._colors.push(color.clone()); });
+      ColorPickerButton.defaultColors.forEach((color: ColorDef) => { this._colors.push(color); });
     }
     this.state = { showPopup: false };
   }
 
   public static get defaultColors(): ColorDef[] {
     return [
-      new ColorDef(ColorByName.red),
-      new ColorDef(ColorByName.orange),
-      new ColorDef(ColorByName.yellow),
-      new ColorDef(ColorByName.green),
-      new ColorDef(ColorByName.blue),
-      new ColorDef(ColorByName.indigo),
-      new ColorDef(ColorByName.violet),
-      new ColorDef(ColorByName.black),
-      new ColorDef(ColorByName.white),
-      new ColorDef(ColorByName.cyan),
-      new ColorDef(ColorByName.fuchsia),
-      new ColorDef(ColorByName.tan),
-      new ColorDef(ColorByName.gray),
-      new ColorDef(ColorByName.brown),
-      new ColorDef(ColorByName.purple),
-      new ColorDef(ColorByName.olive),
+      ColorDef.create(ColorByName.red),
+      ColorDef.create(ColorByName.orange),
+      ColorDef.create(ColorByName.yellow),
+      ColorDef.create(ColorByName.green),
+      ColorDef.create(ColorByName.blue),
+      ColorDef.create(ColorByName.indigo),
+      ColorDef.create(ColorByName.violet),
+      ColorDef.create(ColorByName.black),
+      ColorDef.create(ColorByName.white),
+      ColorDef.create(ColorByName.cyan),
+      ColorDef.create(ColorByName.fuchsia),
+      ColorDef.create(ColorByName.tan),
+      ColorDef.create(ColorByName.gray),
+      ColorDef.create(ColorByName.brown),
+      ColorDef.create(ColorByName.purple),
+      ColorDef.create(ColorByName.olive),
     ];
   }
 
@@ -139,7 +142,7 @@ export class ColorPickerButton extends React.PureComponent<ColorPickerProps, Col
         <Popup
           className="components-colorpicker-popup"
           isOpen={this.state.showPopup}
-          position={Position.BottomLeft}
+          position={RelativePosition.BottomLeft}
           onClose={this._closePopup}
           target={this._target} >
           {this.renderPopup(this.props.dropDownTitle)}

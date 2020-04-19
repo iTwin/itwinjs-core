@@ -1,11 +1,11 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
 import * as chai from "chai";
-import { ClientRequestContext } from "@bentley/bentleyjs-core";
-import { Config, AccessToken } from "@bentley/imodeljs-clients";
+import { ClientRequestContext, Config } from "@bentley/bentleyjs-core";
+import { AccessToken } from "@bentley/itwin-client";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 import { OidcDelegationClient, OidcDelegationClientConfiguration, OidcAgentClient, OidcAgentClientConfiguration } from "../imodeljs-clients-backend";
 import { HubAccessTestValidator } from "./HubAccessTestValidator";
@@ -30,7 +30,7 @@ describe("OidcDelegationClient (#integration)", () => {
     };
 
     const agentClient = new OidcAgentClient(agentConfiguration);
-    jwt = await agentClient.getToken(requestContext);
+    jwt = await agentClient.getAccessToken(requestContext);
   });
 
   it("should get valid SAML delegation tokens", async () => {

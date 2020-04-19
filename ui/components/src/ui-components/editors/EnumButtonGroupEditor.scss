@@ -1,8 +1,9 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-@import "@bentley/ui-core/lib/ui-core/index";
+@import "~@bentley/ui-core/lib/ui-core/style/themecolors";
+@import "~@bentley/ui-core/lib/ui-core/style/typography";
 
 $desktop-tool-stripe-width: 2px;
 $desktop-tool-stripe-height: 22px;
@@ -75,9 +76,11 @@ $components-enumbuttongroup-editor-space-between-toolbar-items: 1px;
   border-color: $buic-background-control-stroke;
   border-style: solid;
   cursor: pointer;
-  transition: all 500ms ease;
+  transition-property: background-color, color;
+  transition-duration: 500ms;
+  transition-timing-function: ease;
   position: relative;
-  background: $buic-background-control linear-gradient(to bottom, $buic-button-gradient1, $buic-button-gradient2);
+  background: $buic-background-control /* linear-gradient(to bottom, $buic-button-gradient1, $buic-button-gradient2) */;
   height: $components-enumbuttongroup-editor-item-height;
   width: $components-enumbuttongroup-editor-item-width;
 

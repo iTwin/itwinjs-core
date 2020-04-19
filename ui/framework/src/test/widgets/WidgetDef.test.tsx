@@ -1,15 +1,19 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { expect } from "chai";
 import * as sinon from "sinon";
 
+import { BadgeType, WidgetState } from "@bentley/ui-abstract";
+
 import TestUtils from "../TestUtils";
-import { WidgetState, WidgetProps, WidgetDef, ConfigurableUiManager, WidgetControl, ConfigurableCreateInfo, ConfigurableUiControlType, SyncUiEventId } from "../../ui-framework";
+import {
+  WidgetProps, WidgetDef, ConfigurableUiManager, WidgetControl,
+  ConfigurableCreateInfo, ConfigurableUiControlType, SyncUiEventId,
+} from "../../ui-framework";
 import { SyncUiEventDispatcher } from "../../ui-framework/syncui/SyncUiEventDispatcher";
-import { BadgeType } from "@bentley/ui-abstract";
 
 // cSpell:ignore widgetstate
 
@@ -19,7 +23,7 @@ describe("WidgetDef", () => {
     constructor(info: ConfigurableCreateInfo, options: any) {
       super(info, options);
 
-      this.reactElement = <div />;
+      this.reactNode = <div />;
     }
   }
 
@@ -38,8 +42,8 @@ describe("WidgetDef", () => {
       priority: 100,
       isFreeform: true,
       iconSpec: "icon-home",
-      label: () => "label",
-      tooltip: () => "tooltip",
+      label: "label",
+      tooltip: "tooltip",
       isToolSettings: true,
       isStatusBar: true,
       fillZone: true,
@@ -49,7 +53,6 @@ describe("WidgetDef", () => {
       element: <div />,
       syncEventIds: [SyncUiEventId.FrontstageReady],
       stateFunc: sinon.spy(),
-      betaBadge: true,
       badgeType: BadgeType.TechnicalPreview,
     };
     const widgetDef: WidgetDef = new WidgetDef(widgetProps);
@@ -70,7 +73,6 @@ describe("WidgetDef", () => {
     expect(widgetDef.tooltip).to.eq("tooltip");
     expect(widgetDef.iconSpec).to.eq("icon-home");
 
-    expect(widgetDef.betaBadge).to.eq(true);    // tslint:disable-line: deprecation
     expect(widgetDef.badgeType).to.eq(BadgeType.TechnicalPreview);
   });
 
@@ -81,7 +83,7 @@ describe("WidgetDef", () => {
     const widgetDef: WidgetDef = new WidgetDef(widgetProps);
 
     expect(widgetDef.getWidgetControl(ConfigurableUiControlType.Widget)).to.not.be.undefined;
-    expect(widgetDef.reactElement).to.not.be.undefined;
+    expect(widgetDef.reactNode).to.not.be.undefined;
   });
 
   it("labelKey and tooltipKey should return translated string", () => {
@@ -102,8 +104,8 @@ describe("WidgetDef", () => {
     };
     const widgetDef: WidgetDef = new WidgetDef(widgetProps);
 
-    widgetDef.reactElement = <div />;
-    expect(widgetDef.reactElement).to.not.be.undefined;
+    widgetDef.reactNode = <div />;
+    expect(widgetDef.reactNode).to.not.be.undefined;
   });
 
   it("widgetControl using constructor classId", () => {
@@ -116,16 +118,18 @@ describe("WidgetDef", () => {
     expect(widgetControl).to.not.be.undefined;
     if (widgetControl)
       expect(widgetControl.classId).to.eq("TestWidget");
-    expect(widgetDef.reactElement).to.not.be.undefined;
+    expect(widgetDef.reactNode).to.not.be.undefined;
   });
 
   it("setWidgetState", () => {
     const widgetProps: WidgetProps = {
       classId: "WidgetDefTest",
+      badgeType: BadgeType.None,
     };
     const widgetDef: WidgetDef = new WidgetDef(widgetProps);
     widgetDef.setWidgetState(WidgetState.Open);
 
+    expect(widgetDef.stateChanged).to.eq(true);
     expect(widgetDef.isVisible).to.eq(true);
     expect(widgetDef.isActive).to.eq(true);
     expect(widgetDef.canOpen()).to.be.true;

@@ -1,12 +1,14 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Utilities */
+/** @packageDocumentation
+ * @module Utilities
+ */
 
 import * as React from "react";
 
-import { StringGetter } from "@bentley/ui-abstract";
+import { StringGetter, ConditionalStringValue } from "@bentley/ui-abstract";
 import { Icon } from "@bentley/ui-core";
 import { UiFramework } from "../UiFramework";
 
@@ -15,7 +17,7 @@ import { UiFramework } from "../UiFramework";
  */
 export class PropsHelper {
   /** Get spec for returning a string. Could be a simple string of a 'StringGetter' method used to return the string. */
-  public static getStringSpec(explicitValue: string | StringGetter | undefined, stringKey?: string): string | StringGetter {
+  public static getStringSpec(explicitValue: string | StringGetter | ConditionalStringValue | undefined, stringKey?: string): string | StringGetter | ConditionalStringValue {
     if (explicitValue) {
       return explicitValue;
     }
@@ -27,10 +29,12 @@ export class PropsHelper {
   }
 
   /** Get the display string. */
-  public static getStringFromSpec(spec: string | StringGetter): string {
+  public static getStringFromSpec(spec: string | StringGetter | ConditionalStringValue): string {
     let label = "";
     if (typeof spec === "string")
       label = spec;
+    else if (spec instanceof ConditionalStringValue)
+      label = spec.value;
     else
       label = spec();
     return label;
@@ -38,7 +42,10 @@ export class PropsHelper {
 
   /** Get JSX element that defines an icon. If iconSpec is a string, then a web-font icon class is used otherwise a ReactNode holding an SVG icon is assumed.  */
   // tslint:disable-next-line:variable-name
-  public static getIcon(iconSpec: string | React.ReactNode): JSX.Element | undefined {
+  public static getIcon(iconSpec: string | ConditionalStringValue | React.ReactNode): JSX.Element | undefined {
+    if (iconSpec instanceof ConditionalStringValue)
+      return <Icon iconSpec={iconSpec.value} />;
+
     return (iconSpec) ? <Icon iconSpec={iconSpec} /> : undefined;
   }
 

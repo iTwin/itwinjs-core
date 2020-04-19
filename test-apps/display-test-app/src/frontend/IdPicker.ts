@@ -1,15 +1,33 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, compareStringsOrUndefined, Id64, Id64Arg } from "@bentley/bentleyjs-core";
-import { Viewport, SpatialViewState, SpatialModelState } from "@bentley/imodeljs-frontend";
-import { CheckBox, createCheckBox, createComboBox, createTextBox, ComboBoxEntry } from "@bentley/frontend-devtools";
+import {
+  assert,
+  compareStringsOrUndefined,
+  Id64,
+  Id64Arg,
+} from "@bentley/bentleyjs-core";
+import { GeometricModel3dProps } from "@bentley/imodeljs-common";
+import {
+  ViewManip,
+  ScreenViewport,
+  SpatialViewState,
+  GeometricModel3dState,
+} from "@bentley/imodeljs-frontend";
+import {
+  CheckBox,
+  createButton,
+  createCheckBox,
+  createComboBox,
+  createTextBox,
+  ComboBoxEntry,
+} from "@bentley/frontend-devtools";
 import { ToolBarDropDown } from "./ToolBar";
 
 export abstract class IdPicker extends ToolBarDropDown {
-  protected readonly _vp: Viewport;
+  protected readonly _vp: ScreenViewport;
   protected readonly _element: HTMLElement;
   protected readonly _parent: HTMLElement;
   protected readonly _checkboxes: HTMLInputElement[] = [];
@@ -47,7 +65,12 @@ export abstract class IdPicker extends ToolBarDropDown {
     ];
   }
 
-  private enableById(id: string): void {
+  protected enableByIds(ids: string[]): void {
+    for (const id of ids)
+      this.enableById(id);
+  }
+
+  protected enableById(id: string): void {
     for (const cb of this._checkboxes) {
       if (cb.id === id) {
         if (!cb.checked) {
@@ -88,20 +111,18 @@ export abstract class IdPicker extends ToolBarDropDown {
       label: "Id: ",
       id: this._elementType + "Enable_byId",
       parent: this._element,
-      tooltip: "Enter Id of entry to enable",
+      tooltip: "Enter comma-separated list of Ids to enable",
       inline: true,
     }).textbox;
     textbox.onkeyup = (e) => {
       if (e.code === "Enter") // enter key
-        this.enableById(textbox.value);
+        this.enableByIds(textbox.value.split(","));
     };
 
-    this._element.appendChild(document.createElement("hr"));
-
-    return this._populate();
+    await this._populate();
   }
 
-  protected constructor(vp: Viewport, parent: HTMLElement) {
+  protected constructor(vp: ScreenViewport, parent: HTMLElement) {
     super();
     this._vp = vp;
     this._parent = parent;
@@ -194,7 +215,7 @@ export abstract class IdPicker extends ToolBarDropDown {
     return rows.map((value) => value[column]);
   }
 
-  private toggleIds(ids: Id64Arg, enabled: boolean): void {
+  protected toggleIds(ids: Id64Arg, enabled: boolean): void {
     const boxById = new Map<string, HTMLInputElement>();
     this._checkboxes.map((box) => boxById.set(box.id, box));
     Id64.forEach(ids, (id) => {
@@ -218,7 +239,7 @@ const selectSpatialCategoryProps = selectCategoryProps + "BisCore.SpatialCategor
 const selectDrawingCategoryProps = selectCategoryProps + "BisCore.DrawingCategory WHERE ECInstanceId IN (" + selectUsedDrawingCategoryIds + ")";
 
 export class CategoryPicker extends IdPicker {
-  public constructor(vp: Viewport, parent: HTMLElement) { super(vp, parent); }
+  public constructor(vp: ScreenViewport, parent: HTMLElement) { super(vp, parent); }
 
   protected get _elementType(): "Category" { return "Category"; }
   protected get _enabledIds() { return this._vp.view.categorySelector.categories; }
@@ -231,6 +252,8 @@ export class CategoryPicker extends IdPicker {
   }
 
   protected async _populate(): Promise<void> {
+    this._element.appendChild(document.createElement("hr"));
+
     const view = this._vp.view;
     if (!view.iModel.isOpen)
       return;
@@ -298,7 +321,12 @@ export class CategoryPicker extends IdPicker {
 }
 
 export class ModelPicker extends IdPicker {
-  public constructor(vp: Viewport, parent: HTMLElement) { super(vp, parent); }
+  private _availableIdList: string[] = [];
+  private _stepIndex = -1;
+  private _fitOnStep = true;
+  private _planProjectionIds: string[] = [];
+
+  public constructor(vp: ScreenViewport, parent: HTMLElement) { super(vp, parent); }
 
   protected get _elementType(): "Model" { return "Model"; }
   protected get _enabledIds() { return (this._vp.view as SpatialViewState).modelSelector.models; }
@@ -322,17 +350,108 @@ export class ModelPicker extends IdPicker {
   }
 
   protected async _populate(): Promise<void> {
+    const buttons = document.createElement("div");
+    buttons.style.textAlign = "center";
+    createButton({
+      parent: buttons,
+      value: "⏪",
+      inline: true,
+      handler: () => this.stepToIndex(0),
+      tooltip: "Isolate first",
+    });
+    createButton({
+      parent: buttons,
+      value: "◀️",
+      inline: true,
+      handler: () => this.stepToIndex(this._stepIndex - 1),
+      tooltip: "Isolate previous",
+    });
+    createButton({
+      parent: buttons,
+      value: "➕",
+      inline: true,
+      handler: () => {
+        const enabledIds = this._enabledIds;
+        for (let i = 0; i < this._availableIdList.length; i++) {
+          if (enabledIds.has(this._availableIdList[i])) {
+            this.stepToIndex(i);
+            break;
+          }
+        }
+      },
+      tooltip: "Set first enabled as step index",
+    });
+    const fit = createButton({
+      parent: buttons,
+      value: "⛶",
+      inline: true,
+      handler: () => {
+        this._fitOnStep = !this._fitOnStep;
+        fit.style.borderStyle = this._fitOnStep ? "inset" : "outset";
+      },
+      tooltip: "Fit after isolate",
+    }).button;
+    fit.style.borderStyle = "inset";
+    createButton({
+      parent: buttons,
+      value: "▶️",
+      inline: true,
+      handler: () => this.stepToIndex(this._stepIndex + 1),
+      tooltip: "Isolate next",
+    });
+    createButton({
+      parent: buttons,
+      value: "⏩",
+      inline: true,
+      handler: () => this.stepToIndex(this._availableIdList.length - 1),
+      tooltip: "Isolate last",
+    });
+    this._element.appendChild(buttons);
+
     const view = this._vp.view as SpatialViewState;
     assert(undefined !== view && view.isSpatialView());
 
-    const query = { from: SpatialModelState.classFullName, wantPrivate: false };
+    const query = { from: GeometricModel3dState.classFullName, wantPrivate: true };
     const props = await view.iModel.models.queryProps(query);
+    props.forEach((prop) => { if (prop.isPrivate) prop.name = "~" + prop.name; });
     props.sort((lhs, rhs) => compareStringsOrUndefined(lhs.name, rhs.name));
 
     const selector = view.modelSelector;
     for (const prop of props) {
-      if (undefined !== prop.id && undefined !== prop.name)
+      if (undefined !== prop.id && undefined !== prop.name) {
         this.addCheckbox(prop.name, prop.id, selector.has(prop.id));
+        if ((prop as GeometricModel3dProps).isPlanProjection)
+          this._planProjectionIds.push(prop.id);
+      }
+    }
+
+    this._availableIdList = Array.from(this._availableIds);
+  }
+
+  private stepToIndex(index: number): void {
+    if (index < 0 || index >= this._availableIdList.length)
+      return;
+
+    this._stepIndex = index;
+    this.toggleAll(false);
+    this.enableById(this._availableIdList[index]);
+
+    if (this._fitOnStep)
+      ViewManip.fitView(this._vp, true);
+  }
+
+  protected get _comboBoxEntries() {
+    const entries = super._comboBoxEntries;
+    entries.push({ name: "Plan Projections", value: "PlanProjections" });
+    return entries;
+  }
+
+  protected show(which: string) {
+    if ("PlanProjections" === which) {
+      this.toggleAll(false);
+      this.toggleIds(this._planProjectionIds, true);
+    } else {
+      super.show(which);
     }
   }
 }

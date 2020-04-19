@@ -1,6 +1,100 @@
 # Change Log - @bentley/ui-framework
 
-This log was last generated on Fri, 01 Nov 2019 13:28:37 GMT and should not be manually modified.
+This log was last generated on Wed, 04 Mar 2020 16:16:31 GMT and should not be manually modified.
+
+## 1.13.0
+Wed, 04 Mar 2020 16:16:31 GMT
+
+### Updates
+
+- Added ability to customize selection handling in VisibilityWidget's Models tree
+- Passing on style props from ui-framework Toolbar to ui-ninezone Toolbar
+- Updated ModelTree ruleset to use RelationshipPathSpecification
+
+## 1.12.0
+Wed, 12 Feb 2020 17:45:50 GMT
+
+### Updates
+
+- Upgraded icons-generic-webfont to ^1.0.0
+- #269173 Nav cube arrow controls will no longer turn model sideways.
+- Avoid handling whole tree model when handling model change event
+- Added UiAdmin.showHTMLElement to show information & graphics for markers
+
+## 1.11.0
+Wed, 22 Jan 2020 19:24:12 GMT
+
+### Updates
+
+- Upgrade to TypeScript 3.7.2.
+- Made 'show/hide all categories' action be limited by the filter
+- Cube navigation aid touch events fix.
+
+## 1.10.0
+Tue, 07 Jan 2020 19:44:01 GMT
+
+### Updates
+
+- Fixed lgtm issues in UI folders
+- Ui doc & release tag cleanup
+- Update to use new BackstageItemManager and PluginStatusBarManager from ui-abstract package. Update StatusbarComposer to show items from plugins.
+- Remove duplicate StatusBarItemManager from ui-framework and only leave the one in ui-abstract.
+- Fix for nine-zone sample app not displaying backstage items.
+
+## 1.9.0
+Tue, 10 Dec 2019 18:08:56 GMT
+
+### Updates
+
+- Add useActiveIModelConnection hook.
+- Allow setting App Iconspec.
+- Setup OidcDesktopClient for Electron use cases.
+- Fix styling of footer Indicator to work with Themes.
+- Disallow plugins from adding tools anywhere but the end of a toolbar.
+- [ModelsTree] Merge same-label Subject nodes to avoid duplication
+- No longer accessing this.state or this.props in setState updater - flagged by lgtm report
+- Changed SignIn & SignOut buttons to large. Fixed Dialog component resizing. Reduced default minimum size of Dialog component.
+- Update sinon version.
+- Added support for NotifyMessageDetails.displayTime for Toast messages
+- Reduce active tab index when tab is removed.
+- Ability to determine available tool settings width.
+- Fix code analysis report issues.
+- Adjusted Categories and Models trees according changes to ControlledTree events
+- Added VisibilityWigdet implementation using ControlledTree and ability to switch to it
+- Remove content node when WidgetContentRenderer unmounts.
+- Update overflow GroupItem click action to open the panel.
+- Prevent frontstage composer rerender on pointer events.
+- Use exhaustive-deps linter rule.
+- Ability to opt-in to toolbar drag interaction.
+- Prevent unnecessary resubscribe in useActiveViewport hook.
+- Visibility Widget: Treat dictionary model as never private in Categories tree.
+- Ability to specify initialWidth for Zone component.
+- Removed unused React state variables. Removed unsupported setState calls from render() methods.
+- Code cleanup based on code analysis report from lgtm. Updated status field fade-in/out animation.
+- Update to allow Sections statusfield to hide/show depending on active view clip.
+- Added ConditionalField and FooterModeField components. StatusBar responsive changes.
+
+## 1.8.0
+Fri, 22 Nov 2019 14:03:34 GMT
+
+### Updates
+
+- Add support for Hide, Isolate, emphasize tools and status bar item to UiFramework.
+- Fix bug where ToolSettings title was not reset after view undo/redo tool usage.
+- Initializing OidcBrowserClient before setting it in UiFramework
+- Responsive logic in Property Grid to switch to Vertical orientation when too narrow
+- Tablet responsive UI
+- Added StatusBarComposer, StatusBarItem, StatusBarManager and StatusBarItemsManager
+- Added StatusBarItemsManager.setIsVisible & StatusBarItem.isVisible
+- Support multiple status bars in the StatusBarManager
+- Added tslint-react-hooks to UI packages
+- Ensure item uniqueness in BackstageItemsManager and StatusBarItemsManager.
+- Remove unsupported fit-content CSS value.
+- Expose stage panel minSize and maxSize props.
+- Do not show widget resize indicator when widget can not be resized.
+- Remove history trays.
+- Open tool panel via drag interaction.
+- Update TileRendering StatusField width.
 
 ## 1.7.0
 Fri, 01 Nov 2019 13:28:37 GMT
@@ -198,7 +292,7 @@ Mon, 03 Jun 2019 18:09:39 GMT
 - Release tag cleanup and ui-framework unit tests
 - Updated UI package release tags for 1.0 release.
 - Fixed release tag warnings in UI packages
-- Removed use of OidcClientWrapper. 
+- Removed use of OidcClientWrapper.
 - Remove console log message output by SyncUiEventDispatcher. Add Logging.
 - Changed some release tags from @hidden to @internal
 - Add alpha level support for solar timeline
@@ -241,13 +335,13 @@ Mon, 13 May 2019 15:52:05 GMT
 - Add unmount component test.
 - Move AnalysisAnimation Tool to ui-test-app. To be replaced by new timeline animation component.
 - Fixed navigation aid bugs
-- Fixes to OidcBrowserClient. 
+- Fixes to OidcBrowserClient.
 - Added SignIn presentational component to ui-components. Removed --ignoreMissingTags extract-api option.
 - Require React & React-dom 16.8
 - remove IModelApp subclasses
-- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization. 
+- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization.
 - Added ViewportDialog in ui-test-app, ui-core/ContributeGuidelines.md. TSLint rules in ui-core for no-default-export & completed-docs. @beta release tags.
-- Minimized serialization/deserialization costs when round tripping SAML based AccessToken-s. 
+- Minimized serialization/deserialization costs when round tripping SAML based AccessToken-s.
 - Rename AppState to SessionState to avoid collision with acutal App's state. Add AvailableSectionScopes to SessionState.
 - Move SelectionScope status field from test app to ui-framework. Update icons-generic-webfont version to latest available.
 - Remove need to sync SelectionMethod since it is not changed within tool code.
@@ -463,7 +557,7 @@ Mon, 03 Dec 2018 18:52:58 GMT
 
 ### Updates
 
-- More information logged from BriefcaseManager.\nFixed deletion/cleanup of invalid briefcases.\nAdded OIDC support for simpleviewtest application. 
+- More information logged from BriefcaseManager.\nFixed deletion/cleanup of invalid briefcases.\nAdded OIDC support for simpleviewtest application.
 - Unit tests
 - Removed ConfigurableUiManager.addFrontstageDef and other unused/old methods and components
 
@@ -472,7 +566,7 @@ Mon, 26 Nov 2018 19:38:42 GMT
 
 ### Updates
 
-- Fix to OIDC browser client. 
+- Fix to OIDC browser client.
 
 ## 0.169.0
 Tue, 20 Nov 2018 16:17:15 GMT
@@ -516,7 +610,7 @@ Thu, 08 Nov 2018 17:59:21 GMT
 
 ### Updates
 
-- OIDC related enhancments (WIP). 
+- OIDC related enhancments (WIP).
 - Updated to TypeScript 3.1
 - ui-core unit tests. Fixed backstage open issue.
 - Zone & Widget initial state, more ui-core unit tests, cleaned up ui-framework index.ts files.

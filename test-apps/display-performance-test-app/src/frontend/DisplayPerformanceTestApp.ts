@@ -1,34 +1,45 @@
 
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Id64, Id64Arg, Id64String, OpenMode, StopWatch, assert } from "@bentley/bentleyjs-core";
-import { HubIModel, OidcFrontendClientConfiguration, Project } from "@bentley/imodeljs-clients";
+import { Id64, Id64Arg, Id64String, OpenMode, StopWatch, ClientRequestContext } from "@bentley/bentleyjs-core";
+import { AccessToken } from "@bentley/itwin-client";
+import { Project } from "@bentley/context-registry-client";
+import { BrowserAuthorizationClient, FrontendAuthorizationClient, BrowserAuthorizationClientConfiguration } from "@bentley/frontend-authorization-client";
+import { ProjectShareClient, ProjectShareFile, ProjectShareFileQuery, ProjectShareFolderQuery } from "@bentley/projectshare-client";
 import {
   BackgroundMapProps, BackgroundMapType, BentleyCloudRpcManager, DisplayStyleProps, ElectronRpcConfiguration, ElectronRpcManager, IModelReadRpcInterface,
-  IModelTileRpcInterface, IModelToken, MobileRpcConfiguration, MobileRpcManager, RpcConfiguration, RpcOperation, RenderMode,
-  SnapshotIModelRpcInterface, ViewDefinitionProps,
+  IModelTileRpcInterface, IModelRpcProps, MobileRpcConfiguration, MobileRpcManager, RpcConfiguration, RpcOperation, RenderMode,
+  SnapshotIModelRpcInterface, ViewDefinitionProps, OidcDesktopClientConfiguration,
 } from "@bentley/imodeljs-common";
 import {
   AuthorizedFrontendRequestContext, FrontendRequestContext, DisplayStyleState, DisplayStyle3dState, IModelApp, IModelConnection, EntityState,
-  OidcBrowserClient, PerformanceMetrics, Pixel, RenderSystem, ScreenViewport, Target, TileAdmin, Viewport, ViewRect, ViewState, IModelAppOptions,
-  FeatureOverrideProvider, FeatureSymbology, cssPixelsToDevicePixels, queryDevicePixelRatio,
+  PerformanceMetrics, Pixel, RenderSystem, ScreenViewport, Target, TileAdmin, Viewport, ViewRect, ViewState, IModelAppOptions,
+  FeatureOverrideProvider, FeatureSymbology, GLTimerResult, OidcDesktopClientRenderer, SnapshotConnection,
 } from "@bentley/imodeljs-frontend";
+import { System } from "@bentley/imodeljs-frontend/lib/webgl";
 import { I18NOptions } from "@bentley/imodeljs-i18n";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
-import { ConnectProjectConfiguration, SVTConfiguration } from "../common/SVTConfiguration";
 import { initializeIModelHub } from "./ConnectEnv";
 import { IModelApi } from "./IModelApi";
 import * as path from "path";
+import { HubIModel } from "@bentley/imodelhub-client";
 
 let curRenderOpts: RenderSystem.Options = {}; // Keep track of the current render options (disabled webgl extensions and enableOptimizedSurfaceShaders flag)
 let curTileProps: TileAdmin.Props = {}; // Keep track of whether or not instancing has been enabled
+let gpuFramesCollected = 0; // Keep track of how many gpu timings we have collected
+const fixed = 4; // The number of decimal places the csv file should save for each data point
 const testNamesImages = new Map<string, number>(); // Keep track of test names and how many duplicate names exist for images
 const testNamesTimings = new Map<string, number>(); // Keep track of test names and how many duplicate names exist for timings
-
+let minimize = false;
 interface Options {
   [key: string]: any; // Add index signature
+}
+
+interface ConnectProjectConfiguration {
+  projectName: string;
+  iModelName: string;
 }
 
 // Retrieve default config data from json file
@@ -170,6 +181,9 @@ function getRenderOpts(): string {
       case "logarithmicZBuffer":
         if (value) optString += "+logZBuf";
         break;
+      case "useWebGL2":
+        if (value) optString += "+webGL2";
+        break;
       default:
         if (value) optString += "+" + key;
     }
@@ -208,7 +222,7 @@ function getTileProps(): string {
 
 function getBackgroundMapProps(): string {
   let bmPropsStr = "";
-  const bmProps = activeViewState.viewState!.displayStyle.backgroundMap.settings;
+  const bmProps = activeViewState.viewState!.displayStyle.settings.backgroundMap;
   switch (bmProps.providerName) {
     case "BingProvider":
       break;
@@ -338,8 +352,8 @@ async function waitForTilesToLoad(modelLocation?: string) {
   const timer = new StopWatch(undefined, true);
   let haveNewTiles = true;
   while (haveNewTiles) {
-    theViewport!.sync.setRedrawPending;
-    theViewport!.sync.invalidateScene();
+    theViewport!.setRedrawPending();
+    theViewport!.invalidateScene();
     theViewport!.renderFrame();
 
     // The scene is ready when (1) all required TileTree roots have been created and (2) all required tiles have finished loading
@@ -362,7 +376,20 @@ async function waitForTilesToLoad(modelLocation?: string) {
   curTileLoadingTime = timer.current.milliseconds;
 }
 
-function getRowData(finalFrameTimings: Array<Map<string, number>>, configs: DefaultConfigs, pixSelectStr?: string): Map<string, number | string> {
+// ###TODO this should be using Viewport.devicePixelRatio.
+function queryDevicePixelRatio(): number {
+  if (false === IModelApp.renderSystem.options.dpiAwareViewports)
+    return 1;
+
+  return window.devicePixelRatio || 1;
+}
+
+// ###TODO This should be going through Viewport.cssPixelsToDevicePixels().
+function cssPixelsToDevicePixels(css: number): number {
+  return Math.floor(css * queryDevicePixelRatio());
+}
+
+function getRowData(finalFrameTimings: Array<Map<string, number>>, finalGPUFrameTimings: Map<string, number[]>, timingsForActualFPS: Array<Map<string, number>>, configs: DefaultConfigs, pixSelectStr?: string): Map<string, number | string> {
   const rowData = new Map<string, number | string>();
   rowData.set("iModel", configs.iModelName!);
   rowData.set("View", configs.viewName!);
@@ -377,26 +404,34 @@ function getRowData(finalFrameTimings: Array<Map<string, number>>, configs: Defa
   rowData.set("Tile Props", getTileProps() !== "" ? " " + getTileProps() : "");
   rowData.set("Bkg Map Props", getBackgroundMapProps() !== "" ? " " + getBackgroundMapProps() : "");
   if (pixSelectStr) rowData.set("ReadPixels Selector", " " + pixSelectStr);
-  rowData.set("Tile Loading Time", curTileLoadingTime);
   rowData.set("Test Name", getTestName(configs));
   rowData.set("Browser", getBrowserName(IModelApp.queryRenderCompatibility().userAgent));
+  if (!minimize) rowData.set("Tile Loading Time", curTileLoadingTime);
+
+  const setGpuData = (name: string) => {
+    if (name === "CPU Total Time")
+      name = "Total";
+    const gpuDataArray = finalGPUFrameTimings.get(name);
+    if (gpuDataArray) {
+      let gpuSum = 0;
+      for (const gpuData of gpuDataArray)
+        gpuSum += gpuData;
+      rowData.set("GPU-" + name, gpuDataArray.length ? (gpuSum / gpuDataArray.length).toFixed(fixed) : gpuSum.toFixed(fixed));
+    }
+  };
 
   // Calculate average timings
   if (pixSelectStr) { // timing read pixels
-    let gpuTime = 0;
     for (const colName of finalFrameTimings[0].keys()) {
       let sum = 0;
       finalFrameTimings.forEach((timing) => {
         const data = timing!.get(colName);
         sum += data ? data : 0;
       });
-      if (colName === "Finish GPU Queue")
-        gpuTime = sum / finalFrameTimings.length;
-      else if (colName === "Read Pixels") {
-        rowData.set("Finish GPU Queue", gpuTime);
-        rowData.set(colName, sum / finalFrameTimings.length);
-      } else
-        rowData.set(colName, sum / finalFrameTimings.length);
+      if (!minimize || (minimize && colName === "CPU Total Time")) {
+        rowData.set(colName, (sum / finalFrameTimings.length).toFixed(fixed));
+        setGpuData(colName);
+      }
     }
   } else { // timing render frame
     for (const colName of finalFrameTimings[0].keys()) {
@@ -405,11 +440,45 @@ function getRowData(finalFrameTimings: Array<Map<string, number>>, configs: Defa
         const data = timing!.get(colName);
         sum += data ? data : 0;
       });
-      rowData.set(colName, sum / finalFrameTimings.length);
+      if (!minimize || (minimize && colName === "CPU Total Time")) {
+        rowData.set(colName, sum / finalFrameTimings.length);
+        setGpuData(colName);
+      }
     }
   }
-  const totalTime: number = Number(rowData.get("Total Time"));
-  rowData.set("Effective FPS", totalTime > 0.0 ? (1000.0 / totalTime).toFixed(2) : "0.00");
+
+  let totalTime: number;
+  if (rowData.get("Finish GPU Queue")) { // If we can't collect GPU data, get non-interactive total time with 'Finish GPU Queue' time
+    totalTime = Number(rowData.get("CPU Total Time")) + Number(rowData.get("Finish GPU Queue"));
+    rowData.set("Non-Interactive Total Time", totalTime);
+    rowData.set("Non-Interactive FPS", totalTime > 0.0 ? (1000.0 / totalTime).toFixed(fixed) : "0");
+  }
+
+  // Get these values from the timingsForActualFPS -- timingsForActualFPS === finalFrameTimings, unless in readPixels mode
+  let totalRenderTime = 0;
+  totalTime = 0;
+  for (const time of timingsForActualFPS) {
+    let timing = time.get("CPU Total Time");
+    totalRenderTime += timing ? timing : 0;
+    timing = time.get("Total Time");
+    totalTime += timing ? timing : 0;
+  }
+  rowData.delete("Total Time");
+  totalRenderTime /= timingsForActualFPS.length;
+  totalTime /= timingsForActualFPS.length;
+  const totalGpuTime = Number(rowData.get("GPU-Total"));
+  if (totalGpuTime) {
+    const gpuBound = totalGpuTime > totalRenderTime;
+    const effectiveFps = 1000.0 / (gpuBound ? totalGpuTime : totalRenderTime);
+    rowData.delete("GPU-Total");
+    rowData.set("GPU Total Time", totalGpuTime.toFixed(fixed)); // Change the name of this column & change column order
+    rowData.set("Bound By", gpuBound ? (effectiveFps < 60.0 ? "gpu" : "gpu ?") : "cpu *");
+    rowData.set("Effective Total Time", gpuBound ? totalGpuTime.toFixed(fixed) : totalRenderTime.toFixed(fixed)); // This is the total gpu time if gpu bound or the total cpu time if cpu bound; times gather with running continuously
+    rowData.set("Effective FPS", effectiveFps.toFixed(fixed));
+  }
+  rowData.set("Actual Total Time", totalTime.toFixed(fixed));
+  rowData.set("Actual FPS", totalTime > 0.0 ? (1000.0 / totalTime).toFixed(fixed) : "0");
+
   return rowData;
 }
 
@@ -482,7 +551,7 @@ class ViewSize {
   constructor(w = 0, h = 0) { this.width = w; this.height = h; }
 }
 
-type TestType = "timing" | "readPixels" | "interactive" | "image" | "both";
+type TestType = "timing" | "readPixels" | "image" | "both";
 
 class DefaultConfigs {
   public view?: ViewSize;
@@ -658,7 +727,7 @@ class SimpleViewState {
   public viewState?: ViewState;
   public viewPort?: Viewport;
   public projectConfig?: ConnectProjectConfiguration;
-  public oidcClient?: OidcBrowserClient;
+  public oidcClient?: BrowserAuthorizationClient;
   public externalSavedViews?: any[];
   public overrideElements?: any[];
   public selectedElements?: Id64Arg;
@@ -754,61 +823,66 @@ async function openView(state: SimpleViewState, viewSize: ViewSize) {
     canvas.style.width = String(viewSize.width) + "px";
     canvas.style.height = String(viewSize.height) + "px";
     theViewport.continuousRendering = false;
-    theViewport.sync.setRedrawPending;
+    theViewport.setRedrawPending();
     (theViewport!.target as Target).performanceMetrics = undefined;
     await _changeView(state.viewState!);
   }
 }
 
-async function initializeOidc(requestContext: FrontendRequestContext) {
-  assert(!!activeViewState);
-  if (activeViewState.oidcClient)
-    return;
-
-  let oidcConfiguration: OidcFrontendClientConfiguration;
+async function createOidcClient(requestContext: ClientRequestContext): Promise<FrontendAuthorizationClient> {
   const scope = "openid email profile organization imodelhub context-registry-service:read-only reality-data:read product-settings-service projectwise-share urlps-third-party";
+
   if (ElectronRpcConfiguration.isElectron) {
     const clientId = "imodeljs-electron-test";
-    const redirectUri = "electron://frontend/signin-callback";
-    oidcConfiguration = { clientId, redirectUri, scope: scope + " offline_access", responseType: "code" };
+    const redirectUri = "http://localhost:3000/signin-callback";
+    const oidcConfiguration: OidcDesktopClientConfiguration = { clientId, redirectUri, scope: scope + " offline_access" };
+    const desktopClient = new OidcDesktopClientRenderer(oidcConfiguration);
+    await desktopClient.initialize(requestContext);
+    return desktopClient;
   } else {
     const clientId = "imodeljs-spa-test";
     const redirectUri = "http://localhost:3000/signin-callback";
-    oidcConfiguration = { clientId, redirectUri, scope: scope + " imodeljs-router", responseType: "code" };
+    const oidcConfiguration: BrowserAuthorizationClientConfiguration = { clientId, redirectUri, scope: scope + " imodeljs-router", responseType: "code" };
+    const browserClient = new BrowserAuthorizationClient(oidcConfiguration);
+    return browserClient;
   }
-
-  const oidcClient = new OidcBrowserClient(oidcConfiguration);
-  await oidcClient.initialize(requestContext);
-  activeViewState.oidcClient = oidcClient;
-  IModelApp.authorizationClient = oidcClient;
 }
 
 // Wraps the signIn process
+// In the case of use in web applications:
 // - called the first time to start the signIn process - resolves to false
 // - called the second time as the Authorization provider redirects to cause the application to refresh/reload - resolves to false
 // - called the third time as the application redirects back to complete the authorization - finally resolves to true
+// In the case of use in electron applications:
+// - promise wraps around a registered call back and resolves to true when the sign in is complete
 // @return Promise that resolves to true only after signIn is complete. Resolves to false until then.
 async function signIn(): Promise<boolean> {
   const requestContext = new FrontendRequestContext();
-  await initializeOidc(requestContext);
+  const oidcClient: FrontendAuthorizationClient = await createOidcClient(requestContext);
 
-  if (!activeViewState.oidcClient!.hasSignedIn) {
-    await activeViewState.oidcClient!.signIn(new FrontendRequestContext());
-    return false;
-  }
+  IModelApp.authorizationClient = oidcClient;
+  if (oidcClient.isAuthorized)
+    return true;
 
-  return true;
+  const retPromise = new Promise<boolean>((resolve, _reject) => {
+    oidcClient.onUserStateChanged.addListener((token: AccessToken | undefined) => {
+      resolve(token !== undefined);
+    });
+  });
+
+  await oidcClient.signIn(requestContext);
+  return retPromise;
 }
 
 async function loadIModel(testConfig: DefaultConfigs): Promise<boolean> {
   activeViewState = new SimpleViewState();
-  activeViewState.viewState;
+  activeViewState.viewState; // eslint-disable-line @typescript-eslint/no-unused-expressions
 
   // Open an iModel from a local file
   let openLocalIModel = (testConfig.iModelLocation !== undefined) || MobileRpcConfiguration.isMobileFrontend;
   if (openLocalIModel) {
     try {
-      activeViewState.iModelConnection = await IModelConnection.openSnapshot(testConfig.iModelFile!);
+      activeViewState.iModelConnection = await SnapshotConnection.openFile(testConfig.iModelFile!);
     } catch (err) {
       alert("openSnapshot failed: " + err.toString());
       openLocalIModel = false;
@@ -828,12 +902,49 @@ async function loadIModel(testConfig: DefaultConfigs): Promise<boolean> {
     const requestContext = await AuthorizedFrontendRequestContext.create();
     requestContext.enter();
 
-    activeViewState.projectConfig = { projectName: testConfig.iModelHubProject, iModelName: testConfig.iModelName!.replace(".ibim", "").replace(".bim", "") } as ConnectProjectConfiguration;
+    const iModelName = testConfig.iModelName!.replace(".ibim", "").replace(".bim", "");
+    activeViewState.projectConfig = { projectName: testConfig.iModelHubProject, iModelName } as ConnectProjectConfiguration;
     activeViewState.project = await initializeIModelHub(activeViewState.projectConfig!.projectName);
     activeViewState.iModel = await IModelApi.getIModelByName(requestContext, activeViewState.project!.wsgId, activeViewState.projectConfig!.iModelName);
     if (activeViewState.iModel === undefined)
       throw new Error(`${activeViewState.projectConfig!.iModelName} - IModel not found in project ${activeViewState.project!.name}`);
     activeViewState.iModelConnection = await IModelApi.openIModel(activeViewState.project!.wsgId, activeViewState.iModel!.wsgId, undefined, OpenMode.Readonly);
+
+    if (activeViewState.project) { // Get any external saved views from the iModelHub if they exist
+      try {
+        const projectShareClient: ProjectShareClient = new ProjectShareClient();
+        const projectId = activeViewState.project.wsgId;
+        const findFile = async (folderId: string): Promise<boolean> => {
+          const files: ProjectShareFile[] = await projectShareClient.getFiles(requestContext, projectId, new ProjectShareFileQuery().inFolderWithNameLike(folderId, iModelName + "_ESV.json"));
+          if (files && files.length > 0) {
+            const content = await projectShareClient.readFile(requestContext, files[0]);
+            const esvString = new TextDecoder("utf-8").decode(content);
+            if (undefined !== esvString && "" !== esvString) {
+              activeViewState.externalSavedViews = JSON.parse(esvString) as any[];
+            }
+            return true;
+          }
+          return false;
+        };
+        const findAllFiles = async (folderId: string): Promise<boolean> => {
+          if (await findFile(folderId))
+            return true;
+          else {
+            const folders = await projectShareClient.getFolders(requestContext, projectId, new ProjectShareFolderQuery().inFolder(folderId));
+            let fileFound = false;
+            for (let i = 0; i < folders.length && !fileFound; i++) {
+              fileFound = await findAllFiles(folders[i].wsgId);
+            }
+            return fileFound;
+          }
+        };
+        // Set activeViewState.externalSavedViews using the first _ESV.json file found in the iModelHub with the iModel's name
+        await findAllFiles(activeViewState.project!.wsgId);
+      } catch (error) {
+        // Couldn't access the project share files
+      }
+
+    }
   }
 
   // open the specified view
@@ -875,8 +986,8 @@ async function loadIModel(testConfig: DefaultConfigs): Promise<boolean> {
     }
     if (undefined !== testConfig.backgroundMap) {
       // Use the testConfig.backgroundMap data for each property in Background if it exists; otherwise, keep using the viewState's ViewFlags info
-      const bmSettings = activeViewState.viewState.displayStyle.backgroundMap.settings;
-      activeViewState.viewState.displayStyle.backgroundMap.settings = bmSettings.clone(testConfig.backgroundMap);
+      const bmSettings = activeViewState.viewState.displayStyle.settings.backgroundMap;
+      activeViewState.viewState.displayStyle.changeBackgroundMapProps(bmSettings.clone(testConfig.backgroundMap));
     }
   }
 
@@ -903,13 +1014,10 @@ async function loadIModel(testConfig: DefaultConfigs): Promise<boolean> {
   return true;
 }
 
-async function closeIModel(isSnapshot: boolean) {
+async function closeIModel() {
   debugPrint("start closeIModel" + activeViewState.iModelConnection);
   if (activeViewState.iModelConnection) {
-    if (isSnapshot)
-      await activeViewState.iModelConnection.closeSnapshot();
-    else
-      await activeViewState.iModelConnection!.close();
+    await activeViewState.iModelConnection.close();
   }
   debugPrint("end closeIModel");
 }
@@ -964,24 +1072,28 @@ function restartIModelApp(testConfig: DefaultConfigs) {
 }
 
 async function createReadPixelsImages(testConfig: DefaultConfigs, pix: Pixel.Selector, pixStr: string) {
-  const width = testConfig.view!.width;
-  const height = testConfig.view!.height;
-  const viewRect = new ViewRect(0, 0, width, height);
   const canvas = theViewport !== undefined ? theViewport.readImageToCanvas() : undefined;
   if (canvas !== undefined) {
     const ctx = canvas.getContext("2d");
     if (ctx) {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      const elemIdImgData = (pix & Pixel.Selector.Feature) ? ctx.createImageData(width, height) : undefined;
-      const depthImgData = (pix & Pixel.Selector.GeometryAndDistance) ? ctx.createImageData(width, height) : undefined;
-      const typeImgData = (pix & Pixel.Selector.GeometryAndDistance) ? ctx.createImageData(width, height) : undefined;
+      const cssWidth = testConfig.view!.width;
+      const cssHeight = testConfig.view!.height;
+      const cssRect = new ViewRect(0, 0, cssWidth, cssHeight);
 
-      theViewport!.readPixels(viewRect, pix, (pixels: any) => {
+      const imgWidth = cssPixelsToDevicePixels(cssWidth);
+      const imgHeight = cssPixelsToDevicePixels(cssHeight);
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const elemIdImgData = (pix & Pixel.Selector.Feature) ? ctx.createImageData(imgWidth, imgHeight) : undefined;
+      const depthImgData = (pix & Pixel.Selector.GeometryAndDistance) ? ctx.createImageData(imgWidth, imgHeight) : undefined;
+      const typeImgData = (pix & Pixel.Selector.GeometryAndDistance) ? ctx.createImageData(imgWidth, imgHeight) : undefined;
+
+      theViewport!.readPixels(cssRect, pix, (pixels: any) => {
         if (undefined === pixels)
           return;
-        for (let y = viewRect.top; y < viewRect.bottom; ++y) {
-          for (let x = viewRect.left; x < viewRect.right; ++x) {
-            const index = (x * 4) + (y * 4 * viewRect.right);
+        for (let y = 0; y < imgHeight; ++y) {
+          for (let x = 0; x < imgWidth; ++x) {
+            const index = (x * 4) + (y * 4 * imgWidth);
             const pixel = pixels.getPixel(x, y);
             // // RGB for element ID
             if (elemIdImgData !== undefined) {
@@ -1055,12 +1167,14 @@ async function createReadPixelsImages(testConfig: DefaultConfigs, pix: Pixel.Sel
   }
 }
 
-async function renderAsync(vp: ScreenViewport, numFrames: number, timings: Array<Map<string, number>>): Promise<void> {
+async function renderAsync(vp: ScreenViewport, numFrames: number, timings: Array<Map<string, number>>, resultsCallback: (result: any) => void): Promise<void> {
   IModelApp.viewManager.addViewport(vp);
 
+  const debugControl = IModelApp.renderSystem.debugControl!;
   const target = vp.target as Target;
   const metrics = target.performanceMetrics!;
   target.performanceMetrics = undefined;
+  debugControl.resultsCallback = undefined; // Turn off glTimer metrics until after the first N frames
 
   const numFramesToIgnore = 120;
   let ignoreFrameCount = 0;
@@ -1075,6 +1189,7 @@ async function renderAsync(vp: ScreenViewport, numFrames: number, timings: Array
         if (ignoreFrameCount === numFramesToIgnore) {
           // Time to start recording.
           target.performanceMetrics = metrics;
+          debugControl.resultsCallback = resultsCallback; // Turn on glTimer metrics after the first N frames
           timer.start();
         }
 
@@ -1086,17 +1201,20 @@ async function renderAsync(vp: ScreenViewport, numFrames: number, timings: Array
       timings[frameCount].set("Total Time", timer.current.milliseconds);
 
       if (++frameCount === numFrames) {
+        target.performanceMetrics = undefined;
+      }
+      if (gpuFramesCollected >= numFrames || (frameCount >= numFrames && !(IModelApp.renderSystem as System).isGLTimerSupported)) {
         removeListener();
         IModelApp.viewManager.dropViewport(vp, false);
+        vp.continuousRendering = false;
+        debugControl.resultsCallback = undefined; // Turn off glTimer metrics
         resolve();
       } else {
-        vp.sync.setRedrawPending();
+        vp.setRedrawPending();
         timer.start();
       }
     });
   });
-
-  vp.continuousRendering = false;
 }
 
 async function runTest(testConfig: DefaultConfigs) {
@@ -1106,89 +1224,107 @@ async function runTest(testConfig: DefaultConfigs) {
   // Open and finish loading model
   const loaded = await loadIModel(testConfig);
   if (!loaded) {
-    await closeIModel(testConfig.iModelLocation !== undefined || MobileRpcConfiguration.isMobileFrontend);
+    await closeIModel();
     return; // could not properly open the given model or saved view so skip test
   }
 
   if (testConfig.testType === "image" || testConfig.testType === "both") {
     updateTestNames(testConfig, undefined, true); // Update the list of image test names
     await savePng(getImageString(testConfig));
+    if (testConfig.testType === "image") {
+      // Close the imodel & exit if nothing else needs to happen
+      await closeIModel();
+      return;
+    }
   }
 
   const csvFormat = testConfig.csvFormat!;
+  const debugControl = IModelApp.renderSystem.debugControl!;
+  gpuFramesCollected = 0; // Set the number of gpu timings collected back to 0
 
-  if (testConfig.testType === "timing" || testConfig.testType === "both" || testConfig.testType === "readPixels" || testConfig.testType === "interactive") {
-    // Throw away the first n renderFrame times, until it's more consistent
-    for (let i = 0; i < (testConfig.numRendersToSkip ? testConfig.numRendersToSkip : 50); ++i) {
-      theViewport!.sync.setRedrawPending();
-      theViewport!.renderFrame();
+  // Throw away the first n renderFrame times, until it's more consistent
+  for (let i = 0; i < (testConfig.numRendersToSkip ? testConfig.numRendersToSkip : 50); ++i) {
+    theViewport!.setRedrawPending();
+    theViewport!.renderFrame();
+  }
+  testConfig.numRendersToTime = testConfig.numRendersToTime ? testConfig.numRendersToTime : 100;
+
+  // Turn on performance metrics to start collecting data when we render things
+  const finalCPUFrameTimings: Array<Map<string, number>> = [];
+  const finalGPUFrameTimings = new Map<string, number[]>();
+  const timingsForActualFPS: Array<Map<string, number>> = []; // only used to get ; most gpu only metrics come from gpuResultsCallback
+  const gpuResultsCallback = (result: GLTimerResult): void => {
+    if (gpuFramesCollected < testConfig.numRendersToTime!) {
+      const label = result.label;
+      const timings = finalGPUFrameTimings.get(label);
+      finalGPUFrameTimings.set(label, timings ? timings.concat(result.nanoseconds / 1e6) : [result.nanoseconds / 1e6]); // Save as miliseconds
+      if (result.children) {
+        for (const kid of result.children)
+          gpuResultsCallback(kid);
+      }
+      if ("Total" === label) // Do this to ensure that we gather the gpu information for exactly 'testConfig.numRendersToTime' frames
+        gpuFramesCollected++;
     }
+  };
 
-    // Turn on performance metrics to start collecting data when we render things
-    (theViewport!.target as Target).performanceMetrics = new PerformanceMetrics("interactive" !== testConfig.testType, false);
+  // Add a pause so that user can start the GPU Performance Capture program
+  // await resolveAfterXMilSeconds(7000);
 
-    // Add a pause so that user can start the GPU Performance Capture program
-    // await resolveAfterXMilSeconds(7000);
-
-    const finalFrameTimings: Array<Map<string, number>> = [];
-    testConfig.numRendersToTime = testConfig.numRendersToTime ? testConfig.numRendersToTime : 100;
-    if (testConfig.testType === "readPixels") {
-      const width = testConfig.view!.width;
-      const height = testConfig.view!.height;
-      const viewRect = new ViewRect(0, 0, width, height);
-      const testReadPix = async (pixSelect: Pixel.Selector, pixSelectStr: string) => {
-        for (let i = 0; i < testConfig.numRendersToTime!; ++i) {
-          theViewport!.readPixels(viewRect, pixSelect, (_pixels: any) => { return; });
-          finalFrameTimings[i] = (theViewport!.target as Target).performanceMetrics!.frameTimings;
-          finalFrameTimings[i].delete("Scene Time");
-        }
-        updateTestNames(testConfig, pixSelectStr, true); // Update the list of image test names
-        updateTestNames(testConfig, pixSelectStr, false); // Update the list of timing test names
-        const rowData = getRowData(finalFrameTimings, testConfig, pixSelectStr);
-        await saveCsv(testConfig.outputPath!, testConfig.outputName!, rowData, csvFormat);
-
-        // Create images from the elementID, depth (i.e. distance), and type (i.e. order)
-        await createReadPixelsImages(testConfig, pixSelect, pixSelectStr);
-      };
-      // Test each combo of pixel selectors
-      await testReadPix(Pixel.Selector.Feature, "+feature");
-      await testReadPix(Pixel.Selector.GeometryAndDistance, "+geom+dist");
-      await testReadPix(Pixel.Selector.All, "+feature+geom+dist");
-    } else {
-      const timer = new StopWatch(undefined, true);
-      if ("interactive" === testConfig.testType) {
-        await renderAsync(theViewport!, testConfig.numRendersToTime!, finalFrameTimings);
-      } else {
-        for (let i = 0; i < testConfig.numRendersToTime!; ++i) {
-          theViewport!.sync.setRedrawPending();
-          theViewport!.renderFrame();
-          finalFrameTimings[i] = (theViewport!.target as Target).performanceMetrics!.frameTimings;
-        }
+  updateTestNames(testConfig); // Update the list of timing test names
+  if (testConfig.testType === "readPixels") {
+    const width = testConfig.view!.width;
+    const height = testConfig.view!.height;
+    const viewRect = new ViewRect(0, 0, width, height);
+    const testReadPix = async (pixSelect: Pixel.Selector, pixSelectStr: string) => {
+      // Get CPU timings
+      (theViewport!.target as Target).performanceMetrics = new PerformanceMetrics(true, false, undefined);
+      debugControl.resultsCallback = undefined; // Turn off glTimer metrics
+      for (let i = 0; i < testConfig.numRendersToTime!; ++i) {
+        theViewport!.readPixels(viewRect, pixSelect, (_pixels: any) => { return; });
+        finalCPUFrameTimings[i] = (theViewport!.target as Target).performanceMetrics!.frameTimings;
+        finalCPUFrameTimings[i].delete("Scene Time");
       }
-
-      timer.stop();
-      updateTestNames(testConfig); // Update the list of timing test names
-      if (wantConsoleOutput) {
-        debugPrint("------------ Elapsed Time: " + timer.elapsed.milliseconds + " = " + timer.elapsed.milliseconds / testConfig.numRendersToTime + "ms per frame");
-        debugPrint("Tile Loading Time: " + curTileLoadingTime);
-        for (const t of finalFrameTimings) {
-          let timingsString = "[";
-          t.forEach((val) => {
-            timingsString += val + ", ";
-          });
-          debugPrint(timingsString + "]");
-          // Save all of the individual runs in the csv file, not just the average
-          // const rowData = getRowData([t], testConfig);
-          // await saveCsv(testConfig.outputPath!, testConfig.outputName!, rowData);
-        }
-      }
-      const rowData = getRowData(finalFrameTimings, testConfig);
+      // Get GPU timings
+      gpuFramesCollected = 0; // Set the number of gpu timings collected back to 0
+      (theViewport!.target as Target).performanceMetrics = new PerformanceMetrics(true, false, gpuResultsCallback);
+      await renderAsync(theViewport!, testConfig.numRendersToTime!, timingsForActualFPS, gpuResultsCallback);
+      debugControl.resultsCallback = undefined; // Turn off glTimer metrics
+      updateTestNames(testConfig, pixSelectStr, true); // Update the list of image test names
+      updateTestNames(testConfig, pixSelectStr, false); // Update the list of timing test names
+      const rowData = getRowData(finalCPUFrameTimings, finalGPUFrameTimings, timingsForActualFPS, testConfig, pixSelectStr);
       await saveCsv(testConfig.outputPath!, testConfig.outputName!, rowData, csvFormat);
+
+      // Create images from the elementID, depth (i.e. distance), and type (i.e. order)
+      await createReadPixelsImages(testConfig, pixSelect, pixSelectStr);
+    };
+    // Test each combo of pixel selectors, then close the iModel
+    await testReadPix(Pixel.Selector.Feature, "+feature");
+    await testReadPix(Pixel.Selector.GeometryAndDistance, "+geom+dist");
+    await testReadPix(Pixel.Selector.All, "+feature+geom+dist");
+    await closeIModel();
+  } else {
+    (theViewport!.target as Target).performanceMetrics = new PerformanceMetrics(true, false, gpuResultsCallback);
+    await renderAsync(theViewport!, testConfig.numRendersToTime!, timingsForActualFPS, gpuResultsCallback);
+    // Close model & save csv file
+    await closeIModel();
+    const rowData = getRowData(timingsForActualFPS, finalGPUFrameTimings, timingsForActualFPS, testConfig);
+    await saveCsv(testConfig.outputPath!, testConfig.outputName!, rowData, csvFormat);
+
+    if (wantConsoleOutput) { // Debug purposes only
+      debugPrint("------------ ");
+      debugPrint("Tile Loading Time: " + curTileLoadingTime);
+      for (const t of finalCPUFrameTimings) {
+        let timingsString = "[";
+        t.forEach((val) => {
+          timingsString += val + ", ";
+        });
+        debugPrint(timingsString + "]");
+        // Save all of the individual runs in the csv file, not just the average
+        // const rowData = getRowData([t], testConfig);
+        // await saveCsv(testConfig.outputPath!, testConfig.outputName!, rowData);
+      }
     }
   }
-
-  // Close the imodel
-  await closeIModel(testConfig.iModelLocation !== undefined || MobileRpcConfiguration.isMobileFrontend);
 }
 
 // selects the configured view.
@@ -1282,6 +1418,8 @@ async function main() {
     if (!signedIn)
       return;
   }
+  if (jsonData.minimize)
+    minimize = jsonData.minimize;
 
   for (const i in jsonData.testSet) {
     if (i) {
@@ -1314,8 +1452,6 @@ async function main() {
 }
 
 window.onload = () => {
-  const configuration = {} as SVTConfiguration;
-
   // Choose RpcConfiguration based on whether we are in electron or browser
   RpcConfiguration.developmentMode = true;
   let rpcConfiguration: RpcConfiguration;
@@ -1324,13 +1460,14 @@ window.onload = () => {
   } else if (MobileRpcConfiguration.isMobileFrontend) {
     rpcConfiguration = MobileRpcManager.initializeClient([DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface]);
   } else {
-    const uriPrefix = configuration.customOrchestratorUri || "http://localhost:3001";
+    const uriPrefix = "http://localhost:3001";
     rpcConfiguration = BentleyCloudRpcManager.initializeClient({ info: { title: "DisplayPerformanceTestApp", version: "v1.0" }, uriPrefix }, [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface]);
 
+    const testToken: IModelRpcProps = { key: "test", contextId: "test", iModelId: "test", changeSetId: "test", openMode: OpenMode.Readonly };
     // WIP: WebAppRpcProtocol seems to require an IModelToken for every RPC request. ECPresentation initialization tries to set active locale using
     // RPC without any imodel and fails...
     for (const definition of rpcConfiguration.interfaces())
-      RpcOperation.forEach(definition, (operation) => operation.policy.token = (request) => (request.findTokenPropsParameter() || new IModelToken("test", "test", "test", "test", OpenMode.Readonly)));
+      RpcOperation.forEach(definition, (operation) => operation.policy.token = (request) => (request.findTokenPropsParameter() || testToken));
   }
 
   // ###TODO: Raman added one-time initialization logic IModelApp.startup which replaces a couple of RpcRequest-related functions.

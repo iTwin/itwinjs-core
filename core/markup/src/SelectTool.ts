@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module MarkupTools */
+/** @packageDocumentation
+ * @module MarkupTools
+ */
 
 import { Point2d, Point3d, Transform, XAndY, Vector2d } from "@bentley/geometry-core";
 import { BeButtonEvent, BeModifierKeys, EventHandled, IModelApp, InputSource, BeButton, BeTouchEvent, ToolAssistance, ToolAssistanceInstruction, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceSection, CoreTools } from "@bentley/imodeljs-frontend";
@@ -228,6 +230,7 @@ class MoveHandle extends ModifyHandle {
   }
   public onClick(_ev: BeButtonEvent) {
     const el = this.handles.el;
+    // tslint:disable-next-line:deprecation
     if (el instanceof MarkupText || (el instanceof G && el.node.className.baseVal === MarkupApp.boxedTextClass)) // if they click on the move handle of a text element, start the text editor
       new EditTextTool(el).run();
   }

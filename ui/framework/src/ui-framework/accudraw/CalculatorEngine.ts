@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module AccuDraw */
+/** @packageDocumentation
+ * @module AccuDraw
+ */
 
 /** @internal */
 export enum CalculatorOperator {  // tslint:disable-line: completed-docs
@@ -55,7 +57,7 @@ export class CalculatorEngine {
   }
 
   public processValue(value: string): string {
-    let resultString = "0";
+    let resultString: string;
 
     if (
       this._displayValue === "0" ||

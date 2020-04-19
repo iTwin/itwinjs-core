@@ -1,11 +1,11 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { IModelApp, IModelConnection, NoRenderApp } from "@bentley/imodeljs-frontend";
-import { IModelDb, IModelJsFs, PhysicalModel } from "@bentley/imodeljs-backend";
-import { SnapshotIModelRpcInterface, IModel, IModelReadRpcInterface, IModelWriteRpcInterface, TestRpcManager, IModelTokenProps, GeometricElement3dProps } from "@bentley/imodeljs-common";
+import { IModelApp, IModelConnection, NoRenderApp, SnapshotConnection } from "@bentley/imodeljs-frontend";
+import { IModelJsFs, PhysicalModel, StandaloneDb } from "@bentley/imodeljs-backend";
+import { SnapshotIModelRpcInterface, IModel, IModelReadRpcInterface, IModelWriteRpcInterface, TestRpcManager, IModelRpcProps, GeometricElement3dProps } from "@bentley/imodeljs-common";
 import { RobotWorldReadRpcInterface, RobotWorldWriteRpcInterface } from "../../common/RobotWorldRpcInterface";
 import { RobotWorldEngine } from "../RobotWorldEngine";
 import { KnownTestLocations } from "./KnownTestLocations";
@@ -29,12 +29,12 @@ async function setUpTest() {
   const iModelFile = IModelTestUtils.prepareOutputFile("RobotWorldRpc.bim");
   const seedFile = IModelTestUtils.resolveAssetFile("empty.bim");
   IModelJsFs.copySync(seedFile, iModelFile);
-  const iModel = IModelDb.openStandalone(iModelFile, OpenMode.ReadWrite);
+  const iModel = StandaloneDb.openFile(iModelFile, OpenMode.ReadWrite);
   await RobotWorld.importSchema(requestContext, iModel);
   iModel.saveChanges();
   PhysicalModel.insert(iModel, IModel.rootSubjectId, "test");
   iModel.saveChanges();
-  iModel.closeStandalone();
+  iModel.close();
 }
 
 describe("RobotWorldRpc", () => {
@@ -56,9 +56,9 @@ describe("RobotWorldRpc", () => {
     const roWrite = RobotWorldWriteRpcInterface.getClient();
     const roRead = RobotWorldReadRpcInterface.getClient();
 
-    const iModel: IModelConnection = await IModelConnection.openSnapshot(KnownTestLocations.outputDir + "/" + "RobotWorldRpc.bim");
+    const iModel: IModelConnection = await SnapshotConnection.openFile(KnownTestLocations.outputDir + "/" + "RobotWorldRpc.bim");
     assert.isTrue(iModel !== undefined);
-    const iToken: IModelTokenProps = iModel.iModelToken.toJSON();
+    const iToken: IModelRpcProps = iModel.getRpcProps();
 
     let modelId!: Id64String;
     for (const modelStr of await iModel.queryEntityIds({ from: "bis:element", where: "CodeValue='test'" }))
@@ -109,7 +109,7 @@ describe("RobotWorldRpc", () => {
       }
     }
 
-    await iModel.closeSnapshot();
+    await iModel.close();
 
     IModelApp.shutdown();
 
@@ -118,7 +118,7 @@ describe("RobotWorldRpc", () => {
 });
 
 // __PUBLISH_EXTRACT_START__ RpcInterface.initializeClientBentleyCloudApp
-// tslint:disable:no-duplicate-imports - The imports are intentionally separated in this cease.
+// tslint:disable:no-duplicate-imports - The imports are intentionally separated in this case.
 import { BentleyCloudRpcManager, BentleyCloudRpcParams, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
 
 export function initializeRpcClientBentleyCloudForApp(interfaces: RpcInterfaceDefinition[]) {

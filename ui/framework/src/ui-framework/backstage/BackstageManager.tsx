@@ -1,14 +1,17 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Backstage */
+/** @packageDocumentation
+ * @module Backstage
+ */
 
 import * as React from "react";
 import { BeEvent } from "@bentley/bentleyjs-core";
 import { Backstage } from "./Backstage";
-import { BackstageItemsManager } from "./BackstageItemsManager";
 import { UiFramework } from "../UiFramework";
+import { CommandItemDef } from "../../ui-framework";
+import { IconSpec } from "@bentley/ui-core";
 
 /** Arguments of [[BackstageManager.onToggled]].
  * @beta
@@ -22,14 +25,9 @@ export interface BackstageToggledArgs {
  */
 export class BackstageManager {
   private _isOpen = false;
-  private _itemsManager = new BackstageItemsManager();
 
   /** Event raised when backstage is opened or closed. */
   public readonly onToggled = new BeEvent<(args: BackstageToggledArgs) => void>();
-
-  public get itemsManager() {
-    return this._itemsManager;
-  }
 
   public get isOpen() {
     return this._isOpen;
@@ -42,7 +40,7 @@ export class BackstageManager {
     this.onToggled.raiseEvent({
       isOpen,
     });
-    Backstage.onBackstageEvent.emit({ isVisible: isOpen });
+    Backstage.onBackstageEvent.emit({ isVisible: isOpen }); // tslint:disable-line:deprecation
   }
 
   public open() {
@@ -55,6 +53,18 @@ export class BackstageManager {
 
   public toggle() {
     this.setIsOpen(!this.isOpen);
+  }
+
+  /** Get CommandItemDef that will toggle display of Backstage and allow iconSpec to be overridden */
+  public static getBackstageToggleCommand(overrideIconSpec?: IconSpec) {
+    return new CommandItemDef({
+      commandId: "UiFramework.openBackstage",
+      iconSpec: overrideIconSpec ? overrideIconSpec : "icon-home",
+      labelKey: "UiFramework:commands.openBackstage",
+      execute: () => {
+        UiFramework.backstageManager.toggle();
+      },
+    });
   }
 }
 

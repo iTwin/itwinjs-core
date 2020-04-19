@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module CartesianGeometry */
+/** @packageDocumentation
+ * @module CartesianGeometry
+ */
 
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Range1d, Range3d } from "../geometry3d/Range";
@@ -17,6 +19,8 @@ import { Loop } from "../curve/Loop";
 import { LineString3d } from "../curve/LineString3d";
 import { GeometryQuery } from "../curve/GeometryQuery";
 import { ClipVector } from "./ClipVector";
+import { Geometry } from "../Geometry";
+import { ClipPlane } from "./ClipPlane";
 
 /** Enumerated type for describing where geometry lies with respect to clipping planes.
  * @public
@@ -89,17 +93,20 @@ export class ClipUtilities {
     let fMid;
     const testPoint = ClipUtilities._selectIntervals01TestPoint;
     const n = unsortedFractions.length;
-    for (let i = 1; i < n; i++ , f0 = f1) {
+    for (let i = 1; i < n; i++) {
       f1 = unsortedFractions.atUncheckedIndex(i);
-      fMid = 0.5 * (f0 + f1);
-      if (f1 > f0 && (fMid >= 0.0 && fMid <= 1.0)) {
-        curve.fractionToPoint(fMid, testPoint);
-        if (clipper.isPointOnOrInside(testPoint)) {
-          if (announce)
-            announce(f0, f1, curve);
-          else
-            return true;
+      if (f1 > f0 + Geometry.smallFraction) {
+        fMid = 0.5 * (f0 + f1);
+        if (fMid >= 0.0 && fMid <= 1.0) {
+          curve.fractionToPoint(fMid, testPoint);
+          if (clipper.isPointOnOrInside(testPoint)) {
+            if (announce)
+              announce(f0, f1, curve);
+            else
+              return true;
+          }
         }
+        f0 = f1;
       }
     }
     return false;
@@ -208,20 +215,30 @@ export class ClipUtilities {
    * @param includeRangeFaces if false, do not compute facets originating as range faces
    * @param ignoreInvisiblePlanes if true, do NOT compute a facet for convex set faces marked invisible.
    */
-  public static announceLoopsOfConvexClipPlaneSetIntersectRange(convexSet: ConvexClipPlaneSet, range: Range3d, loopFunction: (loopPoints: GrowableXYZArray) => void,
+  public static announceLoopsOfConvexClipPlaneSetIntersectRange(convexSet: ConvexClipPlaneSet | ClipPlane, range: Range3d, loopFunction: (loopPoints: GrowableXYZArray) => void,
     includeConvexSetFaces: boolean = true, includeRangeFaces: boolean = true, ignoreInvisiblePlanes = false) {
     const work = new GrowableXYZArray();
     if (includeConvexSetFaces) {
       // Clip convexSet planes to the range and to the rest of the convexSet . .
-      for (const plane of convexSet.planes) {
-        if (ignoreInvisiblePlanes && plane.invisible)
-          continue;
-        const pointsClippedToRange = plane.intersectRange(range, true);
-        const finalPoints = new GrowableXYZArray();
-        if (pointsClippedToRange) {
-          convexSet.polygonClip(pointsClippedToRange, finalPoints, work, plane);
-          if (finalPoints.length > 0)
-            loopFunction(finalPoints);
+      if (convexSet instanceof ConvexClipPlaneSet) {
+        for (const plane of convexSet.planes) {
+          if (ignoreInvisiblePlanes && plane.invisible)
+            continue;
+          const pointsClippedToRange = plane.intersectRange(range, true);
+          const finalPoints = new GrowableXYZArray();
+          if (pointsClippedToRange) {
+            convexSet.polygonClip(pointsClippedToRange, finalPoints, work, plane);
+            if (finalPoints.length > 0)
+              loopFunction(finalPoints);
+          }
+        }
+      } else {  // `convexSet` is just one plane ...
+        if (ignoreInvisiblePlanes && convexSet.invisible) {
+          // skip it !
+        } else {
+          const pointsClippedToRange = convexSet.intersectRange(range, true);
+          if (pointsClippedToRange)
+            loopFunction(pointsClippedToRange);
         }
       }
     }
@@ -233,9 +250,15 @@ export class ClipUtilities {
         const indices = Range3d.faceCornerIndices(i);
         const finalPoints = new GrowableXYZArray();
         const lineString = LineString3d.createIndexedPoints(corners, indices);
-        convexSet.polygonClip(lineString.packedPoints, finalPoints, work);
-        if (finalPoints.length > 0)
-          loopFunction(finalPoints);
+        if (convexSet instanceof ConvexClipPlaneSet) {
+          convexSet.polygonClip(lineString.packedPoints, finalPoints, work);
+          if (finalPoints.length > 0)
+            loopFunction(finalPoints);
+        } else {
+          convexSet.clipConvexPolygonInPlace(lineString.packedPoints, work);
+          if (lineString.packedPoints.length > 0)
+            loopFunction(lineString.packedPoints);
+        }
       }
     }
   }
@@ -243,19 +266,30 @@ export class ClipUtilities {
   /**
    * Return a (possibly empty) array of geometry (Loops !!) which are facets of the intersection of the convex set intersecting a range.
    * * return zero length array for (a) null range or (b) no intersections
+   * @param allClippers convex or union clipper
    * @param range range to intersect
    * @param includeConvexSetFaces if false, do not compute facets originating as convex set planes.
    * @param includeRangeFaces if false, do not compute facets originating as range faces
    * @param ignoreInvisiblePlanes if true, do NOT compute a facet for convex set faces marked invisible.
    */
-  public static loopsOfConvexClipPlaneIntersectionWithRange(convexSet: ConvexClipPlaneSet, range: Range3d,
+  public static loopsOfConvexClipPlaneIntersectionWithRange(allClippers: ConvexClipPlaneSet | UnionOfConvexClipPlaneSets | ClipPlane, range: Range3d,
     includeConvexSetFaces: boolean = true, includeRangeFaces: boolean = true, ignoreInvisiblePlanes = false): GeometryQuery[] {
     const result: GeometryQuery[] = [];
-    this.announceLoopsOfConvexClipPlaneSetIntersectRange(convexSet, range,
-      (points: GrowableXYZArray) => {
-        if (points.length > 0) result.push(Loop.createPolygon(points));
-      },
-      includeConvexSetFaces, includeRangeFaces, ignoreInvisiblePlanes);
+    if (allClippers instanceof UnionOfConvexClipPlaneSets) {
+      for (const clipper of allClippers.convexSets) {
+        this.announceLoopsOfConvexClipPlaneSetIntersectRange(clipper, range,
+          (points: GrowableXYZArray) => {
+            if (points.length > 0) result.push(Loop.createPolygon(points));
+          },
+          includeConvexSetFaces, includeRangeFaces, ignoreInvisiblePlanes);
+      }
+    } else if (allClippers instanceof ConvexClipPlaneSet || allClippers instanceof ClipPlane) {
+      this.announceLoopsOfConvexClipPlaneSetIntersectRange(allClippers, range,
+        (points: GrowableXYZArray) => {
+          if (points.length > 0) result.push(Loop.createPolygon(points));
+        },
+        includeConvexSetFaces, includeRangeFaces, ignoreInvisiblePlanes);
+    }
     return result;
   }
   /**
@@ -406,6 +440,19 @@ export class ClipUtilities {
         if (finalPoints.length > 0)
           return true;
       }
+    }
+    return false;
+  }
+  /**
+   * Test if `obj` is a `Clipper` object.
+   * * This is implemented by testing for each of the methods in the `Clipper` interface.
+   */
+  public static isClipper(obj: any): boolean {
+    if (obj) {
+      if ((obj as any).isPointOnOrInside
+        && (obj as any).announceClippedSegmentIntervals
+        && (obj as any).announceClippedArcIntervals)
+        return true;
     }
     return false;
   }

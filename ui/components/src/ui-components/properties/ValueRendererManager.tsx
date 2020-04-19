@@ -1,12 +1,14 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Properties */
+/** @packageDocumentation
+ * @module Properties
+ */
 
 import * as React from "react";
 import { Orientation } from "@bentley/ui-core";
-import { PropertyRecord, PropertyValueFormat } from "@bentley/imodeljs-frontend";
+import { PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
 import { PrimitivePropertyValueRenderer } from "./renderers/value/PrimitivePropertyValueRenderer";
 import { ArrayPropertyValueRenderer } from "./renderers/value/ArrayPropertyValueRenderer";
 import { StructPropertyValueRenderer } from "./renderers/value/StructPropertyValueRenderer";
@@ -57,6 +59,10 @@ export interface PropertyValueRendererContext {
   onDialogOpen?: (dialogState: PropertyDialogState) => void;
   /** Text with custom style applied to it */
   decoratedTextElement?: React.ReactNode;
+  /** Callback to highlight text */
+  textHighlighter?: (text: string) => React.ReactNode;
+  /** Default value to show if value rendering is asynchronous */
+  defaultValue?: React.ReactNode;
 }
 
 /** Custom property value renderer interface
@@ -66,7 +72,7 @@ export interface IPropertyValueRenderer {
   /** Checks if the renderer can handle given property */
   canRender: (record: PropertyRecord, context?: PropertyValueRendererContext) => boolean;
   /** Method that returns a JSX representation of PropertyRecord */
-  render: (record: PropertyRecord, context?: PropertyValueRendererContext) => React.ReactNode | Promise<React.ReactNode>;
+  render: (record: PropertyRecord, context?: PropertyValueRendererContext) => React.ReactNode;
 }
 
 /** Default implementation of property value renderer manager
@@ -102,7 +108,7 @@ export class PropertyValueRendererManager {
   }
 
   /** Render property into JSX element */
-  public render(record: PropertyRecord, context?: PropertyValueRendererContext): React.ReactNode | Promise<React.ReactNode> {
+  public render(record: PropertyRecord, context?: PropertyValueRendererContext): React.ReactNode {
     const selectedRenderer = this.selectRenderer(record);
 
     if (!selectedRenderer || !selectedRenderer.canRender(record, context))

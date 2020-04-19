@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 const path = require("path");
 const webpack = require("webpack");
@@ -40,7 +40,7 @@ module.exports = {
     '@bentley/bentleyjs-core': 'bentleyjs_core',
     '@bentley/geometry-core': 'geometry_core',
     '@bentley/imodeljs-i18n': 'imodeljs_i18n',
-    '@bentley/imodeljs-clients': 'imodeljs_clients',
+    '@bentley/itwin-client': 'itwin_client',
     '@bentley/imodeljs-common': 'imodeljs_common',
     '@bentley/imodeljs-frontend': 'imodeljs_frontend',
   },

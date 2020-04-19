@@ -1,6 +1,92 @@
 # Change Log - @bentley/ui-components
 
-This log was last generated on Fri, 01 Nov 2019 13:28:37 GMT and should not be manually modified.
+This log was last generated on Wed, 04 Mar 2020 16:16:31 GMT and should not be manually modified.
+
+## 1.13.0
+Wed, 04 Mar 2020 16:16:31 GMT
+
+### Updates
+
+- Fix iOS Safari high CPU of enum button group.
+
+## 1.12.0
+Wed, 12 Feb 2020 17:45:50 GMT
+
+### Updates
+
+- iModel write API development
+- Upgraded icons-generic-webfont to ^1.0.0
+- Added type converter for composite primitive value
+- Changed onNodeLoaded event to nodeLoadHandler in NodeLoader. Fixed node loading scheduling to avoid making multiple requests at the same time
+- Pass tree model changes to onModelChange event
+- Separate label and labelDefinition in PropertyData and TreeNodeItem
+- Property grid border fix.
+
+## 1.11.0
+Wed, 22 Jan 2020 19:24:12 GMT
+
+### Updates
+
+- Remove the @types/linkify-it as a real dependency and make it a devDependency.
+- Allow TreeNodeItem and PropertyData label to be represented as PropertyRecord
+- Upgrade to TypeScript 3.7.2.
+
+## 1.10.0
+Tue, 07 Jan 2020 19:44:01 GMT
+
+### Updates
+
+- Fix styling issue in property grid when actionButtonRenders are not defined.
+- Fixed lgtm issues in UI folders
+- Update code to up code coverage to avoid CI failures on Linux machines.
+- Added Action Buttons for properties
+- Attempt to fix sporadic failing solartimeline test.
+- Fix bug in timeline component when view only has an analysis animation without dates.
+- Update timeline test to use fake timers to see if that resolved sporadic failures on CI builds.
+
+## 1.9.0
+Tue, 10 Dec 2019 18:08:56 GMT
+
+### Updates
+
+- Update sunrise/sunset calculation
+- Update solar timeline test
+- Made detecting links have stricter rules. Links have to start with a schema or `www.`.
+- Fix solar timeline timezone bug.
+- Added a tooltip component.
+- No longer accessing this.state or this.props in setState updater - flagged by lgtm report
+- Changed SignIn & SignOut buttons to large. Fixed Dialog component resizing. Reduced default minimum size of Dialog component.
+- Update sinon version.
+- Added documentation to ControlledTree API and changes release tags to beta
+- Added node editing support in ControlledTree
+- Changes ControlledTree events to pass TreeNodeItem instead of nodeId
+- Added 'removeChild', 'insertChild', 'getChildOffset' methods to MutableTreeModel
+- Moved ControlledTree node highlighting to TreeRenderer
+- Use exhaustive-deps linter rule.
+- Truncate property grid group title.
+- Rename array length property label to be less ambiguous
+- Solar timeline date/time offset fix.
+- Start arrays at `1` when rendering array property items
+- Removed unused React state variables. Removed unsupported setState calls from render() methods.
+- Code cleanup based on code analysis report from lgtm.
+
+## 1.8.0
+Fri, 22 Nov 2019 14:03:34 GMT
+
+### Updates
+
+- Update Icon package version
+- Responsive logic in Property Grid to switch to Vertical orientation when too narrow
+- Added StatusBarComposer, StatusBarItem, StatusBarManager and StatusBarItemsManager
+- Added Table cell context menu support
+- Added Tree Node.tsx export to ui-components package
+- Added tslint-react-hooks to UI packages
+- Change componentDidUpdate to call _setDuration instead of setState directly. This will make sure the onChange handler is called.
+- Refactor ControlledTree custom hooks to use useEffectSkipFirst
+- Separated TreeModelSource and TreeNodeLoader. Added highlighting support to ControlledTree.
+- Added node icon rendering to ControlledTree
+- Fix node content sometimes not being re-rendered when editor state changed very quickly
+- Add componentDidUpdate() to the TimelineComponent, updating currentDuration after the app changes the state of initialDuration.
 
 ## 1.7.0
 Fri, 01 Nov 2019 13:28:37 GMT

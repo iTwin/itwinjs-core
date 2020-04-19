@@ -1,9 +1,11 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module Tools */
+/** @packageDocumentation
+ * @module Tools
+ */
 
 import {
   AxisAlignedBox3d,
@@ -53,8 +55,8 @@ export class ProjectExtentsDecoration {
 
     const builderAccVis = context.createGraphicBuilder(GraphicType.WorldDecoration);
     const builderAccHid = context.createGraphicBuilder(GraphicType.WorldOverlay);
-    const colorAccVis = ColorDef.white.adjustForContrast(context.viewport.view.backgroundColor);
-    const colorAccHid = colorAccVis.clone(); colorAccHid.setAlpha(100);
+    const colorAccVis = ColorDef.white.adjustedForContrast(context.viewport.view.backgroundColor);
+    const colorAccHid = colorAccVis.withAlpha(100);
 
     builderAccVis.setSymbology(colorAccVis, ColorDef.black, 3);
     builderAccHid.setSymbology(colorAccHid, ColorDef.black, 1, LinePixels.Code2);

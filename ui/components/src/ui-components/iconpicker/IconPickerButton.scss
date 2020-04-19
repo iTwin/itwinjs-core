@@ -1,8 +1,9 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-@import "@bentley/ui-core/lib/ui-core/index";
+@import "~@bentley/ui-core/lib/ui-core/style/themecolors";
+@import "~@bentley/ui-core/lib/ui-core/z-index";
 
 .components-iconpicker-button {
   color: $buic-foreground-body;
@@ -37,7 +38,7 @@
 
 .components-iconpicker-popup {
   border: 1px solid $buic-inputs-border;
-  z-index: 99999;
+  @include uicore-z-index(dialog-popup);
 
   .components-iconpicker-popup-container {
     color: $buic-foreground-body;

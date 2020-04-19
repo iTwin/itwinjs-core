@@ -1,15 +1,17 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module PropertyEditors */
+/** @packageDocumentation
+ * @module PropertyEditors
+ */
 
 import * as React from "react";
 import classnames from "classnames";
 import {
   PropertyValueFormat, PropertyValue, PrimitiveValue,
   PropertyEditorParams, PropertyEditorParamTypes, InputEditorSizeParams, IconEditorParams,
-} from "@bentley/imodeljs-frontend";
+} from "@bentley/ui-abstract";
 import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
 import { TypeConverterManager } from "../converters/TypeConverterManager";
 
@@ -37,10 +39,6 @@ export class TextEditor extends React.PureComponent<PropertyEditorProps, TextEdi
     inputValue: "",
     readonly: false,
   };
-
-  public getValue(): string {
-    return this.state.inputValue;
-  }
 
   public async getPropertyValue(): Promise<PropertyValue | undefined> {
     const record = this.props.propertyRecord;
@@ -122,12 +120,15 @@ export class TextEditor extends React.PureComponent<PropertyEditorProps, TextEdi
 
   /** @internal */
   public render(): React.ReactNode {
-    const className = classnames("cell", "components-cell-editor", "components-text-editor", this.props.className);
-
+    const className = classnames("components-cell-editor", "components-text-editor", this.props.className);
+    const minSize = this.state.size ? this.state.size : 8;
+    const minWidthStyle: React.CSSProperties = {
+      minWidth: `${minSize * 0.75}em`,
+    };
     const inputProps: InputProps = {
       type: "text",
       className,
-      style: this.props.style,
+      style: this.props.style ? this.props.style : minWidthStyle,
       readOnly: this.state.readonly,
       disabled: this.state.isDisabled,
       size: this.state.size,

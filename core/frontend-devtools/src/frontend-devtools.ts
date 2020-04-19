@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
 export * from "./ClipboardUtilities";
@@ -8,12 +8,13 @@ export * from "./FrontEndDevTools";
 
 export * from "./tools/AnimationIntervalTool";
 export * from "./tools/ChangeUnitsTool";
-export * from "./tools/ChangeViewFlagsTool";
+export * from "./tools/DisplayStyleTools";
 export * from "./tools/EmphasizeElementsTool";
 export * from "./tools/FrustumDecoration";
 export * from "./tools/InspectElementTool";
 export * from "./tools/MeasureTileLoadTime";
 export * from "./tools/parseToggle";
+export * from "./tools/PlanProjectionTools";
 export * from "./tools/ProjectExtents";
 export * from "./tools/RealityTransitionTool";
 export * from "./tools/RenderSystemTools";
@@ -22,6 +23,7 @@ export * from "./tools/ReportWebGLCompatibilityTool";
 export * from "./tools/SavedViews";
 export * from "./tools/SelectionTools";
 export * from "./tools/TileRequestDecoration";
+export * from "./tools/TileTreeBoundsDecoration";
 export * from "./tools/ViewportTools";
 
 export * from "./ui/Button";
@@ -42,14 +44,6 @@ export * from "./widgets/KeyinField";
 export * from "./widgets/MemoryTracker";
 export * from "./widgets/TileStatisticsTracker";
 export * from "./widgets/ToolSettingsTracker";
-
-// Set the version number so it can be found at runtime. BUILD_SEMVER is replaced at build time by the webpack DefinePlugin.
-declare var BUILD_SEMVER: string;
-if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") && window) {
-  if (!(window as any).iModelJsVersions)
-    (window as any).iModelJsVersions = new Map<string, string>();
-  (window as any).iModelJsVersions.set("frontend-devtools", BUILD_SEMVER);
-}
 
 /** @docs-package-description
  * The frontend-devtools package contains various tools and widgets for monitoring and debugging the front-end state of an iModel.js application.

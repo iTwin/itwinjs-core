@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Curve */
+/** @packageDocumentation
+ * @module Curve
+ */
 import { AxisOrder, Geometry, PlaneAltitudeEvaluator } from "../Geometry";
 import { StrokeOptions } from "./StrokeOptions";
 import { Order2Bezier } from "../numerics/BezierPolynomials";
@@ -65,8 +67,8 @@ export type AnnounceCurvePrimitive = (cp: CurvePrimitive) => void;
 export abstract class CurvePrimitive extends GeometryQuery {
   /** String name for schema properties */
   public readonly geometryCategory = "curvePrimitive";
-    /** String name for schema properties */
-public abstract readonly curvePrimitiveType: CurvePrimitiveType;
+  /** String name for schema properties */
+  public abstract readonly curvePrimitiveType: CurvePrimitiveType;
 
   protected constructor() { super(); }
   /**
@@ -554,6 +556,29 @@ public abstract readonly curvePrimitiveType: CurvePrimitiveType;
       parentMap.addToCountAndLength(curveMap.numStroke, curveMap.curveLength);
     curve.strokeData = curveMap;
   }
+  /**
+   * Return an array containing only the curve primitives.
+   * * This DEFAULT simply pushes `this` to the collectorArray.
+   * * CurvePrimitiveWithDistanceIndex optionally collects its members.
+   * @param collectorArray array to receive primitives (pushed -- the array is not cleared)
+   * @param smallestPossiblePrimitives if false, CurvePrimitiveWithDistanceIndex returns only itself.  If true, it recurses to its (otherwise hidden) children.
+   */
+  public collectCurvePrimitivesGo(collectorArray: CurvePrimitive[], _smallestPossiblePrimitives: boolean) {
+    collectorArray.push(this);
+  }
+
+  /**
+   * Return an array containing only the curve primitives.
+   * * This DEFAULT captures the default result construction and calls collectCurvePrimitivesGo
+   * @param collectorArray optional array to receive primitives.   If present, new primitives are ADDED (without clearing the array.)
+   * @param smallestPossiblePrimitives if false, CurvePrimitiveWithDistanceIndex returns only itself.  If true, it recurses to its (otherwise hidden) children.
+   */
+  public collectCurvePrimitives(collectorArray?: CurvePrimitive[], smallestPossiblePrimitives: boolean = false): CurvePrimitive[] {
+    const results: CurvePrimitive[] = collectorArray === undefined ? [] : collectorArray;
+    this.collectCurvePrimitivesGo(results, smallestPossiblePrimitives);
+    return results;
+  }
+
 }
 
 /** Intermediate class for managing the parentCurve announcements from an IStrokeHandler */

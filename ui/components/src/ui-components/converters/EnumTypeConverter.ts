@@ -1,10 +1,12 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module TypeConverters */
+/** @packageDocumentation
+ * @module TypeConverters
+ */
 
-import { PropertyDescription, EnumerationChoice, Primitives } from "@bentley/imodeljs-frontend";
+import { PropertyDescription, EnumerationChoice, Primitives } from "@bentley/ui-abstract";
 import { TypeConverter, StandardTypeConverterTypeNames } from "./TypeConverter";
 import { TypeConverterManager } from "./TypeConverterManager";
 

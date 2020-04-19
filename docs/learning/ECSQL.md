@@ -337,7 +337,7 @@ ECSQL | Description
 --- | ---
 `SELECT ECInstanceId FROM bis.Element WHERE Model=?``  | Returns all Elements of any subclass in the specified Model
 `SELECT ECInstanceId FROM bis.SpatialViewDefinition WHERE ModelSelector=?``  | Returns SpatialViewDefinitions rows and rows of its subclasses for the specified ModelSelector
-`SELECT ECInstanceId FROM ONLY bis.SpatialViewDefinition WHERE ModelSelector=?``  | Returns only SpatialViewDefinitions rows for the specified ModelSelect, but no rows from its subclasse.
+`SELECT ECInstanceId FROM ONLY bis.SpatialViewDefinition WHERE ModelSelector=?``  | Returns only SpatialViewDefinitions rows for the specified ModelSelect, but no rows from its subclasses.
 
 ## LIMIT and OFFSET
 

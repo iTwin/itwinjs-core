@@ -1,0 +1,111 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "variables";
+
+.components-toolbar-button-item {
+  box-sizing: border-box;
+  background-origin: border-box;
+  border-color: transparent;
+  border-style: solid;
+  cursor: pointer;
+  transition: background-color 250ms ease;
+  position: relative;
+  background: transparent;
+
+  height: 100%;
+  width: 100%;
+
+  outline-style: solid;
+  outline-width: 0;
+
+  > .components-icon {
+    font-size: $icon-size;
+    width: 100%;
+    height: 100%;
+    display: grid;
+    align-content: center;
+    justify-content: center;
+    color: $icon-color;
+    filter: $icon-shadow;
+    transition: all 250ms ease;
+
+    svg {
+      -webkit-filter: drop-shadow(0 1px 0 rgba( var(--buic-foreground-body-reverse-rgb), .5 ));
+      filter: drop-shadow(0 0.5px 0 rgba( var(--buic-foreground-body-reverse-rgb), .5 ));
+    }
+
+    img {
+      width: $icon-size;
+      height: $icon-size;
+    }
+  }
+
+  &:hover {
+    background-color: rgba( $buic-foreground-primary-rgb, .2 );
+
+    svg {
+      opacity: 1;
+    }
+  }
+
+  &:active {
+    background-color: rgba( $buic-foreground-primary-rgb, .2 );
+    border: solid 2px $buic-foreground-primary;
+
+    > .components-icon {
+      color: $pressed-icon-color;
+
+      svg {
+        opacity: 1;
+      }
+    }
+  }
+
+  &:active:not(.components-disabled) {
+    background: $buic-foreground-primary-tone;
+    color: $buic-text-color-reverse;
+    transition-duration: 150ms;
+    transition-timing-function: cubic-bezier(1, 0.1, 1, 0.5);
+  }
+
+  &.components-active {
+    background-color: rgba( $buic-foreground-primary-rgb, .2 );
+    border: solid 2px $buic-foreground-primary;
+
+    &:not(:active):not(.components-disabled) {
+      transition-duration: 0s;
+
+      > .components-icon {
+        color: $icon-color;
+        transition-duration: 150ms;
+        transition-timing-function: cubic-bezier(1, 0.1, 1, 0.5);
+
+        svg {
+          opacity: 1;
+        }
+      }
+    }
+  }
+
+  &.components-disabled {
+    > .components-icon {
+      color: $disabled-icon-color;
+    }
+
+    &:hover {
+      cursor: auto;
+    }
+
+    &:active {
+      pointer-events: none;
+    }
+  }
+
+  > .components-badge {
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+}

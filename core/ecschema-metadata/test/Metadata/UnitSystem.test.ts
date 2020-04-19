@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
@@ -34,7 +34,7 @@ describe("UnitSystem tests", () => {
         name: "IMPERIAL",
         label: "Imperial",
       };
-      await testUnitSystem.deserialize(json);
+      await testUnitSystem.fromJSON(json);
       expect(testUnitSystem.label).to.equal("Imperial");
       expect(testUnitSystem.description).to.be.undefined;
     });
@@ -51,7 +51,7 @@ describe("UnitSystem tests", () => {
           name: "IMPERIAL",
           label: "Imperial",
         };
-        testUnitSystem.deserializeSync(json);
+        testUnitSystem.fromJSONSync(json);
         expect(testUnitSystem.label).to.equal("Imperial");
         expect(testUnitSystem.description).to.be.undefined;
       });

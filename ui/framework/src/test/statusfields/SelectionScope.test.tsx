@@ -1,20 +1,22 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as React from "react";
 import { Provider } from "react-redux";
 import { render, cleanup, fireEvent } from "@testing-library/react";
+
 import { Presentation } from "@bentley/presentation-frontend";
 import { IModelApp } from "@bentley/imodeljs-frontend";
-import { initializeAsync as initializePresentationTesting, terminate as terminatePresentationTesting } from "@bentley/presentation-testing";
+import { initialize as initializePresentationTesting, terminate as terminatePresentationTesting } from "@bentley/presentation-testing";
+import { WidgetState } from "@bentley/ui-abstract";
+
 import TestUtils from "../TestUtils";
 import {
   StatusBar,
   SelectionScopeField,
   StatusBarWidgetControl,
-  WidgetState,
   ConfigurableCreateInfo,
   ConfigurableUiControlType,
   WidgetDef,

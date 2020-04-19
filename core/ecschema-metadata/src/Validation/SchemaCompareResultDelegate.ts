@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
 import { AnyClass } from "../Interfaces";
@@ -80,6 +80,16 @@ export class SchemaCompareResultDelegate {
    */
   public async reportSchemaReferenceMissing(schemaA: Schema, referenceSchema: Schema, _compareDirection: SchemaCompareDirection): Promise<void> {
     const diag = new SchemaCompareDiagnostics.SchemaReferenceMissing(schemaA, [referenceSchema]);
+    await this.reportDiagnostic(diag);
+  }
+
+  /**
+   * Reports differences in the schema reference collection of two schemas where the reference version differs.
+   * @param schemaA The first Schema supplied for comparison.
+   * @param referenceSchema The missing schema reference.
+   */
+  public async reportSchemaReferenceDelta(schemaA: Schema, referenceSchema: Schema, versionA: string, versionB: string, _compareDirection: SchemaCompareDirection): Promise<void> {
+    const diag = new SchemaCompareDiagnostics.SchemaReferenceDelta(schemaA, [referenceSchema, versionA, versionB]);
     await this.reportDiagnostic(diag);
   }
 

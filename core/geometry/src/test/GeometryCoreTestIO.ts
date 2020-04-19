@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { GeometryQuery } from "../curve/GeometryQuery";
 import { prettyPrint } from "./testFunctions";
@@ -17,6 +17,10 @@ import { Polyface } from "../polyface/Polyface";
 import { PolygonOps } from "../geometry3d/PolygonOps";
 import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
 import { Loop } from "../curve/Loop";
+import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
+import { UVSurface } from "../geometry3d/GeometryHandler";
+import { CurveLocationDetail, CurveLocationDetailPair } from "../curve/CurveLocationDetail";
+import { CurveChainWireOffsetContext } from "../curve/internalContexts/PolygonOffsetContext";
 /* tslint:disable:no-console */
 
 // Methods (called from other files in the test suite) for doing I/O of tests files.
@@ -207,7 +211,8 @@ export class GeometryCoreTestIO {
         this.captureGeometry(collection, LineString3d.create(range.corners3d(true, 0)), dx, dy, dz);
       }
     }
-  } public static showMomentData(collection: GeometryQuery[], momentData?: MomentData, xyOnly: boolean = false, dx: number = 0, dy: number = 0, dz: number = 0) {
+  }
+  public static showMomentData(collection: GeometryQuery[], momentData?: MomentData, xyOnly: boolean = false, dx: number = 0, dy: number = 0, dz: number = 0) {
     if (momentData) {
       const momentData1 = MomentData.inertiaProductsToPrincipalAxes(momentData.origin, momentData.sums);
       if (momentData1) {
@@ -219,9 +224,11 @@ export class GeometryCoreTestIO {
         const rz = momentData1.radiusOfGyration.z;
         this.captureGeometry(collection,
           LineString3d.create([
-            momentData1.origin.plusScaled(unitX, 2.0 * rz),
             momentData1.origin,
-            momentData1.origin.plusScaled(unitY, rz)]), dx, dy, dz);
+            momentData1.origin.plusScaled(unitX, 2.0 * rz),
+            momentData1.origin.plusScaled(unitY, rz),
+            momentData1.origin,
+            momentData1.origin.plusScaled(unitZ, 3.0 * rz)]), dx, dy, dz);
         this.captureGeometry(collection, Arc3d.create(momentData1.origin, unitX.scale(rz), unitY.scale(rz), AngleSweep.createStartEndDegrees(0, 355)), dx, dy, dz);
         if (!xyOnly) {
           this.captureGeometry(collection, Arc3d.create(momentData1.origin, unitY.scale(rx), unitZ.scale(rx)), dx, dy, dz);
@@ -230,4 +237,33 @@ export class GeometryCoreTestIO {
       }
     }
   }
+  public static captureMesh(collection: GeometryQuery[], patch: UVSurface, numX: number, numY: number, dx: number = 0, dy: number = 0, dz: number = 0) {
+    const builder = PolyfaceBuilder.create();
+    builder.addUVGridBody(patch, numX, numY);
+    this.captureGeometry(collection, builder.claimPolyface(), dx, dy, dz);
+  }
+  public static captureCurveLocationDetails(collection: GeometryQuery[], data: CurveLocationDetail | CurveLocationDetailPair | CurveLocationDetail[] | CurveLocationDetailPair[], markerSize: number, dx: number = 0, dy: number = 0, dz: number = 0) {
+    if (Array.isArray(data)) {
+      for (const item of data) {
+        this.captureCurveLocationDetails(collection, item, markerSize, dx, dy, dz);
+      }
+    } else if (data instanceof CurveLocationDetail) {
+      if (data.hasFraction1) {
+        if (data.curve) {
+          const partialCurve = data.curve!.clonePartialCurve(data.fraction, data.fraction1!);
+          if (partialCurve) {
+            const curveB = CurveChainWireOffsetContext.createSingleOffsetPrimitiveXY(partialCurve, 0.6 * markerSize);
+            this.captureGeometry(collection, curveB, dx, dy, dz);
+          }
+        }
+      } else {
+        this.createAndCaptureXYMarker(collection, 0, data.point, markerSize, dx, dy, dz);
+      }
+    } else if (data instanceof CurveLocationDetailPair) {
+      this.captureCurveLocationDetails(collection, data.detailA, markerSize, dx, dy, dz);
+      this.captureCurveLocationDetails(collection, data.detailB, markerSize * 0.75, dx, dy, dz);
+    }
+
+  }
+
 }

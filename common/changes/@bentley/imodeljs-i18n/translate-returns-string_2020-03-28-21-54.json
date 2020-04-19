@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-i18n",
+      "comment": "I18N translation functions return strings, not `any`.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-i18n",
+  "email": "Paul.Connelly@bentley.com"
+}

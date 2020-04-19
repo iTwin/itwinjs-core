@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 
@@ -17,8 +17,13 @@ import {
   ViewState,
 } from "@bentley/imodeljs-frontend";
 
-import { BadgeType, RelativePosition } from "@bentley/ui-abstract";
+import {
+  BadgeType, RelativePosition, ToolbarItemUtilities,
+  CommonToolbarItem, StagePanelLocation, ConditionalBooleanValue,
+} from "@bentley/ui-abstract";
 import { ScrollView, Point } from "@bentley/ui-core";
+
+import { NodeKey } from "@bentley/presentation-common";
 
 import {
   FrontstageProvider,
@@ -34,7 +39,6 @@ import {
   Zone,
   Widget,
   GroupItemDef,
-  BaseItemState,
   CoreTools,
   SyncUiEventId,
   WidgetState,
@@ -45,26 +49,25 @@ import {
   ModelessDialogManager,
   UiFramework,
   WIDGET_OPACITY_DEFAULT,
-  ItemList,
-  ConditionalItemDef,
   ContentLayoutManager,
   SavedViewLayout,
   SavedViewLayoutProps,
   CustomItemDef,
   CursorInformation,
   CursorUpdatedEventArgs,
-  RealityDataPickerControl,
-  PopupButton,
   CursorPopupManager,
   CursorPopupContent,
   VisibilityWidget,
   VisibilityComponentHierarchy,
   ZoneLocation,
   StagePanelHeader,
-  StagePanelLocation,
-  IModelConnectedNavigationWidget,
   StagePanelState,
-  ReviewToolWidget,
+  BasicToolWidget,
+  BasicNavigationWidget,
+  ToolbarHelper,
+  ModelsTreeNodeType,
+  MessageManager,
+  ConfigurableUiManager,
 } from "@bentley/ui-framework";
 
 import { AppUi } from "../AppUi";
@@ -87,15 +90,16 @@ import { BreadcrumbDemoWidgetControl } from "../widgets/BreadcrumbDemoWidget";
 import { FeedbackDemoWidget } from "../widgets/FeedbackWidget";
 import { UnifiedSelectionPropertyGridWidgetControl } from "../widgets/UnifiedSelectionPropertyGridWidget";
 import { UnifiedSelectionTableWidgetControl } from "../widgets/UnifiedSelectionTableWidget";
-import { ViewportWidgetControl, ViewportWidget } from "../widgets/ViewportWidget";
+import {/* ViewportWidgetControl, */ ViewportWidget } from "../widgets/ViewportWidget";
 import { NestedAnimationStage } from "./NestedAnimationStage";
 import { ExampleForm } from "../forms/ExampleForm";
 
 // SVG Support - SvgPath or SvgSprite
 // import { SvgPath } from "@bentley/ui-core";
-// import rotateIcon from "../icons/rotate.svg";
 
 import { AccuDrawPopupTools } from "../../tools/AccuDrawPopupTools";
+import { SelectionMode } from "@bentley/ui-components";
+import { VisibilityWidgetControl } from "../widgets/VisibilityWidget";
 
 export class ViewsFrontstage extends FrontstageProvider {
   private _additionalTools = new AdditionalTools();
@@ -135,6 +139,11 @@ export class ViewsFrontstage extends FrontstageProvider {
     });
   }
 
+  private get _additionalNavigationVerticalToolbarItems() {
+    return [
+      ToolbarHelper.createToolbarItemFromItemDef(200, this._viewSelectorItemDef)];
+  }
+
   public get frontstage() {
     // first find an appropriate layout
     const contentLayoutProps: ContentLayoutProps | undefined = AppUi.findLayoutFromContentCount(this.viewStates.length);
@@ -159,106 +168,131 @@ export class ViewsFrontstage extends FrontstageProvider {
         defaultTool={CoreTools.selectElementCommand}
         defaultLayout={contentLayoutDef} contentGroup={myContentGroup}
         isInFooterMode={true} applicationData={{ key: "value" }}
-        topLeft={
-          <Zone
-            widgets={[
-              <Widget isFreeform={true} element={<ReviewToolWidget showCategoryAndModelsContextTools={true}
-                suffixHorizontalItems={this._additionalTools.additionalHorizontalToolbarItems}
-                suffixVerticalItems={this._additionalTools.additionalVerticalToolbarItems} />} />,
-            ]}
+        usage="MyUsage"
+        version={1} // Defaults to 0. Increment this when Frontstage changes are meaningful enough to reinitialize saved user layout settings.
+        contentManipulationTools={
+          < Zone
+            widgets={
+              [
+                <Widget isFreeform={true} element={<BasicToolWidget additionalHorizontalItems={this._additionalTools.additionalHorizontalToolbarItems}
+                  additionalVerticalItems={this._additionalTools.additionalVerticalToolbarItems} showCategoryAndModelsContextTools={false} />} />,
+              ]}
           />
         }
-        topCenter={
-          <Zone
+        toolSettings={
+          < Zone
             allowsMerging
-            widgets={[
-              <Widget
-                iconSpec="icon-placeholder"
-                isToolSettings={true}
-              />,
-            ]}
+            widgets={
+              [
+                <Widget
+                  iconSpec="icon-placeholder"
+                  isToolSettings={true}
+                />,
+              ]}
           />
         }
-        topRight={
-          <Zone
-            widgets={[
-              <Widget isFreeform={true} element={
-                <IModelConnectedNavigationWidget suffixVerticalItems={new ItemList([this._viewSelectorItemDef])} />
-              } />,
-            ]}
+        viewNavigationTools={
+          < Zone
+            widgets={
+              [
+                <Widget isFreeform={true} element={
+                  <BasicNavigationWidget additionalVerticalItems={this._additionalNavigationVerticalToolbarItems} />
+                } />,
+              ]}
           />
         }
         centerLeft={
-          <Zone defaultState={ZoneState.Minimized} allowsMerging={true}
-            widgets={[
-              <Widget defaultState={WidgetState.Closed} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.FeedbackDemo" control={FeedbackDemoWidget}
-                syncEventIds={[SampleAppUiActionId.setTestProperty]}
-                stateFunc={(): WidgetState => SampleAppIModelApp.getTestProperty() !== "HIDE" ? WidgetState.Closed : WidgetState.Hidden}
-              />,
-              <Widget defaultState={WidgetState.Closed} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.BreadcrumbDemo" control={BreadcrumbDemoWidgetControl}
-                syncEventIds={[SampleAppUiActionId.setTestProperty]}
-                stateFunc={(): WidgetState => SampleAppIModelApp.getTestProperty() !== "HIDE" ? WidgetState.Closed : WidgetState.Hidden}
-              />,
-              <Widget defaultState={WidgetState.Closed} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.ModelSelector" control={ModelSelectorWidgetControl}
-                applicationData={{ iModelConnection: this.iModelConnection }} fillZone={true}
-                syncEventIds={[SampleAppUiActionId.setTestProperty]}
-                stateFunc={(): WidgetState => SampleAppIModelApp.getTestProperty() !== "HIDE" ? WidgetState.Closed : WidgetState.Hidden}
-              />,
-            ]}
+          < Zone
+            allowsMerging
+            defaultState={ZoneState.Minimized}
+            initialWidth={250}
+            widgets={
+              [
+                <Widget defaultState={WidgetState.Closed} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.FeedbackDemo" control={FeedbackDemoWidget}
+                  syncEventIds={[SampleAppUiActionId.setTestProperty]}
+                  stateFunc={(): WidgetState => SampleAppIModelApp.getTestProperty() !== "HIDE" ? WidgetState.Closed : WidgetState.Hidden}
+                />,
+                <Widget defaultState={WidgetState.Closed} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.BreadcrumbDemo" control={BreadcrumbDemoWidgetControl}
+                  syncEventIds={[SampleAppUiActionId.setTestProperty]}
+                  stateFunc={(): WidgetState => SampleAppIModelApp.getTestProperty() !== "HIDE" ? WidgetState.Closed : WidgetState.Hidden}
+                />,
+                <Widget defaultState={WidgetState.Closed} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.ModelSelector" control={ModelSelectorWidgetControl}
+                  applicationData={{ iModelConnection: this.iModelConnection }} fillZone={true}
+                  syncEventIds={[SampleAppUiActionId.setTestProperty]}
+                  stateFunc={(): WidgetState => SampleAppIModelApp.getTestProperty() !== "HIDE" ? WidgetState.Closed : WidgetState.Hidden}
+                />,
+              ]}
           />
         }
         centerRight={
-          <Zone defaultState={ZoneState.Minimized} allowsMerging={true}
+          < Zone
+            allowsMerging
+            defaultState={ZoneState.Minimized}
+            initialWidth={350}
             widgets={[
               <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.NavigationTree" control={NavigationTreeWidgetControl}
                 applicationData={{ iModelConnection: this.iModelConnection, rulesetId: "Items" }} fillZone={true} />,
-              <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.VisibilityTree" control={VisibilityTreeWidgetControl}
-                applicationData={{ iModelConnection: this.iModelConnection }} fillZone={true} />,
+              /*<Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.VisibilityTree" control={VisibilityTreeWidgetControl}
+                applicationData={{ iModelConnection: this.iModelConnection }} fillZone={true} />,*/
+              <Widget iconSpec="icon-visibility" label="Searchable Tree" control={VisibilityWidgetControl}
+                applicationData={{
+                  iModelConnection: this.iModelConnection, enableHierarchiesPreloading: [VisibilityComponentHierarchy.Categories],
+                  config: { modelsTree: { selectionMode: SelectionMode.Extended, selectionPredicate: (_key: NodeKey, type: ModelsTreeNodeType) => type === ModelsTreeNodeType.Element } },
+                }}
+                fillZone={true} />,
               <Widget iconSpec={VisibilityWidget.iconSpec} label={VisibilityWidget.label} control={VisibilityWidget}
-                applicationData={{ iModelConnection: this.iModelConnection, enableHierarchiesPreloading: [VisibilityComponentHierarchy.Categories], useControlledTree: true }} fillZone={true} />,
-              <Widget iconSpec={RealityDataPickerControl.iconSpec} label={RealityDataPickerControl.label} control={RealityDataPickerControl}
-                applicationData={{ iModelConnection: this.iModelConnection }} fillZone={true} />,
+                applicationData={{
+                  iModelConnection: this.iModelConnection, enableHierarchiesPreloading: [VisibilityComponentHierarchy.Categories],
+                  config: { modelsTree: { selectionMode: SelectionMode.Extended, selectionPredicate: (_key: NodeKey, type: ModelsTreeNodeType) => type === ModelsTreeNodeType.Element } },
+                }}
+                fillZone={true} />,
             ]}
           />
         }
         bottomLeft={
-          <Zone defaultState={ZoneState.Minimized} allowsMerging={true}
-            widgets={[
-              <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.UnifiedSelectionTable" control={UnifiedSelectionTableWidgetControl}
-                applicationData={{ iModelConnection: this.iModelConnection, rulesetId: "Items" }} fillZone={true} badgeType={BadgeType.New} />,
-              <Widget iconSpec="icon-placeholder" label="External iModel View" control={ViewportWidgetControl} fillZone={true} betaBadge={true}
-                applicationData={{ projectName: "iModelHubTest", imodelName: "86_Hospital" }} />,
-            ]}
+          < Zone
+            allowsMerging
+            defaultState={ZoneState.Minimized}
+            initialWidth={450}
+            widgets={
+              [
+                <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.UnifiedSelectionTable" control={UnifiedSelectionTableWidgetControl}
+                  applicationData={{ iModelConnection: this.iModelConnection, rulesetId: "Items" }} fillZone={true} badgeType={BadgeType.New} />,
+                /* <Widget iconSpec="icon-placeholder" label="External iModel View" control={ViewportWidgetControl} fillZone={true} badgeType={BadgeType.TechnicalPreview}
+                   applicationData={{ projectName: "iModelHubTest", imodelName: "GrandCanyonTerrain" }} />, */
+              ]}
           />
         }
-        bottomCenter={
-          <Zone
-            widgets={[
-              <Widget isStatusBar={true} control={AppStatusBarWidgetControl} />,
-            ]}
+        statusBar={
+          < Zone
+            widgets={
+              [
+                <Widget isStatusBar={true} control={AppStatusBarWidgetControl} />,
+              ]}
           />
         }
         bottomRight={
-          <Zone defaultState={ZoneState.Minimized} allowsMerging={true} mergeWithZone={ZoneLocation.CenterRight}
-            widgets={[
-              <Widget defaultState={WidgetState.Closed} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.UnifiedSelectPropertyGrid"
-                control={UnifiedSelectionPropertyGridWidgetControl} fillZone={true}
-                applicationData={{ iModelConnection: this.iModelConnection, rulesetId: "Items" }}
-                syncEventIds={[SyncUiEventId.SelectionSetChanged]}
-                stateFunc={(): WidgetState => {
-                  const activeContentControl = ContentViewManager.getActiveContentControl();
-                  if (activeContentControl && activeContentControl.viewport && (activeContentControl.viewport.view.iModel.selectionSet.size > 0))
-                    return WidgetState.Open;
-                  return WidgetState.Closed;
-                }}
-              />,
-              <Widget id="VerticalPropertyGrid" defaultState={WidgetState.Hidden} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.VerticalPropertyGrid" control={VerticalPropertyGridWidgetControl} />,
-            ]}
+          < Zone defaultState={ZoneState.Minimized} allowsMerging={true} mergeWithZone={ZoneLocation.CenterRight}
+            widgets={
+              [
+                <Widget defaultState={WidgetState.Closed} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.UnifiedSelectPropertyGrid"
+                  control={UnifiedSelectionPropertyGridWidgetControl} fillZone={true}
+                  applicationData={{ iModelConnection: this.iModelConnection, rulesetId: "Items" }}
+                  syncEventIds={[SyncUiEventId.SelectionSetChanged]}
+                  stateFunc={(): WidgetState => {
+                    const activeContentControl = ContentViewManager.getActiveContentControl();
+                    if (activeContentControl && activeContentControl.viewport && (activeContentControl.viewport.view.iModel.selectionSet.size > 0))
+                      return WidgetState.Open;
+                    return WidgetState.Closed;
+                  }}
+                />,
+                <Widget id="VerticalPropertyGrid" defaultState={WidgetState.Hidden} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.VerticalPropertyGrid" control={VerticalPropertyGridWidgetControl} />,
+              ]}
           />
         }
         leftPanel={
-          <StagePanel
-            header={<StagePanelHeader
+          < StagePanel
+            header={< StagePanelHeader
               collapseButton
               collapseButtonTitle="Collapse"
               location={StagePanelLocation.Left}
@@ -272,12 +306,12 @@ export class ViewsFrontstage extends FrontstageProvider {
           />
         }
         rightPanel={
-          <StagePanel
+          < StagePanel
             allowedZones={this._rightPanel.allowedZones}
           />
         }
         bottomPanel={
-          <StagePanel
+          < StagePanel
             allowedZones={this._bottomPanel.allowedZones}
           />
         }
@@ -292,16 +326,12 @@ class AdditionalTools {
   private _nestedGroup = new GroupItemDef({
     groupId: "nested-group",
     labelKey: "SampleApp:buttons.toolGroup",
+    panelLabelKey: "SampleApp:buttons.toolGroup",
     iconSpec: "icon-placeholder",
-    items: [AppTools.item1, AppTools.item2, AppTools.item3, AppTools.item4, AppTools.item5,
-    AppTools.item6, AppTools.item7, AppTools.item8],
+    items: [AppTools.item1, AppTools.item2, AppTools.item3, AppTools.item4, AppTools.item5, AppTools.item6, AppTools.item7, AppTools.item8],
     // direction: Direction.Bottom,
     itemsInColumn: 7,
   });
-
-  private get _groupItemDef(): GroupItemDef {
-    return this._nestedGroup;
-  }
 
   private _openNestedAnimationStageDef = new CommandItemDef({
     iconSpec: "icon-camera-animation",
@@ -316,18 +346,12 @@ class AdditionalTools {
         await FrontstageManager.openNestedFrontstage(frontstageDef);
       }
     },
-    isVisible: false, // default to not show and then allow stateFunc to redefine.
-    stateSyncIds: [SyncUiEventId.ActiveContentChanged],
-    stateFunc: (currentState: Readonly<BaseItemState>): BaseItemState => {
-      const returnState: BaseItemState = { ...currentState };
+    isHidden: new ConditionalBooleanValue(() => {
       const activeContentControl = ContentViewManager.getActiveContentControl();
-      if (activeContentControl && activeContentControl.viewport &&
-        (undefined !== activeContentControl.viewport.view.analysisStyle || undefined !== activeContentControl.viewport.view.scheduleScript))
-        returnState.isVisible = true;
-      else
-        returnState.isVisible = false;
-      return returnState;
-    },
+      if (activeContentControl && activeContentControl.viewport && (undefined !== activeContentControl.viewport.view.analysisStyle || undefined !== activeContentControl.viewport.view.scheduleScript))
+        return false;
+      return true;
+    }, [SyncUiEventId.ActiveContentChanged]),
   });
 
   /** Command that opens a nested Frontstage */
@@ -366,7 +390,7 @@ class AdditionalTools {
 
   private _tool4 = () => {
     const details = new NotifyMessageDetails(this._tool4Priority, this._tool4Message, this._tool4Detailed, OutputMessageType.Pointer);
-    const wrapper = document.getElementById("uifw-configurableui-wrapper");
+    const wrapper = ConfigurableUiManager.getWrapperElement();
     details.setPointerTypeDetails(wrapper!, { x: CursorInformation.cursorX, y: CursorInformation.cursorY }, this._toolRelativePosition);
     IModelApp.notifications.outputMessage(details);
     document.addEventListener("keyup", this._handleTool4Keypress);
@@ -452,8 +476,12 @@ class AdditionalTools {
 
   private radialMenu(): React.ReactNode {
     return (
-      <TestRadialMenu opened={true} />
+      <TestRadialMenu opened={true} onClose={this._closeModal} />
     );
+  }
+
+  private _closeModal = () => {
+    ModalDialogManager.closeDialog();
   }
 
   private get _openCalculatorItem() {
@@ -480,7 +508,7 @@ class AdditionalTools {
     this._viewportDialogCnt++;
     const id = "ViewportDialog_" + this._viewportDialogCnt.toString();
 
-    const dialog = <ViewportDialog opened={true} projectName="iModelHubTest" imodelName="86_Hospital" dialogId={id} />;
+    const dialog = <ViewportDialog opened={true} projectName="iModelHubTest" imodelName="GrandCanyonTerrain" dialogId={id} />;
 
     ModelessDialogManager.openDialog(dialog, id);
   }
@@ -499,7 +527,7 @@ class AdditionalTools {
 
   private get _saveContentLayout() {
     return new CommandItemDef({
-      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.saveContentLayout", betaBadge: true, execute: () => {
+      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.saveContentLayout", badgeType: BadgeType.TechnicalPreview, execute: () => {
         if (ContentLayoutManager.activeLayout && ContentLayoutManager.activeContentGroup) {
           // Create props for the Layout, ContentGroup and ViewStates
           const savedViewLayoutProps = SavedViewLayout.viewLayoutToProps(ContentLayoutManager.activeLayout, ContentLayoutManager.activeContentGroup, true,
@@ -549,7 +577,7 @@ class AdditionalTools {
         // const relativePosition = CursorInformation.getRelativePositionFromCursorDirection(CursorInformation.cursorDirection);
         const content = (
           <CursorPopupContent>
-            {FrontstageManager.activeToolSettingsNode}
+            {FrontstageManager.activeToolSettingsProvider?.toolSettingsNode}
           </CursorPopupContent>
         );
         // CursorPopupManager.open("test1", content, CursorInformation.cursorPosition, new Point(20, 20), RelativePosition.TopRight, 10);
@@ -595,6 +623,12 @@ class AdditionalTools {
     }
   }
 
+  private get _clearMessages() {
+    return new CommandItemDef({
+      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.clearMessages", execute: () => { MessageManager.clearMessages(); },
+    });
+  }
+
   private _closeCursorPopup() {
     CursorPopupManager.close("test1", false);
     CursorPopupManager.close("testR1", false);
@@ -608,87 +642,80 @@ class AdditionalTools {
     document.removeEventListener("keyup", this._handleCursorPopupKeypress);
   }
 
-  /** example that hides the button if active content is not a 3d View */
-  private _anotherGroupStateFunc = (currentState: Readonly<BaseItemState>): BaseItemState => {
-    const returnState: BaseItemState = { ...currentState };
-    returnState.isVisible = ContentViewManager.isContent3dView(ContentViewManager.getActiveContentControl());
-    return returnState;
-  }
-
-  private _visibleTestStateFunc = (currentState: Readonly<BaseItemState>): BaseItemState => {
-    const returnState: BaseItemState = { ...currentState };
-    returnState.isVisible = SampleAppIModelApp.getTestProperty() !== "HIDE";
-    return returnState;
-  }
-
-  private _enabledTestStateFunc = (currentState: Readonly<BaseItemState>): BaseItemState => {
-    const returnState: BaseItemState = { ...currentState };
-    returnState.isEnabled = SampleAppIModelApp.getTestProperty() !== "HIDE";
-    return returnState;
-  }
-
   // cSpell:disable
 
   /** Get the CustomItemDef for PopupButton  */
   private get _viewportPopupButtonItemDef() {
     return new CustomItemDef({
-      reactElement: (
-        <PopupButton iconSpec="icon-arrow-down" label="Popup Test" badgeType={BadgeType.New}>
-          <div style={{ width: "400px", height: "300px" }}>
-            <ScrollView>
-              <div>
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-                Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure
-                dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
-                proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+      customId: "test.custom-popup",
+      iconSpec: "icon-arrow-down",
+      label: "Popup Test",
+      badgeType: BadgeType.New,
+      popupPanelNode:
+        <div style={{ width: "400px", height: "300px", padding: "6px 0px 6px 6px" }}>
+          <ScrollView>
+            <div>
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+              Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure
+              dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
+              proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
               </div>
-              <ViewportWidget projectName="iModelHubTest" imodelName="86_Hospital" />
-              <div>
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-                Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure
-                dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
-                proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+            {false && <ViewportWidget projectName="iModelHubTest" imodelName="GrandCanyonTerrain" />}
+            <div>
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+              Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure
+              dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
+              proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
               </div>
-            </ScrollView>
-          </div>
-        </PopupButton>
-      ),
+          </ScrollView>
+        </div>,
     });
   }
 
+  public formatGroupItemsItem = (): CommonToolbarItem => {
+    const children = ToolbarHelper.constructChildToolbarItems([
+      AppTools.setLengthFormatMetricCommand, AppTools.setLengthFormatImperialCommand,
+      AppTools.toggleLengthFormatCommand,
+    ]);
+    const item = ToolbarItemUtilities.createGroupButton("tool-formatting-setting", 135, "icon-placeholder", "set formatting units", children, { badgeType: BadgeType.New });
+    return item;
+  }
+
   // cSpell:enable
+  public additionalHorizontalToolbarItems: CommonToolbarItem[] = [
+    ToolbarHelper.createToolbarItemFromItemDef(0, CoreTools.keyinBrowserButtonItemDef),
+    ToolbarHelper.createToolbarItemFromItemDef(5, this._openNestedAnimationStage),
+    ToolbarHelper.createToolbarItemFromItemDef(115, AppTools.tool1),
+    ToolbarHelper.createToolbarItemFromItemDef(120, AppTools.tool2),
+    ToolbarHelper.createToolbarItemFromItemDef(125, this._viewportPopupButtonItemDef),
+    ToolbarHelper.createToolbarItemFromItemDef(130, AppTools.toolWithSettings),
+    ToolbarHelper.createToolbarItemFromItemDef(135, AppTools.toggleHideShowItemsCommand),
+    this.formatGroupItemsItem(),
+  ];
 
-  public additionalHorizontalToolbarItems = new ItemList([
-    this._openNestedAnimationStage,
-    CoreTools.keyinBrowserButtonItemDef,
-    AppTools.tool1,
-    new ConditionalItemDef({
-      conditionalId: "Conditional-tool-2",
-      items: [AppTools.tool2, this._viewportPopupButtonItemDef],
-      stateSyncIds: [SampleAppUiActionId.setTestProperty],
-      stateFunc: this._enabledTestStateFunc,
-      badgeType: BadgeType.New,
-    }),
-    AppTools.toolWithSettings,
-    AppTools.toggleHideShowItemsCommand,
-    new ConditionalItemDef({
-      conditionalId: "Conditional-formatting",
-      items: [
-        new GroupItemDef({
-          groupId: "tool-formatting-setting",
-          labelKey: "SampleApp:buttons.toolGroup",
-          iconSpec: "icon-placeholder",
-          items: [AppTools.setLengthFormatMetricCommand, AppTools.setLengthFormatImperialCommand, AppTools.toggleLengthFormatCommand, CoreTools.clearSelectionItemDef],
-          itemsInColumn: 4,
-        }),
-      ],
-      stateSyncIds: [SampleAppUiActionId.setTestProperty],
-      stateFunc: this._visibleTestStateFunc,
-      betaBadge: true,
-    }),
-  ]);
+  public getMiscGroupItem = (): CommonToolbarItem => {
+    const children = ToolbarHelper.constructChildToolbarItems([
+      this._nestedGroup,
+      this._saveContentLayout,
+      this._restoreContentLayout,
+      this._startCursorPopup,
+      this._addCursorPopups,
+      this._endCursorPopup,
+      AccuDrawPopupTools.addMenuButton,
+      AccuDrawPopupTools.hideMenuButton,
+      AccuDrawPopupTools.showCalculator,
+      AccuDrawPopupTools.showAngleEditor,
+      AccuDrawPopupTools.showLengthEditor,
+      AccuDrawPopupTools.showHeightEditor,
+    ]);
 
-  public additionalVerticalToolbarItems = new ItemList([
+    const groupHiddenCondition = new ConditionalBooleanValue(() => SampleAppIModelApp.getTestProperty() === "HIDE", [SampleAppUiActionId.setTestProperty]);
+    const item = ToolbarItemUtilities.createGroupButton("SampleApp:buttons.anotherGroup", 130, "icon-placeholder", IModelApp.i18n.translate("SampleApp:buttons.anotherGroup"), children, { badgeType: BadgeType.New, isHidden: groupHiddenCondition });
+    return item;
+  }
+
+  // test ToolbarHelper.createToolbarItemsFromItemDefs
+  public additionalVerticalToolbarItems: CommonToolbarItem[] = [...ToolbarHelper.createToolbarItemsFromItemDefs([
     new GroupItemDef({
       labelKey: "SampleApp:buttons.openCloseProperties",
       panelLabel: "Open Close Properties",
@@ -697,10 +724,9 @@ class AdditionalTools {
     }),
     new GroupItemDef({
       labelKey: "SampleApp:buttons.messageDemos",
-      // deprecated way of using tooltip to specify panelLabel
-      tooltip: "Message Demos (Tooltip)",
+      panelLabel: "Message Demos",
       iconSpec: "icon-placeholder",
-      items: [this._tool3Item, this._tool4Item, this._outputMessageItem],
+      items: [this._tool3Item, this._tool4Item, this._outputMessageItem, this._clearMessages],
     }),
     new GroupItemDef({
       labelKey: "SampleApp:buttons.dialogDemos",
@@ -712,20 +738,5 @@ class AdditionalTools {
       ],
       badgeType: BadgeType.New,
     }),
-    new GroupItemDef({
-      labelKey: "SampleApp:buttons.anotherGroup",
-      iconSpec: "icon-placeholder",
-      items: [
-        AppTools.tool1, AppTools.tool2, this._groupItemDef,
-        this._saveContentLayout, this._restoreContentLayout,
-        this._startCursorPopup, this._addCursorPopups, this._endCursorPopup,
-        AccuDrawPopupTools.addMenuButton, AccuDrawPopupTools.hideMenuButton, AccuDrawPopupTools.showCalculator,
-        AccuDrawPopupTools.showAngleEditor, AccuDrawPopupTools.showLengthEditor, AccuDrawPopupTools.showHeightEditor,
-      ],
-      stateSyncIds: [SyncUiEventId.ActiveContentChanged],
-      stateFunc: this._anotherGroupStateFunc,
-      betaBadge: true,
-    }),
-  ]);
-
+  ], 100), this.getMiscGroupItem()];
 }

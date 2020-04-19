@@ -1,11 +1,12 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module WebGL */
+/** @packageDocumentation
+ * @module WebGL
+ */
 
 import { TextureUnit, CompositeFlags } from "../RenderFlags";
-import { Matrix3 } from "../Matrix";
 import { FragmentShaderBuilder, FragmentShaderComponent, VariableType } from "../ShaderBuilder";
 import { ShaderProgram } from "../ShaderProgram";
 import { CompositeGeometry } from "../CachedGeometry";
@@ -14,33 +15,16 @@ import { createViewportQuadBuilder } from "./ViewportQuad";
 import { assignFragColor, addWindowToTexCoords } from "./Fragment";
 import { assert } from "@bentley/bentleyjs-core";
 
-const scratchSettings = new Matrix3();
-const scratchWidths = new Float32Array(2);
-
 function addHiliteSettings(frag: FragmentShaderBuilder): void {
   frag.addUniform("u_hilite_settings", VariableType.Mat3, (prog) => {
-    prog.addGraphicUniform("u_hilite_settings", (uniform, params) => {
-      const c = params.target.hiliteColor;
-      const e = params.target.emphasisColor;
-      const m = scratchSettings;
-      m.data[0] = c.red;
-      m.data[1] = c.green;
-      m.data[2] = c.blue;
-      m.data[3] = e.red;
-      m.data[4] = e.green;
-      m.data[5] = e.blue;
-      m.data[6] = params.target.hiliteSettings.hiddenRatio;
-      m.data[7] = params.target.emphasisSettings.hiddenRatio;
-      uniform.setMatrix3(m);
+    prog.addProgramUniform("u_hilite_settings", (uniform, params) => {
+      params.target.uniforms.hilite.bindCompositeSettings(uniform);
     });
   });
 
   frag.addUniform("u_hilite_width", VariableType.Vec2, (prog) => {
-    prog.addGraphicUniform("u_hilite_width", (uniform, params) => {
-      const w = scratchWidths;
-      w[0] = params.target.hiliteSettings.silhouette;
-      w[1] = params.target.emphasisSettings.silhouette;
-      uniform.setUniform2fv(w);
+    prog.addProgramUniform("u_hilite_width", (uniform, params) => {
+      params.target.uniforms.hilite.bindCompositeWidths(uniform);
     });
   });
 }
@@ -134,7 +118,7 @@ const computeTranslucentBaseColor = "return computeColor();";
 const computeAmbientOcclusionBaseColor = `\nreturn computeOpaqueColor();\n`;
 
 /** @internal */
-export function createCompositeProgram(flags: CompositeFlags, context: WebGLRenderingContext): ShaderProgram {
+export function createCompositeProgram(flags: CompositeFlags, context: WebGLRenderingContext | WebGL2RenderingContext): ShaderProgram {
   assert(CompositeFlags.None !== flags);
 
   const wantHilite = CompositeFlags.None !== (flags & CompositeFlags.Hilite);

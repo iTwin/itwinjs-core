@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-@import "@bentley/ui-core/lib/ui-core/index";
+@import "~@bentley/ui-core/lib/ui-core/button/primary-large";
+@import "~@bentley/ui-core/lib/ui-core/style/typography";
+@import "~@bentley/ui-core/lib/ui-core/style/typography";
 
 $signin-height: 315px; // 250px;
 $signin-width:  275px;
@@ -61,6 +63,11 @@ $signin-hyperlink-hover-color: $buic-foreground-primary-tone;
     margin-top: auto;
   }
 
+  /* signing-in message */
+  .components-signingin-message {
+    margin-top: 3em;
+    text-align: center;
+  }
 
   /* "Register" container */
   .components-signin-register {

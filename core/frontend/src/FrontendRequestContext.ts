@@ -1,11 +1,13 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Utils */
+/** @packageDocumentation
+ * @module Utils
+ */
 
 import { AuthStatus, BentleyError, ClientRequestContext, Guid, Logger } from "@bentley/bentleyjs-core";
-import { AccessToken, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { IModelApp } from "./IModelApp";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 
@@ -20,7 +22,7 @@ const loggerCategory: string = FrontendLoggerCategory.FrontendRequestContext;
 export class AuthorizedFrontendRequestContext extends AuthorizedClientRequestContext {
 
   /**
-   * Create a new context for agent applications or long running frontend operations to pass to various services
+   * Create a new context for frontend operations to pass to various services
    * @see [[AuthorizedFrontendRequestContext.create]] to create the request based on the authorization information supplied to IModelHost.
    */
   public constructor(accessToken: AccessToken, activityId: string = Guid.createValue()) {
@@ -28,7 +30,7 @@ export class AuthorizedFrontendRequestContext extends AuthorizedClientRequestCon
   }
 
   /**
-   * Create a new context for agent applications or long running frontend operations to pass to various services that require
+   * Create a new context for frontend operations to pass to various services that require
    * authorization. Uses the authorization information supplied to IModelHost to setup an accessToken within the context.
    * @throws [[BentleyError]] if the application cannot be authorized.
    * @see [[IModelApp.authorizationClient]] to setup authorization for the frontend application.

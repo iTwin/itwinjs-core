@@ -1,13 +1,15 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module Curve */
+/** @packageDocumentation
+ * @module Curve
+ */
 
 // import { Geometry, Angle, AngleSweep } from "../Geometry";
 
-import { Point3d } from "../geometry3d/Point3dVector3d";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Arc3d, ArcBlendData } from "./Arc3d";
 import { LineString3d } from "./LineString3d";
 import { LineSegment3d } from "./LineSegment3d";
@@ -15,6 +17,14 @@ import { Point3dArrayCarrier } from "../geometry3d/Point3dArrayCarrier";
 import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
 import { Path } from "./Path";
 import { Geometry } from "../Geometry";
+import { Ellipsoid, GeodesicPathPoint } from "../geometry3d/Ellipsoid";
+import { Loop } from "./Loop";
+import { AngleSweep } from "../geometry3d/AngleSweep";
+import { CurveChain } from "./CurveCollection";
+import { Cone } from "../solid/Cone";
+import { TorusPipe } from "../solid/TorusPipe";
+import { CurvePrimitive } from "./CurvePrimitive";
+import { GeometryQuery } from "./GeometryQuery";
 /**
  * The `CurveFactory` class contains methods for specialized curve constructions.
  * @public
@@ -29,15 +39,20 @@ export class CurveFactory {
   }
   /**
    * Construct a sequence of alternating lines and arcs with the arcs creating tangent transition between consecutive edges.
+   *  * If the radius parameter is a number, that radius is used throughout.
+   *  * If the radius parameter is an array of numbers, `radius[i]` is applied at `point[i]`.
+   *    * Note that since no fillet is constructed at the initial or final point, those entries in `radius[]` are never referenced.
+   *    * A zero radius for any point indicates to leave the as a simple corner.
    * @param points point source
-   * @param radius fillet radius
+   * @param radius fillet radius or array of radii indexed to correspond to the points.
    * @param allowBackupAlongEdge true to allow edges to be created going "backwards" along edges if needed to create the blend.
    */
-  public static createFilletsInLineString(points: LineString3d | IndexedXYZCollection | Point3d[], radius: number, allowBackupAlongEdge: boolean = true): Path | undefined {
+  public static createFilletsInLineString(points: LineString3d | IndexedXYZCollection | Point3d[], radius: number | number[], allowBackupAlongEdge: boolean = true): Path | undefined {
     if (Array.isArray(points))
       return this.createFilletsInLineString(new Point3dArrayCarrier(points), radius, allowBackupAlongEdge);
     if (points instanceof LineString3d)
       return this.createFilletsInLineString(points.packedPoints, radius, allowBackupAlongEdge);
+
     const n = points.length;
     if (n <= 1)
       return undefined;
@@ -50,7 +65,17 @@ export class CurveFactory {
 
     for (let i = 1; i + 1 < n; i++) {
       const pointC = points.getPoint3dAtCheckedPointIndex(i + 1)!;
-      blendArray.push(Arc3d.createFilletArc(pointA, pointB, pointC, radius));
+      let thisRadius = 0;
+      if (Array.isArray(radius)) {
+        if (i < radius.length)
+          thisRadius = radius[i];
+      } else if (Number.isFinite(radius))
+        thisRadius = radius;
+
+      if (thisRadius !== 0.0)
+        blendArray.push(Arc3d.createFilletArc(pointA, pointB, pointC, thisRadius));
+      else
+        blendArray.push({ fraction10: 0.0, fraction12: 0.0, point: pointB.clone() });
       pointA.setFromPoint3d(pointB);
       pointB.setFromPoint3d(pointC);
     }
@@ -68,6 +93,7 @@ export class CurveFactory {
           blendArray[i].arc = undefined;
         }
       }
+      /*  The "1-b" logic above prevents this loop from ever doing anything.
       // on edge with conflict, suppress the arc with larger fraction
       for (let i = 1; i < n; i++) {
         const b0 = blendArray[i - 1];
@@ -78,7 +104,7 @@ export class CurveFactory {
           b.fraction12 = 0.0;
           blendArray[i].arc = undefined;
         }
-      }
+      }*/
     }
     const path = Path.create();
     this.addPartialSegment(path, allowBackupAlongEdge, blendArray[0].point, blendArray[1].point, blendArray[0].fraction12, 1.0 - blendArray[1].fraction10);
@@ -91,7 +117,33 @@ export class CurveFactory {
     }
     return path;
   }
-
+  /** Create a `Loop` with given xy corners and fixed z. */
+  public static createRectangleXY(x0: number, y0: number, x1: number, y1: number, z: number = 0, filletRadius?: number): Loop {
+    if (filletRadius === undefined)
+      return Loop.createPolygon([Point3d.create(x0, y0, z), Point3d.create(x1, y0, z), Point3d.create(x1, y1, z), Point3d.create(x0, y1, z), Point3d.create(x0, y0, z)]);
+    else {
+      const vectorU = Vector3d.create(filletRadius, 0, 0);
+      const vectorV = Vector3d.create(0, filletRadius, 0);
+      const x0A = x0 + filletRadius;
+      const y0A = y0 + filletRadius;
+      const x1A = x1 - filletRadius;
+      const y1A = y1 - filletRadius;
+      const centers = [Point3d.create(x1A, y1A, z), Point3d.create(x0A, y1A, z), Point3d.create(x0A, y0A, z), Point3d.create(x1A, y0A, z)];
+      const loop = Loop.create();
+      for (let i = 0; i < 4; i++) {
+        const center = centers[i];
+        const nextCenter = centers[(i + 1) % 4];
+        const edgeVector = Vector3d.createStartEnd(center, nextCenter);
+        const arc = Arc3d.create(center, vectorU, vectorV, AngleSweep.createStartEndDegrees(0, 90));
+        loop.tryAddChild(arc);
+        const arcEnd = arc.endPoint();
+        loop.tryAddChild(LineSegment3d.create(arcEnd, arcEnd.plus(edgeVector)));
+        vectorU.rotate90CCWXY(vectorU);
+        vectorV.rotate90CCWXY(vectorV);
+      }
+      return loop;
+    }
+  }
   /**
    * If `arcB` is a continuation of `arcA`, extend `arcA` (in place) to include the range of `arcB`
    * * This only succeeds if the two arcs are part of identical complete arcs and end of `arcA` matches the beginning of `arcB`.
@@ -125,5 +177,52 @@ export class CurveFactory {
 
     }
     return false;
+  }
+  /**
+   * Return a `Path` containing arcs are on the surface of an ellipsoid and pass through a sequence of points.
+   * * Each arc passes through the two given endpoints and in the plane containing the true surface normal at given `fractionForIntermediateNormal`
+   * @param ellipsoid
+   * @param pathPoints
+   * @param fractionForIntermediateNormal fractional position for surface normal used to create the section plane.
+   */
+  public static assembleArcChainOnEllipsoid(ellipsoid: Ellipsoid, pathPoints: GeodesicPathPoint[], fractionForIntermediateNormal: number = 0.5): Path {
+    const arcPath = Path.create();
+    for (let i = 0; i + 1 < pathPoints.length; i++) {
+      const arc = ellipsoid.sectionArcWithIntermediateNormal(
+        pathPoints[i].toAngles(),
+        fractionForIntermediateNormal,
+        pathPoints[i + 1].toAngles());
+      arcPath.tryAddChild(arc);
+    }
+    return arcPath;
+  }
+  private static appendGeometryQueryArray(candidate: GeometryQuery | GeometryQuery[] | undefined, result: GeometryQuery[]) {
+    if (candidate instanceof GeometryQuery)
+      result.push(candidate);
+    else if (Array.isArray(candidate)) {
+      for (const p of candidate)
+        this.appendGeometryQueryArray(p, result);
+    }
+
+  }
+  /**
+   * Create solid primitives for pipe segments (e.g. Cone or TorusPipe) around line and arc primitives.
+   * @param centerline centerline geometry/
+   * @param pipeRadius radius of pipe.
+   */
+  public static createPipeSegments(centerline: CurvePrimitive | CurveChain, pipeRadius: number): GeometryQuery | GeometryQuery[] | undefined {
+    if (centerline instanceof LineSegment3d) {
+      return Cone.createAxisPoints(centerline.startPoint(), centerline.endPoint(), pipeRadius, pipeRadius, false);
+    } else if (centerline instanceof Arc3d) {
+      return TorusPipe.createAlongArc(centerline, pipeRadius, false);
+    } else if (centerline instanceof CurveChain) {
+      const result: GeometryQuery[] = [];
+      for (const p of centerline.children) {
+        const pipe = this.createPipeSegments(p, pipeRadius);
+        this.appendGeometryQueryArray(pipe, result);
+      }
+      return result;
+    }
+    return undefined;
   }
 }

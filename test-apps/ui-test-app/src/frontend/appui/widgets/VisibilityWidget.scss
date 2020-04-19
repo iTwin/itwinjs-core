@@ -1,0 +1,60 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+
+.ui-test-app-visibility-widget {
+  padding: 4px 4px 5px 5px;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+
+  .components-selectable-content {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+  }
+
+  .components-selectable-content-header {
+    display: flex;
+    align-items: center;
+    padding: 6px 0;
+
+    .components-selectable-content-selector {
+      flex: 1;
+      padding: 5px;
+      border: 1px solid #ccc;
+      width: 50%;
+      margin-right: 10px;
+    }
+  }
+
+  .components-selectable-content-wrapper {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #ccc;
+    margin-top: 4px;
+  }
+
+  .ui-test-app-visibility-tree-toolbar {
+    display: flex;
+    flex-direction: row;
+
+    .tree-toolbar-action-buttons {
+      margin: auto 0px auto 10px;
+      display: flex;
+      flex-direction: row;
+      flex-wrap: nowrap;
+
+      button {
+        height: 32px;
+        width: 32px;
+      }
+    }
+
+    .tree-toolbar-searchbox {
+      margin-left: auto;
+    }
+  }
+}

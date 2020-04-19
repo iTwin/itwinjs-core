@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Views */
+/** @packageDocumentation
+ * @module Views
+ */
 
 import { Logger, ObservableSet } from "@bentley/bentleyjs-core";
 import { Geometry, Matrix4d, Point2d, Point3d, Range1d, Range1dProps, Vector3d, XAndY, XYAndZ } from "@bentley/geometry-core";
@@ -11,10 +13,11 @@ import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { imageElementFromUrl } from "./ImageUtil";
 import { IModelApp } from "./IModelApp";
 import { ToolTipOptions } from "./NotificationManager";
-import { CanvasDecoration } from "./render/System";
+import { CanvasDecoration } from "./render/CanvasDecoration";
 import { BeButtonEvent } from "./tools/Tool";
 import { DecorateContext } from "./ViewContext";
-import { ScreenViewport, Viewport, ViewRect } from "./Viewport";
+import { ScreenViewport, Viewport } from "./Viewport";
+import { ViewRect } from "./ViewRect";
 
 /** The types that may be used for Markers
  * @public
@@ -81,6 +84,8 @@ export class Marker implements CanvasDecoration {
   public label?: string;
   /** The offset for [[label]], in pixels, from the *center* of this Marker. If undefined, (0,0). */
   public labelOffset?: XAndY;
+  /** The maximum with for [[label]], in pixels. If undefined label will not be condensed or use a smaller font size. */
+  public labelMaxWidth?: number;
   /** The color for [[label]]. See  https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/fillStyle. If undefined, "white". */
   public labelColor?: MarkerFillStyle;
   /** The text alignment for [[label]]. See https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/textAlign. If undefined, "center" */
@@ -195,9 +200,9 @@ export class Marker implements CanvasDecoration {
     if (this.label !== undefined) {
       ctx.textAlign = this.labelAlign ? this.labelAlign : "center";
       ctx.textBaseline = this.labelBaseline ? this.labelBaseline : "middle";
-      ctx.font = this.labelFont ? this.labelFont : "14px san-serif";
+      ctx.font = this.labelFont ? this.labelFont : "14px sans-serif";
       ctx.fillStyle = this.labelColor ? this.labelColor : "white";
-      ctx.fillText(this.label, this.labelOffset ? -this.labelOffset.x : 0, this.labelOffset ? -this.labelOffset.y : 0);
+      ctx.fillText(this.label, this.labelOffset ? -this.labelOffset.x : 0, this.labelOffset ? -this.labelOffset.y : 0, this.labelMaxWidth);
     }
   }
 

@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
 import {
@@ -66,6 +66,12 @@ export interface ISchemaComparer {
   compareConstants(constantA: Constant, constantB: Constant | undefined): void;
 }
 
+function labelsMatch(label1?: string, label2?: string) {
+  label1 = label1 === undefined ? "" : label1;
+  label2 = label2 === undefined ? "" : label2;
+  return label1 === label2;
+}
+
 /**
  * Compares EC Schemas and reports differences using the [[IDiagnosticReporter]] objects
  * specified.
@@ -115,8 +121,10 @@ export class SchemaComparer {
     const promises: Array<Promise<void>> = [];
     for (const ref of schemaA.references) {
       const refB = await schemaB.getReference(ref.fullName);
-      if (!refB || !refB.schemaKey.matches(ref.schemaKey))
+      if (!refB)
         promises.push(this._reporter.reportSchemaReferenceMissing(schemaA, ref, this._compareDirection));
+      else if (!refB.schemaKey.matches(ref.schemaKey))
+        promises.push(this._reporter.reportSchemaReferenceDelta(schemaA, ref, ref.schemaKey.version.toString(), refB.schemaKey.version.toString(), this._compareDirection));
     }
 
     if (this._compareDirection === SchemaCompareDirection.Backward)
@@ -159,7 +167,7 @@ export class SchemaComparer {
     if (schemaItemA.description !== schemaItemB.description)
       promises.push(this._reporter.reportSchemaItemDelta(schemaItemA, "description", schemaItemA.description, schemaItemB.description, this._compareDirection));
 
-    if (schemaItemA.label !== schemaItemB.label)
+    if (!labelsMatch(schemaItemA.label, schemaItemB.label))
       promises.push(this._reporter.reportSchemaItemDelta(schemaItemA, "label", schemaItemA.label, schemaItemB.label, this._compareDirection));
 
     if (schemaItemA.schemaItemType !== schemaItemB.schemaItemType) {
@@ -222,10 +230,10 @@ export class SchemaComparer {
       return;
     }
 
-    if (this._compareDirection === SchemaCompareDirection.Backward && propertyB)
+    if (this._compareDirection === SchemaCompareDirection.Backward)
       return;
 
-    if (propertyA.label !== propertyB.label)
+    if (!labelsMatch(propertyA.label, propertyB.label))
       promises.push(this._reporter.reportPropertyDelta(propertyA, "label", propertyA.label, propertyB.label, this._compareDirection));
 
     if (propertyA.description !== propertyB.description)
@@ -776,7 +784,7 @@ export class SchemaComparer {
     if (enumeratorA.description !== enumeratorB.description)
       promises.push(this._reporter.reportEnumeratorDelta(enumA, enumeratorA, "description", enumeratorA.description, enumeratorB.description, this._compareDirection));
 
-    if (enumeratorA.label !== enumeratorB.label)
+    if (!labelsMatch(enumeratorA.label, enumeratorB.label))
       promises.push(this._reporter.reportEnumeratorDelta(enumA, enumeratorA, "label", enumeratorA.label, enumeratorB.label, this._compareDirection));
 
     // No need to compare values if the type is different (which will be reported separately)

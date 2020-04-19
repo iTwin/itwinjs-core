@@ -1,14 +1,11 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import {
-  IModelHost, IModelDb, ECSqlStatement, ExportGraphicsInfo, ExportGraphicsMesh, ExportPartInstanceInfo,
-  ExportPartInfo, ExportGraphics, ExportLinesInfo, ExportGraphicsLines, ExportPartLinesInfo, Texture,
-} from "@bentley/imodeljs-backend";
-import { DbResult, Id64Array, Logger, LogLevel, Id64String } from "@bentley/bentleyjs-core";
+import { DbResult, Id64Array, Id64String, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { Angle, Geometry, Matrix3d } from "@bentley/geometry-core";
+import { ECSqlStatement, ExportGraphics, ExportGraphicsInfo, ExportGraphicsLines, ExportGraphicsMesh, ExportLinesInfo, ExportPartInfo, ExportPartInstanceInfo, ExportPartLinesInfo, IModelHost, SnapshotDb, Texture } from "@bentley/imodeljs-backend";
 import { ColorDef, ImageSourceFormat } from "@bentley/imodeljs-common";
-import { Matrix3d, Angle, Geometry } from "@bentley/geometry-core";
 import * as fs from "fs";
 import * as path from "path";
 import * as yargs from "yargs";
@@ -18,7 +15,7 @@ const ANGLE_TOL = Angle.degreesToRadians(45);
 const MIN_BREP_SIZE = 0.01;
 
 class GltfGlobals {
-  public static iModel: IModelDb;
+  public static iModel: SnapshotDb;
   public static gltf: Gltf;
   public static binFile: number;
   public static texturesDir: string;
@@ -27,7 +24,7 @@ class GltfGlobals {
   public static textureToMaterialMap: Map<Id64String, number>;
 
   public static initialize(iModelName: string, gltfName: string) {
-    GltfGlobals.iModel = IModelDb.openSnapshot(iModelName);
+    GltfGlobals.iModel = SnapshotDb.openFile(iModelName);
     process.stdout.write(`Opened ${iModelName} successfully...\n`);
 
     const gltfPathParts = path.parse(gltfName);
@@ -93,7 +90,7 @@ function findOrAddMaterialIndexForColor(color: number): number {
   let result = GltfGlobals.colorToMaterialMap.get(color);
   if (result !== undefined) return result;
 
-  const rgb = new ColorDef(color).colors;
+  const rgb = ColorDef.getColors(color);
   const pbrMetallicRoughness: GltfMaterialPbrMetallicRoughness = {
     baseColorFactor: [rgb.r / 255, rgb.g / 255, rgb.b / 255, (255 - rgb.t) / 255],
     metallicFactor: 0,

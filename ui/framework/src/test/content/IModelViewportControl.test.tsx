@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 // TODO - once we figure out how to mock all data need to construct a UnifiedSelection Viewport
 // import * as React from "react";
@@ -51,7 +51,7 @@
 //      const info = new ConfigurableCreateInfo("imodelViewId", "uniqueId", "idString");
 //      const vpControl = new IModelViewportControl(info, options);
 //      expect(vpControl).not.to.be.null;
-//      const reactElement = vpControl.reactElement;
+//      const reactElement = vpControl.reactNode;
 //      expect(reactElement).not.to.be.null;
 //      const wrapper = mount(reactElement as React.ReactElement);
 //

@@ -1,29 +1,29 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Popup */
+/** @packageDocumentation
+ * @module Popup
+ */
 
 import * as React from "react";
 
-import { OnCancelFunc, RelativePosition } from "@bentley/ui-abstract";
+import { OnCancelFunc, RelativePosition, OnItemExecutedFunc, CommonToolbarItem, ConditionalBooleanValue } from "@bentley/ui-abstract";
 import { DivWithOutsideClick, Orientation, Point, SizeProps, Size } from "@bentley/ui-core";
 import { Toolbar as NZ_Toolbar } from "@bentley/ui-ninezone";
 
 import { PositionPopup } from "./PositionPopup";
 import { PopupManager, PopupPropsBase } from "./PopupManager";
-import { ItemList } from "../shared/ItemMap";
-import { ItemDefBase } from "../shared/ItemDefBase";
-import { ActionButtonItemDef } from "../shared/ActionButtonItemDef";
-import { ConditionalItemDef } from "../shared/ConditionalItemDef";
 import { CursorPopup } from "../cursor/cursorpopup/CursorPopup";
+import { ToolbarHelper } from "../../ui-framework";
 
 /** @alpha */
 export interface ToolbarPopupProps extends PopupPropsBase {
-  items: ItemList;
+  items: CommonToolbarItem[];
   relativePosition: RelativePosition;
   orientation: Orientation;
   onCancel: OnCancelFunc;
+  onItemExecuted: OnItemExecutedFunc;
 }
 
 /** @internal */
@@ -66,29 +66,19 @@ export class ToolbarPopup extends React.PureComponent<ToolbarPopupProps, Toolbar
     const popupRect = CursorPopup.getPopupRect(point, this.props.offset, this.state.size, this.props.relativePosition!);
     point = new Point(popupRect.left, popupRect.top);
 
-    const actionItems = new Array<ActionButtonItemDef>();
+    const toolbarItems = () => {
+      const availableItems = this.props.items
+        .filter((item) => !(ConditionalBooleanValue.getValue(item.isHidden)))
+        .sort((a, b) => a.itemPriority - b.itemPriority);
 
-    // Filter on ActionButtonItemDef
-    this.props.items.forEach((item: ItemDefBase) => {
-      if (item.isVisible) {
-        if (item instanceof ActionButtonItemDef) {
-          actionItems.push(item);
-        } else {
-          // istanbul ignore else
-          if (item instanceof ConditionalItemDef) {
-            const visibleItems = item.getVisibleItems();
-            visibleItems.forEach((childItem: ActionButtonItemDef) => {
-              actionItems.push(childItem);
-            });
-          }
-        }
-      }
-    });
+      if (0 === availableItems.length)
+        return null;
 
-    // Populate the toolbar items
-    const toolbarItems = actionItems.map((item: ActionButtonItemDef, index: number) => {
-      return item.toolbarReactNode(index);
-    });
+      const createdNodes = availableItems.map((item: CommonToolbarItem) => {
+        return ToolbarHelper.createNodeForToolbarItem(item, this.props.onItemExecuted);
+      });
+      return createdNodes;
+    };
 
     return (
       <PositionPopup key={this.props.id}
@@ -97,7 +87,7 @@ export class ToolbarPopup extends React.PureComponent<ToolbarPopupProps, Toolbar
         onSizeKnown={this._onSizeKnown}
       >
         <DivWithOutsideClick onOutsideClick={this.props.onCancel} onKeyDown={this._handleKeyDown}>
-          <NZ_Toolbar items={toolbarItems} />
+          <NZ_Toolbar items={toolbarItems()} />
         </DivWithOutsideClick>
       </PositionPopup>
     );

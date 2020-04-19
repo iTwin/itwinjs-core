@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
 import { Sample } from "../../serialization/GeometrySamples";
@@ -21,8 +21,6 @@ import { CurveFactory } from "../../curve/CurveFactory";
 import { RegionOps } from "../../curve/RegionOps";
 import { BezierCurve3d } from "../../bspline/BezierCurve3d";
 import { Arc3d } from "../../curve/Arc3d";
-// import { prettyPrint } from "./testFunctions";
-// import { CurveLocationDetail } from "../curve/CurvePrimitive";
 /* tslint:disable:no-console */
 
 function verifyCurveCollection(ck: Checker, collection: CurveCollection) {
@@ -181,11 +179,14 @@ describe("ConsolidateAdjacentPrimitives", () => {
   it("LinesAndArcs", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
+    ck.testUndefined(CurveFactory.createFilletsInLineString([Point3d.create(0, 0, 0)], 0.2, false));
     let x0 = 0.0;
     const y0 = 0.0;
-    const points = [Point3d.create(0, 0, 0), Point3d.create(2, 0, 0), Point3d.create(2, 3, 1), Point3d.create(4, 3, 1)];
+    const points = [Point3d.create(0, 0, 0), Point3d.create(2, 0, 0), Point3d.create(2, 3, 1), Point3d.create(4, 3, 1), Point3d.create(6, 2, 1)];
     const tail = points[points.length - 1];
     const chain0 = CurveFactory.createFilletsInLineString(points, 0.2, false)!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain0, x0, y0);
+    x0 += 10;
     chain0.tryAddChild(BezierCurve3d.create([tail,
       tail.plus(Vector3d.create(1, 1, 0)),
       tail.plus(Vector3d.create(2, 0, -1)),

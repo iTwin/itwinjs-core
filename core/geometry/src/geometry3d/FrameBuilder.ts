@@ -1,9 +1,11 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module CartesianGeometry */
+/** @packageDocumentation
+ * @module CartesianGeometry
+ */
 
 // import { Point2d } from "./Geometry2d";
 /* tslint:disable:variable-name jsdoc-format no-empty */
@@ -158,7 +160,7 @@ export class FrameBuilder {
         const ray = data.fractionToPointAndDerivative(0.0);
         this.announcePoint(ray.origin);
         this.announceVector(ray.direction);
-        this.announceVector(data.matrix.columnZCrossVector(ray.direction));
+        this.announceVector(data.matrixRef.columnZCrossVector(ray.direction));
       } else if (data instanceof LineString3d) {
         for (const point of data.points) {
           this.announcePoint(point);

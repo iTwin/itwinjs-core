@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 "use strict";
 
@@ -48,10 +48,10 @@ if (argv.offline === "mock")
 
 const watchOptions = argv.watch ? ["--watch", "--inline-diffs"] : [];
 
-const debugOptions = argv.debug ? [
+const debugOptions = argv.debug || argv.inspect ? [
   "--inspect=9229",
-  "--debug-brk"
-] : []
+  "--inspect-brk"
+] : [];
 
 let grepOptions = [];
 if (undefined !== argv.grep) {

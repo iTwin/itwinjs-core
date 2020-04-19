@@ -1,5 +1,11 @@
 sep=;
 Release Tag;API Item
+beta;class AbstractTreeNodeLoader 
+beta;class AbstractTreeNodeLoaderWithProvider
+beta;ActionButtonList 
+beta;ActionButtonListProps
+beta;ActionButtonRenderer = (props: ActionButtonRendererProps) => React.ReactNode
+beta;ActionButtonRendererProps
 beta;ActiveMatchInfo
 beta;AlphaSlider 
 beta;AlphaSliderProps 
@@ -51,31 +57,36 @@ beta;BreadcrumbUpdateEventArgs
 beta;CellEditingEngine
 public;CellItem
 public;CellProps
-alpha;CheckBoxInfo
-alpha;CheckboxStateChange
+beta;CheckBoxInfo
+beta;CheckboxStateChange
 beta;ColorEditor 
 beta;ColorPickerButton 
 beta;ColorPickerProps 
 beta;ColorPropertyEditor 
-beta;ColorSwatch: React.FunctionComponent
+beta;ColorSwatch(props: ColorSwatchProps): JSX.Element
 beta;ColorSwatchProps 
 public;ColumnDescription
-alpha;ColumnFilterDescriptor 
-alpha;CompletionObserver
-alpha;CompositeFilterDescriptor 
-alpha;CompositeFilterDescriptorCollection
+beta;ColumnFilterDescriptor 
+public;CompletionObserver
+beta;CompositeFilterDescriptor 
+beta;CompositeFilterDescriptorCollection
+public;CompositeTypeConverter 
 internal;ContextMenu 
 internal;ContextMenuItem 
 internal;ContextMenuProps 
-alpha;ControlledTree: React.FC
-alpha;ControlledTreeProps 
+beta;ControlledSelectableContent(props: ControlledSelectableContentProps): JSX.Element
+beta;ControlledSelectableContentProps
+beta;ControlledTree(props: ControlledTreeProps): JSX.Element
+beta;ControlledTreeProps 
 public;ConvertedPrimitives
-alpha;createDefaultNodeLoadHandler(modelSource: TreeModelSource): (loadedHierarchy: LoadedNodeHierarchy) => void
-alpha;createModelSourceForNodeLoader(nodeLoader: ITreeNodeLoader):
+internal;CubeHover
+beta;CubeNavigationAid 
+beta;CubeNavigationAidProps 
 public;CubeRotationChangeEvent 
 public;CubeRotationChangeEventArgs
 alpha;CustomNumberEditor 
 alpha;CustomNumberPropertyEditor 
+beta;CustomToolbarItem 
 beta;DataController
 beta;class DataControllerBase 
 internal;DataRowItem 
@@ -83,14 +94,20 @@ public;DateTimeTypeConverter
 public;class DateTimeTypeConverterBase 
 alpha;DayPicker 
 public;DelayLoadedTreeNodeItem 
-alpha;DistinctValueCollection
-alpha;DistinctValuesFilterDescriptor 
+public;DEPRECATED_Tree 
+beta;DEPRECATED_withTreeDragDrop
+beta;DistinctValueCollection
+beta;DistinctValuesFilterDescriptor 
 public;DoublePropertyValueRenderer 
 internal;DragAction
 beta;DragDropArguments
 beta;DragLayerProps
 beta;DragSourceArguments
 beta;DragSourceProps
+beta;DrawingNavigationAid 
+beta;DrawingNavigationAidProps 
+internal;DrawingNavigationCanvas 
+internal;DrawingNavigationCanvasProps
 public;DrawingViewportChangeEvent 
 public;DrawingViewportChangeEventArgs
 beta;DropEffects
@@ -106,40 +123,47 @@ beta;EnumEditor
 beta;EnumPropertyButtonGroupEditor 
 beta;EnumPropertyEditor 
 public;EnumTypeConverter 
-alpha;ErrorObserver
+public;ErrorObserver
 public;EventsMuteContext 
-alpha;ExtendedTreeNodeRendererProps 
-alpha;FieldFilterDescriptor 
-alpha;FilterableColumn
-alpha;FilterableTable
-alpha;FilterCompositionLogicalOperator
-alpha;FilterDescriptor
-alpha;FilterDescriptorCollection 
-alpha;class FilterDescriptorCollectionBase
+beta;ExtendedTreeNodeRendererProps 
+internal;FaceCell 
+internal;FaceCellProps 
+beta;FieldFilterDescriptor 
+beta;FilterableColumn
+beta;FilterableTable
+beta;FilterCompositionLogicalOperator
+beta;FilterDescriptor
+beta;FilterDescriptorCollection 
+beta;class FilterDescriptorCollectionBase
 public;FilteringInput 
 public;FilteringInputProps 
-alpha;FilterOperator
-alpha;FilterRenderer
+beta;FilterOperator
+beta;FilterRenderer
 public;FloatTypeConverter 
-alpha;from
+public;from
 beta;GetCurrentlyEditedNode = () => BeInspireTreeNode
+internal;getToolbarDirection: (expandsTo: Direction) => OrthogonalDirection
+internal;handleLoadedNodeHierarchy(modelSource: TreeModelSource, loadedHierarchy: LoadedNodeHierarchy): void
 public;hasChildren: (node: TreeNodeItem) => boolean
 public;hasFlag: (selectionMode: SelectionMode, flag: SelectionModeFlags) => boolean
 public;HexadecimalTypeConverter 
 beta;HighlightableTreeNodeProps
 beta;HighlightableTreeProps
 beta;HighlightingEngine
-public;HorizontalAlignment = "left" | "center" | "right" | "justify"
+internal;HitBoxX
+internal;HitBoxY
+internal;HitBoxZ
 beta;HueSlider 
 beta;HueSliderProps 
 alpha;IconEditor 
 alpha;IconPickerButton 
 alpha;IconPickerProps 
 alpha;IconPropertyEditor 
+beta;IElementPropertyDataProvider
 public;IImageLoader
 public;Image = LoadedImage | LoadedBinaryImage
 public;ImageFileFormat = "png" | "jpg" | "jpge"
-public;ImageSourceType = "svg" | "url" | "binary" | "core-icon"
+public;ImageSourceType = "svg" | "url" | "binary" | "core-icon" | "webfont-icon"
 public;ImmediatelyLoadedTreeNodeItem 
 internal;InlineEdit 
 internal;InputContext
@@ -150,39 +174,42 @@ public;IPropertyDataProvider
 public;IPropertyValueRenderer
 public;isTreeDataProviderInterface: (provider: TreeDataProvider) => provider is ITreeDataProvider
 public;isTreeDataProviderMethod: (provider: TreeDataProvider) => provider is TreeDataProviderMethod
-public;isTreeDataProviderPromise: (provider: TreeDataProvider) => provider is Promise
-public;isTreeDataProviderRaw: (provider: TreeDataProvider) => provider is ImmediatelyLoadedTreeNodeItem[]
-alpha;isTreeModelNode(obj: TreeModelNodeType | undefined): obj is TreeModelNode
-alpha;isTreeModelNodePlaceholder(obj: TreeModelNodeType | undefined): obj is TreeModelNodePlaceholder
-alpha;isTreeModelRootNode(obj: TreeModelNodeType | undefined): obj is TreeModelRootNode
+public;isTreeDataProviderPromise: (provider: TreeDataProvider) => provider is TreeDataProviderPromise
+public;isTreeDataProviderRaw: (provider: TreeDataProvider) => provider is TreeDataProviderRaw
+beta;isTreeModelNode(obj: TreeModelNodeType | undefined): obj is TreeModelNode
+beta;isTreeModelNodePlaceholder(obj: TreeModelNodeType | undefined): obj is TreeModelNodePlaceholder
+beta;isTreeModelRootNode(obj: TreeModelNodeType | undefined): obj is TreeModelRootNode
 public;ItemColorOverrides
 public;ItemStyle
 public;ItemStyleProvider:
 public;ITreeDataProvider
 public;ITreeImageLoader 
-alpha;ITreeNodeLoader
-alpha;ITreeNodeLoaderWithProvider
+beta;ITreeNodeLoader
+beta;ITreeNodeLoaderWithProvider
 public;LessGreaterOperatorProcessor
 beta;LineWeightSwatch 
 beta;LineWeightSwatchProps 
 public;LoadedBinaryImage 
 public;LoadedImage
-alpha;LoadedNodeHierarchy
-alpha;LoadedNodeHierarchyItem
+beta;LoadedNodeHierarchy
+beta;LoadedNodeHierarchyItem
+internal;MapMode
 public;MapPayloadToInspireNodeCallback
 public;matchLinks: (text: string) =>
 internal;MenuItem
 alpha;Milestone
 alpha;MilestoneRange
 internal;MultiSelectionHandler
-alpha;MutableCheckBoxInfo 
+beta;MutableCheckBoxInfo 
 beta;MutableTableDataProvider 
 beta;MutableTreeDataProvider 
-alpha;MutableTreeModel 
-alpha;MutableTreeModelNode 
+beta;MutableTreeModel 
+beta;MutableTreeModelNode 
+internal;NavCubeFace 
+internal;NavCubeFaceProps 
 public;NavigationPropertyTypeConverter 
 public;NavigationPropertyValueRenderer 
-alpha;NextObserver
+public;NextObserver
 public;NodeCheckboxProps 
 internal;NodeRenderer = (item: BeInspireTreeNode
 internal;NodesDeselectedCallback = OnItemsDeselectedCallback
@@ -192,17 +219,16 @@ public;NonPrimitivePropertyLabelRendererProps
 public;NonPrimitivePropertyRenderer 
 public;NonPrimitivePropertyRendererProps 
 public;NullableOperatorProcessor
-alpha;NumericRangeData
 public;class NumericTypeConverterBase 
-alpha;Observable
-alpha;Observer
+public;Observable
+public;Observer
 public;OnItemsDeselectedCallback
 public;OnItemsSelectedCallback
 public;OnSelectionChanged = (shiftDown?: boolean, ctrlDown?: boolean) => void
 public;OperatorProcessor
-alpha;OperatorValueFilterDescriptor 
-alpha;OperatorValueFilterDescriptorCollection 
-alpha;PagedTreeNodeLoader
+beta;OperatorValueFilterDescriptor 
+beta;OperatorValueFilterDescriptorCollection 
+beta;PagedTreeNodeLoader
 public;PageOptions
 alpha;PlaybackSettings
 alpha;PlaybackSettingsChangeHandler = (settingsChange: PlaybackSettings) => void
@@ -211,6 +237,10 @@ internal;PlayerButton
 internal;PlayerButtonProps 
 public;Point2dTypeConverter 
 public;Point3dTypeConverter 
+beta;PopupItem(props: PopupItemProps): JSX.Element
+beta;PopupItemProps 
+beta;PopupItemWithDrag(props: PopupItemWithDragProps): JSX.Element
+beta;PopupItemWithDragProps 
 public;PrimitivePropertyLabelRenderer 
 public;PrimitivePropertyLabelRendererProps 
 public;PrimitivePropertyRenderer 
@@ -251,6 +281,9 @@ beta;SaturationPicker
 beta;SaturationPickerProps 
 internal;Scrubber 
 internal;ScrubberProps 
+beta;SelectableContent(props: SelectableContentProps): JSX.Element
+beta;SelectableContentDefinition
+beta;SelectableContentProps
 internal;SelectionHandler
 public;SelectionMode
 public;SelectionModeFlags
@@ -281,8 +314,8 @@ beta;StandardTypeConverterTypeNames
 public;StringOperatorProcessor
 public;StringTypeConverter 
 public;StructPropertyValueRenderer 
-alpha;Subscribable
-alpha;Subscription 
+public;Subscribable
+public;Subscription 
 public;Table 
 public;TableArrayValueRenderer 
 beta;TableCellContextMenuArgs
@@ -292,7 +325,7 @@ internal;TableColumn
 public;TableDataChangeEvent 
 public;TableDataChangesListener = () => void
 public;TableDataProvider
-alpha;TableDistinctValue
+beta;TableDistinctValue
 beta;TableDragDropProps
 beta;TableDragDropType = {} | RowItem | TableDataProvider
 beta;TableDropTargetProps
@@ -316,55 +349,78 @@ beta;ToggleEditor
 beta;TogglePropertyEditor 
 internal;toNode: 
 internal;toNodes: 
-public;Tree 
-alpha;TreeActions
+beta;ToolbarButtonItem: React.MemoExoticComponent
+beta;ToolbarButtonItemProps 
+beta;ToolbarItem = ActionButton | GroupButton | CustomToolbarItem
+internal;ToolbarItemContext: React.Context
+internal;ToolbarItemContextArgs
+internal;ToolbarOverflowContextProps
+beta;ToolbarPanelAlignment
+internal;ToolbarPanelAlignmentHelpers
+internal;ToolbarPopupContext: React.Context
+internal;ToolbarPopupContextProps
+beta;ToolbarWithOverflow(props: ToolbarWithOverflowProps): JSX.Element
+internal;ToolbarWithOverflowDirectionContext: React.Context
+beta;ToolbarWithOverflowProps 
+beta;TreeActions
 beta;TreeCellUpdatedArgs
-alpha;TreeCheckboxStateChangeEvent
+beta;TreeCheckboxStateChangeEventArgs
 public;TreeDataChangesListener = (nodes: Array
 public;TreeDataProvider = TreeDataProviderRaw | TreeDataProviderPromise | TreeDataProviderMethod | ITreeDataProvider
 public;TreeDataProviderMethod = (node?: TreeNodeItem) => Promise
 public;TreeDataProviderPromise = Promise
 public;TreeDataProviderRaw = ImmediatelyLoadedTreeNodeItem[]
-internal;TreeDataSource
+internal;TreeDataSource 
 beta;TreeDragDropProps
 beta;TreeDragDropType = {} | TreeNodeItem | TreeDataProvider
+beta;TreeEditingParams
 internal;TreeEventDispatcher 
-alpha;TreeEventHandler 
-alpha;TreeEventHandlerParams
-alpha;TreeEvents
+beta;TreeEventHandler 
+beta;TreeEventHandlerParams
+beta;TreeEvents
 public;TreeImageLoader 
-alpha;TreeModel
-alpha;TreeModelNode
-alpha;TreeModelNodeInput
-alpha;TreeModelNodePlaceholder
-alpha;TreeModelRootNode
-alpha;TreeModelSource
+beta;TreeModel
+beta;TreeModelChanges
+beta;TreeModelNode
+beta;TreeModelNodeEditingInfo
+beta;TreeModelNodeInput
+beta;TreeModelNodePlaceholder
+beta;TreeModelNodeType = TreeModelNode | TreeModelNodePlaceholder | TreeModelRootNode
+beta;TreeModelRootNode
+beta;TreeModelSource
 public;TreeNode 
-alpha;TreeNodeEvent
-public;TreeNodeIcon: React.FunctionComponent
+beta;TreeNodeEventArgs
+public;TreeNodeIcon(props: TreeNodeIconProps): JSX.Element | null
 public;TreeNodeIconProps 
 public;TreeNodeItem
-alpha;TreeNodeItemData = ImmediatelyLoadedTreeNodeItem & DelayLoadedTreeNodeItem
-alpha;TreeNodeLoader
+beta;TreeNodeItemData = ImmediatelyLoadedTreeNodeItem & DelayLoadedTreeNodeItem
+beta;TreeNodeLoader
+beta;TreeNodeLoadResult
 public;TreeNodeProps 
-alpha;TreeNodeRenderer: React.MemoExoticComponent
-alpha;TreeNodeRendererProps 
+beta;TreeNodeRenderer: React.MemoExoticComponent
+beta;TreeNodeRendererProps 
 public;TreeProps 
-alpha;TreeRenderer: React.FC
-alpha;TreeRendererProps
-alpha;TreeSelectionChange
-alpha;TreeSelectionModificationEvent
-alpha;TreeSelectionReplacementEvent
-internal;TreeTest
+beta;TreeRenderer(props: TreeRendererProps): JSX.Element
+beta;TreeRendererContext
+beta;TreeRendererProps
+beta;TreeSelectionChange
+beta;TreeSelectionModificationEventArgs
+beta;TreeSelectionReplacementEventArgs
 public;class TypeConverter 
 public;TypeConverterManager
 beta;TypeEditor
 public;UiComponents
-alpha;Unsubscribable
-alpha;useModelSource(nodeLoader: ITreeNodeLoader | undefined): TreeModelSource | undefined
-alpha;useNodeLoader
-alpha;usePagedNodeLoader
-alpha;useVisibleTreeNodes(modelSource: TreeModelSource): VisibleTreeNodes
+alpha;UITooltipRenderer
+public;Unsubscribable
+beta;useAsyncValue: 
+beta;usePagedTreeNodeLoader
+internal;useToolbarPopupContext(): ToolbarPopupContextProps
+internal;useToolbarWithOverflowDirectionContext(): ToolbarOverflowContextProps
+internal;useToolItemEntryContext(): ToolbarItemContextArgs
+beta;useTreeEventsHandler
+beta;useTreeModelSource(dataProvider: TreeDataProvider): TreeModelSource
+beta;useTreeNodeLoader
+beta;useVisibleTreeNodes(modelSource: TreeModelSource): VisibleTreeNodes
 public;ViewClassFullNameChangedEvent 
 public;ViewClassFullNameChangedEventArgs
 public;ViewIdChangedEvent 
@@ -374,7 +430,7 @@ public;ViewportComponentEvents
 public;ViewportProps 
 public;ViewRotationChangeEvent 
 public;ViewRotationChangeEventArgs
-alpha;VisibleTreeNodes 
+beta;VisibleTreeNodes 
 beta;WeightEditor 
 beta;WeightPickerButton 
 beta;WeightPickerProps 
@@ -386,4 +442,3 @@ beta;WithDragSourceProps
 beta;withDropTarget: 
 beta;WithDropTargetProps
 beta;withTableDragDrop
-beta;withTreeDragDrop

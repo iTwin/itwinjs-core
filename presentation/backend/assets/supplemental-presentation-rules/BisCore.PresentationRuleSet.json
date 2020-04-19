@@ -404,7 +404,20 @@
             ]
           },
           "requiredDirection": "Forward",
-          "isPolymorphic": true
+          "isPolymorphic": true,
+          "nestedRelatedProperties": [
+            {
+              "relationships": {
+                "schemaName": "BisCore",
+                "classNames": [
+                  "ElementMultiAspect",
+                  "ElementUniqueAspect"
+                ]
+              },
+              "requiredDirection": "Forward",
+              "isPolymorphic": true
+            }
+          ]
         }
       ]
     },
@@ -429,7 +442,20 @@
             ]
           },
           "requiredDirection": "Forward",
-          "isPolymorphic": true
+          "isPolymorphic": true,
+          "nestedRelatedProperties": [
+            {
+              "relationships": {
+                "schemaName": "BisCore",
+                "classNames": [
+                  "ElementMultiAspect",
+                  "ElementUniqueAspect"
+                ]
+              },
+              "requiredDirection": "Forward",
+              "isPolymorphic": true
+            }
+          ]
         }
       ]
     },

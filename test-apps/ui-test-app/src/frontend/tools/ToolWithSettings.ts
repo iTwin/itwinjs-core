@@ -1,23 +1,29 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 // cSpell:ignore picklist
 
 import {
   IModelApp, PrimitiveTool,
   BeButtonEvent, EventHandled,
-  ToolSettingsPropertyRecord, PropertyDescription, PrimitiveValue, ToolSettingsValue, ToolSettingsPropertySyncItem,
-  NotifyMessageDetails, OutputMessagePriority, PropertyEditorParamTypes, QuantityType, ToolAssistance, ToolAssistanceImage,
-  ColorEditorParams, InputEditorSizeParams, SuppressLabelEditorParams, AngleDescription, LengthDescription, SurveyLengthDescription,
+  AngleDescription, LengthDescription, SurveyLengthDescription,
+  NotifyMessageDetails, OutputMessagePriority,
+  QuantityType, ToolAssistance, ToolAssistanceImage,
 } from "@bentley/imodeljs-frontend";
+import {
+  DialogItem, PropertyDescription, DialogItemValue, DialogPropertySyncItem,
+  PropertyEditorParamTypes,
+  ColorEditorParams, InputEditorSizeParams, SuppressLabelEditorParams,
+} from "@bentley/ui-abstract";
+
 import { Logger } from "@bentley/bentleyjs-core";
 import { Point3d } from "@bentley/geometry-core";
 import { ColorDef, ColorByName } from "@bentley/imodeljs-common";
 import { FormatterSpec } from "@bentley/imodeljs-quantity";
 import { UiFramework, CursorInformation, MenuItemProps } from "@bentley/ui-framework";
 
-const enum ToolOptions {
+enum ToolOptions {
   Red,
   White,
   Blue,
@@ -56,7 +62,7 @@ export class ToolWithSettings extends PrimitiveTool {
     };
   }
 
-  private _optionsValue = new ToolSettingsValue(ToolOptions.Blue);
+  private _optionsValue: DialogItemValue = { value: ToolOptions.Blue };
 
   public get option(): ToolOptions {
     return this._optionsValue.value as ToolOptions;
@@ -75,42 +81,41 @@ export class ToolWithSettings extends PrimitiveTool {
       typename: "number",
       editor: {
         name: "color-picker",
-        params: [
-          {
-            type: PropertyEditorParamTypes.ColorData,
-            colorValues: [
-              ColorByName.blue as number,
-              ColorByName.red as number,
-              ColorByName.green as number,
-              ColorByName.yellow as number,
-              ColorByName.black as number,
-              ColorByName.gray as number,
-              ColorByName.purple as number,
-              ColorByName.pink as number,
-            ],
-            numColumns: 2,
-          } as ColorEditorParams,
+        params: [{
+          type: PropertyEditorParamTypes.ColorData,
+          colorValues: [
+            ColorByName.blue as number,
+            ColorByName.red as number,
+            ColorByName.green as number,
+            ColorByName.yellow as number,
+            ColorByName.black as number,
+            ColorByName.gray as number,
+            ColorByName.purple as number,
+            ColorByName.pink as number,
+          ],
+          numColumns: 2,
+        } as ColorEditorParams,
         ],
       },
     };
   }
 
-  private _colorValue = new ToolSettingsValue(ColorByName.blue as number);
+  private _colorValue: DialogItemValue = { value: ColorByName.blue as number };
 
   public get colorValue(): number {
     return this._optionsValue.value as number;
   }
 
-  public set colorValue(value: number) {
-    this._optionsValue.value = value;
+  public set colorValue(colorVal: number) {
+    this._optionsValue.value = colorVal;
   }
 
   public get colorDef(): ColorDef {
-    return new ColorDef(this._optionsValue.value as number);
+    return ColorDef.create(this._optionsValue.value as number);
   }
 
-  public set colorDef(value: ColorDef) {
-    this._optionsValue.value = value.tbgr;
+  public set colorDef(colorVal: ColorDef) {
+    this._optionsValue.value = colorVal.tbgr;
   }
 
   // ------------- Weight ---------------
@@ -126,14 +131,14 @@ export class ToolWithSettings extends PrimitiveTool {
     };
   }
 
-  private _weightValue = new ToolSettingsValue(3);
+  private _weightValue: DialogItemValue = { value: 3 };
 
   public get weight(): number {
     return this._weightValue.value as number;
   }
 
-  public set weight(value: number) {
-    this._weightValue.value = value;
+  public set weight(weightVal: number) {
+    this._weightValue.value = weightVal;
   }
 
   // ------------- boolean based toggle button ---------------
@@ -147,7 +152,7 @@ export class ToolWithSettings extends PrimitiveTool {
     };
   }
 
-  private _lockValue = new ToolSettingsValue(true);
+  private _lockValue: DialogItemValue = { value: true };
 
   public get lock(): boolean {
     return this._lockValue.value as boolean;
@@ -167,7 +172,7 @@ export class ToolWithSettings extends PrimitiveTool {
     };
   }
 
-  private _cityValue = new ToolSettingsValue("Exton");
+  private _cityValue: DialogItemValue = { value: "Exton" };
 
   public get city(): string {
     return this._cityValue.value as string;
@@ -185,18 +190,17 @@ export class ToolWithSettings extends PrimitiveTool {
       displayLabel: IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.State"),
       typename: "string",
       editor: {
-        params: [
-          {
-            type: PropertyEditorParamTypes.InputEditorSize,
-            size: 4,
-            /* maxLength: 60,*/
-          } as InputEditorSizeParams,
+        params: [{
+          type: PropertyEditorParamTypes.InputEditorSize,
+          size: 4,
+          /* maxLength: 60,*/
+        } as InputEditorSizeParams,
         ],
       },
     };
   }
 
-  private _stateValue = new ToolSettingsValue("PA");
+  private _stateValue: DialogItemValue = { value: "PA" };
 
   public get state(): string {
     return this._stateValue.value as string;
@@ -216,7 +220,7 @@ export class ToolWithSettings extends PrimitiveTool {
     };
   }
 
-  private _coordinateValue = new ToolSettingsValue("0.0, 0.0, 0.0");
+  private _coordinateValue: DialogItemValue = { value: "0.0, 0.0, 0.0" };
 
   public get coordinate(): string {
     return this._coordinateValue.value as string;
@@ -257,7 +261,7 @@ export class ToolWithSettings extends PrimitiveTool {
     return numberValue.toFixed(2);
   }
 
-  private _stationValue = new ToolSettingsValue(this.formatStation(0.0));
+  private _stationValue: DialogItemValue = { value: this.formatStation(0.0) };
 
   public get station(): string {
     return this._stationValue.value as string;
@@ -275,17 +279,16 @@ export class ToolWithSettings extends PrimitiveTool {
       displayLabel: "",
       typename: "boolean",
       editor: {
-        params: [
-          {
-            type: PropertyEditorParamTypes.SuppressEditorLabel,
-            suppressLabelPlaceholder: true,
-          } as SuppressLabelEditorParams,
+        params: [{
+          type: PropertyEditorParamTypes.SuppressEditorLabel,
+          suppressLabelPlaceholder: true,
+        } as SuppressLabelEditorParams,
         ],
       },
     };
   }
 
-  private _useLengthValue = new ToolSettingsValue(true);
+  private _useLengthValue: DialogItemValue = { value: true };
 
   public get useLength(): boolean {
     return this._useLengthValue.value as boolean;
@@ -299,7 +302,7 @@ export class ToolWithSettings extends PrimitiveTool {
   private static _lengthName = "length";
 
   // if _lengthValue also sets up display value then the "number-custom" type editor would not need to format the value before initially displaying it.
-  private _lengthValue = new ToolSettingsValue(1.5);  // value in meters
+  private _lengthValue: DialogItemValue = { value: 1.5 };  // value in meters
 
   public get length(): number {
     return this._lengthValue.value as number;
@@ -313,7 +316,7 @@ export class ToolWithSettings extends PrimitiveTool {
   private static _surveyLengthName = "surveyLength";
 
   // if _surveyLengthValue also sets up display value then the "number-custom" type editor would not need to format the value before initially displaying it.
-  private _surveyLengthValue = new ToolSettingsValue(51.25);  // value in meters
+  private _surveyLengthValue: DialogItemValue = { value: 51.25 };  // value in meters
 
   public get surveyLength(): number {
     return this._surveyLengthValue.value as number;
@@ -326,7 +329,7 @@ export class ToolWithSettings extends PrimitiveTool {
   // ------------- Angle ---------------
 
   // if _angleValue also sets up display value then the "number-custom" type editor would not need to format the value before initially displaying it.
-  private _angleValue = new ToolSettingsValue(0.0);
+  private _angleValue: DialogItemValue = { value: 0.0 };
 
   public get angle(): number {
     return this._angleValue.value as number;
@@ -374,9 +377,9 @@ export class ToolWithSettings extends PrimitiveTool {
     // Used to test Cursor Menu
     if (ev.isAltKey) {
       const menuItems: MenuItemProps[] = [];
-      menuItems.push({ id: "entry1", item: { label: "Label1", iconSpec: "icon-placeholder", execute: () => { this.showInfoFromCursorMenu("hello from entry1"); } } });
+      menuItems.push({ id: "entry1", item: { label: "Label1", icon: "icon-placeholder", execute: () => { this.showInfoFromCursorMenu("hello from entry1"); } } });
       menuItems.push({ id: "entry2", item: { label: "Label2", execute: () => { this.showInfoFromCursorMenu("hello from entry2"); } } });
-      menuItems.push({ id: "entry3", item: { label: "Label3", iconSpec: "icon-placeholder", execute: () => { this.showInfoFromCursorMenu("hello from entry3"); } } });
+      menuItems.push({ id: "entry3", item: { label: "Label3", icon: "icon-placeholder", execute: () => { this.showInfoFromCursorMenu("hello from entry3"); } } });
 
       UiFramework.openCursorMenu({ items: menuItems, position: { x: CursorInformation.cursorX, y: CursorInformation.cursorY } });
       return EventHandled.No;
@@ -399,15 +402,14 @@ export class ToolWithSettings extends PrimitiveTool {
   }
 
   private syncCoordinateValue(coordinate: string, station: string, distance: number): void {
-    const coordinateValue = new ToolSettingsValue(coordinate);
+    const coordinateValue: DialogItemValue = { value: coordinate };
     // clone coordinateValue if storing value within tool - in this case we are not
-    const syncItem: ToolSettingsPropertySyncItem = { value: coordinateValue, propertyName: ToolWithSettings._coordinateName };
-    const stationValue = new ToolSettingsValue(station);
-    const stationSyncItem: ToolSettingsPropertySyncItem = { value: stationValue, propertyName: ToolWithSettings._stationName };
+    const syncItem: DialogPropertySyncItem = { value: coordinateValue, propertyName: ToolWithSettings._coordinateName, isDisabled: true };
+    const stationValue: DialogItemValue = { value: station };
+    const stationSyncItem: DialogPropertySyncItem = { value: stationValue, propertyName: ToolWithSettings._stationName, isDisabled: true };
 
-    const surveyLengthValue = new ToolSettingsValue(distance);
-    surveyLengthValue.displayValue = this._surveyLengthDescription.format(distance);
-    const surveySyncItem: ToolSettingsPropertySyncItem = { value: surveyLengthValue, propertyName: ToolWithSettings._surveyLengthName };
+    const surveyLengthValue: DialogItemValue = { value: distance, displayValue: this._surveyLengthDescription.format(distance) };
+    const surveySyncItem: DialogPropertySyncItem = { value: surveyLengthValue, propertyName: ToolWithSettings._surveyLengthName, isDisabled: true };
     this.syncToolSettingsProperties([syncItem, stationSyncItem, surveySyncItem]);
   }
 
@@ -431,43 +433,42 @@ export class ToolWithSettings extends PrimitiveTool {
   }
 
   /** Used to supply DefaultToolSettingProvider with a list of properties to use to generate ToolSettings.  If undefined then no ToolSettings will be displayed */
-  public supplyToolSettingsProperties(): ToolSettingsPropertyRecord[] | undefined {
+  public supplyToolSettingsProperties(): DialogItem[] | undefined {
     const readonly = true;
-    const toolSettings = new Array<ToolSettingsPropertyRecord>();
-    toolSettings.push(new ToolSettingsPropertyRecord(this._optionsValue.clone() as PrimitiveValue, ToolWithSettings._getEnumAsPicklistDescription(), { rowPriority: 0, columnIndex: 2 }));
-    toolSettings.push(new ToolSettingsPropertyRecord(this._colorValue.clone() as PrimitiveValue, ToolWithSettings._getColorDescription(), { rowPriority: 2, columnIndex: 2 }));
-    toolSettings.push(new ToolSettingsPropertyRecord(this._weightValue.clone() as PrimitiveValue, ToolWithSettings._getWeightDescription(), { rowPriority: 3, columnIndex: 2 }));
-    toolSettings.push(new ToolSettingsPropertyRecord(this._lockValue.clone() as PrimitiveValue, ToolWithSettings._getLockToggleDescription(), { rowPriority: 5, columnIndex: 2 }));
-    toolSettings.push(new ToolSettingsPropertyRecord(this._cityValue.clone() as PrimitiveValue, ToolWithSettings._getCityDescription(), { rowPriority: 10, columnIndex: 2 }));
-    toolSettings.push(new ToolSettingsPropertyRecord(this._stateValue.clone() as PrimitiveValue, ToolWithSettings._getStateDescription(), { rowPriority: 10, columnIndex: 4 }));
-    toolSettings.push(new ToolSettingsPropertyRecord(this._coordinateValue.clone() as PrimitiveValue, ToolWithSettings._getCoordinateDescription(), { rowPriority: 15, columnIndex: 2, columnSpan: 3 }, readonly));
-    toolSettings.push(new ToolSettingsPropertyRecord(this._stationValue.clone() as PrimitiveValue, ToolWithSettings._getStationDescription(), { rowPriority: 16, columnIndex: 2, columnSpan: 3 }, readonly));
-    const lengthLock = new ToolSettingsPropertyRecord(this._useLengthValue.clone() as PrimitiveValue, ToolWithSettings._getUseLengthDescription(), { rowPriority: 20, columnIndex: 0 });
-    toolSettings.push(new ToolSettingsPropertyRecord(this._lengthValue.clone() as PrimitiveValue, this._lengthDescription, { rowPriority: 20, columnIndex: 2 }, false, lengthLock));
-    toolSettings.push(new ToolSettingsPropertyRecord(this._surveyLengthValue.clone() as PrimitiveValue, this._surveyLengthDescription, { rowPriority: 21, columnIndex: 2 }, readonly));
-    toolSettings.push(new ToolSettingsPropertyRecord(this._angleValue.clone() as PrimitiveValue, new AngleDescription(), { rowPriority: 25, columnIndex: 2 }));
+    const toolSettings = new Array<DialogItem>();
+    toolSettings.push({ value: this._optionsValue, property: ToolWithSettings._getEnumAsPicklistDescription(), editorPosition: { rowPriority: 0, columnIndex: 2 } });
+    toolSettings.push({ value: this._colorValue, property: ToolWithSettings._getColorDescription(), editorPosition: { rowPriority: 2, columnIndex: 2 } });
+    toolSettings.push({ value: this._weightValue, property: ToolWithSettings._getWeightDescription(), editorPosition: { rowPriority: 3, columnIndex: 2 } });
+    toolSettings.push({ value: this._lockValue, property: ToolWithSettings._getLockToggleDescription(), editorPosition: { rowPriority: 5, columnIndex: 2 } });
+    toolSettings.push({ value: this._cityValue, property: ToolWithSettings._getCityDescription(), editorPosition: { rowPriority: 10, columnIndex: 2 } });
+    toolSettings.push({ value: this._stateValue, property: ToolWithSettings._getStateDescription(), editorPosition: { rowPriority: 10, columnIndex: 4 } });
+    toolSettings.push({ value: this._coordinateValue, property: ToolWithSettings._getCoordinateDescription(), editorPosition: { rowPriority: 15, columnIndex: 2, columnSpan: 3 }, isDisabled: readonly });
+    toolSettings.push({ value: this._stationValue, property: ToolWithSettings._getStationDescription(), editorPosition: { rowPriority: 16, columnIndex: 2, columnSpan: 3 }, isDisabled: readonly });
+    const lengthLock = { value: this._useLengthValue, property: ToolWithSettings._getUseLengthDescription(), editorPosition: { rowPriority: 20, columnIndex: 0 } };
+    toolSettings.push({ value: this._lengthValue, property: this._lengthDescription, editorPosition: { rowPriority: 20, columnIndex: 2 }, isDisabled: false, lockProperty: lengthLock });
+    toolSettings.push({ value: this._surveyLengthValue, property: this._surveyLengthDescription, editorPosition: { rowPriority: 21, columnIndex: 2 }, isDisabled: readonly });
+    toolSettings.push({ value: this._angleValue, property: new AngleDescription(), editorPosition: { rowPriority: 25, columnIndex: 2 } });
     return toolSettings;
   }
 
-  private showColorInfoFromUi(updatedValue: ToolSettingsPropertySyncItem) {
+  private showColorInfoFromUi(updatedValue: DialogPropertySyncItem) {
     const msg = `Property '${updatedValue.propertyName}' updated to value ${this.colorDef.toRgbString()}`;
     IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
   }
 
-  private showInfoFromUi(updatedValue: ToolSettingsPropertySyncItem) {
+  private showInfoFromUi(updatedValue: DialogPropertySyncItem) {
     const msg = `Property '${updatedValue.propertyName}' updated to value ${updatedValue.value.value}`;
     IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
   }
 
   private syncLengthState(): void {
-    const lengthValue = new ToolSettingsValue(this.length);
-    lengthValue.displayValue = this._lengthDescription.format(lengthValue.value as number);
-    const syncItem: ToolSettingsPropertySyncItem = { value: lengthValue, propertyName: ToolWithSettings._lengthName, isDisabled: !this.useLength };
+    const lengthValue: DialogItemValue = { value: this.length, displayValue: this._lengthDescription.format(this.length as number) };
+    const syncItem: DialogPropertySyncItem = { value: lengthValue, propertyName: ToolWithSettings._lengthName, isDisabled: !this.useLength };
     this.syncToolSettingsProperties([syncItem]);
   }
 
   /** Used to send changes from UI back to Tool */
-  public applyToolSettingPropertyChange(updatedValue: ToolSettingsPropertySyncItem): boolean {
+  public applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): boolean {
     if (updatedValue.propertyName === ToolWithSettings._optionsName) {
       if (this._optionsValue.value !== updatedValue.value.value) {
         this.option = updatedValue.value.value as ToolOptions;

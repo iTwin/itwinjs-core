@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module CartesianGeometry */
+/** @packageDocumentation
+ * @module CartesianGeometry
+ */
 
 import { Geometry } from "../Geometry";
 import { Angle } from "./Angle";
@@ -218,6 +220,17 @@ export class XYZ implements XYAndZ {
       return this.z;
     return this.y;
   }
+  /**
+   * Return the x,y, z component corresponding to 0,1,2.
+   */
+  public setAt(index: number, value: number): void {
+    if (index < 0.5)
+      this.x = value;
+    if (index > 1.5)
+      this.z = value;
+    else
+      this.y = value;
+  }
   /** Return the index (0,1,2) of the x,y,z component with largest absolute value */
   public indexOfMaxAbs(): number {
     let index = 0;
@@ -281,7 +294,7 @@ export class XYZ implements XYAndZ {
    */
   public unitVectorTo(target: XYAndZ, result?: Vector3d): Vector3d | undefined { return this.vectorTo(target, result).normalize(result); }
   /** Freeze this XYZ */
-  public freeze() { Object.freeze(this); }
+  public freeze(): Readonly<this> { return Object.freeze(this); }
 }
 /** 3D point with `x`,`y`,`z` as properties
  * @public
@@ -591,6 +604,7 @@ export class Vector3d extends XYZ {
   public static createPolar(r: number, theta: Angle, z?: number): Vector3d {
     return Vector3d.create(r * theta.cos(), r * theta.sin(), z);
   }
+
   /**
    * Return a vector defined in spherical coordinates.
    * @param r sphere radius
@@ -599,7 +613,7 @@ export class Vector3d extends XYZ {
    */
   public static createSpherical(r: number, theta: Angle, phi: Angle): Vector3d {
     const cosPhi = phi.cos();
-    return Vector3d.create(cosPhi * r * theta.cos(), cosPhi * r * theta.sin(), phi.sin());
+    return Vector3d.create(cosPhi * r * theta.cos(), cosPhi * r * theta.sin(), r * phi.sin());
   }
   /**
    * Convert json to Vector3d.  Accepted forms are:
@@ -727,7 +741,7 @@ export class Vector3d extends XYZ {
    */
   public normalizeInPlace(): boolean {
     const a = Geometry.inverseMetricDistance(this.magnitude());
-    if (!a)
+    if (a === undefined)
       return false;
     this.x *= a;
     this.y *= a;
@@ -1011,6 +1025,15 @@ export class Vector3d extends XYZ {
   public dotProduct(vectorB: XYAndZ): number {
     return this.x * vectorB.x + this.y * vectorB.y + this.z * vectorB.z;
   }
+  /**
+   * Return the dot product of the xyz components of two inputs that are XYAndZ but otherwise not explicitly Vector3d
+   * @param targetA target point for first vector
+   * @param targetB target point for second vector
+   */
+  public static dotProductAsXYAndZ(dataA: XYAndZ, dataB: XYAndZ): number {
+    return dataA.x * dataB.x + dataA.y * dataB.y + dataA.z * dataB.z;
+  }
+
   /**
    * Returns the dot product of this vector with the with vector from pointA to pointB
    * @param pointA start point of second vector of dot product

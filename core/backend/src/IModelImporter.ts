@@ -1,20 +1,23 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Id64String, IModelStatus, Logger, Id64 } from "@bentley/bentleyjs-core";
-import { ElementProps, IModelError, ModelProps, ElementAspectProps, Placement3d, GeometricElement3dProps, AxisAlignedBox3d } from "@bentley/imodeljs-common";
+/** @packageDocumentation
+ * @module iModels
+ */
+import { Id64, Id64String, IModelStatus, Logger } from "@bentley/bentleyjs-core";
+import { AxisAlignedBox3d, ElementAspectProps, ElementProps, GeometricElement3dProps, IModelError, ModelProps, Placement3d } from "@bentley/imodeljs-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
-import { IModelDb } from "./IModelDb";
-import { RelationshipProps, Relationship } from "./Relationship";
-import { ElementMultiAspect, ElementAspect } from "./ElementAspect";
 import { Element, GeometricElement3d } from "./Element";
+import { ElementAspect, ElementMultiAspect } from "./ElementAspect";
+import { IModelDb } from "./IModelDb";
 import { Model } from "./Model";
+import { Relationship, RelationshipProps, SourceAndTarget } from "./Relationship";
 
 const loggerCategory: string = BackendLoggerCategory.IModelImporter;
 
 /** Options provided to the [[IModelImporter]] constructor.
- * @alpha
+ * @beta
  */
 export interface IModelImportOptions {
   /** If `true` (the default), auto-extend the projectExtents of the target iModel as elements are imported. If `false`, throw an Error if an element would be outside of the projectExtents. */
@@ -22,7 +25,10 @@ export interface IModelImportOptions {
 }
 
 /** Base class for importing data into an iModel.
- * @alpha
+ * @see [iModel Transformation and Data Exchange]($docs/learning/backend/IModelTransformation.md)
+ * @see [IModelExporter]($backend)
+ * @see [IModelTransformer]($backend)
+ * @beta
  */
 export class IModelImporter {
   /** The read/write target iModel. */
@@ -85,9 +91,10 @@ export class IModelImporter {
   /** Create a new Model from the specified ModelProps and insert it into the target iModel.
    * @note A subclass may override this method to customize insert behavior but should call `super.onInsertModel`.
    */
-  protected onInsertModel(modelProps: ModelProps): void {
-    this.targetDb.models.insertModel(modelProps);
+  protected onInsertModel(modelProps: ModelProps): Id64String {
+    const modelId: Id64String = this.targetDb.models.insertModel(modelProps);
     Logger.logInfo(loggerCategory, `Inserted ${this.formatModelForLogger(modelProps)}`);
+    return modelId;
   }
 
   /** Update an existing Model in the target iModel from the specified ModelProps.
@@ -122,7 +129,7 @@ export class IModelImporter {
         const targetExtents: AxisAlignedBox3d = targetElementPlacement.calculateRange();
         if (!targetExtents.isNull && !this.targetDb.projectExtents.containsRange(targetExtents)) {
           if (this.autoExtendProjectExtents) {
-            Logger.logTrace(loggerCategory, "[Target] Auto-extending projectExtents");
+            Logger.logTrace(loggerCategory, "Auto-extending projectExtents");
             targetExtents.extendRange(this.targetDb.projectExtents);
             this.targetDb.updateProjectExtents(targetExtents);
           } else {
@@ -289,23 +296,17 @@ export class IModelImporter {
       Logger.logInfo(loggerCategory, `Ignoring ${relationshipProps.classFullName} instance because of invalid RelationshipProps.targetId`);
       return Id64.invalid;
     }
-    try {
-      // check for an existing relationship
-      const relSourceAndTarget = { sourceId: relationshipProps.sourceId, targetId: relationshipProps.targetId };
-      const relationship = this.targetDb.relationships.getInstance(relationshipProps.classFullName, relSourceAndTarget);
-      // if relationship found, update it
+    // check for an existing relationship
+    const relSourceAndTarget: SourceAndTarget = { sourceId: relationshipProps.sourceId, targetId: relationshipProps.targetId };
+    const relationship: Relationship | undefined = this.targetDb.relationships.tryGetInstance(relationshipProps.classFullName, relSourceAndTarget);
+    if (undefined !== relationship) { // if relationship found, update it
       relationshipProps.id = relationship.id;
       if (this.hasRelationshipChanged(relationship, relationshipProps)) {
         this.onUpdateRelationship(relationshipProps);
       }
       return relationshipProps.id;
-    } catch (error) {
-      // catch NotFound error and insert relationship
-      if ((error instanceof IModelError) && (IModelStatus.NotFound === error.errorNumber)) {
-        return this.onInsertRelationship(relationshipProps);
-      } else {
-        throw error;
-      }
+    } else {
+      return this.onInsertRelationship(relationshipProps);
     }
   }
 
@@ -343,6 +344,17 @@ export class IModelImporter {
     }
     this.targetDb.relationships.updateInstance(relationshipProps);
     Logger.logInfo(loggerCategory, `Updated ${this.formatRelationshipForLogger(relationshipProps)}`);
+  }
+
+  /** Delete the specified Relationship from the target iModel. */
+  protected onDeleteRelationship(relationshipProps: RelationshipProps): void {
+    this.targetDb.relationships.deleteInstance(relationshipProps);
+    Logger.logInfo(loggerCategory, `Deleted relationship ${this.formatRelationshipForLogger(relationshipProps)}`);
+  }
+
+  /** Delete the specified Relationship from the target iModel. */
+  public deleteRelationship(relationshipProps: RelationshipProps): void {
+    this.onDeleteRelationship(relationshipProps);
   }
 
   /** Format a Relationship for the Logger. */

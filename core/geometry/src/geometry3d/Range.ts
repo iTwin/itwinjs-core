@@ -1,9 +1,11 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module CartesianGeometry */
+/** @packageDocumentation
+ * @module CartesianGeometry
+ */
 
 import { BeJSONFunctions, Geometry, AxisIndex } from "../Geometry";
 import { GrowableXYZArray } from "./GrowableXYZArray";
@@ -93,8 +95,8 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
     this.high.z = RangeBase._EXTREME_NEGATIVE;
   }
 
-  /** Freeze this instance (and its deep content) so it can be considered read-only */
-  public freeze() { Object.freeze(this); Object.freeze(this.low); Object.freeze(this.high); }
+  /** Freeze this instance (and its members) so it is read-only */
+  public freeze(): Readonly<this> { this.low.freeze(); this.high.freeze(); return Object.freeze(this); }
   /** Flatten the low and high coordinates of any json object with low.x .. high.z into an array of 6 doubles */
   public static toFloat64Array(val: LowAndHighXYZ): Float64Array { return Float64Array.of(val.low.x, val.low.y, val.low.z, val.high.x, val.high.y, val.high.z); }
   /** Flatten the low and high coordinates of this into an array of 6 doubles */
@@ -277,6 +279,8 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
   /** Create a box with 2 pairs of xyz candidates. If any direction has order flip, create null. */
   public static createXYZXYZOrCorrectToNull<T extends Range3d>(xA: number, yA: number, zA: number, xB: number, yB: number, zB: number, result?: T): T {
     result = result ? result : new this() as T;
+    if (xA > xB || yA > yB || zA > zB)
+      return this.createNull(result);
     result.setDirect(
       Math.min(xA, xB), Math.min(yA, yB), Math.min(zA, zB),
       Math.max(xA, xB), Math.max(yA, yB), Math.max(zA, zB), true);
@@ -1222,8 +1226,8 @@ export class Range2d extends RangeBase implements LowAndHighXY {
       this.extendPoint(high);
     }
   }
-  /** Freeze this instance (and its deep content) so it can be considered read-only */
-  public freeze() { Object.freeze(this.low); Object.freeze(this.high); }
+  /** Freeze this instance (and its members) so it is read-only */
+  public freeze(): Readonly<this> { this.low.freeze(); this.high.freeze(); return Object.freeze(this); }
   /** return json array with two points as produced by `Point2d.toJSON` */
   public toJSON(): Range2dProps { return this.isNull ? [] : [this.low.toJSON(), this.high.toJSON()]; }
   /** Use `setFromJSON` to parse `json` into a new Range2d instance. */
@@ -1501,5 +1505,15 @@ export class Range2d extends RangeBase implements LowAndHighXY {
       this.low.x - delta, this.low.y - delta,
       this.high.x + delta, this.high.y + delta, true);
   }
-
+  /** Return fractional coordinates of point within the range.
+   * * returns undefined if the range is null.
+   * * returns undefined if any direction (x,y) has zero length
+   */
+  public worldToLocal(point: Point2d, result?: Point2d): Point2d | undefined {
+    const ax = RangeBase.npcScaleFactor(this.low.x, this.high.x);
+    const ay = RangeBase.npcScaleFactor(this.low.y, this.high.y);
+    if (ax === 0.0 || ay === 0.0)
+      return undefined;
+    return Point2d.create((point.x - this.low.x) * ax, (point.y - this.low.y) * ay, result);
+  }
 }

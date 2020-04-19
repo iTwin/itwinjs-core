@@ -1,20 +1,17 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { DbResult, Id64, Id64String } from "@bentley/bentleyjs-core";
+import { Arc3d, Point3d } from "@bentley/geometry-core";
+import { IModelJson as GeomJson } from "@bentley/geometry-core/lib/serialization/IModelJsonSchema";
+import { Code, ColorDef, GeometricElementProps, GeometryStreamProps, IModel, SubCategoryAppearance } from "@bentley/imodeljs-common";
+import { Reporter } from "@bentley/perf-tools/lib/Reporter";
 import { assert } from "chai";
 import * as path from "path";
-import { DbResult, Id64String, Id64 } from "@bentley/bentleyjs-core";
-import { SpatialCategory, Element, IModelDb } from "../imodeljs-backend";
-import { ECSqlStatement } from "../ECSqlStatement";
+import { BackendRequestContext, ECSqlStatement, Element, IModelDb, IModelJsFs, SnapshotDb, SpatialCategory, ReservedBriefcaseId } from "../imodeljs-backend";
 import { IModelTestUtils } from "../test/IModelTestUtils";
-import { GeometricElementProps, Code, SubCategoryAppearance, ColorDef, IModel, GeometryStreamProps } from "@bentley/imodeljs-common";
-import { Point3d, Arc3d } from "@bentley/geometry-core";
-import { IModelJson as GeomJson } from "@bentley/geometry-core/lib/serialization/IModelJsonSchema";
 import { KnownTestLocations } from "../test/KnownTestLocations";
-import { IModelJsFs } from "../IModelJsFs";
-import { BackendRequestContext } from "../BackendRequestContext";
-import { Reporter } from "@bentley/perf-tools/lib/Reporter";
 
 describe("PerformanceElementsTests", () => {
   const reporter = new Reporter();
@@ -119,15 +116,16 @@ describe("PerformanceElementsTests", () => {
         if (IModelJsFs.existsSync(pathname))
           return;
 
-        const seedIModel = IModelDb.createSnapshot(IModelTestUtils.prepareOutputFile("ElementCRUDPerformance", fileName), { rootSubject: { name: "PerfTest" } });
+        const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("ElementCRUDPerformance", fileName), { rootSubject: { name: "PerfTest" } });
         const testSchemaName = path.join(KnownTestLocations.assetsDir, "PerfTestDomain.ecschema.xml");
         await seedIModel.importSchemas(new BackendRequestContext(), [testSchemaName]);
-        seedIModel.setAsMaster();
+        const result: DbResult = seedIModel.nativeDb.resetBriefcaseId(ReservedBriefcaseId.CheckpointSnapshot);
+        assert.equal(DbResult.BE_SQLITE_OK, result);
         assert.isDefined(seedIModel.getMetaData("PerfTestDomain:" + name), name + "is present in iModel.");
         const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(seedIModel, Code.createEmpty(), true);
         let spatialCategoryId = SpatialCategory.queryCategoryIdByName(seedIModel, IModel.dictionaryId, "MySpatialCategory");
         if (undefined === spatialCategoryId)
-          spatialCategoryId = SpatialCategory.insert(seedIModel, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: new ColorDef("rgb(255,0,0)") }));
+          spatialCategoryId = SpatialCategory.insert(seedIModel, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
 
         for (let m = 0; m < size; ++m) {
           const elementProps = createElemProps(name, seedIModel, newModelId, spatialCategoryId);
@@ -137,7 +135,7 @@ describe("PerformanceElementsTests", () => {
         }
 
         seedIModel.saveChanges();
-        seedIModel.closeStandalone();
+        seedIModel.close();
       }
     }
   });
@@ -159,7 +157,7 @@ describe("PerformanceElementsTests", () => {
           const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(perfimodel, Code.createEmpty(), true);
           let spatialCategoryId = SpatialCategory.queryCategoryIdByName(perfimodel, IModel.dictionaryId, "MySpatialCategory");
           if (undefined === spatialCategoryId)
-            spatialCategoryId = SpatialCategory.insert(perfimodel, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: new ColorDef("rgb(255,0,0)") }));
+            spatialCategoryId = SpatialCategory.insert(perfimodel, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
 
           let totalTime = 0.0;
           for (let m = 0; m < opCount; ++m) {
@@ -179,7 +177,7 @@ describe("PerformanceElementsTests", () => {
             const row = stmt.getRow();
             assert.equal(row.count, size + opCount);
           });
-          perfimodel.closeStandalone();
+          perfimodel.close();
         }
       }
     }
@@ -195,7 +193,7 @@ describe("PerformanceElementsTests", () => {
 
           const testFileName = IModelTestUtils.prepareOutputFile("ElementCRUDPerformance", "IModelPerformance_Delete_" + name + "_" + opCount + ".bim");
           const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
-          const stat = perfimodel.executeQuery("SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM bis.PhysicalElement")[0];
+          const stat = IModelTestUtils.executeQuery(perfimodel, "SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM bis.PhysicalElement")[0];
           const elementIdIncrement = Math.floor(size / opCount);
           assert.equal((stat.maxId - stat.minId + 1), size);
           const startTime = new Date().getTime();
@@ -215,7 +213,7 @@ describe("PerformanceElementsTests", () => {
             const row = stmt.getRow();
             assert.equal(row.count, size - opCount);
           });
-          perfimodel.closeStandalone();
+          perfimodel.close();
         }
       }
     }
@@ -231,7 +229,7 @@ describe("PerformanceElementsTests", () => {
 
           const testFileName = IModelTestUtils.prepareOutputFile("ElementCRUDPerformance", "IModelPerformance_Read_" + name + "_" + opCount + ".bim");
           const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
-          const stat = perfimodel.executeQuery("SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM bis.PhysicalElement")[0];
+          const stat = IModelTestUtils.executeQuery(perfimodel, "SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM bis.PhysicalElement")[0];
           const elementIdIncrement = Math.floor(size / opCount);
           assert.equal((stat.maxId - stat.minId + 1), size);
 
@@ -252,7 +250,7 @@ describe("PerformanceElementsTests", () => {
 
           const elapsedTime = (endTime - startTime) / 1000.0;
           reporter.addEntry("PerformanceElementsTests", "ElementsRead", "Execution time(s)", elapsedTime, { ElementClassName: name, InitialCount: size, opCount });
-          perfimodel.closeStandalone();
+          perfimodel.close();
         }
       }
     }
@@ -268,7 +266,7 @@ describe("PerformanceElementsTests", () => {
 
           const testFileName = IModelTestUtils.prepareOutputFile("ElementCRUDPerformance", "IModelPerformance_Update_" + name + "_" + opCount + ".bim");
           const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
-          const stat = perfimodel.executeQuery("SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM bis.PhysicalElement")[0];
+          const stat = IModelTestUtils.executeQuery(perfimodel, "SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM bis.PhysicalElement")[0];
           const elementIdIncrement = Math.floor(size / opCount);
           // first construct modified elements
           // now lets update and record time
@@ -306,7 +304,7 @@ describe("PerformanceElementsTests", () => {
           }
           const elapsedTime = (endTime - startTime) / 1000.0;
           reporter.addEntry("PerformanceElementsTests", "ElementsUpdate", "Execution time(s)", elapsedTime, { ElementClassName: name, InitialCount: size, opCount });
-          perfimodel.closeStandalone();
+          perfimodel.close();
         }
       }
     }

@@ -1,9 +1,11 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module Polyface */
+/** @packageDocumentation
+ * @module Polyface
+ */
 
 // import { Point2d } from "./Geometry2d";
 /* tslint:disable:variable-name jsdoc-format no-empty*/
@@ -32,6 +34,7 @@ import { XYPointBuckets } from "./multiclip/XYPointBuckets";
 import { CurveLocationDetail } from "../curve/CurveLocationDetail";
 import { Range3d } from "../geometry3d/Range";
 import { Angle } from "../geometry3d/Angle";
+import { FacetOrientationFixup } from "./FacetOrientation";
 /**
  * Structure to return multiple results from volume between facets and plane
  * @public
@@ -44,7 +47,20 @@ export interface FacetProjectedVolumeSums {
   /** summed area moments for negative contributions */
   negativeProjectedFacetAreaMoments?: MomentData;
 }
-
+/**
+ * Enumeration of cases for retaining facets among duplicates
+ * @public
+ */
+export enum DuplicateFacetClusterSelector {
+  /** retain none of the duplicates */
+  SelectNone = 0,
+  /** retain any one member among duplicates */
+  SelectAny = 1,
+  /** retain all members among duplicates */
+  SelectAll = 2,
+  /** retain one from any cluster with an odd number of faces */
+  SelectOneByParity = 3,
+}
 /** PolyfaceQuery is a static class whose methods implement queries on a polyface or polyface visitor provided as a parameter to each method.
  * @public
  */
@@ -65,15 +81,17 @@ export class PolyfaceQuery {
     return result;
   }
   /** Return the sum of all facets areas. */
-  public static sumFacetAreas(source: Polyface | PolyfaceVisitor): number {
+  public static sumFacetAreas(source: Polyface | PolyfaceVisitor | undefined): number {
     let s = 0;
-    if (source instanceof Polyface)
-      return PolyfaceQuery.sumFacetAreas(source.createVisitor(1));
+    if (source !== undefined) {
+      if (source instanceof Polyface)
+        return PolyfaceQuery.sumFacetAreas(source.createVisitor(1));
 
-    const visitor = source as PolyfaceVisitor;
-    visitor.reset();
-    while (visitor.moveToNextFacet()) {
-      s += PolygonOps.sumTriangleAreas(visitor.point.getPoint3dArray());
+      const visitor = source as PolyfaceVisitor;
+      visitor.reset();
+      while (visitor.moveToNextFacet()) {
+        s += PolygonOps.sumTriangleAreas(visitor.point.getPoint3dArray());
+      }
     }
     return s;
   }
@@ -228,9 +246,17 @@ export class PolyfaceQuery {
 
   /**
    * Test if the facets in `source` occur in perfectly mated pairs, as is required for a closed manifold volume.
-   * @param source
    */
   public static isPolyfaceClosedByEdgePairing(source: Polyface): boolean {
+    return this.isPolyfaceManifold(source, false);
+  }
+  /** Test edges pairing in `source` mesh.
+   * * for `allowSimpleBoundaries === false` true return means this is a closed 2-manifold surface
+   * * for `allowSimpleBoundaries === true` true means this is a 2-manifold surface which may have boundary, but is still properly matched internally.
+   * * Any edge with 3 ore more incident facets triggers `false` return.
+   * * Any edge with 2 incident facets in the same direction triggers a `false` return.
+  */
+  public static isPolyfaceManifold(source: Polyface, allowSimpleBoundaries: boolean = false): boolean {
     const edges = new IndexedEdgeMatcher();
     const visitor = source.createVisitor(1) as PolyfaceVisitor;
     visitor.reset();
@@ -241,15 +267,18 @@ export class PolyfaceQuery {
       }
     }
     const badClusters: SortableEdgeCluster[] = [];
-    edges.sortAndCollectClusters(undefined, badClusters, undefined, badClusters);
+    edges.sortAndCollectClusters(undefined, allowSimpleBoundaries ? undefined : badClusters, undefined, badClusters);
     return badClusters.length === 0;
   }
+
   /**
   * Test if the facets in `source` occur in perfectly mated pairs, as is required for a closed manifold volume.
   * If not, extract the boundary edges as lines.
   * @param source
   */
-  public static boundaryEdges(source: Polyface, includeDanglers: boolean = true, includeMismatch: boolean = true, includeNull: boolean = true): CurveCollection | undefined {
+  public static boundaryEdges(source: Polyface | undefined, includeDanglers: boolean = true, includeMismatch: boolean = true, includeNull: boolean = true): CurveCollection | undefined {
+    if (source === undefined)
+      return undefined;
     const edges = new IndexedEdgeMatcher();
     const visitor = source.createVisitor(1) as PolyfaceVisitor;
     visitor.reset();
@@ -377,6 +406,43 @@ export class PolyfaceQuery {
     }
     return facetsInComponent;
   }
+  /**
+   * * Examine the normal orientation for each faces.
+   * * Separate to 3 partitions:
+   *    * facets with normal in the positive direction of the vectorToEye (partition 0)
+   *    * facets with normal in the negative direction of the vectorToEye (partition 1)
+   *    * facets nearly perpendicular to the view vector  (partition 2)
+   * * Return array of arrays of facet indices.
+   */
+  public static partitionFacetIndicesByVisibilityVector(polyface: Polyface | PolyfaceVisitor, vectorToEye: Vector3d, sideAngleTolerance: Angle): number[][] {
+    if (polyface instanceof Polyface) {
+      return this.partitionFacetIndicesByVisibilityVector(polyface.createVisitor(0), vectorToEye, sideAngleTolerance);
+    }
+    const facetsInComponent: number[][] = [];
+    for (let i = 0; i < 3; i++) {
+      facetsInComponent.push([]);
+    }
+    const forwardComponent = facetsInComponent[0];
+    const rearComponent = facetsInComponent[1];
+    const sideComponent = facetsInComponent[2];
+    const radiansTol = Math.max(sideAngleTolerance.radians, 1.0e-8);
+    for (polyface.reset(); polyface.moveToNextFacet();) {
+      const areaNormal = PolygonOps.areaNormalGo(polyface.point);
+      const index = polyface.currentReadIndex();
+      if (areaNormal) {
+        const angle = areaNormal.angleFromPerpendicular(vectorToEye);
+        if (Math.abs(angle.radians) < radiansTol) {
+          sideComponent.push(index);
+        } else if (areaNormal.dotProduct(vectorToEye) < 0) {
+          rearComponent.push(index);
+        } else {
+          forwardComponent.push(index);
+        }
+      }
+    }
+    return facetsInComponent;
+  }
+
   /** Clone the facets in each partition to a separate polyface.
    *
    */
@@ -515,7 +581,7 @@ export class PolyfaceQuery {
   /** Clone the facets, inserting vertices (within edges) where points not part of each facet's vertex indices impinge within edges.
    *
    */
-  public static cloneWithTVertexFixup(polyface: Polyface): Polyface {
+  public static cloneWithTVertexFixup(polyface: Polyface): IndexedPolyface {
     const oldFacetVisitor = polyface.createVisitor(1);  // This is to visit the existing facets.
     const newFacetVisitor = polyface.createVisitor(0); // This is to build the new facets.
     const rangeSearcher = XYPointBuckets.create(polyface.data.point, 30)!;
@@ -543,7 +609,8 @@ export class PolyfaceQuery {
           polyface.data.point.getPoint3dAtUncheckedPointIndex(index, spacePoint);
           const detail = segment.closestPoint(spacePoint, false);
           if (undefined !== detail) {
-            if (detail.fraction >= 0.0 && detail.fraction < 1.0 && !detail.point.isAlmostEqual(point0) && !detail.point.isAlmostEqual(point1)) {
+            if (detail.fraction >= 0.0 && detail.fraction < 1.0 && !detail.point.isAlmostEqual(point0) && !detail.point.isAlmostEqual(point1)
+              && spacePoint.isAlmostEqual(detail.point)) {
               if (detailArray === undefined)
                 detailArray = [];
               detail.a = index;
@@ -564,7 +631,114 @@ export class PolyfaceQuery {
 
     return builder.claimPolyface();
   }
-
+  /**
+   * * Each array input structure is: [facetIndex, vertexIndex0, vertexIndex1, ....]
+   * * Vertex indices assumed reversed so it
+   *   * vertexIndex0 is the lowest index on the facet
+   *   * vertexIndex1 is the lowest neighbor of vertex0
+   *   * first different entry among vertex indices determines lexical result.
+   *   * Hence facets with duplicate indices (whether forward or reversed) are considered equal.
+   * @param arrayA
+   * @param arrayB
+   */
+  private static compareFacetIndexAndVertexIndices(arrayA: number[], arrayB: number[]): number {
+    if (arrayA.length !== arrayB.length)
+      return arrayA.length - arrayB.length;
+    for (let i = 1; i < arrayA.length; i++) {
+      if (arrayA[i] !== arrayB[i]) {
+        return arrayA[i] - arrayB[i];
+      }
+    }
+    return 0;
+  }
+  /**
+   * * Return an array of arrays describing facet duplication.
+   * @param includeSingletons if true, non-duplicated facets are included in the output.
+   * * Each array `entry` in the output contains read indices of a cluster of facets with the same vertex indices.
+   */
+  public static collectDuplicateFacetIndices(polyface: Polyface, includeSingletons: boolean = false): number[][] {
+    const result: number[][] = [];
+    this.announceDuplicateFacetIndices(polyface,
+      (clusterFacetIndices: number[]) => {
+        if (includeSingletons || clusterFacetIndices.length > 1)
+          result.push(clusterFacetIndices.slice());
+      });
+    return result;
+  }
+  /**
+   * * Return an array of arrays describing facet duplication.
+   * @param includeSingletons if true, non-duplicated facets are included in the output.
+   * * Each array `entry` in the output contains read indices of a cluster of facets with the same vertex indices.
+   */
+  public static announceDuplicateFacetIndices(polyface: Polyface, announceCluster: (clusterFacetIndices: number[]) => void) {
+    const visitor = polyface.createVisitor(0);  // This is to visit the existing facets.
+    const facetIndexAndVertexIndices: number[][] = [];
+    for (visitor.reset(); visitor.moveToNextFacet();) {
+      const facetIndex = visitor.currentReadIndex();
+      const entry = [facetIndex];
+      const pointIndex = visitor.pointIndex;
+      const numPointsThisFacet = pointIndex.length;
+      let lowIndex = 0;
+      // find the lowest point index ...
+      for (let i = 1; i < visitor.pointIndex.length; i++) {
+        if (pointIndex[i] < pointIndex[lowIndex])
+          lowIndex = i;
+      }
+      // find its lowest neighbor -- assemble sort array in that direction
+      if (pointIndex[(lowIndex + 1) % numPointsThisFacet] < pointIndex[(lowIndex + numPointsThisFacet - 1) % numPointsThisFacet]) {
+        for (let i = 0; i < numPointsThisFacet; i++) {
+          entry.push(pointIndex[(lowIndex + i) % numPointsThisFacet]);
+        }
+      } else {
+        for (let i = 0; i < numPointsThisFacet; i++) {
+          entry.push(pointIndex[(lowIndex + numPointsThisFacet - i) % numPointsThisFacet]);
+        }
+      }
+      facetIndexAndVertexIndices.push(entry);
+    }
+    facetIndexAndVertexIndices.sort(this.compareFacetIndexAndVertexIndices);
+    let i0, i1;
+    const n = facetIndexAndVertexIndices.length;
+    const clusterArray = [];
+    for (i0 = 0; i0 < n; i0 = i1) {
+      i1 = i0 + 1;
+      clusterArray.length = 0;
+      clusterArray.push(facetIndexAndVertexIndices[i0][0]);
+      while (i1 < n && 0 === this.compareFacetIndexAndVertexIndices(facetIndexAndVertexIndices[i0], facetIndexAndVertexIndices[i1])) {
+        clusterArray.push(facetIndexAndVertexIndices[i1][0]);
+        i1++;
+      }
+      announceCluster(clusterArray);
+    }
+  }
+  /** Return a new facet set with a subset of facets in source
+   * @param includeSingletons true to copy facets that only appear once
+   * @param clusterSelector indicates whether duplicate clusters are to have 0, 1, or all facets included
+   */
+  public static cloneByFacetDuplication(source: Polyface, includeSingletons: boolean, clusterSelector: DuplicateFacetClusterSelector): Polyface {
+    const builder = PolyfaceBuilder.create();
+    const visitor = source.createVisitor(0);
+    this.announceDuplicateFacetIndices(source,
+      (clusterFacetIndices: number[]) => {
+        let numToSelect = 0;
+        if (clusterFacetIndices.length === 1) {
+          if (includeSingletons)
+            numToSelect = 1;
+        } else if (clusterFacetIndices.length > 1) {
+          if (clusterSelector === DuplicateFacetClusterSelector.SelectAny)
+            numToSelect = 1;
+          else if (clusterSelector === DuplicateFacetClusterSelector.SelectAll)
+            numToSelect = clusterFacetIndices.length;
+          else if (clusterSelector === DuplicateFacetClusterSelector.SelectOneByParity)
+            numToSelect = (clusterFacetIndices.length & 0x01) === 0x01 ? 1 : 0;
+        }
+        for (let i = 0; i < numToSelect; i++) {
+          visitor.moveToReadIndex(clusterFacetIndices[i]);
+          builder.addFacetFromVisitor(visitor);
+        }
+      });
+    return builder.claimPolyface();
+  }
   /** Clone the facets, inserting removing points that are simply within colinear edges.
    *
    */
@@ -643,7 +817,18 @@ export class PolyfaceQuery {
       if (data.pointIndex[i] === vertexIndex)
         data.edgeVisible[i] = value;
   }
-
+  /** Load all half edges from a mesh to an IndexedEdgeMatcher */
+  public static createIndexedEdges(visitor: PolyfaceVisitor): IndexedEdgeMatcher {
+    const edges = new IndexedEdgeMatcher();
+    visitor.reset();
+    while (visitor.moveToNextFacet()) {
+      const numEdges = visitor.pointCount - 1;
+      for (let i = 0; i < numEdges; i++) {
+        edges.addEdge(visitor.clientPointIndex(i), visitor.clientPointIndex(i + 1), visitor.currentReadIndex());
+      }
+    }
+    return edges;
+  }
   /**
   * * Find mated pairs among facet edges.
   * * Mated pairs have the same vertex indices appearing in opposite order.
@@ -654,15 +839,9 @@ export class PolyfaceQuery {
   * @param mesh mesh to be marked
   */
   public static markPairedEdgesInvisible(mesh: IndexedPolyface, sharpEdgeAngle?: Angle) {
-    const edges = new IndexedEdgeMatcher();
     const visitor = mesh.createVisitor(1) as PolyfaceVisitor;
-    visitor.reset();
-    while (visitor.moveToNextFacet()) {
-      const numEdges = visitor.pointCount - 1;
-      for (let i = 0; i < numEdges; i++) {
-        edges.addEdge(visitor.clientPointIndex(i), visitor.clientPointIndex(i + 1), visitor.currentReadIndex());
-      }
-    }
+    const edges = this.createIndexedEdges(visitor);
+
     const pairedEdges: SortableEdgeCluster[] = [];
     const boundaryEdges: SortableEdgeCluster[] = [];
     edges.sortAndCollectClusters(pairedEdges, boundaryEdges, boundaryEdges, boundaryEdges);
@@ -710,7 +889,14 @@ export class PolyfaceQuery {
     for (let i = 0; i < data.edgeVisible.length; i++)
       data.edgeVisible[i] = value;
   }
-
+  /**
+   * * Examine adjacent facet orientations throughout the mesh
+   * * If possible, reverse a subset to achieve proper pairing.
+   * @param mesh
+   */
+  public static reorientVertexOrderAroundFacetsForConsistentOrientation(mesh: IndexedPolyface): boolean {
+    return FacetOrientationFixup.doFixup(mesh);
+  }
 }
 
 /** Announce the points on a drape panel.

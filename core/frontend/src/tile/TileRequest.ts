@@ -1,38 +1,45 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Tile */
+/** @packageDocumentation
+ * @module Tiles
+ */
 
 import { AbandonedError, assert, base64StringToUint8Array, IModelStatus } from "@bentley/bentleyjs-core";
 import { ImageSource } from "@bentley/imodeljs-common";
-import { Tile } from "./Tile";
-import { TileTree, TileLoader } from "./TileTree";
-import { TileAdmin } from "./TileAdmin";
+import { Tile, TileTree } from "./internal";
 import { Viewport } from "../Viewport";
+import { ReadonlyViewportSet } from "../ViewportSet";
 import { IModelApp } from "../IModelApp";
 
-/** Represents a pending or active request to load the contents of a [[Tile]]. The request coordinates with a [[TileLoader]] to execute the request for tile content and
- * convert the result into a renderable graphic.
- * @internal
+/** Represents a pending or active request to load the contents of a [[Tile]]. The request coordinates with the [[Tile]] to execute the request for tile content and
+ * convert the result into a renderable graphic. TileRequests are created internally as needed; it is never necessary or useful for external code to create them.
+ * @beta
  */
 export class TileRequest {
   /** The requested tile. While the request is pending or active, `tile.request` points back to this TileRequest. */
   public readonly tile: Tile;
-  /** Determines the order in which pending requests are pulled off the queue to become active. A tile with a lower value takes precedence over one with a higher value. */
   /** The set of [[Viewport]]s that are awaiting the result of this request. When this becomes empty, the request is canceled because no viewport cares about it. */
-  public viewports: TileAdmin.ViewportSet;
+  public viewports: ReadonlyViewportSet;
   private _state: TileRequest.State;
+  /** Determines the order in which pending requests are pulled off the queue to become active. A tile with a lower priority value takes precedence over one with a higher value. */
   public priority = 0;
 
+  /** Constructor */
   public constructor(tile: Tile, vp: Viewport) {
     this._state = TileRequest.State.Queued;
     this.tile = tile;
-    this.viewports = IModelApp.tileAdmin.getViewportSet(vp);
+    this.viewports = IModelApp.tileAdmin.getViewportSetForRequest(vp);
   }
 
+  /** @internal */
   public get state(): TileRequest.State { return this._state; }
+
+  /** @internal */
   public get isQueued() { return TileRequest.State.Queued === this._state; }
+
+  /** True if the request has been canceled. */
   public get isCanceled(): boolean {
     // If iModel was closed, cancel immediately
     if (this.tile.iModel.tiles.isDisposed)
@@ -46,11 +53,12 @@ export class TileRequest {
     return this.viewports.isEmpty;
   }
 
-  public get tree(): TileTree { return this.tile.root; }
-  public get loader(): TileLoader { return this.tree.loader; }
+  /** @internal */
+  public get tree(): TileTree { return this.tile.tree; }
 
+  /** Indicate that the specified viewport is awaiting the result of this request. */
   public addViewport(vp: Viewport): void {
-    this.viewports = IModelApp.tileAdmin.getViewportSet(vp, this.viewports);
+    this.viewports = IModelApp.tileAdmin.getViewportSetForRequest(vp, this.viewports);
   }
 
   /** Transition the request from "queued" to "active", kicking off a series of asynchronous operations usually beginning with an http request, and -
@@ -65,7 +73,7 @@ export class TileRequest {
     let response;
     let gotResponse = false;
     try {
-      response = await this.loader.requestTileContent(this.tile, () => this.isCanceled);
+      response = await this.tile.requestContent(() => this.isCanceled);
       gotResponse = true;
 
       // Set this now, so our `isCanceled` check can see it.
@@ -98,6 +106,9 @@ export class TileRequest {
   /** Cancels this request. This leaves the associated Tile's state untouched. */
   public cancel(): void {
     this.notifyAndClear();
+    if (TileRequest.State.Dispatched === this._state)
+      this.tile.onActiveRequestCanceled();
+
     this._state = TileRequest.State.Failed;
   }
 
@@ -138,7 +149,7 @@ export class TileRequest {
     }
 
     try {
-      const content = await this.loader.loadTileContent(this.tile, data, () => this.isCanceled);
+      const content = await this.tile.readContent(data, IModelApp.renderSystem, () => this.isCanceled);
       if (this.isCanceled)
         return Promise.resolve();
 
@@ -153,23 +164,24 @@ export class TileRequest {
     return Promise.resolve();
   }
 }
-// tslint:disable:no-const-enum
 
-/** @internal */
+/** @beta */
 export namespace TileRequest {
   /** The type of a raw response to a request for tile content. Processed upon receipt into a [[TileRequest.Response]] type.
-   * @internal
+   * @see [[Tile.requestContent]]
+   * @beta
    */
   export type Response = Uint8Array | ArrayBuffer | string | ImageSource | undefined;
-  /** The input to [[TileLoader.loadTileContent]], to be converted into a [[Tile.Content]].
-   * @internal
+  /** The input to [[Tile.readContent]], to be converted into a [[Tile.Content]].
+   * @see [[Tile.readContent]]
+   * @beta
    */
   export type ResponseData = Uint8Array | ImageSource;
 
   /** The states through which a TileRequest proceeds. During the first 3 states, the [[Tile]]'s `request` member is defined, and its [[Tile.LoadStatus]] is computed based on the state of its request.
    * @internal
    */
-  export const enum State {
+  export enum State {
     /** Initial state. Request is pending but not yet dispatched. */
     Queued,
     /** Follows `Queued` when request begins to be actively processed. */

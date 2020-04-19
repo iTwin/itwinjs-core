@@ -1,6 +1,49 @@
 # Change Log - @bentley/ecschema-metadata
 
-This log was last generated on Fri, 01 Nov 2019 13:28:37 GMT and should not be manually modified.
+This log was last generated on Wed, 04 Mar 2020 16:16:31 GMT and should not be manually modified.
+
+## 1.13.0
+Wed, 04 Mar 2020 16:16:31 GMT
+
+*Version update only*
+
+## 1.12.0
+Wed, 12 Feb 2020 17:45:49 GMT
+
+*Version update only*
+
+## 1.11.0
+Wed, 22 Jan 2020 19:24:12 GMT
+
+### Updates
+
+- Setting ECEnumeration property 'isStrict' to true if not present when parsing schema XML.
+- Upgrade to TypeScript 3.7.2.
+
+## 1.10.0
+Tue, 07 Jan 2020 19:44:01 GMT
+
+### Updates
+
+- Diagnostic is now a parameter in rule suppression functions
+- deprecating EC schema file locater classes (moved to ecschema-locaters package)
+- Adding SchemaReferenceDelta to allow reporting of schema reference version differences during schema comparison.
+
+## 1.9.0
+Tue, 10 Dec 2019 18:08:56 GMT
+
+### Updates
+
+- Update sinon version.
+- Resolving an error in schema validation in ecschema-metadata
+
+## 1.8.0
+Fri, 22 Nov 2019 14:03:34 GMT
+
+### Updates
+
+- Edited Schema.ts and all related .test.ts files to require a schema alias.
+- Bis-Rule Suppression Implementation
 
 ## 1.7.0
 Fri, 01 Nov 2019 13:28:37 GMT

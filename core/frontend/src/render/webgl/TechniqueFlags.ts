@@ -1,12 +1,14 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module WebGL */
+/** @packageDocumentation
+ * @module WebGL
+ */
 
 import { Target } from "./Target";
 import { RenderPass } from "./RenderFlags";
-import { ClippingType } from "../System";
+import { ClippingType } from "../RenderClipVolume";
 import { RenderMode } from "@bentley/imodeljs-common";
 
 // tslint:disable:no-const-enum
@@ -48,6 +50,9 @@ export const enum IsEdgeTestNeeded { No, Yes }
 export const enum IsShadowable { No, Yes }
 
 /** @internal */
+export const enum IsThematic { No, Yes }
+
+/** @internal */
 export const enum HasMaterialAtlas { No, Yes }
 
 /** Flags used to control which shader program is used by a rendering Technique.
@@ -62,6 +67,7 @@ export class TechniqueFlags {
   public isInstanced: IsInstanced = IsInstanced.No;
   public isClassified: IsClassified = IsClassified.No;
   public isShadowable: IsShadowable = IsShadowable.No;
+  public isThematic: IsThematic = IsThematic.No;
   public hasMaterialAtlas: HasMaterialAtlas = HasMaterialAtlas.No;
   public usesLogZ = false;
   private _isHilite = false;
@@ -72,7 +78,7 @@ export class TechniqueFlags {
 
   public get hasClip(): boolean { return this.clip.type !== ClippingType.None; }
 
-  public init(target: Target, pass: RenderPass, instanced: IsInstanced, animated: IsAnimated = IsAnimated.No, classified = IsClassified.No, shadowable = IsShadowable.No, hasMaterialAtlas = HasMaterialAtlas.No): void {
+  public init(target: Target, pass: RenderPass, instanced: IsInstanced, animated: IsAnimated = IsAnimated.No, classified = IsClassified.No, shadowable = IsShadowable.No, hasMaterialAtlas = HasMaterialAtlas.No, thematic = IsThematic.No): void {
     if (RenderPass.Hilite === pass || RenderPass.HiliteClassification === pass || RenderPass.HilitePlanarClassification === pass) {
       const isClassified = (classified === IsClassified.Yes && RenderPass.HilitePlanarClassification === pass) ? IsClassified.Yes : IsClassified.No;
       this.initForHilite(target.clipDef, instanced, isClassified, target.wantLogZ);
@@ -84,15 +90,10 @@ export class TechniqueFlags {
       this.isInstanced = instanced;
       this.isClassified = classified;
       this.isShadowable = shadowable;
+      this.isThematic = thematic;
       this.hasMaterialAtlas = hasMaterialAtlas;
       this.usesLogZ = target.wantLogZ;
-
-      if (undefined !== target.currentOverrides)
-        this.featureMode = FeatureMode.Overrides;
-      else if (0 !== target.currentBatchId)
-        this.featureMode = FeatureMode.Pick;
-      else
-        this.featureMode = FeatureMode.None;
+      this.featureMode = target.uniforms.batch.featureMode;
 
       // Determine if we should use the shaders which support discarding surfaces in favor of their edges (and discarding non-planar surfaces in favor of coincident planar surfaces).
       // These are only useful if the geometry defines feature Ids.
@@ -118,7 +119,7 @@ export class TechniqueFlags {
     }
   }
 
-  public reset(mode: FeatureMode, instanced: IsInstanced = IsInstanced.No, shadowable: IsShadowable) {
+  public reset(mode: FeatureMode, instanced: IsInstanced = IsInstanced.No, shadowable: IsShadowable, thematic: IsThematic) {
     this._isHilite = false;
     this.featureMode = mode;
     this.isTranslucent = false;
@@ -127,6 +128,7 @@ export class TechniqueFlags {
     this.isClassified = IsClassified.No;
     this.isInstanced = instanced;
     this.isShadowable = shadowable;
+    this.isThematic = thematic;
     this.hasMaterialAtlas = HasMaterialAtlas.No;
     this.usesLogZ = false;
     this.clip.type = ClippingType.None;
@@ -166,6 +168,7 @@ export class TechniqueFlags {
     if (this.isClassified) parts.push("classified");
     if (this.hasClip) parts.push("clip");
     if (this.isShadowable) parts.push("shadowable");
+    if (this.isThematic) parts.push("thematic");
     if (this.hasFeatures) parts.push(FeatureMode.Pick === this.featureMode ? "pick" : "overrides");
     if (this.hasMaterialAtlas) parts.push("materialAtlas");
     if (this.usesLogZ) parts.push("logZ");

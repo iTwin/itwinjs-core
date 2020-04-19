@@ -1,16 +1,25 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module IModelApp */
+/** @packageDocumentation
+ * @module IModelApp
+ */
 
-const copyrightNotice = 'Copyright © 2017-2019 <a href="https://www.bentley.com" target="_blank" rel="noopener noreferrer">Bentley Systems, Inc.</a>';
+const copyrightNotice = 'Copyright © 2017-2020 <a href="https://www.bentley.com" target="_blank" rel="noopener noreferrer">Bentley Systems, Inc.</a>';
 
-import { dispose, Guid, GuidString, ClientRequestContext, SerializedClientRequestContext, Logger, BeDuration, BeTimePoint } from "@bentley/bentleyjs-core";
 import {
-  AccessToken, ConnectSettingsClient, IModelClient, IModelHubClient,
-  SettingsAdmin, IAuthorizationClient, IncludePrefix,
-} from "@bentley/imodeljs-clients";
+  BeDuration,
+  ClientRequestContext,
+  Guid,
+  GuidString,
+  Logger,
+  SerializedClientRequestContext,
+  dispose,
+} from "@bentley/bentleyjs-core";
+import { IModelClient, IModelHubClient } from "@bentley/imodelhub-client";
+import { AccessToken, IncludePrefix, AuthorizationClient } from "@bentley/itwin-client";
+import { ConnectSettingsClient, SettingsAdmin } from "@bentley/product-settings-client";
 import { IModelError, IModelStatus, RpcConfiguration, RpcRequest } from "@bentley/imodeljs-common";
 import { I18N, I18NOptions } from "@bentley/imodeljs-i18n";
 import { AccuSnap } from "./AccuSnap";
@@ -19,23 +28,25 @@ import { ElementLocateManager } from "./ElementLocateManager";
 import { NotificationManager } from "./NotificationManager";
 import { QuantityFormatter } from "./QuantityFormatter";
 import { FrontendRequestContext } from "./FrontendRequestContext";
-import { RenderSystem } from "./render/System";
-import { System } from "./render/webgl/System";
+import { RenderSystem } from "./render/RenderSystem";
 import { TentativePoint } from "./TentativePoint";
 import { ToolRegistry } from "./tools/Tool";
 import { ToolAdmin } from "./tools/ToolAdmin";
 import { ViewManager } from "./ViewManager";
-import { WebGLRenderCompatibilityInfo } from "./RenderCompatibility";
-import { TileAdmin } from "./tile/TileAdmin";
+import { WebGLRenderCompatibilityInfo, queryRenderCompatibility } from "@bentley/webgl-compatibility";
+import { TileAdmin } from "./tile/internal";
 import { EntityState } from "./EntityState";
 import { TerrainProvider } from "./TerrainProvider";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
-import { PluginAdmin } from "./plugin/Plugin";
+import { ExtensionAdmin } from "./extension/ExtensionAdmin";
 import { UiAdmin } from "@bentley/ui-abstract";
+import { FeatureTrackingManager } from "./FeatureTrackingManager";
+import { FeatureToggleClient } from "./FeatureToggleClient";
+import { System } from "./render/webgl/System";
 
 import * as idleTool from "./tools/IdleTool";
 import * as selectTool from "./tools/SelectTool";
-import * as pluginTool from "./tools/PluginTool";
+import * as extensionTool from "./tools/ExtensionTool";
 import * as viewTool from "./tools/ViewTool";
 import * as clipViewTool from "./tools/ClipViewTool";
 import * as measureTool from "./tools/MeasureTool";
@@ -48,21 +59,10 @@ import * as modelselector from "./ModelSelectorState";
 import * as categorySelectorState from "./CategorySelectorState";
 import * as auxCoordState from "./AuxCoordSys";
 
-declare var BUILD_SEMVER: string;
+// tslint:disable-next-line: no-var-requires
+require("./IModeljs-css");
 
-// add the iModel.js frontend .css styles into DOM when we load
-(() => {
-  const style = document.createElement("style");
-  style.appendChild(document.createTextNode(`
-  .logo-cards-div {position:relative;top:0%;left:0%;transition:top .3s;transition-timing-function:ease-out}
-  .logo-card {width:300px;white-space:normal;padding:5px;margin:5px;background:#d3d3d3;box-shadow:#3c3c3c 3px 3px 10px;border-radius:5px;border-top-style:none;border-left-style:none}
-  .logo-card p {margin:0}
-  .logo-cards-container {position:absolute;bottom:0px;z-index:50;pointer-events:none;overflow:hidden;left:34px;height:0px}
-  .imodeljs-logo {z-index:11;left:5px;bottom:5px;position:absolute;width:32px;height:32px;cursor:pointer;opacity:.5;filter: drop-shadow(0px 3px 2px rgba(10,10,10,.65))}
-  .imodeljs-logo:hover {opacity:1.0}`,
-  ));
-  document.head.prepend(style); // put our styles at the beginning so any application-supplied styles will override them
-})();
+// cSpell:ignore noopener noreferrer gprid forin nbsp
 
 /** Options that can be supplied to [[IModelApp.startup]] to customize frontend behavior.
  * @public
@@ -95,7 +95,7 @@ export interface IModelAppOptions {
   /** If present, supplies the [[I18N]] for this session. May be either an I18N instance or an I18NOptions used to create an I18N */
   i18n?: I18N | I18NOptions;
   /** If present, supplies the authorization information for various frontend APIs */
-  authorizationClient?: IAuthorizationClient;
+  authorizationClient?: AuthorizationClient;
   /** @internal */
   sessionId?: GuidString;
   /** @internal */
@@ -109,9 +109,49 @@ export interface IModelAppOptions {
   /** @internal */
   terrainProvider?: TerrainProvider;
   /** @internal */
-  pluginAdmin?: PluginAdmin;
+  extensionAdmin?: ExtensionAdmin;
   /** If present, supplies the [[UiAdmin]] for this session. */
   uiAdmin?: UiAdmin;
+  /** if present, supplies the [[FeatureTrackingManager]] for this session
+   * @internal
+   */
+  features?: FeatureTrackingManager;
+  /** if present, supplies the [[FeatureToggleClient]] for this session
+   * @internal
+   */
+  featureToggles?: FeatureToggleClient;
+}
+/** Setting for [[EventSource]]
+ * @internal
+ */
+export interface EventSourceOptions {
+  /** Poll interval in milliseconds use to poll backend for events */
+  pollInterval: number;
+  /** Prefetch limit set limit on number of event returned by backend */
+  prefetchLimit: number;
+}
+/** Options for [[IModelApp.makeModalDiv]]
+ *  @internal
+ */
+export interface ModalOptions {
+  /** Width for the Modal dialog box. */
+  width?: number;
+  /** The dialog should be dismissed if the user clicks anywhere or hits Enter or Escape on the keyboard. */
+  autoClose?: boolean;
+  /** Show an 'x' in the upper right corner to close the dialog */
+  closeBox?: boolean;
+  /** The parent for the semi transparent *darkening* div. If not present, use `document.body` */
+  rootDiv?: HTMLElement;
+}
+
+/** Return type for [[IModelApp.makeModalDiv]]
+ * @internal
+ */
+export interface ModalReturn {
+  /** The modal HTMLDivElement created. */
+  modal: HTMLDivElement;
+  /** A function that can be set as an event handler to stop the modal dialog. This can be used if `autoClose` or `closeBox` are not enabled. */
+  stop: (_ev: Event) => void;
 }
 
 /**
@@ -133,7 +173,7 @@ export class IModelApp {
   private static _imodelClient: IModelClient;
   private static _locateManager: ElementLocateManager;
   private static _notifications: NotificationManager;
-  private static _pluginAdmin: PluginAdmin;
+  private static _extensionAdmin: ExtensionAdmin;
   private static _quantityFormatter: QuantityFormatter;
   private static _renderSystem?: RenderSystem;
   private static _settings: SettingsAdmin;
@@ -147,14 +187,19 @@ export class IModelApp {
   private static _animationRequested = false;
   private static _animationInterval: BeDuration | undefined = BeDuration.fromSeconds(1);
   private static _animationIntervalId?: number;
-  private static _tileTreePurgeTime?: BeTimePoint;
-  private static _tileTreePurgeInterval?: BeDuration;
+  private static _features: FeatureTrackingManager;
+  private static _nativeApp: boolean = false;
+  private static _featureToggles: FeatureToggleClient;
 
   // No instances or subclasses of IModelApp may be created. All members are static and must be on the singleton object IModelApp.
   private constructor() { }
 
+  /** Global event source options
+   * @internal
+   */
+  public static eventSourceOptions: EventSourceOptions = { pollInterval: 3000, prefetchLimit: 512 };
   /** Provides authorization information for various frontend APIs */
-  public static authorizationClient?: IAuthorizationClient;
+  public static authorizationClient?: AuthorizationClient;
   /** The [[ToolRegistry]] for this session. */
   public static readonly tools = new ToolRegistry();
   /** A uniqueId for this session */
@@ -163,6 +208,10 @@ export class IModelApp {
   public static get renderSystem(): RenderSystem { return this._renderSystem!; }
   /** The [[ViewManager]] for this session. */
   public static get viewManager(): ViewManager { return this._viewManager; }
+  /** Check if native app or not
+   * @internal
+   */
+  public static get isNativeApp(): boolean { return this._nativeApp; }
   /** The [[NotificationManager]] for this session. */
   public static get notifications(): NotificationManager { return this._notifications; }
   /** The [[TileAdmin]] for this session.
@@ -202,9 +251,18 @@ export class IModelApp {
   /** @internal */
   public static get terrainProvider() { return this._terrainProvider; }
   /** @internal */
-  public static get pluginAdmin() { return this._pluginAdmin; }
+  public static get extensionAdmin() { return this._extensionAdmin; }
   /** The [[UiAdmin]] for this session. */
   public static get uiAdmin() { return this._uiAdmin; }
+  /** The [[FeatureTrackingManager]] for this session
+   * @internal
+   */
+  public static get features() { return this._features; }
+
+  /** The [[FeatureToggleClient]] for this session
+   * @internal
+   */
+  public static get featureToggles() { return this._featureToggles; }
 
   /** Map of classFullName to EntityState class */
   private static _entityClasses = new Map<string, typeof EntityState>();
@@ -244,7 +302,7 @@ export class IModelApp {
    * and/or performance.
    * @beta
    */
-  public static queryRenderCompatibility(): WebGLRenderCompatibilityInfo { return System.queryRenderCompatibility(); }
+  public static queryRenderCompatibility(): WebGLRenderCompatibilityInfo { return queryRenderCompatibility(System.createContext); }
 
   /**
    * This method must be called before any iModel.js frontend services are used.
@@ -269,7 +327,7 @@ export class IModelApp {
     // Initialize basic application details before log messages are sent out
     this.sessionId = (opts.sessionId !== undefined) ? opts.sessionId : Guid.createValue();
     this._applicationId = (opts.applicationId !== undefined) ? opts.applicationId : "2686";  // Default to product id of iModel.js
-    this._applicationVersion = (opts.applicationVersion !== undefined) ? opts.applicationVersion : (typeof (BUILD_SEMVER) !== "undefined" ? BUILD_SEMVER : "");
+    this._applicationVersion = (opts.applicationVersion !== undefined) ? opts.applicationVersion : "";
     this.authorizationClient = opts.authorizationClient;
 
     this._imodelClient = (opts.imodelClient !== undefined) ? opts.imodelClient : new IModelHubClient();
@@ -279,24 +337,28 @@ export class IModelApp {
     // get the localization system set up so registering tools works. At startup, the only namespace is the system namespace.
     this._i18n = (opts.i18n instanceof I18N) ? opts.i18n : new I18N("iModelJs", opts.i18n);
 
-    const tools = this.tools; // first register all the core tools. Subclasses may choose to override them.
+    // first register all the core tools. Subclasses may choose to override them.
     const coreNamespace = this.i18n.registerNamespace("CoreTools");
-    tools.registerModule(selectTool, coreNamespace);
-    tools.registerModule(idleTool, coreNamespace);
-    tools.registerModule(viewTool, coreNamespace);
-    tools.registerModule(clipViewTool, coreNamespace);
-    tools.registerModule(measureTool, coreNamespace);
-    tools.registerModule(accudrawTool, coreNamespace);
-    tools.registerModule(pluginTool, coreNamespace);
+    [
+      selectTool,
+      idleTool,
+      viewTool,
+      clipViewTool,
+      measureTool,
+      accudrawTool,
+      extensionTool,
+    ].forEach((tool) => this.tools.registerModule(tool, coreNamespace));
 
     this.registerEntityState(EntityState.classFullName, EntityState);
-    this.registerModuleEntities(modelState);
-    this.registerModuleEntities(sheetState);
-    this.registerModuleEntities(viewState);
-    this.registerModuleEntities(displayStyleState);
-    this.registerModuleEntities(modelselector);
-    this.registerModuleEntities(categorySelectorState);
-    this.registerModuleEntities(auxCoordState);
+    [
+      modelState,
+      sheetState,
+      viewState,
+      displayStyleState,
+      modelselector,
+      categorySelectorState,
+      auxCoordState,
+    ].forEach((module) => this.registerModuleEntities(module));
 
     this._renderSystem = (opts.renderSys instanceof RenderSystem) ? opts.renderSys : this.createRenderSys(opts.renderSys);
 
@@ -309,41 +371,43 @@ export class IModelApp {
     this._accuSnap = (opts.accuSnap !== undefined) ? opts.accuSnap : new AccuSnap();
     this._locateManager = (opts.locateManager !== undefined) ? opts.locateManager : new ElementLocateManager();
     this._tentativePoint = (opts.tentativePoint !== undefined) ? opts.tentativePoint : new TentativePoint();
-    this._pluginAdmin = (opts.pluginAdmin !== undefined) ? opts.pluginAdmin : new PluginAdmin();
+    this._extensionAdmin = (opts.extensionAdmin !== undefined) ? opts.extensionAdmin : new ExtensionAdmin({});
     this._quantityFormatter = (opts.quantityFormatter !== undefined) ? opts.quantityFormatter : new QuantityFormatter();
     this._terrainProvider = opts.terrainProvider;
     this._uiAdmin = (opts.uiAdmin !== undefined) ? opts.uiAdmin : new UiAdmin();
+    this._features = (opts.features !== undefined) ? opts.features : new FeatureTrackingManager();
+    this._featureToggles = (opts.featureToggles !== undefined) ? opts.featureToggles : new FeatureToggleClient();
 
-    this.renderSystem.onInitialized();
-    this.viewManager.onInitialized();
-    this.toolAdmin.onInitialized();
-    this.accuDraw.onInitialized();
-    this.accuSnap.onInitialized();
-    this.locateManager.onInitialized();
-    this.tentativePoint.onInitialized();
-    this.pluginAdmin.onInitialized();
-    this.quantityFormatter.onInitialized();
-    if (this._terrainProvider)
-      this._terrainProvider.onInitialized();
-    this.uiAdmin.onInitialized();
+    [
+      this.renderSystem,
+      this.viewManager,
+      this.toolAdmin,
+      this.accuDraw,
+      this.accuSnap,
+      this.locateManager,
+      this.tentativePoint,
+      this.extensionAdmin,
+      this.quantityFormatter,
+      this._terrainProvider,
+      this.uiAdmin,
+    ].forEach((sys) => {
+      if (sys)
+        sys.onInitialized();
+    });
   }
 
   /** Must be called before the application exits to release any held resources. */
   public static shutdown() {
-    if (this._initialized) {
-      this._wantEventLoop = false;
-      window.removeEventListener("resize", IModelApp.requestNextAnimation);
-      this.clearIntervalAnimation();
+    if (!this._initialized)
+      return;
 
-      this.toolAdmin.onShutDown();
-      this.viewManager.onShutDown();
-      this.tileAdmin.onShutDown();
-
-      this._renderSystem = dispose(this._renderSystem);
-      this._entityClasses.clear();
-
-      this._initialized = false;
-    }
+    this._wantEventLoop = false;
+    window.removeEventListener("resize", IModelApp.requestNextAnimation);
+    this.clearIntervalAnimation();
+    [this.toolAdmin, this.viewManager, this.tileAdmin].forEach((sys) => sys.onShutDown());
+    this._renderSystem = dispose(this._renderSystem);
+    this._entityClasses.clear();
+    this._initialized = false;
   }
 
   /** Controls how frequently the application polls for changes that may require a new animation frame to be requested.
@@ -396,12 +460,6 @@ export class IModelApp {
   public static startEventLoop() {
     if (!IModelApp._wantEventLoop) {
       IModelApp._wantEventLoop = true;
-      const treeExpirationTime = IModelApp.tileAdmin.tileTreeExpirationTime;
-      if (undefined !== treeExpirationTime) {
-        IModelApp._tileTreePurgeInterval = treeExpirationTime;
-        IModelApp._tileTreePurgeTime = BeTimePoint.now().plus(treeExpirationTime);
-      }
-
       window.addEventListener("resize", IModelApp.requestNextAnimation);
       IModelApp.requestIntervalAnimation();
       IModelApp.requestNextAnimation();
@@ -418,12 +476,6 @@ export class IModelApp {
       IModelApp.toolAdmin.processEvent(); // tslint:disable-line:no-floating-promises
       IModelApp.viewManager.renderLoop();
       IModelApp.tileAdmin.process();
-
-      if (undefined !== IModelApp._tileTreePurgeTime && IModelApp._tileTreePurgeTime.milliseconds < Date.now()) {
-        const now = BeTimePoint.now();
-        IModelApp._tileTreePurgeTime = now.plus(IModelApp._tileTreePurgeInterval!);
-        IModelApp.viewManager.purgeTileTrees(now.minus(IModelApp._tileTreePurgeInterval!));
-      }
     } catch (exception) {
       ToolAdmin.exceptionHandler(exception).then(() => { // tslint:disable-line:no-floating-promises
         close(); // this does nothing in a web browser, closes electron.
@@ -452,9 +504,15 @@ export class IModelApp {
       let userId: string | undefined;
       if (IModelApp.authorizationClient) {
         // todo: need to subscribe to token change events to avoid getting the string equivalent and compute length
-        const accessToken: AccessToken = await IModelApp.authorizationClient.getAccessToken();
-        authorization = accessToken.toTokenString(IncludePrefix.Yes);
-        userId = accessToken.getUserInfo()!.id;
+        try {
+          const accessToken: AccessToken = await IModelApp.authorizationClient.getAccessToken();
+          authorization = accessToken.toTokenString(IncludePrefix.Yes);
+          const userInfo = accessToken.getUserInfo();
+          if (userInfo)
+            userId = userInfo.id;
+        } catch (err) {
+          // The application may go offline
+        }
       }
       return {
         id,
@@ -467,24 +525,121 @@ export class IModelApp {
     };
   }
 
+  /** Shortcut for creating an HTMLElement with optional parent, className, id, innerHTML, innerText
+   *  @internal
+   */
+  public static makeHTMLElement<K extends keyof HTMLElementTagNameMap>(type: K, opt?: {
+    /** The parent for the new HTMLElement */
+    parent?: HTMLElement,
+    /** The className for the new HTMLElement */
+    className?: string,
+    /** The Id for the new HTMLElement */
+    id?: string,
+    /** innerHTML for the new HTMLElement */
+    innerHTML?: string,
+    /** innerText for the new HTMLElement */
+    innerText?: string,
+  }) {
+    const el = document.createElement(type);
+    if (undefined !== opt) {
+      if (undefined !== opt.className)
+        el.className = opt.className;
+      if (undefined !== opt.id)
+        el.id = opt.id;
+      if (undefined !== opt.innerHTML)
+        el.innerHTML = opt.innerHTML;
+      if (undefined !== opt.innerText)
+        el.innerText = opt.innerText;
+      if (undefined !== opt.parent)
+        opt.parent.appendChild(el);
+    }
+    return el;
+  }
+
+  /** Make a modal dialog on top of the root of the application. The returned HTMLDivElement will be placed topmost, all other application
+   * windows will be covered with a semi-transparent background that intercepts all key/mouse/touch events until the modal is dismissed.
+   * @param options The options that describe how the modal should work.
+   * @internal
+   */
+  public static makeModalDiv(options: ModalOptions): ModalReturn {
+    const root = options.rootDiv ? options.rootDiv : document.body;
+    // create the overlay div to "black out" the application to indicate everything is inactive until the modal has been dismissed.
+    const overlay = IModelApp.makeHTMLElement("div", { parent: root, className: "imodeljs-modal-overlay" });
+    overlay.tabIndex = -1; // so we can catch keystroke events
+
+    // function to remove modal dialog
+    const stop = (ev: Event) => { root.removeChild(overlay); ev.stopPropagation(); };
+
+    if (options.autoClose) {
+      overlay.onclick = overlay.oncontextmenu = stop;
+      overlay.onkeydown = overlay.onkeyup = (ev: KeyboardEvent) => { // ignore all keystrokes other than enter and escape
+        switch (ev.key) {
+          case "Enter":
+          case "Escape":
+            stop(ev);
+            return;
+        }
+        ev.stopPropagation();
+      };
+      overlay.focus();
+    }
+
+    const modal = IModelApp.makeHTMLElement("div", { parent: overlay, className: "imodeljs-modal" });
+    if (undefined !== options.width)
+      modal.style.width = options.width + "px";
+    if (options.closeBox) {
+      const close = IModelApp.makeHTMLElement("p", { parent: modal, className: "imodeljs-modal-close" });
+      close.innerText = "\u00d7"; // unicode "times" symbol
+      close.onclick = stop;
+    }
+
+    return { modal, stop };
+  }
+
   /** Applications may implement this method to supply a Logo Card.
    * @beta
    */
-  public static applicationLogoCard?: () => HTMLDivElement;
+  public static applicationLogoCard?: () => HTMLTableRowElement;
 
-  /** Make a new Logo Card, optionally supplying its content and id.
-   * Call this method from your implementation of [[IModelApp.applicationLogoCard]]
-   * @param el content of the logo card (optional)
-   * @param id id of the logo card (optional)
+  /** Make a new Logo Card. Call this method from your implementation of [[IModelApp.applicationLogoCard]]
+   * @param opts Options for Logo Card
    * @beta
    */
-  public static makeLogoCard(el?: HTMLElement, id?: string): HTMLDivElement {
-    const card = document.createElement("div");
-    card.className = "logo-card";
-    if (undefined !== id)
-      card.id = id;
-    if (undefined !== el)
-      card.appendChild(el);
+  public static makeLogoCard(
+    opts: {
+      /** The heading to be put at the top of this logo card inside an <h2>. May include HTML. */
+      heading: string | HTMLElement,
+      /** The URL or HTMLImageElement for the icon on this logo card. */
+      iconSrc?: string | HTMLImageElement;
+      /** The width of the icon, if `iconSrc` is a string. Default is 64. */
+      iconWidth?: number;
+      /** A *notice* string to be shown on the logo card. May include HTML.  */
+      notice?: string | HTMLElement
+    }): HTMLTableRowElement {
+    const card = IModelApp.makeHTMLElement("tr");
+    const iconCell = IModelApp.makeHTMLElement("td", { parent: card, className: "logo-card-logo" });
+    if (undefined !== opts.iconSrc) {
+      if (typeof opts.iconSrc === "string") {
+        const logo = IModelApp.makeHTMLElement("img");
+        logo.src = opts.iconSrc;
+        logo.width = opts.iconWidth ? opts.iconWidth : 64;
+        opts.iconSrc = logo;
+      }
+      iconCell.appendChild(opts.iconSrc);
+    }
+    const noticeCell = IModelApp.makeHTMLElement("td", { parent: card, className: "logo-card-message" });
+    if (undefined !== opts.heading) {
+      if (typeof opts.heading === "string")
+        IModelApp.makeHTMLElement("h2", { parent: noticeCell, innerHTML: opts.heading });
+      else
+        noticeCell.appendChild(opts.heading);
+    }
+    if (undefined !== opts.notice) {
+      if (typeof opts.notice === "string")
+        IModelApp.makeHTMLElement("p", { parent: noticeCell, innerHTML: opts.notice });
+      else
+        noticeCell.appendChild(opts.notice);
+    }
     return card;
   }
 
@@ -492,23 +647,10 @@ export class IModelApp {
    *  @internal
    */
   public static makeIModelJsLogoCard() {
-    const imjsP = document.createElement("p");
-    const poweredBy = document.createElement("span");
-    poweredBy.innerText = this.i18n.translate("Notices.PoweredBy"); // this is localized
-    const version = document.createElement("span");
-    version.innerText = this.applicationVersion;
-    const logo = document.createElement("img");
-    logo.src = "images/imodeljs-logo.svg";
-    logo.width = 80;
-    logo.style.boxShadow = "black 1px 1px 5px";
-    logo.style.marginLeft = "5px";
-    logo.style.marginRight = "5px"; //
-    const copyright = document.createElement("p");
-    copyright.innerHTML = copyrightNotice; // copyright notice is not localized
-    imjsP.appendChild(poweredBy);
-    imjsP.appendChild(logo);
-    imjsP.appendChild(version);
-    imjsP.appendChild(copyright);
-    return this.makeLogoCard(imjsP, "imodeljs-logo-card");
+    return this.makeLogoCard({
+      iconSrc: "images/about-imodeljs.svg",
+      heading: `<span style="font-weight:normal">` + this.i18n.translate("Notices.PoweredBy") + "</span>&nbsp;iModel.js",
+      notice: this.applicationVersion + "<br>" + copyrightNotice,
+    });
   }
 }

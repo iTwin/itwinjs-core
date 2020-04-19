@@ -1,8 +1,9 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import { PropertyRecord } from "@bentley/ui-abstract";
 import { SimpleTreeDataProvider, SimpleTreeDataProviderHierarchy } from "../../ui-components/tree/SimpleTreeDataProvider";
 import { DelayLoadedTreeNodeItem } from "../../ui-components/tree/TreeDataProvider";
 
@@ -12,7 +13,7 @@ describe("SimpleTreeDataProvider", () => {
     return {
       id,
       parentId,
-      label: "label",
+      label: PropertyRecord.fromString("label", "label"),
       hasChildren,
     };
   };

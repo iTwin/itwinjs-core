@@ -2,6 +2,210 @@
   "name": "@bentley/ui-components",
   "entries": [
     {
+      "version": "1.13.0",
+      "tag": "@bentley/ui-components_v1.13.0",
+      "date": "Wed, 04 Mar 2020 16:16:31 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix iOS Safari high CPU of enum button group."
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.12.0",
+      "tag": "@bentley/ui-components_v1.12.0",
+      "date": "Wed, 12 Feb 2020 17:45:50 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "iModel write API development"
+          },
+          {
+            "comment": "Upgraded icons-generic-webfont to ^1.0.0"
+          },
+          {
+            "comment": "Added type converter for composite primitive value"
+          },
+          {
+            "comment": "Changed onNodeLoaded event to nodeLoadHandler in NodeLoader. Fixed node loading scheduling to avoid making multiple requests at the same time"
+          },
+          {
+            "comment": "Pass tree model changes to onModelChange event"
+          },
+          {
+            "comment": "Separate label and labelDefinition in PropertyData and TreeNodeItem"
+          },
+          {
+            "comment": "Property grid border fix."
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.11.0",
+      "tag": "@bentley/ui-components_v1.11.0",
+      "date": "Wed, 22 Jan 2020 19:24:12 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Remove the @types/linkify-it as a real dependency and make it a devDependency."
+          },
+          {
+            "comment": "Allow TreeNodeItem and PropertyData label to be represented as PropertyRecord"
+          },
+          {
+            "comment": "Upgrade to TypeScript 3.7.2."
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.10.0",
+      "tag": "@bentley/ui-components_v1.10.0",
+      "date": "Tue, 07 Jan 2020 19:44:01 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix styling issue in property grid when actionButtonRenders are not defined."
+          },
+          {
+            "comment": "Fixed lgtm issues in UI folders"
+          },
+          {
+            "comment": "Update code to up code coverage to avoid CI failures on Linux machines."
+          },
+          {
+            "comment": "Added Action Buttons for properties"
+          },
+          {
+            "comment": "Attempt to fix sporadic failing solartimeline test."
+          },
+          {
+            "comment": "Fix bug in timeline component when view only has an analysis animation without dates."
+          },
+          {
+            "comment": "Update timeline test to use fake timers to see if that resolved sporadic failures on CI builds."
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.9.0",
+      "tag": "@bentley/ui-components_v1.9.0",
+      "date": "Tue, 10 Dec 2019 18:08:56 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update sunrise/sunset calculation"
+          },
+          {
+            "comment": "Update solar timeline test"
+          },
+          {
+            "comment": "Made detecting links have stricter rules. Links have to start with a schema or `www.`."
+          },
+          {
+            "comment": "Fix solar timeline timezone bug."
+          },
+          {
+            "comment": "Added a tooltip component."
+          },
+          {
+            "comment": "No longer accessing this.state or this.props in setState updater - flagged by lgtm report"
+          },
+          {
+            "comment": "Changed SignIn & SignOut buttons to large. Fixed Dialog component resizing. Reduced default minimum size of Dialog component."
+          },
+          {
+            "comment": "Update sinon version."
+          },
+          {
+            "comment": "Added documentation to ControlledTree API and changes release tags to beta"
+          },
+          {
+            "comment": "Added node editing support in ControlledTree"
+          },
+          {
+            "comment": "Changes ControlledTree events to pass TreeNodeItem instead of nodeId"
+          },
+          {
+            "comment": "Added 'removeChild', 'insertChild', 'getChildOffset' methods to MutableTreeModel"
+          },
+          {
+            "comment": "Moved ControlledTree node highlighting to TreeRenderer"
+          },
+          {
+            "comment": "Use exhaustive-deps linter rule."
+          },
+          {
+            "comment": "Truncate property grid group title."
+          },
+          {
+            "comment": "Rename array length property label to be less ambiguous"
+          },
+          {
+            "comment": "Solar timeline date/time offset fix."
+          },
+          {
+            "comment": "Start arrays at `1` when rendering array property items"
+          },
+          {
+            "comment": "Removed unused React state variables. Removed unsupported setState calls from render() methods."
+          },
+          {
+            "comment": "Code cleanup based on code analysis report from lgtm."
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.8.0",
+      "tag": "@bentley/ui-components_v1.8.0",
+      "date": "Fri, 22 Nov 2019 14:03:34 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update Icon package version"
+          },
+          {
+            "comment": "Responsive logic in Property Grid to switch to Vertical orientation when too narrow"
+          },
+          {
+            "comment": "Added StatusBarComposer, StatusBarItem, StatusBarManager and StatusBarItemsManager"
+          },
+          {
+            "comment": "Added Table cell context menu support"
+          },
+          {
+            "comment": "Added Tree Node.tsx export to ui-components package"
+          },
+          {
+            "comment": "Added tslint-react-hooks to UI packages"
+          },
+          {
+            "comment": "Change componentDidUpdate to call _setDuration instead of setState directly. This will make sure the onChange handler is called."
+          },
+          {
+            "comment": "Refactor ControlledTree custom hooks to use useEffectSkipFirst"
+          },
+          {
+            "comment": "Separated TreeModelSource and TreeNodeLoader. Added highlighting support to ControlledTree."
+          },
+          {
+            "comment": "Added node icon rendering to ControlledTree"
+          },
+          {
+            "comment": "Fix node content sometimes not being re-rendered when editor state changed very quickly"
+          },
+          {
+            "comment": "Add componentDidUpdate() to the TimelineComponent, updating currentDuration after the app changes the state of initialDuration."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.7.0",
       "tag": "@bentley/ui-components_v1.7.0",
       "date": "Fri, 01 Nov 2019 13:28:37 GMT",

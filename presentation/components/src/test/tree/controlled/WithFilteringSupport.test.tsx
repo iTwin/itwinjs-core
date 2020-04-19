@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /* tslint:disable:no-direct-imports */
 
@@ -11,19 +11,21 @@ import sinon from "sinon";
 import * as moq from "typemoq";
 import {
   ControlledTree, TreeModelSource, TreeEvents, SelectionMode, TreeModel, UiComponents,
-  VisibleTreeNodes, MutableTreeModel, ITreeNodeLoaderWithProvider,
+  VisibleTreeNodes, MutableTreeModel, AbstractTreeNodeLoaderWithProvider, TreeModelChanges,
 } from "@bentley/ui-components";
 import { BeUiEvent } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { I18N } from "@bentley/imodeljs-i18n";
 import { NodePathElement } from "@bentley/presentation-common";
 import { ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises";
-import { controlledTreeWithFilteringSupport } from "../../../tree/controlled/WithFilteringSupport";
-import { controlledTreeWithModelSource } from "../../../tree/controlled/WithModelSource";
-import { IPresentationTreeDataProvider } from "../../../tree/IPresentationTreeDataProvider";
+import { DEPRECATED_controlledTreeWithFilteringSupport as controlledTreeWithFilteringSupport } from "../../../presentation-components/tree/controlled/WithFilteringSupport";
+import { DEPRECATED_controlledTreeWithVisibleNodes as controlledTreeWithVisibleNodes } from "../../../presentation-components/tree/controlled/WithVisibleNodes";
+import { IPresentationTreeDataProvider } from "../../../presentation-components/tree/IPresentationTreeDataProvider";
+
+// tslint:disable:deprecation
 
 // tslint:disable-next-line:variable-name naming-convention
-const PresentationTree = controlledTreeWithFilteringSupport(controlledTreeWithModelSource(ControlledTree));
+const PresentationTree = controlledTreeWithFilteringSupport(controlledTreeWithVisibleNodes(ControlledTree));
 
 describe("ControlledTree withFilteringSupport", () => {
   before(async () => {
@@ -33,7 +35,7 @@ describe("ControlledTree withFilteringSupport", () => {
   const modelSourceMock = moq.Mock.ofType<TreeModelSource>();
   const treeEventMock = moq.Mock.ofType<TreeEvents>();
   const dataProviderMock = moq.Mock.ofType<IPresentationTreeDataProvider>();
-  const nodeLoaderMock = moq.Mock.ofType<ITreeNodeLoaderWithProvider<IPresentationTreeDataProvider>>();
+  const nodeLoaderMock = moq.Mock.ofType<AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider>>();
   const imodelMock = moq.Mock.ofType<IModelConnection>();
   const visibleNodes: VisibleTreeNodes = {
     getAtIndex: () => undefined,
@@ -52,9 +54,10 @@ describe("ControlledTree withFilteringSupport", () => {
     imodelMock.reset();
 
     filteredPathsPromise = new ResolvablePromise<NodePathElement[]>();
-    modelSourceMock.setup((x) => x.onModelChanged).returns(() => new BeUiEvent<TreeModel>());
+    modelSourceMock.setup((x) => x.onModelChanged).returns(() => new BeUiEvent<[TreeModel, TreeModelChanges]>());
     modelSourceMock.setup((x) => x.getVisibleNodes()).returns(() => visibleNodes);
-    nodeLoaderMock.setup((x) => x.getDataProvider()).returns(() => dataProviderMock.object);
+    nodeLoaderMock.setup((x) => x.dataProvider).returns(() => dataProviderMock.object);
+    nodeLoaderMock.setup((x) => x.modelSource).returns(() => modelSourceMock.object);
     dataProviderMock.setup((x) => x.imodel).returns(() => imodelMock.object);
     dataProviderMock.setup((x) => x.rulesetId).returns(() => "TestRuleset");
     dataProviderMock.setup((x) => x.getFilteredNodePaths(moq.It.isAny())).returns(async () => filteredPathsPromise);
@@ -62,7 +65,6 @@ describe("ControlledTree withFilteringSupport", () => {
 
   it("mounts without filter", () => {
     mount(<PresentationTree
-      modelSource={modelSourceMock.object}
       nodeLoader={nodeLoaderMock.object}
       treeEvents={treeEventMock.object}
       selectionMode={SelectionMode.Single}
@@ -71,7 +73,6 @@ describe("ControlledTree withFilteringSupport", () => {
 
   it("mounts with filter", async () => {
     mount(<PresentationTree
-      modelSource={modelSourceMock.object}
       nodeLoader={nodeLoaderMock.object}
       treeEvents={treeEventMock.object}
       selectionMode={SelectionMode.Single}
@@ -84,7 +85,6 @@ describe("ControlledTree withFilteringSupport", () => {
   it("calls onFilterApplied", async () => {
     const spy = sinon.spy();
     const node = mount(<PresentationTree
-      modelSource={modelSourceMock.object}
       nodeLoader={nodeLoaderMock.object}
       treeEvents={treeEventMock.object}
       selectionMode={SelectionMode.Single}
@@ -103,7 +103,6 @@ describe("ControlledTree withFilteringSupport", () => {
   it("calls onMatchesCounted", async () => {
     const spy = sinon.spy();
     mount(<PresentationTree
-      modelSource={modelSourceMock.object}
       nodeLoader={nodeLoaderMock.object}
       treeEvents={treeEventMock.object}
       selectionMode={SelectionMode.Single}
@@ -117,7 +116,6 @@ describe("ControlledTree withFilteringSupport", () => {
   it("calls onNodeLoaderChanged", async () => {
     const spy = sinon.spy();
     mount(<PresentationTree
-      modelSource={modelSourceMock.object}
       nodeLoader={nodeLoaderMock.object}
       treeEvents={treeEventMock.object}
       selectionMode={SelectionMode.Single}

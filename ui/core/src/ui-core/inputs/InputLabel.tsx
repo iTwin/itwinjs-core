@@ -1,11 +1,13 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Inputs */
+/** @packageDocumentation
+ * @module Inputs
+ */
 
 import * as React from "react";
-import * as classnames from "classnames";
+import classnames from "classnames";
 
 import { LabeledComponentProps, MessagedComponentProps } from "./LabeledComponentProps";
 import { CommonProps } from "../utils/Props";
@@ -29,12 +31,12 @@ export class InputLabel extends React.PureComponent<InputLabelProps> {
     return (
       <label style={style} className={classnames(
         "uicore-inputs-labeled-input",
-        { disabled: this.props.disabled },
+        this.props.disabled && "uicore-disabled",
         status,
         className,
       )}>
         {label &&
-          <div className={classnames("label", labelClassName)} style={labelStyle}> {label} </div>
+          <div className={classnames("uicore-label", labelClassName)} style={labelStyle}> {label} </div>
         }
         <div className={classnames("input", { "with-icon": !!status })}>
           {this.props.children}
@@ -43,7 +45,7 @@ export class InputLabel extends React.PureComponent<InputLabelProps> {
           }
         </div>
         {message &&
-          <div className={classnames("message", messageClassName)} style={messageStyle}>{message}</div>
+          <div className={classnames("uicore-message", messageClassName)} style={messageStyle}>{message}</div>
         }
       </label>
     );

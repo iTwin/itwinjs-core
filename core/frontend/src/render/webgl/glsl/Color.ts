@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Rendering */
+/** @packageDocumentation
+ * @module Rendering
+ */
 
 import {
   FragmentShaderComponent,
@@ -22,7 +24,7 @@ const computeElementColor = `
   vec2 tc = computeLUTCoords(colorTableStart+colorIndex, u_vertParams.xy, g_vert_center, 1.0);
   vec4 lutColor = TEXTURE(u_vertLUT, tc);
   lutColor.rgb /= max(0.0001, lutColor.a);
-  vec4 color = mix(u_color, lutColor, extractShaderBit(kShaderBit_NonUniformColor));
+  vec4 color = (u_shaderFlags[kShaderBit_NonUniformColor] ? lutColor : u_color);
 `;
 const returnColor = `
   return color;

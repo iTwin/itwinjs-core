@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 export * from "./BriefcaseManager";
 export * from "./Category";
@@ -26,19 +26,25 @@ export * from "./NavigationRelationship";
 export * from "./Schema";
 export * from "./SqliteStatement";
 export * from "./ViewDefinition";
-export * from "./BisCore";
+export * from "./BisCoreSchema";
 export * from "./ChangedElementsDb";
-export * from "./domains/Functional";
+export * from "./EventSink";
+export * from "./domains/FunctionalSchema";
 export * from "./domains/FunctionalElements";
-export * from "./domains/Generic";
+export * from "./domains/GenericSchema";
 export * from "./domains/GenericElements";
-export * from "./domains/LinearReferencing";
+export * from "./domains/LinearReferencingSchema";
 export * from "./domains/LinearReferencingElementAspects";
 export * from "./domains/LinearReferencingElements";
 export * from "./domains/LinearReferencingRelationships";
+export * from "./domains/AnalyticalSchema";
+export * from "./domains/AnalyticalElements";
+export * from "./domains/AnalyticalModels";
+export * from "./domains/AnalyticalRelationships";
 export * from "@bentley/imodeljs-native/IModelJsNative";
 export * from "./IModelCloneContext";
 export * from "./IModelHost";
+export * from "./NativeAppBackend";
 export * from "./IModelExporter";
 export * from "./IModelImporter";
 export * from "./IModelTransformer";
@@ -47,8 +53,9 @@ export * from "./BackendRequestContext";
 export * from "./CloudStorageBackend";
 export * from "./AliCloudStorageService";
 export * from "./DevTools";
+export * from "./oidc/OidcDesktopClient";
+export * from "./usage-logging/UsageLoggingUtilities";
 export * from "./IModelDb"; // must be last
-
 /** @docs-package-description
  * The imodeljs-backend package always runs on the computer with a local Briefcase.
  *
@@ -136,4 +143,8 @@ export * from "./IModelDb"; // must be last
 /**
  * @docs-group-description AliCloudStorageService
  * Classes for working with cloud storage using AliCloud.
+ */
+/**
+ * @docs-group-description Authentication
+ * Classes for working with Authentication.
  */

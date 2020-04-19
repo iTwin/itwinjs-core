@@ -5,7 +5,7 @@ exports[`<LabeledInput /> renders correctly 1`] = `
   className="uicore-inputs-labeled-input"
 >
   <div
-    className="label"
+    className="uicore-label"
   >
      
     input test
@@ -24,7 +24,7 @@ exports[`<LabeledInput /> renders message correctly 1`] = `
   className="uicore-inputs-labeled-input"
 >
   <div
-    className="label"
+    className="uicore-label"
   >
      
     input test
@@ -36,7 +36,7 @@ exports[`<LabeledInput /> renders message correctly 1`] = `
     <Input />
   </div>
   <div
-    className="message"
+    className="uicore-message"
   >
     Test message
   </div>
@@ -48,7 +48,7 @@ exports[`<LabeledInput /> renders status correctly 1`] = `
   className="uicore-inputs-labeled-input success"
 >
   <div
-    className="label"
+    className="uicore-label"
   >
      
     input test

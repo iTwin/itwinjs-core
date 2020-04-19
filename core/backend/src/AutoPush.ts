@@ -1,16 +1,18 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module iModels */
+/** @packageDocumentation
+ * @module iModels
+ */
 
 import { assert, BeEvent, IModelStatus, Logger } from "@bentley/bentleyjs-core";
-import { AccessToken } from "@bentley/imodeljs-clients";
+import { AccessToken } from "@bentley/itwin-client";
 import { IModelError, RpcRequest } from "@bentley/imodeljs-common";
-import { AuthorizedBackendRequestContext } from "./BackendRequestContext";
-import { IModelDb } from "./IModelDb";
-import { IModelHost } from "./IModelHost";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
+import { AuthorizedBackendRequestContext } from "./BackendRequestContext";
+import { BriefcaseDb } from "./IModelDb";
+import { IModelHost } from "./IModelHost";
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
@@ -76,13 +78,13 @@ export enum AutoPushEventType {
 export type AutoPushEventHandler = (etype: AutoPushEventType, autoPush: AutoPush) => void;
 
 /** Use AutoPush to automatically push local changes to a specified IModel. To do this,
- * create an AutoPush object, specifying the IModelDb that should be monitored.
+ * create an AutoPush object, specifying the BriefcaseDb that should be monitored.
  * The instance registers itself to react to events and timers. Often, backend will start
- * auto-pushing when an IModelDb is opened for read-write.
+ * auto-pushing when a BriefcaseDb is opened for read-write.
  *
  * *Example:*
  * ``` ts
- * [[include:IModelDb.onOpened]]
+ * [[include:BriefcaseDb.onOpened]]
  * ```
  * A service or agent would normally get its [[AutoPushParams]] parameters from data provided
  * at deployment time. For example, a service might read configuration data from a .json file
@@ -109,7 +111,7 @@ export type AutoPushEventHandler = (etype: AutoPushEventType, autoPush: AutoPush
  * @beta
  */
 export class AutoPush {
-  private _iModel: IModelDb;
+  private _iModel: BriefcaseDb;
   private _autoSchedule: boolean;
   private _pushIntervalMillisMin: number;
   private _pushIntervalMillisMax: number;
@@ -126,7 +128,7 @@ export class AutoPush {
    * @param params  Auto-push configuration parameters
    * @param activityMonitor The activity monitor that will tell me when the app is idle. Defaults to BackendActivityMonitor with a 1 second idle period.
    */
-  constructor(iModel: IModelDb, params: AutoPushParams, activityMonitor?: AppActivityMonitor) {
+  constructor(iModel: BriefcaseDb, params: AutoPushParams, activityMonitor?: AppActivityMonitor) {
     AutoPush.validateAutoPushParams(params);
     iModel.onBeforeClose.addListener(() => this.cancel());
     this._iModel = iModel;
@@ -170,8 +172,6 @@ export class AutoPush {
 
   /** The autoSchedule property */
   public get autoSchedule(): boolean { return this._autoSchedule; }
-
-  /** The autoSchedule property */
   public set autoSchedule(v: boolean) {
     this._autoSchedule = v;
     if (v)
@@ -179,7 +179,7 @@ export class AutoPush {
   }
 
   /** The IModelDb that this is auto-pushing. */
-  public get iModel(): IModelDb { return this._iModel; }
+  public get iModel(): BriefcaseDb { return this._iModel; }
 
   /** The time that the last push finished in unix milliseconds. Returns 0 if no push has yet been done. */
   public get endOfLastPushMillis() { return (this._startOfPushMillis <= this._endOfPushMillis) ? this._endOfPushMillis : 0; }
@@ -247,7 +247,7 @@ export class AutoPush {
     this._state = AutoPushState.NotRunning;
     this._pendingTimeout = undefined;
     this._lastPushError = undefined;
-    Logger.logTrace(loggerCategory, "AutoPush - pushed.", () => this._iModel.iModelToken);
+    Logger.logTrace(loggerCategory, "AutoPush - pushed.", () => this._iModel.getRpcProps());
     if (this._autoSchedule)
       this.scheduleNextPush();
     if (this.event)
@@ -302,7 +302,7 @@ export class AutoPush {
     // We are either in lull or we have put off this push long enough. Start to push accumulated changes now.
     this.onPushStart();
     this.getRequestContext()
-      .then(async (requestContext: AuthorizedBackendRequestContext) => this.iModel.pushChanges(requestContext))
+      .then(async (requestContext: AuthorizedBackendRequestContext) => this.iModel.pushChanges(requestContext, "auto-push"))
       .then(() => this.onPushEnd())
       .catch((reason) => this.onPushEndWithError(reason));
 

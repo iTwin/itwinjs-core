@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module RpcInterface */
+/** @packageDocumentation
+ * @module RpcInterface
+ */
 
 import { assert, BentleyStatus, Logger, OpenMode, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
 import { URL } from "url";
@@ -13,8 +15,7 @@ import { SerializedRpcOperation, SerializedRpcRequest } from "../core/RpcProtoco
 import { RpcRequest } from "../core/RpcRequest";
 import { OpenAPIParameter } from "./OpenAPI";
 import { WebAppRpcProtocol } from "./WebAppRpcProtocol";
-import { IModelToken, IModelTokenProps } from "../../IModel";
-import { RpcConfiguration } from "../core/RpcConfiguration";
+import { IModelRpcProps } from "../../IModel";
 
 enum AppMode {
   MilestoneReview = "1",
@@ -79,7 +80,7 @@ export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
     /* Note: The changeSetId field is omitted in the route in the case of ReadWrite connections since the connection is generally expected to be at the
      * latest version and not some specific changeSet. Also, for the first version (before any changeSets), the changeSetId in the route is arbitrarily
      * set to "0" instead of an empty string, since the latter is more un-intuitive for a route. However, in all other use cases, including the changeSetId
-     * held by the IModelToken itself, the changeSetId of "" (i.e., empty string) signifies the first version - this is more intuitive and retains
+     * held by the IModelRpcProps itself, the changeSetId of "" (i.e., empty string) signifies the first version - this is more intuitive and retains
      * compatibility with the majority of use cases. */
 
     if (request === undefined) {
@@ -89,7 +90,7 @@ export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
       routeChangeSetId = "{changeSetId}";
     } else {
       const token = operation.policy.token(request);
-      if (!token || (!token.contextId && !RpcConfiguration.developmentMode) || !token.iModelId)
+      if (!token || !token.iModelId)
         throw new IModelError(BentleyStatus.ERROR, "Invalid iModelToken for RPC operation request", Logger.logError, CommonLoggerCategory.RpcInterfaceFrontend);
 
       contextId = encodeURIComponent(token.contextId || "");
@@ -97,7 +98,7 @@ export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
 
       if (token.openMode === OpenMode.Readonly) {
         appMode = AppMode.MilestoneReview;
-        assert(token.changeSetId !== undefined, "ChangeSetId needs to be setup in IModelToken before open");
+        assert(token.changeSetId !== undefined, "ChangeSetId needs to be setup in IModelRpcProps before open");
         routeChangeSetId = token.changeSetId === "" ? "0" : token.changeSetId;
       } else {
         appMode = AppMode.WorkGroupEdit;
@@ -108,10 +109,10 @@ export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
   }
 
   /**
-   * Inflates the IModelToken from the URL path for each request on the backend.
-   * @note This function updates the IModelToken value supplied in the request body.
+   * Inflates the IModelRpcProps from the URL path for each request on the backend.
+   * @note This function updates the IModelRpcProps value supplied in the request body.
    */
-  public inflateToken(tokenFromBody: IModelTokenProps, request: SerializedRpcRequest): IModelTokenProps {
+  public inflateToken(tokenFromBody: IModelRpcProps, request: SerializedRpcRequest): IModelRpcProps {
     const urlPathComponents = request.path.split("/");
 
     const iModelKey = tokenFromBody.key;
@@ -138,7 +139,7 @@ export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
       }
     }
 
-    return new IModelToken(iModelKey, contextId, iModelId, changeSetId, openMode);
+    return { key: iModelKey, contextId, iModelId, changeSetId, openMode };
   }
 
   /** Returns the OpenAPI-compatible URI path parameters for an RPC operation.

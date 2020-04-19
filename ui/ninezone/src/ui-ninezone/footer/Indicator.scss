@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-@import "@bentley/ui-core/lib/ui-core/style/index";
+@import "~@bentley/ui-core/lib/ui-core/style/index";
 @import "variables";
 
 .nz-footer-indicator {
@@ -14,6 +14,14 @@
   padding-top: $nz-footer-indicator-vertical-padding;
   padding-bottom: $nz-footer-indicator-vertical-padding;
   box-sizing: border-box;
+
+  .nz-icon-padding-left {
+    padding-left: $nz-footer-indicator-space-between-text-and-icon;
+  }
+
+  .nz-icon-padding-right {
+    padding-right: $nz-footer-indicator-space-between-text-and-icon;
+  }
 
   .nz-icon {
     font-size: $icon-size;

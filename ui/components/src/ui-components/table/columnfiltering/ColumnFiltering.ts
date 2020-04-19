@@ -1,14 +1,16 @@
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module Table  */
+/** @packageDocumentation
+ * @module Table
+ */
 
 import { RowItem } from "../TableDataProvider";
 
 /** Operator used in FilterDescriptor
- * @alpha
+ * @beta
  */
 export enum FilterOperator {
   // All filterable types
@@ -38,7 +40,7 @@ export enum FilterOperator {
 }
 
 /** Logical operator used for filter descriptor composition
- * @alpha
+ * @beta
  */
 export enum FilterCompositionLogicalOperator {
   And,
@@ -46,7 +48,7 @@ export enum FilterCompositionLogicalOperator {
 }
 
 /** FilterableTable contains the properties and methods provided by a filterable Table.
- * @alpha
+ * @beta
  */
 export interface FilterableTable {
   /** Gets the filter descriptors for the table. */
@@ -57,7 +59,7 @@ export interface FilterableTable {
 }
 
 /** Represents a column that is filterable.
- * @alpha
+ * @beta
  */
 export interface FilterableColumn {
   /** Gets the owning Table for this column. */
@@ -89,7 +91,7 @@ export interface FilterableColumn {
 }
 
 /** A filtering abstraction that knows how to create predicate filtering expression.
- * @alpha
+ * @beta
  */
 export interface FilterDescriptor {
   /** Gets a value indicating whether this filter is active. */
@@ -109,7 +111,7 @@ export interface FilterDescriptor {
 }
 
 /** An abstraction for all filter descriptors that have an operator and a value
- * @alpha
+ * @beta
  */
 export interface OperatorValueFilterDescriptor extends FilterDescriptor {
   /** Gets the operator for the filter. */
@@ -129,7 +131,7 @@ export interface OperatorValueFilterDescriptor extends FilterDescriptor {
 }
 
 /** Represents the distinct filter descriptor of a column filter descriptor.
- * @alpha
+ * @beta
  */
 export interface DistinctValuesFilterDescriptor extends FilterDescriptor {
   /** Gets the distinct values. */
@@ -153,17 +155,8 @@ export interface DistinctValuesFilterDescriptor extends FilterDescriptor {
   distinctValuesComparisonOperator: FilterOperator;
 }
 
-/** Numeric Range data
- * @alpha
- */
-export interface NumericRangeData {
-  type: number;
-  begin: number;
-  end: number;
-}
-
 /** Represents the field filter descriptor of a column filter descriptor.
- * @alpha
+ * @beta
  */
 export interface FieldFilterDescriptor extends FilterDescriptor {
 
@@ -184,7 +177,7 @@ export interface FieldFilterDescriptor extends FilterDescriptor {
 }
 
 /** Represents a column filter descriptor associated with a specific column.
- * @alpha
+ * @beta
  */
 export interface ColumnFilterDescriptor extends FilterDescriptor {
   /** Gets the Distinct Values filter descriptor. */
@@ -195,7 +188,7 @@ export interface ColumnFilterDescriptor extends FilterDescriptor {
 }
 
 /** A set of distinct values for a column.
- * @alpha
+ * @beta
  */
 export class DistinctValueCollection {
   private _values: any[];
@@ -211,7 +204,7 @@ export class DistinctValueCollection {
 
 /** Represents a composite filtering abstraction which has a collection of
  * filter descriptors combined together by a logical operator.
- * @alpha
+ * @beta
  */
 export interface CompositeFilterDescriptor extends FilterDescriptor {
   /** Gets or sets the logical operator. */
@@ -222,7 +215,7 @@ export interface CompositeFilterDescriptor extends FilterDescriptor {
 }
 
 /** Collection of FilterDescriptor objects composed together by a logical operator.
- * @alpha
+ * @beta
  */
 export interface CompositeFilterDescriptorCollection {
   /** Gets the number of filter descriptors in the collection */
@@ -251,7 +244,7 @@ export interface CompositeFilterDescriptorCollection {
 }
 
 /** Collection of filter descriptors.
- * @alpha
+ * @beta
  */
 export abstract class FilterDescriptorCollectionBase<TDescriptor extends FilterDescriptor> {
   private _descriptors: TDescriptor[];
@@ -301,13 +294,13 @@ export abstract class FilterDescriptorCollectionBase<TDescriptor extends FilterD
 }
 
 /** Collection of filter descriptors.
- * @alpha
+ * @beta
  */
 export class FilterDescriptorCollection extends FilterDescriptorCollectionBase<FilterDescriptor> {
 }
 
 /** Collection of OperatorValue filter descriptors.
- * @alpha
+ * @beta
  */
 export class OperatorValueFilterDescriptorCollection extends FilterDescriptorCollectionBase<OperatorValueFilterDescriptor> {
 }

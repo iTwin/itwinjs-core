@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import { expect } from "chai";
@@ -29,12 +29,16 @@ describe("ContentLayout", () => {
     constructor(info: ConfigurableCreateInfo, options: any) {
       super(info, options);
 
-      this.reactElement = <div>Test</div>;
+      this.reactNode = <div>Test</div>;
     }
   }
 
   before(async () => {
     await TestUtils.initializeUiFramework();
+  });
+
+  after(() => {
+    TestUtils.terminateUiFramework();
   });
 
   const myContentGroup: ContentGroup = new ContentGroup({

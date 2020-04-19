@@ -1,0 +1,7 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`WidgetTabTarget  should render with cursor type 1`] = `
+<div
+  class="nz-widget-tabTarget nz-hidden nz-widgetPanels-cursorOverlay_cursor nz-grabbing"
+/>
+`;

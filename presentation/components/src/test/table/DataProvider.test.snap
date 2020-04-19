@@ -1,5 +1,17 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`TableDataProvider getColumns returns one column descriptor when display type is list 1`] = `
+Array [
+  Object {
+    "editable": false,
+    "filterable": false,
+    "key": "/DisplayLabel/",
+    "label": "Label",
+    "sortable": true,
+  },
+]
+`;
+
 exports[`TableDataProvider getColumns returns valid column descriptions 1`] = `
 Array [
   Object {
@@ -84,5 +96,28 @@ Object {
     },
   ],
   "key": "{\\"className\\":\\"full-range\\",\\"id\\":\\"0x163900000001e5c\\"}",
+}
+`;
+
+exports[`TableDataProvider getRow returns valid row when display type is list 1`] = `
+Object {
+  "cells": Array [
+    Object {
+      "key": "/DisplayLabel/",
+      "record": PropertyRecord {
+        "property": Object {
+          "displayLabel": "Label",
+          "name": "content_item_label",
+          "typename": "string",
+        },
+        "value": Object {
+          "displayValue": "workforce Frozen",
+          "value": "workforce Frozen",
+          "valueFormat": 0,
+        },
+      },
+    },
+  ],
+  "key": "{\\"className\\":\\"Home Loan Account\\",\\"id\\":\\"0xe2ed00000039f5\\"}",
 }
 `;

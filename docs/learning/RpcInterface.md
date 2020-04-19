@@ -30,13 +30,13 @@ The diagram above shows an app frontend requesting operations from some backend.
 
 An `RpcInterface` is defined as a set of operations exposed by a server that a client can call, using configurable protocols, in a platform-independent way.
 
-As shown, client and server work with the *RpcManager* to use an RpcInterface. RpcManager exposes a client "stub" on the client side. This stub forwards the request. On the other end, RpcManager uses a server dispatch mechanism to rely the request to the implementation in the server. In between the two is a transport mechanism that marshalls calls from the client to the server over an appropriate communications channel. The transport mechanism is encapsulated in a *configuration* that is applied at runtime.
+As shown, client and server work with the *RpcManager* to use an RpcInterface. RpcManager exposes a client "stub" on the client side. This stub forwards the request. On the other end, RpcManager uses a server dispatch mechanism to relay the request to the implementation in the server. In between the two is a transport mechanism that marshalls calls from the client to the server over an appropriate communications channel. The transport mechanism is encapsulated in a *configuration* that is applied at runtime.
 
 A typical app frontend will use more than one remote component. Likewise, a server can contain and expose more than one component. For example, the app frontend might need two interfaces, Interface 1 and Interface 2. In this example, both are implemented in Backend A.
 
 ![SoftwareArchitecture-Rpc](./SoftwareArchitecture-RPC2.png)
 
-An app frontend can just as easily work with multiple backends to obtain the services that it needs. One of the configuration parameters for an RpcInterface is the identity of the backend that provides it. For example, suppose that the frontend also needs to use Interface 3, which is is served out by Backend B.
+An app frontend can just as easily work with multiple backends to obtain the services that it needs. One of the configuration parameters for an RpcInterface is the identity of the backend that provides it. For example, suppose that the frontend also needs to use Interface 3, which is served out by Backend B.
 
 ![SoftwareArchitecture-Rpc](./SoftwareArchitecture-RPC3.png)
 
@@ -112,7 +112,7 @@ Each impl method must return the operation's result as a Promise.
 
 The impl method must obtain the ClientRequestContext by calling [ClientRequestContext.current]($bentley). It must then follow the [rules of managing the ClientRequestContext](./backend/ManagingClientRequestContext.md).
 
-The methods in the impl may have to transform certain argument types, such as IModelTokenProps, before they can be used by backend code.
+The methods in the impl may have to transform certain argument types, such as IModelRpcProps, before they can be used by backend code.
 
 A best practice is that an impl should be a thin layer on top of normal classes in the server. The impl wrapper should be concerned only with transforming types, not with functionality, while backend operation methods should be concerned only with functionality. Backend operation methods should be static, since a server should be stateless. Preferably, backend operation methods should be [synchronous if possible](#asynchronous-nature-of-rpcinterfaces).
 
@@ -126,7 +126,7 @@ Impls must be registered at runtime, as explained next.
 
 ## RPC Configuration
 
-The [architecture comparison](./SoftwareArchitecture.md#comparison) diagram shows the role of RpcInterfaces in supporting portable, resuable app components. A different *transport mechanism* is used in each configuration. RpcManager is used by clients and servers to apply configurations to RpcInterfaces.
+The [architecture comparison](./SoftwareArchitecture.md#comparison) diagram shows the role of RpcInterfaces in supporting portable, reusable app components. A different *transport mechanism* is used in each configuration. RpcManager is used by clients and servers to apply configurations to RpcInterfaces.
 
 ## Web RPC configuration
 
@@ -250,7 +250,7 @@ A request may pass through many communication tiers. A request will generally be
 
 Frontend methods may also optionally log additional messages that are tagged with the same ActivityId, to provide useful information about the purpose of the activity.
 
-Frontend methods that invoke imodeljs-clients methods directly are responsible for generating or forwarding an ActivityId to them.
+Frontend methods that invoke client methods directly are responsible for generating or forwarding an ActivityId to them.
 
 A backend method that turns around an invokes another backend's method via RpcInterfaces will propagate the current ActivityId to it.
 

@@ -1,11 +1,13 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Expandable */
+/** @packageDocumentation
+ * @module Expandable
+ */
 
 import * as React from "react";
-import * as classnames from "classnames";
+import classnames from "classnames";
 import { CommonProps } from "../utils/Props";
 import "./ExpandableBlock.scss";
 
@@ -25,7 +27,7 @@ export interface ExpandableBlockProps extends CommonProps {
   caption?: string;
 }
 
-/** ExpandableBlock is a React component that shows and hides child content.
+/** ExpandableBlock React component is a container that shows and hides child content.
  * @public
  */
 export class ExpandableBlock extends React.PureComponent<ExpandableBlockProps> {

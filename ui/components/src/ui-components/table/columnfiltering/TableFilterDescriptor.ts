@@ -1,12 +1,14 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Table  */
+/** @packageDocumentation
+ * @module Table
+ */
 
 import { Logger } from "@bentley/bentleyjs-core";
 
-import { OperatorValueFilterDescriptor, FilterableTable, FilterOperator, NumericRangeData } from "./ColumnFiltering";
+import { OperatorValueFilterDescriptor, FilterableTable, FilterOperator } from "./ColumnFiltering";
 import { ColumnFilteringUtilities } from "./ColumnFilteringUtilities";
 import { RowItem } from "../TableDataProvider";
 import { StandardTypeConverterTypeNames, LessGreaterOperatorProcessor, NullableOperatorProcessor } from "../../converters/TypeConverter";
@@ -14,6 +16,7 @@ import { BooleanTypeConverter } from "../../converters/BooleanTypeConverter";
 import { TypeConverterManager } from "../../converters/TypeConverterManager";
 import { StringOperatorProcessor } from "../../../ui-components";
 import { UiComponents } from "../../UiComponents";
+import { NumericRangeData } from "./DataGridFilterParser";
 
 /** Represents a filtering descriptor.
  * @internal

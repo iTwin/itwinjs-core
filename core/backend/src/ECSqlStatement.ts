@@ -1,12 +1,13 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module ECSQL */
+/** @packageDocumentation
+ * @module ECSQL
+ */
 
-import { DbResult, GuidString, Id64String, IDisposable, Logger, StatusCodeWithMessage } from "@bentley/bentleyjs-core";
+import { DbResult, GuidString, Id64String, IDisposable, Logger, StatusCodeWithMessage, Config } from "@bentley/bentleyjs-core";
 import { LowAndHighXYZ, Range3d, XAndY, XYAndZ, XYZ } from "@bentley/geometry-core";
-import { Config } from "@bentley/imodeljs-clients";
 import { ECJsNames, ECSqlValueType, IModelError, NavigationBindingValue, NavigationValue } from "@bentley/imodeljs-common";
 import { ECDb } from "./ECDb";
 import { IModelHost } from "./IModelHost";
@@ -247,9 +248,11 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    * @throws [IModelError]($common) in case of errors
    */
   public clearBindings(): void {
-    const stat: DbResult = this._stmt!.clearBindings();
-    if (stat !== DbResult.BE_SQLITE_OK)
-      throw new IModelError(stat, "Error clearing bindings", Logger.logWarning, loggerCategory);
+    if (this._stmt) {
+      const stat: DbResult = this._stmt!.clearBindings();
+      if (stat !== DbResult.BE_SQLITE_OK)
+        throw new IModelError(stat, "Error clearing bindings", Logger.logWarning, loggerCategory);
+    }
   }
 
   /** Step this statement to the next row.

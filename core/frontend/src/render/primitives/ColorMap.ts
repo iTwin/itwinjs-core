@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Rendering */
+/** @packageDocumentation
+ * @module Rendering
+ */
 
 import { assert, IndexMap, compareNumbers } from "@bentley/bentleyjs-core";
 import { ColorDef, ColorIndex } from "@bentley/imodeljs-common";
@@ -44,9 +46,7 @@ export class ColorMap extends IndexMap<number> {
     }
   }
 
-  private static _scratchColorDef = new ColorDef();
-  private static isTranslucent(color: number) {
-    this._scratchColorDef.tbgr = color;
-    return 255 !== this._scratchColorDef.getAlpha();
+  private static isTranslucent(tbgr: number) {
+    return !ColorDef.isOpaque(tbgr);
   }
 }

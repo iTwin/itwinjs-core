@@ -1,11 +1,13 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Popup */
+/** @packageDocumentation
+ * @module Popup
+ */
 
 import * as React from "react";
-import * as classnames from "classnames";
+import classnames from "classnames";
 
 import { CommonProps, PointProps, SizeProps, Size, CommonDivProps, Div } from "@bentley/ui-core";
 
@@ -59,7 +61,6 @@ export class PositionPopup extends React.PureComponent<PositionPopupProps> {
 /** PositionPopup content with padding
  * @alpha
  */
-// tslint:disable-next-line:variable-name
-export const PositionPopupContent: React.FunctionComponent<CommonDivProps> = (props: CommonDivProps) => {
+export function PositionPopupContent(props: CommonDivProps) {
   return <Div {...props} mainClassName="uifw-position-popup-content" />;
-};
+}

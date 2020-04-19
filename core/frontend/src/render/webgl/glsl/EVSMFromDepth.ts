@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module WebGL */
+/** @packageDocumentation
+ * @module WebGL
+ */
 
 import { ProgramBuilder, VariableType, VertexShaderComponent, FragmentShaderComponent, VariablePrecision } from "../ShaderBuilder";
 import { TextureUnit } from "../RenderFlags";
@@ -47,7 +49,7 @@ const computeEVSM = `
 `;
 
 /** @internal */
-export function createEVSMProgram(context: WebGLRenderingContext): ShaderProgram {
+export function createEVSMProgram(context: WebGLRenderingContext | WebGL2RenderingContext): ShaderProgram {
   const builder = new ProgramBuilder(AttributeMap.findAttributeMap(undefined, false));
   const vert = builder.vert;
   const frag = builder.frag;

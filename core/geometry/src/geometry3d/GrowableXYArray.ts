@@ -1,9 +1,11 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module ArraysAndInterfaces */
+/** @packageDocumentation
+ * @module ArraysAndInterfaces
+ */
 
 import { Geometry } from "../Geometry";
 import { XAndY, XYAndZ } from "./XYZProps";
@@ -42,12 +44,9 @@ export class GrowableXYArray extends IndexedXYCollection {
     this._xyInUse = 0;
     this._xyzCapacity = numPoints;
   }
-  /** Return the number of points in use. */
-  public get length() { return this._xyInUse; }
 
-  /** Set number of points.
-   * Pad zeros if length grows.
-   */
+  /** The number of points in use. When the length is increased, the array is padded with zeroes. */
+  public get length() { return this._xyInUse; }
   public set length(newLength: number) {
     let oldLength = this.length;
     if (newLength < oldLength) {

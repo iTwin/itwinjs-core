@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 // import { Point3d } from "../PointVector";
 
@@ -197,11 +197,11 @@ describe("BSplineSurface", () => {
       Point3d.create(0, 0, 0),
       Point3d.create(0, 0, 1),
       4.0, 1.0, 2),
-    Sample.createConeBsplineSurface(
-      Point3d.create(0, 0, 0),
-      Point3d.create(1, 3, 1),
-      4.0, 1.0,
-      3)]) {
+      Sample.createConeBsplineSurface(
+        Point3d.create(0, 0, 0),
+        Point3d.create(1, 3, 1),
+        4.0, 1.0,
+        3)]) {
       if (ck.testPointer(bsurf) && bsurf) {
         bsurf.tryTranslateInPlace(dx, dy);
         allGeometry.push(bsurf);

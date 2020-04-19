@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
 import React from "react";
@@ -8,9 +8,9 @@ import { render, cleanup, fireEvent, waitForElement } from "@testing-library/rea
 import { expect } from "chai";
 import sinon from "sinon";
 import { EnumButtonGroupEditor } from "../../ui-components/editors/EnumButtonGroupEditor";
-import { PropertyUpdatedArgs } from "../../ui-components/editors/EditorContainer";
+import { PropertyUpdatedArgs, EditorContainer } from "../../ui-components/editors/EditorContainer";
 import TestUtils from "../TestUtils";
-import { PrimitiveValue } from "@bentley/imodeljs-frontend";
+import { PrimitiveValue } from "@bentley/ui-abstract";
 
 describe("<EnumButtonGroupEditor />", () => {
   afterEach(cleanup);
@@ -68,6 +68,13 @@ describe("<EnumButtonGroupEditor />", () => {
     renderedComponent.rerender(<EnumButtonGroupEditor propertyRecord={record} />);
     await waitForElement(() => renderedComponent.getByTestId("Blue"));
     expect(blueButton.classList.contains("nz-is-disabled")).to.be.equal(!TestUtils.blueEnumValueIsEnabled);
+  });
+
+  it("renders editor for 'enum' type and 'enum-buttongroup' editor", () => {
+    const propertyRecord = TestUtils.createEnumProperty("Test", 1);
+    TestUtils.addEnumButtonGroupEditorSpecification(propertyRecord);
+    const renderedComponent = render(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={() => { }} onCancel={() => { }} />);
+    expect(renderedComponent.container.querySelector(".components-enumbuttongroup-editor")).to.not.be.null;
   });
 
 });

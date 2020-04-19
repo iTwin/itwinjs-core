@@ -1,10 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Complex } from "../../numerics/Complex";
-import { Range1d, Range2d } from "../../geometry3d/Range";
+import { Range1d, Range2d, Range3d } from "../../geometry3d/Range";
 import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
@@ -13,12 +13,13 @@ import { Geometry, AxisOrder } from "../../Geometry";
 
 import { Sample } from "../../serialization/GeometrySamples";
 import { Checker } from "../Checker";
-import { expect } from "chai";
+import { expect, assert } from "chai";
 import { OrderedRotationAngles } from "../../geometry3d/OrderedRotationAngles";
 import { SineCosinePolynomial } from "../../numerics/Polynomials";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { LineString3d } from "../../curve/LineString3d";
+import { Arc3d } from "../../curve/Arc3d";
 
 /* tslint:disable:no-console */
 class AngleTests {
@@ -805,6 +806,47 @@ describe("MiscAngles", () => {
     const sweepF = AngleSweep.createStartSweepDegrees();
     ck.testTrue(sweepF.isAlmostEqualAllowPeriodShift(fullDegreesA));
 
+    for (const sign of [-1, 1]) {
+      ck.testFalse(Angle.createDegrees(sign * 90).isHalfCircle);
+      ck.testFalse(Angle.createDegrees(sign * 45).isHalfCircle);
+      ck.testTrue(Angle.createDegrees(sign * 180).isHalfCircle);
+      for (const e of [1.e0 - 8, -1.0e-8]) {
+        ck.testFalse(Angle.createDegrees(sign * 180 + e).isHalfCircle);
+      }
+    }
+    // This demonstrates that addMultipleOf2PiInPlace does indeed protect integer degree
+    let maxDeltaStepBRadians = 0;
+    let maxDeltaStepADegrees = 0;
+    for (const baseDegrees of [0, 45, 60, 90, 270, 10]) {
+      const angleA = Angle.createDegrees(baseDegrees);
+      const baseRadians = Angle.degreesToRadians(baseDegrees);
+      const angleB = Angle.createRadians(Angle.degreesToRadians(baseDegrees));
+      let totalMultiple = 0;
+      // Repeatedly add multiples of 2pi, exercising internal degrees and radians flavors of angles.
+      for (const incrementalMultiple of [0, 1, 2, -1, -2, 5, 10]) {
+        totalMultiple += incrementalMultiple;
+        angleA.addMultipleOf2PiInPlace(incrementalMultiple);
+        angleB.addMultipleOf2PiInPlace(incrementalMultiple);
+        const stepADegrees = (angleA.degrees - baseDegrees);
+        const deltaStepADegrees = stepADegrees - totalMultiple * 360;
+        const stepBRadians = (angleB.radians - baseRadians);
+        const deltaStepBRadians = stepBRadians - totalMultiple * 2.0 * Math.PI;
+        maxDeltaStepADegrees = Math.max(maxDeltaStepADegrees, Math.abs(deltaStepADegrees));
+        maxDeltaStepBRadians = Math.max(maxDeltaStepBRadians, Math.abs(deltaStepBRadians));
+      }
+    }
+    ck.testTrue(0 === maxDeltaStepADegrees, "degree shifts are exact");
+    ck.testFalse(0 === maxDeltaStepBRadians, "radians shifts are not exact");
+    console.log({
+      maxErrDegrees: maxDeltaStepADegrees,
+      maxErrRadians: maxDeltaStepBRadians,
+      maxErrRadiansConvertedToDegrees: Angle.radiansToDegrees(maxDeltaStepBRadians),
+    });
+
+    const f = Angle.createDegrees(10);
+    f.freeze();
+    assert.throws(() => f.setDegrees(20));
+
     expect(ck.getNumErrors()).equals(0);
   });
 
@@ -841,6 +883,18 @@ describe("MiscAngles", () => {
       ck.testAngleNoShift(angleA, angleRa);
       ck.testAngleNoShift(angleA, angleDe);
     }
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("SmallSweep", () => {
+    const ck = new Checker();
+    const sweep = AngleSweep.createStartEndRadians(0.14859042783429374, 0.14859042783429377);
+    const q = sweep.radiansToPositivePeriodicFraction(3.2901830814240864, 3);
+    console.log(q);
+
+    const arc = Arc3d.createXYZXYZXYZ(0, 0, 0, 1, 0, 0, 0, 1, 0, sweep);
+    const range = Range3d.createNull();
+    arc.extendRange(range);
+
     expect(ck.getNumErrors()).equals(0);
   });
 

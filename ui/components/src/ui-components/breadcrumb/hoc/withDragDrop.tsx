@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Breadcrumb */
+/** @packageDocumentation
+ * @module Breadcrumb
+ */
 
 import * as React from "react";
 
@@ -10,8 +12,10 @@ import { getDisplayName } from "@bentley/ui-core";
 import { DropTargetArguments, DragSourceArguments, DropTargetProps, DragSourceProps } from "../../dragdrop/DragDropDef";
 import { BreadcrumbProps, BreadcrumbNode, BreadcrumbNodeProps } from "../Breadcrumb";
 import { TreeNodeItem } from "../../tree/TreeDataProvider";
-import { TreeDragDropType } from "../../tree/hocs/withDragDrop";
+import { TreeDragDropType } from "../../tree/deprecated/hocs/withDragDrop";
 import { DragDropBreadcrumbNode } from "./DragDropBreadcrumbNode";
+
+// tslint:disable:deprecation
 
 /**
  * Props that are injected to the HOC component.

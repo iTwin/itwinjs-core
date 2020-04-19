@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Schema */
+/** @packageDocumentation
+ * @module Schema
+ */
 
 import { IModelError } from "@bentley/imodeljs-common";
 import { IModelHost } from "./IModelHost";
@@ -28,6 +30,10 @@ export class ECSchemaXmlContext {
 
   public setSchemaLocater(locater: IModelJsNative.ECSchemaXmlContext.SchemaLocaterCallback): void {
     this._nativeContext!.setSchemaLocater(locater);
+  }
+
+  public setFirstSchemaLocater(locater: IModelJsNative.ECSchemaXmlContext.SchemaLocaterCallback): void {
+    this._nativeContext!.setFirstSchemaLocater(locater);
   }
 
   public readSchemaFromXmlFile(filePath: string): any {

@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
 import { AnyClass, AnyECType } from "../Interfaces";
@@ -578,7 +578,7 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
     if (suppressionMap) {
       const suppressRule = this.findSuppressionRule(suppressionMap, diagnostic.code);
       if (suppressRule) {
-        const ecSuppression = await suppressRule(ecType);
+        const ecSuppression = await suppressRule(diagnostic, ecType);
         if (ecSuppression) {
           diagnostic.category = DiagnosticCategory.Warning;
         }

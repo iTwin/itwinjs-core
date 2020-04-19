@@ -1,10 +1,12 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Views */
+/** @packageDocumentation
+ * @module Views
+ */
 
-import { Vector3d, Point3d, LowAndHighXYZ, LowAndHighXY, Range3d, Transform, Geometry, Map4d, ConvexClipPlaneSet, ClipPlane } from "@bentley/geometry-core";
+import { AxisOrder, Vector3d, Point3d, LowAndHighXYZ, LowAndHighXY, Range3d, Transform, Geometry, Map4d, ConvexClipPlaneSet, ClipPlane, XYAndZ, Matrix3d } from "@bentley/geometry-core";
 
 /** The 8 corners of the [Normalized Plane Coordinate]($docs/learning/glossary.md#npc) cube.
  * @public
@@ -83,7 +85,7 @@ export class Frustum {
   /** Multiply all the points of this Frustum by a Transform, in place. */
   public multiply(trans: Transform): void { trans.multiplyPoint3dArrayInPlace(this.points); }
   /** Offset all of the points of this Frustum by a vector. */
-  public translate(offset: Vector3d): void { for (const pt of this.points) pt.plus(offset); }
+  public translate(offset: XYAndZ): void { for (const pt of this.points) pt.plus(offset); }
   /** Transform all the points of this Frustum and return the result in another Frustum. */
   public transformBy(trans: Transform, result?: Frustum): Frustum { result = result ? result : new Frustum(); trans.multiplyPoint3dArray(this.points, result.points); return result; }
   /** Calculate a bounding range from the 8 points in this Frustum. */
@@ -107,6 +109,25 @@ export class Frustum {
     orig.points[Npc._100].interpolate(f, orig.points[Npc._011], this.points[Npc._011]);
     orig.points[Npc._000].interpolate(f, orig.points[Npc._111], this.points[Npc._111]);
   }
+  /** Get the front center point */
+  public get frontCenter() { return this.getCorner(Npc.LeftBottomFront).interpolate(.5, this.getCorner(Npc.RightTopFront)); }
+
+  /** Get the front center point */
+  public get rearCenter() { return this.getCorner(Npc.LeftBottomRear).interpolate(.5, this.getCorner(Npc.RightTopRear)); }
+
+  /** Scale this frustum's XY (viewing) plane about its center */
+  public scaleXYAboutCenter(scale: number) {
+    const frontCenter = this.frontCenter, rearCenter = this.rearCenter;
+    frontCenter.interpolate(scale, this.points[Npc.LeftTopFront], this.points[Npc.LeftTopFront]);
+    frontCenter.interpolate(scale, this.points[Npc.RightTopFront], this.points[Npc.RightTopFront]);
+    frontCenter.interpolate(scale, this.points[Npc.LeftBottomFront], this.points[Npc.LeftBottomFront]);
+    frontCenter.interpolate(scale, this.points[Npc.RightBottomFront], this.points[Npc.RightBottomFront]);
+
+    rearCenter.interpolate(scale, this.points[Npc.LeftTopRear], this.points[Npc.LeftTopRear]);
+    rearCenter.interpolate(scale, this.points[Npc.RightTopRear], this.points[Npc.RightTopRear]);
+    rearCenter.interpolate(scale, this.points[Npc.LeftBottomRear], this.points[Npc.LeftBottomRear]);
+    rearCenter.interpolate(scale, this.points[Npc.RightBottomRear], this.points[Npc.RightBottomRear]);
+  }
 
   /** Create a Map4d that converts world coordinates to/from [[Npc]] coordinates of this Frustum. */
   public toMap4d(): Map4d | undefined {
@@ -115,6 +136,30 @@ export class Frustum {
     const yVec = org.vectorTo(this.getCorner(Npc.LeftTopRear));
     const zVec = org.vectorTo(this.getCorner(Npc.LeftBottomFront));
     return Map4d.createVectorFrustum(org, xVec, yVec, zVec, this.getFraction());
+  }
+
+  /** Get the rotation matrix to the frame of this frustum.  This is equivalent to the view rotation matrix. */
+  public getRotation(result?: Matrix3d): Matrix3d | undefined {
+    const org = this.getCorner(Npc.LeftBottomRear);
+    const xVec = org.vectorTo(this.getCorner(Npc.RightBottomRear));
+    const yVec = org.vectorTo(this.getCorner(Npc.LeftTopRear));
+    const matrix = Matrix3d.createRigidFromColumns(xVec, yVec, AxisOrder.XYZ, result);
+    if (matrix)
+      matrix.transposeInPlace();
+    return matrix;
+  }
+
+  /** Get the eye point  - undefined if parallel projection */
+  public getEyePoint(result?: Point3d): Point3d | undefined {
+    const fraction = this.getFraction();
+
+    if (Math.abs(fraction - 1) < 1E-8)
+      return undefined;     // Parallel.
+
+    const org = this.getCorner(Npc.LeftBottomRear);
+    const zVec = org.vectorTo(this.getCorner(Npc.LeftBottomFront));
+
+    return org.plusScaled(zVec, 1 / (1 - fraction), result);
   }
 
   /** Invalidate this Frustum by setting all 8 points to zero. */

@@ -1,10 +1,12 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module WebGL */
+/** @packageDocumentation
+ * @module WebGL
+ */
 
-import { assert, IDisposable } from "@bentley/bentleyjs-core";
+import { assert } from "@bentley/bentleyjs-core";
 import { UniformHandle } from "./Handle";
 import { ShaderProgramParams, DrawParams } from "./DrawCommand";
 import { GL } from "./GL";
@@ -14,6 +16,7 @@ import { TechniqueFlags } from "./TechniqueFlags";
 import { System } from "./System";
 import { Branch, Batch } from "./Graphic";
 import { AttributeDetails } from "./AttributeMap";
+import { WebGLDisposable } from "./Disposable";
 
 // tslint:disable:no-const-enum
 
@@ -115,7 +118,7 @@ export const enum CompileStatus {
 }
 
 /** @internal */
-export class ShaderProgram implements IDisposable {
+export class ShaderProgram implements WebGLDisposable {
   private _description: string; // for debugging purposes...
   public vertSource: string;
   public fragSource: string;
@@ -127,7 +130,7 @@ export class ShaderProgram implements IDisposable {
   private readonly _graphicUniforms = new Array<GraphicUniform>();
   private readonly _attrMap?: Map<string, AttributeDetails>;
 
-  public constructor(gl: WebGLRenderingContext, vertSource: string, fragSource: string, attrMap: Map<string, AttributeDetails> | undefined, description: string, maxClippingPlanes: number) {
+  public constructor(gl: WebGLRenderingContext | WebGL2RenderingContext, vertSource: string, fragSource: string, attrMap: Map<string, AttributeDetails> | undefined, description: string, maxClippingPlanes: number) {
     this._description = description;
     this.vertSource = vertSource;
     this.fragSource = fragSource;
@@ -151,9 +154,10 @@ export class ShaderProgram implements IDisposable {
 
   public get glProgram(): WebGLProgram | undefined { return this._glProgram; }
   public get isUncompiled() { return CompileStatus.Uncompiled === this._status; }
+  public get isCompiled() { return CompileStatus.Success === this._status; }
 
   private compileShader(type: GL.ShaderType): WebGLShader | undefined {
-    const gl: WebGLRenderingContext = System.instance.context;
+    const gl = System.instance.context;
 
     const shader = gl.createShader(type);
     if (null === shader)
@@ -175,7 +179,7 @@ export class ShaderProgram implements IDisposable {
     if (undefined === this._glProgram || null === this._glProgram) // because WebGL APIs used Thing|null, not Thing|undefined...
       return false;
 
-    const gl: WebGLRenderingContext = System.instance.context;
+    const gl = System.instance.context;
     gl.attachShader(this._glProgram, vert);
     gl.attachShader(this._glProgram, frag);
 
@@ -200,14 +204,14 @@ export class ShaderProgram implements IDisposable {
 
     return true;
   }
-  public compile(): boolean {
+  public compile(): CompileStatus {
     switch (this._status) {
-      case CompileStatus.Failure: return false;
-      case CompileStatus.Success: return true;
+      case CompileStatus.Failure: return CompileStatus.Failure;
+      case CompileStatus.Success: return CompileStatus.Success;
       default: {
         if (this.isDisposed) {
           this._status = CompileStatus.Failure;
-          return false;
+          return CompileStatus.Failure;
         }
         break;
       }
@@ -224,11 +228,11 @@ export class ShaderProgram implements IDisposable {
     if (true !== System.instance.options.preserveShaderSourceCode)
       this.vertSource = this.fragSource = "";
 
-    return CompileStatus.Success === this._status;
+    return this._status;
   }
 
   public use(params: ShaderProgramParams): boolean {
-    if (!this.compile()) {
+    if (this.compile() !== CompileStatus.Success) {
       return false;
     }
 
@@ -298,10 +302,14 @@ export class ShaderProgramExecutor {
     this._params = undefined;
   }
 
+  private _isDisposed = false;
+  public get isDisposed(): boolean { return this._isDisposed; }
+
   /** Clears the current program to be executed. This does not free WebGL resources, since those are owned by Techniques. */
   public dispose() {
     this.changeProgram(undefined);
     ShaderProgramExecutor.freeParams();
+    this._isDisposed = true;
   }
 
   public setProgram(program: ShaderProgram): boolean { return this.changeProgram(program); }

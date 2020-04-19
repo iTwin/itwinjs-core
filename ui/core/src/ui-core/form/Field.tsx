@@ -1,31 +1,33 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Form */
+/** @packageDocumentation
+ * @module Form
+ */
 
 import * as React from "react";
 import { FormContext, FormContextState, FieldDef } from "./Form";
 import { Input } from "../inputs/Input";
-import { Checkbox } from "../inputs/checkbox/Checkbox";
+import { Checkbox } from "../checkbox/Checkbox";
 import { Textarea } from "../inputs/Textarea";
-import { Select } from "../inputs/Select";
+import { Select } from "../select/Select";
 
 // cSpell:ignore multilinetextbox
 
 /** Properties used to create a [[Field]] in a [[Form]]
- * @alpha
+ * @beta
  */
-interface IFieldProps extends FieldDef {
+export interface FieldProps extends FieldDef {
   /* The unique field name */
   id: string;
 }
 
 /** Component that represents a single field in an input form. Only four type of editors are supported. Field gets/sets state data from/to the context control by the form.
- * @alpha
+ * @beta
  */
-export class Field extends React.Component<IFieldProps> {
-  constructor(props: IFieldProps) {
+export class Field extends React.Component<FieldProps> {
+  constructor(props: FieldProps) {
     super(props);
   }
 

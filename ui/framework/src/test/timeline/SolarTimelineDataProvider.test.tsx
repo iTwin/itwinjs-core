@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as moq from "typemoq";
 import { expect } from "chai";
@@ -32,7 +32,6 @@ describe("SolarTimelineDataProvider", () => {
     viewMock.setup((view) => view.iModel).returns(() => imodelMock.object);
     viewportMock.reset();
     viewportMock.setup((viewport) => viewport.view).returns(() => viewMock.object);
-    viewportMock.setup((viewport) => viewport.animationFraction).returns(() => 0.3);
   });
 
   it("SolarTimelineDataProvider can provide timeline data", async () => {

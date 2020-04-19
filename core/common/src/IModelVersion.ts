@@ -1,12 +1,15 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module iModels */
+/** @packageDocumentation
+ * @module iModels
+ */
 
-import { IModelClient, ChangeSet, ChangeSetQuery, VersionQuery, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
-import { IModelError } from "./IModelError";
 import { BentleyStatus, GuidString } from "@bentley/bentleyjs-core";
+import { ChangeSet, ChangeSetQuery, IModelClient, VersionQuery } from "@bentley/imodelhub-client";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { IModelError } from "./IModelError";
 
 /** Option to specify the version of the iModel to be acquired and used
  * @public

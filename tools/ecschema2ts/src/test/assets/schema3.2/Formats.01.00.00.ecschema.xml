@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ECSchema schemaName="Formats" alias="f" version="01.00.00" description="Standard Set of Format definitions" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+    <ECSchemaReference name="Units" version="01.00.00" alias="u"/>
+    <Format typeName="AmerFI" displayLabel="FeetInches" type="Fractional" formatTraits="KeepSingleZero|KeepDecimalPoint|ShowUnitLabel" precision="8">
+        <Composite spacer="">
+            <Unit label="'">u:FT</Unit>
+            <Unit label="&quot;">u:IN</Unit>
+        </Composite>
+    </Format>
+    <Format typeName="AmerI" displayLabel="Inches" type="Fractional" formatTraits="KeepSingleZero|ShowUnitLabel" precision="8">
+        <Composite spacer="">
+            <Unit label="&quot;">u:IN</Unit>
+        </Composite>
+    </Format>
+    <Format typeName="AngleDMS" displayLabel="DegreesMinutesSeconds" type="Decimal" formatTraits="KeepSingleZero|KeepDecimalPoint|ShowUnitLabel" precision="4">
+        <Composite spacer="">
+            <Unit label="°">u:ARC_DEG</Unit>
+            <Unit label="'">u:ARC_MINUTE</Unit>
+            <Unit label="&quot;">u:ARC_SECOND</Unit>
+        </Composite>
+    </Format>
+    <Format typeName="DefaultReal" displayLabel="real" type="Decimal" formatTraits="KeepSingleZero|KeepDecimalPoint" precision="6"/>
+    <Format typeName="DefaultRealU" displayLabel="realu" type="Decimal" formatTraits="KeepSingleZero|KeepDecimalPoint|ShowUnitLabel" precision="6"/>
+    <Format typeName="DefaultRealUNS" type="Decimal" formatTraits="KeepSingleZero|KeepDecimalPoint|ShowUnitLabel" precision="6"/>
+    <Format typeName="Fractional" displayLabel="fract" type="Fractional" formatTraits="KeepSingleZero|KeepDecimalPoint" precision="64"/>
+    <Format typeName="HMS" displayLabel="HoursMinutesSeconds" type="Decimal" formatTraits="KeepSingleZero|KeepDecimalPoint|ShowUnitLabel" precision="2">
+        <Composite>
+            <Unit label="hour(s)">u:HR</Unit>
+            <Unit label="min">u:MIN</Unit>
+            <Unit label="sec">u:S</Unit>
+        </Composite>
+    </Format>
+    <Format typeName="StationZ_1000_3" type="Station" formatTraits="TrailZeroes|KeepSingleZero|KeepDecimalPoint" precision="2" minWidth="3" stationOffsetSize="3"/>
+    <Format typeName="StationZ_100_2" type="Station" formatTraits="TrailZeroes|KeepSingleZero|KeepDecimalPoint" precision="2" minWidth="2" stationOffsetSize="2"/>
+</ECSchema>

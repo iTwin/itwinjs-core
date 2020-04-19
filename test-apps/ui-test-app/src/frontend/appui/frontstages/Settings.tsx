@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Settings */
+/** @packageDocumentation
+ * @module Settings
+ */
 
 import * as React from "react";
 import { connect } from "react-redux";
@@ -23,6 +25,8 @@ export class SettingsModalFrontstage implements ModalFrontstageInfo {
 interface SettingsPageProps {
   dragInteraction: boolean;
   onToggleDragInteraction: () => void;
+  frameworkVersion: string;
+  onToggleFrameworkVersion: () => void;
 }
 
 /** SettingsPage displaying the active settings. */
@@ -33,6 +37,10 @@ class SettingsPageComponent extends React.Component<SettingsPageProps> {
   private _autoHideDescription: string = UiFramework.i18n.translate("SampleApp:settingsStage.autoHideDescription");
   private _dragInteractionTitle: string = UiFramework.i18n.translate("SampleApp:settingsStage.dragInteractionTitle");
   private _dragInteractionDescription: string = UiFramework.i18n.translate("SampleApp:settingsStage.dragInteractionDescription");
+  private _useNewUiTitle: string = UiFramework.i18n.translate("SampleApp:settingsStage.newUiTitle");
+  private _useNewUiDescription: string = UiFramework.i18n.translate("SampleApp:settingsStage.newUiDescription");
+  private _useProximityOpacityTitle: string = UiFramework.i18n.translate("SampleApp:settingsStage.useProximityOpacityTitle");
+  private _useProximityOpacityDescription: string = UiFramework.i18n.translate("SampleApp:settingsStage.useProximityOpacityDescription");
 
   private _onThemeChange = () => {
     const theme = this._isLightTheme() ? ColorTheme.Dark : ColorTheme.Light;
@@ -45,6 +53,10 @@ class SettingsPageComponent extends React.Component<SettingsPageProps> {
 
   private _onAutoHideChange = () => {
     UiShowHideManager.autoHideUi = !UiShowHideManager.autoHideUi;
+  }
+
+  private _onUseProximityOpacityChange = () => {
+    UiShowHideManager.useProximityOpacity = !UiShowHideManager.useProximityOpacity;
   }
 
   public render(): React.ReactNode {
@@ -60,6 +72,7 @@ class SettingsPageComponent extends React.Component<SettingsPageProps> {
           </div>
           <div className="panel right-panel">
             <Toggle isOn={isLightTheme} showCheckmark={false} onChange={this._onThemeChange} />
+            &nbsp;&nbsp;
             {_theme}
           </div>
         </div>
@@ -81,18 +94,37 @@ class SettingsPageComponent extends React.Component<SettingsPageProps> {
             <Toggle isOn={this.props.dragInteraction} showCheckmark={false} onChange={this.props.onToggleDragInteraction} />
           </div>
         </div>
+        <div className="uifw-settings-item">
+          <div className="panel left-panel">
+            <span className="title">{this._useNewUiTitle}</span>
+            <span className="description">{this._useNewUiDescription}</span>
+          </div>
+          <div className="panel right-panel">
+            <Toggle isOn={this.props.frameworkVersion === "2"} showCheckmark={false} onChange={this.props.onToggleFrameworkVersion} />
+          </div>
+        </div>
+        <div className="uifw-settings-item">
+          <div className="panel left-panel">
+            <span className="title">{this._useProximityOpacityTitle}</span>
+            <span className="description">{this._useProximityOpacityDescription}</span>
+          </div>
+          <div className="panel right-panel">
+            <Toggle isOn={UiShowHideManager.useProximityOpacity} showCheckmark={false} onChange={this._onUseProximityOpacityChange} />
+          </div>
+        </div>
       </div>
     );
   }
 }
 
 function mapStateToProps(state: RootState) {
-  return { dragInteraction: state.sampleAppState.dragInteraction };
+  return { dragInteraction: state.sampleAppState.dragInteraction, frameworkVersion: state.sampleAppState.frameworkVersion };
 }
 
 function mapDispatchToProps(dispatch: Dispatch) {
   return {
     onToggleDragInteraction: () => dispatch(SampleAppActions.toggleDragInteraction()),
+    onToggleFrameworkVersion: () => dispatch(SampleAppActions.toggleFrameworkVersion()),
     dispatch,
   };
 }

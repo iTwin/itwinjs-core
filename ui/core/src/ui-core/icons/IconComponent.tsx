@@ -1,37 +1,41 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Icon */
+/** @packageDocumentation
+ * @module Icon
+ */
 
 import * as React from "react";
 import { SvgSprite } from "./SvgSprite";
-import { IconSpecUtilities } from "@bentley/ui-abstract";
+import { IconSpecUtilities, ConditionalStringValue } from "@bentley/ui-abstract";
 
 import "./IconComponent.scss";
 
-/** Prototype for an IconSpec which can be a string or a ReactNode.
+/** Prototype for an IconSpec which can be a string, ReactNode or ConditionalStringValue.
  * @public
  */
-export type IconSpec = string | React.ReactNode;
+export type IconSpec = string | ConditionalStringValue | React.ReactNode;
 
 /** Properties for the [[Icon]] React component
  * @public
  */
 export interface IconProps {
-  /** CSS class name or SvgSprite for icon */
+  /** CSS class name or SvgSprite/SvgPath for icon */
   iconSpec?: IconSpec;
 }
 
-/** Icon Functional component
+/** Icon Functional component displays an icon based on an [[IconSpec]].
  * @public
  */
-export const Icon: React.FunctionComponent<IconProps> = (props: IconProps) => {  // tslint:disable-line:variable-name
+export function Icon(props: IconProps) {
   if (!props.iconSpec)
     return null;
+  const iconString = (typeof props.iconSpec === "string" || props.iconSpec instanceof ConditionalStringValue) ?
+    ConditionalStringValue.getValue(props.iconSpec) : undefined;
 
-  if (typeof props.iconSpec === "string") {
-    const svgSource = IconSpecUtilities.getSvgSource(props.iconSpec);
+  if (iconString) {
+    const svgSource = IconSpecUtilities.getSvgSource(iconString);
     // if string begins with "svg:" then we assume it was imported (into plugin source file) using webpack loader svg-sprite-loader
     if (svgSource !== undefined)
       return (
@@ -40,7 +44,7 @@ export const Icon: React.FunctionComponent<IconProps> = (props: IconProps) => { 
         </i>
       );
 
-    const className = "icon " + props.iconSpec;
+    const className = "icon " + iconString;
     return (<i className={className} />);
   }
 
@@ -49,4 +53,4 @@ export const Icon: React.FunctionComponent<IconProps> = (props: IconProps) => { 
       {props.iconSpec}
     </i>
   );
-};
+}

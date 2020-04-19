@@ -3,23 +3,44 @@
 exports[`Utils createTreeNodeItem creates tree node 1`] = `
 Object {
   "__presentation-components/key": Object {
-    "instanceKey": Object {
-      "className": "COM",
-      "id": "0x535d0000015d88",
-    },
-    "pathFromRoot": Array [
-      "b5c02a04-6127-4f62-b128-58488bc1c9d1",
-      "19fb96ab-449d-4f28-a09d-cff691955c55",
+    "instanceKeys": Array [
+      Object {
+        "className": "Indian Rupee Ngultrum",
+        "id": "0x62b00000129a9",
+      },
+      Object {
+        "className": "Tuna",
+        "id": "0x77870000000460",
+      },
     ],
-    "type": "ECInstanceNode",
+    "pathFromRoot": Array [
+      "6127f623-1285-4848-8bc1-c9d119fb96ab",
+      "449df282-09dc-4ff6-9195-5c55e9e31699",
+    ],
+    "type": "ECInstancesNode",
   },
-  "autoExpand": true,
-  "id": "19fb96ab-449d-4f28-a09d-cff691955c55/b5c02a04-6127-4f62-b128-58488bc1c9d1",
-  "label": "engage",
+  "checkBoxState": 1,
+  "hasChildren": true,
+  "icon": "Knolls",
+  "id": "449df282-09dc-4ff6-9195-5c55e9e31699/6127f623-1285-4848-8bc1-c9d119fb96ab",
+  "isCheckboxDisabled": true,
+  "isCheckboxVisible": true,
+  "label": PropertyRecord {
+    "property": Object {
+      "displayLabel": "Label",
+      "name": "node_label",
+      "typename": "string",
+    },
+    "value": Object {
+      "displayValue": "hacking",
+      "value": "Burundi",
+      "valueFormat": 0,
+    },
+  },
   "style": Object {
     "colorOverrides": Object {
-      "backgroundColor": -1843179777,
-      "color": -2100005121,
+      "backgroundColor": -1456493057,
+      "color": -1841005313,
     },
   },
 }
@@ -28,24 +49,42 @@ Object {
 exports[`Utils createTreeNodeItem creates tree node with custom label styles 1`] = `
 Object {
   "__presentation-components/key": Object {
-    "instanceKey": Object {
-      "className": "Configuration",
-      "id": "0xa95e0000010601",
-    },
-    "pathFromRoot": Array [
-      "774cdc48-ca2b-4104-8800-7ce7a4f6d779",
-      "f7dd0ef0-a772-4c3d-b03a-40a84a6a8c62",
+    "instanceKeys": Array [
+      Object {
+        "className": "Mews",
+        "id": "0x1321b00000066ff",
+      },
+      Object {
+        "className": "PNG",
+        "id": "0xd08e000000759d",
+      },
     ],
-    "type": "ECInstanceNode",
+    "pathFromRoot": Array [
+      "ca2b1044-8007-4ce7-a4f6-d779f7dd0ef0",
+      "a772c3d3-03a4-40a8-8a6a-8c62fda69701",
+    ],
+    "type": "ECInstancesNode",
   },
-  "description": "Voluptate consequuntur eum quaerat.",
-  "icon": "Coordinator",
-  "id": "f7dd0ef0-a772-4c3d-b03a-40a84a6a8c62/774cdc48-ca2b-4104-8800-7ce7a4f6d779",
-  "label": "Avon Awesome Plastic Salad",
+  "autoExpand": true,
+  "description": "Consequuntur eum quaerat atque doloribus eum.",
+  "hasChildren": true,
+  "icon": "Cambridgeshire",
+  "id": "a772c3d3-03a4-40a8-8a6a-8c62fda69701/ca2b1044-8007-4ce7-a4f6-d779f7dd0ef0",
+  "label": PropertyRecord {
+    "property": Object {
+      "displayLabel": "Label",
+      "name": "node_label",
+      "typename": "string",
+    },
+    "value": Object {
+      "displayValue": "Iowa",
+      "value": "ADP",
+      "valueFormat": 0,
+    },
+  },
   "style": Object {
     "colorOverrides": Object {
-      "backgroundColor": -1139576833,
-      "color": 2124521215,
+      "backgroundColor": -1829999873,
     },
     "isBold": true,
     "isItalic": true,
@@ -56,21 +95,87 @@ Object {
 exports[`Utils createTreeNodeItem creates tree node with parent id 1`] = `
 Object {
   "__presentation-components/key": Object {
-    "instanceKey": Object {
-      "className": "Small Fresh Shoes",
-      "id": "0x11d2d0000000aba",
-    },
-    "pathFromRoot": Array [
-      "df9c559d-a389-4bc4-aef0-a5d0cb8b62e6",
-      "0b80175c-270d-4a1a-bba3-14ef8866c2a1",
+    "instanceKeys": Array [
+      Object {
+        "className": "JBOD",
+        "id": "0x13af9000000df54",
+      },
+      Object {
+        "className": "extranet",
+        "id": "0x15060000000e479",
+      },
     ],
-    "type": "ECInstanceNode",
+    "pathFromRoot": Array [
+      "a389bc4e-ef0a-45d0-8b8b-62e60b80175c",
+      "270da1a3-ba31-44ef-8866-c2a100d70bea",
+    ],
+    "type": "ECInstancesNode",
   },
-  "description": "Et velit aperiam sed aut.",
+  "icon": "moderator",
+  "id": "270da1a3-ba31-44ef-8866-c2a100d70bea/a389bc4e-ef0a-45d0-8b8b-62e60b80175c",
+  "isCheckboxVisible": true,
+  "label": PropertyRecord {
+    "property": Object {
+      "displayLabel": "Label",
+      "name": "node_label",
+      "typename": "string",
+    },
+    "value": Object {
+      "displayValue": "cross-platform",
+      "value": "Iraq",
+      "valueFormat": 0,
+    },
+  },
+  "parentId": "Organic",
+  "style": Object {
+    "colorOverrides": Object {
+      "color": 17731327,
+    },
+  },
+}
+`;
+
+exports[`Utils createTreeNodeItem creates tree node without labelDefinition 1`] = `
+Object {
+  "__presentation-components/key": Object {
+    "instanceKeys": Array [
+      Object {
+        "className": "connect",
+        "id": "0x10bf900000157a6",
+      },
+      Object {
+        "className": "Cotton",
+        "id": "0xbd9e000001010f",
+      },
+    ],
+    "pathFromRoot": Array [
+      "b57b973f-341e-4d11-9d85-06c29d2bd13d",
+      "baba8d5a-16f1-41a6-bebd-45084f282f50",
+    ],
+    "type": "ECInstancesNode",
+  },
+  "autoExpand": true,
+  "description": "Aut quod rem odit odio saepe nesciunt necessitatibus sed fuga.",
   "hasChildren": true,
-  "id": "0b80175c-270d-4a1a-bba3-14ef8866c2a1/df9c559d-a389-4bc4-aef0-a5d0cb8b62e6",
-  "label": "Indian Rupee Rufiyaa systems",
-  "parentId": "deposit",
+  "id": "baba8d5a-16f1-41a6-bebd-45084f282f50/b57b973f-341e-4d11-9d85-06c29d2bd13d",
+  "label": "calculate",
+  "labelDefinition": PropertyRecord {
+    "property": Object {
+      "displayLabel": "Label",
+      "name": "node_label",
+      "typename": "string",
+    },
+    "value": Object {
+      "displayValue": "calculate",
+      "value": "calculate",
+      "valueFormat": 0,
+    },
+  },
+  "style": Object {
+    "colorOverrides": Object {
+      "color": 143987199,
+    },
+  },
 }
 `;
 
@@ -78,44 +183,86 @@ exports[`Utils createTreeNodeItems creates tree nodes 1`] = `
 Array [
   Object {
     "__presentation-components/key": Object {
-      "instanceKey": Object {
-        "className": "Data",
-        "id": "0xdbbd0000011f6d",
-      },
-      "pathFromRoot": Array [
-        "4dcb61ac-32e0-49da-bf7d-e66ed5ccf6b5",
-        "e845ce78-d049-4079-8e52-c1852841f2dd",
+      "instanceKeys": Array [
+        Object {
+          "className": "systematic",
+          "id": "0x118650000013a42",
+        },
+        Object {
+          "className": "infrastructures",
+          "id": "0x12cd5000000ff83",
+        },
       ],
-      "type": "ECInstanceNode",
+      "pathFromRoot": Array [
+        "32e09daf-f7de-466e-95cc-f6b5e845ce78",
+        "d0490790-e52c-4185-a841-f2ddecb9648f",
+      ],
+      "type": "ECInstancesNode",
     },
     "autoExpand": true,
-    "description": "Necessitatibus eum ab.",
+    "description": "Harum aut sit.",
     "hasChildren": true,
-    "id": "e845ce78-d049-4079-8e52-c1852841f2dd/4dcb61ac-32e0-49da-bf7d-e66ed5ccf6b5",
+    "id": "d0490790-e52c-4185-a841-f2ddecb9648f/32e09daf-f7de-466e-95cc-f6b5e845ce78",
     "isCheckboxDisabled": true,
     "isCheckboxVisible": true,
-    "label": "intranet Executive",
+    "label": PropertyRecord {
+      "property": Object {
+        "displayLabel": "Label",
+        "name": "node_label",
+        "typename": "string",
+      },
+      "value": Object {
+        "displayValue": "Fantastic",
+        "value": "Unbranded",
+        "valueFormat": 0,
+      },
+    },
     "style": Object {
       "colorOverrides": Object {
-        "color": 248743167,
+        "backgroundColor": -2024888833,
       },
     },
   },
   Object {
     "__presentation-components/key": Object {
-      "instanceKey": Object {
-        "className": "Networked",
-        "id": "0xdba500000106ba",
-      },
-      "pathFromRoot": Array [
-        "eba56260-0815-4375-8f3d-aeabb1421892",
-        "b75ef471-908f-4cd9-8af2-5d633b21a813",
+      "instanceKeys": Array [
+        Object {
+          "className": "Assurance",
+          "id": "0x7afe00000109f3",
+        },
+        Object {
+          "className": "initiatives",
+          "id": "0x4000000009ab0",
+        },
       ],
-      "type": "ECInstanceNode",
+      "pathFromRoot": Array [
+        "08153750-f3da-4eab-b142-1892b75ef471",
+        "908fcd9c-af25-4d63-bb21-a81337a8ad7e",
+      ],
+      "type": "ECInstancesNode",
     },
-    "icon": "national",
-    "id": "b75ef471-908f-4cd9-8af2-5d633b21a813/eba56260-0815-4375-8f3d-aeabb1421892",
-    "label": "indexing XSS",
+    "autoExpand": true,
+    "checkBoxState": 1,
+    "id": "908fcd9c-af25-4d63-bb21-a81337a8ad7e/08153750-f3da-4eab-b142-1892b75ef471",
+    "isCheckboxDisabled": true,
+    "isCheckboxVisible": true,
+    "label": PropertyRecord {
+      "property": Object {
+        "displayLabel": "Label",
+        "name": "node_label",
+        "typename": "string",
+      },
+      "value": Object {
+        "displayValue": "Communications",
+        "value": "Plastic",
+        "valueFormat": 0,
+      },
+    },
+    "style": Object {
+      "colorOverrides": Object {
+        "backgroundColor": 2086765311,
+      },
+    },
   },
 ]
 `;
@@ -124,50 +271,81 @@ exports[`Utils createTreeNodeItems creates tree nodes with parentId 1`] = `
 Array [
   Object {
     "__presentation-components/key": Object {
-      "instanceKey": Object {
-        "className": "metrics",
-        "id": "0x63060000003c1a",
-      },
-      "pathFromRoot": Array [
-        "7563a72a-9ca8-4deb-b3f2-90e038b00330",
-        "fde07d2e-c992-4c8d-9f77-66e2d57cff27",
+      "instanceKeys": Array [
+        Object {
+          "className": "Harbors",
+          "id": "0x5315000000a7dd",
+        },
+        Object {
+          "className": "withdrawal",
+          "id": "0x109c70000003fd5",
+        },
       ],
-      "type": "ECInstanceNode",
+      "pathFromRoot": Array [
+        "9ca8debb-3f29-40e0-b8b0-0330fde07d2e",
+        "c992c8d5-f776-46e2-957c-ff276d241866",
+      ],
+      "type": "ECInstancesNode",
     },
-    "checkBoxState": 1,
-    "description": "At enim qui enim quisquam ratione debitis sequi totam aut.",
+    "autoExpand": true,
+    "description": "Ratione debitis sequi totam aut est nemo aut.",
     "hasChildren": true,
-    "id": "fde07d2e-c992-4c8d-9f77-66e2d57cff27/7563a72a-9ca8-4deb-b3f2-90e038b00330",
-    "isCheckboxVisible": true,
-    "label": "Haiti",
-    "parentId": "Movies",
+    "id": "c992c8d5-f776-46e2-957c-ff276d241866/9ca8debb-3f29-40e0-b8b0-0330fde07d2e",
+    "label": PropertyRecord {
+      "property": Object {
+        "displayLabel": "Label",
+        "name": "node_label",
+        "typename": "string",
+      },
+      "value": Object {
+        "displayValue": "Facilitator",
+        "value": "bifurcated",
+        "valueFormat": 0,
+      },
+    },
+    "parentId": "Cuban Peso Peso Convertible",
     "style": Object {
       "colorOverrides": Object {
-        "color": 437788159,
+        "backgroundColor": -785933057,
+        "color": -2116120833,
       },
     },
   },
   Object {
     "__presentation-components/key": Object {
-      "instanceKey": Object {
-        "className": "Accountability",
-        "id": "0xabb40000005556",
-      },
-      "pathFromRoot": Array [
-        "b17a7270-2f3a-4398-85ab-e6ed9fcd7bda",
-        "1c500d4d-5d63-4c09-a4f2-bdad7ba2e46f",
+      "instanceKeys": Array [
+        Object {
+          "className": "synergies",
+          "id": "0x185150000003682",
+        },
+        Object {
+          "className": "Progressive",
+          "id": "0xe6180000005197",
+        },
       ],
-      "type": "ECInstanceNode",
+      "pathFromRoot": Array [
+        "805abe6e-d9fc-4d7b-9a1c-500d4d5d63c0",
+        "9e4f2bda-d7ba-42e4-affe-37f852bc8f5d",
+      ],
+      "type": "ECInstancesNode",
     },
-    "icon": "connecting",
-    "id": "1c500d4d-5d63-4c09-a4f2-bdad7ba2e46f/b17a7270-2f3a-4398-85ab-e6ed9fcd7bda",
-    "label": "Berkshire Soft generate",
-    "parentId": "Movies",
-    "style": Object {
-      "colorOverrides": Object {
-        "backgroundColor": 1513652479,
+    "description": "Aliquam rem ab quia consequatur magnam debitis.",
+    "icon": "Unbranded Steel Keyboard",
+    "id": "9e4f2bda-d7ba-42e4-affe-37f852bc8f5d/805abe6e-d9fc-4d7b-9a1c-500d4d5d63c0",
+    "isCheckboxVisible": true,
+    "label": PropertyRecord {
+      "property": Object {
+        "displayLabel": "Label",
+        "name": "node_label",
+        "typename": "string",
+      },
+      "value": Object {
+        "displayValue": "Tuvalu",
+        "value": "action-items",
+        "valueFormat": 0,
       },
     },
+    "parentId": "Cuban Peso Peso Convertible",
   },
 ]
 `;

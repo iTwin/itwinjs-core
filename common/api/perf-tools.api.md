@@ -7,6 +7,7 @@
 // @beta (undocumented)
 export class Reporter {
     addEntry(testSuite: string, testName: string, valueDescription: string, value: number, info?: any): void;
+    clearEntries(): void;
     exportCSV(fileName: string): void;
 }
 

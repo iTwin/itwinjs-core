@@ -1,15 +1,20 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-@import "@bentley/ui-core/lib/ui-core/index";
-@import "@bentley/ui-ninezone/lib/ui-ninezone/footer/_variables";
+@import "~@bentley/ui-core/lib/ui-core/style/breakpoints";
+@import "~@bentley/ui-core/lib/ui-core/style/typography";
+@import "~@bentley/ui-ninezone/lib/ui-ninezone/footer/variables";
 
 .uifw-statusFields-displayStyle {
   $font-size-medium: $uicore-font-size-small;
   $font-size-small: $uicore-font-size-smaller;
   overflow: hidden;
   padding-right: 0px;
+
+  .uifw-statusFields-displayStyle-selector {
+    max-width: 20em;
+  }
 
   @include for-tablet-portrait-down {
     font-size: $font-size-medium;

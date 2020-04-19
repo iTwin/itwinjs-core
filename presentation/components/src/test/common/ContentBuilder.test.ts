@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /* tslint:disable:no-direct-imports */
 
@@ -15,8 +15,8 @@ import {
   PropertyValueFormat, PrimitiveTypeDescription, PropertiesField, Property, Item,
   ArrayTypeDescription, StructTypeDescription, NestedContentField, NestedContentValue,
 } from "@bentley/presentation-common";
-import { ContentBuilder, getLinks } from "../../common/ContentBuilder";
-import { PrimitiveValue } from "@bentley/imodeljs-frontend";
+import { PrimitiveValue } from "@bentley/ui-abstract";
+import { ContentBuilder, getLinks, FIELD_NAMES_SEPARATOR } from "../../presentation-components/common/ContentBuilder";
 
 describe("ContentBuilder", () => {
 
@@ -26,6 +26,12 @@ describe("ContentBuilder", () => {
       const field = createRandomPrimitiveField();
       const descr = ContentBuilder.createPropertyDescription(field);
       expect(descr).to.matchSnapshot();
+    });
+
+    it("creates description with name prefix", () => {
+      const field = createRandomPrimitiveField();
+      const descr = ContentBuilder.createPropertyDescription(field, { namePrefix: "test" });
+      expect(descr.name).to.eq(`test${FIELD_NAMES_SEPARATOR}${field.name}`);
     });
 
     it("creates description with editor", () => {
@@ -530,7 +536,7 @@ describe("ContentBuilder", () => {
               [nestedField.name]: "some value 1",
             },
             displayValues: {
-              [nestedField.name]: "some display value 1 with link testLink.com",
+              [nestedField.name]: "some display value 1 with link www.testLink.com",
             },
             mergedFieldNames: [],
           }, {
@@ -539,7 +545,7 @@ describe("ContentBuilder", () => {
               [nestedField.name]: "some value 2",
             },
             displayValues: {
-              [nestedField.name]: "some display value 2 with link testLinkTwo.com",
+              [nestedField.name]: "some display value 2 with link http://www.testLinkTwo.com",
             },
             mergedFieldNames: [],
           }] as NestedContentValue[],
@@ -584,7 +590,7 @@ describe("ContentBuilder", () => {
         const item = new Item([createRandomECInstanceKey()], faker.random.words(),
           faker.random.uuid(), undefined, values, displayValues, [field.name]);
         const record = ContentBuilder.createPropertyRecord(field, item);
-        expect(await (record.value as PrimitiveValue).displayValue).to.eq("");
+        expect((record.value as PrimitiveValue).displayValue).to.eq("");
       });
 
       it("throws when display value of merged nested content is not primitive", () => {

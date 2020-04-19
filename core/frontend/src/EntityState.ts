@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module ElementState */
+/** @packageDocumentation
+ * @module ElementState
+ */
 
 import { Id64, Id64String, GuidString } from "@bentley/bentleyjs-core";
 import { EntityProps, Code, ElementProps, RelatedElement } from "@bentley/imodeljs-common";

@@ -2,21 +2,25 @@ sep=;
 Release Tag;API Item
 internal;AnnularSector
 internal;Annulus
-alpha;AutoSuggest 
-alpha;AutoSuggestData
-alpha;AutoSuggestProps 
+beta;AutoSuggest 
+beta;AutoSuggestData
+beta;AutoSuggestProps 
 internal;Badge 
 internal;BadgeProps 
 internal;BadgeUtilities
-internal;BetaBadge: React.FunctionComponent
-public;BlockText: React.FunctionComponent
-public;BodyText: React.FunctionComponent
-alpha;BoundsFunctionProp = number | (() => number | undefined)
+internal;BetaBadge(props: CommonProps): JSX.Element
+public;BlockText(props: TextProps): JSX.Element
+public;BodyText(props: TextProps): JSX.Element
+beta;BoundsFunctionProp = number | (() => number | undefined)
 public;Button 
 public;ButtonProps 
 public;ButtonSize
 public;ButtonType
-public;Centered: React.FunctionComponent
+internal;calculateBackdropFilterBlur: (proximityScale: number) => number
+internal;calculateBoxShadowOpacity: (proximityScale: number) => number
+internal;calculateProximityScale: (proximity: number, threshold?: number) => number
+internal;calculateToolbarOpacity: (proximityScale: number) => number
+public;Centered(props: CommonDivProps): JSX.Element
 public;Checkbox 
 public;CheckBoxInfo
 public;CheckboxProps 
@@ -24,7 +28,7 @@ public;CheckBoxState
 beta;CheckListBox 
 beta;CheckListBoxItem 
 beta;CheckListBoxItemProps 
-beta;CheckListBoxSeparator: React.FunctionComponent
+beta;CheckListBoxSeparator(): JSX.Element
 internal;Circle
 public;ClassNameProps
 public;CommonDivProps 
@@ -49,8 +53,9 @@ public;DialogButtonDef
 public;DialogButtonStyle
 public;DialogButtonType
 public;DialogProps 
-internal;Div 
-internal;DivProps 
+public;DisabledText(props: TextProps): JSX.Element
+public;Div(props: DivProps): JSX.Element
+public;DivProps 
 beta;DivWithOutsideClick:
 public;ElementSeparator 
 public;ElementSeparatorProps 
@@ -62,34 +67,39 @@ public;ExpandableListProps
 public;ExpansionToggle 
 public;ExpansionToggleProps 
 beta;Face
-alpha;FeaturedTile: React.FunctionComponent
-alpha;Field 
-alpha;FieldDef
-alpha;FieldDefinitions
-alpha;FieldEditor = "textbox" | "multilinetextbox" | "dropdown" | "checkbox"
-alpha;FieldValues
-public;FillCentered: React.FunctionComponent
+beta;FeaturedTile(props: TileProps): JSX.Element
+beta;Field 
+beta;FieldDef
+beta;FieldDefinitions
+beta;FieldEditor = "textbox" | "multilinetextbox" | "dropdown" | "checkbox"
+beta;FieldProps 
+beta;FieldValues
+public;FillCentered(props: CommonDivProps): JSX.Element
 internal;flattenChildren: (children: React.ReactNode) => React.ReactNode
-public;FlexWrapContainer: React.FunctionComponent
-beta;FocusTrap 
-alpha;Form 
-alpha;FormContext: React.Context
-alpha;FormContextState 
-internal;getClassName: (obj: any) => string
+public;FlexWrapContainer(props: CommonDivProps): JSX.Element
+internal;FocusTrap(props: Props): JSX.Element | null
+beta;Form 
+beta;FormContext: React.Context
+beta;FormContextState 
+beta;FormProps
 internal;getDisplayName: (component: React.ComponentType
+internal;getToolbarBackdropFilter: (filterBlur: number) => string
+internal;getToolbarBackgroundColor: (opacity: number) => string
+internal;getToolbarBoxShadow: (opacity: number) => string
 internal;getUserColor(email: string): string
 public;GlobalContextMenu 
 public;GlobalContextMenuProps 
 public;GlobalDialog 
 public;GlobalDialogProps 
-public;Headline: React.FunctionComponent
+public;Headline(props: TextProps): JSX.Element
 public;HorizontalAlignment
 beta;HorizontalTabs 
-public;Icon: React.FunctionComponent
-alpha;IconInput 
-alpha;IconInputProps 
+public;Icon(props: IconProps): JSX.Element | null
+beta;IconHelper
+beta;IconInput 
+beta;IconInputProps 
 public;IconProps
-public;IconSpec = string | React.ReactNode
+public;IconSpec = string | ConditionalStringValue | React.ReactNode
 beta;ImageCheckBox 
 beta;ImageCheckBoxProps 
 public;Input 
@@ -107,8 +117,8 @@ public;LabeledTextarea
 public;LabeledTextareaProps 
 public;LabeledToggle 
 public;LabeledToggleProps 
-public;LeadingText: React.FunctionComponent
-public;LeadingText2: React.FunctionComponent
+public;LeadingText(props: TextProps): JSX.Element
+public;LeadingText2(props: TextProps): JSX.Element
 internal;Line
 beta;LoadingBar 
 beta;LoadingBarProps 
@@ -126,17 +136,17 @@ public;MessageContainer
 public;MessageContainerProps 
 public;MessagedComponentProps
 public;MessageSeverity
-alpha;MinimalFeaturedTile: React.FunctionComponent
-alpha;MinimalTile: React.FunctionComponent
-public;MutedText: React.FunctionComponent
-internal;NewBadge: React.FunctionComponent
+beta;MinimalFeaturedTile(props: TileProps): JSX.Element
+beta;MinimalTile(props: TileProps): JSX.Element
+public;MutedText(props: TextProps): JSX.Element
+internal;NewBadge(props: CommonProps): JSX.Element
 beta;NoChildrenProps
 beta;NodeCheckboxProps
 beta;NodeCheckboxRenderer = (props: NodeCheckboxRenderProps) => React.ReactNode
 beta;NodeCheckboxRenderProps = Omit
-alpha;NumericInput 
-alpha;NumericInputDefaultProps = Pick
-alpha;NumericInputProps 
+beta;NumericInput 
+internal;NumericInputDefaultProps = Pick
+beta;NumericInputProps 
 public;Omit
 beta;OmitChildrenProp
 public;Orientation
@@ -144,7 +154,7 @@ internal;Point
 beta;PointProps
 beta;Popup 
 beta;PopupProps 
-beta;Position
+internal;PROXIMITY_THRESHOLD_DEFAULT = 100
 beta;RadialButton 
 beta;RadialButtonProps 
 beta;RadialMenu 
@@ -152,12 +162,14 @@ beta;RadialMenuProps
 public;Radio 
 public;RadioProps 
 internal;ReactNumericInput 
-alpha;ReactNumericInputProps 
+beta;ReactNumericInputProps 
 internal;ReactStepFunctionProp = number | ((component: ReactNumericInput, direction: string) => number | undefined)
 internal;Rectangle 
 beta;RectangleProps
+internal;ResizeObserver: ResizeObserverType
+internal;ResizeObserverType = typeof import("resize-observer-polyfill").default
 alpha;ScrollPositionMaintainer 
-public;ScrollView: React.FunctionComponent
+public;ScrollView(props: CommonDivProps): JSX.Element
 public;SearchBox 
 public;SearchBoxProps 
 public;Select 
@@ -166,7 +178,9 @@ beta;SessionUiSettings
 internal;shallowDiffers: (a:
 internal;Size 
 beta;SizeProps
-public;SmallText: React.FunctionComponent
+beta;Slider(props: SliderProps): JSX.Element
+beta;SliderProps 
+public;SmallText(props: TextProps): JSX.Element
 public;SortDirection
 public;Spinner 
 public;SpinnerProps
@@ -174,11 +188,11 @@ public;SpinnerSize
 beta;SplitButton 
 internal;SplitButtonActionType
 beta;SplitButtonProps 
-alpha;StepFunctionProp = number | ((direction: string) => number | undefined)
-internal;StyledText 
-internal;StyledTextProps 
-public;Subheading: React.FunctionComponent
-public;Subheading2: React.FunctionComponent
+beta;StepFunctionProp = number | ((direction: string) => number | undefined)
+beta;StyledText(props: StyledTextProps): JSX.Element
+beta;StyledTextProps 
+public;Subheading(props: TextProps): JSX.Element
+public;Subheading2(props: TextProps): JSX.Element
 public;SvgPath 
 public;SvgPathProps 
 public;SvgSprite 
@@ -189,16 +203,19 @@ public;Textarea
 public;TextareaProps 
 public;TextProps 
 internal;TildeFinder
-alpha;Tile 
+beta;Tile 
 internal;TileDefaultProps = Pick
-alpha;TileProps 
+beta;TileProps 
 public;TimeFormat
 public;Timer
-public;Title: React.FunctionComponent
-public;Title2: React.FunctionComponent
+public;Title(props: TextProps): JSX.Element
+public;Title2(props: TextProps): JSX.Element
 public;Toggle 
 public;ToggleButtonType
 public;ToggleProps 
+internal;TOOLBAR_BACKDROP_FILTER_BLUR_DEFAULT = 10
+internal;TOOLBAR_BOX_SHADOW_OPACITY_DEFAULT = 0.35
+internal;TOOLBAR_OPACITY_DEFAULT = 0.5
 public;Tree 
 public;TreeBranch 
 public;TreeBranchProps 
@@ -208,17 +225,23 @@ public;TreeNodePlaceholderProps
 public;TreeNodeProps 
 public;TreeProps 
 public;UiCore
-public;UiError: typeof UiError_2
 public;UiEvent
 beta;UiSettings
 beta;UiSettingsResult
 beta;UiSettingsStatus
 public;UnderlinedButton(props: UnderlinedButtonProps): JSX.Element
 public;UnderlinedButtonProps
-alpha;useEffectSkipFirst(callback: () => void, deps?: any[]): void
+public;useDisposable
+public;useEffectSkipFirst(callback: () => (void | (() => void | undefined)) | void, deps?: any[]): void
+public;useOptionalDisposable
+internal;useProximityToMouse: (elementRef: React.RefObject
+internal;useRefEffect
+internal;useRefs
+internal;useResizeObserver
+internal;useTargeted: (elementRef: React.RefObject
 public;VerticalAlignment
 beta;VerticalTabs 
-public;WebFontIcon: React.FunctionComponent
+public;WebFontIcon(props: WebFontIconProps): JSX.Element
 public;WebFontIconProps 
 public;withIsPressed: 
 public;WithIsPressedProps

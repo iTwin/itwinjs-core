@@ -1,15 +1,15 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Logger, OpenMode, Id64, Id64String, IDisposable, BeEvent, LogLevel, BentleyLoggerCategory } from "@bentley/bentleyjs-core";
-import { AccessToken, Config, ChangeSet, AuthorizedClientRequestContext, ImsUserCredentials, ClientsLoggerCategory } from "@bentley/imodeljs-clients";
-import { Code, ElementProps, RpcManager, GeometricElement3dProps, IModel, IModelReadRpcInterface, RelatedElement, RpcConfiguration, CodeProps } from "@bentley/imodeljs-common";
+import { DbResult, IModelStatus, Logger, OpenMode, Id64, Id64String, IDisposable, BeEvent, LogLevel, BentleyLoggerCategory, Config } from "@bentley/bentleyjs-core";
+import { AuthorizedClientRequestContext, ClientsLoggerCategory } from "@bentley/itwin-client";
+import { IModelError, Code, ElementProps, RpcManager, GeometricElement3dProps, IModel, IModelReadRpcInterface, RelatedElement, RpcConfiguration, CodeProps } from "@bentley/imodeljs-common";
 import {
   IModelHostConfiguration, IModelHost, BriefcaseManager, IModelDb, Model, Element,
   InformationPartitionElement, SpatialCategory, IModelJsFs, PhysicalPartition, PhysicalModel, SubjectOwnsPartitionElements,
-  IModelJsNative, NativeLoggerCategory,
+  IModelJsNative, NativeLoggerCategory, SnapshotDb,
 } from "../imodeljs-backend";
 import { BackendLoggerCategory as BackendLoggerCategory } from "../BackendLoggerCategory";
 import { KnownTestLocations } from "./KnownTestLocations";
@@ -20,8 +20,7 @@ import { ElementDrivesElement, RelationshipProps } from "../Relationship";
 import { PhysicalElement } from "../Element";
 import { ClassRegistry } from "../ClassRegistry";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
-import { AuthorizedBackendRequestContext } from "../BackendRequestContext";
-import { TestUsers } from "./TestUsers";
+import { ChangeSet, IModelHubClientLoggerCategory } from "@bentley/imodelhub-client";
 
 /** Class for simple test timing */
 export class Timer {
@@ -143,11 +142,6 @@ export class IModelTestUtils {
     return iModelInfo;
   }
 
-  public static async getTestUserRequestContext(userCredentials: ImsUserCredentials = TestUsers.regular): Promise<AuthorizedBackendRequestContext> {
-    const accessToken: AccessToken = await HubUtility.login(userCredentials);
-    return new AuthorizedBackendRequestContext(accessToken);
-  }
-
   /** Prepare for an output file by:
    * - Resolving the output file name under the known test output directory
    * - Making directories as necessary
@@ -178,19 +172,19 @@ export class IModelTestUtils {
   }
 
   /** Orchestrates the steps necessary to create a new snapshot iModel from a seed file. */
-  public static createSnapshotFromSeed(testFileName: string, seedFileName: string): IModelDb {
-    const seedDb: IModelDb = IModelDb.openSnapshot(seedFileName);
-    const testDb: IModelDb = seedDb.createSnapshot(testFileName);
-    seedDb.closeSnapshot();
+  public static createSnapshotFromSeed(testFileName: string, seedFileName: string): SnapshotDb {
+    const seedDb: SnapshotDb = SnapshotDb.openFile(seedFileName);
+    const testDb: SnapshotDb = SnapshotDb.createFrom(seedDb, testFileName);
+    seedDb.close();
     return testDb;
   }
 
-  public static getUniqueModelCode(testIModel: IModelDb, newModelCodeBase: string): Code {
+  public static getUniqueModelCode(testDb: IModelDb, newModelCodeBase: string): Code {
     let newModelCode: string = newModelCodeBase;
     let iter: number = 0;
     while (true) {
-      const modelCode = InformationPartitionElement.createCode(testIModel, IModel.rootSubjectId, newModelCode);
-      if (testIModel.elements.queryElementIdByCode(modelCode) === undefined)
+      const modelCode = InformationPartitionElement.createCode(testDb, IModel.rootSubjectId, newModelCode);
+      if (testDb.elements.queryElementIdByCode(modelCode) === undefined)
         return modelCode;
 
       newModelCode = newModelCodeBase + iter;
@@ -199,21 +193,51 @@ export class IModelTestUtils {
   }
 
   // Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel.
-  public static createAndInsertPhysicalPartition(testImodel: IModelDb, newModelCode: CodeProps): Id64String {
+  public static createAndInsertPhysicalPartition(testDb: IModelDb, newModelCode: CodeProps): Id64String {
     const modeledElementProps: ElementProps = {
       classFullName: PhysicalPartition.classFullName,
       parent: new SubjectOwnsPartitionElements(IModel.rootSubjectId),
       model: IModel.repositoryModelId,
       code: newModelCode,
     };
-    const modeledElement: Element = testImodel.elements.createElement(modeledElementProps);
-    return testImodel.elements.insertElement(modeledElement);
+    const modeledElement: Element = testDb.elements.createElement(modeledElementProps);
+    return testDb.elements.insertElement(modeledElement);
   }
 
   // Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel.
-  public static createAndInsertPhysicalModel(testImodel: IModelDb, modeledElementRef: RelatedElement, privateModel: boolean = false): Id64String {
-    const newModel = testImodel.models.createModel({ modeledElement: modeledElementRef, classFullName: PhysicalModel.classFullName, isPrivate: privateModel });
-    const newModelId = testImodel.models.insertModel(newModel);
+  public static async createAndInsertPhysicalPartitionAsync(rqctx: AuthorizedClientRequestContext, testDb: IModelDb, newModelCode: CodeProps): Promise<Id64String> {
+    const modeledElementProps: ElementProps = {
+      classFullName: PhysicalPartition.classFullName,
+      parent: new SubjectOwnsPartitionElements(IModel.rootSubjectId),
+      model: IModel.repositoryModelId,
+      code: newModelCode,
+    };
+    const modeledElement: Element = testDb.elements.createElement(modeledElementProps);
+    if (testDb.isBriefcaseDb()) {
+      await testDb.concurrencyControl.requestResourcesForInsert(rqctx, [modeledElement]);
+      rqctx.enter();
+    }
+    return testDb.elements.insertElement(modeledElement);
+  }
+
+  // Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel.
+  public static createAndInsertPhysicalModel(testDb: IModelDb, modeledElementRef: RelatedElement, privateModel: boolean = false): Id64String {
+    const newModel = testDb.models.createModel({ modeledElement: modeledElementRef, classFullName: PhysicalModel.classFullName, isPrivate: privateModel });
+    const newModelId = testDb.models.insertModel(newModel);
+    assert.isTrue(Id64.isValidId64(newModelId));
+    assert.isTrue(Id64.isValidId64(newModel.id));
+    assert.deepEqual(newModelId, newModel.id);
+    return newModelId;
+  }
+
+  // Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel.
+  public static async createAndInsertPhysicalModelAsync(rqctx: AuthorizedClientRequestContext, testDb: IModelDb, modeledElementRef: RelatedElement, privateModel: boolean = false): Promise<Id64String> {
+    const newModel = testDb.models.createModel({ modeledElement: modeledElementRef, classFullName: PhysicalModel.classFullName, isPrivate: privateModel });
+    if (testDb.isBriefcaseDb()) {
+      await testDb.concurrencyControl.requestResourcesForInsert(rqctx, [], [newModel]);
+      rqctx.enter();
+    }
+    const newModelId = testDb.models.insertModel(newModel);
     assert.isTrue(Id64.isValidId64(newModelId));
     assert.isTrue(Id64.isValidId64(newModel.id));
     assert.deepEqual(newModelId, newModel.id);
@@ -228,6 +252,19 @@ export class IModelTestUtils {
     const eid = IModelTestUtils.createAndInsertPhysicalPartition(testImodel, newModelCode);
     const modeledElementRef = new RelatedElement({ id: eid });
     const mid = IModelTestUtils.createAndInsertPhysicalModel(testImodel, modeledElementRef, privateModel);
+    return [eid, mid];
+  }
+
+  //
+  // Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel.
+  // @return [modeledElementId, modelId]
+  //
+  public static async createAndInsertPhysicalPartitionAndModelAsync(rqctx: AuthorizedClientRequestContext, testImodel: IModelDb, newModelCode: CodeProps, privateModel: boolean = false): Promise<Id64String[]> {
+    const eid = await IModelTestUtils.createAndInsertPhysicalPartitionAsync(rqctx, testImodel, newModelCode);
+    rqctx.enter();
+    const modeledElementRef = new RelatedElement({ id: eid });
+    const mid = await IModelTestUtils.createAndInsertPhysicalModelAsync(rqctx, testImodel, modeledElementRef, privateModel);
+    rqctx.enter();
     return [eid, mid];
   }
 
@@ -294,17 +331,42 @@ export class IModelTestUtils {
     // dummy method to get this script included
   }
 
+  private static initDebugLogLevels(reset?: boolean) {
+    Logger.setLevelDefault(reset ? LogLevel.Error : LogLevel.Warning);
+    Logger.setLevel(BentleyLoggerCategory.Performance, reset ? LogLevel.Error : LogLevel.Info);
+    Logger.setLevel(BackendLoggerCategory.IModelDb, reset ? LogLevel.Error : LogLevel.Trace);
+    Logger.setLevel(ClientsLoggerCategory.Clients, reset ? LogLevel.Error : LogLevel.Trace);
+    Logger.setLevel(IModelHubClientLoggerCategory.IModelHub, reset ? LogLevel.Error : LogLevel.Trace);
+    Logger.setLevel(ClientsLoggerCategory.Request, reset ? LogLevel.Error : LogLevel.Trace);
+    Logger.setLevel(NativeLoggerCategory.DgnCore, reset ? LogLevel.Error : LogLevel.Trace);
+    Logger.setLevel(NativeLoggerCategory.BeSQLite, reset ? LogLevel.Error : LogLevel.Trace);
+    Logger.setLevel(NativeLoggerCategory.Licensing, reset ? LogLevel.Error : LogLevel.Trace);
+  }
+
   // Setup typical programmatic log level overrides here
   // Convenience method used to debug specific tests/fixtures
   public static setupDebugLogLevels() {
-    Logger.setLevelDefault(LogLevel.Warning);
-    Logger.setLevel(BentleyLoggerCategory.Performance, LogLevel.Info);
-    Logger.setLevel(BackendLoggerCategory.IModelDb, LogLevel.Trace);
-    Logger.setLevel(ClientsLoggerCategory.Clients, LogLevel.Trace);
-    Logger.setLevel(ClientsLoggerCategory.IModelHub, LogLevel.Trace);
-    Logger.setLevel(ClientsLoggerCategory.Request, LogLevel.Trace);
-    Logger.setLevel(NativeLoggerCategory.DgnCore, LogLevel.Error);
-    Logger.setLevel(NativeLoggerCategory.BeSQLite, LogLevel.Error);
+    IModelTestUtils.initDebugLogLevels(false);
+  }
+
+  public static resetDebugLogLevels() {
+    IModelTestUtils.initDebugLogLevels(true);
+  }
+
+  public static executeQuery(db: IModelDb, ecsql: string, bindings?: any[] | object): any[] {
+    return db.withPreparedStatement(ecsql, (stmt) => {
+      if (bindings)
+        stmt.bindValues(bindings);
+
+      const rows: any[] = [];
+      while (DbResult.BE_SQLITE_ROW === stmt.step()) {
+        rows.push(stmt.getRow());
+        if (rows.length > IModelDb.maxLimit)
+          throw new IModelError(IModelStatus.BadRequest, "Max LIMIT exceeded in SELECT statement");
+      }
+
+      return rows;
+    });
   }
 }
 

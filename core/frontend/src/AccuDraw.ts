@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module AccuDraw */
+/** @packageDocumentation
+ * @module AccuDraw
+ */
 import { IModelApp } from "./IModelApp";
 import {
   Point3d, Vector3d, Point2d, Matrix3d, Transform, Geometry, Arc3d, LineSegment3d, CurvePrimitive,
@@ -20,6 +22,8 @@ import { AuxCoordSystemState, ACSDisplayOptions } from "./AuxCoordSys";
 import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
 import { DecorateContext } from "./ViewContext";
 import { ViewTool } from "./tools/ViewTool";
+
+// cspell:ignore dont primitivetools
 
 /** @internal */
 export enum AccuDrawFlags {
@@ -272,19 +276,19 @@ export class AccuDraw {
   /** @internal */
   protected _indexToleranceInches = 0.11;
   /** @internal */
-  protected readonly _frameColor = new ColorDef(ColorByName.lightGrey);
+  protected readonly _frameColor = ColorDef.create(ColorByName.lightGrey);
   /** @internal */
-  protected readonly _fillColor = new ColorDef(ColorByName.blue);
+  protected readonly _fillColor = ColorDef.create(ColorByName.blue);
   /** @internal */
-  protected readonly _xColor = new ColorDef(ColorByName.red);
+  protected readonly _xColor = ColorDef.create(ColorByName.red);
   /** @internal */
-  protected readonly _yColor = new ColorDef(ColorByName.green);
+  protected readonly _yColor = ColorDef.create(ColorByName.green);
   /** @internal */
-  protected readonly _indexColor = new ColorDef(ColorByName.white);
+  protected readonly _indexColor = ColorDef.create(ColorByName.white);
   /** @internal */
-  protected readonly _frameColorNoFocus = new ColorDef(ColorByName.darkGrey);
+  protected readonly _frameColorNoFocus = ColorDef.create(ColorByName.darkGrey);
   /** @internal */
-  protected readonly _fillColorNoFocus = new ColorDef(ColorByName.lightGrey);
+  protected readonly _fillColorNoFocus = ColorDef.create(ColorByName.lightGrey);
 
   // User Preference Settings...
   public smartKeyin = true;
@@ -922,131 +926,10 @@ export class AccuDraw {
   }
 
   private stringToUORs(_uors: number[], _str: string): BentleyStatus {
-    // DistanceParserPtr parser = DistanceParser:: Create();
-    // DgnViewportP   vp = GetCompassViewport();
-
-    // if (NULL == vp)
-    //   parser = DistanceParser:: Create();
-    //   else
-    // parser = DistanceParser:: Create(* vp);
-
-    // if (SUCCESS != parser.ToValue(uors, str))
-    //   return ERROR;
-
     return BentleyStatus.SUCCESS;
   }
 
   private stringToAngle(_angle: number[], _out: { isBearing: boolean }, _inString: string, _restrict: boolean): BentleyStatus {
-    // WString     buffer(inString, BentleyCharEncoding:: Utf8);
-    // WChar * p1, * p2, * string;
-    // int         north = 0, east = 0;
-    // bool        bearing = false;
-
-    // if (isBearing)
-    //       * isBearing = false;
-
-    // string = buffer.begin();
-
-    // if ((p1 = wcspbrk(string, L"NnSs")) != NULL) {
-    //   string = p1 + 1;
-
-    //   if ((p2 = wcspbrk(string, L"EeWw")) == NULL)
-    //     return ERROR;
-
-    //   north = (towupper(* p1) == L'N');
-    //   east = (towupper(* p2) == L'E');
-    //       * p2 = 0; // terminate string
-    //   bearing = true;
-    // }
-    // else if (string[1] == L' ')
-    // {
-    //   bearing = true;
-
-    //   switch (string[0]) {
-    //     case L'1':
-    //       north = true;
-    //       east = true;
-    //       break;
-    //     case L'2':
-    //       north = false;
-    //       east = true;
-    //       break;
-    //     case L'3':
-    //       north = false;
-    //       east = false;
-    //       break;
-    //     case L'4':
-    //       north = true;
-    //       east = false;
-    //       break;
-    //     default:
-    //       bearing = false;
-    //       break;
-    //   }
-
-    //   if (bearing)
-    //     string += 2;
-    // }
-    //   else
-    // {
-    //   bearing = false;
-    // }
-
-    // while (* string == L' ')
-    // string++;
-
-    // AngleParserPtr parser = AngleParser:: Create();
-
-    // _SetupAngleParser(* parser);
-
-    // if (SUCCESS != parser -> ToValue(angle, Utf8String(string).c_str()))
-    //   return ERROR;
-
-    // if (bearing) {
-    //   if (north) {
-    //     if (east)
-    //       angle = 90.0 - angle;
-    //     else
-    //       angle = 90.0 + angle;
-    //   }
-    //   else {
-    //     if (east)
-    //       angle = 270.0 + angle;
-    //     else
-    //       angle = 270.0 - angle;
-    //   }
-    // }
-    // else {
-    //   DirectionFormatterPtr  formatter;
-
-    //   DgnViewportP vp = GetCompassViewport();
-    //   if (vp)
-    //     formatter = DirectionFormatter:: Create(* vp -> GetViewController().GetTargetModel());
-    //       else
-    //   formatter = DirectionFormatter:: Create();
-
-    //   if (DirectionMode:: Azimuth == formatter -> GetDirectionMode())
-    //   {
-    //     if (formatter -> GetClockwise())
-    //       angle = formatter -> GetBaseDirection() - angle;
-    //     else
-    //       angle = angle - formatter -> GetBaseDirection();
-    //   }
-    // }
-
-    // if (restrict == true) {
-    //   while (angle >= 360.0)
-    //     angle -= 360.0;
-
-    //   while (angle < 0.0)
-    //     angle += 360.0;
-    // }
-
-    // angle *= (msGeomConst_pi / 180.0);
-
-    // if (isBearing)
-    //       * isBearing = bearing;
-
     return BentleyStatus.SUCCESS;
   }
 
@@ -1823,11 +1706,11 @@ export class AccuDraw {
 
   private displayAlignments(graphic: GraphicBuilder, vp: Viewport): void {
     const bgColor = vp.view.backgroundColor;
-    const colorIndex = this._indexColor.adjustForContrast(bgColor, 130);
+    const colorIndex = this._indexColor.adjustedForContrast(bgColor, 130);
     const origin = new Point3d(); // Compass origin is adjusted by active z-lock...
     // For non-zero Z value draw indicator line from plane point to compass origin...
     if (this.getCompassPlanePoint(origin, vp)) {
-      const colorZ = this._frameColor.adjustForContrast(bgColor, 155);
+      const colorZ = this._frameColor.adjustedForContrast(bgColor, 155);
       graphic.setSymbology(colorZ, colorZ, 2);
       graphic.addLineString([origin, this.origin]);
       graphic.setSymbology(colorZ, colorZ, 4);
@@ -1992,7 +1875,7 @@ export class AccuDraw {
       if (undefined === this._acsPickId)
         this._acsPickId = context.viewport.iModel.transientIds.next;
       const acsPickBuilder = context.createGraphicBuilder(GraphicType.WorldDecoration, undefined, this._acsPickId);
-      const color = ColorDef.blue.adjustForContrast(context.viewport.view.backgroundColor, 50);
+      const color = ColorDef.blue.adjustedForContrast(context.viewport.view.backgroundColor, 50);
       acsPickBuilder.setSymbology(color, color, 6);
       acsPickBuilder.addPointString([context.viewport.view.auxiliaryCoordinateSystem.getOrigin()]);
       context.addDecorationFromBuilder(acsPickBuilder);
@@ -2021,10 +1904,10 @@ export class AccuDraw {
 
     const hasFocus = this.hasInputFocus;
     const bgColor = vp.view.backgroundColor;
-    const frameColor = (hasFocus ? this._frameColor : this._frameColorNoFocus).adjustForContrast(bgColor, 155);
-    const fillColor = (hasFocus ? this._fillColor : this._fillColorNoFocus).adjustForContrast(bgColor, 75);
-    const xColor = (hasFocus ? this._xColor : this._frameColorNoFocus).adjustForContrast(bgColor, 155);
-    const yColor = (hasFocus ? this._yColor : this._frameColorNoFocus).adjustForContrast(bgColor, 155);
+    const frameColor = (hasFocus ? this._frameColor : this._frameColorNoFocus).adjustedForContrast(bgColor, 155);
+    const fillColor = (hasFocus ? this._fillColor : this._fillColorNoFocus).adjustedForContrast(bgColor, 75);
+    const xColor = (hasFocus ? this._xColor : this._frameColorNoFocus).adjustedForContrast(bgColor, 155);
+    const yColor = (hasFocus ? this._yColor : this._frameColorNoFocus).adjustedForContrast(bgColor, 155);
     const shadowColor = frameColor;
 
     // Display compass frame...
@@ -2908,17 +2791,17 @@ export class AccuDraw {
       return;
 
     const worldToView = this.currentView.worldToViewMap.transform0;
-    const detail = CurveCurve.intersectionProjectedXY(worldToView, usePointOnSnap ? curveSegment : curve, true, usePointOnSnap ? curve : curveSegment, true);
-    if (0 === detail.dataA.length)
+    const detail = CurveCurve.intersectionProjectedXYPairs(worldToView, usePointOnSnap ? curveSegment : curve, true, usePointOnSnap ? curve : curveSegment, true);
+    if (0 === detail.length)
       return;
 
     let closeIndex = 0;
-    if (detail.dataA.length > 1) {
+    if (detail.length > 1) {
       const snapPt = worldToView.multiplyPoint3d(snap.getPoint(), 1);
       let lastDist: number | undefined;
 
-      for (let i = 0; i < detail.dataA.length; i++) {
-        const testPt = worldToView.multiplyPoint3d(detail.dataA[i].point, 1);
+      for (let i = 0; i < detail.length; i++) {
+        const testPt = worldToView.multiplyPoint3d(detail[i].detailA.point, 1);
         const testDist = snapPt.realDistanceXY(testPt);
 
         if (undefined !== testDist && (undefined === lastDist || testDist < lastDist)) {
@@ -2928,7 +2811,7 @@ export class AccuDraw {
       }
     }
 
-    snap.setSnapPoint(detail.dataA[closeIndex].point, SnapHeat.NotInRange);
+    snap.setSnapPoint(detail[closeIndex].detailA.point, SnapHeat.NotInRange);
   }
 
   private intersectLine(snap: SnapDetail, linePt: Point3d, unitVec: Vector3d) {

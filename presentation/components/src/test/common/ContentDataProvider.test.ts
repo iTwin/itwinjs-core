@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /* tslint:disable:no-direct-imports */
 
@@ -12,25 +12,27 @@ import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { PromiseContainer, ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises";
 import {
   createRandomDescriptor, createRandomRuleset, createRandomContent,
-  createRandomECInstanceKey, createRandomPropertiesField,
+  createRandomECInstanceKey, createRandomPropertiesField, createRandomPrimitiveField, createRandomCategory,
+  createRandomPrimitiveTypeDescription, createRandomECClassInfo, createRandomRelationshipPath,
 } from "@bentley/presentation-common/lib/test/_helpers/random";
-import { IModelConnection, PrimitiveValue, PropertyDescription, PropertyRecord } from "@bentley/imodeljs-frontend";
+import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { PrimitiveValue, PropertyDescription, PropertyRecord } from "@bentley/ui-abstract";
 import {
-  Descriptor, Field,
-  SelectionInfo, Item,
-  KeySet, Ruleset, RegisteredRuleset,
-  Content, DescriptorOverrides,
+  Descriptor, Field, SelectionInfo, Item, KeySet, RegisteredRuleset,
+  Content, DescriptorOverrides, NestedContentField, Ruleset, ContentUpdateInfo,
 } from "@bentley/presentation-common";
 import { Presentation, PresentationManager, RulesetManager } from "@bentley/presentation-frontend";
-import { ContentDataProvider, CacheInvalidationProps } from "../../common/ContentDataProvider";
+import { ContentDataProvider, CacheInvalidationProps, ContentDataProviderProps } from "../../presentation-components/common/ContentDataProvider";
+import { FIELD_NAMES_SEPARATOR } from "../../presentation-components/common/ContentBuilder";
+import { BeEvent } from "@bentley/bentleyjs-core";
 
 /**
  * The Provider class is used to make protected ContentDataProvider
  * function public so the tests can call and spy on them.
  */
 class Provider extends ContentDataProvider {
-  constructor(imodel: IModelConnection, ruleset: string | Ruleset, displayType: string) {
-    super(imodel, ruleset, displayType);
+  constructor(props: ContentDataProviderProps) {
+    super(props);
   }
   public invalidateCache(props: CacheInvalidationProps) { super.invalidateCache(props); }
   public configureContentDescriptor(descriptor: Readonly<Descriptor>) { return super.configureContentDescriptor(descriptor); }
@@ -41,56 +43,42 @@ class Provider extends ContentDataProvider {
   public isFieldHidden(field: Field) { return super.isFieldHidden(field); }
 }
 
-interface MemoizedCacheSpies {
-  defaultDescriptor: any;
-  descriptor: any;
-  sizeAndContent: any;
-}
-
 describe("ContentDataProvider", () => {
 
   let rulesetId: string;
   let displayType: string;
   let provider: Provider;
-  let memoizedCacheSpies: MemoizedCacheSpies;
+  let onContentUpdateEvent: BeEvent<(ruleset: Ruleset, info: ContentUpdateInfo) => void>;
+  let invalidateCacheSpy: sinon.SinonSpy<[CacheInvalidationProps], void>;
   const presentationManagerMock = moq.Mock.ofType<PresentationManager>();
   const imodelMock = moq.Mock.ofType<IModelConnection>();
   before(() => {
     rulesetId = faker.random.word();
     displayType = faker.random.word();
-    Presentation.presentation = presentationManagerMock.object;
+    Presentation.setPresentationManager(presentationManagerMock.object);
   });
+
+  after(() => {
+    Presentation.terminate();
+  });
+
   beforeEach(() => {
+    onContentUpdateEvent = new BeEvent();
     presentationManagerMock.reset();
-    provider = new Provider(imodelMock.object, rulesetId, displayType);
-    resetMemoizedCacheSpies();
+    presentationManagerMock.setup((x) => x.onContentUpdate).returns(() => onContentUpdateEvent);
+    provider = new Provider({ imodel: imodelMock.object, ruleset: rulesetId, displayType });
+    invalidateCacheSpy = sinon.spy(provider, "invalidateCache");
   });
+
   afterEach(() => {
     provider.dispose();
   });
-
-  const verifyMemoizedCachesCleared = (expectCleared: boolean = true) => {
-    Object.values(memoizedCacheSpies).forEach((s) => {
-      if (expectCleared)
-        expect(s).to.be.called;
-      else
-        expect(s).to.not.be.called;
-    });
-  };
-  const resetMemoizedCacheSpies = () => {
-    sinon.restore();
-    memoizedCacheSpies = {
-      defaultDescriptor: sinon.spy((provider as any).getDefaultContentDescriptor.cache, "clear"),
-      descriptor: sinon.spy(provider.getContentDescriptor.cache, "clear"),
-      sizeAndContent: sinon.spy((provider as any)._getContentAndSize.cache, "clear"),
-    };
-  };
 
   describe("constructor", () => {
 
     it("sets display type", () => {
       const type = faker.random.word();
-      const p = new Provider(imodelMock.object, rulesetId, type);
+      const p = new Provider({ imodel: imodelMock.object, ruleset: rulesetId, displayType: type });
       expect(p.displayType).to.eq(type);
     });
 
@@ -100,7 +88,7 @@ describe("ContentDataProvider", () => {
       presentationManagerMock.setup((x) => x.rulesets()).returns(() => rulesetsManagerMock.object);
 
       const ruleset = await createRandomRuleset();
-      const p = new Provider(imodelMock.object, ruleset, displayType);
+      const p = new Provider({ imodel: imodelMock.object, ruleset, displayType });
       expect(p.rulesetId).to.eq(ruleset.id);
       rulesetsManagerMock.verify(async (x) => x.add(ruleset), moq.Times.once());
     });
@@ -112,7 +100,7 @@ describe("ContentDataProvider", () => {
       presentationManagerMock.setup((x) => x.rulesets()).returns(() => rulesetsManagerMock.object);
 
       const ruleset = await createRandomRuleset();
-      const p = new Provider(imodelMock.object, ruleset, displayType);
+      const p = new Provider({ imodel: imodelMock.object, ruleset, displayType });
       p.dispose();
 
       const rulesetDisposeSpy = sinon.spy();
@@ -131,7 +119,7 @@ describe("ContentDataProvider", () => {
       presentationManagerMock.setup((x) => x.rulesets()).returns(() => rulesetsManagerMock.object);
 
       const ruleset = await createRandomRuleset();
-      const p = new Provider(imodelMock.object, ruleset, displayType);
+      const p = new Provider({ imodel: imodelMock.object, ruleset, displayType });
       const rulesetDisposeSpy = sinon.spy();
       await registerPromise.resolve(new RegisteredRuleset(ruleset, "test", rulesetDisposeSpy));
 
@@ -152,14 +140,14 @@ describe("ContentDataProvider", () => {
       const newId = rulesetId + " (changed)";
       provider.rulesetId = newId;
       expect(provider.rulesetId).to.eq(newId);
-      verifyMemoizedCachesCleared();
+      expect(invalidateCacheSpy).to.be.calledOnceWith(CacheInvalidationProps.full());
     });
 
     it("doesn't clear caches if setting to the same rulesetId", () => {
       const newId = rulesetId + "";
       provider.rulesetId = newId;
       expect(provider.rulesetId).to.eq(newId);
-      verifyMemoizedCachesCleared(false);
+      expect(invalidateCacheSpy).to.not.be.called;
     });
 
   });
@@ -174,13 +162,13 @@ describe("ContentDataProvider", () => {
       const newConnection = moq.Mock.ofType<IModelConnection>();
       provider.imodel = newConnection.object;
       expect(provider.imodel).to.eq(newConnection.object);
-      verifyMemoizedCachesCleared();
+      expect(invalidateCacheSpy).to.be.calledOnceWith(CacheInvalidationProps.full());
     });
 
     it("doesn't clear caches if setting to the same imodel", () => {
       provider.imodel = imodelMock.object;
       expect(provider.imodel).to.eq(imodelMock.object);
-      verifyMemoizedCachesCleared(false);
+      expect(invalidateCacheSpy).to.not.be.called;
     });
 
   });
@@ -191,23 +179,23 @@ describe("ContentDataProvider", () => {
       const info1: SelectionInfo = { providerName: "a" };
       provider.selectionInfo = info1;
       expect(provider.selectionInfo).to.eq(info1);
-      resetMemoizedCacheSpies();
+      invalidateCacheSpy.resetHistory();
 
       const info2: SelectionInfo = { providerName: "b" };
       provider.selectionInfo = info2;
       expect(provider.selectionInfo).to.eq(info2);
-      verifyMemoizedCachesCleared(true);
+      expect(invalidateCacheSpy).to.be.calledOnceWith(CacheInvalidationProps.full());
     });
 
     it("doesn't clear caches if setting to the same selectionInfo", () => {
       const info1: SelectionInfo = { providerName: "a" };
       provider.selectionInfo = info1;
       expect(provider.selectionInfo).to.eq(info1);
-      resetMemoizedCacheSpies();
+      invalidateCacheSpy.resetHistory();
 
       provider.selectionInfo = info1;
       expect(provider.selectionInfo).to.eq(info1);
-      verifyMemoizedCachesCleared(false);
+      expect(invalidateCacheSpy).to.not.be.called;
     });
 
   });
@@ -218,48 +206,24 @@ describe("ContentDataProvider", () => {
       const keys = new KeySet();
       provider.keys = keys;
       expect(provider.keys).to.eq(keys);
-      verifyMemoizedCachesCleared(true);
+      expect(invalidateCacheSpy).to.be.calledOnceWith(CacheInvalidationProps.full());
     });
 
     it("doesn't clear caches if keys didn't change", () => {
       const keys = new KeySet();
       provider.keys = keys;
-      resetMemoizedCacheSpies();
+      invalidateCacheSpy.resetHistory();
       provider.keys = keys;
-      verifyMemoizedCachesCleared(false);
+      expect(invalidateCacheSpy).to.not.be.called;
     });
 
     it("sets keys and clears caches when keys change in place", () => {
       const keys = new KeySet();
       provider.keys = keys;
-      resetMemoizedCacheSpies();
+      invalidateCacheSpy.resetHistory();
       keys.add(createRandomECInstanceKey());
       provider.keys = keys;
-      verifyMemoizedCachesCleared(true);
-    });
-
-  });
-
-  describe("invalidateCache", () => {
-
-    it("clears memoized descriptor", () => {
-      provider.invalidateCache({ descriptor: true });
-      expect(memoizedCacheSpies.defaultDescriptor).to.be.called;
-    });
-
-    it("clears memoized configured descriptor", () => {
-      provider.invalidateCache({ descriptorConfiguration: true });
-      expect(memoizedCacheSpies.descriptor).to.be.called;
-    });
-
-    it("clears memoized content set size", () => {
-      provider.invalidateCache({ size: true });
-      expect(memoizedCacheSpies.sizeAndContent).to.be.called;
-    });
-
-    it("clears memoized content", () => {
-      provider.invalidateCache({ content: true });
-      expect(memoizedCacheSpies.sizeAndContent).to.be.called;
+      expect(invalidateCacheSpy).to.be.calledOnceWith(CacheInvalidationProps.full());
     });
 
   });
@@ -287,7 +251,7 @@ describe("ContentDataProvider", () => {
     it("requests presentation manager for descriptor and returns its copy", async () => {
       const result = createRandomDescriptor(displayType);
       presentationManagerMock
-        .setup((x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetId }, displayType, moq.It.isAnyObject(KeySet), selection))
+        .setup((x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetOrId: rulesetId }, displayType, moq.It.isAnyObject(KeySet), selection))
         .returns(async () => result)
         .verifiable();
       provider.selectionInfo = selection;
@@ -321,7 +285,7 @@ describe("ContentDataProvider", () => {
     });
 
     it("handles undefined descriptor returned by presentation manager", async () => {
-      presentationManagerMock.setup((x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetId }, moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
+      presentationManagerMock.setup((x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetOrId: rulesetId }, moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
         .returns(async () => undefined);
       const descriptor = await provider.getContentDescriptor();
       expect(descriptor).to.be.undefined;
@@ -330,7 +294,7 @@ describe("ContentDataProvider", () => {
     it("configures copy of descriptor returned by presentation manager", async () => {
       const configureSpy = sinon.spy(provider, "configureContentDescriptor");
       const result = createRandomDescriptor(displayType);
-      presentationManagerMock.setup((x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetId }, moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
+      presentationManagerMock.setup((x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetOrId: rulesetId }, moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
         .returns(async () => result);
       await provider.getContentDescriptor();
       expect(configureSpy).to.be.calledOnce;
@@ -338,7 +302,7 @@ describe("ContentDataProvider", () => {
 
     it("memoizes result", async () => {
       const resultPromiseContainer = new PromiseContainer<Descriptor>();
-      presentationManagerMock.setup((x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetId }, moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
+      presentationManagerMock.setup((x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetOrId: rulesetId }, moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
         .returns(async () => resultPromiseContainer.promise)
         .verifiable(moq.Times.once());
       const requests = [provider.getContentDescriptor(), provider.getContentDescriptor()];
@@ -358,10 +322,10 @@ describe("ContentDataProvider", () => {
     });
 
     it("returns 0 when manager returns undefined descriptor", async () => {
-      presentationManagerMock.setup((x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetId }, moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
+      presentationManagerMock.setup((x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetOrId: rulesetId }, moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
         .returns(async () => undefined)
         .verifiable();
-      presentationManagerMock.setup((x) => x.getContentSetSize({ imodel: imodelMock.object, rulesetId }, moq.It.isAny(), moq.It.isAny()))
+      presentationManagerMock.setup((x) => x.getContentSetSize({ imodel: imodelMock.object, rulesetOrId: rulesetId }, moq.It.isAny(), moq.It.isAny()))
         .verifiable(moq.Times.never());
       const size = await provider.getContentSetSize();
       presentationManagerMock.verifyAll();
@@ -370,10 +334,10 @@ describe("ContentDataProvider", () => {
 
     it("requests presentation manager for size", async () => {
       const result = new PromiseContainer<{ content: Content, size: number }>();
-      presentationManagerMock.setup((x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetId }, moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
+      presentationManagerMock.setup((x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetOrId: rulesetId }, moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
         .returns(async () => createRandomDescriptor())
         .verifiable();
-      presentationManagerMock.setup((x) => x.getContentAndSize({ imodel: imodelMock.object, rulesetId, paging: { start: 0, size: 10 } }, moq.It.isAny(), moq.It.isAny()))
+      presentationManagerMock.setup((x) => x.getContentAndSize({ imodel: imodelMock.object, rulesetOrId: rulesetId, paging: { start: 0, size: 10 } }, moq.It.isAny(), moq.It.isAny()))
         .returns(async () => result.promise)
         .verifiable();
       provider.pagingSize = 10;
@@ -386,10 +350,10 @@ describe("ContentDataProvider", () => {
 
     it("memoizes result", async () => {
       const resultPromiseContainer = new PromiseContainer<{ content: Content, size: number }>();
-      presentationManagerMock.setup((x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetId }, moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
+      presentationManagerMock.setup((x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetOrId: rulesetId }, moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
         .returns(async () => createRandomDescriptor())
         .verifiable();
-      presentationManagerMock.setup((x) => x.getContentAndSize({ imodel: imodelMock.object, rulesetId, paging: { start: 0, size: 10 } }, moq.It.isAny(), moq.It.isAny()))
+      presentationManagerMock.setup((x) => x.getContentAndSize({ imodel: imodelMock.object, rulesetOrId: rulesetId, paging: { start: 0, size: 10 } }, moq.It.isAny(), moq.It.isAny()))
         .returns(async () => resultPromiseContainer.promise)
         .verifiable(moq.Times.once());
       provider.pagingSize = 10;
@@ -405,10 +369,10 @@ describe("ContentDataProvider", () => {
       const resultPromiseContainer = new PromiseContainer<{ content: Content, size: number }>(); // TODO
       const pagingSize = 20;
 
-      presentationManagerMock.setup((x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetId }, moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
+      presentationManagerMock.setup((x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetOrId: rulesetId }, moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
         .returns(async () => createRandomDescriptor())
         .verifiable();
-      presentationManagerMock.setup((x) => x.getContentAndSize({ imodel: imodelMock.object, rulesetId, paging: { start: 0, size: pagingSize } }, moq.It.isAny(), moq.It.isAny()))
+      presentationManagerMock.setup((x) => x.getContentAndSize({ imodel: imodelMock.object, rulesetOrId: rulesetId, paging: { start: 0, size: pagingSize } }, moq.It.isAny(), moq.It.isAny()))
         .returns(async () => resultPromiseContainer.promise)
         .verifiable(moq.Times.once());
 
@@ -423,10 +387,10 @@ describe("ContentDataProvider", () => {
     it("returns content size equal to content set size when page options are undefined", async () => {
       const descriptor = createRandomDescriptor();
       const content = new Content(descriptor, [new Item([], "1", "", undefined, {}, {}, [])]);
-      presentationManagerMock.setup((x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetId }, moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
+      presentationManagerMock.setup((x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetOrId: rulesetId }, moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
         .returns(async () => descriptor)
         .verifiable();
-      presentationManagerMock.setup((x) => x.getContent({ imodel: imodelMock.object, rulesetId, paging: undefined }, moq.It.isAny(), moq.It.isAny()))
+      presentationManagerMock.setup((x) => x.getContent({ imodel: imodelMock.object, rulesetOrId: rulesetId, paging: undefined }, moq.It.isAny(), moq.It.isAny()))
         .returns(async () => content)
         .verifiable(moq.Times.once());
       presentationManagerMock.setup((x) => x.getContentSetSize(moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
@@ -445,7 +409,7 @@ describe("ContentDataProvider", () => {
 
       presentationManagerMock.setup(async (x) => x.getContentDescriptor(moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
         .verifiable(moq.Times.never());
-      presentationManagerMock.setup(async (x) => x.getContent({ imodel: imodelMock.object, rulesetId, paging: undefined }, overrides, moq.It.isAny()))
+      presentationManagerMock.setup(async (x) => x.getContent({ imodel: imodelMock.object, rulesetOrId: rulesetId, paging: undefined }, overrides, moq.It.isAny()))
         .returns(async () => content)
         .verifiable(moq.Times.once());
 
@@ -462,10 +426,10 @@ describe("ContentDataProvider", () => {
     });
 
     it("returns undefined when manager returns undefined descriptor", async () => {
-      presentationManagerMock.setup(async (x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetId }, moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
+      presentationManagerMock.setup(async (x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetOrId: rulesetId }, moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
         .returns(async () => undefined)
         .verifiable();
-      presentationManagerMock.setup(async (x) => x.getContent({ imodel: imodelMock.object, rulesetId }, moq.It.isAny(), moq.It.isAny()))
+      presentationManagerMock.setup(async (x) => x.getContent({ imodel: imodelMock.object, rulesetOrId: rulesetId }, moq.It.isAny(), moq.It.isAny()))
         .verifiable(moq.Times.never());
       const c = await provider.getContent();
       presentationManagerMock.verifyAll();
@@ -473,10 +437,10 @@ describe("ContentDataProvider", () => {
     });
 
     it("returns undefined when manager returns undefined content", async () => {
-      presentationManagerMock.setup(async (x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetId }, moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
+      presentationManagerMock.setup(async (x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetOrId: rulesetId }, moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
         .returns(async () => createRandomDescriptor())
         .verifiable();
-      presentationManagerMock.setup(async (x) => x.getContent({ imodel: imodelMock.object, rulesetId, paging: undefined }, moq.It.isAny(), moq.It.isAny()))
+      presentationManagerMock.setup(async (x) => x.getContent({ imodel: imodelMock.object, rulesetOrId: rulesetId, paging: undefined }, moq.It.isAny(), moq.It.isAny()))
         .returns(async () => undefined)
         .verifiable();
       const c = await provider.getContent();
@@ -490,10 +454,10 @@ describe("ContentDataProvider", () => {
         content: new Content(descriptor, []),
         size: 1,
       };
-      presentationManagerMock.setup(async (x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetId }, moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
+      presentationManagerMock.setup(async (x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetOrId: rulesetId }, moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
         .returns(async () => descriptor)
         .verifiable();
-      presentationManagerMock.setup(async (x) => x.getContentAndSize({ imodel: imodelMock.object, rulesetId, paging: { start: 0, size: 10 } }, moq.It.isAny(), moq.It.isAny()))
+      presentationManagerMock.setup(async (x) => x.getContentAndSize({ imodel: imodelMock.object, rulesetOrId: rulesetId, paging: { start: 0, size: 10 } }, moq.It.isAny(), moq.It.isAny()))
         .returns(async () => result)
         .verifiable();
       const c = await provider.getContent({ start: 0, size: 10 });
@@ -503,51 +467,62 @@ describe("ContentDataProvider", () => {
 
     it("memoizes result", async () => {
       const descriptor = createRandomDescriptor();
-      const resultContentFirstPagePromise0 = new PromiseContainer<Content>();
-      const resultContentFirstPagePromise1 = new PromiseContainer<{ content: Content, size: number }>();
-      const resultContentNonFirstPagePromise = new PromiseContainer<Content>();
-      presentationManagerMock.setup(async (x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetId }, moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
+      presentationManagerMock.setup(async (x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetOrId: rulesetId }, moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
         .returns(async () => descriptor)
         .verifiable();
 
-      presentationManagerMock.setup(async (x) => x.getContent({ imodel: imodelMock.object, rulesetId, paging: undefined }, moq.It.isAny(), moq.It.isAny()))
+      const resultContentFirstPagePromise0 = new PromiseContainer<Content>();
+      presentationManagerMock.setup(async (x) => x.getContent({ imodel: imodelMock.object, rulesetOrId: rulesetId, paging: undefined }, moq.It.isAny(), moq.It.isAny()))
         .returns(async () => resultContentFirstPagePromise0.promise)
         .verifiable(moq.Times.once());
-      presentationManagerMock.setup(async (x) => x.getContent({ imodel: imodelMock.object, rulesetId, paging: { start: 0, size: 0 } }, moq.It.isAny(), moq.It.isAny()))
+      presentationManagerMock.setup(async (x) => x.getContent({ imodel: imodelMock.object, rulesetOrId: rulesetId, paging: { start: undefined, size: 0 } }, moq.It.isAny(), moq.It.isAny()))
         .verifiable(moq.Times.never());
-      presentationManagerMock.setup(async (x) => x.getContentAndSize({ imodel: imodelMock.object, rulesetId, paging: { start: 0, size: 1 } }, moq.It.isAny(), moq.It.isAny()))
+      presentationManagerMock.setup(async (x) => x.getContent({ imodel: imodelMock.object, rulesetOrId: rulesetId, paging: { start: 0, size: undefined } }, moq.It.isAny(), moq.It.isAny()))
+        .verifiable(moq.Times.never());
+      presentationManagerMock.setup(async (x) => x.getContent({ imodel: imodelMock.object, rulesetOrId: rulesetId, paging: { start: 0, size: 0 } }, moq.It.isAny(), moq.It.isAny()))
+        .verifiable(moq.Times.never());
+
+      const resultContentFirstPagePromise1 = new PromiseContainer<{ content: Content, size: number }>();
+      presentationManagerMock.setup(async (x) => x.getContentAndSize({ imodel: imodelMock.object, rulesetOrId: rulesetId, paging: { start: 0, size: 1 } }, moq.It.isAny(), moq.It.isAny()))
         .returns(async () => resultContentFirstPagePromise1.promise)
         .verifiable(moq.Times.once());
-      presentationManagerMock.setup(async (x) => x.getContent({ imodel: imodelMock.object, rulesetId, paging: { start: 1, size: 0 } }, moq.It.isAny(), moq.It.isAny()))
+
+      const resultContentNonFirstPagePromise = new PromiseContainer<Content>();
+      presentationManagerMock.setup(async (x) => x.getContent({ imodel: imodelMock.object, rulesetOrId: rulesetId, paging: { start: 1, size: 0 } }, moq.It.isAny(), moq.It.isAny()))
         .returns(async () => resultContentNonFirstPagePromise.promise)
         .verifiable(moq.Times.once());
 
       const requests = [
         provider.getContent(undefined),
+        provider.getContent({ start: undefined, size: 0 }),
+        provider.getContent({ start: 0, size: undefined }),
         provider.getContent({ start: 0, size: 0 }),
         provider.getContent({ start: 0, size: 1 }),
         provider.getContent({ start: 1, size: 0 }),
       ];
-      const results: { content: Content, size: number }[] = [{
-        content: new Content(descriptor, [new Item([], "1", "", undefined, {}, {}, [])]),
-        size: 1,
-      }, {
+
+      // for first 4 requests
+      const nonPagedContentStartingAt0Response = new Content(descriptor, [new Item([], "1", "", undefined, {}, {}, [])]);
+      // for 5'th request
+      const pagedContentAndSizeResponse = {
         content: new Content(descriptor, [new Item([], "2", "", undefined, {}, {}, [])]),
         size: 1,
-      }, {
-        content: new Content(descriptor, [new Item([], "3", "", undefined, {}, {}, [])]),
-        size: 1,
-      }];
-      resultContentFirstPagePromise0.resolve(results[0].content);
-      resultContentFirstPagePromise1.resolve(results[1]);
-      resultContentNonFirstPagePromise.resolve(results[2].content);
+      };
+      // for 6'th request
+      const nonPagedContentStartingAt1Response = new Content(descriptor, [new Item([], "3", "", undefined, {}, {}, [])]);
+
+      resultContentFirstPagePromise0.resolve(nonPagedContentStartingAt0Response);
+      resultContentFirstPagePromise1.resolve(pagedContentAndSizeResponse);
+      resultContentNonFirstPagePromise.resolve(nonPagedContentStartingAt1Response);
       const responses = await Promise.all(requests);
 
-      expect(responses[1])
-        .to.deep.eq(responses[0], "responses[1] should eq responses[0]")
-        .to.deep.eq(results[0].content, "both responses[0] and responses[1] should eq results[0]");
-      expect(responses[2]).to.deep.eq(results[1].content, "responses[2] should eq results[1]");
-      expect(responses[3]).to.deep.eq(results[2].content, "responses[3] should eq results[2]");
+      expect(responses[0])
+        .to.deep.eq(responses[1], "responses[1] should eq responses[0]")
+        .to.deep.eq(responses[2], "responses[2] should eq responses[0]")
+        .to.deep.eq(responses[3], "responses[3] should eq responses[0]")
+        .to.deep.eq(nonPagedContentStartingAt0Response, "responses[0], responses[1], responses[2] and responses[3] should eq nonPagedContentStartingAt0Response");
+      expect(responses[4]).to.deep.eq(pagedContentAndSizeResponse.content, "responses[4] should eq pagedContentAndSizeResponse.content");
+      expect(responses[5]).to.deep.eq(nonPagedContentStartingAt1Response, "responses[5] should eq nonPagedContentStartingAt1Response");
       presentationManagerMock.verifyAll();
     });
 
@@ -559,7 +534,7 @@ describe("ContentDataProvider", () => {
 
       presentationManagerMock.setup(async (x) => x.getContentDescriptor(moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
         .verifiable(moq.Times.never());
-      presentationManagerMock.setup(async (x) => x.getContent({ imodel: imodelMock.object, rulesetId, paging: undefined }, overrides, moq.It.isAny()))
+      presentationManagerMock.setup(async (x) => x.getContent({ imodel: imodelMock.object, rulesetOrId: rulesetId, paging: undefined }, overrides, moq.It.isAny()))
         .returns(async () => result)
         .verifiable(moq.Times.once());
 
@@ -615,6 +590,19 @@ describe("ContentDataProvider", () => {
       expect(field).to.be.undefined;
     });
 
+    it("return undefined when field is not found", async () => {
+      const descriptor = createRandomDescriptor();
+
+      presentationManagerMock.setup((x) =>
+        x.getContentDescriptor(moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
+        .returns(async () => descriptor)
+        .verifiable(moq.Times.once());
+
+      const resultField = await provider.getFieldByPropertyRecord(propertyRecord);
+      presentationManagerMock.verifyAll();
+      expect(resultField).to.be.undefined;
+    });
+
     it("return a field", async () => {
       const descriptor = createRandomDescriptor();
       const field = createRandomPropertiesField();
@@ -630,6 +618,41 @@ describe("ContentDataProvider", () => {
       const resultField = await provider.getFieldByPropertyRecord(propertyRecord);
       presentationManagerMock.verifyAll();
       expect(resultField).to.be.eq(field);
+    });
+
+    it("return a nested field", async () => {
+      const descriptor = createRandomDescriptor();
+      const nestedField = createRandomPrimitiveField();
+      const field = new NestedContentField(createRandomCategory(), faker.random.word(),
+        faker.random.words(), createRandomPrimitiveTypeDescription(), faker.random.boolean(),
+        faker.random.number(), createRandomECClassInfo(), createRandomRelationshipPath(1), [nestedField], undefined, faker.random.boolean());
+      descriptor.fields = [field];
+      propertyRecord.property.name = `${field.name}${FIELD_NAMES_SEPARATOR}${nestedField.name}`;
+
+      presentationManagerMock.setup((x) =>
+        x.getContentDescriptor(moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
+        .returns(async () => descriptor)
+        .verifiable(moq.Times.once());
+
+      const resultField = await provider.getFieldByPropertyRecord(propertyRecord);
+      presentationManagerMock.verifyAll();
+      expect(resultField).to.be.eq(nestedField);
+    });
+
+  });
+
+  describe("reacting to updates", () => {
+
+    it("doesn't react to updates to unrelated rulesets", () => {
+      const ruleset: Ruleset = { id: "unrelated", rules: [] };
+      onContentUpdateEvent.raiseEvent(ruleset, "FULL");
+      expect(invalidateCacheSpy).to.not.be.called;
+    });
+
+    it("invalidates cache when update happens to related ruleset", () => {
+      const ruleset: Ruleset = { id: rulesetId, rules: [] };
+      onContentUpdateEvent.raiseEvent(ruleset, "FULL");
+      expect(invalidateCacheSpy).to.be.calledOnceWith(CacheInvalidationProps.full());
     });
 
   });

@@ -1,70 +1,32 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module iModels */
+/** @packageDocumentation
+ * @module iModels
+ */
 
-import { GuidString, Id64, Id64String, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
+import { GuidString, Id64, Id64String, IModelStatus, OpenMode, Logger } from "@bentley/bentleyjs-core";
 import { AxisOrder, Matrix3d, Point3d, Range3dProps, Transform, Vector3d, XYAndZ, XYZProps, YawPitchRollAngles, YawPitchRollProps, Range3d, Angle, AxisIndex } from "@bentley/geometry-core";
-import { Cartographic } from "./geometry/Cartographic";
+import { Cartographic, LatLongAndHeight } from "./geometry/Cartographic";
 import { AxisAlignedBox3d } from "./geometry/Placement";
 import { IModelError } from "./IModelError";
 import { ThumbnailProps } from "./Thumbnail";
 
-/** The properties of IModelToken.
+/** The properties that identify a specific instance of an iModel for RPC operations.
  * @public
  */
-export interface IModelTokenProps {
+export interface IModelRpcProps {
   /** Key used for identifying the iModel on the backend */
-  readonly key?: string;
+  readonly key: string;
   /** Context (Project, Asset, or other infrastructure) in which the iModel exists - must be defined if the iModel exists in the Hub or in a non-Connect infrastructure. */
-  readonly contextId?: string;
+  readonly contextId?: GuidString;
   /** Guid of the iModel - must be defined if the iModel exists in the Hub */
-  readonly iModelId?: string;
+  readonly iModelId?: GuidString;
   /** Id of the last ChangeSet that was applied to the iModel - must be defined if the iModel exists in the Hub. An empty string indicates the first version */
   changeSetId?: string;
   /** Mode used to open the iModel */
   openMode?: OpenMode;
-}
-
-/** A token that identifies a specific instance of an iModel to be operated on
- * @public
- */
-export class IModelToken implements IModelTokenProps {
-  /** Constructs an IModelToken from a props object. */
-  public static fromJSON(props: IModelTokenProps): IModelToken {
-    return new IModelToken(props.key, props.contextId, props.iModelId, props.changeSetId, props.openMode);
-  }
-  /** Key used for identifying the iModel on the backend */
-  public readonly key?: string;
-  /** Context (Project, Asset, or other infrastructure) in which the iModel exists - must be defined if the iModel exists in the Hub or in a non-Connect infrastructure. */
-  public readonly contextId?: string;
-  /** Guid of the iModel - must be defined if the iModel exists in the Hub */
-  public readonly iModelId?: string;
-  /** Id of the last ChangeSet that was applied to the iModel - must be defined if the iModel exists in the Hub. An empty string indicates the first version */
-  public changeSetId?: string;
-  /** Mode used to open the iModel */
-  public openMode?: OpenMode;
-
-  /** Constructor */
-  public constructor(key?: string, contextId?: string, iModelid?: string, changesetId?: string, openMode?: OpenMode) {
-    this.key = key;
-    this.contextId = contextId;
-    this.iModelId = iModelid;
-    this.changeSetId = changesetId;
-    this.openMode = openMode;
-  }
-
-  /** Creates a props object for this IModelToken. */
-  public toJSON(): IModelTokenProps {
-    return {
-      key: this.key,
-      contextId: this.contextId,
-      iModelId: this.iModelId,
-      changeSetId: this.changeSetId,
-      openMode: this.openMode,
-    };
-  }
 }
 
 /** Properties that position an iModel on the earth via [ECEF](https://en.wikipedia.org/wiki/ECEF) (Earth Centered Earth Fixed) coordinates
@@ -75,43 +37,8 @@ export interface EcefLocationProps {
   origin: XYZProps;
   /** The [orientation](https://en.wikipedia.org/wiki/Geographic_coordinate_conversion) of an iModel on the earth. */
   orientation: YawPitchRollProps;
-}
-
-/** The position and orientation of an iModel on the earth in [ECEF](https://en.wikipedia.org/wiki/ECEF) (Earth Centered Earth Fixed) coordinates
- * @see [GeoLocation of iModels]($docs/learning/GeoLocation.md)
- * @public
- */
-export class EcefLocation implements EcefLocationProps {
-  /** The origin of the ECEF transform. */
-  public readonly origin: Point3d;
-  /** The orientation of the ECEF transform */
-  public readonly orientation: YawPitchRollAngles;
-  /** Get the transform from iModel Spatial coordinates to ECEF from this EcefLocation */
-  public getTransform(): Transform { return Transform.createOriginAndMatrix(this.origin, this.orientation.toMatrix3d()); }
-
-  /** Construct a new EcefLocation. Once constructed, it is frozen and cannot be modified. */
-  constructor(props: EcefLocationProps) {
-    this.origin = Point3d.fromJSON(props.origin);
-    this.orientation = YawPitchRollAngles.fromJSON(props.orientation);
-    this.origin.freeze(); // may not be modified
-    this.orientation.freeze(); // may not be modified
-  }
-
-  /** Construct ECEF Location from cartographic origin with optional known point and angle.   */
-  public static createFromCartographicOrigin(origin: Cartographic, point?: Point3d, angle?: Angle) {
-    const ecefOrigin = origin.toEcef();
-    const zVector = Vector3d.createFrom(ecefOrigin).normalize();
-    const xVector = Vector3d.create(-Math.sin(origin.longitude), Math.cos(origin.longitude), 0.0);
-    const matrix = Matrix3d.createRigidFromColumns(zVector!, xVector, AxisOrder.ZXY)!;
-    if (point !== undefined) {
-      const delta = matrix.multiplyVector(Vector3d.create(-point.x, -point.y, -point.z));
-      ecefOrigin.addInPlace(delta);
-    }
-    if (angle !== undefined)
-      matrix.multiplyMatrixMatrix(Matrix3d.createRotationAroundAxisIndex(AxisIndex.Z, angle), matrix);
-
-    return new EcefLocation({ origin: ecefOrigin, orientation: YawPitchRollAngles.createFromMatrix3d(matrix)! });
-  }
+  /** Optional position on the earth used to establish the ECEF coordinates. */
+  cartographicOrigin?: LatLongAndHeight;
 }
 
 /** Properties of the [Root Subject]($docs/bis/intro/glossary#subject-root).
@@ -138,9 +65,10 @@ export interface IModelProps {
   ecefLocation?: EcefLocationProps;
   /** The name of the iModel. */
   name?: string;
-  /** The token of the iModel. */
-  iModelToken?: IModelTokenProps;
 }
+
+/** @internal */
+export type IModelConnectionProps = IModelProps & IModelRpcProps;
 
 /** The properties that can be supplied when creating a *new* iModel.
  * @public
@@ -156,12 +84,85 @@ export interface CreateIModelProps extends IModelProps {
   thumbnail?: ThumbnailProps;
 }
 
+/** Encryption-related properties that can be supplied when creating or opening snapshot iModels.
+ * @beta
+ */
+export interface IModelEncryptionProps {
+  /** The password used to encrypt/decrypt the snapshot iModel. */
+  password?: string;
+}
+
+/** Options that can be supplied when creating snapshot iModels.
+ * @beta
+ */
+export interface CreateSnapshotIModelProps extends IModelEncryptionProps {
+  /** If true, then create SQLite views for Model, Element, ElementAspect, and Relationship classes.
+   * These database views can often be useful for interoperability workflows.
+   */
+  createClassViews?: boolean;
+}
+
+/** The options that can be specified when creating an *empty* snapshot iModel.
+ * @see [SnapshotDb.createEmpty]($backend)
+ * @beta
+ */
+export type CreateEmptySnapshotIModelProps = CreateIModelProps & CreateSnapshotIModelProps;
+
 /** @public */
 export interface FilePropertyProps {
   namespace: string;
   name: string;
   id?: number | string;
   subId?: number | string;
+}
+
+/** The position and orientation of an iModel on the earth in [ECEF](https://en.wikipedia.org/wiki/ECEF) (Earth Centered Earth Fixed) coordinates
+ * @see [GeoLocation of iModels]($docs/learning/GeoLocation.md)
+ * @public
+ */
+export class EcefLocation implements EcefLocationProps {
+  /** The origin of the ECEF transform. */
+  public readonly origin: Point3d;
+  /** The orientation of the ECEF transform */
+  public readonly orientation: YawPitchRollAngles;
+  /** Optional position on the earth used to establish the ECEF origin and orientation. */
+  public readonly cartographicOrigin?: Cartographic;
+
+  /** Get the transform from iModel Spatial coordinates to ECEF from this EcefLocation */
+  public getTransform(): Transform {
+    return Transform.createOriginAndMatrix(this.origin, this.orientation.toMatrix3d());
+  }
+
+  /** Construct a new EcefLocation. Once constructed, it is frozen and cannot be modified. */
+  constructor(props: EcefLocationProps) {
+    this.origin = Point3d.fromJSON(props.origin).freeze();
+    this.orientation = YawPitchRollAngles.fromJSON(props.orientation).freeze();
+    if (props.cartographicOrigin)
+      this.cartographicOrigin = Cartographic.fromRadians(props.cartographicOrigin.longitude, props.cartographicOrigin.latitude, props.cartographicOrigin.height).freeze();
+  }
+
+  /** Construct ECEF Location from cartographic origin with optional known point and angle.   */
+  public static createFromCartographicOrigin(origin: Cartographic, point?: Point3d, angle?: Angle) {
+    const ecefOrigin = origin.toEcef();
+    const zVector = Vector3d.createFrom(ecefOrigin).normalize();
+    const xVector = Vector3d.create(-Math.sin(origin.longitude), Math.cos(origin.longitude), 0.0);
+    const matrix = Matrix3d.createRigidFromColumns(zVector!, xVector, AxisOrder.ZXY)!;
+    if (angle !== undefined) {
+      const north = Matrix3d.createRotationAroundAxisIndex(AxisIndex.Z, angle);
+      matrix.multiplyMatrixMatrix(north, matrix);
+    }
+    if (point !== undefined) {
+      const delta = matrix.multiplyVector(Vector3d.create(-point.x, -point.y, -point.z));
+      ecefOrigin.addInPlace(delta);
+    }
+
+    return new EcefLocation({ origin: ecefOrigin, orientation: YawPitchRollAngles.createFromMatrix3d(matrix)!, cartographicOrigin: origin });
+  }
+  /** Get the location center of the earth in the iModel coordinate system. */
+  public get earthCenter(): Point3d {
+    const matrix = this.orientation.toMatrix3d();
+    return Point3d.createFrom(matrix.multiplyTransposeXYZ(-this.origin.x, -this.origin.y, -this.origin.z));
+  }
 }
 
 /** Represents an iModel in JavaScript.
@@ -179,6 +180,13 @@ export abstract class IModel implements IModelProps {
   public name!: string;
   /** The name and description of the root subject of this iModel */
   public rootSubject!: RootSubjectProps;
+
+  /** Returns `true` if this is a snapshot iModel. */
+  public abstract get isSnapshot(): boolean;
+  /** Returns `true` if this is a briefcase copy of an iModel that is synchronized with iModelHub. */
+  public abstract get isBriefcase(): boolean;
+
+  public abstract get isOpen(): boolean;
 
   private _projectExtents!: AxisAlignedBox3d;
   /**
@@ -204,31 +212,71 @@ export abstract class IModel implements IModelProps {
   public get ecefLocation(): EcefLocation | undefined { return this._ecefLocation; }
 
   /** Set the [EcefLocation]($docs/learning/glossary#ecefLocation) for this iModel. */
-  public setEcefLocation(ecef: EcefLocationProps) {
+  public setEcefLocation(ecef: EcefLocationProps): void {
     this._ecefLocation = new EcefLocation(ecef);
     this._ecefTrans = undefined;
   }
 
   /** @internal */
-  public toJSON(): IModelProps {
-    const out: any = {};
-    out.name = this.name;
-    out.rootSubject = this.rootSubject;
-    out.projectExtents = this.projectExtents.toJSON();
-    out.globalOrigin = this.globalOrigin.toJSON();
-    out.ecefLocation = this.ecefLocation;
-    out.iModelToken = this.iModelToken;
-    return out;
+  public getConnectionProps(): IModelConnectionProps {
+    return {
+      name: this.name,
+      rootSubject: this.rootSubject,
+      projectExtents: this.projectExtents.toJSON(),
+      globalOrigin: this.globalOrigin.toJSON(),
+      ecefLocation: this.ecefLocation,
+      ... this.getRpcProps(),
+    };
   }
 
   /** @internal */
-  protected _token?: IModelToken;
+  public toJSON(): IModelConnectionProps {
+    return this.getConnectionProps();
+  }
 
-  /** The token that can be used to find this iModel instance. */
-  public get iModelToken(): IModelToken { return this._token!; }
+  /** A key used by RPC operations to identify this iModel across the frontend and backend.
+   * @see [[getRpcProps]]
+   * @internal
+   */
+  protected _rpcKey: string;
+  /** The Guid that identifies the *context* that owns this iModel. */
+  public get contextId(): GuidString | undefined { return this._contextId; }
+  /** @internal */
+  protected _contextId?: GuidString;
+  /** The Guid that identifies this iModel. */
+  public get iModelId(): GuidString | undefined { return this._iModelId; }
+  private _iModelId?: GuidString;
+  /** The Id of the last changeset that was applied to this iModel.
+   * @note An empty string indicates the first version while `undefined` mean no changeset information is available.
+   */
+  public get changeSetId(): string | undefined { return this._changeSetId; }
+  /** @internal */
+  protected _changeSetId: string | undefined;
+  /** The [[OpenMode]] used for this IModel. */
+  public readonly openMode: OpenMode;
+
+  /** Return a token that can be used to identify this iModel for RPC operations. */
+  public getRpcProps(): IModelRpcProps {
+    if (!this.isOpen) {
+      throw new IModelError(IModelStatus.BadRequest, "Could not generate valid IModelRpcProps", Logger.logError);
+    }
+    return {
+      key: this._rpcKey,
+      contextId: this.contextId,
+      iModelId: this.iModelId,
+      changeSetId: this.changeSetId,
+      openMode: this.openMode,
+    };
+  }
 
   /** @internal */
-  protected constructor(iModelToken?: IModelToken) { this._token = iModelToken; }
+  protected constructor(tokenProps: IModelRpcProps | undefined, openMode: OpenMode) {
+    this._rpcKey = tokenProps?.key ?? "";
+    this._contextId = tokenProps?.contextId;
+    this._iModelId = tokenProps?.iModelId;
+    this._changeSetId = tokenProps?.changeSetId;
+    this.openMode = openMode;
+  }
 
   /** @internal */
   protected initialize(name: string, props: IModelProps) {
@@ -263,8 +311,7 @@ export abstract class IModel implements IModelProps {
     return this._ecefTrans;
   }
 
-  /**
-   * Convert a point in this iModel's Spatial coordinates to an ECEF point using its [[IModel.ecefLocation]].
+  /** Convert a point in this iModel's Spatial coordinates to an ECEF point using its [[IModel.ecefLocation]].
    * @param spatial A point in the iModel's spatial coordinates
    * @param result If defined, use this for output
    * @returns A Point3d in ECEF coordinates
@@ -272,8 +319,7 @@ export abstract class IModel implements IModelProps {
    */
   public spatialToEcef(spatial: XYAndZ, result?: Point3d): Point3d { return this.getEcefTransform().multiplyPoint3d(spatial, result)!; }
 
-  /**
-   * Convert a point in ECEF coordinates to a point in this iModel's Spatial coordinates using its [[ecefLocation]].
+  /** Convert a point in ECEF coordinates to a point in this iModel's Spatial coordinates using its [[ecefLocation]].
    * @param ecef A point in ECEF coordinates
    * @param result If defined, use this for output
    * @returns A Point3d in this iModel's spatial coordinates
@@ -282,8 +328,7 @@ export abstract class IModel implements IModelProps {
    */
   public ecefToSpatial(ecef: XYAndZ, result?: Point3d): Point3d { return this.getEcefTransform().multiplyInversePoint3d(ecef, result)!; }
 
-  /**
-   * Convert a point in this iModel's Spatial coordinates to a [[Cartographic]] using its [[IModel.ecefLocation]].
+  /** Convert a point in this iModel's Spatial coordinates to a [[Cartographic]] using its [[IModel.ecefLocation]].
    * @param spatial A point in the iModel's spatial coordinates
    * @param result If defined, use this for output
    * @returns A Cartographic location
@@ -291,8 +336,7 @@ export abstract class IModel implements IModelProps {
    */
   public spatialToCartographicFromEcef(spatial: XYAndZ, result?: Cartographic): Cartographic { return Cartographic.fromEcef(this.spatialToEcef(spatial), result)!; }
 
-  /**
-   * Convert a [[Cartographic]] to a point in this iModel's Spatial coordinates using its [[IModel.ecefLocation]].
+  /** Convert a [[Cartographic]] to a point in this iModel's Spatial coordinates using its [[IModel.ecefLocation]].
    * @param cartographic A cartographic location
    * @param result If defined, use this for output
    * @returns A point in this iModel's spatial coordinates

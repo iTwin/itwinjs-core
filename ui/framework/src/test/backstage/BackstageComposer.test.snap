@@ -1,14 +1,5 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`BackstageComposer should close the backstage 1`] = `
-<Backstage
-  isOpen={false}
-  onClose={[Function]}
-  safeAreaInsets={0}
-  showOverlay={true}
-/>
-`;
-
 exports[`BackstageComposer should render 1`] = `
 <Backstage
   isOpen={false}
@@ -30,8 +21,6 @@ exports[`BackstageComposer should render backstage separators 1`] = `
       Object {
         "groupPriority": 100,
         "id": "Stage",
-        "isEnabled": true,
-        "isVisible": true,
         "itemPriority": 50,
         "label": "Custom Label",
         "stageId": "stage-1",
@@ -47,8 +36,6 @@ exports[`BackstageComposer should render backstage separators 1`] = `
         "execute": [Function],
         "groupPriority": 200,
         "id": "Action",
-        "isEnabled": true,
-        "isVisible": true,
         "itemPriority": 50,
         "label": "Custom Label",
         "type": 1,
@@ -59,24 +46,10 @@ exports[`BackstageComposer should render backstage separators 1`] = `
 </Backstage>
 `;
 
-exports[`BackstageComposerActionItem should render 1`] = `
-<BackstageItem
-  icon={
-    <Unknown
-      iconSpec={undefined}
-    />
-  }
-  isDisabled={false}
-  onClick={[Function]}
->
-  Custom Label
-</BackstageItem>
-`;
-
 exports[`BackstageComposerItem BackstageComposerActionItem should render 1`] = `
 <BackstageItem
   icon={
-    <Unknown
+    <Icon
       iconSpec={undefined}
     />
   }
@@ -94,8 +67,6 @@ exports[`BackstageComposerItem BackstageComposerItem should render action item 1
       "execute": [Function],
       "groupPriority": 100,
       "id": "Action",
-      "isEnabled": true,
-      "isVisible": true,
       "itemPriority": 50,
       "label": "Custom Label",
       "type": 1,
@@ -110,8 +81,6 @@ exports[`BackstageComposerItem BackstageComposerItem should render stage launche
     Object {
       "groupPriority": 100,
       "id": "Stage",
-      "isEnabled": true,
-      "isVisible": true,
       "itemPriority": 50,
       "label": "Custom Label",
       "stageId": "stage-1",
@@ -124,56 +93,7 @@ exports[`BackstageComposerItem BackstageComposerItem should render stage launche
 exports[`BackstageComposerItem BackstageComposerStageLauncher should render 1`] = `
 <BackstageItem
   icon={
-    <Unknown
-      iconSpec={undefined}
-    />
-  }
-  isActive={false}
-  isDisabled={false}
-  onClick={[Function]}
->
-  Custom Label
-</BackstageItem>
-`;
-
-exports[`BackstageComposerItem should render action item 1`] = `
-<BackstageComposerActionItem
-  item={
-    Object {
-      "execute": [Function],
-      "groupPriority": 100,
-      "id": "Action",
-      "isEnabled": true,
-      "isVisible": true,
-      "itemPriority": 50,
-      "label": "Custom Label",
-      "type": 1,
-    }
-  }
-/>
-`;
-
-exports[`BackstageComposerItem should render stage launcher 1`] = `
-<BackstageComposerStageLauncher
-  item={
-    Object {
-      "groupPriority": 100,
-      "id": "Stage",
-      "isEnabled": true,
-      "isVisible": true,
-      "itemPriority": 50,
-      "label": "Custom Label",
-      "stageId": "stage-1",
-      "type": 2,
-    }
-  }
-/>
-`;
-
-exports[`BackstageComposerStageLauncher should render 1`] = `
-<BackstageItem
-  icon={
-    <Unknown
+    <Icon
       iconSpec={undefined}
     />
   }

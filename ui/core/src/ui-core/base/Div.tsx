@@ -1,32 +1,32 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Base */
+/** @packageDocumentation
+ * @module Base
+ */
 
 import * as React from "react";
-import * as classnames from "classnames";
+import classnames from "classnames";
 import { CommonDivProps } from "../utils/Props";
 
 /** Properties for the [[Div]] component
- * @internal
+ * @public
  */
 export interface DivProps extends CommonDivProps {
   /** Main CSS class name */
   mainClassName: string;
 }
 
-/** Base div element
- * @internal
+/** Base div element React component
+ * @public
  */
-export class Div extends React.PureComponent<DivProps> {
-  public render(): JSX.Element {
-    const { mainClassName, className, style, children, ...props } = this.props;
+export function Div(props: DivProps) {
+  const { mainClassName, className, style, children, ...divProps } = props;
 
-    return (
-      <div {...props} className={classnames(mainClassName, className)} style={style} >
-        {children}
-      </div>
-    );
-  }
+  return (
+    <div {...divProps} className={classnames(mainClassName, className)} style={style} >
+      {children}
+    </div>
+  );
 }

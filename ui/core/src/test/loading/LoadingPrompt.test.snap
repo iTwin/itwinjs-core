@@ -1,14 +1,11 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`<LoadingBar /> renders correctly 1`] = `
+exports[`<LoadingPrompt /> renders correctly 1`] = `
 <div
   className="core-loadingprompt"
 >
   <span
     className="title"
-  />
-  <span
-    className="message"
   />
   <LoadingSpinner
     messageOnTop={false}
@@ -16,7 +13,7 @@ exports[`<LoadingBar /> renders correctly 1`] = `
 </div>
 `;
 
-exports[`<LoadingBar /> renders with text and message correctly 1`] = `
+exports[`<LoadingPrompt /> renders with text and message correctly 1`] = `
 <div
   className="core-loadingprompt"
 >
@@ -36,7 +33,7 @@ exports[`<LoadingBar /> renders with text and message correctly 1`] = `
 </div>
 `;
 
-exports[`<LoadingBar /> renders with text and message, and deterministic 1`] = `
+exports[`<LoadingPrompt /> renders with text and message, and deterministic 1`] = `
 <div
   className="core-loadingprompt"
 >
@@ -63,7 +60,7 @@ exports[`<LoadingBar /> renders with text and message, and deterministic 1`] = `
 </div>
 `;
 
-exports[`<LoadingBar /> renders with text and message, and deterministic 2`] = `
+exports[`<LoadingPrompt /> renders with text and message, and deterministic 2`] = `
 <div
   className="core-loadingprompt"
 >
@@ -90,7 +87,7 @@ exports[`<LoadingBar /> renders with text and message, and deterministic 2`] = `
 </div>
 `;
 
-exports[`<LoadingBar /> renders with text and message, and deterministic 3`] = `
+exports[`<LoadingPrompt /> renders with text and message, and deterministic 3`] = `
 <div
   className="core-loadingprompt"
 >
@@ -123,7 +120,7 @@ exports[`<LoadingBar /> renders with text and message, and deterministic 3`] = `
 </div>
 `;
 
-exports[`<LoadingBar /> renders with text and message, and deterministic 4`] = `
+exports[`<LoadingPrompt /> renders with text and message, and deterministic 4`] = `
 <div
   className="core-loadingprompt"
 >
@@ -148,7 +145,7 @@ exports[`<LoadingBar /> renders with text and message, and deterministic 4`] = `
     }
   />
   <LoadingStatus
-    message="description"
+    message="updating"
     percent={50}
     style={
       Object {
@@ -161,7 +158,7 @@ exports[`<LoadingBar /> renders with text and message, and deterministic 4`] = `
 </div>
 `;
 
-exports[`<LoadingBar /> renders with text correctly 1`] = `
+exports[`<LoadingPrompt /> renders with text correctly 1`] = `
 <div
   className="core-loadingprompt"
 >
@@ -170,9 +167,6 @@ exports[`<LoadingBar /> renders with text correctly 1`] = `
   >
     title
   </span>
-  <span
-    className="message"
-  />
   <LoadingSpinner
     messageOnTop={false}
   />

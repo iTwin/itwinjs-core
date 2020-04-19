@@ -1,9 +1,11 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module Tools */
+/** @packageDocumentation
+ * @module Tools
+ */
 
 import {
   IModelApp,
@@ -95,6 +97,49 @@ export class TogglePrimitiveVisibilityTool extends RenderTargetDebugControlTool 
     }
 
     return this.run(args);
+  }
+}
+
+/** Turn on display of reality tile boundaies.
+ * @alpha
+ */
+export class ToggleRealityTileBounds extends RenderTargetDebugControlTool {
+  public static toolId = "ToggleRealityTileBounds";
+  public execute(control: RenderTargetDebugControl, vp: ScreenViewport): void {
+    control.displayRealityTileRanges = !control.displayRealityTileRanges;
+    vp.invalidateScene();
+  }
+}
+
+/** Turn on display of reality tile preload debugging.
+ * @alpha
+ */
+export class ToggleRealityTilePreload extends RenderTargetDebugControlTool {
+  public static toolId = "ToggleRealityTilePreload";
+  public execute(control: RenderTargetDebugControl, vp: ScreenViewport): void {
+    control.displayRealityTilePreload = !control.displayRealityTilePreload;
+    vp.invalidateScene();
+  }
+}
+/** Freeze loading of reality tiles.
+ * @alpha
+ */
+export class ToggleRealityTileFreeze extends RenderTargetDebugControlTool {
+  public static toolId = "ToggleRealityTileFreeze";
+  public execute(control: RenderTargetDebugControl, vp: ScreenViewport): void {
+    control.freezeRealityTiles = !control.freezeRealityTiles;
+    vp.invalidateScene();
+  }
+}
+
+/** Turn on logging of console tile selection and loadding (to console).
+ * @alpha
+ */
+export class ToggleRealityTileLogging extends RenderTargetDebugControlTool {
+  public static toolId = "ToggleRealityTileLogging";
+  public execute(control: RenderTargetDebugControl, vp: ScreenViewport): void {
+    control.logRealityTiles = !control.logRealityTiles;
+    vp.invalidateScene();
   }
 }
 

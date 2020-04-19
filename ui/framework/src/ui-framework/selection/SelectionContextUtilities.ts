@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Tools */
+/** @packageDocumentation
+ * @module Tools
+ */
 
 import { FeatureSymbology, EmphasizeElements, Viewport, IModelConnection, FeatureOverrideProvider } from "@bentley/imodeljs-frontend";
 import { Id64String, BeEvent } from "@bentley/bentleyjs-core";
@@ -298,8 +300,10 @@ export class SelectionContextUtilities {
    * @param vp Viewport to affect
    *
    */
-  public static clearEmphasize(vp: Viewport) {
-    EmphasizeElements.clear(vp);
+  public static clearEmphasize(vp: Viewport | undefined) {
+    if (vp)
+      EmphasizeElements.clear(vp);
+    SelectionContextUtilities.emphasizeElementsChanged.raiseEvent();
   }
 
   /**

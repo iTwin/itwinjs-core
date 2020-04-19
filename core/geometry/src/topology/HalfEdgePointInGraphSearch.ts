@@ -1,9 +1,11 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module Topology */
+/** @packageDocumentation
+ * @module Topology
+ */
 
 import { HalfEdge } from "./Graph";
 import { Geometry } from "../Geometry";
@@ -75,7 +77,7 @@ export class PointSearchContext {
         // target is beyond the edge -- move towards it.
         if (dataA.u > dataB.u)
           result = edgeHit.resetAsVertex(dataA.node);
-          else
+        else
           result = edgeHit.resetAsVertex(dataB.node);
       } else {
         // This shouldn't happen -- maybe as if the initial edge point was not within the edge???

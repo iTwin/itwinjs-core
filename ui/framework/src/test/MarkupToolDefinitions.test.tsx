@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { mount, shallow } from "enzyme";
@@ -43,9 +43,13 @@ describe("MarkupToolDefinitions", () => {
       />;
   });
 
+  after(() => {
+    TestUtils.terminateUiFramework();
+  });
+
   it("ToolWidget should render with Markup Tool Definitions", () => {
     const wrapper = mount(
-      <ToolWidget
+      <ToolWidget // tslint:disable-line:deprecation
         horizontalToolbar={horizontalToolbar}
       />,
     );
@@ -54,7 +58,7 @@ describe("MarkupToolDefinitions", () => {
 
   it("ToolWidget should render correctly with Markup Tool Definitions", () => {
     shallow(
-      <ToolWidget
+      <ToolWidget // tslint:disable-line:deprecation
         id="toolWidget"
         horizontalToolbar={horizontalToolbar}
       />,

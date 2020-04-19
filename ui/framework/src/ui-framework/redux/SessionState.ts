@@ -1,13 +1,15 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module State */
+/** @packageDocumentation
+ * @module State
+ */
 
 // The following definitions are causing extract-api issues on linux so for now just using any until we can figure out the issue.
 // import { IModelConnection, ViewState } from "@bentley/imodeljs-frontend";
-// import { AccessToken } from "@bentley/imodeljs-clients";
-import { createAction, ActionsUnion, DeepReadonly } from "../utils/redux-ts";
+// import { AccessToken } from "@bentley/itwin-client";
+import { createAction, ActionsUnion, DeepReadonly } from "./redux-ts";
 
 import { XAndY } from "@bentley/geometry-core";
 import { MenuItemProps } from "../shared/MenuItem";
@@ -46,7 +48,6 @@ export enum SessionStateActionId {
   SetDefaultIModelViewportControlId = "sessionstate:set-default-viewportid",
   SetDefaultViewId = "sessionstate:set-default-viewid",
   SetDefaultViewState = "sessionstate:set-default-view-state",
-  SetDefaultRulesetId = "sessionstate:set-default-rulesetid",
   UpdateCursorMenu = "sessionstate:update-cursor-menu",
 }
 
@@ -61,7 +62,6 @@ export interface SessionState {
   defaultIModelViewportControlId: string | undefined;
   defaultViewId: string | undefined;
   defaultViewState: any | undefined;
-  defaultRulesetId: string | undefined;
   iModelConnection: any | undefined;
   accessToken: any | undefined;
   cursorMenuData: CursorMenuData | undefined;
@@ -82,7 +82,6 @@ const initialState: SessionState = {
   defaultIModelViewportControlId: undefined,
   defaultViewId: undefined,
   defaultViewState: undefined,
-  defaultRulesetId: undefined,
   iModelConnection: undefined,
   accessToken: undefined,
   cursorMenuData: undefined,
@@ -96,7 +95,6 @@ export interface SessionStateActionsProps {
   setActiveIModelId: (typeof SessionStateActions.setActiveIModelId);
   setAvailableSelectionScopes: (typeof SessionStateActions.setAvailableSelectionScopes);
   setDefaultIModelViewportControlId: (typeof SessionStateActions.setDefaultIModelViewportControlId);
-  setDefaultRulesetId: (typeof SessionStateActions.setDefaultRulesetId);
   setDefaultViewId: (typeof SessionStateActions.setDefaultViewId);
   setDefaultViewState: (typeof SessionStateActions.setDefaultViewState);
   setIModelConnection: (typeof SessionStateActions.setIModelConnection);
@@ -113,7 +111,6 @@ export const SessionStateActions = {  // tslint:disable-line:variable-name
   setActiveIModelId: (iModelId: string) => createAction(SessionStateActionId.SetActiveIModelId, iModelId),
   setAvailableSelectionScopes: (availableSelectionScopes: PresentationSelectionScope[]) => createAction(SessionStateActionId.SetAvailableSelectionScopes, availableSelectionScopes),
   setDefaultIModelViewportControlId: (iModelViewportControlId: string) => createAction(SessionStateActionId.SetDefaultIModelViewportControlId, iModelViewportControlId),
-  setDefaultRulesetId: (rulesetid: string) => createAction(SessionStateActionId.SetDefaultRulesetId, rulesetid),
   setDefaultViewId: (viewId: string) => createAction(SessionStateActionId.SetDefaultViewId, viewId),
   setDefaultViewState: (viewState: any) => createAction(SessionStateActionId.SetDefaultViewState, viewState),
   setNumItemsSelected: (numSelected: number) => createAction(SessionStateActionId.SetNumItemsSelected, numSelected),
@@ -177,9 +174,6 @@ export function SessionStateReducer(state: SessionState = initialState, action: 
     }
     case SessionStateActionId.SetDefaultViewState: {
       return { ...state, defaultViewState: action.payload };
-    }
-    case SessionStateActionId.SetDefaultRulesetId: {
-      return { ...state, defaultRulesetId: action.payload };
     }
     case SessionStateActionId.SetIModelConnection: {
       return { ...state, iModelConnection: action.payload };

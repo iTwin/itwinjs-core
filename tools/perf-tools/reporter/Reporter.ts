@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as fs from "fs-extra";
 
@@ -29,6 +29,13 @@ export class Reporter {
     const date = new Date().toISOString();
     const entry: Entry = { testSuite, testName, valueDescription, value, date, info };
     this._entries.push(entry);
+  }
+
+  /**
+   * Clear entries to get a fresh start
+   */
+  public clearEntries() {
+    this._entries = [];
   }
 
   /**

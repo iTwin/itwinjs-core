@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 "use strict";
 
@@ -16,12 +16,11 @@ if (argv.entry === undefined) {
 
 const isCI = (process.env.TF_BUILD);
 const entryPointFileName = argv.entry;
-const isPresentation = argv.isPresentation;
 const ignoreMissingTags = argv.ignoreMissingTags;
 
 const config = {
   $schema: "https://developer.microsoft.com/json-schemas/api-extractor/v7/api-extractor.schema.json",
-  projectFolder: isPresentation ? "../src" : "../",
+  projectFolder: "../",
   compiler: {
     tsconfigFilePath: "<projectFolder>/tsconfig.json"
   },

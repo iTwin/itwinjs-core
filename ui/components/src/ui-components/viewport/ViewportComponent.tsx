@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Viewport */
+/** @packageDocumentation
+ * @module Viewport
+ */
 
 import * as React from "react";
 import { Id64String } from "@bentley/bentleyjs-core";
@@ -88,7 +90,7 @@ export class ViewportComponent extends React.Component<ViewportProps, ViewportSt
       throw new UiError(UiComponents.loggerCategory(this), `Parent <div> failed to load`);
 
     const viewState = await this.getViewState();
-    /* istanbul ignore else */
+    /* istanbul ignore next */
     if (!this._mounted)
       return;
 
@@ -169,7 +171,7 @@ export class ViewportComponent extends React.Component<ViewportProps, ViewportSt
     if (this._vp && viewManager.selectedView === this._vp) {
       this._vp.view.setOrigin(args.origin);
       this._vp.view.setRotation(args.rotation);
-      this._vp.synchWithView(args.complete === true ? true : false);
+      this._vp.synchWithView({ noSaveInUndo: args.complete !== true });
     }
   }
 
@@ -218,7 +220,7 @@ export class ViewportComponent extends React.Component<ViewportProps, ViewportSt
         const frustum = this._vp.getWorldFrustum();
         frustum.multiply(worldTransform);
         this._vp.view.setupFromFrustum(frustum);
-        this._vp.synchWithView(args.complete ? true : false);
+        this._vp.synchWithView({ noSaveInUndo: !args.complete });
       }
     }
   }
@@ -230,7 +232,7 @@ export class ViewportComponent extends React.Component<ViewportProps, ViewportSt
     if (this._vp && viewManager.selectedView === this._vp) {
       // this._vp.view.setStandardRotation(args.standardRotation);
       this._vp.view.setRotationAboutPoint(ViewState.getStandardViewMatrix(args.standardRotation));
-      this._vp.synchWithView(true);
+      this._vp.synchWithView();
     }
   }
 

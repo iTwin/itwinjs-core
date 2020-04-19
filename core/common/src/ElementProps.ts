@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module WireFormats */
+/** @packageDocumentation
+ * @module Entities
+ */
 
 import { GuidString, Id64, Id64String, Logger } from "@bentley/bentleyjs-core";
 import { AngleProps, LowAndHighXY, LowAndHighXYZ, XYProps, XYZProps, YawPitchRollProps } from "@bentley/geometry-core";
@@ -11,7 +13,7 @@ import { CommonLoggerCategory } from "./CommonLoggerCategory";
 import { EntityProps } from "./EntityProps";
 import { GeometryStreamProps } from "./geometry/GeometryStream";
 import { IModelError, IModelStatus } from "./IModelError";
-import { Rank, SubCategoryAppearance } from "./SubCategoryAppearance";
+import { SubCategoryAppearance } from "./SubCategoryAppearance";
 
 /** Properties of a NavigationProperty.
  * @public
@@ -269,6 +271,20 @@ export interface LineStyleProps extends DefinitionElementProps {
  */
 export interface LightLocationProps extends GeometricElement3dProps {
   enabled?: boolean;
+}
+
+/** The *rank* for a Category
+ * @public
+ */
+export enum Rank {
+  /** This category is predefined by the system */
+  System = 0,
+  /** This category is defined by a schema. Elements in this category are not recognized by system classes. */
+  Domain = 1,
+  /** This category is defined by an application. Elements in this category are not recognized by system and schema classes. */
+  Application = 2,
+  /** This category is defined by a user. Elements in this category are not recognized by system, schema, and application classes. */
+  User = 3,
 }
 
 /** Parameters of a [Category]($backend)

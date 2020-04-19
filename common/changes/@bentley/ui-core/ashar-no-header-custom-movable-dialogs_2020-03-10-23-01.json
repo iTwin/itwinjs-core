@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-core",
+      "comment": "[For Dialog component, support dialogs that disable the default header and want to implement custom move logic by updating the x and y props. This was fixed by only handling the pointer move events when a resize or move operation starts instead of on mount. Also now we only update the relevant state in the pointer move event handler based on if we are moving or resizing]",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-core",
+  "email": "Ashar.Ghani@bentley.com"
+}

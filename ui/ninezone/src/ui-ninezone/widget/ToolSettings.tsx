@@ -1,17 +1,19 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Widget */
+/** @packageDocumentation
+ * @module Widget
+ */
 
-import * as classnames from "classnames";
+import classnames from "classnames";
 import * as React from "react";
 import { CommonProps, PointProps, RectangleProps, Rectangle, Point } from "@bentley/ui-core";
 import { TitleBar } from "../footer/dialog/TitleBar";
 import { DragHandle } from "../base/DragHandle";
-import "./ToolSettings.scss";
 import { ResizeHandle } from "./Stacked";
 import { ResizeGrip, ResizeDirection, ResizeGripResizeArgs } from "./rectangular/ResizeGrip";
+import "./ToolSettings.scss";
 
 /** Properties of [[ToolSettings]] component.
  * @beta

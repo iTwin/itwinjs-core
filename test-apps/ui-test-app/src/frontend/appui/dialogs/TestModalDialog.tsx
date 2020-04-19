@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { Dialog, DialogButtonType } from "@bentley/ui-core";
@@ -78,7 +78,7 @@ export class TestModalDialog extends React.Component<TestModalDialogProps, TestM
   }
 
   private _closeDialog = (followUp: () => void) => {
-    this.setState({
+    this.setState({  // eslint-disable-line @typescript-eslint/no-unused-expressions
       opened: false,
     }), () => {
       if (!this.state.opened)

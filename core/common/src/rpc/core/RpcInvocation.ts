@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module RpcInterface */
+/** @packageDocumentation
+ * @module RpcInterface
+ */
 
 import { BentleyStatus, Logger, RpcInterfaceStatus } from "@bentley/bentleyjs-core";
 import { IModelError } from "../../IModelError";
@@ -15,7 +17,7 @@ import { RpcMarshaling, RpcSerializedValue } from "./RpcMarshaling";
 import { RpcOperation } from "./RpcOperation";
 import { RpcProtocol, RpcRequestFulfillment, SerializedRpcRequest } from "./RpcProtocol";
 import { CURRENT_INVOCATION, RpcRegistry } from "./RpcRegistry";
-import { IModelTokenProps } from "../../IModel";
+import { IModelRpcProps } from "../../IModel";
 
 /** Notification callback for an RPC invocation.
  * @public
@@ -143,16 +145,16 @@ export class RpcInvocation {
 
         if (!RpcInvocation.compareTokens(parameter, inflated)) {
           if (RpcConfiguration.throwOnTokenMismatch) {
-            throw new IModelError(BentleyStatus.ERROR, "IModelToken mismatch detected for this request.");
+            throw new IModelError(BentleyStatus.ERROR, "IModelRpcProps mismatch detected for this request.");
           } else {
-            Logger.logWarning(CommonLoggerCategory.RpcInterfaceBackend, "IModelToken mismatch detected for this request.");
+            Logger.logWarning(CommonLoggerCategory.RpcInterfaceBackend, "IModelRpcProps mismatch detected for this request.");
           }
         }
       }
     }
   }
 
-  private static compareTokens(a: IModelTokenProps, b: IModelTokenProps): boolean {
+  private static compareTokens(a: IModelRpcProps, b: IModelRpcProps): boolean {
     return a.key === b.key &&
       a.contextId === b.contextId &&
       a.iModelId === b.iModelId &&

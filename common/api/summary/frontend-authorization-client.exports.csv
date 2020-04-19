@@ -1,0 +1,9 @@
+sep=;
+Release Tag;API Item
+beta;BrowserAuthorizationCallbackHandler 
+beta;BrowserAuthorizationCallbackHandlerConfiguration
+beta;BrowserAuthorizationClient 
+beta;BrowserAuthorizationClientConfiguration
+beta;FrontendAuthorizationClient 
+beta;isBrowserAuthorizationClient: (client: AuthorizationClient | undefined) => client is FrontendAuthorizationClient
+beta;OidcCallbackResponseMode

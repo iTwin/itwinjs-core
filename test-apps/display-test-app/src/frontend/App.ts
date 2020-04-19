@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
 import { XAndY } from "@bentley/geometry-core";
@@ -18,30 +18,32 @@ import {
   TileAdmin,
   Tool,
   ToolTipOptions,
+  ExternalServerExtensionLoader,
 } from "@bentley/imodeljs-frontend";
-import { FrontendDevTools } from "@bentley/frontend-devtools";
+import { FrontendDevTools, parseToggle } from "@bentley/frontend-devtools";
 import ToolTip from "tooltip.js";
 import { DrawingAidTestTool } from "./DrawingAidTestTool";
 import { showError, showStatus } from "./Utils";
 import { MarkupSelectTestTool } from "./MarkupSelectTestTool";
 import { VersionComparisonTool } from "./VersionComparison";
 import { IncidentMarkerDemoTool } from "./IncidentMarkerDemo";
-import { ToggleFrustumIntersectionTool } from "./FrustumIntersectionDecoration";
 import { MarkupTool, SaveImageTool, ZoomToSelectedElementsTool } from "./Viewer";
 import { ToggleShadowMapTilesTool } from "./ShadowMapDecoration";
+import { RecordFpsTool } from "./FpsMonitor";
 import {
   CloneViewportTool,
+  CloseIModelTool,
   CloseWindowTool,
   CreateWindowTool,
   DockWindowTool,
   FocusWindowTool,
   MaximizeWindowTool,
+  OpenIModelTool,
+  ReopenIModelTool,
   ResizeWindowTool,
   RestoreWindowTool,
   Surface,
 } from "./Surface";
-
-declare var BUILD_SEMVER: string;
 
 class DisplayTestAppAccuSnap extends AccuSnap {
   private readonly _activeSnaps: SnapMode[] = [SnapMode.NearestKeypoint];
@@ -74,23 +76,18 @@ class Notifications extends NotificationManager {
       return MessageBoxValue.Cancel;
 
     // create a dialog element.
-    const dialog = document.createElement("dialog") as HTMLDialogElement;
-    dialog.className = "notification-messagebox";
+    const dialog = IModelApp.makeHTMLElement("dialog", { parent: rootDiv, className: "notification-messagebox" });
 
     // set up the message
-    const span = document.createElement("span");
+    const span = IModelApp.makeHTMLElement("span", { parent: dialog, className: "notification-messageboxtext" });
     if (typeof message === "string")
       span.innerHTML = message;
     else
       span.appendChild(message);
-    span.className = "notification-messageboxtext";
-    dialog.appendChild(span);
 
     // make the ok button
-    const button = document.createElement("button");
-    button.className = "notification-messageboxbutton";
+    const button = IModelApp.makeHTMLElement("button", { parent: dialog, className: "notification-messageboxbutton" });
     button.innerHTML = "Ok";
-    dialog.appendChild(button);
 
     const promise = new Promise<MessageBoxValue>((resolve, _rej) => {
       button.addEventListener("click", () => {
@@ -101,7 +98,6 @@ class Notifications extends NotificationManager {
     });
 
     // add the dialog to the root div element and show it.
-    rootDiv.appendChild(dialog);
     dialog.showModal();
     return promise;
   }
@@ -128,7 +124,7 @@ class Notifications extends NotificationManager {
       pt = { x: rect.width / 2, y: rect.height / 2 };
     }
 
-    const location = document.createElement("div");
+    const location = IModelApp.makeHTMLElement("div", { parent: el });
     const height = 20;
     const width = 20;
     location.style.position = "absolute";
@@ -136,8 +132,6 @@ class Notifications extends NotificationManager {
     location.style.left = (pt.x - width / 2) + "px";
     location.style.width = width + "px";
     location.style.height = height + "px";
-
-    el.appendChild(location);
 
     this._el = el;
     this._tooltipDiv = location;
@@ -209,6 +203,28 @@ class ShutDownTool extends Tool {
   }
 }
 
+class Toggle3dManipulationsTool extends Tool {
+  public static toolId = "Toggle3dManipulations";
+  public run(allow?: boolean): boolean {
+    const vp = IModelApp.viewManager.selectedView;
+    if (undefined === vp || !vp.view.is3d())
+      return false;
+    if (undefined === allow)
+      allow = !vp.view.allow3dManipulations();
+    if (allow !== vp.view.allow3dManipulations()) {
+      vp.view.setAllow3dManipulations(allow);
+      IModelApp.toolAdmin.startDefaultTool();
+    }
+    return true;
+  }
+  public parseAndRun(...args: string[]): boolean {
+    const enable = parseToggle(args[0]);
+    if (typeof enable !== "string")
+      this.run(enable);
+    return true;
+  }
+}
+
 export class DisplayTestApp {
   public static tileAdminProps: TileAdmin.Props = {
     retryInterval: 50,
@@ -226,49 +242,42 @@ export class DisplayTestApp {
     opts.tileAdmin = TileAdmin.create(DisplayTestApp.tileAdminProps);
     IModelApp.startup(opts);
 
-    IModelApp.applicationLogoCard = () => {
-      const div = document.createElement("div");
-      const image = new Image();
-      image.src = "DTA.png";
-      image.width = 300;
-      div.appendChild(image);
+    // For testing local extensions only, should not be used in production.
+    IModelApp.extensionAdmin.addExtensionLoader(new ExternalServerExtensionLoader("http://localhost:3000"), 50);
 
-      const attr = document.createElement("p");
-      attr.style.textAlign = "center";
-      attr.style.fontStyle = "italic";
-      attr.style.fontWeight = "bold";
-      attr.innerHTML = "Display Test App " + BUILD_SEMVER;
-      div.appendChild(attr);
-      return IModelApp.makeLogoCard(div, "dta-app-name");
-    };
+    IModelApp.applicationLogoCard =
+      () => IModelApp.makeLogoCard({ iconSrc: "DTA.png", iconWidth: 100, heading: "Display Test App", notice: "For internal testing" });
 
     const svtToolNamespace = IModelApp.i18n.registerNamespace("SVTTools");
-    DrawingAidTestTool.register(svtToolNamespace);
-    MarkupSelectTestTool.register(svtToolNamespace);
-    SVTSelectionTool.register(svtToolNamespace);
-    ResizeWindowTool.register(svtToolNamespace);
-    RefreshTilesTool.register(svtToolNamespace);
-    PurgeTileTreesTool.register(svtToolNamespace);
-    ShutDownTool.register(svtToolNamespace);
-
-    CreateWindowTool.register(svtToolNamespace);
-    FocusWindowTool.register(svtToolNamespace);
-    MaximizeWindowTool.register(svtToolNamespace);
-    CloneViewportTool.register(svtToolNamespace);
-    CloseWindowTool.register(svtToolNamespace);
-    RestoreWindowTool.register(svtToolNamespace);
-    DockWindowTool.register(svtToolNamespace);
-
-    VersionComparisonTool.register(svtToolNamespace);
-    SaveImageTool.register(svtToolNamespace);
-    MarkupTool.register(svtToolNamespace);
-    ZoomToSelectedElementsTool.register(svtToolNamespace);
-    IncidentMarkerDemoTool.register(svtToolNamespace);
-    ToggleFrustumIntersectionTool.register(svtToolNamespace);
-    ToggleShadowMapTilesTool.register(svtToolNamespace);
+    [
+      CloneViewportTool,
+      CloseIModelTool,
+      CloseWindowTool,
+      CreateWindowTool,
+      DockWindowTool,
+      DrawingAidTestTool,
+      FocusWindowTool,
+      IncidentMarkerDemoTool,
+      MarkupSelectTestTool,
+      MarkupTool,
+      MaximizeWindowTool,
+      OpenIModelTool,
+      PurgeTileTreesTool,
+      RecordFpsTool,
+      RefreshTilesTool,
+      ReopenIModelTool,
+      ResizeWindowTool,
+      RestoreWindowTool,
+      SaveImageTool,
+      ShutDownTool,
+      SVTSelectionTool,
+      Toggle3dManipulationsTool,
+      ToggleShadowMapTilesTool,
+      VersionComparisonTool,
+      ZoomToSelectedElementsTool,
+    ].forEach((tool) => tool.register(svtToolNamespace));
 
     IModelApp.toolAdmin.defaultToolId = SVTSelectionTool.toolId;
-
     return FrontendDevTools.initialize();
   }
 

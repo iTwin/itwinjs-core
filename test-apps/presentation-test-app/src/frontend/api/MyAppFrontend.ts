@@ -1,9 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Logger, Guid } from "@bentley/bentleyjs-core";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { ViewQueryParams } from "@bentley/imodeljs-common";
+import { IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
 import SampleRpcInterface from "../../common/SampleRpcInterface";
 
 export class MyAppFrontend {
@@ -18,7 +19,7 @@ export class MyAppFrontend {
   }
 
   public static async openIModel(path: string): Promise<IModelConnection> {
-    this.iModel = await IModelConnection.openSnapshot(path);
+    this.iModel = await SnapshotConnection.openFile(path);
     Logger.logInfo("presentation", "Opened: " + this.iModel.name);
     return this.iModel;
   }
@@ -31,5 +32,17 @@ export class MyAppFrontend {
       window.localStorage.setItem(key, value);
     }
     return value;
+  }
+
+  public static async getViewDefinitions(imodel: IModelConnection) {
+    const viewQueryParams: ViewQueryParams = { wantPrivate: false };
+    const viewSpecs = await imodel.views.queryProps(viewQueryParams);
+    return viewSpecs
+      .filter((spec) => !spec.isPrivate)
+      .map((spec) => ({
+        id: spec.id!,
+        class: spec.classFullName,
+        label: spec.userLabel ?? spec.code.value!,
+      }));
   }
 }

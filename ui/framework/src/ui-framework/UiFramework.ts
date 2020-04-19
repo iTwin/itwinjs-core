@@ -1,15 +1,18 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Utilities */
+/** @packageDocumentation
+ * @module Utilities
+ */
 
 import { Store } from "redux";
 
-import { OidcFrontendClientConfiguration, IOidcFrontendClient, AccessToken } from "@bentley/imodeljs-clients";
+import { Logger } from "@bentley/bentleyjs-core";
+import { AccessToken } from "@bentley/itwin-client";
+import { MobileRpcConfiguration } from "@bentley/imodeljs-common";
 import { I18N, TranslationOptions } from "@bentley/imodeljs-i18n";
-import { ClientRequestContext } from "@bentley/bentleyjs-core";
-import { IModelConnection, SnapMode, IModelApp, OidcBrowserClient, ViewState, FrontendRequestContext } from "@bentley/imodeljs-frontend";
+import { IModelConnection, SnapMode, ViewState } from "@bentley/imodeljs-frontend";
 import { UiError, getClassName } from "@bentley/ui-abstract";
 import { UiEvent } from "@bentley/ui-core";
 import { Presentation } from "@bentley/presentation-frontend";
@@ -25,7 +28,8 @@ import { SessionStateActionId, PresentationSelectionScope, CursorMenuData } from
 import { COLOR_THEME_DEFAULT, WIDGET_OPACITY_DEFAULT } from "./theme/ThemeManager";
 import { UiShowHideManager } from "./utils/UiShowHideManager";
 import { BackstageManager } from "./backstage/BackstageManager";
-import { StatusBarManager } from "./statusbar/StatusBarManager";
+import { WidgetManager } from "./widgets/WidgetManager";
+import { StateManager } from "./redux/StateManager";
 
 // cSpell:ignore Mobi
 
@@ -41,6 +45,19 @@ export interface UiVisibilityEventArgs {
  */
 export class UiVisibilityChangedEvent extends UiEvent<UiVisibilityEventArgs> { }
 
+/** FrameworkVersion Changed Event Args interface.
+ * @internal
+ */
+export interface FrameworkVersionChangedEventArgs {
+  oldVersion: string;
+  version: string;
+}
+
+/** FrameworkVersion Changed Event class.
+ * @internal
+ */
+export class FrameworkVersionChangedEvent extends UiEvent<FrameworkVersionChangedEventArgs> { }
+
 /**
  * Manages the Redux store, I18N service and iModel, Project and Login services for the ui-framework package.
  * @public
@@ -53,39 +70,45 @@ export class UiFramework {
   private static _complaint = "UiFramework not initialized";
   private static _frameworkStateKeyInStore: string = "frameworkState";  // default name
   private static _backstageManager?: BackstageManager;
-  private static _statusBarManager?: StatusBarManager;
+  private static _widgetManager?: WidgetManager;
+  private static _version1WidgetOpacity: number = WIDGET_OPACITY_DEFAULT;
 
   /** Get Show Ui event.
    * @beta
    */
   public static readonly onUiVisibilityChanged = new UiVisibilityChangedEvent();
 
+  /** Get FrameworkVersion Changed event.
+   * @internal
+   */
+  public static readonly onFrameworkVersionChangedEvent = new FrameworkVersionChangedEvent();
+
   /**
    * Called by the app to initialize the UiFramework
-   * @param store The single redux store created by the app.
+   * @param store The single Redux store created by the host application. If this is `undefined` then it is assumed that the [[StateManager]] is being used to provide the Redux store.
    * @param i18n The internationalization service created by the app.
-   * @param oidcConfig Configuration for authenticating user.
-   * @param frameworkStateKey The name of the key used by the app when adding the UiFramework state into the Redux store. If not defined "frameworkState" is assumed.
+   * @param frameworkStateKey The name of the key used by the app when adding the UiFramework state into the Redux store. If not defined "frameworkState" is assumed. This value is ignored if [[StateManager]] is being used. The StateManager use "frameworkState".
    */
-  public static async initialize(store: Store<any>, i18n: I18N, oidcConfig?: OidcFrontendClientConfiguration, frameworkStateKey?: string): Promise<any> {
-    return this.initializeEx(store, i18n, oidcConfig, frameworkStateKey);
+  public static async initialize(store: Store<any> | undefined, i18n: I18N, frameworkStateKey?: string): Promise<void> {
+    return this.initializeEx(store, i18n, frameworkStateKey);
   }
 
   /**
    * Called by the app to initialize the UiFramework
-   * @param store The single redux store created by the app.
+   * @param store The single Redux store created by the host application. If this is `undefined` then it is assumed that the [[StateManager]] is being used to provide the Redux store.
    * @param i18n The internationalization service created by the app.
-   * @param oidcConfig Optional configuration for authenticating user.
-   * @param frameworkStateKey The name of the key used by the app when adding the UiFramework state into the Redux store. If not defined "frameworkState" is assumed.
+   * @param frameworkStateKey The name of the key used by the app when adding the UiFramework state into the Redux store. If not defined "frameworkState" is assumed. This value is ignored if [[StateManager]] is being used. The StateManager use "frameworkState".
    * @param projectServices Optional app defined projectServices. If not specified DefaultProjectServices will be used.
    * @param iModelServices Optional app defined iModelServices. If not specified DefaultIModelServices will be used.
    *
    * @internal
    */
-  public static async initializeEx(store: Store<any>, i18n: I18N, oidcConfig?: OidcFrontendClientConfiguration, frameworkStateKey?: string, projectServices?: ProjectServices, iModelServices?: IModelServices): Promise<any> {
+  public static async initializeEx(store: Store<any> | undefined, i18n: I18N, frameworkStateKey?: string, projectServices?: ProjectServices, iModelServices?: IModelServices): Promise<void> {
+    // if store is undefined then the StateManager class should have been initialized by parent app and the apps default set of reducer registered with it.
     UiFramework._store = store;
     UiFramework._i18n = i18n;
-    if (frameworkStateKey)
+    // ignore setting _frameworkStateKeyInStore if not using store
+    if (frameworkStateKey && store)
       UiFramework._frameworkStateKeyInStore = frameworkStateKey;
 
     const frameworkNamespace = UiFramework._i18n.registerNamespace(UiFramework.i18nNamespace);
@@ -94,15 +117,10 @@ export class UiFramework {
     UiFramework._projectServices = projectServices ? projectServices : new DefaultProjectServices();
     UiFramework._iModelServices = iModelServices ? iModelServices : new DefaultIModelServices();
     UiFramework._backstageManager = new BackstageManager();
-    UiFramework._statusBarManager = new StatusBarManager();
+    UiFramework._widgetManager = new WidgetManager();
 
-    // istanbul ignore next
-    if (oidcConfig) {
-      const oidcClient = new OidcBrowserClient(oidcConfig);
-      const initOidcPromise = oidcClient.initialize(new ClientRequestContext())
-        .then(() => (UiFramework.oidcClient = oidcClient, IModelApp.authorizationClient = UiFramework._oidcClient));
-      return Promise.all([readFinishedPromise, initOidcPromise]);
-    }
+    UiFramework.onFrameworkVersionChangedEvent.addListener(UiFramework._handleFrameworkVersionChangedEvent);
+
     return readFinishedPromise;
   }
 
@@ -117,35 +135,9 @@ export class UiFramework {
     UiFramework._projectServices = undefined;
     UiFramework._iModelServices = undefined;
     UiFramework._backstageManager = undefined;
-    UiFramework._statusBarManager = undefined;
-  }
+    UiFramework._widgetManager = undefined;
 
-  private static _oidcClient: IOidcFrontendClient | undefined;
-  private static _removeUserStateListener: () => void;
-  /** @beta */
-  public static get oidcClient(): IOidcFrontendClient | undefined {
-    return UiFramework._oidcClient;
-  }
-
-  /** @beta */
-  // istanbul ignore next
-  public static set oidcClient(oidcClient: IOidcFrontendClient | undefined) {
-    if (UiFramework._removeUserStateListener)
-      UiFramework._removeUserStateListener();
-
-    UiFramework._oidcClient = oidcClient;
-
-    if (oidcClient) {
-      UiFramework._removeUserStateListener = oidcClient.onUserStateChanged.addListener((token: AccessToken | undefined) => UiFramework.setAccessTokenInternal(token));
-      if (oidcClient.isAuthorized) {
-        oidcClient.getAccessToken(new FrontendRequestContext()) // tslint:disable-line: no-floating-promises
-          .then((accessToken: AccessToken) => {
-            UiFramework.setAccessTokenInternal(accessToken);
-          });
-      } else {
-        UiFramework.setAccessTokenInternal(undefined);
-      }
-    }
+    UiFramework.onFrameworkVersionChangedEvent.removeListener(UiFramework._handleFrameworkVersionChangedEvent);
   }
 
   /** @beta */
@@ -163,9 +155,13 @@ export class UiFramework {
 
   /** The Redux store */
   public static get store(): Store<any> {
-    if (!UiFramework._store)
+    if (UiFramework._store)
+      return UiFramework._store;
+
+    if (!StateManager.isInitialized(true))
       throw new UiError(UiFramework.loggerCategory(this), UiFramework._complaint);
-    return UiFramework._store;
+
+    return StateManager.store;
   }
 
   /** The internationalization service created by the app. */
@@ -188,12 +184,12 @@ export class UiFramework {
     return UiFramework._backstageManager;
   }
 
-  /** @beta */
-  public static get statusBarManager(): StatusBarManager {
+  /** @alpha */
+  public static get widgetManager(): WidgetManager {
     // istanbul ignore next
-    if (!UiFramework._statusBarManager)
+    if (!UiFramework._widgetManager)
       throw new UiError(UiFramework.loggerCategory(this), UiFramework._complaint);
-    return UiFramework._statusBarManager;
+    return UiFramework._widgetManager;
   }
 
   /** Calls i18n.translateWithNamespace with the "UiFramework" namespace. Do NOT include the namespace in the key.
@@ -301,6 +297,7 @@ export class UiFramework {
     UiFramework.dispatchActionToStore(SessionStateActionId.SetAccessToken, accessToken, immediateSync);
   }
 
+  /** @deprecated Use IModelApp.authorizationClient.getAccessToken() instead */
   public static getAccessToken(): AccessToken | undefined {
     return UiFramework.frameworkState ? UiFramework.frameworkState.sessionState.accessToken : /* istanbul ignore next */  undefined;
   }
@@ -326,13 +323,6 @@ export class UiFramework {
   }
   public static getDefaultViewState(): ViewState | undefined {
     return UiFramework.frameworkState ? UiFramework.frameworkState.sessionState.defaultViewState : /* istanbul ignore next */  undefined;
-  }
-  public static setDefaultRulesetId(viewId: string, immediateSync = false) {
-    UiFramework.dispatchActionToStore(SessionStateActionId.SetDefaultRulesetId, viewId, immediateSync);
-  }
-
-  public static getDefaultRulesetId(): string | undefined {
-    return UiFramework.frameworkState ? UiFramework.frameworkState.sessionState.defaultRulesetId : /* istanbul ignore next */  undefined;
   }
 
   /** @beta */
@@ -376,17 +366,29 @@ export class UiFramework {
     return UiFramework.frameworkState ? UiFramework.frameworkState.configurableUiState.widgetOpacity : /* istanbul ignore next */ WIDGET_OPACITY_DEFAULT;
   }
 
-  // TODO: Need better way of determining if Mobile environment
   /** @beta */
-  // istanbul ignore next
   public static isMobile() {  // tslint:disable-line: prefer-get
     let mobile = false;
     if ((/Mobi|Android/i.test(navigator.userAgent))) {
       mobile = true;
-    }
-    if (/Mobi|iPad|iPhone|iPod/i.test(navigator.userAgent)) {
+    } else if (/Mobi|iPad|iPhone|iPod/i.test(navigator.userAgent)) {
       mobile = true;
+    } else {
+      mobile = MobileRpcConfiguration.isMobileFrontend;
     }
     return mobile;
+  }
+
+  private static _handleFrameworkVersionChangedEvent = (args: FrameworkVersionChangedEventArgs) => {
+    // Log Ui Version used
+    Logger.logInfo(UiFramework.loggerCategory(UiFramework), `Ui Version changed to ${args.version} `);
+
+    // If Ui Version 1, save widget opacity
+    if (args.oldVersion === "1")
+      UiFramework._version1WidgetOpacity = UiFramework.getWidgetOpacity();
+
+    // If Ui Version 1, restore widget opacity; otherwise, set widget opacity to 1.0 to basically turn the feature off.
+    // This fixes use of "backdrop-filter: blur(10px)"" CSS.
+    UiFramework.setWidgetOpacity(args.version === "1" ? UiFramework._version1WidgetOpacity : 1.0);
   }
 }

@@ -1,9 +1,11 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module ArraysAndInterfaces */
+/** @packageDocumentation
+ * @module ArraysAndInterfaces
+ */
 
 // import { Point2d } from "./Geometry2d";
 /* tslint:disable:variable-name jsdoc-format no-empty */
@@ -68,10 +70,10 @@ export abstract class IndexedXYCollection {
    * @param result optional caller - allocated vector.
    * @returns return true if indexA, indexB both valid
    */
-    public abstract crossProductIndexIndexIndex(origin: number, indexA: number, indexB: number): number | undefined;
+  public abstract crossProductIndexIndexIndex(origin: number, indexA: number, indexB: number): number | undefined;
 
-    /**
-     * read-only property for number of XYZ in the collection.
-     */
+  /**
+   * read-only property for number of XYZ in the collection.
+   */
   public abstract get length(): number;
 }

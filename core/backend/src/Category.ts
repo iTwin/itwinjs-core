@@ -1,10 +1,12 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Categories */
+/** @packageDocumentation
+ * @module Categories
+ */
 
-import { Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
+import { DbOpcode, Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import { BisCodeSpec, CategoryProps, Code, CodeScopeProps, CodeSpec, ElementProps, Rank, SubCategoryAppearance, SubCategoryProps } from "@bentley/imodeljs-common";
 import { DefinitionElement } from "./Element";
 import { IModelDb } from "./IModelDb";
@@ -13,7 +15,7 @@ import { CategoryOwnsSubCategories } from "./NavigationRelationship";
 /** Defines the appearance for graphics in Geometric elements
  * @public
  */
-export class SubCategory extends DefinitionElement implements SubCategoryProps {
+export class SubCategory extends DefinitionElement {
   /** @internal */
   public static get className(): string { return "SubCategory"; }
   /** The Appearance parameters for this SubCategory */
@@ -64,7 +66,10 @@ export class SubCategory extends DefinitionElement implements SubCategoryProps {
    * @returns The newly constructed SubCategory element.
    * @throws [[IModelError]] if unable to create the element.
    */
-  public static create(iModelDb: IModelDb, parentCategoryId: Id64String, name: string, appearance: SubCategoryAppearance.Props): SubCategory {
+  public static create(iModelDb: IModelDb, parentCategoryId: Id64String, name: string, appearance: SubCategoryAppearance.Props | SubCategoryAppearance): SubCategory {
+    if (appearance instanceof SubCategoryAppearance)
+      appearance = appearance.toJSON();
+
     const parentCategory = iModelDb.elements.getElement<Category>(parentCategoryId);
     const subCategoryProps: SubCategoryProps = {
       classFullName: this.classFullName,
@@ -84,7 +89,7 @@ export class SubCategory extends DefinitionElement implements SubCategoryProps {
    * @returns The Id of the newly inserted SubCategory element.
    * @throws [[IModelError]] if unable to insert the element.
    */
-  public static insert(iModelDb: IModelDb, parentCategoryId: Id64String, name: string, appearance: SubCategoryAppearance.Props): Id64String {
+  public static insert(iModelDb: IModelDb, parentCategoryId: Id64String, name: string, appearance: SubCategoryAppearance.Props | SubCategoryAppearance): Id64String {
     const subCategory = this.create(iModelDb, parentCategoryId, name, appearance);
     return iModelDb.elements.insertElement(subCategory);
   }
@@ -119,7 +124,10 @@ export class Category extends DefinitionElement implements CategoryProps {
   public myDefaultSubCategoryId(): Id64String { return IModelDb.getDefaultSubCategoryId(this.id); }
 
   /** Set the appearance of the default SubCategory for this Category */
-  public setDefaultAppearance(props: SubCategoryAppearance.Props): void {
+  public setDefaultAppearance(props: SubCategoryAppearance.Props | SubCategoryAppearance): void {
+    if (props instanceof SubCategoryAppearance)
+      props = props.toJSON();
+
     const subCat = this.iModel.elements.getElement<SubCategory>(this.myDefaultSubCategoryId());
     subCat.appearance = new SubCategoryAppearance(props);
     this.iModel.elements.updateElement(subCat);
@@ -139,6 +147,14 @@ export class DrawingCategory extends Category {
    * @internal
    */
   public constructor(opts: ElementProps, iModel: IModelDb) { super(opts, iModel); }
+
+  /** Tell monitors about the automatic insertion of my default sub-category */
+  protected static onInserted(props: ElementProps, iModel: IModelDb): void {
+    super.onInserted(props, iModel);
+    if (iModel.isBriefcaseDb()) {
+      iModel.concurrencyControl.onElementWritten(this, IModelDb.getDefaultSubCategoryId(props.id!), DbOpcode.Insert);
+    }
+  }
 
   /** Get the name of the CodeSpec that is used by DrawingCategory objects. */
   public static getCodeSpecName(): string { return BisCodeSpec.drawingCategory; }
@@ -185,7 +201,7 @@ export class DrawingCategory extends Category {
    * @returns The Id of the newly inserted DrawingCategory element.
    * @throws [[IModelError]] if unable to insert the element.
    */
-  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, defaultAppearance: SubCategoryAppearance.Props): Id64String {
+  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, defaultAppearance: SubCategoryAppearance.Props | SubCategoryAppearance): Id64String {
     const category = this.create(iModelDb, definitionModelId, name);
     const elements = iModelDb.elements;
     const categoryId = elements.insertElement(category);
@@ -206,6 +222,14 @@ export class SpatialCategory extends Category {
    * @internal
    */
   public constructor(opts: ElementProps, iModel: IModelDb) { super(opts, iModel); }
+
+  /** Tell monitors about the sneaky insertion of my default sub-category */
+  protected static onInserted(props: ElementProps, iModel: IModelDb): void {
+    super.onInserted(props, iModel);
+    if (iModel.isBriefcaseDb()) {
+      iModel.concurrencyControl.onElementWritten(this, IModelDb.getDefaultSubCategoryId(props.id!), DbOpcode.Insert);
+    }
+  }
 
   /** Get the name of the CodeSpec that is used by SpatialCategory objects. */
   public static getCodeSpecName(): string { return BisCodeSpec.spatialCategory; }
@@ -252,7 +276,7 @@ export class SpatialCategory extends Category {
    * @returns The Id of the newly inserted SpatialCategory element.
    * @throws [[IModelError]] if unable to insert the element.
    */
-  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, defaultAppearance: SubCategoryAppearance.Props): Id64String {
+  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, defaultAppearance: SubCategoryAppearance.Props | SubCategoryAppearance): Id64String {
     const category = this.create(iModelDb, definitionModelId, name);
     const elements = iModelDb.elements;
     const categoryId = elements.insertElement(category);

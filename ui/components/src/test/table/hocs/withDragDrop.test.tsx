@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { expect } from "chai";
@@ -11,7 +11,7 @@ import { Table } from "../../../ui-components";
 import { withTableDragDrop } from "../../../ui-components/table/hocs/withDragDrop";
 import { DropTargetProps, DragSourceProps, DragSourceArguments, DropEffects, DropStatus, DropTargetArguments } from "../../../ui-components/dragdrop/DragDropDef";
 import { TableDataProvider, ColumnDescription, RowItem, CellItem, TableDataChangeEvent } from "../../../ui-components/table/TableDataProvider";
-import { PropertyValue, PropertyValueFormat, PropertyDescription, PropertyRecord } from "@bentley/imodeljs-frontend";
+import { PropertyValue, PropertyValueFormat, PropertyDescription, PropertyRecord } from "@bentley/ui-abstract";
 
 describe("Table withDragDrop HOC", () => {
 
@@ -137,7 +137,7 @@ describe("Table withDragDrop HOC", () => {
     });
     it("should pass data through for functional objectType", async () => {
       const dataProviderMock = createDataProvider(10, { testType: "function-test" });
-      const objectType = sinon.spy((data: { testType: string }) => data.testType);
+      const objectType = sinon.spy((data: { testType: string } | any) => data.testType);
       const root = ReactTestUtils.renderIntoDocument(<DragDropTable dataProvider={dataProviderMock} dragProps={{ objectType }} />) as any;
       const callbacks = root.createDragProps(await dataProviderMock.getRow(0)) as DragSourceProps;
       const ret = (callbacks.objectType as any)();

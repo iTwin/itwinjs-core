@@ -1,12 +1,15 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Footer */
+/** @packageDocumentation
+ * @module Footer
+ */
 
-import * as classnames from "classnames";
+import classnames from "classnames";
 import * as React from "react";
-import { CommonProps, Popup, Position } from "@bentley/ui-core";
+import { RelativePosition } from "@bentley/ui-abstract";
+import { CommonProps, Popup } from "@bentley/ui-core";
 import "./Popup.scss";
 
 /** Properties of [[ToolSettingsPopup]] component.
@@ -35,7 +38,7 @@ export class ToolSettingsPopup extends React.PureComponent<ToolSettingsPopupProp
           "nz-widget-toolSettings-popup",
           className,
         )}
-        position={Position.Bottom}
+        position={RelativePosition.Bottom}
         showArrow
         showShadow={false}
         {...props}

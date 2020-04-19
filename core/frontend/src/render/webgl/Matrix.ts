@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module WebGL */
+/** @packageDocumentation
+ * @module WebGL
+ */
 
 import { Vector3d, Point3d, Matrix3d, Transform, Matrix4d } from "@bentley/geometry-core";
 import { assert } from "@bentley/bentleyjs-core";
@@ -192,9 +194,13 @@ export class Matrix4 {
     result.initFromMatrix4d(mat);
     return result;
   }
-  public toMatrix4d(): Matrix4d {
+  public toMatrix4d(result?: Matrix4d): Matrix4d {
     const data = this.data;
-    return Matrix4d.createRowValues(data[0], data[4], data[8], data[12], data[1], data[5], data[9], data[13], data[2], data[6], data[10], data[14], data[3], data[7], data[11], data[15]);
+    return Matrix4d.createRowValues(data[0], data[4], data[8], data[12],
+      data[1], data[5], data[9], data[13],
+      data[2], data[6], data[10], data[14],
+      data[3], data[7], data[11], data[15],
+      result);
   }
 
   public lookAt(eye: Point3d, center: Point3d, up: Vector3d): boolean {

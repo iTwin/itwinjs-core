@@ -1,8 +1,9 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-@import "@bentley/ui-core/lib/ui-core/index";
+@import "~@bentley/ui-core/lib/ui-core/button/hollow";
+@import "~@bentley/ui-core/lib/ui-core/inputs/input";
 
 .components-filtering-input {
   display: flex;
@@ -35,10 +36,8 @@
   bottom: 0px;
 
   > .icon {
-    position: absolute;
-    top: 50%;
-    right: 0;
-    line-height: 0;
+    align-self: center;
+    border: none;
   }
 }
 

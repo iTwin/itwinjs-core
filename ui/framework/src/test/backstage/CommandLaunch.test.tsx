@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { mount, shallow } from "enzyme";
@@ -22,7 +22,7 @@ describe("Backstage", () => {
   before(async () => {
     await TestUtils.initializeUiFramework();
 
-    FrontstageManager.setActiveFrontstageDef(undefined); // tslint:disable-line:no-floating-promises
+    await FrontstageManager.setActiveFrontstageDef(undefined);
   });
 
   after(() => {
@@ -33,9 +33,9 @@ describe("Backstage", () => {
     it("CommandLaunchBackstageItem should render & execute", () => {
       const spyMethod = sinon.stub();
       let stateFuncRun = false;
-      const stateFunc = (state: Readonly<BackstageItemState>): BackstageItemState => {
+      const stateFunc = (state: Readonly<BackstageItemState>): BackstageItemState => { // tslint:disable-line:deprecation
         stateFuncRun = true;
-        return { ...state, isEnabled: false } as BackstageItemState;
+        return { ...state, isEnabled: false } as BackstageItemState; // tslint:disable-line:deprecation
       };
       const wrapper = mount(
         <CommandLaunchBackstageItem commandId="my-command-id" labelKey="UiFramework:tests.label"

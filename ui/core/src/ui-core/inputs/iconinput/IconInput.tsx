@@ -1,18 +1,20 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Inputs */
+/** @packageDocumentation
+ * @module Inputs
+ */
 
 import * as React from "react";
-import * as classnames from "classnames";
+import classnames from "classnames";
 
 import { Input, InputProps } from "../Input";
 
 import "./IconInput.scss";
 
 /** Properties for the [[IconInput]] component
- * @alpha
+ * @beta
  */
 export interface IconInputProps extends InputProps {
   /** Icon displayed to the left of the Input field within the IconInput component */
@@ -22,7 +24,7 @@ export interface IconInputProps extends InputProps {
 }
 
 /** Input component with icon to the left of the input field
- * @alpha
+ * @beta
  */
 export class IconInput extends React.PureComponent<IconInputProps> {
   public render(): JSX.Element {

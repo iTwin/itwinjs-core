@@ -57,8 +57,23 @@
     "ShowTileVolumes": {
       "keyin": "fdt tile bounds"
     },
+    "ToggleTileTreeBoundsDecoration": {
+      "keyin": "fdt tiletree bounds"
+    },
     "TogglePrimitiveVisibility": {
       "keyin": "fdt visibility"
+    },
+    "ToggleRealityTileBounds": {
+      "keyin": "fdt reality bounds"
+    },
+    "ToggleRealityTilePreload": {
+      "keyin": "fdt toggle reality preload"
+    },
+    "ToggleRealityTileFreeze": {
+      "keyin": "fdt toggle reality freeze"
+    },
+    "ToggleRealityTileLogging": {
+      "keyin": "fdt toggle reality logging"
     },
     "SetAspectRatioSkew": {
       "keyin": "fdt aspect skew"
@@ -110,6 +125,21 @@
     },
     "ViewportTileSizeMod": {
       "keyin": "fdt tilesize viewport"
+    },
+    "ViewportAddRealityModel": {
+      "keyin": "fdt attach reality model"
+    },
+    "DumpLayerSettings": {
+      "keyin": "fdt layer dump"
+    },
+    "ChangeLayerSettings": {
+      "keyin": "fdt layer set"
+    },
+    "OverrideSubCategoryPriority": {
+      "keyin": "fdt subcat priority"
+    },
+    "ClipColorTool": {
+      "keyin": "fdt clip color"
     }
   }
 }

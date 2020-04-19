@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Schema */
+/** @packageDocumentation
+ * @module Schema
+ */
 
 import { DbOpcode, Id64, Id64String } from "@bentley/bentleyjs-core";
 import { EntityProps, PropertyCallback, PropertyMetaData } from "@bentley/imodeljs-common";
@@ -73,15 +75,9 @@ export class Entity implements EntityProps {
    */
   public forEachProperty(func: PropertyCallback, includeCustom: boolean = false) { IModelDb.forEachMetaData(this.iModel, this.classFullName, true, func, includeCustom); }
 
-  /**  Get the full BIS class name of this Entity in the form "schema:class"  */
+  /** Get the full BIS class name of this Entity in the form "schema:class" */
   public static get classFullName(): string { return this.schema.schemaName + ":" + this.className; }
 
   /** Get the full BIS class name of this Entity in the form "schema:class". */
   public get classFullName(): string { return this._ctor.classFullName; }
-
-  /** Make a deep copy of this Entity
-   * @deprecated This method is of limited utility since it does not handle Id remapping. In most cases, it is better to just create a new instance.
-   * @internal
-   */
-  public clone(): this { return new this._ctor(this, this.iModel) as this; }
 }

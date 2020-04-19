@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
@@ -330,7 +330,7 @@ describe("Full Schema Deserialization", () => {
             descriptions.push((await c.baseClass).description!);
           else if (c.schemaItemType === SchemaItemType.Mixin && c.appliesTo)
             descriptions.push((await c.appliesTo).description!);
-        }),
+        }) as any,
       };
 
       const context = new SchemaContext();
@@ -381,7 +381,7 @@ describe("Full Schema Deserialization", () => {
             descriptions.push((await c.baseClass).description!);
           else if (c.schemaItemType === SchemaItemType.Mixin && c.appliesTo)
             descriptions.push((await c.appliesTo).description!);
-        }),
+        }) as any,
       };
 
       const context = new SchemaContext();
@@ -454,7 +454,7 @@ describe("Full Schema Deserialization", () => {
             const prop = await c.properties![0] as NavigationProperty;
             descriptions.push((await prop.relationshipClass).description!);
           }
-        }),
+        }) as any,
       };
 
       const context = new SchemaContext();
@@ -527,7 +527,7 @@ describe("Full Schema Deserialization", () => {
             const prop = await c.properties![0] as NavigationProperty;
             descriptions.push((await prop.relationshipClass).description!);
           }
-        }),
+        }) as any,
       };
 
       const context = new SchemaContext();

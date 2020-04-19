@@ -20,7 +20,7 @@ Using a closed region as the cutter is a specialized high level operation, just 
 |---|---|
 | a _split_ step uses the region boundary curves but not the interior/exterior properties. |`const splitPaths = RegionOps.splitToPathsBetweenFlagBreaks ((pathWithIntersectionMarkup, true);` |
 | a _classification_ step tests one point from each fragment of the `splitPaths`: | |
-| (a) obtain one point on a fragment being tested |`const pointOnChild = CurveCollection.createCurveLocationDetailOnAnyCurvePrimitive(splitPaths);` |
+| (a) obtain one point on a fragment being tested |`const pointOnChild = CurveCollection.createCurveLocationDetailOnAnyCurvePrimiitive(splitPaths);` |
 | (b) determine if that single point is inside or outside. <br> since the fragments have no interior crossings, that point classifies the whole fragment | `const inOnOut = RegionOps.testPointInOnOutRegionXY(region, pointOnChild.point.x, pointOnChild.point.y);` |
 
 
@@ -36,7 +36,7 @@ This tests whether single points are in, out, or on an xy region.
 
 |  |  |
 |---|---|
-| Parity region with various test points <br> circle is "on" <br> diamond is "in" <br> plus is "out" | ![>](./figs/RegionOps/testPointInOnOutRegionXY\ParityRegionWithSinglePointInOut.png) |
+| Parity region with various test points <br> circle is "on" <br> diamond is "in" <br> plus is "out" | ![>](./figs/RegionOps/testPointInOnOutRegionXY/ParityRegionWithSinglePointInOut.png) |
 
 
 Unit Test

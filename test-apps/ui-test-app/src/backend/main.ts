@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
 import { app as electron } from "electron";
@@ -8,10 +8,9 @@ import { IModelHost } from "@bentley/imodeljs-backend";
 import { RpcInterfaceDefinition } from "@bentley/imodeljs-common";
 import { Presentation } from "@bentley/presentation-backend";
 import getSupportedRpcs from "../common/rpcs";
-
-import { Config } from "@bentley/imodeljs-clients";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 import { initializeLogging, setupSnapshotConfiguration } from "./web/BackendServer";
+import { Config } from "@bentley/bentleyjs-core";
 
 IModelJsConfig.init(true /*suppress error*/, true /* suppress message */, Config.App);
 

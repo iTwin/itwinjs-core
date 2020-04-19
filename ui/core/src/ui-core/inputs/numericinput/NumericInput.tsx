@@ -1,11 +1,13 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Inputs */
+/** @packageDocumentation
+ * @module Inputs
+ */
 
 import * as React from "react";
-import * as classnames from "classnames";
+import classnames from "classnames";
 import { ReactNumericInput, ReactNumericInputProps } from "./ReactNumericInput";
 
 import { CommonProps } from "../../utils/Props";
@@ -15,20 +17,26 @@ import "./NumericInput.scss";
 
 // cSpell:ignore nostyle
 
-/** @alpha */
+/** Step function prototype for [[NumericInput]] component
+ * @beta
+ */
 export type StepFunctionProp = number | ((direction: string) => number | undefined);
 
-/** @alpha */
+/** Properties for the [[NumericInput]] component
+ * @beta
+ */
 export interface NumericInputProps extends Omit<ReactNumericInputProps, "step">, CommonProps {
   step?: StepFunctionProp;
 }
 
 /** Default properties of [[NumericInput]] component.
- * @alpha
+ * @internal
  */
 export type NumericInputDefaultProps = Pick<NumericInputProps, "strict">;
 
-/** @alpha */
+/** Numeric Input React component.
+ * @beta
+ */
 export class NumericInput extends React.Component<NumericInputProps> {
 
   /** @internal */

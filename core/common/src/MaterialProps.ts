@@ -1,11 +1,13 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module WireFormats */
+/** @packageDocumentation
+ * @module Rendering
+ */
 
 import { DefinitionElementProps } from "./ElementProps";
-import { TextureMapping } from "./Render";
+import { TextureMapping } from "./TextureMapping";
 import { Id64String } from "@bentley/bentleyjs-core";
 
 /** Contains three array entries ordered as red, green, blue containing values 0 to 1

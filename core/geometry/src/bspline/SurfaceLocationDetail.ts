@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Curve */
+/** @packageDocumentation
+ * @module Curve
+ */
 import { Point3d } from "../geometry3d/Point3dVector3d";
 import { UVSurface } from "../geometry3d/GeometryHandler";
 import { Point2d } from "../geometry3d/Point2dVector2d";
@@ -42,6 +44,20 @@ export class UVSurfaceLocationDetail {
     detail.point.setFromPoint3d(point);
     return detail;
   }
+  /**
+   * Create a new detail structure.
+   * @param surface
+   * @param uv coordinates to copy (not capture) into the `detail.uv`
+   * @param point coordinates to copy (not capture) into the `detail.point`
+   */
+  public static createSurfaceUVNumbersPoint(surface: UVSurface | undefined, u: number, v: number, point: Point3d): UVSurfaceLocationDetail {
+    const detail = new UVSurfaceLocationDetail(surface);
+    detail.uv.x = u;
+    detail.uv.y = v;
+    detail.point.setFromPoint3d(point);
+    return detail;
+  }
+
 }
 /**
  * Carrier for both curve and surface data, e.g. from intersection calculations.

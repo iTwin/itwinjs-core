@@ -1,16 +1,20 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as moq from "typemoq";
 import * as sinon from "sinon";
 import { expect, use } from "chai";
 import ChaiAsPromised from "chai-as-promised";
-import { Id64String, Guid } from "@bentley/bentleyjs-core";
+import { Id64String, Guid, BeEvent } from "@bentley/bentleyjs-core";
 import { PresentationManager, Presentation, RulesetManager } from "@bentley/presentation-frontend";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { Content, Descriptor, DefaultContentDisplayTypes, KeySet, Ruleset, ValuesDictionary, Item, RegisteredRuleset, Field, CategoryDescription, PrimitiveTypeDescription, PropertyValueFormat, Value, DisplayValue } from "@bentley/presentation-common";
-import { ContentBuilder, IContentBuilderDataProvider } from "../ContentBuilder";
+import {
+  Content, Descriptor, DefaultContentDisplayTypes, KeySet, Ruleset, ValuesDictionary,
+  Item, RegisteredRuleset, Field, CategoryDescription, PrimitiveTypeDescription,
+  PropertyValueFormat, Value, DisplayValue,
+} from "@bentley/presentation-common";
+import { ContentBuilder, IContentBuilderDataProvider } from "../presentation-testing/ContentBuilder";
 
 use(ChaiAsPromised);
 
@@ -170,11 +174,12 @@ describe("ContentBuilder", () => {
       presentationManagerMock.reset();
       presentationManagerMock.setup((manager) => manager.rulesets()).returns(() => rulesetManagerMock.object);
       presentationManagerMock.setup(async (manager) => manager.getContent(moq.It.isAny(), moq.It.isAny(), moq.It.isAny())).returns(getEmptyContent);
-      Presentation.presentation = presentationManagerMock.object;
+      presentationManagerMock.setup((x) => x.onContentUpdate).returns(() => new BeEvent());
+      Presentation.setPresentationManager(presentationManagerMock.object);
     });
 
     it("returns empty records when there is no content returned from presentation", async () => {
-      const builder = new ContentBuilder(imodelMock.object);
+      const builder = new ContentBuilder({ imodel: imodelMock.object });
       let content = await builder.createContent("1", []);
       expect(content).to.be.empty;
 
@@ -188,14 +193,14 @@ describe("ContentBuilder", () => {
     });
 
     it("returns empty records when there is no content in the supplied data provider", async () => {
-      const builder = new ContentBuilder(imodelMock.object, new EmptyDataProvider());
+      const builder = new ContentBuilder({ imodel: imodelMock.object, dataProvider: new EmptyDataProvider() });
       const content = await builder.createContent("1", []);
       expect(content).to.be.empty;
     });
 
     it("returns correct records when there is content in the supplied data provider", async () => {
       const dataProvider = new DataProvider();
-      const builder = new ContentBuilder(imodelMock.object, dataProvider);
+      const builder = new ContentBuilder({ imodel: imodelMock.object, dataProvider });
       const content = await builder.createContent("1", []);
       expect(content.length).to.equal(dataProvider.values.length * dataProvider.descriptor.fields.length);
     });
@@ -224,9 +229,10 @@ describe("ContentBuilder", () => {
     it("returns all required instances with empty records", async () => {
       const verificationSpy = sinon.spy();
 
-      const builder = new ContentBuilder(
-        imodelMock.object,
-        new EmptyDataProvider((keyset: KeySet) => verifyKeyset(keyset, testInstances, verificationSpy)));
+      const builder = new ContentBuilder({
+        imodel: imodelMock.object,
+        dataProvider: new EmptyDataProvider((keyset: KeySet) => verifyKeyset(keyset, testInstances, verificationSpy)),
+      });
 
       const content = await builder.createContentForAllInstances("1");
 
@@ -263,9 +269,10 @@ describe("ContentBuilder", () => {
 
         const verificationSpy = sinon.spy();
 
-        const builder = new ContentBuilder(
-          imodelMock.object,
-          new EmptyDataProvider((keyset: KeySet) => verifyKeyset(keyset, testInstances, verificationSpy)));
+        const builder = new ContentBuilder({
+          imodel: imodelMock.object,
+          dataProvider: new EmptyDataProvider((keyset: KeySet) => verifyKeyset(keyset, testInstances, verificationSpy)),
+        });
 
         const content = await builder.createContentForInstancePerClass("1");
 
@@ -286,9 +293,10 @@ describe("ContentBuilder", () => {
 
         const verificationSpy = sinon.spy();
 
-        const builder = new ContentBuilder(
-          imodelMock.object,
-          new EmptyDataProvider((keyset: KeySet) => verifyKeyset(keyset, testInstances, verificationSpy)));
+        const builder = new ContentBuilder({
+          imodel: imodelMock.object,
+          dataProvider: new EmptyDataProvider((keyset: KeySet) => verifyKeyset(keyset, testInstances, verificationSpy)),
+        });
 
         await expect(builder.createContentForInstancePerClass("1")).to.be.rejectedWith("Test error");
       });
@@ -305,9 +313,10 @@ describe("ContentBuilder", () => {
       it("returns an empty list", async () => {
         const verificationSpy = sinon.spy();
 
-        const builder = new ContentBuilder(
-          imodelMock.object,
-          new EmptyDataProvider((keyset: KeySet) => verifyKeyset(keyset, testInstances, verificationSpy)));
+        const builder = new ContentBuilder({
+          imodel: imodelMock.object,
+          dataProvider: new EmptyDataProvider((keyset: KeySet) => verifyKeyset(keyset, testInstances, verificationSpy)),
+        });
 
         const content = await builder.createContentForInstancePerClass("1");
 

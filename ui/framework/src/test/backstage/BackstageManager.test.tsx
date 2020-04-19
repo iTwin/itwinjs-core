@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
@@ -28,10 +28,10 @@ describe("useIsBackstageOpen", () => {
   };
 
   it("should return is backstage open", () => {
-    const spy = sinon.spy() as sinon.SinonSpy<[ReturnType<typeof useIsBackstageOpen>]>;
+    const spy = sinon.stub<[ReturnType<typeof useIsBackstageOpen>]>();
     const manager = new BackstageManager();
     shallow(<TestHook
-      onRender={() => spy(useIsBackstageOpen(manager))} // tslint:disable-line: react-hooks-nesting
+      onRender={() => spy(useIsBackstageOpen(manager))}
     />);
 
     spy.calledOnceWithExactly(false).should.true;
@@ -41,17 +41,17 @@ describe("useIsBackstageOpen", () => {
     const manager = new BackstageManager();
     const spy = sinon.spy(manager.onToggled, "addListener");
     mount(<TestHook
-      onRender={() => useIsBackstageOpen(manager)}  // tslint:disable-line: react-hooks-nesting
+      onRender={() => useIsBackstageOpen(manager)}
     />);
 
     spy.calledOnce.should.true;
   });
 
   it("should update isOpen", () => {
-    const spy = sinon.spy() as sinon.SinonSpy<[ReturnType<typeof useIsBackstageOpen>]>;
+    const spy = sinon.stub<[ReturnType<typeof useIsBackstageOpen>]>();
     const manager = new BackstageManager();
     mount(<TestHook
-      onRender={() => spy(useIsBackstageOpen(manager))} // tslint:disable-line: react-hooks-nesting
+      onRender={() => spy(useIsBackstageOpen(manager))}
     />);
 
     manager.open();
@@ -62,7 +62,7 @@ describe("useIsBackstageOpen", () => {
     const manager = new BackstageManager();
     const spy = sinon.spy(manager.onToggled, "removeListener");
     const sut = mount(<TestHook
-      onRender={() => useIsBackstageOpen(manager)}  // tslint:disable-line: react-hooks-nesting
+      onRender={() => useIsBackstageOpen(manager)}
     />);
     sut.unmount();
 

@@ -1,15 +1,18 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module RadialMenu */
+/** @packageDocumentation
+ * @module RadialMenu
+ */
 
 import * as React from "react";
-import * as classnames from "classnames";
+import classnames from "classnames";
 
 import { AnnularSector, Annulus } from "./Annulus";
 import { CommonProps } from "../utils/Props";
 import { Point } from "../utils/Point";
+import { Icon, IconSpec } from "../icons/IconComponent";
 
 import "./RadialMenu.scss";
 
@@ -174,7 +177,7 @@ export interface RadialButtonProps extends CommonProps {
   /** Whether label is rotated to radial menu. Default: Inherit */
   labelRotate?: boolean;
   /** which icon to display in on the menu button */
-  icon?: string;
+  icon?: IconSpec;
   /** @internal */
   annularSector?: AnnularSector;
   /** listens to any onClick event, or any select event, which can be triggered by the select() method. */
@@ -241,7 +244,9 @@ export class RadialButton extends React.Component<RadialButtonProps, RadialButto
         </path>
         <foreignObject transform={t} x={p.x - size / 2} y={p.y - 16} width={size} height={size} className={"core-radial-menu-button-svg"}>
           <div {...{ xmlns: "http://www.w3.org/1999/xhtml" }} className={"core-radial-menu-button-container"}>
-            <div className={classnames("core-radial-menu-button-icon", "icon", this.props.icon)} />
+            <div className="core-radial-menu-button-icon">
+              <Icon iconSpec={this.props.icon} />
+            </div>
             <div className={"core-radial-menu-button-content"}>
               {this.props.children}
             </div>

@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Point3d } from "../geometry3d/Point3dVector3d";
 import { HalfEdge } from "./Graph";
@@ -8,7 +8,9 @@ import { Geometry } from "../Geometry";
 import { Ray3d } from "../geometry3d/Ray3d";
 import { Point2d } from "../geometry3d/Point2dVector2d";
 
-/** @module Topology */
+/** @packageDocumentation
+ * @module Topology
+ */
 /**
  * Reference to a HalfEdge node with extra XYZ and UV data.
  * @internal

@@ -1,17 +1,19 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module LocatingElements */
+/** @packageDocumentation
+ * @module LocatingElements
+ */
 
 import { Id64 } from "@bentley/bentleyjs-core";
 import { Point2d, Point3d } from "@bentley/geometry-core";
 import { HitDetail, HitList, HitPriority, HitSource } from "./HitDetail";
 import { IModelApp } from "./IModelApp";
-import { Pixel } from "./rendering";
+import { Pixel } from "./render/Pixel";
 import { InputSource, InteractiveTool } from "./tools/Tool";
-import { ScreenViewport, Viewport, ViewRect } from "./Viewport";
-import { cssPixelsToDevicePixels } from "./render/DevicePixelRatio";
+import { ScreenViewport, Viewport } from "./Viewport";
+import { ViewRect } from "./ViewRect";
 
 /** The possible actions for which a locate filter can be called.
  * @public
@@ -89,6 +91,22 @@ export class LocateResponse {
   public snapStatus = SnapStatus.Success;
   public reason?: string;
   public explanation = "";
+
+  /** @internal */
+  public clone(): LocateResponse {
+    const other = new LocateResponse();
+    other.snapStatus = this.snapStatus;
+    other.reason = this.reason;
+    other.explanation = this.explanation;
+    return other;
+  }
+
+  /** @internal */
+  public setFrom(other: LocateResponse): void {
+    this.snapStatus = other.snapStatus;
+    this.reason = other.reason;
+    this.explanation = other.explanation;
+  }
 }
 
 /** @public */
@@ -175,9 +193,9 @@ export class ElementPicker {
       if (undefined === pixels)
         return;
 
-      testPointView.x = cssPixelsToDevicePixels(testPointView.x);
-      testPointView.y = cssPixelsToDevicePixels(testPointView.y);
-      pixelRadius = cssPixelsToDevicePixels(pixelRadius);
+      testPointView.x = vp.cssPixelsToDevicePixels(testPointView.x);
+      testPointView.y = vp.cssPixelsToDevicePixels(testPointView.y);
+      pixelRadius = vp.cssPixelsToDevicePixels(pixelRadius);
 
       const elmHits = new Map<string, Point2d>();
       const testPoint = Point2d.createZero();

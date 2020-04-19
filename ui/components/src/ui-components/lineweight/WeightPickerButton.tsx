@@ -1,13 +1,16 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module LineWeight */
+/** @packageDocumentation
+ * @module LineWeight
+ */
 
 import * as React from "react";
 import classnames from "classnames";
 import { ColorDef } from "@bentley/imodeljs-common";
-import { Popup, Position, CommonProps } from "@bentley/ui-core";
+import { RelativePosition } from "@bentley/ui-abstract";
+import { Popup, CommonProps } from "@bentley/ui-core";
 import ReactResizeDetector from "react-resize-detector";
 import { LineWeightSwatch } from "./Swatch";
 import "./WeightPickerButton.scss";
@@ -208,7 +211,7 @@ export class WeightPickerButton extends React.PureComponent<WeightPickerProps, W
               className="components-weightpicker-popup"
               style={{ width: `${width}px` }}
               isOpen={this.state.showPopup}
-              position={Position.Bottom}
+              position={RelativePosition.Bottom}
               offset={0}
               showShadow={false}
               onClose={this._closePopup}

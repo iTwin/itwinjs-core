@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as fs from "fs";
 import * as fsextra from "fs-extra";
@@ -8,13 +8,11 @@ import * as path from "path";
 import * as child_process from "child_process";
 import * as http from "http";
 import * as https from "https";
-import { IModelClient, IModelBankClient, IModelBankFileSystemContextClient, Config } from "@bentley/imodeljs-clients";
-import { IModelBankDummyAuthorizationClient } from "@bentley/imodeljs-clients/lib/imodelbank/IModelBankDummyAuthorizationClient";
-import { BasicAuthorizationClient } from "@bentley/imodeljs-clients/lib/imodelbank/BasicAuthorizationClient";
-import { UrlFileHandler } from "../../UrlFileHandler";
-import { TestIModelHubCloudEnv } from "./IModelHubCloudEnv";
-import { workDir } from "./TestUtils";
-import { Logger } from "@bentley/bentleyjs-core";
+import { workDir, createIModelBankFileHandler } from "./TestUtils";
+import { Logger, Config } from "@bentley/bentleyjs-core";
+import { IModelCloudEnvironment, IModelBankClient, IModelBankFileSystemContextClient } from "@bentley/imodelhub-client";
+import { BasicAuthorizationClient } from "@bentley/imodelhub-client/lib/imodelbank/BasicAuthorizationClient";
+import { IModelBankDummyAuthorizationClient } from "@bentley/imodelhub-client/lib/imodelbank/IModelBankDummyAuthorizationClient";
 
 // To run tests with imodel-bank integration:
 // set NODE_EXTRA_CA_CERTS=d:\imjs\imodeljs\core\clients-backend\src\test\assets\local_dev_server.crt
@@ -24,7 +22,7 @@ import { Logger } from "@bentley/bentleyjs-core";
 // set imjs_test_imodel_bank_run_orchestrator=%SrcRoot%\imodel-bank\local-orchestrator\lib\server.js
 // set imjs_test_imodel_bank_logging_config=<somewhere>logging.config.json
 
-export function getIModelBankCloudEnv(): [TestIModelHubCloudEnv, IModelClient] {
+export function getIModelBankCloudEnv(): IModelCloudEnvironment {
   if (Config.App.has("imjs_test_imodel_bank_run_orchestrator"))
     return launchLocalOrchestrator();
 
@@ -33,21 +31,22 @@ export function getIModelBankCloudEnv(): [TestIModelHubCloudEnv, IModelClient] {
   const basicAuthentication: boolean = !!JSON.parse(Config.App.get("imjs_test_imodel_bank_basic_authentication"));
   const authorization = basicAuthentication ? new BasicAuthorizationClient() : new IModelBankDummyAuthorizationClient();
 
-  const bankClient = new IModelBankClient(orchestratorUrl, new UrlFileHandler());
+  const bankClient = new IModelBankClient(orchestratorUrl, createIModelBankFileHandler());
   const contextMgr = new IModelBankFileSystemContextClient(orchestratorUrl);
 
   const cloudEnv = {
     isIModelHub: false,
     authorization,
     contextMgr,
+    imodelClient: bankClient,
     shutdown: () => Promise.resolve(0),
     startup: () => Promise.resolve(),
   };
 
-  return [cloudEnv, bankClient];
+  return cloudEnv;
 }
 
-function launchLocalOrchestrator(): [TestIModelHubCloudEnv, IModelClient] {
+function launchLocalOrchestrator(): IModelCloudEnvironment {
 
   const loggingCategory = "imodeljs-clients-backend.IModelBankCloudEnv";
 
@@ -143,16 +142,17 @@ function launchLocalOrchestrator(): [TestIModelHubCloudEnv, IModelClient] {
   const authorization = basicAuthentication ? new BasicAuthorizationClient() : new IModelBankDummyAuthorizationClient();
 
   const orchestratorUrl = `${cfg.baseUrl}:${cfg.port}`;
-  const bankClient = new IModelBankClient(orchestratorUrl, new UrlFileHandler());
+  const bankClient = new IModelBankClient(orchestratorUrl, createIModelBankFileHandler());
   const contextMgr = new IModelBankFileSystemContextClient(orchestratorUrl);
 
   const cloudEnv = {
     isIModelHub: false,
     authorization,
     contextMgr,
+    imodelClient: bankClient,
     shutdown: doShutdown,
     startup: doStartup,
   };
 
-  return [cloudEnv, bankClient];
+  return cloudEnv;
 }

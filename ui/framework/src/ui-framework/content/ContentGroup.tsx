@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module ContentView */
+/** @packageDocumentation
+ * @module ContentView
+ */
 
 import * as React from "react";
 
@@ -114,7 +116,7 @@ export class ContentGroup {
     this.contentPropsList.forEach((contentProps: ContentProps, index: number) => {
       const control = this.getContentControl(contentProps, index);
       if (control) {
-        contentNodes.push(control.reactElement);
+        contentNodes.push(control.reactNode);
         this._contentSetMap.set(control.controlId, control);
       }
     });

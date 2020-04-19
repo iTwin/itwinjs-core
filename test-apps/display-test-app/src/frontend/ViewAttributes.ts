@@ -1,34 +1,46 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
 import {
   Id64String,
 } from "@bentley/bentleyjs-core";
 import {
-  ViewState,
-  ViewState3d,
-  Viewport,
-  DisplayStyle3dState,
-  DisplayStyle2dState,
-  DisplayStyleState,
-} from "@bentley/imodeljs-frontend";
-import {
+  AmbientOcclusion,
   BackgroundMapProps,
   BackgroundMapProviderName,
   BackgroundMapType,
-  TerrainProps,
-  RenderMode,
-  ViewFlags,
   ColorDef,
+  ColorDefProps,
+  EnvironmentProps,
+  GlobeMode,
   HiddenLine,
+  LightSettings,
+  LightSettingsProps,
   LinePixels,
+  MonochromeMode,
+  RenderMode,
+  SolarShadowSettings,
+  SolarShadowSettingsProps,
+  TerrainProps,
+  ViewFlags,
+  ViewFlagProps,
 } from "@bentley/imodeljs-common";
+import {
+  DisplayStyle2dState,
+  DisplayStyle3dState,
+  DisplayStyleState,
+  Environment,
+  ViewState,
+  ViewState3d,
+  Viewport,
+} from "@bentley/imodeljs-frontend";
 import {
   CheckBox,
   createCheckBox,
   ComboBox,
+  ComboBoxEntry,
   createComboBox,
   createColorInput,
   createNestedMenu,
@@ -40,10 +52,188 @@ import { ToolBarDropDown } from "./ToolBar";
 import { Settings } from "./FeatureOverrides";
 import { AmbientOcclusionEditor } from "./AmbientOcclusion";
 import { EnvironmentEditor } from "./EnvironmentEditor";
+import { ThematicDisplayEditor } from "./ThematicDisplay";
 
 type UpdateAttribute = (view: ViewState) => void;
 
-type ViewFlag = "acsTriad" | "grid" | "fill" | "materials" | "textures" | "visibleEdges" | "hiddenEdges" | "monochrome" | "constructions" | "transparency" | "weights" | "styles" | "clipVolume" | "shadows" | "forceSurfaceDiscard";
+type ViewFlag = "acsTriad" | "grid" | "fill" | "materials" | "textures" | "visibleEdges" | "hiddenEdges" | "monochrome" | "constructions" | "transparency" | "weights" | "styles" | "clipVolume" | "forceSurfaceDiscard" | "whiteOnWhiteReversal";
+
+interface Style3dPreset {
+  name: string;
+  viewflags?: ViewFlagProps;
+  backgroundColor?: ColorDefProps;
+  monochromeColor?: ColorDefProps;
+  monochromeMode?: MonochromeMode;
+  environment?: EnvironmentProps;
+  hline?: HiddenLine.SettingsProps;
+  ao?: AmbientOcclusion.Props;
+  solarShadows?: SolarShadowSettingsProps;
+  lights?: LightSettingsProps;
+}
+
+const stylePresets: Style3dPreset[] = [
+  {
+    name: "None",
+  },
+  {
+    name: "Default",
+    environment: {
+      sky: {
+        display: true, groundColor: 8228728, zenithColor: 16741686, nadirColor: 3880, skyColor: 16764303,
+      },
+      ground: {
+        display: false, elevation: -0.01, aboveColor: 32768, belowColor: 1262987,
+      },
+    },
+    viewflags: {
+      renderMode: 6,
+    },
+    lights: {
+      solar: { direction: [-0.9833878378071199, -0.18098510351728977, 0.013883542698953828] },
+    },
+    hline: {},
+    ao: {},
+    solarShadows: {},
+  },
+  {
+    name: "Illustration",
+    environment: {},
+    backgroundColor: 10921638,
+    viewflags: { noCameraLights: true, noSourceLights: true, noSolarLight: true, visEdges: true, renderMode: 6 },
+    lights: {
+      solar: { direction: [-0.9833878378071199, -0.18098510351728977, 0.013883542698953828] },
+    },
+    hline: {
+      visible: { ovrColor: true, color: 0, pattern: 0, width: 1 },
+      hidden: { ovrColor: false, color: 16777215, pattern: 3435973836, width: 0 },
+      transThreshold: 1,
+    },
+    ao: {},
+    solarShadows: {},
+  },
+  {
+    name: "Sun-dappled",
+    environment: {
+      sky: {
+        display: true, groundColor: 8228728, zenithColor: 16741686, nadirColor: 3880, skyColor: 16764303,
+      },
+      ground: {
+        display: false, elevation: -0.01, aboveColor: 32768, belowColor: 1262987,
+      },
+    },
+    viewflags: {
+      shadows: true, renderMode: 6,
+    },
+    lights: {
+      solar: { direction: [0.9391245716329828, 0.10165764029437066, -0.3281931795832247] },
+      hemisphere: { intensity: 0.2 },
+      portrait: { intensity: 0 },
+    },
+    hline: {},
+    ao: {},
+    solarShadows: {},
+  },
+  {
+    name: "Schematic",
+    environment: {},
+    backgroundColor: 16777215,
+    viewflags: { visEdges: true, renderMode: 6 },
+    lights: {
+      solar: { direction: [0, -0.6178171353958787, -0.7863218089378106], intensity: 1.95, alwaysEnabled: true },
+      ambient: { intensity: 0.65 },
+      portrait: { intensity: 0 },
+      specularIntensity: 0,
+    },
+    hline: {
+      visible: { ovrColor: true, color: 0, pattern: 0, width: 2 },
+      hidden: { ovrColor: false, color: 16777215, pattern: 3435973836, width: 0 },
+      transThreshold: 1,
+    },
+    ao: {},
+    solarShadows: {},
+  },
+  {
+    name: "Outdoorsy",
+    environment: {
+      sky: { display: true, groundColor: 8228728, zenithColor: 16741686, nadirColor: 3880, skyColor: 16764303 },
+      ground: { display: false, elevation: -0.01, aboveColor: 32768, belowColor: 1262987 },
+    },
+    viewflags: { renderMode: 6 },
+    lights: {
+      solar: { direction: [-0.9833878378071199, -0.18098510351728977, 0.013883542698953828], intensity: 1.05 },
+      ambient: { intensity: 0.25 },
+      hemisphere: {
+        upperColor: { r: 206, g: 233, b: 255 },
+        intensity: 0.5,
+      },
+      portrait: { intensity: 0 },
+    },
+    hline: {},
+    ao: {},
+    solarShadows: {},
+  },
+  {
+    name: "Soft",
+    environment: {
+      sky: { display: true, groundColor: 8228728, zenithColor: 16741686, nadirColor: 3880, skyColor: 16764303 },
+      ground: { display: false, elevation: -0.01, aboveColor: 32768, belowColor: 1262987 },
+    },
+    viewflags: { ambientOcclusion: true, renderMode: 6 },
+    lights: {
+      solar: { direction: [-0.9833878378071199, -0.18098510351728977, 0.013883542698953828], intensity: 0 },
+      ambient: { intensity: 0.75 },
+      hemisphere: { intensity: 0.3 },
+      portrait: { intensity: 0.5 },
+      specularIntensity: 0.4,
+    },
+    ao: { bias: 0.25, zLengthCap: 0.0025, maxDistance: 100, intensity: 1, texelStepSize: 1, blurDelta: 1.5, blurSigma: 2, blurTexelStepSize: 1 },
+    hline: {},
+    solarShadows: {},
+  },
+  {
+    name: "Moonlit",
+    environment: {
+      sky: { display: true, groundColor: 2435876, zenithColor: 0, nadirColor: 3880, skyColor: 3481088 },
+      ground: { display: false, elevation: -0.01, aboveColor: 32768, belowColor: 1262987 },
+    },
+    viewflags: { visEdges: true, renderMode: 6 },
+    lights: {
+      solar: { direction: [-0.9833878378071199, -0.18098510351728977, 0.013883542698953828], intensity: 3, alwaysEnabled: true },
+      ambient: { intensity: 0.05 },
+      hemisphere: { lowerColor: { r: 83, g: 100, b: 87 } },
+      portrait: { intensity: 0 },
+      specularIntensity: 0,
+    },
+    monochromeMode: 0,
+    hline: {
+      visible: { ovrColor: true, color: 0, pattern: -1, width: 0 },
+      hidden: { ovrColor: false, color: 16777215, pattern: 3435973836, width: 0 },
+      transThreshold: 1,
+    },
+    monochromeColor: 7897479,
+    ao: {},
+    solarShadows: {},
+  },
+  {
+    name: "Gloss",
+    environment: {
+      sky: { display: true, groundColor: 8228728, zenithColor: 16741686, nadirColor: 3880, skyColor: 16764303 },
+      ground: { display: false, elevation: -0.01, aboveColor: 32768, belowColor: 1262987 },
+    },
+    viewflags: { visEdges: true, renderMode: 6 },
+    lights: {
+      solar: { direction: [-0.9833878378071199, -0.18098510351728977, 0.013883542698953828] },
+      specularIntensity: 4.15,
+    },
+    hline: {
+      visible: { ovrColor: true, color: 8026756, pattern: 0, width: 1 },
+      hidden: { ovrColor: false, color: 16777215, pattern: 3435973836, width: 0 },
+      transThreshold: 1,
+    },
+    ao: {},
+    solarShadows: {},
+  },
+];
 
 export class ViewAttributes {
   private static _expandViewFlags = false;
@@ -65,7 +255,7 @@ export class ViewAttributes {
     this._displayStylePickerDiv!.appendChild(newComboBox.div);
   }
 
-  public constructor(vp: Viewport, parent: HTMLElement) {
+  public constructor(vp: Viewport, parent: HTMLElement, disableEdges = false) {
     this._vp = vp;
     this._parent = parent;
     this._element = document.createElement("div");
@@ -75,6 +265,7 @@ export class ViewAttributes {
 
     this.addDisplayStylePicker();
     this.addRenderMode();
+    this.addPresets();
     this._element.appendChild(document.createElement("hr"));
 
     const flagsDiv = document.createElement("div");
@@ -95,24 +286,24 @@ export class ViewAttributes {
     this.addViewFlagAttribute(flagsDiv, "Fill", "fill");
     this.addViewFlagAttribute(flagsDiv, "Materials", "materials");
     this.addViewFlagAttribute(flagsDiv, "Textures", "textures");
-    this.addViewFlagAttribute(flagsDiv, "Monochrome", "monochrome");
     this.addViewFlagAttribute(flagsDiv, "Constructions", "constructions");
     this.addViewFlagAttribute(flagsDiv, "Transparency", "transparency");
     this.addViewFlagAttribute(flagsDiv, "Line Weights", "weights");
     this.addViewFlagAttribute(flagsDiv, "Line Styles", "styles");
     this.addViewFlagAttribute(flagsDiv, "Clip Volume", "clipVolume", true);
     this.addViewFlagAttribute(flagsDiv, "Force Surface Discard", "forceSurfaceDiscard", true);
+    this.addViewFlagAttribute(flagsDiv, "White-on-white Reversal", "whiteOnWhiteReversal");
 
-    this.addShadowsToggle(flagsDiv);
-    this.addLightingToggle(flagsDiv);
     this.addCameraToggle(flagsDiv);
-
-    this.addEdgeDisplay();
+    this.addMonochrome(flagsDiv);
 
     this.addEnvironmentEditor();
-
     this.addBackgroundMapOrTerrain();
+    if (!disableEdges)
+      this.addEdgeDisplay();
+
     this.addAmbientOcclusion();
+    this.addThematicDisplay();
 
     // Set initial states
     this.update();
@@ -145,74 +336,9 @@ export class ViewAttributes {
 
     const update = (view: ViewState) => {
       const visible = !only3d || view.is3d();
-      elems.div.style.display = visible ? "block" : "none";
+      elems.div.style.display = visible ? "" : "none";
       if (visible)
         elems.checkbox.checked = view.viewFlags[flag];
-    };
-
-    this._updates.push(update);
-  }
-
-  private addShadowsToggle(parent: HTMLElement): void {
-    let currentColor: ColorDef | undefined;
-    if (this._vp.view.is3d())
-      currentColor = (this._vp.view as ViewState3d).getDisplayStyle3d().settings.solarShadowsSettings.color;
-
-    const shadowsColorInput = createColorInput({
-      label: "Shadow Color",
-      id: this._nextId,
-      parent,
-      display: "inline",
-      value: undefined === currentColor ? "#FFFFFF" : currentColor.toHexString(),
-      handler: (color) => {
-        (this._vp.view as ViewState3d).getDisplayStyle3d().settings.solarShadowsSettings.color = new ColorDef(color);
-        this.sync();
-      },
-    });
-    shadowsColorInput.div.style.cssFloat = "right";
-
-    const elems = this.addCheckbox("Shadows", (enabled: boolean) => {
-      const vf = this._vp.viewFlags.clone(this._scratchViewFlags);
-      vf.shadows = enabled;
-      this._vp.viewFlags = vf;
-      this.sync();
-    }, parent);
-
-    const updateUI = (view: ViewState) => {
-      if (view.is3d())
-        currentColor = (view as ViewState3d).getDisplayStyle3d().settings.solarShadowsSettings.color;
-      shadowsColorInput.input.value = undefined === currentColor ? "#FFFFFF" : currentColor.toHexString();
-    };
-
-    const update = (view: ViewState) => {
-      const vf = view.viewFlags;
-      const visible = view.is3d();
-      elems.div.style.display = visible ? "block" : "none";
-      shadowsColorInput.div.style.display = (visible && vf.shadows) ? "inline" : "none";
-      updateUI(view);
-      if (visible)
-        elems.checkbox.checked = vf.shadows;
-    };
-
-    this._vp.onDisplayStyleChanged.addListener((vp) => updateUI(vp.view));
-
-    this._updates.push(update);
-  }
-
-  private addLightingToggle(parent: HTMLElement): void {
-    const elems = this.addCheckbox("Lights", (enabled: boolean) => {
-      const vf = this._vp.viewFlags.clone(this._scratchViewFlags);
-      vf.lighting = enabled;
-      this._vp.viewFlags = vf;
-      this.sync();
-    }, parent);
-
-    const update = (view: ViewState) => {
-      const vf = view.viewFlags;
-      const visible = view.is3d() && RenderMode.SmoothShade === vf.renderMode;
-      elems.div.style.display = visible ? "block" : "none";
-      if (visible)
-        elems.checkbox.checked = vf.lighting;
     };
 
     this._updates.push(update);
@@ -225,17 +351,50 @@ export class ViewAttributes {
       else
         (this._vp.view as ViewState3d).turnCameraOff();
 
-      this.sync();
+      this.sync(true);
     }, parent);
 
     const update = (view: ViewState) => {
-      const visible = view.is3d() && view.allow3dManipulations();
+      const visible = view.is3d() && view.allow3dManipulations() && view.supportsCamera();
       elems.div.style.display = visible ? "block" : "none";
       if (visible)
         elems.checkbox.checked = this._vp.isCameraOn;
     };
 
     this._updates.push(update);
+  }
+
+  private addMonochrome(parent: HTMLElement): void {
+    const colorInput = createColorInput({
+      label: "Color",
+      id: this._nextId,
+      parent,
+      display: "inline",
+      value: this._vp.view.displayStyle.settings.monochromeColor.toHexString(),
+      handler: (color) => {
+        this._vp.view.displayStyle.settings.monochromeColor = ColorDef.create(color);
+        this.sync();
+      },
+    });
+    colorInput.div.style.cssFloat = "right";
+
+    const scaledCb = this.addCheckbox("Scaled", (enabled: boolean) => {
+      this._vp.displayStyle.settings.monochromeMode = enabled ? MonochromeMode.Scaled : MonochromeMode.Flat;
+      this.sync();
+    }, parent);
+    scaledCb.div.style.cssFloat = "right";
+
+    this.addViewFlagAttribute(parent, "Monochrome", "monochrome");
+
+    this._updates.push((view: ViewState) => {
+      if (view.viewFlags.monochrome) {
+        colorInput.div.style.display = scaledCb.div.style.display = "";
+        colorInput.input.value = view.displayStyle.settings.monochromeColor.toHexString();
+        scaledCb.checkbox.checked = MonochromeMode.Scaled === view.displayStyle.settings.monochromeMode;
+      } else {
+        colorInput.div.style.display = scaledCb.div.style.display = "none";
+      }
+    });
   }
 
   private addRenderMode(): void {
@@ -272,9 +431,91 @@ export class ViewAttributes {
     this._element.appendChild(div);
   }
 
+  private addPresets(): void {
+    const div = document.createElement("div");
+    const entries: ComboBoxEntry[] = stylePresets.map((preset, index) => ({ name: preset.name, value: index }));
+    createComboBox({
+      parent: div,
+      name: "Preset: ",
+      entries,
+      id: "viewAttr_preset",
+      value: 0,
+      handler: (cbx) => {
+        this.applyPreset(stylePresets[parseInt(cbx.value, 10)]);
+      },
+    });
+
+    this._updates.push((view) => {
+      div.style.display = view.is3d() ? "" : "none";
+    });
+
+    this._element.appendChild(div);
+  }
+
+  private applyPreset(preset: Style3dPreset): void {
+    if (preset.name === "None")
+      return;
+
+    const style = this._vp.view.is3d() ? this._vp.view.getDisplayStyle3d().clone(this._vp.iModel) : undefined;
+    if (!style)
+      return;
+
+    if (preset.environment)
+      style.environment = new Environment(preset.environment);
+
+    if (preset.backgroundColor)
+      style.backgroundColor = ColorDef.fromJSON(preset.backgroundColor);
+
+    if (preset.monochromeColor)
+      style.monochromeColor = ColorDef.fromJSON(preset.monochromeColor);
+
+    if (preset.monochromeMode)
+      style.settings.monochromeMode = preset.monochromeMode;
+
+    if (preset.viewflags) {
+      // Preserve flags we don't care about, like background map, grid, constructions, etc.
+      // Set any we do care about that are not overridden to default values.
+      // Override any explicitly specified.
+      const vf = {
+        ...style.viewFlags.toJSON(),
+        noCameraLights: false,
+        noSourceLights: false,
+        noSolarLight: false,
+        visEdges: false,
+        hidEdges: false,
+        shadows: false,
+        monochrome: false,
+        ambientOcclusion: false,
+        thematicDisplay: false,
+        ...preset.viewflags,
+      };
+
+      style.viewFlags = ViewFlags.fromJSON(vf);
+    }
+
+    if (preset.hline)
+      style.settings.hiddenLineSettings = HiddenLine.Settings.fromJSON(preset.hline);
+
+    if (preset.ao)
+      style.settings.ambientOcclusionSettings = AmbientOcclusion.Settings.fromJSON(preset.ao);
+
+    if (preset.solarShadows)
+      style.settings.solarShadows = SolarShadowSettings.fromJSON(preset.solarShadows);
+
+    if (preset.lights)
+      style.settings.lights = LightSettings.fromJSON(preset.lights);
+
+    this._vp.displayStyle = style;
+  }
+
   private addAmbientOcclusion(): void {
     const ao = new AmbientOcclusionEditor(this._vp, this._element);
     this._updates.push((view) => ao.update(view));
+  }
+
+  private addThematicDisplay(): void {
+    const thematic = new ThematicDisplayEditor(this._vp, this._element);
+    this._updates.push((view) => thematic.update(view));
   }
 
   private getBackgroundMap(view: ViewState) { return view.displayStyle.settings.backgroundMap; }
@@ -323,6 +564,16 @@ export class ViewAttributes {
       ],
       handler: (select) => this.updateBackgroundMap({ providerData: { mapType: Number.parseInt(select.value, 10) } }),
     }).select;
+    const globeModes = createComboBox({
+      parent: backgroundSettingsDiv,
+      name: "Globe: ",
+      id: "viewAttr_globeMode",
+      entries: [
+        { name: "Ellipsoid", value: GlobeMode.Ellipsoid },
+        { name: "Plane", value: GlobeMode.Plane },
+      ],
+      handler: (select) => this.updateBackgroundMap({ globeMode: Number.parseInt(select.value, 10) }),
+    }).select;
 
     const terrainSettings = this.addTerrainSettings();
     const mapSettings = this.addMapSettings();
@@ -336,6 +587,7 @@ export class ViewAttributes {
 
     const terrainCheckbox = this.addCheckbox("Terrain", enableTerrain, backgroundSettingsDiv).checkbox;
     const transCheckbox = this.addCheckbox("Transparency", (enabled: boolean) => this.updateBackgroundMap({ transparency: enabled ? 0.5 : false }), backgroundSettingsDiv).checkbox;
+    backgroundSettingsDiv.appendChild(document.createElement("hr")!);
     backgroundSettingsDiv.appendChild(document.createElement("hr")!);
     backgroundSettingsDiv.appendChild(mapSettings);
     backgroundSettingsDiv.appendChild(terrainSettings);
@@ -354,7 +606,9 @@ export class ViewAttributes {
       types.value = map.mapType.toString();
       terrainCheckbox.checked = map.applyTerrain;
       transCheckbox.checked = false !== map.transparency;
-      enableTerrain(terrainCheckbox.checked);
+      globeModes.value = map.globeMode.toString();
+      if (map.applyTerrain !== terrainCheckbox.checked)
+        enableTerrain(terrainCheckbox.checked);
     });
     div.appendChild(backgroundSettingsDiv);
     this._element.appendChild(div);
@@ -390,6 +644,7 @@ export class ViewAttributes {
 
   private updateBackgroundMap(props: BackgroundMapProps): void {
     this._vp.changeBackgroundMapProps(props);
+    this.sync();
   }
 
   private addTerrainSettings() {
@@ -424,8 +679,6 @@ export class ViewAttributes {
     heightOriginDiv.style.textAlign = "left";
     settingsDiv.appendChild(heightOriginDiv);
 
-    const lightingCheckBox = this.addCheckbox("Terrain Lighting", (enabled: boolean) => updateTerrainSettings({ applyLighting: enabled }), settingsDiv).checkbox;
-
     const exaggerationDiv = document.createElement("div") as HTMLDivElement;
     const exaggerationLabel = document.createElement("label") as HTMLLabelElement;
     exaggerationLabel.style.display = "inline";
@@ -446,7 +699,6 @@ export class ViewAttributes {
       const terrainSettings = map.terrainSettings;
       heightOriginMode.value = terrainSettings.heightOriginMode.toString();
       heightOrigin.value = terrainSettings.heightOrigin.toString();
-      lightingCheckBox.checked = terrainSettings.applyLighting;
       exaggeration.value = terrainSettings.exaggeration.toString();
     });
 
@@ -475,8 +727,8 @@ export class ViewAttributes {
     }
   }
 
-  private sync(): void {
-    this._vp.synchWithView(true);
+  private sync(saveInUndo = false): void {
+    this._vp.synchWithView({ noSaveInUndo: !saveInUndo });
   }
 
   private get _nextId(): string {
@@ -585,11 +837,11 @@ export class ViewAttributes {
         value: color,
         display: "inline",
         disabled: !settings.ovrColor,
-        handler: (value: string) => this.overrideEdgeSettings({ [settingsName]: this.edgeSettings[settingsName].overrideColor(new ColorDef(value)) }),
+        handler: (value: string) => this.overrideEdgeSettings({ [settingsName]: this.edgeSettings[settingsName].overrideColor(ColorDef.create(value)) }),
       }).input;
 
       colorCb.addEventListener("click", () => {
-        this.overrideEdgeSettings({ [settingsName]: this.edgeSettings[settingsName].overrideColor(colorCb!.checked ? new ColorDef(colorInput!.value) : undefined) });
+        this.overrideEdgeSettings({ [settingsName]: this.edgeSettings[settingsName].overrideColor(colorCb!.checked ? ColorDef.create(colorInput!.value) : undefined) });
       });
     }
 
@@ -661,11 +913,13 @@ export class ViewAttributesPanel extends ToolBarDropDown {
   private readonly _parent: HTMLElement;
   private _attributes?: ViewAttributes;
   private _displayStylePickerInput?: ComboBox;
+  private _disableEdges: boolean;
 
-  public constructor(vp: Viewport, parent: HTMLElement) {
+  public constructor(vp: Viewport, parent: HTMLElement, disableEdges: boolean) {
     super();
     this._vp = vp;
     this._parent = parent;
+    this._disableEdges = disableEdges;
     this.open();
   }
 
@@ -714,7 +968,7 @@ export class ViewAttributesPanel extends ToolBarDropDown {
 
   public get isOpen() { return undefined !== this._attributes; }
   protected _open(): void {
-    this._attributes = new ViewAttributes(this._vp, this._parent);
+    this._attributes = new ViewAttributes(this._vp, this._parent, this._disableEdges);
     const loadingComboBox = createComboBox({
       name: "Style: ",
       id: "DisplayStyles",

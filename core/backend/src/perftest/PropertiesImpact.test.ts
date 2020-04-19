@@ -1,20 +1,17 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { SpatialCategory, IModelDb } from "../imodeljs-backend";
-import { IModelTestUtils } from "../test/IModelTestUtils";
-import { BackendRequestContext } from "../BackendRequestContext";
-import { KnownTestLocations } from "../test/KnownTestLocations";
+import { DbResult, Id64, Id64String } from "@bentley/bentleyjs-core";
+import { Arc3d, Point3d } from "@bentley/geometry-core";
 import { IModelJson as GeomJson } from "@bentley/geometry-core/lib/serialization/IModelJsonSchema";
+import { Code, ColorDef, GeometricElementProps, GeometryStreamProps, IModel, SubCategoryAppearance } from "@bentley/imodeljs-common";
+import { Reporter } from "@bentley/perf-tools/lib/Reporter";
 import { assert } from "chai";
 import * as path from "path";
-import { IModelJsFs } from "../IModelJsFs";
-import { Code, IModel, SubCategoryAppearance, ColorDef, GeometricElementProps, GeometryStreamProps } from "@bentley/imodeljs-common";
-import { Id64, Id64String, DbResult } from "@bentley/bentleyjs-core";
-import { Arc3d, Point3d } from "@bentley/geometry-core";
-import { ECSqlStatement } from "../ECSqlStatement";
-import { Reporter } from "@bentley/perf-tools/lib/Reporter";
+import { BackendRequestContext, ECSqlStatement, IModelDb, IModelJsFs, SnapshotDb, SpatialCategory, ReservedBriefcaseId } from "../imodeljs-backend";
+import { IModelTestUtils } from "../test/IModelTestUtils";
+import { KnownTestLocations } from "../test/KnownTestLocations";
 
 function createElemProps(_imodel: IModelDb, modId: Id64String, catId: Id64String, className: string = "TestPropsSchema:PropElement"): GeometricElementProps {
   // add Geometry
@@ -96,14 +93,15 @@ describe("SchemaDesignPerf Impact of Properties", () => {
       assert(IModelJsFs.existsSync(st));
       const seedName = path.join(outDir, "props_" + pCount + ".bim");
       if (!IModelJsFs.existsSync(seedName)) {
-        const seedIModel = IModelDb.createSnapshot(IModelTestUtils.prepareOutputFile("PropPerformance", "props_" + pCount + ".bim"), { rootSubject: { name: "PerfTest" } });
+        const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("PropPerformance", "props_" + pCount + ".bim"), { rootSubject: { name: "PerfTest" } });
         await seedIModel.importSchemas(new BackendRequestContext(), [st]);
-        seedIModel.setAsMaster();
+        const result: DbResult = seedIModel.nativeDb.resetBriefcaseId(ReservedBriefcaseId.CheckpointSnapshot);
+        assert.equal(DbResult.BE_SQLITE_OK, result);
         assert.isDefined(seedIModel.getMetaData("TestPropsSchema:PropElement"), "PropsClass is present in iModel.");
         const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(seedIModel, Code.createEmpty(), true);
         let spatialCategoryId = SpatialCategory.queryCategoryIdByName(seedIModel, IModel.dictionaryId, "MySpatialCategory");
         if (undefined === spatialCategoryId)
-          spatialCategoryId = SpatialCategory.insert(seedIModel, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: new ColorDef("rgb(255,0,0)") }));
+          spatialCategoryId = SpatialCategory.insert(seedIModel, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
         // create elements that can be used in tests
         for (let i = 0; i < seedCount; ++i) {
           const elementProps = createElemProps(seedIModel, newModelId, spatialCategoryId);
@@ -114,7 +112,7 @@ describe("SchemaDesignPerf Impact of Properties", () => {
         }
         seedIModel.saveChanges();
         assert.equal(getCount(seedIModel, "TestPropsSchema:PropElement"), seedCount);
-        seedIModel.closeSnapshot();
+        seedIModel.close();
       }
     }
   });
@@ -133,7 +131,7 @@ describe("SchemaDesignPerf Impact of Properties", () => {
       const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(perfimodel, Code.createEmpty(), true);
       let spatialCategoryId = SpatialCategory.queryCategoryIdByName(perfimodel, IModel.dictionaryId, "MySpatialCategory");
       if (undefined === spatialCategoryId)
-        spatialCategoryId = SpatialCategory.insert(perfimodel, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: new ColorDef("rgb(255,0,0)") }));
+        spatialCategoryId = SpatialCategory.insert(perfimodel, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
 
       for (let i = 0; i < opCount; ++i) {
         const elementProps = createElemProps(perfimodel, newModelId, spatialCategoryId);
@@ -148,7 +146,7 @@ describe("SchemaDesignPerf Impact of Properties", () => {
       }
       perfimodel.saveChanges();
       assert.equal(getCount(perfimodel, "TestPropsSchema:PropElement"), opCount + seedCount);
-      perfimodel.closeStandalone();
+      perfimodel.close();
 
       reporter.addEntry("PropPerfTest", "ElementsInsert", "Execution time(s)", totalTime, { count: opCount, properties: propCount });
     }
@@ -159,7 +157,7 @@ describe("SchemaDesignPerf Impact of Properties", () => {
       const testFileName = IModelTestUtils.prepareOutputFile("PropPerformance", "PropsPerf_Delete_" + propCount + ".bim");
       const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
 
-      const stat = perfimodel.executeQuery("SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM bis.PhysicalElement")[0];
+      const stat = IModelTestUtils.executeQuery(perfimodel, "SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM bis.PhysicalElement")[0];
       const elementIdIncrement = Math.floor(seedCount / opCount);
       assert.equal((stat.maxId - stat.minId + 1), seedCount);
       const startTime = new Date().getTime();
@@ -174,7 +172,7 @@ describe("SchemaDesignPerf Impact of Properties", () => {
       const endTime = new Date().getTime();
       const elapsedTime = (endTime - startTime) / 1000.0;
       assert.equal(getCount(perfimodel, "TestPropsSchema:PropElement"), seedCount - opCount);
-      perfimodel.closeStandalone();
+      perfimodel.close();
 
       reporter.addEntry("PropPerfTest", "ElementsDelete", "Execution time(s)", elapsedTime, { count: opCount, properties: propCount });
     }
@@ -186,7 +184,7 @@ describe("SchemaDesignPerf Impact of Properties", () => {
       const testFileName = IModelTestUtils.prepareOutputFile("PropPerformance", "PropsPerf_Read_" + propCount + ".bim");
       const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
 
-      const stat = perfimodel.executeQuery("SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM bis.PhysicalElement")[0];
+      const stat = IModelTestUtils.executeQuery(perfimodel, "SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM bis.PhysicalElement")[0];
       const elementIdIncrement = Math.floor(seedCount / opCount);
       assert.equal((stat.maxId - stat.minId + 1), seedCount);
       const startTime = new Date().getTime();
@@ -206,7 +204,7 @@ describe("SchemaDesignPerf Impact of Properties", () => {
           assert.equal(elemFound[key], "Test value");
         }
       }
-      perfimodel.closeStandalone();
+      perfimodel.close();
       reporter.addEntry("PropPerfTest", "ElementsRead", "Execution time(s)", elapsedTime, { count: opCount, properties: propCount });
     }
   });
@@ -216,7 +214,7 @@ describe("SchemaDesignPerf Impact of Properties", () => {
       const testFileName = IModelTestUtils.prepareOutputFile("PropPerformance", "PropsPerf_Update_" + propCount + ".bim");
       const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
 
-      const stat = perfimodel.executeQuery("SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM bis.PhysicalElement")[0];
+      const stat = IModelTestUtils.executeQuery(perfimodel, "SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM bis.PhysicalElement")[0];
       const elementIdIncrement = Math.floor(seedCount / opCount);
       assert.equal((stat.maxId - stat.minId + 1), seedCount);
 
@@ -253,7 +251,7 @@ describe("SchemaDesignPerf Impact of Properties", () => {
       }
 
       const elapsedTime = (endTime - startTime) / 1000.0;
-      perfimodel.closeStandalone();
+      perfimodel.close();
       reporter.addEntry("PropPerfTest", "ElementsUpdate", "Execution time(s)", elapsedTime, { count: opCount, properties: propCount });
     }
 
@@ -348,14 +346,15 @@ describe("SchemaDesignPerf Number of Indices", () => {
       assert(IModelJsFs.existsSync(st));
       const seedName = path.join(outDir, "index_" + iCount + ".bim");
       if (!IModelJsFs.existsSync(seedName)) {
-        const seedIModel = IModelDb.createSnapshot(IModelTestUtils.prepareOutputFile("IndexPerformance", "index_" + iCount + ".bim"), { rootSubject: { name: "PerfTest" } });
+        const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("IndexPerformance", "index_" + iCount + ".bim"), { rootSubject: { name: "PerfTest" } });
         await seedIModel.importSchemas(new BackendRequestContext(), [st]);
-        seedIModel.setAsMaster();
+        const result: DbResult = seedIModel.nativeDb.resetBriefcaseId(ReservedBriefcaseId.CheckpointSnapshot);
+        assert.equal(DbResult.BE_SQLITE_OK, result);
         assert.isDefined(seedIModel.getMetaData("TestIndexSchema:PropElement"), "PropsClass is present in iModel.");
         const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(seedIModel, Code.createEmpty(), true);
         let spatialCategoryId = SpatialCategory.queryCategoryIdByName(seedIModel, IModel.dictionaryId, "MySpatialCategory");
         if (undefined === spatialCategoryId)
-          spatialCategoryId = SpatialCategory.insert(seedIModel, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: new ColorDef("rgb(255,0,0)") }));
+          spatialCategoryId = SpatialCategory.insert(seedIModel, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
         // create elements that can be used in tests
         for (let i = 0; i < seedCount; ++i) {
           const elementProps = createElemProps(seedIModel, newModelId, spatialCategoryId, "TestIndexSchema:PropElement");
@@ -366,7 +365,7 @@ describe("SchemaDesignPerf Number of Indices", () => {
         }
         seedIModel.saveChanges();
         assert.equal(getCount(seedIModel, "TestIndexSchema:PropElement"), seedCount);
-        seedIModel.closeSnapshot();
+        seedIModel.close();
       }
     }
     // second round for Index per class seed files
@@ -375,14 +374,15 @@ describe("SchemaDesignPerf Number of Indices", () => {
       assert(IModelJsFs.existsSync(st));
       const seedName = path.join(outDir, "index_perclass_" + iCount + ".bim");
       if (!IModelJsFs.existsSync(seedName)) {
-        const seedIModel = IModelDb.createSnapshot(IModelTestUtils.prepareOutputFile("IndexPerformance", "index_perclass_" + iCount + ".bim"), { rootSubject: { name: "PerfTest" } });
+        const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("IndexPerformance", "index_perclass_" + iCount + ".bim"), { rootSubject: { name: "PerfTest" } });
         await seedIModel.importSchemas(new BackendRequestContext(), [st]);
-        seedIModel.setAsMaster();
+        const result: DbResult = seedIModel.nativeDb.resetBriefcaseId(ReservedBriefcaseId.CheckpointSnapshot);
+        assert.equal(DbResult.BE_SQLITE_OK, result);
         assert.isDefined(seedIModel.getMetaData("TestIndexSchema:PropElement0"), "PropsClass is present in iModel.");
         const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(seedIModel, Code.createEmpty(), true);
         let spatialCategoryId = SpatialCategory.queryCategoryIdByName(seedIModel, IModel.dictionaryId, "MySpatialCategory");
         if (undefined === spatialCategoryId)
-          spatialCategoryId = SpatialCategory.insert(seedIModel, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: new ColorDef("rgb(255,0,0)") }));
+          spatialCategoryId = SpatialCategory.insert(seedIModel, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
         // create elements that can be used in tests
         for (let i = 0; i < seedCount; ++i) {
           const elementProps = createElemProps(seedIModel, newModelId, spatialCategoryId, "TestIndexSchema:PropElement0");
@@ -395,7 +395,7 @@ describe("SchemaDesignPerf Number of Indices", () => {
         assert.equal(getCount(seedIModel, "TestIndexSchema:PropElement0"), seedCount);
 
         seedIModel.saveChanges();
-        seedIModel.closeSnapshot();
+        seedIModel.close();
       }
     }
 
@@ -415,7 +415,7 @@ describe("SchemaDesignPerf Number of Indices", () => {
       const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(perfimodel, Code.createEmpty(), true);
       let spatialCategoryId = SpatialCategory.queryCategoryIdByName(perfimodel, IModel.dictionaryId, "MySpatialCategory");
       if (undefined === spatialCategoryId)
-        spatialCategoryId = SpatialCategory.insert(perfimodel, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: new ColorDef("rgb(255,0,0)") }));
+        spatialCategoryId = SpatialCategory.insert(perfimodel, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
 
       for (let i = 0; i < opCount; ++i) {
         const elementProps = createElemProps(perfimodel, newModelId, spatialCategoryId, "TestIndexSchema:PropElement");
@@ -430,7 +430,7 @@ describe("SchemaDesignPerf Number of Indices", () => {
       }
       perfimodel.saveChanges();
       assert.equal(getCount(perfimodel, "TestIndexSchema:PropElement"), opCount + seedCount);
-      perfimodel.closeStandalone();
+      perfimodel.close();
 
       reporter.addEntry("IndexPerfTest", "ElementsInsert", "Execution time(s)", totalTime, { count: opCount, indices: indexCount, perClass: "No" });
     }
@@ -443,7 +443,7 @@ describe("SchemaDesignPerf Number of Indices", () => {
       const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(perfimodel, Code.createEmpty(), true);
       let spatialCategoryId = SpatialCategory.queryCategoryIdByName(perfimodel, IModel.dictionaryId, "MySpatialCategory");
       if (undefined === spatialCategoryId)
-        spatialCategoryId = SpatialCategory.insert(perfimodel, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: new ColorDef("rgb(255,0,0)") }));
+        spatialCategoryId = SpatialCategory.insert(perfimodel, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
 
       for (let i = 0; i < opCount; ++i) {
         const elementProps = createElemProps(perfimodel, newModelId, spatialCategoryId, "TestIndexSchema:PropElement0");
@@ -458,7 +458,7 @@ describe("SchemaDesignPerf Number of Indices", () => {
       }
       perfimodel.saveChanges();
       assert.equal(getCount(perfimodel, "TestIndexSchema:PropElement0"), opCount + seedCount);
-      perfimodel.closeStandalone();
+      perfimodel.close();
 
       reporter.addEntry("IndexPerfTest", "ElementsInsert", "Execution time(s)", totalTime, { count: opCount, indices: indexCount, perClass: "Yes" });
     }
@@ -469,7 +469,7 @@ describe("SchemaDesignPerf Number of Indices", () => {
       const testFileName = IModelTestUtils.prepareOutputFile("IndexPerformance", "IndexPerf_Delete_" + indexCount + ".bim");
       const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
 
-      const stat = perfimodel.executeQuery("SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM bis.PhysicalElement")[0];
+      const stat = IModelTestUtils.executeQuery(perfimodel, "SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM bis.PhysicalElement")[0];
       const elementIdIncrement = Math.floor(seedCount / opCount);
       assert.equal((stat.maxId - stat.minId + 1), seedCount);
       const startTime = new Date().getTime();
@@ -485,7 +485,7 @@ describe("SchemaDesignPerf Number of Indices", () => {
       const elapsedTime = (endTime - startTime) / 1000.0;
       assert.equal(getCount(perfimodel, "TestIndexSchema:PropElement"), seedCount - opCount);
 
-      perfimodel.closeStandalone();
+      perfimodel.close();
 
       reporter.addEntry("IndexPerfTest", "ElementsDelete", "Execution time(s)", elapsedTime, { count: opCount, indices: indexCount, perClass: "No" });
     }
@@ -495,7 +495,7 @@ describe("SchemaDesignPerf Number of Indices", () => {
       const testFileName = IModelTestUtils.prepareOutputFile("IndexPerformance", "IndexPerf_PerClass_Delete_" + indexCount + ".bim");
       const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
 
-      const stat = perfimodel.executeQuery("SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM TestIndexSchema:PropElement0")[0];
+      const stat = IModelTestUtils.executeQuery(perfimodel, "SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM TestIndexSchema:PropElement0")[0];
       const elementIdIncrement = Math.floor(seedCount / opCount);
       assert.equal((stat.maxId - stat.minId + 1), seedCount);
       const startTime = new Date().getTime();
@@ -511,7 +511,7 @@ describe("SchemaDesignPerf Number of Indices", () => {
       const elapsedTime = (endTime - startTime) / 1000.0;
       assert.equal(getCount(perfimodel, "TestIndexSchema:PropElement0"), seedCount - opCount);
 
-      perfimodel.closeStandalone();
+      perfimodel.close();
 
       reporter.addEntry("IndexPerfTest", "ElementsDelete", "Execution time(s)", elapsedTime, { count: opCount, indices: indexCount, perClass: "Yes" });
     }
@@ -522,7 +522,7 @@ describe("SchemaDesignPerf Number of Indices", () => {
       const testFileName = IModelTestUtils.prepareOutputFile("IndexPerformance", "IndexPerf_Read_" + indexCount + ".bim");
       const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
 
-      const stat = perfimodel.executeQuery("SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM bis.PhysicalElement")[0];
+      const stat = IModelTestUtils.executeQuery(perfimodel, "SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM bis.PhysicalElement")[0];
       const elementIdIncrement = Math.floor(seedCount / opCount);
       assert.equal((stat.maxId - stat.minId + 1), seedCount);
       const startTime = new Date().getTime();
@@ -542,7 +542,7 @@ describe("SchemaDesignPerf Number of Indices", () => {
           assert.equal(elemFound[key], "Test value");
         }
       }
-      perfimodel.closeStandalone();
+      perfimodel.close();
       reporter.addEntry("IndexPerfTest", "ElementsRead", "Execution time(s)", elapsedTime, { count: opCount, indices: indexCount, perClass: "No" });
     }
     // second round for per class
@@ -551,7 +551,7 @@ describe("SchemaDesignPerf Number of Indices", () => {
       const testFileName = IModelTestUtils.prepareOutputFile("IndexPerformance", "IndexPerf_PerClass_Read_" + indexCount + ".bim");
       const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
 
-      const stat = perfimodel.executeQuery("SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM TestIndexSchema:PropElement0")[0];
+      const stat = IModelTestUtils.executeQuery(perfimodel, "SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM TestIndexSchema:PropElement0")[0];
       const elementIdIncrement = Math.floor(seedCount / opCount);
       assert.equal((stat.maxId - stat.minId + 1), seedCount);
       const startTime = new Date().getTime();
@@ -571,7 +571,7 @@ describe("SchemaDesignPerf Number of Indices", () => {
           assert.equal(elemFound[key], "Test value");
         }
       }
-      perfimodel.closeStandalone();
+      perfimodel.close();
       reporter.addEntry("IndexPerfTest", "ElementsRead", "Execution time(s)", elapsedTime, { count: opCount, indices: indexCount, perClass: "Yes" });
     }
   });
@@ -581,7 +581,7 @@ describe("SchemaDesignPerf Number of Indices", () => {
       const testFileName = IModelTestUtils.prepareOutputFile("IndexPerformance", "PropsPerf_Update_" + indexCount + ".bim");
       const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
 
-      const stat = perfimodel.executeQuery("SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM bis.PhysicalElement")[0];
+      const stat = IModelTestUtils.executeQuery(perfimodel, "SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM bis.PhysicalElement")[0];
       const elementIdIncrement = Math.floor(seedCount / opCount);
       assert.equal((stat.maxId - stat.minId + 1), seedCount);
       const geomArray: Arc3d[] = [
@@ -614,7 +614,7 @@ describe("SchemaDesignPerf Number of Indices", () => {
         assert.equal(elemFound.primProp1, "Updated Value");
       }
       const elapsedTime = (endTime - startTime) / 1000.0;
-      perfimodel.closeStandalone();
+      perfimodel.close();
       reporter.addEntry("IndexPerfTest", "ElementsUpdate", "Execution time(s)", elapsedTime, { count: opCount, indices: indexCount, perClass: "No" });
     }
     // second round for per class
@@ -623,7 +623,7 @@ describe("SchemaDesignPerf Number of Indices", () => {
       const testFileName = IModelTestUtils.prepareOutputFile("IndexPerformance", "PropsPerf_PerClassUpdate_" + indexCount + ".bim");
       const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
 
-      const stat = perfimodel.executeQuery("SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM TestIndexSchema:PropElement0")[0];
+      const stat = IModelTestUtils.executeQuery(perfimodel, "SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM TestIndexSchema:PropElement0")[0];
       const elementIdIncrement = Math.floor(seedCount / opCount);
       assert.equal((stat.maxId - stat.minId + 1), seedCount);
       const geomArray: Arc3d[] = [
@@ -656,7 +656,7 @@ describe("SchemaDesignPerf Number of Indices", () => {
         assert.equal(elemFound.primProp1, "Updated Value");
       }
       const elapsedTime = (endTime - startTime) / 1000.0;
-      perfimodel.closeStandalone();
+      perfimodel.close();
       reporter.addEntry("IndexPerfTest", "ElementsUpdate", "Execution time(s)", elapsedTime, { count: opCount, indices: indexCount, perClass: "Yes" });
     }
   });

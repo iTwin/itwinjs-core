@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-abstract",
+      "comment": " Updates to remove need for svg-sprite-loader, use defualt CRA svgr loader instead.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-abstract",
+  "email": "bill.steinbock@bentley.com"
+}

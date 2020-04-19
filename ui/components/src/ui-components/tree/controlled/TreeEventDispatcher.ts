@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Tree */
+/** @packageDocumentation
+ * @module Tree
+ */
 
 import { Observable } from "rxjs/internal/Observable";
 import { concat } from "rxjs/internal/observable/concat";
@@ -26,13 +28,14 @@ import { CheckBoxState } from "@bentley/ui-core";
 import { TreeActions } from "./TreeActions";
 import { TreeEvents } from "./TreeEvents";
 import { TreeModelNodePlaceholder, TreeModelNode, isTreeModelNode, VisibleTreeNodes } from "./TreeModel";
-import { ITreeNodeLoader, LoadedNodeHierarchyItem } from "./TreeNodeLoader";
+import { ITreeNodeLoader } from "./TreeNodeLoader";
 import { TreeSelectionManager, IndividualSelection, RangeSelection, isRangeSelection } from "./internal/TreeSelectionManager";
 import { SelectionMode } from "../../common/selection/SelectionModes";
 import { TreeNodeItem } from "../TreeDataProvider";
 
 /**
  * Default event dispatcher that emits tree events according performed actions.
+ * It converts low level tree events into TreeEvents.
  * @internal
  */
 export class TreeEventDispatcher implements TreeActions {
@@ -173,7 +176,14 @@ export class TreeEventDispatcher implements TreeActions {
   }
 
   public onNodeClicked(nodeId: string, event: React.MouseEvent<Element, MouseEvent>) {
+    const node = this._getVisibleNodes ? this._getVisibleNodes().getModel().getNode(nodeId) : undefined;
+    const isNodeSelected = node ? node.isSelected : false;
     this._selectionManager.onNodeClicked(nodeId, event);
+
+    // if clicked node was already selected fire delayed click event
+    if (isNodeSelected && this._treeEvents.onDelayedNodeClick !== undefined) {
+      this._treeEvents.onDelayedNodeClick({ nodeId });
+    }
   }
 
   public onNodeMouseDown(nodeId: string) {
@@ -226,7 +236,7 @@ export class TreeEventDispatcher implements TreeActions {
         // Maybe we could simplify this to `this._nodeLoader.loadNodes(nodesToLoad)`?
         mergeAll(),
         distinctUntilChanged(),
-        map((loadedHierarchy) => TreeEventDispatcher.collectTreeNodeItems(loadedHierarchy.hierarchyItems)),
+        map((loadResult) => loadResult.loadedNodes),
       );
 
     return concat(of(readyNodes), loadedSelectedNodes)
@@ -280,16 +290,6 @@ export class TreeEventDispatcher implements TreeActions {
         items.push(node.item);
     }
     return items;
-  }
-
-  private static collectTreeNodeItems(hierarchyItems: LoadedNodeHierarchyItem[], result: TreeNodeItem[] = []) {
-    for (const hierarchyItem of hierarchyItems) {
-      result.push(hierarchyItem.item);
-      if (hierarchyItem.children)
-        TreeEventDispatcher.collectTreeNodeItems(hierarchyItem.children, result);
-    }
-
-    return result;
   }
 
   private static groupNodesByLoadingState(

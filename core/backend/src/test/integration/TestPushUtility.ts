@@ -1,22 +1,17 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as path from "path";
-import * as fs from "fs";
-import { Id64String, GuidString } from "@bentley/bentleyjs-core";
+import { GuidString, Id64String } from "@bentley/bentleyjs-core";
 import { Point3d, Range3d, YawPitchRollAngles } from "@bentley/geometry-core";
-import { ImsUserCredentials } from "@bentley/imodeljs-clients";
-import { IModelVersion, CodeScopeSpec, Code, ColorDef, IModel, GeometricElement3dProps } from "@bentley/imodeljs-common";
-import {
-  IModelDb, OpenParams, BriefcaseManager, CategorySelector, DisplayStyle3d, GeometricElement, ModelSelector,
-  OrthographicViewDefinition, PhysicalModel, SpatialCategory, AuthorizedBackendRequestContext,
-} from "../../imodeljs-backend";
-import { IModelWriter } from "./IModelWriter";
-import { HubUtility } from "./HubUtility";
-import { IModelTestUtils } from "../IModelTestUtils";
-import { TestUsers } from "../TestUsers";
+import { Code, CodeScopeSpec, ColorDef, GeometricElement3dProps, IModel, IModelVersion } from "@bentley/imodeljs-common";
+import { TestUsers, TestUtility, TestUserCredentials } from "@bentley/oidc-signin-tool";
+import * as fs from "fs";
+import * as path from "path";
+import { AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseManager, CategorySelector, ConcurrencyControl, DisplayStyle3d, GeometricElement, IModelDb, ModelSelector, OpenParams, OrthographicViewDefinition, PhysicalModel, SnapshotDb, SpatialCategory } from "../../imodeljs-backend";
 import { KnownTestLocations } from "../KnownTestLocations";
+import { HubUtility } from "./HubUtility";
+import { IModelWriter } from "./IModelWriter";
 
 const pause = async (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -34,8 +29,8 @@ export class TestPushUtility {
   private _currentLevel: number = 0;
 
   /** Initializes the utility */
-  public async initialize(projectName: string, iModelName: string, user: ImsUserCredentials = TestUsers.superManager) {
-    this._requestContext = await IModelTestUtils.getTestUserRequestContext(user);
+  public async initialize(projectName: string, iModelName: string, user: TestUserCredentials = TestUsers.superManager) {
+    this._requestContext = await TestUtility.getAuthorizedClientRequestContext(user);
     this.iModelName = iModelName;
     this._projectId = await HubUtility.queryProjectIdByName(this._requestContext, projectName);
   }
@@ -49,8 +44,10 @@ export class TestPushUtility {
 
   /** Pushes new change sets to the Hub periodically and sets up named versions */
   public async pushTestChangeSetsAndVersions(count: number) {
-    this._iModelDb = await IModelDb.open(this._requestContext!, this._projectId!, this._iModelId!.toString(), OpenParams.pullAndPush(), IModelVersion.latest());
-
+    this._iModelDb = await BriefcaseDb.open(this._requestContext!, this._projectId!, this._iModelId!.toString(), OpenParams.pullAndPush(), IModelVersion.latest());
+    if (this._iModelDb.isBriefcaseDb()) {
+      this._iModelDb.concurrencyControl.setPolicy(ConcurrencyControl.OptimisticPolicy); // don't want to bother with locks.
+    }
     const lastLevel = this._currentLevel + count;
     while (this._currentLevel < lastLevel) {
       await this.createTestChangeSet();
@@ -66,12 +63,12 @@ export class TestPushUtility {
     if (fs.existsSync(pathname))
       fs.unlinkSync(pathname);
 
-    this._iModelDb = IModelDb.createSnapshot(pathname, { rootSubject: { name: this.iModelName! } });
+    this._iModelDb = SnapshotDb.createEmpty(pathname, { rootSubject: { name: this.iModelName! } });
 
     const definitionModelId: Id64String = IModel.dictionaryId;
     this._physicalModelId = PhysicalModel.insert(this._iModelDb, IModel.rootSubjectId, "TestModel");
     this._codeSpecId = this._iModelDb.codeSpecs.insert("TestCodeSpec", CodeScopeSpec.Type.Model);
-    this._categoryId = SpatialCategory.insert(this._iModelDb, definitionModelId, "TestCategory", { color: new ColorDef("blanchedAlmond") });
+    this._categoryId = SpatialCategory.insert(this._iModelDb, definitionModelId, "TestCategory", { color: ColorDef.fromString("blanchedAlmond").toJSON() });
 
     // Insert a ViewDefinition for the PhysicalModel
     const viewName = "Physical View";
@@ -172,14 +169,16 @@ export class TestPushUtility {
   private async createTestChangeSet() {
     this.insertTestElement(this._currentLevel, 0);
     this.insertTestElement(this._currentLevel, 1);
-    await this._iModelDb!.concurrencyControl.request(this._requestContext!);
-    this._iModelDb!.saveChanges(`Inserted elements into level ${this._currentLevel}`);
-    this.updateTestElement(this._currentLevel - 1, 0);
-    await this._iModelDb!.concurrencyControl.request(this._requestContext!);
-    this._iModelDb!.saveChanges(`Updated element in level ${this._currentLevel - 1}`);
-    this.deleteTestElements(this._currentLevel - 1, 1);
-    await this._iModelDb!.concurrencyControl.request(this._requestContext!);
-    this._iModelDb!.saveChanges(`Deleted element in level ${this._currentLevel - 1}`);
+    if (this._iModelDb instanceof BriefcaseDb) {
+      await this._iModelDb!.concurrencyControl.request(this._requestContext!);
+      this._iModelDb!.saveChanges(`Inserted elements into level ${this._currentLevel}`);
+      this.updateTestElement(this._currentLevel - 1, 0);
+      await this._iModelDb!.concurrencyControl.request(this._requestContext!);
+      this._iModelDb!.saveChanges(`Updated element in level ${this._currentLevel - 1}`);
+      this.deleteTestElements(this._currentLevel - 1, 1);
+      await this._iModelDb!.concurrencyControl.request(this._requestContext!);
+      this._iModelDb!.saveChanges(`Deleted element in level ${this._currentLevel - 1}`);
+    }
   }
 
   private static getChangeSetDescription(level: number) {
@@ -188,7 +187,9 @@ export class TestPushUtility {
 
   private async pushTestChangeSet() {
     const description = TestPushUtility.getChangeSetDescription(this._currentLevel);
-    await this._iModelDb!.pushChanges(this._requestContext!, () => description);
+    if (this._iModelDb instanceof BriefcaseDb) {
+      await this._iModelDb!.pushChanges(this._requestContext!, description);
+    }
   }
 
   private async createNamedVersion() {
