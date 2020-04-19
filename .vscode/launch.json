@@ -700,19 +700,6 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Debug CopyDependentModules",
-      "program": "${workspaceRoot}/test-apps/ui-test-app/node_modules/@bentley/webpack-tools/modules/copyDependentModules.js",
-      "cwd": "${workspaceRoot}/test-apps/ui-test-app",
-      "args": [
-        "--packageFile=./package.json",
-        "--destDir=./lib/backend/public",
-        "--type=dev"
-      ],
-      "protocol": "inspector"
-    },
-    {
-      "type": "node",
-      "request": "launch",
       "name": "⚠︝Clients Tests (Integration - Certa/Backend)",
       "cwd": "${workspaceRoot}/core/clients/",
       "program": "${workspaceRoot}/tools/certa/bin/certa.js",
