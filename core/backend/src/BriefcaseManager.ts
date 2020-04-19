@@ -34,7 +34,7 @@ const loggerCategory: string = BackendLoggerCategory.IModelDb;
  */
 export type BriefcaseId = number;
 
-/** The reserved BriefcaseId values used to identify special kinds of iModels.
+/** The reserved BriefcaseId values used to identify special kinds of IModelDbs.
  * @see [[BriefcaseId]]
  * @public
  */
@@ -45,23 +45,22 @@ export enum ReservedBriefcaseId {
   /** BriefcaseIds must be less than this value
    * @internal
    */
-  MaxRepo = 1 << 24,
+  Max = 1 << 24,
 
-  /** Reserve a fixed BriefcaseId for the new concept of a single-practitioner standalone iModel.
-   * @note This will be renamed to Standalone once all source code has been updated.
+  /** All BriefcaseIds of this value or higher are reserved
    * @internal
    */
-  Standalone = ReservedBriefcaseId.MaxRepo - 2,
+  FirstReserved = ReservedBriefcaseId.Max - 10,
 
-  /** A snapshot iModel is read-only once created. They are typically used for archival and data transfer purposes.
-   * @note Legacy standalone iModels are now considered snapshots
+  /** BriefcaseId for a single-practitioner standalone iModel.
+   * @internal
    */
+  Standalone = ReservedBriefcaseId.Max - 2,
+
+  /** A snapshot iModel is read-only once created. They are used for archival and data transfer purposes. */
   Snapshot = 1,
 
-  /** A checkpoint snapshot iModel is a snapshot of a point on the iModelHub timeline.
-   * @note Legacy master briefcases are now considered checkpoint snapshots that match the beginning of the iModelHub timeline
-   * @beta
-   */
+  /** A checkpoint snapshot iModel is a snapshot that represents a point on an iModelHub timeline. */
   CheckpointSnapshot = 0,
 }
 
@@ -928,8 +927,12 @@ export class BriefcaseManager {
       briefcase.reversedChangeSetIndex = undefined;
   }
 
+  private static isReservedBriefcaseId(id: BriefcaseId) {
+    return id <= ReservedBriefcaseId.Snapshot || id >= ReservedBriefcaseId.FirstReserved;
+  }
+
   private static async initBriefcaseFileId(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseEntry) {
-    if (briefcase.briefcaseId === ReservedBriefcaseId.Snapshot)
+    if (this.isReservedBriefcaseId(briefcase.briefcaseId)) // only possible to get fileId only for normal briefcases
       return;
 
     const hubBriefcases: HubBriefcase[] = await BriefcaseManager.imodelClient.briefcases.get(requestContext, briefcase.iModelId, new BriefcaseQuery().byId(briefcase.briefcaseId));

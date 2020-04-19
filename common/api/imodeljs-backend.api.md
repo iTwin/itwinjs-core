@@ -3501,11 +3501,12 @@ export class RepositoryModel extends DefinitionModel {
 
 // @public
 export enum ReservedBriefcaseId {
-    // @beta
     CheckpointSnapshot = 0,
+    // @internal
+    FirstReserved = 16777206,
     Illegal = 4294967295,
     // @internal
-    MaxRepo = 16777216,
+    Max = 16777216,
     Snapshot = 1,
     // @internal
     Standalone = 16777214
