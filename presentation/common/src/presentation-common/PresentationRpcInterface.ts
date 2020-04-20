@@ -17,12 +17,14 @@ import { ContentJSON } from "./content/Content";
 import {
   HierarchyRequestOptions, ContentRequestOptions,
   LabelRequestOptions, SelectionScopeRequestOptions, Paged,
+  PresentationDataCompareOptions,
 } from "./PresentationManagerOptions";
 import { KeySetJSON } from "./KeySet";
 import { InstanceKeyJSON } from "./EC";
 import { Omit } from "./Utils";
 import { SelectionScope } from "./selection/SelectionScope";
 import { PresentationStatus } from "./Error";
+import { PartialHierarchyModificationJSON } from "./Update";
 
 /**
  * Base options for all presentation RPC requests.
@@ -71,6 +73,11 @@ export type SelectionScopeRpcRequestOptions = PresentationRpcRequestOptions<Sele
  * @public
  */
 export type RulesetVariableRpcRequestOptions = PresentationRpcRequestOptions<{ rulesetId: string }>;
+/**
+ * Data structure for comparing presentation data after ruleset or ruleset variable changes.
+ * @alpha
+ */
+export type PresentationDataCompareRpcOptions = PresentationRpcRequestOptions<PresentationDataCompareOptions<any>>;
 
 /**
  * Interface used for communication between Presentation backend and frontend.
@@ -82,7 +89,7 @@ export class PresentationRpcInterface extends RpcInterface {
   public static readonly interfaceName = "PresentationRpcInterface"; // tslint:disable-line: naming-convention
 
   /** The semantic version of the interface. */
-  public static interfaceVersion = "2.0.1";
+  public static interfaceVersion = "2.1.0";
 
   /*===========================================================================================
     NOTE: Any add/remove/change to the methods below requires an update of the interface version.
@@ -108,6 +115,9 @@ export class PresentationRpcInterface extends RpcInterface {
 
   public async getSelectionScopes(_token: IModelRpcProps, _options: SelectionScopeRpcRequestOptions): PresentationRpcResponse<SelectionScope[]> { return this.forward(arguments); }
   public async computeSelection(_token: IModelRpcProps, _options: SelectionScopeRpcRequestOptions, _ids: Id64String[], _scopeId: string): PresentationRpcResponse<KeySetJSON> { return this.forward(arguments); }
+
+  /** @alpha */
+  public async compareHierarchies(_token: IModelRpcProps, _options: PresentationDataCompareRpcOptions): PresentationRpcResponse<PartialHierarchyModificationJSON[]> { return this.forward(arguments); }
 }
 
 /** @alpha */

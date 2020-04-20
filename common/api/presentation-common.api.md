@@ -499,7 +499,16 @@ export interface HierarchyRequestOptions<TIModel> extends RequestOptionsWithRule
 export type HierarchyRpcRequestOptions = PresentationRpcRequestOptions<HierarchyRequestOptions<any>>;
 
 // @alpha (undocumented)
-export type HierarchyUpdateInfo = typeof UPDATE_FULL | Array<NodeInsertionInfo | NodeDeletionInfo | NodeUpdateInfo>;
+export type HierarchyUpdateInfo = typeof UPDATE_FULL | PartialHierarchyModification[];
+
+// @alpha (undocumented)
+export namespace HierarchyUpdateInfo {
+    export function fromJSON(json: HierarchyUpdateInfoJSON): HierarchyUpdateInfo;
+    export function toJSON(obj: HierarchyUpdateInfo): HierarchyUpdateInfoJSON;
+}
+
+// @alpha (undocumented)
+export type HierarchyUpdateInfoJSON = typeof UPDATE_FULL | PartialHierarchyModificationJSON[];
 
 // @public
 export interface ImageIdOverride extends RuleBase, ConditionContainer {
@@ -903,9 +912,27 @@ export interface NodeDeletionInfo {
 }
 
 // @alpha (undocumented)
+export interface NodeDeletionInfoJSON {
+    // (undocumented)
+    node: NodeJSON;
+    // (undocumented)
+    type: "Delete";
+}
+
+// @alpha (undocumented)
 export interface NodeInsertionInfo {
     // (undocumented)
     node: Node;
+    // (undocumented)
+    position: number;
+    // (undocumented)
+    type: "Insert";
+}
+
+// @alpha (undocumented)
+export interface NodeInsertionInfoJSON {
+    // (undocumented)
+    node: NodeJSON;
     // (undocumented)
     position: number;
     // (undocumented)
@@ -977,6 +1004,20 @@ export interface NodeUpdateInfo {
     type: "Update";
 }
 
+// @alpha (undocumented)
+export interface NodeUpdateInfoJSON {
+    // (undocumented)
+    changes: Array<{
+        name: string;
+        old: unknown;
+        new: unknown;
+    }>;
+    // (undocumented)
+    node: NodeJSON;
+    // (undocumented)
+    type: "Update";
+}
+
 // @public
 export type Omit<T, K> = Pick<T, Exclude<keyof T, K>>;
 
@@ -991,6 +1032,31 @@ export interface PageOptions {
     start?: number;
 }
 
+// @alpha (undocumented)
+export type PartialHierarchyModification = NodeInsertionInfo | NodeDeletionInfo | NodeUpdateInfo;
+
+// @alpha (undocumented)
+export namespace PartialHierarchyModification {
+    export function fromJSON(json: PartialHierarchyModificationJSON): PartialHierarchyModification;
+    export function toJSON(obj: PartialHierarchyModification): PartialHierarchyModificationJSON;
+}
+
+// @alpha (undocumented)
+export type PartialHierarchyModificationJSON = NodeInsertionInfoJSON | NodeDeletionInfoJSON | NodeUpdateInfoJSON;
+
+// @alpha
+export interface PresentationDataCompareOptions<TIModel> extends RequestOptionsWithRuleset<TIModel> {
+    // (undocumented)
+    prev: {
+        rulesetOrId: Ruleset | string;
+    } | {
+        rulesetVariables: RulesetVariable[];
+    };
+}
+
+// @alpha
+export type PresentationDataCompareRpcOptions = PresentationRpcRequestOptions<PresentationDataCompareOptions<any>>;
+
 // @public
 export class PresentationError extends BentleyError {
     constructor(errorNumber: PresentationStatus, message?: string, log?: LogFunction, getMetaData?: GetMetaDataFunction);
@@ -1004,6 +1070,8 @@ export enum PresentationRpcEvents {
 
 // @public
 export class PresentationRpcInterface extends RpcInterface {
+    // @alpha (undocumented)
+    compareHierarchies(_token: IModelRpcProps, _options: PresentationDataCompareRpcOptions): PresentationRpcResponse<PartialHierarchyModificationJSON[]>;
     // (undocumented)
     computeSelection(_token: IModelRpcProps, _options: SelectionScopeRpcRequestOptions, _ids: Id64String[], _scopeId: string): PresentationRpcResponse<KeySetJSON>;
     // (undocumented)
@@ -1378,6 +1446,8 @@ export class RpcRequestsHandler implements IDisposable {
     constructor(props?: RpcRequestsHandlerProps);
     readonly clientId: string;
     // (undocumented)
+    compareHierarchies(options: PresentationDataCompareOptions<IModelRpcProps>): Promise<PartialHierarchyModificationJSON[]>;
+    // (undocumented)
     computeSelection(options: SelectionScopeRequestOptions<IModelRpcProps>, ids: Id64String[], scopeId: string): Promise<KeySetJSON>;
     // (undocumented)
     dispose(): void;
@@ -1641,6 +1711,21 @@ export interface UpdateInfo {
     // (undocumented)
     [rulesetId: string]: {
         hierarchy?: HierarchyUpdateInfo;
+        content?: ContentUpdateInfo;
+    };
+}
+
+// @alpha (undocumented)
+export namespace UpdateInfo {
+    export function fromJSON(json: UpdateInfoJSON): UpdateInfo;
+    export function toJSON(obj: UpdateInfo): UpdateInfoJSON;
+}
+
+// @alpha (undocumented)
+export interface UpdateInfoJSON {
+    // (undocumented)
+    [rulesetId: string]: {
+        hierarchy?: HierarchyUpdateInfoJSON;
         content?: ContentUpdateInfo;
     };
 }

@@ -8,7 +8,10 @@
 
 import { IDisposable, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { IModelJsNative, IModelDb, IModelHost } from "@bentley/imodeljs-backend";
-import { PresentationError, PresentationStatus, VariableValueTypes, UpdateInfo } from "@bentley/presentation-common";
+import {
+  PresentationError, PresentationStatus, VariableValueTypes,
+  PartialHierarchyModificationJSON, UpdateInfoJSON,
+} from "@bentley/presentation-common";
 import { VariableValueJSON } from "@bentley/presentation-common/lib/presentation-common/RulesetVariables";
 import { PresentationManagerMode } from "./PresentationManager";
 
@@ -41,7 +44,8 @@ export interface NativePlatformDefinition extends IDisposable {
   handleRequest(requestContext: ClientRequestContext, db: any, options: string): Promise<string>;
   getRulesetVariableValue(rulesetId: string, variableId: string, type: VariableValueTypes): VariableValueJSON;
   setRulesetVariableValue(rulesetId: string, variableId: string, type: VariableValueTypes, value: VariableValueJSON): void;
-  getUpdateInfo(): UpdateInfo | undefined;
+  getUpdateInfo(): UpdateInfoJSON | undefined;
+  compareHierarchies(requestContext: ClientRequestContext, db: any, options: { prevRulesetId: string, currRulesetId: string, locale: string }): Promise<PartialHierarchyModificationJSON[]>;
 }
 
 /** @internal */
@@ -141,6 +145,18 @@ export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): 
     }
     public getUpdateInfo() {
       return this.handleResult(this._nativeAddon.getUpdateInfo());
+    }
+    public async compareHierarchies(requestContext: ClientRequestContext, db: any, options: { prevRulesetId: string, currRulesetId: string, locale: string }): Promise<PartialHierarchyModificationJSON[]> {
+      return new Promise((resolve, reject) => {
+        requestContext.enter();
+        this._nativeAddon.compareHierarchies(db, options, (response) => {
+          try {
+            resolve(this.handleResult(response));
+          } catch (error) {
+            reject(error);
+          }
+        });
+      });
     }
   };
 };

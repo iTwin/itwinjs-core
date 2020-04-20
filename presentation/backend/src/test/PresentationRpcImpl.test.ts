@@ -21,7 +21,7 @@ import {
   HierarchyRpcRequestOptions,
   Node, PageOptions, KeySet, InstanceKey, NodeKey,
   Paged, Omit, PresentationStatus, DescriptorOverrides, NodePathElement, PresentationError,
-  SelectionScope, Content, Descriptor,
+  SelectionScope, Content, Descriptor, PresentationDataCompareOptions, PartialHierarchyModification, HierarchyUpdateInfo,
 } from "@bentley/presentation-common";
 import { RulesetVariablesManager } from "../presentation-backend/RulesetVariablesManager";
 import { PresentationManager } from "../presentation-backend/PresentationManager";
@@ -1006,6 +1006,29 @@ describe("PresentationRpcImpl", () => {
         expect(actualResult.result).to.be.undefined;
         expect(actualResult.statusCode).to.eq(PresentationStatus.BackendTimeout);
         await result.resolve(new KeySet());
+      });
+
+    });
+
+    describe("compareHierarchies", () => {
+
+      it("calls manager for comparison", async () => {
+        const result: PartialHierarchyModification[] = [{
+          type: "Delete",
+          node: createRandomECInstancesNode(),
+        }];
+        const options: Omit<PresentationDataCompareOptions<any>, "imodel"> = {
+          prev: {
+            rulesetOrId: "1",
+          },
+          rulesetOrId: "2",
+        };
+        presentationManagerMock.setup((x) => x.compareHierarchies(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }))
+          .returns(async () => result)
+          .verifiable();
+        const actualResult = await impl.compareHierarchies(testData.imodelToken, { ...defaultRpcParams, ...options });
+        presentationManagerMock.verifyAll();
+        expect(actualResult.result).to.deep.eq(HierarchyUpdateInfo.toJSON(result));
       });
 
     });

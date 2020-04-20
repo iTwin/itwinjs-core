@@ -123,7 +123,7 @@ describe("TreeDataProvider", async () => {
 
     expect(count).to.not.eq(0);
     expect(nodes).to.not.be.undefined;
-    expect(getNodesSpy.calledOnce).to.be.true;
+    expect(getNodesSpy).to.be.calledOnce;
   });
 
 });

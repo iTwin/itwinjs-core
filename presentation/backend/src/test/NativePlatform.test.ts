@@ -75,34 +75,38 @@ describe("default NativePlatform", () => {
     addonMock.verifyAll();
   });
 
-  it("calls addon's handleRequest", async () => {
-    addonMock
-      .setup((x) => x.handleRequest(moq.It.isAny(), "", moq.It.isAny()))
-      .callback((_db, _options, cb) => { cb({ result: "0" }); })
-      .verifiable();
-    expect(await nativePlatform.handleRequest(ClientRequestContext.current, undefined, "")).to.equal("0");
-    addonMock.verifyAll();
-  });
+  describe("handleRequest", () => {
 
-  it("throws on invalid handleRequest response", async () => {
-    addonMock
-      .setup((x) => x.handleRequest(moq.It.isAny(), "", moq.It.isAny()))
-      .callback((_db, _options, cb) => { cb(undefined as any); });
-    await expect(nativePlatform.handleRequest(ClientRequestContext.current, undefined, "")).to.be.rejectedWith(PresentationError);
-  });
+    it("calls addon", async () => {
+      addonMock
+        .setup((x) => x.handleRequest(moq.It.isAny(), "", moq.It.isAny()))
+        .callback((_db, _options, cb) => { cb({ result: "0" }); })
+        .verifiable();
+      expect(await nativePlatform.handleRequest(ClientRequestContext.current, undefined, "")).to.equal("0");
+      addonMock.verifyAll();
+    });
 
-  it("throws on handleRequest cancelation response", async () => {
-    addonMock
-      .setup((x) => x.handleRequest(moq.It.isAny(), "", moq.It.isAny()))
-      .callback((_db, _options, cb) => { cb({ error: { status: IModelJsNative.ECPresentationStatus.Canceled, message: "test" } }); });
-    await expect(nativePlatform.handleRequest(ClientRequestContext.current, undefined, "")).to.be.rejectedWith(PresentationError, "test");
-  });
+    it("throws on invalid response", async () => {
+      addonMock
+        .setup((x) => x.handleRequest(moq.It.isAny(), "", moq.It.isAny()))
+        .callback((_db, _options, cb) => { cb(undefined as any); });
+      await expect(nativePlatform.handleRequest(ClientRequestContext.current, undefined, "")).to.be.rejectedWith(PresentationError);
+    });
 
-  it("throws on handleRequest error response", async () => {
-    addonMock
-      .setup((x) => x.handleRequest(moq.It.isAny(), "", moq.It.isAny()))
-      .callback((_db, _options, cb) => { cb({ error: { status: IModelJsNative.ECPresentationStatus.Error, message: "test" } }); });
-    await expect(nativePlatform.handleRequest(ClientRequestContext.current, undefined, "")).to.be.rejectedWith(PresentationError, "test");
+    it("throws on cancellation response", async () => {
+      addonMock
+        .setup((x) => x.handleRequest(moq.It.isAny(), "", moq.It.isAny()))
+        .callback((_db, _options, cb) => { cb({ error: { status: IModelJsNative.ECPresentationStatus.Canceled, message: "test" } }); });
+      await expect(nativePlatform.handleRequest(ClientRequestContext.current, undefined, "")).to.be.rejectedWith(PresentationError, "test");
+    });
+
+    it("throws on error response", async () => {
+      addonMock
+        .setup((x) => x.handleRequest(moq.It.isAny(), "", moq.It.isAny()))
+        .callback((_db, _options, cb) => { cb({ error: { status: IModelJsNative.ECPresentationStatus.Error, message: "test" } }); });
+      await expect(nativePlatform.handleRequest(ClientRequestContext.current, undefined, "")).to.be.rejectedWith(PresentationError, "test");
+    });
+
   });
 
   it("calls addon's setupRulesetDirectories", async () => {
@@ -215,6 +219,37 @@ describe("default NativePlatform", () => {
     mock.setup((x) => x.nativeDb).returns(() => (undefined as any)).verifiable(moq.Times.atLeastOnce());
     expect(() => nativePlatform.getImodelAddon(mock.object)).to.throw(PresentationError);
     mock.verifyAll();
+  });
+
+  describe("compareHierarchies", () => {
+
+    it("calls addon", async () => {
+      const options = {
+        prevRulesetId: "1",
+        currRulesetId: "2",
+        locale: "test",
+      };
+      addonMock
+        .setup((x) => x.compareHierarchies(moq.It.isAny(), options, moq.It.isAny()))
+        .callback((_db, _options, cb) => { cb({ result: [] }); })
+        .verifiable();
+      expect(await nativePlatform.compareHierarchies(ClientRequestContext.current, undefined, options)).to.deep.eq([]);
+      addonMock.verifyAll();
+    });
+
+    it("throws on error response", async () => {
+      const options = {
+        prevRulesetId: "1",
+        currRulesetId: "2",
+        locale: "test",
+      };
+      addonMock
+        .setup((x) => x.compareHierarchies(moq.It.isAny(), options, moq.It.isAny()))
+        .callback((_db, _options, cb) => { cb({ error: { status: IModelJsNative.ECPresentationStatus.Error, message: "test" } }); })
+        .verifiable();
+      await expect(nativePlatform.compareHierarchies(ClientRequestContext.current, undefined, options)).to.be.rejectedWith(PresentationError, "test");
+    });
+
   });
 
 });

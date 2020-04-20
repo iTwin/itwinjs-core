@@ -28,12 +28,13 @@ export {
   RequestOptions, HierarchyRequestOptions, ContentRequestOptions,
   LabelRequestOptions, SelectionScopeRequestOptions,
   PageOptions, Paged, RequestOptionsWithRuleset, RequestPriority,
-  PresentationUnitSystem,
+  PresentationUnitSystem, PresentationDataCompareOptions,
 } from "./presentation-common/PresentationManagerOptions";
 export { LabelDefinition, LabelRawValue, LabelCompositeValue } from "./presentation-common/LabelDefinition";
 export {
-  UpdateInfo, HierarchyUpdateInfo, ContentUpdateInfo, UPDATE_FULL,
-  NodeInsertionInfo, NodeDeletionInfo, NodeUpdateInfo,
+  UpdateInfo, UpdateInfoJSON, HierarchyUpdateInfo, HierarchyUpdateInfoJSON, ContentUpdateInfo, UPDATE_FULL,
+  NodeInsertionInfo, NodeInsertionInfoJSON, NodeDeletionInfo, NodeDeletionInfoJSON, NodeUpdateInfo, NodeUpdateInfoJSON,
+  PartialHierarchyModification, PartialHierarchyModificationJSON,
 } from "./presentation-common/Update";
 
 /**
@@ -47,6 +48,7 @@ export {
   PresentationRpcInterface, PresentationRpcRequestOptions,
   LabelRpcRequestOptions, ContentRpcRequestOptions,
   HierarchyRpcRequestOptions, SelectionScopeRpcRequestOptions,
+  PresentationDataCompareRpcOptions,
   PresentationRpcResponse, PresentationRpcEvents,
 } from "./presentation-common/PresentationRpcInterface";
 export { RpcRequestsHandler, RpcRequestsHandlerProps } from "./presentation-common/RpcRequestsHandler";

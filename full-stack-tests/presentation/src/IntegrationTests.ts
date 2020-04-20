@@ -6,6 +6,8 @@
 import * as fs from "fs";
 import * as path from "path";
 import * as cpx from "cpx";
+import * as chai from "chai";
+import sinonChai from "sinon-chai";
 import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
 import { I18NOptions } from "@bentley/imodeljs-i18n";
 import { Logger, LogLevel } from "@bentley/bentleyjs-core";
@@ -15,6 +17,8 @@ import { PresentationManagerProps as PresentationFrontendProps } from "@bentley/
 import { NoRenderApp, IModelAppOptions } from "@bentley/imodeljs-frontend";
 import { initialize as initializeTesting, terminate as terminateTesting, PresentationTestingInitProps } from "@bentley/presentation-testing";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
+
+chai.use(sinonChai);
 
 IModelJsConfig.init(true);
 

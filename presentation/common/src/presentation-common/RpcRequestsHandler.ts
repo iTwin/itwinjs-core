@@ -18,8 +18,12 @@ import { LabelDefinitionJSON } from "./LabelDefinition";
 import { SelectionInfo, DescriptorJSON, DescriptorOverrides } from "./content/Descriptor";
 import { ContentJSON } from "./content/Content";
 import { SelectionScope } from "./selection/SelectionScope";
-import { HierarchyRequestOptions, ContentRequestOptions, Paged, SelectionScopeRequestOptions, LabelRequestOptions } from "./PresentationManagerOptions";
+import {
+  HierarchyRequestOptions, ContentRequestOptions, Paged,
+  SelectionScopeRequestOptions, LabelRequestOptions, PresentationDataCompareOptions,
+} from "./PresentationManagerOptions";
 import { PresentationRpcInterface, PresentationRpcRequestOptions, PresentationRpcResponse } from "./PresentationRpcInterface";
+import { PartialHierarchyModificationJSON } from "./Update";
 import { Omit } from "./Utils";
 
 /**
@@ -160,5 +164,9 @@ export class RpcRequestsHandler implements IDisposable {
   public async computeSelection(options: SelectionScopeRequestOptions<IModelRpcProps>, ids: Id64String[], scopeId: string): Promise<KeySetJSON> {
     return this.request<KeySetJSON, SelectionScopeRequestOptions<IModelRpcProps>>(
       this.rpcClient, this.rpcClient.computeSelection, options, ids, scopeId);
+  }
+  public async compareHierarchies(options: PresentationDataCompareOptions<IModelRpcProps>): Promise<PartialHierarchyModificationJSON[]> {
+    return this.request<PartialHierarchyModificationJSON[], PresentationDataCompareOptions<IModelRpcProps>>(
+      this.rpcClient, this.rpcClient.compareHierarchies, options);
   }
 }

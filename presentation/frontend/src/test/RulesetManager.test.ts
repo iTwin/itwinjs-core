@@ -9,13 +9,18 @@ import * as sinon from "sinon";
 import * as faker from "faker";
 import { createRandomRuleset } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { RulesetManagerImpl } from "../presentation-frontend/RulesetManager";
+import { RegisteredRuleset, Ruleset, RuleTypes, Rule } from "@bentley/presentation-common";
 
 describe("RulesetManager", () => {
 
+  let onRulesetModifiedSpy: sinon.SinonSpy<[RegisteredRuleset, Ruleset], Promise<void>>;
   let manager: RulesetManagerImpl;
 
   beforeEach(() => {
-    manager = new RulesetManagerImpl();
+    onRulesetModifiedSpy = sinon.stub<[RegisteredRuleset, Ruleset], Promise<void>>().resolves();
+    manager = RulesetManagerImpl.create({
+      onRulesetModified: onRulesetModifiedSpy,
+    });
   });
 
   describe("get", () => {
@@ -37,7 +42,7 @@ describe("RulesetManager", () => {
 
   describe("add", () => {
 
-    it("registers a ruleset and raises onStateChanged event", async () => {
+    it("registers a ruleset", async () => {
       const ruleset = await createRandomRuleset();
       await manager.add(ruleset);
       expect((await manager.get(ruleset.id))!.toJSON()).to.deep.eq(ruleset);
@@ -50,6 +55,26 @@ describe("RulesetManager", () => {
         r.id = rulesetId;
         return manager.add(r);
       }));
+    });
+
+  });
+
+  describe("modify", () => {
+
+    it("modifies given ruleset and raises the `onRulesetModified` event", async () => {
+      const initialRuleset = await createRandomRuleset();
+      const registered = await manager.add(initialRuleset);
+      expect(await manager.get(initialRuleset.id)).to.eq(registered);
+      const newRule: Rule = {
+        ruleType: RuleTypes.Content,
+        condition: "test",
+        specifications: [],
+      };
+      const modified = await manager.modify(registered, { rules: [newRule] });
+      expect(modified.rules).to.deep.eq([newRule]);
+      expect(onRulesetModifiedSpy).to.be.calledOnce;
+      expect(onRulesetModifiedSpy.firstCall.args[0]).to.eq(modified);
+      expect(onRulesetModifiedSpy.firstCall.args[1]).to.deep.eq(initialRuleset);
     });
 
   });
@@ -108,5 +133,7 @@ describe("RulesetManager", () => {
       result.dispose();
       expect(eventSpy).to.have.been.calledOnce;
     });
+
   });
+
 });

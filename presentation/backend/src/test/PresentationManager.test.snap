@@ -13,7 +13,7 @@ Array [
       "pathFromRoot": Array [
         "p1",
       ],
-      "type": "ECInstanceNode",
+      "type": "ECInstancesNode",
     },
     "label": Object {
       "displayValue": "test2",
@@ -51,7 +51,7 @@ Array [
       "pathFromRoot": Array [
         "p1",
       ],
-      "type": "ECInstanceNode",
+      "type": "ECInstancesNode",
     },
     "label": Object {
       "displayValue": "test2",
@@ -946,7 +946,7 @@ Array [
       "pathFromRoot": Array [
         "p1",
       ],
-      "type": "ECInstanceNode",
+      "type": "ECInstancesNode",
     },
     "label": Object {
       "displayValue": "test2",
@@ -1023,7 +1023,7 @@ Array [
       "pathFromRoot": Array [
         "p1",
       ],
-      "type": "ECInstanceNode",
+      "type": "ECInstancesNode",
     },
     "label": Object {
       "displayValue": "test2",
