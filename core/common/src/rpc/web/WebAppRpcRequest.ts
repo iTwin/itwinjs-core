@@ -200,7 +200,7 @@ export class WebAppRpcRequest extends RpcRequest {
     const response = fulfillment.result.objects;
     res.set(WEB_RPC_CONSTANTS.CONTENT, WEB_RPC_CONSTANTS.TEXT);
     WebAppRpcRequest.configureResponse(protocol, request, fulfillment, res);
-    res.status(fulfillment.status).send(response);
+    res.status(fulfillment.status).send(response || JSON.stringify({}));
   }
 
   private static sendBinary(protocol: WebAppRpcProtocol, request: SerializedRpcRequest, fulfillment: RpcRequestFulfillment, res: HttpServerResponse) {
@@ -329,6 +329,6 @@ export class WebAppRpcRequest extends RpcRequest {
     this._pathSuffix = "";
     this._headers[WEB_RPC_CONSTANTS.CONTENT] = WEB_RPC_CONSTANTS.TEXT;
     this._request.method = "post";
-    this._request.body = parameters.objects;
+    this._request.body = parameters.objects || JSON.stringify({});
   }
 }
