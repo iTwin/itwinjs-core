@@ -64,9 +64,9 @@ export class NullRenderSystem extends RenderSystem {
  * @internal
  */
 export class NoRenderApp {
-  public static startup(opts?: IModelAppOptions) {
+  public static async startup(opts?: IModelAppOptions): Promise<void> {
     opts = opts ? opts : {};
     opts.renderSys = new NullRenderSystem();
-    IModelApp.startup(opts);
+    await IModelApp.startup(opts);
   }
 }

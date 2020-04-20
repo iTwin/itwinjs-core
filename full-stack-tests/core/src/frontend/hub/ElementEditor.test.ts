@@ -39,7 +39,7 @@ describe("Element editor tests (#integration)", async () => {
       imodelClient: TestUtility.imodelCloudEnv.imodelClient,
       applicationVersion: "1.2.1.1",
     };
-    IModelApp.startup(options);
+    await IModelApp.startup(options);
 
     // NB: Call IModelApp.startup and set the authorizationClient *before* calling any other functions that might query the server.
 
@@ -56,7 +56,7 @@ describe("Element editor tests (#integration)", async () => {
     if (iModel) {
       await iModel.close();
     }
-    IModelApp.shutdown();
+    await IModelApp.shutdown();
   });
 
   it("ElementEditor3d test", async () => {

@@ -31,15 +31,15 @@ const PresentationViewport = viewWithUnifiedSelection(ViewportComponent);
 
 describe("Viewport withUnifiedSelection", () => {
 
-  before(() => {
+  before(async () => {
     if (IModelApp.initialized)
-      IModelApp.shutdown();
-    NoRenderApp.startup();
+      await IModelApp.shutdown();
+    await NoRenderApp.startup();
     classNameGenerator = () => faker.random.word();
   });
 
-  after(() => {
-    IModelApp.shutdown();
+  after(async () => {
+    await IModelApp.shutdown();
   });
 
   let viewDefinitionId: Id64String;
@@ -161,15 +161,15 @@ describe("ViewportSelectionHandler", () => {
   let handler: ViewportSelectionHandler;
   const imodelMock = moq.Mock.ofType<IModelConnection>();
 
-  before(() => {
-    NoRenderApp.startup();
+  before(async () => {
+    await NoRenderApp.startup();
     Presentation.setSelectionManager(new SelectionManager({ scopes: moq.Mock.ofType<SelectionScopesManager>().object }));
     const defaultClassName = faker.random.word();
     classNameGenerator = () => defaultClassName;
   });
 
-  after(() => {
-    IModelApp.shutdown();
+  after(async () => {
+    await IModelApp.shutdown();
   });
 
   beforeEach(() => {

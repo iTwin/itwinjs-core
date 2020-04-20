@@ -21,9 +21,9 @@ import { IConnectivityInformationProvider } from "../presentation-frontend/Conne
 
 describe("Presentation", () => {
 
-  const shutdownIModelApp = () => {
+  const shutdownIModelApp = async () => {
     if (IModelApp.initialized)
-      IModelApp.shutdown();
+      await IModelApp.shutdown();
   };
 
   const mockI18N = () => {
@@ -32,16 +32,16 @@ describe("Presentation", () => {
     return mock;
   };
 
-  beforeEach(() => {
-    shutdownIModelApp();
-    NoRenderApp.startup();
+  beforeEach(async () => {
+    await shutdownIModelApp();
+    await NoRenderApp.startup();
     Presentation.terminate();
   });
 
   describe("initialize", () => {
 
     it("throws when initialized before IModelApp.startup()", async () => {
-      shutdownIModelApp();
+      await shutdownIModelApp();
       expect(Presentation.initialize()).to.be.rejectedWith(PresentationError, "IModelApp.startup");
     });
 

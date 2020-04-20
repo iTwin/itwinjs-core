@@ -9,11 +9,11 @@ import { assert } from "chai";
 
 describe("SnapshotConnection", () => {
   before(async () => {
-    IModelApp.startup();
+    await IModelApp.startup();
   });
 
   after(async () => {
-    IModelApp.shutdown();
+    await IModelApp.shutdown();
   });
 
   it("SnapshotConnection properties", async () => {

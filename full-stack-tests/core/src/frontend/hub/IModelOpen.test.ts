@@ -16,7 +16,7 @@ describe("Opening IModelConnection (#integration)", () => {
   let testChangeSetId: GuidString;
 
   before(async () => {
-    MockRender.App.startup({
+    await MockRender.App.startup({
       applicationVersion: "1.2.1.1",
     });
     Logger.initializeToConsole();
@@ -42,7 +42,7 @@ describe("Opening IModelConnection (#integration)", () => {
 
   after(async () => {
     await TestUtility.purgeAcquiredBriefcases(testIModelId);
-    MockRender.App.shutdown();
+    await MockRender.App.shutdown();
   });
 
   const doTest = async (openMode: OpenMode) => {

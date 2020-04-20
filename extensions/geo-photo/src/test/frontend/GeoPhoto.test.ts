@@ -124,7 +124,7 @@ describe("GeoPhoto (#integration)", () => {
   const subFolders = true;
 
   before(async () => {
-    IModelApp.startup();
+    await IModelApp.startup();
 
     requestContext = await TestConfig.getAuthorizedClientRequestContext();
     IModelApp.authorizationClient = new TestAuthorizationClient(requestContext.accessToken);

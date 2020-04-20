@@ -43,7 +43,7 @@ describe("ViewState", () => {
   let unitTestRpcImp: TestRpcInterface;
 
   before(async () => {
-    MockRender.App.startup();
+    await MockRender.App.startup();
     imodel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
     const viewRows: ViewDefinitionProps[] = await imodel.views.queryProps({ from: SpatialViewState.classFullName });
     assert.exists(viewRows, "Should find some views");
@@ -57,7 +57,7 @@ describe("ViewState", () => {
   after(async () => {
     if (imodel) await imodel.close();
     if (imodel2) await imodel2.close();
-    MockRender.App.shutdown();
+    await MockRender.App.shutdown();
   });
 
   const compareView = (v1: SpatialViewState, v2: SpatialViewDefinitionProps, str: string) => {
@@ -472,7 +472,7 @@ describe("ViewState2d", () => {
   let imodel: IModelConnection;
 
   before(async () => {
-    MockRender.App.startup();
+    await MockRender.App.startup();
     imodel = await SnapshotConnection.openFile("ReadWriteTest.bim");
   });
 
@@ -480,7 +480,7 @@ describe("ViewState2d", () => {
     if (imodel)
       await imodel.close();
 
-    MockRender.App.shutdown();
+    await MockRender.App.shutdown();
   });
 
   it("should have valid viewed extents", async () => {

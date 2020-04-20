@@ -98,13 +98,13 @@ describe("Test that requires Presentation", () => {
 
   let widgetControl: StatusBarWidgetControl | undefined;
 
-  const shutdownIModelApp = () => {
+  const shutdownIModelApp = async () => {
     if (IModelApp.initialized)
-      IModelApp.shutdown();
+      await IModelApp.shutdown();
   };
 
   before(async () => {
-    shutdownIModelApp();
+    await shutdownIModelApp();
     Presentation.terminate();
 
     await initializePresentationTesting();

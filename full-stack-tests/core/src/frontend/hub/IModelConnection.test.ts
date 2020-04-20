@@ -23,7 +23,7 @@ describe("IModelConnection (#integration)", () => {
   let iModel: IModelConnection;
 
   before(async () => {
-    MockRender.App.startup({
+    await MockRender.App.startup({
       applicationVersion: "1.2.1.1",
     });
 
@@ -43,7 +43,7 @@ describe("IModelConnection (#integration)", () => {
     await TestUtility.purgeAcquiredBriefcases(iModel.iModelId!);
     if (iModel)
       await iModel.close();
-    MockRender.App.shutdown();
+    await MockRender.App.shutdown();
   });
 
   it("should be able to get elements and models from an IModelConnection", async () => {

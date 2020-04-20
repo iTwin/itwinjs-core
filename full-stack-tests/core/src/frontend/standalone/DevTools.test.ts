@@ -12,7 +12,7 @@ describe("DevTools", () => {
   let devTools: DevTools;
 
   before(async () => {
-    IModelApp.startup();
+    await IModelApp.startup();
 
     const iModelRpcProps: IModelRpcProps = {
       iModelId: "test",
@@ -23,7 +23,7 @@ describe("DevTools", () => {
   });
 
   after(async () => {
-    IModelApp.shutdown();
+    await IModelApp.shutdown();
   });
 
   it("can fetch stats from backend", async () => {

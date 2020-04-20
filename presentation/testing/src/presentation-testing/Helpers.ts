@@ -56,7 +56,7 @@ export interface PresentationTestingInitProps {
   /** Properties for frontend initialization */
   frontendProps?: PresentationFrontendProps;
   /** IModelApp implementation */
-  frontendApp?: { startup: (opts?: IModelAppOptions) => void };
+  frontendApp?: { startup: (opts?: IModelAppOptions) => Promise<void> };
   /** Whether to use authorization client */
   useClientServices?: boolean;
 }
@@ -98,9 +98,9 @@ export const initialize = async (props?: PresentationTestingInitProps) => {
     };
     const authorizationClient = new OidcAgentClient(agentConfiguration);
     await authorizationClient.getAccessToken();
-    props.frontendApp.startup({ authorizationClient });
+    await props.frontendApp.startup({ authorizationClient });
   } else {
-    props.frontendApp.startup();
+    await props.frontendApp.startup();
   }
   const defaultFrontendProps: PresentationFrontendProps = {
     activeLocale: IModelApp.i18n.languageList()[0],

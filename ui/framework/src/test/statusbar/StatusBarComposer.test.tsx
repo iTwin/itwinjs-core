@@ -84,7 +84,7 @@ describe("StatusBarComposer", () => {
 
     before(async () => {
       await TestUtils.initializeUiFramework();
-      NoRenderApp.startup();
+      await NoRenderApp.startup();
 
       const statusBarWidgetDef = new WidgetDef({
         classId: AppStatusBarWidgetControl,
@@ -95,9 +95,9 @@ describe("StatusBarComposer", () => {
       widgetControl = statusBarWidgetDef.getWidgetControl(ConfigurableUiControlType.StatusBarWidget) as StatusBarWidgetControl;
     });
 
-    after(() => {
+    after(async () => {
       TestUtils.terminateUiFramework();
-      IModelApp.shutdown();
+      await IModelApp.shutdown();
     });
 
     it("StatusBarComposer should be instantiated", () => {
@@ -367,7 +367,7 @@ describe("StatusBarComposer", () => {
 
     before(async () => {
       await TestUtils.initializeUiFramework();
-      NoRenderApp.startup();
+      await NoRenderApp.startup();
 
       const statusBarWidgetDef = new WidgetDef({
         classId: AppStatusBarWidgetControl,
@@ -378,9 +378,9 @@ describe("StatusBarComposer", () => {
       widgetControl = statusBarWidgetDef.getWidgetControl(ConfigurableUiControlType.StatusBarWidget) as StatusBarWidgetControl;
     });
 
-    after(() => {
+    after(async () => {
       TestUtils.terminateUiFramework();
-      IModelApp.shutdown();
+      await IModelApp.shutdown();
     });
 
     afterEach(() => {

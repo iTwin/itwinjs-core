@@ -78,7 +78,7 @@ export type NodeMappingFunc = (node: TreeNodeItem) => MappedNode;
 export interface PresentationTestingInitProps {
     backendProps?: PresentationManagerProps;
     frontendApp?: {
-        startup: (opts?: IModelAppOptions) => void;
+        startup: (opts?: IModelAppOptions) => Promise<void>;
     };
     frontendProps?: PresentationManagerProps_2;
     useClientServices?: boolean;

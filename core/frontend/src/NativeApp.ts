@@ -56,7 +56,7 @@ export class NativeApp {
     if (!RpcRegistry.instance.isRpcInterfaceInitialized(NativeAppRpcInterface)) {
       throw new IModelError(IModelStatus.BadArg, "NativeAppRpcInterface must be registered");
     }
-    IModelApp.startup(opts);
+    await IModelApp.startup(opts);
     (IModelApp as any)._nativeApp = true;
     const backendConfig = await NativeAppRpcInterface.getClient().getConfig();
     Config.App.merge(backendConfig);
@@ -71,7 +71,7 @@ export class NativeApp {
   public static async shutdown() {
     NativeApp.unhookBrowserConnectivityEvents();
     await NativeAppLogger.flush();
-    IModelApp.shutdown();
+    await IModelApp.shutdown();
   }
 
   public static async requestDownloadBriefcase(contextId: string, iModelId: string, downloadOptions: DownloadBriefcaseOptions, version: IModelVersion = IModelVersion.latest(), progress?: ProgressCallback): Promise<BriefcaseDownloader> {

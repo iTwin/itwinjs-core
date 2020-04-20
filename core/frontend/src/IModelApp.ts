@@ -312,7 +312,7 @@ export class IModelApp {
    * ```
    * @param opts The options for configuring IModelApp
    */
-  public static startup(opts?: IModelAppOptions): void {
+  public static async startup(opts?: IModelAppOptions): Promise<void> {
     opts = opts ? opts : {};
 
     if (this._initialized)
@@ -397,7 +397,7 @@ export class IModelApp {
   }
 
   /** Must be called before the application exits to release any held resources. */
-  public static shutdown() {
+  public static async shutdown() {
     if (!this._initialized)
       return;
 

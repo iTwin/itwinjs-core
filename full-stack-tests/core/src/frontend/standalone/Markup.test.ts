@@ -13,7 +13,7 @@ describe("Markup tests", async () => {
   let vp: ScreenTestViewport;
 
   before(async () => {
-    IModelApp.startup();
+    await IModelApp.startup();
     imodel = await SnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
     await MarkupApp.initialize();
     vp = await createOnScreenTestViewport("0x24", imodel, 500, 500);
@@ -23,7 +23,7 @@ describe("Markup tests", async () => {
   after(async () => {
     vp.dispose();
     if (imodel) await imodel.close();
-    IModelApp.shutdown();
+    await IModelApp.shutdown();
   });
 
   const makeRect = (g: G) => g.rect(10, 10).move(3, 3).css(MarkupApp.props.active.element);

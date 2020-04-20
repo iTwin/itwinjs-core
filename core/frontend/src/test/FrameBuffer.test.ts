@@ -9,8 +9,8 @@ import { System, RenderBuffer, TextureHandle, FrameBuffer, GL, Debug } from "../
 import { Capabilities } from "@bentley/webgl-compatibility";
 
 describe("FrameBuffer tests", () => {
-  before(() => IModelApp.startup());
-  after(() => IModelApp.shutdown());
+  before(async () => IModelApp.startup());
+  after(async () => IModelApp.shutdown());
 
   it("should produce and bind a valid framebuffer with single color attachment", () => {
     if (!IModelApp.hasRenderSystem)

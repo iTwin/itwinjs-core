@@ -200,6 +200,14 @@ Previously, the default tslint configuration reported [usage of deprecated APIs]
 
 With a new major version of the iModel.js library come breaking API changes. The majority of those changes result from the removal of previously deprecated APIs. In addition, the following APIs have changed in ways that may require calling code to be adjusted:
 
+### Async startup and shutdown
+
+The following methods are now `async` and return `Promise<void>`:
+- [IModelApp.startup]($frontend)
+- [IModelApp.shutdown]($frontend)
+
+Calling code should be updated to `await` these Promises.
+
 ### iTwin client packages
 
 the `imodeljs-clients` package has been split into the following packages, all of which are hosted in the `/clients/` directory alongside the existing `extension-client`:

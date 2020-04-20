@@ -74,7 +74,7 @@ function getImageBufferData(): Uint8Array {
   const buffer = new Uint8Array(4096);
   let currentBufferIdx = 0;
   const color = ColorDef.from(54, 117, 255);
-  for (let i = 0; i < 1024; i++ , currentBufferIdx += 4) {
+  for (let i = 0; i < 1024; i++, currentBufferIdx += 4) {
     buffer[currentBufferIdx] = color.colors.r; buffer[currentBufferIdx + 1] = color.colors.g; buffer[currentBufferIdx + 2] = color.colors.b; buffer[currentBufferIdx + 3] = color.getAlpha();
   }
   return buffer;
@@ -140,13 +140,13 @@ function disposedCheck(disposable: any, ignoredAttribs?: string[]): boolean {
 // This test block exists on its own since disposal of System causes system to detach from an imodel's onClose event
 describe("Disposal of System", () => {
   before(async () => {
-    IModelApp.startup();
+    await IModelApp.startup();
     imodel0 = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
   });
 
   after(async () => {
     await imodel0.close();
-    IModelApp.shutdown();
+    await IModelApp.shutdown();
   });
 
   it("expect rendersystem disposal to trigger disposal of textures cached in id-map", async () => {
@@ -185,7 +185,7 @@ describe("Disposal of System", () => {
 
 describe("Disposal of WebGL Resources", () => {
   before(async () => {
-    IModelApp.startup();
+    await IModelApp.startup();
 
     imodel0 = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
     imodel1 = await SnapshotConnection.openFile("testImodel.bim"); // relative path resolved by BackendTestAssetResolver
@@ -194,7 +194,7 @@ describe("Disposal of WebGL Resources", () => {
   after(async () => {
     await imodel0.close();
     await imodel1.close();
-    IModelApp.shutdown();
+    await IModelApp.shutdown();
   });
 
   // ###TODO: Update TileIO.data.ts for new tile format...

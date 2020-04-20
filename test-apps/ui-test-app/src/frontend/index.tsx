@@ -183,12 +183,12 @@ export class SampleAppIModelApp {
     return SampleAppIModelApp._uiSettings;
   }
 
-  public static startup(opts?: IModelAppOptions): void {
+  public static async startup(opts?: IModelAppOptions): Promise<void> {
     opts = opts ? opts : {};
     opts.accuSnap = new SampleAppAccuSnap();
     opts.notifications = new AppNotificationManager();
     opts.uiAdmin = new FrameworkUiAdmin();
-    IModelApp.startup(opts);
+    await IModelApp.startup(opts);
 
     // For testing local extensions only, should not be used in production.
     IModelApp.extensionAdmin.addExtensionLoader(new ExternalServerExtensionLoader("http://localhost:3000"), 50);
@@ -658,12 +658,11 @@ async function main() {
   };
 
   // Start the app.
-  SampleAppIModelApp.startup({ renderSys: renderSystemOptions, authorizationClient: oidcClient });
+  await SampleAppIModelApp.startup({ renderSys: renderSystemOptions, authorizationClient: oidcClient });
 
   // wait for both our i18n namespaces to be read.
-  SampleAppIModelApp.initialize().then(() => { // tslint:disable-line:no-floating-promises
-    ReactDOM.render(<SampleAppViewer />, document.getElementById("root") as HTMLElement);
-  });
+  await SampleAppIModelApp.initialize();
+  ReactDOM.render(<SampleAppViewer />, document.getElementById("root") as HTMLElement);
 }
 
 // Entry point - run the main function

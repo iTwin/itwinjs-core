@@ -36,7 +36,7 @@ describe("ChangeSummary (#integration)", () => {
       imodelClient: TestUtility.imodelCloudEnv.imodelClient,
       applicationVersion: "1.2.1.1",
     };
-    MockRender.App.startup(options);
+    await MockRender.App.startup(options);
 
     assert(IModelApp.authorizationClient);
 
@@ -49,7 +49,7 @@ describe("ChangeSummary (#integration)", () => {
   after(async () => {
     if (iModel)
       await iModel.close();
-    MockRender.App.shutdown();
+    await MockRender.App.shutdown();
   });
 
   // ###TODO AFFAN ???

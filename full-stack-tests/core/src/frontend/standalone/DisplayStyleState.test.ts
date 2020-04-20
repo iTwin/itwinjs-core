@@ -20,7 +20,7 @@ describe("DisplayStyle", () => {
   };
 
   before(async () => {
-    MockRender.App.startup();
+    await MockRender.App.startup();
     imodel = await SnapshotConnection.openFile("test.bim");
   });
 
@@ -28,7 +28,7 @@ describe("DisplayStyle", () => {
     if (imodel)
       await imodel.close();
 
-    MockRender.App.shutdown();
+    await MockRender.App.shutdown();
   });
 
   it("should clone correctly", () => {

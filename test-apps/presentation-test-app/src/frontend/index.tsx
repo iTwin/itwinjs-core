@@ -45,8 +45,8 @@ Logger.setLevelDefault(LogLevel.Warning);
 
 export class SampleApp {
   private static _ready: Promise<void>;
-  public static startup() {
-    IModelApp.startup();
+  public static async startup(): Promise<void> {
+    await IModelApp.startup();
     const readyPromises = new Array<Promise<void>>();
 
     const localizationNamespace = IModelApp.i18n.registerNamespace("Sample");
@@ -85,11 +85,12 @@ export class SampleApp {
   public static get ready(): Promise<void> { return this._ready; }
 }
 
-SampleApp.startup();
+(async () => {
+  await SampleApp.startup();
 
-SampleApp.ready.then(() => { // tslint:disable-line:no-floating-promises
+  await SampleApp.ready;
   ReactDOM.render(
     <App />,
     document.getElementById("root") as HTMLElement,
   );
-});
+})(); // tslint:disable-line:no-floating-promises

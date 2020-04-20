@@ -149,13 +149,13 @@ describe("UiFramework", () => {
 
 // before we can test setting scope to a valid scope id we must make sure Presentation Manager is initialized.
 describe("Requires Presentation", () => {
-  const shutdownIModelApp = () => {
+  const shutdownIModelApp = async () => {
     if (IModelApp.initialized)
-      IModelApp.shutdown();
+      await IModelApp.shutdown();
   };
 
   beforeEach(async () => {
-    shutdownIModelApp();
+    await shutdownIModelApp();
     Presentation.terminate();
     await initializePresentationTesting();
   });
@@ -172,7 +172,7 @@ describe("Requires Presentation", () => {
       TestUtils.terminateUiFramework();
 
       Presentation.terminate();
-      shutdownIModelApp();
+      await shutdownIModelApp();
     });
   });
 });

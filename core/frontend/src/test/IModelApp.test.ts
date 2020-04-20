@@ -45,11 +45,11 @@ class TestSelectTool extends SelectionTool { }
 class TestApp extends MockRender.App {
   public static testNamespace?: I18NNamespace;
 
-  public static startup(opts?: IModelAppOptions) {
+  public static async startup(opts?: IModelAppOptions): Promise<void> {
     opts = opts ? opts : {};
     opts.accuDraw = new TestAccuDraw();
     opts.i18n = this.supplyI18NOptions();
-    MockRender.App.startup(opts);
+    await MockRender.App.startup(opts);
 
     this.testNamespace = IModelApp.i18n.registerNamespace("TestApp");
     TestImmediate.register(this.testNamespace);
@@ -70,7 +70,7 @@ class TestApp extends MockRender.App {
 }
 
 describe("IModelApp", () => {
-  before(() => TestApp.startup());
+  before(async () => TestApp.startup());
   after(() => TestApp.shutdown());
 
   it("TestApp should override correctly", () => {

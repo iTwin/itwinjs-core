@@ -22,13 +22,13 @@ const ActiveViewport = (props: { children?: (activeViewport: ReturnType<typeof u
 describe("useActiveViewport", () => {
   const sandbox = sinon.createSandbox();
 
-  before(() => {
+  before(async () => {
     (global as any).XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
-    NoRenderApp.startup();
+    await NoRenderApp.startup();
   });
 
-  after(() => {
-    IModelApp.shutdown();
+  after(async () => {
+    await IModelApp.shutdown();
   });
 
   afterEach(() => {

@@ -3785,10 +3785,10 @@ export class IModelApp {
     static requestNextAnimation(): void;
     static sessionId: GuidString;
     static get settings(): SettingsAdmin;
-    static shutdown(): void;
+    static shutdown(): Promise<void>;
     // @internal (undocumented)
     static startEventLoop(): void;
-    static startup(opts?: IModelAppOptions): void;
+    static startup(opts?: IModelAppOptions): Promise<void>;
     // @internal (undocumented)
     static get tentativePoint(): TentativePoint;
     // @internal (undocumented)
@@ -5152,9 +5152,9 @@ export namespace MockRender {
         // (undocumented)
         protected static createDefaultRenderSystem(): System;
         // (undocumented)
-        static shutdown(): void;
+        static shutdown(): Promise<void>;
         // (undocumented)
-        static startup(opts?: IModelAppOptions): void;
+        static startup(opts?: IModelAppOptions): Promise<void>;
         // (undocumented)
         static systemFactory: SystemFactory;
     }
@@ -5392,7 +5392,7 @@ export class NativeAppLogger {
 // @internal
 export class NoRenderApp {
     // (undocumented)
-    static startup(opts?: IModelAppOptions): void;
+    static startup(opts?: IModelAppOptions): Promise<void>;
 }
 
 // @public

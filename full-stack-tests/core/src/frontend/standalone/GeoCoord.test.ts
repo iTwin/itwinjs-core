@@ -19,7 +19,7 @@ describe("GeoCoord", () => {
   let wgs84GeoCoordsResponse: GeoCoordinatesResponseProps;
 
   before(async () => {
-    IModelApp.startup();
+    await IModelApp.startup();
     iModel = await SnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
     // make an array of 10x10 geoPoints in geoPointList.
     for (let iLatitude: number = 0; iLatitude < 10; iLatitude++) {
@@ -34,7 +34,7 @@ describe("GeoCoord", () => {
 
   after(async () => {
     if (iModel) await iModel.close();
-    IModelApp.shutdown();
+    await IModelApp.shutdown();
   });
 
   it("should get different results for different datums", async () => {
