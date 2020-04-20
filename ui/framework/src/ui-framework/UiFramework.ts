@@ -9,10 +9,11 @@
 import { Store } from "redux";
 
 import { Logger } from "@bentley/bentleyjs-core";
-import { AccessToken } from "@bentley/itwin-client";
+import { UserInfo, AccessToken } from "@bentley/itwin-client";
 import { MobileRpcConfiguration } from "@bentley/imodeljs-common";
 import { I18N, TranslationOptions } from "@bentley/imodeljs-i18n";
-import { IModelConnection, SnapMode, ViewState } from "@bentley/imodeljs-frontend";
+import { IModelConnection, SnapMode, ViewState, IModelApp } from "@bentley/imodeljs-frontend";
+import { isBrowserAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { UiError, getClassName } from "@bentley/ui-abstract";
 import { UiEvent } from "@bentley/ui-core";
 import { Presentation } from "@bentley/presentation-frontend";
@@ -120,6 +121,17 @@ export class UiFramework {
     UiFramework._widgetManager = new WidgetManager();
 
     UiFramework.onFrameworkVersionChangedEvent.addListener(UiFramework._handleFrameworkVersionChangedEvent);
+
+    const oidcClient = IModelApp.authorizationClient;
+    // istanbul ignore next
+    if (isBrowserAuthorizationClient(oidcClient)) {
+      const authorized = IModelApp.authorizationClient && IModelApp.authorizationClient.isAuthorized;
+      if (authorized) {
+        const accessToken = await oidcClient.getAccessToken();
+        UiFramework.setUserInfo(accessToken !== undefined ? accessToken.getUserInfo() : undefined);
+      }
+      oidcClient.onUserStateChanged.addListener(UiFramework._handleUserStateChanged);
+    }
 
     return readFinishedPromise;
   }
@@ -288,18 +300,14 @@ export class UiFramework {
     return UiFramework.frameworkState ? UiFramework.frameworkState.sessionState.iModelConnection : /* istanbul ignore next */  undefined;
   }
 
-  /** @deprecated Token is managed internally, and there is no need for the caller to explicitly set the access token. */
-  public static setAccessToken(accessToken: AccessToken | undefined, immediateSync = false) {
-    this.setAccessTokenInternal(accessToken, immediateSync);
+  /** @beta */
+  public static setUserInfo(userInfo: UserInfo | undefined, immediateSync = false) {
+    UiFramework.dispatchActionToStore(SessionStateActionId.SetUserInfo, userInfo, immediateSync);
   }
 
-  private static setAccessTokenInternal(accessToken: AccessToken | undefined, immediateSync = false) {
-    UiFramework.dispatchActionToStore(SessionStateActionId.SetAccessToken, accessToken, immediateSync);
-  }
-
-  /** @deprecated Use IModelApp.authorizationClient.getAccessToken() instead */
-  public static getAccessToken(): AccessToken | undefined {
-    return UiFramework.frameworkState ? UiFramework.frameworkState.sessionState.accessToken : /* istanbul ignore next */  undefined;
+  /** @beta */
+  public static getUserInfo(): UserInfo | undefined {
+    return UiFramework.frameworkState ? UiFramework.frameworkState.sessionState.userInfo : /* istanbul ignore next */  undefined;
   }
 
   public static setDefaultIModelViewportControlId(iModelViewportControlId: string, immediateSync = false) {
@@ -391,4 +399,10 @@ export class UiFramework {
     // This fixes use of "backdrop-filter: blur(10px)"" CSS.
     UiFramework.setWidgetOpacity(args.version === "1" ? UiFramework._version1WidgetOpacity : 1.0);
   }
+
+  // istanbul ignore next
+  private static _handleUserStateChanged = (accessToken: AccessToken | undefined) => {
+    UiFramework.setUserInfo(accessToken !== undefined ? accessToken.getUserInfo() : undefined);
+  }
+
 }

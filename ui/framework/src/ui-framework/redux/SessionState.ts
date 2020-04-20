@@ -8,7 +8,7 @@
 
 // The following definitions are causing extract-api issues on linux so for now just using any until we can figure out the issue.
 // import { IModelConnection, ViewState } from "@bentley/imodeljs-frontend";
-// import { AccessToken } from "@bentley/itwin-client";
+import { UserInfo } from "@bentley/itwin-client";
 import { createAction, ActionsUnion, DeepReadonly } from "./redux-ts";
 
 import { XAndY } from "@bentley/geometry-core";
@@ -44,7 +44,7 @@ export enum SessionStateActionId {
   SetSelectionScope = "sessionstate:set-selection-scope",
   SetActiveIModelId = "sessionstate:set-active-imodelid",
   SetIModelConnection = "sessionstate:set-imodel-connection",
-  SetAccessToken = "sessionstate:set-access-token",
+  SetUserInfo = "sessionstate:set-user-info",
   SetDefaultIModelViewportControlId = "sessionstate:set-default-viewportid",
   SetDefaultViewId = "sessionstate:set-default-viewid",
   SetDefaultViewState = "sessionstate:set-default-view-state",
@@ -63,7 +63,7 @@ export interface SessionState {
   defaultViewId: string | undefined;
   defaultViewState: any | undefined;
   iModelConnection: any | undefined;
-  accessToken: any | undefined;
+  userInfo: UserInfo | undefined;
   cursorMenuData: CursorMenuData | undefined;
 }
 
@@ -83,7 +83,7 @@ const initialState: SessionState = {
   defaultViewId: undefined,
   defaultViewState: undefined,
   iModelConnection: undefined,
-  accessToken: undefined,
+  userInfo: undefined,
   cursorMenuData: undefined,
 };
 
@@ -91,7 +91,6 @@ const initialState: SessionState = {
  * @beta
  */
 export interface SessionStateActionsProps {
-  setAccessToken: (typeof SessionStateActions.setAccessToken);
   setActiveIModelId: (typeof SessionStateActions.setActiveIModelId);
   setAvailableSelectionScopes: (typeof SessionStateActions.setAvailableSelectionScopes);
   setDefaultIModelViewportControlId: (typeof SessionStateActions.setDefaultIModelViewportControlId);
@@ -100,6 +99,7 @@ export interface SessionStateActionsProps {
   setIModelConnection: (typeof SessionStateActions.setIModelConnection);
   setNumItemsSelected: (typeof SessionStateActions.setNumItemsSelected);
   setSelectionScope: (typeof SessionStateActions.setSelectionScope);
+  setUserInfo: (typeof SessionStateActions.setUserInfo);
   updateCursorMenu: (typeof SessionStateActions.updateCursorMenu);
 }
 
@@ -107,7 +107,7 @@ export interface SessionStateActionsProps {
  * @beta
  */
 export const SessionStateActions = {  // tslint:disable-line:variable-name
-  setAccessToken: (accessToken: any) => createAction(SessionStateActionId.SetAccessToken, accessToken),
+  setUserInfo: (userInfo: UserInfo) => createAction(SessionStateActionId.SetUserInfo, userInfo),
   setActiveIModelId: (iModelId: string) => createAction(SessionStateActionId.SetActiveIModelId, iModelId),
   setAvailableSelectionScopes: (availableSelectionScopes: PresentationSelectionScope[]) => createAction(SessionStateActionId.SetAvailableSelectionScopes, availableSelectionScopes),
   setDefaultIModelViewportControlId: (iModelViewportControlId: string) => createAction(SessionStateActionId.SetDefaultIModelViewportControlId, iModelViewportControlId),
@@ -178,8 +178,8 @@ export function SessionStateReducer(state: SessionState = initialState, action: 
     case SessionStateActionId.SetIModelConnection: {
       return { ...state, iModelConnection: action.payload };
     }
-    case SessionStateActionId.SetAccessToken: {
-      return { ...state, accessToken: action.payload };
+    case SessionStateActionId.SetUserInfo: {
+      return { ...state, userInfo: action.payload };
     }
     case SessionStateActionId.UpdateCursorMenu: {
       return { ...state, cursorMenuData: action.payload };

@@ -9,17 +9,16 @@
 import * as React from "react";
 
 import { ClientRequestContext, isElectronRenderer } from "@bentley/bentleyjs-core";
-import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
+import { FrontendAuthorizationClient, isBrowserAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { CommonProps } from "@bentley/ui-core";
 import { SignIn as SignInBase } from "@bentley/ui-components";
 import { UiFramework } from "../UiFramework";
+import { IModelApp } from "@bentley/imodeljs-frontend";
 
 /** Properties for the [[SignIn]] component
  * @public
  */
 export interface SignInProps extends CommonProps {
-  /** Oidc Frontend Client object */
-  oidcClient?: FrontendAuthorizationClient;
   /** Handler called after sign-in has completed */
   onSignedIn?: () => void;
   /** Handler for the Register link */
@@ -33,38 +32,45 @@ export interface SignInProps extends CommonProps {
 
 /**
  * SignIn React component.
- * `this.props.oidcClient.signIn` is called when the "Sign In" button is pressed,
+ * `this._oidcClient.signIn` is called when the "Sign In" button is pressed,
  * then `props.onSignedIn` is called after sign-in has completed.
  * @public
  */
 export class SignIn extends React.PureComponent<SignInProps> {
+  /** Oidc Frontend Client object */
+  private _oidcClient: FrontendAuthorizationClient | undefined;
+
   constructor(props: SignInProps) {
     super(props);
   }
 
   public componentDidMount() {
+    const oidcClient = IModelApp.authorizationClient;
+    if (isBrowserAuthorizationClient(oidcClient))
+      this._oidcClient = oidcClient;
+
     // istanbul ignore next
-    const isAuthorized = this.props.oidcClient && this.props.oidcClient.isAuthorized;
+    const isAuthorized = this._oidcClient && this._oidcClient.isAuthorized;
     if (isAuthorized)
-      this.props.oidcClient!.onUserStateChanged.addListener(this._onUserStateChanged);
+      this._oidcClient!.onUserStateChanged.addListener(this._onUserStateChanged);
   }
 
   private _onUserStateChanged() {
     // istanbul ignore next
-    if (this.props.oidcClient && this.props.oidcClient.isAuthorized && this.props.onSignedIn)
+    if (this._oidcClient && this._oidcClient.isAuthorized && this.props.onSignedIn)
       this.props.onSignedIn();
   }
 
   public componentWillUnmount() {
     // istanbul ignore next
-    if (this.props.oidcClient)
-      this.props.oidcClient.onUserStateChanged.removeListener(this._onUserStateChanged);
+    if (this._oidcClient)
+      this._oidcClient.onUserStateChanged.removeListener(this._onUserStateChanged);
   }
 
   private _onStartSignin = async () => {
     // istanbul ignore next
-    if (this.props.oidcClient)
-      this.props.oidcClient.signIn(new ClientRequestContext()); // tslint:disable-line:no-floating-promises
+    if (this._oidcClient)
+      this._oidcClient.signIn(new ClientRequestContext()); // tslint:disable-line:no-floating-promises
 
     // istanbul ignore else
     if (this.props.onStartSignIn)

@@ -17,7 +17,7 @@ class SignInControl extends ContentControl {
 
     const oidcClient = IModelApp.authorizationClient;
     if (isBrowserAuthorizationClient(oidcClient))
-      this.reactNode = <SignIn oidcClient={oidcClient} onOffline={this._onWorkOffline} onRegister={this._onRegister} />;
+      this.reactNode = <SignIn onOffline={this._onWorkOffline} onRegister={this._onRegister} />;
     else
       this.reactNode = null;
   }
