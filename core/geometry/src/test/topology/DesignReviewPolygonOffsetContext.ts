@@ -2,26 +2,27 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+//   WARNING THIS IS A LOCAL COPY OF PolygonOffsetContext.ts, with classes renamed to ensure no direct conflict
 /** @packageDocumentation
  * @module Curve
  */
 
 /* tslint:disable: no-console */
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { CurveCollection } from "../CurveCollection";
-import { CurvePrimitive } from "../CurvePrimitive";
-import { LineSegment3d } from "../LineSegment3d";
+import { CurveCollection } from "../../curve/CurveCollection";
+import { CurvePrimitive } from "../../curve/CurvePrimitive";
+import { LineSegment3d } from "../../curve/LineSegment3d";
 import { Ray3d } from "../../geometry3d/Ray3d";
-import { CurveCurveApproachType, CurveLocationDetailPair } from "../CurveLocationDetail";
-import { LineString3d } from "../LineString3d";
-import { Path } from "../Path";
-import { Loop } from "../Loop";
-import { Arc3d } from "../Arc3d";
-import { CurveCurve } from "../CurveCurve";
+import { CurveCurveApproachType, CurveLocationDetailPair } from "../../curve/CurveLocationDetail";
+import { LineString3d } from "../../curve/LineString3d";
+import { Path } from "../../curve/Path";
+import { Loop } from "../../curve/Loop";
+import { Arc3d } from "../../curve/Arc3d";
+import { CurveCurve } from "../../curve/CurveCurve";
 import { Angle } from "../../geometry3d/Angle";
 import { Geometry } from "../../Geometry";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
-import { RegionOps } from "../RegionOps";
+import { RegionOps } from "../../curve/RegionOps";
 
 /**
  * Classification of contortions at a joint.
@@ -46,7 +47,7 @@ enum JointMode {
  *   * otherwise make single edge.
  * @public
  */
-export class JointOptions {
+class JointOptions {
   /** smallest arc to construct.
    * * If this control angle is large, arcs are never created.
    */
@@ -471,7 +472,7 @@ export class PolygonWireOffsetContext {
       const segment = LineSegment3d.create(
         basePointA.plusScaled(this._unitPerp, distance, this._offsetA),
         basePointB.plusScaled(this._unitPerp, distance, this._offsetB));
-      CurveChainWireOffsetContext.applyBasePoints(segment, basePointA.clone(), basePointB.clone());
+      DesignReviewCurveChainWireOffsetContext.applyBasePoints(segment, basePointA.clone(), basePointB.clone());
       return segment;
     }
     return undefined;
@@ -536,7 +537,7 @@ export class PolygonWireOffsetContext {
  * Context for building a wire offset from a Path or Loop of CurvePrimitives
  * @internal
  */
-export class CurveChainWireOffsetContext {
+export class DesignReviewCurveChainWireOffsetContext {
   /** construct a context. */
   public constructor() {
   }
@@ -592,7 +593,7 @@ export class CurveChainWireOffsetContext {
         const sign = g1.sweep.sweepRadians * g1.matrixRef.coffs[8] >= 0.0 ? 1.0 : -1.0;
         const r = g1.matrixRef.columnXMagnitude();
         const r1 = r - sign * distanceLeft;
-        if (!Geometry.isSmallMetricDistance (r1)) {
+        if (!Geometry.isSmallMetricDistance(r1)) {
           const factor = r1 / r;
           const matrix = g1.matrixClone();
           matrix.scaleColumnsInPlace(factor, factor, 1.0);
@@ -635,7 +636,7 @@ export class CurveChainWireOffsetContext {
    * @param curves input curves
    * @param offsetDistanceOrOptions offset controls.
    */
-  public static constructCurveXYOffset(curves: Path | Loop, options: JointOptions): CurveCollection | undefined {
+  private static constructCurveXYOffsetGo(curves: Path | Loop, options: JointOptions): CurveCollection | undefined {
     const wrap = curves instanceof Loop;
     if (options === undefined)
       return undefined;
@@ -643,7 +644,7 @@ export class CurveChainWireOffsetContext {
     const simpleOffsets: CurvePrimitive[] = [];
     // setup pass: get simple offsets of each primitive
     for (const c of curves.children) {
-      const c1 = CurveChainWireOffsetContext.createSingleOffsetPrimitiveXY(c, options.leftOffsetDistance);
+      const c1 = DesignReviewCurveChainWireOffsetContext.createSingleOffsetPrimitiveXY(c, options.leftOffsetDistance);
       if (c1 === undefined) {
         // bad .. maybe arc to inside?
       } else if (c1 instanceof CurvePrimitive)
@@ -675,5 +676,9 @@ export class CurveChainWireOffsetContext {
     const outputCurves: CurvePrimitive[] = [];
     Joint.collectCurvesFromChain(joint0, outputCurves, numOffset);
     return RegionOps.createLoopPathOrBagOfCurves(outputCurves, wrap);
+  }
+  public static constructCurveXYOffset(curves: Path | Loop, offsetDistanceOrOptions: number | JointOptions): CurveCollection | undefined {
+    const options = JointOptions.create(offsetDistanceOrOptions);
+    return this.constructCurveXYOffsetGo(curves, options);
   }
 }

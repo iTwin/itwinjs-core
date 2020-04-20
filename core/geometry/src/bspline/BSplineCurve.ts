@@ -33,6 +33,8 @@ import { UnivariateBezier } from "../numerics/BezierPolynomials";
 import { Bezier1dNd } from "./Bezier1dNd";
 import { Point4d } from "../geometry4d/Point4d";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
+import { BandedSystem } from "../numerics/BandedSystem";
+import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
 
 /**
  * Base class for BSplineCurve3d and BSplineCurve3dH.
@@ -362,6 +364,47 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
     }
     return curve;
   }
+/**
+ *
+ * @param points pass-through points.
+ * @param order bspline order (1 more than degree)
+ */
+  public static createThroughPoints(points: IndexedXYZCollection, order: number): BSplineCurve3d | undefined {
+    const numPoints = points.length;
+    if (order > numPoints || order < 2)
+      return undefined;
+    const degree = order - 1;
+    const bw = 1 + 2 * degree;    // probably less than that . . just zeros at fringe.
+    const matrix = new Float64Array(bw * numPoints);
+    const basisFunctions = new Float64Array(order);
+    const rhs = new GrowableXYZArray();
+    const knots = KnotVector.createUniformClamped(numPoints, order - 1, 0.0, 1.0);
+    const xyz = Point3d.create();
+    for (let basePointIndex = 0; basePointIndex < numPoints; basePointIndex++) {
+      const u = knots.grevilleKnot(basePointIndex);
+      const spanIndex = knots.knotToLeftKnotIndex(u);
+      knots.evaluateBasisFunctions(spanIndex, u, basisFunctions);
+      // hmph .. how do the max points shift within the order spots?
+      let maxIndex = 0;
+      for (let i = 1; i < order; i++)
+        if (basisFunctions[i] > basisFunctions[maxIndex])
+          maxIndex = i;
+      const basisFunctionStartWithinRow = degree - maxIndex;
+      const rowStart = basePointIndex * bw;
+      for (let i = 0; i < order; i++) {
+        const realColumn = basePointIndex - degree + basisFunctionStartWithinRow + i;
+        if (rowStart + realColumn >= 0 && realColumn < numPoints)
+          matrix[rowStart + basisFunctionStartWithinRow + i] = basisFunctions[i];
+      }
+      rhs.push(points.getPoint3dAtUncheckedPointIndex(basePointIndex, xyz));
+    }
+    const poles = BandedSystem.solveBandedSystemMultipleRHS(numPoints, bw, matrix, 3, rhs.float64Data());
+    if (poles) {
+      return BSplineCurve3d.create(poles, knots.knots, order);
+    }
+    return undefined;
+  }
+
   /** Create a bspline with given knots.
    *
    * *  Two count conditions are recognized:

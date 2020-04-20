@@ -1,0 +1,51 @@
+{
+  "name": "test-apps-imjs-importer",
+  "version": "1.0.0",
+  "description": "Converter to import IModelJson files into bim files.",
+  "main": "./lib/Main.js",
+  "scripts": {
+    "build": "npm run build-code && node ./node_modules/@bentley/build-tools/scripts/ignoreargs.js 1>&2",
+    "build-code": "tsc 1>&2",
+    "clean": "rimraf lib",
+    "docs": " ",
+    "test": "",
+    "cover": "",
+    "lint": "tslint --project .",
+    "blint": "npm run build && npm run lint",
+    "main1": "node lib/main1.js",
+    "byDirectory": "node lib/byDirectory.js --input=CurveFactory --output=abc",
+    "test1": "npm run test1:unit ",
+    "test1:unit": "mocha --opts ./test/unit/mocha.opts \"test/unit/**/*.test.ts*\""
+  },
+  "author": {
+    "name": "Bentley Systems, Inc.",
+    "url": "http://www.bentley.com"
+  },
+  "license": "ISC",
+  "dependencies": {
+    "@bentley/bentleyjs-core": "2.0.0-dev.50",
+    "@bentley/config-loader": "2.0.0-dev.50",
+    "@bentley/geometry-core": "2.0.0-dev.50",
+    "@bentley/imodeljs-backend": "2.0.0-dev.50",
+    "@bentley/imodeljs-clients": "2.0.0-dev.50",
+    "@bentley/imodeljs-clients-backend": "2.0.0-dev.50",
+    "@bentley/imodeljs-common": "2.0.0-dev.50",
+    "@bentley/imodeljs-i18n": "2.0.0-dev.50",
+    "@bentley/logger-config": "2.0.0-dev.50",
+    "chai": "^4.1.2",
+    "jquery": "^3.4.1",
+    "yargs": "^15.0.0"
+  },
+  "devDependencies": {
+    "@bentley/build-tools": "2.0.0-dev.50",
+    "@types/chai": "^4.1.4",
+    "@types/jquery": "^3.3.33",
+    "@types/mocha": "^5.2.5",
+    "@types/node": "10.14.1",
+    "@types/yargs": "^12.0.5",
+    "chai": "^4.1.2",
+    "mocha": "^5.2.0",
+    "tslint": "^5.11.0",
+    "typescript": "~3.7.4"
+  }
+}
