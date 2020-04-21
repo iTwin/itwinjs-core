@@ -23,9 +23,9 @@ import { SampleTool } from "./ui/SampleTool";
  * For more information about Extensions, see Extension in the iModel.js documentation. *
  */
 export class DialogItemsSample extends Extension {
- /** We'll register the dialogItemsSample.json as the Extension's namespace/ */
+  /** We'll register the dialogItemsSample.json as the Extension's namespace/ */
   private _i18NNamespace?: I18NNamespace;
-/** The uiProvider will add a tool to the Toolbar and an item to the StatusBar in the host app */
+  /** The uiProvider will add a tool to the Toolbar and an item to the StatusBar in the host app */
   public uiProvider?: SampleUiItemsProvider;
 
   public constructor(name: string) {
@@ -34,22 +34,20 @@ export class DialogItemsSample extends Extension {
   }
 
   /** Invoked the first time this extension is loaded. */
-  public onLoad(_args: string[]): void {
+  public async onLoad(_args: string[]): Promise<void> {
     /** Register the localized strings for this extension
      * We'll pass the i18n member to the rest of the classes in the Extension to allow them to translate strings in the UI they implement.
      */
     this._i18NNamespace = this.i18n.registerNamespace("dialogItemsSample");
-    this._i18NNamespace!.readFinished.then(() => {
-      const message: string = this.i18n.translate("dialogItemsSample:Messages.Start");
-      const msgDetails: NotifyMessageDetails = new NotifyMessageDetails(OutputMessagePriority.Info, message);
-      IModelApp.notifications.outputMessage(msgDetails);
-      if (undefined === this.uiProvider) {
-        this.uiProvider = new SampleUiItemsProvider(this.i18n);
-        UiItemsManager.register (this.uiProvider);
-      }
-      SampleTool.register(this._i18NNamespace, this.i18n);
-
-    }).catch(() => { });
+    await this._i18NNamespace!.readFinished;
+    const message: string = this.i18n.translate("dialogItemsSample:Messages.Start");
+    const msgDetails: NotifyMessageDetails = new NotifyMessageDetails(OutputMessagePriority.Info, message);
+    IModelApp.notifications.outputMessage(msgDetails);
+    if (undefined === this.uiProvider) {
+      this.uiProvider = new SampleUiItemsProvider(this.i18n);
+      UiItemsManager.register(this.uiProvider);
+    }
+    SampleTool.register(this._i18NNamespace, this.i18n);
   }
 
   /** Invoked each time this extension is loaded. */
