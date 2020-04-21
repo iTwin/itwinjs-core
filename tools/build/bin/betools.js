@@ -124,7 +124,7 @@ function docsCommmand(options) {
 
 function extractCommand(options) {
   const extractOpt = options.extractFrom ? ["--extractFrom", options.extractFrom] : [];
-  const outOpt = options.outDir ? ["--out", options.out] : [];
+  const outOpt = options.out ? ["--out", options.out] : [];
   const fileExt = options.fileExt ? ["--fileExt", options.fileExt] : [];
   const recursive = options.recursive ? ["--recursive"] : [];
   exec(["node", path.resolve(__dirname, "../scripts/extract.js"), ...extractOpt, ...outOpt, ...fileExt, ...recursive]);
