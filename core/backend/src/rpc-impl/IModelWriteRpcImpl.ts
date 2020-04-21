@@ -7,11 +7,15 @@
  */
 import { Id64, ClientRequestContext, Id64String, DbOpcode, assert, Id64Array, GuidString } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { RpcInterface, RpcManager, IModelConnectionProps, IModelRpcProps, IModelWriteRpcInterface, ThumbnailProps, ImageSourceFormat, AxisAlignedBox3dProps, CodeProps, ElementProps, IModel, RelatedElement, SubCategoryAppearance, Code } from "@bentley/imodeljs-common";
-import { BriefcaseDb, IModelDb, OpenParams } from "../IModelDb";
+import {
+  IModelConnectionProps, IModelRpcProps, IModelWriteRpcInterface, RpcInterface, RpcManager, ThumbnailProps, ImageSourceFormat, AxisAlignedBox3dProps,
+  CodeProps, ElementProps, IModel, RelatedElement, SubCategoryAppearance, Code, SyncMode,
+} from "@bentley/imodeljs-common";
 import { Range3d } from "@bentley/geometry-core";
-import { ConcurrencyControl, AuthorizedBackendRequestContext, PhysicalPartition, SubjectOwnsPartitionElements, PhysicalModel, SpatialCategory, Element } from "../imodeljs-backend";
 import { LockLevel, LockType } from "@bentley/imodelhub-client";
+import { BriefcaseDb, IModelDb } from "../IModelDb";
+import { ConcurrencyControl, AuthorizedBackendRequestContext, PhysicalPartition, SubjectOwnsPartitionElements, PhysicalModel, SpatialCategory, Element } from "../imodeljs-backend";
+import { RpcBriefcaseUtility } from "./RpcBriefcaseUtility";
 
 class EditingFunctions {
   public static async createAndInsertPartition(rqctx: AuthorizedBackendRequestContext, iModelDb: IModelDb, newModelCode: CodeProps): Promise<Id64String> {
@@ -70,10 +74,7 @@ export class IModelWriteRpcImpl extends RpcInterface implements IModelWriteRpcIn
 
   public async openForWrite(tokenProps: IModelRpcProps): Promise<IModelConnectionProps> {
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
-    const openParams: OpenParams = OpenParams.pullAndPush();
-    openParams.timeout = 1000;
-    const db = await BriefcaseDb.open(requestContext, tokenProps.contextId!, tokenProps.iModelId!, openParams);
-    return db.getConnectionProps();
+    return RpcBriefcaseUtility.openWithTimeout(requestContext, tokenProps, SyncMode.PullAndPush);
   }
 
   public async saveChanges(tokenProps: IModelRpcProps, description?: string): Promise<void> {

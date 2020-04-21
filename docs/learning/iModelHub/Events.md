@@ -4,9 +4,11 @@ iModelHub sends [IModelHubEvent]($imodelhub-client)s for operations that occur o
 
 To receive events, the user has to:
 
-1. [Subscribe to events](#creating-events-subscription) from a single iModel, specifying [types of events](#event-types) they want to receive.
-2. Get an [EventSAS]($imodelhub-client) token, that is used to authenticate to Events service. See [getting events](#getting-events).
-3. Send a request to get and delete the first event from that subscription's queue. See [getting events](#getting-events).
+- [Events](#events)
+  - [Event Types](#event-types)
+  - [Creating Events Subscription](#creating-events-subscription)
+  - [Getting events](#getting-events)
+  - [Creating Events Listener](#creating-events-listener)
 
 Instead of repeating steps 2 and 3, it's possible to [create a listener](#creating-events-listener) that continuously receives events from a subscription.
 
@@ -14,17 +16,17 @@ Instead of repeating steps 2 and 3, it's possible to [create a listener](#creati
 
 When a user [subscribes to events](#creating-events-subscription), they have to provide [EventType]($imodelhub-client)s of [IModelHubEvent]($imodelhub-client)s they want to receive. iModelHub sends these events:
 
-| Type | Description |
-|---|---|
-| [AllCodesDeletedEvent]($imodelhub-client) | All [HubCode]($imodelhub-client)s for a [Briefcase]($imodelhub-client) are deleted. |
-| [AllLocksDeletedEvent]($imodelhub-client) | All [Lock]($imodelhub-client)s for a [Briefcase]($imodelhub-client) are deleted. |
-| [BriefcaseDeletedEvent]($imodelhub-client) | A [Briefcase]($imodelhub-client) was deleted. |
-| [ChangeSetPostPushEvent]($imodelhub-client) | A [[ChangeSet]($imodelhub-client) was successfully pushed. |
-| [ChangeSetPrePushEvent]($imodelhub-client) | A [[ChangeSet]($imodelhub-client) push has started. |
-| [CodeEvent]($imodelhub-client) | One or more [HubCode]($imodelhub-client)s were updated. |
-| [IModelDeletedEvent]($imodelhub-client) | An iModel was deleted. |
-| [LockEvent]($imodelhub-client) | One or more [Lock]($imodelhub-client)s were updated. |
-| [VersionEvent]($imodelhub-client) | A new named [Version]($imodelhub-client) was created. |
+| Type                                        | Description                                                                         |
+| ------------------------------------------- | ----------------------------------------------------------------------------------- |
+| [AllCodesDeletedEvent]($imodelhub-client)   | All [HubCode]($imodelhub-client)s for a [Briefcase]($imodelhub-client) are deleted. |
+| [AllLocksDeletedEvent]($imodelhub-client)   | All [Lock]($imodelhub-client)s for a [Briefcase]($imodelhub-client) are deleted.    |
+| [BriefcaseDeletedEvent]($imodelhub-client)  | A [Briefcase]($imodelhub-client) was deleted.                                       |
+| [ChangeSetPostPushEvent]($imodelhub-client) | A [[ChangeSet]($imodelhub-client) was successfully pushed.                          |
+| [ChangeSetPrePushEvent]($imodelhub-client)  | A [[ChangeSet]($imodelhub-client) push has started.                                 |
+| [CodeEvent]($imodelhub-client)              | One or more [HubCode]($imodelhub-client)s were updated.                             |
+| [IModelDeletedEvent]($imodelhub-client)     | An iModel was deleted.                                                              |
+| [LockEvent]($imodelhub-client)              | One or more [Lock]($imodelhub-client)s were updated.                                |
+| [VersionEvent]($imodelhub-client)           | A new named [Version]($imodelhub-client) was created.                               |
 
 > [CodeEvent]($imodelhub-client) and [LockEvent]($imodelhub-client) includes every updated [HubCode]($imodelhub-client) or [Lock]($imodelhub-client) value, so it tends to be quite chatty. It's recommended to not subscribe to these events, unless they are necessary for your workflow.
 
@@ -66,7 +68,7 @@ If [EventHandler.getEvent]($imodelhub-client) is called with a timeout duration 
 
 [EventHandler.createListener]($imodelhub-client) can be used to handle repeated calls to [EventHandler.getEvent]($imodelhub-client) and [EventHandler.getSASToken]($imodelhub-client).
 
-Authentication callback example, similar to [getting access token]($docs/learning/common/AccessToken.md). [AuthorizationToken]($itwin-client) could be retrieved from credentials stored somewhere else or refreshed before it expires.
+Authentication callback example, similar to [getting access token]($docs/learning/common/AccessToken.md). [AccessToken]($itwin-client) could be retrieved from credentials stored somewhere else or refreshed before it expires.
 
 ```ts
 [[include:EventHandler.createListener.authenticate.example-code]]

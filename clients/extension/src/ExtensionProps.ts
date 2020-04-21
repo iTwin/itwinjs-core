@@ -3,6 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+/** @packageDocumentation
+ * @module ExtensionService
+ */
+
 /**
  * Contains metadata for an iModel.js Extension
  * @beta

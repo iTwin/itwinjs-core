@@ -4,6 +4,7 @@
   // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
   "version": "0.2.0",
   "configurations": [
+
     {
       "type": "node",
       "request": "attach",
@@ -246,6 +247,19 @@
         "--inspect"
       ],
       "port": 9229,
+      "protocol": "inspector",
+      "outputCapture": "std"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Run imjs-importer.   See launch.json to give command line args",
+      "program": "${workspaceFolder}/test-apps/imjs-importer/lib/byDirectory.js",
+      "cwd": "${workspaceFolder}/test-apps/imjs-importer",
+      "args": [
+        "--input=PipeConnections",
+        "--output=abc"
+      ],
       "protocol": "inspector",
       "outputCapture": "std"
     },
@@ -700,19 +714,6 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Debug CopyDependentModules",
-      "program": "${workspaceRoot}/test-apps/ui-test-app/node_modules/@bentley/webpack-tools/modules/copyDependentModules.js",
-      "cwd": "${workspaceRoot}/test-apps/ui-test-app",
-      "args": [
-        "--packageFile=./package.json",
-        "--destDir=./lib/backend/public",
-        "--type=dev"
-      ],
-      "protocol": "inspector"
-    },
-    {
-      "type": "node",
-      "request": "launch",
       "name": "⚠︝Clients Tests (Integration - Certa/Backend)",
       "cwd": "${workspaceRoot}/core/clients/",
       "program": "${workspaceRoot}/tools/certa/bin/certa.js",
@@ -794,7 +795,7 @@
       "args": [
         "--debug",
         "-r",
-        "${input:integrationTestEnvironment}",
+        "electron",
         "--grep",
         "#integration",
       ],
@@ -905,7 +906,7 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": [
         "run-script",
-        "debug:tests"
+        "test:debug"
       ],
       "protocol": "inspector",
       "outputCapture": "std",
@@ -931,7 +932,7 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": [
         "run-script",
-        "debug:tests"
+        "test:debug"
       ],
       "protocol": "inspector",
       "outputCapture": "std",

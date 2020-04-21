@@ -15,7 +15,9 @@ import { AuxCoordSystemProps } from '@bentley/imodeljs-common';
 import { AxisAlignedBox3d } from '@bentley/imodeljs-common';
 import { BackgroundMapProps } from '@bentley/imodeljs-common';
 import { BeEvent } from '@bentley/bentleyjs-core';
-import { BriefcaseRpcProps } from '@bentley/imodeljs-common';
+import { BriefcaseDownloader } from '@bentley/imodeljs-common';
+import { BriefcaseKey } from '@bentley/imodeljs-common';
+import { BriefcaseProps } from '@bentley/imodeljs-common';
 import { CalloutProps } from '@bentley/imodeljs-common';
 import { Camera } from '@bentley/imodeljs-common';
 import { CancelRequest } from '@bentley/itwin-client';
@@ -49,11 +51,14 @@ import { CreateSnapshotIModelProps } from '@bentley/imodeljs-common';
 import { DbOpcode } from '@bentley/bentleyjs-core';
 import { DbResult } from '@bentley/bentleyjs-core';
 import { DefinitionElementProps } from '@bentley/imodeljs-common';
+import { DesktopAuthorizationClientConfiguration } from '@bentley/imodeljs-common';
 import { DisplayStyle3dProps } from '@bentley/imodeljs-common';
 import { DisplayStyle3dSettings } from '@bentley/imodeljs-common';
 import { DisplayStyleProps } from '@bentley/imodeljs-common';
 import { DisplayStyleSettings } from '@bentley/imodeljs-common';
 import { DistanceExpressionProps } from '@bentley/imodeljs-common';
+import { DownloadBriefcaseOptions } from '@bentley/imodeljs-common';
+import { DownloadBriefcaseStatus } from '@bentley/imodeljs-common';
 import { EcefLocation } from '@bentley/imodeljs-common';
 import { ECSqlValueType } from '@bentley/imodeljs-common';
 import { ElementAlignedBox3d } from '@bentley/imodeljs-common';
@@ -95,7 +100,7 @@ import { IModelJsNative } from '@bentley/imodeljs-native';
 import { IModelRpcProps } from '@bentley/imodeljs-common';
 import { IModelStatus } from '@bentley/imodeljs-common';
 import { IModelVersion } from '@bentley/imodeljs-common';
-import { ImsOidcClient } from '@bentley/itwin-client';
+import { ImsAuthorizationClient } from '@bentley/itwin-client';
 import { InformationPartitionElementProps } from '@bentley/imodeljs-common';
 import { InternetConnectivityStatus } from '@bentley/imodeljs-common';
 import { LightLocationProps } from '@bentley/imodeljs-common';
@@ -118,7 +123,7 @@ import { ModelProps } from '@bentley/imodeljs-common';
 import { ModelSelectorProps } from '@bentley/imodeljs-common';
 import { NavigationBindingValue } from '@bentley/imodeljs-common';
 import { NavigationValue } from '@bentley/imodeljs-common';
-import { OidcDesktopClientConfiguration } from '@bentley/imodeljs-common';
+import { OpenBriefcaseOptions } from '@bentley/imodeljs-common';
 import { OpenMode } from '@bentley/bentleyjs-core';
 import * as os from 'os';
 import { OverriddenBy } from '@bentley/imodeljs-common';
@@ -153,6 +158,7 @@ import { StandardViewIndex } from '@bentley/geometry-core';
 import { SubCategoryAppearance } from '@bentley/imodeljs-common';
 import { SubCategoryProps } from '@bentley/imodeljs-common';
 import { SubjectProps } from '@bentley/imodeljs-common';
+import { SyncMode } from '@bentley/imodeljs-common';
 import { TextureFlags } from '@bentley/imodeljs-common';
 import { TextureMapProps } from '@bentley/imodeljs-common';
 import { TextureProps } from '@bentley/imodeljs-common';
@@ -437,35 +443,27 @@ export class BisCoreSchema extends Schema {
 export class BriefcaseDb extends IModelDb {
     // @internal (undocumented)
     get briefcase(): BriefcaseEntry;
-    // @internal
-    static cancelDownloadBriefcase(iModelToken: IModelRpcProps): boolean;
+    // @beta
+    get briefcaseKey(): BriefcaseKey;
     get changeSetId(): string;
     set changeSetId(csId: string);
-    close(requestContext: AuthorizedClientRequestContext, keepBriefcase?: KeepBriefcase): Promise<void>;
-    // @internal
-    closeBriefcase(requestContext: ClientRequestContext | AuthorizedClientRequestContext, keepBriefcase?: KeepBriefcase): Promise<void>;
+    close(): void;
     // @beta
     get concurrencyControl(): ConcurrencyControl;
     get contextId(): GuidString;
-    static create(requestContext: AuthorizedClientRequestContext, contextId: string, iModelName: string, args: CreateIModelProps): Promise<BriefcaseDb>;
-    // @internal
-    static deleteBriefcase(requestContext: AuthorizedClientRequestContext, iModelToken: IModelRpcProps): Promise<void>;
-    // @internal
-    static downloadBriefcase(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: string, openParams?: OpenParams, version?: IModelVersion): Promise<IModelRpcProps>;
     // @internal
     get eventSink(): EventSink | undefined;
     // @internal
     static findByKey(key: string): BriefcaseDb;
-    static finishDownloadBriefcase(requestContext: AuthorizedClientRequestContext, iModelToken: IModelRpcProps): Promise<void>;
+    // @internal
+    get isPushEnabled(): boolean;
     readonly onBeforeClose: BeEvent<() => void>;
     readonly onChangesetApplied: BeEvent<() => void>;
-    static readonly onCreate: BeEvent<(_requestContext: AuthorizedClientRequestContext, _contextId: string, _args: CreateIModelProps) => void>;
     static readonly onCreated: BeEvent<(_imodelDb: BriefcaseDb) => void>;
-    static readonly onOpen: BeEvent<(_requestContext: AuthorizedClientRequestContext, _contextId: string, _iModelId: string, _openParams: OpenParams, _version: IModelVersion) => void>;
+    static readonly onOpen: BeEvent<(_requestContext: AuthorizedClientRequestContext | ClientRequestContext, _briefcaseProps: BriefcaseProps) => void>;
     static readonly onOpened: BeEvent<(_requestContext: AuthorizedClientRequestContext | ClientRequestContext, _imodelDb: BriefcaseDb) => void>;
-    static open(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: string, openParams?: OpenParams, version?: IModelVersion): Promise<BriefcaseDb>;
-    // @internal
-    static openBriefcase(requestContext: AuthorizedClientRequestContext | ClientRequestContext, iModelToken: IModelRpcProps): Promise<BriefcaseDb>;
+    // @beta
+    static open(requestContext: AuthorizedClientRequestContext | ClientRequestContext, briefcaseKey: BriefcaseKey, openOptions?: OpenBriefcaseOptions): Promise<BriefcaseDb>;
     // @beta
     pullAndMergeChanges(requestContext: AuthorizedClientRequestContext, version?: IModelVersion): Promise<void>;
     // @beta
@@ -474,32 +472,35 @@ export class BriefcaseDb extends IModelDb {
     reinstateChanges(requestContext: AuthorizedClientRequestContext, version?: IModelVersion): Promise<void>;
     // @beta
     reverseChanges(requestContext: AuthorizedClientRequestContext, version?: IModelVersion): Promise<void>;
-    // @internal
-    static startDownloadBriefcase(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: string, openParams?: OpenParams, version?: IModelVersion): Promise<IModelRpcProps>;
+    saveChanges(description?: string): void;
+    // @beta
+    readonly syncMode: SyncMode;
     // @internal
     static tryFindByKey(key: string): BriefcaseDb | undefined;
 }
 
 // @internal
 export class BriefcaseEntry {
-    constructor(contextId: GuidString, iModelId: GuidString, targetChangeSetId: GuidString, pathname: string, openParams: OpenParams, briefcaseId: BriefcaseId);
+    constructor(contextId: GuidString, iModelId: GuidString, targetChangeSetId: GuidString, pathname: string, syncMode: SyncMode, openMode: OpenMode, briefcaseId: BriefcaseId);
     briefcaseId: BriefcaseId;
     cancelDownloadRequest: CancelRequest;
     conflictError?: ConflictingCodesError;
-    contextId: string;
+    contextId: GuidString;
     get currentChangeSetId(): GuidString;
     get currentChangeSetIndex(): number;
     downloadProgress?: ProgressCallback;
+    downloadPromise: Promise<void>;
+    downloadStatus: DownloadBriefcaseStatus;
     fileId?: string;
+    getBriefcaseProps(): BriefcaseProps;
     getDebugInfo(): any;
-    getKey(): string;
+    getKey(): BriefcaseKey;
     get hasReversedChanges(): boolean;
     // (undocumented)
     get iModelDb(): IModelDb | undefined;
     set iModelDb(iModelDb: IModelDb | undefined);
     iModelId: GuidString;
     isOpen: boolean;
-    isPending?: Promise<void>;
     // (undocumented)
     get nativeDb(): IModelJsNative.DgnDb;
     readonly onAfterOpen: BeEvent<(_requestContext: AuthorizedClientRequestContext) => void>;
@@ -507,6 +508,7 @@ export class BriefcaseEntry {
     readonly onBeforeOpen: BeEvent<(_requestContext: AuthorizedClientRequestContext) => void>;
     readonly onBeforeVersionUpdate: BeEvent<() => void>;
     readonly onChangesetApplied: BeEvent<() => void>;
+    openMode: OpenMode;
     openParams: OpenParams;
     parentChangeSetId: GuidString;
     parentChangeSetIndex?: number;
@@ -514,45 +516,58 @@ export class BriefcaseEntry {
     reversedChangeSetId?: GuidString;
     reversedChangeSetIndex?: number;
     setNativeDb(nativeDb: IModelJsNative.DgnDb): void;
+    syncMode: SyncMode;
     targetChangeSetId: string;
     targetChangeSetIndex?: number;
-    toJson(): any;
 }
 
 // @public
 export type BriefcaseId = number;
 
-// @internal
+// @beta
 export class BriefcaseManager {
-    // (undocumented)
+    // @internal (undocumented)
     static get cacheDir(): string;
-    static close(requestContext: ClientRequestContext | AuthorizedClientRequestContext, briefcase: BriefcaseEntry, keepBriefcase: KeepBriefcase): Promise<void>;
+    // @internal
+    static close(briefcase: BriefcaseEntry): void;
+    // @internal
     static get connectClient(): ContextRegistryClient;
-    static create(requestContext: AuthorizedClientRequestContext, contextId: string, iModelName: string, args: CreateIModelProps): Promise<string>;
-    static createStandaloneChangeSet(iModelDb: IModelDb): ChangeSetToken;
-    // (undocumented)
+    static create(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelName: GuidString, args: CreateIModelProps): Promise<GuidString>;
+    static delete(requestContext: AuthorizedClientRequestContext, key: BriefcaseKey): Promise<void>;
+    // @internal (undocumented)
     static deleteAllBriefcases(requestContext: AuthorizedClientRequestContext, iModelId: GuidString): Promise<void[] | undefined>;
-    static deleteBriefcase(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseEntry): Promise<void>;
-    static download(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelId: GuidString, openParams: OpenParams, changeSetId: GuidString): Promise<BriefcaseEntry>;
+    static download(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelId: GuidString, downloadOptions: DownloadBriefcaseOptions, version?: IModelVersion, downloadProgress?: ProgressCallback): Promise<BriefcaseProps>;
+    // @internal
     static downloadChangeSets(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, fromChangeSetId: string, toChangeSetId: string): Promise<ChangeSet[]>;
-    static findBriefcaseByKey(key: string): BriefcaseEntry | undefined;
-    static getBriefcasesFromDisk(requestContext: ClientRequestContext): Promise<BriefcaseRpcProps[]>;
-    // (undocumented)
+    // @internal
+    static findBriefcaseByKey(key: BriefcaseKey): BriefcaseEntry | undefined;
+    // @internal
+    static getBriefcases(): BriefcaseProps[];
+    // @internal (undocumented)
     static getChangeCachePathName(iModelId: GuidString): string;
-    // (undocumented)
+    // @internal (undocumented)
     static getChangedElementsPathName(iModelId: GuidString): string;
-    // (undocumented)
+    // @internal (undocumented)
     static getChangeSetsPath(iModelId: GuidString): string;
+    // @internal
     static get imodelClient(): IModelClient;
+    // @internal
     static initialize(cacheRootDir: string, iModelClient?: IModelClient): void;
-    static initializeBriefcaseCacheFromDisk(requestContext: ClientRequestContext | AuthorizedClientRequestContext): Promise<void>;
+    // @internal
+    static initializeOffline(): void;
+    // @internal
     static openBriefcase(briefcase: BriefcaseEntry): void;
+    // @internal
     static pullAndMergeChanges(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseEntry, mergeToVersion?: IModelVersion): Promise<void>;
+    // @internal
     static purgeCache(requestContext: AuthorizedClientRequestContext): Promise<void>;
+    // @internal
     static pushChanges(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseEntry, description: string, relinquishCodesLocks?: boolean): Promise<void>;
-    // (undocumented)
+    // @internal (undocumented)
     static reinstateChanges(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseEntry, reinstateToVersion?: IModelVersion): Promise<void>;
-    // (undocumented)
+    // @internal
+    static requestDownload(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelId: GuidString, downloadOptions: DownloadBriefcaseOptions, version?: IModelVersion, downloadProgress?: ProgressCallback): Promise<BriefcaseDownloader>;
+    // @internal (undocumented)
     static reverseChanges(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseEntry, reverseToVersion: IModelVersion): Promise<void>;
     }
 
@@ -829,7 +844,7 @@ export class ConcurrencyControl {
     // @internal (undocumented)
     get needLocks(): boolean;
     // (undocumented)
-    onClose(_requestContext: AuthorizedClientRequestContext): Promise<void>;
+    onClose(): void;
     // (undocumented)
     onElementWrite(elementClass: typeof Element, element: ElementProps, opcode: DbOpcode): void;
     // (undocumented)
@@ -1052,6 +1067,20 @@ export class DefinitionPartition extends InformationPartitionElement {
     // @internal (undocumented)
     static get className(): string;
 }
+
+// @alpha
+export class DesktopAuthorizationClient extends ImsAuthorizationClient implements FrontendAuthorizationClient {
+    constructor(clientConfiguration: DesktopAuthorizationClientConfiguration);
+    dispose(): void;
+    getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
+    get hasExpired(): boolean;
+    get hasSignedIn(): boolean;
+    initialize(requestContext: ClientRequestContext): Promise<void>;
+    get isAuthorized(): boolean;
+    readonly onUserStateChanged: BeEvent<(token: AccessToken | undefined) => void>;
+    signIn(requestContext: ClientRequestContext): Promise<void>;
+    signOut(requestContext: ClientRequestContext): Promise<void>;
+    }
 
 // @public (undocumented)
 export class DetailCallout extends Callout {
@@ -2260,7 +2289,7 @@ export class IModelCloneContext {
 // @public
 export abstract class IModelDb extends IModel {
     // @internal
-    protected constructor(nativeDb: IModelJsNative.DgnDb, iModelToken: IModelRpcProps, openParams: OpenParams);
+    protected constructor(nativeDb: IModelJsNative.DgnDb, iModelToken: IModelRpcProps, openMode: OpenMode);
     abandonChanges(): void;
     cancelSnap(sessionId: string): void;
     // @internal
@@ -2312,15 +2341,12 @@ export abstract class IModelDb extends IModel {
     get isStandalone(): boolean;
     // @internal
     isStandaloneDb(): this is StandaloneDb;
-    // @internal
-    protected static logUsage(requestContext: AuthorizedClientRequestContext, contextId: string, iModelDb: IModelDb, startDate: Date, endDate: Date, featureId?: GuidString): Promise<void>;
     // (undocumented)
     static readonly maxLimit = 10000;
     // (undocumented)
     readonly models: IModelDb.Models;
     // @internal
     get nativeDb(): IModelJsNative.DgnDb;
-    readonly openParams: OpenParams;
     // @internal
     prepareSqliteStatement(sql: string): SqliteStatement;
     prepareStatement(sql: string): ECSqlStatement;
@@ -2497,7 +2523,7 @@ export class IModelHost {
     // @internal
     static elementEditors: Map<string, IElementEditor>;
     static getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
-    // (undocumented)
+    // @internal (undocumented)
     static get isNativeAppBackend(): boolean;
     // @internal (undocumented)
     static loadNative(region: number, dir?: string): void;
@@ -2547,9 +2573,9 @@ export class IModelHostConfiguration {
     // @internal
     eventSinkOptions: EventSinkOptions;
     imodelClient?: IModelClient;
-    // (undocumented)
+    // @internal (undocumented)
     get isDefaultBriefcaseCacheDir(): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     get isDefaultNativeAppCacheDir(): boolean;
     // @internal
     logTileLoadTimeThreshold: number;
@@ -2784,14 +2810,6 @@ export class IReferentReferencesElement extends RelatedElement {
     constructor(referencedElementId: Id64String, relClassName?: string);
     // (undocumented)
     static classFullName: string;
-}
-
-// @public
-export enum KeepBriefcase {
-    // (undocumented)
-    No = 0,
-    // (undocumented)
-    Yes = 1
 }
 
 // @public
@@ -3244,42 +3262,14 @@ export class NativeAppBackend {
     static startup(configuration?: IModelHostConfiguration): void;
 }
 
-// @alpha
-export class OidcDesktopClient extends ImsOidcClient implements FrontendAuthorizationClient {
-    constructor(clientConfiguration: OidcDesktopClientConfiguration);
-    dispose(): void;
-    getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
-    get hasExpired(): boolean;
-    get hasSignedIn(): boolean;
-    initialize(requestContext: ClientRequestContext): Promise<void>;
-    get isAuthorized(): boolean;
-    readonly onUserStateChanged: BeEvent<(token: AccessToken | undefined) => void>;
-    signIn(requestContext: ClientRequestContext): Promise<void>;
-    signOut(requestContext: ClientRequestContext): Promise<void>;
-    }
-
-// @public
+// @public @deprecated
 export class OpenParams {
     constructor(
     openMode: OpenMode,
-    syncMode?: SyncMode | undefined,
-    timeout?: number | undefined);
-    static createSnapshot(): OpenParams;
-    // @internal
-    downloadProgress?: ProgressCallback;
-    equals(other: OpenParams): boolean;
-    static fixedVersion(): OpenParams;
-    get isBriefcase(): boolean;
-    get isSnapshot(): boolean;
+    syncMode?: SyncMode | undefined);
     readonly openMode: OpenMode;
-    static openSnapshot(): OpenParams;
-    static pullAndPush(): OpenParams;
-    static pullOnly(): OpenParams;
-    // @internal
-    static standalone(openMode: OpenMode): OpenParams;
     readonly syncMode?: SyncMode | undefined;
-    timeout?: number | undefined;
-    }
+}
 
 // @public
 export class OrthographicViewDefinition extends SpatialViewDefinition {
@@ -3501,11 +3491,12 @@ export class RepositoryModel extends DefinitionModel {
 
 // @public
 export enum ReservedBriefcaseId {
-    // @beta
     CheckpointSnapshot = 0,
+    // @internal
+    FirstReserved = 16777206,
     Illegal = 4294967295,
     // @internal
-    MaxRepo = 16777216,
+    Max = 16777216,
     Snapshot = 1,
     // @internal
     Standalone = 16777214
@@ -3881,16 +3872,6 @@ export class SubjectOwnsSubjects extends ElementOwnsChildElements {
     constructor(parentId: Id64String, relClassName?: string);
     // (undocumented)
     static classFullName: string;
-}
-
-// @public
-export enum SyncMode {
-    // (undocumented)
-    FixedVersion = 1,
-    // (undocumented)
-    PullAndPush = 2,
-    // (undocumented)
-    PullOnly = 3
 }
 
 // @beta

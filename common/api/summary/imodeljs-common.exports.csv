@@ -31,7 +31,9 @@ internal;bisectTileRange3d(range: Range3d, takeUpper: boolean): void
 internal;BoundingSphere
 beta;BRepEntity
 public;BRepPrimitive
-internal;BriefcaseRpcProps 
+internal;BriefcaseDownloader
+internal;BriefcaseKey = string
+internal;BriefcaseProps 
 beta;calculateSolarAngles(date: Date, location: Cartographic):
 beta;calculateSolarDirection(date: Date, location: Cartographic): Vector3d
 beta;calculateSunriseOrSunset(date: Date, location: Cartographic, sunrise: boolean): Date
@@ -82,8 +84,9 @@ internal;CURRENT_REQUEST: unique symbol
 internal;CurrentImdlVersion
 beta;CustomAttribute
 beta;DecorationGeometryProps
-alpha;defaultOidcDesktopClientExpiryBuffer: number
+alpha;defaultDesktopAuthorizationClientExpiryBuffer: number
 public;DefinitionElementProps 
+alpha;DesktopAuthorizationClientConfiguration
 internal;class DevToolsRpcInterface 
 internal;DevToolsStatsOptions
 public;DisplayStyle3dProps 
@@ -94,6 +97,8 @@ beta;DisplayStyleSettings
 public;DisplayStyleSettingsProps
 public;DisplayStyleSubCategoryProps 
 beta;DistanceExpressionProps
+beta;DownloadBriefcaseOptions
+internal;DownloadBriefcaseStatus
 beta;DPoint2dProps = number[]
 beta;Easing:
 beta;EasingFunction = (k: number) => number
@@ -278,7 +283,6 @@ public;NpcCenter: Point3d
 public;NpcCorners: Point3d[]
 internal;OctEncodedNormal
 internal;OctEncodedNormalPair
-alpha;OidcDesktopClientConfiguration
 internal;OpenAPIContentMap
 internal;OpenAPIDocument
 internal;OpenAPIEncoding
@@ -292,6 +296,7 @@ internal;OpenAPIRequestBody
 internal;OpenAPIResponse
 internal;OpenAPIResponses
 internal;OpenAPISchema
+beta;OpenBriefcaseOptions
 internal;OPERATION: unique symbol
 alpha;OrbitGtBlobProps
 internal;OverriddenBy
@@ -345,6 +350,7 @@ public;RenderMode
 beta;RenderSchedule
 beta;class RenderTexture 
 beta;RenderTexture
+internal;RequestBriefcaseProps
 public;ResponseLike 
 public;RgbColor
 public;RgbColorProps =
@@ -426,6 +432,7 @@ public;SubCategoryAppearance
 public;SubCategoryOverride
 public;SubCategoryProps 
 public;SubjectProps 
+public;SyncMode
 beta;TerrainHeightOriginMode
 beta;TerrainProps
 beta;TerrainProviderName = "CesiumWorldTerrain"

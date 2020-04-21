@@ -9,7 +9,7 @@
 import * as React from "react";
 
 import { ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
-import { UserInfo, AccessToken } from "@bentley/itwin-client";
+import { UserInfo } from "@bentley/itwin-client";
 import { isBrowserAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { IModelApp } from "@bentley/imodeljs-frontend";
 import { getUserColor } from "@bentley/ui-core";
@@ -29,11 +29,9 @@ export class SignOutModalFrontstage implements ModalFrontstageInfo {
   private _signOut = UiFramework.translate("userProfile.signout");
   private _signOutPrompt = UiFramework.translate("userProfile.signoutprompt");
   private _userInfo: UserInfo | undefined = undefined;
-  private _handleSignOut?: () => void;
 
-  constructor(accessToken: AccessToken, onSignOut?: () => void) {
-    this._userInfo = accessToken.getUserInfo();
-    this._handleSignOut = onSignOut;
+  constructor(userInfo?: UserInfo) {
+    this._userInfo = userInfo;
   }
 
   private _getInitials(): string {
@@ -69,13 +67,9 @@ export class SignOutModalFrontstage implements ModalFrontstageInfo {
 
     // istanbul ignore next
     if (isBrowserAuthorizationClient(authorizationClient))
-      authorizationClient.signOut(new ClientRequestContext()); // tslint:disable-line:no-floating-promises
+      await authorizationClient.signOut(new ClientRequestContext());
     else
-      Logger.logInfo(UiFramework.loggerCategory(this), "IModelApp.authorizationClient must be set for signOut");
-
-    // istanbul ignore else
-    if (this._handleSignOut)
-      this._handleSignOut();
+      Logger.logError(UiFramework.loggerCategory(this), "IModelApp.authorizationClient must be set for signOut");
   }
 
   public get content(): React.ReactNode {

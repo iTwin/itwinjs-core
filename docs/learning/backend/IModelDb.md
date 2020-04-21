@@ -2,13 +2,14 @@
 
 ## Opening a local *briefcase* of an iModel managed my iModelHub
 
-The [BriefcaseDb]($backend) class provides methods for opening, closing, and accessing a [briefcase](../Glossary.md#briefcase) (i.e. a local copy of an iModel.) An instance of BriefcaseDb in memory holds a briefcase file open.
+The [BriefcaseManager]($backend) class provides a method to download a [briefcase](../Glossary.md#briefcase) (i.e. a local copy of an iModel.).
+Once downloaded, the [BriefcaseDb]($backend) class provides methods for opening, closing, and accessing the briefcase. An instance of BriefcaseDb in memory holds a briefcase file open.
 
 An IModelDb is used by a service or by the backend of an iModel.js app.
 
-Use [BriefcaseDb.open]($backend) to obtain and open an IModelDb from iModelHub.
+Use [BriefcaseManager.download]($backend) to download the briefcase, and [BriefcaseDb.open]($backend) to open the briefcase.
 
-> When acquiring a briefcase this way ([SyncMode.PullAndPush]($backend) should be specified when possible. See [briefcase id](../imodelhub/briefcases.md#briefcase-id).
+> When acquiring a briefcase this way ([SyncMode.PullAndPush]($common) should be specified when possible. See [briefcase id](../imodelhub/briefcases.md#briefcase-id).
 
 Use [BriefcaseDb.close]($backend) to close the local briefcase.
 

@@ -49,7 +49,7 @@ describe("RobotWorldRpc", () => {
 
     await setUpTest();  // tricky: do this after simulateBackendDeployment, as that function has the side effect of initializing IModelHost
 
-    NoRenderApp.startup();
+    await NoRenderApp.startup();
 
     // expose interfaces using a direct call mechanism
     TestRpcManager.initialize([SnapshotIModelRpcInterface, IModelReadRpcInterface, IModelWriteRpcInterface, RobotWorldReadRpcInterface, RobotWorldWriteRpcInterface]);
@@ -111,7 +111,7 @@ describe("RobotWorldRpc", () => {
 
     await iModel.close();
 
-    IModelApp.shutdown();
+    await IModelApp.shutdown();
 
     simulateBackendShutdown();
   });

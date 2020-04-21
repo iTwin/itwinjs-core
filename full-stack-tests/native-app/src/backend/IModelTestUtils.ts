@@ -3,11 +3,24 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Id64, Id64String } from "@bentley/bentleyjs-core";
-import { Code, ElementProps, GeometricElement3dProps, IModel, RelatedElement, CodeProps } from "@bentley/imodeljs-common";
-import { IModelDb, Element, PhysicalPartition, PhysicalModel, SubjectOwnsPartitionElements, InformationPartitionElement } from "@bentley/imodeljs-backend";
+import { Id64, Id64String, GuidString } from "@bentley/bentleyjs-core";
+import { Code, ElementProps, GeometricElement3dProps, IModel, RelatedElement, CodeProps, BriefcaseProps, SyncMode, IModelVersion } from "@bentley/imodeljs-common";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { IModelDb, Element, PhysicalPartition, PhysicalModel, SubjectOwnsPartitionElements, InformationPartitionElement, BriefcaseDb, BriefcaseManager } from "@bentley/imodeljs-backend";
 
 export class IModelTestUtils {
+  // Helper to open a briefcase db
+  public static async downloadAndOpenBriefcaseDb(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelId: GuidString, syncMode: SyncMode, version: IModelVersion = IModelVersion.latest()): Promise<BriefcaseDb> {
+    requestContext.enter();
+    const briefcaseProps: BriefcaseProps = await BriefcaseManager.download(requestContext, contextId, iModelId, { syncMode }, version);
+    requestContext.enter();
+    return BriefcaseDb.open(requestContext, briefcaseProps.key);
+  }
+
+  public static async closeAndDeleteBriefcaseDb(requestContext: AuthorizedClientRequestContext, briefcaseDb: BriefcaseDb) {
+    briefcaseDb.close();
+    await BriefcaseManager.delete(requestContext, briefcaseDb.briefcaseKey);
+  }
 
   // Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel.
   public static createAndInsertPhysicalPartition(testDb: IModelDb, newModelCode: CodeProps): Id64String {

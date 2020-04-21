@@ -10,12 +10,7 @@
  *
  * The static [[Config.App]] is used by many parts of the iModel.js library to retrieve configuration settings.
  *
- * The initial use of [[Config.App]] gathers configuration variables from 3 different locations:
- * 1. Sets 'imjs_env_is_browser' based on if the window is defined.
- * 1. Performs a GET request for a "config.json".  If found merges the files contents into the Config.
- * 1. Appends any environment variable that are prefixed with "imjs".
- *
- * > The order listed above is important because if there is any overlap, the last one to contain the variable will win.
+ * The initial use of [[Config.App]] appends any environment variable that is prefixed with "imjs".
  *
  * After the initial use of `Config.App`, all additional updates to the configuration must be performed using [[Config.App.add]] or [[Config.App.merge]].
  *
@@ -32,24 +27,9 @@ export class Config {
   private _expanded: any = {};
   private constructor() { }
 
-  /** Sets up the Config object by performing 3 steps, this order:
-   * 1. Sets 'imjs_env_is_browser' based on if the window is defined.
-   * 1. Performs a GET request for a "config.json".  If found merges the entire file.
-   * 1. Appends environment variables that are prefixed with "imjs".
+  /** Sets up the Config object by appending environment variables that are prefixed with "imjs".
    */
   private appendSystemVars() {
-    this.set("imjs_env_is_browser", Boolean(typeof window !== undefined));
-    try {
-      const configRequest: XMLHttpRequest = new XMLHttpRequest();
-      configRequest.open("GET", "config.json", false);
-      configRequest.send();
-      const configResponse: any = JSON.parse(configRequest.responseText);
-      if (typeof configResponse !== "undefined")
-        this.merge(configResponse);
-    } catch (error) {
-      // couldn't get config.
-    }
-
     // Merge system environment variables that start with "imjs"
     const imjsPrefix = /^imjs/i;
     const systemEnv = Object.keys(process.env)

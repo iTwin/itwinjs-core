@@ -5,41 +5,11 @@ ignore: true
 
 ## Update to iModel.js Build System
 
-The iModel.js 1.0 build system relied on a single package (`@bentley/webpack-tools`) to build iModel.js backends, frontends and plugins.  With the release of 2.0, there are significant improvements to the build system to help with both clarity and usability to make creating an app based on the latest technologies easier.  To aid in this, the build system is now split into 3 separate components:
+The iModel.js 1.0 build system relied on a single package (`@bentley/webpack-tools`) to build iModel.js backends, frontends and extensions. With the release of 2.0, there are significant improvements to the build system to help with both clarity and usability to enable creating an app based on the latest technologies easier. To aid in this, the build system is now split into 3 separate components:
 
 - Build of an iModel.js backend, and agent, with the `@bentley/backend-webpack-tools`
 - Webpack/bundling of an iModel.js Extension (formerly Plugin) with `@bentley/extension-webpack-tools`
-- The iModel.js frontend build system is now using Create-React-App as its base.  More details in the [iModel.js frontend build updates](#frontend-build-updates)
-
-### Frontend Build Updates
-
-Quick overview... create-react-app (CRA) is a very popular way to start writing React applications and is actually maintained by Facebook (the creators/maintainers of React).  React-scripts is the webpack/build configuration that is used by CRA and therefore most react-based applications.
-
-There are a lot of details about CRA and how it works on their website [here](https://create-react-app.dev/).  Then more information in the [README](https://dev.azure.com/bentleycs/iModelTechnologies/_git/react-scripts?path=%2FREADME-bentley.md&version=GBbentley) for the Bentley/iModel.js fork of the react-scripts and why we need/want it.
-
-Here I'd like to cover just the changes made to our current test-apps to make compatible with CRA/react-scripts.  One of the main principles of CRA is that you have a `src` folder with a `index.ts` at the root, which is the entry point of an app, and a `public` folder with a `index.html` at the root.  Everything within the `src` folder is then subject to webpacking, including all of the assets that are parsed via loader (i.e. scss, css, json, etc.), and everything in the `public` folder is expected to live at the webroot when it's deployed so it's copied into the build output appropriately.
-
-With the above in mind, the quickest/easiest migration pattern for all existing apps is,
-
-1. Move the current `index.html`, that now most likely lives within `src/frontend/index.html`, to `public/index.html`
-1. Update the `index.html` to remove the following lines,
-
-    ```html
-    <!-- check the browser to verify it is supported. -->
-    <script type="text/javascript" src="v<%= htmlWebpackPlugin.options.loaderVersion %>/checkbrowser.js"></script>
-
-    <script type="text/javascript" src="v<%= htmlWebpackPlugin.options.runtimeVersion %>/runtime.js"></script>
-    <script type="text/javascript" src="v<%= htmlWebpackPlugin.options.loaderVersion %>/IModelJsLoader.js"
-    data-imjsversions='<%= htmlWebpackPlugin.options.imjsVersions %>'></script>
-    ```
-
-   and replace it with,
-
-    ```html
-    <script type="text/javascript" src="%PUBLIC_URL%/scripts/checkbrowser.js"></script>
-    ```
-
-1. Add a `src/index.ts` file which references the current entry point of your app.  For example, if the entry point is currently, `./src/frontend/index.ts`, then the new `./src/index.ts` will be as simple as the new [ui-test-app/src/index.ts](https://dev.azure.com/bentleycs/iModelTechnologies/_git/imodeljs/pullrequest/74170?_a=files&path=%2Ftest-apps%2Fui-test-app%2Fsrc%2Findex.ts) file
+- The iModel.js frontend build system is now based on [Create-React-App](https://create-react-app.dev/). More details visit the [Build Migration Guide](./migration-guides/migratingbuildsystems.md).
 
 ## Update to Electron 8
 
@@ -188,19 +158,6 @@ function enableAndConfigureThematicDisplay(viewport: Viewport): boolean {
 ![Thematic height mode with a smooth "sea mountain" color gradient applied to surfaces](assets/ThematicDisplay_HeightSmooth.png)
 <p align="center">Thematic height mode with a smooth "sea mountain" color gradient applied to surfaces</p>
 
-## Opening iModels
-
-The API now allows opening iModels (briefcases) at the backend with a new [SyncMode.pullOnly]($backend) option. e.g.,
-```ts
-const iModel = await BriefcaseDb.open(requestContext, projectId, iModelId, OpenParams.pullOnly());
-```
-* Opening with this new option establishes a local briefcase that allows change sets to be pulled from the iModel Hub and merged in. e.g.,
-  ```ts
-  iModel.pullAndMergeChanges(requestContext, IModelVersion.latest());
-  ```
-*  Upon open a new briefcase is *acquired* from the iModel Hub and is meant for exclusive use by that user.
-* The briefcase is opened ReadWrite to allow merging of change sets even if no changes can be made to it.
-
 ## Solar Calculation APIs
 
 The solar calculation functions [calculateSolarAngles]($common), [calculateSolarDirection]($common), and [calculateSunriseOrSunset]($common) have moved from imodeljs-frontend to imodeljs-common.
@@ -212,6 +169,14 @@ Previously, the default tslint configuration reported [usage of deprecated APIs]
 ## Breaking API changes
 
 With a new major version of the iModel.js library come breaking API changes. The majority of those changes result from the removal of previously deprecated APIs. In addition, the following APIs have changed in ways that may require calling code to be adjusted:
+
+### Async startup and shutdown
+
+The following methods are now `async` and return `Promise<void>`:
+- [IModelApp.startup]($frontend)
+- [IModelApp.shutdown]($frontend)
+
+Calling code should be updated to `await` these Promises.
 
 ### iTwin client packages
 
@@ -227,21 +192,21 @@ the `imodeljs-clients` package has been split into the following packages, all o
 - `reality-data-client`
 - `usage-logging-client`
 
-### Authorization
+### Authentication and Authorization
 
+#### Removed support for SAML based authorization
 * The deprecated SAML based authentication utilities, ImsActiveSecureTokenClient and ImsDelegationSecureTokenClient have now been removed. All authentication must be done using OIDC.
+* [AccessToken]($clients) cannot hold SAML tokens anymore.
 * The deprecated OidcAgentClientV1 for SAML based authentication of agents has been removed.
 * The `IAuthorizationClient` interface has been renamed to [AuthorizationClient]($itwin-client)
 
-#### OidcBrowserClient
+#### Authorization in Browsers
 
 OIDC functionality in the browser has been overhauled to better support iModel.js Extensions that might require the user to authenticate with other services.
 
 - [IOidcFrontendClient]($clients) has been supplanted by [FrontendAuthorizationClient]($frontend-authorization-client)
   - All existing classes which previously implemented [IOidcFrontendClient]($clients), now implement [FrontendAuthorizationClient]($frontend-authorization-client)
-    - [OidcDesktopClient]($backend)
-    - [OidcDesktopClientRenderer]($frontend)
-    - [OidcIOSClient]($frontend)
+    - [DesktopAuthorizationClient]($frontend)
 - [OidcBrowserClient]($frontend) has been marked as `@deprecated` and split into the following classes:
   - [BrowserAuthorizationClient]($frontend-authorization-client)
     - implements [FrontendAuthorizationClient]($frontend-authorization-client)
@@ -286,6 +251,24 @@ For situations where a signin is delayed until after app startup, `signInPopup()
 
 Signin callbacks generated by any of the `signIn` methods can be handled easily using a single call to [BrowserAuthorizationCallbackHandler]($frontend-authorization-client)`.handleSigninCallback()`.
 
+### Authorization for Agent Applications
+The OidcAgentClient utility has been renamed to [AgentAuthorizationClient]($clients-backend) and OidcAgentClientConfiguration is now renamed to [AgentAuthorizationClientConfiguration]($clients-backend) for consistency.
+
+### Authorization for Desktop Applications
+[DesktopAuthorizationClient]($frontend) is available for authorization in Desktop Applications. This is meant for use in the renderer process. A configured instance of this class can be used to setup [IModelApp.authorizationClient]($frontend).
+
+```ts
+const authConfiguration: DesktopAuthorizationClientConfiguration = {
+  clientId: "imodeljs-electron-test",
+  redirectUri: "http://localhost:3000/signin-callback",
+  scope: "openid email profile organization imodelhub context-registry-service:read-only product-settings-service projectwise-share urlps-third-party",
+  responseType: "code",
+};
+const desktopClient = new DesktopAuthorizationClient(authConfiguration);
+await desktopClient.initialize(new ClientRequestContext());
+await desktopClient.signIn();
+```
+
 ### IModel, IModelConnection, IModelDb
 
 The properties formerly under `IModel.iModelToken` have been promoted to [IModel]($common). These renames affect [IModelConnection]($frontend) and [IModelDb]($backend):
@@ -305,20 +288,69 @@ And the following method has been renamed/refactored to *find* based on a key:
 
 ### Briefcase iModels
 
-The methods for working with Briefcase iModels (those that are synchronized with iModelHub) have been moved into a new [BriefcaseDb]($backend) class, which is a breaking change.
-The following methods have been moved from (the now abstract) [IModelDb]($backend) class:
+The methods for working with Briefcase iModels (those that are synchronized with the iModelHub) have been refactored. At the backend many of the methods have been moved from (the now abstract) [IModelDb]($backend) class to the [BriefcaseDb]($backend) class. At the frontend, the methods have been moved from (the now abstract) [IModelConnection]($frontend) class to the [RemoteBriefcaseConnection]($frontend) class. More details below -
 
-* `IModelDb.open` --> [BriefcaseDb.open]($backend)
-* `IModelDb.create` --> [BriefcaseDb.create]($backend)
-* `IModelDb.pullAndMergeChanges` --> [BriefcaseDb.pullAndMergeChanges]($backend)
-* `IModelDb.pushChanges` --> [BriefcaseDb.pushChanges]($backend)
-* `IModelDb.reverseChanges` --> [BriefcaseDb.reverseChanges]($backend)
-* `IModelDb.reinstateChanges` --> [BriefcaseDb.reinstateChanges]($backend)
-* `IModelDb.concurrencyControl` --> [BriefcaseDb.concurrencyControl]($backend)
+#### Managing Briefcases at the Backend
+* Opening an iModel from iModel Hub at the backend involves two steps - downloading a briefcase of the iModel, and then opening that briefcase. These two operations have been separated out now, and require two different API calls - await the asynchronous call to [BriefcaseManager.download]($backend) to complete the download, and open the briefcase with a synchronous call to [BriefcaseDb.open]($backend).
+  * Before change:
+    ```ts
+    const iModelDb = await IModelDb.open(requestContext, projectId, iModelId, OpenParams.fixedVersion(), IModelVersion.latest());
+    ```
+  * After change:
+    ```ts
+      const downloadOptions: DownloadOptions = {syncMode: FixedVersion};
+      const briefcaseProps: BriefcaseProps = await BriefcaseManager.download(requestContext, contextId, iModelId, downloadOptions, version);
+      requestContext.enter();
 
-Corresponding changes have been made to the frontend. The following methods have been moved from (the now abstract) [IModelConnection]($frontend) class:
+      const briefcaseDb = BriefcaseDb.open(requestContext, briefcaseProps.key);
+    ```
+* The parameter OpenParams to the open call has been removed, and instead replaced with  [OpenBriefcaseOptions]($common). The download call takes [DownloadBriefcaseOptions]($common). See above example. Also, the [SyncMode]($common) option that's part of [DownloadBriefcaseOptions]($common) has been moved from the imodeljs-backend package to imodeljs-common package. Update your imports like below -
+  ```ts
+  import {SyncMode} from "@bentley/imodeljs-common";
+  ```
+* The API now allows downloading briefcases at the backend with a new [SyncMode.PullOnly]($common) option. e.g.,
+  ```ts
+  const downloadOptions: DownloadOptions = {syncMode: FixedVersion};
+  const briefcaseProps: BriefcaseProps = await BriefcaseManager.download(requestContext, projectId, iModelId, downloadOptions);
+  requestContext.enter();
 
-* `IModelConnection.open` --> [BriefcaseConnection.open]($frontend)
+  const briefcaseDb = BriefcaseDb.open(requestContext, briefcaseProps.key);
+  ```
+  * Downloading iModels with this new option establishes a local briefcase that allows change sets to be pulled from the iModel Hub and merged in, but disallows pushes back to the iModel Hub. e.g.,
+    ```ts
+    briefcaseDb.pullAndMergeChanges(requestContext, IModelVersion.latest());
+    ```
+  *  Upon open, a new briefcase is acquired from the iModel Hub and is meant for exclusive use by that user.
+  * The briefcase is opened ReadWrite to allow merging of change sets even if no changes can be made to it.
+* [BriefcaseDb.onOpen]($backend) and [BriefcaseDb.onOpened]($backend) events pass a context that may or may not include an AccessToken. i.e., they take [AuthorizedClientRequestContext]($clients) | [ClientRequestContext]($bentleyjs-core) as a parameter instead of [AuthorizedClientRequestContext]($clients)
+
+* Removed the option to delete the briefcase on close (i.e., KeepBriefcase). Very similar to the open, it should be done in two separate steps, with the close being a synchronous operation now.
+  * Before change:
+    ```ts
+    await iModelDb.close(requestContext, KeepBriefcase.No);
+    ```
+  * After change:
+    ```
+    briefcaseDb.close();
+    await BriefcaseManager.delete(requestContext, briefcaseDb.key);
+    ```
+
+* The following methods have been moved from (the now abstract) [IModelDb]($backend) class to the [BriefcaseDb]($backend):
+  * `IModelDb.pullAndMergeChanges` --> [BriefcaseDb.pullAndMergeChanges]($backend)
+  * `IModelDb.pushChanges` --> [BriefcaseDb.pushChanges]($backend)
+  * `IModelDb.reverseChanges` --> [BriefcaseDb.reverseChanges]($backend)
+  * `IModelDb.reinstateChanges` --> [BriefcaseDb.reinstateChanges]($backend)
+  * `IModelDb.concurrencyControl` --> [BriefcaseDb.concurrencyControl]($backend)
+
+* The following methods have been moved from [IModelDb]($backend) to [BriefcaseManager]($backend)
+  * `IModelDb.create` --> [BriefcaseManager.create]($backend)
+
+#### Managing Briefcases at the Frontend
+
+Similar to the backend, at the frontend, the following method has been moved from (the now abstract) [IModelConnection]($frontend) class:
+* `IModelConnection.open` --> [RemoteBriefcaseConnection.open]($frontend)
+
+Like before this causes the briefcase to be downloaded at the backend (if necessary) before opening it.
 
 ### Snapshot iModels
 

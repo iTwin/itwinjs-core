@@ -27,7 +27,7 @@ describe("Mesh Builder Tests", () => {
   document.body.appendChild(viewDiv!);
 
   before(async () => {   // Create a ViewState to load into a Viewport
-    MockRender.App.startup();
+    await MockRender.App.startup();
     imodel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
     spatialView = await imodel.views.load("0x34") as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
@@ -35,7 +35,7 @@ describe("Mesh Builder Tests", () => {
 
   after(async () => {
     if (imodel) await imodel.close();
-    MockRender.App.shutdown();
+    await MockRender.App.shutdown();
   });
 
   it("constructor", () => {

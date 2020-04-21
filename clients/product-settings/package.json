@@ -1,6 +1,6 @@
 {
   "name": "@bentley/product-settings-client",
-  "version": "2.0.0-dev.71",
+  "version": "2.0.0-dev.74",
   "description": "iModel.js Product Settings Client",
   "main": "lib/product-settings-client.js",
   "typings": "lib/product-settings-client",
@@ -13,15 +13,15 @@
   "scripts": {
     "build": "tsc 1>&2",
     "clean": "rimraf lib .rush",
-    "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=product-settings-client",
-    "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --includes=../../generated-docs/extract --json=../../generated-docs/clients/product-settings-client/file.json --tsIndexFile=product-settings-client.ts --onlyJson %TYPEDOC_THEME%",
+    "cover": "",
+    "extract-api": "betools extract-api --entry=product-settings-client",
+    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/clients/product-settings-client/file.json --tsIndexFile=product-settings-client.ts --onlyJson",
     "lint": "tslint --project . 1>&2",
-    "webpackTests": "webpack --config ./src/test/utils/webpack.config.js 1>&2",
     "test": "",
     "test:integration": "npm run webpackTests && npm run test:integration:chrome",
-    "test:integration:chrome": "node --max-http-header-size=16000 ./node_modules/@bentley/certa/bin/certa.js -r chrome --grep \"#integration\"",
-    "test:integration:electron": "node ./node_modules/@bentley/certa/bin/certa.js -r electron --grep \"#integration\"",
-    "cover": ""
+    "test:integration:chrome": "certa -r chrome --grep \"#integration\"",
+    "test:integration:electron": "certa -r electron --grep \"#integration\"",
+    "webpackTests": "webpack --config ./src/test/utils/webpack.config.js 1>&2"
   },
   "keywords": [
     "Bentley",
@@ -35,16 +35,16 @@
   },
   "dependencies": {},
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.0.0-dev.71",
-    "@bentley/itwin-client": "^2.0.0-dev.71"
+    "@bentley/bentleyjs-core": "^2.0.0-dev.74",
+    "@bentley/itwin-client": "^2.0.0-dev.74"
   },
   "devDependencies": {
-    "@bentley/build-tools": "2.0.0-dev.71",
-    "@bentley/certa": "2.0.0-dev.71",
-    "@bentley/config-loader": "2.0.0-dev.71",
-    "@bentley/context-registry-client": "2.0.0-dev.71",
-    "@bentley/imodelhub-client": "2.0.0-dev.71",
-    "@bentley/oidc-signin-tool": "2.0.0-dev.71",
+    "@bentley/build-tools": "2.0.0-dev.74",
+    "@bentley/certa": "2.0.0-dev.74",
+    "@bentley/config-loader": "2.0.0-dev.74",
+    "@bentley/context-registry-client": "2.0.0-dev.74",
+    "@bentley/imodelhub-client": "2.0.0-dev.74",
+    "@bentley/oidc-signin-tool": "2.0.0-dev.74",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
     "@types/node": "10.14.1",

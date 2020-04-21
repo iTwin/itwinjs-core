@@ -16,7 +16,7 @@ describe("EmphasizeElements tests", () => {
   document.body.appendChild(viewDiv!);
 
   before(async () => {
-    MockRender.App.startup();
+    await MockRender.App.startup();
     imodel = await SnapshotConnection.openFile("test.bim");
     spatialView = await imodel.views.load("0x34") as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
@@ -24,7 +24,7 @@ describe("EmphasizeElements tests", () => {
 
   after(async () => {
     if (imodel) await imodel.close();
-    MockRender.App.shutdown();
+    await MockRender.App.shutdown();
   });
 
   it("Emphasize add/replace/clear", async () => {

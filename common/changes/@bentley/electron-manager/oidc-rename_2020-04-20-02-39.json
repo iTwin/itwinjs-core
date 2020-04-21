@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/electron-manager",
+      "comment": "Renamed OIDC constructs for consistency; Removed SAML support. ",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/electron-manager",
+  "email": "Ramanujam.Raman@bentley.com"
+}

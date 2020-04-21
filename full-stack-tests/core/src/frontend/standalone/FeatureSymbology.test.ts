@@ -23,7 +23,7 @@ describe("FeatureSymbology.Overrides", () => {
     viewState: SpatialViewState;
 
   before(async () => {
-    IModelApp.startup();
+    await IModelApp.startup();
     imodel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
     const viewRows: ViewDefinitionProps[] = await imodel.views.queryProps({ from: SpatialViewState.classFullName });
     assert.exists(viewRows, "Should find some views");
@@ -33,7 +33,7 @@ describe("FeatureSymbology.Overrides", () => {
   after(async () => {
     if (imodel)
       await imodel.close();
-    IModelApp.shutdown();
+    await IModelApp.shutdown();
   });
 
   it("constructor with ViewState parameter works as expected", () => {

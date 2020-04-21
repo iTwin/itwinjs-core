@@ -30,14 +30,14 @@ describe("FrontstageManager", () => {
 
     await TestUtils.initializeUiFramework();
 
-    MockRender.App.startup();
+    await MockRender.App.startup();
 
     FrontstageManager.initialize();
     FrontstageManager.clearFrontstageDefs();
   });
 
-  after(() => {
-    MockRender.App.shutdown();
+  after(async () => {
+    await MockRender.App.shutdown();
     TestUtils.terminateUiFramework();
 
     // restore the overriden property getter

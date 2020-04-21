@@ -1,6 +1,6 @@
 {
   "name": "@bentley/logger-config",
-  "version": "2.0.0-dev.71",
+  "version": "2.0.0-dev.74",
   "description": "Logger configuration",
   "main": "lib/logger-config.js",
   "typings": "lib/logger-config",
@@ -10,8 +10,8 @@
     "build": "tsc 1>&2",
     "clean": "rimraf lib .rush",
     "cover": "",
-    "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --includes=../../generated-docs/extract --json=../../generated-docs/core/logger-config/file.json --tsIndexFile=./logger-config.ts --onlyJson %TYPEDOC_THEME%",
-    "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=logger-config",
+    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/logger-config/file.json --tsIndexFile=./logger-config.ts --onlyJson",
+    "extract-api": "betools extract-api --entry=logger-config",
     "lint": "tslint --project . 1>&2",
     "test": ""
   },
@@ -29,15 +29,15 @@
     "iModel"
   ],
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.0.0-dev.71",
+    "@bentley/bentleyjs-core": "^2.0.0-dev.74",
     "bunyan": "^1.8.12",
     "bunyan-seq": "^0.2.0",
     "request": "^2.88.0",
     "request-promise": "^4.2.0"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.0.0-dev.71",
-    "@bentley/build-tools": "2.0.0-dev.71",
+    "@bentley/bentleyjs-core": "2.0.0-dev.74",
+    "@bentley/build-tools": "2.0.0-dev.74",
     "@types/bunyan": "^1.8.4",
     "@types/bunyan-seq": "^0.2.0",
     "@types/node": "10.14.1",

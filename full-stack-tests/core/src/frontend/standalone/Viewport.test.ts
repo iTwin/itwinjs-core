@@ -30,7 +30,7 @@ describe("Viewport", () => {
   const viewDiv2 = createViewDiv();
 
   before(async () => {   // Create a ViewState to load into a Viewport
-    MockRender.App.startup();
+    await MockRender.App.startup();
     imodel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
     imodel2 = await SnapshotConnection.openFile("test2.bim"); // relative path resolved by BackendTestAssetResolver
     spatialView = await imodel.views.load("0x34") as SpatialViewState;
@@ -40,7 +40,7 @@ describe("Viewport", () => {
   after(async () => {
     if (imodel) await imodel.close();
     if (imodel2) await imodel2.close();
-    MockRender.App.shutdown();
+    await MockRender.App.shutdown();
   });
 
   it("Viewport", async () => {
@@ -404,7 +404,7 @@ describe("Viewport changed events", async () => {
   document.body.appendChild(viewDiv);
 
   before(async () => {
-    MockRender.App.startup();
+    await MockRender.App.startup();
     testBim = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
     testImodel = await SnapshotConnection.openFile("testImodel.bim"); // relative path resolved by BackendTestAssetResolver
   });
@@ -416,7 +416,7 @@ describe("Viewport changed events", async () => {
     if (undefined !== testImodel)
       await testImodel.close();
 
-    MockRender.App.shutdown();
+    await MockRender.App.shutdown();
   });
 
   // Make an Id64 for testImodel which has briefcase Id=1
@@ -921,7 +921,7 @@ describe("Per-model category visibility overrides", () => {
   const usedCatIds = ["0x17", "0x2d", "0x2f", "0x31"];
 
   before(async () => {
-    MockRender.App.startup();
+    await MockRender.App.startup();
     imodel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
     spatialView = await imodel.views.load("0x34") as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
@@ -939,7 +939,7 @@ describe("Per-model category visibility overrides", () => {
     if (imodel)
       await imodel.close();
 
-    MockRender.App.shutdown();
+    await MockRender.App.shutdown();
   });
 
   it("overrides category selector", async () => {

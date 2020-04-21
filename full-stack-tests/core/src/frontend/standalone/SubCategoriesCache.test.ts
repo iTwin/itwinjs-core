@@ -22,7 +22,7 @@ describe("SubCategoriesCache", () => {
   let imodel: IModelConnection;
 
   before(async () => {
-    MockRender.App.startup();
+    await MockRender.App.startup();
     imodel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
   });
 
@@ -30,7 +30,7 @@ describe("SubCategoriesCache", () => {
     if (undefined !== imodel)
       await imodel.close();
 
-    MockRender.App.shutdown();
+    await MockRender.App.shutdown();
   });
 
   it("should not repeatedly request same categories", async () => {

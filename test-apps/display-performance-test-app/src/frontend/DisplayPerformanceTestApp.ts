@@ -11,12 +11,12 @@ import { ProjectShareClient, ProjectShareFile, ProjectShareFileQuery, ProjectSha
 import {
   BackgroundMapProps, BackgroundMapType, BentleyCloudRpcManager, DisplayStyleProps, ElectronRpcConfiguration, ElectronRpcManager, IModelReadRpcInterface,
   IModelTileRpcInterface, IModelRpcProps, MobileRpcConfiguration, MobileRpcManager, RpcConfiguration, RpcOperation, RenderMode,
-  SnapshotIModelRpcInterface, ViewDefinitionProps, OidcDesktopClientConfiguration,
+  SnapshotIModelRpcInterface, ViewDefinitionProps, DesktopAuthorizationClientConfiguration,
 } from "@bentley/imodeljs-common";
 import {
   AuthorizedFrontendRequestContext, FrontendRequestContext, DisplayStyleState, DisplayStyle3dState, IModelApp, IModelConnection, EntityState,
   PerformanceMetrics, Pixel, RenderSystem, ScreenViewport, Target, TileAdmin, Viewport, ViewRect, ViewState, IModelAppOptions,
-  FeatureOverrideProvider, FeatureSymbology, GLTimerResult, OidcDesktopClientRenderer, SnapshotConnection,
+  FeatureOverrideProvider, FeatureSymbology, GLTimerResult, DesktopAuthorizationClient, SnapshotConnection,
 } from "@bentley/imodeljs-frontend";
 import { System } from "@bentley/imodeljs-frontend/lib/webgl";
 import { I18NOptions } from "@bentley/imodeljs-i18n";
@@ -108,10 +108,10 @@ function getBrowserName(userAgent: string) {
 }
 
 class DisplayPerfTestApp {
-  public static startup(opts?: IModelAppOptions) {
+  public static async startup(opts?: IModelAppOptions): Promise<void> {
     opts = opts ? opts : {};
     opts.i18n = { urlTemplate: "locales/en/{{ns}}.json" } as I18NOptions;
-    IModelApp.startup(opts);
+    await IModelApp.startup(opts);
     IModelApp.animationInterval = undefined;
   }
 }
@@ -835,8 +835,8 @@ async function createOidcClient(requestContext: ClientRequestContext): Promise<F
   if (ElectronRpcConfiguration.isElectron) {
     const clientId = "imodeljs-electron-test";
     const redirectUri = "http://localhost:3000/signin-callback";
-    const oidcConfiguration: OidcDesktopClientConfiguration = { clientId, redirectUri, scope: scope + " offline_access" };
-    const desktopClient = new OidcDesktopClientRenderer(oidcConfiguration);
+    const oidcConfiguration: DesktopAuthorizationClientConfiguration = { clientId, redirectUri, scope: scope + " offline_access" };
+    const desktopClient = new DesktopAuthorizationClient(oidcConfiguration);
     await desktopClient.initialize(requestContext);
     return desktopClient;
   } else {
@@ -1023,7 +1023,7 @@ async function closeIModel() {
 }
 
 // Restart the IModelApp if either the TileAdmin.Props or the Render.Options has changed
-function restartIModelApp(testConfig: DefaultConfigs) {
+async function restartIModelApp(testConfig: DefaultConfigs): Promise<void> {
   const newRenderOpts: RenderSystem.Options = testConfig.renderOptions ? testConfig.renderOptions : {};
   const newTileProps: TileAdmin.Props = testConfig.tileProps ? testConfig.tileProps : {};
   if (IModelApp.initialized) {
@@ -1058,13 +1058,13 @@ function restartIModelApp(testConfig: DefaultConfigs) {
         theViewport.dispose();
         theViewport = undefined;
       }
-      IModelApp.shutdown();
+      await IModelApp.shutdown();
     }
   }
   curRenderOpts = newRenderOpts;
   curTileProps = newTileProps;
   if (!IModelApp.initialized) {
-    DisplayPerfTestApp.startup({
+    await DisplayPerfTestApp.startup({
       renderSys: testConfig.renderOptions,
       tileAdmin: TileAdmin.create(curTileProps),
     });
@@ -1219,7 +1219,7 @@ async function renderAsync(vp: ScreenViewport, numFrames: number, timings: Array
 
 async function runTest(testConfig: DefaultConfigs) {
   // Restart the IModelApp if needed
-  restartIModelApp(testConfig);
+  await restartIModelApp(testConfig);
 
   // Open and finish loading model
   const loaded = await loadIModel(testConfig);
@@ -1448,10 +1448,10 @@ async function main() {
   await DisplayPerfRpcInterface.getClient().finishCsv(renderData, testConfig.outputPath, testConfig.outputName, testConfig.csvFormat);
 
   DisplayPerfRpcInterface.getClient().finishTest(); // tslint:disable-line:no-floating-promises
-  IModelApp.shutdown();
+  await IModelApp.shutdown();
 }
 
-window.onload = () => {
+window.onload = async () => {
   // Choose RpcConfiguration based on whether we are in electron or browser
   RpcConfiguration.developmentMode = true;
   let rpcConfiguration: RpcConfiguration;
@@ -1472,7 +1472,7 @@ window.onload = () => {
 
   // ###TODO: Raman added one-time initialization logic IModelApp.startup which replaces a couple of RpcRequest-related functions.
   // Cheap hacky workaround until that's fixed.
-  DisplayPerfTestApp.startup();
+  await DisplayPerfTestApp.startup();
 
-  main(); // tslint:disable-line:no-floating-promises
+  await main();
 };

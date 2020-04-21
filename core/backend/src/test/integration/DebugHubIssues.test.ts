@@ -5,16 +5,16 @@
 import { ChangeSetApplyOption, ChangeSetStatus, GuidString, Logger, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
 import { RequestGlobalOptions } from "@bentley/itwin-client";
 import { RequestHost } from "@bentley/imodeljs-clients-backend";
-import { IModel, IModelVersion } from "@bentley/imodeljs-common";
+import { IModel, IModelVersion, SyncMode } from "@bentley/imodeljs-common";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { assert } from "chai";
 import * as path from "path";
-import { AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseManager, ChangeSetToken, OpenParams, PhysicalModel, StandaloneDb } from "../../imodeljs-backend";
+import { AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseManager, ChangeSetToken, PhysicalModel, StandaloneDb } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
 import { Version, UserInfoQuery, HubUserInfo } from "@bentley/imodelhub-client";
 
-// Useful utilities to download/upload test cases from/to the iModel Hub
+// Useful utilities to download/upload test cases from/to the iModelHub
 describe.skip("DebugHubIssues (#integration)", () => {
   let requestContext: AuthorizedBackendRequestContext;
   const iModelRootDir = "d:\\testmodels\\";
@@ -41,11 +41,11 @@ describe.skip("DebugHubIssues (#integration)", () => {
     const myProjectId = await HubUtility.queryProjectIdByName(requestContext, projectName);
     const myIModelId = await HubUtility.queryIModelIdByName(requestContext, myProjectId, iModelName);
 
-    const iModel = await BriefcaseDb.open(requestContext, myProjectId, myIModelId.toString(), OpenParams.fixedVersion());
+    const iModel = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, myProjectId, myIModelId.toString(), SyncMode.FixedVersion);
     assert.exists(iModel);
-    assert(iModel.openParams.openMode === OpenMode.Readonly);
+    assert(iModel.openMode === OpenMode.Readonly);
 
-    await iModel.close(requestContext);
+    iModel.close();
   });
 
   it.skip("should be able to dump iModel links for test files", async () => {
@@ -297,7 +297,7 @@ describe.skip("DebugHubIssues (#integration)", () => {
     const projectId = await HubUtility.queryProjectIdByName(requestContext, projectName);
     const iModelId: GuidString = await HubUtility.pushIModel(requestContext, projectId, pathname);
 
-    const iModelDb = await BriefcaseDb.open(requestContext, projectId, iModelId.toString(), OpenParams.pullAndPush(), IModelVersion.latest());
+    const iModelDb = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, projectId, iModelId.toString(), SyncMode.PullAndPush, IModelVersion.latest());
     assert(!!iModelDb);
 
     // Create and upload a dummy change set to the Hub
@@ -322,11 +322,11 @@ describe.skip("DebugHubIssues (#integration)", () => {
     const myProjectId = await HubUtility.queryProjectIdByName(requestContext, projectName);
     const myIModelId = await HubUtility.queryIModelIdByName(requestContext, myProjectId, iModelName);
 
-    const iModel = await BriefcaseDb.open(requestContext, myProjectId, myIModelId.toString(), OpenParams.fixedVersion());
+    const iModel = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, myProjectId, myIModelId.toString(), SyncMode.FixedVersion);
     assert.exists(iModel);
-    assert(iModel.openParams.openMode === OpenMode.Readonly);
+    assert(iModel.openMode === OpenMode.Readonly);
 
-    await iModel.close(requestContext);
+    iModel.close();
   });
 
   it.skip("should be able to open any iModel on the Hub", async () => {
@@ -336,11 +336,11 @@ describe.skip("DebugHubIssues (#integration)", () => {
     const myProjectId = await HubUtility.queryProjectIdByName(requestContext, projectName);
     const myIModelId = await HubUtility.queryIModelIdByName(requestContext, myProjectId, iModelName);
 
-    const iModel = await BriefcaseDb.open(requestContext, myProjectId, myIModelId.toString(), OpenParams.fixedVersion());
+    const iModel = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, myProjectId, myIModelId.toString(), SyncMode.FixedVersion);
     assert.exists(iModel);
-    assert(iModel.openParams.openMode === OpenMode.Readonly);
+    assert(iModel.openMode === OpenMode.Readonly);
 
-    await iModel.close(requestContext);
+    iModel.close();
   });
 
   it.skip("should purge the briefcase cache", async () => {

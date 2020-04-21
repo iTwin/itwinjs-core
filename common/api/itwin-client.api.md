@@ -14,8 +14,10 @@ import { HttpStatus } from '@bentley/bentleyjs-core';
 import { LogFunction } from '@bentley/bentleyjs-core';
 
 // @beta
-export class AccessToken extends Token {
+export class AccessToken {
     // (undocumented)
+    protected _expiresAt?: Date;
+    // @internal (undocumented)
     static foreignProjectAccessTokenJsonProperty: string;
     // @internal
     static fromForeignProjectAccessTokenJson(foreignJsonStr: string): AccessToken | undefined;
@@ -24,15 +26,23 @@ export class AccessToken extends Token {
     // @internal
     static fromJsonWebTokenString(jwt: string, startsAt?: Date, expiresAt?: Date, userInfo?: UserInfo): AccessToken;
     // @internal
-    static fromSamlAssertion(samlAssertion: string): AccessToken;
-    // @internal
-    static fromSamlTokenString(accessTokenStr: string, includesPrefix?: IncludePrefix): AccessToken;
-    // @internal
     static fromTokenString(tokenStr: string): AccessToken;
-    // @internal
-    get isJwt(): boolean;
+    // @internal (undocumented)
+    getExpiresAt(): Date | undefined;
+    // @internal (undocumented)
+    getStartsAt(): Date | undefined;
+    // @internal (undocumented)
+    getUserInfo(): UserInfo | undefined;
+    // (undocumented)
+    protected _jwt?: string;
+    // @internal (undocumented)
+    setUserInfo(userInfo: UserInfo): void;
+    // (undocumented)
+    protected _startsAt?: Date;
     // @internal
     toTokenString(includePrefix?: IncludePrefix): string;
+    // (undocumented)
+    protected _userInfo?: UserInfo;
 }
 
 // @beta
@@ -45,12 +55,6 @@ export interface AuthorizationClient {
     hasExpired: boolean;
     hasSignedIn: boolean;
     isAuthorized: boolean;
-}
-
-// @internal
-export class AuthorizationToken extends Token {
-    static fromSamlAssertion(samlAssertion: string): AuthorizationToken;
-    toTokenString(includePrefix?: IncludePrefix): string;
 }
 
 // @public
@@ -155,7 +159,7 @@ export function getArrayBuffer(requestContext: ClientRequestContext, url: string
 export function getJson(requestContext: ClientRequestContext, url: string): Promise<any>;
 
 // @beta (undocumented)
-export class ImsOidcClient extends Client {
+export class ImsAuthorizationClient extends Client {
     constructor();
     protected getUrlSearchKey(): string;
     // (undocumented)
@@ -311,30 +315,43 @@ export class ResponseError extends BentleyError {
     status?: number;
 }
 
-// @beta
-export abstract class Token {
+// @internal @deprecated
+export class SamlAccessToken extends SamlToken {
+    static fromJson(jsonObj: any): SamlAccessToken | undefined;
+    static fromSamlAssertion(samlAssertion: string): SamlAccessToken;
+    static fromSamlTokenString(accessTokenStr: string, includesPrefix?: IncludePrefix): SamlAccessToken;
+    static fromTokenString(tokenStr: string): SamlAccessToken;
+    toTokenString(includePrefix?: IncludePrefix): string;
+}
+
+// @internal @deprecated
+export class SamlAuthorizationToken extends SamlToken {
+    static fromSamlAssertion(samlAssertion: string): SamlAuthorizationToken;
+    toTokenString(includePrefix?: IncludePrefix): string;
+}
+
+// @internal @deprecated
+export abstract class SamlToken {
     protected constructor();
     // (undocumented)
     protected _expiresAt?: Date;
-    // @internal (undocumented)
+    // (undocumented)
     getExpiresAt(): Date | undefined;
-    // @internal (undocumented)
+    // (undocumented)
     protected getSaml(): string | undefined;
-    // @internal (undocumented)
+    // (undocumented)
     getSamlAssertion(): string | undefined;
-    // @internal (undocumented)
+    // (undocumented)
     getStartsAt(): Date | undefined;
-    // @internal (undocumented)
+    // (undocumented)
     getUserInfo(): UserInfo | undefined;
     // (undocumented)
-    protected _jwt?: string;
-    // @internal (undocumented)
     protected parseSamlAssertion(): boolean;
     // (undocumented)
     protected _saml?: string;
     // (undocumented)
     protected _samlAssertion?: string;
-    // @internal (undocumented)
+    // (undocumented)
     setUserInfo(userInfo: UserInfo): void;
     // (undocumented)
     protected _startsAt?: Date;
@@ -391,7 +408,10 @@ export class UserInfo {
         ultimateSite: string;
         usageCountryIso: string;
     } | undefined;
+    // @internal
     static fromJson(jsonObj: any): UserInfo | undefined;
+    // @internal
+    static fromTokenResponseJson(jsonObj: any): UserInfo | undefined;
     id: string;
     organization?: {
         id: string;

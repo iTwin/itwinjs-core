@@ -83,7 +83,7 @@ export class TestContext {
 
     this.initializeRpcInterfaces({ title: this.settings.Backend.name, version: this.settings.Backend.version });
 
-    NoRenderApp.startup({ applicationVersion: PACKAGE_VERSION, applicationId: this.settings.gprid });
+    await NoRenderApp.startup({ applicationVersion: PACKAGE_VERSION, applicationId: this.settings.gprid });
 
     IModelApp.authorizationClient = new BasicAuthorizationClient(this.adminUserAccessToken);
 

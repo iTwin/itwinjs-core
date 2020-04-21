@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { OpenMode } from "@bentley/bentleyjs-core";
-import { BriefcaseConnection, IModelApp } from "@bentley/imodeljs-frontend";
+import { RemoteBriefcaseConnection, IModelApp } from "@bentley/imodeljs-frontend";
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import { BasicAuthorizationClient } from "../setup/BasicAuthorizationClient";
@@ -24,7 +24,7 @@ describe("Basic Scenarios", async () => {
   });
 
   async function openIModelAndQueryPage(contextId: string, iModelId: string, openMode: OpenMode) {
-    const iModel = await BriefcaseConnection.open(contextId, iModelId, openMode);
+    const iModel = await RemoteBriefcaseConnection.open(contextId, iModelId, openMode);
     expect(iModel).to.exist;
     expect(iModel.elements).to.exist;
 

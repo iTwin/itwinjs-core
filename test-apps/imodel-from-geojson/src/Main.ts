@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
 import * as yargs from "yargs";
 import { Logger } from "@bentley/bentleyjs-core";
 import { IModelHost } from "@bentley/imodeljs-backend";

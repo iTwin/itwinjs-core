@@ -266,13 +266,13 @@ describe("TileIO (WebGL)", () => {
   let imodel: IModelConnection;
 
   before(async () => {
-    IModelApp.startup();
+    await IModelApp.startup();
     imodel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
   });
 
   after(async () => {
     if (imodel) await imodel.close();
-    IModelApp.shutdown();
+    await IModelApp.shutdown();
   });
 
   it("should read an iModel tile containing a single rectangle", async () => {
@@ -436,13 +436,13 @@ describe("TileIO (mock render)", () => {
   let imodel: IModelConnection;
 
   before(async () => {
-    MockRender.App.startup();
+    await MockRender.App.startup();
     imodel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
   });
 
   after(async () => {
     if (imodel) await imodel.close();
-    MockRender.App.shutdown();
+    await MockRender.App.shutdown();
   });
 
   it("should support canceling operation", async () => {
@@ -594,7 +594,7 @@ describe("mirukuru TileTree", () => {
 
   before(async () => {
     MockRender.App.systemFactory = () => new TestSystem();
-    MockRender.App.startup();
+    await MockRender.App.startup();
     imodel = await SnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
   });
 
@@ -613,7 +613,7 @@ describe("mirukuru TileTree", () => {
 
   after(async () => {
     if (imodel) await imodel.close();
-    MockRender.App.shutdown();
+    await MockRender.App.shutdown();
   });
 
   // mirukuru contains a model (ID 0x1C) containing a single rectangle.
@@ -837,7 +837,7 @@ describe("TileAdmin", () => {
     }
 
     if (IModelApp.initialized)
-      IModelApp.shutdown();
+      await IModelApp.shutdown();
   };
 
   after(async () => {
@@ -867,7 +867,7 @@ describe("TileAdmin", () => {
         theIModel = undefined;
       }
 
-      IModelApp.shutdown();
+      await IModelApp.shutdown();
     }
   }
 

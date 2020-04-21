@@ -122,14 +122,14 @@ describe("SavedViewLayout", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
-    MockRender.App.startup();
+    await MockRender.App.startup();
 
     // Required for SavedViewLayout
     ConfigurableUiManager.registerControl("TestViewport", TestViewportContentControl);
   });
 
-  after(() => {
-    MockRender.App.shutdown();
+  after(async () => {
+    await MockRender.App.shutdown();
     TestUtils.terminateUiFramework();
   });
 

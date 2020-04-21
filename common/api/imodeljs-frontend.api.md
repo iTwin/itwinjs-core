@@ -27,7 +27,9 @@ import { BeEvent } from '@bentley/bentleyjs-core';
 import { BentleyStatus } from '@bentley/bentleyjs-core';
 import { BeTimePoint } from '@bentley/bentleyjs-core';
 import { BeUiEvent } from '@bentley/bentleyjs-core';
-import { BriefcaseRpcProps } from '@bentley/imodeljs-common';
+import { BriefcaseDownloader } from '@bentley/imodeljs-common';
+import { BriefcaseKey } from '@bentley/imodeljs-common';
+import { BriefcaseProps } from '@bentley/imodeljs-common';
 import { ByteStream } from '@bentley/bentleyjs-core';
 import { Camera } from '@bentley/imodeljs-common';
 import { Capabilities } from '@bentley/webgl-compatibility';
@@ -48,6 +50,7 @@ import { ContentIdProvider } from '@bentley/imodeljs-common';
 import { ContextRealityModelProps } from '@bentley/imodeljs-common';
 import { ConvexClipPlaneSet } from '@bentley/geometry-core';
 import { CurvePrimitive } from '@bentley/geometry-core';
+import { DesktopAuthorizationClientConfiguration } from '@bentley/imodeljs-common';
 import { DevToolsStatsOptions } from '@bentley/imodeljs-common';
 import { DialogItem } from '@bentley/ui-abstract';
 import { DialogPropertyItem } from '@bentley/ui-abstract';
@@ -56,6 +59,7 @@ import { Dictionary } from '@bentley/bentleyjs-core';
 import { DisplayStyle3dSettings } from '@bentley/imodeljs-common';
 import { DisplayStyleProps } from '@bentley/imodeljs-common';
 import { DisplayStyleSettings } from '@bentley/imodeljs-common';
+import { DownloadBriefcaseOptions } from '@bentley/imodeljs-common';
 import { EasingFunction } from '@bentley/imodeljs-common';
 import { EcefLocationProps } from '@bentley/imodeljs-common';
 import { EdgeArgs } from '@bentley/imodeljs-common';
@@ -120,7 +124,7 @@ import { IModelConnectionProps } from '@bentley/imodeljs-common';
 import { IModelCoordinatesResponseProps } from '@bentley/imodeljs-common';
 import { IModelRpcProps } from '@bentley/imodeljs-common';
 import { IModelVersion } from '@bentley/imodeljs-common';
-import { ImsOidcClient } from '@bentley/itwin-client';
+import { ImsAuthorizationClient } from '@bentley/itwin-client';
 import { IndexedPolyface } from '@bentley/geometry-core';
 import { IndexMap } from '@bentley/bentleyjs-core';
 import { InternetConnectivityStatus } from '@bentley/imodeljs-common';
@@ -147,7 +151,6 @@ import { ModelQueryParams } from '@bentley/imodeljs-common';
 import { ModelSelectorProps } from '@bentley/imodeljs-common';
 import { MonochromeMode } from '@bentley/imodeljs-common';
 import { OctEncodedNormal } from '@bentley/imodeljs-common';
-import { OidcDesktopClientConfiguration } from '@bentley/imodeljs-common';
 import { OpenMode } from '@bentley/bentleyjs-core';
 import { OrbitGtBlobProps } from '@bentley/imodeljs-common';
 import { OrbitGtDataManager } from '@bentley/orbitgt-core';
@@ -1488,21 +1491,20 @@ export interface BlankConnectionProps {
 }
 
 // @public
-export class BriefcaseConnection extends IModelConnection {
+export abstract class BriefcaseConnection extends IModelConnection {
+    protected constructor(iModelProps: IModelConnectionProps);
     // @internal
     attachChangeCache(): Promise<void>;
     // @internal
     changeCacheAttached(): Promise<boolean>;
-    close(): Promise<void>;
     get contextId(): GuidString;
-    // @internal
-    static createForNativeAppBriefcase(iModelProps: IModelConnectionProps): BriefcaseConnection;
     // @internal
     detachChangeCache(): Promise<void>;
     get iModelId(): GuidString;
     get isClosed(): boolean;
-    static open(contextId: string, iModelId: string, openMode?: OpenMode, version?: IModelVersion): Promise<BriefcaseConnection>;
-    }
+    // (undocumented)
+    protected _isClosed?: boolean;
+}
 
 // @internal
 export interface CachedIModelCoordinatesResponseProps {
@@ -2011,6 +2013,20 @@ export interface DepthRangeNpc {
     minimum: number;
 }
 
+// @alpha
+export class DesktopAuthorizationClient implements FrontendAuthorizationClient {
+    constructor(clientConfiguration: DesktopAuthorizationClientConfiguration);
+    dispose(): void;
+    getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
+    get hasExpired(): boolean;
+    get hasSignedIn(): boolean;
+    initialize(requestContext: ClientRequestContext): Promise<void>;
+    get isAuthorized(): boolean;
+    readonly onUserStateChanged: BeEvent<(token: AccessToken | undefined) => void>;
+    signIn(requestContext: ClientRequestContext): Promise<void>;
+    signOut(requestContext: ClientRequestContext): Promise<void>;
+}
+
 // @internal
 export class DevTools {
     static connectToBackendInstance(tokenProps: IModelRpcProps): DevTools;
@@ -2112,15 +2128,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     set viewFlags(flags: ViewFlags);
     // @internal (undocumented)
     get wantShadows(): boolean;
-}
-
-// @internal
-export class DownloadBriefcaseToken {
-    constructor(iModelRpcProps: IModelRpcProps, stopProgressEvents: () => void);
-    // (undocumented)
-    iModelRpcProps: IModelRpcProps;
-    // (undocumented)
-    stopProgressEvents: () => void;
 }
 
 // @alpha
@@ -3004,7 +3011,7 @@ export enum FrontendLoggerCategory {
     FeatureToggle = "imodeljs-frontend.FeatureToggles",
     FrontendRequestContext = "imodeljs-frontend.FrontendRequestContext",
     IModelConnection = "imodeljs-frontend.IModelConnection",
-    OidcIOSClient = "imodeljs-frontend.OidcIOSClient",
+    IOSAuthorizationClient = "imodeljs-frontend.IOSAuthorizationClient",
     // (undocumented)
     Package = "imodeljs-frontend"
 }
@@ -3792,10 +3799,10 @@ export class IModelApp {
     static requestNextAnimation(): void;
     static sessionId: GuidString;
     static get settings(): SettingsAdmin;
-    static shutdown(): void;
+    static shutdown(): Promise<void>;
     // @internal (undocumented)
     static startEventLoop(): void;
-    static startup(opts?: IModelAppOptions): void;
+    static startup(opts?: IModelAppOptions): Promise<void>;
     // @internal (undocumented)
     static get tentativePoint(): TentativePoint;
     // @internal (undocumented)
@@ -3883,8 +3890,11 @@ export abstract class IModelConnection extends IModel {
     get isBriefcase(): boolean;
     isBriefcaseConnection(): this is BriefcaseConnection;
     abstract get isClosed(): boolean;
+    // @internal
+    isLocalBriefcaseConnection(): this is LocalBriefcaseConnection;
     get isOpen(): boolean;
     get isReadonly(): boolean;
+    isRemoteBriefcaseConnection(): this is RemoteBriefcaseConnection;
     get isSnapshot(): boolean;
     isSnapshotConnection(): this is SnapshotConnection;
     loadFontMap(): Promise<FontMap>;
@@ -4292,6 +4302,12 @@ export interface LoadedExtensionProps {
     basePath: string;
     // (undocumented)
     props: ExtensionProps;
+}
+
+// @internal
+export class LocalBriefcaseConnection extends BriefcaseConnection {
+    close(): Promise<void>;
+    static open(briefcaseProps: BriefcaseProps): Promise<LocalBriefcaseConnection>;
 }
 
 // @public
@@ -5150,9 +5166,9 @@ export namespace MockRender {
         // (undocumented)
         protected static createDefaultRenderSystem(): System;
         // (undocumented)
-        static shutdown(): void;
+        static shutdown(): Promise<void>;
         // (undocumented)
-        static startup(opts?: IModelAppOptions): void;
+        static startup(opts?: IModelAppOptions): Promise<void>;
         // (undocumented)
         static systemFactory: SystemFactory;
     }
@@ -5346,33 +5362,27 @@ export enum ModifyElementSource {
 // @internal
 export class NativeApp {
     // (undocumented)
-    static cancelDownloadBriefcase(requestContext: AuthorizedClientRequestContext, downloadBriefcaseToken: DownloadBriefcaseToken): Promise<boolean>;
-    // (undocumented)
     static checkInternetConnectivity(): Promise<InternetConnectivityStatus>;
     // (undocumented)
-    static closeBriefcase(requestContext: ClientRequestContext, iModelToken: IModelRpcProps): Promise<void>;
+    static closeBriefcase(briefcaseKey: BriefcaseKey): Promise<void>;
     static closeStorage(storage: Storage, deleteId: boolean): Promise<void>;
     // (undocumented)
-    static deleteBriefcase(requestContext: AuthorizedClientRequestContext, iModelToken: IModelRpcProps): Promise<void>;
-    // (undocumented)
-    static downloadBriefcase(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: string, version?: IModelVersion): Promise<IModelRpcProps>;
-    // (undocumented)
-    static finishDownloadBriefcase(requestContext: AuthorizedClientRequestContext, downloadBriefcaseToken: DownloadBriefcaseToken): Promise<void>;
-    static getBriefcases(): Promise<BriefcaseRpcProps[]>;
+    static deleteBriefcase(briefcaseKey: BriefcaseKey): Promise<void>;
+    static getBriefcases(): Promise<BriefcaseProps[]>;
     static getStorageNames(): Promise<string[]>;
     // (undocumented)
     static onInternetConnectivityChanged: BeEvent<(status: InternetConnectivityStatus) => void>;
     // (undocumented)
     static onMemoryWarning: BeEvent<() => void>;
     // (undocumented)
-    static openBriefcase(requestContext: ClientRequestContext, iModelToken: IModelRpcProps): Promise<BriefcaseConnection>;
+    static openBriefcase(briefcaseProps: BriefcaseProps): Promise<LocalBriefcaseConnection>;
     static openStorage(name: string): Promise<Storage>;
     // (undocumented)
     static overrideInternetConnectivity(status: InternetConnectivityStatus): Promise<void>;
     // (undocumented)
-    static shutdown(): Promise<void>;
+    static requestDownloadBriefcase(contextId: string, iModelId: string, downloadOptions: DownloadBriefcaseOptions, version?: IModelVersion, progress?: ProgressCallback): Promise<BriefcaseDownloader>;
     // (undocumented)
-    static startDownloadBriefcase(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: string, version?: IModelVersion, progress?: ProgressCallback): Promise<DownloadBriefcaseToken>;
+    static shutdown(): Promise<void>;
     // (undocumented)
     static startup(opts?: IModelAppOptions): Promise<void>;
     }
@@ -5396,7 +5406,7 @@ export class NativeAppLogger {
 // @internal
 export class NoRenderApp {
     // (undocumented)
-    static startup(opts?: IModelAppOptions): void;
+    static startup(opts?: IModelAppOptions): Promise<void>;
 }
 
 // @public
@@ -5554,7 +5564,7 @@ export class OffScreenViewport extends Viewport {
 }
 
 // @beta @deprecated
-export class OidcBrowserClient extends ImsOidcClient implements FrontendAuthorizationClient {
+export class OidcBrowserClient extends ImsAuthorizationClient implements FrontendAuthorizationClient {
     constructor(_configuration: OidcFrontendClientConfiguration);
     // (undocumented)
     protected _accessToken?: AccessToken;
@@ -5571,20 +5581,6 @@ export class OidcBrowserClient extends ImsOidcClient implements FrontendAuthoriz
     protected signInSilent(requestContext: ClientRequestContext): Promise<User>;
     signOut(requestContext: ClientRequestContext): Promise<void>;
     }
-
-// @alpha
-export class OidcDesktopClientRenderer implements FrontendAuthorizationClient {
-    constructor(clientConfiguration: OidcDesktopClientConfiguration);
-    dispose(): void;
-    getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
-    get hasExpired(): boolean;
-    get hasSignedIn(): boolean;
-    initialize(requestContext: ClientRequestContext): Promise<void>;
-    get isAuthorized(): boolean;
-    readonly onUserStateChanged: BeEvent<(token: AccessToken | undefined) => void>;
-    signIn(requestContext: ClientRequestContext): Promise<void>;
-    signOut(requestContext: ClientRequestContext): Promise<void>;
-}
 
 // @internal
 export class OnScreenTarget extends Target {
@@ -6272,6 +6268,12 @@ export interface RealityTileTreeParams extends TileTreeParams {
     // (undocumented)
     readonly yAxisUp?: boolean;
 }
+
+// @public
+export class RemoteBriefcaseConnection extends BriefcaseConnection {
+    close(): Promise<void>;
+    static open(contextId: string, iModelId: string, openMode?: OpenMode, version?: IModelVersion): Promise<RemoteBriefcaseConnection>;
+    }
 
 // @beta
 export abstract class RenderClipVolume implements IDisposable {

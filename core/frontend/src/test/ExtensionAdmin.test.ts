@@ -8,8 +8,8 @@ import { IModelApp } from "../IModelApp";
 import { PendingExtension } from "../extension/Extension";
 
 describe("ExtensionAdmin tests", () => {
-  beforeEach(() => IModelApp.startup());
-  afterEach(() => IModelApp.shutdown());
+  beforeEach(async () => IModelApp.startup());
+  afterEach(async () => IModelApp.shutdown());
 
   it("uses the first available ExtensionLoader", async () => {
     let calledFirst = false;

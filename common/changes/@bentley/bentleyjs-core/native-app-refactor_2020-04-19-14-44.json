@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/bentleyjs-core",
+      "comment": "Updated error text. ",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/bentleyjs-core",
+  "email": "Ramanujam.Raman@bentley.com"
+}

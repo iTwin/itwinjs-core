@@ -38,7 +38,7 @@ describe("ViewAttributes", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
-    MockRender.App.startup();
+    await MockRender.App.startup();
 
     const statusBarWidgetDef = new WidgetDef({
       classId: AppStatusBarWidgetControl,
@@ -49,8 +49,8 @@ describe("ViewAttributes", () => {
     widgetControl = statusBarWidgetDef.getWidgetControl(ConfigurableUiControlType.StatusBarWidget) as StatusBarWidgetControl;
   });
 
-  after(() => {
-    MockRender.App.shutdown();
+  after(async () => {
+    await MockRender.App.shutdown();
     TestUtils.terminateUiFramework();
   });
 

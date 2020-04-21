@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodelhub-client",
-  "version": "2.0.0-dev.71",
+  "version": "2.0.0-dev.74",
   "description": "iModel.js iModelHub Client",
   "main": "lib/imodelhub-client.js",
   "typings": "lib/imodelhub-client",
@@ -13,8 +13,8 @@
   "scripts": {
     "build": "tsc 1>&2",
     "clean": "rimraf lib .rush",
-    "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=imodelhub-client",
-    "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --includes=../../generated-docs/extract --json=../../generated-docs/clients/imodelhub-client/file.json --tsIndexFile=imodelhub-client.ts --onlyJson %TYPEDOC_THEME%",
+    "extract-api": "betools extract-api --entry=imodelhub-client",
+    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/clients/imodelhub-client/file.json --tsIndexFile=imodelhub-client.ts --onlyJson",
     "lint": "tslint --project . 1>&2",
     "test": "",
     "test:integration": "",
@@ -32,18 +32,18 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "@bentley/context-registry-client": "2.0.0-dev.71",
+    "@bentley/context-registry-client": "2.0.0-dev.74",
     "deep-assign": "^2.0.0",
     "js-base64": "^2.4.5"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.0.0-dev.71",
-    "@bentley/itwin-client": "^2.0.0-dev.71"
+    "@bentley/bentleyjs-core": "^2.0.0-dev.74",
+    "@bentley/itwin-client": "^2.0.0-dev.74"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.0.0-dev.71",
-    "@bentley/build-tools": "2.0.0-dev.71",
-    "@bentley/itwin-client": "2.0.0-dev.71",
+    "@bentley/bentleyjs-core": "2.0.0-dev.74",
+    "@bentley/build-tools": "2.0.0-dev.74",
+    "@bentley/itwin-client": "2.0.0-dev.74",
     "@types/deep-assign": "^0.1.0",
     "@types/js-base64": "^2.3.1",
     "@types/node": "10.14.1",

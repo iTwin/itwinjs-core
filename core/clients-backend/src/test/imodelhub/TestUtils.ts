@@ -116,7 +116,6 @@ function removeFileUrlExpirationTime(url?: string) {
 export class MockAccessToken extends AccessToken {
   public constructor() {
     super();
-    this._samlAssertion = "";
   }
 
   public getUserInfo(): UserInfo | undefined {

@@ -7,16 +7,16 @@ import * as chai from "chai";
 const assert = chai.assert;
 
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
-import { OidcDesktopClient, IModelHost } from "@bentley/imodeljs-backend";
+import { DesktopAuthorizationClient, IModelHost } from "@bentley/imodeljs-backend";
 import { signIn } from "../signIn";
 
 describe.skip("ExtensionClient CLI (#integration)", () => {
   it("gets token", async () => {
     IModelHost.startup();
 
-    // Initialize an OidcDesktopClient to delete refresh token from global store, then dispose it.
+    // Initialize an DesktopAuthorizationClient to delete refresh token from global store, then dispose it.
     const requestContext = new ClientRequestContext();
-    const client = new OidcDesktopClient({
+    const client = new DesktopAuthorizationClient({
       clientId: "imodeljs-extension-publisher",
       redirectUri: "",
       scope: "",

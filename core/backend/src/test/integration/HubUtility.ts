@@ -10,7 +10,7 @@ import { BriefcaseManager, ChangeSetToken, IModelDb, IModelJsFs, ReservedBriefca
 import { Briefcase as HubBriefcase, BriefcaseQuery, ChangeSet, ChangeSetQuery, ChangesType, HubIModel, IModelHubClient, IModelQuery, Version, VersionQuery } from "@bentley/imodelhub-client";
 import { Project } from "@bentley/context-registry-client";
 
-/** Utility to work with the iModel Hub */
+/** Utility to work with the iModelHub */
 export class HubUtility {
 
   public static logCategory = "HubUtility";

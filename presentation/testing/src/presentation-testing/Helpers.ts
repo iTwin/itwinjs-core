@@ -27,7 +27,7 @@ import {
   PresentationManagerProps as PresentationFrontendProps,
 } from "@bentley/presentation-frontend";
 
-import { OidcAgentClientConfiguration, OidcAgentClient } from "@bentley/imodeljs-clients-backend";
+import { AgentAuthorizationClientConfiguration, AgentAuthorizationClient } from "@bentley/imodeljs-clients-backend";
 
 function initializeRpcInterfaces(interfaces: RpcInterfaceDefinition[]) {
   const config = class extends RpcDefaultConfiguration {
@@ -56,7 +56,7 @@ export interface PresentationTestingInitProps {
   /** Properties for frontend initialization */
   frontendProps?: PresentationFrontendProps;
   /** IModelApp implementation */
-  frontendApp?: { startup: (opts?: IModelAppOptions) => void };
+  frontendApp?: { startup: (opts?: IModelAppOptions) => Promise<void> };
   /** Whether to use authorization client */
   useClientServices?: boolean;
 }
@@ -91,16 +91,16 @@ export const initialize = async (props?: PresentationTestingInitProps) => {
   if (!props.frontendApp)
     props.frontendApp = NoRenderApp;
   if (props.useClientServices) {
-    const agentConfiguration: OidcAgentClientConfiguration = {
+    const agentConfiguration: AgentAuthorizationClientConfiguration = {
       clientId: Config.App.getString("imjs_agent_test_client_id"),
       clientSecret: Config.App.getString("imjs_agent_test_client_secret"),
       scope: "imodelhub rbac-user:external-client reality-data:read urlps-third-party context-registry-service:read-only imodeljs-backend-2686 product-settings-service",
     };
-    const authorizationClient = new OidcAgentClient(agentConfiguration);
+    const authorizationClient = new AgentAuthorizationClient(agentConfiguration);
     await authorizationClient.getAccessToken();
-    props.frontendApp.startup({ authorizationClient });
+    await props.frontendApp.startup({ authorizationClient });
   } else {
-    props.frontendApp.startup();
+    await props.frontendApp.startup();
   }
   const defaultFrontendProps: PresentationFrontendProps = {
     activeLocale: IModelApp.i18n.languageList()[0],

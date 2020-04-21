@@ -556,7 +556,7 @@ export class IModelsHandler {
       throw IModelHubClientError.invalidArgument("extent");
   }
 
-  /** Create an iModel from given seed file. In most cases [BriefcaseDb.create]($backend) should be used instead. See [iModel creation]($docs/learning/iModelHub/iModels/CreateiModel.md).
+  /** Create an iModel from given seed file. See [iModel creation]($docs/learning/iModelHub/iModels/CreateiModel.md).
    * This method does not work on browsers. If iModel creation fails before finishing file upload, partially created iModel is deleted. This method is not supported in iModelBank.
    * @param requestContext The client request context.
    * @param contextId Id for the iModel's context. For iModelHub it should be the id of the connect context ([[Project]] or [[Asset]]).
@@ -732,7 +732,7 @@ export class IModelHandler {
   }
 
   /**
-   * Create an iModel from given seed file. In most cases [BriefcaseDb.create]($backend) should be used instead. See [iModel creation]($docs/learning/iModelHub/iModels/CreateiModel.md).
+   * Create an iModel from given seed file. In most cases [BriefcaseManager.create]($backend) should be used instead. See [iModel creation]($docs/learning/iModelHub/iModels/CreateiModel.md).
    *
    * This method does not work on browsers. If iModel creation fails before finishing file upload, partially created iModel is deleted. This method is not supported in iModelBank.
    * @param requestContext The client request context.

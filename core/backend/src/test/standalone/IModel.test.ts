@@ -1707,64 +1707,6 @@ describe("iModel", () => {
     autoPush.cancel();
   });
 
-  it.skip("ImodelJsTest.MeasureInsertPerformance", () => {
-
-    const seedFileName = IModelTestUtils.resolveAssetFile("DgnPlatformSeedManager_OneSpatialModel10.bim");
-    const testFileName = IModelTestUtils.prepareOutputFile("IModel", "ImodelJsTest_MeasureInsertPerformance.bim");
-    const ifperfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
-
-    // tslint:disable-next-line:no-console
-    console.time("ImodelJsTest.MeasureInsertPerformance");
-
-    // TODO: Look up model by code (i.e., codevalue of a child of root subject, where child has a PhysicalPartition)
-    // const physicalPartitionCode: Code = PhysicalPartition::CreateCode(*m_db->Elements().GetRootSubject(), "DefaultModel");
-    // const modelId: Id64String = ifperfimodel.models.querySubModelId(physicalPartitionCode);
-    const modelId = Id64.fromString("0X11");
-
-    const defaultCategoryId: Id64String | undefined = SpatialCategory.queryCategoryIdByName(ifperfimodel, IModel.dictionaryId, "DefaultCategory");
-    assert.isFalse(undefined === defaultCategoryId);
-
-    const elementCount = 10000;
-    for (let i = 0; i < elementCount; ++i) {
-      const elementProps = { classFullName: "DgnPlatformTest:ImodelJsTestElement", model: modelId, id: Id64.invalid, code: Code.createEmpty(), category: defaultCategoryId };
-      const element: Element = ifperfimodel.elements.createElement(elementProps);
-
-      element.asAny.integerProperty1 = i;
-      element.asAny.integerProperty2 = i;
-      element.asAny.integerProperty3 = i;
-      element.asAny.integerProperty4 = i;
-      element.asAny.doubleProperty1 = i;
-      element.asAny.doubleProperty2 = i;
-      element.asAny.doubleProperty3 = i;
-      element.asAny.doubleProperty4 = i;
-      element.asAny.b = (0 === (i % 100));
-      const pt: Point3d = new Point3d(i, 0, 0);
-      element.asAny.pointProperty1 = pt;
-      element.asAny.pointProperty2 = pt;
-      element.asAny.pointProperty3 = pt;
-      element.asAny.pointProperty4 = pt;
-      // const dtUtc: Date = new Date("2013-09-15 12:05:39Z");    // Dates are so expensive to parse in native code that this skews the performance results
-      // element.dtUtc = dtUtc;
-
-      const insertedElemId = ifperfimodel.elements.insertElement(element);
-      assert.isTrue(Id64.isValidId64(insertedElemId), "insert worked");
-      if (0 === (i % 100))
-        ifperfimodel.saveChanges();
-    }
-
-    ifperfimodel.saveChanges();
-
-    ifperfimodel.withPreparedStatement("select count(*) as [count] from DgnPlatformTest.ImodelJsTestElement", (stmt: ECSqlStatement) => {
-      assert.equal(DbResult.BE_SQLITE_ROW, stmt.step());
-      const row = stmt.getRow();
-      assert.equal(row.count, elementCount);
-    });
-
-    // tslint:disable-next-line:no-console
-    console.timeEnd("ImodelJsTest.MeasureInsertPerformance");
-
-  });
-
   function hasClassView(db: IModelDb, name: string): boolean {
     try {
       return db.withPreparedSqliteStatement(`SELECT ECInstanceId FROM [${name}]`, (): boolean => true);

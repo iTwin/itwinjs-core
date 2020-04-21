@@ -8,8 +8,99 @@
 
 import { RpcInterface } from "../RpcInterface";
 import { RpcManager } from "../RpcManager";
-import { IModelRpcProps, IModelProps } from "../IModel";
-import { LogLevel } from "@bentley/bentleyjs-core";
+import { IModelProps, IModelRpcProps } from "../IModel";
+import { LogLevel, OpenMode, GuidString } from "@bentley/bentleyjs-core";
+
+/**
+ * Status of downloading a briefcase
+ * @internal
+ */
+export enum DownloadBriefcaseStatus {
+  NotStarted,
+  Initializing,
+  DownloadingCheckpoint,
+  DownloadingChangeSets,
+  ApplyingChangeSets,
+  Complete,
+  Error,
+}
+
+/** Operations allowed when synchronizing changes between the Briefcase and the iModelHub
+ * @public
+ */
+export enum SyncMode { FixedVersion = 1, PullAndPush = 2, PullOnly = 3 }
+
+/**
+ * Key to locate a briefcase
+ * @internal
+ */
+export type BriefcaseKey = string;
+
+/**
+ * Options to download the briefcase
+ * @beta
+ */
+export interface DownloadBriefcaseOptions {
+  /** This setting defines the operations allowed when synchronizing changes between the briefcase and iModelHub */
+  syncMode: SyncMode;
+}
+
+/**
+ * Options to open the briefcase
+ * @beta
+ */
+export interface OpenBriefcaseOptions {
+  /** Limit the opened briefcase for Readonly operations by establishing a Readonly connection with the Db */
+  openAsReadOnly?: boolean;
+}
+
+/**
+ * Properties required to request download of a briefcase
+ * @internal
+ */
+export interface RequestBriefcaseProps {
+  /** Context (Project or Asset) that the iModel belongs to */
+  readonly contextId: GuidString;
+
+  /** Id of the iModel */
+  readonly iModelId: GuidString;
+
+  /** Id of the change set */
+  readonly changeSetId: GuidString;
+}
+
+/**
+ * Properties of a briefcase
+ * @internal
+ */
+export interface BriefcaseProps extends RequestBriefcaseProps, DownloadBriefcaseOptions {
+  /** Key to locate the briefcase in the disk cache */
+  readonly key: BriefcaseKey;
+
+  /** Mode used to open the briefcase */
+  openMode: OpenMode;
+
+  /** Status of downloading a briefcase */
+  downloadStatus: DownloadBriefcaseStatus;
+
+  /** File size of the briefcase on disk - only set for briefcases that are completely downloaded */
+  fileSize?: number;
+}
+
+/**
+ * Manages the download of a briefcase
+ * @internal
+ */
+export interface BriefcaseDownloader {
+  /** Properties of the briefcase that's being downloaded */
+  briefcaseProps: BriefcaseProps;
+
+  /** Promise that resolves when the download completes. await this to complete the download */
+  downloadPromise: Promise<void>;
+
+  /** Request cancellation of the download */
+  requestCancel: () => Promise<boolean>;
+}
 
 /**
  * Type of value for storage values
@@ -38,14 +129,6 @@ export namespace Events {
   }
 }
 
-/**
- * Briefcase props
- * @internal
- */
-export interface BriefcaseRpcProps extends IModelRpcProps {
-  fileSize?: number;
-}
-
 /** Identifies a list of tile content Ids belonging to a single tile tree.
  * @internal
  */
@@ -68,6 +151,7 @@ export enum OverriddenBy {
   Browser,
   User,
 }
+
 /** NativeAppRpcInterface supplies Rpc functionality specific to native apps.
  * A "native app" is an iModel.js application in which a one-to-one relationship exists between the frontend and backend process. Both processes execute on the same device, which can
  * enable offline workflows. Such an app can target a specific platform - e.g., Electron, iOS, Android.
@@ -82,7 +166,7 @@ export abstract class NativeAppRpcInterface extends RpcInterface {
   public static readonly interfaceName = "NativeAppRpcInterface";
 
   /** The version of the interface. */
-  public static interfaceVersion = "0.1.5";
+  public static interfaceVersion = "0.2.0";
 
   /*===========================================================================================
       NOTE: Any add/remove/change to the methods below requires an update of the interface version.
@@ -117,58 +201,52 @@ export abstract class NativeAppRpcInterface extends RpcInterface {
   public async cancelTileContentRequests(_iModelToken: IModelRpcProps, _contentIds: TileTreeContentIds[]): Promise<void> { return this.forward(arguments); }
 
   /**
-   * Downloads briefcase only. The call require internet connection and must have valid token.
-   * @param _iModelToken IModel context information.
-   * @returns IModelRpcProps which allow to create IModelConnection.
-   */
-  public async downloadBriefcase(_iModelToken: IModelRpcProps): Promise<IModelRpcProps> { return this.forward(arguments); }
-
-  /**
-   * Starts download of a briefcase. The call require internet connection and must have valid token.
-   * @param _iModelToken IModel context information.
+   * Request download of a briefcase. The call require internet connection and must have valid token.
+   * @param _requestProps Properties required to locate the iModel and download it as a briefcase
+   * @param _downloadOptions Options to affect the download of the briefcase
    * @param _reportProgress Report progress to frontend
-   * @returns IModelRpcProps which allow to create IModelConnection.
+   * @returns BriefcaseProps The properties of the briefcase to be downloaded
    */
-  public async startDownloadBriefcase(_iModelToken: IModelRpcProps, _reportProgress: boolean): Promise<IModelRpcProps> { return this.forward(arguments); }
+  public async requestDownloadBriefcase(_requestProps: RequestBriefcaseProps, _downloadOptions: DownloadBriefcaseOptions, _reportProgress: boolean): Promise<BriefcaseProps> { return this.forward(arguments); }
 
   /**
    * Finishes download of a briefcase. The call require internet connection and must have valid token.
-   * @param _iModelToken IModel context information.
-   * @returns IModelRpcProps which allow to create IModelConnection.
+   * @param _key Key to locate the briefcase in the disk cache
    */
-  public async finishDownloadBriefcase(_iModelToken: IModelRpcProps): Promise<void> { return this.forward(arguments); }
+  public async downloadRequestCompleted(_key: BriefcaseKey): Promise<void> { return this.forward(arguments); }
 
   /**
-   * Cancels download of a briefcase. The call require internet connection and must have valid token.
-   * @param _iModelToken IModel context information.
-   * @returns IModelRpcProps which allow to create IModelConnection.
+   * Cancels the previously requested download of a briefcase
+   * @param _key Key to locate the briefcase in the disk cache
+   * @returns true if the cancel request was acknowledged. false otherwise
    */
-  public async cancelDownloadBriefcase(_iModelToken: IModelRpcProps): Promise<boolean> { return this.forward(arguments); }
+  public async requestCancelDownloadBriefcase(_key: BriefcaseKey): Promise<boolean> { return this.forward(arguments); }
 
   /**
-   * Opens briefcase. This api can be called offline. It opens the briefcase on disk.
-   * @param _iModelToken IModel context information.
+   * Opens the briefcase on disk - this api can be called offline
+   * @param _key Key to locate the briefcase in the disk cache
+   * @param _openOptions Options to open the briefcase
    * @returns IModelRpcProps which allow to create IModelConnection.
    */
-  public async openBriefcase(_iModelToken: IModelRpcProps): Promise<IModelProps> { return this.forward(arguments); }
+  public async openBriefcase(_key: BriefcaseKey, _openOptions?: OpenBriefcaseOptions): Promise<IModelProps> { return this.forward(arguments); }
 
   /**
-   * Opens briefcase. This api can be called offline. It closes the briefcase on disk.
-   * @param _iModelToken Token that identifies the briefcase
+   * Closes the briefcase on disk - this api can be called offline
+   * @param _key Key to locate the briefcase in the disk cache
    */
-  public async closeBriefcase(_iModelToken: IModelRpcProps): Promise<boolean> { return this.forward(arguments); }
+  public async closeBriefcase(_key: BriefcaseKey): Promise<void> { return this.forward(arguments); }
 
   /**
    * Deletes a previously downloaded briefcase. The briefcase must be closed.
-   * @param _iModelToken Token that identifies the briefcase.
+   * @param _key Key to locate the briefcase in the disk cache
    */
-  public async deleteBriefcase(_iModelToken: IModelRpcProps): Promise<void> { return this.forward(arguments); }
+  public async deleteBriefcase(_key: BriefcaseKey): Promise<void> { return this.forward(arguments); }
 
   /**
-   * Gets briefcases properties that are available cache.
+   * Gets all briefcases that were previously requested to be downloaded, or were completely downloaded
    * @returns list of briefcases.
    */
-  public async getBriefcases(): Promise<BriefcaseRpcProps[]> { return this.forward(arguments); }
+  public async getBriefcases(): Promise<BriefcaseProps[]> { return this.forward(arguments); }
 
   // Storage Manager Persistence Api
   public async storageMgrOpen(_storageId: string): Promise<string> { return this.forward(arguments); }

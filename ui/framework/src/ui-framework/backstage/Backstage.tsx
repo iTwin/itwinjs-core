@@ -9,7 +9,7 @@
 import * as React from "react";
 import { UiEvent, CommonProps, IconSpec } from "@bentley/ui-core";
 import { Backstage as NZ_Backstage } from "@bentley/ui-ninezone";
-import { AccessToken } from "@bentley/itwin-client";
+import { UserInfo } from "@bentley/itwin-client";
 import { SafeAreaContext } from "../safearea/SafeAreaContext";
 import { UserProfileBackstageItem } from "./UserProfile";
 import { UiFramework } from "../UiFramework";
@@ -33,7 +33,7 @@ export class BackstageEvent extends UiEvent<BackstageEventArgs> { } // tslint:di
  * @public @deprecated use BackstageComposer.
  */
 export interface BackstageProps extends CommonProps {
-  accessToken?: AccessToken;
+  userInfo?: UserInfo;
   isVisible?: boolean;
   showOverlay?: boolean;
   onClose?: () => void;
@@ -127,8 +127,8 @@ export class Backstage extends React.Component<BackstageProps, BackstageState> {
 
     if (this.props.header)
       header = this.props.header;
-    else if (this.props.accessToken !== undefined)
-      header = <UserProfileBackstageItem accessToken={this.props.accessToken} />;
+    else if (this.props.userInfo !== undefined)
+      header = <UserProfileBackstageItem userInfo={this.props.userInfo} />;
 
     return (
       <SafeAreaContext.Consumer>

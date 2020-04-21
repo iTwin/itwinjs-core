@@ -18,12 +18,12 @@ class MySystem extends MockRender.System {
 }
 
 describe("MockRender", () => {
-  before(() => {
+  before(async () => {
     MockRender.App.systemFactory = () => new MySystem();
-    MockRender.App.startup();
+    await MockRender.App.startup();
   });
 
-  after(() => MockRender.App.shutdown());
+  after(async () => MockRender.App.shutdown());
 
   it("Should override mock render system", () => {
     expect(IModelApp.hasRenderSystem).to.be.true;

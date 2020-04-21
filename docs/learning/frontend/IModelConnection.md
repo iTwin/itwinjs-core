@@ -10,8 +10,8 @@ The following subclasses of [IModelConnection]($frontend) are used depending on 
 - [SnapshotConnection]($frontend)
 - [BlankConnection]($frontend)
 
-To open a [BriefcaseConnection]($frontend), you must obtain an [AccessToken](../common/AccessToken.md). [BriefcaseConnection.open]($frontend) takes that as an argument.
+[BriefcaseConnection]($frontend) is the abstract base class that is the parent for classes that are intended for use with briefcases of iModels that are downloaded from the iModel Hub. The sub class [RemoteBriefcaseConnection]($frontend) is intended for use in web applications.
 
-A [SnapshotConnection]($frontend) is intended for desktop and mobile (aka *native*) applications and should not be used for web applications.
+A [SnapshotConnection]($frontend) is intended for desktop and mobile (aka *native*) applications for opening snap shot files and should not be used for web applications.
 
 You can create a [Blank IModelConnection](./BlankConnection.md) to show Views of information from sources other than an iModel.

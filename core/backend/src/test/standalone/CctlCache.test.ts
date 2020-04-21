@@ -3,10 +3,10 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { LockLevel, LockType } from "@bentley/imodelhub-client";
-import { CodeProps } from "@bentley/imodeljs-common";
+import { CodeProps, SyncMode } from "@bentley/imodeljs-common";
 import { assert } from "chai";
 import * as path from "path";
-import { ConcurrencyControl, IModelJsFs, SyncMode } from "../../imodeljs-backend";
+import { ConcurrencyControl, IModelJsFs } from "../../imodeljs-backend";
 import { KnownTestLocations } from "../KnownTestLocations";
 
 describe("ConcurrencyControl.StateCache", () => {
@@ -24,9 +24,8 @@ describe("ConcurrencyControl.StateCache", () => {
         briefcase: {
           pathname: mockBriefcasePathname,
         },
-        openParams: {
-          syncMode: SyncMode.PullAndPush,
-        },
+        syncMode: SyncMode.PullAndPush,
+        isPushEnabled: true,
       },
     };
 

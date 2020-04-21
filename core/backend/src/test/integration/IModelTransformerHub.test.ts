@@ -4,15 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 import { DbResult, Guid, GuidString, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { Point3d } from "@bentley/geometry-core";
-import { ColorDef, IModel, IModelVersion } from "@bentley/imodeljs-common";
+import { ColorDef, IModel, IModelVersion, SyncMode } from "@bentley/imodeljs-common";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { assert } from "chai";
 import * as path from "path";
 import * as semver from "semver";
 import {
-  AuthorizedBackendRequestContext, BackendLoggerCategory, BisCoreSchema, BriefcaseDb, BriefcaseManager, ConcurrencyControl,
+  AuthorizedBackendRequestContext, BackendLoggerCategory, BisCoreSchema, BriefcaseManager, ConcurrencyControl,
   ECSqlStatement, Element, ElementRefersToElements, ExternalSourceAspect, GenericSchema, IModelDb, IModelExporter, IModelJsFs, IModelTransformer,
-  KeepBriefcase, NativeLoggerCategory, OpenParams, SnapshotDb,
+  NativeLoggerCategory, SnapshotDb,
 } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { CountingIModelImporter, IModelToTextFileExporter, IModelTransformerUtils, TestIModelTransformer } from "../IModelTransformerUtils";
@@ -68,8 +68,8 @@ describe("IModelTransformerHub (#integration)", () => {
     assert.isTrue(Guid.isGuid(targetIModelId));
 
     try {
-      const sourceDb = await BriefcaseDb.open(requestContext, projectId, sourceIModelId, OpenParams.pullAndPush(), IModelVersion.latest());
-      const targetDb = await BriefcaseDb.open(requestContext, projectId, targetIModelId, OpenParams.pullAndPush(), IModelVersion.latest());
+      const sourceDb = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, projectId, sourceIModelId, SyncMode.PullAndPush, IModelVersion.latest());
+      const targetDb = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, projectId, targetIModelId, SyncMode.PullAndPush, IModelVersion.latest());
       assert.isTrue(sourceDb.isBriefcaseDb());
       assert.exists(targetDb.isBriefcaseDb());
       assert.isFalse(sourceDb.isSnapshot);
@@ -243,8 +243,9 @@ describe("IModelTransformerHub (#integration)", () => {
         assert.equal(targetDbChanges.model.deleteIds.size, 0);
       }
 
-      await sourceDb.close(requestContext, KeepBriefcase.No);
-      await targetDb.close(requestContext, KeepBriefcase.No);
+      await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, sourceDb);
+      await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, targetDb);
+
     } finally {
       await BriefcaseManager.imodelClient.iModels.delete(requestContext, projectId, sourceIModelId);
       await BriefcaseManager.imodelClient.iModels.delete(requestContext, projectId, targetIModelId);
@@ -263,7 +264,7 @@ describe("IModelTransformerHub (#integration)", () => {
 
     try {
       // open/upgrade sourceDb
-      const sourceDb = await BriefcaseDb.open(requestContext, projectId, sourceIModelId, OpenParams.pullAndPush(), IModelVersion.latest());
+      const sourceDb = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, projectId, sourceIModelId, SyncMode.PullAndPush, IModelVersion.latest());
       assert.isTrue(semver.satisfies(sourceDb.querySchemaVersion(BisCoreSchema.schemaName)!, ">= 1.0.1"));
       assert.isFalse(sourceDb.containsClass(ExternalSourceAspect.classFullName), "Expect iModelHub to be using an old version of BisCore before ExternalSourceAspect was introduced");
       sourceDb.concurrencyControl.setPolicy(ConcurrencyControl.OptimisticPolicy);
@@ -299,7 +300,7 @@ describe("IModelTransformerHub (#integration)", () => {
       assert.isFalse(sourceDb.concurrencyControl.hasSchemaLock);
 
       // open/upgrade targetDb
-      const targetDb = await BriefcaseDb.open(requestContext, projectId, targetIModelId, OpenParams.pullAndPush(), IModelVersion.latest());
+      const targetDb = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, projectId, targetIModelId, SyncMode.PullAndPush, IModelVersion.latest());
       assert.isFalse(targetDb.containsClass(ExternalSourceAspect.classFullName), "Expect iModelHub to be using an old version of BisCore before ExternalSourceAspect was introduced");
       targetDb.concurrencyControl.setPolicy(ConcurrencyControl.OptimisticPolicy);
       await targetDb.importSchemas(requestContext, [BisCoreSchema.schemaFilePath, GenericSchema.schemaFilePath]);
@@ -320,8 +321,8 @@ describe("IModelTransformerHub (#integration)", () => {
       await targetDb.pushChanges(requestContext, "Import changes from sourceDb");
 
       // close iModel briefcases
-      await sourceDb.close(requestContext, KeepBriefcase.No);
-      await targetDb.close(requestContext, KeepBriefcase.No);
+      await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, sourceDb);
+      await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, targetDb);
     } finally {
       // delete iModel briefcases
       await BriefcaseManager.imodelClient.iModels.delete(requestContext, projectId, sourceIModelId);

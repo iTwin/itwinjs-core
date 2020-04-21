@@ -1,6 +1,6 @@
 {
   "name": "@bentley/electron-manager",
-  "version": "2.0.0-dev.71",
+  "version": "2.0.0-dev.74",
   "description": "iModel.js electron utilities",
   "main": "lib/ElectronManager.js",
   "typings": "lib/ElectronManager",
@@ -11,8 +11,8 @@
   "scripts": {
     "build": "tsc 1>&2",
     "clean": "rimraf lib .rush",
-    "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --includes=../../generated-docs/extract --json=../../generated-docs/core/electron-manager/file.json --tsIndexFile=./ElectronManager.ts --onlyJson %TYPEDOC_THEME%",
-    "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=ElectronManager",
+    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/electron-manager/file.json --tsIndexFile=./ElectronManager.ts --onlyJson",
+    "extract-api": "betools extract-api --entry=ElectronManager",
     "lint": "tslint --project . 1>&2",
     "test": "",
     "cover": ""
@@ -31,22 +31,22 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "electron": "^8.0.0",
-    "@bentley/bentleyjs-core": "^2.0.0-dev.71",
-    "@bentley/imodeljs-backend": "^2.0.0-dev.71"
+    "electron": "^8.2.1",
+    "@bentley/bentleyjs-core": "^2.0.0-dev.74",
+    "@bentley/imodeljs-backend": "^2.0.0-dev.74"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/build-tools": "2.0.0-dev.71",
-    "@bentley/bentleyjs-core": "2.0.0-dev.71",
-    "@bentley/itwin-client": "2.0.0-dev.71",
-    "@bentley/imodeljs-common": "2.0.0-dev.71",
-    "@bentley/imodeljs-backend": "2.0.0-dev.71",
+    "@bentley/build-tools": "2.0.0-dev.74",
+    "@bentley/bentleyjs-core": "2.0.0-dev.74",
+    "@bentley/itwin-client": "2.0.0-dev.74",
+    "@bentley/imodeljs-common": "2.0.0-dev.74",
+    "@bentley/imodeljs-backend": "2.0.0-dev.74",
     "@types/node": "10.14.1",
-    "electron": "^8.0.0",
+    "electron": "^8.2.1",
     "rimraf": "^3.0.2",
     "tslint": "^5.11.0",
     "tslint-etc": "^1.5.2",

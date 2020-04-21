@@ -12,11 +12,11 @@ describe("FrontstageDef", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
-    MockRender.App.startup();
+    await MockRender.App.startup();
   });
 
-  after(() => {
-    MockRender.App.shutdown();
+  after(async () => {
+    await MockRender.App.shutdown();
     TestUtils.terminateUiFramework();
   });
 

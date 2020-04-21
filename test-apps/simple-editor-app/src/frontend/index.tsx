@@ -14,12 +14,12 @@ import {
 } from "@bentley/frontend-authorization-client";
 import {
   RpcConfiguration, RpcOperation, IModelRpcProps, ElectronRpcManager,
-  BentleyCloudRpcManager, OidcDesktopClientConfiguration,
+  BentleyCloudRpcManager, DesktopAuthorizationClientConfiguration,
 } from "@bentley/imodeljs-common";
 import {
   IModelApp, IModelConnection, SnapMode, AccuSnap, ViewClipByPlaneTool, RenderSystem,
   IModelAppOptions, SelectionTool, ViewState, FrontendLoggerCategory,
-  ExternalServerExtensionLoader, OidcDesktopClientRenderer,
+  ExternalServerExtensionLoader, DesktopAuthorizationClient,
 } from "@bentley/imodeljs-frontend";
 import { MarkupApp } from "@bentley/imodeljs-markup";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
@@ -170,12 +170,12 @@ export class SampleAppIModelApp {
     return StateManager.store as Store<RootState>;
   }
 
-  public static startup(opts?: IModelAppOptions): void {
+  public static async startup(opts?: IModelAppOptions): Promise<void> {
     opts = opts ? opts : {};
     opts.accuSnap = new SampleAppAccuSnap();
     opts.notifications = new AppNotificationManager();
     opts.uiAdmin = new FrameworkUiAdmin();
-    IModelApp.startup(opts);
+    await IModelApp.startup(opts);
 
     // For testing local extensions only, should not be used in production.
     IModelApp.extensionAdmin.addExtensionLoader(new ExternalServerExtensionLoader("http://localhost:3000"), 50);
@@ -559,7 +559,7 @@ async function retrieveConfiguration(): Promise<void> {
   });
 }
 
-function getOidcConfiguration(): BrowserAuthorizationClientConfiguration | OidcDesktopClientConfiguration {
+function getOidcConfiguration(): BrowserAuthorizationClientConfiguration | DesktopAuthorizationClientConfiguration {
   const redirectUri = "http://localhost:3000/signin-callback";
   const baseOidcScope = "openid email profile organization imodelhub context-registry-service:read-only product-settings-service projectwise-share urlps-third-party imodel-extension-service-api";
 
@@ -583,9 +583,9 @@ async function handleOidcCallback(oidcConfiguration: BrowserAuthorizationClientC
   }
 }
 
-async function createOidcClient(requestContext: ClientRequestContext, oidcConfiguration: BrowserAuthorizationClientConfiguration | OidcDesktopClientConfiguration): Promise<FrontendAuthorizationClient> {
+async function createOidcClient(requestContext: ClientRequestContext, oidcConfiguration: BrowserAuthorizationClientConfiguration | DesktopAuthorizationClientConfiguration): Promise<FrontendAuthorizationClient> {
   if (isElectronRenderer) {
-    const desktopClient = new OidcDesktopClientRenderer(oidcConfiguration as OidcDesktopClientConfiguration);
+    const desktopClient = new DesktopAuthorizationClient(oidcConfiguration as DesktopAuthorizationClientConfiguration);
     await desktopClient.initialize(requestContext);
     return desktopClient;
   } else {
@@ -625,12 +625,11 @@ async function main() {
   };
 
   // Start the app.
-  SampleAppIModelApp.startup({ renderSys: renderSystemOptions, authorizationClient: oidcClient });
+  await SampleAppIModelApp.startup({ renderSys: renderSystemOptions, authorizationClient: oidcClient });
 
   // wait for both our i18n namespaces to be read.
-  SampleAppIModelApp.initialize().then(() => { // tslint:disable-line:no-floating-promises
-    ReactDOM.render(<SampleAppViewer />, document.getElementById("root") as HTMLElement);
-  });
+  await SampleAppIModelApp.initialize();
+  ReactDOM.render(<SampleAppViewer />, document.getElementById("root") as HTMLElement);
 }
 
 // Entry point - run the main function

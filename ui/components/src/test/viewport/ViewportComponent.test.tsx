@@ -23,11 +23,11 @@ describe("ViewportComponent", () => {
   before(async () => {
     ViewportComponentEvents.terminate();
     await TestUtils.initializeUiComponents();
-    MockRender.App.startup();
+    await MockRender.App.startup();
   });
 
   after(async () => {
-    MockRender.App.shutdown();
+    await MockRender.App.shutdown();
   });
 
   let extents = Vector3d.create(400, 400);

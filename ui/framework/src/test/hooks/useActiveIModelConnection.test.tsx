@@ -22,11 +22,11 @@ describe("useActiveIModelConnection", () => {
     SyncUiEventDispatcher.initialize();   // To process Backstage events
 
     // use mock renderer so standards tools are registered.
-    MockRender.App.startup();
+    await MockRender.App.startup();
   });
 
-  after(() => {
-    MockRender.App.shutdown();
+  after(async () => {
+    await MockRender.App.shutdown();
     TestUtils.terminateUiFramework();
   });
 

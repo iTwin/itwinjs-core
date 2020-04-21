@@ -97,15 +97,21 @@ export class IModelHostConfiguration {
 
   private static getDefaultBriefcaseCacheDir(): string { return path.normalize(path.join(KnownLocations.tmpdir, "Bentley/IModelJs/cache/")); }
   private static getDefaultNativeAppCacheDir(): string { return path.normalize(path.join(KnownLocations.tmpdir, "Bentley/IModelJs/NativeApp/Cache")); }
+
   private _briefcaseCacheDir = IModelHostConfiguration.getDefaultBriefcaseCacheDir();
 
-  /** The path where the cache of briefcases are stored. Defaults to `path.join(KnownLocations.tmpdir, "Bentley/IModelJs/cache/iModels/")`
+  /** The path where the cache of briefcases are stored. Defaults to `path.join(KnownLocations.tmpdir, "Bentley/IModelJs/cache/")`
    * If overriding this, ensure it's set to a folder with complete access - it may have to be deleted and recreated.
    */
   public get briefcaseCacheDir(): string { return this._briefcaseCacheDir; }
   public set briefcaseCacheDir(cacheDir: string) { this._briefcaseCacheDir = path.normalize(cacheDir.replace(/\/?$/, path.sep)); }
+
+  /** @internal */
   public get isDefaultBriefcaseCacheDir(): boolean { return this._briefcaseCacheDir === IModelHostConfiguration.getDefaultBriefcaseCacheDir(); }
+
+  /** @internal */
   public get isDefaultNativeAppCacheDir(): boolean { return this.nativeAppCacheDir === IModelHostConfiguration.getDefaultNativeAppCacheDir(); }
+
   /** The directory where the app's assets are found. */
   public appAssetsDir?: string;
 
@@ -205,6 +211,7 @@ export class IModelHost {
   /** @internal */
   public static get platform(): typeof IModelJsNative { return this._platform!; }
 
+  /** @internal */
   public static get isNativeAppBackend(): boolean { return IModelHost._nativeAppBackend; }
 
   public static configuration?: IModelHostConfiguration;
@@ -415,6 +422,7 @@ export class IModelHost {
       return;
     IModelHost.onBeforeShutdown.raiseEvent();
     IModelHost.configuration = undefined;
+    IModelHost._nativeAppBackend = false;
   }
 
   /** The directory where application assets may be found */

@@ -15,7 +15,7 @@ import {
   MobileRpcConfiguration,
   MobileRpcManager,
   NativeAppRpcInterface,
-  OidcDesktopClientConfiguration,
+  DesktopAuthorizationClientConfiguration,
   RpcConfiguration,
   RpcInterfaceDefinition,
   RpcOperation,
@@ -30,7 +30,7 @@ import {
   IModelConnection,
   RenderDiagnostics,
   RenderSystem,
-  OidcDesktopClientRenderer,
+  DesktopAuthorizationClient,
   SnapshotConnection,
 } from "@bentley/imodeljs-frontend";
 import { WebGLExtensionName } from "@bentley/webgl-compatibility";
@@ -79,7 +79,7 @@ async function openSnapshotIModel(filename: string): Promise<IModelConnection> {
   return iModelConnection;
 }
 
-function getOidcConfiguration(): BrowserAuthorizationClientConfiguration | OidcDesktopClientConfiguration {
+function getOidcConfiguration(): BrowserAuthorizationClientConfiguration | DesktopAuthorizationClientConfiguration {
   const redirectUri = "http://localhost:3000/signin-callback";
   const baseOidcScope = "openid email profile organization imodelhub context-registry-service:read-only reality-data:read product-settings-service projectwise-share urlps-third-party imodel-extension-service-api";
 
@@ -103,9 +103,9 @@ async function handleOidcCallback(oidcConfiguration: BrowserAuthorizationClientC
   }
 }
 
-async function createOidcClient(requestContext: ClientRequestContext, oidcConfiguration: BrowserAuthorizationClientConfiguration | OidcDesktopClientConfiguration): Promise<OidcDesktopClientRenderer | BrowserAuthorizationClient> {
+async function createOidcClient(requestContext: ClientRequestContext, oidcConfiguration: BrowserAuthorizationClientConfiguration | DesktopAuthorizationClientConfiguration): Promise<DesktopAuthorizationClient | BrowserAuthorizationClient> {
   if (ElectronRpcConfiguration.isElectron) {
-    const desktopClient = new OidcDesktopClientRenderer(oidcConfiguration as OidcDesktopClientConfiguration);
+    const desktopClient = new DesktopAuthorizationClient(oidcConfiguration as DesktopAuthorizationClientConfiguration);
     await desktopClient.initialize(requestContext);
     return desktopClient;
   } else {
