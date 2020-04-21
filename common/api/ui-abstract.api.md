@@ -519,6 +519,9 @@ export type OnItemExecutedFunc = (item: any) => void;
 export type OnNumberCommitFunc = (value: number) => void;
 
 // @beta
+export type OnValueCommitFunc = (value: Primitives.Value) => void;
+
+// @beta
 export interface ParseResults {
     // (undocumented)
     parseError?: string;
@@ -893,6 +896,7 @@ export class UiAdmin {
     showContextMenu(_menuItemsProps: AbstractMenuItemProps[], _location: XAndY, _htmlElement?: HTMLElement): boolean;
     showHeightEditor(_initialValue: number, _location: XAndY, _onCommit: OnNumberCommitFunc, _onCancel: OnCancelFunc, _htmlElement?: HTMLElement): boolean;
     showHTMLElement(_displayElement: HTMLElement, _location: XAndY, _offset: XAndY, _onCancel: OnCancelFunc, _relativePosition?: RelativePosition, _htmlElement?: HTMLElement): boolean;
+    showInputEditor(_initialValue: Primitives.Value, _propertyDescription: PropertyDescription, _location: XAndY, _onCommit: OnValueCommitFunc, _onCancel: OnCancelFunc, _htmlElement?: HTMLElement): boolean;
     showLengthEditor(_initialValue: number, _location: XAndY, _onCommit: OnNumberCommitFunc, _onCancel: OnCancelFunc, _htmlElement?: HTMLElement): boolean;
     showMenuButton(_id: string, _menuItemsProps: AbstractMenuItemProps[], _location: XAndY, _htmlElement?: HTMLElement): boolean;
     showToolbar(_toolbarProps: AbstractToolbarProps, _location: XAndY, _offset: XAndY, _onItemExecuted: OnItemExecutedFunc, _onCancel: OnCancelFunc, _relativePosition?: RelativePosition, _htmlElement?: HTMLElement): boolean;
@@ -947,6 +951,8 @@ export enum UiItemsApplicationAction {
 
 // @beta
 export class UiItemsArbiter {
+    // @internal (undocumented)
+    static clearApplication(): void;
     static get uiItemsApplication(): UiItemsApplication | undefined;
     static set uiItemsApplication(app: UiItemsApplication | undefined);
     // @internal (undocumented)

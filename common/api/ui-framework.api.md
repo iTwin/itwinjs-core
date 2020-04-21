@@ -83,6 +83,7 @@ import { Omit } from '@bentley/ui-core';
 import { OnCancelFunc } from '@bentley/ui-abstract';
 import { OnItemExecutedFunc } from '@bentley/ui-abstract';
 import { OnNumberCommitFunc } from '@bentley/ui-abstract';
+import { OnValueCommitFunc } from '@bentley/ui-abstract';
 import { OpenMode } from '@bentley/bentleyjs-core';
 import { Orientation } from '@bentley/ui-core';
 import { OutputMessagePriority } from '@bentley/imodeljs-frontend';
@@ -91,6 +92,7 @@ import { PanelSide } from '@bentley/ui-ninezone';
 import { PlaybackSettings } from '@bentley/ui-components';
 import { Point } from '@bentley/ui-core';
 import { PointProps } from '@bentley/ui-core';
+import { Primitives } from '@bentley/ui-abstract';
 import { PropertyDescription } from '@bentley/ui-abstract';
 import { PropertyRecord } from '@bentley/ui-abstract';
 import { PropertyUpdatedArgs } from '@bentley/ui-components';
@@ -1755,6 +1757,7 @@ export class FrameworkUiAdmin extends UiAdmin {
     showContextMenu(items: AbstractMenuItemProps[], location: XAndY, htmlElement?: HTMLElement): boolean;
     showHeightEditor(initialValue: number, location: XAndY, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc, htmlElement?: HTMLElement): boolean;
     showHTMLElement(displayElement: HTMLElement, location: XAndY, offset: XAndY, onCancel: OnCancelFunc, relativePosition?: RelativePosition, htmlElement?: HTMLElement): boolean;
+    showInputEditor(initialValue: Primitives.Value, propertyDescription: PropertyDescription, location: XAndY, onCommit: OnValueCommitFunc, onCancel: OnCancelFunc, htmlElement?: HTMLElement): boolean;
     showLengthEditor(initialValue: number, location: XAndY, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc, htmlElement?: HTMLElement): boolean;
     showMenuButton(id: string, menuItemsProps: AbstractMenuItemProps[], location: XAndY, htmlElement?: HTMLElement): boolean;
     showToolbar(toolbarProps: AbstractToolbarProps, location: XAndY, offset: XAndY, onItemExecuted: OnItemExecutedFunc, onCancel: OnCancelFunc, relativePosition?: RelativePosition, htmlElement?: HTMLElement): boolean;
@@ -2507,11 +2510,11 @@ export function initializeFrontstageState({ frontstage }: InitializeFrontstageSt
 
 // @alpha (undocumented)
 export class InputEditorCommitHandler {
-    constructor(onCommit: OnNumberCommitFunc);
+    constructor(onCommit: OnValueCommitFunc);
     // (undocumented)
     handleCommit: (args: PropertyUpdatedArgs) => void;
     // (undocumented)
-    readonly onCommit: OnNumberCommitFunc;
+    readonly onCommit: OnValueCommitFunc;
 }
 
 // @alpha
@@ -3495,7 +3498,7 @@ export class PopupManager {
     // (undocumented)
     static showHTMLElement(displayElement: HTMLElement, el: HTMLElement, pt: XAndY, offset: XAndY, onCancel: OnCancelFunc, relativePosition: RelativePosition): boolean;
     // (undocumented)
-    static showInputEditor(el: HTMLElement, pt: XAndY, value: number, propertyDescription: PropertyDescription, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc): boolean;
+    static showInputEditor(el: HTMLElement, pt: XAndY, value: Primitives.Value, propertyDescription: PropertyDescription, onCommit: OnValueCommitFunc, onCancel: OnCancelFunc): boolean;
     // (undocumented)
     static showToolbar(toolbarProps: AbstractToolbarProps, el: HTMLElement, pt: XAndY, offset: XAndY, onItemExecuted: OnItemExecutedFunc, onCancel: OnCancelFunc, relativePosition: RelativePosition): boolean;
     }

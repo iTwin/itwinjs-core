@@ -13,8 +13,7 @@ import { CommonToolbarItem, ToolbarUsage, ToolbarOrientation } from "./toolbars/
 import { BackstageItem } from "./backstage/BackstageItem";
 import { StagePanelLocation, StagePanelSection } from "./widget/StagePanel";
 import { AbstractWidgetProps } from "./widget/AbstractWidgetProps";
-
-const loggerCategory = "ui-abstract.UiItemsProvider";
+import { UiAbstract } from "./UiAbstract";
 
 /** Action taken by the application on item provided by a UiItemsProvider
  * @beta
@@ -50,7 +49,7 @@ export interface UiItemsProvider {
   onStatusBarItemArbiterChange?: (item: CommonStatusBarItem, action: UiItemsApplicationAction) => void;
   /** Called if the application changed the Backstage item */
   onBackstageItemArbiterChange?: (item: BackstageItem, action: UiItemsApplicationAction) => void;
-  /** Called when the application changes the Widget */
+  /** Called if the application changed the Widget */
   onWidgetArbiterChange?: (widget: AbstractWidgetProps, action: UiItemsApplicationAction) => void;
 }
 
@@ -100,10 +99,10 @@ export class UiItemsManager {
    */
   public static register(uiProvider: UiItemsProvider): void {
     if (UiItemsManager.getUiItemsProvider(uiProvider.id)) {
-      Logger.logInfo(loggerCategory, `UiItemsProvider (${uiProvider.id}) is already loaded`);
+      Logger.logInfo(UiAbstract.loggerCategory(this), `UiItemsProvider (${uiProvider.id}) is already loaded`);
     } else {
       UiItemsManager._registeredUiItemsProviders.set(uiProvider.id, uiProvider);
-      Logger.logInfo(loggerCategory, `UiItemsProvider (${uiProvider.id}) loaded`);
+      Logger.logInfo(UiAbstract.loggerCategory(this), `UiItemsProvider (${uiProvider.id}) loaded`);
 
       UiItemsManager.sendRegisteredEvent({ providerId: uiProvider.id } as UiItemProviderRegisteredEventArgs);
     }
@@ -115,7 +114,7 @@ export class UiItemsManager {
       return;
 
     UiItemsManager._registeredUiItemsProviders.delete(uiProviderId);
-    Logger.logInfo(loggerCategory, `UiItemsProvider (${uiProviderId}) unloaded`);
+    Logger.logInfo(UiAbstract.loggerCategory(this), `UiItemsProvider (${uiProviderId}) unloaded`);
 
     // trigger a refresh of the ui
     UiItemsManager.sendRegisteredEvent({ providerId: uiProviderId } as UiItemProviderRegisteredEventArgs);

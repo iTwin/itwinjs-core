@@ -17,4 +17,3 @@ Therefore, code in imodeljs-frontend can use classes and interfaces in ui-abstra
 * [UiItemsProvider](./UiItemsProvider.md) - Classes and interfaces for specifying UI items to be inserted at runtime.
 * [UiDataProvider](./UiDataProvider.md) - Data synchronization for apps that directly create UI with React or other UI libraries.
 * [Utilities](./Utilities.md) - Various utility classes for working with a UI.
-* [Widget](./Widget.md) - Classes for creating and providing Widgets.

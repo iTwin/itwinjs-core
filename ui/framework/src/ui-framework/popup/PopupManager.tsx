@@ -11,10 +11,11 @@ import * as React from "react";
 import { Logger } from "@bentley/bentleyjs-core";
 import { XAndY } from "@bentley/geometry-core";
 import {
-  OnNumberCommitFunc, OnCancelFunc, OnItemExecutedFunc,
+  OnValueCommitFunc, OnCancelFunc, OnItemExecutedFunc,
   AbstractToolbarProps, RelativePosition,
   PrimitiveValue, PropertyValueFormat, PropertyRecord,
   PropertyDescription,
+  Primitives,
 } from "@bentley/ui-abstract";
 
 import { UiEvent, Rectangle, Point, SizeProps, Orientation } from "@bentley/ui-core";
@@ -129,7 +130,7 @@ export class PopupManager {
   public static get defaultOffset(): XAndY { return PopupManager._defaultOffset; }
   public static set defaultOffset(offset: XAndY) { PopupManager._defaultOffset = offset; }
 
-  public static showInputEditor(el: HTMLElement, pt: XAndY, value: number, propertyDescription: PropertyDescription, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc): boolean {
+  public static showInputEditor(el: HTMLElement, pt: XAndY, value: Primitives.Value, propertyDescription: PropertyDescription, onCommit: OnValueCommitFunc, onCancel: OnCancelFunc): boolean {
     const primitiveValue: PrimitiveValue = {
       value,
       valueFormat: PropertyValueFormat.Primitive,

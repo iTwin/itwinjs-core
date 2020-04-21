@@ -5,6 +5,7 @@
 
 import { expect } from "chai";
 import * as sinon from "sinon";
+import { Logger } from "@bentley/bentleyjs-core";
 import {
   StageUsage, UiItemsProvider, ToolbarUsage, ToolbarOrientation, CommonToolbarItem, ToolbarItemUtilities,
   UiItemsApplicationAction, UiItemsManager, CommonStatusBarItem, AbstractStatusBarItemUtilities, StatusBarSection,
@@ -15,6 +16,26 @@ import {
 describe("UiItemsArbiter", () => {
   const onSpy = sinon.spy();
   let testUiProvider: UiItemsProvider;
+
+  describe("uiItemsApplication", () => {
+    it("should log error when already set", () => {
+      UiItemsArbiter.clearApplication();
+      expect(UiItemsArbiter.uiItemsApplication).to.be.undefined;
+
+      class TestUiItemsApplication implements UiItemsApplication { }
+      const spyLogger = sinon.spy(Logger, "logError");
+
+      const app = new TestUiItemsApplication();
+      UiItemsArbiter.uiItemsApplication = app;
+      expect(UiItemsArbiter.uiItemsApplication).to.eq(app);
+
+      UiItemsArbiter.uiItemsApplication = new TestUiItemsApplication();
+      spyLogger.calledOnce.should.true;
+      (Logger.logError as any).restore();
+
+      UiItemsArbiter.clearApplication();
+    });
+  });
 
   describe("ToolbarItems", () => {
 
@@ -41,7 +62,7 @@ describe("UiItemsArbiter", () => {
 
     afterEach(() => {
       UiItemsManager.unregister(testUiProvider.id);
-      UiItemsArbiter.uiItemsApplication = undefined;
+      UiItemsArbiter.clearApplication();
     });
 
     it("should allow ToolbarItem", () => {
@@ -127,7 +148,7 @@ describe("UiItemsArbiter", () => {
 
     afterEach(() => {
       UiItemsManager.unregister(testUiProvider.id);
-      UiItemsArbiter.uiItemsApplication = undefined;
+      UiItemsArbiter.clearApplication();
     });
 
     it("should allow StatusBarItem", () => {
@@ -209,7 +230,7 @@ describe("UiItemsArbiter", () => {
 
     afterEach(() => {
       UiItemsManager.unregister(testUiProvider.id);
-      UiItemsArbiter.uiItemsApplication = undefined;
+      UiItemsArbiter.clearApplication();
     });
 
     it("should allow BackstageItem", () => {
@@ -293,7 +314,7 @@ describe("UiItemsArbiter", () => {
 
     afterEach(() => {
       UiItemsManager.unregister(testUiProvider.id);
-      UiItemsArbiter.uiItemsApplication = undefined;
+      UiItemsArbiter.clearApplication();
     });
 
     it("should allow Widget", () => {
