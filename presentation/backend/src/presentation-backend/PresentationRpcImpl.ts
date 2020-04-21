@@ -10,13 +10,11 @@ import { ClientRequestContext, Id64String, Logger } from "@bentley/bentleyjs-cor
 import { IModelRpcProps } from "@bentley/imodeljs-common";
 import { IModelDb } from "@bentley/imodeljs-backend";
 import {
-  Node, NodeKey, NodePathElement,
-  Descriptor, SelectionInfo,
-  PresentationError, PresentationStatus,
-  Paged, InstanceKey, KeySet,
-  SelectionScope, DescriptorOverrides,
+  Node, NodeKey, NodePathElement, Descriptor, SelectionInfo,
+  PresentationError, PresentationStatus, Paged, InstanceKey, KeySet,
+  SelectionScope, DescriptorOverrides, PartialHierarchyModification, PartialHierarchyModificationJSON,
   PresentationRpcResponse, HierarchyRpcRequestOptions, ContentRpcRequestOptions,
-  SelectionScopeRpcRequestOptions,
+  SelectionScopeRpcRequestOptions, PresentationDataCompareRpcOptions,
   LabelRpcRequestOptions, PresentationRpcInterface, Ruleset, LabelDefinition,
 } from "@bentley/presentation-common";
 import { NodeJSON } from "@bentley/presentation-common/lib/presentation-common/hierarchy/Node";
@@ -158,10 +156,11 @@ export class PresentationRpcImpl extends PresentationRpcInterface {
 
   public async loadHierarchy(token: IModelRpcProps, requestOptions: HierarchyRpcRequestOptions): PresentationRpcResponse<void> {
     return this.makeRequest(token, requestOptions, async (requestContext, options) => {
+      const manager = this.getManager(requestOptions.clientId);
       // note: we intentionally don't await here - don't want frontend waiting for this task to complete
       // tslint:disable-next-line:no-floating-promises
-      this.getManager(requestOptions.clientId).loadHierarchy(requestContext, options)
-        .catch((e) => Logger.logWarning("Presentation", `Error loading '${getRulesetId(requestOptions)}' hierarchy: ${e}`));
+      manager.loadHierarchy(requestContext, options)
+        .catch((e) => Logger.logWarning("Presentation", `Error loading '${manager.getRulesetId(requestOptions.rulesetOrId)}' hierarchy: ${e}`));
     });
   }
 
@@ -236,19 +235,14 @@ export class PresentationRpcImpl extends PresentationRpcInterface {
       return keys.toJSON();
     });
   }
-}
 
-// istanbul ignore next: used only for log messages
-const getRulesetId = (props: { rulesetOrId?: string | Ruleset; rulesetId?: string }) => {
-  if (props.rulesetOrId) {
-    if (typeof props.rulesetOrId === "object")
-      return props.rulesetOrId.id;
-    return props.rulesetOrId;
+  public async compareHierarchies(token: IModelRpcProps, requestOptions: PresentationDataCompareRpcOptions): PresentationRpcResponse<PartialHierarchyModificationJSON[]> {
+    return this.makeRequest(token, requestOptions, async (requestContext, options) =>
+      (await this.getManager(requestOptions.clientId).compareHierarchies(requestContext, options))
+        .map(PartialHierarchyModification.toJSON),
+    );
   }
-  if (props.rulesetId)
-    return props.rulesetId;
-  return "<unknown>";
-};
+}
 
 const nodeKeyFromJson = (json: NodeKeyJSON | undefined): NodeKey | undefined => {
   if (!json)

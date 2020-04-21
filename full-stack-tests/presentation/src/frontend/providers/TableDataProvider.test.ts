@@ -118,7 +118,7 @@ describe("TableDataProvider", async () => {
 
     expect(count).to.not.eq(0);
     expect(row).to.not.be.undefined;
-    expect(getContentAndContentSizeSpy.calledOnce).to.be.true;
+    expect(getContentAndContentSizeSpy).to.be.calledOnce;
   });
 
   describe("sorting", () => {

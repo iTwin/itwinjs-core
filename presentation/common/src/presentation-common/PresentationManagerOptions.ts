@@ -97,6 +97,18 @@ export interface LabelRequestOptions<TIModel> extends RequestOptions<TIModel> { 
 export interface SelectionScopeRequestOptions<TIModel> extends RequestOptions<TIModel> { }
 
 /**
+ * Data structure for comparing presentation data after ruleset or ruleset variable changes.
+ * @alpha
+ */
+export interface PresentationDataCompareOptions<TIModel> extends RequestOptionsWithRuleset<TIModel> {
+  prev: {
+    rulesetOrId: Ruleset | string;
+  } | {
+    rulesetVariables: RulesetVariable[];
+  };
+}
+
+/**
  * Paging options
  * @public
  */

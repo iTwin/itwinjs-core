@@ -8,18 +8,16 @@
 
 import * as path from "path";
 import * as hash from "object-hash";
-import { ClientRequestContext, Id64String, Id64, DbResult, Logger } from "@bentley/bentleyjs-core";
-import {
-  BriefcaseDb, IModelDb, Element, GeometricElement, GeometricElement3d,
-  EventSinkManager, EventSink, IModelHost,
-} from "@bentley/imodeljs-backend";
+import { ClientRequestContext, Id64String, Logger } from "@bentley/bentleyjs-core";
+import { BriefcaseDb, IModelDb, EventSinkManager, EventSink, IModelHost } from "@bentley/imodeljs-backend";
 import {
   PresentationError, PresentationStatus,
   HierarchyRequestOptions, NodeKey, Node, NodePathElement,
   ContentRequestOptions, SelectionInfo, Content, Descriptor,
   DescriptorOverrides, Paged, KeySet, InstanceKey, LabelRequestOptions,
   SelectionScopeRequestOptions, SelectionScope, DefaultContentDisplayTypes,
-  ContentFlags, Ruleset, RulesetVariable, RequestPriority, LabelDefinition, PresentationUnitSystem,
+  ContentFlags, Ruleset, RulesetVariable, RequestPriority, LabelDefinition,
+  PresentationUnitSystem, PartialHierarchyModification, PresentationDataCompareOptions,
 } from "@bentley/presentation-common";
 import { getLocalesDirectory } from "@bentley/presentation-common/lib/presentation-common/Utils";
 import { NativePlatformDefinition, createDefaultNativePlatform, NativePlatformRequestTypes } from "./NativePlatform";
@@ -27,6 +25,8 @@ import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetV
 import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
 import { PRESENTATION_BACKEND_ASSETS_ROOT, PRESENTATION_COMMON_PUBLIC_ROOT } from "./Constants";
 import { UpdatesTracker } from "./UpdatesTracker";
+import { SelectionScopesHelper } from "./SelectionScopesHelper";
+import { getElementKey } from "./Utils";
 
 /**
  * Presentation manager working mode.
@@ -309,17 +309,31 @@ export class PresentationManager {
       this.getNativePlatform().setupRulesetDirectories(props.rulesetDirectories);
   }
 
-  /** @internal */
-  public getRulesetId(rulesetOrId: Ruleset | string): string {
+  private getRulesetIdObject(rulesetOrId: Ruleset | string): { uniqueId: string, parts: { id: string, hash?: string } } {
     if (typeof rulesetOrId === "object") {
       if (this._isOneFrontendPerBackend) {
         // in case of native apps we don't have to enforce ruleset id uniqueness, since there's ony one
         // frontend and it's up to the frontend to make sure rulesets are unique
-        return rulesetOrId.id;
+        return {
+          uniqueId: rulesetOrId.id,
+          parts: { id: rulesetOrId.id },
+        };
       }
-      return `${rulesetOrId.id}-${hash.MD5(rulesetOrId)}`;
+      const hashedId = hash.MD5(rulesetOrId);
+      return {
+        uniqueId: `${rulesetOrId.id}-${hashedId}`,
+        parts: {
+          id: rulesetOrId.id,
+          hash: hashedId,
+        },
+      };
     }
-    return rulesetOrId;
+    return { uniqueId: rulesetOrId, parts: { id: rulesetOrId } };
+  }
+
+  /** @internal */
+  public getRulesetId(rulesetOrId: Ruleset | string) {
+    return this.getRulesetIdObject(rulesetOrId).uniqueId;
   }
 
   private ensureRulesetRegistered(rulesetOrId: Ruleset | string): string {
@@ -330,6 +344,7 @@ export class PresentationManager {
     return rulesetOrId;
   }
 
+  /** Registers given ruleset and sets ruleset variables */
   private handleOptions<TOptions extends { rulesetOrId: Ruleset | string, rulesetVariables?: RulesetVariable[] }>(options: TOptions) {
     const { rulesetVariables, rulesetOrId, ...strippedOptions } = options;
     const registeredRulesetId = this.ensureRulesetRegistered(rulesetOrId);
@@ -580,7 +595,7 @@ export class PresentationManager {
   public async getDisplayLabelDefinitions(requestContext: ClientRequestContext, requestOptions: LabelRequestOptions<IModelDb>, instanceKeys: InstanceKey[]): Promise<LabelDefinition[]> {
     instanceKeys = instanceKeys.map((k) => {
       if (k.className === "BisCore:Element")
-        return this.getElementKey(requestOptions.imodel, k.id);
+        return getElementKey(requestOptions.imodel, k.id);
       return k;
     }).filter<InstanceKey>((k): k is InstanceKey => (undefined !== k));
     const rulesetId = "RulesDrivenECPresentationManager_RulesetId_DisplayLabel";
@@ -607,234 +622,7 @@ export class PresentationManager {
   public async getSelectionScopes(requestContext: ClientRequestContext, requestOptions: SelectionScopeRequestOptions<IModelDb>): Promise<SelectionScope[]> {
     requestContext.enter();
     (requestOptions as any);
-
-    const createSelectionScope = (scopeId: string, label: string, description: string): SelectionScope => ({
-      id: scopeId,
-      label,
-      description,
-    });
-
-    return [
-      createSelectionScope("element", "Element", "Select the picked element"),
-      createSelectionScope("assembly", "Assembly", "Select parent of the picked element"),
-      createSelectionScope("top-assembly", "Top Assembly", "Select the topmost parent of the picked element"),
-      // WIP: temporarily comment-out "category" and "model" scopes since we can't hilite contents of them fast enough
-      // createSelectionScope("category", "Category", "Select all elements in the picked element's category"),
-      // createSelectionScope("model", "Model", "Select all elements in the picked element's model"),
-    ];
-  }
-
-  private getElementKey(imodel: IModelDb, id: Id64String): InstanceKey | undefined {
-    let key: InstanceKey | undefined;
-    const query = `SELECT ECClassId FROM ${Element.classFullName} e WHERE ECInstanceId = ?`;
-    imodel.withPreparedStatement(query, (stmt) => {
-      try {
-        stmt.bindId(1, id);
-        if (stmt.step() === DbResult.BE_SQLITE_ROW)
-          key = { className: stmt.getValue(0).getClassNameForClassId().replace(".", ":"), id };
-      } catch { }
-    });
-    return key;
-  }
-
-  private computeElementSelection(requestOptions: SelectionScopeRequestOptions<IModelDb>, ids: Id64String[]) {
-    const keys = new KeySet();
-    ids.forEach(skipTransients((id) => {
-      const key = this.getElementKey(requestOptions.imodel, id);
-      if (key)
-        keys.add(key);
-    }));
-    return keys;
-  }
-
-  private getParentInstanceKey(imodel: IModelDb, id: Id64String): InstanceKey | undefined {
-    const parentRelProps = imodel.elements.getElementProps(id).parent;
-    if (!parentRelProps)
-      return undefined;
-    return this.getElementKey(imodel, parentRelProps.id);
-  }
-
-  private getAssemblyKey(imodel: IModelDb, id: Id64String) {
-    const parentKey = this.getParentInstanceKey(imodel, id);
-    if (parentKey)
-      return parentKey;
-    return this.getElementKey(imodel, id);
-  }
-
-  private computeAssemblySelection(requestOptions: SelectionScopeRequestOptions<IModelDb>, ids: Id64String[]) {
-    const parentKeys = new KeySet();
-    ids.forEach(skipTransients((id) => {
-      const key = this.getAssemblyKey(requestOptions.imodel, id);
-      if (key)
-        parentKeys.add(key);
-    }));
-    return parentKeys;
-  }
-
-  private getTopAssemblyKey(imodel: IModelDb, id: Id64String) {
-    let currKey: InstanceKey | undefined;
-    let parentKey = this.getParentInstanceKey(imodel, id);
-    while (parentKey) {
-      currKey = parentKey;
-      parentKey = this.getParentInstanceKey(imodel, currKey.id);
-    }
-    return currKey ?? this.getElementKey(imodel, id);
-  }
-
-  private computeTopAssemblySelection(requestOptions: SelectionScopeRequestOptions<IModelDb>, ids: Id64String[]) {
-    const parentKeys = new KeySet();
-    ids.forEach(skipTransients((id) => {
-      const key = this.getTopAssemblyKey(requestOptions.imodel, id);
-      if (key)
-        parentKeys.add(key);
-    }));
-    return parentKeys;
-  }
-
-  private computeCategorySelection(requestOptions: SelectionScopeRequestOptions<IModelDb>, ids: Id64String[]) {
-    const categoryKeys = new KeySet();
-    ids.forEach(skipTransients((id) => {
-      const el = requestOptions.imodel.elements.getElement(id);
-      if (el instanceof GeometricElement) {
-        const category = requestOptions.imodel.elements.getElementProps(el.category);
-        categoryKeys.add({ className: category.classFullName, id: category.id! });
-      }
-    }));
-    return categoryKeys;
-  }
-
-  private computeModelSelection(requestOptions: SelectionScopeRequestOptions<IModelDb>, ids: Id64String[]) {
-    const modelKeys = new KeySet();
-    ids.forEach(skipTransients((id) => {
-      const el = requestOptions.imodel.elements.getElementProps(id);
-      const model = requestOptions.imodel.models.getModelProps(el.model);
-      modelKeys.add({ className: model.classFullName, id: model.id! });
-    }));
-    return modelKeys;
-  }
-
-  private getRelatedFunctionalElementKey(imodel: IModelDb, graphicalElementId: Id64String): InstanceKey | undefined {
-    const query = `
-      SELECT funcSchemaDef.Name || '.' || funcClassDef.Name funcElClassName, fe.ECInstanceId funcElId
-        FROM bis.Element e
-        LEFT JOIN func.PhysicalElementFulfillsFunction rel1 ON rel1.SourceECInstanceId = e.ECInstanceId
-        LEFT JOIN func.DrawingGraphicRepresentsFunctionalElement rel2 ON rel2.SourceECInstanceId = e.ECInstanceId
-        LEFT JOIN func.FunctionalElement fe ON fe.ECInstanceId IN (rel1.TargetECInstanceId, rel2.TargetECInstanceId)
-        INNER JOIN meta.ECClassDef funcClassDef ON funcClassDef.ECInstanceId = fe.ECClassId
-        INNER JOIN meta.ECSchemaDef funcSchemaDef ON funcSchemaDef.ECInstanceId = funcClassDef.Schema.Id
-       WHERE e.ECInstanceId = ?
-      `;
-    return imodel.withPreparedStatement(query, (stmt): InstanceKey | undefined => {
-      stmt.bindId(1, graphicalElementId);
-      // istanbul ignore else
-      if (DbResult.BE_SQLITE_ROW === stmt.step()) {
-        const row = stmt.getRow();
-        if (row.funcElClassName && row.funcElId)
-          return { className: row.funcElClassName.replace(".", ":"), id: row.funcElId };
-      }
-      return undefined;
-    });
-  }
-
-  private findFirstRelatedFunctionalElementKey(imodel: IModelDb, graphicalElementId: Id64String): InstanceKey | undefined {
-    let currId: Id64String | undefined = graphicalElementId;
-    while (currId) {
-      const relatedFunctionalKey = this.getRelatedFunctionalElementKey(imodel, currId);
-      if (relatedFunctionalKey)
-        return relatedFunctionalKey;
-      currId = this.getParentInstanceKey(imodel, currId)?.id;
-    }
-    return undefined;
-  }
-
-  private elementClassDerivesFrom(imodel: IModelDb, elementId: Id64String, baseClassFullName: string): boolean {
-    const query = `
-      SELECT 1
-        FROM bis.Element e
-        INNER JOIN meta.ClassHasAllBaseClasses baseClassRels ON baseClassRels.SourceECInstanceId = e.ECClassId
-        INNER JOIN meta.ECClassDef baseClass ON baseClass.ECInstanceId = baseClassRels.TargetECInstanceId
-        INNER JOIN meta.ECSchemaDef baseSchema ON baseSchema.ECInstanceId = baseClass.Schema.Id
-       WHERE e.ECInstanceId = ? AND (baseSchema.Name || ':' || baseClass.Name) = ?
-      `;
-    return imodel.withPreparedStatement(query, (stmt): boolean => {
-      stmt.bindId(1, elementId);
-      stmt.bindString(2, baseClassFullName);
-      return (DbResult.BE_SQLITE_ROW === stmt.step());
-    });
-  }
-
-  private computeFunctionalElementSelection(requestOptions: SelectionScopeRequestOptions<IModelDb>, ids: Id64String[]) {
-    const keys = new KeySet();
-    ids.forEach(skipTransients((id): void => {
-      const is3d = this.elementClassDerivesFrom(requestOptions.imodel, id, GeometricElement3d.classFullName);
-      if (!is3d) {
-        // if the input is not a 3d element, we try to find the first related functional element
-        const firstFunctionalKey = this.findFirstRelatedFunctionalElementKey(requestOptions.imodel, id);
-        if (firstFunctionalKey) {
-          keys.add(firstFunctionalKey);
-          return;
-        }
-      }
-      let keyToAdd: InstanceKey | undefined;
-      if (is3d) {
-        // if we're computing scope for a 3d element, try to switch to its related functional element
-        keyToAdd = this.getRelatedFunctionalElementKey(requestOptions.imodel, id);
-      }
-      if (!keyToAdd)
-        keyToAdd = this.getElementKey(requestOptions.imodel, id);
-      keyToAdd && keys.add(keyToAdd);
-    }));
-    return keys;
-  }
-
-  private computeFunctionalAssemblySelection(requestOptions: SelectionScopeRequestOptions<IModelDb>, ids: Id64String[]) {
-    const keys = new KeySet();
-    ids.forEach(skipTransients((id): void => {
-      let idToGetAssemblyFor = id;
-      const is3d = this.elementClassDerivesFrom(requestOptions.imodel, id, GeometricElement3d.classFullName);
-      if (!is3d) {
-        // if the input is not a 3d element, we try to find the first related functional element
-        const firstFunctionalKey = this.findFirstRelatedFunctionalElementKey(requestOptions.imodel, id);
-        if (firstFunctionalKey)
-          idToGetAssemblyFor = firstFunctionalKey.id;
-      }
-      // find the assembly of either the given element or the functional element
-      const assemblyKey = this.getAssemblyKey(requestOptions.imodel, idToGetAssemblyFor);
-      let keyToAdd = assemblyKey;
-      if (is3d && keyToAdd) {
-        // if we're computing scope for a 3d element, try to switch to its related functional element
-        const relatedFunctionalKey = this.getRelatedFunctionalElementKey(requestOptions.imodel, keyToAdd.id);
-        if (relatedFunctionalKey)
-          keyToAdd = relatedFunctionalKey;
-      }
-      keyToAdd && keys.add(keyToAdd);
-    }));
-    return keys;
-  }
-
-  private async computeFunctionalTopAssemblySelection(requestOptions: SelectionScopeRequestOptions<IModelDb>, ids: Id64String[]) {
-    const keys = new KeySet();
-    ids.forEach(skipTransients((id): void => {
-      let idToGetAssemblyFor = id;
-      const is3d = this.elementClassDerivesFrom(requestOptions.imodel, id, GeometricElement3d.classFullName);
-      if (!is3d) {
-        // if the input is not a 3d element, we try to find the first related functional element
-        const firstFunctionalKey = this.findFirstRelatedFunctionalElementKey(requestOptions.imodel, id);
-        if (firstFunctionalKey)
-          idToGetAssemblyFor = firstFunctionalKey.id;
-      }
-      // find the top assembly of either the given element or the functional element
-      const topAssemblyKey = this.getTopAssemblyKey(requestOptions.imodel, idToGetAssemblyFor);
-      let keyToAdd = topAssemblyKey;
-      if (is3d && keyToAdd) {
-        // if we're computing scope for a 3d element, try to switch to its related functional element
-        const relatedFunctionalKey = this.getRelatedFunctionalElementKey(requestOptions.imodel, keyToAdd.id);
-        if (relatedFunctionalKey)
-          keyToAdd = relatedFunctionalKey;
-      }
-      keyToAdd && keys.add(keyToAdd);
-    }));
-    return keys;
+    return SelectionScopesHelper.getSelectionScopes();
   }
 
   /**
@@ -846,22 +634,7 @@ export class PresentationManager {
    */
   public async computeSelection(requestContext: ClientRequestContext, requestOptions: SelectionScopeRequestOptions<IModelDb>, ids: Id64String[], scopeId: string): Promise<KeySet> {
     requestContext.enter();
-    (requestOptions as any);
-
-    switch (scopeId) {
-      case "element": return this.computeElementSelection(requestOptions, ids);
-      case "assembly": return this.computeAssemblySelection(requestOptions, ids);
-      case "top-assembly": return this.computeTopAssemblySelection(requestOptions, ids);
-      case "category": return this.computeCategorySelection(requestOptions, ids);
-      case "model": return this.computeModelSelection(requestOptions, ids);
-      case "functional":
-      case "functional-element":
-        return this.computeFunctionalElementSelection(requestOptions, ids);
-      case "functional-assembly": return this.computeFunctionalAssemblySelection(requestOptions, ids);
-      case "functional-top-assembly": return this.computeFunctionalTopAssemblySelection(requestOptions, ids);
-    }
-
-    throw new PresentationError(PresentationStatus.InvalidArgument, "scopeId");
+    return SelectionScopesHelper.computeSelection(requestOptions, ids, scopeId);
   }
 
   private async request<T>(requestContext: ClientRequestContext, imodel: IModelDb, params: string, reviver?: (key: string, value: any) => any): Promise<T> {
@@ -876,15 +649,10 @@ export class PresentationManager {
 
   private createRequestParams(requestId: string, genericOptions: { imodel: IModelDb, locale?: string, unitSystem?: PresentationUnitSystem }, additionalOptions?: object): string {
     const { imodel, locale, unitSystem, ...genericOptionsStripped } = genericOptions;
-
-    let lowerCaseLocale = locale ?? this.activeLocale;
-    if (lowerCaseLocale)
-      lowerCaseLocale = lowerCaseLocale.toLowerCase();
-
     const request = {
       requestId,
       params: {
-        locale: lowerCaseLocale,
+        locale: normalizeLocale(locale ?? this.activeLocale),
         unitSystem: unitSystem ?? this.activeUnitSystem,
         ...genericOptionsStripped,
         ...additionalOptions,
@@ -903,7 +671,7 @@ export class PresentationManager {
     const keyset = new KeySet();
     keyset.add(keys);
     elementIds.forEach((elementId) => {
-      const concreteKey = this.getElementKey(imodel, elementId);
+      const concreteKey = getElementKey(imodel, elementId);
       if (concreteKey) {
         keyset.delete({ className: elementClassName, id: elementId });
         keyset.add(concreteKey);
@@ -911,12 +679,44 @@ export class PresentationManager {
     });
     return keyset;
   }
+
+  public async compareHierarchies(requestContext: ClientRequestContext, requestOptions: PresentationDataCompareOptions<IModelDb>): Promise<PartialHierarchyModification[]> {
+    requestContext.enter();
+
+    const prev = getPrevValues(requestOptions);
+    const currRulesetId = this.getRulesetIdObject(requestOptions.rulesetOrId);
+    const prevRulesetId = this.getRulesetIdObject(prev.rulesetOrId);
+    if (prevRulesetId.parts.id !== currRulesetId.parts.id)
+      throw new PresentationError(PresentationStatus.InvalidArgument, "Can't compare rulesets with different IDs");
+
+    // note: we're only using imodel property from `handleOptions` result, but it also
+    // registers the changed ruleset and updates ruleset variable values (if necessary)
+    const options = this.handleOptions(requestOptions);
+
+    const imodelAddon = this.getNativePlatform().getImodelAddon(options.imodel);
+    const modificationJsons = await this.getNativePlatform().compareHierarchies(requestContext, imodelAddon, {
+      prevRulesetId: prevRulesetId.uniqueId,
+      currRulesetId: currRulesetId.uniqueId,
+      locale: normalizeLocale(options.locale ?? this.activeLocale) ?? "",
+    });
+    return modificationJsons.map(PartialHierarchyModification.fromJSON);
+  }
 }
 
-const skipTransients = (callback: (id: Id64String) => void) => {
-  return (id: Id64String) => {
-    if (!Id64.isTransient(id))
-      callback(id);
+const hasPrevRuleset = (prev: ({ rulesetOrId: string | Ruleset } | { rulesetVariables: RulesetVariable[] })): prev is ({ rulesetOrId: string | Ruleset }) => {
+  return !!(prev as { rulesetOrId: string | Ruleset }).rulesetOrId;
+};
+
+const getPrevValues = (options: PresentationDataCompareOptions<IModelDb>) => {
+  if (hasPrevRuleset(options.prev)) {
+    return {
+      rulesetOrId: options.prev.rulesetOrId,
+      rulesetVariables: options.rulesetVariables ?? [],
+    };
+  }
+  return {
+    rulesetOrId: options.rulesetOrId,
+    rulesetVariables: options.prev.rulesetVariables,
   };
 };
 
@@ -940,4 +740,10 @@ const createTaskAllocationsMap = (props?: PresentationManagerProps) => {
     [RequestPriority.Preload]: 1,
     [RequestPriority.Max]: 1,
   };
+};
+
+const normalizeLocale = (locale?: string) => {
+  if (!locale)
+    return undefined;
+  return locale.toLocaleLowerCase();
 };

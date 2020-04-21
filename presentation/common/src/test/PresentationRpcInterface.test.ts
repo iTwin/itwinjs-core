@@ -13,6 +13,7 @@ import {
   KeySet, Paged, LabelRpcRequestOptions,
   HierarchyRpcRequestOptions, ContentRpcRequestOptions,
   SelectionScopeRpcRequestOptions,
+  PresentationDataCompareRpcOptions,
 } from "../presentation-common";
 
 describe("PresentationRpcInterface", () => {
@@ -211,6 +212,17 @@ describe("PresentationRpcInterface", () => {
       const scopeId = faker.random.uuid();
       await rpcInterface.computeSelection(token, options, ids, scopeId);
       mock.verify(async (x) => x(toArguments(token, options, ids, scopeId)), moq.Times.once());
+    });
+
+    it("forwards compareHierarchies call", async () => {
+      const options: PresentationDataCompareRpcOptions = {
+        prev: {
+          rulesetOrId: "test1",
+        },
+        rulesetOrId: "test2",
+      };
+      await rpcInterface.compareHierarchies(token, options);
+      mock.verify(async (x) => x(toArguments(token, options)), moq.Times.once());
     });
 
   });

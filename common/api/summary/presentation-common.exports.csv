@@ -68,7 +68,9 @@ public;GroupingSpecificationBase
 public;GroupingSpecificationTypes
 public;HierarchyRequestOptions
 public;HierarchyRpcRequestOptions = PresentationRpcRequestOptions
-alpha;HierarchyUpdateInfo = typeof UPDATE_FULL | Array
+alpha;HierarchyUpdateInfo = typeof UPDATE_FULL | PartialHierarchyModification[]
+alpha;HierarchyUpdateInfo
+alpha;HierarchyUpdateInfoJSON = typeof UPDATE_FULL | PartialHierarchyModificationJSON[]
 public;ImageIdOverride 
 public;InstanceId = Id64String
 public;InstanceKey
@@ -129,7 +131,9 @@ internal;reviver(key: string, value: any): any
 internal;toJSON(node: Node): NodeJSON
 public;NodeArtifactsRule 
 alpha;NodeDeletionInfo
+alpha;NodeDeletionInfoJSON
 alpha;NodeInsertionInfo
+alpha;NodeInsertionInfoJSON
 public;NodeKey = BaseNodeKey | ECInstancesNodeKey | ECClassGroupingNodeKey | ECPropertyGroupingNodeKey | LabelGroupingNodeKey
 public;NodeKey
 internal;fromJSON(json: NodeKeyJSON): NodeKey
@@ -145,9 +149,15 @@ internal;reviver(key: string, value: any): any
 internal;toJSON(npe: NodePathElement): NodePathElementJSON
 public;NodePathFilteringData
 alpha;NodeUpdateInfo
+alpha;NodeUpdateInfoJSON
 public;Omit
 public;Paged
 public;PageOptions
+alpha;PartialHierarchyModification = NodeInsertionInfo | NodeDeletionInfo | NodeUpdateInfo
+alpha;PartialHierarchyModification
+alpha;PartialHierarchyModificationJSON = NodeInsertionInfoJSON | NodeDeletionInfoJSON | NodeUpdateInfoJSON
+alpha;PresentationDataCompareOptions
+alpha;PresentationDataCompareRpcOptions = PresentationRpcRequestOptions
 public;PresentationError 
 alpha;PresentationRpcEvents
 public;PresentationRpcInterface 
@@ -236,6 +246,8 @@ public;SupplementationInfo
 public;TypeDescription = PrimitiveTypeDescription | ArrayTypeDescription | StructTypeDescription
 alpha;UPDATE_FULL = "FULL"
 alpha;UpdateInfo
+alpha;UpdateInfo
+alpha;UpdateInfoJSON
 public;Value = string | number | boolean | undefined | ValuesMap | ValuesArray | NestedContentValue[]
 public;Value
 internal;fromJSON(json: ValueJSON): Value

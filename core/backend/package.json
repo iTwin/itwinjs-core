@@ -100,7 +100,7 @@
     "webpack": "4.42.0"
   },
   "dependencies": {
-    "@bentley/imodeljs-native": "2.0.24",
+    "@bentley/imodeljs-native": "2.0.25",
     "@bentley/context-registry-client": "2.0.0-dev.74",
     "@azure/storage-blob": "10.4.0",
     "deep-assign": "^2.0.0",
