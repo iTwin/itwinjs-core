@@ -1877,9 +1877,9 @@ export class BriefcaseDb extends IModelDb {
   private clearEventSink() { if (this._eventSink) { EventSinkManager.delete(this._eventSink.id); } }
   private initializeEventSink() { if (this._fileKey !== "") { this._eventSink = EventSinkManager.get(this._fileKey); } }
 
-  private constructor(briefcaseEntry: BriefcaseEntry, briefcaseProps: BriefcaseProps) {
-    super(briefcaseEntry.nativeDb, briefcaseProps, briefcaseProps.openMode);
-    this.syncMode = briefcaseProps.syncMode;
+  private constructor(briefcaseEntry: BriefcaseEntry, iModelRpcProps: IModelRpcProps) {
+    super(briefcaseEntry.nativeDb, iModelRpcProps, briefcaseEntry.openMode);
+    this.syncMode = briefcaseEntry.syncMode;
     this.setupBriefcaseEntry(briefcaseEntry);
     this.setDefaultConcurrentControlAndPolicy();
     this.initializeEventSink();
@@ -1932,8 +1932,16 @@ export class BriefcaseDb extends IModelDb {
 
     briefcaseEntry.openMode = openOptions?.openAsReadOnly ? OpenMode.Readonly : briefcaseEntry.openMode; // Override default openMode if user has requested it
     BriefcaseManager.openBriefcase(briefcaseEntry);
+
     briefcaseProps = briefcaseEntry.getBriefcaseProps();
-    const briefcaseDb = new BriefcaseDb(briefcaseEntry, briefcaseProps);
+    const iModelRpcProps: IModelRpcProps = {
+      key: briefcaseProps.key,
+      contextId: briefcaseProps.contextId,
+      iModelId: briefcaseProps.iModelId,
+      changeSetId: briefcaseProps.changeSetId,
+      openMode: briefcaseProps.openMode,
+    };
+    const briefcaseDb = new BriefcaseDb(briefcaseEntry, iModelRpcProps);
     briefcaseEntry.iModelDb = briefcaseDb;
 
     if (briefcaseDb.isPushEnabled) {

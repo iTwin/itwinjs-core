@@ -10,7 +10,7 @@ import { Id64String, OpenMode, Logger, LogLevel, isElectronRenderer, ClientReque
 import { AccessToken } from "@bentley/itwin-client";
 import {
   BrowserAuthorizationCallbackHandler, BrowserAuthorizationClientConfiguration,
-  BrowserAuthorizationClient, isBrowserAuthorizationClient, FrontendAuthorizationClient,
+  BrowserAuthorizationClient, isFrontendAuthorizationClient, FrontendAuthorizationClient,
 } from "@bentley/frontend-authorization-client";
 import {
   RpcConfiguration, RpcOperation, IModelRpcProps, ElectronRpcManager,
@@ -501,13 +501,13 @@ export class SampleAppViewer extends React.Component<any> {
 
   public componentDidMount() {
     const oidcClient = IModelApp.authorizationClient;
-    if (isBrowserAuthorizationClient(oidcClient))
+    if (isFrontendAuthorizationClient(oidcClient))
       oidcClient.onUserStateChanged.addListener(this._onUserStateChanged);
   }
 
   public componentWillUnmount() {
     const oidcClient = IModelApp.authorizationClient;
-    if (isBrowserAuthorizationClient(oidcClient))
+    if (isFrontendAuthorizationClient(oidcClient))
       oidcClient.onUserStateChanged.removeListener(this._onUserStateChanged);
   }
 

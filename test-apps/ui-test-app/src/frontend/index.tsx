@@ -11,7 +11,7 @@ import { AccessToken } from "@bentley/itwin-client";
 import {
   FrontendAuthorizationClient, BrowserAuthorizationClient,
   BrowserAuthorizationCallbackHandler, BrowserAuthorizationClientConfiguration,
-  isBrowserAuthorizationClient,
+  isFrontendAuthorizationClient,
 } from "@bentley/frontend-authorization-client";
 import {
   RpcConfiguration, RpcOperation, IModelRpcProps, ElectronRpcManager,
@@ -531,13 +531,13 @@ export class SampleAppViewer extends React.Component<any, { authorized: boolean 
 
   public componentDidMount() {
     const oidcClient = IModelApp.authorizationClient;
-    if (isBrowserAuthorizationClient(oidcClient))
+    if (isFrontendAuthorizationClient(oidcClient))
       oidcClient.onUserStateChanged.addListener(this._onUserStateChanged);
   }
 
   public componentWillUnmount() {
     const oidcClient = IModelApp.authorizationClient;
-    if (isBrowserAuthorizationClient(oidcClient))
+    if (isFrontendAuthorizationClient(oidcClient))
       oidcClient.onUserStateChanged.removeListener(this._onUserStateChanged);
   }
 
