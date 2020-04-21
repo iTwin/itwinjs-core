@@ -185,3 +185,7 @@ export * from "./tile/TileMetadata";
  * @docs-group-description Tile
  * Types for working with 3d tile formats.
  */
+/**
+ * @docs-group-description Utils
+ * Miscellaneous utility classes.
+ */

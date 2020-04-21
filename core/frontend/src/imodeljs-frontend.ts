@@ -179,3 +179,7 @@ export * from "./BackgroundMapGeometry";
  * @docs-group-description Tiles
  * Classes representing graphics as [hierarchical 3d tiles](https://github.com/CesiumGS/3d-tiles).
  */
+/**
+ * @docs-group-description Authentication
+ * Classes for managing authentication.
+ */

@@ -11,6 +11,6 @@ export * from "./ExtensionProps";
  */
 
 /**
- * @docs-group-description Extension
+ * @docs-group-description ExtensionService
  * Classes for communicating with an iModel.js extension service.
  */
