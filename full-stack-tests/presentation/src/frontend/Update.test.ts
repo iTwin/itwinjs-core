@@ -26,7 +26,7 @@ describe("Update", () => {
 
   after(async () => {
     await imodel.close();
-    terminate();
+    await terminate();
   });
 
   // NEEDS_WORK: Linux specific failure - temporarily skipped

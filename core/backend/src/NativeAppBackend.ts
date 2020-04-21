@@ -27,7 +27,7 @@ export class NativeAppBackend {
    * @param [configuration]
    * @note this should be called instead of IModelHost.startup(). But it would indirectly call that.
    */
-  public static startup(configuration?: IModelHostConfiguration) {
+  public static async startup(configuration?: IModelHostConfiguration): Promise<void> {
     if (IModelHost.isNativeAppBackend) {
       throw new Error("NativeAppBackend.startup() has already been called once");
     }
@@ -60,7 +60,7 @@ export class NativeAppBackend {
         }
       }
     }
-    IModelHost.startup(configuration);
+    await IModelHost.startup(configuration);
   }
 
   /**
@@ -84,9 +84,9 @@ export class NativeAppBackend {
   /**
    * Shutdowns native app backend and at the end also call IModelHost.shutdown()
    */
-  public static shutdown() {
+  public static async shutdown(): Promise<void> {
     this.onInternetConnectivityChanged.clear();
-    IModelHost.shutdown();
+    await IModelHost.shutdown();
   }
 
   /**

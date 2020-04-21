@@ -115,13 +115,13 @@ export class RobotWorldEngine {
     return iModelDb.elements.insertElement(props);
   }
 
-  public static initialize(_requestContext: ClientRequestContext) {
+  public static async initialize(_requestContext: ClientRequestContext): Promise<void> {
     const config = new IModelHostConfiguration();
     if (Platform.isNodeJs)
       config.appAssetsDir = path.join(__dirname, "assets");
     else
       config.appAssetsDir = KnownLocations.packageAssetsDir;
-    IModelHost.startup(config);
+    await IModelHost.startup(config);
 
     // Can't to this, as our logging config uses Bunyan/Seq, and we don't really want to do that here.
     // initializeLogging();
@@ -164,7 +164,7 @@ export class RobotWorldEngine {
   }
   // __PUBLISH_EXTRACT_END__
 
-  public static shutdown() {
-    IModelHost.shutdown();
+  public static async shutdown(): Promise<void> {
+    await IModelHost.shutdown();
   }
 }

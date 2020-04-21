@@ -51,15 +51,17 @@ if (undefined !== program.references) {
   }
 }
 
-// convert schema file to typescript
-let createdFiles;
-try {
-  const writer = new ECSchemaToTsXmlWriter(program.output);
-  createdFiles = writer.convertSchemaFileSync(new SchemaContext(), program.input, referencePaths);
-} catch (err) {
-  console.log(chalk.red("Failed to create: " + err.message));
-  process.exit(1);
-}
+(async () => {
+  // convert schema file to typescript
+  let createdFiles;
+  try {
+    const writer = new ECSchemaToTsXmlWriter(program.output);
+    createdFiles = await writer.convertSchemaFile(new SchemaContext(), program.input, referencePaths);
+  } catch (err) {
+    console.log(chalk.red("Failed to create: " + err.message));
+    process.exit(1);
+  }
 
-// output result
-console.log(chalk.green(`${createdFiles}`));
+  // output result
+  console.log(chalk.green(`${createdFiles}`));
+})(); // tslint:disable-line:no-floating-promises

@@ -18,10 +18,10 @@ describe("default NativePlatform", () => {
   let nativePlatform: NativePlatformDefinition;
   const addonMock = moq.Mock.ofType<IModelJsNative.ECPresentationManager>();
 
-  beforeEach(() => {
-    IModelHost.shutdown();
+  beforeEach(async () => {
+    await IModelHost.shutdown();
     try {
-      IModelHost.startup();
+      await IModelHost.startup();
     } catch (e) {
       let isLoaded = false;
       try {

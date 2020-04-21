@@ -122,7 +122,7 @@ function setupStandaloneConfiguration(): SVTConfiguration {
   return configuration;
 }
 
-export function initializeBackend() {
+export async function initializeBackend(): Promise<void> {
   const svtConfig = setupStandaloneConfiguration();
 
   const hostConfig = new IModelHostConfiguration();
@@ -144,7 +144,7 @@ export function initializeBackend() {
       logLevel = Logger.parseLogLevel(logLevelEnv);
   }
 
-  IModelHost.startup(hostConfig);
+  await IModelHost.startup(hostConfig);
 
   // Set up logging (by default, no logging is enabled)
   Logger.initializeToConsole();

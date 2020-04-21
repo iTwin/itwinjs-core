@@ -2536,9 +2536,9 @@ export class IModelHost {
     // @internal
     static get restrictTileUrlsByClientIp(): boolean;
     static sessionId: GuidString;
-    static shutdown(): void;
+    static shutdown(): Promise<void>;
     static snapshotFileNameResolver?: FileNameResolver;
-    static startup(configuration?: IModelHostConfiguration): void;
+    static startup(configuration?: IModelHostConfiguration): Promise<void>;
     // @beta
     static tileCacheService: CloudStorageService;
     // @internal
@@ -3258,8 +3258,8 @@ export class NativeAppBackend {
     // (undocumented)
     static onInternetConnectivityChanged: BeEvent<(status: InternetConnectivityStatus) => void>;
     static overrideInternetConnectivity(_overridenBy: OverriddenBy, status?: InternetConnectivityStatus): void;
-    static shutdown(): void;
-    static startup(configuration?: IModelHostConfiguration): void;
+    static shutdown(): Promise<void>;
+    static startup(configuration?: IModelHostConfiguration): Promise<void>;
 }
 
 // @public @deprecated

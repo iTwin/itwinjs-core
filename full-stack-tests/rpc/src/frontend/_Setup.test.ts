@@ -25,7 +25,8 @@ before(async () => {
     case "electron": return ElectronRpcManager.initializeClient({}, rpcInterfaces);
     case "direct": {
       // (global as any).window = undefined;
-      require("../backend/CommonBackendSetup");
+      const { commonSetup } = require("../backend/CommonBackendSetup");
+      await commonSetup();
       const config = RpcConfiguration.obtain(RpcDefaultConfiguration);
       config.interfaces = () => rpcInterfaces as any;
       return RpcConfiguration.initializeInterfaces(config);

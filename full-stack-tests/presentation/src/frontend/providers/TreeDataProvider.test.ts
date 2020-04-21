@@ -60,7 +60,7 @@ describe("TreeDataProvider", async () => {
 
   after(async () => {
     await imodel.close();
-    terminate();
+    await terminate();
   });
 
   it("returns root nodes count", async () => {

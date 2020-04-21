@@ -173,6 +173,9 @@ With a new major version of the iModel.js library come breaking API changes. The
 ### Async startup and shutdown
 
 The following methods are now `async` and return `Promise<void>`:
+
+- [IModelHost.startup]($backend)
+- [IModelHost.shutdown]($backend)
 - [IModelApp.startup]($frontend)
 - [IModelApp.shutdown]($frontend)
 

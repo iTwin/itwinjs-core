@@ -34,7 +34,7 @@ describe("Localization", async () => {
 
   after(async () => {
     await imodel.close();
-    terminate();
+    await terminate();
   });
 
   it("localizes using app/test supplied localized strings", async () => {

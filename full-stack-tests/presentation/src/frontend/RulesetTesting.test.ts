@@ -31,9 +31,9 @@ describe("RulesetTesting", () => {
     await initialize();
   });
 
-  after(() => {
+  after(async () => {
     // terminate presentation-testing
-    terminate();
+    await terminate();
   });
 
   beforeEach(async () => {

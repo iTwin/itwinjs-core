@@ -124,7 +124,7 @@ export default class DisplayPerfRpcImpl extends DisplayPerfRpcInterface {
   }
 
   public async finishTest() {
-    IModelHost.shutdown();
+    await IModelHost.shutdown();
 
     // Electron only
     if (app !== undefined) app.exit();

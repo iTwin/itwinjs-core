@@ -99,8 +99,8 @@ export const initializeWithClientServices = async () => {
   await initializeCommon({ useClientServices: true });
 };
 
-export const terminate = () => {
-  terminateTesting();
+export const terminate = async () => {
+  await terminateTesting();
 };
 
 export const resetBackend = () => {

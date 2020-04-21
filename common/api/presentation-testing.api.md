@@ -85,7 +85,7 @@ export interface PresentationTestingInitProps {
 }
 
 // @public
-export const terminate: (frontendApp?: typeof IModelApp) => void;
+export const terminate: (frontendApp?: typeof IModelApp) => Promise<void>;
 
 
 // (No @packageDocumentation comment for this package)

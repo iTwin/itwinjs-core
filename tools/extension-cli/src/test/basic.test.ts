@@ -12,7 +12,7 @@ import { signIn } from "../signIn";
 
 describe.skip("ExtensionClient CLI (#integration)", () => {
   it("gets token", async () => {
-    IModelHost.startup();
+    await IModelHost.startup();
 
     // Initialize an DesktopAuthorizationClient to delete refresh token from global store, then dispose it.
     const requestContext = new ClientRequestContext();
@@ -27,6 +27,6 @@ describe.skip("ExtensionClient CLI (#integration)", () => {
 
     const token = await signIn();
     assert.exists(token);
-    IModelHost.shutdown();
+    await IModelHost.shutdown();
   });
 });

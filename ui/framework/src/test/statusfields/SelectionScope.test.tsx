@@ -119,9 +119,9 @@ describe("Test that requires Presentation", () => {
     widgetControl = statusBarWidgetDef.getWidgetControl(ConfigurableUiControlType.StatusBarWidget) as StatusBarWidgetControl;
   });
 
-  after(() => {
+  after(async () => {
     TestUtils.terminateUiFramework();
-    terminatePresentationTesting();
+    await terminatePresentationTesting();
   });
 
   afterEach(cleanup);

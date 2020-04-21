@@ -16,8 +16,8 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
   }
 
   public async restartIModelHost(): Promise<void> {
-    IModelHost.shutdown();
-    IModelHost.startup();
+    await IModelHost.shutdown();
+    await IModelHost.startup();
   }
 
   public async extractChangeSummaries(tokenProps: IModelRpcProps, options: any): Promise<void> {

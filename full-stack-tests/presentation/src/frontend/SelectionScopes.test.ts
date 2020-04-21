@@ -21,7 +21,7 @@ describe("Selection Scopes", () => {
 
   after(async () => {
     await imodel.close();
-    terminate();
+    await terminate();
   });
 
   beforeEach(() => {

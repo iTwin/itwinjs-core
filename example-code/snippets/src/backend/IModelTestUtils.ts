@@ -84,7 +84,7 @@ export class IModelTestUtils {
   }
 
   // __PUBLISH_EXTRACT_START__ IModelHost.startup
-  public static startupIModelHost() {
+  public static async startupIModelHost(): Promise<void> {
     // The host configuration.
     // The defaults will work for most backends.
     // Here is an example of how the briefcasesCacheDir property of the host configuration
@@ -99,11 +99,11 @@ export class IModelTestUtils {
     imHostConfig.briefcaseCacheDir = briefcaseCacheDir;
 
     // Start up IModelHost, supplying the configuration.
-    IModelHost.startup(imHostConfig);
+    await IModelHost.startup(imHostConfig);
   }
   // __PUBLISH_EXTRACT_END__
 
 }
 
 // Start the backend
-IModelTestUtils.startupIModelHost();
+IModelTestUtils.startupIModelHost(); // tslint:disable-line:no-floating-promises
