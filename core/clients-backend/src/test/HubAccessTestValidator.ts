@@ -10,7 +10,7 @@ import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 
 chai.should();
 
-/** Utility to test basic access to Connect, RBAC and iModelHub */
+/** Utility to test basic access to the Context Registry, RBAC, and iModelHub */
 export class HubAccessTestValidator {
   private static _singletonInstance: HubAccessTestValidator;
 
@@ -33,7 +33,7 @@ export class HubAccessTestValidator {
     return HubAccessTestValidator._singletonInstance;
   }
 
-  public async validateConnectAccess(accessToken: AccessToken) {
+  public async validateContextRegistryAccess(accessToken: AccessToken) {
     const requestContext = new AuthorizedClientRequestContext(accessToken);
     const projectId = await TestConfig.queryProjectId(requestContext, this._testProjectName);
     chai.expect(projectId).to.be.equal(this._testProjectId);

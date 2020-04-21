@@ -506,7 +506,7 @@ export abstract class IModelDb extends IModel {
   }
 
   /** Commit pending changes to this iModel.
-   * @note If this IModelDb is connected to an iModel, then you must call [[ConcurrencyControl.request]] before attempting to save changes.
+   * @note If this IModelDb is a briefcase that is synchronized with iModelHub, then you must call [[ConcurrencyControl.request]] before attempting to save changes.
    * @param description Optional description of the changes
    * @throws [[IModelError]] if there is a problem saving changes or if there are pending, un-processed lock or code requests.
    */
@@ -1856,15 +1856,14 @@ export class BriefcaseDb extends IModelDb {
   public set changeSetId(csId: string) { this._changeSetId = csId; }
 
   /** Get the ConcurrencyControl for this iModel.
-   * The concurrency control is used available *only* if the briefcase has been setup to synchronize changes with the iModelHub (i.e., syncMode = SyncMode.PullAndPush),
+   * The concurrency control is used available *only* if the briefcase has been setup to synchronize changes with iModelHub (i.e., syncMode = SyncMode.PullAndPush),
    * and has been opened ReadWrite (i.e., openMode = OpenMode.ReadWrite)
    * @beta
    */
   public get concurrencyControl(): ConcurrencyControl { return this._concurrencyControl; }
   private _concurrencyControl!: ConcurrencyControl;
 
-  /**
-   * Returns true if the briefcase can be used to push changes up to the iModelHub.
+  /** Returns `true` if the briefcase can be used to push changes to iModelHub.
    * @internal
    */
   public get isPushEnabled(): boolean { return this.syncMode === SyncMode.PullAndPush && this.openMode === OpenMode.ReadWrite; }
@@ -1892,7 +1891,7 @@ export class BriefcaseDb extends IModelDb {
   }
 
   /** Commit pending changes to this iModel.
-   * @note If this IModelDb is connected to an iModel, then you must call [[ConcurrencyControl.request]] before attempting to save changes.
+   * @note If this IModelDb is a briefcase that is synchronized with iModelHub, then you must call [[ConcurrencyControl.request]] before attempting to save changes.
    * @param description Optional description of the changes
    * @throws [[IModelError]] if there is a problem saving changes or if there are pending, un-processed lock or code requests.
    */
@@ -1910,7 +1909,6 @@ export class BriefcaseDb extends IModelDb {
    * @param requestContext The client request context.
    * @param briefcaseKey Key that identifies the briefcase in the cache. See [[BriefcaseManager.download]]
    * @param openOptions Optional parameter to affect the opening of the briefcase
-   * @beta
    */
   public static async open(requestContext: AuthorizedClientRequestContext | ClientRequestContext, briefcaseKey: BriefcaseKey, openOptions?: OpenBriefcaseOptions): Promise<BriefcaseDb> {
     requestContext.enter();
@@ -1919,7 +1917,7 @@ export class BriefcaseDb extends IModelDb {
     if (briefcaseEntry === undefined)
       throw new IModelError(IModelStatus.BadRequest, "Cannot open a briefcase that has not been downloaded", Logger.logError, loggerCategory, () => briefcaseKey);
     if (briefcaseEntry.downloadStatus !== DownloadBriefcaseStatus.Complete)
-      throw new IModelError(IModelStatus.BadRequest, "Cannot open a briefcase that's not been completely downloaded", Logger.logError, loggerCategory, () => briefcaseEntry.getDebugInfo());
+      throw new IModelError(IModelStatus.BadRequest, "Cannot open a briefcase that has not been completely downloaded", Logger.logError, loggerCategory, () => briefcaseEntry.getDebugInfo());
 
     let briefcaseProps = briefcaseEntry.getBriefcaseProps();
     BriefcaseDb.onOpen.raiseEvent(requestContext, briefcaseProps);
@@ -1952,9 +1950,8 @@ export class BriefcaseDb extends IModelDb {
     return briefcaseDb;
   }
 
-  /** Log usage when opening the iModel
-   */
-  private async logUsage(requestContext: AuthorizedClientRequestContext, contextId: string) {
+  /** Log usage when opening the iModel */
+  private async logUsage(requestContext: AuthorizedClientRequestContext, contextId: GuidString) {
     requestContext.enter();
     if (IModelHost.configuration && IModelHost.configuration.applicationType === ApplicationType.WebAgent)
       return; // We do not log usage for agents, since the usage logging service cannot handle them.
@@ -2030,7 +2027,6 @@ export class BriefcaseDb extends IModelDb {
    * @param requestContext The client request context.
    * @param version Version to pull and merge to.
    * @throws [[IModelError]] If the pull and merge fails.
-   * @beta
    */
   public async pullAndMergeChanges(requestContext: AuthorizedClientRequestContext, version: IModelVersion = IModelVersion.latest()): Promise<void> {
     requestContext.enter();
@@ -2049,7 +2045,6 @@ export class BriefcaseDb extends IModelDb {
    * @param description The changeset description
    * @throws [[IModelError]] If there are unsaved changes or the pull and merge fails.
    * @note This function is a no-op if there are no changes to push.
-   * @beta
    */
   public async pushChanges(requestContext: AuthorizedClientRequestContext, description: string): Promise<void> {
     requestContext.enter();
@@ -2074,7 +2069,6 @@ export class BriefcaseDb extends IModelDb {
    * @param requestContext The client request context.
    * @param version Version to reverse changes to.
    * @throws [[IModelError]] If the reversal fails.
-   * @beta
    */
   public async reverseChanges(requestContext: AuthorizedClientRequestContext, version: IModelVersion = IModelVersion.latest()): Promise<void> {
     requestContext.enter();
@@ -2087,7 +2081,6 @@ export class BriefcaseDb extends IModelDb {
    * @param requestContext The client request context.
    * @param version Version to reinstate changes to.
    * @throws [[IModelError]] If the reinstate fails.
-   * @beta
    */
   public async reinstateChanges(requestContext: AuthorizedClientRequestContext, version: IModelVersion = IModelVersion.latest()): Promise<void> {
     requestContext.enter();

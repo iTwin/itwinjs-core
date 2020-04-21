@@ -684,7 +684,7 @@ export class RemoteBriefcaseConnection extends BriefcaseConnection {
   }
 
   /** Close this RemoteBriefcaseConnection
-   * In the case of ReadWrite connections ensure all changes are pushed to the iModelHub before making this call -
+   * In the case of ReadWrite connections ensure all changes are pushed to iModelHub before making this call -
    * any un-pushed changes are lost after the close.
    */
   public async close(): Promise<void> {
@@ -738,7 +738,7 @@ export class LocalBriefcaseConnection extends BriefcaseConnection {
   }
 
   /** Close this LocalBriefcaseConnection
-   * In the case of ReadWrite connections ensure all changes are pushed to the iModelHub before making this call -
+   * In the case of ReadWrite connections ensure all changes are pushed to iModelHub before making this call -
    * any un-pushed changes are lost after the close.
    */
   public async close(): Promise<void> {

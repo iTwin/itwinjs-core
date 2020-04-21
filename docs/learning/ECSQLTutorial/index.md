@@ -40,7 +40,7 @@ This also enables you to experiment more with ECSQL by modifying the tutorial's 
 ### Step 1 - Start the iModelConsole
 
 1. Launch the console
-1. Authenticate with your CONNECT credentials.
+1. Authenticate with your iTwin credentials.
 
 ### Step 2 - Open the sample iModel
 

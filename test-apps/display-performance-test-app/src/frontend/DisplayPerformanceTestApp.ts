@@ -893,7 +893,7 @@ async function loadIModel(testConfig: DefaultConfigs): Promise<boolean> {
     }
   }
 
-  // Open an iModel from the iModelHub
+  // Open an iModel from iModelHub
   if (!openLocalIModel && testConfig.iModelHubProject !== undefined && !MobileRpcConfiguration.isMobileFrontend) {
     const signedIn: boolean = await signIn();
     if (!signedIn)
@@ -910,7 +910,7 @@ async function loadIModel(testConfig: DefaultConfigs): Promise<boolean> {
       throw new Error(`${activeViewState.projectConfig!.iModelName} - IModel not found in project ${activeViewState.project!.name}`);
     activeViewState.iModelConnection = await IModelApi.openIModel(activeViewState.project!.wsgId, activeViewState.iModel!.wsgId, undefined, OpenMode.Readonly);
 
-    if (activeViewState.project) { // Get any external saved views from the iModelHub if they exist
+    if (activeViewState.project) { // Get any external saved views from iModelHub if they exist
       try {
         const projectShareClient: ProjectShareClient = new ProjectShareClient();
         const projectId = activeViewState.project.wsgId;
@@ -938,7 +938,7 @@ async function loadIModel(testConfig: DefaultConfigs): Promise<boolean> {
             return fileFound;
           }
         };
-        // Set activeViewState.externalSavedViews using the first _ESV.json file found in the iModelHub with the iModel's name
+        // Set activeViewState.externalSavedViews using the first _ESV.json file found in iModelHub with the iModel's name
         await findAllFiles(activeViewState.project!.wsgId);
       } catch (error) {
         // Couldn't access the project share files

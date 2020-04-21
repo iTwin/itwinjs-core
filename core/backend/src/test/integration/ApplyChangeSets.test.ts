@@ -12,7 +12,7 @@ import { AuthorizedBackendRequestContext, KnownLocations, NativeLoggerCategory }
 import { HubUtility } from "./HubUtility";
 import { IModelTestUtils } from "../IModelTestUtils";
 
-// Useful utilities to download/upload test cases from/to the iModelHub
+// Useful utilities to download/upload test cases from/to iModelHub
 describe("ApplyChangeSets (#integration)", () => {
   const iModelRootDir = path.join(KnownLocations.tmpdir, "IModelJsTest/");
 

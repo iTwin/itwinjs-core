@@ -291,9 +291,10 @@ And the following method has been renamed/refactored to *find* based on a key:
 
 ### Briefcase iModels
 
-The methods for working with Briefcase iModels (those that are synchronized with the iModelHub) have been refactored. At the backend many of the methods have been moved from (the now abstract) [IModelDb]($backend) class to the [BriefcaseDb]($backend) class. At the frontend, the methods have been moved from (the now abstract) [IModelConnection]($frontend) class to the [RemoteBriefcaseConnection]($frontend) class. More details below -
+The methods for working with Briefcase iModels (those that are synchronized with iModelHub) have been refactored. At the backend many of the methods have been moved from (the now abstract) [IModelDb]($backend) class to the [BriefcaseDb]($backend) class. At the frontend, the methods have been moved from (the now abstract) [IModelConnection]($frontend) class to the [RemoteBriefcaseConnection]($frontend) class. More details below -
 
 #### Managing Briefcases at the Backend
+
 * Opening an iModel from iModel Hub at the backend involves two steps - downloading a briefcase of the iModel, and then opening that briefcase. These two operations have been separated out now, and require two different API calls - await the asynchronous call to [BriefcaseManager.download]($backend) to complete the download, and open the briefcase with a synchronous call to [BriefcaseDb.open]($backend).
   * Before change:
     ```ts
@@ -351,6 +352,7 @@ The methods for working with Briefcase iModels (those that are synchronized with
 #### Managing Briefcases at the Frontend
 
 Similar to the backend, at the frontend, the following method has been moved from (the now abstract) [IModelConnection]($frontend) class:
+
 * `IModelConnection.open` --> [RemoteBriefcaseConnection.open]($frontend)
 
 Like before this causes the briefcase to be downloaded at the backend (if necessary) before opening it.

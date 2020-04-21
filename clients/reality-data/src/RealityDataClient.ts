@@ -16,7 +16,7 @@ import { URL } from "url";
  * an Azure blob URL, the token may be required to obtain this Azure blob URL or refresh it.
  * The Azure blob URL is considered valid for an hour and is refreshed after 50 minutes.
  * In addition to the reality data properties, and Azure blob URL and internal states, a reality data also contains
- * the identification of the CONNECT project to identify the context(used for access permissions resolution) and
+ * the identification of the iTwin project to identify the context(used for access permissions resolution) and
  * may contain a RealityDataClient to obtain the WSG client specialization to communicate with ProjectWise Context Share (to obtain the Azure blob URL).
  * @internal
  */
@@ -144,7 +144,7 @@ export class RealityData extends WsgInstance {
   // Link to client to fetch the blob url
   public client: undefined | RealityDataClient;
 
-  // project id used when using the client. If defined must contain the GUID of the CONNECT
+  // project id used when using the client. If defined must contain the GUID of the iTwin
   // project or "Server" to indicate access is performed out of context (for accessing PUBLIC or ENTERPRISE data).
   // If undefined when accessing reality data tiles then it will automatically be set to "Server"
   public projectId: undefined | string;
@@ -301,7 +301,7 @@ export class FileAccessKey extends WsgInstance {
 }
 
 /** RealityDataRelationship
- * This class is used to represent relationships with a Reality Data and CONNECT Context (CONNECT Project or CONNECT Asset)
+ * This class is used to represent relationships with a Reality Data and iTwin Context (Project or Asset)
  * @internal
  */
 @ECJsonTypeMap.classToJson("wsg", "S3MX.RealityDataRelationship", { schemaPropertyName: "schemaName", classPropertyName: "className" })
@@ -387,7 +387,7 @@ export class RealityDataClient extends WsgClient {
    * Technically it should never be required as the RealityData object returned should have all the information to obtain the
    * data.
    * @param requestContext The client request context.
-   * @param projectId id of associated connect project
+   * @param projectId id of associated iTwin project
    * @param tilesId realityDataInstance id, called tilesId when returned from tile generator job
    * @returns string containing the URL to reality data for indicated tile.
    */
@@ -404,7 +404,7 @@ export class RealityDataClient extends WsgClient {
   /**
    * Gets reality data with all of its properties
    * @param requestContext The client request context.
-   * @param projectId id of associated connect project
+   * @param projectId id of associated iTwin project
    * @param tilesId realityDataInstance id, called tilesId when returned from tile generator job
    * @returns The requested reality data.
    */
@@ -427,7 +427,7 @@ export class RealityDataClient extends WsgClient {
   /**
    * Gets all reality data associated to the project. Consider using getRealityDataInProjectOverlapping() if spatial extent is known.
    * @param requestContext The client request context.
-   * @param projectId id of associated connect project
+   * @param projectId id of associated iTwin project
    * @returns an array of RealityData that are associated to the project.
    */
   public async getRealityDataInProject(requestContext: AuthorizedClientRequestContext, projectId: string, type?: string): Promise<RealityData[]> {
@@ -446,7 +446,7 @@ export class RealityDataClient extends WsgClient {
    * Gets all reality data that has a footprint defined that overlaps the given area and that are associated with the project. Reality Data returned must be accessible by user
    * as public, enterprise data, private or accessible through context RBAC rights attributed to user.
    * @param requestContext The client request context.
-   * @param projectId id of associated connect project
+   * @param projectId id of associated iTwin project
    * @param minLongDeg The minimum longitude in degrees of a 2d range to search.
    * @param maxLongDeg The maximum longitude in degrees of a 2d range to search.
    * @param minLatDeg The minimum latitude in degrees of a 2d range to search.
@@ -468,7 +468,7 @@ export class RealityDataClient extends WsgClient {
   /**
    * Gets reality datas with all of its properties
    * @param requestContext The client request context.
-   * @param projectId id of associated connect project.
+   * @param projectId id of associated iTwin project.
    * @param queryOptions RealityDataServicesRequestQueryOptions of the request.
    * @returns The requested reality data.
    */
@@ -487,7 +487,7 @@ export class RealityDataClient extends WsgClient {
   /**
    * Creates a reality data with given properties
    * @param requestContext The client request context.
-   * @param projectId id of associated connect project
+   * @param projectId id of associated iTwin project
    * @param realityData The reality data to create. The Id of the reality data is usually left empty indicating for the service to assign
    * one. If set then the reality id must not exist on the server.
    * realityDataInstance id, called tilesId when returned from tile generator job
@@ -512,7 +512,7 @@ export class RealityDataClient extends WsgClient {
   /**
    * Updates a reality data with given properties
    * @param requestContext The client request context.
-   * @param projectId id of associated connect project
+   * @param projectId id of associated iTwin project
    * @param realityData The reality data to update. The Id must contain the identifier of the reality data to update.
    * NOTE: As a probable known defect some specific read-only attributes must be undefined prior to passing the reality data.
    * These are: organizationId, sizeUpToDate, ownedBy, ownerId
@@ -537,7 +537,7 @@ export class RealityDataClient extends WsgClient {
   /**
    * Deletes a reality data.
    * @param requestContext The client request context.
-   * @param projectId id of associated connect project
+   * @param projectId id of associated iTwin project
    * @param realityDataId The identifier of the reality data to delete.
    * @returns a void Promise.
    */
@@ -552,7 +552,7 @@ export class RealityDataClient extends WsgClient {
   /**
    * Gets all reality data relationships associated to the given reality id, not only the relationship for given project.
    * @param requestContext The client request context.
-   * @param projectId id of associated connect project in which to make to call for permission reason
+   * @param projectId id of associated iTwin project in which to make to call for permission reason
    * @param realityDataId realityDataInstance id to obtain the relationships for.
    * @returns All relationships associated to reality data. The requested reality data.
    */
@@ -565,7 +565,7 @@ export class RealityDataClient extends WsgClient {
   /**
    * Gets all reality data relationships associated to the given reality id, not only the relationship for given project.
    * @param requestContext The client request context.
-   * @param projectId id of associated connect project in which to make to call for permission reason
+   * @param projectId id of associated iTwin project in which to make to call for permission reason
    * @param realityDataId realityDataInstance id to obtain the relationships for.
    * @returns All relationships associated to reality data. The requested reality data.
    */
@@ -581,7 +581,7 @@ export class RealityDataClient extends WsgClient {
   /**
    * Gets all reality data relationships associated to the given reality id, not only the relationship for given project.
    * @param requestContext The client request context.
-   * @param projectId id of associated connect project in which to make to call for permission reason
+   * @param projectId id of associated iTwin project in which to make to call for permission reason
    * @param realityDataId realityDataInstance id to obtain the relationships for.
    * @returns All relationships associated to reality data. The requested reality data.
    */
@@ -593,7 +593,7 @@ export class RealityDataClient extends WsgClient {
   /**
    * Gets a tile file access key
    * @param requestContext The client request context.
-   * @param projectId id of associated connect project
+   * @param projectId id of associated iTwin project
    * @param tilesId realityDataInstance id, called tilesId when returned from tile generator job.
    * @param writeAccess Optional boolean indicating if write access is requested. Default is false for read-only access.
    * @returns a FileAccessKey object containing the Azure blob address.

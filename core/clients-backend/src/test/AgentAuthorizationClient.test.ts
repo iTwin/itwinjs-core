@@ -56,11 +56,11 @@ describe("AgentAuthorizationClient (#integration)", () => {
     chai.assert.isDefined(startsAt);
     chai.assert.isAtLeast(startsAt!.getTime(), expiresAt!.getTime() - 1 * 60 * 60 * 1000); // Starts atleast 1 hour before expiry
 
-    await validator.validateConnectAccess(jwt);
+    await validator.validateContextRegistryAccess(jwt);
     await validator.validateIModelHubAccess(jwt);
 
     const refreshJwt: AccessToken = await agentClient.getAccessToken(requestContext);
-    await validator.validateConnectAccess(refreshJwt);
+    await validator.validateContextRegistryAccess(refreshJwt);
     await validator.validateIModelHubAccess(refreshJwt);
   });
 

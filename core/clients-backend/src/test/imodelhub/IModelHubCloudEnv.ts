@@ -9,8 +9,8 @@ import { TestUtility } from "@bentley/oidc-signin-tool";
 import { getImodelHubClient } from "./TestUtils";
 import { ContextRegistryClient, Project, Asset } from "@bentley/context-registry-client";
 
-/** An implementation of IModelProjectAbstraction backed by a iModelHub/Connect project */
-class TestConnectClient implements ContextManagerClient {
+/** An implementation of IModelProjectAbstraction backed by a iModelHub/iTwin project */
+class TestContextManagerClient implements ContextManagerClient {
   public async queryProjectByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<Project> {
     const client = new ContextRegistryClient();
     return client.getProject(requestContext, {
@@ -49,7 +49,7 @@ class TestIModelHubUserMgr implements IModelAuthorizationClient {
 
 export class TestIModelHubCloudEnv implements IModelCloudEnvironment {
   public get isIModelHub(): boolean { return true; }
-  public readonly contextMgr = new TestConnectClient();
+  public readonly contextMgr = new TestContextManagerClient();
   public readonly authorization = new TestIModelHubUserMgr();
   public readonly imodelClient = getImodelHubClient();
   public async startup(): Promise<void> { return Promise.resolve(); }

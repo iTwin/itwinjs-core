@@ -222,7 +222,7 @@ export class ConcurrencyControl {
    */
   public onElementWrite(elementClass: typeof Element, element: ElementProps, opcode: DbOpcode): void {
     if (!this._iModel.isPushEnabled) {
-      throw new IModelError(IModelStatus.ReadOnly, "iModel is read-only - changes cannot be pushed to the iModelHub", Logger.logError, loggerCategory);
+      throw new IModelError(IModelStatus.ReadOnly, "iModel is read-only - changes cannot be pushed to iModelHub", Logger.logError, loggerCategory);
     }
     const resourcesNeeded = new ConcurrencyControl.Request();
     this.buildRequestForElementTo(resourcesNeeded, element, opcode, elementClass);

@@ -3262,7 +3262,7 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
 
 // @public
 export interface IModelRpcProps {
-    changeSetId?: string;
+    changeSetId?: GuidString;
     readonly contextId?: GuidString;
     readonly iModelId?: GuidString;
     readonly key: string;

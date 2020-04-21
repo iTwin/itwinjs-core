@@ -10,7 +10,7 @@ import * as os from "os";
 import * as path from "path";
 import { BriefcaseManager, ChangeSetToken, IModelDb, IModelJsFs, ReservedBriefcaseId, StandaloneDb, IModelHost } from "@bentley/imodeljs-backend";
 
-/** Utility to work with the iModelHub */
+/** Utility to work with iModelHub */
 export class HubUtility {
 
   public static logCategory = "HubUtility";
@@ -458,7 +458,7 @@ export class HubUtility {
   }
 }
 
-/** An implementation of IModelProjectAbstraction backed by a iModelHub/Connect project */
+/** An implementation of IModelProjectAbstraction backed by an iTwin project */
 class TestIModelHubProject {
   public get isIModelHub(): boolean { return true; }
   public terminate(): void { }

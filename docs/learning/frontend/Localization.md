@@ -14,13 +14,13 @@ For example, suppose you are developing an application called SafetyBase and you
  {
    "info": {
      "login": {
-       "notLoggedIn": "You are not currently logged in to Bentley Connect.",
-       "loggedIn": "You are logged in to Bentley Connect as {{userName}}."
+       "notLoggedIn": "You are not currently logged in.",
+       "loggedIn": "You are logged in as {{userName}}."
      }
    },
    "warning": {
      "login": {
-       "mustLogin": "That feature is unavailable unless you log in to Bentley Connect.",
+       "mustLogin": "That feature is unavailable unless you log.",
        "notAuthorized": "You are not authorized to access that resource."
      }
    },
@@ -43,7 +43,7 @@ if (this.notLoggedIn) {
 }
 ```
 
-In the example above, we start by registering the namespace with IModelApp. That starts the process of retrieving the SafetyBaseMessages.json file in the directory corresponding to the current locale (in this case, "en") from the server. Since that might take a little while, before the first use of a namespace, we await on the readFinished property of the I18NNamespace, which is a Promise that is fulfilled when the file is retrieved and ready to be accessed by the translate method. If not logged in, we use the simple form of the translate method to display the string "You are not currently logged in to Bentley Connect." to the console. If the user is logged in, the message "You are logged in to Bentley Connect as xxx.", is displayed on the console, where xxx is replaced by this.loginName. This demonstrates passing additional argument to the translate method, which substitutes the value of the arguments for the corresponding variables specified in the {{ }} formulas in the translation string. That substitution is called "interpolation" in internationalization terminology.
+In the example above, we start by registering the namespace with IModelApp. That starts the process of retrieving the SafetyBaseMessages.json file in the directory corresponding to the current locale (in this case, "en") from the server. Since that might take a little while, before the first use of a namespace, we await on the readFinished property of the I18NNamespace, which is a Promise that is fulfilled when the file is retrieved and ready to be accessed by the translate method. If not logged in, we use the simple form of the translate method to display the string "You are not currently logged in to Bentley Connect." to the console. If the user is logged in, the message "You are logged in as xxx.", is displayed on the console, where xxx is replaced by this.loginName. This demonstrates passing additional argument to the translate method, which substitutes the value of the arguments for the corresponding variables specified in the {{ }} formulas in the translation string. That substitution is called "interpolation" in internationalization terminology.
 
 Behind the scenes, iModel.js uses the [i18Next](http://www.i18next.com) JavaScript package. It has many other sophisticated internationalization capabilities, including formatting, plurals, and nesting, as well as the interpolation example above. iModel.js initializes i18next with a set of options that are usually fine for all applications. If you want different options, you can use i18next directly from your application, or instantiate an instance of iModel.js' I18N class, which provides some convenience methods for waiting for the read to finish, etc.
 

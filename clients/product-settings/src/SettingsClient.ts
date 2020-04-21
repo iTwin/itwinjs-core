@@ -49,7 +49,7 @@ class SettingsFromNamespaceCollector {
 }
 
 /**
- * Client API for the CONNECT ProductSettingsService - implements the SettingsAdmin interface when settings are stored by CONNECT.
+ * Client API for the iTwin ProductSettingsService - implements the SettingsAdmin interface.
  * This class is not accessed directly from applications, they should use IModelApp.SettingsAdmin.
  * @internal
  */

@@ -40,7 +40,7 @@ export class IOSAzureFileHandler implements FileHandler {
     fs.mkdirSync(dirPath);
   }
   /**
-   * Download a file from AzureBlobStorage for the iModelHub. Creates the directory containing the file if necessary. If there is an error in the operation, incomplete file is deleted from disk.
+   * Download a file from AzureBlobStorage for iModelHub. Creates the directory containing the file if necessary. If there is an error in the operation, incomplete file is deleted from disk.
    * @param requestContext The client request context
    * @param downloadUrl URL to download file from.
    * @param downloadToPathname Pathname to download the file to.
@@ -139,7 +139,7 @@ export class IOSAzureFileHandler implements FileHandler {
   }
 
   /**
-   * Upload a file to AzureBlobStorage for the iModelHub.
+   * Upload a file to AzureBlobStorage for iModelHub.
    * @param requestContext The client request context
    * @param uploadUrl URL to upload the file to.
    * @param uploadFromPathname Pathname to upload the file from.

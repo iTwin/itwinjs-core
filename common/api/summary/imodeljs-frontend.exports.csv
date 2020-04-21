@@ -144,8 +144,8 @@ public;FeatureOverrideProvider
 beta;FeatureOverrideType
 public;FeatureSymbology
 alpha;FeatureTrackingManager
-alpha;findAvailableRealityModels(projectid: string, modelCartographicRange?: CartographicRange | undefined): Promise
-alpha;findAvailableUnattachedRealityModels(projectid: string, iModel?: IModelConnection, modelCartographicRange?: CartographicRange | undefined): Promise
+alpha;findAvailableRealityModels(contextId: GuidString, modelCartographicRange?: CartographicRange | undefined): Promise
+alpha;findAvailableUnattachedRealityModels(contextId: GuidString, iModel?: IModelConnection, modelCartographicRange?: CartographicRange | undefined): Promise
 public;FitViewTool 
 internal;Flags
 public;FlyViewTool 

@@ -6,7 +6,7 @@ import { Asset, ContextRegistryClient, Project } from "@bentley/context-registry
 import { ContextManagerClient } from "@bentley/imodelhub-client";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 
-/** An implementation of IModelProjectAbstraction backed by a iModelHub/Connect project */
+/** An implementation of IModelProjectAbstraction backed by an iTwin project */
 export class ContextRegistryClientWrapper implements ContextManagerClient {
   public async queryProjectByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<Project> {
     const client = new ContextRegistryClient();

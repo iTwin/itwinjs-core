@@ -5,8 +5,9 @@
 /** @packageDocumentation
  * @module Views
  */
-import { ContextRealityModelProps, CartographicRange, OrbitGtBlobProps } from "@bentley/imodeljs-common";
+import { GuidString } from "@bentley/bentleyjs-core";
 import { Angle } from "@bentley/geometry-core";
+import { CartographicRange, ContextRealityModelProps, OrbitGtBlobProps } from "@bentley/imodeljs-common";
 import { AccessToken } from "@bentley/itwin-client";
 import { RealityData, RealityDataClient } from "@bentley/reality-data-client";
 import { DisplayStyleState } from "./DisplayStyleState";
@@ -15,7 +16,7 @@ import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { SpatialModelState } from "./ModelState";
 import { SpatialClassifiers } from "./SpatialClassifiers";
-import { createRealityTileTreeReference, RealityModelTileClient, RealityModelTileTree, RealityModelTileUtils, TileTreeReference, createOrbitGtTileTreeReference } from "./tile/internal";
+import { createOrbitGtTileTreeReference, createRealityTileTreeReference, RealityModelTileClient, RealityModelTileTree, RealityModelTileUtils, TileTreeReference } from "./tile/internal";
 
 async function getAccessToken(): Promise<AccessToken | undefined> {
   if (!IModelApp.authorizationClient || !IModelApp.authorizationClient.hasSignedIn)
@@ -78,7 +79,7 @@ export class ContextRealityModelState {
     };
   }
 
-  /** ###TODO this is ridiculously slow (like, 10s of seconds) and downlaods megabytes of data to extract range and throw it all away.
+  /** ###TODO this is ridiculously slow (like, 10s of seconds) and downloads megabytes of data to extract range and throw it all away.
    * findAvailableRealityModels() already TAKES the project extents as a cartographic range to exclude so...
    */
   public async intersectsProjectExtents(): Promise<boolean> {
@@ -114,25 +115,25 @@ export class ContextRealityModelState {
 }
 
 /**
- * Returns a list of reality data associated to the given CONNECT project
- * @param projectId id of associated connect project
+ * Returns a list of reality data associated to the given iTwin context
+ * @param contextId id of associated iTwin context
  * @param modelCartographicRange optional cartographic range of the model that can limit the spatial range for the search
  * @returns a list of reality model properties associated with the project
  * @alpha
  */
-export async function findAvailableRealityModels(projectid: string, modelCartographicRange?: CartographicRange | undefined): Promise<ContextRealityModelProps[]> {
-  return findAvailableUnattachedRealityModels(projectid, undefined, modelCartographicRange);
+export async function findAvailableRealityModels(contextId: GuidString, modelCartographicRange?: CartographicRange | undefined): Promise<ContextRealityModelProps[]> {
+  return findAvailableUnattachedRealityModels(contextId, undefined, modelCartographicRange);
 }
 
 /**
- * Returns a list of reality data associated to the given CONNECT project - but filters out any reality sets that are directly attached to the iModel.
- * @param projectId id of associated connect project
+ * Returns a list of reality data associated to the given iTwin context - but filters out any reality sets that are directly attached to the iModel.
+ * @param contextId id of associated iTwin context
  * @param iModel the iModel -- reality data sets attached to this model will be excluded from the returned list.
  * @param modelCartographicRange optional cartographic range of the model that can limit the spatial range for the search
  * @returns a list of reality model properties associated with the project
  * @alpha
  */
-export async function findAvailableUnattachedRealityModels(projectid: string, iModel?: IModelConnection, modelCartographicRange?: CartographicRange | undefined): Promise<ContextRealityModelProps[]> {
+export async function findAvailableUnattachedRealityModels(contextId: GuidString, iModel?: IModelConnection, modelCartographicRange?: CartographicRange | undefined): Promise<ContextRealityModelProps[]> {
   const availableRealityModels: ContextRealityModelProps[] = [];
 
   const accessToken: AccessToken | undefined = await getAccessToken();
@@ -147,12 +148,12 @@ export async function findAvailableUnattachedRealityModels(projectid: string, iM
   let realityData: RealityData[];
   if (modelCartographicRange) {
     const iModelRange = modelCartographicRange.getLongitudeLatitudeBoundingBox();
-    realityData = await client.getRealityDataInProjectOverlapping(requestContext, projectid, Angle.radiansToDegrees(iModelRange.low.x),
+    realityData = await client.getRealityDataInProjectOverlapping(requestContext, contextId, Angle.radiansToDegrees(iModelRange.low.x),
       Angle.radiansToDegrees(iModelRange.high.x),
       Angle.radiansToDegrees(iModelRange.low.y),
       Angle.radiansToDegrees(iModelRange.high.y));
   } else {
-    realityData = await client.getRealityDataInProject(requestContext, projectid);
+    realityData = await client.getRealityDataInProject(requestContext, contextId);
   }
   requestContext.enter();
 
@@ -186,7 +187,7 @@ export async function findAvailableUnattachedRealityModels(projectid: string, iM
 
     // If the RealityData is valid then we add it to the list.
     if (currentRealityData.id && validRd === true) {
-      const url = await client.getRealityDataUrl(requestContext, projectid, currentRealityData.id as string);
+      const url = await client.getRealityDataUrl(requestContext, contextId, currentRealityData.id as string);
       requestContext.enter();
       if (!modelRealityDataIds.has(currentRealityData.id as string))
         availableRealityModels.push({ tilesetUrl: url, name: realityDataName, description: (currentRealityData.description ? currentRealityData.description : "") });

@@ -130,7 +130,7 @@ export class BriefcaseEntry {
   private _nativeDb!: IModelJsNative.DgnDb;
   public get nativeDb(): IModelJsNative.DgnDb { return this._nativeDb; }
 
-  /** Operations allowed when synchronizing changes between the Briefcase and the iModelHub */
+  /** Operations allowed when synchronizing changes between the Briefcase and iModelHub */
   public syncMode: SyncMode;
 
   /** Mode used to open the briefcase */
@@ -387,7 +387,7 @@ export class BriefcaseManager {
   private static _contextRegistryClient?: ContextRegistryClient;
 
   /**
-   * Connect client to be used for all briefcase operations
+   * Client to be used for all briefcase operations
    * @internal
    */
   public static get connectClient(): ContextRegistryClient {
@@ -610,7 +610,7 @@ export class BriefcaseManager {
       this._imodelClient = new IModelHubClient(new AzureFileHandler());
   }
 
-  private static setupConnectClient() {
+  private static setupContextRegistryClient() {
     BriefcaseManager._contextRegistryClient = new ContextRegistryClient();
   }
 
@@ -622,7 +622,7 @@ export class BriefcaseManager {
       return;
     this._imodelClient = iModelClient;
     BriefcaseManager.setupCacheDir(cacheRootDir);
-    BriefcaseManager.setupConnectClient();
+    BriefcaseManager.setupContextRegistryClient();
     IModelHost.onBeforeShutdown.addListener(BriefcaseManager.finalize);
     this._initialized = true;
   }
@@ -717,11 +717,10 @@ export class BriefcaseManager {
 
   private static _asyncMutex = new AsyncMutex();
 
-  /**
-   * Request downloading of a briefcase
+  /** Request downloading of a briefcase
    * @return Information on the downloaded briefcase, and a promise that resolves when the download completes
    * @param requestContext The client request context.
-   * @param contextId Id of the Connect Project or Asset containing the iModel
+   * @param contextId Id of the iTwin Project or Asset containing the iModel
    * @param iModelId Id of the iModel
    * @param downloadOptions Options to affect the download of the briefcase
    * @param version Version of the iModel to open

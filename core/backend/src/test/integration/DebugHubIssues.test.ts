@@ -14,7 +14,7 @@ import { IModelTestUtils } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
 import { Version, UserInfoQuery, HubUserInfo } from "@bentley/imodelhub-client";
 
-// Useful utilities to download/upload test cases from/to the iModelHub
+// Useful utilities to download/upload test cases from/to iModelHub
 describe.skip("DebugHubIssues (#integration)", () => {
   let requestContext: AuthorizedBackendRequestContext;
   const iModelRootDir = "d:\\testmodels\\";

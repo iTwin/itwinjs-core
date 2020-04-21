@@ -129,7 +129,7 @@ export class ProjectShareQuery extends WsgQuery {
    * @param nameLike Wild card expression to match the name of the file
    * @note
    * <ul>
-   * <li> The path is really as seen in the connect project share portal, and should not include the contextId at the root.
+   * <li> The path is really as seen in the iTwin project share portal, and should not include the contextId at the root.
    * <li> This cannot be combined with other queries.
    * <ul>
    */
@@ -145,7 +145,7 @@ export class ProjectShareQuery extends WsgQuery {
    * @param nameLike Wildcard expression to match the name of the file
    * @note
    * <ul>
-   * <li> The path is really as seen in the connect project share portal, and should not include the contextId at the root.
+   * <li> The path is really as seen in the iTwin project share portal, and should not include the contextId at the root.
    * <li> This cannot be combined with other queries.
    * <ul>
    */
@@ -166,7 +166,7 @@ export class ProjectShareFileQuery extends ProjectShareQuery {
    * @param path Path specified relative to the root folder to look in. Note: Root folder is named by the contextId, and need not be included.
    * @note
    * <ul>
-   * <li> The path is really as seen in the connect project share portal, and should not include the contextId at the root.
+   * <li> The path is really as seen in the iTwin project share portal, and should not include the contextId at the root.
    * <li> This cannot be combined with other queries.
    * <ul>
    */
@@ -185,7 +185,7 @@ export class ProjectShareFolderQuery extends ProjectShareQuery {
    * @param path Path specified relative to the root folder to look in. Note: Root folder is named by the contextId, and need not be included.
    * @note
    * <ul>
-   * <li> The path is really as seen in the connect project share portal, and should not include the contextId at the root.
+   * <li> The path is really as seen in the iTwin project share portal, and should not include the contextId at the root.
    * <li> This cannot be combined with other queries.
    * <ul>
    */
@@ -204,8 +204,8 @@ export class ProjectShareFolderQuery extends ProjectShareQuery {
  * creating OIDC tokens must include the scope *projectwise-share*.
  * <li> Use this [link](http://bsw-wiki.bentley.com/bin/view.pl/Main/ProjectShareApiV2Documentation) for comprehensive documentation of
  * the underlying REST API.
- * <li> The user accessing Project Share must be provided the required permissions in the connect role management portal.
- * i.e., from the main connect project portal, follow the link to "Project Team Management > Project Role Management > Service Access and Permissions > Share"
+ * <li> The user accessing Project Share must be provided the required permissions in the iTwin role management portal.
+ * i.e., from the main iTwin project portal, follow the link to "Project Team Management > Project Role Management > Service Access and Permissions > Share"
  * and ensure it includes the relevant Project Share permissions for Read, Write, Delete, etc.
  * </ul>
  * @alpha
