@@ -57,7 +57,7 @@
     "@bentley/bentleyjs-core": "2.0.0-dev.75",
     "@bentley/ecschema-metadata": "2.0.0-dev.75",
     "@bentley/ecschema-locaters": "2.0.0-dev.75",
-    "@bentley/imodeljs-clients-backend": "2.0.0-dev.75",
+    "@bentley/backend-itwin-client": "2.0.0-dev.75",
     "@bentley/imodeljs-common": "2.0.0-dev.75",
     "@bentley/imodeljs-backend": "2.0.0-dev.75",
     "@bentley/geometry-core": "2.0.0-dev.75",

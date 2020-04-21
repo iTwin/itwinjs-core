@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { ChangeSetApplyOption, ChangeSetStatus, GuidString, Logger, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
 import { RequestGlobalOptions } from "@bentley/itwin-client";
-import { RequestHost } from "@bentley/imodeljs-clients-backend";
+import { RequestHost } from "@bentley/backend-itwin-client";
 import { IModel, IModelVersion, SyncMode } from "@bentley/imodeljs-common";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { assert } from "chai";

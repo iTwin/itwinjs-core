@@ -195,6 +195,10 @@ the `imodeljs-clients` package has been split into the following packages, all o
 - `reality-data-client`
 - `usage-logging-client`
 
+### iTwin client-backend package rename
+
+to align with the splitting of the `imodeljs-clients` package, `imodeljs-clients-backend` has been renamed to `backend-itwin-client`
+
 ### Authentication and Authorization
 
 #### Removed support for SAML based authorization

@@ -70,7 +70,7 @@
     "@bentley/icons-generic": "^1.0.5",
     "@bentley/imodelhub-client": "2.0.0-dev.75",
     "@bentley/itwin-client": "2.0.0-dev.75",
-    "@bentley/imodeljs-clients-backend": "2.0.0-dev.75",
+    "@bentley/backend-itwin-client": "2.0.0-dev.75",
     "@bentley/imodeljs-common": "2.0.0-dev.75",
     "@bentley/imodeljs-i18n": "2.0.0-dev.75",
     "@bentley/imodeljs-frontend": "2.0.0-dev.75",

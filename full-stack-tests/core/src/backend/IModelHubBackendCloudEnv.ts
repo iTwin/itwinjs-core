@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { IModelHubClient, IModelCloudEnvironment } from "@bentley/imodelhub-client";
-import { AzureFileHandler } from "@bentley/imodeljs-clients-backend";
+import { AzureFileHandler } from "@bentley/backend-itwin-client";
 import { ContextRegistryClientWrapper } from "../common/ContextRegistryClientWrapper";
 import { IModelHubUserMgr } from "../common/IModelHubUserMgr";
 

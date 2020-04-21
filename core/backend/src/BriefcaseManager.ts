@@ -11,7 +11,7 @@ import {
   CheckpointQuery, Checkpoint, BriefcaseQuery, ChangeSetQuery, ConflictingCodesError, IModelClient, HubIModel, IModelBankClient,
 } from "@bentley/imodelhub-client";
 import { AuthorizedClientRequestContext, CancelRequest, ProgressCallback, UserCancelledError } from "@bentley/itwin-client";
-import { AzureFileHandler, IOSAzureFileHandler } from "@bentley/imodeljs-clients-backend";
+import { AzureFileHandler, IOSAzureFileHandler } from "@bentley/backend-itwin-client";
 import {
   ChangeSetApplyOption, BeEvent, DbResult, OpenMode, assert, Logger, ChangeSetStatus,
   BentleyStatus, IModelHubStatus, PerfLogger, GuidString, Id64, IModelStatus, AsyncMutex, BeDuration,

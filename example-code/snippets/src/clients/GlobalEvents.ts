@@ -6,7 +6,7 @@
 import { ClientRequestContext, Config, Logger } from "@bentley/bentleyjs-core";
 import { GetEventOperationType, GlobalEventSAS, GlobalEventSubscription, IModelHubClient, IModelHubGlobalEvent } from "@bentley/imodelhub-client";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { AgentAuthorizationClient, BackendAuthorizationClientConfiguration } from "@bentley/imodeljs-clients-backend";
+import { AgentAuthorizationClient, BackendAuthorizationClientConfiguration } from "@bentley/backend-itwin-client";
 
 class MockAccessToken extends AccessToken {
   public constructor() { super(); }

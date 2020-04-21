@@ -30,7 +30,7 @@ import { LocalhostHandler } from "../../imodelhub/LocalhostFileHandler";
 import { StorageServiceFileHandler } from "../../StorageServiceFileHandler";
 import { Project, Asset } from "@bentley/context-registry-client";
 
-const loggingCategory = "imodeljs-clients-backend.TestUtils";
+const loggingCategory = "backend-itwin-client.TestUtils";
 
 const bankProjects: string[] = [];
 

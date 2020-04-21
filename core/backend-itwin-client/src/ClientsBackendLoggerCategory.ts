@@ -7,7 +7,7 @@
  */
 
 /** Logger categories used by this package
- * @note All logger categories in this package start with the `imodeljs-clients-backend` prefix.
+ * @note All logger categories in this package start with the `backend-itwin-client` prefix.
  * @see [Logger]($bentley)
  * @public
  */
@@ -18,5 +18,5 @@ export enum ClientsBackendLoggerCategory {
   IModelHub = "imodelhub-client.iModelHub",
 
   /** The logger category used for Authorization */
-  Authorization = "imodeljs-clients-backend.Authorization",
+  Authorization = "backend-itwin-client.Authorization",
 }

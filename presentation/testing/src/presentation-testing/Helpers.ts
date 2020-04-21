@@ -27,7 +27,7 @@ import {
   PresentationManagerProps as PresentationFrontendProps,
 } from "@bentley/presentation-frontend";
 
-import { AgentAuthorizationClientConfiguration, AgentAuthorizationClient } from "@bentley/imodeljs-clients-backend";
+import { AgentAuthorizationClientConfiguration, AgentAuthorizationClient } from "@bentley/backend-itwin-client";
 
 function initializeRpcInterfaces(interfaces: RpcInterfaceDefinition[]) {
   const config = class extends RpcDefaultConfiguration {

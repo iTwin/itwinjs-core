@@ -8,7 +8,7 @@ import { Issuer } from "openid-client";
 import { ClientRequestContext, BeDuration, Config } from "@bentley/bentleyjs-core";
 import { AccessToken, IncludePrefix } from "@bentley/itwin-client";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
-import { AgentAuthorizationClient, AgentAuthorizationClientConfiguration } from "../imodeljs-clients-backend";
+import { AgentAuthorizationClient, AgentAuthorizationClientConfiguration } from "../backend-itwin-client";
 import { HubAccessTestValidator } from "./HubAccessTestValidator";
 
 IModelJsConfig.init(true /* suppress exception */, false /* suppress error message */, Config.App);

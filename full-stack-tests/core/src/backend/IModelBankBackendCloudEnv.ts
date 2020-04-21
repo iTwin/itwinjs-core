@@ -8,7 +8,7 @@ import * as path from "path";
 import * as child_process from "child_process";
 import * as http from "http";
 import * as https from "https";
-import { UrlFileHandler } from "@bentley/imodeljs-clients-backend";
+import { UrlFileHandler } from "@bentley/backend-itwin-client";
 import { Logger, Config } from "@bentley/bentleyjs-core";
 import { IModelCloudEnvironment, IModelBankClient, IModelBankFileSystemContextClient } from "@bentley/imodelhub-client";
 import { IModelBankDummyAuthorizationClient } from "@bentley/imodelhub-client/lib/imodelbank/IModelBankDummyAuthorizationClient";
@@ -18,7 +18,7 @@ export const assetsPath = __dirname + "/../../../lib/test/assets/";
 export const workDir = __dirname + "/../../../lib/test/output/";
 
 // To run tests with imodel-bank integration:
-// set NODE_EXTRA_CA_CERTS=d:\imjs\imodeljs\core\clients-backend\src\test\assets\local_dev_server.crt
+// set NODE_EXTRA_CA_CERTS=d:\imjs\imodeljs\core\backend-itwin-client\src\test\assets\local_dev_server.crt
 // set imjs_test_imodel_bank to true to run tests with imodel-bank. Then either:
 // set imjs_test_imodel_bank_url to specify the url to locally deployed orchestrator
 // or set the following so the tests would deploy a local orchestrator themselves:
@@ -51,7 +51,7 @@ export function getIModelBankCloudEnv(): IModelCloudEnvironment {
 
 function launchLocalOrchestrator(): IModelCloudEnvironment {
 
-  const loggingCategory = "imodeljs-clients-backend.IModelBankCloudEnv";
+  const loggingCategory = "backend-itwin-client.IModelBankCloudEnv";
 
   const bankFsRoot = path.join(workDir, "bankfs");
 

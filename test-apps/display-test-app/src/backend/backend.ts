@@ -15,7 +15,7 @@ import {
 import * as fs from "fs";
 import * as path from "path";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
-import { UrlFileHandler } from "@bentley/imodeljs-clients-backend";
+import { UrlFileHandler } from "@bentley/backend-itwin-client";
 import { SVTConfiguration } from "../common/SVTConfiguration";
 import "./SVTRpcImpl"; // just to get the RPC implementation registered
 import SVTRpcInterface from "../common/SVTRpcInterface";

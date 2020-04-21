@@ -1,12 +1,12 @@
 {
-  "name": "@bentley/imodeljs-clients-backend",
+  "name": "@bentley/backend-itwin-client",
   "version": "2.0.0-dev.75",
   "description": "Clients for various Bentley Services used by iModel.js at the backend",
-  "main": "lib/imodeljs-clients-backend.js",
+  "main": "lib/backend-itwin-client.js",
   "browser": {
-    "./lib/imodeljs-clients-backend.js": "./lib/imodeljs-clients-backend-mobile.js"
+    "./lib/backend-itwin-client.js": "./lib/backend-itwin-client-mobile.js"
   },
-  "typings": "lib/imodeljs-clients-backend",
+  "typings": "lib/backend-itwin-client",
   "license": "MIT",
   "engines": {
     "node": ">=10.16.0 <13.0"
@@ -18,8 +18,8 @@
     "clean": "rimraf lib .rush",
     "cover": "nyc npm test",
     "cover:integration": "npm run copy:test-assets && nyc --report-dir ./lib/test/coverage/integration npm run test-integration",
-    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-clients-backend/file.json --tsIndexFile=imodeljs-clients-backend.ts --onlyJson",
-    "extract-api": "betools extract-api --entry=imodeljs-clients-backend",
+    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/backend-itwin-client/file.json --tsIndexFile=backend-itwin-client.ts --onlyJson",
+    "extract-api": "betools extract-api --entry=backend-itwin-client",
     "lint": "tslint --project . 1>&2",
     "pretest": "npm run copy:test-assets",
     "test": "npm run pretest && betools test --offline=\"mock\" --grep=\"#integration\" --invert",
