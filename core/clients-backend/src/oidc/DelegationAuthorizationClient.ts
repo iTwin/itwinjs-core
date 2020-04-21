@@ -6,25 +6,43 @@
  * @module Authentication
  */
 
-import { AccessToken, IncludePrefix } from "@bentley/itwin-client";
+import { AccessToken, IncludePrefix, SamlAccessToken } from "@bentley/itwin-client";
 import { GrantParams, TokenSet } from "openid-client";
 import { BentleyStatus, BentleyError, ClientRequestContext } from "@bentley/bentleyjs-core";
-import { OidcBackendClientConfiguration, OidcBackendClient } from "./OidcBackendClient";
+import { BackendAuthorizationClientConfiguration, BackendAuthorizationClient } from "./BackendAuthorizationClient";
 
-/** @beta */
-export type OidcDelegationClientConfiguration = OidcBackendClientConfiguration;
-
-/** Utility to generate delegation OAuth or legacy SAML tokens for backend applications
+/**
+ * Configuration for [[OidcDelegationClient]]
+ * @deprecated Use [[DelegationAuthorizationClientConfiguration]] instead
  * @beta
  */
-export class OidcDelegationClient extends OidcBackendClient {
-  /** Creates an instance of OidcBackendClient.
+export type OidcDelegationClientConfiguration = DelegationAuthorizationClientConfiguration;
+
+/**
+ * Utility to generate delegation OAuth or legacy SAML tokens for backend applications
+ * @beta
+ * @deprecated Use [[DelegationAuthorizationClient]] instead
+ */
+export type OidcDelegationClient = DelegationAuthorizationClient;
+
+/**
+ * Configuration for [[DelegationAuthorizationClient]]
+ * @beta
+ */
+export type DelegationAuthorizationClientConfiguration = BackendAuthorizationClientConfiguration;
+
+/**
+ * Utility to generate delegation OAuth or legacy SAML tokens for backend applications
+ * @beta
+ */
+export class DelegationAuthorizationClient extends BackendAuthorizationClient {
+  /** Creates an instance of BackendAuthorizationClient.
    */
-  public constructor(configuration: OidcDelegationClientConfiguration) {
+  public constructor(configuration: DelegationAuthorizationClientConfiguration) {
     super(configuration);
   }
 
-  private async exchangeToJwtToken(requestContext: ClientRequestContext, accessToken: AccessToken, grantType: string): Promise<AccessToken> {
+  private async exchangeToJwtToken(requestContext: ClientRequestContext, accessToken: AccessToken | SamlAccessToken, grantType: string): Promise<AccessToken> {
     requestContext.enter();
 
     const grantParams: GrantParams = {
@@ -39,9 +57,9 @@ export class OidcDelegationClient extends OidcBackendClient {
   }
 
   /** Get a JWT for the specified scope from a SAML token */
-  public async getJwtFromSaml(requestContext: ClientRequestContext, accessToken: AccessToken): Promise<AccessToken> {
+  public async getJwtFromSaml(requestContext: ClientRequestContext, samlToken: SamlAccessToken): Promise<AccessToken> {
     requestContext.enter();
-    return this.exchangeToJwtToken(requestContext, accessToken, "urn:ietf:params:oauth:grant-type:saml-token");
+    return this.exchangeToJwtToken(requestContext, samlToken, "urn:ietf:params:oauth:grant-type:saml-token");
   }
 
   /** Get a delegation JWT for a new scope from another JWT */
@@ -51,20 +69,20 @@ export class OidcDelegationClient extends OidcBackendClient {
   }
 
   /** Get a SAML token for the specified scope from a JWT token */
-  public async getSamlFromJwt(requestContext: ClientRequestContext, jwt: AccessToken): Promise<AccessToken> {
+  public async getSamlFromJwt(requestContext: ClientRequestContext, accessToken: AccessToken): Promise<SamlAccessToken> {
     requestContext.enter();
 
     const grantType = "urn:ietf:params:oauth:grant-type:jwt-bearer";
     const params: GrantParams = {
       grant_type: grantType,
       scope: this._configuration.scope,
-      assertion: jwt.toTokenString(IncludePrefix.No),
+      assertion: accessToken.toTokenString(IncludePrefix.No),
     };
 
     const client = await this.getClient(requestContext);
     const tokenSet: TokenSet = await client.grant(params);
 
-    const samlToken = AccessToken.fromSamlTokenString(tokenSet.access_token, IncludePrefix.No);
+    const samlToken = SamlAccessToken.fromSamlTokenString(tokenSet.access_token, IncludePrefix.No);
     if (!samlToken)
       throw new BentleyError(BentleyStatus.ERROR, `Could not convert jwt to accessToken`);
     return samlToken;

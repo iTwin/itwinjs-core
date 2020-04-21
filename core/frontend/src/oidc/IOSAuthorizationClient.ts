@@ -7,16 +7,16 @@
  */
 
 import { AuthStatus, BeEvent, BentleyError, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
-import { AccessToken, UserInfo, ImsOidcClient } from "@bentley/itwin-client";
+import { AccessToken, UserInfo, ImsAuthorizationClient } from "@bentley/itwin-client";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
 
-const loggerCategory: string = FrontendLoggerCategory.OidcIOSClient;
+const loggerCategory: string = FrontendLoggerCategory.IOSAuthorizationClient;
 
 /** Utility to provide OIDC/OAuth tokens from native ios app to frontend
  * @alpha
  */
-export class OidcIOSClient extends ImsOidcClient implements FrontendAuthorizationClient {
+export class IOSAuthorizationClient extends ImsAuthorizationClient implements FrontendAuthorizationClient {
   private _accessToken: AccessToken | undefined;
   public constructor() {
     super();
@@ -39,7 +39,7 @@ export class OidcIOSClient extends ImsOidcClient implements FrontendAuthorizatio
     const info = JSON.parse(settings!);
     const startsAt: Date = new Date(info!.expires_at - info!.expires_in);
     const expiresAt: Date = new Date(info!.expires_at);
-    const userInfo = UserInfo.fromJson(info.user_info);
+    const userInfo = UserInfo.fromTokenResponseJson(info.user_info);
     this._accessToken = AccessToken.fromJsonWebTokenString(info.access_token, startsAt, expiresAt, userInfo);
   }
 

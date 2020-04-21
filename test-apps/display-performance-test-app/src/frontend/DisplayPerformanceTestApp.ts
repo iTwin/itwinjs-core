@@ -11,12 +11,12 @@ import { ProjectShareClient, ProjectShareFile, ProjectShareFileQuery, ProjectSha
 import {
   BackgroundMapProps, BackgroundMapType, BentleyCloudRpcManager, DisplayStyleProps, ElectronRpcConfiguration, ElectronRpcManager, IModelReadRpcInterface,
   IModelTileRpcInterface, IModelRpcProps, MobileRpcConfiguration, MobileRpcManager, RpcConfiguration, RpcOperation, RenderMode,
-  SnapshotIModelRpcInterface, ViewDefinitionProps, OidcDesktopClientConfiguration,
+  SnapshotIModelRpcInterface, ViewDefinitionProps, DesktopAuthorizationClientConfiguration,
 } from "@bentley/imodeljs-common";
 import {
   AuthorizedFrontendRequestContext, FrontendRequestContext, DisplayStyleState, DisplayStyle3dState, IModelApp, IModelConnection, EntityState,
   PerformanceMetrics, Pixel, RenderSystem, ScreenViewport, Target, TileAdmin, Viewport, ViewRect, ViewState, IModelAppOptions,
-  FeatureOverrideProvider, FeatureSymbology, GLTimerResult, OidcDesktopClientRenderer, SnapshotConnection,
+  FeatureOverrideProvider, FeatureSymbology, GLTimerResult, DesktopAuthorizationClient, SnapshotConnection,
 } from "@bentley/imodeljs-frontend";
 import { System } from "@bentley/imodeljs-frontend/lib/webgl";
 import { I18NOptions } from "@bentley/imodeljs-i18n";
@@ -835,8 +835,8 @@ async function createOidcClient(requestContext: ClientRequestContext): Promise<F
   if (ElectronRpcConfiguration.isElectron) {
     const clientId = "imodeljs-electron-test";
     const redirectUri = "http://localhost:3000/signin-callback";
-    const oidcConfiguration: OidcDesktopClientConfiguration = { clientId, redirectUri, scope: scope + " offline_access" };
-    const desktopClient = new OidcDesktopClientRenderer(oidcConfiguration);
+    const oidcConfiguration: DesktopAuthorizationClientConfiguration = { clientId, redirectUri, scope: scope + " offline_access" };
+    const desktopClient = new DesktopAuthorizationClient(oidcConfiguration);
     await desktopClient.initialize(requestContext);
     return desktopClient;
   } else {

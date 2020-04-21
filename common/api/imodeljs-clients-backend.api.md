@@ -12,13 +12,30 @@ import { Client } from 'openid-client';
 import { ClientRequestContext } from '@bentley/bentleyjs-core';
 import { FileHandler } from '@bentley/itwin-client';
 import * as https from 'https';
-import { ImsOidcClient } from '@bentley/itwin-client';
+import { ImsAuthorizationClient } from '@bentley/itwin-client';
 import { Issuer } from 'openid-client';
 import { ProgressCallback } from '@bentley/itwin-client';
+import { SamlAccessToken } from '@bentley/itwin-client';
 import { TokenSet } from 'openid-client';
 import { Transform } from 'stream';
 import { TransformCallback } from 'stream';
 import { UserInfo } from '@bentley/itwin-client';
+
+// @beta
+export class AgentAuthorizationClient extends BackendAuthorizationClient implements AuthorizationClient {
+    constructor(agentConfiguration: AgentAuthorizationClientConfiguration);
+    getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
+    // @deprecated
+    getToken(requestContext: ClientRequestContext): Promise<AccessToken>;
+    get hasExpired(): boolean;
+    get hasSignedIn(): boolean;
+    get isAuthorized(): boolean;
+    // @deprecated
+    refreshToken(requestContext: ClientRequestContext, jwt: AccessToken): Promise<AccessToken>;
+}
+
+// @beta
+export type AgentAuthorizationClientConfiguration = BackendAuthorizationClientConfiguration;
 
 // @internal
 export class AzureFileHandler implements FileHandler {
@@ -34,6 +51,27 @@ export class AzureFileHandler implements FileHandler {
     uploadFile(requestContext: AuthorizedClientRequestContext, uploadUrlString: string, uploadFromPathname: string, progressCallback?: ProgressCallback): Promise<void>;
     }
 
+// @beta
+export abstract class BackendAuthorizationClient extends ImsAuthorizationClient {
+    constructor(configuration: BackendAuthorizationClientConfiguration);
+    // (undocumented)
+    protected _configuration: BackendAuthorizationClientConfiguration;
+    // (undocumented)
+    protected createToken(tokenSet: TokenSet, userInfo?: UserInfo): AccessToken;
+    discoverEndpoints(requestContext: ClientRequestContext): Promise<Issuer>;
+    // (undocumented)
+    protected getClient(requestContext: ClientRequestContext): Promise<Client>;
+    // (undocumented)
+    static parseUserInfo(jwt: string): UserInfo | undefined;
+}
+
+// @beta
+export interface BackendAuthorizationClientConfiguration {
+    clientId: string;
+    clientSecret: string;
+    scope: string;
+}
+
 // @internal
 export class BufferedStream extends Transform {
     constructor(bufferSize: number);
@@ -43,10 +81,20 @@ export class BufferedStream extends Transform {
 
 // @public
 export enum ClientsBackendLoggerCategory {
-    IModelHub = "imodelhub-client.iModelHub",
-    OidcAgentClient = "imodeljs-clients-backend.OidcAgentClient",
-    OidcDeviceClient = "imodeljs-clients-backend.OidcDeviceClient"
+    Authorization = "imodeljs-clients-backend.Authorization",
+    IModelHub = "imodelhub-client.iModelHub"
 }
+
+// @beta
+export class DelegationAuthorizationClient extends BackendAuthorizationClient {
+    constructor(configuration: DelegationAuthorizationClientConfiguration);
+    getJwtFromJwt(requestContext: ClientRequestContext, accessToken: AccessToken): Promise<AccessToken>;
+    getJwtFromSaml(requestContext: ClientRequestContext, samlToken: SamlAccessToken): Promise<AccessToken>;
+    getSamlFromJwt(requestContext: ClientRequestContext, accessToken: AccessToken): Promise<SamlAccessToken>;
+}
+
+// @beta
+export type DelegationAuthorizationClientConfiguration = BackendAuthorizationClientConfiguration;
 
 // @internal
 export class IOSAzureFileHandler implements FileHandler {
@@ -62,53 +110,17 @@ export class IOSAzureFileHandler implements FileHandler {
     uploadFile(requestContext: AuthorizedClientRequestContext, uploadUrlString: string, uploadFromPathname: string): Promise<void>;
 }
 
-// @beta
-export class OidcAgentClient extends OidcBackendClient implements AuthorizationClient {
-    constructor(agentConfiguration: OidcAgentClientConfiguration);
-    getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
-    // @deprecated
-    getToken(requestContext: ClientRequestContext): Promise<AccessToken>;
-    get hasExpired(): boolean;
-    get hasSignedIn(): boolean;
-    get isAuthorized(): boolean;
-    // @deprecated
-    refreshToken(requestContext: ClientRequestContext, jwt: AccessToken): Promise<AccessToken>;
-}
+// @beta @deprecated
+export type OidcAgentClient = AgentAuthorizationClient;
 
-// @beta
-export type OidcAgentClientConfiguration = OidcBackendClientConfiguration;
+// @beta @deprecated
+export type OidcAgentClientConfiguration = AgentAuthorizationClientConfiguration;
 
-// @beta
-export abstract class OidcBackendClient extends ImsOidcClient {
-    constructor(configuration: OidcBackendClientConfiguration);
-    // (undocumented)
-    protected _configuration: OidcBackendClientConfiguration;
-    // (undocumented)
-    protected createToken(tokenSet: TokenSet, userInfo?: UserInfo): AccessToken;
-    discoverEndpoints(requestContext: ClientRequestContext): Promise<Issuer>;
-    // (undocumented)
-    protected getClient(requestContext: ClientRequestContext): Promise<Client>;
-    // (undocumented)
-    static parseUserInfo(jwt: string): UserInfo | undefined;
-}
+// @beta @deprecated
+export type OidcDelegationClient = DelegationAuthorizationClient;
 
-// @beta
-export interface OidcBackendClientConfiguration {
-    clientId: string;
-    clientSecret: string;
-    scope: string;
-}
-
-// @beta
-export class OidcDelegationClient extends OidcBackendClient {
-    constructor(configuration: OidcDelegationClientConfiguration);
-    getJwtFromJwt(requestContext: ClientRequestContext, accessToken: AccessToken): Promise<AccessToken>;
-    getJwtFromSaml(requestContext: ClientRequestContext, accessToken: AccessToken): Promise<AccessToken>;
-    getSamlFromJwt(requestContext: ClientRequestContext, jwt: AccessToken): Promise<AccessToken>;
-}
-
-// @beta (undocumented)
-export type OidcDelegationClientConfiguration = OidcBackendClientConfiguration;
+// @beta @deprecated
+export type OidcDelegationClientConfiguration = DelegationAuthorizationClientConfiguration;
 
 // @internal
 export class RequestHost {

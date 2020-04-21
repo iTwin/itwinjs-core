@@ -10,7 +10,7 @@
 import { BeEvent, ClientRequestContext, isElectronRenderer, electronRenderer, assert, Logger } from "@bentley/bentleyjs-core";
 import { AccessToken, UserInfo } from "@bentley/itwin-client";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
-import { OidcDesktopClientConfiguration, defaultOidcDesktopClientExpiryBuffer } from "@bentley/imodeljs-common";
+import { DesktopAuthorizationClientConfiguration, defaultDesktopAuthorizationClientExpiryBuffer } from "@bentley/imodeljs-common";
 import { FrontendRequestContext } from "../FrontendRequestContext";
 import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
 
@@ -22,8 +22,8 @@ const loggerCategory: string = FrontendLoggerCategory.Authorization;
  * Ipc Wrapper around OidcDestkopClient for use in the electron render process
  * @alpha
  */
-export class OidcDesktopClientRenderer implements FrontendAuthorizationClient {
-  private _clientConfiguration: OidcDesktopClientConfiguration;
+export class DesktopAuthorizationClient implements FrontendAuthorizationClient {
+  private _clientConfiguration: DesktopAuthorizationClientConfiguration;
   private _accessToken?: AccessToken;
 
   /**
@@ -33,8 +33,8 @@ export class OidcDesktopClientRenderer implements FrontendAuthorizationClient {
    */
   public readonly onUserStateChanged = new BeEvent<(token: AccessToken | undefined) => void>();
 
-  /** Creates a new OidcDesktopClient to be used in the electron render process */
-  public constructor(clientConfiguration: OidcDesktopClientConfiguration) {
+  /** Creates a new DesktopAuthorizationClient to be used in the electron render process */
+  public constructor(clientConfiguration: DesktopAuthorizationClientConfiguration) {
     this._clientConfiguration = clientConfiguration;
     if (!ipc)
       throw new Error("This code should only be run in the electron renderer process");
@@ -56,13 +56,13 @@ export class OidcDesktopClientRenderer implements FrontendAuthorizationClient {
 
   /** Wrapper around ipc.send to add log traces */
   private ipcSend(message: string, ...args: any[]) {
-    Logger.logTrace(loggerCategory, "OidcDesktopClientRenderer sends message", () => ({ message }));
+    Logger.logTrace(loggerCategory, "DesktopAuthorizationClient sends message", () => ({ message }));
     ipc.send(message, ...args);
   }
 
   /** Wrapper around ipc.on to add log traces */
   private ipcOn(message: string, fn: any) {
-    Logger.logTrace(loggerCategory, "OidcDesktopClientRenderer receives message", () => ({ message }));
+    Logger.logTrace(loggerCategory, "DesktopAuthorizationClient receives message", () => ({ message }));
     ipc.on(message, fn);
   }
 
@@ -70,15 +70,15 @@ export class OidcDesktopClientRenderer implements FrontendAuthorizationClient {
   public async initialize(requestContext: ClientRequestContext): Promise<void> {
     requestContext.enter();
 
-    this.ipcOn("OidcDesktopClient.onUserStateChanged", (_event: any, accessTokenObj: AccessToken | undefined, _additionalArgs: any) => {
+    this.ipcOn("DesktopAuthorizationClient.onUserStateChanged", (_event: any, accessTokenObj: AccessToken | undefined, _additionalArgs: any) => {
       const accessToken = this.createAccessToken(accessTokenObj);
       this._accessToken = accessToken;
       this.onUserStateChanged.raiseEvent(accessToken);
     });
 
     return new Promise<void>((resolve, reject) => {
-      this.ipcSend("OidcDesktopClient.initialize", requestContext, this._clientConfiguration);
-      this.ipcOn("OidcDesktopClient.initialize:complete", (_event: any, err: Error) => err ? reject(err) : resolve());
+      this.ipcSend("DesktopAuthorizationClient.initialize", requestContext, this._clientConfiguration);
+      this.ipcOn("DesktopAuthorizationClient.initialize:complete", (_event: any, err: Error) => err ? reject(err) : resolve());
     });
   }
 
@@ -86,8 +86,8 @@ export class OidcDesktopClientRenderer implements FrontendAuthorizationClient {
   public async signIn(requestContext: ClientRequestContext): Promise<void> {
     requestContext.enter();
     return new Promise<void>((resolve, reject) => {
-      this.ipcSend("OidcDesktopClient.signIn", requestContext);
-      this.ipcOn("OidcDesktopClient.signIn:complete", (_event: any, err: Error) => err ? reject(err) : resolve());
+      this.ipcSend("DesktopAuthorizationClient.signIn", requestContext);
+      this.ipcOn("DesktopAuthorizationClient.signIn:complete", (_event: any, err: Error) => err ? reject(err) : resolve());
     });
   }
 
@@ -95,8 +95,8 @@ export class OidcDesktopClientRenderer implements FrontendAuthorizationClient {
   public async signOut(requestContext: ClientRequestContext): Promise<void> {
     requestContext.enter();
     return new Promise<void>((resolve, reject) => {
-      this.ipcSend("OidcDesktopClient.signOut", requestContext);
-      this.ipcOn("OidcDesktopClient.signOut:complete", (_event: any, err: Error) => err ? reject(err) : resolve());
+      this.ipcSend("DesktopAuthorizationClient.signOut", requestContext);
+      this.ipcOn("DesktopAuthorizationClient.signOut:complete", (_event: any, err: Error) => err ? reject(err) : resolve());
     });
   }
 
@@ -108,8 +108,8 @@ export class OidcDesktopClientRenderer implements FrontendAuthorizationClient {
       return false;
 
     const expiresAt = this._accessToken.getExpiresAt();
-    assert(!!expiresAt, "Invalid token in OidcDesktopClient");
-    if (expiresAt!.getTime() - Date.now() > (this._clientConfiguration.expiryBuffer || defaultOidcDesktopClientExpiryBuffer) * 1000)
+    assert(!!expiresAt, "Invalid token in DesktopAuthorizationClient");
+    if (expiresAt!.getTime() - Date.now() > (this._clientConfiguration.expiryBuffer || defaultDesktopAuthorizationClientExpiryBuffer) * 1000)
       return true;
 
     return false;
@@ -141,8 +141,8 @@ export class OidcDesktopClientRenderer implements FrontendAuthorizationClient {
       return this._accessToken!;
 
     return new Promise<AccessToken>((resolve, reject) => {
-      this.ipcSend("OidcDesktopClient.getAccessToken", requestContext);
-      this.ipcOn("OidcDesktopClient.getAccessToken:complete", (_event: any, err: Error, accessTokenObj: AccessToken) => {
+      this.ipcSend("DesktopAuthorizationClient.getAccessToken", requestContext);
+      this.ipcOn("DesktopAuthorizationClient.getAccessToken:complete", (_event: any, err: Error, accessTokenObj: AccessToken) => {
         if (err) {
           reject(err);
         } else {
@@ -156,6 +156,6 @@ export class OidcDesktopClientRenderer implements FrontendAuthorizationClient {
 
   /** Disposes of any resources owned */
   public dispose(): void {
-    this.ipcSend("OidcDesktopClient.dispose");
+    this.ipcSend("DesktopAuthorizationClient.dispose");
   }
 }

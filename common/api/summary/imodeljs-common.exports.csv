@@ -84,8 +84,9 @@ internal;CURRENT_REQUEST: unique symbol
 internal;CurrentImdlVersion
 beta;CustomAttribute
 beta;DecorationGeometryProps
-alpha;defaultOidcDesktopClientExpiryBuffer: number
+alpha;defaultDesktopAuthorizationClientExpiryBuffer: number
 public;DefinitionElementProps 
+alpha;DesktopAuthorizationClientConfiguration
 internal;class DevToolsRpcInterface 
 internal;DevToolsStatsOptions
 public;DisplayStyle3dProps 
@@ -282,7 +283,6 @@ public;NpcCenter: Point3d
 public;NpcCorners: Point3d[]
 internal;OctEncodedNormal
 internal;OctEncodedNormalPair
-alpha;OidcDesktopClientConfiguration
 internal;OpenAPIContentMap
 internal;OpenAPIDocument
 internal;OpenAPIEncoding

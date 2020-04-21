@@ -9,9 +9,9 @@
  */
 
 import { BeEvent, BentleyError, AuthStatus, Logger, assert, ClientRequestContext } from "@bentley/bentleyjs-core";
-import { AccessToken, UserInfo, request, RequestOptions, ImsOidcClient } from "@bentley/itwin-client";
+import { AccessToken, UserInfo, ImsAuthorizationClient, request, RequestOptions } from "@bentley/itwin-client";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
-import { OidcDesktopClientConfiguration, defaultOidcDesktopClientExpiryBuffer } from "@bentley/imodeljs-common";
+import { DesktopAuthorizationClientConfiguration, defaultDesktopAuthorizationClientExpiryBuffer } from "@bentley/imodeljs-common";
 import {
   GRANT_TYPE_AUTHORIZATION_CODE, GRANT_TYPE_REFRESH_TOKEN,
   AuthorizationNotifier, AuthorizationServiceConfiguration, BaseTokenRequestHandler, TokenRequestHandler,
@@ -32,8 +32,8 @@ const loggerCategory = BackendLoggerCategory.Authorization;
  * Utility to generate OIDC/OAuth tokens for Desktop Applications
  * @alpha
  */
-export class OidcDesktopClient extends ImsOidcClient implements FrontendAuthorizationClient {
-  private _clientConfiguration: OidcDesktopClientConfiguration;
+export class DesktopAuthorizationClient extends ImsAuthorizationClient implements FrontendAuthorizationClient {
+  private _clientConfiguration: DesktopAuthorizationClientConfiguration;
   private _configuration: AuthorizationServiceConfiguration | undefined;
   private _tokenResponse: TokenResponse | undefined;
   private _accessToken?: AccessToken;
@@ -42,7 +42,7 @@ export class OidcDesktopClient extends ImsOidcClient implements FrontendAuthoriz
   /** Event called when the user's sign-in state changes - this may be due to calls to signIn(), signOut() or simply because the token expired */
   public readonly onUserStateChanged = new BeEvent<(token: AccessToken | undefined) => void>();
 
-  public constructor(clientConfiguration: OidcDesktopClientConfiguration) {
+  public constructor(clientConfiguration: DesktopAuthorizationClientConfiguration) {
     super();
     this._clientConfiguration = clientConfiguration;
     this._tokenStore = new ElectronTokenStore(this._clientConfiguration.clientId);
@@ -186,7 +186,7 @@ export class OidcDesktopClient extends ImsOidcClient implements FrontendAuthoriz
     };
 
     const response = await request(requestContext, this._configuration!.userInfoEndpoint!, options);
-    return UserInfo.fromJson(response.body);
+    return UserInfo.fromTokenResponseJson(response.body);
   }
 
   private async createAccessTokenFromResponse(requestContext: ClientRequestContext, tokenResponse: TokenResponse): Promise<AccessToken> {
@@ -218,7 +218,7 @@ export class OidcDesktopClient extends ImsOidcClient implements FrontendAuthoriz
   }
 
   private isValidToken(tokenResponse: TokenResponse): boolean {
-    return tokenResponse.isValid(this._clientConfiguration.expiryBuffer || defaultOidcDesktopClientExpiryBuffer);
+    return tokenResponse.isValid(this._clientConfiguration.expiryBuffer || defaultDesktopAuthorizationClientExpiryBuffer);
   }
 
   private async refreshAccessToken(requestContext: ClientRequestContext, refreshToken: string): Promise<AccessToken> {

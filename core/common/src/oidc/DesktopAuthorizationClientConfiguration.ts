@@ -10,7 +10,7 @@
  * Client configuration to generate OIDC/OAuth tokens for desktop applications
  * @alpha
  */
-export interface OidcDesktopClientConfiguration {
+export interface DesktopAuthorizationClientConfiguration {
   /** Client application's identifier as registered with the Bentley IMS OIDC/OAuth2 provider. */
   clientId: string;
 
@@ -27,13 +27,13 @@ export interface OidcDesktopClientConfiguration {
    * Time in seconds that's used as a buffer to check the token for validity/expiry.
    * The checks for authorization, and refreshing access tokens all use this buffer - i.e., the token is considered expired if the current time is within the specified
    * time of the actual expiry.
-   * @note If unspecified this defaults to 10 minutes. Also @see defaultOidcDesktopClientExpiryBuffer
+   * @note If unspecified this defaults to 10 minutes. Also @see defaultDesktopAuthorizationClientExpiryBuffer
    */
   expiryBuffer?: number;
 }
 
-/** Default expiry buffer if the expiry buffer is unspecified in [[OidcDesktopClientConfiguration]]
- * @see [[OidcDesktopClientConfiguration]] for expiryBuffer
+/** Default expiry buffer if the expiry buffer is unspecified in [[DesktopAuthorizationClientConfiguration]]
+ * @see [[DesktopAuthorizationClientConfiguration]] for expiryBuffer
  * @alpha
  */
-export const defaultOidcDesktopClientExpiryBuffer: number = 10 * 60 * 1;  // 10 mins in seconds
+export const defaultDesktopAuthorizationClientExpiryBuffer: number = 10 * 60 * 1;  // 10 mins in seconds

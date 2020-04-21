@@ -4,22 +4,22 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { OidcAgentClient, OidcBackendClientConfiguration } from "@bentley/imodeljs-clients-backend";
+import { AgentAuthorizationClient, BackendAuthorizationClientConfiguration } from "@bentley/imodeljs-clients-backend";
 import { GuidString, Guid, Logger, ClientRequestContext, Config } from "@bentley/bentleyjs-core";
 import { IModelHubClient, IModelHubEvent, EventSubscription, EventSAS } from "@bentley/imodelhub-client";
 
 class MockAccessToken extends AccessToken {
-  public constructor() { super(); this._samlAssertion = ""; }
+  public constructor() { super(); }
   public toTokenString() { return ""; }
 }
 
-const clientConfig: OidcBackendClientConfiguration = {
+const clientConfig: BackendAuthorizationClientConfiguration = {
   clientId: Config.App.get("imjs_agent_test_client_id"),
   clientSecret: Config.App.get("imjs_agent_test_client_secret"),
   scope: Config.App.get("imjs_oidc_browser_test_scopes"),
 };
 
-const authorizationClient = new OidcAgentClient(clientConfig);
+const authorizationClient = new AgentAuthorizationClient(clientConfig);
 const imodelHubClient: IModelHubClient = new IModelHubClient();
 const imodelId: GuidString = Guid.createValue();
 

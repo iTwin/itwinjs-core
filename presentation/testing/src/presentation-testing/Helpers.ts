@@ -27,7 +27,7 @@ import {
   PresentationManagerProps as PresentationFrontendProps,
 } from "@bentley/presentation-frontend";
 
-import { OidcAgentClientConfiguration, OidcAgentClient } from "@bentley/imodeljs-clients-backend";
+import { AgentAuthorizationClientConfiguration, AgentAuthorizationClient } from "@bentley/imodeljs-clients-backend";
 
 function initializeRpcInterfaces(interfaces: RpcInterfaceDefinition[]) {
   const config = class extends RpcDefaultConfiguration {
@@ -91,12 +91,12 @@ export const initialize = async (props?: PresentationTestingInitProps) => {
   if (!props.frontendApp)
     props.frontendApp = NoRenderApp;
   if (props.useClientServices) {
-    const agentConfiguration: OidcAgentClientConfiguration = {
+    const agentConfiguration: AgentAuthorizationClientConfiguration = {
       clientId: Config.App.getString("imjs_agent_test_client_id"),
       clientSecret: Config.App.getString("imjs_agent_test_client_secret"),
       scope: "imodelhub rbac-user:external-client reality-data:read urlps-third-party context-registry-service:read-only imodeljs-backend-2686 product-settings-service",
     };
-    const authorizationClient = new OidcAgentClient(agentConfiguration);
+    const authorizationClient = new AgentAuthorizationClient(agentConfiguration);
     await authorizationClient.getAccessToken();
     await props.frontendApp.startup({ authorizationClient });
   } else {

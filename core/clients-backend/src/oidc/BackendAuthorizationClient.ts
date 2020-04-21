@@ -7,7 +7,7 @@
  */
 
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
-import { AccessToken, UserInfo, ImsOidcClient } from "@bentley/itwin-client";
+import { ImsAuthorizationClient, AccessToken, UserInfo } from "@bentley/itwin-client";
 import { Issuer, Client as OpenIdClient, ClientConfiguration, TokenSet } from "openid-client";
 import { decode } from "jsonwebtoken";
 
@@ -15,7 +15,7 @@ import { decode } from "jsonwebtoken";
  * Client configuration to create OIDC/OAuth tokens for backend applications
  * @beta
  */
-export interface OidcBackendClientConfiguration {
+export interface BackendAuthorizationClientConfiguration {
   /** Client application's identifier as registered with the Bentley IMS OIDC/OAuth2 provider. */
   clientId: string;
   /** Client application's secret key as registered with the Bentley IMS OIDC/OAuth2 provider. */
@@ -28,13 +28,13 @@ export interface OidcBackendClientConfiguration {
  * Utility to generate OIDC/OAuth tokens for backend applications
  * @beta
  */
-export abstract class OidcBackendClient extends ImsOidcClient {
-  protected _configuration: OidcBackendClientConfiguration;
+export abstract class BackendAuthorizationClient extends ImsAuthorizationClient {
+  protected _configuration: BackendAuthorizationClientConfiguration;
 
   /**
-   * Creates an instance of OidcBackendClient.
+   * Creates an instance of BackendAuthorizationClient.
    */
-  public constructor(configuration: OidcBackendClientConfiguration) {
+  public constructor(configuration: BackendAuthorizationClientConfiguration) {
     super();
     this._configuration = configuration;
   }
@@ -83,7 +83,7 @@ export abstract class OidcBackendClient extends ImsOidcClient {
 
   public static parseUserInfo(jwt: string): UserInfo | undefined {
     const decoded: any = decode(jwt, { json: true, complete: false });
-    const userInfo = UserInfo.fromJson(decoded);
+    const userInfo = UserInfo.fromTokenResponseJson(decoded);
     return userInfo;
   }
 }

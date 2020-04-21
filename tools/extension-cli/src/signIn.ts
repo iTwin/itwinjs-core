@@ -4,13 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 import { AccessToken } from "@bentley/itwin-client";
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
-import { OidcDesktopClient } from "@bentley/imodeljs-backend";
+import { DesktopAuthorizationClient } from "@bentley/imodeljs-backend";
 
 export async function signIn(): Promise<AccessToken> {
   const clientId = "imodeljs-extension-publisher";
   const redirectUri = "http://localhost:5001/signin-oidc";
   const requestContext: ClientRequestContext = new ClientRequestContext();
-  const client = new OidcDesktopClient({
+  const client = new DesktopAuthorizationClient({
     clientId,
     redirectUri,
     scope: "openid imodel-extension-service-api context-registry-service:read-only offline_access",

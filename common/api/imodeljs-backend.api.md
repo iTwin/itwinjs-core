@@ -51,6 +51,7 @@ import { CreateSnapshotIModelProps } from '@bentley/imodeljs-common';
 import { DbOpcode } from '@bentley/bentleyjs-core';
 import { DbResult } from '@bentley/bentleyjs-core';
 import { DefinitionElementProps } from '@bentley/imodeljs-common';
+import { DesktopAuthorizationClientConfiguration } from '@bentley/imodeljs-common';
 import { DisplayStyle3dProps } from '@bentley/imodeljs-common';
 import { DisplayStyle3dSettings } from '@bentley/imodeljs-common';
 import { DisplayStyleProps } from '@bentley/imodeljs-common';
@@ -99,7 +100,7 @@ import { IModelJsNative } from '@bentley/imodeljs-native';
 import { IModelRpcProps } from '@bentley/imodeljs-common';
 import { IModelStatus } from '@bentley/imodeljs-common';
 import { IModelVersion } from '@bentley/imodeljs-common';
-import { ImsOidcClient } from '@bentley/itwin-client';
+import { ImsAuthorizationClient } from '@bentley/itwin-client';
 import { InformationPartitionElementProps } from '@bentley/imodeljs-common';
 import { InternetConnectivityStatus } from '@bentley/imodeljs-common';
 import { LightLocationProps } from '@bentley/imodeljs-common';
@@ -122,7 +123,6 @@ import { ModelProps } from '@bentley/imodeljs-common';
 import { ModelSelectorProps } from '@bentley/imodeljs-common';
 import { NavigationBindingValue } from '@bentley/imodeljs-common';
 import { NavigationValue } from '@bentley/imodeljs-common';
-import { OidcDesktopClientConfiguration } from '@bentley/imodeljs-common';
 import { OpenBriefcaseOptions } from '@bentley/imodeljs-common';
 import { OpenMode } from '@bentley/bentleyjs-core';
 import * as os from 'os';
@@ -1067,6 +1067,20 @@ export class DefinitionPartition extends InformationPartitionElement {
     // @internal (undocumented)
     static get className(): string;
 }
+
+// @alpha
+export class DesktopAuthorizationClient extends ImsAuthorizationClient implements FrontendAuthorizationClient {
+    constructor(clientConfiguration: DesktopAuthorizationClientConfiguration);
+    dispose(): void;
+    getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
+    get hasExpired(): boolean;
+    get hasSignedIn(): boolean;
+    initialize(requestContext: ClientRequestContext): Promise<void>;
+    get isAuthorized(): boolean;
+    readonly onUserStateChanged: BeEvent<(token: AccessToken | undefined) => void>;
+    signIn(requestContext: ClientRequestContext): Promise<void>;
+    signOut(requestContext: ClientRequestContext): Promise<void>;
+    }
 
 // @public (undocumented)
 export class DetailCallout extends Callout {
@@ -3247,20 +3261,6 @@ export class NativeAppBackend {
     static shutdown(): void;
     static startup(configuration?: IModelHostConfiguration): void;
 }
-
-// @alpha
-export class OidcDesktopClient extends ImsOidcClient implements FrontendAuthorizationClient {
-    constructor(clientConfiguration: OidcDesktopClientConfiguration);
-    dispose(): void;
-    getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
-    get hasExpired(): boolean;
-    get hasSignedIn(): boolean;
-    initialize(requestContext: ClientRequestContext): Promise<void>;
-    get isAuthorized(): boolean;
-    readonly onUserStateChanged: BeEvent<(token: AccessToken | undefined) => void>;
-    signIn(requestContext: ClientRequestContext): Promise<void>;
-    signOut(requestContext: ClientRequestContext): Promise<void>;
-    }
 
 // @public @deprecated
 export class OpenParams {

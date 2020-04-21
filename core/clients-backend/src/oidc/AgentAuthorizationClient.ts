@@ -9,20 +9,35 @@
 import { GrantParams, TokenSet } from "openid-client";
 import { AccessToken, AuthorizationClient } from "@bentley/itwin-client";
 import { AuthStatus, BentleyError, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
-import { OidcBackendClientConfiguration, OidcBackendClient } from "./OidcBackendClient";
+import { BackendAuthorizationClientConfiguration, BackendAuthorizationClient } from "./BackendAuthorizationClient";
 import { ClientsBackendLoggerCategory } from "../ClientsBackendLoggerCategory";
 
-const loggerCategory = ClientsBackendLoggerCategory.OidcAgentClient;
+const loggerCategory = ClientsBackendLoggerCategory.Authorization;
 
 /**
  * Configuration of clients for agent or service applications.
- * @see [[OidcAgentClient]] for notes on registering an application
+ * @see [[AgentAuthorizationClient]] for notes on registering an application
  * @beta
  */
-export type OidcAgentClientConfiguration = OidcBackendClientConfiguration;
+export type AgentAuthorizationClientConfiguration = BackendAuthorizationClientConfiguration;
 
 /**
- * Utility to generate OIDC/OAuth tokens for agent or service applications
+ * Configuration of clients for agent or service applications.
+ * @see [[AgentAuthorizationClient]] for notes on registering an application
+ * @deprecated Use [[AgentAuthorizationClient]] instead
+ * @beta
+ */
+export type OidcAgentClientConfiguration = AgentAuthorizationClientConfiguration;
+
+/**
+ * Utility to generate OIDC/OAuth tokens for agent or agent applications
+ * @deprecated Use [[AgentAuthorizationClient]] instead
+ * @beta
+ */
+export type OidcAgentClient = AgentAuthorizationClient;
+
+/**
+ * Utility to generate OIDC/OAuth tokens for agent or agent applications
  * * The application must register a client using the
  * [self service registration page](https://imodeljs.org/getting-started/registration-dashboard/).
  * * The client type must be "Agent"
@@ -32,10 +47,10 @@ export type OidcAgentClientConfiguration = OidcBackendClientConfiguration;
  * with the appropriate role that includes the required access permissions.
  * @beta
  */
-export class OidcAgentClient extends OidcBackendClient implements AuthorizationClient {
+export class AgentAuthorizationClient extends BackendAuthorizationClient implements AuthorizationClient {
   private _accessToken?: AccessToken;
 
-  constructor(agentConfiguration: OidcAgentClientConfiguration) {
+  constructor(agentConfiguration: AgentAuthorizationClientConfiguration) {
     super(agentConfiguration);
   }
 
@@ -56,14 +71,14 @@ export class OidcAgentClient extends OidcBackendClient implements AuthorizationC
     } catch (error) {
       throw new BentleyError(AuthStatus.Error, error.message || "Authorization error", Logger.logError, loggerCategory, () => ({ error: error.error, message: error.message }));
     }
-    const userInfo = OidcBackendClient.parseUserInfo(tokenSet.access_token);
+    const userInfo = BackendAuthorizationClient.parseUserInfo(tokenSet.access_token);
     this._accessToken = this.createToken(tokenSet, userInfo);
     return this._accessToken;
   }
 
   /**
    * Get the access token
-   * @deprecated Use [[OidcAgentClient.getAccessToken]] instead.
+   * @deprecated Use [[AgentAuthorizationClient.getAccessToken]] instead.
    */
   public async getToken(requestContext: ClientRequestContext): Promise<AccessToken> {
     return this.generateAccessToken(requestContext);
@@ -71,7 +86,7 @@ export class OidcAgentClient extends OidcBackendClient implements AuthorizationC
 
   /**
    * Refresh the access token - simply checks if the token is still valid before re-fetching a new access token
-   * @deprecated Use [[OidcAgentClient.getAccessToken]] instead to always get a valid token.
+   * @deprecated Use [[AgentAuthorizationClient.getAccessToken]] instead to always get a valid token.
    */
   public async refreshToken(requestContext: ClientRequestContext, jwt: AccessToken): Promise<AccessToken> {
     requestContext.enter();

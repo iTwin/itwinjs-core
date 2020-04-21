@@ -47,7 +47,7 @@ export * from "./ViewManager";
 export * from "./ViewRect";
 export * from "./ViewState";
 export * from "./Viewport";
-export * from "./oidc/OidcDesktopClientRenderer";
+export * from "./oidc/DesktopAuthorizationClient";
 export * from "./oidc/OidcBrowserClient";
 export * from "./extension/Extension";
 export * from "./extension/ExtensionAdmin";

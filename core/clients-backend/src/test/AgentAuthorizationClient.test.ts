@@ -8,19 +8,19 @@ import { Issuer } from "openid-client";
 import { ClientRequestContext, BeDuration, Config } from "@bentley/bentleyjs-core";
 import { AccessToken, IncludePrefix } from "@bentley/itwin-client";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
-import { OidcAgentClient, OidcAgentClientConfiguration } from "../imodeljs-clients-backend";
+import { AgentAuthorizationClient, AgentAuthorizationClientConfiguration } from "../imodeljs-clients-backend";
 import { HubAccessTestValidator } from "./HubAccessTestValidator";
 
 IModelJsConfig.init(true /* suppress exception */, false /* suppress error message */, Config.App);
 
 chai.should();
 
-describe("OidcAgentClient (#integration)", () => {
+describe("AgentAuthorizationClient (#integration)", () => {
 
   let validator: HubAccessTestValidator;
   const requestContext = new ClientRequestContext();
 
-  let agentConfiguration: OidcAgentClientConfiguration;
+  let agentConfiguration: AgentAuthorizationClientConfiguration;
 
   before(async () => {
     validator = await HubAccessTestValidator.getInstance();
@@ -34,7 +34,7 @@ describe("OidcAgentClient (#integration)", () => {
   });
 
   it("should discover token end points correctly", async () => {
-    const client = new OidcAgentClient(agentConfiguration);
+    const client = new AgentAuthorizationClient(agentConfiguration);
     const url: string = await client.getUrl(requestContext);
 
     const issuer: Issuer = await client.discoverEndpoints(requestContext);
@@ -44,7 +44,7 @@ describe("OidcAgentClient (#integration)", () => {
   });
 
   it("should get valid OIDC tokens for agent applications", async () => {
-    const agentClient = new OidcAgentClient(agentConfiguration);
+    const agentClient = new AgentAuthorizationClient(agentConfiguration);
     const now = Date.now();
     const jwt: AccessToken = await agentClient.getAccessToken(requestContext);
 
@@ -65,7 +65,7 @@ describe("OidcAgentClient (#integration)", () => {
   });
 
   it("should not refresh token unless necessary", async () => {
-    const agentClient = new OidcAgentClient(agentConfiguration);
+    const agentClient = new AgentAuthorizationClient(agentConfiguration);
 
     const jwt: AccessToken = await agentClient.getAccessToken(requestContext);
 

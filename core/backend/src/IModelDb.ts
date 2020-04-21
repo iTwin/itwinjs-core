@@ -1959,7 +1959,7 @@ export class BriefcaseDb extends IModelDb {
     if (IModelHost.configuration && IModelHost.configuration.applicationType === ApplicationType.WebAgent)
       return; // We do not log usage for agents, since the usage logging service cannot handle them.
 
-    const authType = requestContext.accessToken.isJwt ? IModelJsNative.AuthType.OIDC : IModelJsNative.AuthType.SAML;
+    const authType = IModelJsNative.AuthType.OIDC;
     try {
       await UsageLoggingUtilities.postUserUsage(requestContext, contextId, authType, os.hostname(), IModelJsNative.UsageType.Trial);
     } catch (err) {

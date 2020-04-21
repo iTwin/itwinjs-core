@@ -17,9 +17,6 @@ export enum ClientsBackendLoggerCategory {
    */
   IModelHub = "imodelhub-client.iModelHub",
 
-  /** The logger category used by OidcDeviceClient */
-  OidcDeviceClient = "imodeljs-clients-backend.OidcDeviceClient",
-
-  /** The logger category used by OidcAgentClient */
-  OidcAgentClient = "imodeljs-clients-backend.OidcAgentClient",
+  /** The logger category used for Authorization */
+  Authorization = "imodeljs-clients-backend.Authorization",
 }

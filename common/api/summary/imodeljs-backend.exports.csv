@@ -56,6 +56,7 @@ alpha;CrashReportingConfigNameValuePair
 public;class DefinitionElement 
 public;DefinitionModel 
 public;DefinitionPartition 
+alpha;DesktopAuthorizationClient 
 public;DetailCallout 
 public;class DetailingSymbol 
 internal;DevTools
@@ -224,7 +225,6 @@ internal;MetaDataRegistry
 public;Model 
 public;ModelSelector 
 internal;NativeAppBackend
-alpha;OidcDesktopClient 
 public;OpenParams
 public;OrthographicViewDefinition 
 public;class PhysicalElement 

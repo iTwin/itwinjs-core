@@ -50,6 +50,7 @@ import { ContentIdProvider } from '@bentley/imodeljs-common';
 import { ContextRealityModelProps } from '@bentley/imodeljs-common';
 import { ConvexClipPlaneSet } from '@bentley/geometry-core';
 import { CurvePrimitive } from '@bentley/geometry-core';
+import { DesktopAuthorizationClientConfiguration } from '@bentley/imodeljs-common';
 import { DevToolsStatsOptions } from '@bentley/imodeljs-common';
 import { DialogItem } from '@bentley/ui-abstract';
 import { DialogPropertyItem } from '@bentley/ui-abstract';
@@ -123,7 +124,7 @@ import { IModelConnectionProps } from '@bentley/imodeljs-common';
 import { IModelCoordinatesResponseProps } from '@bentley/imodeljs-common';
 import { IModelRpcProps } from '@bentley/imodeljs-common';
 import { IModelVersion } from '@bentley/imodeljs-common';
-import { ImsOidcClient } from '@bentley/itwin-client';
+import { ImsAuthorizationClient } from '@bentley/itwin-client';
 import { IndexedPolyface } from '@bentley/geometry-core';
 import { IndexMap } from '@bentley/bentleyjs-core';
 import { InternetConnectivityStatus } from '@bentley/imodeljs-common';
@@ -150,7 +151,6 @@ import { ModelQueryParams } from '@bentley/imodeljs-common';
 import { ModelSelectorProps } from '@bentley/imodeljs-common';
 import { MonochromeMode } from '@bentley/imodeljs-common';
 import { OctEncodedNormal } from '@bentley/imodeljs-common';
-import { OidcDesktopClientConfiguration } from '@bentley/imodeljs-common';
 import { OpenMode } from '@bentley/bentleyjs-core';
 import { OrbitGtBlobProps } from '@bentley/imodeljs-common';
 import { OrbitGtDataManager } from '@bentley/orbitgt-core';
@@ -2013,6 +2013,20 @@ export interface DepthRangeNpc {
     minimum: number;
 }
 
+// @alpha
+export class DesktopAuthorizationClient implements FrontendAuthorizationClient {
+    constructor(clientConfiguration: DesktopAuthorizationClientConfiguration);
+    dispose(): void;
+    getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
+    get hasExpired(): boolean;
+    get hasSignedIn(): boolean;
+    initialize(requestContext: ClientRequestContext): Promise<void>;
+    get isAuthorized(): boolean;
+    readonly onUserStateChanged: BeEvent<(token: AccessToken | undefined) => void>;
+    signIn(requestContext: ClientRequestContext): Promise<void>;
+    signOut(requestContext: ClientRequestContext): Promise<void>;
+}
+
 // @internal
 export class DevTools {
     static connectToBackendInstance(tokenProps: IModelRpcProps): DevTools;
@@ -2997,7 +3011,7 @@ export enum FrontendLoggerCategory {
     FeatureToggle = "imodeljs-frontend.FeatureToggles",
     FrontendRequestContext = "imodeljs-frontend.FrontendRequestContext",
     IModelConnection = "imodeljs-frontend.IModelConnection",
-    OidcIOSClient = "imodeljs-frontend.OidcIOSClient",
+    IOSAuthorizationClient = "imodeljs-frontend.IOSAuthorizationClient",
     // (undocumented)
     Package = "imodeljs-frontend"
 }
@@ -5550,7 +5564,7 @@ export class OffScreenViewport extends Viewport {
 }
 
 // @beta @deprecated
-export class OidcBrowserClient extends ImsOidcClient implements FrontendAuthorizationClient {
+export class OidcBrowserClient extends ImsAuthorizationClient implements FrontendAuthorizationClient {
     constructor(_configuration: OidcFrontendClientConfiguration);
     // (undocumented)
     protected _accessToken?: AccessToken;
@@ -5567,20 +5581,6 @@ export class OidcBrowserClient extends ImsOidcClient implements FrontendAuthoriz
     protected signInSilent(requestContext: ClientRequestContext): Promise<User>;
     signOut(requestContext: ClientRequestContext): Promise<void>;
     }
-
-// @alpha
-export class OidcDesktopClientRenderer implements FrontendAuthorizationClient {
-    constructor(clientConfiguration: OidcDesktopClientConfiguration);
-    dispose(): void;
-    getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
-    get hasExpired(): boolean;
-    get hasSignedIn(): boolean;
-    initialize(requestContext: ClientRequestContext): Promise<void>;
-    get isAuthorized(): boolean;
-    readonly onUserStateChanged: BeEvent<(token: AccessToken | undefined) => void>;
-    signIn(requestContext: ClientRequestContext): Promise<void>;
-    signOut(requestContext: ClientRequestContext): Promise<void>;
-}
 
 // @internal
 export class OnScreenTarget extends Target {

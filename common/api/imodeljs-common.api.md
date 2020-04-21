@@ -1453,12 +1453,20 @@ export interface DecorationGeometryProps {
 }
 
 // @alpha
-export const defaultOidcDesktopClientExpiryBuffer: number;
+export const defaultDesktopAuthorizationClientExpiryBuffer: number;
 
 // @public
 export interface DefinitionElementProps extends ElementProps {
     // (undocumented)
     isPrivate?: boolean;
+}
+
+// @alpha
+export interface DesktopAuthorizationClientConfiguration {
+    clientId: string;
+    expiryBuffer?: number;
+    redirectUri: string;
+    scope: string;
 }
 
 // @internal
@@ -3905,14 +3913,6 @@ export class OctEncodedNormalPair {
     first: OctEncodedNormal;
     // (undocumented)
     second: OctEncodedNormal;
-}
-
-// @alpha
-export interface OidcDesktopClientConfiguration {
-    clientId: string;
-    expiryBuffer?: number;
-    redirectUri: string;
-    scope: string;
 }
 
 // @internal

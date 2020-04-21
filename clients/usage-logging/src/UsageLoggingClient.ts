@@ -6,7 +6,7 @@
  * @module UsageLogging
  */
 import { BentleyStatus, Guid, GuidString, Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext, Client, IncludePrefix, request, RequestOptions, Response } from "@bentley/itwin-client";
+import { AuthorizedClientRequestContext, Client, request, RequestOptions, Response } from "@bentley/itwin-client";
 import { FeatureLogEntryJson, LogEntryConverter } from "./LogEntryConverter";
 import { UsageLoggingClientLoggerCategory } from "./UsageLoggingClientLoggerCategories";
 
@@ -241,7 +241,7 @@ export class UsageLoggingClient extends Client {
 
   private async logEntry(requestContext: AuthorizedClientRequestContext, postUrl: string, jsonBody: any): Promise<LogPostingResponse> {
     const token = requestContext.accessToken;
-    const authString: string = !token.getSamlAssertion() ? token.toTokenString() : "SAML " + token.toTokenString(IncludePrefix.No);
+    const authString: string = token.toTokenString();
     const options: RequestOptions = {
       method: "POST",
       headers: { authorization: authString },

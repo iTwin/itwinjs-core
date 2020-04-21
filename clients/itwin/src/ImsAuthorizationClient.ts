@@ -9,7 +9,7 @@
 import { Client } from "./Client";
 
 /** @beta */
-export class ImsOidcClient extends Client {
+export class ImsAuthorizationClient extends Client {
   public static readonly searchKey: string = "IMSOpenID";
 
   public constructor() {
@@ -21,6 +21,6 @@ export class ImsOidcClient extends Client {
    * @returns Search key for the URL.
    */
   protected getUrlSearchKey(): string {
-    return ImsOidcClient.searchKey;
+    return ImsAuthorizationClient.searchKey;
   }
 }

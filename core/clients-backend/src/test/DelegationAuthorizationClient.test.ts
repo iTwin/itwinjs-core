@@ -5,16 +5,16 @@
 
 import * as chai from "chai";
 import { ClientRequestContext, Config } from "@bentley/bentleyjs-core";
-import { AccessToken } from "@bentley/itwin-client";
+import { AccessToken, SamlAccessToken } from "@bentley/itwin-client";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
-import { OidcDelegationClient, OidcDelegationClientConfiguration, OidcAgentClient, OidcAgentClientConfiguration } from "../imodeljs-clients-backend";
+import { DelegationAuthorizationClient, DelegationAuthorizationClientConfiguration, AgentAuthorizationClient, AgentAuthorizationClientConfiguration } from "../imodeljs-clients-backend";
 import { HubAccessTestValidator } from "./HubAccessTestValidator";
 
 IModelJsConfig.init(true /* suppress exception */, false /* suppress error message */, Config.App);
 
 chai.should();
 
-describe("OidcDelegationClient (#integration)", () => {
+describe("DelegationAuthorizationClient (#integration)", () => {
 
   let validator: HubAccessTestValidator;
   let jwt: AccessToken;
@@ -23,38 +23,40 @@ describe("OidcDelegationClient (#integration)", () => {
   before(async () => {
     validator = await HubAccessTestValidator.getInstance();
 
-    const agentConfiguration: OidcAgentClientConfiguration = {
+    const agentConfiguration: AgentAuthorizationClientConfiguration = {
       clientId: Config.App.getString("imjs_agent_test_client_id"),
       clientSecret: Config.App.getString("imjs_agent_test_client_secret"),
       scope: "imodelhub rbac-user:external-client reality-data:read urlps-third-party context-registry-service:read-only imodeljs-backend-2686",
     };
 
-    const agentClient = new OidcAgentClient(agentConfiguration);
+    const agentClient = new AgentAuthorizationClient(agentConfiguration);
     jwt = await agentClient.getAccessToken(requestContext);
   });
 
   it("should get valid SAML delegation tokens", async () => {
 
-    const delegationConfiguration: OidcDelegationClientConfiguration = {
+    const delegationConfiguration: DelegationAuthorizationClientConfiguration = {
       clientId: Config.App.getString("imjs_delegation_test_client_id"),
       clientSecret: Config.App.getString("imjs_delegation_test_client_secret"),
       scope: Config.App.getString("imjs_default_relying_party_uri"),
     };
 
-    const delegationClient = new OidcDelegationClient(delegationConfiguration);
-    const saml = await delegationClient.getSamlFromJwt(requestContext, jwt);
-    await validator.validateConnectAccess(saml);
-    await validator.validateIModelHubAccess(saml);
+    const delegationClient = new DelegationAuthorizationClient(delegationConfiguration);
+    const saml: SamlAccessToken = await delegationClient.getSamlFromJwt(requestContext, jwt);
+    const str = saml.toTokenString();
+    chai.assert.isTrue(str.length > 10);
+    // Note: No SAML support for existing clients anymore. Testing any further requires a new client that
+    // only works with SAML.
   });
 
   it("should get valid OIDC delegation tokens", async () => {
-    const delegationConfiguration: OidcDelegationClientConfiguration = {
+    const delegationConfiguration: DelegationAuthorizationClientConfiguration = {
       clientId: Config.App.getString("imjs_delegation_test_client_id"),
       clientSecret: Config.App.getString("imjs_delegation_test_client_secret"),
       scope: "context-registry-service imodelhub rbac-service",
     };
 
-    const delegationClient = new OidcDelegationClient(delegationConfiguration);
+    const delegationClient = new DelegationAuthorizationClient(delegationConfiguration);
     const delegationJwt = await delegationClient.getJwtFromJwt(requestContext, jwt);
     await validator.validateConnectAccess(delegationJwt);
     await validator.validateIModelHubAccess(delegationJwt);

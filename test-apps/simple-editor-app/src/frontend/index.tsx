@@ -14,12 +14,12 @@ import {
 } from "@bentley/frontend-authorization-client";
 import {
   RpcConfiguration, RpcOperation, IModelRpcProps, ElectronRpcManager,
-  BentleyCloudRpcManager, OidcDesktopClientConfiguration,
+  BentleyCloudRpcManager, DesktopAuthorizationClientConfiguration,
 } from "@bentley/imodeljs-common";
 import {
   IModelApp, IModelConnection, SnapMode, AccuSnap, ViewClipByPlaneTool, RenderSystem,
   IModelAppOptions, SelectionTool, ViewState, FrontendLoggerCategory,
-  ExternalServerExtensionLoader, OidcDesktopClientRenderer,
+  ExternalServerExtensionLoader, DesktopAuthorizationClient,
 } from "@bentley/imodeljs-frontend";
 import { MarkupApp } from "@bentley/imodeljs-markup";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
@@ -559,7 +559,7 @@ async function retrieveConfiguration(): Promise<void> {
   });
 }
 
-function getOidcConfiguration(): BrowserAuthorizationClientConfiguration | OidcDesktopClientConfiguration {
+function getOidcConfiguration(): BrowserAuthorizationClientConfiguration | DesktopAuthorizationClientConfiguration {
   const redirectUri = "http://localhost:3000/signin-callback";
   const baseOidcScope = "openid email profile organization imodelhub context-registry-service:read-only product-settings-service projectwise-share urlps-third-party imodel-extension-service-api";
 
@@ -583,9 +583,9 @@ async function handleOidcCallback(oidcConfiguration: BrowserAuthorizationClientC
   }
 }
 
-async function createOidcClient(requestContext: ClientRequestContext, oidcConfiguration: BrowserAuthorizationClientConfiguration | OidcDesktopClientConfiguration): Promise<FrontendAuthorizationClient> {
+async function createOidcClient(requestContext: ClientRequestContext, oidcConfiguration: BrowserAuthorizationClientConfiguration | DesktopAuthorizationClientConfiguration): Promise<FrontendAuthorizationClient> {
   if (isElectronRenderer) {
-    const desktopClient = new OidcDesktopClientRenderer(oidcConfiguration as OidcDesktopClientConfiguration);
+    const desktopClient = new DesktopAuthorizationClient(oidcConfiguration as DesktopAuthorizationClientConfiguration);
     await desktopClient.initialize(requestContext);
     return desktopClient;
   } else {

@@ -1,9 +1,8 @@
 sep=;
 Release Tag;API Item
-beta;AccessToken 
+beta;AccessToken
 beta;AuthenticationError 
 beta;AuthorizationClient
-internal;AuthorizationToken 
 public;AuthorizedClientRequestContext 
 public;AuthorizedClientRequestContextProps 
 beta;CancelRequest
@@ -19,7 +18,7 @@ internal;ECJsonTypeMap
 beta;FileHandler
 internal;getArrayBuffer(requestContext: ClientRequestContext, url: string): Promise
 internal;getJson(requestContext: ClientRequestContext, url: string): Promise
-beta;ImsOidcClient 
+beta;ImsAuthorizationClient 
 internal;IncludePrefix
 beta;isAuthorizedClientRequestContext: (requestContext: ClientRequestContext) => requestContext is AuthorizedClientRequestContext
 beta;ProgressCallback = (progress: ProgressInfo) => void
@@ -34,7 +33,9 @@ beta;RequestQueryStringifyOptions
 beta;RequestTimeoutOptions
 beta;Response
 beta;ResponseError 
-beta;class Token
+internal;SamlAccessToken 
+internal;SamlAuthorizationToken 
+internal;class SamlToken
 internal;UrlDiscoveryClient 
 internal;UserCancelledError 
 beta;UserInfo

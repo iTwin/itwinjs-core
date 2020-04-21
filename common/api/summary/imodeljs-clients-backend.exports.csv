@@ -1,15 +1,19 @@
 sep=;
 Release Tag;API Item
+beta;AgentAuthorizationClient 
+beta;AgentAuthorizationClientConfiguration = BackendAuthorizationClientConfiguration
 internal;AzureFileHandler 
+beta;class BackendAuthorizationClient 
+beta;BackendAuthorizationClientConfiguration
 internal;BufferedStream 
 public;ClientsBackendLoggerCategory
+beta;DelegationAuthorizationClient 
+beta;DelegationAuthorizationClientConfiguration = BackendAuthorizationClientConfiguration
 internal;IOSAzureFileHandler 
-beta;OidcAgentClient 
-beta;OidcAgentClientConfiguration = OidcBackendClientConfiguration
-beta;class OidcBackendClient 
-beta;OidcBackendClientConfiguration
-beta;OidcDelegationClient 
-beta;OidcDelegationClientConfiguration = OidcBackendClientConfiguration
+beta;OidcAgentClient = AgentAuthorizationClient
+beta;OidcAgentClientConfiguration = AgentAuthorizationClientConfiguration
+beta;OidcDelegationClient = DelegationAuthorizationClient
+beta;OidcDelegationClientConfiguration = DelegationAuthorizationClientConfiguration
 internal;RequestHost
 internal;StorageServiceFileHandler 
 internal;UrlFileHandler 

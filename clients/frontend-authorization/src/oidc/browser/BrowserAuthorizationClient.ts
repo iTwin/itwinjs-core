@@ -8,7 +8,7 @@
  */
 
 import { assert, AuthStatus, BeEvent, BentleyError, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
-import { AccessToken, AuthorizationClient, ImsOidcClient, UserInfo } from "@bentley/itwin-client";
+import { AccessToken, AuthorizationClient, ImsAuthorizationClient, UserInfo } from "@bentley/itwin-client";
 import { User, UserManager, UserManagerSettings } from "oidc-client";
 import { FrontendAuthorizationClient } from "../../FrontendAuthorizationClient";
 import { BrowserAuthorizationBase } from "./BrowserAuthorizationBase";
@@ -101,8 +101,8 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
     }
 
     if (!userManagerSettings.authority) {
-      const imsOidcClient = new ImsOidcClient();
-      const authority = await imsOidcClient.getUrl(requestContext);
+      const imsAuthorizationClient = new ImsAuthorizationClient();
+      const authority = await imsAuthorizationClient.getUrl(requestContext);
       userManagerSettings.authority = authority;
     }
 

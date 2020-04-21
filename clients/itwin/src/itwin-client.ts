@@ -8,12 +8,13 @@ export * from "./Client";
 export * from "./iTwinClientLoggerCategory";
 export * from "./ECJsonTypeMap";
 export * from "./FileHandler";
-export * from "./ImsOidcClient";
 export * from "./Request";
 export * from "./Token";
 export * from "./UserInfo";
 export * from "./WsgClient";
 export * from "./WsgQuery";
+export * from "./ImsAuthorizationClient";
+export * from "./SamlToken";
 
 /** @docs-package-description
  * The itwin-client package allows sending requests to various CONNECT services.

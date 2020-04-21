@@ -100,6 +100,7 @@ internal;DefineACSByPointsTool
 alpha;DepthPointOptions
 alpha;DepthPointSource
 public;DepthRangeNpc
+alpha;DesktopAuthorizationClient 
 internal;DevTools
 public;DisplayStyle2dState 
 public;DisplayStyle3dState 
@@ -285,7 +286,6 @@ internal;NullTarget
 internal;OffScreenTarget 
 internal;OffScreenViewport 
 beta;OidcBrowserClient 
-alpha;OidcDesktopClientRenderer 
 internal;OnScreenTarget 
 beta;openImageDataUrlInNewWindow(url: string, title?: string): void
 internal;OrbitGtTileTree 

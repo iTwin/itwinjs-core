@@ -58,7 +58,7 @@ describe("BriefcaseManager (#integration)", () => {
 
   before(async () => {
     IModelTestUtils.setupLogging();
-    IModelTestUtils.setupDebugLogLevels();
+    // IModelTestUtils.setupDebugLogLevels();
 
     requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
     testProjectId = await HubUtility.queryProjectIdByName(requestContext, "iModelJsIntegrationTest");

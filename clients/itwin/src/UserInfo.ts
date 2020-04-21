@@ -28,8 +28,19 @@ export class UserInfo {
     public featureTracking?: { ultimateSite: string, usageCountryIso: string },
   ) { }
 
-  /** Creates UserInfo from JSON obtained from typical Oidc clients */
+  /** Creates UserInfo from JSON obtained from typical Oidc clients
+   * @internal
+   */
   public static fromJson(jsonObj: any): UserInfo | undefined {
+    if (!jsonObj)
+      return undefined;
+    return new UserInfo(jsonObj.id, jsonObj.email, jsonObj.profile, jsonObj.organization, jsonObj.featureTracking);
+  }
+
+  /** Creates UserInfo from JSON obtained from typical Oidc clients
+   * @internal
+   */
+  public static fromTokenResponseJson(jsonObj: any): UserInfo | undefined {
     if (!jsonObj)
       return undefined;
     const id: string = jsonObj.sub;
