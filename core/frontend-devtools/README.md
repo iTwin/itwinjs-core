@@ -128,7 +128,7 @@ The key-ins below enable, disable, or toggle a specific feature. They take at mo
   * `overlay=`: 1 to draw as an overlay, 0 to draw normally (with depth).
   * `priority=`: 1 to enforce subcategory display priority, 0 to ignore.
 * `fdt subcat priority` - Override display priority of one or more subcategories. Only has an effect on plan projection models. The first argument is a comma-separated list of subcategory Ids; the second is the integer priority value. Omit the second argument to clear the overrides for the specified subcategories.
-* `fdy toggle reality preload` - Toggles the display of preloaded reality tile bounding boxes.
+* `fdt toggle reality preload` - Toggles the display of preloaded reality tile bounding boxes.
 * `fdt toggle reality freeze`  - Toggles the freezing of reality tile loading, when the reality tiles are frozen new reality tiles are not downloaded or purged.
 * `fdt toggle reality logging` - Toggle the logging of reality tile loading and selection diagnostics to the console.
 * `fdt toggle reality bounds` - Toggle the display of bounding boxes for reality tiles.
@@ -136,3 +136,6 @@ The key-ins below enable, disable, or toggle a specific feature. They take at mo
   * "clear": Clear all clip colors
   * "inside `<color string>` | clear": Set or clear an inside clip color
   * "outside  `<color string>` | clear": Set or clear an outside clip color
+* `fdt sourceId from elemId` and `fdt elemId from sourceId` - Converts between the Id of an element in the iModel and the corresponding object in the source document from which it originated. Outputs the result to IModelApp.notifications.
+*   * `id=`: the source aspect Id or element Id.
+*   * `copy=`: (optional) 1 to copy the resultant Id to the system clipboard.
