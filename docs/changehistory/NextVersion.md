@@ -468,8 +468,8 @@ The deprecated ToolSettingsValue.ts has been removed.
 
 A couple of already `@deprecated` APIs are now being hard-deprecated by adding a `DEPRECATED_` prefix to increase consumers' awareness about future removal of the APIs:
 
-* `Tree` to `DEPRECATED_Tree`
-* `withTreeDragDrop` to `DEPRECATED_withTreeDragDrop`
+* `Tree` to `DEPRECATED_Tree`. Recommended replacement - `ControlledTree`.
+* `withTreeDragDrop` to `DEPRECATED_withTreeDragDrop`. We don't have a replacement for that yet.
 
 As a short term solution consumers can simply do a rename when importing the module, e.g.:
 
@@ -587,14 +587,12 @@ Because of the above breaking `PresentationRpcInterface` changes its version was
 
 Some of already `@deprecated` APIs are now being hard-deprecated by adding a `DEPRECATED_` prefix to increase consumers' awareness about future removal of the APIs:
 
-* `AllInstanceNodesSpecification` to `DEPRECATED_AllInstanceNodesSpecification`
-* `AllRelatedInstanceNodesSpecification` to `DEPRECATED_AllRelatedInstanceNodesSpecification`
-* `ChildNodeSpecificationTypes.AllInstanceNodes` to `ChildNodeSpecificationTypes.DEPRECATED_AllInstanceNodes`
-* `ChildNodeSpecificationTypes.AllRelatedInstanceNodes` to `ChildNodeSpecificationTypes.DEPRECATED_AllRelatedInstanceNodes`
-* `PropertiesDisplaySpecification` to `DEPRECATED_PropertiesDisplaySpecification`
-* `PropertyEditorsSpecification` to `DEPRECATED_PropertyEditorsSpecification`
-* `PropertiesDisplaySpecification` to `DEPRECATED_PropertiesDisplaySpecification`
-* `PropertyEditorsSpecification` to `DEPRECATED_PropertyEditorsSpecification`
+* `AllInstanceNodesSpecification` to `DEPRECATED_AllInstanceNodesSpecification`. Recommended replacement - `InstanceNodesOfSpecificClassesSpecification`.
+* `AllRelatedInstanceNodesSpecification` to `DEPRECATED_AllRelatedInstanceNodesSpecification`. Recommended replacement - `RelatedInstanceNodesSpecification`.
+* `ChildNodeSpecificationTypes.AllInstanceNodes` to `ChildNodeSpecificationTypes.DEPRECATED_AllInstanceNodes`. Recommended replacement - `ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses`.
+* `ChildNodeSpecificationTypes.AllRelatedInstanceNodes` to `ChildNodeSpecificationTypes.DEPRECATED_AllRelatedInstanceNodes`. Recommended replacement - `ChildNodeSpecificationTypes.RelatedInstanceNodes`.
+* `PropertiesDisplaySpecification` to `DEPRECATED_PropertiesDisplaySpecification`. Recommended replacement - using property overrides of `PropertySpecification` type with `isDisplayed` attribute.
+* `PropertyEditorsSpecification` to `DEPRECATED_PropertyEditorsSpecification`. Recommended replacement - using property overrides of `PropertySpecification` type with `editor` attribute.
 
 As a short term solution consumers can simply do a rename when importing the module, e.g.:
 
@@ -655,10 +653,10 @@ import { DEPRECATED_PropertiesDisplaySpecification as PropertiesDisplaySpecifica
 
 Some of already `@deprecated` APIs are now being hard-deprecated by adding a `DEPRECATED_` prefix to increase consumers' awareness about future removal of the APIs:
 
-* `controlledTreeWithFilteringSupport` renamed to `DEPRECATED_controlledTreeWithFilteringSupport`.
-* `controlledTreeWithVisibleNodes` renamed to `DEPRECATED_controlledTreeWithVisibleNodes`.
-* `treeWithFilteringSupport` renamed to `DEPRECATED_treeWithFilteringSupport`.
-* `treeWithUnifiedSelection` renamed to `DEPRECATED_treeWithUnifiedSelection`.
+* `controlledTreeWithFilteringSupport` renamed to `DEPRECATED_controlledTreeWithFilteringSupport`. Recommended replacement - `useControlledTreeFiltering` React hook.
+* `controlledTreeWithVisibleNodes` renamed to `DEPRECATED_controlledTreeWithVisibleNodes`. This HOC is completely unnecessary when using React hooks which is what we recommend to use with the `ControlledTree` component.
+* `treeWithFilteringSupport` renamed to `DEPRECATED_treeWithFilteringSupport`. Recommended replacement - `ControlledTree` and `useControlledTreeFiltering` React hook.
+* `treeWithUnifiedSelection` renamed to `DEPRECATED_treeWithUnifiedSelection`. Recommended replacement - `ControlledTree` and `useUnifiedSelectionTreeEventHandler` React hook.
 
 As a short term solution consumers can simply do a rename when importing the module, e.g.:
 
