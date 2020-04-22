@@ -53,8 +53,8 @@ export class SignOutModalFrontstage implements ModalFrontstageInfo {
   private _getFullName(): string {
     let name: string = "";
     // istanbul ignore else
-    if (this._userInfo) {
-      name = this._userInfo.profile!.firstName + " " + this._userInfo.profile!.lastName;
+    if (this._userInfo && this._userInfo.profile) {
+      name = this._userInfo.profile.firstName + " " + this._userInfo.profile.lastName;
     }
 
     return name;

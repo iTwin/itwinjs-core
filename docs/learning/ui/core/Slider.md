@@ -38,8 +38,9 @@ The `includeTicksInWidth` prop indicates whether to compensate for the tick mark
 
 ### Tooltip
 
-A tooltip may optionally be shown above the thumbs.
-The `showTooltip` prop indicates whether to show tooltip with the value above the Slider thumbs.
+A tooltip may optionally be shown above or below the Slider.
+The `showTooltip` prop indicates whether to show a tooltip with the value. The tooltip will be above the Slider, by default.
+To show the tooltip below the Slider, set the `tooltipBelow` prop.
 The `formatTooltip` prop specifies a function to format a value for the tooltip.
 
 ### Min/Max Labels and Icons

@@ -71,6 +71,7 @@ export class RadialMenu extends React.Component<RadialMenuProps, RadialMenuState
   public render(): JSX.Element {
     const width = 2 * (this.props.outerRadius + 1);
     let x = this.props.left, y = this.props.top;
+
     if (this.props.left && this.props.top && typeof this.props.left === "number" && typeof this.props.top === "number") {
       x = this.props.left;
       y = this.props.top;
@@ -84,6 +85,7 @@ export class RadialMenu extends React.Component<RadialMenuProps, RadialMenuState
       if (y > window.innerHeight - width)
         y = window.innerHeight - width;
     }
+
     const divStyle: React.CSSProperties = { left: x, top: y, ...this.props.style };
 
     return (
@@ -210,6 +212,7 @@ export class RadialButton extends React.Component<RadialButtonProps, RadialButto
     let size = 0;
     let t = "";
     let path = "";
+
     if (sector) {
       size = sector.start.p1.getDistanceTo(sector.end.p2) * 2;
       path = sector.path;
@@ -224,7 +227,8 @@ export class RadialButton extends React.Component<RadialButtonProps, RadialButto
         let a = angle * 180 / Math.PI + 90;
         while (a > 180)
           a -= 360;
-        while (a < -180) a += 360;
+        while (a < -180)
+          a += 360;
         if (a > 90)
           a -= 180;
         if (a < -90)
@@ -232,6 +236,7 @@ export class RadialButton extends React.Component<RadialButtonProps, RadialButto
         t = `rotate(${a} ${p.x}, ${p.y})`;
       }
     }
+
     return (
       <g
         onMouseOver={this._handleMouseOver}
@@ -255,20 +260,24 @@ export class RadialButton extends React.Component<RadialButtonProps, RadialButto
       </g>
     );
   }
+
   /** Manually call this.props.onSelect */
   public select = () => {
     // istanbul ignore else
     if (this.props.onSelect)
       this.props.onSelect(undefined);
   }
+
   private _handleClick = (event: React.MouseEvent<SVGElement>) => {
     // istanbul ignore else
     if (this.props.onSelect)
       this.props.onSelect(event);
   }
+
   private _handleMouseOver = (_event: React.MouseEvent<SVGElement>) => {
     this.setState({ hover: true });
   }
+
   private _handleMouseOut = (_event: React.MouseEvent<SVGElement>) => {
     this.setState({ hover: false });
   }

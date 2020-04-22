@@ -20,7 +20,7 @@ function FancySlider() {
   return (
     <Slider style={{ minWidth: "160px" }} min={0} max={100} values={[30, 70]} step={5} mode={2}
       showTicks getTickCount={() => 10}
-      showTooltip formatTooltip={handleFormatTip}
+      showTooltip tooltipBelow formatTooltip={handleFormatTip}
       onChange={handleSliderChange} />
   );
 }
@@ -31,7 +31,7 @@ function BasicSlider() {
   }, []);
   return (
     <Slider style={{ minWidth: "160px" }} min={0} max={100} values={[50]} step={1} showMinMax={true} maxImage={<Icon iconSpec="icon-placeholder" />}
-      showTooltip onChange={handleSliderChange} />
+      showTooltip tooltipBelow onChange={handleSliderChange} />
   );
 }
 

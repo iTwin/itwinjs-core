@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 @import "../style/themecolors";
+@import "../z-index";
 
 $uicore-slider-height:          24px;
 $uicore-slider-rail-height:     4px;
@@ -103,38 +104,31 @@ $uicore-slider-minmax-margin:   6px;
       position: absolute;
       top: 50%;
       transform: translateY(-50%);
-      z-index: 1;
+
+      @include uicore-z-index(tooltip);
 
       .core-slider-tooltip {
         position: absolute;
-        top: -20px;
+        top: -10px;
         display: inline-block;
-        border-bottom: 1px dotted #222;
         font-size: 14px;
 
+        &.tooltip-below {
+          top: 48px;
+        }
+
         .core-slider-tooltip-text {
-          background-color: #222;
-          color: #fff;
+          background-color: $buic-background-tooltip;
+          color: $buic-text-color;
           text-align: center;
-          border-radius: 6px;
-          padding: 8px 12px;
+          border-radius: 3px;
+          border: 1px solid $buic-background-control-stroke;
+          padding: 2px 6px;
           position: absolute;
-          z-index: 1;
-          bottom: 150%;
+          bottom: 0%;
           left: 50%;
           transform: translateX(-50%);
           white-space: nowrap;
-
-          &:after {
-            content: "";
-            position: absolute;
-            top: 100%;
-            left: 50%;
-            margin-left: -5px;
-            border-width: 5px;
-            border-style: solid;
-            border-color: #222 transparent transparent transparent;
-          }
         }
       }
     }
