@@ -9,10 +9,11 @@ import * as faker from "faker";
 import sinon from "sinon";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import {
-  createRandomDescriptor,
+  createRandomDescriptor, createRandomECInstancesNodeJSON,
   createRandomECInstancesNode, createRandomECInstancesNodeKey, createRandomNodePathElement,
   createRandomECInstanceKey, createRandomRuleset, createRandomLabelDefinition,
 } from "@bentley/presentation-common/lib/test/_helpers/random";
+import { using, BeDuration, BeEvent } from "@bentley/bentleyjs-core";
 import { I18N, I18NNamespace } from "@bentley/imodeljs-i18n";
 import { IModelRpcProps } from "@bentley/imodeljs-common";
 import { IModelConnection, EventSource } from "@bentley/imodeljs-frontend";
@@ -20,17 +21,19 @@ import {
   KeySet, Content, HierarchyRequestOptions, Node, Ruleset, VariableValueTypes, RulesetVariable,
   Paged, ContentRequestOptions, RpcRequestsHandler, LabelRequestOptions, NodeKey, NodePathElement,
   InstanceKey, Descriptor, RequestPriority, PresentationRpcInterface, PresentationRpcEvents,
-  PresentationUnitSystem, UpdateInfo, HierarchyUpdateInfo, ContentUpdateInfo,
+  PresentationUnitSystem, UpdateInfo, HierarchyUpdateInfo, ContentUpdateInfo, RegisteredRuleset,
+  PresentationDataCompareOptions, PartialHierarchyModification, PartialHierarchyModificationJSON,
+  PresentationError, PresentationStatus,
 } from "@bentley/presentation-common";
 import { PresentationManager } from "../presentation-frontend/PresentationManager";
 import { RulesetVariablesManagerImpl } from "../presentation-frontend/RulesetVariablesManager";
-import { RulesetManagerImpl } from "../presentation-frontend/RulesetManager";
+import { RulesetManagerImpl, RulesetManagerImplProps } from "../presentation-frontend/RulesetManager";
 import { Presentation } from "../presentation-frontend/Presentation";
-import { using, BeDuration } from "@bentley/bentleyjs-core";
 
 describe("PresentationManager", () => {
 
-  let rpcRequestsHandlerMock: moq.IMock<RpcRequestsHandler>;
+  const rulesetsManagerMock = moq.Mock.ofType<RulesetManagerImpl>();
+  const rpcRequestsHandlerMock = moq.Mock.ofType<RpcRequestsHandler>();
   let manager: PresentationManager;
   const i18nMock = moq.Mock.ofType<I18N>();
   const testData = {
@@ -39,15 +42,21 @@ describe("PresentationManager", () => {
     pageOptions: { start: 0, size: 0 },
     rulesetId: "",
   };
+  let rulesetManagerCreateStub: sinon.SinonSpy<[RulesetManagerImplProps?], RulesetManagerImpl>;
 
   beforeEach(() => {
     mockI18N();
     testData.imodelMock.reset();
     testData.imodelMock.setup((x) => x.getRpcProps()).returns(() => testData.imodelToken);
+    testData.imodelMock.setup((x) => x.onClose).returns(() => new BeEvent());
     testData.pageOptions = { start: faker.random.number(), size: faker.random.number() };
     testData.rulesetId = faker.random.uuid();
-    rpcRequestsHandlerMock = moq.Mock.ofType<RpcRequestsHandler>();
-    manager = PresentationManager.create({ rpcRequestsHandler: rpcRequestsHandlerMock.object });
+    rulesetsManagerMock.reset();
+    rulesetManagerCreateStub = sinon.stub(RulesetManagerImpl, "create").returns(rulesetsManagerMock.object);
+    rpcRequestsHandlerMock.reset();
+    manager = PresentationManager.create({
+      rpcRequestsHandler: rpcRequestsHandlerMock.object,
+    });
   });
 
   afterEach(() => {
@@ -138,14 +147,163 @@ describe("PresentationManager", () => {
 
   describe("onConnection", () => {
 
-    it("caches IModelConnection", () => {
-      const managerStub = sinon.stub(manager, "onNewiModelConnection");
-      const imodelConnectionMock = moq.Mock.ofType<IModelConnection>();
-      (manager as any).onConnection(imodelConnectionMock.object).then(() => {
-        (manager as any).onConnection(imodelConnectionMock.object).then(() => {
-          expect(managerStub.calledOnceWith(imodelConnectionMock.object)).to.be.true;
-        });
+    it("caches IModelConnection and calls `onNewiModelConnection` for the first time", async () => {
+      const spy = sinon.stub(manager, "onNewiModelConnection");
+      const onCloseEvent = new BeEvent();
+      const imodelMock = moq.Mock.ofType<IModelConnection>();
+      imodelMock.setup((x) => x.onClose).returns(() => onCloseEvent);
+      rpcRequestsHandlerMock.setup((x) => x.getNodesCount(moq.It.isAny(), undefined)).returns(async () => 0);
+
+      // expect the spy to be called on first imodel use
+      await manager.getNodesCount({
+        imodel: imodelMock.object,
+        rulesetOrId: testData.rulesetId,
       });
+      expect(spy).to.be.calledOnceWith(imodelMock.object);
+      spy.resetHistory();
+
+      // expect the spy to not be called second time
+      await manager.getNodesCount({
+        imodel: imodelMock.object,
+        rulesetOrId: testData.rulesetId,
+      });
+      expect(spy).to.not.be.called;
+      spy.resetHistory();
+
+      // simulate imodel close
+      onCloseEvent.raiseEvent();
+
+      // expect the spy to be called again
+      await manager.getNodesCount({
+        imodel: imodelMock.object,
+        rulesetOrId: testData.rulesetId,
+      });
+      expect(spy).to.be.calledOnceWith(imodelMock.object);
+    });
+
+  });
+
+  describe("onRulesetModified", () => {
+
+    const triggerRulesetModification = async (curr: RegisteredRuleset, prev: Ruleset) => {
+      const rulesetManagerCreateProps: RulesetManagerImplProps | undefined = rulesetManagerCreateStub.firstCall.args[0];
+      expect(rulesetManagerCreateProps?.onRulesetModified).to.not.be.undefined;
+      await (rulesetManagerCreateProps!.onRulesetModified!(curr, prev) as any as Promise<void>);
+    };
+
+    it("compares hierarchies and triggers hierarchy update event for each imodel", async () => {
+      // setup a second imodel connection
+      const imodelToken2 = moq.Mock.ofType<IModelRpcProps>().object;
+      const imodelMock2 = moq.Mock.ofType<IModelConnection>();
+      imodelMock2.setup((x) => x.getRpcProps()).returns(() => imodelToken2);
+      imodelMock2.setup((x) => x.onClose).returns(() => new BeEvent());
+
+      // init both imodel connections
+      rpcRequestsHandlerMock.setup((x) => x.getNodesCount(moq.It.isAny(), undefined)).returns(async () => 0);
+      await manager.getNodesCount({ imodel: testData.imodelMock.object, rulesetOrId: "1" });
+      await manager.getNodesCount({ imodel: imodelMock2.object, rulesetOrId: "2" });
+
+      // set up prev and new rulesets
+      const prevRuleset = await createRandomRuleset();
+      const newRuleset = { ...await createRandomRuleset(), id: prevRuleset.id };
+      const newRegisteredRuleset = new RegisteredRuleset(newRuleset, "", () => { });
+      rulesetsManagerMock.setup((x) => x.get(newRuleset.id)).returns(async () => newRegisteredRuleset);
+
+      // set up rpc requests handler
+      const compareOptions1: PresentationDataCompareOptions<IModelConnection> = {
+        imodel: testData.imodelMock.object,
+        prev: {
+          rulesetOrId: prevRuleset,
+        },
+        rulesetOrId: newRuleset,
+      };
+      const compareOptions2: PresentationDataCompareOptions<IModelConnection> = {
+        imodel: imodelMock2.object,
+        prev: {
+          rulesetOrId: prevRuleset,
+        },
+        rulesetOrId: newRuleset,
+      };
+      const compareResult1: PartialHierarchyModificationJSON[] = [{
+        type: "Delete",
+        node: createRandomECInstancesNodeJSON(),
+      }, {
+        type: "Insert",
+        node: createRandomECInstancesNodeJSON(),
+        position: 123,
+      }, {
+        type: "Update",
+        node: createRandomECInstancesNodeJSON(),
+        changes: [],
+      }];
+      const compareResult2: PartialHierarchyModificationJSON[] = [];
+      rpcRequestsHandlerMock.setup((x) => x.compareHierarchies(prepareOptions(compareOptions1))).returns(async () => compareResult1).verifiable(moq.Times.once());
+      rpcRequestsHandlerMock.setup((x) => x.compareHierarchies(prepareOptions(compareOptions2))).returns(async () => compareResult2).verifiable(moq.Times.once());
+
+      // add hierarchy modification listener
+      const onHierarchyUpdateSpy = sinon.spy();
+      manager.onHierarchyUpdate.addListener(onHierarchyUpdateSpy);
+
+      // trigger ruleset modification
+      await triggerRulesetModification(newRegisteredRuleset, prevRuleset);
+
+      // confirm hierarchies got compared and appropriate events raised
+      rpcRequestsHandlerMock.verifyAll();
+      expect(onHierarchyUpdateSpy).to.be.calledTwice;
+      expect(onHierarchyUpdateSpy.firstCall).to.be.calledWith(newRegisteredRuleset, compareResult1.map(PartialHierarchyModification.fromJSON));
+      expect(onHierarchyUpdateSpy.secondCall).to.be.calledWith(newRegisteredRuleset, compareResult2.map(PartialHierarchyModification.fromJSON));
+    });
+
+    it("ignores cancelled comparison exceptions", async () => {
+      // init imodel connection
+      rpcRequestsHandlerMock.setup((x) => x.getNodesCount(moq.It.isAny(), undefined)).returns(async () => 0);
+      await manager.getNodesCount({ imodel: testData.imodelMock.object, rulesetOrId: "1" });
+
+      // set up prev and new rulesets
+      const prevRuleset = await createRandomRuleset();
+      const newRuleset = { ...await createRandomRuleset(), id: prevRuleset.id };
+      const newRegisteredRuleset = new RegisteredRuleset(newRuleset, "", () => { });
+      rulesetsManagerMock.setup((x) => x.get(newRuleset.id)).returns(async () => newRegisteredRuleset);
+
+      // set up rpc requests handler
+      rpcRequestsHandlerMock.setup((x) => x.compareHierarchies(moq.It.isAny())).returns(() => Promise.reject(new PresentationError(PresentationStatus.Canceled)));
+
+      // add hierarchy modification listener
+      const onHierarchyUpdateSpy = sinon.spy();
+      manager.onHierarchyUpdate.addListener(onHierarchyUpdateSpy);
+
+      // trigger ruleset modification
+      await triggerRulesetModification(newRegisteredRuleset, prevRuleset);
+
+      // confirm hierarchies got compared and no events were raised
+      rpcRequestsHandlerMock.verifyAll();
+      expect(onHierarchyUpdateSpy).to.not.be.called;
+    });
+
+    it("throws on comparison exception", async () => {
+      // init imodel connection
+      rpcRequestsHandlerMock.setup((x) => x.getNodesCount(moq.It.isAny(), undefined)).returns(async () => 0);
+      await manager.getNodesCount({ imodel: testData.imodelMock.object, rulesetOrId: "1" });
+
+      // set up prev and new rulesets
+      const prevRuleset = await createRandomRuleset();
+      const newRuleset = { ...await createRandomRuleset(), id: prevRuleset.id };
+      const newRegisteredRuleset = new RegisteredRuleset(newRuleset, "", () => { });
+      rulesetsManagerMock.setup((x) => x.get(newRuleset.id)).returns(async () => newRegisteredRuleset);
+
+      // set up rpc requests handler
+      rpcRequestsHandlerMock.setup((x) => x.compareHierarchies(moq.It.isAny())).returns(() => Promise.reject(new PresentationError(PresentationStatus.Error)));
+
+      // add hierarchy modification listener
+      const onHierarchyUpdateSpy = sinon.spy();
+      manager.onHierarchyUpdate.addListener(onHierarchyUpdateSpy);
+
+      // trigger ruleset modification
+      expect(triggerRulesetModification(newRegisteredRuleset, prevRuleset)).to.eventually.be.rejectedWith(PresentationError);
+
+      // confirm hierarchies got compared and no events were raised
+      rpcRequestsHandlerMock.verifyAll();
+      expect(onHierarchyUpdateSpy).to.not.be.called;
     });
 
   });
@@ -225,7 +383,14 @@ describe("PresentationManager", () => {
 
   describe("rulesets", () => {
 
-    it("returns rulesets manager", () => {
+    it("returns rulesets manager provided through props", () => {
+      const rulesets = manager.rulesets();
+      expect(rulesets).to.eq(rulesetsManagerMock.object);
+    });
+
+    it("returns an instance of `RulesetManagerImpl` if not provided through props", () => {
+      rulesetManagerCreateStub.restore();
+      manager = PresentationManager.create();
       const rulesets = manager.rulesets();
       expect(rulesets).to.be.instanceOf(RulesetManagerImpl);
     });
@@ -703,7 +868,7 @@ describe("PresentationManager", () => {
 
     beforeEach(async () => {
       testRuleset = await createRandomRuleset();
-      await manager.rulesets().add(testRuleset);
+      rulesetsManagerMock.setup((x) => x.get(testRuleset.id)).returns(async () => new RegisteredRuleset(testRuleset, "", () => { }));
       testRulesetVariable = { id: faker.random.word(), type: VariableValueTypes.String, value: faker.random.word() };
       await manager.vars(testRuleset.id).setString(testRulesetVariable.id, testRulesetVariable.value as string);
     });
@@ -801,9 +966,10 @@ describe("PresentationManager", () => {
       const ruleset2: Ruleset = { id: "2", rules: [] };
       const ruleset3: Ruleset = { id: "3", rules: [] };
       const ruleset4: Ruleset = { id: "4", rules: [] };
-      await manager.rulesets().add(ruleset1);
-      await manager.rulesets().add(ruleset2);
-      await manager.rulesets().add(ruleset3);
+      rulesetsManagerMock.setup((x) => x.get(ruleset1.id)).returns(async () => new RegisteredRuleset(ruleset1, "", () => { }));
+      rulesetsManagerMock.setup((x) => x.get(ruleset2.id)).returns(async () => new RegisteredRuleset(ruleset2, "", () => { }));
+      rulesetsManagerMock.setup((x) => x.get(ruleset3.id)).returns(async () => new RegisteredRuleset(ruleset3, "", () => { }));
+      rulesetsManagerMock.setup((x) => x.get(ruleset4.id)).returns(async () => undefined);
 
       const report: UpdateInfo = {
         [ruleset1.id]: {

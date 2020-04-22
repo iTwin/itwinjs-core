@@ -25,11 +25,11 @@ describe("SheetNavigationAid", () => {
     if (!ConfigurableUiManager.isControlRegistered("SheetNavigationAid"))
       ConfigurableUiManager.registerControl("SheetNavigationAid", SheetNavigationAidControl);
 
-    MockRender.App.startup();
+    await MockRender.App.startup();
   });
 
-  after(() => {
-    MockRender.App.shutdown();
+  after(async () => {
+    await MockRender.App.shutdown();
     TestUtils.terminateUiFramework();
   });
 

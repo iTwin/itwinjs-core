@@ -30,7 +30,7 @@ async function init() {
   hostConfig.imodelClient = CloudEnv.cloudEnv.imodelClient;
   hostConfig.concurrentQuery.concurrent = 2;
   hostConfig.concurrentQuery.pollInterval = 5;
-  IModelHost.startup(hostConfig);
+  await IModelHost.startup(hostConfig);
   IModelHost.snapshotFileNameResolver = new BackendTestAssetResolver();
 
   Logger.initializeToConsole();

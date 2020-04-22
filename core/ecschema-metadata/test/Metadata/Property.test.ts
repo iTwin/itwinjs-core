@@ -1302,7 +1302,7 @@ describe("PrimitiveArrayProperty", () => {
   });
 });
 
-describe.skip("NavigationProperty (Deserialization not fully implemented)", () => {
+describe("NavigationProperty (Deserialization not fully implemented)", () => {
   describe("toXml", () => {
     let testNavigationProperty: NavigationProperty;
     const newDom = createEmptyXmlDocument();

@@ -1,6 +1,6 @@
 {
   "name": "@bentley/extension-client",
-  "version": "2.0.0-dev.71",
+  "version": "2.0.0-dev.76",
   "description": "IModel.js Extension Client",
   "main": "lib/extension-client.js",
   "typings": "lib/extension-client",
@@ -13,14 +13,14 @@
     "build": "tsc 1>&2",
     "clean": "rimraf lib .rush",
     "cover": "",
-    "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --includes=../../generated-docs/extract --json=../../generated-docs/clients/extension-client/file.json --tsIndexFile=./ExtensionClient.ts --onlyJson %TYPEDOC_THEME%",
-    "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=ExtensionClient",
+    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/clients/extension-client/file.json --tsIndexFile=./extension-client.ts --onlyJson",
+    "extract-api": "betools extract-api --entry=extension-client",
     "lint": "tslint --project . 1>&2",
     "test": "",
     "test:integration": "npm run webpackTests && npm run test:integration:chrome",
-    "test:integration:chrome": "node ./node_modules/@bentley/certa/bin/certa.js -r chrome",
-    "test:integration:electron": "node ./node_modules/@bentley/certa/bin/certa.js -r electron",
-    "test:integration:node": "node ./node_modules/@bentley/certa/bin/certa.js -r node",
+    "test:integration:chrome": "certa -r chrome",
+    "test:integration:electron": "certa -r electron",
+    "test:integration:node": "certa -r node",
     "webpackTests": "webpack --config ./src/test/utils/webpack.config.js 1>&2"
   },
   "keywords": [
@@ -34,16 +34,16 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "@bentley/itwin-client": "2.0.0-dev.71",
-    "@bentley/imodeljs-common": "2.0.0-dev.71",
-    "@bentley/bentleyjs-core": "2.0.0-dev.71"
+    "@bentley/itwin-client": "2.0.0-dev.76",
+    "@bentley/imodeljs-common": "2.0.0-dev.76",
+    "@bentley/bentleyjs-core": "2.0.0-dev.76"
   },
   "devDependencies": {
-    "@bentley/build-tools": "2.0.0-dev.71",
-    "@bentley/certa": "2.0.0-dev.71",
-    "@bentley/context-registry-client": "2.0.0-dev.71",
-    "@bentley/config-loader": "2.0.0-dev.71",
-    "@bentley/oidc-signin-tool": "2.0.0-dev.71",
+    "@bentley/build-tools": "2.0.0-dev.76",
+    "@bentley/certa": "2.0.0-dev.76",
+    "@bentley/context-registry-client": "2.0.0-dev.76",
+    "@bentley/config-loader": "2.0.0-dev.76",
+    "@bentley/oidc-signin-tool": "2.0.0-dev.76",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
     "@types/node": "10.14.1",

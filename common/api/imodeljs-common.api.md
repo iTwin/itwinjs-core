@@ -539,9 +539,21 @@ export interface BRepPrimitive {
 }
 
 // @internal
-export interface BriefcaseRpcProps extends IModelRpcProps {
-    // (undocumented)
+export interface BriefcaseDownloader {
+    briefcaseProps: BriefcaseProps;
+    downloadPromise: Promise<void>;
+    requestCancel: () => Promise<boolean>;
+}
+
+// @internal
+export type BriefcaseKey = string;
+
+// @internal
+export interface BriefcaseProps extends RequestBriefcaseProps, DownloadBriefcaseOptions {
+    downloadStatus: DownloadBriefcaseStatus;
     fileSize?: number;
+    readonly key: BriefcaseKey;
+    openMode: OpenMode;
 }
 
 export { BriefcaseStatus }
@@ -1441,12 +1453,20 @@ export interface DecorationGeometryProps {
 }
 
 // @alpha
-export const defaultOidcDesktopClientExpiryBuffer: number;
+export const defaultDesktopAuthorizationClientExpiryBuffer: number;
 
 // @public
 export interface DefinitionElementProps extends ElementProps {
     // (undocumented)
     isPrivate?: boolean;
+}
+
+// @alpha
+export interface DesktopAuthorizationClientConfiguration {
+    clientId: string;
+    expiryBuffer?: number;
+    redirectUri: string;
+    scope: string;
 }
 
 // @internal
@@ -1612,6 +1632,29 @@ export interface DistanceExpressionProps {
     lateralOffsetFromILinearElement?: number;
     // (undocumented)
     verticalOffsetFromILinearElement?: number;
+}
+
+// @beta
+export interface DownloadBriefcaseOptions {
+    syncMode: SyncMode;
+}
+
+// @internal
+export enum DownloadBriefcaseStatus {
+    // (undocumented)
+    ApplyingChangeSets = 4,
+    // (undocumented)
+    Complete = 5,
+    // (undocumented)
+    DownloadingChangeSets = 3,
+    // (undocumented)
+    DownloadingCheckpoint = 2,
+    // (undocumented)
+    Error = 6,
+    // (undocumented)
+    Initializing = 1,
+    // (undocumented)
+    NotStarted = 0
 }
 
 // @beta
@@ -3091,6 +3134,8 @@ export abstract class IModel implements IModelProps {
     static readonly dictionaryId: Id64String;
     get ecefLocation(): EcefLocation | undefined;
     ecefToSpatial(ecef: XYAndZ, result?: Point3d): Point3d;
+    // @internal
+    protected _fileKey: string;
     // @internal (undocumented)
     getConnectionProps(): IModelConnectionProps;
     static getDefaultSubCategoryId(categoryId: Id64String): Id64String;
@@ -3113,8 +3158,6 @@ export abstract class IModel implements IModelProps {
     static readonly repositoryModelId: Id64String;
     rootSubject: RootSubjectProps;
     static readonly rootSubjectId: Id64String;
-    // @internal
-    protected _rpcKey: string;
     setEcefLocation(ecef: EcefLocationProps): void;
     spatialToCartographicFromEcef(spatial: XYAndZ, result?: Cartographic): Cartographic;
     spatialToEcef(spatial: XYAndZ, result?: Point3d): Point3d;
@@ -3219,7 +3262,7 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
 
 // @public
 export interface IModelRpcProps {
-    changeSetId?: string;
+    changeSetId?: GuidString;
     readonly contextId?: GuidString;
     readonly iModelId?: GuidString;
     readonly key: string;
@@ -3749,23 +3792,22 @@ export enum MonochromeMode {
 
 // @internal
 export abstract class NativeAppRpcInterface extends RpcInterface {
-    cancelDownloadBriefcase(_iModelToken: IModelRpcProps): Promise<boolean>;
     cancelTileContentRequests(_iModelToken: IModelRpcProps, _contentIds: TileTreeContentIds[]): Promise<void>;
     checkInternetConnectivity(): Promise<InternetConnectivityStatus>;
-    closeBriefcase(_iModelToken: IModelRpcProps): Promise<boolean>;
-    deleteBriefcase(_iModelToken: IModelRpcProps): Promise<void>;
-    downloadBriefcase(_iModelToken: IModelRpcProps): Promise<IModelRpcProps>;
+    closeBriefcase(_key: BriefcaseKey): Promise<void>;
+    deleteBriefcase(_key: BriefcaseKey): Promise<void>;
+    downloadRequestCompleted(_key: BriefcaseKey): Promise<void>;
     fetchEvents(_iModelToken: IModelRpcProps, _maxToFetch: number): Promise<QueuedEvent[]>;
-    finishDownloadBriefcase(_iModelToken: IModelRpcProps): Promise<void>;
-    getBriefcases(): Promise<BriefcaseRpcProps[]>;
+    getBriefcases(): Promise<BriefcaseProps[]>;
     static getClient(): NativeAppRpcInterface;
     getConfig(): Promise<any>;
     static readonly interfaceName = "NativeAppRpcInterface";
     static interfaceVersion: string;
     log(_timestamp: number, _level: LogLevel, _category: string, _message: string, _metaData?: any): Promise<void>;
-    openBriefcase(_iModelToken: IModelRpcProps): Promise<IModelProps>;
+    openBriefcase(_key: BriefcaseKey, _openOptions?: OpenBriefcaseOptions): Promise<IModelProps>;
     overrideInternetConnectivity(_overriddenBy: OverriddenBy, _status?: InternetConnectivityStatus): Promise<void>;
-    startDownloadBriefcase(_iModelToken: IModelRpcProps, _reportProgress: boolean): Promise<IModelRpcProps>;
+    requestCancelDownloadBriefcase(_key: BriefcaseKey): Promise<boolean>;
+    requestDownloadBriefcase(_requestProps: RequestBriefcaseProps, _downloadOptions: DownloadBriefcaseOptions, _reportProgress: boolean): Promise<BriefcaseProps>;
     // (undocumented)
     storageGet(_storageId: string, _key: string): Promise<StorageValue | undefined>;
     // (undocumented)
@@ -3871,14 +3913,6 @@ export class OctEncodedNormalPair {
     first: OctEncodedNormal;
     // (undocumented)
     second: OctEncodedNormal;
-}
-
-// @alpha
-export interface OidcDesktopClientConfiguration {
-    clientId: string;
-    expiryBuffer?: number;
-    redirectUri: string;
-    scope: string;
 }
 
 // @internal
@@ -4037,6 +4071,11 @@ export interface OpenAPISchema {
     nullable?: boolean;
     // (undocumented)
     type?: "boolean" | "object" | "array" | "number" | "string";
+}
+
+// @beta
+export interface OpenBriefcaseOptions {
+    openAsReadOnly?: boolean;
 }
 
 // @internal (undocumented)
@@ -4863,6 +4902,13 @@ export namespace RenderTexture {
 
 export { RepositoryStatus }
 
+// @internal
+export interface RequestBriefcaseProps {
+    readonly changeSetId: GuidString;
+    readonly contextId: GuidString;
+    readonly iModelId: GuidString;
+}
+
 // @public (undocumented)
 export class ResponseLike implements Response {
     constructor(data: any);
@@ -4941,6 +4987,7 @@ export abstract class RpcConfiguration {
     // @internal
     readonly controlChannel: RpcControlChannel;
     static developmentMode: boolean;
+    static disableRoutingValidation: boolean;
     static initializeInterfaces(configuration: RpcConfiguration): void;
     abstract readonly interfaces: () => RpcInterfaceDefinition[];
     static obtain<T extends RpcConfiguration>(configurationConstructor: {
@@ -5094,6 +5141,7 @@ export class RpcManager {
     static getClientForInterface<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>): T;
     static initializeInterface<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>): void;
     static registerImpl<TDefinition extends RpcInterface, TImplementation extends TDefinition>(definition: RpcInterfaceDefinition<TDefinition>, implementation: RpcInterfaceImplementation<TImplementation>): void;
+    static setIModel(props: IModelRpcProps): void;
     static supplyImplInstance<TDefinition extends RpcInterface, TImplementation extends TDefinition>(definition: RpcInterfaceDefinition<TDefinition>, instance: TImplementation): void;
     static terminateInterface<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>): void;
     static unregisterImpl<TDefinition extends RpcInterface>(definition: RpcInterfaceDefinition<TDefinition>): void;
@@ -5834,6 +5882,16 @@ export interface SubCategoryProps extends DefinitionElementProps {
 export interface SubjectProps extends ElementProps {
     // (undocumented)
     description?: string;
+}
+
+// @public
+export enum SyncMode {
+    // (undocumented)
+    FixedVersion = 1,
+    // (undocumented)
+    PullAndPush = 2,
+    // (undocumented)
+    PullOnly = 3
 }
 
 // @beta

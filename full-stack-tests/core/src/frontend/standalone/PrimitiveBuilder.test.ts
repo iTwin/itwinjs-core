@@ -19,7 +19,7 @@ describe("PrimitiveBuilder tests", () => {
   document.body.appendChild(viewDiv!);
 
   before(async () => {   // Create a ViewState to load into a Viewport
-    IModelApp.startup();
+    await IModelApp.startup();
     imodel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
     spatialView = await imodel.views.load("0x34") as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
@@ -27,7 +27,7 @@ describe("PrimitiveBuilder tests", () => {
 
   after(async () => {
     if (imodel) await imodel.close();
-    IModelApp.shutdown();
+    await IModelApp.shutdown();
   });
 
   it("PrimitiveBuilder should produce proper arc strokes for specific tolerances", () => {

@@ -14,7 +14,8 @@ import {
   ContentRequestOptions, Content, Descriptor, SelectionInfo,
   Paged, KeySet, InstanceKey, LabelRequestOptions, Ruleset, RulesetVariable, LabelDefinition,
   PresentationRpcInterface, PresentationRpcEvents, RegisteredRuleset, PresentationUnitSystem,
-  UpdateInfo, HierarchyUpdateInfo, ContentUpdateInfo,
+  UpdateInfo, HierarchyUpdateInfo, ContentUpdateInfo, PresentationRpcRequestOptions,
+  PartialHierarchyModification, PresentationError, PresentationStatus, PresentationDataCompareOptions,
 } from "@bentley/presentation-common";
 import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager";
 import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
@@ -98,7 +99,7 @@ export class PresentationManager implements IDisposable {
     this._requestsHandler = props?.rpcRequestsHandler ?? new RpcRequestsHandler(props ? { clientId: props.clientId } : undefined);
     this._eventSource = props?.eventSource ?? EventSourceManager.global;
     this._rulesetVars = new Map<string, RulesetVariablesManager>();
-    this._rulesets = new RulesetManagerImpl();
+    this._rulesets = RulesetManagerImpl.create({ onRulesetModified: this.onRulesetModified });
     this._localizationHelper = new LocalizationHelper();
     this._connections = new Map<IModelConnection, Promise<void>>();
 
@@ -110,16 +111,30 @@ export class PresentationManager implements IDisposable {
     this._eventSource.off(PresentationRpcInterface.interfaceName, PresentationRpcEvents.Update, this.onUpdate);
   }
 
-  private async onConnection(imodelConnection: IModelConnection) {
-    if (!this._connections.has(imodelConnection))
-      this._connections.set(imodelConnection, this.onNewiModelConnection(imodelConnection));
-    await this._connections.get(imodelConnection);
+  private async onConnection(imodel: IModelConnection) {
+    if (!this._connections.has(imodel))
+      this._connections.set(imodel, this.initializeIModel(imodel));
+    await this._connections.get(imodel);
+  }
+
+  private async initializeIModel(imodel: IModelConnection) {
+    imodel.onClose.addOnce(() => {
+      this._connections.delete(imodel);
+    });
+    await this.onNewiModelConnection(imodel);
   }
 
   // tslint:disable-next-line: naming-convention
   private onUpdate = (report: UpdateInfo) => {
     // tslint:disable-next-line: no-floating-promises
     this.handleUpdateAsync(report);
+  }
+
+  private handleRulesetUpdate(ruleset: Ruleset, updates: { hierarchy?: HierarchyUpdateInfo, content?: ContentUpdateInfo }) {
+    if (updates.content)
+      this.onContentUpdate.raiseEvent(ruleset, updates.content);
+    if (updates.hierarchy)
+      this.onHierarchyUpdate.raiseEvent(ruleset, updates.hierarchy);
   }
 
   private async handleUpdateAsync(report: UpdateInfo) {
@@ -133,11 +148,35 @@ export class PresentationManager implements IDisposable {
       .filter<RegisteredRuleset>((ruleset): ruleset is RegisteredRuleset => (undefined !== ruleset));
     rulesets.forEach((ruleset: Ruleset) => {
       const updateInfo = report[ruleset.id];
-      if (updateInfo.content)
-        this.onContentUpdate.raiseEvent(ruleset, updateInfo.content);
-      if (updateInfo.hierarchy)
-        this.onHierarchyUpdate.raiseEvent(ruleset, updateInfo.hierarchy);
+      this.handleRulesetUpdate(ruleset, updateInfo);
     });
+  }
+
+  // tslint:disable-next-line: naming-convention
+  private onRulesetModified = async (curr: RegisteredRuleset, prev: Ruleset) => {
+    const imodels = [...this._connections.keys()];
+    const currRulesetOptions: PresentationRpcRequestOptions<PresentationDataCompareOptions<IModelConnection>> = await this.addRulesetAndVariablesToOptions({
+      prev: {
+        rulesetOrId: prev,
+      },
+      rulesetOrId: curr.toJSON(),
+    });
+    await Promise.all(imodels.map(async (imodel) => {
+      let modifications: PartialHierarchyModification[] | undefined;
+      try {
+        modifications = (await this.rpcRequestsHandler.compareHierarchies(this.toRpcTokenOptions({ ...currRulesetOptions, imodel })))
+          .map(PartialHierarchyModification.fromJSON);
+      } catch (e) {
+        if (e instanceof PresentationError && e.errorNumber === PresentationStatus.Canceled) {
+          // ignore
+        } else {
+          // rethrow
+          throw e;
+        }
+      }
+      if (modifications)
+        this.handleRulesetUpdate(curr, { content: "FULL", hierarchy: modifications });
+    }));
   }
 
   /** Function that is called when a new IModelConnection is used to retrieve data.

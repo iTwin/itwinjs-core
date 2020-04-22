@@ -47,7 +47,7 @@ module.exports = {
   },
   externals: {
     "@bentley/imodeljs-native/loadNativePlatform.js": "@bentley/imodeljs-backend/node_modules/@bentley/imodeljs-native/loadNativePlatform.js",
-    "electron": "electron",
+    "electron": "commonjs electron",
     "fs": "fs",
     "process": "process",
     "child_process": "child_process",

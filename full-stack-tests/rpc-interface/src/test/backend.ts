@@ -25,7 +25,7 @@ const settings = new Settings(process.env);
   const hostConfig = new IModelHostConfiguration();
   hostConfig.concurrentQuery.concurrent = 2;
   hostConfig.concurrentQuery.pollInterval = 5;
-  IModelHost.startup(hostConfig);
+  await IModelHost.startup(hostConfig);
 
   PresentationBackend.initialize();
 

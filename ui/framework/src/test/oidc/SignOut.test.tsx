@@ -7,7 +7,8 @@ import * as sinon from "sinon";
 import { mount } from "enzyme";
 import { expect } from "chai";
 
-import TestUtils, { MockAccessToken } from "../TestUtils";
+import { Logger } from "@bentley/bentleyjs-core";
+import TestUtils, { mockUserInfo } from "../TestUtils";
 import { SignOutModalFrontstage } from "../../ui-framework/oidc/SignOut";
 
 describe("SignOutModalFrontstage", () => {
@@ -21,7 +22,7 @@ describe("SignOutModalFrontstage", () => {
   });
 
   it("should render", () => {
-    const stage = new SignOutModalFrontstage(new MockAccessToken());
+    const stage = new SignOutModalFrontstage(mockUserInfo());
     const title = stage.title;
     expect(title).not.to.be.undefined;
 
@@ -31,15 +32,15 @@ describe("SignOutModalFrontstage", () => {
   });
 
   it("should call onSignOut handler", () => {
-    const spyMethod = sinon.spy();
-
-    const stage = new SignOutModalFrontstage(new MockAccessToken(), spyMethod);
+    const spyMethod = sinon.spy(Logger, "logError");
+    const stage = new SignOutModalFrontstage(mockUserInfo());
 
     const wrapper = mount(stage.content as React.ReactElement<any>);
     wrapper.find("button").simulate("click");
-
     spyMethod.calledOnce.should.true;
+
     wrapper.unmount();
+    (Logger.logError as any).restore();
   });
 
 });

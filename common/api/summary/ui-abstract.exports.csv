@@ -67,6 +67,7 @@ beta;LinkElementsInfo
 beta;OnCancelFunc = () => void
 beta;OnItemExecutedFunc = (item: any) => void
 beta;OnNumberCommitFunc = (value: number) => void
+beta;OnValueCommitFunc = (value: Primitives.Value) => void
 beta;ParseResults
 beta;Primitives
 beta;PrimitiveValue 

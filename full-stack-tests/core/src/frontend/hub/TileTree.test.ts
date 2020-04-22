@@ -32,7 +32,7 @@ class MockTile extends Tile {
   }
 
   public async readContent(_data: TileRequest.ResponseData, _system: RenderSystem, _canceled?: () => boolean): Promise<TileContent> {
-    return Promise.resolve({ });
+    return Promise.resolve({});
   }
 
   public constructor(tree: TileTree) {
@@ -77,7 +77,7 @@ describe("TileTreeSupplier", () => {
   let imodel: IModelConnection;
 
   before(async () => {
-    IModelApp.startup();
+    await IModelApp.startup();
     imodel = await SnapshotConnection.openFile("mirukuru.ibim");
   });
 
@@ -85,7 +85,7 @@ describe("TileTreeSupplier", () => {
     if (imodel)
       await imodel.close();
 
-    IModelApp.shutdown();
+    await IModelApp.shutdown();
   });
 
   it("should be discarded when ecef location is modified if tiles are ecef-dependent", async () => {

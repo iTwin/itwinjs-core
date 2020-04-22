@@ -45,7 +45,7 @@ describe("Rulesets", async () => {
 
   after(async () => {
     await imodel.close();
-    terminate();
+    await terminate();
   });
 
   it("creates ruleset from json and gets root node using it", async () => {

@@ -12,16 +12,16 @@ import {
 } from "@bentley/bentleyjs-core";
 import { Point3d, Range3d, Range3dProps, XYAndZ, XYZProps } from "@bentley/geometry-core";
 import {
-  AxisAlignedBox3d, BisCodeSpec, Cartographic, CodeProps, CodeSpec, EcefLocation, EcefLocationProps, ElementProps, EntityQueryParams,
+  AxisAlignedBox3d, BisCodeSpec, BriefcaseProps, Cartographic, CodeProps, CodeSpec, EcefLocation, EcefLocationProps, ElementProps, EntityQueryParams,
   FontMap, FontMapProps, GeoCoordStatus, ImageSourceFormat, IModel, IModelConnectionProps, IModelError, IModelReadRpcInterface, IModelStatus, IModelRpcProps, IModelVersion, IModelWriteRpcInterface,
   MassPropertiesRequestProps, MassPropertiesResponseProps, ModelProps, ModelQueryParams, NativeAppRpcInterface, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus,
   RpcNotFoundResponse, RpcOperation, RpcRequest, RpcRequestEvent, SnapRequestProps, SnapResponseProps, SnapshotIModelRpcInterface, SubCategoryAppearance,
-  ThumbnailProps, TileTreeProps, ViewDefinitionProps, ViewQueryParams, WipRpcInterface,
+  ThumbnailProps, TileTreeProps, ViewDefinitionProps, ViewQueryParams, WipRpcInterface, RpcManager,
 } from "@bentley/imodeljs-common";
 import { EntityState } from "./EntityState";
 import { EventSource, EventSourceManager } from "./EventSource";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
-import { AuthorizedFrontendRequestContext } from "./FrontendRequestContext";
+import { AuthorizedFrontendRequestContext, FrontendRequestContext } from "./FrontendRequestContext";
 import { GeoServices } from "./GeoServices";
 import { IModelApp } from "./IModelApp";
 import { ModelState } from "./ModelState";
@@ -111,6 +111,15 @@ export abstract class IModelConnection extends IModel {
 
   /** Type guard for instanceof [[BriefcaseConnection]] */
   public isBriefcaseConnection(): this is BriefcaseConnection { return this instanceof BriefcaseConnection; }
+
+  /** Type guard for instanceof [[RemoteBriefcaseConnection]] */
+  public isRemoteBriefcaseConnection(): this is RemoteBriefcaseConnection { return this instanceof RemoteBriefcaseConnection; }
+
+  /** Type guard for instanceof [[RemoteBriefcaseConnection]]
+   * @internal
+   */
+  public isLocalBriefcaseConnection(): this is LocalBriefcaseConnection { return this instanceof LocalBriefcaseConnection; }
+
   /** Type guard for instanceof [[SnapshotConnection]] */
   public isSnapshotConnection(): this is SnapshotConnection { return this instanceof SnapshotConnection; }
   /** Type guard for instanceof [[BlankConnection]]
@@ -222,8 +231,8 @@ export abstract class IModelConnection extends IModel {
     this.subcategories = new SubCategoriesCache(this);
     this.geoServices = new GeoServices(this);
     this.displayedExtents = Range3d.fromJSON(this.projectExtents);
-    if (this._rpcKey !== "") {
-      this.eventSource = EventSourceManager.get(this._rpcKey, this.getRpcProps());
+    if (this._fileKey !== "") {
+      this.eventSource = EventSourceManager.get(this._fileKey, this.getRpcProps());
     }
   }
 
@@ -503,12 +512,10 @@ export abstract class IModelConnection extends IModel {
   }
 }
 
-/** A connection to a [BriefcaseDb]($backend) hosted on the backend. A briefcase is a copy of an iModel that is synchronized with iModelHub.
+/** Base class for connections to a [BriefcaseDb]($backend) hosted on the backend. A briefcase is a copy of an iModel that is synchronized with iModelHub.
  * @public
  */
-export class BriefcaseConnection extends IModelConnection {
-  private _isNativeAppBriefcase: boolean; // Set to true if it's a connection over a briefcase in a native application
-
+export abstract class BriefcaseConnection extends IModelConnection {
   /** The Guid that identifies the *context* that owns this iModel. */
   public get contextId(): GuidString { return super.contextId!; } // GuidString | undefined for the superclass, but required for BriefcaseConnection
   /** The Guid that identifies this iModel. */
@@ -516,21 +523,48 @@ export class BriefcaseConnection extends IModelConnection {
 
   /** Returns `true` if [[close]] has already been called. */
   public get isClosed(): boolean { return this._isClosed ? true : false; }
-  private _isClosed?: boolean;
+  protected _isClosed?: boolean;
 
-  private constructor(iModelProps: IModelConnectionProps, isNativeAppBriefcase: boolean) {
+  protected constructor(iModelProps: IModelConnectionProps) {
     super(iModelProps);
-    this._isNativeAppBriefcase = isNativeAppBriefcase;
   }
 
-  /** Creates iModel Connection over a local briefcase for a native application
+  /** WIP - Determines whether the *Change Cache file* is attached to this iModel or not.
+   * See also [Change Summary Overview]($docs/learning/ChangeSummaries)
+   * @returns Returns true if the *Change Cache file* is attached to the iModel. false otherwise
    * @internal
    */
-  public static createForNativeAppBriefcase(iModelProps: IModelConnectionProps): BriefcaseConnection {
-    return new this(iModelProps, true);
+  public async changeCacheAttached(): Promise<boolean> { return WipRpcInterface.getClient().isChangeCacheAttached(this.getRpcProps()); }
+
+  /** WIP - Attaches the *Change Cache file* to this iModel if it hasn't been attached yet.
+   * A new *Change Cache file* will be created for the iModel if it hasn't existed before.
+   * See also [Change Summary Overview]($docs/learning/ChangeSummaries)
+   * @throws [IModelError]($common) if a Change Cache file has already been attached before.
+   * @internal
+   */
+  public async attachChangeCache(): Promise<void> { return WipRpcInterface.getClient().attachChangeCache(this.getRpcProps()); }
+
+  /** WIP - Detaches the *Change Cache file* to this iModel if it had been attached before.
+   * > You do not have to check whether a Change Cache file had been attached before. The
+   * > method does not do anything, if no Change Cache is attached.
+   * See also [Change Summary Overview]($docs/learning/ChangeSummaries)
+   * @internal
+   */
+  public async detachChangeCache(): Promise<void> { return WipRpcInterface.getClient().detachChangeCache(this.getRpcProps()); }
+}
+
+/** A connection to a [BriefcaseDb]($backend) hosted on a remote backend, and is typically used in web applications.
+ * A briefcase is a copy of an iModel that is synchronized with iModelHub.
+ * @public
+ */
+export class RemoteBriefcaseConnection extends BriefcaseConnection {
+
+  private constructor(iModelProps: IModelConnectionProps) {
+    super(iModelProps);
   }
+
   /** Open an IModelConnection to an iModel. It's recommended that every open call be matched with a corresponding call to close. */
-  public static async open(contextId: string, iModelId: string, openMode: OpenMode = OpenMode.Readonly, version: IModelVersion = IModelVersion.latest()): Promise<BriefcaseConnection> {
+  public static async open(contextId: string, iModelId: string, openMode: OpenMode = OpenMode.Readonly, version: IModelVersion = IModelVersion.latest()): Promise<RemoteBriefcaseConnection> {
     if (!IModelApp.initialized)
       throw new IModelError(BentleyStatus.ERROR, "Call IModelApp.startup() before calling open");
 
@@ -541,11 +575,12 @@ export class BriefcaseConnection extends IModelConnection {
     requestContext.enter();
 
     const iModelRpcProps: IModelRpcProps = { key: "", contextId, iModelId, changeSetId, openMode }; // WIP: what is the right value for key?
+    RpcManager.setIModel(iModelRpcProps);
 
-    const openResponse = await BriefcaseConnection.callOpen(requestContext, iModelRpcProps, openMode);
+    const openResponse = await RemoteBriefcaseConnection.callOpen(requestContext, iModelRpcProps, openMode);
     requestContext.enter();
 
-    const connection = new BriefcaseConnection(openResponse, false);
+    const connection = new RemoteBriefcaseConnection(openResponse);
     RpcRequest.notFoundHandlers.addListener(connection._reopenConnectionHandler);
 
     IModelConnection.onOpen.raiseEvent(connection);
@@ -625,7 +660,7 @@ export class BriefcaseConnection extends IModelConnection {
       return;
 
     const iModelRpcProps = request.parameters[0] as IModelRpcProps;
-    if (this._rpcKey !== iModelRpcProps.key)
+    if (this._fileKey !== iModelRpcProps.key)
       return; // The handler is called for a different connection than this
 
     const requestContext: AuthorizedFrontendRequestContext = await AuthorizedFrontendRequestContext.create(request.id); // Reuse activityId
@@ -634,9 +669,9 @@ export class BriefcaseConnection extends IModelConnection {
     Logger.logTrace(loggerCategory, "Attempting to reopen connection", () => iModelRpcProps);
 
     try {
-      const openResponse = await BriefcaseConnection.callOpen(requestContext, iModelRpcProps, this.openMode);
+      const openResponse = await RemoteBriefcaseConnection.callOpen(requestContext, iModelRpcProps, this.openMode);
       // The new/reopened connection may have a new rpcKey and/or changeSetId, but the other IModelRpcTokenProps should be the same
-      this._rpcKey = openResponse.key;
+      this._fileKey = openResponse.key;
       this._changeSetId = openResponse.changeSetId;
     } catch (error) {
       reject(error.message);
@@ -649,8 +684,8 @@ export class BriefcaseConnection extends IModelConnection {
     resubmit();
   }
 
-  /** Close this IModelConnection
-   * In the case of ReadWrite connections ensure all changes are pushed to the iModelHub before making this call -
+  /** Close this RemoteBriefcaseConnection
+   * In the case of ReadWrite connections ensure all changes are pushed to iModelHub before making this call -
    * any un-pushed changes are lost after the close.
    */
   public async close(): Promise<void> {
@@ -664,14 +699,62 @@ export class BriefcaseConnection extends IModelConnection {
     RpcRequest.notFoundHandlers.removeListener(this._reopenConnectionHandler);
     requestContext.useContextForRpc = true;
 
-    let closePromise: Promise<boolean>;
-    if (this._isNativeAppBriefcase)
-      closePromise = NativeAppRpcInterface.getClient().closeBriefcase(this.getRpcProps());
-    else
-      closePromise = IModelReadRpcInterface.getClient().close(this.getRpcProps()); // Ensure the method isn't awaited right away.
-
+    const closePromise: Promise<boolean> = IModelReadRpcInterface.getClient().close(this.getRpcProps()); // Ensure the method isn't awaited right away.
     if (this.eventSource) {
-      EventSourceManager.delete(this._rpcKey);
+      EventSourceManager.delete(this._fileKey);
+    }
+    try {
+      await closePromise;
+    } finally {
+      requestContext.enter();
+      this._isClosed = true;
+      this.subcategories.onIModelConnectionClose();
+    }
+  }
+}
+
+/** A connection to a [BriefcaseDb]($backend) hosted on the same machine in a different process, and is typically used in native (desktop and mobile) applications.
+ * A briefcase is a copy of an iModel that is synchronized with iModelHub.
+ * @internal
+ */
+export class LocalBriefcaseConnection extends BriefcaseConnection {
+
+  private constructor(iModelProps: IModelConnectionProps) {
+    super(iModelProps);
+  }
+
+  /** Open an IModelConnection to a locally downloaded briefcase of an iModel. Only applicable for Native applications
+   * @internal
+   */
+  public static async open(briefcaseProps: BriefcaseProps): Promise<LocalBriefcaseConnection> {
+    if (!IModelApp.initialized)
+      throw new IModelError(IModelStatus.BadRequest, "Call NativeApp.startup() before calling openBriefcase");
+
+    const requestContext = new FrontendRequestContext();
+    requestContext.enter();
+
+    requestContext.useContextForRpc = true;
+    const iModelProps = await NativeAppRpcInterface.getClient().openBriefcase(briefcaseProps.key);
+    return new this({ ...briefcaseProps, ...iModelProps });
+  }
+
+  /** Close this LocalBriefcaseConnection
+   * In the case of ReadWrite connections ensure all changes are pushed to iModelHub before making this call -
+   * any un-pushed changes are lost after the close.
+   */
+  public async close(): Promise<void> {
+    if (this.isClosed) {
+      return;
+    }
+    this.beforeClose();
+
+    const requestContext = new FrontendRequestContext();
+    requestContext.enter();
+
+    requestContext.useContextForRpc = true;
+    const closePromise: Promise<void> = NativeAppRpcInterface.getClient().closeBriefcase(this._fileKey); // Ensure the method isn't awaited right away.
+    if (this.eventSource) {
+      EventSourceManager.delete(this._fileKey);
     }
     try {
       await closePromise;
@@ -682,28 +765,6 @@ export class BriefcaseConnection extends IModelConnection {
     }
   }
 
-  /** WIP - Determines whether the *Change Cache file* is attached to this iModel or not.
-   * See also [Change Summary Overview]($docs/learning/ChangeSummaries)
-   * @returns Returns true if the *Change Cache file* is attached to the iModel. false otherwise
-   * @internal
-   */
-  public async changeCacheAttached(): Promise<boolean> { return WipRpcInterface.getClient().isChangeCacheAttached(this.getRpcProps()); }
-
-  /** WIP - Attaches the *Change Cache file* to this iModel if it hasn't been attached yet.
-   * A new *Change Cache file* will be created for the iModel if it hasn't existed before.
-   * See also [Change Summary Overview]($docs/learning/ChangeSummaries)
-   * @throws [IModelError]($common) if a Change Cache file has already been attached before.
-   * @internal
-   */
-  public async attachChangeCache(): Promise<void> { return WipRpcInterface.getClient().attachChangeCache(this.getRpcProps()); }
-
-  /** WIP - Detaches the *Change Cache file* to this iModel if it had been attached before.
-   * > You do not have to check whether a Change Cache file had been attached before. The
-   * > method does not do anything, if no Change Cache is attached.
-   * See also [Change Summary Overview]($docs/learning/ChangeSummaries)
-   * @internal
-   */
-  public async detachChangeCache(): Promise<void> { return WipRpcInterface.getClient().detachChangeCache(this.getRpcProps()); }
 }
 
 /** A connection that exists without an iModel. Useful for connecting to Reality Data services.

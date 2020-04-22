@@ -17,7 +17,7 @@ export enum ProjectReadStatus {
   DoneReading,
 }
 
-/** The possible values for Project scope in the CONNECT environment.
+/** The possible values for Project scope in the iTwin services environment.
  * @internal
  */
 export enum ProjectScope {
@@ -27,7 +27,7 @@ export enum ProjectScope {
   All,
 }
 
-/** Information required to display a CONNECT Project to the user.
+/** Information required to display an iTwin Project to the user.
  * @internal
  */
 export interface ProjectInfo {

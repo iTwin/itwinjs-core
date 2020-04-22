@@ -8,7 +8,7 @@ import * as lolex from "lolex";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { using } from "@bentley/bentleyjs-core";
 import { EventSink } from "@bentley/imodeljs-backend";
-import { UpdateInfo, PresentationRpcInterface, PresentationRpcEvents } from "@bentley/presentation-common";
+import { UpdateInfoJSON, PresentationRpcInterface, PresentationRpcEvents } from "@bentley/presentation-common";
 import { UpdatesTracker } from "../presentation-backend/UpdatesTracker";
 import { NativePlatformDefinition } from "../presentation-backend/NativePlatform";
 
@@ -75,7 +75,7 @@ describe("UpdatesTracker", () => {
     });
 
     it("emits events if there are updates", () => {
-      const updates: UpdateInfo = {
+      const updates: UpdateInfoJSON = {
         "a-ruleset": { hierarchy: [] },
         "b-ruleset": { hierarchy: "FULL" },
         "c-ruleset": { content: "FULL" },

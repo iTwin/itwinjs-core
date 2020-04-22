@@ -30,7 +30,7 @@ async function init() {
   hostConfig.imodelClient = CloudEnv.cloudEnv.imodelClient;
   hostConfig.concurrentQuery.concurrent = 2;
   hostConfig.concurrentQuery.pollInterval = 5;
-  NativeAppBackend.startup(hostConfig);
+  await NativeAppBackend.startup(hostConfig);
 
   Logger.initializeToConsole();
   Logger.setLevel("imodeljs-backend.IModelReadRpcImpl", LogLevel.Error);  // Change to trace to debug

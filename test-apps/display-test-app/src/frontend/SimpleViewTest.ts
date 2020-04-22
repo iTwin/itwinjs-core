@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { OpenMode, ClientRequestContext } from "@bentley/bentleyjs-core";
+import { ClientRequestContext } from "@bentley/bentleyjs-core";
 import {
   BentleyCloudRpcManager,
   CloudStorageContainerUrl,
@@ -11,14 +11,12 @@ import {
   ElectronRpcManager,
   IModelReadRpcInterface,
   IModelTileRpcInterface,
-  IModelRpcProps,
   MobileRpcConfiguration,
   MobileRpcManager,
   NativeAppRpcInterface,
-  OidcDesktopClientConfiguration,
+  DesktopAuthorizationClientConfiguration,
   RpcConfiguration,
   RpcInterfaceDefinition,
-  RpcOperation,
   SnapshotIModelRpcInterface,
   TileContentIdentifier,
 } from "@bentley/imodeljs-common";
@@ -30,7 +28,7 @@ import {
   IModelConnection,
   RenderDiagnostics,
   RenderSystem,
-  OidcDesktopClientRenderer,
+  DesktopAuthorizationClient,
   SnapshotConnection,
 } from "@bentley/imodeljs-frontend";
 import { WebGLExtensionName } from "@bentley/webgl-compatibility";
@@ -79,7 +77,7 @@ async function openSnapshotIModel(filename: string): Promise<IModelConnection> {
   return iModelConnection;
 }
 
-function getOidcConfiguration(): BrowserAuthorizationClientConfiguration | OidcDesktopClientConfiguration {
+function getOidcConfiguration(): BrowserAuthorizationClientConfiguration | DesktopAuthorizationClientConfiguration {
   const redirectUri = "http://localhost:3000/signin-callback";
   const baseOidcScope = "openid email profile organization imodelhub context-registry-service:read-only reality-data:read product-settings-service projectwise-share urlps-third-party imodel-extension-service-api";
 
@@ -103,9 +101,9 @@ async function handleOidcCallback(oidcConfiguration: BrowserAuthorizationClientC
   }
 }
 
-async function createOidcClient(requestContext: ClientRequestContext, oidcConfiguration: BrowserAuthorizationClientConfiguration | OidcDesktopClientConfiguration): Promise<OidcDesktopClientRenderer | BrowserAuthorizationClient> {
+async function createOidcClient(requestContext: ClientRequestContext, oidcConfiguration: BrowserAuthorizationClientConfiguration | DesktopAuthorizationClientConfiguration): Promise<DesktopAuthorizationClient | BrowserAuthorizationClient> {
   if (ElectronRpcConfiguration.isElectron) {
-    const desktopClient = new OidcDesktopClientRenderer(oidcConfiguration as OidcDesktopClientConfiguration);
+    const desktopClient = new DesktopAuthorizationClient(oidcConfiguration as DesktopAuthorizationClientConfiguration);
     await desktopClient.initialize(requestContext);
     return desktopClient;
   } else {
@@ -208,23 +206,15 @@ async function main() {
 
   // Choose RpcConfiguration based on whether we are in electron or browser
   const rpcInterfaces: RpcInterfaceDefinition[] = [IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface, SVTRpcInterface];
-  let rpcConfiguration: RpcConfiguration;
   if (ElectronRpcConfiguration.isElectron) {
     rpcInterfaces.push(NativeAppRpcInterface);
-    rpcConfiguration = ElectronRpcManager.initializeClient({}, rpcInterfaces);
+    ElectronRpcManager.initializeClient({}, rpcInterfaces);
   } else if (MobileRpcConfiguration.isMobileFrontend) {
     rpcInterfaces.push(NativeAppRpcInterface);
-    rpcConfiguration = MobileRpcManager.initializeClient(rpcInterfaces);
+    MobileRpcManager.initializeClient(rpcInterfaces);
   } else {
     const uriPrefix = configuration.customOrchestratorUri || "http://localhost:3001";
-    rpcConfiguration = BentleyCloudRpcManager.initializeClient({ info: { title: "SimpleViewApp", version: "v1.0" }, uriPrefix }, rpcInterfaces);
-
-    const testToken: IModelRpcProps = { key: "test", contextId: "test", iModelId: "test", changeSetId: "test", openMode: OpenMode.Readonly };
-
-    // WIP: WebAppRpcProtocol seems to require an IModelToken for every RPC request. ECPresentation initialization tries to set active locale using
-    // RPC without any imodel and fails...
-    for (const definition of rpcConfiguration.interfaces())
-      RpcOperation.forEach(definition, (operation) => operation.policy.token = (request) => (request.findTokenPropsParameter() || testToken));
+    BentleyCloudRpcManager.initializeClient({ info: { title: "SimpleViewApp", version: "v1.0" }, uriPrefix }, rpcInterfaces);
   }
 
   if (!configuration.standalone && !configuration.customOrchestratorUri) {

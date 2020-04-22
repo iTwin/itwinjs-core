@@ -56,8 +56,8 @@ function createTarget(): Target | undefined {
 }
 
 describe("Techniques", () => {
-  before(() => IModelApp.startup());
-  after(() => IModelApp.shutdown());
+  before(async () => IModelApp.startup());
+  after(async () => IModelApp.shutdown());
 
   it("should produce a simple dynamic rendering technique", () => {
     const target = createTarget();
@@ -87,42 +87,42 @@ describe("Techniques", () => {
 
   // NB: compiling all shaders can potentially take a long time, especially on our mac build machines.
   const compileTimeout = "95000";
-  function compileAllShaders(opts?: RenderSystem.Options): void {
+  async function compileAllShaders(opts?: RenderSystem.Options): Promise<void> {
     if (undefined !== opts) {
       // Replace current render system with customized one
-      IModelApp.shutdown();
-      IModelApp.startup({ renderSys: opts });
+      await IModelApp.shutdown();
+      await IModelApp.startup({ renderSys: opts });
     }
 
     expect(System.instance.techniques.compileShaders()).to.be.true;
 
     if (undefined !== opts) {
       // Reset render system to default state
-      IModelApp.shutdown();
-      IModelApp.startup();
+      await IModelApp.shutdown();
+      await IModelApp.startup();
     }
   }
 
   let haveWebGL2 = false; // currently we only use webgl 2 if explicitly enabled at startup
-  it("should compile all shader programs with WebGL 1", () => {
+  it("should compile all shader programs with WebGL 1", async () => {
     haveWebGL2 = System.instance.capabilities.isWebGL2;
     if (!haveWebGL2) {
       const canvas = document.createElement("canvas");
       haveWebGL2 = null !== canvas.getContext("webgl2");
     }
 
-    compileAllShaders({ useWebGL2: false });
+    await compileAllShaders({ useWebGL2: false });
   }).timeout(compileTimeout);
 
-  it("should successfully compile all shader programs with WebGL 2", () => {
+  it("should successfully compile all shader programs with WebGL 2", async () => {
     if (haveWebGL2)
-      compileAllShaders({ useWebGL2: true });
+      await compileAllShaders({ useWebGL2: true });
   }).timeout(compileTimeout);
 
-  it("should compile all shader programs without MRT", () => {
+  it("should compile all shader programs without MRT", async () => {
     if (System.instance.capabilities.supportsDrawBuffers) {
       // WebGL 2 always supports MRT - must use WebGL 1 context to test.
-      compileAllShaders({ disabledExtensions: ["WEBGL_draw_buffers"], useWebGL2: false });
+      await compileAllShaders({ disabledExtensions: ["WEBGL_draw_buffers"], useWebGL2: false });
     }
   }).timeout(compileTimeout);
 

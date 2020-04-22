@@ -5,7 +5,7 @@
 
 import { expect } from "chai";
 
-import { OpenAPIInfo, BentleyCloudRpcManager } from "@bentley/imodeljs-common";
+import { OpenAPIInfo, BentleyCloudRpcManager, RpcConfiguration } from "@bentley/imodeljs-common";
 import { AccessToken } from "@bentley/itwin-client";
 import { NoRenderApp, IModelApp } from "@bentley/imodeljs-frontend";
 import { Logger, LogLevel, Config } from "@bentley/bentleyjs-core";
@@ -45,6 +45,7 @@ export class TestContext {
 
   /** Initialize configuration for the rpc interfaces used by the application. */
   private initializeRpcInterfaces(info: OpenAPIInfo) {
+    RpcConfiguration.disableRoutingValidation = true;
     // Url without trailing slash
     const uriPrefix: string = this.settings.Backend.location.replace(/\/$/, "");
     BentleyCloudRpcManager.initializeClient({ info, uriPrefix }, getRpcInterfaces(this.settings));
@@ -83,7 +84,7 @@ export class TestContext {
 
     this.initializeRpcInterfaces({ title: this.settings.Backend.name, version: this.settings.Backend.version });
 
-    NoRenderApp.startup({ applicationVersion: PACKAGE_VERSION, applicationId: this.settings.gprid });
+    await NoRenderApp.startup({ applicationVersion: PACKAGE_VERSION, applicationId: this.settings.gprid });
 
     IModelApp.authorizationClient = new BasicAuthorizationClient(this.adminUserAccessToken);
 

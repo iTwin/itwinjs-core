@@ -36,8 +36,8 @@ describe("ExtensionClient (#integration)", () => {
 
     projectName = Config.App.getString("imjs_test_project_name");
 
-    const connectClient = new ContextRegistryClient();
-    const project = await connectClient.getProject(requestContext, {
+    const contextRegistry = new ContextRegistryClient();
+    const project = await contextRegistry.getProject(requestContext, {
       $select: "*",
       $filter: `Name+eq+'${projectName}'`,
     });

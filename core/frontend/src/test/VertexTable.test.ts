@@ -48,8 +48,8 @@ class FakeTexture extends RenderTexture {
 }
 
 describe("VertexLUT", () => {
-  before(() => MockRender.App.startup());
-  after(() => MockRender.App.shutdown());
+  before(async () => MockRender.App.startup());
+  after(async () => MockRender.App.shutdown());
 
   it("should produce correct VertexLUT.Params from MeshArgs", () => {
     // Make a mesh consisting of a single triangle.

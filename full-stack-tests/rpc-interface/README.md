@@ -14,7 +14,7 @@ Before running the tests, the environment needs to be setup.  The easiest way is
 
 All test related settings are contained in the `process.env` variable and parsed by [Settings.ts](./setup/Settings.ts).  If something required is missing or not configured properly, the tests will fail to setup.
 
-### Setting up required Connect Project
+### Setting up the required context
 
 The tests require an Project and iModel to be setup in order to run properly.
 

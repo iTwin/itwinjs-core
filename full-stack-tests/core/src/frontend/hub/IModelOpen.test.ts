@@ -5,7 +5,7 @@
 import { BeDuration, GuidString, Logger, OpenMode } from "@bentley/bentleyjs-core";
 import { ChangeSet, ChangeSetQuery, IModelHubClient } from "@bentley/imodelhub-client";
 import { IModelVersion } from "@bentley/imodeljs-common";
-import { AuthorizedFrontendRequestContext, BriefcaseConnection, IModelApp, IModelConnection, MockRender } from "@bentley/imodeljs-frontend";
+import { AuthorizedFrontendRequestContext, RemoteBriefcaseConnection, IModelApp, IModelConnection, MockRender } from "@bentley/imodeljs-frontend";
 import { TestAuthorizationClient, TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
 import { assert } from "chai";
 import { TestUtility } from "./TestUtility";
@@ -16,7 +16,7 @@ describe("Opening IModelConnection (#integration)", () => {
   let testChangeSetId: GuidString;
 
   before(async () => {
-    MockRender.App.startup({
+    await MockRender.App.startup({
       applicationVersion: "1.2.1.1",
     });
     Logger.initializeToConsole();
@@ -42,7 +42,7 @@ describe("Opening IModelConnection (#integration)", () => {
 
   after(async () => {
     await TestUtility.purgeAcquiredBriefcases(testIModelId);
-    MockRender.App.shutdown();
+    await MockRender.App.shutdown();
   });
 
   const doTest = async (openMode: OpenMode) => {
@@ -51,7 +51,7 @@ describe("Opening IModelConnection (#integration)", () => {
     let promiseChainWithFullWaits: Promise<void> = Promise.resolve();
     let n = 0;
     while (++n < 10) {
-      const openPromise = BriefcaseConnection.open(testProjectId, testIModelId, openMode, IModelVersion.asOfChangeSet(testChangeSetId));
+      const openPromise = RemoteBriefcaseConnection.open(testProjectId, testIModelId, openMode, IModelVersion.asOfChangeSet(testChangeSetId));
       const waitPromise = BeDuration.wait(5000); // 5 seconds
       const racePromise = Promise.race([openPromise, waitPromise]).then(() => Promise.resolve());
 

@@ -689,7 +689,7 @@ export class TemplateModelCloner extends IModelTransformer {
     for (const sourceElementId of this._sourceIdToTargetIdMap.keys()) {
       const targetElementId = this.context.findTargetElementId(sourceElementId);
       this._sourceIdToTargetIdMap.set(sourceElementId, targetElementId);
-      this.context.remapElement(sourceElementId, Id64.invalid); // clear the underlying native remapping context for the next clone operation
+      this.context.removeElement(sourceElementId); // clear the underlying native remapping context for the next clone operation
     }
     return this._sourceIdToTargetIdMap; // return the sourceElementId -> targetElementId Map in case further post-processing is required.
   }

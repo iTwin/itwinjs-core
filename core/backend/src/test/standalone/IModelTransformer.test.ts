@@ -8,9 +8,9 @@ import { AxisAlignedBox3d, Code, ColorDef, CreateIModelProps, GeometricElement3d
 import { assert } from "chai";
 import * as path from "path";
 import {
-  BackendLoggerCategory, BackendRequestContext, BriefcaseManager, DefinitionPartition, ECSqlStatement, Element, ElementMultiAspect, ElementRefersToElements, ElementUniqueAspect,
-  ExternalSourceAspect, IModelCloneContext, IModelDb, IModelExporter, IModelJsFs, IModelTransformer, InformationRecordModel, InformationRecordPartition,
-  PhysicalModel, PhysicalObject, PhysicalPartition, SnapshotDb, SpatialCategory, Subject, TemplateModelCloner, TemplateRecipe3d,
+  BackendLoggerCategory, BackendRequestContext, DefinitionPartition, ECSqlStatement, Element, ElementMultiAspect, ElementRefersToElements,
+  ElementUniqueAspect, ExternalSourceAspect, IModelCloneContext, IModelDb, IModelExporter, IModelJsFs, IModelTransformer, InformationRecordModel,
+  InformationRecordPartition, PhysicalModel, PhysicalObject, PhysicalPartition, SnapshotDb, SpatialCategory, Subject, TemplateModelCloner, TemplateRecipe3d,
 } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { ClassCounter, IModelToTextFileExporter, IModelTransformer3d, IModelTransformerUtils, RecordingIModelImporter, TestIModelTransformer } from "../IModelTransformerUtils";
@@ -469,7 +469,7 @@ describe("IModelTransformer", () => {
     const buildingSubjectId: Id64String = Subject.insert(mergedDb, IModel.rootSubjectId, "Building");
     assert.isTrue(Id64.isValidId64(buildingSubjectId));
     mergedDb.saveChanges("Create Subject hierarchy");
-    BriefcaseManager.createStandaloneChangeSet(mergedDb); // subsequent calls to importSchemas will fail if this is not called to flush local changes
+    IModelTestUtils.flushTxns(mergedDb); // subsequent calls to importSchemas will fail if this is not called to flush local changes
 
     // Import campus
     if (true) {
@@ -482,7 +482,7 @@ describe("IModelTransformer", () => {
       transformer.processAll();
       transformer.dispose();
       mergedDb.saveChanges("Imported Campus");
-      BriefcaseManager.createStandaloneChangeSet(mergedDb); // subsequent calls to importSchemas will fail if this is not called to flush local changes
+      IModelTestUtils.flushTxns(mergedDb); // subsequent calls to importSchemas will fail if this is not called to flush local changes
       campusDb.close();
     }
 
@@ -496,7 +496,7 @@ describe("IModelTransformer", () => {
       transformer.processAll();
       transformer.dispose();
       mergedDb.saveChanges("Imported Garage");
-      BriefcaseManager.createStandaloneChangeSet(mergedDb); // subsequent calls to importSchemas will fail if this is not called to flush local changes
+      IModelTestUtils.flushTxns(mergedDb); // subsequent calls to importSchemas will fail if this is not called to flush local changes
       garageDb.close();
     }
 
@@ -511,7 +511,7 @@ describe("IModelTransformer", () => {
       transformer.processAll();
       transformer.dispose();
       mergedDb.saveChanges("Imported Building");
-      BriefcaseManager.createStandaloneChangeSet(mergedDb); // subsequent calls to importSchemas will fail if this is not called to flush local changes
+      IModelTestUtils.flushTxns(mergedDb); // subsequent calls to importSchemas will fail if this is not called to flush local changes
       buildingDb.close();
     }
 

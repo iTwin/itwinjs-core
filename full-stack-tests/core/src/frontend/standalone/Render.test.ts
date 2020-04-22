@@ -55,11 +55,11 @@ import { BuffersContainer, VAOContainer, VBOContainer } from "@bentley/imodeljs-
 describe("Test VAO creation", () => {
   before(async () => {
     const renderSysOpts: RenderSystem.Options = {};
-    IModelApp.startup({ renderSys: renderSysOpts });
+    await IModelApp.startup({ renderSys: renderSysOpts });
   });
 
   after(async () => {
-    IModelApp.shutdown();
+    await IModelApp.shutdown();
   });
 
   it("should create VAO BuffersContainer object", async () => {
@@ -72,11 +72,11 @@ describe("Test VBO creation", () => {
   before(async () => {
     const renderSysOpts: RenderSystem.Options = {};
     renderSysOpts.disabledExtensions = ["OES_vertex_array_object"];
-    IModelApp.startup({ renderSys: renderSysOpts });
+    await IModelApp.startup({ renderSys: renderSysOpts });
   });
 
   after(async () => {
-    IModelApp.shutdown();
+    await IModelApp.shutdown();
   });
 
   it("should create VBO BuffersContainer object", async () => {
@@ -98,13 +98,13 @@ describe("Render mirukuru with VAOs disabled", () => {
     const renderSysOpts: RenderSystem.Options = {};
     renderSysOpts.disabledExtensions = ["OES_vertex_array_object"];
 
-    IModelApp.startup({ renderSys: renderSysOpts });
+    await IModelApp.startup({ renderSys: renderSysOpts });
     imodel = await SnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
   });
 
   after(async () => {
     if (imodel) await imodel.close();
-    IModelApp.shutdown();
+    await IModelApp.shutdown();
   });
 
   it("should properly render the model (smooth shaded with visible edges)", async () => {
@@ -163,13 +163,13 @@ describe("Properly render on- or off-screen", () => {
   let imodel: IModelConnection;
 
   before(async () => {
-    IModelApp.startup();
+    await IModelApp.startup();
     imodel = await SnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
   });
 
   after(async () => {
     if (imodel) await imodel.close();
-    IModelApp.shutdown();
+    await IModelApp.shutdown();
   });
 
   it("single viewport should render using system canvas", async () => {
@@ -193,13 +193,13 @@ describe("Render mirukuru with single clip plane", () => {
   let imodel: IModelConnection;
 
   before(async () => {
-    IModelApp.startup();
+    await IModelApp.startup();
     imodel = await SnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
   });
 
   after(async () => {
     if (imodel) await imodel.close();
-    IModelApp.shutdown();
+    await IModelApp.shutdown();
   });
 
   it("should render the model", async () => {
@@ -253,13 +253,13 @@ describe("Render mirukuru with thematic display applied", () => {
   let imodel: IModelConnection;
 
   before(async () => {
-    IModelApp.startup();
+    await IModelApp.startup();
     imodel = await SnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
   });
 
   after(async () => {
     if (imodel) await imodel.close();
-    IModelApp.shutdown();
+    await IModelApp.shutdown();
   });
 
   it("should render the model with proper thematic colors applied", async () => {
@@ -326,13 +326,13 @@ describe("Render mirukuru", () => {
   let imodel: IModelConnection;
 
   before(async () => {
-    IModelApp.startup();
+    await IModelApp.startup();
     imodel = await SnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
   });
 
   after(async () => {
     if (imodel) await imodel.close();
-    IModelApp.shutdown();
+    await IModelApp.shutdown();
   });
 
   it("should have expected view definition", async () => {
@@ -791,7 +791,7 @@ describe("Tile unloading", async () => {
   };
 
   before(async () => {
-    IModelApp.startup({ tileAdmin: TileAdmin.create(tileOpts) });
+    await IModelApp.startup({ tileAdmin: TileAdmin.create(tileOpts) });
     imodel = await SnapshotConnection.openFile("CompatibilityTestSeed.bim"); // relative path resolved by BackendTestAssetResolver
   });
 
@@ -799,7 +799,7 @@ describe("Tile unloading", async () => {
     if (imodel)
       await imodel.close();
 
-    IModelApp.shutdown();
+    await IModelApp.shutdown();
   });
 
   function getTileTree(vp: Viewport): TileTree {
@@ -1006,13 +1006,13 @@ describe("White-on-white reversal", async () => {
   let imodel: IModelConnection;
 
   before(async () => {
-    IModelApp.startup();
+    await IModelApp.startup();
     imodel = await SnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
   });
 
   after(async () => {
     if (imodel) await imodel.close();
-    IModelApp.shutdown();
+    await IModelApp.shutdown();
   });
 
   async function test(expectedColors: Color[], setup: (vp: Viewport, vf: ViewFlags) => void, cleanup?: (vp: Viewport) => void): Promise<void> {

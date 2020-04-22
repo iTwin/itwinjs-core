@@ -6,7 +6,7 @@ import { Id64, Id64Set, OpenMode } from "@bentley/bentleyjs-core";
 import { Matrix4d, Point3d, Transform, XYZProps, YawPitchRollAngles } from "@bentley/geometry-core";
 import { AccessToken } from "@bentley/itwin-client";
 import { EcefLocation, GeoCoordStatus, IModelCoordinatesResponseProps, IModelReadRpcInterface, IModelTileRpcInterface, MassPropertiesOperation, MassPropertiesRequestProps, ModelQueryParams, SnapResponseProps } from "@bentley/imodeljs-common";
-import { BriefcaseConnection, IModelApp, IModelConnection, SpatialModelState, ViewState } from "@bentley/imodeljs-frontend";
+import { RemoteBriefcaseConnection, IModelApp, IModelConnection, SpatialModelState, ViewState } from "@bentley/imodeljs-frontend";
 import { BasicAuthorizationClient } from "./setup/BasicAuthorizationClient";
 import { TestContext } from "./setup/TestContext";
 
@@ -38,7 +38,7 @@ describe("IModel Connection", () => {
     const openMode = OpenMode.Readonly;
     const iModelId = testContext.iModelWithChangesets!.iModelId;
 
-    const iModel: IModelConnection = await BriefcaseConnection.open(contextId, iModelId, openMode);
+    const iModel: IModelConnection = await RemoteBriefcaseConnection.open(contextId, iModelId, openMode);
 
     expect(iModel).to.exist.and.be.not.empty;
 
@@ -49,7 +49,7 @@ describe("IModel Connection", () => {
   it("should successfully close an open an IModelConnection", async () => {
     const iModelId = testContext.iModelWithChangesets!.iModelId;
     const contextId = testContext.iModelWithChangesets!.contextId;
-    const iModel: IModelConnection = await BriefcaseConnection.open(contextId, iModelId);
+    const iModel: IModelConnection = await RemoteBriefcaseConnection.open(contextId, iModelId);
 
     expect(iModel).to.exist;
     return expect(iModel.close()).to.eventually.be.fulfilled;
@@ -73,7 +73,7 @@ describe("IModelConnection Tiles", () => {
     contextId = testContext.iModelWithChangesets!.contextId;
     accessToken = testContext.adminUserAccessToken;
     (IModelApp.authorizationClient as BasicAuthorizationClient).setAccessToken(accessToken);
-    iModel = await BriefcaseConnection.open(contextId, iModelId);
+    iModel = await RemoteBriefcaseConnection.open(contextId, iModelId);
   });
 
   it("IModelTileRpcInterface method getTileCacheContainerUrl should work as expected", async () => {
@@ -203,7 +203,7 @@ describe("IModelReadRpcInterface Methods requestable from an IModelConnection", 
     contextId = testContext.iModelWithChangesets!.contextId;
     accessToken = testContext.adminUserAccessToken;
     (IModelApp.authorizationClient as BasicAuthorizationClient).setAccessToken(accessToken);
-    iModel = await BriefcaseConnection.open(contextId, iModelId);
+    iModel = await RemoteBriefcaseConnection.open(contextId, iModelId);
   });
 
   it("IModelReadRpcInterface method queryEntityIds should work as expected", async () => {
@@ -403,7 +403,7 @@ describe("Snapping", () => {
     contextId = testContext.iModelWithChangesets!.contextId;
     accessToken = testContext.adminUserAccessToken;
     (IModelApp.authorizationClient as BasicAuthorizationClient).setAccessToken(accessToken);
-    iModel = await BriefcaseConnection.open(contextId, iModelId);
+    iModel = await RemoteBriefcaseConnection.open(contextId, iModelId);
   });
 
   it("should be able to request a snap", async () => {

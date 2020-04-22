@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { AccessToken } from "@bentley/itwin-client";
+import { UserInfo } from "@bentley/itwin-client";
 import { CommonProps, getUserColor } from "@bentley/ui-core";
 import { UserProfile as NZ_UserProfile } from "@bentley/ui-ninezone";
 import { SignOutModalFrontstage } from "../oidc/SignOut";
@@ -22,7 +22,7 @@ import { UiFramework } from "../UiFramework";
  * @public
  */
 export interface UserProfileBackstageItemProps extends CommonProps {
-  accessToken: AccessToken;
+  userInfo: UserInfo;
   onOpenSignOut?: () => void;
 }
 
@@ -34,7 +34,7 @@ export class UserProfileBackstageItem extends React.PureComponent<UserProfileBac
   public render(): React.ReactNode | undefined {
     let content: React.ReactNode = null;
 
-    const userInfo = this.props.accessToken.getUserInfo();
+    const userInfo = this.props.userInfo;
 
     // istanbul ignore else
     if (userInfo) {
@@ -77,7 +77,7 @@ export class UserProfileBackstageItem extends React.PureComponent<UserProfileBac
     const manager = UiFramework.backstageManager;
     manager.close();
 
-    FrontstageManager.openModalFrontstage(new SignOutModalFrontstage(this.props.accessToken));
+    FrontstageManager.openModalFrontstage(new SignOutModalFrontstage(this.props.userInfo));
 
     // istanbul ignore else
     if (this.props.onOpenSignOut)

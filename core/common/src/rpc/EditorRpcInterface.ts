@@ -23,7 +23,7 @@ export abstract class Editor3dRpcInterface extends RpcInterface {
   public static readonly interfaceName = "Editor3dRpcInterface";
 
   /** The version of the interface. */
-  public static interfaceVersion = "0.0.1";
+  public static interfaceVersion = "0.0.2";
 
   /*===========================================================================================
       NOTE: Any add/remove/change to the methods below requires an update of the interface version.

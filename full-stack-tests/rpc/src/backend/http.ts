@@ -8,11 +8,12 @@ import { IModelJsExpressServer } from "@bentley/express-server";
 
 import { registerBackendCallback } from "@bentley/certa/lib/utils/CallbackUtils";
 import { BackendTestCallbacks } from "../common/SideChannels";
-import "./CommonBackendSetup";
-
-registerBackendCallback(BackendTestCallbacks.getEnvironment, () => "http");
+import { commonSetup } from "./CommonBackendSetup";
 
 async function init() {
+  await commonSetup();
+  registerBackendCallback(BackendTestCallbacks.getEnvironment, () => "http");
+
   const rpcConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "rpc-full-stack-test", version: "v1.0" } }, rpcInterfaces);
 
   // create a basic express web server

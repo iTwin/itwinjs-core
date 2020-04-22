@@ -14,6 +14,8 @@ export function getRpcInterfaces() {
   return [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface];
 }
 
-// Initialize the backend
-initializeBackend();
-MobileRpcManager.initializeImpl(getRpcInterfaces());
+(async () => {
+  // Initialize the backend
+  await initializeBackend();
+  MobileRpcManager.initializeImpl(getRpcInterfaces());
+})(); // tslint:disable-line:no-floating-promises

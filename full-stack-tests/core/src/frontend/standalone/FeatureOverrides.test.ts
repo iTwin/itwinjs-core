@@ -27,7 +27,7 @@ describe("FeatureOverrides tests", () => {
   document.body.appendChild(viewDiv!);
 
   before(async () => {   // Create a ViewState to load into a Viewport
-    IModelApp.startup();
+    await IModelApp.startup();
     imodel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
     spatialView = await imodel.views.load("0x34") as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
@@ -35,7 +35,7 @@ describe("FeatureOverrides tests", () => {
 
   after(async () => {
     if (imodel) await imodel.close();
-    IModelApp.shutdown();
+    await IModelApp.shutdown();
   });
 
   it("should create a uniform feature overrides object", () => {

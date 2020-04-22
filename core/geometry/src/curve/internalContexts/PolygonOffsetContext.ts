@@ -592,7 +592,7 @@ export class CurveChainWireOffsetContext {
         const sign = g1.sweep.sweepRadians * g1.matrixRef.coffs[8] >= 0.0 ? 1.0 : -1.0;
         const r = g1.matrixRef.columnXMagnitude();
         const r1 = r - sign * distanceLeft;
-        if (r1 >= 0) {
+        if (!Geometry.isSmallMetricDistance (r1)) {
           const factor = r1 / r;
           const matrix = g1.matrixClone();
           matrix.scaleColumnsInPlace(factor, factor, 1.0);
@@ -644,9 +644,9 @@ export class CurveChainWireOffsetContext {
     // setup pass: get simple offsets of each primitive
     for (const c of curves.children) {
       const c1 = CurveChainWireOffsetContext.createSingleOffsetPrimitiveXY(c, options.leftOffsetDistance);
-      if (c1 === undefined)
-        return undefined;
-      if (c1 instanceof CurvePrimitive)
+      if (c1 === undefined) {
+        // bad .. maybe arc to inside?
+      } else if (c1 instanceof CurvePrimitive)
         simpleOffsets.push(c1);
       else if (Array.isArray(c1)) {
         for (const c2 of c1) {

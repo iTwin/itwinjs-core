@@ -6,20 +6,20 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { Store } from "redux";  // createStore,
 import { Provider, connect } from "react-redux";
-import { Id64String, OpenMode, Logger, LogLevel, isElectronRenderer, ClientRequestContext, Config } from "@bentley/bentleyjs-core";
+import { Id64String, Logger, LogLevel, isElectronRenderer, ClientRequestContext, Config } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/itwin-client";
 import {
   FrontendAuthorizationClient, BrowserAuthorizationClient,
   BrowserAuthorizationCallbackHandler, BrowserAuthorizationClientConfiguration,
-  isBrowserAuthorizationClient,
+  isFrontendAuthorizationClient,
 } from "@bentley/frontend-authorization-client";
 import {
-  RpcConfiguration, RpcOperation, IModelRpcProps, ElectronRpcManager,
-  BentleyCloudRpcManager, OidcDesktopClientConfiguration,
+  RpcConfiguration, ElectronRpcManager,
+  BentleyCloudRpcManager, DesktopAuthorizationClientConfiguration,
 } from "@bentley/imodeljs-common";
 import {
   IModelApp, IModelConnection, SnapMode, AccuSnap, ViewClipByPlaneTool, RenderSystem, IModelAppOptions, SelectionTool, ViewState,
-  ExternalServerExtensionLoader, OidcDesktopClientRenderer,
+  ExternalServerExtensionLoader, DesktopAuthorizationClient,
 } from "@bentley/imodeljs-frontend";
 import { MarkupApp } from "@bentley/imodeljs-markup";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
@@ -61,17 +61,12 @@ import { AppBackstageComposer } from "./appui/backstage/AppBackstageComposer";
 
 // Initialize my application gateway configuration for the frontend
 RpcConfiguration.developmentMode = true;
-let rpcConfiguration: RpcConfiguration;
 const rpcInterfaces = getSupportedRpcs();
-if (isElectronRenderer)
-  rpcConfiguration = ElectronRpcManager.initializeClient({}, rpcInterfaces);
-else
-  rpcConfiguration = BentleyCloudRpcManager.initializeClient({ info: { title: "ui-test-app", version: "v1.0" }, uriPrefix: "http://localhost:3001" }, rpcInterfaces);
-
-const testToken: IModelRpcProps = { key: "test", contextId: "test", iModelId: "test", changeSetId: "test", openMode: OpenMode.Readonly };
-// WIP: WebAppRpcProtocol seems to require an IModelToken for every RPC request
-for (const definition of rpcConfiguration.interfaces())
-  RpcOperation.forEach(definition, (operation) => operation.policy.token = (request) => (request.findTokenPropsParameter() || testToken));
+if (isElectronRenderer) {
+  ElectronRpcManager.initializeClient({}, rpcInterfaces);
+} else {
+  BentleyCloudRpcManager.initializeClient({ info: { title: "ui-test-app", version: "v1.0" }, uriPrefix: "http://localhost:3001" }, rpcInterfaces);
+}
 
 // cSpell:ignore setTestProperty sampleapp uitestapp setisimodellocal projectwise
 /** Action Ids used by redux and to send sync UI components. Typically used to refresh visibility or enable state of control.
@@ -183,12 +178,12 @@ export class SampleAppIModelApp {
     return SampleAppIModelApp._uiSettings;
   }
 
-  public static startup(opts?: IModelAppOptions): void {
+  public static async startup(opts?: IModelAppOptions): Promise<void> {
     opts = opts ? opts : {};
     opts.accuSnap = new SampleAppAccuSnap();
     opts.notifications = new AppNotificationManager();
     opts.uiAdmin = new FrameworkUiAdmin();
-    IModelApp.startup(opts);
+    await IModelApp.startup(opts);
 
     // For testing local extensions only, should not be used in production.
     IModelApp.extensionAdmin.addExtensionLoader(new ExternalServerExtensionLoader("http://localhost:3000"), 50);
@@ -531,13 +526,13 @@ export class SampleAppViewer extends React.Component<any, { authorized: boolean 
 
   public componentDidMount() {
     const oidcClient = IModelApp.authorizationClient;
-    if (isBrowserAuthorizationClient(oidcClient))
+    if (isFrontendAuthorizationClient(oidcClient))
       oidcClient.onUserStateChanged.addListener(this._onUserStateChanged);
   }
 
   public componentWillUnmount() {
     const oidcClient = IModelApp.authorizationClient;
-    if (isBrowserAuthorizationClient(oidcClient))
+    if (isFrontendAuthorizationClient(oidcClient))
       oidcClient.onUserStateChanged.removeListener(this._onUserStateChanged);
   }
 
@@ -592,7 +587,7 @@ async function retrieveConfiguration(): Promise<void> {
   });
 }
 
-function getOidcConfiguration(): BrowserAuthorizationClientConfiguration | OidcDesktopClientConfiguration {
+function getOidcConfiguration(): BrowserAuthorizationClientConfiguration | DesktopAuthorizationClientConfiguration {
   const redirectUri = "http://localhost:3000/signin-callback";
   const baseOidcScope = "openid email profile organization imodelhub context-registry-service:read-only product-settings-service projectwise-share urlps-third-party imodel-extension-service-api";
 
@@ -616,9 +611,9 @@ async function handleOidcCallback(oidcConfiguration: BrowserAuthorizationClientC
   }
 }
 
-async function createOidcClient(requestContext: ClientRequestContext, oidcConfiguration: BrowserAuthorizationClientConfiguration | OidcDesktopClientConfiguration): Promise<FrontendAuthorizationClient> {
+async function createOidcClient(requestContext: ClientRequestContext, oidcConfiguration: BrowserAuthorizationClientConfiguration | DesktopAuthorizationClientConfiguration): Promise<FrontendAuthorizationClient> {
   if (isElectronRenderer) {
-    const desktopClient = new OidcDesktopClientRenderer(oidcConfiguration as OidcDesktopClientConfiguration);
+    const desktopClient = new DesktopAuthorizationClient(oidcConfiguration as DesktopAuthorizationClientConfiguration);
     await desktopClient.initialize(requestContext);
     return desktopClient;
   } else {
@@ -658,12 +653,11 @@ async function main() {
   };
 
   // Start the app.
-  SampleAppIModelApp.startup({ renderSys: renderSystemOptions, authorizationClient: oidcClient });
+  await SampleAppIModelApp.startup({ renderSys: renderSystemOptions, authorizationClient: oidcClient });
 
   // wait for both our i18n namespaces to be read.
-  SampleAppIModelApp.initialize().then(() => { // tslint:disable-line:no-floating-promises
-    ReactDOM.render(<SampleAppViewer />, document.getElementById("root") as HTMLElement);
-  });
+  await SampleAppIModelApp.initialize();
+  ReactDOM.render(<SampleAppViewer />, document.getElementById("root") as HTMLElement);
 }
 
 // Entry point - run the main function

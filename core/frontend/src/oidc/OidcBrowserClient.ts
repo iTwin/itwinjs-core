@@ -7,7 +7,7 @@
  */
 
 import { AuthStatus, BeEvent, BentleyError, ClientRequestContext, Logger, LogLevel, assert } from "@bentley/bentleyjs-core";
-import { AccessToken, UserInfo, ImsOidcClient } from "@bentley/itwin-client";
+import { AccessToken, UserInfo, ImsAuthorizationClient } from "@bentley/itwin-client";
 import { User, UserManager, UserManagerSettings, WebStorageStateStore, Log as OidcClientLog, Logger as IOidcClientLogger } from "oidc-client";
 import { FrontendRequestContext } from "../FrontendRequestContext";
 import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
@@ -79,7 +79,7 @@ class OidcClientLogger implements IOidcClientLogger {
  * @beta
  * @deprecated Use [[BrowserAuthorizationClient]] instead
  */
-export class OidcBrowserClient extends ImsOidcClient implements FrontendAuthorizationClient {
+export class OidcBrowserClient extends ImsAuthorizationClient implements FrontendAuthorizationClient {
   private _userManager?: UserManager;
   protected _accessToken?: AccessToken;
   private _redirectPath: string;

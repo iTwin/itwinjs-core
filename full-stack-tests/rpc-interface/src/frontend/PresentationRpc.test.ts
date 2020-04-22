@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { Id64, using } from "@bentley/bentleyjs-core";
 import { RpcManager } from "@bentley/imodeljs-common";
-import { BriefcaseConnection, IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
+import { RemoteBriefcaseConnection, IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
 import { Descriptor, InstanceKey, KeySet, PresentationRpcInterface, RegisteredRuleset, Ruleset } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
 import { expect } from "chai";
@@ -33,7 +33,7 @@ describe("PresentationRpcInterface tests", () => {
     const contextId = testContext.iModelWithChangesets!.contextId;
     const accessToken = testContext.adminUserAccessToken;
     (IModelApp.authorizationClient as BasicAuthorizationClient).setAccessToken(accessToken);
-    iModel = await BriefcaseConnection.open(contextId, iModelId);
+    iModel = await RemoteBriefcaseConnection.open(contextId, iModelId);
   });
 
   it("getNodes works as expected", async () => {

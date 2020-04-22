@@ -7,30 +7,21 @@
  * @module RpcInterface
  */
 
+import { ClientRequestContext, IModelStatus, Logger, LogLevel, Config } from "@bentley/bentleyjs-core";
+import { AuthorizedClientRequestContext, ProgressInfo, ProgressCallback } from "@bentley/itwin-client";
 import {
-  IModelRpcProps,
-  NativeAppRpcInterface,
-  InternetConnectivityStatus,
-  OverriddenBy,
-  QueuedEvent,
-  RpcInterface,
-  RpcManager,
-  TileTreeContentIds,
-  IModelVersion,
-  IModelProps,
-  BriefcaseRpcProps,
-  StorageValue,
-  IModelError,
-  Events,
+  BriefcaseKey, BriefcaseProps, DownloadBriefcaseOptions, Events, IModelError, IModelProps, IModelRpcProps, IModelVersion, InternetConnectivityStatus,
+  NativeAppRpcInterface, OpenBriefcaseOptions, OverriddenBy, QueuedEvent, RequestBriefcaseProps, RpcInterface, RpcManager, StorageValue, TileTreeContentIds,
 } from "@bentley/imodeljs-common";
-import { EventSinkManager, EmitStrategy } from "../EventSink";
-import { cancelTileContentRequests } from "./IModelTileRpcImpl";
+import { BackendLoggerCategory } from "../BackendLoggerCategory";
+import { BriefcaseManager } from "../BriefcaseManager";
+import { EmitStrategy, EventSinkManager } from "../EventSink";
+import { BriefcaseDb } from "../IModelDb";
 import { NativeAppBackend } from "../NativeAppBackend";
-import { AuthorizedClientRequestContext, ProgressInfo } from "@bentley/itwin-client";
-import { Logger, LogLevel, ClientRequestContext, DbResult, Config } from "@bentley/bentleyjs-core";
-import { BriefcaseDb, OpenParams } from "../IModelDb";
-import { BriefcaseManager, KeepBriefcase } from "../BriefcaseManager";
 import { NativeAppStorage } from "../NativeAppStorage";
+import { cancelTileContentRequests } from "./IModelTileRpcImpl";
+
+const loggerCategory = BackendLoggerCategory.IModelDb;
 
 /** The backend implementation of NativeAppRpcInterface.
  * @internal
@@ -96,118 +87,112 @@ export class NativeAppRpcImpl extends RpcInterface implements NativeAppRpcInterf
   }
 
   /**
-   * Downloads briefcase and wait for it until its done
-   * @param tokenProps context for imodel to download.
-   * @returns briefcase id of the briefcase that is downloaded.
-   * @note this api can be call only in connected mode where internet is available.
+   * Request download of a briefcase. The call require internet connection and must have valid token.
+   * @param requestProps Properties to download the briefcase
+   * @param downloadOptions Options to affect the download of the briefcase
+   * @param reportProgress Report progress to frontend
+   * @returns BriefcaseProps The properties of the briefcase to be downloaded
    */
-  public async downloadBriefcase(tokenProps: IModelRpcProps): Promise<IModelRpcProps> {
+  public async requestDownloadBriefcase(requestProps: RequestBriefcaseProps, downloadOptions: DownloadBriefcaseOptions, reportProgress: boolean): Promise<BriefcaseProps> {
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
+    BriefcaseManager.initializeOffline();
 
-    await BriefcaseManager.initializeBriefcaseCacheFromDisk(requestContext);
+    if (downloadOptions?.syncMode === undefined) {
+      // NEEDS_WORK: This should never happen, but does seem to happen with the WebRpc that forces use of IModelRpcProps for some reason as the default -
+      // needs a way to figure a way to force avoiding NativeAppRpcInterface use in these cases. Not a priority since this RPC interface is only registered
+      // for native applications.
+      throw new IModelError(IModelStatus.BadRequest, "SyncMode must be specified when requesting download");
+    }
 
-    const openParams: OpenParams = OpenParams.pullOnly();
-    const iModelVersion = IModelVersion.asOfChangeSet(tokenProps.changeSetId!);
-    return BriefcaseDb.downloadBriefcase(requestContext, tokenProps.contextId!, tokenProps.iModelId!, openParams, iModelVersion);
-  }
-
-  /**
-   * Starts downloading a briefcase
-   * @param tokenProps context for imodel to download.
-   * @returns briefcase id of the briefcase that is downloaded.
-   * @note this api can be call only in connected mode where internet is available.
-   */
-  public async startDownloadBriefcase(tokenProps: IModelRpcProps, reportProgress: boolean): Promise<IModelRpcProps> {
-    const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
-
-    await BriefcaseManager.initializeBriefcaseCacheFromDisk(requestContext);
-    const openParams: OpenParams = OpenParams.pullOnly();
+    const iModelVersion = IModelVersion.asOfChangeSet(requestProps.changeSetId);
+    let downloadProgress: ProgressCallback | undefined;
     if (reportProgress) {
-      openParams.downloadProgress = (progress: ProgressInfo) => {
+      downloadProgress = (progress: ProgressInfo) => {
         EventSinkManager.global.emit(
           Events.NativeApp.namespace,
-          Events.NativeApp.onBriefcaseDownloadProgress + "-" + tokenProps.iModelId,
+          Events.NativeApp.onBriefcaseDownloadProgress + "-" + requestProps.iModelId,
           { progress }, { strategy: EmitStrategy.PurgeOlderEvents });
       };
     }
-    const iModelVersion = IModelVersion.asOfChangeSet(tokenProps.changeSetId!);
-    return BriefcaseDb.startDownloadBriefcase(requestContext, tokenProps.contextId!, tokenProps.iModelId!, openParams, iModelVersion);
+
+    const { briefcaseProps } = await BriefcaseManager.requestDownload(requestContext, requestProps.contextId, requestProps.iModelId, downloadOptions, iModelVersion, downloadProgress);
+    return briefcaseProps;
   }
 
   /**
-   * Finishes downloading a briefcase
-   * @param tokenProps context for imodel to download.
+   * Finishes download of a briefcase. The call require internet connection and must have valid token.
+   * @param key Key to locate the briefcase in the disk cache
    */
-  public async finishDownloadBriefcase(tokenProps: IModelRpcProps): Promise<void> {
+  public async downloadRequestCompleted(key: BriefcaseKey): Promise<void> {
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
-    await BriefcaseDb.finishDownloadBriefcase(requestContext, tokenProps);
-  }
 
-  /**
-   * Cancels downloading a briefcase
-   * @param tokenProps context for imodel to download.
-   */
-  public async cancelDownloadBriefcase(tokenProps: IModelRpcProps): Promise<boolean> {
-    const status = BriefcaseDb.cancelDownloadBriefcase(tokenProps);
-    return status;
-  }
+    const briefcaseEntry = BriefcaseManager.findBriefcaseByKey(key);
+    if (briefcaseEntry === undefined)
+      throw new IModelError(IModelStatus.BadRequest, "Cannot finish download for a briefcase that not started to download", Logger.logError, loggerCategory, () => key);
 
-  /**
-   * Opens briefcase on the backend. The briefcase must be present or download before call this api.
-   * @param tokenProps Context for imodel to open.
-   * @returns briefcase id of briefcase.
-   */
-  public async openBriefcase(tokenProps: IModelRpcProps): Promise<IModelProps> {
-    const requestContext = ClientRequestContext.current;
-
-    await BriefcaseManager.initializeBriefcaseCacheFromDisk(requestContext);
-    requestContext.enter();
-
-    if (!tokenProps.key) {
-      const allBriefcases = await BriefcaseManager.getBriefcasesFromDisk(requestContext);
-      const briefcases = allBriefcases.filter((v) => {
-        return v.changeSetId === tokenProps.changeSetId
-          && v.iModelId === tokenProps.iModelId;
-      });
-      if (briefcases.length === 0) {
-        throw new IModelError(DbResult.BE_SQLITE_ERROR_FileNotFound, "Briefcase not found with requested iModelId/changesetId/openMode");
-      }
-
-      Object.assign(tokenProps, { key: briefcases[0].key });
+    // Finish the download
+    try {
+      await briefcaseEntry.downloadPromise;
+    } finally {
+      requestContext.enter();
     }
-    const db = await BriefcaseDb.openBriefcase(requestContext, tokenProps);
+  }
+
+  /**
+   * Cancels the previously requested download of a briefcase
+   * @param key Key to locate the briefcase in the disk cache
+   * @returns true if the cancel request was acknowledged. false otherwise
+   */
+  public async requestCancelDownloadBriefcase(key: BriefcaseKey): Promise<boolean> {
+    const briefcaseEntry = BriefcaseManager.findBriefcaseByKey(key);
+    if (briefcaseEntry === undefined)
+      throw new IModelError(IModelStatus.BadRequest, "Cannot cancel download for a briefcase that not started to download", Logger.logError, loggerCategory, () => key);
+
+    return briefcaseEntry.cancelDownloadRequest.cancel();
+  }
+
+  /**
+   * Opens the briefcase on disk - this api can be called offline
+   * @param key Key to locate the briefcase in the disk cache
+   * @param openOptions Options to open the briefcase
+   * @returns IModelRpcProps which allow to create IModelConnection.
+   */
+  public async openBriefcase(key: BriefcaseKey, openOptions?: OpenBriefcaseOptions): Promise<IModelProps> {
+    const requestContext = ClientRequestContext.current;
+    BriefcaseManager.initializeOffline();
+
+    const db = await BriefcaseDb.open(requestContext, key, openOptions);
     requestContext.enter();
     return db.toJSON();
   }
 
   /**
-   * Closes briefcase on the backend
-   * @param tokenProps Identifies briefcase to be closed
+   * Closes the briefcase on disk - this api can be called offline
+   * @param key Key to locate the briefcase in the disk cache
    */
-  public async closeBriefcase(tokenProps: IModelRpcProps): Promise<boolean> {
-    const requestContext = ClientRequestContext.current;
-    await BriefcaseDb.findByKey(tokenProps.key).closeBriefcase(requestContext, KeepBriefcase.Yes);
-    return Promise.resolve(true);
+  public async closeBriefcase(key: BriefcaseKey): Promise<void> {
+    const briefcaseDb = BriefcaseDb.findByKey(key);
+    briefcaseDb.close();
   }
 
   /**
-   * Deletes briefcase on the backend
+   * Deletes a previously downloaded briefcase. The briefcase must be closed.
+   * @param key Key to locate the briefcase in the disk cache
    */
-  public async deleteBriefcase(tokenProps: IModelRpcProps): Promise<void> {
+  public async deleteBriefcase(key: BriefcaseKey): Promise<void> {
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
-    await BriefcaseDb.deleteBriefcase(requestContext, tokenProps);
+    await BriefcaseManager.delete(requestContext, key);
   }
 
   /**
-   * Return list of briefcase available on disk
-   * @returns briefcases
-   * @note The ContextId in empty and should remain empty when pass to openBriefcase() call.
+   * Gets all briefcases that were previously requested to be downloaded, or were completely downloaded
+   * @returns list of briefcases.
    */
-  public async getBriefcases(): Promise<BriefcaseRpcProps[]> {
+  public async getBriefcases(): Promise<BriefcaseProps[]> {
     const requestContext: ClientRequestContext = ClientRequestContext.current;
-    await BriefcaseManager.initializeBriefcaseCacheFromDisk(requestContext);
+    BriefcaseManager.initializeOffline();
     requestContext.enter();
-    return BriefcaseManager.getBriefcasesFromDisk(requestContext);
+    return BriefcaseManager.getBriefcases();
   }
 
   /**

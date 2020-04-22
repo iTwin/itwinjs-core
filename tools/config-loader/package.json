@@ -1,6 +1,6 @@
 {
   "name": "@bentley/config-loader",
-  "version": "2.0.0-dev.71",
+  "version": "2.0.0-dev.76",
   "description": "Configuration loader",
   "license": "MIT",
   "repository": {
@@ -13,7 +13,7 @@
     "clean": "rimraf lib .rush",
     "docs": "",
     "lint": "tslint --project . 1>&2",
-    "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=index",
+    "extract-api": "betools extract-api --entry=index",
     "test": "",
     "cover": ""
   },
@@ -31,7 +31,7 @@
     "json5": "^2.1.0"
   },
   "devDependencies": {
-    "@bentley/build-tools": "2.0.0-dev.71",
+    "@bentley/build-tools": "2.0.0-dev.76",
     "@types/json5": "0.0.30",
     "@types/node": "10.14.1",
     "rimraf": "^3.0.2",

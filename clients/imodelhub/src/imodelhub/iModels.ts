@@ -353,7 +353,7 @@ export class IModelsHandler {
 
   /** Get iModels that belong to the specified context.
    * @param requestContext The client request context.
-   * @param contextId Id for the iModel's context. For iModelHub it should be the id of the connect context ([[Project]] or [[Asset]]).
+   * @param contextId Id for the iModel's context. For iModelHub it should be the id of the iTwin context ([[Project]] or [[Asset]]).
    * @param query Optional query object to filter the queried iModels or select different data from them.
    * @returns [[HubIModel]] instances that match the query.
    * @throws [[WsgError]] with [WSStatus.InstanceNotFound]($bentley) if [[InstanceIdQuery.byId]] is used and an HubIModel with the specified id could not be found.
@@ -372,10 +372,9 @@ export class IModelsHandler {
     return imodels;
   }
 
-  /**
-   * Delete an iModel with specified id from a context. This method is not supported in iModelBank.
+  /** Delete an iModel with specified id from a context. This method is not supported in iModelBank.
    * @param requestContext The client request context.
-   * @param contextId Id for the iModel's context. For iModelHub it should be the id of the connect context ([[Project]] or [[Asset]]).
+   * @param contextId Id for the iModel's context. For iModelHub it should be the id of the iTwin context ([[Project]] or [[Asset]]).
    * @param iModelId Id of the iModel to be deleted. See [[HubIModel]].
    * @throws [[IModelHubError]] with [IModelHubStatus.iModelDoesNotExist]$(bentley) if iModel with specified id does not exist.
    * @throws [[IModelHubError]] with [IModelHubStatus.UserDoesNotHavePermission]($bentley) if the user does not have DeleteiModel permission.
@@ -403,7 +402,7 @@ export class IModelsHandler {
 
   /** Create an iModel instance
    * @param requestContext The client request context.
-   * @param contextId Id of the connect context.
+   * @param contextId Id of the iTwin context.
    * @param iModelName Name of the iModel on the Hub.
    * @param description Description of the iModel on the Hub.
    * @param iModelTemplate iModel template.
@@ -487,14 +486,13 @@ export class IModelsHandler {
     return IModelsHandler._defaultCreateOptionsProvider.assignOptions(options);
   }
 
-  /**
-   * Wait until the iModel is initialized.
+  /** Wait until the iModel is initialized.
    * @param requestContext The client request context.
-   * @param contextId Id for the iModel's context. For iModelHub it should be the id of the connect context ([[Project]] or [[Asset]]).
+   * @param contextId Id for the iModel's context. For iModelHub it should be the id of the iTwin context ([[Project]] or [[Asset]]).
    * @param imodel iModel instance that will be returned if initialization is successful.
    * @param timeOutInMilliseconds Maximum time to wait for the initialization.
    */
-  private async waitForInitializion(requestContext: AuthorizedClientRequestContext, contextId: string, imodel: HubIModel, timeOutInMilliseconds: number): Promise<HubIModel> {
+  private async waitForInitialization(requestContext: AuthorizedClientRequestContext, contextId: string, imodel: HubIModel, timeOutInMilliseconds: number): Promise<HubIModel> {
     requestContext.enter();
     const errorMessage = "iModel initialization failed";
     const retryDelay = timeOutInMilliseconds / 10;
@@ -556,10 +554,10 @@ export class IModelsHandler {
       throw IModelHubClientError.invalidArgument("extent");
   }
 
-  /** Create an iModel from given seed file. In most cases [BriefcaseDb.create]($backend) should be used instead. See [iModel creation]($docs/learning/iModelHub/iModels/CreateiModel.md).
+  /** Create an iModel from given seed file. See [iModel creation]($docs/learning/iModelHub/iModels/CreateiModel.md).
    * This method does not work on browsers. If iModel creation fails before finishing file upload, partially created iModel is deleted. This method is not supported in iModelBank.
    * @param requestContext The client request context.
-   * @param contextId Id for the iModel's context. For iModelHub it should be the id of the connect context ([[Project]] or [[Asset]]).
+   * @param contextId Id for the iModel's context. For iModelHub it should be the id of the iTwin context ([[Project]] or [[Asset]]).
    * @param name Name of the iModel on the Hub.
    * @param createOptions Optional arguments for iModel creation.
    * @throws [[IModelHubError]] with [IModelHubStatus.UserDoesNotHavePermission]($bentley) if the user does not have CreateiModel permission.
@@ -608,12 +606,12 @@ export class IModelsHandler {
       requestContext.enter();
     }
 
-    return this.waitForInitializion(requestContext, contextId, imodel, createOptions.timeOutInMilliseconds!);
+    return this.waitForInitialization(requestContext, contextId, imodel, createOptions.timeOutInMilliseconds!);
   }
 
   /** Update iModel's name and/or description
    * @param requestContext The client request context.
-   * @param contextId Id for the iModel's context. For iModelHub it should be the id of the connect context ([[Project]] or [[Asset]]).
+   * @param contextId Id for the iModel's context. For iModelHub it should be the id of the iTwin context ([[Project]] or [[Asset]]).
    * @param imodel iModel to update. See [[HubIModel]].
    * @throws [[IModelHubError]] with [IModelHubStatus.UserDoesNotHavePermission]($bentley) if the user does not have CreateiModel permission.
    * @throws [[IModelHubError]] with [IModelHubStatus.iModelDoesNotExist]$(bentley) if iModel does not exist.
@@ -686,7 +684,7 @@ export class IModelHandler {
   /**
    * Get iModel that belong to the specified context.
    * @param requestContext The client request context.
-   * @param contextId Id for the iModel's context. For iModelHub it should be the id of the connect context ([[Project]] or [[Asset]]).
+   * @param contextId Id for the iModel's context. For iModelHub it should be the id of the iTwin context ([[Project]] or [[Asset]]).
    * @returns [[HubIModel]] instances that match the query.
    * @throws [[IModelHubError]] with [IModelHubStatus.iModelDoesNotExist]$(bentley) if iModel does not exist.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
@@ -707,7 +705,7 @@ export class IModelHandler {
   /**
    * Delete an iModel from a context. This method is not supported in iModelBank.
    * @param requestContext The client request context.
-   * @param contextId Id for the iModel's context. For iModelHub it should be the id of the connect context ([[Project]] or [[Asset]]).
+   * @param contextId Id for the iModel's context. For iModelHub it should be the id of the iTwin context ([[Project]] or [[Asset]]).
    * @throws [[IModelHubError]] with [IModelHubStatus.iModelDoesNotExist]$(bentley) if iModel does not exist.
    * @throws [[IModelHubError]] with [IModelHubStatus.UserDoesNotHavePermission]($bentley) if the user does not have DeleteiModel permission.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
@@ -720,7 +718,7 @@ export class IModelHandler {
   /**
    * Get the [[InitializationState]] for the specified iModel. See [iModel creation]($docs/learning/iModelHub/iModels/CreateiModel.md).
    * @param requestContext The client request context.
-   * @param contextId Id for the iModel's context. For iModelHub it should be the id of the connect context ([[Project]] or [[Asset]]).
+   * @param contextId Id for the iModel's context. For iModelHub it should be the id of the iTwin context ([[Project]] or [[Asset]]).
    * @returns State of the seed file initialization.
    * @throws [[IModelHubError]] with [IModelHubStatus.iModelDoesNotExist]$(bentley) if iModel does not exist.
    * @throws [[IModelHubError]] with [IModelHubStatus.FileDoesNotExist]($bentley) if the seed file was not found.
@@ -732,11 +730,11 @@ export class IModelHandler {
   }
 
   /**
-   * Create an iModel from given seed file. In most cases [BriefcaseDb.create]($backend) should be used instead. See [iModel creation]($docs/learning/iModelHub/iModels/CreateiModel.md).
+   * Create an iModel from given seed file. In most cases [BriefcaseManager.create]($backend) should be used instead. See [iModel creation]($docs/learning/iModelHub/iModels/CreateiModel.md).
    *
    * This method does not work on browsers. If iModel creation fails before finishing file upload, partially created iModel is deleted. This method is not supported in iModelBank.
    * @param requestContext The client request context.
-   * @param contextId Id for the iModel's context. For iModelHub it should be the id of the connect context ([[Project]] or [[Asset]]).
+   * @param contextId Id for the iModel's context. For iModelHub it should be the id of the iTwin context ([[Project]] or [[Asset]]).
    * @param name Name of the iModel on the Hub.
    * @param createOptions Optional arguments for iModel creation.
    * @throws [[IModelHubError]] with [IModelHubStatus.UserDoesNotHavePermission]($bentley) if the user does not have CreateiModel permission.
@@ -765,7 +763,7 @@ export class IModelHandler {
   /**
    * Update iModel's name and/or description
    * @param requestContext The client request context.
-   * @param contextId Id for the iModel's context. For iModelHub it should be the id of the connect context ([[Project]] or [[Asset]]).
+   * @param contextId Id for the iModel's context. For iModelHub it should be the id of the iTwin context ([[Project]] or [[Asset]]).
    * @param imodel iModel to update. See [[HubIModel]].
    * @throws [[IModelHubError]] with [IModelHubStatus.UserDoesNotHavePermission]($bentley) if the user does not have CreateiModel permission.
    * @throws [[IModelHubError]] with [IModelHubStatus.iModelDoesNotExist]$(bentley) if iModel does not exist.
@@ -780,7 +778,7 @@ export class IModelHandler {
   /**
    * Method to download the seed file for iModel. This will download the original seed file, that was uploaded when creating iModel. To download a file that was updated with ChangeSets on iModelHub, see [[BriefcaseHandler.download]].
    * @param requestContext The client request context.
-   * @param contextId Id for the iModel's context. For iModelHub it should be the id of the connect context ([[Project]] or [[Asset]]).
+   * @param contextId Id for the iModel's context. For iModelHub it should be the id of the iTwin context ([[Project]] or [[Asset]]).
    * @param path Path where seed file should be downloaded, including filename.
    * @param progressCallback Callback for tracking progress.
    * @throws [[IModelHubError]] with [IModelHubStatus.iModelDoesNotExist]$(bentley) if iModel does not exist.

@@ -138,7 +138,7 @@ export class ThumbnailHandler {
 
   /** Download the latest iModel's thumbnail.
    * @param requestContext The client request context.
-   * @param contextId Id of the connect context.
+   * @param contextId Id of the iTwin context.
    * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param size Size of the thumbnail. Pass 'Small' for 400x250 PNG image, and 'Large' for a 800x500 PNG image.
    * @return String for the PNG image that includes the base64 encoded array of the image bytes.

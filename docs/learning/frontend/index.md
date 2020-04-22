@@ -32,7 +32,6 @@ These packages provide the following functions that a frontend requires:
 * Executing [ECSQL queries](./ExecutingECSQL.md) on iModels
 * Storing [Settings](./Settings.md) for Applications, Projects, and iModels.
 * Implementing [Extensions](./Extensions.md)
-* Building [Modules](./BuildingIModelJsModules.md)
 
 ## Web browser compatibility
 

@@ -53,7 +53,7 @@ describe("Events", () => {
   let eventTool: EventTest;
 
   before(async () => {
-    IModelApp.startup();
+    await IModelApp.startup();
     const iModelRpcProps: IModelRpcProps = {
       key: EventSourceManager.GLOBAL,
       iModelId: "test",
@@ -63,7 +63,7 @@ describe("Events", () => {
   });
 
   after(async () => {
-    IModelApp.shutdown();
+    await IModelApp.shutdown();
   });
 
   it("echo - roundtrip", async () => {

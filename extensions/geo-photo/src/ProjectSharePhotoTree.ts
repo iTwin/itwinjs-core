@@ -128,7 +128,7 @@ export class ProjectShareHandler extends BasePhotoTreeHandler implements PhotoTr
   /**
    * Saves information regarding Photo as custom properties in Project Share for the specified file
    * @param requestContext Client request context that includes the authorization information to access Project Share.
-   * @param contextId Connect context Id (e.g., projectId or assetId)
+   * @param contextId iTwin context Id (e.g., projectId or assetId)
    * @param file
    * @param auxInfo
    */
@@ -172,7 +172,7 @@ export class ProjectShareHandler extends BasePhotoTreeHandler implements PhotoTr
   /**
    * Delete customInfo (stored as custom properties in Project Share) for the specified file
    * @param requestContext Client request context that includes the authorization information to access Project Share.
-   * @param contextId Connect context Id (e.g., projectId or assetId)
+   * @param contextId iTwin context Id (e.g., projectId or assetId)
    * @param file
    */
   public async deleteCustomInfo(requestContext: AuthorizedClientRequestContext, contextId: GuidString, psFile: PSPhotoFile): Promise<void> {

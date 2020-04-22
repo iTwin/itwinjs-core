@@ -22,7 +22,7 @@ describe("Blank Connection", () => {
   const contextId: GuidString = Guid.createValue();
 
   before(async () => {
-    MockRender.App.startup();
+    await MockRender.App.startup();
     const exton = Cartographic.fromDegrees(-75.686694, 40.065757, 0);
     blankConnection = BlankConnection.create({
       name: "test",
@@ -33,7 +33,7 @@ describe("Blank Connection", () => {
   });
   after(async () => {
     if (blankConnection) { await blankConnection.close(); }
-    MockRender.App.shutdown();
+    await MockRender.App.shutdown();
   });
 
   it("BlankConnection properties", async () => {

@@ -8,6 +8,7 @@ import { UiAdmin } from "../ui-abstract/UiAdmin";
 import { AbstractMenuItemProps } from "../ui-abstract/items/AbstractMenuItemProps";
 import { AbstractToolbarProps } from "../ui-abstract/items/AbstractToolbarProps";
 import { RelativePosition } from "../ui-abstract/items/RelativePosition";
+import { PropertyDescription } from "../ui-abstract/properties/Description";
 
 describe("UiAdmin", () => {
 
@@ -108,6 +109,17 @@ describe("UiAdmin", () => {
 
     expect(uiAdmin.showHeightEditor(100, uiAdmin.createXAndY(150, 250), spyCommit, spyCancel, doc.documentElement)).to.be.false;
     expect(uiAdmin.showHeightEditor(100, uiAdmin.createXAndY(150, 250), spyCommit, spyCancel)).to.be.false;
+    expect(uiAdmin.hideInputEditor()).to.be.false;
+  });
+
+  it("showInputEditor should return false by default", () => {
+    const doc = new DOMParser().parseFromString("<div>xyz</div>", "text/html");
+    const spyCommit = sinon.fake();
+    const spyCancel = sinon.fake();
+    const propertyDescription: PropertyDescription = { name: "test", displayLabel: "Test", typename: "number" };
+
+    expect(uiAdmin.showInputEditor(100, propertyDescription, uiAdmin.createXAndY(150, 250), spyCommit, spyCancel, doc.documentElement)).to.be.false;
+    expect(uiAdmin.showInputEditor(100, propertyDescription, uiAdmin.createXAndY(150, 250), spyCommit, spyCancel)).to.be.false;
     expect(uiAdmin.hideInputEditor()).to.be.false;
   });
 

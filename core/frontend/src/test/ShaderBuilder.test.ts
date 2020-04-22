@@ -20,8 +20,8 @@ import {
 } from "../webgl";
 
 describe("Variable declaration tests", () => {
-  before(() => IModelApp.startup());
-  after(() => IModelApp.shutdown());
+  before(async () => IModelApp.startup());
+  after(async () => IModelApp.shutdown());
 
   it("should convert ShaderVariable to glsl declaration", () => {
     let variable = ShaderVariable.createGlobal("x", VariableType.Float, "1.0", true);
@@ -92,8 +92,8 @@ describe("ShaderVariables tests", () => {
 });
 
 describe("Test shader compilation", () => {
-  before(() => IModelApp.startup());
-  after(() => IModelApp.shutdown());
+  before(async () => IModelApp.startup());
+  after(async () => IModelApp.shutdown());
 
   it.skip("should build and compile a simple shader program", () => {
     const builder = new ProgramBuilder();

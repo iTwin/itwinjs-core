@@ -12,7 +12,7 @@ import { PropertyRecord } from "../properties/Record";
 import { PropertyValueFormat, PrimitiveValue } from "../properties/Value";
 import { UiDataProvider } from "./UiDataProvider";
 
-/** DialogRow is the interface that groups dialog items into rows for building UI
+/** [[DialogRow]] is the interface that groups dialog items into rows for building UI
  * @beta
  */
 export interface DialogRow {
@@ -33,7 +33,7 @@ export interface DialogItemSyncArgs {
   readonly items: ReadonlyArray<DialogPropertySyncItem>;
 }
 
-/** Items manager to generate UI items for Dialogs
+/** [[DialogItemsManager]] generates UI items for Dialogs
  * @beta
  */
 export class DialogItemsManager extends UiDataProvider {

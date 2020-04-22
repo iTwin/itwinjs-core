@@ -98,13 +98,13 @@ describe("Test that requires Presentation", () => {
 
   let widgetControl: StatusBarWidgetControl | undefined;
 
-  const shutdownIModelApp = () => {
+  const shutdownIModelApp = async () => {
     if (IModelApp.initialized)
-      IModelApp.shutdown();
+      await IModelApp.shutdown();
   };
 
   before(async () => {
-    shutdownIModelApp();
+    await shutdownIModelApp();
     Presentation.terminate();
 
     await initializePresentationTesting();
@@ -119,9 +119,9 @@ describe("Test that requires Presentation", () => {
     widgetControl = statusBarWidgetDef.getWidgetControl(ConfigurableUiControlType.StatusBarWidget) as StatusBarWidgetControl;
   });
 
-  after(() => {
+  after(async () => {
     TestUtils.terminateUiFramework();
-    terminatePresentationTesting();
+    await terminatePresentationTesting();
   });
 
   afterEach(cleanup);

@@ -10,8 +10,8 @@ import * as fs from "fs";
 import * as path from "path";
 import * as Yargs from "yargs";
 
-function doExport(iModelName: string, objName: string, mtlName: string) {
-  IModelHost.startup();
+async function doExport(iModelName: string, objName: string, mtlName: string): Promise<void> {
+  await IModelHost.startup();
   Logger.initializeToConsole();
   Logger.setLevelDefault(LogLevel.Error);
 
@@ -115,16 +115,18 @@ interface ExportObjArgs {
   output: string;
 }
 
-try {
-  Yargs.usage("Export an OBJ from an existing BIM file.");
-  Yargs.required("input", "The input BIM");
-  Yargs.required("output", "The output OBJ file");
-  const args = Yargs.parse() as Yargs.Arguments<ExportObjArgs>;
+(async () => {
+  try {
+    Yargs.usage("Export an OBJ from an existing BIM file.");
+    Yargs.required("input", "The input BIM");
+    Yargs.required("output", "The output OBJ file");
+    const args = Yargs.parse() as Yargs.Arguments<ExportObjArgs>;
 
-  const parsedOutput = path.parse(args.output);
-  const mtlName = path.join(parsedOutput.dir, `${parsedOutput.name}.mtllib`);
+    const parsedOutput = path.parse(args.output);
+    const mtlName = path.join(parsedOutput.dir, `${parsedOutput.name}.mtllib`);
 
-  doExport(args.input, args.output, mtlName);
-} catch (error) {
-  process.stdout.write(error.message + "\n" + error.stack);
-}
+    await doExport(args.input, args.output, mtlName);
+  } catch (error) {
+    process.stdout.write(error.message + "\n" + error.stack);
+  }
+})(); // tslint:disable-line:no-floating-promises

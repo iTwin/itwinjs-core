@@ -53,8 +53,8 @@
     "packageAliases": {
       "backend": "imodeljs-backend",
       "bentley": "bentleyjs-core",
-      "clients-backend": "imodeljs-clients-backend",
       "itwin-client": "itwin-client",
+      "backend-itwin-client": "backend-itwin-client",
       "common": "imodeljs-common",
       "context-registry-client": "context-registry-client",
       "extension-client": "extension-client",

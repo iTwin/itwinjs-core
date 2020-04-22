@@ -1,6 +1,6 @@
 {
   "name": "@bentley/ui-ninezone",
-  "version": "2.0.0-dev.71",
+  "version": "2.0.0-dev.76",
   "description": "iModel.js Nine-zone React UI components",
   "main": "lib/ui-ninezone.js",
   "typings": "lib/ui-ninezone",
@@ -17,13 +17,12 @@
     "clean": "rimraf lib out .rush demo/lib",
     "cover": "nyc npm test",
     "docs": "npm run docs:typedoc",
-    "docs:typedoc": "node ./node_modules/@bentley/build-tools/scripts/docs.js --includes=../../generated-docs/extract --json=../../generated-docs/ui/ui-ninezone/file.json --tsIndexFile=./ui-ninezone.ts --onlyJson %TYPEDOC_THEME%",
+    "docs:typedoc": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/ui/ui-ninezone/file.json --tsIndexFile=./ui-ninezone.ts --onlyJson",
     "docs:demo": "webpack --config ./demo/webpack.prod.ts",
-    "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=ui-ninezone",
+    "extract-api": "betools extract-api --entry=ui-ninezone",
     "lint": "npm run tslint && npm run eslint",
     "eslint": "eslint src demo --ext .ts,.tsx,.js,.jsx",
     "tslint": "tslint --project . 1>&2 && tslint --project ./demo/tsconfig.json 1>&2",
-    "pack": "npm run build && node ../../scripts/pack.js",
     "start": "webpack-dev-server --config ./demo/webpack.dev.ts",
     "test": "mocha --opts ../mocha.opts \"./lib/test/**/*.test.js\"",
     "test:watch": "npm test -- --reporter min --watch-extensions ts,tsx --watch"
@@ -38,18 +37,18 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/ui-core": "^2.0.0-dev.71"
+    "@bentley/ui-core": "^2.0.0-dev.76"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/build-tools": "2.0.0-dev.71",
+    "@bentley/build-tools": "2.0.0-dev.76",
     "@bentley/icons-generic-webfont": "^1.0.5",
-    "@bentley/ui-abstract": "2.0.0-dev.71",
-    "@bentley/ui-components": "2.0.0-dev.71",
-    "@bentley/ui-core": "2.0.0-dev.71",
+    "@bentley/ui-abstract": "2.0.0-dev.76",
+    "@bentley/ui-components": "2.0.0-dev.76",
+    "@bentley/ui-core": "2.0.0-dev.76",
     "@testing-library/react": "^8.0.1",
     "@testing-library/react-hooks": "^3.2.1",
     "@types/chai": "^4.1.4",

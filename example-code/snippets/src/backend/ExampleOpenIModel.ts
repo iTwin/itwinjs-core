@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { EnvMacroSubst, OpenMode, ClientRequestContext, Config } from "@bentley/bentleyjs-core";
-import { BriefcaseDb, ConcurrencyControl, OpenParams } from "@bentley/imodeljs-backend";
+import { ClientRequestContext, EnvMacroSubst, OpenMode, Config } from "@bentley/bentleyjs-core";
+import { BriefcaseDb, ConcurrencyControl } from "@bentley/imodeljs-backend";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { IModelError, IModelStatus, IModelVersion } from "@bentley/imodeljs-common";
+import { BriefcaseProps, IModelError, IModelStatus } from "@bentley/imodeljs-common";
 import { TestUserCredentials, TestUtility } from "@bentley/oidc-signin-tool";
 
 async function getUserAccessToken(userCredentials: TestUserCredentials): Promise<AccessToken> {
@@ -31,16 +31,16 @@ export function readConfigParams(): any {
 
 function configureIModel() {
   // __PUBLISH_EXTRACT_START__ BriefcaseDb.onOpen
-  BriefcaseDb.onOpen.addListener((_requestContext: AuthorizedClientRequestContext, _contextId: string, _iModelId: string, openParams: OpenParams, _version: IModelVersion) => {
+  BriefcaseDb.onOpen.addListener((_requestContext: AuthorizedClientRequestContext | ClientRequestContext, briefcaseProps: BriefcaseProps) => {
     // A read-only service might want to reject all requests to open an iModel for writing. It can do this in the onOpen event.
-    if (openParams.openMode !== OpenMode.Readonly)
+    if (briefcaseProps.openMode !== OpenMode.Readonly)
       throw new IModelError(IModelStatus.BadRequest, "Navigator is readonly");
   });
   // __PUBLISH_EXTRACT_END__
 
   // __PUBLISH_EXTRACT_START__ BriefcaseDb.onOpened
   BriefcaseDb.onOpened.addListener((_requestContext: AuthorizedClientRequestContext | ClientRequestContext, iModel: BriefcaseDb) => {
-    if (iModel.openParams.openMode !== OpenMode.ReadWrite)
+    if (iModel.openMode !== OpenMode.ReadWrite)
       return;
 
     // Setting a concurrency control policy is an example of something you might do in an onOpened event handler.

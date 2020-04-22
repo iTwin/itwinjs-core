@@ -210,6 +210,8 @@ export interface RulesetManager {
     add(ruleset: Ruleset): Promise<RegisteredRuleset>;
     clear(): Promise<void>;
     get(id: string): Promise<RegisteredRuleset | undefined>;
+    // @alpha
+    modify(ruleset: RegisteredRuleset, newRules: Omit<Ruleset, "id">): Promise<RegisteredRuleset>;
     remove(ruleset: RegisteredRuleset | [string, string]): Promise<boolean>;
 }
 

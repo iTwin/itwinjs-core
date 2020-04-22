@@ -44,7 +44,7 @@ describe("Sign in (#integration)", () => {
       .to.be.rejectedWith(Error, `Failed OIDC signin for ${invalidUser.email}.\nError: Incorrect user ID or password. Type the correct user ID and password, and try again.`);
   });
 
-  it("failure with invalid user", async () => {
+  it.skip("failure with invalid user", async () => {
     const invalidUser = {
       email: "invalid@email.com",
       password: "invalid",

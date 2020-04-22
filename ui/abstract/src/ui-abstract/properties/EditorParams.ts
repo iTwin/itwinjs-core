@@ -27,7 +27,7 @@ export enum PropertyEditorParamTypes {
 }
 
 /**
- * Base interface for Property Editor Params
+ * [[BasePropertyEditorParams]] Base interface for Property Editor Params
  * @beta
  */
 export interface BasePropertyEditorParams {
@@ -36,6 +36,9 @@ export interface BasePropertyEditorParams {
 
 /**
  * Parameters used by PropertyEditors that use HTML <input> element.
+ * @beta
+ */
+/** [[InputEditorSizeParams]] type guard.
  * @beta
  */
 export interface InputEditorSizeParams extends BasePropertyEditorParams {
@@ -54,7 +57,7 @@ export const isInputEditorSizeParams = (item: BasePropertyEditorParams): item is
 };
 
 /**
- * Parameters used to populate color type editor with a specific set of colors. If not specified the Color
+ * [[ColorEditorParams]] Parameters used to populate color type editor with a specific set of colors. If not specified the Color
  * Editor will show a default palette of 16 colors.
  * @beta
  */
@@ -74,7 +77,7 @@ export const isColorEditorParams = (item: BasePropertyEditorParams): item is Col
 };
 
 /**
- * Parameters used to populate icon type editor with a specific set of icons.
+ * [[IconListEditorParams]] Parameters used to populate icon type editor with a specific set of icons.
  * @beta
  */
 export interface IconListEditorParams extends BasePropertyEditorParams {
@@ -95,7 +98,7 @@ export const isIconListEditorParams = (item: BasePropertyEditorParams): item is 
 };
 
 /**
- * Information about an icon displayed next to a property editor.
+ * [[IconDefinition]] Information about an icon displayed next to a property editor.
  * @beta
  */
 export interface IconDefinition {
@@ -106,7 +109,7 @@ export interface IconDefinition {
 }
 
 /**
- * Parameters used by EnumButtonGroupEditor to define icons in button group.
+ * [[ButtonGroupEditorParams]] Parameters used by EnumButtonGroupEditor to define icons in button group.
  * @beta
  */
 export interface ButtonGroupEditorParams extends BasePropertyEditorParams {
@@ -122,7 +125,7 @@ export const isButtonGroupEditorParams = (item: BasePropertyEditorParams): item 
 };
 
 /**
- * Parameters used to suppress the label for a type editor in the ToolSettings widget.
+ * [[SuppressLabelEditorParams]] Parameters used to suppress the label for a type editor in the ToolSettings widget.
  * @beta
  */
 export interface SuppressLabelEditorParams extends BasePropertyEditorParams {

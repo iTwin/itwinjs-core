@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority, FitViewTool, WindowAreaTool, ZoomViewTool, PanViewTool, RotateViewTool, SelectionTool } from "@bentley/imodeljs-frontend";
-import { BadgeType, AbstractMenuItemProps, AbstractToolbarProps, RelativePosition } from "@bentley/ui-abstract";
+import { BadgeType, AbstractMenuItemProps, AbstractToolbarProps, RelativePosition, PropertyDescription, Primitives } from "@bentley/ui-abstract";
 import { CommandItemDef, ActionButtonItemDef } from "@bentley/ui-framework";
 
 export class AccuDrawPopupTools {
 
   private static _menuButtonAdded = false;
-  private static _accudrawMenuItems: AbstractMenuItemProps[] = [
+  private static _exampleMenuItems: AbstractMenuItemProps[] = [
     {
       id: "Mode", label: "~Mode", icon: "icon-placeholder", badgeType: BadgeType.New,
       submenu: [
@@ -47,7 +47,7 @@ export class AccuDrawPopupTools {
       iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.addMenuButton", execute: () => {
         const viewport = IModelApp.viewManager.selectedView;
         if (viewport) {
-          IModelApp.uiAdmin.showMenuButton("test1", this._accudrawMenuItems, IModelApp.uiAdmin.createXAndY(150, 150), viewport.toolTipDiv);
+          IModelApp.uiAdmin.showMenuButton("test1", this._exampleMenuItems, IModelApp.uiAdmin.createXAndY(150, 150), viewport.toolTipDiv);
           this._menuButtonAdded = true;
         }
       },
@@ -89,7 +89,12 @@ export class AccuDrawPopupTools {
     });
   }
 
-  private static _inputCommit = (value: number) => {
+  private static _numberInputCommit = (value: number) => {
+    IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Updated value is ${value}`));
+    AccuDrawPopupTools._closeInputEditor();
+  }
+
+  private static _inputCommit = (value: Primitives.Value) => {
     IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Updated value is ${value}`));
     AccuDrawPopupTools._closeInputEditor();
   }
@@ -107,7 +112,7 @@ export class AccuDrawPopupTools {
       iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.showAngleEditor", execute: () => {
         const viewport = IModelApp.viewManager.selectedView;
         if (viewport) {
-          IModelApp.uiAdmin.showAngleEditor(90, IModelApp.uiAdmin.createXAndY(150, 150), this._inputCommit, this._inputCancel, viewport.toolTipDiv);
+          IModelApp.uiAdmin.showAngleEditor(90, IModelApp.uiAdmin.createXAndY(150, 150), this._numberInputCommit, this._inputCancel, viewport.toolTipDiv);
         }
       },
     });
@@ -118,7 +123,7 @@ export class AccuDrawPopupTools {
       iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.showLengthEditor", execute: () => {
         const viewport = IModelApp.viewManager.selectedView;
         if (viewport) {
-          IModelApp.uiAdmin.showLengthEditor(90, IModelApp.uiAdmin.createXAndY(150, 150), this._inputCommit, this._inputCancel, viewport.toolTipDiv);
+          IModelApp.uiAdmin.showLengthEditor(90, IModelApp.uiAdmin.createXAndY(150, 150), this._numberInputCommit, this._inputCancel, viewport.toolTipDiv);
         }
       },
     });
@@ -129,8 +134,17 @@ export class AccuDrawPopupTools {
       iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.showHeightEditor", execute: () => {
         const viewport = IModelApp.viewManager.selectedView;
         if (viewport) {
-          IModelApp.uiAdmin.showHeightEditor(30, IModelApp.uiAdmin.createXAndY(150, 150), this._inputCommit, this._inputCancel, viewport.toolTipDiv);
+          IModelApp.uiAdmin.showHeightEditor(30, IModelApp.uiAdmin.createXAndY(150, 150), this._numberInputCommit, this._inputCancel, viewport.toolTipDiv);
         }
+      },
+    });
+  }
+
+  public static get showInputEditor() {
+    return new CommandItemDef({
+      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.showInputEditor", execute: () => {
+        const propertyDescription: PropertyDescription = { name: "test", displayLabel: "Test", typename: "number" };
+        IModelApp.uiAdmin.showInputEditor(30, propertyDescription, IModelApp.uiAdmin.cursorPosition, this._inputCommit, this._inputCancel);
       },
     });
   }
@@ -138,7 +152,7 @@ export class AccuDrawPopupTools {
   public static get showContextMenu() {
     return new CommandItemDef({
       iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.showContextMenu", execute: () => {
-        IModelApp.uiAdmin.showContextMenu(this._accudrawMenuItems, IModelApp.uiAdmin.cursorPosition);
+        IModelApp.uiAdmin.showContextMenu(this._exampleMenuItems, IModelApp.uiAdmin.cursorPosition);
       },
     });
   }
@@ -161,9 +175,9 @@ export class AccuDrawPopupTools {
     });
   }
 
-  private static _markerToolbar = (): AbstractToolbarProps => {
+  private static _exampleToolbar = (): AbstractToolbarProps => {
     return {
-      toolbarId: "accudraw-popup",
+      toolbarId: "example-toolbar",
       items: [
         {
           id: SelectionTool.toolId,
@@ -234,7 +248,7 @@ export class AccuDrawPopupTools {
     return new CommandItemDef({
       iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.showToolbar", execute: () => {
         IModelApp.uiAdmin.showToolbar(
-          this._markerToolbar(), IModelApp.uiAdmin.cursorPosition, IModelApp.uiAdmin.createXAndY(8, 8),
+          this._exampleToolbar(), IModelApp.uiAdmin.cursorPosition, IModelApp.uiAdmin.createXAndY(8, 8),
           this._toolbarItemExecuted, this._toolbarCancel);
       },
     });
@@ -246,7 +260,7 @@ export class AccuDrawPopupTools {
         const viewport = IModelApp.viewManager.selectedView;
         if (viewport) {
           IModelApp.uiAdmin.showToolbar(
-            this._markerToolbar(), IModelApp.uiAdmin.createXAndY(200, 200), IModelApp.uiAdmin.createXAndY(8, 8),
+            this._exampleToolbar(), IModelApp.uiAdmin.createXAndY(200, 200), IModelApp.uiAdmin.createXAndY(8, 8),
             this._toolbarItemExecuted, this._toolbarCancel, RelativePosition.BottomRight, viewport.parentDiv);
         }
       },

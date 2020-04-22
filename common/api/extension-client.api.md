@@ -23,5 +23,38 @@ export class ExtensionClient extends Client {
     protected getUrlSearchKey(): string;
     }
 
+// @beta
+export interface ExtensionFile {
+    // (undocumented)
+    content: ArrayBuffer;
+    // (undocumented)
+    fileName: string;
+}
+
+// @beta
+export interface ExtensionProps {
+    // (undocumented)
+    contextId: string;
+    // (undocumented)
+    extensionName: string;
+    // (undocumented)
+    files: FileInfo[];
+    // (undocumented)
+    isPublic: boolean;
+    // (undocumented)
+    status: ExtensionUploadStatus;
+    // (undocumented)
+    timestamp: Date;
+    // (undocumented)
+    uploadedBy: string;
+    // (undocumented)
+    version: string;
+}
+
+// @internal
+export function extensionPropsFromJSON(jsonObject: any): ExtensionProps | undefined;
+
+
+// (No @packageDocumentation comment for this package)
 
 ```

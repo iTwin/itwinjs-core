@@ -11,4 +11,4 @@ public;initialize: (props?: PresentationTestingInitProps | undefined) => Promise
 public;MappedNode
 public;NodeMappingFunc = (node: TreeNodeItem) => MappedNode
 public;PresentationTestingInitProps
-public;terminate: (frontendApp?: typeof IModelApp) => void
+public;terminate: (frontendApp?: typeof IModelApp) => Promise

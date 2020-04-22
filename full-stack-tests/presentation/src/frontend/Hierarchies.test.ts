@@ -23,7 +23,7 @@ describe("Hierarchies", () => {
 
   after(async () => {
     await imodel.close();
-    terminate();
+    await terminate();
   });
 
   describe("Getting node paths", () => {

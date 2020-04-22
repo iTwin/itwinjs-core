@@ -11,7 +11,7 @@
 import { AuthorizationErrorJson, AuthorizationResponseJson } from "@openid/appauth";
 import * as Http from "http";
 import * as Url from "url";
-import { OidcDesktopClientConfiguration } from "@bentley/imodeljs-common";
+import { DesktopAuthorizationClientConfiguration } from "@bentley/imodeljs-common";
 import { ElectronAuthorizationEvents } from "./ElectronAuthorizationEvents";
 
 type StateEventsPair = [string, ElectronAuthorizationEvents];
@@ -39,16 +39,16 @@ class AuthorizationState {
 }
 
 /**
- * Web server to listen to authorization requests/responses for the OidcDesktopClient
+ * Web server to listen to authorization requests/responses for the DesktopAuthorizationClient
  * @internal
  */
 export class LoopbackWebServer {
-  private static _clientConfiguration: OidcDesktopClientConfiguration;
+  private static _clientConfiguration: DesktopAuthorizationClientConfiguration;
   private static _httpServer?: Http.Server;
   private static _authState: AuthorizationState = new AuthorizationState();
 
   /** Start a web server to listen to the browser requests */
-  public static start(clientConfiguration: OidcDesktopClientConfiguration) {
+  public static start(clientConfiguration: DesktopAuthorizationClientConfiguration) {
     if (LoopbackWebServer._httpServer)
       return;
 

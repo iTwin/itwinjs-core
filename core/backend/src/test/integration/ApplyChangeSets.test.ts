@@ -4,14 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 import { GuidString, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { IModelVersion } from "@bentley/imodeljs-common";
+import { IModelVersion, SyncMode } from "@bentley/imodeljs-common";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { assert } from "chai";
 import * as path from "path";
-import { AuthorizedBackendRequestContext, BriefcaseDb, KnownLocations, NativeLoggerCategory, OpenParams } from "../../imodeljs-backend";
+import { AuthorizedBackendRequestContext, KnownLocations, NativeLoggerCategory } from "../../imodeljs-backend";
 import { HubUtility } from "./HubUtility";
+import { IModelTestUtils } from "../IModelTestUtils";
 
-// Useful utilities to download/upload test cases from/to the iModel Hub
+// Useful utilities to download/upload test cases from/to iModelHub
 describe("ApplyChangeSets (#integration)", () => {
   const iModelRootDir = path.join(KnownLocations.tmpdir, "IModelJsTest/");
 
@@ -28,7 +29,7 @@ describe("ApplyChangeSets (#integration)", () => {
   };
 
   const testOpen = async (requestContext: AuthorizedClientRequestContext, projectId: string, iModelId: string) => {
-    const iModelDb = await BriefcaseDb.open(requestContext, projectId, iModelId, OpenParams.fixedVersion(), IModelVersion.latest());
+    const iModelDb = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, projectId, iModelId, SyncMode.FixedVersion, IModelVersion.latest());
     assert(!!iModelDb);
   };
 

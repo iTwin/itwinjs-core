@@ -39,7 +39,7 @@ export interface PropertyEditorInfo {
 }
 
 /**
- * PropertyDescription contains metadata about a Property
+ * [[PropertyDescription]] contains metadata about a Property
  * @beta
  */
 export interface PropertyDescription {

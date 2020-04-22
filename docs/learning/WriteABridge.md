@@ -39,7 +39,8 @@ See:
 
 * [Importing a schema and bootstrapping definitions](./backend/SchemasAndElementsInTypeScript.md#importing-the-schema)
 * [AccessToken](./common/AccessToken.md)
-* [BriefcaseDb.create]($backend)
+* [BriefcaseManager.create]($backend)
+* [BriefcaseDb.open]($backend)
 * [IModelDb.saveChanges]($backend)
 * [BriefcaseDb.pullAndMergeChanges]($backend)
 * [BriefcaseDb.pushChanges]($backend)

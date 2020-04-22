@@ -2,6 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module Extensions
+ */
+
 import { ExtensionLoader, PendingExtension } from "../Extension";
 
 /** Reads the extension from a plain server assuming that the extension is a set of files in a directory formatted as "imjs_extensions/<extensionName>".

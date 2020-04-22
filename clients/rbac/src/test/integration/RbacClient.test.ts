@@ -12,7 +12,7 @@ import { TestConfig } from "../TestConfig";
 
 // VSTS#291161: Re-enable tests after oidc-signin-tool fixes
 describe.skip("RbacClient (#integration)", () => {
-  const connectClient = new ContextRegistryClient();
+  const contextRegistry = new ContextRegistryClient();
   const rbacClient = new RbacClient();
   let requestContext: AuthorizedClientRequestContext;
 
@@ -28,7 +28,7 @@ describe.skip("RbacClient (#integration)", () => {
       $filter: "Name+eq+'" + TestConfig.projectName + "'",
     };
 
-    const project: Project = await connectClient.getProject(requestContext, queryOptions);
+    const project: Project = await contextRegistry.getProject(requestContext, queryOptions);
     expect(!!project);
 
     const iModelHubServiceGPRId = 2485;
@@ -36,14 +36,14 @@ describe.skip("RbacClient (#integration)", () => {
     expect(permissions.length).equals(6);
   });
 
-  it("should get the permissions relevant to the iModelHubService for the specified project (#integration)", async () => {
+  it("should get the permissions relevant to iModelHub for the specified project (#integration)", async () => {
     // Get test project
     const queryOptions: ContextRegistryRequestQueryOptions = {
       $select: "*",
       $filter: "Name+eq+'" + TestConfig.projectName + "'",
     };
 
-    const project: Project = await connectClient.getProject(requestContext, queryOptions);
+    const project: Project = await contextRegistry.getProject(requestContext, queryOptions);
     expect(!!project);
 
     const permissions: IModelHubPermission = await rbacClient.getIModelHubPermissions(requestContext, project.wsgId);

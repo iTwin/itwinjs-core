@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { connect } from "react-redux";
-import { AccessToken } from "@bentley/itwin-client";
+import { UserInfo } from "@bentley/itwin-client";
 import { UserProfileBackstageItem, BackstageComposer } from "@bentley/ui-framework";
 import { RootState } from "../..";
 import { AppBackstageItemProvider } from "./AppBackstageItemProvider";
@@ -15,12 +15,12 @@ function mapStateToProps(state: RootState) {
   if (!frameworkState)
     return undefined;
 
-  return { accessToken: frameworkState.sessionState.accessToken };
+  return { userInfo: frameworkState.sessionState.userInfo };
 }
 
 interface AppBackstageComposerProps {
-  /** AccessToken from sign-in */
-  accessToken: AccessToken | undefined;
+  /** UserInfo from sign-in */
+  userInfo: UserInfo | undefined;
 }
 
 export class AppBackstageComposerComponent extends React.PureComponent<AppBackstageComposerProps> {
@@ -36,7 +36,7 @@ export class AppBackstageComposerComponent extends React.PureComponent<AppBackst
   public render() {
     return (
       <BackstageComposer items={this.backstageItemProvider.backstageItems}
-        header={this.props.accessToken && <UserProfileBackstageItem accessToken={this.props.accessToken} />}
+        header={this.props.userInfo && <UserProfileBackstageItem userInfo={this.props.userInfo} />}
       />
     );
   }

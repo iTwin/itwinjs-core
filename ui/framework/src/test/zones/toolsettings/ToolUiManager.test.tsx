@@ -53,12 +53,12 @@ describe("ToolUiManager", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
-    NoRenderApp.startup();
+    await NoRenderApp.startup();
   });
 
-  after(() => {
+  after(async () => {
     TestUtils.terminateUiFramework();
-    IModelApp.shutdown();
+    await IModelApp.shutdown();
   });
 
   it("check initial values", () => {
@@ -68,9 +68,9 @@ describe("ToolUiManager", () => {
 
   it("simulate a tool starting", () => {
     const toolSettingsProperties: DialogItem[] = [];
-    const useLengthValue: DialogItemValue = {value: false};
-    const lengthValue: DialogItemValue = {value: 1.2345, displayValue: "1.2345"};
-    const enumValue: DialogItemValue = {value: "1"};
+    const useLengthValue: DialogItemValue = { value: false };
+    const lengthValue: DialogItemValue = { value: 1.2345, displayValue: "1.2345" };
+    const enumValue: DialogItemValue = { value: "1" };
 
     toolSettingsProperties.push({ value: useLengthValue, property: useLengthDescription, editorPosition: { rowPriority: 0, columnIndex: 1 } });
     toolSettingsProperties.push({ value: lengthValue, property: lengthDescription, editorPosition: { rowPriority: 0, columnIndex: 3 } });

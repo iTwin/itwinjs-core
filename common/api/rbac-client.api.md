@@ -5,6 +5,7 @@
 ```ts
 
 import { AuthorizedClientRequestContext } from '@bentley/itwin-client';
+import { GuidString } from '@bentley/bentleyjs-core';
 import { WsgClient } from '@bentley/itwin-client';
 import { WsgInstance } from '@bentley/itwin-client';
 
@@ -43,7 +44,7 @@ export class RbacClient extends WsgClient {
     constructor();
     // (undocumented)
     static readonly configRelyingPartyUri = "imjs_rbac_relying_party_uri";
-    getIModelHubPermissions(requestContext: AuthorizedClientRequestContext, projectId: string): Promise<IModelHubPermission>;
+    getIModelHubPermissions(requestContext: AuthorizedClientRequestContext, projectId: GuidString): Promise<IModelHubPermission>;
     getPermissions(requestContext: AuthorizedClientRequestContext, projectId: string, serviceGPRId: number): Promise<Permission[]>;
     protected getRelyingPartyUrl(): string;
     protected getUrlSearchKey(): string;

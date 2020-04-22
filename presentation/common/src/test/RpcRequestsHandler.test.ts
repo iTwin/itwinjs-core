@@ -18,8 +18,9 @@ import {
   RpcRequestsHandler, PresentationRpcInterface,
   KeySet, Paged, SelectionInfo, PresentationStatus,
   HierarchyRequestOptions, ContentRequestOptions, SelectionScopeRequestOptions, PresentationError, LabelRequestOptions,
-  PresentationRpcRequestOptions, PresentationRpcResponse,
+  PresentationRpcRequestOptions, PresentationRpcResponse, PartialHierarchyModificationJSON,
 } from "../presentation-common";
+import { PresentationDataCompareOptions } from "../presentation-common/PresentationManagerOptions";
 
 describe("RpcRequestsHandler", () => {
 
@@ -415,6 +416,27 @@ describe("RpcRequestsHandler", () => {
       const result = new KeySet().toJSON();
       rpcInterfaceMock.setup(async (x) => x.computeSelection(token, rpcOptions, ids, scopeId)).returns(async () => successResponse(result)).verifiable();
       expect(await handler.computeSelection(handlerOptions, ids, scopeId)).to.eq(result);
+      rpcInterfaceMock.verifyAll();
+    });
+
+    it("forwards compareHierarchies call", async () => {
+      const handlerOptions: PresentationDataCompareOptions<IModelRpcProps> = {
+        prev: {
+          rulesetOrId: "test1",
+        },
+        rulesetOrId: "test2",
+        imodel: token,
+      };
+      const rpcOptions: PresentationRpcRequestOptions<PresentationDataCompareOptions<any>> = {
+        clientId,
+        prev: {
+          rulesetOrId: "test1",
+        },
+        rulesetOrId: "test2",
+      };
+      const result = new Array<PartialHierarchyModificationJSON>();
+      rpcInterfaceMock.setup(async (x) => x.compareHierarchies(token, rpcOptions)).returns(async () => successResponse(result)).verifiable();
+      expect(await handler.compareHierarchies(handlerOptions)).to.eq(result);
       rpcInterfaceMock.verifyAll();
     });
 

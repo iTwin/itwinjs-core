@@ -29,8 +29,8 @@ describe("ModelSelector", () => {
     });
   });
 
-  after(() => {
-    terminate();
+  after(async () => {
+    await terminate();
     TestUtils.terminateUiFramework();
   });
 

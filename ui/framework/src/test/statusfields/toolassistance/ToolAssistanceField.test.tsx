@@ -63,7 +63,7 @@ describe("ToolAssistanceField", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
-    MockRender.App.startup();
+    await MockRender.App.startup();
 
     const statusBarWidgetDef = new WidgetDef({
       classId: AppStatusBarWidgetControl,
@@ -74,9 +74,9 @@ describe("ToolAssistanceField", () => {
     widgetControl = statusBarWidgetDef.getWidgetControl(ConfigurableUiControlType.StatusBarWidget) as StatusBarWidgetControl;
   });
 
-  after(() => {
+  after(async () => {
     TestUtils.terminateUiFramework();
-    MockRender.App.shutdown();
+    await MockRender.App.shutdown();
   });
 
   // cSpell:Ignore TOOLPROMPT

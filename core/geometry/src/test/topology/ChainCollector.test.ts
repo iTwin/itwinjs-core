@@ -12,66 +12,41 @@ import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
 import * as fs from "fs";
-import { CurveCollection, BagOfCurves } from "../../curve/CurveCollection";
-import { Loop } from "../../curve/Loop";
-import { RegionOps } from "../../curve/RegionOps";
-import { ChainCollectorContext } from "../../curve/ChainCollectorContext";
-import { CurvePrimitive } from "../../curve/CurvePrimitive";
-import { Path } from "../../curve/Path";
-import { AnyCurve } from "../../curve/CurveChain";
-const chainCollectorInputDirectory = "./src/test/iModelJsonSamples/ChainCollector/";
+import { OffsetHelpers } from "./ChainCollectorContextA";
+import { Range3d } from "../../geometry3d/Range";
 
-it("ChainCollector", () => {
+const chainCollectorInputDirectory = "./src/test/testInputs/ChainCollector/";
+
+it("Diego", () => {
   const ck = new Checker();
-  const allGeometry: GeometryQuery[] = [];
-  const x0 = 0;
-  const y0 = 0;
-  const y1 = y0 + 40;
-  for (const filename of ["boomerang"]) {
+  let xOut = 0;
+  let y0 = 0;
+  for (const filename of ["boomerang.incompleteOffset", "boomerang.noOffsetsWithThisOrder", "boomerang", "rectangle00", "linestrings"]) {
+    const allGeometry: GeometryQuery[] = [];
     const stringData = fs.readFileSync(chainCollectorInputDirectory + filename + ".imjs", "utf8");
     if (stringData) {
       const jsonData = JSON.parse(stringData);
       const fragments = IModelJson.Reader.parse(jsonData);
-      const collector = new ChainCollectorContext(false);
-      if (fragments) {
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, fragments, x0, 0);
-        if (Array.isArray(fragments)) {
-          for (const s of fragments) {
-            collector.announceCurvePrimitive(s, true);
-          }
-        } else if (fragments instanceof CurveCollection) {
-          for (const s of fragments.children!) {
-            if (s instanceof CurvePrimitive)
-              collector.announceCurvePrimitive(s, true);
-          }
-        }
-        const loopA = collector.grabResult(true);
-        ck.testDefined(loopA);
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, loopA, x0, y1 , 0);
-        const result: GeometryQuery[] = [];
-        appendOffsets(loopA, 0.5, result);
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, result, x0, y1, 0);
+      if (Array.isArray(fragments)) {
+        const range = OffsetHelpers.extendRange(Range3d.create(), fragments);
+        const x0 = xOut - range.low.x;
+        y0 = -range.low.y;
+
+        const offsetDistance = 0.1 * range.xLength();
+        const yShift = 2 * range.yLength();
+        const offsets = OffsetHelpers.collectInsideAndOutsideOffsets(fragments, offsetDistance, offsetDistance * 0.1);
+        y0 += yShift;
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, fragments, x0, y0);
+        y0 += yShift;
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, offsets.chains, x0, y0);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, offsets.insideOffsets, x0, y0, 0.01);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, offsets.outsideOffsets, x0, y0, -0.01);
+
+        console.log("output to " + filename);
         GeometryCoreTestIO.saveGeometry(allGeometry, "ChainCollector", filename);
+        xOut += 2 * range.xLength();
       }
     }
   }
   expect(ck.getNumErrors()).equals(0);
 });
-
-function appendOffsets(data: AnyCurve | undefined, offset: number, result: GeometryQuery[]) {
-  if (data instanceof CurvePrimitive) {
-    const resultA = RegionOps.constructCurveXYOffset(Path.create(data), 0.5);
-    if (resultA)
-      result.push(resultA);
-  } else if ((data instanceof Loop) || (data instanceof Path)) {
-    const resultA = RegionOps.constructCurveXYOffset(data, 0.5);
-    if (resultA)
-      result.push(resultA);
-  } else if (data instanceof BagOfCurves) {
-    for (const q of data.children)
-      appendOffsets(q, offset, result);
-  } else if (Array.isArray(data)) {
-    for (const q of data)
-      appendOffsets(q, offset, result);
-  }
-}

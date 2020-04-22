@@ -10,7 +10,7 @@ import { GuidString, Logger, OpenMode } from "@bentley/bentleyjs-core";
 import { ChangeSet, ChangeSetQuery, HubIModel, HubUserInfo, IModelHubClient, IModelQuery, UserInfoQuery, Version, VersionQuery } from "@bentley/imodelhub-client";
 // import GatewayProxyApi from "./gatewayProxy";
 import { IModelVersion } from "@bentley/imodeljs-common";
-import { AuthorizedFrontendRequestContext, BriefcaseConnection, IModelConnection } from "@bentley/imodeljs-frontend";
+import { AuthorizedFrontendRequestContext, RemoteBriefcaseConnection, IModelConnection } from "@bentley/imodeljs-frontend";
 import { UiFramework } from "../UiFramework";
 import { ChangeSetInfo, IModelInfo, IModelServices, IModelUserInfo, VersionInfo } from "./IModelServices";
 import { ProjectInfo } from "./ProjectServices";
@@ -82,7 +82,7 @@ export class DefaultIModelServices implements IModelServices {
   public async openIModel(contextId: string, iModelId: GuidString, openMode?: OpenMode, changeSetId?: string): Promise<IModelConnection> {
     try {
       // GatewayProxyApi.setAccessToken(accessToken);
-      const iModelConnection: IModelConnection = await BriefcaseConnection.open(contextId, iModelId, openMode ? openMode : OpenMode.Readonly, changeSetId ? IModelVersion.asOfChangeSet(changeSetId) : IModelVersion.latest());
+      const iModelConnection: IModelConnection = await RemoteBriefcaseConnection.open(contextId, iModelId, openMode ? openMode : OpenMode.Readonly, changeSetId ? IModelVersion.asOfChangeSet(changeSetId) : IModelVersion.latest());
       return iModelConnection;
     } catch (e) {
       alert(JSON.stringify(e));

@@ -47,7 +47,7 @@ describe("ToolWidget", () => {
 
     before(async () => {
       await TestUtils.initializeUiFramework();
-      NoRenderApp.startup();
+      await NoRenderApp.startup();
 
       // Set in the before() after UiFramework.i18n is initialized
       horizontalToolbar =
@@ -89,7 +89,7 @@ describe("ToolWidget", () => {
 
     after(async () => {
       TestUtils.terminateUiFramework();
-      IModelApp.shutdown();
+      await IModelApp.shutdown();
     });
 
     const tool1 = new CommandItemDef({
@@ -188,12 +188,12 @@ describe("ToolWidget", () => {
 
     before(async () => {
       await TestUtils.initializeUiFramework();
-      NoRenderApp.startup();
+      await NoRenderApp.startup();
     });
 
-    after(() => {
+    after(async () => {
       TestUtils.terminateUiFramework();
-      IModelApp.shutdown();
+      await IModelApp.shutdown();
     });
 
     afterEach(cleanup);

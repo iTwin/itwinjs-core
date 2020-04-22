@@ -670,43 +670,35 @@ export class RenderCommands {
   public clearCheckRange(): void { this._frustumPlanes = undefined; }
 
   private setupClassificationByVolume(): void {
-    // To make is easier to process the classifiers individually, set up a secondary command list for them where they
-    // are each separated by their own push & pop and can more easily be accessed by index.
-    // NOTE: This assumes no nested branches.
+    // To make it easier to process the classifiers individually, set up a secondary command list for them where they
+    // are each separated by their own pushes & pops so that they can easily be drawn individually.  This now supports
+    // nested branches and batches.
     const groupedCmds = this._commands[RenderPass.Classification];
     const byIndexCmds = this._commands[RenderPass.ClassificationByIndex];
-    let pushBranch: DrawCommand | undefined;
-    let pushBatch: DrawCommand | undefined;
+    const pushCommands: DrawCommands = []; // will contain current set of pushes ahead of a primitive
     for (const cmd of groupedCmds) {
-      if (undefined === pushBranch) {
-        // Looking for a set of commands inside a branch.
-        if ("pushBranch" === cmd.opcode)
-          pushBranch = cmd;
-      } else {
-        if (undefined === pushBatch) {
-          // Looking for a set of commands inside a batch inside a branch.
-          if ("pushBatch" === cmd.opcode)
-            pushBatch = cmd;
-          else if ("popBranch" === cmd.opcode)
-            pushBranch = undefined; // no batches in this branch.
-        } else {
-          // Looking for primitives inside a batch inside a branch.
-          switch (cmd.opcode) {
-            case "drawPrimitive":
-              byIndexCmds.push(pushBranch);
-              byIndexCmds.push(pushBatch);
-              byIndexCmds.push(cmd);
-              byIndexCmds.push(PopBatchCommand.instance);
-              byIndexCmds.push(PopBranchCommand.instance);
-              break;
-            case "popBatch":
-              pushBatch = undefined;
-              break;
-            case "popBranch":
-              pushBranch = undefined;
-              break;
+      switch (cmd.opcode) {
+        case "pushBranch":
+        case "pushBatch":
+        case "pushState":
+          pushCommands.push(cmd);
+          break;
+        case "drawPrimitive":
+          for (const pushCmd of pushCommands) {
+            byIndexCmds.push(pushCmd);
           }
-        }
+          byIndexCmds.push(cmd);
+          for (let i = pushCommands.length - 1; i >= 0; --i) {
+            if ("pushBatch" === pushCommands[i].opcode)
+              byIndexCmds.push(PopBatchCommand.instance);
+            else // should be eith pushBranch or pushState opcode
+              byIndexCmds.push(PopBranchCommand.instance);
+          }
+          break;
+        case "popBatch":
+        case "popBranch":
+          pushCommands.pop();
+          break;
       }
     }
   }

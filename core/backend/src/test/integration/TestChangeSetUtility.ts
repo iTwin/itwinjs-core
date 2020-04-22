@@ -5,10 +5,10 @@
 *--------------------------------------------------------------------------------------------*/
 import { GuidString } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { ColorDef, IModel, IModelVersion, SubCategoryAppearance } from "@bentley/imodeljs-common";
+import { ColorDef, IModel, IModelVersion, SubCategoryAppearance, SyncMode } from "@bentley/imodeljs-common";
 import { SpatialCategory } from "../../Category";
 import { ConcurrencyControl } from "../../ConcurrencyControl";
-import { BriefcaseDb, BriefcaseManager, KeepBriefcase, OpenParams } from "../../imodeljs-backend";
+import { BriefcaseDb, BriefcaseManager } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
 
@@ -37,7 +37,7 @@ export class TestChangeSetUtility {
   }
 
   private async addTestModel(): Promise<void> {
-    this._iModel = await BriefcaseDb.open(this._requestContext, this.projectId, this.iModelId, OpenParams.pullAndPush(), IModelVersion.latest());
+    this._iModel = await IModelTestUtils.downloadAndOpenBriefcaseDb(this._requestContext, this.projectId, this.iModelId, SyncMode.PullAndPush, IModelVersion.latest());
     this._iModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
     [, this._modelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(this._iModel, IModelTestUtils.getUniqueModelCode(this._iModel, "TestPhysicalModel"), true);
     await this._iModel.concurrencyControl.request(this._requestContext);
@@ -84,7 +84,7 @@ export class TestChangeSetUtility {
   public async deleteTestIModel(): Promise<void> {
     if (!this._iModel)
       throw new Error("Must first call createTestIModel");
-    await this._iModel.close(this._requestContext, KeepBriefcase.No);
+    await IModelTestUtils.closeAndDeleteBriefcaseDb(this._requestContext, this._iModel);
     await BriefcaseManager.imodelClient.iModels.delete(this._requestContext, this.projectId, this.iModelId);
   }
 }

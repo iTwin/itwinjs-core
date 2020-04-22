@@ -31,14 +31,14 @@ describe("Frontstage", () => {
   const sandbox = sinon.createSandbox();
 
   before(async () => {
-    NoRenderApp.startup();
+    await NoRenderApp.startup();
     await TestUtils.initializeUiFramework();
     FrontstageManager.clearFrontstageDefs();
   });
 
-  after(() => {
+  after(async () => {
     TestUtils.terminateUiFramework();
-    IModelApp.shutdown();
+    await IModelApp.shutdown();
   });
 
   beforeEach(() => {

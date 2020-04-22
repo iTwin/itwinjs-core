@@ -332,26 +332,24 @@ export class GeoPhotoExtension extends Extension {
   }
 
   /** Invoked the first time this extension is loaded. */
-  public onLoad(_args: string[]): void {
+  public async onLoad(_args: string[]) {
     // store the extension in the tool prototype.
     GeoPhotoTool.extension = this;
 
     this._i18NNamespace = this.i18n.registerNamespace("geoPhoto");
-    this._i18NNamespace!.readFinished.then(() => {
-      IModelApp.tools.register(GeoPhotoTool, this._i18NNamespace, this.i18n);
-      GeoPhotoTool.extension = this;
-    }).catch(() => { });
+    await this._i18NNamespace!.readFinished;
+    IModelApp.tools.register(GeoPhotoTool, this._i18NNamespace, this.i18n);
+    GeoPhotoTool.extension = this;
   }
 
   /** Invoked each time this extension is loaded. */
-  public onExecute(args: string[]): void {
+  public async onExecute(args: string[]): Promise<void> {
     // if no args passed in, don't do anything.
     if (args.length < 1)
       return;
 
-    this._i18NNamespace!.readFinished.then(() => {
-      this.geoPhotoOperation(args.length > 1 ? args[1] : "toggle");
-    }).catch((_err: Error) => { });
+    await this._i18NNamespace!.readFinished;
+    this.geoPhotoOperation(args.length > 1 ? args[1] : "toggle");
   }
 
   // returning false blocks output of message for subsequent "load Extension" attempts. onExecute is called.

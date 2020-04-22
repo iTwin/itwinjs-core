@@ -10,5 +10,5 @@ export * from "./RbacClient";
 
 /**
  * @docs-group-description RbacClient
- * Classes for managing role-based access control to various CONNECT services.
+ * Classes for managing role-based access control to various iTwin services.
  */

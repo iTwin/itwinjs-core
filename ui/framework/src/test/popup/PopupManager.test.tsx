@@ -9,7 +9,7 @@ import * as sinon from "sinon";
 
 import { Logger } from "@bentley/bentleyjs-core";
 import { MockRender, AngleDescription, LengthDescription } from "@bentley/imodeljs-frontend";
-import { AbstractToolbarProps, BadgeType, RelativePosition } from "@bentley/ui-abstract";
+import { AbstractToolbarProps, BadgeType, RelativePosition, PropertyDescription } from "@bentley/ui-abstract";
 import { Point } from "@bentley/ui-core";
 import { EditorContainer } from "@bentley/ui-components";
 import { Toolbar } from "@bentley/ui-ninezone";
@@ -17,7 +17,7 @@ import { Toolbar } from "@bentley/ui-ninezone";
 import { MenuButton } from "../../ui-framework/accudraw/MenuButton";
 import { Calculator } from "../../ui-framework/accudraw/Calculator";
 import { TestUtils } from "../TestUtils";
-import { PopupManager, PopupRenderer } from "../../ui-framework/popup/PopupManager";
+import { PopupManager, PopupRenderer, PopupInfo } from "../../ui-framework/popup/PopupManager";
 import { MenuItemProps } from "../../ui-framework/shared/MenuItem";
 import { AccuDrawPopupManager } from "../../ui-framework/accudraw/AccuDrawPopupManager";
 
@@ -25,11 +25,11 @@ describe("PopupManager", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
-    MockRender.App.startup();
+    await MockRender.App.startup();
   });
 
-  after(() => {
-    MockRender.App.shutdown();
+  after(async () => {
+    await MockRender.App.shutdown();
     TestUtils.terminateUiFramework();
   });
 
@@ -150,6 +150,15 @@ describe("PopupManager", () => {
       popup = PopupManager.popups[0];
       expect(popup.pt.x).to.eq(200);
       expect(popup.pt.y).to.eq(300);
+
+      const propertyDescription: PropertyDescription = { name: "test", displayLabel: "Test", typename: "number" };
+
+      PopupManager.showInputEditor(doc.documentElement, new Point(300, 400), 256, propertyDescription, spyCommit, spyCancel);
+
+      expect(PopupManager.popupCount).to.eq(1);
+      popup = PopupManager.popups[0];
+      expect(popup.pt.x).to.eq(300);
+      expect(popup.pt.y).to.eq(400);
     });
 
     it("hideInputEditor should hide editor", () => {

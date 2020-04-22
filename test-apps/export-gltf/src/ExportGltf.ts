@@ -394,8 +394,8 @@ function exportInstances(partInstanceArray: ExportPartInstanceInfo[]) {
   }
 }
 
-function doExport(iModelName: string, gltfName: string) {
-  IModelHost.startup();
+async function doExport(iModelName: string, gltfName: string): Promise<void> {
+  await IModelHost.startup();
   Logger.initializeToConsole();
   Logger.setLevelDefault(LogLevel.Warning);
   GltfGlobals.initialize(iModelName, gltfName);
@@ -420,12 +420,14 @@ function doExport(iModelName: string, gltfName: string) {
 }
 
 interface ExportGltfArgs { input: string; output: string; }
-try {
-  yargs.usage("Export a GLTF from an existing BIM file.");
-  yargs.required("input", "The input BIM");
-  yargs.required("output", "The output GLTF file");
-  const args = yargs.parse() as yargs.Arguments<ExportGltfArgs>;
-  doExport(args.input, args.output);
-} catch (error) {
-  process.stdout.write(error.message + "\n" + error.stack);
-}
+(async () => {
+  try {
+    yargs.usage("Export a GLTF from an existing BIM file.");
+    yargs.required("input", "The input BIM");
+    yargs.required("output", "The output GLTF file");
+    const args = yargs.parse() as yargs.Arguments<ExportGltfArgs>;
+    await doExport(args.input, args.output);
+  } catch (error) {
+    process.stdout.write(error.message + "\n" + error.stack);
+  }
+})(); // tslint:disable-line:no-floating-promises

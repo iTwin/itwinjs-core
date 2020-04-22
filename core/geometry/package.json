@@ -1,6 +1,6 @@
 {
   "name": "@bentley/geometry-core",
-  "version": "2.0.0-dev.71",
+  "version": "2.0.0-dev.76",
   "description": "Bentley Core Geometry library",
   "main": "lib/geometry-core.js",
   "typings": "lib/geometry-core",
@@ -10,10 +10,10 @@
     "build": "tsc 1>&2",
     "clean": "rimraf lib .rush ./src/test/output",
     "watch": "tsc --watch",
-    "test": "node ./node_modules/@bentley/build-tools/scripts/test.js",
-    "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=geometry-core",
-    "extract-api-test": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=geometry-core",
-    "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --tsIndexFile=./geometry-core.ts --json=../../generated-docs/core/geometry-core/file.json --onlyJson %TYPEDOC_THEME%",
+    "test": "betools test",
+    "extract-api": "betools extract-api --entry=geometry-core",
+    "extract-api-test": "betools extract-api --entry=geometry-core",
+    "docs": "betools docs --tsIndexFile=./geometry-core.ts --json=../../generated-docs/core/geometry-core/file.json --onlyJson",
     "cover": "nyc npm test",
     "cover:docs": "node ./node_modules/@bentley/build-tools/scripts/docscoverage.js",
     "lint": "tslint --project . 1>&2"
@@ -31,11 +31,11 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.0.0-dev.71"
+    "@bentley/bentleyjs-core": "^2.0.0-dev.76"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.0.0-dev.71",
-    "@bentley/build-tools": "2.0.0-dev.71",
+    "@bentley/bentleyjs-core": "2.0.0-dev.76",
+    "@bentley/build-tools": "2.0.0-dev.76",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
     "@types/node": "10.14.1",

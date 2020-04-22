@@ -22,13 +22,16 @@ import { Node } from '@bentley/presentation-common';
 import { NodeKey } from '@bentley/presentation-common';
 import { NodePathElement } from '@bentley/presentation-common';
 import { Paged } from '@bentley/presentation-common';
+import { PartialHierarchyModification } from '@bentley/presentation-common';
+import { PartialHierarchyModificationJSON } from '@bentley/presentation-common';
+import { PresentationDataCompareOptions } from '@bentley/presentation-common';
 import { PresentationUnitSystem } from '@bentley/presentation-common';
 import { RegisteredRuleset } from '@bentley/presentation-common';
 import { Ruleset } from '@bentley/presentation-common';
 import { SelectionInfo } from '@bentley/presentation-common';
 import { SelectionScope } from '@bentley/presentation-common';
 import { SelectionScopeRequestOptions } from '@bentley/presentation-common';
-import { UpdateInfo } from '@bentley/presentation-common';
+import { UpdateInfoJSON } from '@bentley/presentation-common';
 import { VariableValue } from '@bentley/presentation-common';
 import { VariableValueJSON } from '@bentley/presentation-common/lib/presentation-common/RulesetVariables';
 import { VariableValueTypes } from '@bentley/presentation-common';
@@ -55,6 +58,8 @@ export class PresentationManager {
     constructor(props?: PresentationManagerProps);
     activeLocale: string | undefined;
     activeUnitSystem: PresentationUnitSystem | undefined;
+    // (undocumented)
+    compareHierarchies(requestContext: ClientRequestContext, requestOptions: PresentationDataCompareOptions<IModelDb>): Promise<PartialHierarchyModification[]>;
     computeSelection(requestContext: ClientRequestContext, requestOptions: SelectionScopeRequestOptions<IModelDb>, ids: Id64String[], scopeId: string): Promise<KeySet>;
     dispose(): void;
     getContent(requestContext: ClientRequestContext, requestOptions: Paged<ContentRequestOptions<IModelDb>>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet): Promise<Content | undefined>;

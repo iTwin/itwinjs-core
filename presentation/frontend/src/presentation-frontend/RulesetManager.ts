@@ -25,6 +25,12 @@ export interface RulesetManager {
   add(ruleset: Ruleset): Promise<RegisteredRuleset>;
 
   /**
+   * Modify the given pre-registered ruleset
+   * @alpha
+   */
+  modify(ruleset: RegisteredRuleset, newRules: Omit<Ruleset, "id">): Promise<RegisteredRuleset>;
+
+  /**
    * Unregister the supplied ruleset
    */
   remove(ruleset: RegisteredRuleset | [string, string]): Promise<boolean>;
@@ -36,9 +42,25 @@ export interface RulesetManager {
 }
 
 /** @internal */
+export interface RulesetManagerImplProps {
+  /** Called when ruleset is modified */
+  onRulesetModified?: (curr: RegisteredRuleset, prev: Ruleset) => Promise<void>;
+}
+
+/** @internal */
 export class RulesetManagerImpl implements RulesetManager {
 
   private _clientRulesets = new Map<string, RegisteredRuleset[]>();
+  private _onRulesetModified?: (curr: RegisteredRuleset, prev: Ruleset) => Promise<void>;
+
+  private constructor(props?: RulesetManagerImplProps) {
+    /* istanbul ignore next */
+    this._onRulesetModified = props?.onRulesetModified;
+  }
+
+  public static create(props?: RulesetManagerImplProps) {
+    return new RulesetManagerImpl(props);
+  }
 
   /**
    * Get a ruleset with the specified id.
@@ -59,6 +81,18 @@ export class RulesetManagerImpl implements RulesetManager {
       this._clientRulesets.set(ruleset.id, []);
     this._clientRulesets.get(ruleset.id)!.push(registered);
     return registered;
+  }
+
+  /**
+   * Modifies the given pre-registered ruleset
+   */
+  public async modify(ruleset: RegisteredRuleset, newRules: Omit<Ruleset, "id">): Promise<RegisteredRuleset> {
+    await this.remove(ruleset);
+    const modified = await this.add({ ...newRules, id: ruleset.id });
+    // istanbul ignore else
+    if (this._onRulesetModified)
+      await this._onRulesetModified(modified, ruleset.toJSON());
+    return modified;
   }
 
   /**
