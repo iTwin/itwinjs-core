@@ -17,6 +17,23 @@ import * as electron from "electron";
   const autoOpenDevTools = (undefined === process.env.SVT_NO_DEV_TOOLS);
   const maximizeWindow = (undefined === process.env.SVT_NO_MAXIMIZE_WINDOW);
 
+  let width = 1280;
+  let height = 800;
+  const sizeStr = process.env.SVT_WINDOW_SIZE;
+  if (typeof sizeStr === "string") {
+    const parts = sizeStr.split(",");
+    if (parts.length === 2) {
+      const w = Number.parseInt(parts[0], 10);
+      const h = Number.parseInt(parts[1], 10);
+
+      if (!Number.isNaN(w))
+        width = w;
+
+      if (!Number.isNaN(h))
+        height = h;
+    }
+  }
+
   let manager: StandardElectronManager;
   if (process.env.NODE_ENV === "production")
     manager = new IModelJsElectronManager(path.join(__dirname, "..", "..", "build"));
@@ -37,8 +54,8 @@ import * as electron from "electron";
   });
 
   await manager.initialize({
-    width: 1280,
-    height: 800,
+    width,
+    height,
     webPreferences: {
       nodeIntegration: true,
       experimentalFeatures: true, // Needed for CSS Grid support
