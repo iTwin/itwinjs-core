@@ -155,7 +155,7 @@ export interface PresentationManagerProps {
    * A directory for Presentation hierarchy caches. If not set hierarchy cache is created
    * along side iModel.
    *
-   * @alpha
+   * @internal
    */
   cacheDirectory?: string;
 

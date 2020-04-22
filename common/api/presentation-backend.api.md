@@ -105,7 +105,7 @@ export interface PresentationManagerProps {
     activeUnitSystem?: PresentationUnitSystem;
     // @internal (undocumented)
     addon?: NativePlatformDefinition;
-    // @alpha
+    // @internal
     cacheDirectory?: string;
     enableSchemasPreload?: boolean;
     // @internal (undocumented)
