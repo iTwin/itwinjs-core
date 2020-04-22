@@ -570,9 +570,17 @@ export class KeyinField {
 }
 
 // @beta
+export enum KeyinFieldLocalization {
+    Both = 2,
+    Localized = 1,
+    NonLocalized = 0
+}
+
+// @beta
 export interface KeyinFieldProps {
     baseId: string;
     historyLength?: number;
+    localization?: KeyinFieldLocalization;
     parent?: HTMLElement;
     wantButton?: boolean;
     wantLabel?: boolean;

@@ -58,6 +58,7 @@ alpha;GpuProfiler
 alpha;InspectElementTool 
 beta;IsolateSelectedElementsTool 
 beta;KeyinField
+beta;KeyinFieldLocalization
 beta;KeyinFieldProps
 alpha;LabeledNumericInput
 alpha;LabeledNumericInputProps 
