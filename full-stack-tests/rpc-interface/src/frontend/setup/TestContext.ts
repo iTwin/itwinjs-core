@@ -5,7 +5,7 @@
 
 import { expect } from "chai";
 
-import { OpenAPIInfo, BentleyCloudRpcManager } from "@bentley/imodeljs-common";
+import { OpenAPIInfo, BentleyCloudRpcManager, RpcConfiguration } from "@bentley/imodeljs-common";
 import { AccessToken } from "@bentley/itwin-client";
 import { NoRenderApp, IModelApp } from "@bentley/imodeljs-frontend";
 import { Logger, LogLevel, Config } from "@bentley/bentleyjs-core";
@@ -45,6 +45,7 @@ export class TestContext {
 
   /** Initialize configuration for the rpc interfaces used by the application. */
   private initializeRpcInterfaces(info: OpenAPIInfo) {
+    RpcConfiguration.disableRoutingValidation = true;
     // Url without trailing slash
     const uriPrefix: string = this.settings.Backend.location.replace(/\/$/, "");
     BentleyCloudRpcManager.initializeClient({ info, uriPrefix }, getRpcInterfaces(this.settings));

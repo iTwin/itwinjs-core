@@ -16,7 +16,7 @@ import {
   FontMap, FontMapProps, GeoCoordStatus, ImageSourceFormat, IModel, IModelConnectionProps, IModelError, IModelReadRpcInterface, IModelStatus, IModelRpcProps, IModelVersion, IModelWriteRpcInterface,
   MassPropertiesRequestProps, MassPropertiesResponseProps, ModelProps, ModelQueryParams, NativeAppRpcInterface, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus,
   RpcNotFoundResponse, RpcOperation, RpcRequest, RpcRequestEvent, SnapRequestProps, SnapResponseProps, SnapshotIModelRpcInterface, SubCategoryAppearance,
-  ThumbnailProps, TileTreeProps, ViewDefinitionProps, ViewQueryParams, WipRpcInterface,
+  ThumbnailProps, TileTreeProps, ViewDefinitionProps, ViewQueryParams, WipRpcInterface, RpcManager,
 } from "@bentley/imodeljs-common";
 import { EntityState } from "./EntityState";
 import { EventSource, EventSourceManager } from "./EventSource";
@@ -575,6 +575,7 @@ export class RemoteBriefcaseConnection extends BriefcaseConnection {
     requestContext.enter();
 
     const iModelRpcProps: IModelRpcProps = { key: "", contextId, iModelId, changeSetId, openMode }; // WIP: what is the right value for key?
+    RpcManager.setIModel(iModelRpcProps);
 
     const openResponse = await RemoteBriefcaseConnection.callOpen(requestContext, iModelRpcProps, openMode);
     requestContext.enter();
