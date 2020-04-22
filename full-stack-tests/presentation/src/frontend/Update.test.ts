@@ -29,8 +29,7 @@ describe("Update", () => {
     terminate();
   });
 
-  // NEEDS_WORK: Linux specific failure - temporarily skipped
-  describe.skip("on ruleset modification", async () => {
+  describe("on ruleset modification", async () => {
 
     const listener = sinon.spy();
 
