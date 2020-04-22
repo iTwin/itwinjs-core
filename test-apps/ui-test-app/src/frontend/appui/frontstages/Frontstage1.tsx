@@ -33,6 +33,27 @@ import { Toolbar, Direction } from "@bentley/ui-ninezone";
 import { AppTools } from "../../tools/ToolSpecifications";
 import { NestedFrontstage1 } from "./NestedFrontstage1";
 import { TableDemoWidgetControl } from "../widgets/TableDemoWidget";
+import { TimelineComponent } from "@bentley/ui-components";
+
+function SampleTimelineComponent() {
+  const duration = 20 * 1000;
+  const startDate = new Date(2014, 6, 6);
+  const endDate = new Date(2016, 8, 12);
+
+  return (
+    <div>
+      <TimelineComponent
+        startDate={startDate}
+        endDate={endDate}
+        initialDuration={0}
+        totalDuration={duration}
+        minimized={true}
+        showDuration={true}
+        alwaysMinimized={true}
+      />
+    </div>
+  );
+}
 
 export class Frontstage1 extends FrontstageProvider {
   private _topMostPanel = {
@@ -60,7 +81,7 @@ export class Frontstage1 extends FrontstageProvider {
 
   private _bottomPanel = {
     widgets: [
-      <Widget element={<h2>Bottom panel</h2>} />,
+      <Widget element={<SampleTimelineComponent />} />,
     ],
   };
 
@@ -241,8 +262,12 @@ class FrontstageToolWidget extends React.Component {
           <GroupButton
             labelKey="SampleApp:buttons.anotherGroup"
             iconSpec="icon-placeholder"
-            items={[AppTools.tool1, AppTools.tool2, AppTools.item3, AppTools.item4, AppTools.item5,
-              AppTools.item6, AppTools.item7, AppTools.item8]}
+            items={
+              [
+                AppTools.tool1, AppTools.tool2, AppTools.item3, AppTools.item4, AppTools.item5,
+                AppTools.item6, AppTools.item7, AppTools.item8,
+              ]
+            }
           />
         </>
       }
