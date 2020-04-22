@@ -16,7 +16,7 @@ import {
   FontMap, FontMapProps, GeoCoordStatus, ImageSourceFormat, IModel, IModelConnectionProps, IModelError, IModelReadRpcInterface, IModelStatus, IModelRpcProps, IModelVersion, IModelWriteRpcInterface,
   MassPropertiesRequestProps, MassPropertiesResponseProps, ModelProps, ModelQueryParams, NativeAppRpcInterface, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus,
   RpcNotFoundResponse, RpcOperation, RpcRequest, RpcRequestEvent, SnapRequestProps, SnapResponseProps, SnapshotIModelRpcInterface, SubCategoryAppearance,
-  ThumbnailProps, TileTreeProps, ViewDefinitionProps, ViewQueryParams, WipRpcInterface,
+  ThumbnailProps, TileTreeProps, ViewDefinitionProps, ViewQueryParams, WipRpcInterface, RpcManager,
 } from "@bentley/imodeljs-common";
 import { EntityState } from "./EntityState";
 import { EventSource, EventSourceManager } from "./EventSource";
@@ -575,6 +575,7 @@ export class RemoteBriefcaseConnection extends BriefcaseConnection {
     requestContext.enter();
 
     const iModelRpcProps: IModelRpcProps = { key: "", contextId, iModelId, changeSetId, openMode }; // WIP: what is the right value for key?
+    RpcManager.setIModel(iModelRpcProps);
 
     const openResponse = await RemoteBriefcaseConnection.callOpen(requestContext, iModelRpcProps, openMode);
     requestContext.enter();
@@ -684,7 +685,7 @@ export class RemoteBriefcaseConnection extends BriefcaseConnection {
   }
 
   /** Close this RemoteBriefcaseConnection
-   * In the case of ReadWrite connections ensure all changes are pushed to the iModelHub before making this call -
+   * In the case of ReadWrite connections ensure all changes are pushed to iModelHub before making this call -
    * any un-pushed changes are lost after the close.
    */
   public async close(): Promise<void> {
@@ -738,7 +739,7 @@ export class LocalBriefcaseConnection extends BriefcaseConnection {
   }
 
   /** Close this LocalBriefcaseConnection
-   * In the case of ReadWrite connections ensure all changes are pushed to the iModelHub before making this call -
+   * In the case of ReadWrite connections ensure all changes are pushed to iModelHub before making this call -
    * any un-pushed changes are lost after the close.
    */
   public async close(): Promise<void> {

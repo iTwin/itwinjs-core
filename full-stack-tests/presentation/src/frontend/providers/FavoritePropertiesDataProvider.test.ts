@@ -29,7 +29,7 @@ describe("FavoritePropertiesDataProvider", async () => {
 
   after(async () => {
     await imodel.close();
-    terminate();
+    await terminate();
   });
 
   afterEach(async () => {

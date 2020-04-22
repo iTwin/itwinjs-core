@@ -47,10 +47,10 @@ import { SelectionScopesHelper } from "../presentation-backend/SelectionScopesHe
 
 describe("PresentationManager", () => {
 
-  beforeEach(() => {
-    IModelHost.shutdown();
+  beforeEach(async () => {
+    await IModelHost.shutdown();
     try {
-      IModelHost.startup();
+      await IModelHost.startup();
     } catch (e) {
       let isLoaded = false;
       try {

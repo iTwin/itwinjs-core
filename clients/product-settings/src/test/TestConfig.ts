@@ -36,8 +36,8 @@ export class TestConfig {
   }
 
   public static async queryProject(requestContext: AuthorizedClientRequestContext, projectName: string): Promise<Project> {
-    const connectClient = new ContextRegistryClient();
-    const project: Project | undefined = await connectClient.getProject(requestContext, {
+    const contextRegistry = new ContextRegistryClient();
+    const project: Project | undefined = await contextRegistry.getProject(requestContext, {
       $select: "*",
       $filter: `Name+eq+'${projectName}'`,
     });

@@ -27,7 +27,7 @@ import {
   PresentationManagerProps as PresentationFrontendProps,
 } from "@bentley/presentation-frontend";
 
-import { AgentAuthorizationClientConfiguration, AgentAuthorizationClient } from "@bentley/imodeljs-clients-backend";
+import { AgentAuthorizationClientConfiguration, AgentAuthorizationClient } from "@bentley/backend-itwin-client";
 
 function initializeRpcInterfaces(interfaces: RpcInterfaceDefinition[]) {
   const config = class extends RpcDefaultConfiguration {
@@ -81,7 +81,7 @@ export const initialize = async (props?: PresentationTestingInitProps) => {
   props.backendProps = props.backendProps ?? {};
   if (!props.backendProps.id)
     props.backendProps.id = `test-${Guid.createValue()}`;
-  IModelHost.startup();
+  await IModelHost.startup();
   PresentationBackend.initialize(props.backendProps);
 
   // set up rpc interfaces
@@ -118,7 +118,7 @@ export const initialize = async (props?: PresentationTestingInitProps) => {
  *
  * @public
  */
-export const terminate = (frontendApp = IModelApp) => {
+export const terminate = async (frontendApp = IModelApp) => {
   if (!isInitialized)
     return;
 
@@ -128,7 +128,7 @@ export const terminate = (frontendApp = IModelApp) => {
 
   // terminate backend
   PresentationBackend.terminate();
-  IModelHost.shutdown();
+  await IModelHost.shutdown();
   if (tempDirectory)
     rimraf.sync(tempDirectory);
 

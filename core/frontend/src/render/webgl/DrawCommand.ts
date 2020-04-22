@@ -250,61 +250,37 @@ export type DrawCommand = PushCommand | PopCommand | PrimitiveCommand;
  */
 export type DrawCommands = DrawCommand[];
 
-export function extractFlashedVolumeClassifierCommands(flashedId: Id64String, cmds: DrawCommands): DrawCommands | undefined {
+/** Extracts the commands for rendering the flashed classifier (if any) from the by-index set of volume classifier commands.
+ * NB: Cmds will be sets of some pushes, a primitive, and then some pops (equal to number of pushes).
+ * The primitive should be right in the middle of a set.  We need to find the set which matches the flashID.
+ * @internal
+ */
+export function extractFlashedVolumeClassifierCommands(flashedId: Id64String, cmds: DrawCommands, numCmdsPerClassifier: number): DrawCommands | undefined {
   if (!Id64.isValid(flashedId))
     return undefined;
 
-  // NB: Cmds are known to be organized in groups of 5: push branch, push batch, primitive, pop batch, pop branch
-  let pushBranch: PushBranchCommand | undefined;
-  let pushBatch: PushBatchCommand | undefined;
-  for (const cmd of cmds) {
-    switch (cmd.opcode) {
-      case "pushBranch":
-        assert(undefined === pushBranch);
-        pushBranch = cmd;
-        break;
-      case "popBranch":
-        assert(undefined !== pushBranch);
-        pushBranch = undefined;
-        break;
-      case "pushBatch":
-        if (undefined !== pushBranch) {
-          assert(undefined === pushBatch);
-          pushBatch = cmd;
-        }
-
-        break;
-      case "popBatch":
-        if (undefined !== pushBatch) {
-          assert(undefined !== pushBranch);
-          pushBatch = undefined;
-        }
-
-        break;
-      case "drawPrimitive":
-        if (undefined !== pushBranch && undefined !== pushBatch) {
-          const surface = cmd.primitive.cachedGeometry.asSurface;
-          if (undefined !== surface && undefined !== surface.mesh.uniformFeatureId) {
-            const elemId = pushBatch.batch.featureTable.findElementId(surface.mesh.uniformFeatureId);
-            if (undefined !== elemId && elemId === flashedId) {
-              return [
-                pushBranch,
-                pushBatch,
-                cmd,
-                PopBatchCommand.instance,
-                PopBranchCommand.instance,
-              ];
-            }
-          }
-        }
-
-        break;
+  const firstPrim = (numCmdsPerClassifier - 1) / 2;
+  for (let i = firstPrim; i < cmds.length; i += numCmdsPerClassifier) {
+    assert("drawPrimitive" === cmds[i].opcode, "Command list not configured as expected.");
+    const pc: PrimitiveCommand = cmds[i] as PrimitiveCommand;
+    const surface = pc.primitive.cachedGeometry.asSurface;
+    if (undefined !== surface && undefined !== surface.mesh.uniformFeatureId) {
+      let j = i - 1;
+      while (j >= 0 && "pushBatch" !== cmds[j].opcode) // Find batch for this primitive
+        j--;
+      if (j < 0) continue;
+      const pushBatch = cmds[j] as PushBatchCommand;
+      const elemId = pushBatch.batch.featureTable.findElementId(surface.mesh.uniformFeatureId);
+      if (undefined !== elemId && elemId === flashedId) {
+        return cmds.slice(i - firstPrim, i + firstPrim + 1);
+      }
     }
   }
 
   return undefined;
 }
 
+/** @internal */
 export function extractHilitedVolumeClassifierCommands(hilites: Hilites, cmds: DrawCommands): DrawCommands {
   // TODO: This could really be done at the time the HiliteClassification render pass commands are being generated
   //       by just not putting the ones which are not hilited into the ClassificationHilite command list.
@@ -313,8 +289,18 @@ export function extractHilitedVolumeClassifierCommands(hilites: Hilites, cmds: D
   let batch;
   for (const cmd of cmds) {
     switch (cmd.opcode) {
+      case "popBranch":
+        if (result.length > 0 && "pushBranch" === result[result.length - 1].opcode) {
+          result.pop(); // remove empty push/pop pairs
+          continue;
+        }
+        break;
       case "popBatch":
         batch = undefined;
+        if (result.length > 0 && "pushBatch" === result[result.length - 1].opcode) {
+          result.pop(); // remove empty push/pop pairs
+          continue;
+        }
         break;
       case "pushBatch":
         batch = cmd.batch;

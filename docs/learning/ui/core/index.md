@@ -1,6 +1,7 @@
 # The ui-core package
 
-The `@bentley/ui-core` package contains general purpose React components, such as Button, ContextMenu, Dialog, MessageBox, SearchBox, RadialMenu and SplitButton. It also contains various input components, such as Input, Radio, Checkbox, NumericInput, Select, Slider and Toggle, and components for styled text.
+The `@bentley/ui-core` package contains general purpose React components, such as Button, ContextMenu, Dialog, MessageBox, SearchBox, RadialMenu and SplitButton.
+It also contains various input components, such as Input, Radio, Checkbox, NumericInput, Select, Slider and Toggle, and components for styled text.
 
 ## Topics
 
@@ -15,7 +16,7 @@ The `@bentley/ui-core` package contains general purpose React components, such a
 * [Expandable](./Expandable.md) - Components for working with a ExpandableBlock or ExpandableList.
 * [Form](./Form.md) - Components used to create a Form using supplied properties to specify fields.
 * [Icon](./Icon.md) - Components that render icons when given an icon name or SVG source or path.
-* [Inputs](./Inputs.md) - Components for working with input controls, such as Input, Radio, Checkbox, Select, Slider and Toggle.
+* [Inputs](./Inputs.md) - Components for working with input controls, such as Input, IconInput, NumericInput and Textarea.
 * [Loading](./Loading.md) - Components for working with Loading spinner and progress indicator.
 * [Popup](./Popup.md) - Components for working with a Popup.
 * [RadialMenu](./RadialMenu.md) - Components for working with a RadialMenu.

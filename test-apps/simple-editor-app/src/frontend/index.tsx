@@ -10,10 +10,10 @@ import { Id64String, OpenMode, Logger, LogLevel, isElectronRenderer, ClientReque
 import { AccessToken } from "@bentley/itwin-client";
 import {
   BrowserAuthorizationCallbackHandler, BrowserAuthorizationClientConfiguration,
-  BrowserAuthorizationClient, isBrowserAuthorizationClient, FrontendAuthorizationClient,
+  BrowserAuthorizationClient, isFrontendAuthorizationClient, FrontendAuthorizationClient,
 } from "@bentley/frontend-authorization-client";
 import {
-  RpcConfiguration, RpcOperation, IModelRpcProps, ElectronRpcManager,
+  RpcConfiguration, ElectronRpcManager,
   BentleyCloudRpcManager, DesktopAuthorizationClientConfiguration,
 } from "@bentley/imodeljs-common";
 import {
@@ -59,17 +59,12 @@ import { ActiveSettingsManager } from "./api/ActiveSettingsManager";
 
 // Initialize my application gateway configuration for the frontend
 RpcConfiguration.developmentMode = true;
-let rpcConfiguration: RpcConfiguration;
 const rpcInterfaces = getSupportedRpcs();
-if (isElectronRenderer)
-  rpcConfiguration = ElectronRpcManager.initializeClient({}, rpcInterfaces);
-else
-  rpcConfiguration = BentleyCloudRpcManager.initializeClient({ info: { title: "simple-editor-app", version: "v1.0" }, uriPrefix: "http://localhost:3001" }, rpcInterfaces);
-
-const testToken: IModelRpcProps = { key: "test", contextId: "test", iModelId: "test", changeSetId: "test", openMode: OpenMode.Readonly };
-// WIP: WebAppRpcProtocol seems to require an IModelRpcProps for every RPC request
-for (const definition of rpcConfiguration.interfaces())
-  RpcOperation.forEach(definition, (operation) => operation.policy.token = (request) => (request.findTokenPropsParameter() || testToken));
+if (isElectronRenderer) {
+  ElectronRpcManager.initializeClient({}, rpcInterfaces);
+} else {
+  BentleyCloudRpcManager.initializeClient({ info: { title: "simple-editor-app", version: "v1.0" }, uriPrefix: "http://localhost:3001" }, rpcInterfaces);
+}
 
 // cSpell:ignore setTestProperty sampleapp uitestapp setisimodellocal projectwise
 /** Action Ids used by redux and to send sync UI components. Typically used to refresh visibility or enable state of control.
@@ -501,13 +496,13 @@ export class SampleAppViewer extends React.Component<any> {
 
   public componentDidMount() {
     const oidcClient = IModelApp.authorizationClient;
-    if (isBrowserAuthorizationClient(oidcClient))
+    if (isFrontendAuthorizationClient(oidcClient))
       oidcClient.onUserStateChanged.addListener(this._onUserStateChanged);
   }
 
   public componentWillUnmount() {
     const oidcClient = IModelApp.authorizationClient;
-    if (isBrowserAuthorizationClient(oidcClient))
+    if (isFrontendAuthorizationClient(oidcClient))
       oidcClient.onUserStateChanged.removeListener(this._onUserStateChanged);
   }
 

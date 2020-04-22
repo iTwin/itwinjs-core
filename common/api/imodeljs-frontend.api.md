@@ -2599,8 +2599,8 @@ export abstract class Extension {
     set loader(loader: ExtensionLoader | undefined);
     // (undocumented)
     name: string;
-    abstract onExecute(_args: string[]): void;
-    onLoad(_args: string[]): void;
+    abstract onExecute(_args: string[]): Promise<void>;
+    onLoad(_args: string[]): Promise<void>;
     reportReload(): boolean;
     resolveResourceUrl(relativeUrl: string): string;
     setI18n(defaultNamespace?: string, options?: I18NOptions): void;
@@ -2613,7 +2613,6 @@ export class ExtensionAdmin {
     // @internal (undocumented)
     addPendingExtension(extensionRootName: string, pendingExtension: PendingExtension): void;
     loadExtension(extensionRoot: string, extensionVersion?: string, args?: string[]): Promise<Extension | undefined>;
-    // (undocumented)
     readonly onExtensionLoaded: BeEvent<(extensionName: string) => void>;
     onInitialized(): void;
     register(extension: Extension): void;
@@ -2621,7 +2620,7 @@ export class ExtensionAdmin {
 
 // @beta
 export interface ExtensionAdminProps {
-    loadProductStartupExtensions?: boolean;
+    configureExtensionServiceLoader?: boolean;
 }
 
 // @beta
@@ -2852,10 +2851,10 @@ export class FeatureTrackingManager {
 }
 
 // @alpha
-export function findAvailableRealityModels(projectid: string, modelCartographicRange?: CartographicRange | undefined): Promise<ContextRealityModelProps[]>;
+export function findAvailableRealityModels(contextId: GuidString, modelCartographicRange?: CartographicRange | undefined): Promise<ContextRealityModelProps[]>;
 
 // @alpha
-export function findAvailableUnattachedRealityModels(projectid: string, iModel?: IModelConnection, modelCartographicRange?: CartographicRange | undefined): Promise<ContextRealityModelProps[]>;
+export function findAvailableUnattachedRealityModels(contextId: GuidString, iModel?: IModelConnection, modelCartographicRange?: CartographicRange | undefined): Promise<ContextRealityModelProps[]>;
 
 // @public
 export class FitViewTool extends ViewTool {

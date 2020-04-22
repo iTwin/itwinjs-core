@@ -332,7 +332,7 @@ export class IModelHost {
    * Raises [[onAfterStartup]].
    * @see [[shutdown]].
    */
-  public static startup(configuration: IModelHostConfiguration = new IModelHostConfiguration()) {
+  public static async startup(configuration: IModelHostConfiguration = new IModelHostConfiguration()): Promise<void> {
     if (IModelHost.configuration)
       throw new IModelError(BentleyStatus.ERROR, "startup may only be called once", Logger.logError, loggerCategory, () => (configuration));
 
@@ -417,7 +417,7 @@ export class IModelHost {
   }
 
   /** This method must be called when an iModel.js services is shut down. Raises [[onBeforeShutdown]] */
-  public static shutdown() {
+  public static async shutdown(): Promise<void> {
     if (!IModelHost.configuration)
       return;
     IModelHost.onBeforeShutdown.raiseEvent();

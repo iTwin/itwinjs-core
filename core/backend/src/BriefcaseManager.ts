@@ -11,7 +11,7 @@ import {
   CheckpointQuery, Checkpoint, BriefcaseQuery, ChangeSetQuery, ConflictingCodesError, IModelClient, HubIModel, IModelBankClient,
 } from "@bentley/imodelhub-client";
 import { AuthorizedClientRequestContext, CancelRequest, ProgressCallback, UserCancelledError } from "@bentley/itwin-client";
-import { AzureFileHandler, IOSAzureFileHandler } from "@bentley/imodeljs-clients-backend";
+import { AzureFileHandler, IOSAzureFileHandler } from "@bentley/backend-itwin-client";
 import {
   ChangeSetApplyOption, BeEvent, DbResult, OpenMode, assert, Logger, ChangeSetStatus,
   BentleyStatus, IModelHubStatus, PerfLogger, GuidString, Id64, IModelStatus, AsyncMutex, BeDuration,
@@ -28,8 +28,7 @@ import * as glob from "glob";
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
-/** The Id assigned to a briefcase by iModelHub or one of the special reserved values that identify special kinds of iModels.
- * @see [[ReservedBriefcaseId]]
+/** The Id assigned to a briefcase by iModelHub, or a [[BriefcaseIdValue]] that identify special kinds of iModels.
  * @public
  */
 export type BriefcaseId = number;
@@ -38,30 +37,24 @@ export type BriefcaseId = number;
  * @see [[BriefcaseId]]
  * @public
  */
-export enum ReservedBriefcaseId {
+export enum BriefcaseIdValue {
   /** Indicates an invalid/illegal BriefcaseId */
   Illegal = 0xffffffff,
 
-  /** BriefcaseIds must be less than this value
-   * @internal
-   */
+  /** BriefcaseIds must be less than this value */
   Max = 1 << 24,
 
-  /** All BriefcaseIds of this value or higher are reserved
-   * @internal
-   */
-  FirstReserved = ReservedBriefcaseId.Max - 10,
+  /** All valid iModelHub issued BriefcaseIds will be equal or higher than this */
+  FirstValid = 2,
 
-  /** BriefcaseId for a single-practitioner standalone iModel.
-   * @internal
-   */
-  Standalone = ReservedBriefcaseId.Max - 2,
+  /** All valid iModelHub issued BriefcaseIds will be equal or lower than this */
+  LastValid = BriefcaseIdValue.Max - 11,
 
-  /** A snapshot iModel is read-only once created. They are used for archival and data transfer purposes. */
-  Snapshot = 1,
+  /** a Standalone briefcase */
+  Standalone = 0,
 
-  /** A checkpoint snapshot iModel is a snapshot that represents a point on an iModelHub timeline. */
-  CheckpointSnapshot = 0,
+  /** @internal */
+  DeprecatedStandalone = 1,
 }
 
 /**
@@ -130,7 +123,7 @@ export class BriefcaseEntry {
   private _nativeDb!: IModelJsNative.DgnDb;
   public get nativeDb(): IModelJsNative.DgnDb { return this._nativeDb; }
 
-  /** Operations allowed when synchronizing changes between the Briefcase and the iModelHub */
+  /** Operations allowed when synchronizing changes between the Briefcase and iModelHub */
   public syncMode: SyncMode;
 
   /** Mode used to open the briefcase */
@@ -387,7 +380,7 @@ export class BriefcaseManager {
   private static _contextRegistryClient?: ContextRegistryClient;
 
   /**
-   * Connect client to be used for all briefcase operations
+   * Client to be used for all briefcase operations
    * @internal
    */
   public static get connectClient(): ContextRegistryClient {
@@ -485,15 +478,15 @@ export class BriefcaseManager {
           }));
         }
         // Validate that the briefcase id is set to standalone
-        if (briefcaseId !== ReservedBriefcaseId.CheckpointSnapshot) {
-          throw new IModelError(BentleyStatus.ERROR, "BriefcaseManager.initializeBriefcaseOfline: The briefcase found does not have the expected legacy standalone briefcaseId", Logger.logError, loggerCategory, () => ({
+        if (briefcaseId !== BriefcaseIdValue.Standalone) {
+          throw new IModelError(BentleyStatus.ERROR, "BriefcaseManager.initializeBriefcaseOfline: The briefcase found is not valid", Logger.logError, loggerCategory, () => ({
             pathname: bcPathname, syncMode, briefcaseId,
           }));
         }
       } else {
         // Validate that the sub directory name matches the briefcaseId stored in the db
         if (briefcaseId !== +bcSubDir) {
-          throw new IModelError(BentleyStatus.ERROR, "BriefcaseManager.initializeBriefcaseOffline: The briefcase found doesn't have the expected briefcaseId", Logger.logError, loggerCategory, () => ({
+          throw new IModelError(BentleyStatus.ERROR, "BriefcaseManager.initializeBriefcaseOffline: The briefcase doesn't have the expected briefcaseId", Logger.logError, loggerCategory, () => ({
             pathname: bcPathname, syncMode, briefcaseId, briefcaseSubDir: bcSubDir,
           }));
         }
@@ -562,7 +555,7 @@ export class BriefcaseManager {
     const pathname = this.buildFixedVersionBriefcasePath(iModelId, changeSetId);
     if (!IModelJsFs.existsSync(pathname))
       return;
-    const briefcase = this.initializeBriefcase(requestContext, requestBriefcaseProps, downloadOptions, pathname, ReservedBriefcaseId.CheckpointSnapshot);
+    const briefcase = this.initializeBriefcase(requestContext, requestBriefcaseProps, downloadOptions, pathname, BriefcaseIdValue.Standalone);
     return briefcase;
   }
 
@@ -610,7 +603,7 @@ export class BriefcaseManager {
       this._imodelClient = new IModelHubClient(new AzureFileHandler());
   }
 
-  private static setupConnectClient() {
+  private static setupContextRegistryClient() {
     BriefcaseManager._contextRegistryClient = new ContextRegistryClient();
   }
 
@@ -622,7 +615,7 @@ export class BriefcaseManager {
       return;
     this._imodelClient = iModelClient;
     BriefcaseManager.setupCacheDir(cacheRootDir);
-    BriefcaseManager.setupConnectClient();
+    BriefcaseManager.setupContextRegistryClient();
     IModelHost.onBeforeShutdown.addListener(BriefcaseManager.finalize);
     this._initialized = true;
   }
@@ -717,11 +710,10 @@ export class BriefcaseManager {
 
   private static _asyncMutex = new AsyncMutex();
 
-  /**
-   * Request downloading of a briefcase
+  /** Request downloading of a briefcase
    * @return Information on the downloaded briefcase, and a promise that resolves when the download completes
    * @param requestContext The client request context.
-   * @param contextId Id of the Connect Project or Asset containing the iModel
+   * @param contextId Id of the iTwin Project or Asset containing the iModel
    * @param iModelId Id of the iModel
    * @param downloadOptions Options to affect the download of the briefcase
    * @param version Version of the iModel to open
@@ -1026,12 +1018,17 @@ export class BriefcaseManager {
       briefcase.reversedChangeSetIndex = undefined;
   }
 
-  private static isReservedBriefcaseId(id: BriefcaseId) {
-    return id <= ReservedBriefcaseId.Snapshot || id >= ReservedBriefcaseId.FirstReserved;
+  /** @internal */
+  public static isStandaloneBriefcaseId(id: BriefcaseId) {
+    return id == BriefcaseIdValue.Standalone || id == BriefcaseIdValue.DeprecatedStandalone;
+  }
+  /** @internal */
+  public static isValidBriefcaseId(id: BriefcaseId) {
+    return id >= BriefcaseIdValue.FirstValid && id <= BriefcaseIdValue.LastValid;
   }
 
   private static async initBriefcaseFileId(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseEntry) {
-    if (this.isReservedBriefcaseId(briefcase.briefcaseId)) // only possible to get fileId only for normal briefcases
+    if (!this.isValidBriefcaseId(briefcase.briefcaseId)) // only possible to get fileId only for normal briefcases
       return;
 
     const hubBriefcases: HubBriefcase[] = await BriefcaseManager.imodelClient.briefcases.get(requestContext, briefcase.iModelId, new BriefcaseQuery().byId(briefcase.briefcaseId));
@@ -1047,7 +1044,7 @@ export class BriefcaseManager {
     const openMode = OpenMode.Readonly;
 
     const pathname = this.buildFixedVersionBriefcasePath(iModelId, changeSetId);
-    const briefcase = new BriefcaseEntry(contextId, iModelId, changeSetId, pathname, syncMode, openMode, ReservedBriefcaseId.CheckpointSnapshot);
+    const briefcase = new BriefcaseEntry(contextId, iModelId, changeSetId, pathname, syncMode, openMode, BriefcaseIdValue.Standalone);
     briefcase.downloadProgress = downloadProgress;
 
     briefcase.downloadStatus = DownloadBriefcaseStatus.Initializing;

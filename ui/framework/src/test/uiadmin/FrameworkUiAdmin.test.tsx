@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 
-import { AbstractMenuItemProps, AbstractToolbarProps, RelativePosition } from "@bentley/ui-abstract";
+import { AbstractMenuItemProps, AbstractToolbarProps, RelativePosition, PropertyDescription } from "@bentley/ui-abstract";
 import { Point } from "@bentley/ui-core";
 
 import { FrameworkUiAdmin } from "../../ui-framework/uiadmin/FrameworkUiAdmin";
@@ -115,6 +115,17 @@ describe("FrameworkUiAdmin", () => {
 
     expect(uiAdmin.showHeightEditor(100, uiAdmin.createXAndY(150, 250), spyCommit, spyCancel, doc.documentElement)).to.be.true;
     expect(uiAdmin.showHeightEditor(100, uiAdmin.createXAndY(150, 250), spyCommit, spyCancel)).to.be.true;
+    expect(uiAdmin.hideInputEditor()).to.be.true;
+  });
+
+  it("showInputEditor should return false by default", () => {
+    const doc = new DOMParser().parseFromString("<div>xyz</div>", "text/html");
+    const spyCommit = sinon.fake();
+    const spyCancel = sinon.fake();
+    const propertyDescription: PropertyDescription = { name: "test", displayLabel: "Test", typename: "number" };
+
+    expect(uiAdmin.showInputEditor(100, propertyDescription, uiAdmin.createXAndY(150, 250), spyCommit, spyCancel, doc.documentElement)).to.be.true;
+    expect(uiAdmin.showInputEditor(100, propertyDescription, uiAdmin.createXAndY(150, 250), spyCommit, spyCancel)).to.be.true;
     expect(uiAdmin.hideInputEditor()).to.be.true;
   });
 

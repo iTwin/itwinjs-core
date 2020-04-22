@@ -9,7 +9,7 @@
 import * as React from "react";
 
 import { ClientRequestContext, isElectronRenderer } from "@bentley/bentleyjs-core";
-import { FrontendAuthorizationClient, isBrowserAuthorizationClient } from "@bentley/frontend-authorization-client";
+import { FrontendAuthorizationClient, isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { CommonProps } from "@bentley/ui-core";
 import { SignIn as SignInBase } from "@bentley/ui-components";
 import { UiFramework } from "../UiFramework";
@@ -46,7 +46,7 @@ export class SignIn extends React.PureComponent<SignInProps> {
 
   public componentDidMount() {
     const oidcClient = IModelApp.authorizationClient;
-    if (isBrowserAuthorizationClient(oidcClient))
+    if (isFrontendAuthorizationClient(oidcClient))
       this._oidcClient = oidcClient;
 
     // istanbul ignore next

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { ClientRequestContext, Config } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/itwin-client";
-import { AgentAuthorizationClient, AgentAuthorizationClientConfiguration } from "@bentley/imodeljs-clients-backend";
+import { AgentAuthorizationClient, AgentAuthorizationClientConfiguration } from "@bentley/backend-itwin-client";
 import { IModelVersion, MobileRpcConfiguration, SyncMode } from "@bentley/imodeljs-common";
 import { assert } from "chai";
 import { AuthorizedBackendRequestContext } from "../../imodeljs-backend";

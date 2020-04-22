@@ -27,7 +27,7 @@ describe("PropertyDataProvider", async () => {
 
   after(async () => {
     await imodel.close();
-    terminate();
+    await terminate();
   });
 
   it("creates empty result when properties requested for 0 instances", async () => {

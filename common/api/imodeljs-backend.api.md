@@ -462,15 +462,10 @@ export class BriefcaseDb extends IModelDb {
     static readonly onCreated: BeEvent<(_imodelDb: BriefcaseDb) => void>;
     static readonly onOpen: BeEvent<(_requestContext: AuthorizedClientRequestContext | ClientRequestContext, _briefcaseProps: BriefcaseProps) => void>;
     static readonly onOpened: BeEvent<(_requestContext: AuthorizedClientRequestContext | ClientRequestContext, _imodelDb: BriefcaseDb) => void>;
-    // @beta
     static open(requestContext: AuthorizedClientRequestContext | ClientRequestContext, briefcaseKey: BriefcaseKey, openOptions?: OpenBriefcaseOptions): Promise<BriefcaseDb>;
-    // @beta
     pullAndMergeChanges(requestContext: AuthorizedClientRequestContext, version?: IModelVersion): Promise<void>;
-    // @beta
     pushChanges(requestContext: AuthorizedClientRequestContext, description: string): Promise<void>;
-    // @beta
     reinstateChanges(requestContext: AuthorizedClientRequestContext, version?: IModelVersion): Promise<void>;
-    // @beta
     reverseChanges(requestContext: AuthorizedClientRequestContext, version?: IModelVersion): Promise<void>;
     saveChanges(description?: string): void;
     // @beta
@@ -2536,9 +2531,9 @@ export class IModelHost {
     // @internal
     static get restrictTileUrlsByClientIp(): boolean;
     static sessionId: GuidString;
-    static shutdown(): void;
+    static shutdown(): Promise<void>;
     static snapshotFileNameResolver?: FileNameResolver;
-    static startup(configuration?: IModelHostConfiguration): void;
+    static startup(configuration?: IModelHostConfiguration): Promise<void>;
     // @beta
     static tileCacheService: CloudStorageService;
     // @internal
@@ -3258,8 +3253,8 @@ export class NativeAppBackend {
     // (undocumented)
     static onInternetConnectivityChanged: BeEvent<(status: InternetConnectivityStatus) => void>;
     static overrideInternetConnectivity(_overridenBy: OverriddenBy, status?: InternetConnectivityStatus): void;
-    static shutdown(): void;
-    static startup(configuration?: IModelHostConfiguration): void;
+    static shutdown(): Promise<void>;
+    static startup(configuration?: IModelHostConfiguration): Promise<void>;
 }
 
 // @public @deprecated

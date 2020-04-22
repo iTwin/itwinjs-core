@@ -8,8 +8,8 @@ import { ContextRegistryClient, ContextRegistryRequestQueryOptions, Project } fr
 import { TestConfig } from "../TestConfig";
 
 chai.should();
-describe("ConnectClient (#integration)", () => {
-  const connectClient: ContextRegistryClient = new ContextRegistryClient();
+describe("ContextRegistryClient (#integration)", () => {
+  const contextRegistry: ContextRegistryClient = new ContextRegistryClient();
   let requestContext: AuthorizedClientRequestContext;
 
   before(async function () {
@@ -23,7 +23,7 @@ describe("ConnectClient (#integration)", () => {
       $top: 20,
     };
 
-    const projects: Project[] = await connectClient.getProjects(requestContext, queryOptions);
+    const projects: Project[] = await contextRegistry.getProjects(requestContext, queryOptions);
     chai.expect(projects.length).greaterThan(0);
   });
 
@@ -34,7 +34,7 @@ describe("ConnectClient (#integration)", () => {
       isMRU: true,
     };
 
-    const projects: Project[] = await connectClient.getProjects(requestContext, queryOptions);
+    const projects: Project[] = await contextRegistry.getProjects(requestContext, queryOptions);
     chai.expect(projects.length).greaterThan(0);
   });
 
@@ -45,7 +45,7 @@ describe("ConnectClient (#integration)", () => {
       isFavorite: true,
     };
 
-    const projects: Project[] = await connectClient.getProjects(requestContext, queryOptions);
+    const projects: Project[] = await contextRegistry.getProjects(requestContext, queryOptions);
     chai.expect(projects.length).to.be.greaterThan(0);
   });
 
@@ -54,12 +54,12 @@ describe("ConnectClient (#integration)", () => {
       $select: "*",
       $filter: "Name+eq+'" + TestConfig.projectName + "'",
     };
-    const project: Project = await connectClient.getProject(requestContext, queryOptions);
+    const project: Project = await contextRegistry.getProject(requestContext, queryOptions);
     chai.expect(project.name).equals(TestConfig.projectName);
   });
 
   it("should get a list of invited projects (#integration)", async () => {
-    const invitedProjects: Project[] = await connectClient.getInvitedProjects(requestContext);
+    const invitedProjects: Project[] = await contextRegistry.getInvitedProjects(requestContext);
     chai.expect(invitedProjects.length).greaterThan(0);
   });
 

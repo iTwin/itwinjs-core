@@ -25,7 +25,7 @@ export enum DownloadBriefcaseStatus {
   Error,
 }
 
-/** Operations allowed when synchronizing changes between the Briefcase and the iModelHub
+/** Operations allowed when synchronizing changes between the Briefcase and iModelHub
  * @public
  */
 export enum SyncMode { FixedVersion = 1, PullAndPush = 2, PullOnly = 3 }

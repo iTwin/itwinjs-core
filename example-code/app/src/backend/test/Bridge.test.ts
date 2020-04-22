@@ -81,7 +81,7 @@ async function createIModel(requestContext: AuthorizedClientRequestContext, proj
 // __PUBLISH_EXTRACT_START__ Bridge.firstTime.example-code
 async function runBridgeFirstTime(requestContext: AuthorizedClientRequestContext, iModelId: string, projectId: string, assetsDir: string) {
   // Start the IModelHost
-  IModelHost.startup();
+  await IModelHost.startup();
 
   requestContext.enter();
 
@@ -165,16 +165,16 @@ describe.skip("Bridge", async () => {
   let imodelRepository: HubIModel;
 
   before(async () => {
-    IModelHost.startup();
+    await IModelHost.startup();
     requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.superManager);
     testProjectId = (await queryProjectIdByName(requestContext, "iModelJsIntegrationTest")).wsgId;
     seedPathname = path.join(KnownTestLocations.assetsDir, "empty.bim");
     imodelRepository = await createIModel(requestContext, testProjectId, "BridgeTest", seedPathname);
-    IModelHost.shutdown();
+    await IModelHost.shutdown();
   });
 
-  afterEach(() => {
-    IModelHost.shutdown();
+  afterEach(async () => {
+    await IModelHost.shutdown();
   });
 
   it("should run bridge the first time", async () => {

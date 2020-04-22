@@ -27,7 +27,7 @@ describe("Unified Selection", () => {
 
   after(async () => {
     await imodel.close();
-    terminate();
+    await terminate();
   });
 
   describe("Hiliting selection", () => {

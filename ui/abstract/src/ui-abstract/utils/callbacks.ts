@@ -6,10 +6,17 @@
  * @module Utilities
  */
 
+import { Primitives } from "../properties/PrimitiveTypes";
+
 /** Signature for number onCommit function.
  * @beta
  */
 export type OnNumberCommitFunc = (value: number) => void;
+
+/** Signature for value onCommit function.
+ * @beta
+ */
+export type OnValueCommitFunc = (value: Primitives.Value) => void;
 
 /** Signature for onCancel function.
  * @beta

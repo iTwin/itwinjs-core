@@ -12,26 +12,26 @@ import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 import { initializeLogging, setupSnapshotConfiguration } from "./web/BackendServer";
 import { Config } from "@bentley/bentleyjs-core";
 
-IModelJsConfig.init(true /*suppress error*/, true /* suppress message */, Config.App);
-
-if (!electron) {
-  initializeLogging();
-  setupSnapshotConfiguration();
-}
-
-// initialize imodeljs-backend
-IModelHost.startup();
-
-// initialize presentation-backend
-Presentation.initialize({
-  // Specify location of where application's presentation rule sets are located.
-  // May be omitted if application doesn't have any presentation rules.
-  rulesetDirectories: [path.join("assets", "presentation_rules")],
-  enableSchemasPreload: true,
-});
-
-// invoke platform-specific initialization
 (async () => { // tslint:disable-line:no-floating-promises
+  IModelJsConfig.init(true /*suppress error*/, true /* suppress message */, Config.App);
+
+  if (!electron) {
+    initializeLogging();
+    setupSnapshotConfiguration();
+  }
+
+  // initialize imodeljs-backend
+  await IModelHost.startup();
+
+  // initialize presentation-backend
+  Presentation.initialize({
+    // Specify location of where application's presentation rule sets are located.
+    // May be omitted if application doesn't have any presentation rules.
+    rulesetDirectories: [path.join("assets", "presentation_rules")],
+    enableSchemasPreload: true,
+  });
+
+  // invoke platform-specific initialization
   // get platform-specific initialization function
   let init: (rpcs: RpcInterfaceDefinition[]) => void;
   if (electron) {

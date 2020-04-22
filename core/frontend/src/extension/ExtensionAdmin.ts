@@ -7,7 +7,6 @@
  */
 
 import { Logger, BeEvent } from "@bentley/bentleyjs-core";
-import { IModelApp } from "../IModelApp";
 import { PendingExtension, Extension, ExtensionLoader, loggerCategory } from "./Extension";
 import { ExtensionServiceExtensionLoader } from "./loaders/ExtensionServiceExtensionLoader";
 
@@ -16,13 +15,13 @@ import { ExtensionServiceExtensionLoader } from "./loaders/ExtensionServiceExten
  * @beta
  */
 export interface ExtensionAdminProps {
-  /** Whether or not to load Extensions from the Product Setting Service on the initialization of the ExtensionAdmin.
+  /** Whether or not to configure Extension Service by default.
    *
-   * Requires the `product-setting-service` OIDC scope.
+   * Requires the `imodel-extension-service-api` OIDC scope.
    *
    * @beta
    */
-  loadProductStartupExtensions?: boolean;
+  configureExtensionServiceLoader?: boolean;
 }
 
 interface PriorityLoaderPair {
@@ -39,28 +38,25 @@ interface PriorityLoaderPair {
  */
 export class ExtensionAdmin {
   private _extensionAdminProps?: ExtensionAdminProps;
-  // private _bentleyExtensionServiceLoaderAdded: boolean = false;
   private _extensionLoaders: PriorityLoaderPair[] = [];
   private _pendingExtensions: Map<string, PendingExtension> = new Map<string, PendingExtension>();
   private _registeredExtensions: Map<string, Extension> = new Map<string, Extension>();
-  private _viewStartupExtensionsLoaded: boolean = false;
 
+  /**
+   * Fired when an extension has finished loading and is ready to use.
+   */
   public readonly onExtensionLoaded = new BeEvent<(extensionName: string) => void>();
 
   public constructor(props?: ExtensionAdminProps) {
     this._extensionAdminProps = props;
   }
 
-  /** On view startup, [[IModelApp.viewManager.onViewOpen]], any saved extensions will be loaded.
+  /** On view startup, [[IModelApp.viewManager.onViewOpen]], [[ExtensionAdmin]] will be setup according to the provided [[ExtensionAdminProps]].
    * @beta
    */
   public onInitialized() {
-    if (this._extensionAdminProps && this._extensionAdminProps.loadProductStartupExtensions)
-      IModelApp.viewManager.onViewOpen.addOnce(this.loadViewStartupExtensions.bind(this));
-
-    // TODO: find default context id
-    // TODO: Only load when specified, this should be the default
-    this.addExtensionLoader(new ExtensionServiceExtensionLoader("00000000-0000-0000-0000-000000000000"), 100);
+    if (this._extensionAdminProps && this._extensionAdminProps.configureExtensionServiceLoader)
+      this.addExtensionLoader(new ExtensionServiceExtensionLoader("00000000-0000-0000-0000-000000000000"), 100);
   }
 
   /** @internal */
@@ -86,9 +82,11 @@ export class ExtensionAdmin {
 
   /**
    * Loads an Extension using one of the available [[ExtensionLoader]]s that are registered on the [[ExtensionAdmin]].
+   * If the Extension has already been loaded, [[Extension.onExecute]] will be called instead.
    * @param extensionRoot the root name of the Extension to be loaded from the web server.
    * @param extensionVersion the version of the Extension to be loaded
-   * @param args arguments that will be passed to the Extension.onLoaded and Extension.onExecute methods. If the first argument is not the extension name, the extension name will be prepended to the args array.
+   * @param args arguments that will be passed to the [[Extension.onLoaded]] and [[Extension.onExecute]] methods. If the first argument is not the extension name, the extension name will be prepended to the args array.
+   * @returns Promise that resolves to an Extension as soon as the extension has started loading. Note that this does not mean the extension is ready to use, see [[ExtensionAdmin.onExtensionLoaded]] instead.
    */
   public async loadExtension(extensionRoot: string, extensionVersion?: string, args?: string[]): Promise<Extension | undefined> {
     for (const loaderPriorityPair of this._extensionLoaders) {
@@ -109,7 +107,13 @@ export class ExtensionAdmin {
         const registeredExtension = this._registeredExtensions.get(extensionNameLC);
         if (registeredExtension) {
           // extension is already loaded.
-          registeredExtension.onExecute(args);
+          try {
+            await registeredExtension.onExecute(args);
+          } catch (err) {
+            if (err instanceof Error) {
+              Logger.logError(loggerCategory, err.message);
+            }
+          }
           if (!registeredExtension.reportReload())
             return undefined;
         }
@@ -150,25 +154,16 @@ export class ExtensionAdmin {
 
     if (!args)
       args = [extension.name];
-    extension.onLoad(args);
-    extension.onExecute(args);
 
-    this.onExtensionLoaded.raiseEvent(extension.name);
-  }
-
-  /** @internal */
-  private async loadViewStartupExtensions(): Promise<void> {
-    if (this._viewStartupExtensionsLoaded)
-      return;
-    if (!IModelApp.authorizationClient)
-      return;
-    const accessToken = await IModelApp.authorizationClient!.getAccessToken();
-    if (!accessToken)
-      return;
-    this._viewStartupExtensionsLoaded = true;
-    // const requestContext = new AuthorizedClientRequestContext(accessToken, "loadStartupExtension");
-    // load user/app specific extensions.
-    // const extensionsLoadResults: LoadSavedExtensionsResult = await this.loadSavedExtensions(requestContext, "StartViewExtensions");
-    // extensionsLoadResults.report();
+    extension.onLoad(args)
+      .then(async () => {
+        await extension.onExecute(args!);
+        this.onExtensionLoaded.raiseEvent(extension.name);
+      })
+      .catch((err) => {
+        if (err instanceof Error) {
+          Logger.logError(loggerCategory, err.message);
+        }
+      });
   }
 }

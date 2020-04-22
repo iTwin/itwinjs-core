@@ -153,21 +153,20 @@ export class HyperModelingExtension extends Extension {
   public static extension: HyperModelingExtension | undefined;
 
   /** Invoked the first time this extension is loaded. */
-  public onLoad(_args: string[]): void {
+  public async onLoad(_args: string[]): Promise<void> {
     HyperModelingExtension.extension = this; // store the extension.
     this._i18NNamespace = this.i18n.registerNamespace("HyperModeling");
-    this._i18NNamespace!.readFinished.then(() => {
-      IModelApp.tools.register(SectionMarkerDisplayTool, this._i18NNamespace, this.i18n);
-      IModelApp.tools.register(SectionMarkerFilterCategoryTool, this._i18NNamespace, this.i18n);
-      IModelApp.tools.register(SectionMarkerFilterSectionTypeTool, this._i18NNamespace, this.i18n);
-      IModelApp.tools.register(SectionMarkerFilterDetailTypeTool, this._i18NNamespace, this.i18n);
-      IModelApp.tools.register(SectionMarkerFilterElevationTypeTool, this._i18NNamespace, this.i18n);
-      IModelApp.tools.register(SectionMarkerFilterPlanTypeTool, this._i18NNamespace, this.i18n);
-    }).catch(() => { });
+    await this._i18NNamespace!.readFinished;
+    IModelApp.tools.register(SectionMarkerDisplayTool, this._i18NNamespace, this.i18n);
+    IModelApp.tools.register(SectionMarkerFilterCategoryTool, this._i18NNamespace, this.i18n);
+    IModelApp.tools.register(SectionMarkerFilterSectionTypeTool, this._i18NNamespace, this.i18n);
+    IModelApp.tools.register(SectionMarkerFilterDetailTypeTool, this._i18NNamespace, this.i18n);
+    IModelApp.tools.register(SectionMarkerFilterElevationTypeTool, this._i18NNamespace, this.i18n);
+    IModelApp.tools.register(SectionMarkerFilterPlanTypeTool, this._i18NNamespace, this.i18n);
   }
 
   /** Invoked each time this extension is loaded. */
-  public onExecute(args: string[]): void {
+  public async onExecute(args: string[]): Promise<void> {
     if (args.length < 2)
       return; // if no "optional" args passed in, don't do anything. NOTE: args[0] is extension name...
 

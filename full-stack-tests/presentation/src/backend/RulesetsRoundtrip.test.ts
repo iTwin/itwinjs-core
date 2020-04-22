@@ -33,9 +33,9 @@ describe("Rulesets roundtrip", () => {
     rulesets = new RulesetManagerImpl(() => nativePlatform);
   });
 
-  after(() => {
+  after(async () => {
     nativePlatform.dispose();
-    terminate();
+    await terminate();
   });
 
   const getRoundtripRuleset = async (sourceRuleset: Ruleset): Promise<Ruleset> => {

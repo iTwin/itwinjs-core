@@ -15,7 +15,7 @@ import {
 import * as fs from "fs";
 import * as path from "path";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
-import { UrlFileHandler } from "@bentley/imodeljs-clients-backend";
+import { UrlFileHandler } from "@bentley/backend-itwin-client";
 import { SVTConfiguration } from "../common/SVTConfiguration";
 import "./SVTRpcImpl"; // just to get the RPC implementation registered
 import SVTRpcInterface from "../common/SVTRpcInterface";
@@ -122,7 +122,7 @@ function setupStandaloneConfiguration(): SVTConfiguration {
   return configuration;
 }
 
-export function initializeBackend() {
+export async function initializeBackend(): Promise<void> {
   const svtConfig = setupStandaloneConfiguration();
 
   const hostConfig = new IModelHostConfiguration();
@@ -144,7 +144,7 @@ export function initializeBackend() {
       logLevel = Logger.parseLogLevel(logLevelEnv);
   }
 
-  IModelHost.startup(hostConfig);
+  await IModelHost.startup(hostConfig);
 
   // Set up logging (by default, no logging is enabled)
   Logger.initializeToConsole();

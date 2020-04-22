@@ -9,7 +9,7 @@
 import { XAndY } from "@bentley/geometry-core";
 import {
   UiAdmin, AbstractMenuItemProps, AbstractToolbarProps,
-  RelativePosition, OnItemExecutedFunc, OnCancelFunc, OnNumberCommitFunc,
+  RelativePosition, OnItemExecutedFunc, OnCancelFunc, OnNumberCommitFunc, Primitives, PropertyDescription, OnValueCommitFunc,
 } from "@bentley/ui-abstract";
 
 import { CursorInformation } from "../cursor/CursorInformation";
@@ -172,6 +172,21 @@ export class FrameworkUiAdmin extends UiAdmin {
     const { position, el } = this.resolveHtmlElement(location, htmlElement);
 
     return AccuDrawPopupManager.showHeightEditor(el, position, initialValue, onCommit, onCancel);
+  }
+
+  /** Show an input editor for a primitive value at a particular location.
+   * @param initialValue Value initially displayed in the editor.
+   * @param propertyDescription Description of the primitive value property
+   * @param location Location of the editor, relative to the origin of htmlElement or the window.
+   * @param onCommit Function called when the OK button or the Enter key is pressed.
+   * @param onCancel Function called when the Cancel button or the Escape key  is pressed.
+   * @param htmlElement The HTMLElement that anchors the context menu. If undefined, the location is relative to the overall window.
+   * @return true if the editor was displayed, false if the editor could not be displayed.
+   */
+  public showInputEditor(initialValue: Primitives.Value, propertyDescription: PropertyDescription, location: XAndY, onCommit: OnValueCommitFunc, onCancel: OnCancelFunc, htmlElement?: HTMLElement): boolean {
+    const { position, el } = this.resolveHtmlElement(location, htmlElement);
+
+    return PopupManager.showInputEditor(el, position, initialValue, propertyDescription, onCommit, onCancel);
   }
 
   /** Hides the input editor. */

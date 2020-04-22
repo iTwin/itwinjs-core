@@ -87,7 +87,7 @@ export interface FrontendAuthorizationClient extends IDisposable, AuthorizationC
 }
 
 // @beta
-export const isBrowserAuthorizationClient: (client: AuthorizationClient | undefined) => client is FrontendAuthorizationClient;
+export const isFrontendAuthorizationClient: (client: AuthorizationClient | undefined) => client is FrontendAuthorizationClient;
 
 // @beta (undocumented)
 export enum OidcCallbackResponseMode {

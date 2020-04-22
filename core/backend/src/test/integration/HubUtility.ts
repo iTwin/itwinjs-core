@@ -6,11 +6,11 @@ import { assert, ChangeSetApplyOption, ChangeSetStatus, GuidString, Logger, Open
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import * as os from "os";
 import * as path from "path";
-import { BriefcaseManager, ChangeSetToken, IModelDb, IModelJsFs, ReservedBriefcaseId, StandaloneDb, IModelHost } from "../../imodeljs-backend";
+import { BriefcaseManager, ChangeSetToken, IModelDb, IModelJsFs, BriefcaseIdValue, StandaloneDb, IModelHost } from "../../imodeljs-backend";
 import { Briefcase as HubBriefcase, BriefcaseQuery, ChangeSet, ChangeSetQuery, ChangesType, HubIModel, IModelHubClient, IModelQuery, Version, VersionQuery } from "@bentley/imodelhub-client";
 import { Project } from "@bentley/context-registry-client";
 
-/** Utility to work with the iModelHub */
+/** Utility to work with iModelHub */
 export class HubUtility {
 
   public static logCategory = "HubUtility";
@@ -397,7 +397,7 @@ export class HubUtility {
     IModelJsFs.copySync(seedPathname, iModelPathname);
 
     const iModel = StandaloneDb.openFile(iModelPathname, OpenMode.ReadWrite);
-    iModel.nativeDb.resetBriefcaseId(ReservedBriefcaseId.Snapshot);
+    iModel.nativeDb.resetBriefcaseId(BriefcaseIdValue.Standalone);
     iModel.close();
 
     return iModelPathname;
@@ -458,7 +458,7 @@ export class HubUtility {
   }
 }
 
-/** An implementation of IModelProjectAbstraction backed by a iModelHub/Connect project */
+/** An implementation of IModelProjectAbstraction backed by an iTwin project */
 class TestIModelHubProject {
   public get isIModelHub(): boolean { return true; }
   public terminate(): void { }

@@ -8,14 +8,14 @@
 
 import { PropertyDescription } from "../properties/Description";
 
-/** DialogItemValue interface of PrimitiveValue types that have type editor support for use in dialogs
+/** [[DialogItemValue]] Interface of PrimitiveValue types that have type editor support for use in dialogs
  * @beta
  */
 export interface DialogItemValue {
   value?: number | string | boolean | Date;
   displayValue?: string;
 }
-/** Interface used to identify the location of the item a DialogItem property value.
+/** [[EditorPosition]] Interface used to identify the location of the item a DialogItem property value.
  * @beta
  */
 export interface EditorPosition {
@@ -27,7 +27,7 @@ export interface EditorPosition {
   columnSpan?: number;
 }
 
-/** BaseDialogItem contains only the members necessary to create a PropertyRecord.
+/** [[BaseDialogItem]] contains only the members necessary to create a PropertyRecord.
  * @beta
  */
 export interface BaseDialogItem {
@@ -35,7 +35,7 @@ export interface BaseDialogItem {
   readonly property: PropertyDescription;
   readonly isDisabled?: boolean;
 }
-/** DialogItem is the specification that the display engine turns into a UI item
+/** [[DialogItem]] is the specification that the display engine turns into a UI item
  * @beta
  */
 export interface DialogItem extends BaseDialogItem {
@@ -46,7 +46,7 @@ export interface DialogItem extends BaseDialogItem {
   readonly lockProperty?: BaseDialogItem;
 }
 
-/** DialogPropertyItem us the specification to use if you are defining the components directly, e.g., in React
+/** [[DialogPropertyItem]] us the specification to use if you are defining the components directly, e.g., in React
  * @beta
  */
 export interface DialogPropertyItem {
@@ -54,7 +54,7 @@ export interface DialogPropertyItem {
   readonly propertyName: string;
 }
 
-/** DialogPropertySyncItem is used to pass sync messages for DialogPropertyItems
+/** [[DialogPropertySyncItem]] is used to pass sync messages for DialogPropertyItems
  * @beta
  */
 export interface DialogPropertySyncItem extends DialogPropertyItem {

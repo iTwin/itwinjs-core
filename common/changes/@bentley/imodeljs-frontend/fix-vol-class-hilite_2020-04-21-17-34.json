@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-frontend",
+      "comment": "fixed pick of volume classified geometry",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Marc.Neely@bentley.com"
+}

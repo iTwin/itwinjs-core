@@ -300,11 +300,11 @@ export class IModelTestUtils {
     return testImodel.elements.createElement(elementProps);
   }
 
-  public static startBackend() {
+  public static async startBackend(): Promise<void> {
     IModelJsConfig.init(true /* suppress exception */, false /* suppress error message */, Config.App);
     const config = new IModelHostConfiguration();
     config.concurrentQuery.concurrent = 4; // for test restrict this to two threads. Making closing connection faster
-    IModelHost.startup(config);
+    await IModelHost.startup(config);
   }
 
   public static registerTestBimSchema() {
@@ -315,8 +315,8 @@ export class IModelTestUtils {
     }
   }
 
-  public static shutdownBackend() {
-    IModelHost.shutdown();
+  public static async shutdownBackend(): Promise<void> {
+    await IModelHost.shutdown();
   }
 
   public static setupLogging() {
@@ -391,5 +391,7 @@ export class IModelTestUtils {
   }
 }
 
-IModelTestUtils.setupLogging();
-IModelTestUtils.startBackend();
+before(async () => {
+  IModelTestUtils.setupLogging();
+  await IModelTestUtils.startBackend();
+});

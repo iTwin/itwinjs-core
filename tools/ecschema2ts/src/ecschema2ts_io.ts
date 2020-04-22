@@ -191,7 +191,7 @@ class SchemaDeserializer {
    * @param schemaContext The schema context in which to deserialize the schema.
    * @param referencePaths Optional paths to search when locating schema references.
    */
-  public deserializeXmlFile(schemaFilePath: string, schemaContext: SchemaContext, referencePaths?: string[]): Schema {
+  public async deserializeXmlFile(schemaFilePath: string, schemaContext: SchemaContext, referencePaths?: string[]): Promise<Schema> {
     // If the schema file doesn't exist, throw an error
     if (!fs.existsSync(schemaFilePath))
       throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, "Unable to locate schema XML file at " + schemaFilePath);
@@ -199,7 +199,7 @@ class SchemaDeserializer {
     // Needed to avoid crash in backend when calling IModelHost.startup.  This
     // can be removed once the backed is no longer need for de-serialization.
     (Config as any)._appConfig = new (Config as any)();
-    IModelHost.startup();
+    await IModelHost.startup();
 
     // add reference paths to the native context
     if (undefined === referencePaths)
@@ -227,7 +227,7 @@ class SchemaDeserializer {
 
       schema = locater.getSchemaSync(schemaKey, SchemaMatchType.Exact, schemaContext);
     } finally {
-      IModelHost.shutdown();
+      await IModelHost.shutdown();
     }
 
     return schema!;
@@ -271,7 +271,6 @@ class SchemaDeserializer {
  */
 export interface ECSchemaToTsFileWriter {
   convertSchemaFile(context: SchemaContext, schemaPath: string, referencePaths?: string[]): Promise<string>;
-  convertSchemaFileSync(context: SchemaContext, schemaPath: string, referencePaths?: string[]): string;
 }
 
 /**
@@ -289,7 +288,6 @@ export class ECSchemaToTsXmlWriter implements ECSchemaToTsFileWriter {
   }
 
   /**
-   * Async version of convertFileSync.
    * Given a valid schema file path, the converted typescript files will be
    * created in the provided output directory. If the output directory does not exist the file will not be
    * created.
@@ -298,18 +296,6 @@ export class ECSchemaToTsXmlWriter implements ECSchemaToTsFileWriter {
    * @param outdir The path to the directory to write the generated typescript file.
    */
   public async convertSchemaFile(context: SchemaContext, schemaPath: string, referencePaths?: string[]): Promise<string> {
-    return this.convertSchemaFileSync(context, schemaPath, referencePaths);
-  }
-
-  /**
-   * Given a valid schema file path, the converted typescript files will be
-   * created in the provided output directory. If the output directory does not exist the file will not be
-   * created.
-   * @param context Schema context used to find reference schema
-   * @param schemaPath The full path to the ECSchema xml file
-   * @param outdir The path to the directory to write the generated typescript file.
-   */
-  public convertSchemaFileSync(context: SchemaContext, schemaPath: string, referencePaths?: string[]): string {
     // check if outdir is correct path
     if (!this._outdir)
       throw new Error(`The out directory ${this._outdir} is invalid.`);
@@ -319,7 +305,7 @@ export class ECSchemaToTsXmlWriter implements ECSchemaToTsFileWriter {
       throw new Error(`The out directory ${this._outdir} does not exist.`);
 
     // convert schema to typescript String
-    const schema = this._deserializer.deserializeXmlFile(schemaPath, context, referencePaths);
+    const schema = await this._deserializer.deserializeXmlFile(schemaPath, context, referencePaths);
     const tsString = this._ecschema2ts.convertSchemaToTs(schema);
     const schemaTsString = tsString.schemaTsString;
     const elemTsString = tsString.elemTsString;

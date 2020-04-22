@@ -3262,7 +3262,7 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
 
 // @public
 export interface IModelRpcProps {
-    changeSetId?: string;
+    changeSetId?: GuidString;
     readonly contextId?: GuidString;
     readonly iModelId?: GuidString;
     readonly key: string;
@@ -4987,6 +4987,7 @@ export abstract class RpcConfiguration {
     // @internal
     readonly controlChannel: RpcControlChannel;
     static developmentMode: boolean;
+    static disableRoutingValidation: boolean;
     static initializeInterfaces(configuration: RpcConfiguration): void;
     abstract readonly interfaces: () => RpcInterfaceDefinition[];
     static obtain<T extends RpcConfiguration>(configurationConstructor: {
@@ -5140,6 +5141,7 @@ export class RpcManager {
     static getClientForInterface<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>): T;
     static initializeInterface<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>): void;
     static registerImpl<TDefinition extends RpcInterface, TImplementation extends TDefinition>(definition: RpcInterfaceDefinition<TDefinition>, implementation: RpcInterfaceImplementation<TImplementation>): void;
+    static setIModel(props: IModelRpcProps): void;
     static supplyImplInstance<TDefinition extends RpcInterface, TImplementation extends TDefinition>(definition: RpcInterfaceDefinition<TDefinition>, instance: TImplementation): void;
     static terminateInterface<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>): void;
     static unregisterImpl<TDefinition extends RpcInterface>(definition: RpcInterfaceDefinition<TDefinition>): void;

@@ -17,7 +17,7 @@ export * from "./ImsAuthorizationClient";
 export * from "./SamlToken";
 
 /** @docs-package-description
- * The itwin-client package allows sending requests to various CONNECT services.
+ * The itwin-client package allows sending requests to various iTwin services.
  *
  * It works both on [backend]($docs/learning/backend/index.md) and [frontend]($docs/learning/frontend/index.md).
  */

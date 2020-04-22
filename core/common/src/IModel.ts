@@ -19,12 +19,12 @@ import { ThumbnailProps } from "./Thumbnail";
 export interface IModelRpcProps {
   /** Key used for identifying the iModel on the backend */
   readonly key: string;
-  /** Context (Project, Asset, or other infrastructure) in which the iModel exists - must be defined if the iModel exists in the Hub or in a non-Connect infrastructure. */
+  /** The context (Project, Asset, or other infrastructure) in which the iModel exists - must be defined for briefcases that are synchronized with iModelHub. */
   readonly contextId?: GuidString;
-  /** Guid of the iModel - must be defined if the iModel exists in the Hub */
+  /** Guid of the iModel. */
   readonly iModelId?: GuidString;
-  /** Id of the last ChangeSet that was applied to the iModel - must be defined if the iModel exists in the Hub. An empty string indicates the first version */
-  changeSetId?: string;
+  /** Id of the last ChangeSet that was applied to the iModel - must be defined for briefcases that are synchronized with iModelHub. An empty string indicates the first version */
+  changeSetId?: GuidString;
   /** Mode used to open the iModel */
   openMode?: OpenMode;
 }

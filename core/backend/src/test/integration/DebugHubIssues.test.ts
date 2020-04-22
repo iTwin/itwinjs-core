@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { ChangeSetApplyOption, ChangeSetStatus, GuidString, Logger, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
 import { RequestGlobalOptions } from "@bentley/itwin-client";
-import { RequestHost } from "@bentley/imodeljs-clients-backend";
+import { RequestHost } from "@bentley/backend-itwin-client";
 import { IModel, IModelVersion, SyncMode } from "@bentley/imodeljs-common";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { assert } from "chai";
@@ -14,7 +14,7 @@ import { IModelTestUtils } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
 import { Version, UserInfoQuery, HubUserInfo } from "@bentley/imodelhub-client";
 
-// Useful utilities to download/upload test cases from/to the iModelHub
+// Useful utilities to download/upload test cases from/to iModelHub
 describe.skip("DebugHubIssues (#integration)", () => {
   let requestContext: AuthorizedBackendRequestContext;
   const iModelRootDir = "d:\\testmodels\\";

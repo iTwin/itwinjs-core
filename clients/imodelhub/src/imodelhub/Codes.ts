@@ -20,11 +20,11 @@ const loggerCategory: string = IModelHubClientLoggerCategory.IModelHub;
  * @alpha Hide Code API while focused on readonly viewing scenarios
  */
 export enum CodeState {
-  /** Code with this state is not persisted in iModelHub. Code that is updated to 'Available' state is deleted from the iModelHub. */
+  /** Code with this state is not persisted in iModelHub. Code that is updated to 'Available' state is deleted from iModelHub. */
   Available = 0,
   /** Code is reserved by the [[Briefcase]], no one else is allowed to change its state. */
   Reserved = 1,
-  /** Code is used in a [[ChangeSet]] committed to the iModelHub. */
+  /** Code is used in a [[ChangeSet]] committed to iModelHub. */
   Used = 2,
   /** Retired Code can not be reserved or used. It can only be deleted and then reserved again */
   Retired = 3,

@@ -27,7 +27,7 @@ describe.skip("UsageLoggingUtilities - OIDC Token (#integration)", () => {
 
   before(async () => {
     IModelTestUtils.setupLogging();
-    IModelTestUtils.setupDebugLogLevels();
+    // IModelTestUtils.setupDebugLogLevels();
 
     const oidcConfig: TestOidcConfiguration = {
       clientId: Config.App.getString("imjs_oidc_ulas_test_client_id"),

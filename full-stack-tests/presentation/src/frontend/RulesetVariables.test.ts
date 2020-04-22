@@ -36,8 +36,8 @@ describe("Ruleset Variables", async () => {
     await initialize();
   });
 
-  after(() => {
-    terminate();
+  after(async () => {
+    await terminate();
   });
 
   beforeEach(() => {

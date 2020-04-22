@@ -1148,17 +1148,17 @@ abstract class Compositor extends SceneCompositor {
   }
 
   private renderVolumeClassification(commands: RenderCommands, compositeFlags: CompositeFlags, renderForReadPixels: boolean) {
-    // We need to render the classifier stencil volumes one at a time,
-    // so draw them from the cmdsByIndex list which is organized as follows for each primitive:
-    // push branch
-    //  push batch
-    //    draw primitive
-    //  pop batch
-    // pop branch
-    const numCmdsPerClassifier = 5;
-
+    // Sometimes we need to render the classifier stencil volumes one at a time, if so draw them from the cmdsByIndex list
     const cmds = commands.getCommands(RenderPass.Classification);
     const cmdsByIndex = commands.getCommands(RenderPass.ClassificationByIndex);
+    let numCmdsPerClassifier = 0;
+    for (const cmd of cmdsByIndex) { // Figure out how many commands there are per index/primitive
+      numCmdsPerClassifier++;
+      if ("drawPrimitive" === cmd.opcode) {
+        numCmdsPerClassifier += numCmdsPerClassifier - 1;
+        break;
+      }
+    }
     const cmdsForVC = commands.getCommands(RenderPass.VolumeClassifiedRealityData);
     if (!this.target.activeVolumeClassifierProps || (renderForReadPixels && 0 === cmds.length) || 0 === cmdsForVC.length)
       return;
@@ -1437,7 +1437,7 @@ abstract class Compositor extends SceneCompositor {
 
     // Process the flashed classifier if there is one.
     // Like the selected volumes, we do not need to do this step if we used by-element-color since the flashing is included in the element color.
-    const flashedClassifierCmds = extractFlashedVolumeClassifierCommands(this.target.flashedId, cmdsByIndex);
+    const flashedClassifierCmds = extractFlashedVolumeClassifierCommands(this.target.flashedId, cmdsByIndex, numCmdsPerClassifier);
     if (undefined !== flashedClassifierCmds && !doColorByElement) {
       // Set the stencil for this one classifier.
       fbStack.execute(this._frameBuffers.stencilSet!, false, () => {

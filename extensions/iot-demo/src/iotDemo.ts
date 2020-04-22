@@ -487,34 +487,32 @@ export class IoTDemoExtension extends Extension {
   }
 
   /** Invoked the first time this extension is loaded. */
-  public onLoad(args: string[]): void {
+  public async onLoad(args: string[]): Promise<void> {
     this._i18NNamespace = this.i18n.registerNamespace("iotDemo");
-    this._i18NNamespace!.readFinished.then(() => {
-      const message: string = this.i18n.translate("iotDemo:Messages.Start");
-      const msgDetails: NotifyMessageDetails = new NotifyMessageDetails(OutputMessagePriority.Info, message);
-      IModelApp.notifications.outputMessage(msgDetails);
+    await this._i18NNamespace!.readFinished;
+    const message: string = this.i18n.translate("iotDemo:Messages.Start");
+    const msgDetails: NotifyMessageDetails = new NotifyMessageDetails(OutputMessagePriority.Info, message);
+    IModelApp.notifications.outputMessage(msgDetails);
 
-      IModelApp.viewManager.addToolTipProvider(new IotToolTipProvider(this));
-      this.iotUiProvider = new IotUiProvider(this);
-      // When a new UiProvider is registered the UI is typically refreshed so any extension provided items are displayed.
-      // A call to UiItemsManager.unregister will allow any UI provided by the provider to be removed.
-      UiItemsManager.register(this.iotUiProvider);
-      // if we have a simulationUrl, we'll use it, otherwise we generate the simulated data in the front end.
-      if (args.length > 1) {
-        this.simulationUrl = args[1];
-        // TBD: retrieve the start and end times from the server.
-        // this.getStartEndTimesFromServer();
-        this.iotUiProvider.showIotDialog();
-      } else {
-        this.localSimulator = new IoTSimulator(this.resolveResourceUrl("assets/microsoft-campus.json"));
-        this.simulationPromise = this.localSimulator.runSimulation();
-        this.simulationPromise.then(() => {
-          this.iotUiProvider!.minDate = this.localSimulator!.getStartTime();
-          this.iotUiProvider!.maxDate = this.localSimulator!.getEndTime();
-          this.iotUiProvider!.showIotDialog();
-        }).catch(() => { });
-      }
-    }).catch(() => { });
+    IModelApp.viewManager.addToolTipProvider(new IotToolTipProvider(this));
+    this.iotUiProvider = new IotUiProvider(this);
+    // When a new UiProvider is registered the UI is typically refreshed so any extension provided items are displayed.
+    // A call to UiItemsManager.unregister will allow any UI provided by the provider to be removed.
+    UiItemsManager.register(this.iotUiProvider);
+    // if we have a simulationUrl, we'll use it, otherwise we generate the simulated data in the front end.
+    if (args.length > 1) {
+      this.simulationUrl = args[1];
+      // TBD: retrieve the start and end times from the server.
+      // this.getStartEndTimesFromServer();
+      this.iotUiProvider.showIotDialog();
+    } else {
+      this.localSimulator = new IoTSimulator(this.resolveResourceUrl("assets/microsoft-campus.json"));
+      this.simulationPromise = this.localSimulator.runSimulation();
+      await this.simulationPromise;
+      this.iotUiProvider!.minDate = this.localSimulator!.getStartTime();
+      this.iotUiProvider!.maxDate = this.localSimulator!.getEndTime();
+      this.iotUiProvider!.showIotDialog();
+    }
   }
 
   /** Invoked each time this extension is loaded. */

@@ -70,7 +70,7 @@ const argv = yargs.strict(true)
   .argv;
 
 (async () => {
-  IModelHost.startup();
+  await IModelHost.startup();
   const token = await signIn();
   const requestContext = new AuthorizedClientRequestContext(token);
   const client = new ExtensionClient();
@@ -127,7 +127,7 @@ const argv = yargs.strict(true)
       break;
   }
 
-  IModelHost.shutdown();
+  await IModelHost.shutdown();
 })().catch((err) => {
   if (err instanceof BentleyError)
     process.stderr.write("Error: " + err.name + ": " + err.message);

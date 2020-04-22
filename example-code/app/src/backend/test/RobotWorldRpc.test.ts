@@ -16,12 +16,12 @@ import { RobotWorld } from "../RobotWorldSchema";
 
 const requestContext = new ClientRequestContext();
 
-function simulateBackendDeployment() {
-  RobotWorldEngine.initialize(requestContext);
+async function simulateBackendDeployment(): Promise<void> {
+  await RobotWorldEngine.initialize(requestContext);
 }
 
-function simulateBackendShutdown() {
-  RobotWorldEngine.shutdown();
+async function simulateBackendShutdown() {
+  await RobotWorldEngine.shutdown();
 }
 
 async function setUpTest() {
@@ -45,7 +45,7 @@ describe("RobotWorldRpc", () => {
 
   it("should run robotWorld through RPC as a client", async () => {
     // Simulate the deployment of the backend server
-    simulateBackendDeployment();
+    await simulateBackendDeployment();
 
     await setUpTest();  // tricky: do this after simulateBackendDeployment, as that function has the side effect of initializing IModelHost
 
@@ -113,7 +113,7 @@ describe("RobotWorldRpc", () => {
 
     await IModelApp.shutdown();
 
-    simulateBackendShutdown();
+    await simulateBackendShutdown();
   });
 });
 

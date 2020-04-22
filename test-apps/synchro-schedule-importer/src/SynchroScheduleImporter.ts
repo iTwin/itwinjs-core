@@ -272,6 +272,7 @@ Yargs.default("createDuplicateIbim", true, "Create a duplicate IBIM with the imp
 Yargs.required("script", "Animation script JSON file");
 Yargs.string("script");
 const args = Yargs.parse() as Yargs.Arguments<ImportInputArgs>;
-
-IModelHost.startup(new IModelHostConfiguration());
-doImport(args);
+(async () => {
+  await IModelHost.startup(new IModelHostConfiguration());
+  doImport(args);
+})(); // tslint:disable-line:no-floating-promises

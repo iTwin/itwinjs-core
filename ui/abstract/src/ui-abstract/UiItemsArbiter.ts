@@ -6,11 +6,14 @@
  * @module UiItemsProvider
  */
 
+import { Logger } from "@bentley/bentleyjs-core";
+
 import { CommonToolbarItem } from "./toolbars/ToolbarItem";
 import { CommonStatusBarItem } from "./statusbar/StatusBarItem";
 import { BackstageItem } from "./backstage/BackstageItem";
 import { AbstractWidgetProps } from "./widget/AbstractWidgetProps";
 import { UiItemsApplicationAction, UiItemsManager } from "./UiItemsManager";
+import { UiAbstract } from "./UiAbstract";
 
 /** Application for items provided by a UiItemsProvider
  * @beta
@@ -34,7 +37,18 @@ export class UiItemsArbiter {
 
   /** The UiItemsApplication implementation. The application should set this to validate items from the extensions. */
   public static get uiItemsApplication(): UiItemsApplication | undefined { return UiItemsArbiter._uiItemsApplication; }
-  public static set uiItemsApplication(app: UiItemsApplication | undefined) { UiItemsArbiter._uiItemsApplication = app; }
+  public static set uiItemsApplication(app: UiItemsApplication | undefined) {
+    // uiItemsApplication can only be set once
+    if (UiItemsArbiter._uiItemsApplication === undefined)
+      UiItemsArbiter._uiItemsApplication = app;
+    else
+      Logger.logError(UiAbstract.loggerCategory(this), `uiItemsApplication can only be set once`);
+  }
+
+  /** @internal */
+  public static clearApplication(): void {
+    UiItemsArbiter._uiItemsApplication = undefined;
+  }
 
   /** @internal */
   public static updateToolbarButtonItems(items: ReadonlyArray<CommonToolbarItem>): ReadonlyArray<CommonToolbarItem> {

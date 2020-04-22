@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-framework",
+      "comment": "Fixed FrontendAuthorizationClient type guard. ",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-framework",
+  "email": "Ramanujam.Raman@bentley.com"
+}

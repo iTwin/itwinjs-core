@@ -11,27 +11,29 @@ import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 import rpcs from "../common/Rpcs";
 import "./SampleRpcImpl"; // just to get the RPC implementation registered
 
-IModelJsConfig.init(true /*suppress error*/, true /* suppress message */, Config.App);
-
-// initialize logging
-Logger.initializeToConsole();
-
-// initialize imodeljs-backend
-IModelHost.startup();
-
 // __PUBLISH_EXTRACT_START__ Presentation.Backend.Initialization
 import { Presentation, PresentationManagerMode } from "@bentley/presentation-backend";
-
-// initialize presentation-backend
-Presentation.initialize({
-  rulesetDirectories: [path.join("assets", "presentation_rules")],
-  localeDirectories: [path.join("assets", "locales")],
-  mode: PresentationManagerMode.ReadOnly,
-});
 // __PUBLISH_EXTRACT_END__
 
-// invoke platform-specific initialization
 (async () => { // tslint:disable-line:no-floating-promises
+  IModelJsConfig.init(true /*suppress error*/, true /* suppress message */, Config.App);
+
+  // initialize logging
+  Logger.initializeToConsole();
+
+  // initialize imodeljs-backend
+  await IModelHost.startup();
+
+  // __PUBLISH_EXTRACT_START__ Presentation.Backend.Initialization2
+  // initialize presentation-backend
+  Presentation.initialize({
+    rulesetDirectories: [path.join("assets", "presentation_rules")],
+    localeDirectories: [path.join("assets", "locales")],
+    mode: PresentationManagerMode.ReadOnly,
+  });
+  // __PUBLISH_EXTRACT_END__
+
+  // invoke platform-specific initialization
   RpcConfiguration.developmentMode = true;
   // get platform-specific initialization function
   let init: (_rpcs: RpcInterfaceDefinition[]) => void;

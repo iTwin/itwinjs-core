@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-backend",
+      "comment": "Avoided casting of BriefcaseProps to IModelRpcProps.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "Ramanujam.Raman@bentley.com"
+}

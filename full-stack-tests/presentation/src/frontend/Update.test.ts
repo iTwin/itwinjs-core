@@ -26,7 +26,7 @@ describe("Update", () => {
 
   after(async () => {
     await imodel.close();
-    terminate();
+    await terminate();
   });
 
   describe("on ruleset modification", async () => {

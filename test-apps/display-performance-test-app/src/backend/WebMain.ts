@@ -40,64 +40,66 @@ function startWebServer() {
   DisplayPerfRpcInterface.webServer = appExp.listen(appExp.get("port"), announceWebServer);
 }
 
-// Initialize the webserver
-startWebServer();
+(async () => {
+  // Initialize the webserver
+  startWebServer();
 
-// Initialize the backend
-initializeBackend();
+  // Initialize the backend
+  await initializeBackend();
 
-let serverConfig: any;
-let browser = "";
+  let serverConfig: any;
+  let browser = "";
 
-process.argv.forEach((arg) => {
-  if (arg.split(".").pop() === "json")
-    DisplayPerfRpcInterface.jsonFilePath = arg;
-  else if (arg === "chrome" || arg === "edge" || arg === "firefox")
-    browser = arg;
-});
+  process.argv.forEach((arg) => {
+    if (arg.split(".").pop() === "json")
+      DisplayPerfRpcInterface.jsonFilePath = arg;
+    else if (arg === "chrome" || arg === "edge" || arg === "firefox")
+      browser = arg;
+  });
 
-if (serverConfig === undefined) {
-  serverConfig = { port: 3001, baseUrl: "https://localhost" };
-} else {
+  if (serverConfig === undefined) {
+    serverConfig = { port: 3001, baseUrl: "https://localhost" };
+  } else {
 
-}
+  }
 
-// Set up the ability to serve the supported rpcInterfaces via web requests
-const cloudConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "display-performance-test-app", version: "v1.0" } }, getRpcInterfaces());
+  // Set up the ability to serve the supported rpcInterfaces via web requests
+  const cloudConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "display-performance-test-app", version: "v1.0" } }, getRpcInterfaces());
 
-const app = express();
-app.use(express.text({ limit: "50mb" }));
+  const app = express();
+  app.use(express.text({ limit: "50mb" }));
 
-// Enable CORS for all apis
-app.all("/*", (_req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Methods", "POST, GET");
-  res.header("Access-Control-Allow-Headers", "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With, X-Correlation-Id, X-Session-Id, X-Application-Id, X-Application-Version, X-User-Id");
-  next();
-});
+  // Enable CORS for all apis
+  app.all("/*", (_req, res, next) => {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Methods", "POST, GET");
+    res.header("Access-Control-Allow-Headers", "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With, X-Correlation-Id, X-Session-Id, X-Application-Id, X-Application-Version, X-User-Id");
+    next();
+  });
 
-// --------------------------------------------
-// Routes
-// --------------------------------------------
-app.get("/v3/swagger.json", (req, res) => cloudConfig.protocol.handleOpenApiDescriptionRequest(req, res));
-app.post("*", async (req, res) => cloudConfig.protocol.handleOperationPostRequest(req, res));
-app.get(/\/imodel\//, async (req, res) => cloudConfig.protocol.handleOperationGetRequest(req, res));
-app.use("*", (_req, res) => { res.send("<h1>IModelJs RPC Server</h1>"); });
+  // --------------------------------------------
+  // Routes
+  // --------------------------------------------
+  app.get("/v3/swagger.json", (req, res) => cloudConfig.protocol.handleOpenApiDescriptionRequest(req, res));
+  app.post("*", async (req, res) => cloudConfig.protocol.handleOperationPostRequest(req, res));
+  app.get(/\/imodel\//, async (req, res) => cloudConfig.protocol.handleOperationGetRequest(req, res));
+  app.use("*", (_req, res) => { res.send("<h1>IModelJs RPC Server</h1>"); });
 
-// ---------------------------------------------
-// Run the server...
-// ---------------------------------------------
-app.set("port", serverConfig.port);
-const announce = () => console.log(`***** Display Performance Testing App listening on ${serverConfig.baseUrl}:${app.get("port")}`);
+  // ---------------------------------------------
+  // Run the server...
+  // ---------------------------------------------
+  app.set("port", serverConfig.port);
+  const announce = () => console.log(`***** Display Performance Testing App listening on ${serverConfig.baseUrl}:${app.get("port")}`);
 
-DisplayPerfRpcInterface.backendServer = app.listen(app.get("port"), announce);
+  DisplayPerfRpcInterface.backendServer = app.listen(app.get("port"), announce);
 
-// ---------------------------------------------
-// Start the browser, if given a specific one
-// ---------------------------------------------
-if (browser === "chrome")
-  chromeLauncher.launch({ startingUrl: "http://localhost:3000" }).then((val) => { DisplayPerfRpcInterface.chrome = val; }); // tslint:disable-line:no-floating-promises
-else if (browser === "firefox")
-  child_process.execSync("start firefox http://localhost:3000");
-else if (browser === "edge")
-  child_process.execSync("start microsoft-edge:http://localhost:3000");
+  // ---------------------------------------------
+  // Start the browser, if given a specific one
+  // ---------------------------------------------
+  if (browser === "chrome")
+    chromeLauncher.launch({ startingUrl: "http://localhost:3000" }).then((val) => { DisplayPerfRpcInterface.chrome = val; }); // tslint:disable-line:no-floating-promises
+  else if (browser === "firefox")
+    child_process.execSync("start firefox http://localhost:3000");
+  else if (browser === "edge")
+    child_process.execSync("start microsoft-edge:http://localhost:3000");
+})(); // tslint:disable-line:no-floating-promises

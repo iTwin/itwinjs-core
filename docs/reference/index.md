@@ -16,7 +16,7 @@ The iModel.js library is organized into the following separately downloadable [n
 - ($frontend)
 - ($common)
 - ($backend)
-- ($clients-backend)
+- ($backend-itwin-client)
 - ($markup)
 - ($i18n)
 - ($bentley)

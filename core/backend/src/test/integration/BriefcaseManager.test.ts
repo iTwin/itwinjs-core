@@ -336,13 +336,13 @@ describe("BriefcaseManager (#integration)", () => {
     iModelPullAndPush.close();
     iModelPullOnly.close();
 
-    IModelHost.shutdown();
+    await IModelHost.shutdown();
 
     assert.isTrue(IModelJsFs.existsSync(sharedPathname));
     assert.isTrue(IModelJsFs.existsSync(pullAndPushPathname));
     assert.isTrue(IModelJsFs.existsSync(pullOnlyPathname));
 
-    IModelHost.startup();
+    await IModelHost.startup();
 
     iModelShared = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, testProjectId, readOnlyTestIModel.id, SyncMode.FixedVersion, IModelVersion.latest());
     assert.exists(iModelShared);
@@ -369,19 +369,19 @@ describe("BriefcaseManager (#integration)", () => {
   it.skip("should be able to gracefully error out if a bad cache dir is specified", async () => {
     const config = new IModelHostConfiguration();
     config.briefcaseCacheDir = "\\\\blah\\blah\\blah";
-    IModelTestUtils.shutdownBackend();
+    await IModelTestUtils.shutdownBackend();
 
     let exceptionThrown = false;
     try {
-      IModelHost.startup(config);
+      await IModelHost.startup(config);
     } catch (error) {
       exceptionThrown = true;
     }
     assert.isTrue(exceptionThrown);
 
     // Restart the backend to the default configuration
-    IModelHost.shutdown();
-    IModelTestUtils.startBackend();
+    await IModelHost.shutdown();
+    await IModelTestUtils.startBackend();
   });
 
   it("should be able to reverse and reinstate changes", async () => {

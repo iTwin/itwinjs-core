@@ -26,7 +26,7 @@ describe("Favorite properties", () => {
   });
 
   after(async () => {
-    terminate();
+    await terminate();
   });
 
   let propertiesDataProvider: PresentationPropertyDataProvider;
@@ -135,7 +135,7 @@ describe("Favorite properties", () => {
   describe("#with-services", () => {
 
     before(async () => {
-      terminate();
+      await terminate();
       await initializeWithClientServices();
       imodel = await SnapshotConnection.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
       expect(imodel).is.not.null;
@@ -294,7 +294,7 @@ describe("IModelAppFavoritePropertiesStorage", () => {
     });
 
     after(async () => {
-      terminate();
+      await terminate();
     });
 
     beforeEach(async () => {

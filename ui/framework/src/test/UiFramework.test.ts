@@ -160,8 +160,8 @@ describe("Requires Presentation", () => {
     await initializePresentationTesting();
   });
 
-  afterEach(() => {
-    terminatePresentationTesting();
+  afterEach(async () => {
+    await terminatePresentationTesting();
   });
 
   describe("initialize and setActiveSelectionScope", () => {

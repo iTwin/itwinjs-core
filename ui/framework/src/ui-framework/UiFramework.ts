@@ -13,7 +13,7 @@ import { UserInfo, AccessToken } from "@bentley/itwin-client";
 import { MobileRpcConfiguration } from "@bentley/imodeljs-common";
 import { I18N, TranslationOptions } from "@bentley/imodeljs-i18n";
 import { IModelConnection, SnapMode, ViewState, IModelApp } from "@bentley/imodeljs-frontend";
-import { isBrowserAuthorizationClient } from "@bentley/frontend-authorization-client";
+import { isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { UiError, getClassName } from "@bentley/ui-abstract";
 import { UiEvent } from "@bentley/ui-core";
 import { Presentation } from "@bentley/presentation-frontend";
@@ -124,7 +124,7 @@ export class UiFramework {
 
     const oidcClient = IModelApp.authorizationClient;
     // istanbul ignore next
-    if (isBrowserAuthorizationClient(oidcClient)) {
+    if (isFrontendAuthorizationClient(oidcClient)) {
       const authorized = IModelApp.authorizationClient && IModelApp.authorizationClient.isAuthorized;
       if (authorized) {
         const accessToken = await oidcClient.getAccessToken();

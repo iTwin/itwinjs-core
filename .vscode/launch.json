@@ -4,7 +4,6 @@
   // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
   "version": "0.2.0",
   "configurations": [
-
     {
       "type": "node",
       "request": "attach",
@@ -146,10 +145,10 @@
       "type": "node",
       "request": "launch",
       "name": "Clients-Backend Tests (Offline)",
-      "program": "${workspaceFolder}/core/clients-backend/node_modules/@bentley/build-tools/scripts/test",
-      "cwd": "${workspaceFolder}/core/clients-backend",
+      "program": "${workspaceFolder}/core/backend-itwin-client/node_modules/@bentley/build-tools/scripts/test",
+      "cwd": "${workspaceFolder}/core/backend-itwin-client",
       "args": [
-        "--testDir=${workspaceFolder}/core/clients-backend/lib/test",
+        "--testDir=${workspaceFolder}/core/backend-itwin-client/lib/test",
         "--inspect",
         "--offline",
         "mock",
@@ -165,10 +164,10 @@
       "type": "node",
       "request": "launch",
       "name": "Clients-Backend Tests (Integration)",
-      "program": "${workspaceFolder}/core/clients-backend/node_modules/@bentley/build-tools/scripts/test",
-      "cwd": "${workspaceFolder}/core/clients-backend",
+      "program": "${workspaceFolder}/core/backend-itwin-client/node_modules/@bentley/build-tools/scripts/test",
+      "cwd": "${workspaceFolder}/core/backend-itwin-client",
       "args": [
-        "--testDir=${workspaceFolder}/core/clients-backend/lib/test",
+        "--testDir=${workspaceFolder}/core/backend-itwin-client/lib/test",
         "--inspect",
         "--grep",
         "#unit|iModelHub URL Whitelist Validator",
@@ -182,10 +181,10 @@
       "type": "node",
       "request": "launch",
       "name": "Clients-Backend Tests (iModelBank)",
-      "program": "${workspaceFolder}/core/clients-backend/node_modules/@bentley/build-tools/scripts/test",
-      "cwd": "${workspaceFolder}/core/clients-backend",
+      "program": "${workspaceFolder}/core/backend-itwin-client/node_modules/@bentley/build-tools/scripts/test",
+      "cwd": "${workspaceFolder}/core/backend-itwin-client",
       "args": [
-        "--testDir=${workspaceFolder}/core/clients-backend/lib/test",
+        "--testDir=${workspaceFolder}/core/backend-itwin-client/lib/test",
         "--inspect",
         "--grep",
         "#iModelBank"
