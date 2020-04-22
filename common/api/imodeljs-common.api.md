@@ -5492,10 +5492,13 @@ export namespace RpcSerializedValue {
     export function create(objects?: string, data?: Uint8Array[]): RpcSerializedValue;
 }
 
-// @beta
+// @alpha
 export interface SectionLocationProps extends GeometricElement3dProps {
+    // @internal @deprecated
     categorySelectorId?: Id64String;
+    // @internal @deprecated
     clipGeometry?: string;
+    // @internal @deprecated
     modelSelectorId?: Id64String;
     sectionType?: SectionType;
     viewAttachment?: Id64String;

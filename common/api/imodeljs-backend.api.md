@@ -30,7 +30,6 @@ import { ChangedValueState } from '@bentley/imodeljs-common';
 import { ChangeOpCode } from '@bentley/imodeljs-common';
 import { ChangeSet } from '@bentley/imodelhub-client';
 import { ClientRequestContext } from '@bentley/bentleyjs-core';
-import { ClipVector } from '@bentley/geometry-core';
 import { CloudStorageContainerDescriptor } from '@bentley/imodeljs-common';
 import { CloudStorageContainerUrl } from '@bentley/imodeljs-common';
 import { CloudStorageProvider } from '@bentley/imodeljs-common';
@@ -3551,20 +3550,13 @@ export class SectionDrawingModel extends DrawingModel {
     static get className(): string;
 }
 
-// @beta
+// @alpha
 export class SectionLocation extends SpatialLocationElement implements SectionLocationProps {
     // @internal
     constructor(props: SectionLocationProps, iModel: IModelDb);
-    categorySelectorId: Id64String;
     // @internal (undocumented)
     static get className(): string;
-    clipGeometry?: string;
-    // @alpha (undocumented)
-    protected collectPredecessorIds(predecessorIds: Id64Set): void;
-    getClip(): ClipVector | undefined;
-    modelSelectorId: Id64String;
     sectionType: SectionType;
-    setClip(clip?: ClipVector): void;
     // @internal (undocumented)
     toJSON(): SectionLocationProps;
 }

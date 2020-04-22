@@ -123,19 +123,28 @@ export enum SectionType {
 }
 
 /** Properties that define a [SectionLocation]($backend)
- * @beta
+ * @alpha
  */
 export interface SectionLocationProps extends GeometricElement3dProps {
   /** Section type */
   sectionType?: SectionType;
-  /** Details on how this section was clipped. A placement local ClipVector stored as a json string. */
-  clipGeometry?: string;
-  /** The element Id of the [ModelSelector]($backend) for this SectionLocation */
-  modelSelectorId?: Id64String;
-  /** The element Id of the [CategorySelector]($backend) for this SectionLocation */
-  categorySelectorId?: Id64String;
   /** Optional Id of the associated [[ViewAttachmentProps]]. */
   viewAttachment?: Id64String;
+  /** Details on how this section was clipped. A placement local ClipVector stored as a json string.
+   * @deprecated
+   * @internal
+   */
+  clipGeometry?: string;
+  /** The element Id of the [ModelSelector]($backend) for this SectionLocation
+   * @deprecated
+   * @internal
+   */
+  modelSelectorId?: Id64String;
+  /** The element Id of the [CategorySelector]($backend) for this SectionLocation
+   * @deprecated
+   * @internal
+   */
+  categorySelectorId?: Id64String;
 }
 
 /** Properties that define a [GeometricElement2d]($backend)

@@ -403,7 +403,7 @@ public;RpcResponseCacheControl
 public;RpcResponseCachingCallback_T = (request: RpcRequest) => RpcResponseCacheControl
 public;RpcSerializedValue
 public;RpcSerializedValue
-beta;SectionLocationProps 
+alpha;SectionLocationProps 
 public;SectionType
 public;SerializedRpcOperation
 public;SerializedRpcRequest 

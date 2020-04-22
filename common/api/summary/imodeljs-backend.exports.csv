@@ -258,7 +258,7 @@ public;Schemas
 public;SectionCallout 
 public;SectionDrawing 
 public;SectionDrawingModel 
-beta;SectionLocation 
+alpha;SectionLocation 
 public;Sheet 
 public;SheetBorderTemplate 
 public;SheetModel 
