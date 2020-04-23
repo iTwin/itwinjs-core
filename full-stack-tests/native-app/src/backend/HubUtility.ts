@@ -382,7 +382,7 @@ export class HubUtility {
       if (!IModelJsFs.existsSync(changeSetPathname)) {
         throw new Error("Cannot find the ChangeSet file: " + changeSetPathname);
       }
-      tokens.push(new ChangeSetToken(changeSetJson.id, changeSetJson.parentId, +changeSetJson.index, changeSetPathname, changeSetJson.changesType === ChangesType.Schema));
+      tokens.push(new ChangeSetToken(changeSetJson.id, changeSetJson.parentId, +changeSetJson.index, changeSetPathname, changeSetJson.changesType!));
     }
 
     return tokens;
