@@ -19,6 +19,10 @@
     "docSiteId": 5,
     "displayName": "Learning"
   },
+  "changehistory": {
+    "docSiteId": 6,
+    "displayName": "Change History"
+  },
   "metadata": {
     "home": "landing-page",
     "logo": "landing-page/assets/imodeljs-logo.svg",
@@ -30,7 +34,8 @@
       "getting-started",
       "learning",
       "bis",
-      "reference"
+      "reference",
+      "changehistory"
     ],
     "headerTabs": {
       "Getting Started": "getting-started",
@@ -39,12 +44,6 @@
       "API Reference": "reference",
       "v1.14.0": "changehistory"
     },
-    "archivedVersions": [
-      {
-        "version": "v1.13.0",
-        "archivedPath": "/v1"
-      }
-    ],
     "packageAliases": {
       "backend": "imodeljs-backend",
       "bentley": "bentleyjs-core",

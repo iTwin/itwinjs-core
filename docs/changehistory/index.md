@@ -1,6 +1,6 @@
 # 1.14.0 Change Notes
 
-With the [iModel.js 2.0](./roadmap.md#release-2.0) release quickly approaching, this release only includes bug fixes.
+With the [iModel.js 2.0](./roadmap.md#release-20) release quickly approaching, this release only includes bug fixes.
 
 For details on the bug fixes made to each package, visit the individual changelogs:
 

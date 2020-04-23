@@ -2,6 +2,18 @@
   "name": "@bentley/presentation-common",
   "entries": [
     {
+      "version": "1.14.1",
+      "tag": "@bentley/presentation-common_v1.14.1",
+      "date": "Wed, 22 Apr 2020 19:04:00 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Documentation"
+          }
+        ]
+      }
+    },
+    {
       "version": "1.14.0",
       "tag": "@bentley/presentation-common_v1.14.0",
       "date": "Tue, 31 Mar 2020 15:44:19 GMT",
