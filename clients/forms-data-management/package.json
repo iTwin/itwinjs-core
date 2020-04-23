@@ -1,6 +1,6 @@
 {
   "name": "@bentley/forms-data-management-client",
-  "version": "2.0.0-dev.76",
+  "version": "2.0.0-dev.77",
   "description": "iModel.js Forms Data Management Client",
   "main": "lib/forms-data-management-client.js",
   "typings": "lib/forms-data-management-client",
@@ -34,17 +34,17 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/itwin-client": "^2.0.0-dev.76"
+    "@bentley/itwin-client": "^2.0.0-dev.77"
   },
   "dependencies": {
-    "@bentley/bentleyjs-core": "2.0.0-dev.76"
+    "@bentley/bentleyjs-core": "2.0.0-dev.77"
   },
   "devDependencies": {
-    "@bentley/build-tools": "2.0.0-dev.76",
-    "@bentley/certa": "2.0.0-dev.76",
-    "@bentley/config-loader": "2.0.0-dev.76",
-    "@bentley/itwin-client": "2.0.0-dev.76",
-    "@bentley/oidc-signin-tool": "2.0.0-dev.76",
+    "@bentley/build-tools": "2.0.0-dev.77",
+    "@bentley/certa": "2.0.0-dev.77",
+    "@bentley/config-loader": "2.0.0-dev.77",
+    "@bentley/itwin-client": "2.0.0-dev.77",
+    "@bentley/oidc-signin-tool": "2.0.0-dev.77",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
     "@types/node": "10.14.1",
