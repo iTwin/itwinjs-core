@@ -29,8 +29,8 @@ import { ChangedModels } from '@bentley/imodeljs-common';
 import { ChangedValueState } from '@bentley/imodeljs-common';
 import { ChangeOpCode } from '@bentley/imodeljs-common';
 import { ChangeSet } from '@bentley/imodelhub-client';
+import { ChangesType } from '@bentley/imodelhub-client';
 import { ClientRequestContext } from '@bentley/bentleyjs-core';
-import { ClipVector } from '@bentley/geometry-core';
 import { CloudStorageContainerDescriptor } from '@bentley/imodeljs-common';
 import { CloudStorageContainerUrl } from '@bentley/imodeljs-common';
 import { CloudStorageProvider } from '@bentley/imodeljs-common';
@@ -519,6 +519,17 @@ export class BriefcaseEntry {
 // @public
 export type BriefcaseId = number;
 
+// @public
+export enum BriefcaseIdValue {
+    // @internal (undocumented)
+    DeprecatedStandalone = 1,
+    FirstValid = 2,
+    Illegal = 4294967295,
+    LastValid = 16777205,
+    Max = 16777216,
+    Standalone = 0
+}
+
 // @beta
 export class BriefcaseManager {
     // @internal (undocumented)
@@ -550,6 +561,10 @@ export class BriefcaseManager {
     static initialize(cacheRootDir: string, iModelClient?: IModelClient): void;
     // @internal
     static initializeOffline(): void;
+    // @internal (undocumented)
+    static isStandaloneBriefcaseId(id: BriefcaseId): boolean;
+    // @internal (undocumented)
+    static isValidBriefcaseId(id: BriefcaseId): boolean;
     // @internal
     static openBriefcase(briefcase: BriefcaseEntry): void;
     // @internal
@@ -557,7 +572,7 @@ export class BriefcaseManager {
     // @internal
     static purgeCache(requestContext: AuthorizedClientRequestContext): Promise<void>;
     // @internal
-    static pushChanges(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseEntry, description: string, relinquishCodesLocks?: boolean): Promise<void>;
+    static pushChanges(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseEntry, description: string, changeType?: ChangesType, relinquishCodesLocks?: boolean): Promise<void>;
     // @internal (undocumented)
     static reinstateChanges(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseEntry, reinstateToVersion?: IModelVersion): Promise<void>;
     // @internal
@@ -651,9 +666,9 @@ export class ChangedElementsDb implements IDisposable {
 
 // @internal
 export class ChangeSetToken {
-    constructor(id: string, parentId: string, index: number, pathname: string, containsSchemaChanges: boolean, pushDate?: string | undefined);
+    constructor(id: string, parentId: string, index: number, pathname: string, changeType: ChangesType, pushDate?: string | undefined);
     // (undocumented)
-    containsSchemaChanges: boolean;
+    changeType: ChangesType;
     // (undocumented)
     id: string;
     // (undocumented)
@@ -2277,6 +2292,7 @@ export class IModelCloneContext {
     remapCodeSpec(sourceCodeSpecName: string, targetCodeSpecName: string): void;
     remapElement(sourceId: Id64String, targetId: Id64String): void;
     remapElementClass(sourceClassFullName: string, targetClassFullName: string): void;
+    removeElement(sourceId: Id64String): void;
     readonly sourceDb: IModelDb;
     readonly targetDb: IModelDb;
 }
@@ -3485,19 +3501,6 @@ export class RepositoryModel extends DefinitionModel {
 }
 
 // @public
-export enum ReservedBriefcaseId {
-    CheckpointSnapshot = 0,
-    // @internal
-    FirstReserved = 16777206,
-    Illegal = 4294967295,
-    // @internal
-    Max = 16777216,
-    Snapshot = 1,
-    // @internal
-    Standalone = 16777214
-}
-
-// @public
 export abstract class RoleElement extends Element {
     // @internal (undocumented)
     static get className(): string;
@@ -3551,20 +3554,13 @@ export class SectionDrawingModel extends DrawingModel {
     static get className(): string;
 }
 
-// @beta
+// @alpha
 export class SectionLocation extends SpatialLocationElement implements SectionLocationProps {
     // @internal
     constructor(props: SectionLocationProps, iModel: IModelDb);
-    categorySelectorId: Id64String;
     // @internal (undocumented)
     static get className(): string;
-    clipGeometry?: string;
-    // @alpha (undocumented)
-    protected collectPredecessorIds(predecessorIds: Id64Set): void;
-    getClip(): ClipVector | undefined;
-    modelSelectorId: Id64String;
     sectionType: SectionType;
-    setClip(clip?: ClipVector): void;
     // @internal (undocumented)
     toJSON(): SectionLocationProps;
 }

@@ -265,21 +265,23 @@ describe("IModelTransformerHub (#integration)", () => {
     try {
       // open/upgrade sourceDb
       const sourceDb = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, projectId, sourceIModelId, SyncMode.PullAndPush, IModelVersion.latest());
-      assert.isTrue(semver.satisfies(sourceDb.querySchemaVersion(BisCoreSchema.schemaName)!, ">= 1.0.1"));
-      assert.isFalse(sourceDb.containsClass(ExternalSourceAspect.classFullName), "Expect iModelHub to be using an old version of BisCore before ExternalSourceAspect was introduced");
+      const seedBisCoreVersion = sourceDb.querySchemaVersion(BisCoreSchema.schemaName)!;
+      assert.isTrue(semver.satisfies(seedBisCoreVersion, ">= 1.0.1"));
       sourceDb.concurrencyControl.setPolicy(ConcurrencyControl.OptimisticPolicy);
       assert.isFalse(sourceDb.concurrencyControl.hasSchemaLock);
       await sourceDb.importSchemas(requestContext, [BisCoreSchema.schemaFilePath, GenericSchema.schemaFilePath]);
       assert.isTrue(sourceDb.concurrencyControl.hasSchemaLock);
-      assert.isTrue(semver.satisfies(sourceDb.querySchemaVersion(BisCoreSchema.schemaName)!, ">= 1.0.8"));
+      const updatedBisCoreVersion = sourceDb.querySchemaVersion(BisCoreSchema.schemaName)!;
+      assert.isTrue(semver.satisfies(updatedBisCoreVersion, ">= 1.0.10"));
       assert.isTrue(sourceDb.containsClass(ExternalSourceAspect.classFullName), "Expect BisCore to be updated and contain ExternalSourceAspect");
+      const expectedHasPendingTxns: boolean = seedBisCoreVersion !== updatedBisCoreVersion;
 
       // push sourceDb schema changes
       await sourceDb.concurrencyControl.request(requestContext);
-      assert.isTrue(sourceDb.nativeDb.hasPendingTxns(), "Expect importSchemas to have saved changes");
+      assert.equal(sourceDb.nativeDb.hasPendingTxns(), expectedHasPendingTxns, "Expect importSchemas to have saved changes");
       assert.isFalse(sourceDb.nativeDb.hasUnsavedChanges(), "Expect no unsaved changes after importSchemas");
-      await sourceDb.pushChanges(requestContext, "Import schemas to upgrade BisCore"); // should actually push schema changes
-      assert.isFalse(sourceDb.concurrencyControl.hasSchemaLock);
+      await sourceDb.pushChanges(requestContext, "Import schemas to upgrade BisCore"); // may push schema changes
+      assert.equal(sourceDb.concurrencyControl.hasSchemaLock, !expectedHasPendingTxns); // NOTE - pushChanges does not currently release locks if there are no changes to push. It probably should.
 
       // import schemas again to test common scenario of not knowing whether schemas are up-to-date or not..
       await sourceDb.importSchemas(requestContext, [BisCoreSchema.schemaFilePath, GenericSchema.schemaFilePath]);
@@ -301,7 +303,6 @@ describe("IModelTransformerHub (#integration)", () => {
 
       // open/upgrade targetDb
       const targetDb = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, projectId, targetIModelId, SyncMode.PullAndPush, IModelVersion.latest());
-      assert.isFalse(targetDb.containsClass(ExternalSourceAspect.classFullName), "Expect iModelHub to be using an old version of BisCore before ExternalSourceAspect was introduced");
       targetDb.concurrencyControl.setPolicy(ConcurrencyControl.OptimisticPolicy);
       await targetDb.importSchemas(requestContext, [BisCoreSchema.schemaFilePath, GenericSchema.schemaFilePath]);
       assert.isTrue(targetDb.containsClass(ExternalSourceAspect.classFullName), "Expect BisCore to be updated and contain ExternalSourceAspect");

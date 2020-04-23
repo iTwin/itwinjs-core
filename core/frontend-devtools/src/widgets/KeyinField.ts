@@ -17,21 +17,25 @@ import { createButton } from "../ui/Button";
 import { createTextBox, TextBox } from "../ui/TextBox";
 import { createDataList, DataList, DataListEntry, appendDataListEntries } from "../ui/DataList";
 
-function findKeyins(): string[] {
-  const keyins: string[] = [];
-  const tools = IModelApp.tools.getToolList();
-  for (const tool of tools) {
-    keyins.push(tool.keyin);
-  }
-  return keyins;
-}
-
 function keyinsToDataListEntries(keyins: string[]): DataListEntry[] {
   const entries: DataListEntry[] = [];
   for (const keyin of keyins) {
     entries.push({ value: keyin });
   }
+
   return entries;
+}
+
+/** Controls whether localized and/or non-localized key-in strings appear in a KeyinField's auto-completion list.
+ * @beta
+ */
+export enum KeyinFieldLocalization {
+  /** Include only non-localized key-in strings. */
+  NonLocalized,
+  /** Include only localized key-in strings. */
+  Localized,
+  /** Include localized and non-localized strings for each key-in. */
+  Both,
 }
 
 /** Properties controlling how a KeyinField is created.
@@ -51,6 +55,11 @@ export interface KeyinFieldProps {
    * Default: zero;
    */
   historyLength?: number;
+  /** Controls whether localized and/or non-localized keyin strings appear in the autocompletion list.
+   * Note: the KeyinField will still accept either localized or non-localized strings; this option only controls what is displayed in the auto-completion list.
+   * Default: non-localized
+   */
+  localization?: KeyinFieldLocalization;
 }
 
 /** A textbox allowing input of key-ins (localized tool names) combined with a drop-down that lists all registered key-ins, filtered by substring match on the current input.
@@ -65,9 +74,11 @@ export class KeyinField {
   private _historyIndex?: number;
   private _historyLength = 0;
   private readonly _history: string[] | undefined;
+  private readonly _localization: KeyinFieldLocalization;
 
   public constructor(props: KeyinFieldProps) {
-    this.keyins = findKeyins();
+    this._localization = props.localization ?? KeyinFieldLocalization.NonLocalized;
+    this.keyins = this.findKeyins();
     const autoCompleteListId = props.baseId + "_autoComplete";
     this.autoCompleteList = createDataList({
       parent: props.parent,
@@ -200,7 +211,7 @@ export class KeyinField {
 
     // Handle case in which new tools were registered since we last populated the auto-complete list.
     // This can occur e.g. as a result of loading a extension, or deferred initialization of a package like markup.
-    const keyins = findKeyins();
+    const keyins = this.findKeyins();
     if (keyins.length > this.keyins.length) {
       const newKeyins: string[] = [];
       for (const keyin of keyins)
@@ -212,5 +223,28 @@ export class KeyinField {
       if (newKeyins.length > 0)
         appendDataListEntries(this.autoCompleteList, keyinsToDataListEntries(newKeyins));
     }
+  }
+
+  private findKeyins(): string[] {
+    const keyins: string[] = [];
+    const tools = IModelApp.tools.getToolList();
+    for (const tool of tools) {
+      switch (this._localization) {
+        case KeyinFieldLocalization.Localized:
+          keyins.push(tool.keyin);
+          break;
+        case KeyinFieldLocalization.Both:
+          keyins.push(tool.keyin);
+          if (tool.keyin === tool.englishKeyin)
+            break;
+        /* falls through */
+        default:
+        case KeyinFieldLocalization.NonLocalized:
+          keyins.push(tool.englishKeyin);
+          break;
+      }
+    }
+
+    return keyins;
   }
 }

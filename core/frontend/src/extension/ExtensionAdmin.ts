@@ -114,8 +114,6 @@ export class ExtensionAdmin {
               Logger.logError(loggerCategory, err.message);
             }
           }
-          if (!registeredExtension.reportReload())
-            return undefined;
         }
         return pendingExtension.promise;
       }

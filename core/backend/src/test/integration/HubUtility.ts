@@ -7,7 +7,7 @@ import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import * as os from "os";
 import * as path from "path";
 import { BriefcaseManager, ChangeSetToken, IModelDb, IModelJsFs, BriefcaseIdValue, StandaloneDb, IModelHost } from "../../imodeljs-backend";
-import { Briefcase as HubBriefcase, BriefcaseQuery, ChangeSet, ChangeSetQuery, ChangesType, HubIModel, IModelHubClient, IModelQuery, Version, VersionQuery } from "@bentley/imodelhub-client";
+import { Briefcase as HubBriefcase, BriefcaseQuery, ChangeSet, ChangeSetQuery, HubIModel, IModelHubClient, IModelQuery, Version, VersionQuery } from "@bentley/imodelhub-client";
 import { Project } from "@bentley/context-registry-client";
 
 /** Utility to work with iModelHub */

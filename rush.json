@@ -415,6 +415,12 @@
       "shouldPublish": false
     },
     {
+      "packageName": "imjs-importer",
+      "projectFolder": "test-apps/imjs-importer",
+      "reviewCategory": "internal",
+      "shouldPublish": false
+    },
+    {
       "packageName": "imodel-from-geojson",
       "projectFolder": "test-apps/imodel-from-geojson",
       "reviewCategory": "internal",

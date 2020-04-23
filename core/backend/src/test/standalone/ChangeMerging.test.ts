@@ -6,7 +6,7 @@ import { ChangeSetApplyOption, ChangeSetStatus, Id64String, OpenMode } from "@be
 import { IModel, IModelError, SubCategoryAppearance } from "@bentley/imodeljs-common";
 import { assert } from "chai";
 import * as path from "path";
-import { ChangeSetToken, ConcurrencyControl, DictionaryModel, Element, IModelDb, IModelHost, IModelJsFs, IModelJsNative, BriefcaseIdValue, SpatialCategory, StandaloneDb } from "../../imodeljs-backend";
+import { ChangeSetToken, ConcurrencyControl, DictionaryModel, Element, IModelDb, IModelHost, IModelJsFs, IModelJsNative, SpatialCategory, StandaloneDb } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 

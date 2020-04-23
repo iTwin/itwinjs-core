@@ -7,7 +7,7 @@
  */
 
 import { IDisposable, BeEvent } from "@bentley/bentleyjs-core";
-import { IModelConnection, EventSource, EventSourceManager } from "@bentley/imodeljs-frontend";
+import { IModelConnection, EventSource, EventSourceManager, IModelApp } from "@bentley/imodeljs-frontend";
 import {
   RpcRequestsHandler, RequestPriority, DescriptorOverrides,
   HierarchyRequestOptions, Node, NodeKey, NodePathElement,
@@ -103,12 +103,17 @@ export class PresentationManager implements IDisposable {
     this._localizationHelper = new LocalizationHelper();
     this._connections = new Map<IModelConnection, Promise<void>>();
 
-    this._eventSource.on(PresentationRpcInterface.interfaceName, PresentationRpcEvents.Update, this.onUpdate);
+    if (IModelApp.isNativeApp) {
+      // EventSource only works in native apps, so the `onUpdate` callback will only be called there. Adding
+      // under the condition just to avoid an error message being logged.
+      this._eventSource.on(PresentationRpcInterface.interfaceName, PresentationRpcEvents.Update, this.onUpdate);
+    }
   }
 
   public dispose() {
     this._requestsHandler.dispose();
-    this._eventSource.off(PresentationRpcInterface.interfaceName, PresentationRpcEvents.Update, this.onUpdate);
+    if (IModelApp.isNativeApp)
+      this._eventSource.off(PresentationRpcInterface.interfaceName, PresentationRpcEvents.Update, this.onUpdate);
   }
 
   private async onConnection(imodel: IModelConnection) {

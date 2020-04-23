@@ -8,6 +8,7 @@
 
 import { I18N, TranslationOptions } from "@bentley/imodeljs-i18n";
 import { UiError, getClassName } from "@bentley/ui-abstract";
+import { enablePatches } from "immer";
 
 /**
  * Manages the I18N service for the ui-components package.
@@ -22,6 +23,7 @@ export class UiComponents {
    * @param i18n The internationalization service created by the IModelApp.
    */
   public static async initialize(i18n: I18N): Promise<void> {
+    enablePatches();
     UiComponents._i18n = i18n;
     await UiComponents._i18n.registerNamespace(UiComponents.i18nNamespace).readFinished;
     return Promise.resolve();

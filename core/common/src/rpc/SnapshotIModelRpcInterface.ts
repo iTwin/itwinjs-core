@@ -9,6 +9,10 @@
 import { IModelConnectionProps, IModelRpcProps } from "../IModel";
 import { RpcInterface } from "../RpcInterface";
 import { RpcManager } from "../RpcManager";
+import { RpcOperation } from "./core/RpcOperation";
+import { RpcRequestTokenSupplier_T } from "./core/RpcRequest";
+
+const unknownIModelId: RpcRequestTokenSupplier_T = (req) => ({ iModelId: "undefined", key: req.parameters[0] });
 
 /** The RPC interface for working with *snapshot* iModels.
  * This interface is intended for desktop and mobile products. Web products are discouraged from registering this interface.
@@ -29,7 +33,11 @@ export abstract class SnapshotIModelRpcInterface extends RpcInterface {
     NOTE: Please consult the README in this folder for the semantic versioning rules.
   ===========================================================================================*/
 
+  @RpcOperation.setRoutingProps(unknownIModelId)
   public async openFile(_filePath: string): Promise<IModelConnectionProps> { return this.forward(arguments); }
+
+  @RpcOperation.setRoutingProps(unknownIModelId)
   public async openRemote(_key: string): Promise<IModelConnectionProps> { return this.forward(arguments); }
+
   public async close(_iModelRpcProps: IModelRpcProps): Promise<boolean> { return this.forward(arguments); }
 }

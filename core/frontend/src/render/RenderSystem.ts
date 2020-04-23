@@ -550,5 +550,11 @@ export namespace RenderSystem {
      * @beta
      */
     doIdleWork?: boolean;
+
+    /** WebGL context attributes to explicitly set when initializing [[IModelApp.renderSystem]].
+     * Exposed chiefly for OpenCities Planner.
+     * @internal
+     */
+    contextAttributes?: WebGLContextAttributes;
   }
 }

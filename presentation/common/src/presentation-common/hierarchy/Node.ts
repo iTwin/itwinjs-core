@@ -48,7 +48,7 @@ export interface Node {
 
 /**
  * Serialized [[Node]] JSON representation.
- * @internal
+ * @public
  */
 export interface NodeJSON {
   key: NodeKeyJSON;
@@ -67,12 +67,10 @@ export interface NodeJSON {
   isCheckboxEnabled?: boolean;
   extendedData?: { [key: string]: any };
 }
+
 /** @public */
 export namespace Node {
-  /**
-   * Serialize given node to JSON.
-   * @internal
-   */
+  /** Serialize given [[Node]] to JSON */
   export function toJSON(node: Node): NodeJSON {
     const { label, ...baseNode } = node;
     return {
@@ -82,13 +80,7 @@ export namespace Node {
     };
   }
 
-  /**
-   * Deserialize node from JSON
-   * @param json JSON or JSON serialized to string to deserialize from
-   * @returns Deserialized node
-   *
-   * @internal
-   */
+  /** Deserialize [[Node]] from JSON */
   export function fromJSON(json: NodeJSON | string): Node {
     if (typeof json === "string")
       return JSON.parse(json, reviver);

@@ -137,6 +137,15 @@ export namespace RpcOperation {
     };
   }
 
+  /** Convenience decorator for setting an RPC operation policy that supplies the IModelRpcProps for an operation. */
+  export function setRoutingProps(handler: RpcRequestTokenSupplier_T) {
+    return <T extends RpcInterface>(target: T, propertyKey: string, descriptor: PropertyDescriptor) => {
+      descriptor.value[OPERATION] = new RpcOperation(target.constructor as any, propertyKey, new class extends RpcOperationPolicy {
+        public token = handler;
+      }());
+    };
+  }
+
   /** Decorator for setting the default policy for an RPC interface definition class. */
   export function setDefaultPolicy(policy: RpcOperationPolicy | RpcOperationPolicyProps) {
     return <T extends RpcInterface>(definition: RpcInterfaceDefinition<T>) => {

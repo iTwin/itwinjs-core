@@ -36,7 +36,7 @@ describe("<CheckListBox />", () => {
 
     const cb = wrapper.find(Checkbox);
     cb.length.should.eq(1);
-    cb.prop("onClick")!(sinon.stub({} as React.MouseEvent));
+    cb.prop("onClick")!({} as React.MouseEvent);
     spyMethod.calledOnce.should.true;
 
     wrapper.unmount();

@@ -14,7 +14,7 @@ import { TypeDescription } from "./TypeDescription";
 
 /**
  * Data structure for a [[Field]] serialized to JSON.
- * @internal
+ * @public
  */
 export interface BaseFieldJSON {
   category: CategoryDescription;
@@ -28,7 +28,7 @@ export interface BaseFieldJSON {
 
 /**
  * Data structure for a [[PropertiesField]] serialized to JSON.
- * @internal
+ * @public
  */
 export interface PropertiesFieldJSON extends BaseFieldJSON {
   properties: PropertyJSON[];
@@ -36,7 +36,7 @@ export interface PropertiesFieldJSON extends BaseFieldJSON {
 
 /**
  * Data structure for a [[NestedContentField]] serialized to JSON.
- * @internal
+ * @public
  */
 export interface NestedContentFieldJSON extends BaseFieldJSON {
   contentClassInfo: ClassInfoJSON;
@@ -45,21 +45,18 @@ export interface NestedContentFieldJSON extends BaseFieldJSON {
   nestedFields: FieldJSON[];
 }
 
-/** @internal */
+/**
+ * JSON representation of a [[Field]]
+ * @public
+ */
 export type FieldJSON = BaseFieldJSON | PropertiesFieldJSON | NestedContentFieldJSON;
 
-/**
- * Is supplied field a properties field.
- * @internal
- */
+/** Is supplied field a properties field. */
 const isPropertiesField = (field: FieldJSON | Field): field is PropertiesFieldJSON | PropertiesField => {
   return (field as any).properties;
 };
 
-/**
- * Is supplied field a nested content field.
- * @internal
- */
+/** Is supplied field a nested content field. */
 const isNestedContentField = (field: FieldJSON | Field): field is NestedContentFieldJSON | NestedContentField => {
   return (field as any).nestedFields;
 };
@@ -124,7 +121,7 @@ export class Field {
    */
   public get parent(): NestedContentField | undefined { return this._parent; }
 
-  /** @internal */
+  /** Serialize this object to JSON */
   public toJSON(): FieldJSON {
     return {
       category: this.category,
@@ -137,13 +134,7 @@ export class Field {
     };
   }
 
-  /**
-   * Deserialize Field from JSON
-   * @param json JSON or JSON serialized to string to deserialize from
-   * @returns Deserialized field or undefined if deserialization failed
-   *
-   * @internal
-   */
+  /** Deserialize [[Field]] from JSON */
   public static fromJSON(json: FieldJSON | string | undefined): Field | undefined {
     if (!json)
       return undefined;
@@ -205,7 +196,7 @@ export class PropertiesField extends Field {
     this.properties = properties;
   }
 
-  /** @internal */
+  /** Serialize this object to JSON */
   public toJSON(): PropertiesFieldJSON {
     return {
       ...super.toJSON(),
@@ -213,13 +204,7 @@ export class PropertiesField extends Field {
     };
   }
 
-  /**
-   * Deserialize PropertiesField from JSON
-   * @param json JSON or JSON serialized to string to deserialize from
-   * @returns Deserialized properties field or undefined if deserialization failed
-   *
-   * @internal
-   */
+  /** Deserialize [[PropertiesField]] from JSON */
   public static fromJSON(json: PropertiesFieldJSON | string | undefined): PropertiesField | undefined {
     if (!json)
       return undefined;
@@ -280,7 +265,7 @@ export class NestedContentField extends Field {
     return getFieldByName(this.nestedFields, name, recurse);
   }
 
-  /** @internal */
+  /** Serialize this object to JSON */
   public toJSON(): NestedContentFieldJSON {
     return {
       ...super.toJSON(),
@@ -291,13 +276,7 @@ export class NestedContentField extends Field {
     };
   }
 
-  /**
-   * Deserialize NestedContentField from JSON
-   * @param json JSON or JSON serialized to string to deserialize from
-   * @returns Deserialized nested content field or undefined if deserialization failed
-   *
-   * @internal
-   */
+  /** Deserialize [[NestedContentField]] from JSON */
   public static fromJSON(json: NestedContentFieldJSON | string | undefined): NestedContentField | undefined {
     if (!json)
       return undefined;

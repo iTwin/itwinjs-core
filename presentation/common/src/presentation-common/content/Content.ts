@@ -11,7 +11,7 @@ import { Item, ItemJSON } from "./Item";
 
 /**
  * Serialized [[Content]] JSON representation.
- * @internal
+ * @public
  */
 export interface ContentJSON {
   descriptor: DescriptorJSON;
@@ -36,7 +36,7 @@ export class Content {
     this.contentSet = items;
   }
 
-  /** @internal */
+  /** Serialize this object to JSON */
   public toJSON(): ContentJSON {
     return {
       descriptor: this.descriptor.toJSON(),
@@ -44,13 +44,7 @@ export class Content {
     };
   }
 
-  /**
-   * Deserialize Content from JSON
-   * @param json JSON or JSON serialized to string to deserialize from
-   * @returns Deserialized content or undefined if deserialization failed
-   *
-   * @internal
-   */
+  /** Deserialize [[Content]] from JSON */
   public static fromJSON(json: ContentJSON | string | undefined): Content | undefined {
     if (!json)
       return undefined;

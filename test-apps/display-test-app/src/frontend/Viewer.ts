@@ -17,7 +17,7 @@ import {
   ViewState,
   SnapshotConnection,
 } from "@bentley/imodeljs-frontend";
-import { MarkupApp } from "@bentley/imodeljs-markup";
+import { MarkupApp, MarkupData } from "@bentley/imodeljs-markup";
 import { createTimeline } from "./Timeline";
 import { CategoryPicker, ModelPicker } from "./IdPicker";
 import { FeatureOverridesPanel } from "./FeatureOverrides";
@@ -79,7 +79,11 @@ export class SaveImageTool extends Tool {
 
 export class MarkupTool extends Tool {
   public static toolId = "Markup";
-  public run(_args: any[]): boolean {
+  public static savedData?: MarkupData;
+  public static get minArgs() { return 0; }
+  public static get maxArgs() { return 1; }
+
+  public run(wantSavedData: boolean): boolean {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined === vp)
       return true;
@@ -93,16 +97,23 @@ export class MarkupTool extends Tool {
       }
       MarkupApp.props.result.maxWidth = 1500;
       MarkupApp.stop().then((markupData) => {
+        if (wantSavedData)
+          MarkupTool.savedData = markupData;
         if (undefined !== markupData.image)
           openImageDataUrlInNewWindow(markupData.image, "Markup");
       }).catch((_) => { });
     } else {
       MarkupApp.props.active.element.stroke = "white"; // as an example, set default color for elements
       MarkupApp.markupSelectToolId = "Markup.TestSelect"; // as an example override the default markup select tool to launch redline tools using key events
-      MarkupApp.start(vp); // tslint:disable-line:no-floating-promises
+      MarkupApp.start(vp, wantSavedData ? MarkupTool.savedData : undefined); // tslint:disable-line:no-floating-promises
     }
 
     return true;
+  }
+
+  public parseAndRun(...args: string[]): boolean {
+    const wantSavedData = "savedata" === args[0]?.toLowerCase();
+    return this.run(wantSavedData);
   }
 }
 

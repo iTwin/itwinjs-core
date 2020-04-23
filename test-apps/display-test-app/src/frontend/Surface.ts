@@ -2,10 +2,18 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { KeyinField } from "@bentley/frontend-devtools";
+import {
+  KeyinField,
+  parseArgs,
+} from "@bentley/frontend-devtools";
 import { Range3d } from "@bentley/geometry-core";
 import { Cartographic } from "@bentley/imodeljs-common";
-import { BlankConnection, IModelApp, SnapshotConnection, Tool } from "@bentley/imodeljs-frontend";
+import {
+  BlankConnection,
+  IModelApp,
+  SnapshotConnection,
+  Tool,
+} from "@bentley/imodeljs-frontend";
 import { DisplayTestApp } from "./App";
 import { BrowserFileSelector, selectFileName } from "./FileOpen";
 import { FpsMonitor } from "./FpsMonitor";
@@ -14,7 +22,13 @@ import { addSnapModes } from "./SnapModes";
 import { TileLoadIndicator } from "./TileLoadIndicator";
 import { createToolButton, ToolBar } from "./ToolBar";
 import { Viewer, ViewerProps } from "./Viewer";
-import { Dock, NamedWindow, NamedWindowProps, Window, WindowProps } from "./Window";
+import {
+  Dock,
+  NamedWindow,
+  NamedWindowProps,
+  Window,
+  WindowProps,
+} from "./Window";
 
 export class Surface {
   public readonly element: HTMLElement;
@@ -395,36 +409,24 @@ export class CreateWindowTool extends Tool {
     return true;
   }
 
-  public parseAndRun(...args: string[]): boolean {
+  public parseAndRun(...inputArgs: string[]): boolean {
     let name: string | undefined;
     const props: WindowProps = {};
 
-    for (const arg of args) {
-      const parts = arg.split("=");
-      if (2 !== parts.length)
-        return true;
+    const args = parseArgs(inputArgs);
+    const id = args.get("id");
+    if (undefined !== id)
+      name = id;
 
-      const key = parts[0].toLowerCase();
-      switch (key) {
-        case "id":
-          name = parts[1];
-          break;
-        case "title":
-          props.title = parts[1];
-          break;
-        case "top":
-        case "left":
-        case "width":
-        case "height":
-          const value = parseInt(parts[1], 10);
-          if (Number.isNaN(value))
-            return true;
+    const title = args.get("title");
+    if (undefined !== title)
+      props.title = title;
 
-          props[key] = value;
-          break;
-        default:
-          return true;
-      }
+    const sides: Array<"top" | "left" | "width" | "height"> = ["top", "left", "width", "height"];
+    for (const key of sides) {
+      const value = args.getInteger(key);
+      if (undefined !== value)
+        props[key] = value;
     }
 
     if (undefined !== name) {

@@ -1020,7 +1020,7 @@ export class BriefcaseManager {
 
   /** @internal */
   public static isStandaloneBriefcaseId(id: BriefcaseId) {
-    return id == BriefcaseIdValue.Standalone || id == BriefcaseIdValue.DeprecatedStandalone;
+    return id === BriefcaseIdValue.Standalone || id === BriefcaseIdValue.DeprecatedStandalone;
   }
   /** @internal */
   public static isValidBriefcaseId(id: BriefcaseId) {

@@ -16,6 +16,14 @@
       ]
     },
     {
+      "name": "@bentley/backend-itwin-client",
+      "allowedCategories": [
+        "backend",
+        "internal",
+        "tools"
+      ]
+    },
+    {
       "name": "@bentley/bentleyjs-core",
       "allowedCategories": [
         "backend",
@@ -165,14 +173,6 @@
       "allowedCategories": [
         "backend",
         "extensions",
-        "internal",
-        "tools"
-      ]
-    },
-    {
-      "name": "@bentley/imodeljs-clients-backend",
-      "allowedCategories": [
-        "backend",
         "internal",
         "tools"
       ]
@@ -427,12 +427,6 @@
       "name": "@svgr/webpack",
       "allowedCategories": [
         "tools"
-      ]
-    },
-    {
-      "name": "@testing-library/dom",
-      "allowedCategories": [
-        "frontend"
       ]
     },
     {
@@ -889,6 +883,12 @@
     },
     {
       "name": "istanbul-instrumenter-loader",
+      "allowedCategories": [
+        "internal"
+      ]
+    },
+    {
+      "name": "jquery",
       "allowedCategories": [
         "internal"
       ]
@@ -1447,13 +1447,6 @@
       ]
     },
     {
-      "name": "svg-baker-runtime",
-      "allowedCategories": [
-        "frontend",
-        "internal"
-      ]
-    },
-    {
       "name": "svg-react-loader",
       "allowedCategories": [
         "frontend"
@@ -1575,7 +1568,6 @@
     {
       "name": "tsutils",
       "allowedCategories": [
-        "frontend",
         "tools"
       ]
     },

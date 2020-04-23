@@ -70,6 +70,10 @@ import {
 } from "./tools/PlanProjectionTools";
 import { ToggleTileTreeBoundsDecorationTool } from "./tools/TileTreeBoundsDecoration";
 import { ClipColorTool } from "./tools/ClipColorTool";
+import {
+  ElementIdFromSourceAspectIdTool,
+  SourceAspectIdFromElementIdTool,
+} from "./tools/SourceAspectIdTools";
 
 /** Entry-point for the package. Before using the package you *must* call [[FrontendDevTools.initialize]].
  * @beta
@@ -105,6 +109,7 @@ export class FrontendDevTools {
       CompileShadersTool,
       DefaultTileSizeModifierTool,
       DumpPlanProjectionSettingsTool,
+      ElementIdFromSourceAspectIdTool,
       EmphasizeSelectedElementsTool,
       FadeOutTool,
       FreezeSceneTool,
@@ -121,6 +126,7 @@ export class FrontendDevTools {
       SetVolClassIntersectOff,
       SetVolClassIntersectOn,
       ShowTileVolumesTool,
+      SourceAspectIdFromElementIdTool,
       ToggleDrapeFrustumTool,
       ToggleFrustumSnapshotTool,
       ToggleLogZTool,

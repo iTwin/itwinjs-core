@@ -410,8 +410,8 @@
               "relationships": {
                 "schemaName": "BisCore",
                 "classNames": [
-                  "ElementMultiAspect",
-                  "ElementUniqueAspect"
+                  "ElementOwnsMultiAspects",
+                  "ElementOwnsUniqueAspects"
                 ]
               },
               "requiredDirection": "Forward",
@@ -448,8 +448,8 @@
               "relationships": {
                 "schemaName": "BisCore",
                 "classNames": [
-                  "ElementMultiAspect",
-                  "ElementUniqueAspect"
+                  "ElementOwnsMultiAspects",
+                  "ElementOwnsUniqueAspects"
                 ]
               },
               "requiredDirection": "Forward",

@@ -115,7 +115,8 @@ describe("ImportIMJS", () => {
                 }
                 ok = totalModels > 0;
             }
-            expect(ok)        }
+            expect(ok)
+        }
     });
 
 });

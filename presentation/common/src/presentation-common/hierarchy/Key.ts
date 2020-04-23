@@ -26,65 +26,41 @@ export enum StandardNodeTypes {
 export type NodeKey = BaseNodeKey | ECInstancesNodeKey | ECClassGroupingNodeKey | ECPropertyGroupingNodeKey | LabelGroupingNodeKey;
 /** @public */
 export namespace NodeKey {
-  /**
-   * Serialize given [[NodeKey]] to JSON
-   * @internal
-   */
+  /** Serialize given [[NodeKey]] to JSON */
   export function toJSON(key: NodeKey): NodeKeyJSON {
     if (isInstancesNodeKey(key))
       return { ...key, instanceKeys: key.instanceKeys.map(InstanceKey.toJSON) };
     return { ...key };
   }
 
-  /**
-   * Deserialize node key from JSON
-   * @param json JSON or JSON serialized to string to deserialize from
-   * @returns Deserialized node key
-   *
-   * @internal
-   */
+  /** Deserialize node key from JSON */
   export function fromJSON(json: NodeKeyJSON): NodeKey {
     if (isInstancesNodeKey(json))
       return { ...json, instanceKeys: json.instanceKeys.map(InstanceKey.fromJSON) };
     return { ...json };
   }
 
-  /**
-   * Checks if the supplied key is an [[ECInstancesNodeKey]]
-   * @public
-   */
+  /** Checks if the supplied key is an [[ECInstancesNodeKey]] */
   export function isInstancesNodeKey(key: NodeKey): key is ECInstancesNodeKey {
     return key.type === StandardNodeTypes.ECInstancesNode;
   }
 
-  /**
-   * Checks if the supplied key is an [[ECClassGroupingNodeKey]]
-   * @public
-   */
+  /** Checks if the supplied key is an [[ECClassGroupingNodeKey]] */
   export function isClassGroupingNodeKey(key: NodeKey): key is ECClassGroupingNodeKey {
     return key.type === StandardNodeTypes.ECClassGroupingNode;
   }
 
-  /**
-   * Checks if the supplied key is an [[ECPropertyGroupingNodeKey]]
-   * @public
-   */
+  /** Checks if the supplied key is an [[ECPropertyGroupingNodeKey]] */
   export function isPropertyGroupingNodeKey(key: NodeKey): key is ECPropertyGroupingNodeKey {
     return key.type === StandardNodeTypes.ECPropertyGroupingNode;
   }
 
-  /**
-   * Checks if the supplied key is a [[LabelGroupingNodeKey]]
-   * @public
-   */
+  /** Checks if the supplied key is a [[LabelGroupingNodeKey]] */
   export function isLabelGroupingNodeKey(key: NodeKey): key is LabelGroupingNodeKey {
     return key.type === StandardNodeTypes.DisplayLabelGroupingNode;
   }
 
-  /**
-   * Checks if the supplied key is a grouping node key
-   * @public
-   */
+  /** Checks if the supplied key is a grouping node key */
   export function isGroupingNodeKey(key: NodeKey): key is GroupingNodeKey {
     return isClassGroupingNodeKey(key) || isPropertyGroupingNodeKey(key) || isLabelGroupingNodeKey(key);
   }

@@ -37,7 +37,11 @@ export enum VariableValueTypes {
  * @public
  */
 export type VariableValue = boolean | string | number | number[] | Id64String[];
-/** @internal */
+
+/**
+ * JSON representation of [[VariableValue]]
+ * @public
+ */
 export type VariableValueJSON = boolean | string | string[] | number | number[];
 
 /**

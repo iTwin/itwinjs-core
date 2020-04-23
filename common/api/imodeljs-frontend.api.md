@@ -2601,7 +2601,6 @@ export abstract class Extension {
     name: string;
     abstract onExecute(_args: string[]): Promise<void>;
     onLoad(_args: string[]): Promise<void>;
-    reportReload(): boolean;
     resolveResourceUrl(relativeUrl: string): string;
     setI18n(defaultNamespace?: string, options?: I18NOptions): void;
 }
@@ -6800,6 +6799,8 @@ export abstract class RenderSystem implements IDisposable {
 export namespace RenderSystem {
     // @beta
     export interface Options {
+        // @internal
+        contextAttributes?: WebGLContextAttributes;
         // @internal
         disabledExtensions?: WebGLExtensionName[];
         displaySolarShadows?: boolean;

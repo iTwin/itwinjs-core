@@ -50,8 +50,10 @@ export interface SliderProps extends CommonProps {
   /** Indicates whether to compensate for the tick marks when determining the width. */
   includeTicksInWidth?: boolean;
 
-  /** Indicates whether to show tooltip with the value above the Slider. */
+  /** Indicates whether to show tooltip with the value. The tooltip will be positioned above the Slider, by default. */
   showTooltip?: boolean;
+  /** Indicates whether the tooltip should show below the Slider instead of above. */
+  tooltipBelow?: boolean;
   /** Format a value for the tooltip */
   formatTooltip?: (value: number) => string;
 
@@ -105,7 +107,7 @@ export function Slider(props: SliderProps) {
     showTicks, showTickLabels, formatTick, getTickCount, getTickValues, includeTicksInWidth,
     reversed, disabled,
     showMinMax, minImage, maxImage,
-    showTooltip, formatTooltip,
+    showTooltip, tooltipBelow, formatTooltip,
   } = props;
   const domain = [min, max];
   const multipleValues = values.length > 1;
@@ -157,8 +159,9 @@ export function Slider(props: SliderProps) {
                   getEventData={getEventData}
                   getTrackProps={getTrackProps}
                   showTooltip={showTooltip}
-                  multipleValues={multipleValues}
+                  tooltipBelow={tooltipBelow}
                   formatTooltip={formatTooltip}
+                  multipleValues={multipleValues}
                 />
               ))}
             </div>
@@ -193,6 +196,7 @@ export function Slider(props: SliderProps) {
                   isActive={handle.id === activeHandleID}
                   getHandleProps={getHandleProps}
                   showTooltip={showTooltip}
+                  tooltipBelow={tooltipBelow}
                   formatTooltip={formatTooltip}
                   disabled={disabled}
                 />
@@ -252,6 +256,7 @@ interface TooltipTrackProps {
   activeHandleID: string;
   getEventData: (e: Event) => object;
   showTooltip?: boolean;
+  tooltipBelow?: boolean;
   formatTooltip?: (value: number) => string;
   multipleValues?: boolean;
 }
@@ -263,7 +268,9 @@ interface TooltipTrackState {
 
 /** TooltipTrack component for Slider */
 function TooltipTrack(props: TooltipTrackProps) {
-  const { source, target, activeHandleID, showTooltip, multipleValues, formatTooltip, getTrackProps, getEventData } = props;
+  const { source, target, activeHandleID, showTooltip, tooltipBelow,
+    multipleValues, formatTooltip, getTrackProps, getEventData,
+  } = props;
 
   const [percent, setPercent] = React.useState(null as number | null);
 
@@ -289,12 +296,17 @@ function TooltipTrack(props: TooltipTrackProps) {
     tooltipText = `${sourceValue} : ${targetValue}`;
   }
 
+  const tooltipClassName = classnames(
+    "core-slider-tooltip",
+    tooltipBelow && "tooltip-below",
+  );
+
   // istanbul ignore next - WIP
   return (
     <>
       {!activeHandleID && percent && showTooltip && multipleValues ? (
         <div className="core-slider-tooltip-container" style={{ left: `${percent}%` }}>
-          <div className="core-slider-tooltip" data-testid="core-slider-tooltip">
+          <div className={tooltipClassName} data-testid="core-slider-tooltip">
             <span className="core-slider-tooltip-text">{tooltipText}</span>
           </div>
         </div>
@@ -343,6 +355,7 @@ interface HandleProps {
   domain: number[];
   getHandleProps: (id: string, config: object) => object;
   showTooltip?: boolean;
+  tooltipBelow?: boolean;
   formatTooltip?: (value: number) => string;
 }
 
@@ -355,6 +368,7 @@ function Handle(props: HandleProps) {
     disabled,
     getHandleProps,
     showTooltip,
+    tooltipBelow,
     formatTooltip,
   } = props;
 
@@ -370,12 +384,17 @@ function Handle(props: HandleProps) {
     setMouseOver(false);
   };
 
+  const tooltipClassName = classnames(
+    "core-slider-tooltip",
+    tooltipBelow && "tooltip-below",
+  );
+
   // istanbul ignore next - WIP
   return (
     <>
       {(mouseOver || isActive) && !disabled && showTooltip ? (
         <div className="core-slider-tooltip-container" style={{ left: `${percent}%` }}>
-          <div className="core-slider-tooltip" data-testid="core-slider-tooltip">
+          <div className={tooltipClassName} data-testid="core-slider-tooltip">
             <span className="core-slider-tooltip-text">{formatTooltip ? formatTooltip(value) : value}</span>
           </div>
         </div>

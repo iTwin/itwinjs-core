@@ -33,7 +33,7 @@ import { SelectionScope } from '@bentley/presentation-common';
 import { SelectionScopeRequestOptions } from '@bentley/presentation-common';
 import { UpdateInfoJSON } from '@bentley/presentation-common';
 import { VariableValue } from '@bentley/presentation-common';
-import { VariableValueJSON } from '@bentley/presentation-common/lib/presentation-common/RulesetVariables';
+import { VariableValueJSON } from '@bentley/presentation-common';
 import { VariableValueTypes } from '@bentley/presentation-common';
 
 // @beta
@@ -105,7 +105,7 @@ export interface PresentationManagerProps {
     activeUnitSystem?: PresentationUnitSystem;
     // @internal (undocumented)
     addon?: NativePlatformDefinition;
-    // @alpha
+    // @internal
     cacheDirectory?: string;
     enableSchemasPreload?: boolean;
     // @internal (undocumented)

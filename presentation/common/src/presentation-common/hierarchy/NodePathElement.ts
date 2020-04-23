@@ -9,14 +9,15 @@
 import { Node, NodeJSON } from "./Node";
 
 /**
- * Data related to node hierarchy filtering
+ * Serialized [[NodePathElement]] JSON representation.
  * @public
  */
-export interface NodePathFilteringData {
-  /** Number of filter matches in the current element */
-  matchesCount: number;
-  /** Number of filter matches in the current element's children (recursively) */
-  childMatchesCount: number;
+export interface NodePathElementJSON {
+  node: NodeJSON;
+  index: number;
+  isMarked?: boolean;
+  children: NodePathElementJSON[];
+  filteringData?: NodePathFilteringDataJSON;
 }
 
 /**
@@ -35,12 +36,10 @@ export interface NodePathElement {
   /** Additional filtering-related information */
   filteringData?: NodePathFilteringData;
 }
+
 /** @public */
 export namespace NodePathElement {
-  /**
-   * Serialize given [[NodePathElement]] to JSON
-   * @internal
-   */
+  /** Serialize given [[NodePathElement]] to JSON */
   export function toJSON(npe: NodePathElement): NodePathElementJSON {
     const result: NodePathElementJSON = {
       node: Node.toJSON(npe.node),
@@ -50,17 +49,11 @@ export namespace NodePathElement {
     if (undefined !== npe.isMarked)
       result.isMarked = npe.isMarked;
     if (undefined !== npe.filteringData)
-      result.filteringData = nodePathFilteringDataToJson(npe.filteringData);
+      result.filteringData = NodePathFilteringData.toJSON(npe.filteringData);
     return result;
   }
 
-  /**
-   * Deserialize [[NodePathElement]] from JSON
-   * @param json JSON or JSON serialized to string to deserialize from
-   * @returns Deserialized [[NodePathElement]]
-   *
-   * @internal
-   */
+  /** Deserialize [[NodePathElement]] from JSON */
   export function fromJSON(json: NodePathElementJSON | string): NodePathElement {
     if (typeof json === "string")
       return JSON.parse(json, reviver);
@@ -72,7 +65,7 @@ export namespace NodePathElement {
     if (undefined !== json.isMarked)
       result.isMarked = json.isMarked;
     if (undefined !== json.filteringData)
-      result.filteringData = nodePathFilteringDataFromJson(json.filteringData);
+      result.filteringData = NodePathFilteringData.fromJSON(json.filteringData);
     return result;
   }
 
@@ -112,7 +105,7 @@ export namespace NodePathElement {
 
 /**
  * Serialized [[NodePathFilteringData]] JSON representation.
- * @internal
+ * @public
  */
 export interface NodePathFilteringDataJSON {
   occurances: number;
@@ -120,27 +113,31 @@ export interface NodePathFilteringDataJSON {
 }
 
 /**
- * Serialized [[NodePathElement]] JSON representation.
- * @internal
+ * Data related to node hierarchy filtering
+ * @public
  */
-export interface NodePathElementJSON {
-  node: NodeJSON;
-  index: number;
-  isMarked?: boolean;
-  children: NodePathElementJSON[];
-  filteringData?: NodePathFilteringDataJSON;
+export interface NodePathFilteringData {
+  /** Number of filter matches in the current element */
+  matchesCount: number;
+  /** Number of filter matches in the current element's children (recursively) */
+  childMatchesCount: number;
 }
 
-const nodePathFilteringDataToJson = (npfd: NodePathFilteringData): NodePathFilteringDataJSON => {
-  return {
-    occurances: npfd.matchesCount,
-    childrenOccurances: npfd.childMatchesCount,
-  };
-};
+/** @public */
+export namespace NodePathFilteringData {
+  /** Serialize given [[NodePathFilteringData]] to JSON */
+  export function toJSON(npfd: NodePathFilteringData): NodePathFilteringDataJSON {
+    return {
+      occurances: npfd.matchesCount,
+      childrenOccurances: npfd.childMatchesCount,
+    };
+  }
 
-const nodePathFilteringDataFromJson = (json: NodePathFilteringDataJSON): NodePathFilteringData => {
-  return {
-    matchesCount: json.occurances,
-    childMatchesCount: json.childrenOccurances,
-  };
-};
+  /** Deserialize [[NodePathFilteringData]] from JSON */
+  export function fromJSON(json: NodePathFilteringDataJSON): NodePathFilteringData {
+    return {
+      matchesCount: json.occurances,
+      childMatchesCount: json.childrenOccurances,
+    };
+  }
+}

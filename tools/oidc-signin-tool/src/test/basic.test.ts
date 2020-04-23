@@ -7,9 +7,7 @@ import { Config } from "@bentley/bentleyjs-core";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
-import { getTestOidcToken } from "../TestOidcClient";
-import { TestOidcConfiguration, TestUsers } from "../TestUsers";
-import { TestUtility } from "../TestUtility";
+import { getTestAccessToken, TestBrowserAuthorizationClientConfiguration, TestUsers, TestUtility } from "../index";
 
 const assert = chai.assert;
 const expect = chai.expect;
@@ -18,7 +16,7 @@ chai.use(chaiAsPromised);
 IModelJsConfig.init(true /* suppress exception */, false /* suppress error message */, Config.App);
 
 describe("Sign in (#integration)", () => {
-  let oidcConfig: TestOidcConfiguration;
+  let oidcConfig: TestBrowserAuthorizationClientConfiguration;
 
   before(() => {
     oidcConfig = {
@@ -30,7 +28,7 @@ describe("Sign in (#integration)", () => {
 
   it("success with valid user", async () => {
     const validUser = TestUsers.regular;
-    const token = await getTestOidcToken(oidcConfig, validUser);
+    const token = await getTestAccessToken(oidcConfig, validUser);
     assert.exists(token);
   });
 
@@ -40,7 +38,7 @@ describe("Sign in (#integration)", () => {
       password: "invalid",
     };
 
-    await expect(getTestOidcToken(oidcConfig, invalidUser))
+    await expect(getTestAccessToken(oidcConfig, invalidUser))
       .to.be.rejectedWith(Error, `Failed OIDC signin for ${invalidUser.email}.\nError: Incorrect user ID or password. Type the correct user ID and password, and try again.`);
   });
 
@@ -50,7 +48,7 @@ describe("Sign in (#integration)", () => {
       password: "invalid",
       scope: Config.App.getString("imjs_oidc_browser_test_scopes"),
     };
-    await expect(getTestOidcToken(oidcConfig, invalidUser))
+    await expect(getTestAccessToken(oidcConfig, invalidUser))
       .to.be.rejectedWith(Error, `Failed OIDC signin for ${invalidUser.email}.\nError: We didn't recognize the username or password you entered. Please try again.`);
   });
 });

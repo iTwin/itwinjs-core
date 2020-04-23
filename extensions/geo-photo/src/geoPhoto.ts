@@ -352,11 +352,6 @@ export class GeoPhotoExtension extends Extension {
     this.geoPhotoOperation(args.length > 1 ? args[1] : "toggle");
   }
 
-  // returning false blocks output of message for subsequent "load Extension" attempts. onExecute is called.
-  public reportReload() {
-    return false;
-  }
-
   // called when an iModel is closed to remove the dialog
   public removeUi() {
     if (this.uiProvider) {

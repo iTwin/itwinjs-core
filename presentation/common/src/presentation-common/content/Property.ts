@@ -45,19 +45,18 @@ export interface Property {
    */
   relatedClassPath: RelationshipPath;
 }
+
 /** @public */
 export namespace Property {
-  /** @internal */
+  /** Serialize [[Property]] to JSON */
   export function toJSON(prop: Property): PropertyJSON {
     return {
       property: PropertyInfo.toJSON(prop.property),
       relatedClassPath: prop.relatedClassPath.map((rci) => RelatedClassInfo.toJSON(rci)),
     };
   }
-  /**
-   * Deserializes [[Property]] from [[PropertyJSON]]
-   * @internal
-   */
+
+  /** Deserializes [[Property]] from JSON */
   export function fromJSON(json: PropertyJSON): Property {
     return {
       property: PropertyInfo.fromJSON(json.property),
@@ -67,8 +66,8 @@ export namespace Property {
 }
 
 /**
- * Serialized [[Property]]
- * @internal
+ * JSON representation of [[Property]]
+ * @public
  */
 export interface PropertyJSON {
   property: PropertyInfoJSON;

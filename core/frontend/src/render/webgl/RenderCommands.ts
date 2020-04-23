@@ -466,15 +466,13 @@ export class RenderCommands {
       (sceneGf as Graphic).addCommands(this);
 
     if (undefined !== overlayDecorations) {
-      this._stack.pushState(this.target.decorationsState);
-
-      for (const overlay of overlayDecorations) {
-        const gf = overlay as Graphic;
-        if (gf.isPickable)
-          gf.addCommands(this);
-      }
-
-      this._stack.pop();
+      this.pushAndPopState(this.target.decorationsState, () => {
+        for (const overlay of overlayDecorations) {
+          const gf = overlay as Graphic;
+          if (gf.isPickable)
+            gf.addCommands(this);
+        }
+      });
     }
 
     this._addTranslucentAsOpaque = false;
