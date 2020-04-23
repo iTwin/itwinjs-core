@@ -9,10 +9,9 @@
 import { IDisposable, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { IModelJsNative, IModelDb, IModelHost } from "@bentley/imodeljs-backend";
 import {
-  PresentationError, PresentationStatus, VariableValueTypes,
+  PresentationError, PresentationStatus, VariableValueTypes, VariableValueJSON,
   PartialHierarchyModificationJSON, UpdateInfoJSON,
 } from "@bentley/presentation-common";
-import { VariableValueJSON } from "@bentley/presentation-common/lib/presentation-common/RulesetVariables";
 import { PresentationManagerMode } from "./PresentationManager";
 
 /** @internal */

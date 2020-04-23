@@ -14,17 +14,22 @@ import { ValuesDictionary } from "../Utils";
  * @public
  */
 export type Value = string | number | boolean | undefined | ValuesMap | ValuesArray | NestedContentValue[];
+
 /** @public */
 export namespace Value {
   /** Is the value a primitive */
   export function isPrimitive(value: Value): value is string | number | boolean | undefined { return isPrimitiveValue(value); }
+
   /** Is the value an array */
   export function isArray(value: Value): value is ValuesArray { return isArrayValue(value); }
+
   /** Is the value a map / struct */
   export function isMap(value: Value): value is ValuesMap { return isMapValue(value); }
+
   /** Is the value a nested content value */
   export function isNestedContent(value: Value): value is NestedContentValue[] { return isNestedContentValue(value); }
-  /** @internal */
+
+  /** Serialize [[Value]] to JSON */
   export function fromJSON(json: ValueJSON): Value {
     if (json === null)
       return undefined;
@@ -36,7 +41,8 @@ export namespace Value {
       return valuesMapFromJSON(json);
     return json;
   }
-  /** @internal */
+
+  /** Deserialize [[Value]] from JSON */
   export function toJSON(value: Value): ValueJSON {
     if (undefined === value)
       return null;
@@ -49,11 +55,13 @@ export namespace Value {
     return value;
   }
 }
+
 /**
  * A map of raw values
  * @public
  */
 export interface ValuesMap extends ValuesDictionary<Value> { }
+
 /**
  * An array of raw values
  * @public
@@ -65,15 +73,19 @@ export interface ValuesArray extends Array<Value> { }
  * @public
  */
 export type DisplayValue = string | undefined | DisplayValuesMap | DisplayValuesArray;
+
 /** @public */
 export namespace DisplayValue {
   /** Is the value a primitive */
   export function isPrimitive(value: DisplayValue): value is string | undefined { return isPrimitiveValue(value); }
+
   /** Is the value an array */
   export function isArray(value: DisplayValue): value is DisplayValuesArray { return isArrayValue(value); }
+
   /** Is the value a map / struct */
   export function isMap(value: DisplayValue): value is DisplayValuesMap { return isMapValue(value); }
-  /** @internal */
+
+  /** Serialize [[DisplayValue]] to JSON */
   export function fromJSON(json: DisplayValueJSON): DisplayValue {
     if (json === null)
       return undefined;
@@ -83,7 +95,8 @@ export namespace DisplayValue {
       return displayValuesMapFromJSON(json);
     return json;
   }
-  /** @internal */
+
+  /** Deserialize [[DisplayValue]] from JSON */
   export function toJSON(value: DisplayValue): DisplayValueJSON {
     if (undefined === value)
       return null;
@@ -94,11 +107,13 @@ export namespace DisplayValue {
     return value;
   }
 }
+
 /**
  * A map of display values
  * @public
  */
 export interface DisplayValuesMap extends ValuesDictionary<DisplayValue> { }
+
 /**
  * An array of display values
  * @public
@@ -119,9 +134,10 @@ export interface NestedContentValue {
   /** Names of fields whose values are merged */
   mergedFieldNames: string[];
 }
+
 /** @public */
 export namespace NestedContentValue {
-  /** @internal */
+  /** Serialize [[NestedContentValue]] to JSON */
   export function toJSON(json: NestedContentValue): NestedContentValueJSON {
     return {
       primaryKeys: json.primaryKeys.map(InstanceKey.toJSON),
@@ -130,7 +146,8 @@ export namespace NestedContentValue {
       mergedFieldNames: json.mergedFieldNames,
     };
   }
-  /** @internal */
+
+  /** Deserialize [[NestedContentValue]] from JSON */
   export function fromJSON(json: NestedContentValueJSON): NestedContentValue {
     return {
       primaryKeys: json.primaryKeys.map(InstanceKey.fromJSON),
@@ -141,23 +158,45 @@ export namespace NestedContentValue {
   }
 }
 
-/** @internal */
+/**
+ * JSON representation of [[Value]]
+ * @public
+ */
 export type ValueJSON = string | number | boolean | null | ValuesMapJSON | ValuesArrayJSON | NestedContentValueJSON[];
-/** @internal */
+
+/**
+ * JSON representation of [[ValuesMap]]
+ * @public
+ */
 export interface ValuesMapJSON extends ValuesDictionary<ValueJSON> { }
-/** @internal */
+
+/**
+ * JSON representation of [[ValuesArray]]
+ * @public
+ */
 export interface ValuesArrayJSON extends Array<ValueJSON> { }
 
-/** @internal */
+/**
+ * JSON representation of [[DisplayValue]]
+ * @public
+ */
 export type DisplayValueJSON = string | null | DisplayValuesMapJSON | DisplayValuesArrayJSON;
-/** @internal */
+
+/**
+ * JSON representation of [[DisplayValuesMap]]
+ * @public
+ */
 export interface DisplayValuesMapJSON extends ValuesDictionary<DisplayValueJSON> { }
-/** @internal */
+
+/**
+ * JSON representation of [[DisplayValuesArray]]
+ * @public
+ */
 export interface DisplayValuesArrayJSON extends Array<DisplayValueJSON> { }
 
 /**
- * Serialized [[NestedContentValue]] JSON representation.
- * @internal
+ * JSON representation of [[NestedContentValue]]
+ * @public
  */
 export interface NestedContentValueJSON {
   primaryKeys: InstanceKeyJSON[];

@@ -18,8 +18,8 @@ import {
   SelectionScopeRequestOptions, SelectionScope, DefaultContentDisplayTypes,
   ContentFlags, Ruleset, RulesetVariable, RequestPriority, LabelDefinition,
   PresentationUnitSystem, PartialHierarchyModification, PresentationDataCompareOptions,
+  getLocalesDirectory,
 } from "@bentley/presentation-common";
-import { getLocalesDirectory } from "@bentley/presentation-common/lib/presentation-common/Utils";
 import { NativePlatformDefinition, createDefaultNativePlatform, NativePlatformRequestTypes } from "./NativePlatform";
 import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager";
 import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";

@@ -15,22 +15,23 @@ export interface LabelCompositeValue {
   values: LabelDefinition[];
 }
 
-/** @internal */
+/**
+ * JSON representation of [[LabelCompositeValue]]
+ * @public
+ */
 export interface LabelCompositeValueJSON {
   separator: string;
   values: LabelDefinitionJSON[];
 }
 
-/**
- * @public
- */
+/** @public */
 export namespace LabelCompositeValue {
-  /** @internal */
+  /** Serialize given [[LabelCompositeValue]] to JSON */
   export function toJSON(compositeValue: LabelCompositeValue): LabelCompositeValueJSON {
     return { ...compositeValue, values: compositeValue.values.map(LabelDefinition.toJSON) };
   }
 
-  /** @internal */
+  /** Deserialize [[LabelCompositeValue]] from JSON */
   export function fromJSON(json: LabelCompositeValueJSON): LabelCompositeValue {
     return Object.assign({}, json, {
       values: json.values.map(LabelDefinition.fromJSON),
@@ -43,7 +44,11 @@ export namespace LabelCompositeValue {
  * @public
  */
 export type LabelRawValue = string | number | boolean | LabelCompositeValue;
-/** @internal */
+
+/**
+ * JSON representation of  [[LabelRawValue]]
+ * @public
+ */
 export type LabelRawValueJSON = string | number | boolean | LabelCompositeValueJSON;
 
 /**
@@ -59,7 +64,10 @@ export interface LabelDefinition {
   typeName: string;
 }
 
-/** @internal */
+/**
+ * JSON representation of [[LabelDefinition]]
+ * @public
+ */
 export interface LabelDefinitionJSON {
   displayValue: string;
   rawValue: LabelRawValueJSON;
@@ -68,10 +76,7 @@ export interface LabelDefinitionJSON {
 
 /** @public */
 export namespace LabelDefinition {
-  /**
-   * Serialize given label definition to JSON.
-   * @internal
-   */
+  /** Serialize given [[LabelDefinition]] to JSON */
   export function toJSON(labelDefinition: LabelDefinition): LabelDefinitionJSON {
     return {
       displayValue: labelDefinition.displayValue,
@@ -80,13 +85,7 @@ export namespace LabelDefinition {
     };
   }
 
-  /**
-   * Deserialize label definition from JSON
-   * @param json JSON or JSON serialized to string to deserialize from
-   * @returns Deserialized label definition
-   *
-   * @internal
-   */
+  /** Deserialize [[LabelDefinition]] from JSON */
   export function fromJSON(json: LabelDefinitionJSON | string): LabelDefinition {
     if (typeof json === "string")
       return JSON.parse(json, reviver);
