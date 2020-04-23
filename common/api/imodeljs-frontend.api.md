@@ -2601,7 +2601,6 @@ export abstract class Extension {
     name: string;
     abstract onExecute(_args: string[]): Promise<void>;
     onLoad(_args: string[]): Promise<void>;
-    reportReload(): boolean;
     resolveResourceUrl(relativeUrl: string): string;
     setI18n(defaultNamespace?: string, options?: I18NOptions): void;
 }

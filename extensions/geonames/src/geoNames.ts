@@ -234,11 +234,6 @@ export class GeoNameExtension extends Extension {
 
     await this._i18NNamespace!.readFinished;
   }
-
-  // returning false blocks output of message for subsequent "load Extension" attempts. onExecute is called.
-  public reportReload() {
-    return false;
-  }
 }
 
 // Register the extension with the extensionAdmin.
