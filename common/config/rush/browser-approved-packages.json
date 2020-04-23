@@ -430,12 +430,6 @@
       ]
     },
     {
-      "name": "@testing-library/dom",
-      "allowedCategories": [
-        "frontend"
-      ]
-    },
-    {
       "name": "@testing-library/react",
       "allowedCategories": [
         "frontend"

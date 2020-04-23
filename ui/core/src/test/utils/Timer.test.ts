@@ -94,10 +94,8 @@ describe("Timer", () => {
 
   it("should restart the started timer", () => {
     const clock = sinon.useFakeTimers();
-    const clearTimeoutSpy = sinon.spy();
-    const setTimeoutSpy = sinon.spy();
-    clock.clearTimeout = clearTimeoutSpy;
-    clock.setTimeout = setTimeoutSpy;
+    const clearTimeoutSpy = sinon.spy(clock, "clearTimeout");
+    const setTimeoutSpy = sinon.spy(clock, "setTimeout");
 
     const sut = new Timer(100);
     sut.start();

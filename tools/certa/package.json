@@ -40,7 +40,7 @@
     "nyc": "^14.0.0",
     "puppeteer": "chrome-80",
     "source-map-support": "^0.5.6",
-    "uuid": "~3.3.2",
+    "uuid": "^7.0.3",
     "yargs": "^15.0.0"
   },
   "devDependencies": {
@@ -52,7 +52,7 @@
     "@types/mocha": "^5.2.5",
     "@types/node": "10.14.1",
     "@types/puppeteer": "2.0.1",
-    "@types/uuid": "~3.4.4",
+    "@types/uuid": "^7.0.2",
     "@types/yargs": "^12.0.5",
     "rimraf": "^3.0.2",
     "tslint": "^5.11.0",

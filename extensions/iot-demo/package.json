@@ -29,15 +29,12 @@
     "@bentley/build-tools": "2.0.0-dev.76",
     "@bentley/extension-webpack-tools": "2.0.0-dev.76",
     "@types/react": "^16.8.0",
-    "@types/react-dom": "^16.8.0",
-    "@types/react-redux": "^7.0.1",
     "@types/classnames": "^2.2.3",
     "cpx": "^1.5.0",
     "rimraf": "^3.0.2",
     "tslint": "^5.11.0",
     "tslint-etc": "^1.5.2",
-    "typescript": "~3.7.4",
-    "svg-baker-runtime": "^1.4.2"
+    "typescript": "~3.7.4"
   },
   "dependencies": {
     "@bentley/bentleyjs-core": "2.0.0-dev.76",
@@ -53,10 +50,7 @@
     "@bentley/ui-framework": "2.0.0-dev.76",
     "@bentley/ui-ninezone": "2.0.0-dev.76",
     "classnames": "^2.2.5",
-    "react-dom": "^16.8.0",
-    "react-redux": "^5.0.7",
     "react": "^16.8.0",
-    "redux": "^4.0.3",
     "svg-sprite-loader": "4.2.1"
   }
 }

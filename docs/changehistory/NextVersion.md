@@ -568,6 +568,10 @@ The following items that were marked as @deprecated in the 1.x time frame have b
 * UiError (use UiError in @bentley/ui-abstract instead)
 * Position for Popup component (Use RelativePosition in @bentley/ui-abstract instead)
 
+### React dependency changes
+
+`react` and `react-dom` dependencies are moved from `dependencies` to `peerDependencies`.
+
 ### API Changes in `presentation-common` Package
 
 #### RPC Changes
