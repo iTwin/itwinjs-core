@@ -93,7 +93,7 @@ class StretchHandle extends ModifyHandle {
 
   public startDrag(_ev: BeButtonEvent) {
     const handles = this.handles;
-    this.startCtm = handles.el.screenCTM().lmultiplyO(MarkupApp.screenToVbMtx);
+    this.startCtm = handles.el.screenCTM().lmultiplyO(MarkupApp.screenToVbMtx());
     this.startBox = handles.el.bbox(); // save starting size so we can preserve aspect ratio
     this.startPos = handles.npcToBox(this.posNpc);
     this.opposite = handles.npcToBox({ x: 1 - this.posNpc.x, y: 1 - this.posNpc.y });
@@ -183,7 +183,7 @@ class VertexHandle extends ModifyHandle {
   }
   public setPosition(): void {
     let point = new Point(this.handles.el.attr(this._x), this.handles.el.attr(this._y));
-    const matrix = this.handles.el.screenCTM().lmultiplyO(MarkupApp.screenToVbMtx);
+    const matrix = this.handles.el.screenCTM().lmultiplyO(MarkupApp.screenToVbMtx());
     point = point.transform(matrix);
     this._circle.center(point.x, point.y);
   }
@@ -298,7 +298,7 @@ export class Handles {
   public draw() {
     const el = this.el;
     const bb = el.bbox();
-    const ctm = el.screenCTM().lmultiplyO(MarkupApp.screenToVbMtx);
+    const ctm = el.screenCTM().lmultiplyO(MarkupApp.screenToVbMtx());
     this.vbToBoxTrn = ctm.inverse().toIModelTransform();
     this.npcToVbTrn = new Matrix().scaleO(bb.w, bb.h).translateO(bb.x, bb.y).lmultiplyO(ctm).toIModelTransform();
     this.handles.forEach((h) => h.setPosition());

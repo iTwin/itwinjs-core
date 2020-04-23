@@ -54,6 +54,7 @@
   flex: 1;
   vertical-align: middle;
   background-color: gray;
+  overflow: auto;
   z-index: 10;
 }
 
