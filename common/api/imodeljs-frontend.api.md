@@ -6801,6 +6801,8 @@ export namespace RenderSystem {
     // @beta
     export interface Options {
         // @internal
+        contextAttributes?: WebGLContextAttributes;
+        // @internal
         disabledExtensions?: WebGLExtensionName[];
         displaySolarShadows?: boolean;
         doIdleWork?: boolean;

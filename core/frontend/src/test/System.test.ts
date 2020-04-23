@@ -19,7 +19,6 @@ function _createCanvas(): HTMLCanvasElement | undefined {
 describe("Render Compatibility", () => {
   // NB: We assume software rendering for these tests because puppeteer only supports software rendering.
   // Further, we run in the context of Chrome, whose Swift software renderer fully supports our renderer.
-
   it("should turn off logarithmicZBuffer if the gl frag depth extension is not available", () => {
     const canvas = _createCanvas();
     expect(canvas).to.not.be.undefined;
@@ -76,5 +75,30 @@ describe("Instancing", () => {
 
   it("should not enable instancing if neither requested nor supported", async () => {
     await TestApp.test(false, false, false);
+  });
+});
+
+describe("RenderSystem", () => {
+  it("should override webgl context attributes", () => {
+    const expectAttributes = (system: System, expected: WebGLContextAttributes) => {
+      const attrs = system.context.getContextAttributes()!;
+      expect(attrs).not.to.be.null;
+      expect(attrs.premultipliedAlpha).to.equal(expected.premultipliedAlpha);
+      expect(attrs.preserveDrawingBuffer).to.equal(expected.preserveDrawingBuffer);
+      expect(attrs.antialias).to.equal(expected.antialias);
+      expect(attrs.powerPreference).to.equal(expected.powerPreference);
+    };
+
+    const defaultSys = System.create();
+    expectAttributes(defaultSys, { antialias: true, premultipliedAlpha: true, preserveDrawingBuffer: false, powerPreference: "high-performance" });
+
+    const sys1Attrs: WebGLContextAttributes = { antialias: false, premultipliedAlpha: false, preserveDrawingBuffer: true, powerPreference: "low-power" };
+    const sys1 = System.create({ contextAttributes: sys1Attrs });
+    expectAttributes(sys1, sys1Attrs);
+
+    // Override only some attributes; use defaults for others.
+    const sys2Attrs: WebGLContextAttributes = { antialias: false, preserveDrawingBuffer: true };
+    const sys2 = System.create({ contextAttributes: sys2Attrs });
+    expectAttributes(sys2, { ...sys2Attrs, powerPreference: "high-performance", premultipliedAlpha: true });
   });
 });
