@@ -1885,6 +1885,8 @@ export class ElectronRpcProtocol extends RpcProtocol {
 
 // @beta (undocumented)
 export class ElectronRpcRequest extends RpcRequest {
+    // @internal (undocumented)
+    dispose(): void;
     protected load(): Promise<import("../core/RpcMarshaling").RpcSerializedValue>;
     // @internal (undocumented)
     notifyResponse(fulfillment: RpcRequestFulfillment): void;

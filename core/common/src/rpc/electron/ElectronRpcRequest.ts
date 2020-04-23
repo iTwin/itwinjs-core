@@ -52,4 +52,10 @@ export class ElectronRpcRequest extends RpcRequest {
     this._fulfillment = fulfillment;
     this._res(fulfillment.status);
   }
+
+  /** @internal */
+  public dispose() {
+    this.protocol.requests.delete(this.id);
+    super.dispose();
+  }
 }

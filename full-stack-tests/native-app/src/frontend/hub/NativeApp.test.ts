@@ -123,7 +123,11 @@ describe("NativeApp (#integration)", () => {
 
     let cancelled1: boolean = false;
     setTimeout(async () => {
-      cancelled1 = await downloader.requestCancel();
+      try {
+        cancelled1 = await downloader.requestCancel();
+      } catch (err) {
+        assert(false, "WIP: The 'user cancelled' error is now caught here...");
+      }
     }, 10000);
 
     let cancelled2: boolean = false;
