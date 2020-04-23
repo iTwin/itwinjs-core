@@ -87,10 +87,6 @@
       "allowedCategories": [ "backend", "extensions", "internal", "tools" ]
     },
     {
-      "name": "@bentley/imodeljs-clients-backend",
-      "allowedCategories": [ "backend", "internal", "tools" ]
-    },
-    {
       "name": "@bentley/imodeljs-common",
       "allowedCategories": [ "backend", "common", "extensions", "frontend", "internal", "tools" ]
     },
@@ -823,10 +819,6 @@
       "allowedCategories": [ "common" ]
     },
     {
-      "name": "svg-baker-runtime",
-      "allowedCategories": [ "frontend", "internal" ]
-    },
-    {
       "name": "svg-react-loader",
       "allowedCategories": [ "frontend" ]
     },
@@ -892,7 +884,7 @@
     },
     {
       "name": "tsutils",
-      "allowedCategories": [ "frontend", "tools" ]
+      "allowedCategories": [ "tools" ]
     },
     {
       "name": "typedoc",

@@ -19,7 +19,7 @@ import {
   DictionaryModel, DocumentPartition, DrawingGraphic, ECSqlStatement, Element, ElementGroupsMembers, ElementOwnsChildElements, Entity,
   GeometricElement2d, GeometricElement3d, GeometricModel, GroupInformationPartition, IModelDb, IModelHost, IModelJsFs, InformationPartitionElement,
   LightLocation, LinkPartition, Model, PhysicalModel, PhysicalPartition, RenderMaterialElement, SpatialCategory, SqliteStatement, SqliteValue,
-  SqliteValueType, SubCategory, Subject, Texture, ViewDefinition, DisplayStyle3d, ElementDrivesElement, PhysicalObject, BackendRequestContext, ReservedBriefcaseId, SnapshotDb, StandaloneDb,
+  SqliteValueType, SubCategory, Subject, Texture, ViewDefinition, DisplayStyle3d, ElementDrivesElement, PhysicalObject, BackendRequestContext, BriefcaseIdValue, SnapshotDb, StandaloneDb,
 } from "../../imodeljs-backend";
 import { DisableNativeAssertions, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
@@ -1560,6 +1560,13 @@ describe("iModel", () => {
     next = iModel.queryNextAvailableFileProperty(myPropsStr);
     assert.equal(0, next, "queryNextAvailableFileProperty, should return 0 when none present");
 
+    const testLocal = "TestLocal";
+    const testValue = "this is a test";
+    const nativeDb = iModel.nativeDb;
+    assert.isUndefined(nativeDb.queryLocalValue(testLocal));
+    assert.equal(DbResult.BE_SQLITE_DONE, nativeDb.saveLocalValue(testLocal, testValue));
+    assert.equal(nativeDb.queryLocalValue(testLocal), testValue);
+
     iModel.close();
   });
 
@@ -1722,7 +1729,7 @@ describe("iModel", () => {
     assert.isTrue(standaloneDb1.isStandaloneDb());
     assert.isTrue(standaloneDb1.isStandalone);
     assert.isFalse(standaloneDb1.isReadonly, "Expect standalone iModels to be read-write during create");
-    assert.equal(standaloneDb1.getBriefcaseId(), ReservedBriefcaseId.Standalone);
+    assert.equal(standaloneDb1.getBriefcaseId(), BriefcaseIdValue.Standalone);
     assert.equal(standaloneDb1.filePath, standaloneFile1);
     assert.equal(standaloneDb1, StandaloneDb.tryFindByKey(standaloneFile1), "Should be in the list of open StandaloneDbs");
     assert.isUndefined(SnapshotDb.tryFindByKey(standaloneFile1), "Should not be in the list of open SnapshotDbs");
@@ -1764,10 +1771,10 @@ describe("iModel", () => {
     assert.isFalse(snapshotDb1.isReadonly, "Expect snapshots to be read-write during create");
     assert.isFalse(snapshotDb2.isReadonly, "Expect snapshots to be read-write during create");
     assert.isFalse(snapshotDb3.isReadonly, "Expect snapshots to be read-write during create");
-    assert.equal(snapshotDb1.getBriefcaseId(), ReservedBriefcaseId.Snapshot);
-    assert.equal(snapshotDb2.getBriefcaseId(), ReservedBriefcaseId.Snapshot);
-    assert.equal(snapshotDb3.getBriefcaseId(), ReservedBriefcaseId.Snapshot);
-    assert.equal(imodel1.getBriefcaseId(), ReservedBriefcaseId.Snapshot);
+    assert.equal(snapshotDb1.getBriefcaseId(), BriefcaseIdValue.Standalone);
+    assert.equal(snapshotDb2.getBriefcaseId(), BriefcaseIdValue.Standalone);
+    assert.equal(snapshotDb3.getBriefcaseId(), BriefcaseIdValue.Standalone);
+    assert.equal(imodel1.getBriefcaseId(), BriefcaseIdValue.Standalone);
     assert.equal(snapshotDb1.filePath, snapshotFile1);
     assert.equal(snapshotDb2.filePath, snapshotFile2);
     assert.equal(snapshotDb3.filePath, snapshotFile3);
@@ -1837,7 +1844,7 @@ describe("iModel", () => {
 
     // create snapshot from scratch without a password, then unnecessarily specify a password to open
     let snapshotDb1 = SnapshotDb.createFrom(imodel1, snapshotFile1);
-    assert.equal(snapshotDb1.getBriefcaseId(), ReservedBriefcaseId.Snapshot);
+    assert.equal(snapshotDb1.getBriefcaseId(), BriefcaseIdValue.Standalone);
     snapshotDb1.close();
     snapshotDb1 = SnapshotDb.openFile(snapshotFile1, { password: "unnecessaryPassword" });
     assert.isTrue(snapshotDb1.isSnapshotDb());
@@ -1848,7 +1855,7 @@ describe("iModel", () => {
 
     // create snapshot from scratch and give it a password
     let snapshotDb2 = SnapshotDb.createEmpty(snapshotFile2, { rootSubject: { name: "Password-Protected" }, password: "password", createClassViews: true });
-    assert.equal(snapshotDb2.getBriefcaseId(), ReservedBriefcaseId.Snapshot);
+    assert.equal(snapshotDb2.getBriefcaseId(), BriefcaseIdValue.Standalone);
     const subjectName2 = "TestSubject2";
     const subjectId2: Id64String = Subject.insert(snapshotDb2, IModel.rootSubjectId, subjectName2);
     assert.isTrue(Id64.isValidId64(subjectId2));
@@ -1863,7 +1870,7 @@ describe("iModel", () => {
 
     // create a new snapshot from a non-password-protected snapshot and then give it a password
     let snapshotDb3 = SnapshotDb.createFrom(imodel1, snapshotFile3, { password: "password" });
-    assert.equal(snapshotDb3.getBriefcaseId(), ReservedBriefcaseId.Snapshot);
+    assert.equal(snapshotDb3.getBriefcaseId(), BriefcaseIdValue.Standalone);
     snapshotDb3.close();
     snapshotDb3 = SnapshotDb.openFile(snapshotFile3, { password: "password" });
     assert.isTrue(snapshotDb3.isSnapshotDb());

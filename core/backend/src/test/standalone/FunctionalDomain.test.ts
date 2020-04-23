@@ -21,6 +21,8 @@ describe("Functional Domain", () => {
       guid: Guid.createValue(),
     });
 
+    iModelDb.nativeDb.resetBriefcaseId(100);
+
     // Import the Functional schema
     FunctionalSchema.registerSchema();
     await FunctionalSchema.importSchema(requestContext, iModelDb); // tslint:disable-line:deprecation

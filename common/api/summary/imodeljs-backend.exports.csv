@@ -29,6 +29,7 @@ public;BisCoreSchema
 public;BriefcaseDb 
 internal;BriefcaseEntry
 public;BriefcaseId = number
+public;BriefcaseIdValue
 beta;BriefcaseManager
 public;CachedECSqlStatement
 internal;CachedSqliteStatement
@@ -248,7 +249,6 @@ public;RenderMaterialElement
 public;RenderMaterialOwnsRenderMaterials 
 public;RepositoryLink 
 public;RepositoryModel 
-public;ReservedBriefcaseId
 public;class RoleElement 
 public;RoleModel 
 public;Schema

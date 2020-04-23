@@ -28,8 +28,7 @@ import * as glob from "glob";
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
-/** The Id assigned to a briefcase by iModelHub or one of the special reserved values that identify special kinds of iModels.
- * @see [[ReservedBriefcaseId]]
+/** The Id assigned to a briefcase by iModelHub, or a [[BriefcaseIdValue]] that identify special kinds of iModels.
  * @public
  */
 export type BriefcaseId = number;
@@ -38,30 +37,24 @@ export type BriefcaseId = number;
  * @see [[BriefcaseId]]
  * @public
  */
-export enum ReservedBriefcaseId {
+export enum BriefcaseIdValue {
   /** Indicates an invalid/illegal BriefcaseId */
   Illegal = 0xffffffff,
 
-  /** BriefcaseIds must be less than this value
-   * @internal
-   */
+  /** BriefcaseIds must be less than this value */
   Max = 1 << 24,
 
-  /** All BriefcaseIds of this value or higher are reserved
-   * @internal
-   */
-  FirstReserved = ReservedBriefcaseId.Max - 10,
+  /** All valid iModelHub issued BriefcaseIds will be equal or higher than this */
+  FirstValid = 2,
 
-  /** BriefcaseId for a single-practitioner standalone iModel.
-   * @internal
-   */
-  Standalone = ReservedBriefcaseId.Max - 2,
+  /** All valid iModelHub issued BriefcaseIds will be equal or lower than this */
+  LastValid = BriefcaseIdValue.Max - 11,
 
-  /** A snapshot iModel is read-only once created. They are used for archival and data transfer purposes. */
-  Snapshot = 1,
+  /** a Standalone briefcase */
+  Standalone = 0,
 
-  /** A checkpoint snapshot iModel is a snapshot that represents a point on an iModelHub timeline. */
-  CheckpointSnapshot = 0,
+  /** @internal */
+  DeprecatedStandalone = 1,
 }
 
 /**
@@ -77,7 +70,7 @@ enum BriefcaseValidity {
  * @internal
  */
 export class ChangeSetToken {
-  constructor(public id: string, public parentId: string, public index: number, public pathname: string, public containsSchemaChanges: boolean, public pushDate?: string) { }
+  constructor(public id: string, public parentId: string, public index: number, public pathname: string, public changeType: ChangesType, public pushDate?: string) { }
 }
 
 /** Entry in the briefcase cache
@@ -485,15 +478,15 @@ export class BriefcaseManager {
           }));
         }
         // Validate that the briefcase id is set to standalone
-        if (briefcaseId !== ReservedBriefcaseId.CheckpointSnapshot) {
-          throw new IModelError(BentleyStatus.ERROR, "BriefcaseManager.initializeBriefcaseOfline: The briefcase found does not have the expected legacy standalone briefcaseId", Logger.logError, loggerCategory, () => ({
+        if (briefcaseId !== BriefcaseIdValue.Standalone) {
+          throw new IModelError(BentleyStatus.ERROR, "BriefcaseManager.initializeBriefcaseOfline: The briefcase found is not valid", Logger.logError, loggerCategory, () => ({
             pathname: bcPathname, syncMode, briefcaseId,
           }));
         }
       } else {
         // Validate that the sub directory name matches the briefcaseId stored in the db
         if (briefcaseId !== +bcSubDir) {
-          throw new IModelError(BentleyStatus.ERROR, "BriefcaseManager.initializeBriefcaseOffline: The briefcase found doesn't have the expected briefcaseId", Logger.logError, loggerCategory, () => ({
+          throw new IModelError(BentleyStatus.ERROR, "BriefcaseManager.initializeBriefcaseOffline: The briefcase doesn't have the expected briefcaseId", Logger.logError, loggerCategory, () => ({
             pathname: bcPathname, syncMode, briefcaseId, briefcaseSubDir: bcSubDir,
           }));
         }
@@ -562,7 +555,7 @@ export class BriefcaseManager {
     const pathname = this.buildFixedVersionBriefcasePath(iModelId, changeSetId);
     if (!IModelJsFs.existsSync(pathname))
       return;
-    const briefcase = this.initializeBriefcase(requestContext, requestBriefcaseProps, downloadOptions, pathname, ReservedBriefcaseId.CheckpointSnapshot);
+    const briefcase = this.initializeBriefcase(requestContext, requestBriefcaseProps, downloadOptions, pathname, BriefcaseIdValue.Standalone);
     return briefcase;
   }
 
@@ -1025,12 +1018,17 @@ export class BriefcaseManager {
       briefcase.reversedChangeSetIndex = undefined;
   }
 
-  private static isReservedBriefcaseId(id: BriefcaseId) {
-    return id <= ReservedBriefcaseId.Snapshot || id >= ReservedBriefcaseId.FirstReserved;
+  /** @internal */
+  public static isStandaloneBriefcaseId(id: BriefcaseId) {
+    return id === BriefcaseIdValue.Standalone || id === BriefcaseIdValue.DeprecatedStandalone;
+  }
+  /** @internal */
+  public static isValidBriefcaseId(id: BriefcaseId) {
+    return id >= BriefcaseIdValue.FirstValid && id <= BriefcaseIdValue.LastValid;
   }
 
   private static async initBriefcaseFileId(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseEntry) {
-    if (this.isReservedBriefcaseId(briefcase.briefcaseId)) // only possible to get fileId only for normal briefcases
+    if (!this.isValidBriefcaseId(briefcase.briefcaseId)) // only possible to get fileId only for normal briefcases
       return;
 
     const hubBriefcases: HubBriefcase[] = await BriefcaseManager.imodelClient.briefcases.get(requestContext, briefcase.iModelId, new BriefcaseQuery().byId(briefcase.briefcaseId));
@@ -1046,7 +1044,7 @@ export class BriefcaseManager {
     const openMode = OpenMode.Readonly;
 
     const pathname = this.buildFixedVersionBriefcasePath(iModelId, changeSetId);
-    const briefcase = new BriefcaseEntry(contextId, iModelId, changeSetId, pathname, syncMode, openMode, ReservedBriefcaseId.CheckpointSnapshot);
+    const briefcase = new BriefcaseEntry(contextId, iModelId, changeSetId, pathname, syncMode, openMode, BriefcaseIdValue.Standalone);
     briefcase.downloadProgress = downloadProgress;
 
     briefcase.downloadStatus = DownloadBriefcaseStatus.Initializing;
@@ -1707,7 +1705,7 @@ export class BriefcaseManager {
     changeSets.forEach((changeSet: ChangeSet) => {
       const changeSetPathname = path.join(changeSetsPath, changeSet.fileName!);
       assert(IModelJsFs.existsSync(changeSetPathname), `Change set file ${changeSetPathname} does not exist`);
-      const changeSetToken = new ChangeSetToken(changeSet.wsgId, changeSet.parentId!, +changeSet.index!, changeSetPathname, changeSet.changesType === ChangesType.Schema);
+      const changeSetToken = new ChangeSetToken(changeSet.wsgId, changeSet.parentId!, +changeSet.index!, changeSetPathname, changeSet.changesType!);
       changeSetTokens.push(changeSetToken);
       if (+changeSet.fileSize! > maxFileSize)
         maxFileSize = +changeSet.fileSize!;
@@ -1900,7 +1898,7 @@ export class BriefcaseManager {
 
     for (const changeSet of changeSets) {
       const changeSetPathname = path.join(changeSetsPath, changeSet.fileName!);
-      const token = new ChangeSetToken(changeSet.wsgId, changeSet.parentId!, +changeSet.index!, changeSetPathname, changeSet.changesType === ChangesType.Schema);
+      const token = new ChangeSetToken(changeSet.wsgId, changeSet.parentId!, +changeSet.index!, changeSetPathname, changeSet.changesType!);
       try {
         const codes = BriefcaseManager.extractCodesFromFile(briefcase, [token]);
         await BriefcaseManager.imodelClient.codes.update(requestContext, briefcase.iModelId, codes, { deniedCodes: true, continueOnConflict: true });
@@ -1990,7 +1988,7 @@ export class BriefcaseManager {
   }
 
   /** Attempt to push a ChangeSet to iModelHub */
-  private static async pushChangeSet(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseEntry, description: string, relinquishCodesLocks: boolean): Promise<void> {
+  private static async pushChangeSet(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseEntry, description: string, changeType: ChangesType, relinquishCodesLocks: boolean): Promise<void> {
     requestContext.enter();
     if (briefcase.syncMode !== SyncMode.PullAndPush)
       throw new IModelError(BentleyStatus.ERROR, "Invalid to call pushChanges when the briefcase was not opened with SyncMode = PullAndPush", Logger.logError, loggerCategory, () => briefcase.getDebugInfo());
@@ -2000,7 +1998,7 @@ export class BriefcaseManager {
     changeSet.briefcaseId = briefcase.briefcaseId;
     changeSet.id = changeSetToken.id;
     changeSet.parentId = changeSetToken.parentId;
-    changeSet.changesType = changeSetToken.containsSchemaChanges ? ChangesType.Schema : ChangesType.Regular;
+    changeSet.changesType = changeSetToken.changeType === ChangesType.Schema ? ChangesType.Schema : changeType;
     changeSet.seedFileId = briefcase.fileId!;
     changeSet.fileSize = IModelJsFs.lstatSync(changeSetToken.pathname)!.size.toString();
     changeSet.description = description;
@@ -2038,12 +2036,12 @@ export class BriefcaseManager {
   }
 
   /** Attempt to pull merge and push once */
-  private static async pushChangesOnce(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseEntry, description: string, relinquishCodesLocks: boolean): Promise<void> {
+  private static async pushChangesOnce(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseEntry, description: string, changeType: ChangesType, relinquishCodesLocks: boolean): Promise<void> {
     await BriefcaseManager.pullAndMergeChanges(requestContext, briefcase, IModelVersion.latest());
     requestContext.enter();
 
     try {
-      await BriefcaseManager.pushChangeSet(requestContext, briefcase, description, relinquishCodesLocks);
+      await BriefcaseManager.pushChangeSet(requestContext, briefcase, description, changeType, relinquishCodesLocks);
       requestContext.enter();
     } catch (err) {
       requestContext.enter();
@@ -2073,13 +2071,13 @@ export class BriefcaseManager {
    * @param relinquishCodesLocks release locks held and codes reserved (but not used) after pushing?
    * @internal
    */
-  public static async pushChanges(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseEntry, description: string, relinquishCodesLocks: boolean = true): Promise<void> {
+  public static async pushChanges(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseEntry, description: string, changeType: ChangesType = ChangesType.Regular, relinquishCodesLocks: boolean = true): Promise<void> {
     requestContext.enter();
     for (let i = 0; i < 5; ++i) {
       let pushed = false;
       let error: any;
       try {
-        await BriefcaseManager.pushChangesOnce(requestContext, briefcase, description, relinquishCodesLocks);
+        await BriefcaseManager.pushChangesOnce(requestContext, briefcase, description, changeType, relinquishCodesLocks);
         requestContext.enter();
         pushed = true;
       } catch (err) {

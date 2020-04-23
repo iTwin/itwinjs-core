@@ -6,7 +6,7 @@ import { ChangeSetApplyOption, ChangeSetStatus, Id64String, OpenMode } from "@be
 import { IModel, IModelError, SubCategoryAppearance } from "@bentley/imodeljs-common";
 import { assert } from "chai";
 import * as path from "path";
-import { ChangeSetToken, ConcurrencyControl, DictionaryModel, Element, IModelDb, IModelHost, IModelJsFs, IModelJsNative, ReservedBriefcaseId, SpatialCategory, StandaloneDb } from "../../imodeljs-backend";
+import { ChangeSetToken, ConcurrencyControl, DictionaryModel, Element, IModelDb, IModelHost, IModelJsFs, IModelJsNative, SpatialCategory, StandaloneDb } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 
@@ -68,9 +68,9 @@ describe("ChangeMerging", () => {
     const secondDb = StandaloneDb.openFile(secondFileName, OpenMode.ReadWrite);
     const neutralDb = StandaloneDb.openFile(neutralFileName, OpenMode.ReadWrite);
     assert.isTrue(firstDb !== secondDb);
-    firstDb.nativeDb.resetBriefcaseId(ReservedBriefcaseId.Standalone);
-    secondDb.nativeDb.resetBriefcaseId(ReservedBriefcaseId.Standalone);
-    neutralDb.nativeDb.resetBriefcaseId(ReservedBriefcaseId.Standalone);
+    firstDb.nativeDb.resetBriefcaseId(100);
+    secondDb.nativeDb.resetBriefcaseId(200);
+    neutralDb.nativeDb.resetBriefcaseId(300);
 
     firstDb.nativeDb.setBriefcaseManagerOptimisticConcurrencyControlPolicy(new ConcurrencyControl.OptimisticPolicy().conflictResolution);
     secondDb.nativeDb.setBriefcaseManagerOptimisticConcurrencyControlPolicy(new ConcurrencyControl.OptimisticPolicy().conflictResolution);
