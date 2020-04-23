@@ -40,7 +40,7 @@
     "@bentley/logger-config": "2.0.0-dev.77",
     "@bentley/build-tools": "2.0.0-dev.77",
     "@bentley/imodeljs-markup": "2.0.0-dev.77",
-    "@bentley/react-scripts": "3.4.1-dev.27",
+    "@bentley/react-scripts": "3.4.1-dev.32",
     "@types/classnames": "^2.2.3",
     "@types/lorem-ipsum": "^1.0.2",
     "@types/node": "10.14.1",

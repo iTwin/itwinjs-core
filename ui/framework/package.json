@@ -73,7 +73,7 @@
     "@bentley/presentation-frontend": "2.0.0-dev.77",
     "@bentley/presentation-testing": "2.0.0-dev.77",
     "@bentley/product-settings-client": "2.0.0-dev.77",
-    "@bentley/react-scripts": "3.4.1-dev.27",
+    "@bentley/react-scripts": "3.4.1-dev.32",
     "@bentley/ui-abstract": "2.0.0-dev.77",
     "@bentley/ui-core": "2.0.0-dev.77",
     "@bentley/ui-components": "2.0.0-dev.77",

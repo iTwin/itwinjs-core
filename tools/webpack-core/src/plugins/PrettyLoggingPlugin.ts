@@ -7,6 +7,14 @@ import { Compiler, Stats } from "webpack";
 
 type StatsFormatter = (stats: Stats.ToJsonOutput) => Stats.ToJsonOutput;
 
+// No point in having a stack trace that points to the PrettyLoggingPlugin rethrowing an error message.
+class PrettyLoggingError extends Error {
+  constructor(...params: any[]) {
+    super(...params);
+    delete this.stack;
+  }
+}
+
 export class PrettyLoggingPlugin {
   private _grouped = false;
   private _isWatch = false;
@@ -56,15 +64,15 @@ export class PrettyLoggingPlugin {
   private handleWarningsAndErrors(elapsed: number, stats: any) {
     const { errors, warnings } = this._formatter(stats.toJson({}, true));
     if (errors.length)
-      throw new Error(errors.join("\n\n"));
+      throw new PrettyLoggingError(errors.join("\n\n"));
 
     if (warnings.length > 0) {
       if (process.env.CI) {
         console.log(chalk.yellow(`\nTreating warnings as errors because process.env.CI is set.\nMost CI servers set it automatically.\n`));
-        throw new Error(warnings.join("\n\n"));
+        throw new PrettyLoggingError(warnings.join("\n\n"));
       } else if (process.env.TF_BUILD) {
         console.log(chalk.yellow(`\nTreating warnings as errors because process.env.TF_BUILD is set.\nTFS sets this automatically.\n`));
-        throw new Error(warnings.join("\n\n"));
+        throw new PrettyLoggingError(warnings.join("\n\n"));
       }
 
       if (this.isInteractive)

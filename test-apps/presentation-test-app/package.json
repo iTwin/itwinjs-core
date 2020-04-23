@@ -53,7 +53,7 @@
   "devDependencies": {
     "@bentley/config-loader": "2.0.0-dev.77",
     "@bentley/build-tools": "2.0.0-dev.77",
-    "@bentley/react-scripts": "3.4.1-dev.27",
+    "@bentley/react-scripts": "3.4.1-dev.32",
     "@types/bunyan": "^1.8.4",
     "@types/react": "^16.8.0",
     "@types/react-dom": "^16.8.0",
