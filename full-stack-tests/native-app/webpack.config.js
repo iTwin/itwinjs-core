@@ -42,6 +42,9 @@ function createConfig(shouldInstrument) {
     optimization: {
       nodeEnv: "production"
     },
+    externals: {
+      electron: "commonjs electron",
+    },
     plugins: [
       // Makes some environment variables available to the JS code, for example:
       // if (process.env.NODE_ENV === "development") { ... }. See `./env.js`.

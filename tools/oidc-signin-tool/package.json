@@ -1,6 +1,6 @@
 {
   "name": "@bentley/oidc-signin-tool",
-  "version": "2.0.0-dev.71",
+  "version": "2.0.0-dev.76",
   "description": "OIDC Signin Helper",
   "main": "lib/index.js",
   "typings": "lib/index",
@@ -14,7 +14,7 @@
     "clean": "rimraf lib .rush",
     "lint": "tslint --project . 1>&2",
     "test": "",
-    "test:integration": "node ./node_modules/@bentley/build-tools/scripts/test.js",
+    "test:integration": "betools test",
     "docs": "",
     "cover": ""
   },
@@ -29,17 +29,17 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "@bentley/bentleyjs-core": "2.0.0-dev.71",
-    "@bentley/certa": "2.0.0-dev.71",
-    "@bentley/config-loader": "2.0.0-dev.71",
-    "@bentley/geometry-core": "2.0.0-dev.71",
-    "@bentley/frontend-authorization-client": "2.0.0-dev.71",
-    "@bentley/itwin-client": "2.0.0-dev.71",
+    "@bentley/bentleyjs-core": "2.0.0-dev.76",
+    "@bentley/certa": "2.0.0-dev.76",
+    "@bentley/config-loader": "2.0.0-dev.76",
+    "@bentley/geometry-core": "2.0.0-dev.76",
+    "@bentley/frontend-authorization-client": "2.0.0-dev.76",
+    "@bentley/itwin-client": "2.0.0-dev.76",
     "openid-client": "^3.7.2",
     "puppeteer": "chrome-80"
   },
   "devDependencies": {
-    "@bentley/build-tools": "2.0.0-dev.71",
+    "@bentley/build-tools": "2.0.0-dev.76",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/mocha": "^5.2.5",

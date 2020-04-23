@@ -5,7 +5,7 @@ Items provided at runtime may be inserted into a Toolbar, StatusBar or Backstage
 
 ## UiItemsProvider Interface
 
-Below is an excerpt from the UiItemsProvider interface that shows the primary methods that an application or extension would want to implement to add items to different areas of the User Interface.
+Below is an excerpt from the [UiItemsProvider]($ui-abstract) interface that shows the primary methods that an application or extension would want to implement to add items to different areas of the User Interface.
 
 ```ts
 export interface UiItemsProvider {
@@ -95,17 +95,86 @@ class TestUiProvider implements UiItemsProvider {
 
 ## UiItemsManager Class
 
-The [UiItemsManager]($ui-abstract) class is used to registered UiItemsProviders. It also informs listeners that the list of registered UiItemsProviders has changed when a provider is registered or unregistered. This class also provides methods to retrieve item definitions from all registered UiItemProviders.
+The
+[UiItemsManager]($ui-abstract) class is used to register UiItemsProviders. It also informs listeners that the list of registered UiItemsProviders has changed when a provider is registered or unregistered. This class also provides methods to retrieve item definitions from all registered UiItemProviders.
 
 Below is an example of registering the TestUiProvider defined above.
 
 ```ts
-      UiItemsManager.register( new TestUiProvider());
+UiItemsManager.register( new TestUiProvider());
 ```
 
-## UiItemsArbiter Class
+## UiItemsArbiter
 
-## UiItemsApplication Interface
+The [UiItemsArbiter]($ui-abstract) class is used by the application to
+arbitrate or negotiate between the application and a UiItemsProvider.
+
+The application can either allow, disallow or update provided items from a UiItemsProvider.
+These actions are defined by [UiItemsApplicationAction]($ui-abstract).
+The application implements the [UiItemsApplication]($ui-abstract) and provides
+one or more of the following optional functions to validate items:
+
+* validateToolbarButtonItem -  Validate and optionally update a Toolbar button item
+* validateStatusBarItem - Validate and optionally update a StatusBar item
+* validateBackstageItem - Validate and optionally update a Backstage item
+* validateWidget - Validate and optionally update a Widget
+
+To setup for arbitration, the application sets the `UiItemsArbiter.uiItemsApplication` member,
+which may only be set once:
+
+```ts
+UiItemsArbiter.uiItemsApplication = new ExampleUiItemsApplication();
+```
+
+A [UiItemsProvider]($ui-abstract) can listen for the actions taken by the application by defining the following optional methods:
+
+* onToolbarButtonItemArbiterChange - Called if the application changes the Toolbar button item
+* onStatusBarItemArbiterChange - Called if the application changes the StatusBar item
+* onBackstageItemArbiterChange - Called if the application changes the Backstage item
+* onWidgetArbiterChange - Called if the application changes the Widget
+
+### Examples
+
+The following examples show how an application can allow, disallow and update a Toolbar item.
+
+#### Allowing a Toolbar Item
+
+```ts
+class ExampleUiItemsApplication implements UiItemsApplication {
+  public validateToolbarButtonItem(item: CommonToolbarItem): { updatedItem: CommonToolbarItem, action: UiItemsApplicationAction } {
+    return { updatedItem: item, action: UiItemsApplicationAction.Allow };
+  }
+}
+```
+
+#### Disallowing a Toolbar Item
+
+```ts
+class ExampleUiItemsApplication implements UiItemsApplication {
+  public validateToolbarButtonItem(item: CommonToolbarItem): { updatedItem: CommonToolbarItem, action: UiItemsApplicationAction } {
+    let action = UiItemsApplicationAction.Allow;
+    if (item.id === "test2")
+      action = UiItemsApplicationAction.Disallow;
+    return { updatedItem: item, action };
+  }
+}
+```
+
+#### Updating a Toolbar Item
+
+```ts
+class ExampleUiItemsApplication implements UiItemsApplication {
+  public validateToolbarButtonItem(item: CommonToolbarItem): { updatedItem: CommonToolbarItem, action: UiItemsApplicationAction } {
+    let action = UiItemsApplicationAction.Allow;
+    let updatedItem = item;
+    if (item.id === "test2") {
+      action = UiItemsApplicationAction.Update;
+      updatedItem = { ...item, itemPriority: 1000 };
+    }
+    return { updatedItem, action };
+  }
+}
+```
 
 ## API Reference
 

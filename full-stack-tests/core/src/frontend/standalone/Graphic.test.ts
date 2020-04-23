@@ -16,13 +16,13 @@ export class FakeGraphic extends RenderGraphic {
 describe("createTriMesh", () => {
   let imodel: IModelConnection;
   before(async () => {
-    IModelApp.startup();
+    await IModelApp.startup();
     imodel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
   });
 
   after(async () => {
     if (imodel) await imodel.close();
-    IModelApp.shutdown();
+    await IModelApp.shutdown();
   });
 
   it("should create a simple mesh graphic", () => {

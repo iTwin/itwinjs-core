@@ -9,7 +9,7 @@ import { Config } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext, ECJsonTypeMap, RequestOptions, RequestQueryOptions, WsgClient, WsgInstance } from "@bentley/itwin-client";
 import * as deepAssign from "deep-assign";
 
-/** Connect context type
+/** The iTwin context type.
  * @beta
  */
 export enum ContextType {
@@ -18,7 +18,7 @@ export enum ContextType {
   Project = 3,
 }
 
-/** Connect context. Currently supported contexts are [[Project]] and [[Asset]].
+/** The iTwin context. Currently supported context types are [[Project]] and [[Asset]].
  * @beta
  */
 @ECJsonTypeMap.classToJson("wsg", "CONNECTEDContext.Context", { schemaPropertyName: "schemaName", classPropertyName: "className" })
@@ -74,7 +74,7 @@ abstract class CommonContext extends Context {
   public lastModifiedDate?: string;
 }
 
-/** Connect project. Represents time-constrained work done on an [[Asset]].
+/** An iTwin context of type project. Represents time-constrained work done on an [[Asset]].
  * @beta
  */
 @ECJsonTypeMap.classToJson("wsg", "CONNECTEDContext.Project", { schemaPropertyName: "schemaName", classPropertyName: "className" })
@@ -89,7 +89,7 @@ export class Project extends CommonContext {
   public isRbacEnabled?: boolean;
 }
 
-/** Connect asset. Assets represent a large scale item that is owned and/or operated by organization, such as buildings, highways and so on.
+/** An iTwin context of type asset. Assets represent a large scale item that is owned and/or operated by organization, such as buildings, highways and so on.
  * @beta
  */
 @ECJsonTypeMap.classToJson("wsg", "CONNECTEDContext.Asset", { schemaPropertyName: "schemaName", classPropertyName: "className" })
@@ -98,7 +98,7 @@ export class Asset extends CommonContext {
   public assetType?: string;
 }
 
-/** Options to request connect projects
+/** Options to request iTwin contexts.
  * @beta
  */
 export interface ContextRegistryRequestQueryOptions extends RequestQueryOptions {
@@ -109,7 +109,7 @@ export interface ContextRegistryRequestQueryOptions extends RequestQueryOptions 
   isFavorite?: boolean;
 }
 
-/** Client API to access the connect services.
+/** Client API to access the context registry services.
  * @beta
  */
 export class ContextRegistryClient extends WsgClient {
@@ -120,8 +120,7 @@ export class ContextRegistryClient extends WsgClient {
     super("v2.5");
   }
 
-  /**
-   * Gets name/key to query the service URLs from the URL Discovery Service ("Buddi")
+  /** Gets name/key to query the service URLs from the URL Discovery Service ("Buddi")
    * @returns Search key for the URL.
    */
   protected getUrlSearchKey(): string {
@@ -133,8 +132,7 @@ export class ContextRegistryClient extends WsgClient {
     deepAssign(options, { headers: { "content-type": "application/json" } });
   }
 
-  /**
-   * Gets theRelyingPartyUrl for the service.
+  /** Gets theRelyingPartyUrl for the service.
    * @returns RelyingPartyUrl for the service.
    */
   protected getRelyingPartyUrl(): string {
@@ -149,8 +147,7 @@ export class ContextRegistryClient extends WsgClient {
     throw new Error(`RelyingPartyUrl not set. Set it in Config.App using key ${ContextRegistryClient.configRelyingPartyUri}`);
   }
 
-  /**
-   * Gets connect projects accessible to the authorized user.
+  /** Gets the iTwin project contexts that are accessible to the authorized user.
    * @param requestContext The client request context
    * @param queryOptions Query options. Use the mapped EC property names in the query strings and not the TypeScript property names.
    * @returns Resolves to an array of projects.
@@ -160,8 +157,7 @@ export class ContextRegistryClient extends WsgClient {
     return this.getInstances<Project>(requestContext, Project, "/Repositories/BentleyCONNECT--Main/ConnectedContext/Project", queryOptions);
   }
 
-  /**
-   * Gets a connect project.
+  /** Gets a specific iTwin project context.
    * @param requestContext The client request context
    * @param queryOptions Query options. Use the mapped EC property names in the query strings and not the TypeScript property names.
    * @returns Resolves to the found project. Rejects if no projects, or more than one project is found.
@@ -178,7 +174,7 @@ export class ContextRegistryClient extends WsgClient {
     return projects[0];
   }
 
-  /** Get the projects the user has been "invited" to.
+  /** Get the iTwin projects that the user has been "invited" to.
    * @param token Delegation token of the authorized user.
    * @param queryOptions Query options. Use the mapped EC property names in the query strings and not the TypeScript property names.
    * @returns Resolves to an array of invited projects.
@@ -188,8 +184,7 @@ export class ContextRegistryClient extends WsgClient {
     return this.getInstances<Project>(requestContext, Project, "/Repositories/BentleyCONNECT--Main/ConnectedContext/Project?rbaconly=true", queryOptions);
   }
 
-  /**
-   * Gets a connect asset.
+  /** Gets a specific iTwin asset context.
    * @param requestContext The client request context
    * @param queryOptions Query options. Use the mapped EC property names in the query strings and not the TypeScript property names.
    * @returns Resolves to the found asset. Rejects if no assets, or more than one asset is found.
@@ -206,8 +201,7 @@ export class ContextRegistryClient extends WsgClient {
     return assets[0];
   }
 
-  /**
-   * Gets connect assets accessible to the authorized user.
+  /** Gets the iTwin asset contexts that are accessible to the authorized user.
    * @param requestContext The client request context
    * @param queryOptions Query options. Use the mapped EC property names in the query strings and not the TypeScript property names.
    * @returns Resolves to an array of assets.

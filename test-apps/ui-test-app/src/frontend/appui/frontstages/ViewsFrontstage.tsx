@@ -707,6 +707,7 @@ class AdditionalTools {
       AccuDrawPopupTools.showAngleEditor,
       AccuDrawPopupTools.showLengthEditor,
       AccuDrawPopupTools.showHeightEditor,
+      AccuDrawPopupTools.showInputEditor,
     ]);
 
     const groupHiddenCondition = new ConditionalBooleanValue(() => SampleAppIModelApp.getTestProperty() === "HIDE", [SampleAppUiActionId.setTestProperty]);

@@ -16,7 +16,7 @@ export function getRpcInterfaces() {
   return [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface];
 }
 
-export function initializeBackend() {
+export async function initializeBackend() {
   const hostConfig = new IModelHostConfiguration();
-  IModelHost.startup(hostConfig);
+  await IModelHost.startup(hostConfig);
 }

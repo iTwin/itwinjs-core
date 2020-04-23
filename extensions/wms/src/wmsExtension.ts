@@ -160,7 +160,7 @@ class WMSExtension extends Extension {
   }
 
   /** Invoked the first time this extension is loaded. */
-  public onLoad(_args: string[]): void {
+  public async onLoad(_args: string[]): Promise<void> {
     this._i18NNamespace = this.i18n.registerNamespace("WmsExtension");
     const logoImage = this.resolveResourceUrl("wmsExtension.svg");
 
@@ -169,7 +169,7 @@ class WMSExtension extends Extension {
   }
 
   /** Invoked each time this extension is loaded. */
-  public onExecute(_args: string[]): void {
+  public async onExecute(_args: string[]): Promise<void> {
     const selectedView: ScreenViewport | undefined = IModelApp.viewManager.selectedView;
     if (undefined === selectedView)
       return;
@@ -185,11 +185,10 @@ class WMSExtension extends Extension {
 
     // Output a message indicating the current imagery type.
     const weatherType = (WMSImageryType.Temperature === this._currentImageryType) ? "temperature" : "precipitation";
-    this._i18NNamespace!.readFinished.then(() => {
-      const message: string = this.i18n.translate("WmsExtension:Messages.DisplayType", { weatherType });
-      const msgDetails: NotifyMessageDetails = new NotifyMessageDetails(OutputMessagePriority.Info, message);
-      IModelApp.notifications.outputMessage(msgDetails);
-    }).catch(() => { });
+    await this._i18NNamespace!.readFinished;
+    const message: string = this.i18n.translate("WmsExtension:Messages.DisplayType", { weatherType });
+    const msgDetails: NotifyMessageDetails = new NotifyMessageDetails(OutputMessagePriority.Info, message);
+    IModelApp.notifications.outputMessage(msgDetails);
   }
 }
 

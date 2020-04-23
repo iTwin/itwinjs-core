@@ -564,7 +564,7 @@ export class BentleyError extends Error {
       case RpcInterfaceStatus.IncompatibleVersion: return "RpcInterfaceStatus.IncompatibleVersion";
 
       // ChangeSetStatus
-      case ChangeSetStatus.ApplyError: return "Error applying a change set when reversing or reinstating it";
+      case ChangeSetStatus.ApplyError: return "Error applying a change set";
       case ChangeSetStatus.ChangeTrackingNotEnabled: return "Change tracking has not been enabled. The ChangeSet API mandates this";
       case ChangeSetStatus.CorruptedChangeStream: return "Contents of the change stream are corrupted and does not match the ChangeSet";
       case ChangeSetStatus.FileNotFound: return "File containing the changes was not found";

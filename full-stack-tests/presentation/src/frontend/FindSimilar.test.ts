@@ -25,7 +25,7 @@ describe("Find Similar", () => {
 
   after(async () => {
     await imodel.close();
-    terminate();
+    await terminate();
   });
 
   let propertiesDataProvider: IPresentationPropertyDataProvider;

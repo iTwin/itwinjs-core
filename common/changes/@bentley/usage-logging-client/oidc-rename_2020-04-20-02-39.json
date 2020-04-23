@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/usage-logging-client",
+      "comment": "Renamed OIDC constructs for consistency; Removed SAML support.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/usage-logging-client",
+  "email": "Ramanujam.Raman@bentley.com"
+}

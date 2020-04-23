@@ -34,7 +34,7 @@ describe("GeometryAccumulator tests", () => {
   document.body.appendChild(canvas!);
 
   before(async () => {   // Create a ViewState to load into a Viewport
-    IModelApp.startup();
+    await IModelApp.startup();
     iModel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
     spatialView = await iModel.views.load("0x34") as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
@@ -42,7 +42,7 @@ describe("GeometryAccumulator tests", () => {
 
   after(async () => {
     if (iModel) await iModel.close();
-    IModelApp.shutdown();
+    await IModelApp.shutdown();
   });
 
   it("addPath works as expected", () => {

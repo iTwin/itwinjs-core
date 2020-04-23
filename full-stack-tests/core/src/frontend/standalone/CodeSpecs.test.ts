@@ -10,13 +10,13 @@ describe("CodeSpecs", async () => {
   let iModel: IModelConnection;
 
   before(async () => {
-    IModelApp.startup();
+    await IModelApp.startup();
     iModel = await SnapshotConnection.openFile("test.bim");
   });
 
   after(async () => {
     if (iModel) await iModel.close();
-    IModelApp.shutdown();
+    await IModelApp.shutdown();
   });
 
   it("should load CodeSpecs", async () => {

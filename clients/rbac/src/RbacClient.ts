@@ -6,7 +6,7 @@
  * @module RbacClient
  */
 
-import { Config } from "@bentley/bentleyjs-core";
+import { Config, GuidString } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext, ECJsonTypeMap, request, Response, WsgClient, WsgInstance } from "@bentley/itwin-client";
 
 /** RBAC permission
@@ -27,7 +27,7 @@ export class Permission extends WsgInstance {
   public categoryId?: number;
 }
 
-/** iModel Hub Permission
+/** iModelHub Permission
  * @internal
  */
 export enum IModelHubPermission {
@@ -40,7 +40,7 @@ export enum IModelHubPermission {
   ManageVersions = 1 << 5,
 }
 
-/** Client API to access the connect services.
+/** Client API to access the iTwin services.
  * @internal
  */
 export class RbacClient extends WsgClient {
@@ -125,11 +125,11 @@ export class RbacClient extends WsgClient {
   }
 
   /**
-   * Get the permissions relevant to the iModelHubService for a specified project
+   * Get the permissions relevant to iModelHub for a specified project
    * @param requestContext The client request context.
    * @param projectId Id of the specified project.
    */
-  public async getIModelHubPermissions(requestContext: AuthorizedClientRequestContext, projectId: string): Promise<IModelHubPermission> {
+  public async getIModelHubPermissions(requestContext: AuthorizedClientRequestContext, projectId: GuidString): Promise<IModelHubPermission> {
     requestContext.enter();
 
     const iModelHubServiceGPRId = 2485;

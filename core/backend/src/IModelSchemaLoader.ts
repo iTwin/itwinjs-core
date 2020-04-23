@@ -5,7 +5,8 @@
 
 import { IModelError } from "@bentley/imodeljs-common";
 import { Logger, IModelStatus } from "@bentley/bentleyjs-core";
-import { IModelJsNative, BackendLoggerCategory } from "./imodeljs-backend";
+import { IModelJsNative } from "@bentley/imodeljs-native";
+import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { IModelDb } from "./IModelDb";
 import { BinaryPropertyTypeConverter } from "./BinaryPropertyTypeConverter";
 import { ISchemaLocater, Schema, SchemaKey, SchemaMatchType, SchemaContext, SchemaProps, ECVersion } from "@bentley/ecschema-metadata";

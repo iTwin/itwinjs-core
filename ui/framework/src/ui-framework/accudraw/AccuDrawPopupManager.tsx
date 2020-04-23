@@ -11,7 +11,7 @@ import * as React from "react";
 import { XAndY } from "@bentley/geometry-core";
 import {
   AbstractMenuItemProps, IconSpecUtilities,
-  OnNumberCommitFunc, OnCancelFunc,
+  OnNumberCommitFunc, OnCancelFunc, OnValueCommitFunc,
 } from "@bentley/ui-abstract";
 import {
   AngleDescription, LengthDescription,
@@ -74,16 +74,16 @@ export class AccuDrawPopupManager {
 
   public static showAngleEditor(el: HTMLElement, pt: XAndY, value: number, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc): boolean {
     const propertyDescription = new AngleDescription(undefined, undefined, IconSpecUtilities.createSvgIconSpec(angleIcon));
-    return PopupManager.showInputEditor(el, pt, value, propertyDescription, onCommit, onCancel);
+    return PopupManager.showInputEditor(el, pt, value, propertyDescription, onCommit as OnValueCommitFunc, onCancel);
   }
 
   public static showLengthEditor(el: HTMLElement, pt: XAndY, value: number, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc): boolean {
     const propertyDescription = new LengthDescription(undefined, undefined, IconSpecUtilities.createSvgIconSpec(lengthIcon));
-    return PopupManager.showInputEditor(el, pt, value, propertyDescription, onCommit, onCancel);
+    return PopupManager.showInputEditor(el, pt, value, propertyDescription, onCommit as OnValueCommitFunc, onCancel);
   }
 
   public static showHeightEditor(el: HTMLElement, pt: XAndY, value: number, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc): boolean {
     const propertyDescription = new LengthDescription(undefined, undefined, IconSpecUtilities.createSvgIconSpec(heightIcon));
-    return PopupManager.showInputEditor(el, pt, value, propertyDescription, onCommit, onCancel);
+    return PopupManager.showInputEditor(el, pt, value, propertyDescription, onCommit as OnValueCommitFunc, onCancel);
   }
 }

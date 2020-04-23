@@ -6,7 +6,7 @@
  * @module RpcInterface
  */
 
-import { assert, ClientRequestContext, Id64, Id64String, IModelStatus, Logger, OpenMode } from "@bentley/bentleyjs-core";
+import { assert, ClientRequestContext, Id64, Id64String, IModelStatus, Logger } from "@bentley/bentleyjs-core";
 import { Range3d, Range3dProps } from "@bentley/geometry-core";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import {
@@ -21,7 +21,6 @@ import {
   IModelCoordinatesResponseProps,
   IModelReadRpcInterface,
   IModelRpcProps,
-  IModelVersion,
   MassPropertiesRequestProps,
   MassPropertiesResponseProps,
   ModelProps,
@@ -33,14 +32,15 @@ import {
   RpcManager,
   SnapRequestProps,
   SnapResponseProps,
+  SyncMode,
   ViewStateProps,
 } from "@bentley/imodeljs-common";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
-import { KeepBriefcase } from "../BriefcaseManager";
 import { SpatialCategory } from "../Category";
 import { generateGeometrySummaries } from "../GeometrySummary";
-import { BriefcaseDb, IModelDb, OpenParams } from "../IModelDb";
+import { IModelDb } from "../IModelDb";
 import { DictionaryModel } from "../Model";
+import { RpcBriefcaseUtility } from "./RpcBriefcaseUtility";
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
@@ -53,20 +53,12 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
 
   public async openForRead(tokenProps: IModelRpcProps): Promise<IModelConnectionProps> {
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
-    const openParams: OpenParams = OpenParams.fixedVersion();
-    openParams.timeout = 1000; // 1 second
-    const iModelVersion = IModelVersion.asOfChangeSet(tokenProps.changeSetId!);
-    const db = await BriefcaseDb.open(requestContext, tokenProps.contextId!, tokenProps.iModelId!, openParams, iModelVersion);
-    return db.getConnectionProps();
+    return RpcBriefcaseUtility.openWithTimeout(requestContext, tokenProps, SyncMode.FixedVersion);
   }
 
   public async close(tokenProps: IModelRpcProps): Promise<boolean> {
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
-    if (OpenMode.Readonly === tokenProps.openMode) {
-      return Promise.resolve(true); // Close is a no-op for ReadOnly connections.
-    }
-    await BriefcaseDb.findByKey(tokenProps.key).close(requestContext, KeepBriefcase.No);
-    return Promise.resolve(true);
+    return RpcBriefcaseUtility.close(requestContext, tokenProps);
   }
 
   public async queryRows(tokenProps: IModelRpcProps, ecsql: string, bindings?: any[] | object, limit?: QueryLimit, quota?: QueryQuota, priority?: QueryPriority): Promise<QueryResponse> {

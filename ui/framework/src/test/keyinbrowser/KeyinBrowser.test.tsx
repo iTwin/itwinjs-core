@@ -28,13 +28,13 @@ describe("<KeyinBrowser>", () => {
 
     await TestUtils.initializeUiFramework();
     // use mock renderer so standards tools are registered.
-    MockRender.App.startup();
+    await MockRender.App.startup();
   });
 
   afterEach(cleanup);
 
-  after(() => {
-    MockRender.App.shutdown();
+  after(async () => {
+    await MockRender.App.shutdown();
 
     // restore the overriden property getter
     Object.defineProperty(window, "localStorage", propertyDescriptorToRestore);

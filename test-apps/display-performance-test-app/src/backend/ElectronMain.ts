@@ -11,21 +11,21 @@ import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 
 import * as electron from "electron";
 
-// --------------------------------------------------------------------------------------
-// ------- Initialization and setup of host and tools before starting app ---------------
-
-// Start the backend
-initializeBackend();
-
-if (process.argv.length > 2 && process.argv[2].split(".").pop() === "json")
-  DisplayPerfRpcInterface.jsonFilePath = process.argv[2];
-
-// --------------------------------------------------------------------------------------
-// ---------------- This part copied from protogist ElectronMain.ts ---------------------
-const autoOpenDevTools = (undefined === process.env.SVT_NO_DEV_TOOLS);
-const maximizeWindow = (undefined === process.env.SVT_NO_MAXIMIZE_WINDOW); // Make max window the default
-
 (async () => { // tslint:disable-line:no-floating-promises
+  // --------------------------------------------------------------------------------------
+  // ------- Initialization and setup of host and tools before starting app ---------------
+
+  // Start the backend
+  await initializeBackend();
+
+  if (process.argv.length > 2 && process.argv[2].split(".").pop() === "json")
+    DisplayPerfRpcInterface.jsonFilePath = process.argv[2];
+
+  // --------------------------------------------------------------------------------------
+  // ---------------- This part copied from protogist ElectronMain.ts ---------------------
+  const autoOpenDevTools = (undefined === process.env.SVT_NO_DEV_TOOLS);
+  const maximizeWindow = (undefined === process.env.SVT_NO_MAXIMIZE_WINDOW); // Make max window the default
+
   const manager: IModelJsElectronManager = new IModelJsElectronManager(path.join(__dirname, "..", "..", "build"));
 
   await manager.initialize({

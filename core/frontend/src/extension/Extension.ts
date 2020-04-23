@@ -61,14 +61,14 @@ export abstract class Extension {
   /** Method called when the Extension is first loaded.
    * @param _args arguments that were passed to [ExtensionAdmin.loadExtension]($frontend). The first argument is the extension name.
    */
-  public onLoad(_args: string[]): void {
+  public async onLoad(_args: string[]): Promise<void> {
   }
 
   /** Method called immediately following the call to onLoad when the Extension is first loaded, and also once for
    * each additional call to [ExtensionAdmin.loadExtension]($frontend) for the same Extension.
    * @param _args arguments that were passed to [ExtensionAdmin.loadExtension]($frontend). The first argument is the extension name.
    */
-  public abstract onExecute(_args: string[]): void;
+  public abstract onExecute(_args: string[]): Promise<void>;
 
   private _loader: ExtensionLoader | undefined;
   /** @internal */

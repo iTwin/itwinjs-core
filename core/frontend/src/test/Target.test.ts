@@ -52,11 +52,11 @@ describe("FrustumUniforms", () => {
 });
 
 describe("Clips", () => {
-  before(() => {
-    IModelApp.startup();
+  before(async () => {
+    await IModelApp.startup();
   });
-  after(() => {
-    IModelApp.shutdown();
+  after(async () => {
+    await IModelApp.shutdown();
   });
   it("should create, store, and retrieve Clips", () => {
     const points: Point3d[] = [];

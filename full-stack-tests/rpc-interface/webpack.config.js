@@ -40,6 +40,9 @@ module.exports = {
   optimization: {
     nodeEnv: "production"
   },
+  externals: {
+    electron: "commonjs electron",
+  },
   node: {
     process: false
   },

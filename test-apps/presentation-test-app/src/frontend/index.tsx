@@ -5,12 +5,12 @@
 
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import { Logger, LogLevel, OpenMode, Config } from "@bentley/bentleyjs-core";
+import { Logger, LogLevel, Config } from "@bentley/bentleyjs-core";
 import { IModelApp } from "@bentley/imodeljs-frontend";
 import {
   BentleyCloudRpcManager, BentleyCloudRpcParams,
   ElectronRpcManager, ElectronRpcConfiguration,
-  RpcOperation, IModelRpcProps, RpcConfiguration,
+  RpcConfiguration,
 } from "@bentley/imodeljs-common";
 // __PUBLISH_EXTRACT_START__ Presentation.Frontend.Imports
 import { Presentation } from "@bentley/presentation-frontend";
@@ -33,20 +33,17 @@ Logger.setLevelDefault(LogLevel.Warning);
   if (ElectronRpcConfiguration.isElectron) {
     ElectronRpcManager.initializeClient({}, rpcs);
   } else {
-    const testToken: IModelRpcProps = { key: "test", contextId: "test", iModelId: "test", changeSetId: "test", openMode: OpenMode.Readonly };
     const rpcParams: BentleyCloudRpcParams = { info: { title: "presentation-test-app", version: "v1.0" }, uriPrefix: "http://localhost:3001" };
     // __PUBLISH_EXTRACT_START__ Presentation.Frontend.RpcInterface
-    const rpcConfiguration = BentleyCloudRpcManager.initializeClient(rpcParams, rpcs);
+    BentleyCloudRpcManager.initializeClient(rpcParams, rpcs);
     // __PUBLISH_EXTRACT_END__
-    for (const def of rpcConfiguration.interfaces())
-      RpcOperation.forEach(def, (operation) => operation.policy.token = (request) => (request.findTokenPropsParameter() || testToken));
   }
 })();
 
 export class SampleApp {
   private static _ready: Promise<void>;
-  public static startup() {
-    IModelApp.startup();
+  public static async startup(): Promise<void> {
+    await IModelApp.startup();
     const readyPromises = new Array<Promise<void>>();
 
     const localizationNamespace = IModelApp.i18n.registerNamespace("Sample");
@@ -85,11 +82,12 @@ export class SampleApp {
   public static get ready(): Promise<void> { return this._ready; }
 }
 
-SampleApp.startup();
+(async () => {
+  await SampleApp.startup();
 
-SampleApp.ready.then(() => { // tslint:disable-line:no-floating-promises
+  await SampleApp.ready;
   ReactDOM.render(
     <App />,
     document.getElementById("root") as HTMLElement,
   );
-});
+})(); // tslint:disable-line:no-floating-promises

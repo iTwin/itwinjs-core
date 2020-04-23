@@ -83,7 +83,7 @@ export * from "./geometry/ImageGraphic";
 export * from "./geometry/LineStyle";
 export * from "./geometry/Placement";
 export * from "./geometry/TextString";
-export * from "./oidc/OidcDesktopClientConfiguration";
+export * from "./oidc/DesktopAuthorizationClientConfiguration";
 export * from "./rpc/DevToolsRpcInterface";
 export * from "./rpc/EditorRpcInterface";
 export * from "./rpc/IModelReadRpcInterface";
@@ -184,4 +184,8 @@ export * from "./tile/TileMetadata";
 /**
  * @docs-group-description Tile
  * Types for working with 3d tile formats.
+ */
+/**
+ * @docs-group-description Utils
+ * Miscellaneous utility classes.
  */

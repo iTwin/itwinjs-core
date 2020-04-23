@@ -8,8 +8,8 @@ import { BufferHandle } from "../render/webgl/Handle";
 import { IModelApp } from "../IModelApp";
 
 describe("Handles", () => {
-  before(() => IModelApp.startup());
-  after(() => IModelApp.shutdown());
+  before(async () => IModelApp.startup());
+  after(async () => IModelApp.shutdown());
 
   it("should create and use BufferHandles for GL resources", () => {
     if (!IModelApp.hasRenderSystem) {

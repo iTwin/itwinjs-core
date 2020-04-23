@@ -5,12 +5,12 @@
 import { Id64String } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { ChangeSet, HubIModel, IModelHubClient, IModelHubError, IModelQuery, ChangesType } from "@bentley/imodelhub-client";
-import { IModel, IModelVersion, SubCategoryAppearance } from "@bentley/imodeljs-common";
+import { IModel, IModelVersion, SubCategoryAppearance, SyncMode } from "@bentley/imodeljs-common";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { Reporter } from "@bentley/perf-tools/lib/Reporter";
 import { assert } from "chai";
 import * as path from "path";
-import { BriefcaseDb, BriefcaseManager, ConcurrencyControl, DictionaryModel, Element, IModelDb, IModelJsFs, KeepBriefcase, OpenParams, SpatialCategory } from "../imodeljs-backend";
+import { BriefcaseDb, BriefcaseManager, ConcurrencyControl, DictionaryModel, Element, IModelDb, IModelJsFs, SpatialCategory } from "../imodeljs-backend";
 import { IModelTestUtils, TestIModelInfo } from "../test/IModelTestUtils";
 import { KnownTestLocations } from "../test/KnownTestLocations";
 
@@ -21,45 +21,45 @@ async function getIModelAfterApplyingCS(requestContext: AuthorizedClientRequestC
 
   // open imodel first time from imodel-hub with first revision
   const startTime = new Date().getTime();
-  const iModelDb = await BriefcaseDb.open(requestContext, projectId, imodelId, OpenParams.fixedVersion(), IModelVersion.asOfChangeSet(firstChangeSetId));
+  const iModelDb = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, projectId, imodelId, SyncMode.FixedVersion, IModelVersion.asOfChangeSet(firstChangeSetId));
   const endTime = new Date().getTime();
   assert.exists(iModelDb);
   const elapsedTime = (endTime - startTime) / 1000.0;
   assert.strictEqual<string>(iModelDb.briefcase.currentChangeSetId, firstChangeSetId);
-  await iModelDb.close(requestContext).catch();
+  iModelDb.close();
   reporter.addEntry("ImodelChangesetPerformance", "GetImodel", "Execution time(s)", elapsedTime, { Description: "from hub first CS", Operation: "Open" });
 
   // open imodel from local cache with second revision
   const startTime1 = new Date().getTime();
-  const iModelDb1 = await BriefcaseDb.open(requestContext, projectId, imodelId, OpenParams.fixedVersion(), IModelVersion.asOfChangeSet(secondChangeSetId));
+  const iModelDb1 = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, projectId, imodelId, SyncMode.FixedVersion, IModelVersion.asOfChangeSet(secondChangeSetId));
   const endTime1 = new Date().getTime();
   assert.exists(iModelDb1);
   const elapsedTime1 = (endTime1 - startTime1) / 1000.0;
   assert.strictEqual<string>(iModelDb1.briefcase.currentChangeSetId, secondChangeSetId);
-  await iModelDb1.close(requestContext).catch();
+  iModelDb1.close();
   reporter.addEntry("ImodelChangesetPerformance", "GetImodel", "Execution time(s)", elapsedTime1, { Description: "from cache second CS", Operation: "Open" });
 
   // open imodel from local cache with first revision
   const startTime2 = new Date().getTime();
-  const iModelDb2 = await BriefcaseDb.open(requestContext, projectId, imodelId, OpenParams.fixedVersion(), IModelVersion.first());
+  const iModelDb2 = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, projectId, imodelId, SyncMode.FixedVersion, IModelVersion.first());
   const endTime2 = new Date().getTime();
   assert.exists(iModelDb2);
   const elapsedTime2 = (endTime2 - startTime2) / 1000.0;
-  await iModelDb2.close(requestContext).catch();
+  iModelDb2.close();
   reporter.addEntry("ImodelChangesetPerformance", "GetImodel", "Execution time(s)", elapsedTime2, { Description: "from cache first CS", Operation: "Open" });
 
   // open imodel from local cache with latest revision
   const startTime3 = new Date().getTime();
-  const iModelDb3 = await BriefcaseDb.open(requestContext, projectId, imodelId, OpenParams.fixedVersion(), IModelVersion.named("latest"));
+  const iModelDb3 = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, projectId, imodelId, SyncMode.FixedVersion, IModelVersion.named("latest"));
   const endTime3 = new Date().getTime();
   assert.exists(iModelDb3);
   const elapsedTime3 = (endTime3 - startTime3) / 1000.0;
-  await iModelDb3.close(requestContext).catch();
+  iModelDb3.close();
   reporter.addEntry("ImodelChangesetPerformance", "GetImodel", "Execution time(s)", elapsedTime3, { Description: "from cache latest CS", Operation: "Open" });
 }
 
 async function pushIModelAfterMetaChanges(requestContext: AuthorizedClientRequestContext, reporter: Reporter, projectId: string, imodelPushId: string) {
-  const iModelPullAndPush = await BriefcaseDb.open(requestContext, projectId, imodelPushId, OpenParams.pullAndPush(), IModelVersion.latest());
+  const iModelPullAndPush = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, projectId, imodelPushId, SyncMode.PullAndPush, IModelVersion.latest());
   assert.exists(iModelPullAndPush);
   iModelPullAndPush.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
 
@@ -82,7 +82,8 @@ async function pushIModelAfterMetaChanges(requestContext: AuthorizedClientReques
     const elapsedTime1 = (endTime1 - startTime1) / 1000.0;
     reporter.addEntry("ImodelChangesetPerformance", "PushMetaChangeToHub", "Execution time(s)", elapsedTime1, { Description: "meta changes to hub", Operation: "Push" });
   } catch (error) { }
-  await iModelPullAndPush.close(requestContext, KeepBriefcase.No);
+
+  await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModelPullAndPush);
 }
 
 async function createNewModelAndCategory(requestContext: AuthorizedClientRequestContext, rwIModel: IModelDb) {
@@ -117,9 +118,9 @@ async function pushIModelAfterDataChanges(requestContext: AuthorizedClientReques
     await BriefcaseManager.imodelClient.iModels.delete(requestContext, projectId, iModelTemp.id!);
   }
   // create new imodel with given name
-  const rwIModel = await BriefcaseDb.create(requestContext, projectId, iModelName, { rootSubject: { name: "TestSubject" } });
-  const rwIModelId = rwIModel.iModelId;
+  const rwIModelId = await BriefcaseManager.create(requestContext, projectId, iModelName, { rootSubject: { name: "TestSubject" } });
   assert.isNotEmpty(rwIModelId);
+  const rwIModel = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, projectId, rwIModelId, SyncMode.PullAndPush);
 
   // create new model, category and physical element, and insert in imodel
   rwIModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
@@ -133,7 +134,7 @@ async function pushIModelAfterDataChanges(requestContext: AuthorizedClientReques
   const endTime1 = new Date().getTime();
   const elapsedTime1 = (endTime1 - startTime1) / 1000.0;
   reporter.addEntry("ImodelChangesetPerformance", "PushDataChangeToHub", "Execution time(s)", elapsedTime1, { Description: "data changes to hub", Operation: "Push" });
-  await rwIModel.close(requestContext, KeepBriefcase.No);
+  await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, rwIModel);
 }
 
 async function pushIModelAfterSchemaChanges(requestContext: AuthorizedClientRequestContext, reporter: Reporter, projectId: string) {
@@ -144,8 +145,10 @@ async function pushIModelAfterSchemaChanges(requestContext: AuthorizedClientRequ
     await BriefcaseManager.imodelClient.iModels.delete(requestContext, projectId, iModelTemp.id!);
   }
   // create new imodel with given name
-  const rwIModel = await BriefcaseDb.create(requestContext, projectId, iModelName, { rootSubject: { name: "TestSubject" } });
-  const rwIModelId = rwIModel.iModelId;
+  const rwIModelId = await BriefcaseManager.create(requestContext, projectId, iModelName, { rootSubject: { name: "TestSubject" } });
+  assert.isNotEmpty(rwIModelId);
+  const rwIModel = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, projectId, rwIModelId, SyncMode.PullAndPush);
+
   assert.isNotEmpty(rwIModelId);
   // import schema and push change to hub
   const schemaPathname = path.join(KnownTestLocations.assetsDir, "PerfTestDomain.ecschema.xml");
@@ -160,7 +163,7 @@ async function pushIModelAfterSchemaChanges(requestContext: AuthorizedClientRequ
   const endTime1 = new Date().getTime();
   const elapsedTime1 = (endTime1 - startTime1) / 1000.0;
   reporter.addEntry("ImodelChangesetPerformance", "PushSchemaChangeToHub", "Execution time(s)", elapsedTime1, { Description: "schema changes to hub", Operation: "Push" });
-  await rwIModel.close(requestContext, KeepBriefcase.No);
+  await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, rwIModel);
 }
 
 const getElementCount = (iModel: IModelDb): number => {
@@ -170,7 +173,7 @@ const getElementCount = (iModel: IModelDb): number => {
 };
 
 async function executeQueryTime(requestContext: AuthorizedClientRequestContext, reporter: Reporter, projectId: string, imodelId: string) {
-  const iModelDb = await BriefcaseDb.open(requestContext, projectId, imodelId, OpenParams.fixedVersion(), IModelVersion.named("latest"));
+  const iModelDb = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, projectId, imodelId, SyncMode.FixedVersion, IModelVersion.named("latest"));
   assert.exists(iModelDb);
   const startTime = new Date().getTime();
   const stat = IModelTestUtils.executeQuery(iModelDb, "SELECT * FROM BisCore.LineStyle");
@@ -178,7 +181,7 @@ async function executeQueryTime(requestContext: AuthorizedClientRequestContext, 
   const elapsedTime1 = (endTime - startTime) / 1000.0;
   assert.equal(7, stat.length);
   reporter.addEntry("ImodelChangesetPerformance", "ExecuteQuery", "Execution time(s)", elapsedTime1, { Description: "execute a simple ECSQL query", Operation: "ExecuteQuery" });
-  await iModelDb.close(requestContext).catch();
+  iModelDb.close();
 }
 
 async function reverseChanges(requestContext: AuthorizedClientRequestContext, reporter: Reporter, projectId: string) {
@@ -189,9 +192,9 @@ async function reverseChanges(requestContext: AuthorizedClientRequestContext, re
     await BriefcaseManager.imodelClient.iModels.delete(requestContext, projectId, iModelTemp.id!);
 
   // create new imodel with given name
-  const rwIModel = await BriefcaseDb.create(requestContext, projectId, iModelName, { rootSubject: { name: "TestSubject" } });
-  const rwIModelId = rwIModel.iModelId;
+  const rwIModelId = await BriefcaseManager.create(requestContext, projectId, iModelName, { rootSubject: { name: "TestSubject" } });
   assert.isNotEmpty(rwIModelId);
+  const rwIModel = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, projectId, rwIModelId, SyncMode.PullAndPush);
 
   // create new model, category and physical element, and insert in imodel, and push these changes
   rwIModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
@@ -223,7 +226,7 @@ async function reverseChanges(requestContext: AuthorizedClientRequestContext, re
   assert.equal(reverseCount, firstCount);
 
   reporter.addEntry("ImodelChangesetPerformance", "ReverseChanges", "Execution time(s)", elapsedTime1, { Description: "reverse the imodel to first CS from latest", Operation: "ReverseChanges" });
-  await rwIModel.close(requestContext, KeepBriefcase.No);
+  rwIModel.close();
 }
 
 async function reinstateChanges(requestContext: AuthorizedClientRequestContext, reporter: Reporter, projectId: string) {
@@ -234,9 +237,9 @@ async function reinstateChanges(requestContext: AuthorizedClientRequestContext, 
     await BriefcaseManager.imodelClient.iModels.delete(requestContext, projectId, iModelTemp.id!);
 
   // create new imodel with given name
-  const rwIModel = await BriefcaseDb.create(requestContext, projectId, iModelName, { rootSubject: { name: "TestSubject" } });
-  const rwIModelId = rwIModel.iModelId;
+  const rwIModelId = await BriefcaseManager.create(requestContext, projectId, iModelName, { rootSubject: { name: "TestSubject" } });
   assert.isNotEmpty(rwIModelId);
+  const rwIModel = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, projectId, rwIModelId, SyncMode.PullAndPush);
 
   // create new model, category and physical element, and insert in imodel, and push these changes
   rwIModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
@@ -271,7 +274,7 @@ async function reinstateChanges(requestContext: AuthorizedClientRequestContext, 
   assert.equal(reinstateCount, secondCount);
 
   reporter.addEntry("ImodelChangesetPerformance", "ReinstateChanges", "Execution time(s)", elapsedTime1, { Description: "reinstate the imodel to latest CS from first", Operation: "ReinstateChanges" });
-  await rwIModel.close(requestContext, KeepBriefcase.No);
+  rwIModel.close();
 }
 
 describe("ImodelChangesetPerformance", () => {
@@ -406,7 +409,7 @@ describe("ImodelChangesetPerformance big datasets", () => {
       };
 
       const firstChangeSetId = changeSets[startNum].wsgId;
-      const iModelDb = await BriefcaseDb.open(requestContext, projectId, imodelId, OpenParams.pullAndPush(), IModelVersion.asOfChangeSet(firstChangeSetId));
+      const iModelDb = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, projectId, imodelId, SyncMode.PullAndPush, IModelVersion.asOfChangeSet(firstChangeSetId));
 
       for (let j = startNum; j < endNum; ++j) {
         const cs: ChangeSet = changeSets[j];
@@ -440,7 +443,7 @@ describe("ImodelChangesetPerformance big datasets", () => {
           reporter.clearEntries();
         }
       }
-      await iModelDb.close(requestContext).catch();
+      iModelDb.close();
       reporter.exportCSV(csvPath);
       reporter.clearEntries();
     }

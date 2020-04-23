@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { IModelVersion } from "@bentley/imodeljs-common";
+import { IModelVersion, SyncMode } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext, AccessToken } from "@bentley/itwin-client";
-import { OpenParams, AuthorizedBackendRequestContext } from "../../imodeljs-backend";
+import { AuthorizedBackendRequestContext } from "../../imodeljs-backend";
 import { PromiseMemoizer, QueryablePromise } from "../../PromiseMemoizer";
 import { TestMemoizer, testFn } from "./TestMemoizer";
 import { BeDuration } from "@bentley/bentleyjs-core";
@@ -16,15 +16,15 @@ describe("PromiseMemoizer", () => {
 
   const pause = async (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-  const generateTestFunctionKey = (requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: string, openParams: OpenParams, version: IModelVersion): string => {
-    return `${requestContext.accessToken.toTokenString()}:${contextId}:${iModelId}:${JSON.stringify(openParams)}:${JSON.stringify(version)}`;
+  const generateTestFunctionKey = (requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: string, syncMode: SyncMode, version: IModelVersion): string => {
+    return `${requestContext.accessToken.toTokenString()}:${contextId}:${iModelId}:${syncMode}:${JSON.stringify(version)}`;
   };
 
-  const testFunction = async (requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: string, openParams: OpenParams, version: IModelVersion): Promise<string> => {
+  const testFunction = async (requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: string, syncMode: SyncMode, version: IModelVersion): Promise<string> => {
     await pause(1000);
     if (contextId === "TestError")
       throw new Error("TestError");
-    return generateTestFunctionKey(requestContext, contextId, iModelId, openParams, version);
+    return generateTestFunctionKey(requestContext, contextId, iModelId, syncMode, version);
   };
 
   const maxCacheSize = 25;
@@ -40,7 +40,7 @@ describe("PromiseMemoizer", () => {
 
   it("should be able to await memoized promise", async () => {
     const startTime = Date.now();
-    const qp: QueryablePromise<string> = memoizeTest(requestContextRegular, "contextId2", "iModelId2", OpenParams.fixedVersion(), IModelVersion.latest());
+    const qp: QueryablePromise<string> = memoizeTest(requestContextRegular, "contextId2", "iModelId2", SyncMode.FixedVersion, IModelVersion.latest());
     await qp.promise;
     const endTime = Date.now();
     assert.isAbove(endTime - startTime, 950);
@@ -50,26 +50,26 @@ describe("PromiseMemoizer", () => {
     const qps = new Array<QueryablePromise<string>>(5);
     const expectedResults = new Array<string>(5);
 
-    qps[0] = memoizeTest(requestContextRegular, "contextId", "iModelId1", OpenParams.fixedVersion(), IModelVersion.latest());
-    expectedResults[0] = generateTestFunctionKey(requestContextRegular, "contextId", "iModelId1", OpenParams.fixedVersion(), IModelVersion.latest());
+    qps[0] = memoizeTest(requestContextRegular, "contextId", "iModelId1", SyncMode.FixedVersion, IModelVersion.latest());
+    expectedResults[0] = generateTestFunctionKey(requestContextRegular, "contextId", "iModelId1", SyncMode.FixedVersion, IModelVersion.latest());
 
-    qps[1] = memoizeTest(requestContextRegular, "contextId", "iModelId1", OpenParams.fixedVersion(), IModelVersion.latest());
-    expectedResults[1] = generateTestFunctionKey(requestContextRegular, "contextId", "iModelId1", OpenParams.fixedVersion(), IModelVersion.latest());
+    qps[1] = memoizeTest(requestContextRegular, "contextId", "iModelId1", SyncMode.FixedVersion, IModelVersion.latest());
+    expectedResults[1] = generateTestFunctionKey(requestContextRegular, "contextId", "iModelId1", SyncMode.FixedVersion, IModelVersion.latest());
     assert.strictEqual(qps[1], qps[0], "qps[1] === qps[0] fails");
 
-    qps[2] = memoizeTest(requestContextManager, "contextId", "iModelId1", OpenParams.fixedVersion(), IModelVersion.latest());
-    expectedResults[2] = generateTestFunctionKey(requestContextManager, "contextId", "iModelId1", OpenParams.fixedVersion(), IModelVersion.latest());
+    qps[2] = memoizeTest(requestContextManager, "contextId", "iModelId1", SyncMode.FixedVersion, IModelVersion.latest());
+    expectedResults[2] = generateTestFunctionKey(requestContextManager, "contextId", "iModelId1", SyncMode.FixedVersion, IModelVersion.latest());
     assert.notStrictEqual(qps[2], qps[0], "qps[2] === qps[0] fails");
 
-    qps[3] = memoizeTest(requestContextRegular, "contextId", "iModelId2", OpenParams.fixedVersion(), IModelVersion.latest());
-    expectedResults[3] = generateTestFunctionKey(requestContextRegular, "contextId", "iModelId2", OpenParams.fixedVersion(), IModelVersion.latest());
+    qps[3] = memoizeTest(requestContextRegular, "contextId", "iModelId2", SyncMode.FixedVersion, IModelVersion.latest());
+    expectedResults[3] = generateTestFunctionKey(requestContextRegular, "contextId", "iModelId2", SyncMode.FixedVersion, IModelVersion.latest());
     assert.notStrictEqual(qps[3], qps[0], "qps[3] === qps[0] fails");
 
-    qps[4] = memoizeTest(requestContextRegular, "contextId", "iModelId1", OpenParams.fixedVersion(), IModelVersion.first());
-    expectedResults[4] = generateTestFunctionKey(requestContextRegular, "contextId", "iModelId1", OpenParams.fixedVersion(), IModelVersion.first());
+    qps[4] = memoizeTest(requestContextRegular, "contextId", "iModelId1", SyncMode.FixedVersion, IModelVersion.first());
+    expectedResults[4] = generateTestFunctionKey(requestContextRegular, "contextId", "iModelId1", SyncMode.FixedVersion, IModelVersion.first());
     assert.notStrictEqual(qps[4], qps[0], "qps[4] === qps[0] fails");
 
-    const qpRej = memoizeTest(requestContextRegular, "TestError", "iModelId1", OpenParams.fixedVersion(), IModelVersion.first());
+    const qpRej = memoizeTest(requestContextRegular, "TestError", "iModelId1", SyncMode.FixedVersion, IModelVersion.first());
 
     for (const qp of qps) {
       assert.isTrue(qp.isPending, "qp.isPending check fails");
@@ -85,8 +85,8 @@ describe("PromiseMemoizer", () => {
     assert.isTrue(qpRej.isRejected);
     assert.strictEqual(qpRej.error.message, "TestError");
 
-    deleteMemoizedTest(requestContextRegular, "contextId", "iModelId1", OpenParams.fixedVersion(), IModelVersion.latest());
-    const qp0 = memoizeTest(requestContextRegular, "contextId", "iModelId1", OpenParams.fixedVersion(), IModelVersion.latest());
+    deleteMemoizedTest(requestContextRegular, "contextId", "iModelId1", SyncMode.FixedVersion, IModelVersion.latest());
+    const qp0 = memoizeTest(requestContextRegular, "contextId", "iModelId1", SyncMode.FixedVersion, IModelVersion.latest());
     assert.isTrue(qp0.isPending);
   });
 
@@ -115,7 +115,7 @@ describe("A wrapper around PromiseMemoizer", () => {
     assert.equal(actualValue, expectedValue);
   });
 
-  it.skip("should not increase the cache size when repeating the same call", async () => {
+  it("should not increase the cache size when repeating the same call", async () => {
     for (let ii = 0; ii < 5; ii++) { // Ensure the testFn doesn't resolve
       const retString = await testMemoizer.callMemoizedTestFn(0, resolveWaitTime); // same call everytime
       assert.equal(retString, "Pending");

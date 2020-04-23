@@ -65,6 +65,11 @@ export class IModelCloneContext {
     this._nativeContext.addElementId(sourceId, targetId);
   }
 
+  /** Remove a rule that remaps the specified source Element. */
+  public removeElement(sourceId: Id64String): void {
+    this._nativeContext.removeElementId(sourceId);
+  }
+
   /** Look up a target CodeSpecId from the source CodeSpecId.
    * @returns the target CodeSpecId or [Id64.invalid]($bentley) if a mapping not found.
    */

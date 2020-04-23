@@ -151,14 +151,14 @@ export namespace MockRender {
   export class App {
     public static systemFactory: SystemFactory = () => App.createDefaultRenderSystem();
 
-    public static startup(opts?: IModelAppOptions) {
+    public static async startup(opts?: IModelAppOptions): Promise<void> {
       opts = opts ? opts : {};
       opts.renderSys = this.systemFactory();
-      IModelApp.startup(opts);
+      await IModelApp.startup(opts);
     }
-    public static shutdown(): void {
+    public static async shutdown(): Promise<void> {
       this.systemFactory = () => App.createDefaultRenderSystem();
-      IModelApp.shutdown();
+      await IModelApp.shutdown();
     }
 
     protected static createDefaultRenderSystem() { return new System(); }

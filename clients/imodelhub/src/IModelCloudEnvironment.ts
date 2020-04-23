@@ -10,7 +10,7 @@ import { Asset, Project } from "@bentley/context-registry-client";
 import { AccessToken, AuthorizedClientRequestContext, AuthorizationClient, UserInfo } from "@bentley/itwin-client";
 import { IModelClient } from "./IModelClient";
 
-/** How to discover "contexts". A context corresponds roughly to a "project" in Connect.
+/** How to discover "contexts". A context corresponds to an iTwin "project" or "asset".
  * @internal
  */
 export interface ContextManagerClient {

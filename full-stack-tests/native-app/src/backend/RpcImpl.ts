@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { BentleyError, BentleyStatus, ClientRequestContext, ClientRequestContextProps, Config } from "@bentley/bentleyjs-core";
-import { IModelQuery, IModelBankClient } from "@bentley/imodelhub-client";
-import { BriefcaseDb, BriefcaseManager, ChangeSummaryExtractOptions, ChangeSummaryManager, IModelDb, IModelHost, IModelJsFs } from "@bentley/imodeljs-backend";
+import { BriefcaseDb, BriefcaseManager, ChangeSummaryExtractOptions, ChangeSummaryManager, IModelDb, IModelHost, IModelJsFs, NativeAppBackend } from "@bentley/imodeljs-backend";
 import { AuthorizedClientRequestContext, AuthorizedClientRequestContextProps } from "@bentley/itwin-client";
+import { IModelBankClient, IModelQuery } from "@bentley/imodelhub-client";
 import { IModelRpcProps, RpcInterface, RpcManager } from "@bentley/imodeljs-common";
+import * as nock from "nock";
 import { CloudEnvProps, TestRpcInterface } from "../common/RpcInterfaces";
 import { CloudEnv } from "./cloudEnv";
-import * as nock from "nock";
 import { TestChangeSetUtility } from "./TestChangeSetUtility";
 
 export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
@@ -18,8 +18,8 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
   }
 
   public async restartIModelHost(): Promise<void> {
-    IModelHost.shutdown();
-    IModelHost.startup();
+    await NativeAppBackend.shutdown();
+    await NativeAppBackend.startup();
   }
 
   public async extractChangeSummaries(tokenProps: IModelRpcProps, options: any): Promise<void> {

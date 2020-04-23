@@ -5,7 +5,7 @@
 import { OpenMode } from "@bentley/bentleyjs-core";
 import { HubIModel, IModelQuery, Version, VersionQuery } from "@bentley/imodelhub-client";
 import { IModelVersion } from "@bentley/imodeljs-common";
-import { AuthorizedFrontendRequestContext, BriefcaseConnection, IModelApp } from "@bentley/imodeljs-frontend";
+import { AuthorizedFrontendRequestContext, RemoteBriefcaseConnection, IModelApp } from "@bentley/imodeljs-frontend";
 
 export class IModelApi {
 
@@ -30,7 +30,7 @@ export class IModelApi {
   }
 
   /** Open the specified version of the IModel */
-  public static async openIModel(projectId: string, iModelId: string, changeSetId: string | undefined, openMode: OpenMode): Promise<BriefcaseConnection> {
-    return BriefcaseConnection.open(projectId, iModelId, openMode, changeSetId ? IModelVersion.asOfChangeSet(changeSetId) : IModelVersion.latest());
+  public static async openIModel(projectId: string, iModelId: string, changeSetId: string | undefined, openMode: OpenMode): Promise<RemoteBriefcaseConnection> {
+    return RemoteBriefcaseConnection.open(projectId, iModelId, openMode, changeSetId ? IModelVersion.asOfChangeSet(changeSetId) : IModelVersion.latest());
   }
 }

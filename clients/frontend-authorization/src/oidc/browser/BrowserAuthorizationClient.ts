@@ -8,7 +8,7 @@
  */
 
 import { assert, AuthStatus, BeEvent, BentleyError, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
-import { AccessToken, AuthorizationClient, ImsOidcClient, UserInfo } from "@bentley/itwin-client";
+import { AccessToken, ImsAuthorizationClient, UserInfo } from "@bentley/itwin-client";
 import { User, UserManager, UserManagerSettings } from "oidc-client";
 import { FrontendAuthorizationClient } from "../../FrontendAuthorizationClient";
 import { BrowserAuthorizationBase } from "./BrowserAuthorizationBase";
@@ -38,13 +38,6 @@ export interface BrowserAuthorizationClientConfiguration {
   /** The mechanism (or authentication flow) used to acquire auth information from the user through the authority */
   readonly responseType?: "code" | "id_token" | "id_token token" | "code id_token" | "code token" | "code id_token token" | string;
 }
-
-/** FrontendAuthorization type guard.
- * @beta
- */
-export const isBrowserAuthorizationClient = (client: AuthorizationClient | undefined): client is FrontendAuthorizationClient => {
-  return client !== undefined && (client as FrontendAuthorizationClient).signIn !== undefined && (client as FrontendAuthorizationClient).signOut !== undefined;
-};
 
 /**
  * @beta
@@ -101,8 +94,8 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
     }
 
     if (!userManagerSettings.authority) {
-      const imsOidcClient = new ImsOidcClient();
-      const authority = await imsOidcClient.getUrl(requestContext);
+      const imsAuthorizationClient = new ImsAuthorizationClient();
+      const authority = await imsAuthorizationClient.getUrl(requestContext);
       userManagerSettings.authority = authority;
     }
 

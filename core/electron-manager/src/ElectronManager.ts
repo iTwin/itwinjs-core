@@ -5,7 +5,7 @@
 import * as path from "path";
 import * as fs from "fs";
 import { app, BrowserWindow, BrowserWindowConstructorOptions, protocol } from "electron";
-import { OidcDesktopClientMain } from "./OidcDesktopClientMain";
+import { DesktopAuthorizationClientIpc } from "./DesktopAuthorizationClientIpc";
 import { BeDuration } from "@bentley/bentleyjs-core";
 
 /**
@@ -56,7 +56,7 @@ export abstract class StandardElectronManager {
     this.openMainWindow(windowOptions);
 
     // Setup handlers for IPC calls to support Authorization
-    OidcDesktopClientMain.initializeIpc(this.mainWindow!);
+    DesktopAuthorizationClientIpc.initializeIpc(this.mainWindow!);
   }
 }
 
@@ -92,7 +92,7 @@ export class IModelJsElectronManager extends StandardElectronManager {
       assetPath = "index.html";
     assetPath = assetPath.replace(/(#|\?).*$/, "");
 
-    // NEEDS_WORK: Remove this after migration to OidcDesktopClient
+    // NEEDS_WORK: Remove this after migration to DesktopAuthorizationClient
     assetPath = assetPath.replace("signin-callback", "index.html");
     assetPath = path.normalize(`${this._webResourcesPath}/${assetPath}`);
 

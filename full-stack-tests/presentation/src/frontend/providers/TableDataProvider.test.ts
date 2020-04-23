@@ -55,7 +55,7 @@ describe("TableDataProvider", async () => {
 
   after(async () => {
     await imodel.close();
-    terminate();
+    await terminate();
   });
 
   describe("getColumns", () => {

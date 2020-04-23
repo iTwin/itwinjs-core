@@ -6,7 +6,7 @@ import { DbResult, Guid, Id64, Id64String, Logger } from "@bentley/bentleyjs-cor
 import { Code, CodeScopeSpec, CodeSpec, FunctionalElementProps, IModel } from "@bentley/imodeljs-common";
 import { assert } from "chai";
 import * as path from "path";
-import { BackendRequestContext, BriefcaseManager, ECSqlStatement, FunctionalModel, FunctionalSchema, SqliteStatement, StandaloneDb } from "../../imodeljs-backend";
+import { BackendRequestContext, ECSqlStatement, FunctionalModel, FunctionalSchema, SqliteStatement, StandaloneDb } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
 describe("Functional Domain", () => {
@@ -20,6 +20,8 @@ describe("Functional Domain", () => {
       projectExtents: { low: { x: -500, y: -500, z: -50 }, high: { x: 500, y: 500, z: 50 } },
       guid: Guid.createValue(),
     });
+
+    iModelDb.nativeDb.resetBriefcaseId(100);
 
     // Import the Functional schema
     FunctionalSchema.registerSchema();
@@ -36,7 +38,7 @@ describe("Functional Domain", () => {
     dropCommit();
     dropCommitted();
 
-    BriefcaseManager.createStandaloneChangeSet(iModelDb); // importSchema below will fail if this is not called to flush local changes
+    IModelTestUtils.flushTxns(iModelDb); // importSchema below will fail if this is not called to flush local changes
 
     await iModelDb.importSchemas(requestContext, [path.join(__dirname, "../assets/TestFunctional.ecschema.xml")]);
 

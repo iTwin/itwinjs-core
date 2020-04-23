@@ -20,8 +20,8 @@ describe("NativePlatform", () => {
     await initialize();
   });
 
-  after(() => {
-    terminate();
+  after(async () => {
+    await terminate();
   });
 
   beforeEach(() => {

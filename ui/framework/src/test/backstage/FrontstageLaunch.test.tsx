@@ -28,14 +28,14 @@ describe("Backstage", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
-    NoRenderApp.startup();
+    await NoRenderApp.startup();
 
     await FrontstageManager.setActiveFrontstageDef(undefined);
   });
 
-  after(() => {
+  after(async () => {
     TestUtils.terminateUiFramework();
-    IModelApp.shutdown();
+    await IModelApp.shutdown();
   });
 
   describe("<FrontstageLaunchBackstageItem />", () => {

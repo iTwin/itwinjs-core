@@ -63,6 +63,10 @@ export class TestUtility {
   }
 
   public static async purgeBriefcaseCache() {
+    const requestContext = await AuthorizedFrontendRequestContext.create();
+    requestContext.enter();
+
+    requestContext.useContextForRpc = true;
     return TestRpcInterface.getClient().purgeBriefcaseCache();
   }
 

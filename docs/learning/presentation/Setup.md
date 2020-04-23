@@ -9,6 +9,7 @@ consumers must do before the library can be used.
 
   ```ts
   [[include:Presentation.Backend.Initialization]]
+  [[include:Presentation.Backend.Initialization2]]
   ```
 
 2. Register `PresentationRpcInterface` (amongst other RPC interfaces):

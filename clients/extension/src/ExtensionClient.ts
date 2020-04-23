@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 /** @packageDocumentation
- * @module Extension
+ * @module ExtensionService
  */
 
 import { ExtensionStatus, ClientRequestContext } from "@bentley/bentleyjs-core";

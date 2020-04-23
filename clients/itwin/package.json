@@ -1,6 +1,6 @@
 {
   "name": "@bentley/itwin-client",
-  "version": "2.0.0-dev.71",
+  "version": "2.0.0-dev.76",
   "description": "Base client package for iTwin applications",
   "main": "lib/itwin-client.js",
   "typings": "lib/itwin-client",
@@ -9,13 +9,13 @@
   "scripts": {
     "build": "tsc 1>&2",
     "clean": "rimraf lib .rush",
-    "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=itwin-client",
-    "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --includes=../../generated-docs/extract --json=../../generated-docs/core/itwin-client/file.json --tsIndexFile=itwin-client.ts --onlyJson %TYPEDOC_THEME%",
+    "extract-api": "betools extract-api --entry=itwin-client",
+    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/itwin-client/file.json --tsIndexFile=itwin-client.ts --onlyJson",
     "lint": "tslint --project . 1>&2",
     "webpackTests": "webpack --config ./src/test/utils/webpack.config.js 1>&2",
-    "test": "node ./node_modules/@bentley/build-tools/scripts/test.js --offline=\"mock\" --grep=\"#integration\" --invert",
+    "test": "betools test --offline=\"mock\"",
     "test:integration": "",
-    "cover": "npm test -- --cover"
+    "cover": "nyc npm test"
   },
   "repository": {
     "type": "git",
@@ -31,18 +31,18 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.0.0-dev.71"
+    "@bentley/bentleyjs-core": "^2.0.0-dev.76"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/certa": "2.0.0-dev.71",
-    "@bentley/bentleyjs-core": "2.0.0-dev.71",
-    "@bentley/build-tools": "2.0.0-dev.71",
-    "@bentley/config-loader": "2.0.0-dev.71",
-    "@bentley/geometry-core": "2.0.0-dev.71",
+    "@bentley/certa": "2.0.0-dev.76",
+    "@bentley/bentleyjs-core": "2.0.0-dev.76",
+    "@bentley/build-tools": "2.0.0-dev.76",
+    "@bentley/config-loader": "2.0.0-dev.76",
+    "@bentley/geometry-core": "2.0.0-dev.76",
     "@bentley/oidc-signin-tool": "2.0.0-dev.71",
     "@types/chai": "^4.1.4",
     "@types/deep-assign": "^0.1.0",

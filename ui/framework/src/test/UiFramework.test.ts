@@ -8,7 +8,7 @@ import { Presentation } from "@bentley/presentation-frontend";
 import { IModelApp, IModelConnection, ViewState } from "@bentley/imodeljs-frontend";
 import { Id64String } from "@bentley/bentleyjs-core";
 import { initialize as initializePresentationTesting, terminate as terminatePresentationTesting } from "@bentley/presentation-testing";
-import TestUtils, { MockAccessToken } from "./TestUtils";
+import TestUtils, { mockUserInfo } from "./TestUtils";
 import { UiFramework, ColorTheme, CursorMenuData } from "../ui-framework";
 import { DefaultIModelServices } from "../ui-framework/clientservices/DefaultIModelServices";
 import { DefaultProjectServices } from "../ui-framework/clientservices/DefaultProjectServices";
@@ -117,10 +117,10 @@ describe("UiFramework", () => {
   it("SessionState setters/getters", async () => {
     await TestUtils.initializeUiFramework();
 
-    const mockToken = new MockAccessToken();
+    const userInfo = mockUserInfo();
 
-    UiFramework.setAccessToken(mockToken);    // tslint:disable-line: deprecation
-    expect(UiFramework.getAccessToken()!.getUserInfo()!.id).to.eq(mockToken.getUserInfo()!.id); // tslint:disable-line: deprecation
+    UiFramework.setUserInfo(userInfo);
+    expect(UiFramework.getUserInfo()!.id).to.eq(userInfo!.id);
 
     UiFramework.setDefaultIModelViewportControlId("DefaultIModelViewportControlId");
     expect(UiFramework.getDefaultIModelViewportControlId()).to.eq("DefaultIModelViewportControlId");
@@ -149,19 +149,19 @@ describe("UiFramework", () => {
 
 // before we can test setting scope to a valid scope id we must make sure Presentation Manager is initialized.
 describe("Requires Presentation", () => {
-  const shutdownIModelApp = () => {
+  const shutdownIModelApp = async () => {
     if (IModelApp.initialized)
-      IModelApp.shutdown();
+      await IModelApp.shutdown();
   };
 
   beforeEach(async () => {
-    shutdownIModelApp();
+    await shutdownIModelApp();
     Presentation.terminate();
     await initializePresentationTesting();
   });
 
-  afterEach(() => {
-    terminatePresentationTesting();
+  afterEach(async () => {
+    await terminatePresentationTesting();
   });
 
   describe("initialize and setActiveSelectionScope", () => {
@@ -172,7 +172,7 @@ describe("Requires Presentation", () => {
       TestUtils.terminateUiFramework();
 
       Presentation.terminate();
-      shutdownIModelApp();
+      await shutdownIModelApp();
     });
   });
 });

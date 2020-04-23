@@ -23,8 +23,8 @@ describe("Content", () => {
     await openIModel();
   });
 
-  after(() => {
-    terminate();
+  after(async () => {
+    await terminate();
   });
 
   describe("DistinctValues", () => {
@@ -70,7 +70,7 @@ describe("Content", () => {
 
     beforeEach(async () => {
       // re-initialize to set backend response timeout to 500 ms
-      terminate();
+      await terminate();
       await initialize(500);
       await openIModel();
 

@@ -13,7 +13,7 @@ import { TestUtility } from "./TestUtility";
 describe("IModelApp (#integration)", () => {
 
   before(async () => {
-    IModelApp.startup({
+    await IModelApp.startup({
       applicationId: "1234",
       applicationVersion: "testappversion",
       sessionId: "testsessionid",
@@ -24,7 +24,7 @@ describe("IModelApp (#integration)", () => {
   });
 
   after(async () => {
-    IModelApp.shutdown();
+    await IModelApp.shutdown();
 
     IModelApp.authorizationClient = undefined;
   });

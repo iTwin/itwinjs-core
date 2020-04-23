@@ -259,10 +259,11 @@ describe("RpcInterface", () => {
     const endpointsRestored = await RpcManager.describeAvailableEndpoints();
     assert.isTrue(endpointsRestored[0].compatible);
 
+    const originalToken = RpcOperation.fallbackToken;
     RpcOperation.fallbackToken = { key: "test", contextId: "test", iModelId: "test", changeSetId: "test", openMode: OpenMode.Readonly };
     assert.equal(controlPolicy.token(undefined as any)!.contextId, "test");
-    RpcOperation.fallbackToken = undefined;
-    assert.equal(controlPolicy.token(undefined as any)!.contextId, "none");
+    RpcOperation.fallbackToken = originalToken;
+    assert.equal(controlPolicy.token(undefined as any)!.contextId, originalToken ? originalToken.contextId : "none");
   });
 
   it("should support retrieving binary resources from the backend", async () => {

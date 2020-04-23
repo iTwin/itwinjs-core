@@ -698,6 +698,8 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
     copyPoints(): any[];
     copyPointsFloat64Array(): Float64Array;
     static create(poleArray: Float64Array | Point3d[], knotArray: Float64Array | number[], order: number): BSplineCurve3d | undefined;
+    // (undocumented)
+    static createThroughPoints(points: IndexedXYZCollection, order: number): BSplineCurve3d | undefined;
     static createUniformKnots(poles: Point3d[] | Float64Array | GrowableXYZArray, order: number): BSplineCurve3d | undefined;
     dispatchToGeometryHandler(handler: GeometryHandler): any;
     emitStrokableParts(handler: IStrokeHandler, options?: StrokeOptions): void;
@@ -1947,6 +1949,7 @@ export class GrowableFloat64Array {
     move(i: number, j: number): void;
     pop(): void;
     push(toPush: number): void;
+    pushArray(data: Float64Array | number[]): void;
     pushBlockCopy(copyFromIndex: number, numToCopy: number): void;
     reassign(index: number, value: number): void;
     resize(newLength: number, padValue?: number): void;

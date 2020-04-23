@@ -4,14 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 import { BentleyError, GuidString } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/itwin-client";
-import { IModelVersion, RpcPendingResponse } from "@bentley/imodeljs-common";
+import { ChangeSet } from "@bentley/imodelhub-client";
+import { IModelVersion, SyncMode } from "@bentley/imodeljs-common";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { assert } from "chai";
-import { KeepBriefcase } from "../../BriefcaseManager";
-import { AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseManager, OpenParams } from "../../imodeljs-backend";
+import { AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseManager } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
-import { ChangeSet } from "@bentley/imodelhub-client";
 
 describe("IModelOpen (#integration)", () => {
 
@@ -33,9 +32,9 @@ describe("IModelOpen (#integration)", () => {
     testChangeSetId = await HubUtility.queryLatestChangeSetId(requestContext, testIModelId);
 
     // Open and close the iModel to ensure it works and is closed
-    const iModel = await BriefcaseDb.open(requestContext, testProjectId, testIModelId, OpenParams.fixedVersion(), IModelVersion.asOfChangeSet(testChangeSetId));
+    const iModel = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, testProjectId, testIModelId, SyncMode.FixedVersion, IModelVersion.asOfChangeSet(testChangeSetId));
     assert.isDefined(iModel);
-    await iModel.close(requestContext, KeepBriefcase.No);
+    await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModel);
 
     const badToken = AccessToken.fromJsonWebTokenString("ThisIsABadToken");
     badRequestContext = new AuthorizedBackendRequestContext(badToken);
@@ -50,7 +49,7 @@ describe("IModelOpen (#integration)", () => {
     // Try the bad request context
     let error: any;
     try {
-      await BriefcaseDb.open(badRequestContext, testProjectId, testIModelId, OpenParams.fixedVersion(), IModelVersion.latest());
+      await IModelTestUtils.downloadAndOpenBriefcaseDb(badRequestContext, testProjectId, testIModelId, SyncMode.FixedVersion, IModelVersion.latest());
     } catch (err) {
       error = err;
     }
@@ -60,7 +59,7 @@ describe("IModelOpen (#integration)", () => {
 
     error = undefined;
     try {
-      await BriefcaseDb.open(badRequestContext, testProjectId, testIModelId, OpenParams.fixedVersion(), IModelVersion.asOfChangeSet(testChangeSetId));
+      await IModelTestUtils.downloadAndOpenBriefcaseDb(badRequestContext, testProjectId, testIModelId, SyncMode.FixedVersion, IModelVersion.asOfChangeSet(testChangeSetId));
     } catch (err) {
       error = err;
     }
@@ -69,62 +68,18 @@ describe("IModelOpen (#integration)", () => {
     assert.equal(401, error.status);
   });
 
-  it("should throw a pending response after specified timeout", async () => {
-    // Clean folder to refetch briefcase
-    deleteTestIModelCache();
-
-    const openParams: OpenParams = OpenParams.fixedVersion();
-    openParams.timeout = 500;
-
-    // Open iModel and ensure RpcPendingResponse exception is thrown
-    let exceptionThrown = false;
-    try {
-      await BriefcaseDb.open(requestContext, testProjectId, testIModelId, openParams);
-    } catch (error) {
-      exceptionThrown = error instanceof RpcPendingResponse;
-    }
-    assert.isTrue(exceptionThrown);
-
-    // Open and close the model
-    openParams.timeout = undefined;
-    const iModel = await BriefcaseDb.open(requestContext, testProjectId, testIModelId, openParams);
-    assert.isDefined(iModel);
-    await iModel.close(requestContext, KeepBriefcase.No);
-  });
-
   it("should be able to handle simultaneous multiple open calls", async () => {
-    // Clean folder to refetch briefcase
+    // Clean folder to re-fetch briefcase
     deleteTestIModelCache();
 
     const numTries = 100;
-    const openParams: OpenParams = OpenParams.fixedVersion();
-    openParams.timeout = 500;
+    const syncMode = SyncMode.FixedVersion;
     const version = IModelVersion.asOfChangeSet(testChangeSetId);
-    let openPromises = new Array<Promise<BriefcaseDb>>();
-    for (let ii = 0; ii < numTries; ii++) {
-      const open = BriefcaseDb.open(requestContext, testProjectId, testIModelId, openParams, version);
-      openPromises.push(open);
-    }
-
-    // Open iModel and ensure RpcPendingResponse exception is thrown
-    let exceptionThrown = false;
-    let startTime = 0;
-    let timeElapsed = 0;
-    try {
-      startTime = Date.now();
-      await Promise.all(openPromises);
-    } catch (error) {
-      timeElapsed = Date.now() - startTime;
-      exceptionThrown = error instanceof RpcPendingResponse;
-    }
-    assert.isTrue(exceptionThrown);
-    assert.isBelow(timeElapsed, openParams.timeout + 500); // Adding arbitrary overhead
 
     // Open iModel with no timeout, and ensure all promises resolve to the same briefcase
-    openPromises = [];
-    openParams.timeout = undefined;
+    const openPromises = new Array<Promise<BriefcaseDb>>();
     for (let ii = 0; ii < numTries; ii++) {
-      const open = BriefcaseDb.open(requestContext, testProjectId, testIModelId, openParams, version);
+      const open = IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, testProjectId, testIModelId, syncMode, version);
       openPromises.push(open);
     }
     const iModels: BriefcaseDb[] = await Promise.all(openPromises);
@@ -132,7 +87,7 @@ describe("IModelOpen (#integration)", () => {
     for (let ii = 1; ii < numTries; ii++) {
       assert.strictEqual(iModels[ii].briefcase.pathname, pathname);
     }
-    await iModels[0].close(requestContext, KeepBriefcase.No);
+    await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModels[0]);
   });
 
   it("should be able to open a version that requires many merges", async () => {
@@ -143,9 +98,9 @@ describe("IModelOpen (#integration)", () => {
     const numChangeSets = changeSets.length;
     assert.isAbove(numChangeSets, 10);
 
-    const iModel = await BriefcaseDb.open(requestContext, testProjectId, testIModelId, OpenParams.fixedVersion(), IModelVersion.asOfChangeSet(changeSets[9].wsgId));
+    const iModel = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, testProjectId, testIModelId, SyncMode.FixedVersion, IModelVersion.asOfChangeSet(changeSets[9].wsgId));
     assert.isDefined(iModel);
-    await iModel.close(requestContext, KeepBriefcase.No);
+    await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModel);
   });
 
   it("should be able to handle simultaneous multiple open calls of different versions", async () => {
@@ -164,13 +119,13 @@ describe("IModelOpen (#integration)", () => {
 
     const openPromises = new Array<Promise<BriefcaseDb>>();
     for (const changeSetId of changeSetIds) {
-      const open = BriefcaseDb.open(requestContext, testProjectId, testIModelId, OpenParams.fixedVersion(), IModelVersion.asOfChangeSet(changeSetId));
+      const open = IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, testProjectId, testIModelId, SyncMode.FixedVersion, IModelVersion.asOfChangeSet(changeSetId));
       openPromises.push(open);
     }
 
     const iModels: BriefcaseDb[] = await Promise.all(openPromises);
     for (const iModel of iModels) {
-      await iModel.close(requestContext, KeepBriefcase.Yes);
+      await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModel);
     }
   }).timeout(1000000);
 

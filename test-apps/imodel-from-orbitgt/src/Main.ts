@@ -27,21 +27,24 @@ const argv: yargs.Arguments<{}> = yargs
   .demandOption(["accountName", "sasToken", "blobFileName", "output"])
   .argv;
 
-IModelHost.startup();
-Logger.initializeToConsole();
+(async () => {
+  await IModelHost.startup();
+  Logger.initializeToConsole();
 
-const pcProps = {
-  accountName: argv.accountName as string,
-  sasToken: argv.sasToken as string,
-  containerName: argv.containerName as string,
-  blobFileName: argv.blobFileName as string,
-};
+  const pcProps = {
+    accountName: argv.accountName as string,
+    sasToken: argv.sasToken as string,
+    containerName: argv.containerName as string,
+    blobFileName: argv.blobFileName as string,
+  };
 
-const creator = new OrbitGtContextIModelCreator(pcProps, argv.output as string, argv.name as string);
-creator.create().then(() => {
-  process.stdout.write("IModel: " + argv.output + " Created for Point Cloud: " + argv.blobFileName);
-  IModelHost.shutdown();
-}).catch(() => {
-  process.stdout.write("Error occurred creating IModel\n");
-  IModelHost.shutdown();
-});
+  const creator = new OrbitGtContextIModelCreator(pcProps, argv.output as string, argv.name as string);
+  try {
+    await creator.create();
+    process.stdout.write("IModel: " + argv.output + " Created for Point Cloud: " + argv.blobFileName);
+    await IModelHost.shutdown();
+  } catch (_error) {
+    process.stdout.write("Error occurred creating IModel\n");
+    await IModelHost.shutdown();
+  }
+})(); // tslint:disable-line:no-floating-promises

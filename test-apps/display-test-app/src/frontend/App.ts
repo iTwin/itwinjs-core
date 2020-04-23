@@ -197,7 +197,7 @@ class ShutDownTool extends Tool {
 
   public run(_args: any[]): boolean {
     DisplayTestApp.surface.closeAllViewers();
-    IModelApp.shutdown();
+    IModelApp.shutdown(); // tslint:disable-line:no-floating-promises
     debugger; // tslint:disable-line:no-debugger
     return true;
   }
@@ -240,7 +240,7 @@ export class DisplayTestApp {
     opts.accuSnap = new DisplayTestAppAccuSnap();
     opts.notifications = new Notifications();
     opts.tileAdmin = TileAdmin.create(DisplayTestApp.tileAdminProps);
-    IModelApp.startup(opts);
+    await IModelApp.startup(opts);
 
     // For testing local extensions only, should not be used in production.
     IModelApp.extensionAdmin.addExtensionLoader(new ExternalServerExtensionLoader("http://localhost:3000"), 50);

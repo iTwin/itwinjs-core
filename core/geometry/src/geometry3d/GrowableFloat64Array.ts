@@ -119,6 +119,13 @@ export class GrowableFloat64Array {
       this._inUse++;
     }
   }
+  /**
+   * Push each value from an array.
+   * @param data array of values to push
+   */
+  public pushArray(data: Float64Array | number[]) {
+    for (const a of data) this.push(a);
+  }
   /** Push a `numToCopy` consecutive values starting at `copyFromIndex` to the end of the array. */
   public pushBlockCopy(copyFromIndex: number, numToCopy: number) {
     const newLength = this._inUse + numToCopy;

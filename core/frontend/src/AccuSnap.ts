@@ -617,12 +617,15 @@ export class AccuSnap implements Decorator {
       if (snapModes.includes(SnapMode.Nearest)) {
         if (out) out.snapStatus = SnapStatus.Success;
         return new SnapDetail(thisHit, SnapMode.Nearest, SnapHeat.InRange);
+      } else if (1 === snapModes.length && snapModes.includes(SnapMode.Intersection)) {
+        if (out) out.snapStatus = SnapStatus.NoSnapPossible;
+        return undefined;
+      } else {
+        if (out) out.snapStatus = SnapStatus.Success;
+        const realitySnap = new SnapDetail(thisHit, SnapMode.Nearest, SnapHeat.None);
+        realitySnap.sprite = undefined; // Don't show a snap mode that isn't applicable, but still accept hit point...
+        return realitySnap;
       }
-      if (out) {
-        out.snapStatus = (1 === snapModes.length && snapModes.includes(SnapMode.Intersection) ? SnapStatus.NoSnapPossible : SnapStatus.NotSnappable);
-        out.explanation = IModelApp.i18n.translate(ElementLocateManager.getFailureMessageKey("RealityModelSnapMode"));
-      }
-      return undefined;
     }
 
     if (undefined !== thisHit.subCategoryId && !thisHit.isExternalIModelHit) {

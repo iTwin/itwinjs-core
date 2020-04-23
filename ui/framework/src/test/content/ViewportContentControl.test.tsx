@@ -48,15 +48,15 @@ describe("ViewportContentControl", () => {
     });
 
     await TestUtils.initializeUiFramework();
-    MockRender.App.startup();
+    await MockRender.App.startup();
 
     ConfigurableUiManager.initialize();
     FrontstageManager.isInitialized = false;
     FrontstageManager.initialize();
   });
 
-  after(() => {
-    MockRender.App.shutdown();
+  after(async () => {
+    await MockRender.App.shutdown();
     TestUtils.terminateUiFramework();
 
     // restore the overriden property getter

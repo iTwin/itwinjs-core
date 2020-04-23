@@ -10,7 +10,6 @@ import { AbstractStatusBarCustomItem } from '@bentley/ui-abstract';
 import { AbstractToolbarProps } from '@bentley/ui-abstract';
 import { AbstractTreeNodeLoaderWithProvider } from '@bentley/ui-components';
 import { AbstractWidgetProps } from '@bentley/ui-abstract';
-import { AccessToken } from '@bentley/itwin-client';
 import { ActionButton } from '@bentley/ui-abstract';
 import { ActivityMessageDetails } from '@bentley/imodeljs-frontend';
 import { ActivityMessageEndReason } from '@bentley/imodeljs-frontend';
@@ -51,7 +50,6 @@ import { DraggedWidgetManagerProps } from '@bentley/ui-ninezone';
 import { DragLayerProps } from '@bentley/ui-components';
 import { DragSourceArguments } from '@bentley/ui-components';
 import { EmphasizeElementsProps } from '@bentley/imodeljs-frontend';
-import { FrontendAuthorizationClient } from '@bentley/frontend-authorization-client';
 import { GroupButton as GroupButton_2 } from '@bentley/ui-abstract';
 import { HorizontalAnchor } from '@bentley/ui-ninezone';
 import { I18N } from '@bentley/imodeljs-i18n';
@@ -85,6 +83,7 @@ import { Omit } from '@bentley/ui-core';
 import { OnCancelFunc } from '@bentley/ui-abstract';
 import { OnItemExecutedFunc } from '@bentley/ui-abstract';
 import { OnNumberCommitFunc } from '@bentley/ui-abstract';
+import { OnValueCommitFunc } from '@bentley/ui-abstract';
 import { OpenMode } from '@bentley/bentleyjs-core';
 import { Orientation } from '@bentley/ui-core';
 import { OutputMessagePriority } from '@bentley/imodeljs-frontend';
@@ -93,6 +92,7 @@ import { PanelSide } from '@bentley/ui-ninezone';
 import { PlaybackSettings } from '@bentley/ui-components';
 import { Point } from '@bentley/ui-core';
 import { PointProps } from '@bentley/ui-core';
+import { Primitives } from '@bentley/ui-abstract';
 import { PropertyDescription } from '@bentley/ui-abstract';
 import { PropertyRecord } from '@bentley/ui-abstract';
 import { PropertyUpdatedArgs } from '@bentley/ui-components';
@@ -149,6 +149,7 @@ import { UiSettingsResult } from '@bentley/ui-core';
 import { UiSettingsStatus } from '@bentley/ui-core';
 import { UnifiedSelectionTreeEventHandler } from '@bentley/presentation-components';
 import { UnifiedSelectionTreeEventHandlerParams } from '@bentley/presentation-components';
+import { UserInfo } from '@bentley/itwin-client';
 import { VerticalAnchor } from '@bentley/ui-ninezone';
 import { ViewDefinitionProps } from '@bentley/imodeljs-common';
 import { ViewFlagProps } from '@bentley/imodeljs-common';
@@ -473,8 +474,6 @@ export class BackstageManager {
 // @public @deprecated
 export interface BackstageProps extends CommonProps {
     // (undocumented)
-    accessToken?: AccessToken;
-    // (undocumented)
     header?: React.ReactNode;
     // (undocumented)
     isVisible?: boolean;
@@ -482,6 +481,8 @@ export interface BackstageProps extends CommonProps {
     onClose?: () => void;
     // (undocumented)
     showOverlay?: boolean;
+    // (undocumented)
+    userInfo?: UserInfo;
 }
 
 // @beta @deprecated
@@ -1672,7 +1673,7 @@ export interface FooterModeFieldProps extends StatusFieldProps {
 export const FrameworkReducer: (state: import("./redux-ts").CombinedReducerState<{
     configurableUiState: typeof ConfigurableUiReducer;
     sessionState: typeof SessionStateReducer;
-}>, action: import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetSnapMode, number>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetTheme, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetToolPrompt, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetWidgetOpacity, number>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetAccessToken, any>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetActiveIModelId, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetAvailableSelectionScopes, import("./redux-ts").DeepReadonlyArray<import("./SessionState").PresentationSelectionScope>>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultIModelViewportControlId, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultViewId, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultViewState, any>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetNumItemsSelected, number>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetIModelConnection, any>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetSelectionScope, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.UpdateCursorMenu, import("./redux-ts").DeepReadonlyObject<import("./SessionState").CursorMenuData>>>) => import("./redux-ts").CombinedReducerState<{
+}>, action: import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetSnapMode, number>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetTheme, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetToolPrompt, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetWidgetOpacity, number>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetUserInfo, import("./redux-ts").DeepReadonlyObject<import("@bentley/itwin-client").UserInfo>>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetActiveIModelId, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetAvailableSelectionScopes, import("./redux-ts").DeepReadonlyArray<import("./SessionState").PresentationSelectionScope>>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultIModelViewportControlId, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultViewId, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultViewState, any>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetNumItemsSelected, number>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetIModelConnection, any>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetSelectionScope, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.UpdateCursorMenu, import("./redux-ts").DeepReadonlyObject<import("./SessionState").CursorMenuData>>>) => import("./redux-ts").CombinedReducerState<{
     configurableUiState: typeof ConfigurableUiReducer;
     sessionState: typeof SessionStateReducer;
 }>;
@@ -1756,6 +1757,7 @@ export class FrameworkUiAdmin extends UiAdmin {
     showContextMenu(items: AbstractMenuItemProps[], location: XAndY, htmlElement?: HTMLElement): boolean;
     showHeightEditor(initialValue: number, location: XAndY, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc, htmlElement?: HTMLElement): boolean;
     showHTMLElement(displayElement: HTMLElement, location: XAndY, offset: XAndY, onCancel: OnCancelFunc, relativePosition?: RelativePosition, htmlElement?: HTMLElement): boolean;
+    showInputEditor(initialValue: Primitives.Value, propertyDescription: PropertyDescription, location: XAndY, onCommit: OnValueCommitFunc, onCancel: OnCancelFunc, htmlElement?: HTMLElement): boolean;
     showLengthEditor(initialValue: number, location: XAndY, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc, htmlElement?: HTMLElement): boolean;
     showMenuButton(id: string, menuItemsProps: AbstractMenuItemProps[], location: XAndY, htmlElement?: HTMLElement): boolean;
     showToolbar(toolbarProps: AbstractToolbarProps, location: XAndY, offset: XAndY, onItemExecuted: OnItemExecutedFunc, onCancel: OnCancelFunc, relativePosition?: RelativePosition, htmlElement?: HTMLElement): boolean;
@@ -2508,11 +2510,11 @@ export function initializeFrontstageState({ frontstage }: InitializeFrontstageSt
 
 // @alpha (undocumented)
 export class InputEditorCommitHandler {
-    constructor(onCommit: OnNumberCommitFunc);
+    constructor(onCommit: OnValueCommitFunc);
     // (undocumented)
     handleCommit: (args: PropertyUpdatedArgs) => void;
     // (undocumented)
-    readonly onCommit: OnNumberCommitFunc;
+    readonly onCommit: OnValueCommitFunc;
 }
 
 // @alpha
@@ -3496,7 +3498,7 @@ export class PopupManager {
     // (undocumented)
     static showHTMLElement(displayElement: HTMLElement, el: HTMLElement, pt: XAndY, offset: XAndY, onCancel: OnCancelFunc, relativePosition: RelativePosition): boolean;
     // (undocumented)
-    static showInputEditor(el: HTMLElement, pt: XAndY, value: number, propertyDescription: PropertyDescription, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc): boolean;
+    static showInputEditor(el: HTMLElement, pt: XAndY, value: Primitives.Value, propertyDescription: PropertyDescription, onCommit: OnValueCommitFunc, onCancel: OnCancelFunc): boolean;
     // (undocumented)
     static showToolbar(toolbarProps: AbstractToolbarProps, el: HTMLElement, pt: XAndY, offset: XAndY, onItemExecuted: OnItemExecutedFunc, onCancel: OnCancelFunc, relativePosition: RelativePosition): boolean;
     }
@@ -3795,8 +3797,6 @@ export class SeparatorBackstageItem extends React.PureComponent<BackstageItemPro
 // @beta
 export interface SessionState {
     // (undocumented)
-    accessToken: any | undefined;
-    // (undocumented)
     activeSelectionScope: string;
     // (undocumented)
     availableSelectionScopes: PresentationSelectionScope[];
@@ -3814,12 +3814,12 @@ export interface SessionState {
     iModelId: string;
     // (undocumented)
     numItemsSelected: number;
+    // (undocumented)
+    userInfo: UserInfo | undefined;
 }
 
 // @beta
 export enum SessionStateActionId {
-    // (undocumented)
-    SetAccessToken = "sessionstate:set-access-token",
     // (undocumented)
     SetActiveIModelId = "sessionstate:set-active-imodelid",
     // (undocumented)
@@ -3837,12 +3837,14 @@ export enum SessionStateActionId {
     // (undocumented)
     SetSelectionScope = "sessionstate:set-selection-scope",
     // (undocumented)
+    SetUserInfo = "sessionstate:set-user-info",
+    // (undocumented)
     UpdateCursorMenu = "sessionstate:update-cursor-menu"
 }
 
 // @beta
 export const SessionStateActions: {
-    setAccessToken: (accessToken: any) => import("./redux-ts").ActionWithPayload<SessionStateActionId.SetAccessToken, any>;
+    setUserInfo: (userInfo: UserInfo) => import("./redux-ts").ActionWithPayload<SessionStateActionId.SetUserInfo, import("./redux-ts").DeepReadonlyObject<UserInfo>>;
     setActiveIModelId: (iModelId: string) => import("./redux-ts").ActionWithPayload<SessionStateActionId.SetActiveIModelId, string>;
     setAvailableSelectionScopes: (availableSelectionScopes: PresentationSelectionScope[]) => import("./redux-ts").ActionWithPayload<SessionStateActionId.SetAvailableSelectionScopes, import("./redux-ts").DeepReadonlyArray<PresentationSelectionScope>>;
     setDefaultIModelViewportControlId: (iModelViewportControlId: string) => import("./redux-ts").ActionWithPayload<SessionStateActionId.SetDefaultIModelViewportControlId, string>;
@@ -3856,8 +3858,6 @@ export const SessionStateActions: {
 
 // @beta
 export interface SessionStateActionsProps {
-    // (undocumented)
-    setAccessToken: (typeof SessionStateActions.setAccessToken);
     // (undocumented)
     setActiveIModelId: (typeof SessionStateActions.setActiveIModelId);
     // (undocumented)
@@ -3875,6 +3875,8 @@ export interface SessionStateActionsProps {
     // (undocumented)
     setSelectionScope: (typeof SessionStateActions.setSelectionScope);
     // (undocumented)
+    setUserInfo: (typeof SessionStateActions.setUserInfo);
+    // (undocumented)
     updateCursorMenu: (typeof SessionStateActions.updateCursorMenu);
 }
 
@@ -3883,7 +3885,7 @@ export type SessionStateActionsUnion = ActionsUnion<typeof SessionStateActions>;
 
 // @beta
 export const sessionStateMapDispatchToProps: {
-    setAccessToken: (accessToken: any) => import("./redux-ts").ActionWithPayload<SessionStateActionId.SetAccessToken, any>;
+    setUserInfo: (userInfo: UserInfo) => import("./redux-ts").ActionWithPayload<SessionStateActionId.SetUserInfo, import("./redux-ts").DeepReadonlyObject<UserInfo>>;
     setActiveIModelId: (iModelId: string) => import("./redux-ts").ActionWithPayload<SessionStateActionId.SetActiveIModelId, string>;
     setAvailableSelectionScopes: (availableSelectionScopes: PresentationSelectionScope[]) => import("./redux-ts").ActionWithPayload<SessionStateActionId.SetAvailableSelectionScopes, import("./redux-ts").DeepReadonlyArray<PresentationSelectionScope>>;
     setDefaultIModelViewportControlId: (iModelViewportControlId: string) => import("./redux-ts").ActionWithPayload<SessionStateActionId.SetDefaultIModelViewportControlId, string>;
@@ -3978,7 +3980,6 @@ export class SignIn extends React.PureComponent<SignInProps> {
 
 // @public
 export interface SignInProps extends CommonProps {
-    oidcClient?: FrontendAuthorizationClient;
     onOffline?: () => void;
     onRegister?: () => void;
     onSignedIn?: () => void;
@@ -3988,7 +3989,7 @@ export interface SignInProps extends CommonProps {
 
 // @public
 export class SignOutModalFrontstage implements ModalFrontstageInfo {
-    constructor(accessToken: AccessToken, onSignOut?: () => void);
+    constructor(userInfo?: UserInfo);
     // (undocumented)
     get content(): React.ReactNode;
     // (undocumented)
@@ -4956,8 +4957,6 @@ export class UiFramework {
     static get frameworkState(): FrameworkState | undefined;
     // @beta (undocumented)
     static get frameworkStateKey(): string;
-    // @deprecated (undocumented)
-    static getAccessToken(): AccessToken | undefined;
     // (undocumented)
     static getAccudrawSnapMode(): SnapMode;
     // (undocumented)
@@ -4981,6 +4980,8 @@ export class UiFramework {
     // @beta (undocumented)
     static getIsUiVisible(): boolean;
     // @beta (undocumented)
+    static getUserInfo(): UserInfo | undefined;
+    // @beta (undocumented)
     static getWidgetOpacity(): number;
     static get i18n(): I18N;
     static get i18nNamespace(): string;
@@ -5003,8 +5004,6 @@ export class UiFramework {
     static get packageName(): string;
     // @internal (undocumented)
     static get projectServices(): ProjectServices;
-    // @deprecated (undocumented)
-    static setAccessToken(accessToken: AccessToken | undefined, immediateSync?: boolean): void;
     // (undocumented)
     static setAccudrawSnapMode(snapMode: SnapMode): void;
     // (undocumented)
@@ -5023,6 +5022,8 @@ export class UiFramework {
     static setIModelConnection(iModelConnection: IModelConnection | undefined, immediateSync?: boolean): void;
     // @beta (undocumented)
     static setIsUiVisible(visible: boolean): void;
+    // @beta (undocumented)
+    static setUserInfo(userInfo: UserInfo | undefined, immediateSync?: boolean): void;
     // @beta (undocumented)
     static setWidgetOpacity(opacity: number): void;
     static get store(): Store<any>;
@@ -5126,9 +5127,9 @@ export class UserProfileBackstageItem extends React.PureComponent<UserProfileBac
 // @public
 export interface UserProfileBackstageItemProps extends CommonProps {
     // (undocumented)
-    accessToken: AccessToken;
-    // (undocumented)
     onOpenSignOut?: () => void;
+    // (undocumented)
+    userInfo: UserInfo;
 }
 
 // @internal (undocumented)

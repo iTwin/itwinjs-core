@@ -21,3 +21,10 @@ export interface FrontendAuthorizationClient extends IDisposable, AuthorizationC
   /** Event called when the user's sign-in state changes - this may be due to calls to signIn(), signOut() or simply because the token expired */
   readonly onUserStateChanged: BeEvent<(token: AccessToken | undefined) => void>;
 }
+
+/** FrontendAuthorization type guard.
+ * @beta
+ */
+export const isFrontendAuthorizationClient = (client: AuthorizationClient | undefined): client is FrontendAuthorizationClient => {
+  return client !== undefined && (client as FrontendAuthorizationClient).signIn !== undefined && (client as FrontendAuthorizationClient).signOut !== undefined;
+};

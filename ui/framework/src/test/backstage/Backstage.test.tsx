@@ -14,7 +14,7 @@ import {
   FrontstageManager,
   SyncUiEventDispatcher,
 } from "../../ui-framework";
-import TestUtils, { MockAccessToken } from "../TestUtils";
+import TestUtils, { mockUserInfo } from "../TestUtils";
 import { SeparatorBackstageItem } from "../../ui-framework/backstage/Separator";
 
 describe("Backstage", () => {
@@ -53,8 +53,8 @@ describe("Backstage", () => {
       shallow(<Backstage header={<div> Hello World! </div>} />).dive().should.matchSnapshot(); // tslint:disable-line:deprecation
     });
 
-    it("renders correctly with AccessToken", () => {
-      shallow(<Backstage accessToken={new MockAccessToken()} />).dive().should.matchSnapshot(); // tslint:disable-line:deprecation
+    it("renders correctly with UserInfo", () => {
+      shallow(<Backstage userInfo={mockUserInfo()} />).dive().should.matchSnapshot(); // tslint:disable-line:deprecation
     });
 
     it("with child items", () => {

@@ -40,41 +40,41 @@ describe("Render Compatibility", () => {
 
 describe("Instancing", () => {
   class TestApp extends MockRender.App {
-    public static test(enableInstancing: boolean, supportsInstancing: boolean, expectEnabled: boolean): void {
+    public static async test(enableInstancing: boolean, supportsInstancing: boolean, expectEnabled: boolean): Promise<void> {
       const tileAdminProps: TileAdmin.Props = { enableInstancing };
       const renderSysOpts: RenderSystem.Options = {};
       if (!supportsInstancing)
         renderSysOpts.disabledExtensions = ["ANGLE_instanced_arrays"];
 
-      IModelApp.startup({
+      await IModelApp.startup({
         renderSys: renderSysOpts,
         tileAdmin: TileAdmin.create(tileAdminProps),
       });
 
       expect(IModelApp.tileAdmin.enableInstancing).to.equal(expectEnabled);
-      IModelApp.shutdown();
+      await IModelApp.shutdown();
     }
   }
 
-  after(() => {
+  after(async () => {
     // make sure app shut down if exception occurs during test
     if (IModelApp.initialized)
-      TestApp.shutdown();
+      await TestApp.shutdown();
   });
 
-  it("should enable instancing if supported and requested", () => {
-    TestApp.test(true, true, true);
+  it("should enable instancing if supported and requested", async () => {
+    await TestApp.test(true, true, true);
   });
 
-  it("should not enable instancing if requested but not supported", () => {
-    TestApp.test(true, false, false);
+  it("should not enable instancing if requested but not supported", async () => {
+    await TestApp.test(true, false, false);
   });
 
-  it("should not enable instancing if supported but not requested", () => {
-    TestApp.test(false, true, false);
+  it("should not enable instancing if supported but not requested", async () => {
+    await TestApp.test(false, true, false);
   });
 
-  it("should not enable instancing if neither requested nor supported", () => {
-    TestApp.test(false, false, false);
+  it("should not enable instancing if neither requested nor supported", async () => {
+    await TestApp.test(false, false, false);
   });
 });

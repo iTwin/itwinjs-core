@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Logger, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
-import { BriefcaseConnection, IModelApp, IModelAppOptions, IModelConnection, MockRender } from "@bentley/imodeljs-frontend";
+import { RemoteBriefcaseConnection, IModelApp, IModelAppOptions, IModelConnection, MockRender } from "@bentley/imodeljs-frontend";
 import { TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
 import { assert } from "chai";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
@@ -21,7 +21,7 @@ async function executeQuery(iModel: IModelConnection, ecsql: string, bindings?: 
 }
 
 describe("ChangeSummary (#integration)", () => {
-  let iModel: BriefcaseConnection;
+  let iModel: RemoteBriefcaseConnection;
   let testProjectId: string;
   let testIModelId: string;
 
@@ -36,20 +36,20 @@ describe("ChangeSummary (#integration)", () => {
       imodelClient: TestUtility.imodelCloudEnv.imodelClient,
       applicationVersion: "1.2.1.1",
     };
-    MockRender.App.startup(options);
+    await MockRender.App.startup(options);
 
     assert(IModelApp.authorizationClient);
 
     testProjectId = await TestUtility.getTestProjectId(testProjectName);
     testIModelId = await TestUtility.getTestIModelId(testProjectId, testIModelName);
 
-    iModel = await BriefcaseConnection.open(testProjectId, testIModelId);
+    iModel = await RemoteBriefcaseConnection.open(testProjectId, testIModelId);
   });
 
   after(async () => {
     if (iModel)
       await iModel.close();
-    MockRender.App.shutdown();
+    await MockRender.App.shutdown();
   });
 
   // ###TODO AFFAN ???
@@ -71,7 +71,7 @@ describe("ChangeSummary (#integration)", () => {
     // for now, imodel must be open read/write for changesummary extraction
     await iModel.close();
 
-    const testIModel: BriefcaseConnection = await BriefcaseConnection.open(testProjectId, testIModelId, OpenMode.ReadWrite);
+    const testIModel: RemoteBriefcaseConnection = await RemoteBriefcaseConnection.open(testProjectId, testIModelId, OpenMode.ReadWrite);
     try {
       await TestRpcInterface.getClient().deleteChangeCache(testIModel.getRpcProps());
       await TestRpcInterface.getClient().extractChangeSummaries(testIModel.getRpcProps(), { currentChangeSetOnly: true });

@@ -29,7 +29,7 @@ export abstract class WipRpcInterface extends RpcInterface {
   /** The semantic version of the interface.
    * @note The WipRpcInterface will never progress to 1.0 since it is never intended to be public.
    */
-  public static interfaceVersion = "0.3.0";
+  public static interfaceVersion = "0.4.0";
 
   /*===========================================================================================
     NOTE: Any add/remove/change to the methods below requires an update of the interface version.

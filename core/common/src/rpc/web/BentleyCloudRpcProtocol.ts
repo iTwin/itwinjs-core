@@ -16,6 +16,7 @@ import { RpcRequest } from "../core/RpcRequest";
 import { OpenAPIParameter } from "./OpenAPI";
 import { WebAppRpcProtocol } from "./WebAppRpcProtocol";
 import { IModelRpcProps } from "../../IModel";
+import { RpcConfiguration } from "../core/RpcConfiguration";
 
 enum AppMode {
   MilestoneReview = "1",
@@ -73,9 +74,9 @@ export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
     const appVersion = this.info.version;
     const operationId = `${operation.interfaceDefinition.interfaceName}-${operation.interfaceVersion}-${operation.operationName}`;
 
-    let appMode: string;
-    let contextId: string;
-    let iModelId: string;
+    let appMode: string = "";
+    let contextId: string = "";
+    let iModelId: string = "";
     let routeChangeSetId: string | undefined;
     /* Note: The changeSetId field is omitted in the route in the case of ReadWrite connections since the connection is generally expected to be at the
      * latest version and not some specific changeSet. Also, for the first version (before any changeSets), the changeSetId in the route is arbitrarily
@@ -89,19 +90,21 @@ export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
       iModelId = "{iModelId}";
       routeChangeSetId = "{changeSetId}";
     } else {
-      const token = operation.policy.token(request);
-      if (!token || !token.iModelId)
-        throw new IModelError(BentleyStatus.ERROR, "Invalid iModelToken for RPC operation request", Logger.logError, CommonLoggerCategory.RpcInterfaceFrontend);
+      const token = operation.policy.token(request) || RpcOperation.fallbackToken;
+      if (!RpcConfiguration.disableRoutingValidation) {
+        if (!token || !token.iModelId)
+          throw new IModelError(BentleyStatus.ERROR, "Invalid iModelToken for RPC operation request", Logger.logError, CommonLoggerCategory.RpcInterfaceFrontend);
 
-      contextId = encodeURIComponent(token.contextId || "");
-      iModelId = encodeURIComponent(token.iModelId);
+        contextId = encodeURIComponent(token.contextId || "");
+        iModelId = encodeURIComponent(token.iModelId);
 
-      if (token.openMode === OpenMode.Readonly) {
-        appMode = AppMode.MilestoneReview;
-        assert(token.changeSetId !== undefined, "ChangeSetId needs to be setup in IModelRpcProps before open");
-        routeChangeSetId = token.changeSetId === "" ? "0" : token.changeSetId;
-      } else {
-        appMode = AppMode.WorkGroupEdit;
+        if (token.openMode === OpenMode.Readonly) {
+          appMode = AppMode.MilestoneReview;
+          assert(token.changeSetId !== undefined, "ChangeSetId needs to be setup in IModelRpcProps before open");
+          routeChangeSetId = token.changeSetId === "" ? "0" : token.changeSetId;
+        } else {
+          appMode = AppMode.WorkGroupEdit;
+        }
       }
     }
 

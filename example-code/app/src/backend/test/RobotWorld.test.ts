@@ -17,7 +17,7 @@ const requestContext = new ClientRequestContext();
 
 describe("RobotWorld", () => {
   it("should run robotworld", async () => {
-    RobotWorldEngine.initialize(requestContext);
+    await RobotWorldEngine.initialize(requestContext);
 
     const iModelFile = IModelTestUtils.prepareOutputFile("should-run-robotworld.bim");
     const seedFile = IModelTestUtils.resolveAssetFile("empty.bim");
@@ -85,6 +85,6 @@ describe("RobotWorld", () => {
     iModel.saveChanges();
     iModel.close();
 
-    RobotWorldEngine.shutdown();
+    await RobotWorldEngine.shutdown();
   });
 });

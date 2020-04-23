@@ -10,12 +10,12 @@ describe("Tools", () => {
   let imodel: IModelConnection;
 
   before(async () => {
-    MockRender.App.startup();
+    await MockRender.App.startup();
     imodel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
   });
   after(async () => {
     if (imodel) await imodel.close();
-    MockRender.App.shutdown();
+    await MockRender.App.shutdown();
   });
 
   it("ElementAgenda tests", () => {
@@ -158,7 +158,7 @@ describe("HiliteSet", () => {
   let hilited: HiliteSet;
 
   before(async () => {
-    MockRender.App.startup();
+    await MockRender.App.startup();
     imodel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
     selected = imodel.selectionSet;
     hilited = imodel.hilited;
@@ -166,7 +166,7 @@ describe("HiliteSet", () => {
 
   after(async () => {
     if (imodel) await imodel.close();
-    MockRender.App.shutdown();
+    await MockRender.App.shutdown();
   });
 
   function expectHilitedElements(ids: Id64Arg) {

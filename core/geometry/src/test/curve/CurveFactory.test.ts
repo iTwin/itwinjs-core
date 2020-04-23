@@ -15,6 +15,8 @@ import { Angle } from "../../geometry3d/Angle";
 import { Segment1d } from "../../geometry3d/Segment1d";
 import { Arc3d } from "../../curve/Arc3d";
 import { LineSegment3d } from "../../curve/LineSegment3d";
+import * as fs from "fs";
+import { IModelJson } from "../../serialization/IModelJsonSchema";
 /* tslint:disable:no-console */
 
 describe("CurveFactory", () => {
@@ -177,3 +179,45 @@ function markArcData(allGeometry: GeometryQuery[], arc: Arc3d, radialFraction: n
     LineSegment3d.create(center.interpolate(radialFraction, start), center.interpolate(radialFraction + tickFraction, start)),
     LineString3d.create(point0.origin, center, point90.origin)], x0, y0);
 }
+const ppePathInputDirector = "./src/test/testInputs/pipeConnections/";
+describe("PipeConnections", () => {
+  it("ChainCollector", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let refPoint: Point3d | undefined;
+    let x0 = 0;
+    let y0 = 0;
+    let z0 = 0;
+    const dx = 400.0;
+    const dy = 600.0;
+    const pipeRadius = 0.20;
+    const bendRadius = 0.50;
+    for (const filename of ["pipeLinesApril2020"]) {
+      const stringData = fs.readFileSync(ppePathInputDirector + filename + ".imjs", "utf8");
+      if (stringData) {
+        const jsonData = JSON.parse(stringData);
+        const fragments = IModelJson.Reader.parse(jsonData);
+        if (Array.isArray(fragments)) {
+          for (const g of fragments) {
+            if (g instanceof LineString3d) {
+              if (refPoint === undefined) {
+                refPoint = g.packedPoints.getPoint3dAtCheckedPointIndex(0);
+                if (refPoint) {
+                  x0 = -refPoint.x;
+                  y0 = -refPoint.y;
+                  z0 = -refPoint.z;
+                }
+              }
+              const chain0 = CurveFactory.createFilletsInLineString(g, bendRadius, false)!;
+              const pipe0 = CurveFactory.createPipeSegments(chain0, pipeRadius);
+              GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain0, x0 + dx, y0 + dy, z0);
+              GeometryCoreTestIO.captureCloneGeometry(allGeometry, pipe0, x0, y0, z0);
+            }
+          }
+        }
+      }
+      GeometryCoreTestIO.saveGeometry(allGeometry, "PipeConnections", filename);
+    }
+    expect(ck.getNumErrors()).equals(0);
+  });
+});

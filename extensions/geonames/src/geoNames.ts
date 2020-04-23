@@ -213,29 +213,26 @@ export class GeoNameExtension extends Extension {
   public static extension: GeoNameExtension | undefined;
 
   /** Invoked the first time this extension is loaded. */
-  public onLoad(_args: string[]): void {
+  public async onLoad(_args: string[]): Promise<void> {
     // store the extension in the tool prototype.
     GeoNameExtension.extension = this;
 
     this._i18NNamespace = this.i18n.registerNamespace("geoNames");
-    this._i18NNamespace!.readFinished.then(() => {
-      IModelApp.tools.register(GeoNameOnTool, this._i18NNamespace, this.i18n);
-      IModelApp.tools.register(GeoNameOffTool, this._i18NNamespace, this.i18n);
-      IModelApp.tools.register(GeoNameUpdateTool, this._i18NNamespace, this.i18n);
-      if (undefined !== IModelApp.viewManager.selectedView)
-        GeoNameMarkerManager.show(IModelApp.viewManager.selectedView).then(() => { }).catch(() => { });
-    }).catch(() => { });
+    await this._i18NNamespace!.readFinished;
+    IModelApp.tools.register(GeoNameOnTool, this._i18NNamespace, this.i18n);
+    IModelApp.tools.register(GeoNameOffTool, this._i18NNamespace, this.i18n);
+    IModelApp.tools.register(GeoNameUpdateTool, this._i18NNamespace, this.i18n);
+    if (undefined !== IModelApp.viewManager.selectedView)
+      await GeoNameMarkerManager.show(IModelApp.viewManager.selectedView);
   }
 
   /** Invoked each time this extension is loaded. */
-  public onExecute(args: string[]): void {
+  public async onExecute(args: string[]): Promise<void> {
     // if no args passed in, don't do anything.
     if (args.length < 1)
       return;
 
-    this._i18NNamespace!.readFinished.then(() => {
-      // maybe nothing needed here?
-    }).catch((_err: Error) => { });
+    await this._i18NNamespace!.readFinished;
   }
 
   // returning false blocks output of message for subsequent "load Extension" attempts. onExecute is called.

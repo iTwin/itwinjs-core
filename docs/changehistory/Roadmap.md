@@ -51,11 +51,11 @@ We expect the transition from 1.x to 2.x to be trivial and uneventful for most u
 - Synch with changesets from iModelHub
 - Minimize power consumption
 
-### Plugins
+### Extensions
 
-- Finalize Plugin APIs
-- Streamline Plugin development and deployment processes
-- Create Plugin examples for broad set of scenarios
+- Finalize Extension APIs
+- Streamline Extension development and deployment processes
+- Create Extension examples for broad set of scenarios
 
 ### User Interface
 

@@ -77,7 +77,7 @@ describe("RulesEmbedding", () => {
     expect(imodel).is.not.null;
   });
 
-  after(() => {
+  after(async () => {
     imodel.close();
     nativePlatform.dispose();
 
@@ -85,7 +85,7 @@ describe("RulesEmbedding", () => {
       if (err)
         expect(false);
     });
-    terminate();
+    await terminate();
   });
 
   beforeEach(async () => {

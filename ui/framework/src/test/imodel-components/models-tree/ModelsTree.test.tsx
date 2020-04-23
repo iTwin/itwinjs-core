@@ -1547,8 +1547,8 @@ describe("ModelsTree", () => {
       });
     });
 
-    after(() => {
-      terminatePresentationTesting();
+    after(async () => {
+      await terminatePresentationTesting();
     });
 
     beforeEach(async () => {

@@ -52,8 +52,8 @@ class IntegrationTestsApp extends NoRenderApp {
     return { urlTemplate };
   }
 
-  public static startup(opts?: IModelAppOptions) {
-    NoRenderApp.startup({ ...opts, i18n: this.supplyI18NOptions() });
+  public static async startup(opts?: IModelAppOptions): Promise<void> {
+    await NoRenderApp.startup({ ...opts, i18n: this.supplyI18NOptions() });
     cpx.copySync(`assets/**/*`, "lib/assets");
     copyBentleyBackendAssets("lib/assets");
     copyBentleyFrontendAssets("lib/public");
@@ -99,8 +99,8 @@ export const initializeWithClientServices = async () => {
   await initializeCommon({ useClientServices: true });
 };
 
-export const terminate = () => {
-  terminateTesting();
+export const terminate = async () => {
+  await terminateTesting();
 };
 
 export const resetBackend = () => {

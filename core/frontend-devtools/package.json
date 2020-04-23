@@ -1,16 +1,16 @@
 {
   "name": "@bentley/frontend-devtools",
-  "version": "2.0.0-dev.71",
+  "version": "2.0.0-dev.76",
   "description": "Debug menu and supporting UI widgets",
   "main": "lib/frontend-devtools.js",
   "imodeljsSharedLibrary": true,
   "license": "MIT",
   "scripts": {
     "build": "npm run copy:assets && tsc 1>&2",
-    "copy:assets": "cpx ./public/**/* ./lib/public",
+    "copy:assets": "cpx \"./public/**/*\" ./lib/public",
     "clean": "rimraf lib .rush",
-    "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --includes=../../generated-docs/extract --json=../../generated-docs/core/frontend-devtools/file.json --tsIndexFile=./frontend-devtools.ts --onlyJson %TYPEDOC_THEME%",
-    "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=frontend-devtools",
+    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/frontend-devtools/file.json --tsIndexFile=./frontend-devtools.ts --onlyJson",
+    "extract-api": "betools extract-api --entry=frontend-devtools",
     "lint": "tslint --project . 1>&2",
     "test": "",
     "cover": ""
@@ -31,16 +31,16 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "@bentley/imodeljs-frontend": "2.0.0-dev.71",
-    "@bentley/imodeljs-i18n": "2.0.0-dev.71",
-    "@bentley/imodeljs-common": "2.0.0-dev.71",
-    "@bentley/bentleyjs-core": "2.0.0-dev.71",
-    "@bentley/geometry-core": "2.0.0-dev.71",
+    "@bentley/imodeljs-frontend": "2.0.0-dev.76",
+    "@bentley/imodeljs-i18n": "2.0.0-dev.76",
+    "@bentley/imodeljs-common": "2.0.0-dev.76",
+    "@bentley/bentleyjs-core": "2.0.0-dev.76",
+    "@bentley/geometry-core": "2.0.0-dev.76",
     "file-saver": "^2.0.2"
   },
   "peerDependencies": {},
   "devDependencies": {
-    "@bentley/build-tools": "2.0.0-dev.71",
+    "@bentley/build-tools": "2.0.0-dev.76",
     "@types/node": "10.14.1",
     "@types/file-saver": "^2.0.1",
     "cpx": "^1.5.0",

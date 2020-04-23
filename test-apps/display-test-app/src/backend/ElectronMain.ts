@@ -10,13 +10,13 @@ import { IModelJsElectronManager, WebpackDevServerElectronManager, StandardElect
 
 import * as electron from "electron";
 
-// Start the backend
-initializeBackend();
-
-const autoOpenDevTools = (undefined === process.env.SVT_NO_DEV_TOOLS);
-const maximizeWindow = (undefined === process.env.SVT_NO_MAXIMIZE_WINDOW);
-
 (async () => { // tslint:disable-line:no-floating-promises
+  // Start the backend
+  await initializeBackend();
+
+  const autoOpenDevTools = (undefined === process.env.SVT_NO_DEV_TOOLS);
+  const maximizeWindow = (undefined === process.env.SVT_NO_MAXIMIZE_WINDOW);
+
   let manager: StandardElectronManager;
   if (process.env.NODE_ENV === "production")
     manager = new IModelJsElectronManager(path.join(__dirname, "..", "..", "build"));

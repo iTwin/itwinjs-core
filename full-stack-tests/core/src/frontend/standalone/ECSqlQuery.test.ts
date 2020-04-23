@@ -13,7 +13,7 @@ describe("ECSql Query", () => {
   let imodel5: IModelConnection;
 
   before(async () => {
-    IModelApp.startup();
+    await IModelApp.startup();
     imodel1 = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
     imodel2 = await SnapshotConnection.openFile("CompatibilityTestSeed.bim"); // relative path resolved by BackendTestAssetResolver
     imodel3 = await SnapshotConnection.openFile("GetSetAutoHandledStructProperties.bim"); // relative path resolved by BackendTestAssetResolver
@@ -27,7 +27,7 @@ describe("ECSql Query", () => {
     if (imodel3) await imodel3.close();
     if (imodel4) await imodel4.close();
     if (imodel5) await imodel5.close();
-    IModelApp.shutdown();
+    await IModelApp.shutdown();
   });
 
   it("Paging Results", async () => {

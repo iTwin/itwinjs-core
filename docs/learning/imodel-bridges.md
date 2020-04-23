@@ -49,7 +49,7 @@ Sometimes BIS domain schemas are not adequate to capture all the data in the aut
 
 As iModel Bridges always run multiple times to keep an iModel synchronized, the schemas created by previous executions limit the schemas that can be used by subsequent executions. To provide consistency and enable concise change sets, the Bridges add to the previously-defined schemas (creating new schema versions). This follows the general schema update strategy defined in [Schema Versioning and Generations](../bis/intro/schema-versioning-and-generations.md)
 
-The `DynamicSchema` custom attribute should be set on customer specific application schemas. This custom attribute can be found in the standard schema `CoreCustomAttributes` and it enables the iModelHub to programmatically detect dynamic schemas. Dynamic schemas require special handling since their name and version are typically duplicated between iModels from different work sets.
+The `DynamicSchema` custom attribute should be set on customer specific application schemas. This custom attribute can be found in the standard schema `CoreCustomAttributes` and it enables iModelHub to programmatically detect dynamic schemas. Dynamic schemas require special handling since their name and version are typically duplicated between iModels from different work sets.
 
 ## Display Labels
 

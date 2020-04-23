@@ -5,7 +5,7 @@
 import { Id64String, OpenMode } from "@bentley/bentleyjs-core";
 import { IModelJson, LineSegment3d, Point3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import { Code } from "@bentley/imodeljs-common";
-import { BeButtonEvent, BriefcaseConnection, ElementEditor3d, IModelApp, IModelAppOptions, IModelConnection, Viewport } from "@bentley/imodeljs-frontend";
+import { BeButtonEvent, RemoteBriefcaseConnection, ElementEditor3d, IModelApp, IModelAppOptions, IModelConnection, Viewport } from "@bentley/imodeljs-frontend";
 import { TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
 import { assert } from "chai";
 import { PlacementTestTool } from "./TestPrimitiveTools";
@@ -39,7 +39,7 @@ describe("Element editor tests (#integration)", async () => {
       imodelClient: TestUtility.imodelCloudEnv.imodelClient,
       applicationVersion: "1.2.1.1",
     };
-    IModelApp.startup(options);
+    await IModelApp.startup(options);
 
     // NB: Call IModelApp.startup and set the authorizationClient *before* calling any other functions that might query the server.
 
@@ -49,14 +49,14 @@ describe("Element editor tests (#integration)", async () => {
     assert.isTrue(imodelId !== undefined);
     assert.isTrue(imodelId !== "");
 
-    iModel = await BriefcaseConnection.open(contextId, imodelId, OpenMode.ReadWrite);
+    iModel = await RemoteBriefcaseConnection.open(contextId, imodelId, OpenMode.ReadWrite);
   });
 
   after(async () => {
     if (iModel) {
       await iModel.close();
     }
-    IModelApp.shutdown();
+    await IModelApp.shutdown();
   });
 
   it("ElementEditor3d test", async () => {
