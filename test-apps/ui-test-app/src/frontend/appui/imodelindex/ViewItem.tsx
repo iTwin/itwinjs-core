@@ -110,7 +110,7 @@ export default class ViewItem extends React.Component<ViewItemProps, ViewItemSta
     } else {
       return (
         <>
-          <img src={this.state.thumbnail} />
+          <img src={this.state.thumbnail} alt="" />
           {this.props.showHoverIndicator && <span className="open">Open</span>}
         </>
       );

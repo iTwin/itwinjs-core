@@ -5,7 +5,6 @@
 import * as React from "react";
 
 import {
-  ConfigurableCreateInfo,
   ConfigurableUiManager,
   ContentViewManager,
   ViewSelector,
@@ -19,10 +18,6 @@ import {
 export class IModelViewportControl extends UIFW_IModelViewportControl {
   public static get id() {
     return "TestApp.IModelViewport";
-  }
-
-  constructor(info: ConfigurableCreateInfo, options: any) {
-    super(info, options);
   }
 
   /** Get the React component that will be shown when no iModel data is available */
@@ -62,10 +57,6 @@ interface MockIModelViewportProps {
  */
 class MockIModelViewport extends React.Component<MockIModelViewportProps> {
   private _htmlCanvas!: HTMLCanvasElement;
-
-  constructor(props: MockIModelViewportProps) {
-    super(props);
-  }
 
   public render(): React.ReactNode {
     const divStyle: React.CSSProperties = {

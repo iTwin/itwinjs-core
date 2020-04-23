@@ -84,9 +84,9 @@ function combineFilePaths(additionalPath: string, initPath?: string) {
   if (initPath === undefined || additionalPath[1] === ":") // if additionalPath is full path (like D:), ignore the initial path
     return additionalPath;
   let combined = initPath;
-  while (combined.endsWith("\\") || combined.endsWith("\/"))
+  while (combined.endsWith("\\") || combined.endsWith("/"))
     combined = combined.slice(0, -1);
-  if (additionalPath[0] !== "\\" && additionalPath[0] !== "\/")
+  if (additionalPath[0] !== "\\" && additionalPath[0] !== "/")
     combined += "\\";
   combined += additionalPath;
   return combined;
@@ -131,40 +131,42 @@ function getRenderOpts(): string {
   for (const [key, value] of Object.entries(curRenderOpts)) {
     switch (key) {
       case "disabledExtensions":
-        if (value) value.forEach((ext: string) => {
-          switch (ext) {
-            case "WEBGL_draw_buffers":
-              optString += "-drawBuf";
-              break;
-            case "OES_element_index_uint":
-              optString += "-unsignedInt";
-              break;
-            case "OES_texture_float":
-              optString += "-texFloat";
-              break;
-            case "OES_texture_half_float":
-              optString += "-texHalfFloat";
-              break;
-            case "WEBGL_depth_texture":
-              optString += "-depthTex";
-              break;
-            case "EXT_color_buffer_float":
-              optString += "-floats";
-              break;
-            case "EXT_shader_texture_lod":
-              optString += "-texLod";
-              break;
-            case "ANGLE_instanced_arrays":
-              optString += "-instArrays";
-              break;
-            case "EXT_frag_depth":
-              optString += "-fragDepth";
-              break;
-            default:
-              optString += "-" + ext;
-              break;
+        if (value) {
+          for (const ext of value) {
+            switch (ext) {
+              case "WEBGL_draw_buffers":
+                optString += "-drawBuf";
+                break;
+              case "OES_element_index_uint":
+                optString += "-unsignedInt";
+                break;
+              case "OES_texture_float":
+                optString += "-texFloat";
+                break;
+              case "OES_texture_half_float":
+                optString += "-texHalfFloat";
+                break;
+              case "WEBGL_depth_texture":
+                optString += "-depthTex";
+                break;
+              case "EXT_color_buffer_float":
+                optString += "-floats";
+                break;
+              case "EXT_shader_texture_lod":
+                optString += "-texLod";
+                break;
+              case "ANGLE_instanced_arrays":
+                optString += "-instArrays";
+                break;
+              case "EXT_frag_depth":
+                optString += "-fragDepth";
+                break;
+              default:
+                optString += "-" + ext;
+                break;
+            }
           }
-        });
+        }
         break;
       // case "enableOptimizedSurfaceShaders": // No longer supported
       //   if (value) optString += "+optSurf";
@@ -731,7 +733,6 @@ class SimpleViewState {
   public externalSavedViews?: any[];
   public overrideElements?: any[];
   public selectedElements?: Id64Arg;
-  constructor() { }
 }
 
 class FOProvider implements FeatureOverrideProvider {

@@ -24,14 +24,15 @@ export default function ViewDefinitionSelector(props: ViewDefinitionSelectorProp
     // tslint:disable-next-line: no-floating-promises
     MyAppFrontend.getViewDefinitions(props.imodel).then(setAvailableViewDefinitions);
   }, [props.imodel]);
-  const onViewDefinitionSelected = useCallback((evt: React.ChangeEvent<HTMLSelectElement>) => {
+  const onViewDefinitionSelected = props.onViewDefinitionSelected;
+  const memoizedOnViewDefinitionSelected = useCallback((evt: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedId = evt.target.value || undefined;
-    if (props.onViewDefinitionSelected)
-      props.onViewDefinitionSelected(selectedId);
-  }, []);
+    if (onViewDefinitionSelected)
+      onViewDefinitionSelected(selectedId);
+  }, [onViewDefinitionSelected]);
   return (
     <div className="ViewDefinitionSelector">
-      <select onChange={onViewDefinitionSelected} value={props.selectedViewDefinition}>
+      <select onChange={memoizedOnViewDefinitionSelected} value={props.selectedViewDefinition}>
         {(availableViewDefinitions ?? []).map((definition) => (
           <option value={definition.id} key={definition.id}>{definition.label}</option>
         ))}

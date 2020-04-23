@@ -7,7 +7,7 @@ import * as React from "react";
 import { FooterSeparator } from "@bentley/ui-ninezone";
 import { StatusBarSection, ConditionalBooleanValue } from "@bentley/ui-abstract";
 import {
-  ConfigurableUiManager, ConfigurableCreateInfo, ToolAssistanceField, ActivityCenterField, MessageCenterField,
+  ConfigurableUiManager, ToolAssistanceField, ActivityCenterField, MessageCenterField,
   SnapModeField, StatusBarItem, StatusBarItemUtilities,
   StatusBarWidgetControl, StatusBarWidgetControlArgs, StatusBarComposer,
   withStatusFieldProps, withMessageCenterFieldProps, FooterModeField,
@@ -17,10 +17,6 @@ import { SampleAppUiActionId, SampleAppIModelApp } from "../..";
 
 export class SmallStatusBarWidgetControl extends StatusBarWidgetControl {
   private _statusBarItems: StatusBarItem[] | undefined;
-
-  constructor(info: ConfigurableCreateInfo, options: any) {
-    super(info, options);
-  }
 
   private get statusBarItems(): StatusBarItem[] {
     // tslint:disable-next-line: variable-name

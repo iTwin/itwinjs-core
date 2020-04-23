@@ -24,11 +24,6 @@ export interface TabProps {
  * @internal
  */
 export class Tab extends React.Component<TabProps> {
-
-  constructor(props: TabProps, context?: any) {
-    super(props, context);
-  }
-
   public static defaultProps: Partial<TabProps> = {
     label: "",
     icon: "",
@@ -47,6 +42,7 @@ export class Tab extends React.Component<TabProps> {
     const icon = classnames("icon", this.props.icon);
     return (
       <li className={classes} onClick={this._onClick}>
+        {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
         <a>
           <span className={icon} />
           <span className="text">{this.props.label}</span>

@@ -49,7 +49,7 @@ class ViewCard extends React.Component<ViewCardProps, ViewCardState> {
     return (
       <div className={cardClassName} onClick={this._onClicked}>
         <div className="view-card-content">
-          <img className="view-card-thumbnail" src="https://upload.wikimedia.org/wikipedia/commons/a/ac/No_image_available.svg" />
+          <img className="view-card-thumbnail" src="https://upload.wikimedia.org/wikipedia/commons/a/ac/No_image_available.svg" alt="" />
           <div className="view-card-name">{name}</div>
         </div>
       </div>

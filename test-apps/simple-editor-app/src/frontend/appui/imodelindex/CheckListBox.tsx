@@ -25,11 +25,6 @@ export interface CheckListBoxItemProps extends CommonProps {
  * @internal
  */
 export class CheckListBoxItem extends React.Component<CheckListBoxItemProps> {
-
-  constructor(props: CheckListBoxItemProps, context?: any) {
-    super(props, context);
-  }
-
   private _onClick = () => {
     if (this.props.onClick) {
       this.props.onClick();

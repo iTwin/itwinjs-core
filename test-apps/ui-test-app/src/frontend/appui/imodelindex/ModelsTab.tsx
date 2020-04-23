@@ -366,7 +366,7 @@ export class ModelsTab extends React.Component<ModelsProps, ModelsState> {
   /** Gets the model Ids that we want to view based on doc codes */
   private _getModelsFromDocCodes(): Id64String[] {
     const selectedDocCodes: Map<string, ValueDescPair[]> = new Map<string, ValueDescPair[]>();
-    this.state.docCodes!.map((pair: DocCodeCategory) => {
+    this.state.docCodes!.forEach((pair: DocCodeCategory) => {
       pair.values.forEach((vp: ValueDescPair) => {
         if (vp.checked) {
           if (selectedDocCodes.has(pair.name))
@@ -453,7 +453,7 @@ export class ModelsTab extends React.Component<ModelsProps, ModelsState> {
   private _isOkButtonEnabled(): boolean {
     let count = 0;
     if (this.state.docCodes) {
-      this.state.docCodes!.map((pair: DocCodeCategory) => {
+      this.state.docCodes!.forEach((pair: DocCodeCategory) => {
         pair.values.forEach((vp: ValueDescPair) => {
           if (vp.checked) {
             ++count;
@@ -574,6 +574,7 @@ export class ModelsTab extends React.Component<ModelsProps, ModelsState> {
     } else {
       return (
         <div className="models-tree-container">
+          {/* eslint-disable-next-line react/jsx-pascal-case */}
           {<DEPRECATED_Tree selectedNodes={this._getSelectedNodes()} dataProvider={this._dataProvider} onCheckboxClick={this._onCheckboxClick} />}
         </div>
       );
@@ -590,7 +591,7 @@ export class ModelsTab extends React.Component<ModelsProps, ModelsState> {
           <span>{toastTitle}</span>
           <span>{toastMessage}</span>
         </div>
-        <a target="_blank" href="https://docs.bentley.com/LiveContent/web/ProjectWise%20Explorer%20Help-v9/en/GUID-7D468087-663C-96F6-A664-E204EC65484B.html">{UiFramework.translate("iModelIndex.learnMore")}</a>
+        <a target="_blank" rel="noopener noreferrer" href="https://docs.bentley.com/LiveContent/web/ProjectWise%20Explorer%20Help-v9/en/GUID-7D468087-663C-96F6-A664-E204EC65484B.html">{UiFramework.translate("iModelIndex.learnMore")}</a>
         <span className="close" onClick={this._onCloseToast}>&times;</span>
       </div>
     );

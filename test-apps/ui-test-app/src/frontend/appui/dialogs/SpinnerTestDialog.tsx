@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { Dialog, Spinner, SpinnerSize, LoadingSpinner, FillCentered } from "@bentley/ui-core";
-import { ModalDialogManager } from "@bentley/ui-framework";
 import { IModelApp } from "@bentley/imodeljs-frontend";
 
 export interface SpinnerTestDialogProps {
@@ -132,11 +131,8 @@ export class SpinnerTestDialog extends React.Component<SpinnerTestDialogProps, S
   }
 
   private _closeDialog = () => {
-    this.setState({  // eslint-disable-line @typescript-eslint/no-unused-expressions
+    this.setState({
       opened: false,
-    }), () => {
-      if (!this.state.opened)
-        ModalDialogManager.closeDialog();
-    };
+    });
   }
 }

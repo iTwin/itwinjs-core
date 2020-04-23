@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { Dialog, DialogButtonType } from "@bentley/ui-core";
-import { ModalDialogManager } from "@bentley/ui-framework";
 
 export interface TestModalDialogProps {
   opened: boolean;
@@ -77,13 +76,9 @@ export class TestModalDialog extends React.Component<TestModalDialogProps, TestM
     });
   }
 
-  private _closeDialog = (followUp: () => void) => {
-    this.setState({  // eslint-disable-line @typescript-eslint/no-unused-expressions
+  private _closeDialog = (_followUp: () => void) => {
+    this.setState({
       opened: false,
-    }), () => {
-      if (!this.state.opened)
-        ModalDialogManager.closeDialog();
-      followUp();
-    };
+    });
   }
 }
