@@ -6,6 +6,7 @@ import * as yargs from "yargs";
 import { IModelHost } from "@bentley/imodeljs-backend";
 import { ImportIMJS } from "./ImportIMJS";
 
+// tslint:disable:no-console
 
 interface Args {
   input: string;
@@ -22,8 +23,6 @@ const argv: yargs.Arguments<Args> = yargs
   .alias("output", "o")
   .demandOption(["input", "output"])
   .argv;
-
-
 
 IModelHost.startup();
 console.log("start ..");

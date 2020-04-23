@@ -6,6 +6,8 @@
 import { IModelHost } from "@bentley/imodeljs-backend";
 import { ImportIMJS } from "./ImportIMJS";
 
+// tslint:disable:no-console
+
 IModelHost.startup();
 console.log("start ..");
 for (const directoryTail of [
