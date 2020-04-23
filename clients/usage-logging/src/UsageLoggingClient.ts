@@ -15,7 +15,7 @@ const loggerCategory: string = UsageLoggingClientLoggerCategory.Client;
 /** Represents one of the potential usage types.
  * See also
  *  - [[UsageLogEntry]], [[FeatureLogEntry]]
- *  - *UsageType* entry on [ULAS Swagger](https://qa-connect-ulastm.bentley.com/Bentley.ULAS.SwaggerUI/SwaggerWebApp/?urls.primaryName=ULAS%20Posting%20Service%20v1)
+ *  - *UsageType* entry on [ULAS Swagger](https://connect-ulastm.bentley.com/Bentley.ULAS.SwaggerUI/SwaggerWebApp/?urls.primaryName=ULAS%20Posting%20Service%20v1)
  *  site (section *Models*)
  * @internal
  */
@@ -38,7 +38,7 @@ export interface ProductVersion {
  * Usage log entry data that is submitted to the ULAS Posting Service.
  * See also
  *  - [[UlasClient]]
- *  - *UsageLogEntry* entry on [ULAS Swagger](https://qa-connect-ulastm.bentley.com/Bentley.ULAS.SwaggerUI/SwaggerWebApp/index.html?urls.primaryName=ULAS%20Posting%20Service%20v1)
+ *  - *UsageLogEntry* entry on [ULAS Swagger](https://connect-ulastm.bentley.com/Bentley.ULAS.SwaggerUI/SwaggerWebApp/index.html?urls.primaryName=ULAS%20Posting%20Service%20v1)
  *  site (section *Models*)
  * @internal
  */
@@ -87,7 +87,7 @@ export interface FeatureLogEntryMetadata {
  * Standard feature log entry data that is submitted to the ULAS Posting Service.
  * See also
  *  - [[UlasClient]]
- *  - *FeatureLogEntry* entry on [ULAS Swagger](https://qa-connect-ulastm.bentley.com/Bentley.ULAS.SwaggerUI/SwaggerWebApp/index.html?urls.primaryName=ULAS%20Posting%20Service%20v1)
+ *  - *FeatureLogEntry* entry on [ULAS Swagger](https://connect-ulastm.bentley.com/Bentley.ULAS.SwaggerUI/SwaggerWebApp/index.html?urls.primaryName=ULAS%20Posting%20Service%20v1)
  *  site (section *Models*)
  * @internal
  */
@@ -179,7 +179,7 @@ export class EndFeatureLogEntry extends FeatureLogEntry {
 
 /**
  * Response from posting a [[UsageLogEntry]] or [[FeatureLogEntry]] with the [[UlasClient]].
- * See also *LogPostingResponse* entry on [ULAS Swagger](https://qa-connect-ulastm.bentley.com/Bentley.ULAS.SwaggerUI/SwaggerWebApp/?urls.primaryName=ULAS%20Posting%20Service%20v1)
+ * See also *LogPostingResponse* entry on [ULAS Swagger](https://connect-ulastm.bentley.com/Bentley.ULAS.SwaggerUI/SwaggerWebApp/?urls.primaryName=ULAS%20Posting%20Service%20v1)
  * site (section *Models*)
  * @internal
  */
@@ -196,7 +196,7 @@ export interface LogPostingResponse {
 
 /**
  * Client for the Bentley Usage Logging & Analysis Services (ULAS).
- * See also the two `POST` requests on [ULAS Swagger](https://qa-connect-ulastm.bentley.com/Bentley.ULAS.SwaggerUI/SwaggerWebApp/?urls.primaryName=ULAS%20Posting%20Service%20v1)
+ * See also the two `POST` requests on [ULAS Swagger](https://connect-ulastm.bentley.com/Bentley.ULAS.SwaggerUI/SwaggerWebApp/?urls.primaryName=ULAS%20Posting%20Service%20v1)
  * @internal
  */
 export class UsageLoggingClient extends Client {

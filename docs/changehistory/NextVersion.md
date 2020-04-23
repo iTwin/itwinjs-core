@@ -5,9 +5,8 @@ ignore: true
 
 ## Update to iModel.js Build System
 
-The iModel.js 1.0 build system relied on a single package (`@bentley/webpack-tools`) to build iModel.js backends, frontends and extensions. With the release of 2.0, there are significant improvements to the build system to help with both clarity and usability to enable creating an app based on the latest technologies easier. To aid in this, the build system is now split into 3 separate components:
+The iModel.js 1.0 build system relied on a single package (`@bentley/webpack-tools`) to build iModel.js frontends and extensions. With the release of 2.0, there are significant improvements to the build system to help with both clarity and usability to enable creating an app based on the latest technologies easier. To aid in this, the build system is now split into 2 separate components:
 
-- Build of an iModel.js backend, and agent, with the `@bentley/backend-webpack-tools`
 - Webpack/bundling of an iModel.js Extension (formerly Plugin) with `@bentley/extension-webpack-tools`
 - The iModel.js frontend build system is now based on [Create-React-App](https://create-react-app.dev/). More details visit the [Build Migration Guide](./migration-guides/migratingbuildsystems.md).
 

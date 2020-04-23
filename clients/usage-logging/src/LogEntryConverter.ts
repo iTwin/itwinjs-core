@@ -13,7 +13,7 @@ import { UsageLoggingClientLoggerCategory } from "./UsageLoggingClientLoggerCate
 const loggerCategory: string = UsageLoggingClientLoggerCategory.Client;
 
 /** Specifies the JSON format for a UsageLogEntry as expected by the ULAS REST API
- * (see https://qa-connect-ulastm.bentley.com/Bentley.ULAS.SwaggerUI/SwaggerWebApp/?urls.primaryName=ULAS%20Posting%20Service%20v1)
+ * (see https://connect-ulastm.bentley.com/Bentley.ULAS.SwaggerUI/SwaggerWebApp/?urls.primaryName=ULAS%20Posting%20Service%20v1)
  * @internal
  */
 export interface UsageLogEntryJson {
@@ -66,7 +66,7 @@ export interface FeatureLogEntryAttributeJson {
 }
 
 /** Specifies the JSON format for a FeatureLogEntry as expected by the ULAS REST API
- * (see https://qa-connect-ulastm.bentley.com/Bentley.ULAS.SwaggerUI/SwaggerWebApp/?urls.primaryName=ULAS%20Posting%20Service%20v1)
+ * (see https://connect-ulastm.bentley.com/Bentley.ULAS.SwaggerUI/SwaggerWebApp/?urls.primaryName=ULAS%20Posting%20Service%20v1)
  * @internal
  */
 export interface FeatureLogEntryJson extends UsageLogEntryJson {
