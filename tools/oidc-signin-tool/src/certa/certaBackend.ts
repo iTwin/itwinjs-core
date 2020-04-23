@@ -7,7 +7,7 @@ import { Config } from "@bentley/bentleyjs-core";
 import { registerBackendCallback } from "@bentley/certa/lib/utils/CallbackUtils";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 import { AccessToken } from "@bentley/itwin-client";
-import { TestOidcConfiguration, TestUserCredentials } from "../TestUsers";
+import { TestBrowserAuthorizationClientConfiguration, TestUserCredentials } from "../TestUsers";
 import { TestUtility } from "../TestUtility";
 import { getTokenCallbackName, serializeToken } from "./certaCommon";
 
@@ -26,7 +26,7 @@ IModelJsConfig.init(true, true, Config.App);
  *
  * If the oidcConfig param is provided, it will always be used over the default.
  */
-async function signin(user: TestUserCredentials, oidcConfig?: TestOidcConfiguration): Promise<AccessToken> {
+async function signin(user: TestUserCredentials, oidcConfig?: TestBrowserAuthorizationClientConfiguration): Promise<AccessToken> {
   // Handle OIDC signin
   // console.log("Starting OIDC signin...");
   // console.time("Finished OIDC signin in");

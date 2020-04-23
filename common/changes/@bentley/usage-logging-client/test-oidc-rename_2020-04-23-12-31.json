@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/usage-logging-client",
+      "comment": "Renamed TestOidcClient and related constructs for consistency",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/usage-logging-client",
+  "email": "Ramanujam.Raman@bentley.com"
+}

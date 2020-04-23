@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { Guid, Config } from "@bentley/bentleyjs-core";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { getTestOidcToken, TestOidcConfiguration, TestUsers } from "@bentley/oidc-signin-tool";
+import { getTestAccessToken, TestBrowserAuthorizationClientConfiguration, TestUsers } from "@bentley/oidc-signin-tool";
 import { assert } from "chai";
 import * as os from "os";
 import { AuthorizedBackendRequestContext, IModelJsNative } from "../../imodeljs-backend";
@@ -29,12 +29,12 @@ describe.skip("UsageLoggingUtilities - OIDC Token (#integration)", () => {
     IModelTestUtils.setupLogging();
     // IModelTestUtils.setupDebugLogLevels();
 
-    const oidcConfig: TestOidcConfiguration = {
+    const oidcConfig: TestBrowserAuthorizationClientConfiguration = {
       clientId: Config.App.getString("imjs_oidc_ulas_test_client_id"),
       redirectUri: Config.App.getString("imjs_oidc_ulas_test_redirect_uri"),
       scope: Config.App.getString("imjs_oidc_ulas_test_scopes"),
     };
-    const accessToken = await getTestOidcToken(oidcConfig, TestUsers.regular);
+    const accessToken = await getTestAccessToken(oidcConfig, TestUsers.regular);
     requestContext = new AuthorizedBackendRequestContext(accessToken);
   });
 
