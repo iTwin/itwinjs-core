@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 @import "~@bentley/ui-core/lib/ui-core/text/mixins";
+@import "~@bentley/ui-core/lib/ui-core/icons/index";
 
 .uifw-statusbar-message-label {
   color: $buic-text-color;
@@ -14,6 +15,13 @@
 
 .uifw-statusbar-message-detailed {
   @include uicore-text(small);
+}
+
+.uifw-statusbar-hollow-icon {
+  color: $buic-accessory-hollow;
+  width:  $uicore-icons-small;
+  height: $uicore-icons-small;
+  font-size: $uicore-icons-small;
 }
 
 .uifw-statusbar-space-between {

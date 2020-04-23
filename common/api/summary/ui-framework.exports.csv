@@ -251,8 +251,11 @@ public;InputFieldMessageEventArgs
 public;InputFieldMessageRemovedEvent 
 alpha;InputStatus
 internal;isCollapsedToPanelState: (isCollapsed: boolean) => StagePanelState.Minimized | StagePanelState.Open
+internal;isHTMLElement: (message: NotifyMessageType) => message is HTMLElement
 beta;isNoSelectionActive(): boolean
 internal;isPanelCollapsed(zoneStates: ReadonlyArray
+internal;isReactMessage: (message: NotifyMessageType) => message is ReactMessage
+internal;isReactNotifyMessageDetails: (details: any) => details is ReactNotifyMessageDetails
 alpha;isStatusBarItem: (item: CommonStatusBarItem) => item is StatusBarItem
 internal;isToolSettingsWidgetManagerProps: (props: WidgetManagerProps | undefined) => props is ToolSettingsWidgetManagerProps
 public;class ItemDefBase
@@ -332,6 +335,8 @@ public;NavigationWidgetProps
 public;NavigationWidgetPropsEx 
 public;NestedFrontstage
 public;NineZoneChangeHandler
+public;NotifyMessageDetailsType = NotifyMessageDetails | ReactNotifyMessageDetails
+public;NotifyMessageType = string | HTMLElement | ReactMessage
 alpha;PanelStateChangedEvent 
 alpha;PanelStateChangedEventArgs
 internal;panelStateToIsCollapsed: (panelState: StagePanelState) => boolean
@@ -359,6 +364,8 @@ internal;ProjectScope
 internal;ProjectServices
 public;PromptField: import("react-redux").ConnectedComponent
 public;PropsHelper
+public;ReactMessage
+public;ReactNotifyMessageDetails
 public;Reducer
 public;ReducerActions
 public;ReducerMapActions

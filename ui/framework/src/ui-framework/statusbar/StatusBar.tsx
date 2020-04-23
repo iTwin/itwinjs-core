@@ -9,7 +9,7 @@
 import * as React from "react";
 import classnames from "classnames";
 
-import { MessageContainer, MessageSeverity, SmallText, CommonProps, CommonDivProps, Div, UiCore } from "@bentley/ui-core";
+import { MessageContainer, MessageSeverity, SmallText, CommonProps, CommonDivProps, Div, UiCore, Icon, IconProps } from "@bentley/ui-core";
 import {
   Footer,
   Toast as ToastMessage,
@@ -17,9 +17,10 @@ import {
   MessageLayout,
   MessageButton, Status, MessageHyperlink, MessageProgress,
 } from "@bentley/ui-ninezone";
-import { NotifyMessageDetails, OutputMessageType } from "@bentley/imodeljs-frontend";
+import { OutputMessageType } from "@bentley/imodeljs-frontend";
 
 import { MessageManager, MessageAddedEventArgs, ActivityMessageEventArgs } from "../messages/MessageManager";
+import { NotifyMessageType, NotifyMessageDetailsType } from "../messages/ReactNotifyMessageDetails";
 import { UiShowHideManager } from "../utils/UiShowHideManager";
 import { MessageDiv } from "../messages/MessageSpan";
 import { SafeAreaContext } from "../safearea/SafeAreaContext";
@@ -30,11 +31,18 @@ import "./StatusBar.scss";
 
 // cspell:ignore safearea
 
-// tslint:disable-next-line: variable-name
-const MessageLabel = (props: { message: HTMLElement | string, className: string }): JSX.Element => {
+function MessageLabel(props: { message: NotifyMessageType, className: string }) {
   const classNames = classnames("uifw-statusbar-message-label", props.className);
   return <MessageDiv className={classNames} message={props.message} />;
-};
+}
+
+function HollowIcon(props: IconProps) {
+  return (
+    <span className="uifw-statusbar-hollow-icon">
+      <Icon {...props} />
+    </span>
+  );
+}
 
 /** Enum for StatusBar Message Type
  * @internal
@@ -52,7 +60,7 @@ enum StatusBarMessageType {
 interface StatusBarState {
   openWidget: StatusBarFieldId;
   visibleMessage: StatusBarMessageType;
-  messageDetails: NotifyMessageDetails | undefined;
+  messageDetails: NotifyMessageDetailsType | undefined;
   activityMessageInfo: ActivityMessageEventArgs | undefined;
   isActivityMessageVisible: boolean;
   toastMessageKey: number;
@@ -217,7 +225,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
               <Message
                 status={StatusBar.severityToStatus(severity)}
                 icon={
-                  <i className={`icon ${MessageContainer.getIconClassName(severity, true)}`} />
+                  <HollowIcon iconSpec={MessageContainer.getIconClassName(severity, true)} />
                 }
               >
                 <MessageLayout>
@@ -238,13 +246,13 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
           <Message
             status={StatusBar.severityToStatus(severity)}
             icon={
-              <i className={`icon ${MessageContainer.getIconClassName(severity, true)}`} />
+              <HollowIcon iconSpec={MessageContainer.getIconClassName(severity, true)} />
             }
           >
             <MessageLayout
               buttons={
                 <MessageButton onClick={this._hideMessages}>
-                  <i className="icon icon-close" />
+                  <Icon iconSpec="icon-close" />
                 </MessageButton>
               }
             >
@@ -278,7 +286,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
       <Message
         status={Status.Information}
         icon={
-          <i className="icon icon-info-hollow" />
+          <Icon iconSpec="icon-info-hollow" />
         }
       >
         <MessageLayout
@@ -288,11 +296,11 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
                 <MessageHyperlink onClick={this._cancelActivityMessage}>{cancelMessage}</MessageHyperlink>
                 <span>&nbsp;</span>
                 <MessageButton onClick={this._dismissActivityMessage}>
-                  <i className="icon icon-close" />
+                  <Icon iconSpec="icon-close" />
                 </MessageButton>
               </div> :
               <MessageButton onClick={this._dismissActivityMessage}>
-                <i className="icon icon-close" />
+                <Icon iconSpec="icon-close" />
               </MessageButton>
           }
           progress={
@@ -342,7 +350,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
     this.setVisibleMessage(StatusBarMessageType.None);
   }
 
-  private setVisibleMessage(visibleMessage: StatusBarMessageType, messageDetails?: NotifyMessageDetails) {
+  private setVisibleMessage(visibleMessage: StatusBarMessageType, messageDetails?: NotifyMessageDetailsType) {
     this.setState({
       visibleMessage,
       messageDetails,

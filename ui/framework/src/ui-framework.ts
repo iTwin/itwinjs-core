@@ -95,6 +95,7 @@ export * from "./ui-framework/messages/AppNotificationManager";
 export * from "./ui-framework/messages/MessageManager";
 export * from "./ui-framework/messages/InputField";
 export * from "./ui-framework/messages/Pointer";
+export * from "./ui-framework/messages/ReactNotifyMessageDetails";
 
 export * from "./ui-framework/navigationaids/CubeNavigationAidControl";
 export * from "./ui-framework/navigationaids/DrawingNavigationAidControl";

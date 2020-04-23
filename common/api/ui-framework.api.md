@@ -21,6 +21,7 @@ import { BackstageStageLauncher as BackstageStageLauncher_2 } from '@bentley/ui-
 import { BadgeType } from '@bentley/ui-abstract';
 import { BaseSolarDataProvider } from '@bentley/ui-components';
 import { BaseTimelineDataProvider } from '@bentley/ui-components';
+import { BeDuration } from '@bentley/bentleyjs-core';
 import { BeEvent } from '@bentley/bentleyjs-core';
 import { BeUiEvent } from '@bentley/bentleyjs-core';
 import { ButtonProps } from '@bentley/ui-core';
@@ -86,11 +87,14 @@ import { OnNumberCommitFunc } from '@bentley/ui-abstract';
 import { OnValueCommitFunc } from '@bentley/ui-abstract';
 import { OpenMode } from '@bentley/bentleyjs-core';
 import { Orientation } from '@bentley/ui-core';
+import { OutputMessageAlert } from '@bentley/imodeljs-frontend';
 import { OutputMessagePriority } from '@bentley/imodeljs-frontend';
+import { OutputMessageType } from '@bentley/imodeljs-frontend';
 import { PageOptions } from '@bentley/ui-components';
 import { PanelSide } from '@bentley/ui-ninezone';
 import { PlaybackSettings } from '@bentley/ui-components';
 import { Point } from '@bentley/ui-core';
+import { Point2d } from '@bentley/geometry-core';
 import { PointProps } from '@bentley/ui-core';
 import { Primitives } from '@bentley/ui-abstract';
 import { PropertyDescription } from '@bentley/ui-abstract';
@@ -277,7 +281,7 @@ export class ActivityMessageCancelledEvent extends UiEvent<{}> {
 // @public
 export interface ActivityMessageEventArgs {
     details?: ActivityMessageDetails;
-    message: HTMLElement | string;
+    message: NotifyMessageType;
     percentage: number;
     restored?: boolean;
 }
@@ -1612,7 +1616,7 @@ export class ElementTooltip extends React.Component<CommonProps, ElementTooltipS
     // (undocumented)
     render(): JSX.Element | null;
     // (undocumented)
-    static showTooltip(el: HTMLElement, message: HTMLElement | string, pt?: XAndY, options?: ToolTipOptions): void;
+    static showTooltip(el: HTMLElement, message: NotifyMessageType, pt?: XAndY, options?: ToolTipOptions): void;
     // @internal (undocumented)
     readonly state: Readonly<ElementTooltipState>;
     }
@@ -1628,7 +1632,7 @@ export interface ElementTooltipChangedEventArgs {
     // (undocumented)
     isTooltipVisible: boolean;
     // (undocumented)
-    message: HTMLElement | string;
+    message: NotifyMessageType;
     // (undocumented)
     options?: ToolTipOptions;
     // (undocumented)
@@ -2555,8 +2559,8 @@ export class InputFieldMessageAddedEvent extends UiEvent<InputFieldMessageEventA
 
 // @public
 export interface InputFieldMessageEventArgs {
-    detailedMessage: HTMLElement | string;
-    messageText: HTMLElement | string;
+    detailedMessage: NotifyMessageType;
+    messageText: NotifyMessageType;
     priority: OutputMessagePriority;
     target: Element;
 }
@@ -2576,11 +2580,20 @@ export enum InputStatus {
 // @internal (undocumented)
 export const isCollapsedToPanelState: (isCollapsed: boolean) => StagePanelState.Minimized | StagePanelState.Open;
 
+// @internal
+export const isHTMLElement: (message: NotifyMessageType) => message is HTMLElement;
+
 // @beta
 export function isNoSelectionActive(): boolean;
 
 // @internal (undocumented)
 export function isPanelCollapsed(zoneStates: ReadonlyArray<ZoneState | undefined>, panelStates: ReadonlyArray<StagePanelState | undefined>): boolean;
+
+// @internal
+export const isReactMessage: (message: NotifyMessageType) => message is ReactMessage;
+
+// @internal
+export const isReactNotifyMessageDetails: (details: any) => details is ReactNotifyMessageDetails;
 
 // @alpha
 export const isStatusBarItem: (item: CommonStatusBarItem) => item is StatusBarItem;
@@ -3035,7 +3048,7 @@ export class MessageAddedEvent extends UiEvent<MessageAddedEventArgs> {
 
 // @public
 export interface MessageAddedEventArgs {
-    message: NotifyMessageDetails;
+    message: NotifyMessageDetailsType;
 }
 
 // @public
@@ -3058,16 +3071,16 @@ export interface MessageCenterFieldProps extends StatusFieldProps {
 
 // @public
 export class MessageManager {
-    static addMessage(message: NotifyMessageDetails): void;
-    static addToMessageCenter(message: NotifyMessageDetails): void;
+    static addMessage(message: NotifyMessageDetailsType): void;
+    static addToMessageCenter(message: NotifyMessageDetailsType): void;
     static clearMessages(): void;
-    static displayInputFieldMessage(target: HTMLElement, messageText: HTMLElement | string, detailedMessage?: HTMLElement | string, priority?: OutputMessagePriority): void;
+    static displayInputFieldMessage(target: HTMLElement, messageText: NotifyMessageType, detailedMessage?: NotifyMessageType, priority?: OutputMessagePriority): void;
     static endActivityMessage(isCompleted: boolean): boolean;
-    static getIconClassName(details: NotifyMessageDetails): string;
-    static getIconType(details: NotifyMessageDetails): MessageBoxIconType;
-    static getSeverity(details: NotifyMessageDetails): MessageSeverity;
+    static getIconClassName(details: NotifyMessageDetailsType): string;
+    static getIconType(details: NotifyMessageDetailsType): MessageBoxIconType;
+    static getSeverity(details: NotifyMessageDetailsType): MessageSeverity;
     static hideInputFieldMessage(): void;
-    static get messages(): Readonly<NotifyMessageDetails[]>;
+    static get messages(): Readonly<NotifyMessageDetailsType[]>;
     static readonly onActivityMessageCancelledEvent: ActivityMessageCancelledEvent;
     static readonly onActivityMessageUpdatedEvent: ActivityMessageUpdatedEvent;
     // (undocumented)
@@ -3078,15 +3091,18 @@ export class MessageManager {
     static readonly onMessagesUpdatedEvent: MessagesUpdatedEvent;
     // @beta
     static readonly onToolAssistanceChangedEvent: ToolAssistanceChangedEvent;
-    static openMessageBox(mbType: MessageBoxType, message: HTMLElement | string, icon: MessageBoxIconType): Promise<MessageBoxValue>;
+    static openMessageBox(mbType: MessageBoxType, message: NotifyMessageType, icon: MessageBoxIconType): Promise<MessageBoxValue>;
+    static openToolTip(htmlElement: HTMLElement, message: NotifyMessageType, location?: XAndY, options?: ToolTipOptions): void;
+    static outputActivityMessage(message: NotifyMessageType, percentComplete: number): boolean;
+    static outputMessage(message: NotifyMessageDetailsType): void;
     static outputPrompt(prompt: string): void;
     static setMaxCachedMessages(max: number): void;
     // @beta
     static setToolAssistance(instructions: ToolAssistanceInstructions | undefined): void;
     static setupActivityMessageDetails(details: ActivityMessageDetails): boolean;
-    static setupActivityMessageValues(message: HTMLElement | string, percentage: number, restored?: boolean): boolean;
+    static setupActivityMessageValues(message: NotifyMessageType, percentage: number, restored?: boolean): boolean;
     // @internal (undocumented)
-    static showAlertMessageBox(messageDetails: NotifyMessageDetails): void;
+    static showAlertMessageBox(messageDetails: NotifyMessageDetailsType): void;
     }
 
 // @public
@@ -3361,6 +3377,12 @@ export interface NineZoneChangeHandler {
     handleZonesBoundsChange(bounds: RectangleProps): void;
 }
 
+// @public
+export type NotifyMessageDetailsType = NotifyMessageDetails | ReactNotifyMessageDetails;
+
+// @public
+export type NotifyMessageType = string | HTMLElement | ReactMessage;
+
 // @alpha
 export class PanelStateChangedEvent extends UiEvent<PanelStateChangedEventArgs> {
 }
@@ -3389,7 +3411,7 @@ export class PointerMessage extends React.Component<PointerMessageProps, Pointer
     // (undocumented)
     render(): React.ReactNode;
     // (undocumented)
-    static showMessage(message: NotifyMessageDetails): void;
+    static showMessage(message: NotifyMessageDetailsType): void;
     // (undocumented)
     readonly state: Readonly<PointerMessageState>;
     // (undocumented)
@@ -3403,13 +3425,13 @@ export class PointerMessageChangedEvent extends UiEvent<PointerMessageChangedEve
 // @public
 export interface PointerMessageChangedEventArgs {
     // (undocumented)
-    detailedMessage?: HTMLElement | string;
+    detailedMessage?: NotifyMessageType;
     // (undocumented)
     isVisible: boolean;
     // (undocumented)
-    message: HTMLElement | string;
+    message: NotifyMessageType;
     // (undocumented)
-    messageDetails?: NotifyMessageDetails;
+    messageDetails?: NotifyMessageDetailsType;
     // (undocumented)
     priority: OutputMessagePriority;
     // (undocumented)
@@ -3609,6 +3631,37 @@ export class PropsHelper {
     static getStringFromSpec(spec: string | StringGetter | ConditionalStringValue): string;
     static getStringSpec(explicitValue: string | StringGetter | ConditionalStringValue | undefined, stringKey?: string): string | StringGetter | ConditionalStringValue;
     static isShallowEqual(newObj: any, prevObj: any): boolean;
+}
+
+// @public
+export interface ReactMessage {
+    // (undocumented)
+    reactNode: React.ReactNode;
+}
+
+// @public
+export class ReactNotifyMessageDetails {
+    constructor(priority: OutputMessagePriority, briefMessage: NotifyMessageType, detailedMessage?: string | HTMLElement | ReactMessage | undefined, msgType?: OutputMessageType, openAlert?: OutputMessageAlert);
+    // (undocumented)
+    briefMessage: NotifyMessageType;
+    // (undocumented)
+    detailedMessage?: string | HTMLElement | ReactMessage | undefined;
+    get displayPoint(): Point2d | undefined;
+    get displayTime(): BeDuration;
+    set displayTime(duration: BeDuration);
+    get inputField(): HTMLElement | undefined;
+    // @internal (undocumented)
+    get messageDetails(): NotifyMessageDetails;
+    // (undocumented)
+    msgType: OutputMessageType;
+    // (undocumented)
+    openAlert: OutputMessageAlert;
+    // (undocumented)
+    priority: OutputMessagePriority;
+    get relativePosition(): RelativePosition;
+    setInputFieldTypeDetails(inputField: HTMLElement): void;
+    setPointerTypeDetails(viewport: HTMLElement, displayPoint: XAndY, relativePosition?: RelativePosition): void;
+    get viewport(): HTMLElement | undefined;
 }
 
 // @public

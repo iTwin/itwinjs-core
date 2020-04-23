@@ -11,12 +11,13 @@ import classnames from "classnames";
 
 import { XAndY } from "@bentley/geometry-core";
 import { RelativePosition } from "@bentley/ui-abstract";
-import { NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
+import { OutputMessagePriority } from "@bentley/imodeljs-frontend";
 import { UiEvent, CommonProps, MessageContainer, MessageSeverity, Point, PointProps, Rectangle, SizeProps } from "@bentley/ui-core";
 import { offsetAndContainInContainer, Tooltip } from "@bentley/ui-ninezone";
 
 import { MessageSpan, MessageDiv } from "./MessageSpan";
 import { MessageManager } from "./MessageManager";
+import { NotifyMessageType, NotifyMessageDetailsType } from "./ReactNotifyMessageDetails";
 
 import "./Pointer.scss";
 
@@ -35,10 +36,10 @@ export interface PointerMessageProps extends CommonProps {
  */
 interface PointerMessageState {
   isVisible: boolean;
-  message: HTMLElement | string;
-  detailedMessage?: HTMLElement | string;
+  message: NotifyMessageType;
+  detailedMessage?: NotifyMessageType;
   position: PointProps;
-  messageDetails?: NotifyMessageDetails;
+  messageDetails?: NotifyMessageDetailsType;
 }
 
 /** [[PointerMessageChangedEvent]] arguments.
@@ -47,12 +48,12 @@ interface PointerMessageState {
 export interface PointerMessageChangedEventArgs {
   isVisible: boolean;
   priority: OutputMessagePriority;
-  message: HTMLElement | string;
-  detailedMessage?: HTMLElement | string;
+  message: NotifyMessageType;
+  detailedMessage?: NotifyMessageType;
   relativePosition?: RelativePosition;
   viewport?: HTMLElement;
   pt?: XAndY;
-  messageDetails?: NotifyMessageDetails;
+  messageDetails?: NotifyMessageDetailsType;
 }
 
 /** Pointer Message Changed Event emitted by the [[PointerMessage]] component
@@ -82,7 +83,7 @@ export class PointerMessage extends React.Component<PointerMessageProps, Pointer
 
   public static get onPointerMessageChangedEvent(): PointerMessageChangedEvent { return PointerMessage._pointerMessageChangedEvent; }
 
-  public static showMessage(message: NotifyMessageDetails): void {
+  public static showMessage(message: NotifyMessageDetailsType): void {
     PointerMessage.onPointerMessageChangedEvent.emit({
       isVisible: true,
       priority: message.priority,
