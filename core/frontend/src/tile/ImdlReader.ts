@@ -373,7 +373,7 @@ export class ImdlReader extends GltfReader {
       return undefined;
     }
 
-    const isPlanar = JsonUtils.asBool(primitive.isPlanar);
+    const isPlanar = !this._is3d || JsonUtils.asBool(primitive.isPlanar);
     const primitiveType = JsonUtils.asInt(primitive.type, Mesh.PrimitiveType.Mesh);
     const instances = this.readInstances(primitive);
     switch (primitiveType) {
