@@ -35,15 +35,15 @@ describe("UlasClient - OIDC Token (#integration)", () => {
     const passingTokenModes = [TokenMode.Complete, TokenMode.NoUserId, TokenMode.NoUltimateId];
 
     for (const mode of [TokenMode.Complete, TokenMode.NoUserProfile, TokenMode.NoUserId, TokenMode.NoUltimateId]) {
-      let tempAccessToken: AccessToken;
+      const tempAccessToken: AccessToken = (await getAccessTokenFromBackend(TestUsers.regular) as any) as AccessToken;
 
       if (mode === TokenMode.NoUserProfile) {
         // fake token that does not contain a user profile
-        tempAccessToken = AccessToken.fromForeignProjectAccessTokenJson(JSON.stringify({ ForeignProjectAccessToken: {} }))!;
+        tempAccessToken.setUserInfo(undefined as any);
       } else {
         // token from which some user profile information is removed. UlasClient does not utilize this information, and instead defers this task to the ULAS server, which examines the token string itself.
         // Need to cast to any and then back to AccessToken because of circular dependency with the oidc-signin-tool
-        tempAccessToken = (await getAccessTokenFromBackend(TestUsers.regular) as any) as AccessToken; switch (mode) {
+        switch (mode) {
           case TokenMode.NoUserId:
             tempAccessToken.getUserInfo()!.id = "";
             break;

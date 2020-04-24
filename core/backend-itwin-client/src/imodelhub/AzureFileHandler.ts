@@ -9,7 +9,7 @@
 import { Logger, BriefcaseStatus } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext, FileHandler, ProgressInfo, ProgressCallback, request, RequestOptions, ResponseError, CancelRequest, UserCancelledError } from "@bentley/itwin-client";
 import { Transform, TransformCallback, PassThrough } from "stream";
-import { ClientsBackendLoggerCategory } from "../ClientsBackendLoggerCategory";
+import { BackendITwinClientLoggerCategory } from "../BackendITwinClientLoggerCategory";
 import WriteStreamAtomic = require("fs-write-stream-atomic");
 import { AzCopy, ProgressEventArgs, StringEventArgs, InitEventArgs } from "../util/AzCopy";
 import { ArgumentCheck } from "@bentley/imodelhub-client";
@@ -20,7 +20,7 @@ import * as path from "path";
 import * as os from "os";
 import * as urllib from "url";
 
-const loggerCategory: string = ClientsBackendLoggerCategory.IModelHub;
+const loggerCategory: string = BackendITwinClientLoggerCategory.FileHandlers;
 
 /**
  * Stream that buffers writing to file.

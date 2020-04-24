@@ -9,7 +9,6 @@ beta;CancelRequest
 beta;ChangeState = "new" | "modified" | "deleted"
 internal;ClassKeyMapInfo
 beta;class Client
-beta;ClientsLoggerCategory
 internal;ConstructorType = new () => any
 internal;DefaultRequestOptionsProvider
 internal;DefaultWsgRequestOptionsProvider 
@@ -19,8 +18,9 @@ beta;FileHandler
 internal;getArrayBuffer(requestContext: ClientRequestContext, url: string): Promise
 internal;getJson(requestContext: ClientRequestContext, url: string): Promise
 beta;ImsAuthorizationClient 
-internal;IncludePrefix
+beta;IncludePrefix
 beta;isAuthorizedClientRequestContext: (requestContext: ClientRequestContext) => requestContext is AuthorizedClientRequestContext
+beta;ITwinClientLoggerCategory
 beta;ProgressCallback = (progress: ProgressInfo) => void
 beta;ProgressInfo
 internal;request(requestContext: ClientRequestContext, url: string, options: RequestOptions): Promise

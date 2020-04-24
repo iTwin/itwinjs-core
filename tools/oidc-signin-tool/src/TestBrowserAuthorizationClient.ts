@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, ClientRequestContext, Config } from "@bentley/bentleyjs-core";
-import { AccessToken, AuthorizationClient, UrlDiscoveryClient, UserInfo } from "@bentley/itwin-client";
-import { AuthorizationParameters, Client, generators, Issuer, OpenIDCallbackChecks, TokenSet, UserinfoResponse as OIDCUserInfo } from "openid-client";
+import { AccessToken, AuthorizationClient, UrlDiscoveryClient } from "@bentley/itwin-client";
+import { AuthorizationParameters, Client, generators, Issuer, OpenIDCallbackChecks, TokenSet } from "openid-client";
 import * as os from "os";
 import * as puppeteer from "puppeteer";
 import * as url from "url";
@@ -160,25 +160,9 @@ export class TestBrowserAuthorizationClient implements AuthorizationClient {
     return this.tokenSetToAccessToken(tokenSet);
   }
 
-  private static oidcInfoToUserInfo(info: OIDCUserInfo): UserInfo {
-    const { sub, email, given_name, family_name, org, org_name, preferred_username, ultimate_site, usage_country_iso } = info;
-    const emailObj = (email) ? { id: email } : undefined;
-    const profile = (given_name && family_name) ? { firstName: given_name, lastName: family_name, preferredUserName: preferred_username } : undefined;
-    const organization = (org && org_name) ? { id: org as string, name: org_name as string } : undefined;
-    const featureTracking = (ultimate_site && usage_country_iso) ? { ultimateSite: ultimate_site as string, usageCountryIso: usage_country_iso as string } : undefined;
-
-    return new UserInfo(sub, emailObj, profile, organization, featureTracking);
-  }
-
   private async tokenSetToAccessToken(tokenSet: TokenSet): Promise<AccessToken> {
     const userInfo = await this._client.userinfo(tokenSet);
-    const startsAt: Date = new Date((tokenSet.expires_at! - tokenSet.expires_in!) * 1000);
-    const expiresAt: Date = new Date(tokenSet.expires_at! * 1000);
-    return AccessToken.fromJsonWebTokenString(
-      tokenSet.access_token!,
-      startsAt,
-      expiresAt,
-      TestBrowserAuthorizationClient.oidcInfoToUserInfo(userInfo));
+    return AccessToken.fromTokenResponseJson(tokenSet, userInfo)!;
   }
 
   private createAuthParams(scope: string): [AuthorizationParameters, OpenIDCallbackChecks] {

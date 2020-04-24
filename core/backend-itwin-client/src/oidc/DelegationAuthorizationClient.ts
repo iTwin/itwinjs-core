@@ -53,7 +53,12 @@ export class DelegationAuthorizationClient extends BackendAuthorizationClient {
 
     const client = await this.getClient(requestContext);
     const tokenSet: TokenSet = await client.grant(grantParams);
-    return this.createToken(tokenSet, accessToken.getUserInfo());
+
+    const exchangedToken = AccessToken.fromTokenResponseJson(tokenSet);
+    const userInfo = accessToken.getUserInfo();
+    if (userInfo !== undefined)
+      accessToken.setUserInfo(userInfo);
+    return exchangedToken;
   }
 
   /** Get a JWT for the specified scope from a SAML token */

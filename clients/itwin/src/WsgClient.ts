@@ -7,13 +7,13 @@
  */
 import { ClientRequestContext, GetMetaDataFunction, HttpStatus, Logger, WSStatus } from "@bentley/bentleyjs-core";
 import * as deepAssign from "deep-assign";
-import { ClientsLoggerCategory } from "./iTwinClientLoggerCategory";
+import { ITwinClientLoggerCategory } from "./ITwinClientLoggerCategory";
 import { ECJsonTypeMap, WsgInstance } from "./ECJsonTypeMap";
 import { ResponseError, RequestOptions, request, Response, RequestQueryOptions } from "./Request";
 import { AuthenticationError, DefaultRequestOptionsProvider, Client } from "./Client";
 import { AuthorizedClientRequestContext } from "./AuthorizedClientRequestContext";
 
-const loggerCategory: string = ClientsLoggerCategory.Clients;
+const loggerCategory: string = ITwinClientLoggerCategory.Clients;
 
 /** Error that was returned by a WSG based service.
  * @beta

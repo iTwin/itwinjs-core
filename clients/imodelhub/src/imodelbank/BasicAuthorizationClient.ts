@@ -19,7 +19,7 @@ export class BasicAccessToken extends AccessToken {
    * @param userCredentials User credentials containing email and password of the user.
    */
   public static fromCredentials(userCredentials: any): AccessToken {
-    const basicToken = new BasicAccessToken();
+    const basicToken = new BasicAccessToken("");
     basicToken._token = Buffer.from(userCredentials.email + ":" + userCredentials.password).toString("base64");
     return basicToken;
   }

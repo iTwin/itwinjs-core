@@ -8,7 +8,7 @@ import { ChangeSet, IModelHubClient, SmallThumbnail, Version, VersionQuery } fro
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 
 class MockAccessToken extends AccessToken {
-  public constructor() { super(); }
+  public constructor() { super(""); }
   public toTokenString() { return ""; }
 }
 

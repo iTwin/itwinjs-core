@@ -76,14 +76,14 @@ describe("AgentAuthorizationClient (#integration)", () => {
 
     // Set the expiry of the token to be 2 min from now, and the token should remain the same
     const twoMinFromNow = new Date(Date.now() + 2 * 60 * 1000);
-    const jwtExpiresAtTwoMinFromNow = AccessToken.fromJsonWebTokenString(jwt.toTokenString(IncludePrefix.No), jwt.getStartsAt(), twoMinFromNow, jwt.getUserInfo());
+    const jwtExpiresAtTwoMinFromNow = new AccessToken(jwt.toTokenString(IncludePrefix.No), jwt.getStartsAt(), twoMinFromNow, jwt.getUserInfo());
     (agentClient as any)._accessToken = jwtExpiresAtTwoMinFromNow;
     refreshJwt = await agentClient.getAccessToken(requestContext);
     chai.assert.strictEqual(refreshJwt, jwtExpiresAtTwoMinFromNow);
 
     // Set the expiry of the token to be less than a min from now, and the token should be refreshed
     const lessThanMinFromNow = new Date(Date.now() + 59 * 1000);
-    const jwtExpiresAtLessThanMinFromNow = AccessToken.fromJsonWebTokenString(jwt.toTokenString(IncludePrefix.No), jwt.getStartsAt(), lessThanMinFromNow, jwt.getUserInfo());
+    const jwtExpiresAtLessThanMinFromNow = new AccessToken(jwt.toTokenString(IncludePrefix.No), jwt.getStartsAt(), lessThanMinFromNow, jwt.getUserInfo());
     (agentClient as any)._accessToken = jwtExpiresAtLessThanMinFromNow;
     refreshJwt = await agentClient.getAccessToken(requestContext);
     chai.assert.notStrictEqual(refreshJwt.toTokenString(IncludePrefix.No), jwtExpiresAtLessThanMinFromNow.toTokenString(IncludePrefix.No));

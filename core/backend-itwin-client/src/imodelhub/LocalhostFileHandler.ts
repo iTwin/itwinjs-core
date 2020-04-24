@@ -8,13 +8,13 @@
 
 import { Logger } from "@bentley/bentleyjs-core";
 import { FileHandler, AuthorizedClientRequestContext, ProgressCallback } from "@bentley/itwin-client";
-import { ClientsBackendLoggerCategory } from "../ClientsBackendLoggerCategory";
+import { BackendITwinClientLoggerCategory } from "../BackendITwinClientLoggerCategory";
 import * as https from "https";
 import * as pathLib from "path";
 import * as fs from "fs-extra";
 import * as url from "url";
 
-const loggerCategory: string = ClientsBackendLoggerCategory.IModelHub;
+const loggerCategory: string = BackendITwinClientLoggerCategory.FileHandlers;
 
 /**
  * Provides methods to work with the local file system. An instance of this class has to be provided to [[IModelClient]] for file upload/download methods to work.

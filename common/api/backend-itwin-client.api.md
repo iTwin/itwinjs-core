@@ -16,10 +16,8 @@ import { ImsAuthorizationClient } from '@bentley/itwin-client';
 import { Issuer } from 'openid-client';
 import { ProgressCallback } from '@bentley/itwin-client';
 import { SamlAccessToken } from '@bentley/itwin-client';
-import { TokenSet } from 'openid-client';
 import { Transform } from 'stream';
 import { TransformCallback } from 'stream';
-import { UserInfo } from '@bentley/itwin-client';
 
 // @beta
 export class AgentAuthorizationClient extends BackendAuthorizationClient implements AuthorizationClient {
@@ -56,14 +54,10 @@ export abstract class BackendAuthorizationClient extends ImsAuthorizationClient 
     constructor(configuration: BackendAuthorizationClientConfiguration);
     // (undocumented)
     protected _configuration: BackendAuthorizationClientConfiguration;
-    // (undocumented)
-    protected createToken(tokenSet: TokenSet, userInfo?: UserInfo): AccessToken;
     discoverEndpoints(requestContext: ClientRequestContext): Promise<Issuer>;
     // (undocumented)
     protected getClient(requestContext: ClientRequestContext): Promise<Client>;
-    // (undocumented)
-    static parseUserInfo(jwt: string): UserInfo | undefined;
-}
+    }
 
 // @beta
 export interface BackendAuthorizationClientConfiguration {
@@ -72,17 +66,17 @@ export interface BackendAuthorizationClientConfiguration {
     scope: string;
 }
 
+// @public
+export enum BackendITwinClientLoggerCategory {
+    Authorization = "backend-itwin-client.Authorization",
+    FileHandlers = "backend-itwin-client.FileHandlers"
+}
+
 // @internal
 export class BufferedStream extends Transform {
     constructor(bufferSize: number);
     _flush(callback: TransformCallback): void;
     _transform(chunk: any, encoding: string, callback: TransformCallback): void;
-}
-
-// @public
-export enum ClientsBackendLoggerCategory {
-    Authorization = "backend-itwin-client.Authorization",
-    IModelHub = "imodelhub-client.iModelHub"
 }
 
 // @beta

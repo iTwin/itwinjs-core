@@ -10,9 +10,9 @@ import { ArgumentCheck } from "@bentley/imodelhub-client";
 import { AuthorizedClientRequestContext, FileHandler, request, RequestOptions, ProgressCallback, UserCancelledError, CancelRequest } from "@bentley/itwin-client";
 import * as fs from "fs";
 import * as path from "path";
-import { ClientsBackendLoggerCategory } from "../ClientsBackendLoggerCategory";
+import { BackendITwinClientLoggerCategory } from "../BackendITwinClientLoggerCategory";
 
-const loggerCategory: string = ClientsBackendLoggerCategory.IModelHub;
+const loggerCategory: string = BackendITwinClientLoggerCategory.FileHandlers;
 
 /**
  * Provides methods to work with the file system and azure storage. An instance of this class has to be provided to [[IModelClient]] for file upload/download methods to work.

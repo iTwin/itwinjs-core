@@ -7,16 +7,15 @@
  */
 
 /** Logger categories used by this package
- * @note All logger categories in this package start with the `itwin-client` prefix.
+ * @note All logger categories in this package start with the `backend-itwin-client` prefix.
  * @see [Logger]($bentley)
- * @beta
+ * @public
  */
-export enum ClientsLoggerCategory {
-  /** The logger category used by base clients */
-  Clients = "itwin-client.Clients",
+export enum BackendITwinClientLoggerCategory {
+  /** The logger category used for file handlers
+   */
+  FileHandlers = "backend-itwin-client.FileHandlers",
 
-  /** The logger category used when converting to/from ECJson. */
-  ECJson = "itwin-client.ECJson",
-
-  Request = "itwin-client.Request",
+  /** The logger category used for Authorization */
+  Authorization = "backend-itwin-client.Authorization",
 }

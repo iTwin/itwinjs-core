@@ -16,9 +16,11 @@ export async function initializeCustomCloudEnv(projectName: string | undefined, 
   const featureTracking = { ultimateSite: "ultimateSite", usageCountryIso: "usageCountryIso" };
 
   const userInfo = new UserInfo(id, email, profile, organization, featureTracking);
-  const foreignAccessTokenWrapper: any = {};
-  foreignAccessTokenWrapper[AccessToken.foreignProjectAccessTokenJsonProperty] = { userInfo };
-  const accessToken = AccessToken.fromForeignProjectAccessTokenJson(JSON.stringify(foreignAccessTokenWrapper));
+  const foreignAccessTokenWrapper: any = {
+    ForeignProjectAccessToken: userInfo,
+  };
+  const accessToken = new AccessToken(JSON.stringify(foreignAccessTokenWrapper));
+  accessToken.setUserInfo(userInfo);
 
   if (undefined === projectName)
     projectName = "iModelJsTest";

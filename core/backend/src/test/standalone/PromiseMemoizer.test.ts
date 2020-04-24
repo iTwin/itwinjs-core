@@ -31,8 +31,8 @@ describe("PromiseMemoizer", () => {
   const { memoize: memoizeTest, deleteMemoized: deleteMemoizedTest } = new PromiseMemoizer<string>(testFunction, generateTestFunctionKey, maxCacheSize);
 
   before(async () => {
-    const fakeRegularAccessToken = AccessToken.fromJsonWebTokenString("Regular", new Date(), new Date());
-    const fakeManagerAccessToken = AccessToken.fromJsonWebTokenString("Manager", new Date(), new Date());
+    const fakeRegularAccessToken = new AccessToken("Regular", new Date(), new Date());
+    const fakeManagerAccessToken = new AccessToken("Manager", new Date(), new Date());
 
     requestContextRegular = new AuthorizedBackendRequestContext(fakeRegularAccessToken);
     requestContextManager = new AuthorizedBackendRequestContext(fakeManagerAccessToken);

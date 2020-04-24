@@ -7,16 +7,18 @@
  */
 
 /** Logger categories used by this package
- * @note All logger categories in this package start with the `backend-itwin-client` prefix.
+ * @note All logger categories in this package start with the `itwin-client` prefix.
  * @see [Logger]($bentley)
- * @public
+ * @beta
  */
-export enum ClientsBackendLoggerCategory {
-  /** The logger category used for interactions with iModelHub.
-   * @note Should match ClientsBackendLoggerCategory.IModelHub from @bentley/imodelhub-client.
-   */
-  IModelHub = "imodelhub-client.iModelHub",
+export enum ITwinClientLoggerCategory {
+  /** The logger category used by base clients */
+  Clients = "itwin-client.Clients",
 
-  /** The logger category used for Authorization */
-  Authorization = "backend-itwin-client.Authorization",
+  /** The logger category used when converting to/from ECJson. */
+  ECJson = "itwin-client.ECJson",
+
+  Request = "itwin-client.Request",
+
+  Authorization = "itwin-client.Authorization",
 }

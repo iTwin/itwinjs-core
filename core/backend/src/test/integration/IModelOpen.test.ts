@@ -36,7 +36,7 @@ describe("IModelOpen (#integration)", () => {
     assert.isDefined(iModel);
     await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModel);
 
-    const badToken = AccessToken.fromJsonWebTokenString("ThisIsABadToken");
+    const badToken = new AccessToken("ThisIsABadToken");
     badRequestContext = new AuthorizedBackendRequestContext(badToken);
   });
 

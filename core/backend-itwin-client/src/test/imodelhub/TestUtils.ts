@@ -115,7 +115,7 @@ function removeFileUrlExpirationTime(url?: string) {
 /** Other services */
 export class MockAccessToken extends AccessToken {
   public constructor() {
-    super();
+    super("");
   }
 
   public getUserInfo(): UserInfo | undefined {

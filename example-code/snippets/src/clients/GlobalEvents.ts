@@ -9,7 +9,7 @@ import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-clie
 import { AgentAuthorizationClient, BackendAuthorizationClientConfiguration } from "@bentley/backend-itwin-client";
 
 class MockAccessToken extends AccessToken {
-  public constructor() { super(); }
+  public constructor() { super(""); }
   public toTokenString() { return ""; }
 }
 

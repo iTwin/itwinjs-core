@@ -9,7 +9,7 @@ import { GuidString, Guid, Logger, ClientRequestContext, Config } from "@bentley
 import { IModelHubClient, IModelHubEvent, EventSubscription, EventSAS } from "@bentley/imodelhub-client";
 
 class MockAccessToken extends AccessToken {
-  public constructor() { super(); }
+  public constructor() { super(""); }
   public toTokenString() { return ""; }
 }
 

@@ -15,17 +15,10 @@ import { LogFunction } from '@bentley/bentleyjs-core';
 
 // @beta
 export class AccessToken {
-    // (undocumented)
-    protected _expiresAt?: Date;
-    // @internal (undocumented)
-    static foreignProjectAccessTokenJsonProperty: string;
+    constructor(jwt: string, startsAt?: Date, expiresAt?: Date, userInfo?: UserInfo);
+    static fromJson(jsonObj: any): AccessToken;
     // @internal
-    static fromForeignProjectAccessTokenJson(foreignJsonStr: string): AccessToken | undefined;
-    // @internal
-    static fromJson(jsonObj: any): AccessToken | undefined;
-    // @internal
-    static fromJsonWebTokenString(jwt: string, startsAt?: Date, expiresAt?: Date, userInfo?: UserInfo): AccessToken;
-    // @internal
+    static fromTokenResponseJson(tokenResponse: any, userProfileResponse?: any): AccessToken;
     static fromTokenString(tokenStr: string): AccessToken;
     // @internal (undocumented)
     getExpiresAt(): Date | undefined;
@@ -33,17 +26,10 @@ export class AccessToken {
     getStartsAt(): Date | undefined;
     // @internal (undocumented)
     getUserInfo(): UserInfo | undefined;
-    // (undocumented)
-    protected _jwt?: string;
     // @internal (undocumented)
     setUserInfo(userInfo: UserInfo): void;
-    // (undocumented)
-    protected _startsAt?: Date;
-    // @internal
     toTokenString(includePrefix?: IncludePrefix): string;
-    // (undocumented)
-    protected _userInfo?: UserInfo;
-}
+    }
 
 // @beta
 export class AuthenticationError extends ResponseError {
@@ -97,14 +83,6 @@ export abstract class Client {
     protected setupOptionDefaults(options: RequestOptions): Promise<void>;
     // (undocumented)
     protected _url?: string;
-}
-
-// @beta
-export enum ClientsLoggerCategory {
-    Clients = "itwin-client.Clients",
-    ECJson = "itwin-client.ECJson",
-    // (undocumented)
-    Request = "itwin-client.Request"
 }
 
 // @internal (undocumented)
@@ -166,7 +144,7 @@ export class ImsAuthorizationClient extends Client {
     static readonly searchKey: string;
 }
 
-// @internal (undocumented)
+// @beta
 export enum IncludePrefix {
     // (undocumented)
     No = 1,
@@ -176,6 +154,16 @@ export enum IncludePrefix {
 
 // @beta
 export const isAuthorizedClientRequestContext: (requestContext: ClientRequestContext) => requestContext is AuthorizedClientRequestContext;
+
+// @beta
+export enum ITwinClientLoggerCategory {
+    // (undocumented)
+    Authorization = "itwin-client.Authorization",
+    Clients = "itwin-client.Clients",
+    ECJson = "itwin-client.ECJson",
+    // (undocumented)
+    Request = "itwin-client.Request"
+}
 
 // @beta (undocumented)
 export type ProgressCallback = (progress: ProgressInfo) => void;
@@ -408,10 +396,9 @@ export class UserInfo {
         ultimateSite: string;
         usageCountryIso: string;
     } | undefined;
+    static fromJson(jsonObj: any): UserInfo;
     // @internal
-    static fromJson(jsonObj: any): UserInfo | undefined;
-    // @internal
-    static fromTokenResponseJson(jsonObj: any): UserInfo | undefined;
+    static fromTokenResponseJson(jsonObj: any): UserInfo;
     id: string;
     organization?: {
         id: string;

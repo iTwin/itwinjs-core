@@ -6,9 +6,9 @@
  * @module ProductShareClient
  */
 import { BentleyError, BentleyStatus, GuidString, Logger, Config } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext, ClientsLoggerCategory, ECJsonTypeMap, request, RequestOptions, WsgClient, WsgInstance, WsgQuery } from "@bentley/itwin-client";
+import { AuthorizedClientRequestContext, ITwinClientLoggerCategory, ECJsonTypeMap, request, RequestOptions, WsgClient, WsgInstance, WsgQuery } from "@bentley/itwin-client";
 
-const loggerCategory = ClientsLoggerCategory.Clients;
+const loggerCategory = ITwinClientLoggerCategory.Clients;
 
 /** Folder
  * @alpha
