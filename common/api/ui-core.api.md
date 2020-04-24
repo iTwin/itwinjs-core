@@ -1555,12 +1555,7 @@ export interface SearchBoxProps extends CommonProps {
 }
 
 // @public
-export class Select extends React.PureComponent<SelectProps> {
-    // (undocumented)
-    componentDidMount(): void;
-    // (undocumented)
-    render(): JSX.Element;
-    }
+export function Select(props: SelectProps): JSX.Element;
 
 // @public
 export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement>, CommonProps {

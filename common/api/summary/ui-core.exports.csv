@@ -172,7 +172,7 @@ alpha;ScrollPositionMaintainer
 public;ScrollView(props: CommonDivProps): JSX.Element
 public;SearchBox 
 public;SearchBoxProps 
-public;Select 
+public;Select(props: SelectProps): JSX.Element
 public;SelectProps 
 beta;SessionUiSettings 
 internal;shallowDiffers: (a:
