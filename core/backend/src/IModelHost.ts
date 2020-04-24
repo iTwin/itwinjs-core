@@ -95,30 +95,34 @@ export class IModelHostConfiguration {
   /** The native platform to use -- normally, the app should leave this undefined. [[IModelHost.startup]] will set it to the appropriate nativePlatform automatically. */
   public nativePlatform?: any;
 
-  private static getDefaultBriefcaseCacheDir(): string { return path.normalize(path.join(KnownLocations.tmpdir, "Bentley/IModelJs/cache/")); }
-  private static getDefaultNativeAppCacheDir(): string { return path.normalize(path.join(KnownLocations.tmpdir, "Bentley/IModelJs/NativeApp/Cache")); }
-
-  private _briefcaseCacheDir = IModelHostConfiguration.getDefaultBriefcaseCacheDir();
-
-  /** The path where the cache of briefcases are stored. Defaults to `path.join(KnownLocations.tmpdir, "Bentley/IModelJs/cache/")`
-   * If overriding this, ensure it's set to a folder with complete access - it may have to be deleted and recreated.
+  /**
+   * Root of the directory holding all the files that iModel.js caches
+   * - If not specified at startup a platform specific default is used -
+   *   - Windows: $(HOMEDIR)/AppData/Local/iModelJs/
+   *   - Mac/iOS: $(HOMEDIR)/Library/Caches/iModelJs/
+   *   - Linux:   $(HOMEDIR)/.cache/iModelJs/
+   *   where $(HOMEDIR) is documented [here](https://nodejs.org/api/os.html#os_os_homedir)
+   * - if specified, ensure it is set to a folder with read/write access.
+   * - Sub-folders within this folder organize various caches -
+   *   - bc/ -> Briefcases
+   *   - appSettings/ -> Offline application settings (only relevant in native applications)
+   *   - etc.
+   * @see [[IModelHost.cacheDir]] for the value it's set to after startup
    */
-  public get briefcaseCacheDir(): string { return this._briefcaseCacheDir; }
-  public set briefcaseCacheDir(cacheDir: string) { this._briefcaseCacheDir = path.normalize(cacheDir.replace(/\/?$/, path.sep)); }
+  public cacheDir?: string;
 
-  /** @internal */
-  public get isDefaultBriefcaseCacheDir(): boolean { return this._briefcaseCacheDir === IModelHostConfiguration.getDefaultBriefcaseCacheDir(); }
-
-  /** @internal */
-  public get isDefaultNativeAppCacheDir(): boolean { return this.nativeAppCacheDir === IModelHostConfiguration.getDefaultNativeAppCacheDir(); }
+  /** The path where the cache of briefcases are stored. Defaults to `path.join(KnownLocations.tmpdir, "Bentley/iModelJs/cache/")`
+   * If overriding this, ensure it's set to a folder with complete access - it may have to be deleted and recreated.
+   * @deprecated Use [[IModelHostConfiguration.cacheDir]] instead to specify the root of all caches.
+   * - Using this new option will cause a new cache structure and invalidate existing caches - i.e., the cache will be
+   *   re-created in a new location on disk, and the existing cache may have to be manually cleaned out.
+   * - If [[IModelHostConfiguration.cacheDir]] is also specified, this setting will take precedence for the briefcase cache
+   */
+  public briefcaseCacheDir?: string;
 
   /** The directory where the app's assets are found. */
   public appAssetsDir?: string;
 
-  /** Native app local data
-   * @internal
-   */
-  public nativeAppCacheDir?: string = IModelHostConfiguration.getDefaultNativeAppCacheDir();
   /** The kind of iModel server to use. Defaults to iModelHubClient */
   public imodelClient?: IModelClient;
 
@@ -207,6 +211,8 @@ export class IModelHost {
   private static _authorizationClient?: AuthorizationClient;
   private static _nativeAppBackend: boolean;
   public static backendVersion = "";
+  private static _cacheDir = "";
+
   private static _platform?: typeof IModelJsNative;
   /** @internal */
   public static get platform(): typeof IModelJsNative { return this._platform!; }
@@ -229,6 +235,9 @@ export class IModelHost {
 
   /** The version of this backend application - needs to be set if is an agent application. The applicationVersion will otherwise originate at the frontend. */
   public static applicationVersion: string;
+
+  /** Root of the directory holding all the files that iModel.js caches */
+  public static get cacheDir(): string { return this._cacheDir; }
 
   /** Active element editors. Each editor is identified by a GUID.
    * @internal
@@ -340,6 +349,7 @@ export class IModelHost {
     if (configuration.applicationType && configuration.applicationType === ApplicationType.NativeApp) {
       this._nativeAppBackend = true;
     }
+
     // Setup a current context for all requests that originate from this backend
     const requestContext = new BackendRequestContext();
     requestContext.enter();
@@ -381,7 +391,8 @@ export class IModelHost {
       }
     }
 
-    BriefcaseManager.initialize(configuration.briefcaseCacheDir, configuration.imodelClient);
+    this.setupCacheDirs(configuration);
+    BriefcaseManager.initialize(this._briefcaseCacheDir, configuration.imodelClient);
 
     IModelHost.setupRpcRequestContext();
 
@@ -414,6 +425,40 @@ export class IModelHost {
     }
 
     IModelHost.onAfterStartup.raiseEvent();
+  }
+
+  private static _briefcaseCacheDir: string;
+
+  // Get a platform specific default cache dir
+  private static getDefaultCacheDir(): string {
+    let baseDir: string;
+    const homedir = os.homedir();
+    const platform = os.platform() as string;
+    switch (platform) {
+      case "win32":
+        baseDir = path.join(homedir, "AppData", "Local");
+        break;
+      case "darwin":
+      case "ios":
+        baseDir = path.join(homedir, "Library", "Caches");
+        break;
+      case "linux":
+        baseDir = path.join(homedir, ".cache");
+        break;
+      default:
+        throw new BentleyError(BentleyStatus.ERROR, "Unknown platform that does not support iModel.js backends", () => ({ platform }));
+    }
+    return path.join(baseDir, "iModelJs");
+  }
+
+  private static setupCacheDirs(configuration: IModelHostConfiguration) {
+    this._cacheDir = configuration.cacheDir ? path.normalize(configuration.cacheDir) : this.getDefaultCacheDir();
+
+    // Setup the briefcaseCacheDir, defaulting to the the legacy/deprecated value
+    if (configuration.briefcaseCacheDir) // tslint:disable-line:deprecation
+      this._briefcaseCacheDir = path.normalize(configuration.briefcaseCacheDir); // tslint:disable-line:deprecation
+    else
+      this._briefcaseCacheDir = path.join(this._cacheDir, "bc");
   }
 
   /** This method must be called when an iModel.js services is shut down. Raises [[onBeforeShutdown]] */

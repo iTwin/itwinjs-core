@@ -5,13 +5,14 @@
 /** @module NativeAppBackend */
 
 import { InternetConnectivityStatus, OverriddenBy, Events } from "@bentley/imodeljs-common";
-import { BeEvent } from "@bentley/bentleyjs-core";
+import { BeEvent, BentleyError, BentleyStatus, Logger } from "@bentley/bentleyjs-core";
 import { IModelHost, IModelHostConfiguration, ApplicationType } from "./IModelHost";
 import { EventSinkManager, EmitStrategy } from "./EventSink";
 import * as path from "path";
-import * as os from "os";
-import { IModelJsFs } from "./IModelJsFs";
 import { RequestGlobalOptions } from "@bentley/itwin-client";
+import { BackendLoggerCategory } from "./BackendLoggerCategory";
+
+const loggerCategory = BackendLoggerCategory.NativeApp;
 
 /**
  * Used by desktop/mobile native application
@@ -21,6 +22,18 @@ export class NativeAppBackend {
   private static _reachability?: InternetConnectivityStatus;
   private constructor() { }
   public static onInternetConnectivityChanged: BeEvent<(status: InternetConnectivityStatus) => void> = new BeEvent<(status: InternetConnectivityStatus) => void>();
+
+  private static _appSettingsCacheDir?: string;
+
+  /** Get the local cache folder for application settingss */
+  public static get appSettingsCacheDir(): string {
+    if (this._appSettingsCacheDir === undefined) {
+      if (!IModelHost.isNativeAppBackend)
+        throw new BentleyError(BentleyStatus.ERROR, "Call NativeAppBackend.startup before fetching the appSettingsCacheDir", Logger.logError, loggerCategory);
+      this._appSettingsCacheDir = path.join(IModelHost.cacheDir, "appSettings");
+    }
+    return this._appSettingsCacheDir;
+  }
 
   /**
    * Startups native app backend. It does necessary initialization of the backend.
@@ -40,45 +53,8 @@ export class NativeAppBackend {
     }
     /** Override applicationType to NativeApp */
     configuration!.applicationType = ApplicationType.NativeApp;
-    /** Do not override default on a build server */
-    if (!process.env.TF_BUILD) {
-      /** find platform dependent cache folder and verify if path exist or can be created */
-      let cacheFolder = this.getCacheFolder();
-      try {
-        if (cacheFolder) {
-          IModelJsFs.recursiveMkDirSync(cacheFolder);
-        }
-      } catch {
-        cacheFolder = undefined;
-      }
-      if (cacheFolder) {
-        if (configuration.isDefaultBriefcaseCacheDir) {
-          configuration.briefcaseCacheDir = path.normalize(path.join(cacheFolder, "bentley/imodeljs/cache/"));
-        }
-        if (configuration.isDefaultNativeAppCacheDir) {
-          configuration.nativeAppCacheDir = path.normalize(path.join(cacheFolder, "bentley/imodeljs-native-app/storage"));
-        }
-      }
-    }
-    await IModelHost.startup(configuration);
-  }
 
-  /**
-   * Gets cache folder for the native application.
-   */
-  private static getCacheFolder(): string | undefined {
-    const homedir = os.homedir();
-    const platform = os.platform() as string;
-    switch (platform) {
-      case "win32":
-        return path.join(homedir, "AppData", "Local");
-      case "darwin":
-      case "ios":
-        return path.join(homedir, "Library", "Caches");
-      case "linux":
-        return path.join(homedir, ".cache");
-    }
-    return undefined;
+    await IModelHost.startup(configuration);
   }
 
   /**

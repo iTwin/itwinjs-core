@@ -87,16 +87,16 @@ export class IModelTestUtils {
   public static async startupIModelHost(): Promise<void> {
     // The host configuration.
     // The defaults will work for most backends.
-    // Here is an example of how the briefcasesCacheDir property of the host configuration
+    // Here is an example of how the cacheDir property of the host configuration
     // could be set from an environment variable, which could be set by a cloud deployment mechanism.
-    let briefcaseCacheDir = process.env.MY_SERVICE_BRIEFCASES_DIR;
-    if (briefcaseCacheDir === undefined) {
+    let cacheDir = process.env.MY_SERVICE_CACHE_DIR;
+    if (cacheDir === undefined) {
       const tempDir = process.env.MY_SERVICE_TMP_DIR || KnownLocations.tmpdir;
-      briefcaseCacheDir = path.join(tempDir, "iModelJs_cache");
+      cacheDir = path.join(tempDir, "iModelJs_cache");
     }
 
     const imHostConfig = new IModelHostConfiguration();
-    imHostConfig.briefcaseCacheDir = briefcaseCacheDir;
+    imHostConfig.cacheDir = cacheDir;
 
     // Start up IModelHost, supplying the configuration.
     await IModelHost.startup(imHostConfig);

@@ -180,6 +180,18 @@ The following methods are now `async` and return `Promise<void>`:
 
 Calling code should be updated to `await` these Promises.
 
+### Specifying cache locations
+
+The existing method to specify the briefcase cache location by passing [IModelHostConfiguration.briefcaseCacheDir]($backend) to [IModelHost.startup]($backend) has been deprecated. However, this can still be used to match the existing behavior, even if use of it will cause deprecation warnings during compilation.
+
+Starting with this version, a new [IModelHostConfiguration.cacheDir]($backend) has been introduced to specify a root location for all caches including the briefcase cache. The briefcases are organized under the "bc" sub-folder of this location.
+
+If [IModelHostConfiguration.cacheDir]($backend) and the legacy [IModelHostConfiguration.briefcaseCacheDir]($backend) are both not specified, the existing default behavior was to pick a location underneath the temporary directory. This is no more the case.
+
+Starting with version, the default behavior is to instead pick a location outside of the temporary directory, but still under the home directory. For more details on the new location see [IModelHostConfiguration.cacheDir]($backend).
+
+Use [IModelHost.cacheDir]($backend) to query the resolved cache location after startup.
+
 ### iTwin client packages
 
 the `imodeljs-clients` package has been split into the following packages, all of which are hosted in the `/clients/` directory alongside the existing `extension-client`:

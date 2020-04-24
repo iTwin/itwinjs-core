@@ -143,10 +143,6 @@ export class IModelTestUtils {
     const iModelInfo = new TestIModelInfo(iModelName);
     iModelInfo.id = await HubUtility.queryIModelIdByName(requestContext, testProjectId, iModelInfo.name);
 
-    const cacheDir = IModelHost.configuration!.briefcaseCacheDir;
-    iModelInfo.localReadonlyPath = path.join(cacheDir, iModelInfo.id, "readOnly");
-    iModelInfo.localReadWritePath = path.join(cacheDir, iModelInfo.id, "readWrite");
-
     iModelInfo.changeSets = await BriefcaseManager.imodelClient.changeSets.get(requestContext, iModelInfo.id);
     return iModelInfo;
   }

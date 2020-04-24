@@ -419,6 +419,8 @@ export enum BackendLoggerCategory {
     // @beta
     IModelTransformer = "imodeljs-backend.IModelTransformer",
     LinearReferencing = "imodeljs-backend.LinearReferencing",
+    // @internal
+    NativeApp = "imodeljs-backend.NativeApp",
     PromiseMemoizer = "imodeljs-backend.PromiseMemoizer",
     Relationship = "imodeljs-backend.Relationship",
     Schemas = "imodeljs-backend.Schemas"
@@ -2527,6 +2529,7 @@ export class IModelHost {
     static set authorizationClient(authorizationClient: AuthorizationClient | undefined);
     // (undocumented)
     static backendVersion: string;
+    static get cacheDir(): string;
     // @internal
     static get compressCachedTiles(): boolean;
     // (undocumented)
@@ -2567,8 +2570,9 @@ export class IModelHostConfiguration {
     appAssetsDir?: string;
     // @alpha
     applicationType?: ApplicationType;
-    get briefcaseCacheDir(): string;
-    set briefcaseCacheDir(cacheDir: string);
+    // @deprecated
+    briefcaseCacheDir?: string;
+    cacheDir?: string;
     // @beta
     compressCachedTiles?: boolean;
     // (undocumented)
@@ -2584,16 +2588,10 @@ export class IModelHostConfiguration {
     // @internal
     eventSinkOptions: EventSinkOptions;
     imodelClient?: IModelClient;
-    // @internal (undocumented)
-    get isDefaultBriefcaseCacheDir(): boolean;
-    // @internal (undocumented)
-    get isDefaultNativeAppCacheDir(): boolean;
     // @internal
     logTileLoadTimeThreshold: number;
     // @internal
     logTileSizeThreshold: number;
-    // @internal
-    nativeAppCacheDir?: string;
     nativePlatform?: any;
     // @beta
     restrictTileUrlsByClientIp?: boolean;
@@ -3265,6 +3263,7 @@ export class ModelSelector extends DefinitionElement implements ModelSelectorPro
 
 // @internal
 export class NativeAppBackend {
+    static get appSettingsCacheDir(): string;
     static checkInternetConnectivity(): InternetConnectivityStatus;
     // (undocumented)
     static onInternetConnectivityChanged: BeEvent<(status: InternetConnectivityStatus) => void>;
