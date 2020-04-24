@@ -6,6 +6,7 @@
  * @module Utilities
  */
 
+import { Logger } from "@bentley/bentleyjs-core";
 import { I18N, TranslationOptions } from "@bentley/imodeljs-i18n";
 
 import { UiError } from "./utils/UiError";
@@ -16,16 +17,22 @@ import { getClassName } from "./utils/getClassName";
  * @public
  */
 export class UiAbstract {
-
+  private static _initialized = false;
   private static _i18n?: I18N;
 
   /**
-   * Called by IModelApp to initialize the UiAbstract
-   * @param i18n The internationalization service created by the IModelApp.
+   * Registers the I18N service namespace for UiAbstract
+   * @param i18n The internationalization service created by the application.
    */
   public static async initialize(i18n: I18N): Promise<void> {
+    if (UiAbstract._initialized) {
+      Logger.logInfo(UiAbstract.loggerCategory(UiAbstract), `UiAbstract.initialize already called`);
+      return;
+    }
+
     UiAbstract._i18n = i18n;
     await UiAbstract._i18n.registerNamespace(UiAbstract.i18nNamespace).readFinished;
+    UiAbstract._initialized = true;
   }
 
   /** Unregisters the UiAbstract internationalization service namespace */
@@ -33,9 +40,13 @@ export class UiAbstract {
     if (UiAbstract._i18n)
       UiAbstract._i18n.unregisterNamespace(UiAbstract.i18nNamespace);
     UiAbstract._i18n = undefined;
+    UiAbstract._initialized = false;
   }
 
-  /** The internationalization service created by the IModelApp. */
+  /** Determines if UiAbstract has been initialized */
+  public static get initialized(): boolean { return UiAbstract._initialized; }
+
+  /** The internationalization service created by the application. */
   public static get i18n(): I18N {
     if (!UiAbstract._i18n)
       throw new UiError(UiAbstract.loggerCategory(this), "UiAbstract not initialized");

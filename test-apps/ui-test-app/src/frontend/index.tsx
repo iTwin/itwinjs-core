@@ -25,8 +25,8 @@ import { MarkupApp } from "@bentley/imodeljs-markup";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { Presentation } from "@bentley/presentation-frontend";
 import { getClassName } from "@bentley/ui-abstract";
-import { UiCore, UiSettings, LocalUiSettings } from "@bentley/ui-core";
-import { UiComponents, BeDragDropContext } from "@bentley/ui-components";
+import { UiSettings, LocalUiSettings } from "@bentley/ui-core";
+import { BeDragDropContext } from "@bentley/ui-components";
 import {
   UiFramework, FrameworkReducer, AppNotificationManager, FrameworkUiAdmin,   // , FrameworkState
   IModelInfo, FrontstageManager, createAction, ActionsUnion, DeepReadonly, ProjectInfo,
@@ -224,10 +224,7 @@ export class SampleAppIModelApp {
   }
 
   public static async initialize() {
-    UiCore.initialize(IModelApp.i18n); // tslint:disable-line:no-floating-promises
-    UiComponents.initialize(IModelApp.i18n); // tslint:disable-line:no-floating-promises
-
-    await UiFramework.initialize(undefined, IModelApp.i18n);
+    await UiFramework.initialize(undefined);
 
     // initialize Presentation
     await Presentation.initialize({

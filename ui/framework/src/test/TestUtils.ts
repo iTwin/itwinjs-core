@@ -17,8 +17,7 @@ import {
   ContentGroupProps,
   combineReducers,
 } from "../ui-framework";
-import { UiComponents } from "@bentley/ui-components";
-import { UiCore, UiSettings, UiSettingsStatus, UiSettingsResult } from "@bentley/ui-core";
+import { UiSettings, UiSettingsStatus, UiSettingsResult } from "@bentley/ui-core";
 import { Store, createStore } from "redux";
 import { TestContentControl } from "./frontstage/FrontstageTestUtils";
 import { ToolUiManager } from "../ui-framework/zones/toolsettings/ToolUiManager";
@@ -103,8 +102,6 @@ export class TestUtils {
       TestUtils.defineContentGroups();
       TestUtils.defineContentLayouts();
 
-      await UiComponents.initialize(TestUtils.i18n);
-      await UiCore.initialize(TestUtils.i18n);
       TestUtils._uiFrameworkInitialized = true;
     }
     ToolUiManager.clearToolSettingsData();
@@ -112,8 +109,6 @@ export class TestUtils {
   }
 
   public static terminateUiFramework() {
-    UiCore.terminate();
-    UiComponents.terminate();
     UiFramework.terminate();
     TestUtils._uiFrameworkInitialized = false;
   }

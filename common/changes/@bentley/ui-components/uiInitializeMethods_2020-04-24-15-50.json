@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-components",
+      "comment": "Defaulting to IModelApp.i18n in UI packages and cascading initialize() calls",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "dan.east@bentley.com"
+}

@@ -4097,7 +4097,8 @@ export interface TypeEditor {
 export class UiComponents {
     static get i18n(): I18N;
     static get i18nNamespace(): string;
-    static initialize(i18n: I18N): Promise<void>;
+    static initialize(i18n?: I18N): Promise<void>;
+    static get initialized(): boolean;
     // @internal (undocumented)
     static loggerCategory(obj: any): string;
     // @internal (undocumented)

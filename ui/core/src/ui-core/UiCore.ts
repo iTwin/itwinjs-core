@@ -6,6 +6,7 @@
  * @module Utilities
  */
 
+import { Logger } from "@bentley/bentleyjs-core";
 import { I18N, TranslationOptions } from "@bentley/imodeljs-i18n";
 import { UiError, getClassName, UiAbstract } from "@bentley/ui-abstract";
 
@@ -18,28 +19,39 @@ import "./classes.scss";
  * @public
  */
 export class UiCore {
-
+  private static _initialized = false;
   private static _i18n?: I18N;
 
   /**
-   * Called by IModelApp to initialize the UiCore
-   * @param i18n The internationalization service created by the IModelApp.
+   * Registers the I18N service namespace for UiCore. Also initializes UiAbstract.
+   * @param i18n The internationalization service created by the application.
    */
   public static async initialize(i18n: I18N): Promise<void> {
+    if (UiCore._initialized) {
+      Logger.logInfo(UiCore.loggerCategory(UiCore), `UiCore.initialize already called`);
+      return;
+    }
+
     UiCore._i18n = i18n;
     await UiCore._i18n.registerNamespace(UiCore.i18nNamespace).readFinished;
     await UiAbstract.initialize(i18n);
+    UiCore._initialized = true;
   }
 
-  /** Unregisters the UiCore internationalization service namespace */
+  /** Unregisters the UiCore I18N namespace */
   public static terminate() {
     if (UiCore._i18n)
       UiCore._i18n.unregisterNamespace(UiCore.i18nNamespace);
     UiCore._i18n = undefined;
+
     UiAbstract.terminate();
+    UiCore._initialized = false;
   }
 
-  /** The internationalization service created by the IModelApp. */
+  /** Determines if UiCore has been initialized */
+  public static get initialized(): boolean { return UiCore._initialized; }
+
+  /** The internationalization service created by the application. */
   public static get i18n(): I18N {
     if (!UiCore._i18n)
       throw new UiError(UiCore.loggerCategory(this), "UiCore not initialized");

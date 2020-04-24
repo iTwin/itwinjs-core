@@ -5040,9 +5040,10 @@ export class UiFramework {
     static get i18nNamespace(): string;
     // @internal (undocumented)
     static get iModelServices(): IModelServices;
-    static initialize(store: Store<any> | undefined, i18n: I18N, frameworkStateKey?: string): Promise<void>;
+    static initialize(store: Store<any> | undefined, i18n?: I18N, frameworkStateKey?: string): Promise<void>;
+    static get initialized(): boolean;
     // @internal
-    static initializeEx(store: Store<any> | undefined, i18n: I18N, frameworkStateKey?: string, projectServices?: ProjectServices, iModelServices?: IModelServices): Promise<void>;
+    static initializeEx(store: Store<any> | undefined, i18n?: I18N, frameworkStateKey?: string, projectServices?: ProjectServices, iModelServices?: IModelServices): Promise<void>;
     // @beta (undocumented)
     static isMobile(): boolean;
     // @internal (undocumented)

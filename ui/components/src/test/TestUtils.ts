@@ -16,7 +16,6 @@ import {
 import {
   UiComponents, ColumnDescription, FilterableTable, CompositeFilterDescriptorCollection,
 } from "../ui-components";
-import { UiCore } from "@bentley/ui-core";
 import { ColorByName } from "@bentley/imodeljs-common";
 import { TableFilterDescriptorCollection } from "../ui-components/table/columnfiltering/TableFilterDescriptorCollection";
 
@@ -43,13 +42,11 @@ export class TestUtils {
       (global as any).XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest; // tslint:disable-line:no-var-requires
 
       await UiComponents.initialize(TestUtils.i18n);
-      await UiCore.initialize(TestUtils.i18n);
       TestUtils._uiComponentsInitialized = true;
     }
   }
 
   public static terminateUiComponents() {
-    UiCore.terminate();
     UiComponents.terminate();
     TestUtils._uiComponentsInitialized = false;
   }

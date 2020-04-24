@@ -11,7 +11,11 @@ import * as sinon from "sinon";
 import TestUtils from "../TestUtils";
 import { ViewportComponent } from "../../ui-components";
 
-import { IModelConnection, MockRender, ScreenViewport, ViewManager, ViewState, Viewport, ChangeFlags, TentativePoint, ViewRect, SpatialViewState, CategorySelectorState, DisplayStyle3dState, ModelSelectorState, StandardViewId, OrthographicViewState } from "@bentley/imodeljs-frontend";
+import {
+  IModelConnection, MockRender, ScreenViewport, ViewManager, ViewState, Viewport, ChangeFlags,
+  TentativePoint, ViewRect, SpatialViewState, CategorySelectorState, DisplayStyle3dState,
+  ModelSelectorState, StandardViewId, OrthographicViewState,
+} from "@bentley/imodeljs-frontend";
 import { Frustum, SpatialViewDefinitionProps } from "@bentley/imodeljs-common";
 import { Vector3d, Point3d, Matrix3d, AxisIndex, WritableXAndY } from "@bentley/geometry-core";
 import { BeEvent } from "@bentley/bentleyjs-core";
