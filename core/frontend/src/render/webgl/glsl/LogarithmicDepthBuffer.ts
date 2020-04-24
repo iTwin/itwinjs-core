@@ -25,7 +25,7 @@ import {
 // Previously attempted to adjust z in vertex shader along the lines of https://outerra.blogspot.com/2013/07/logarithmic-depth-buffer-optimizations.html
 // - but interpolation along triangles intersecting the near plane was far too wonky.
 const finalizeDepth = `
-  return log(-v_eyeSpace.z * u_logZ.x) / u_logZ.y;
+  return 0.0 == u_logZ.x ? -v_eyeSpace.z / u_logZ.y : log(-v_eyeSpace.z * u_logZ.x) / u_logZ.y;
 `;
 
 /** @internal */

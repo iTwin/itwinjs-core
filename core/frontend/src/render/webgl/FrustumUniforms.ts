@@ -220,8 +220,10 @@ export class FrustumUniforms {
     this._frustumData[FrustumData.kNear] = nearPlane;
     this._frustumData[FrustumData.kFar] = farPlane;
     this._frustumData[FrustumData.kType] = type as number;
+
+    // If nearPlane is zero, we don't have a camera (or got very unlucky); in that case shader will compute linear depth.
     this._logZData[0] = 0 !== nearPlane ? 1 / nearPlane : 0;
-    this._logZData[1] = 0 !== nearPlane ? Math.log(farPlane / nearPlane) : 1;
+    this._logZData[1] = 0 !== nearPlane ? Math.log(farPlane / nearPlane) : farPlane;
   }
 }
 
