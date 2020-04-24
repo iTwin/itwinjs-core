@@ -9,7 +9,6 @@
 import { IModelApp } from "@bentley/imodeljs-frontend";
 import { ReportWebGLCompatibilityTool } from "./tools/ReportWebGLCompatibilityTool";
 import {
-  ToggleLogZTool,
   TogglePrimitiveVisibilityTool,
   ToggleReadPixelsTool,
   SetVolClassIntersectOn,
@@ -129,7 +128,6 @@ export class FrontendDevTools {
       SourceAspectIdFromElementIdTool,
       ToggleDrapeFrustumTool,
       ToggleFrustumSnapshotTool,
-      ToggleLogZTool,
       TogglePrimitiveVisibilityTool,
       ToggleProjectExtentsTool,
       ToggleReadPixelsTool,

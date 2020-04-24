@@ -220,8 +220,7 @@ export class PrimitiveCommand {
     const isAnimated = this.primitive.hasAnimation ? IsAnimated.Yes : IsAnimated.No;
 
     const flags = PrimitiveCommand._scratchTechniqueFlags;
-    flags.init(target, exec.renderPass, isInstanced, isAnimated, isClassified, isShadowable, undefined, isThematic);
-    flags.setHasMaterialAtlas(target.currentViewFlags.materials && this.primitive.hasMaterialAtlas);
+    flags.init(target, exec.renderPass, isInstanced, isAnimated, isClassified, isShadowable, isThematic);
 
     const technique = target.techniques.getTechnique(techniqueId);
     const program = technique.getShader(flags);

@@ -102,7 +102,6 @@ alpha;TextBoxProps
 beta;TileStatisticsTracker
 alpha;ToggleDrapeFrustumTool 
 beta;ToggleFrustumSnapshotTool 
-alpha;ToggleLogZTool 
 beta;TogglePrimitiveVisibilityTool 
 beta;toggleProjectExtents(imodel: IModelConnection, enabled?: boolean): boolean
 beta;ToggleProjectExtentsTool 

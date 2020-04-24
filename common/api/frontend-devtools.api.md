@@ -995,14 +995,6 @@ export class ToggleFrustumSnapshotTool extends Tool {
     static toolId: string;
 }
 
-// @alpha
-export class ToggleLogZTool extends RenderTargetDebugControlTool {
-    // (undocumented)
-    execute(control: RenderTargetDebugControl, vp: ScreenViewport): void;
-    // (undocumented)
-    static toolId: string;
-}
-
 // @beta
 export class TogglePrimitiveVisibilityTool extends RenderTargetDebugControlTool {
     // (undocumented)

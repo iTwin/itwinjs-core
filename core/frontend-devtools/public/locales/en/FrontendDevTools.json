@@ -9,9 +9,6 @@
     "ToggleReadPixels": {
       "keyin": "fdt toggle readpixels"
     },
-    "ToggleLogZ": {
-      "keyin": "fdt toggle logz"
-    },
     "ToggleDrapeFrustum": {
       "keyin": "fdt toggle drapefrustum"
     },

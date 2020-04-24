@@ -6908,7 +6908,6 @@ export interface RenderTargetDebugControl {
     primitiveVisibility: PrimitiveVisibility;
     // @internal (undocumented)
     readonly shadowFrustum: Frustum | undefined;
-    useLogZ: boolean;
     // @internal (undocumented)
     vcSupportIntersectingVolumes: boolean;
 }
@@ -8167,8 +8166,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     updateSolarShadows(context: SceneContext | undefined): void;
     // (undocumented)
-    useLogZ: boolean;
-    // (undocumented)
     vcSupportIntersectingVolumes: boolean;
     // (undocumented)
     get viewRect(): ViewRect;
@@ -8178,8 +8175,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     get wantAmbientOcclusion(): boolean;
     // (undocumented)
     get wantInvertBlackBackground(): boolean;
-    // (undocumented)
-    get wantLogZ(): boolean;
     // (undocumented)
     get wantThematicDisplay(): boolean;
     }

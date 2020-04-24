@@ -544,6 +544,7 @@ export class SurfaceGeometry extends MeshGeometry {
 
     const useMaterial = wantMaterials(vf);
     flags[SurfaceBitIndex.IgnoreMaterial] = useMaterial ? 0 : 1;
+    flags[SurfaceBitIndex.HasMaterialAtlas] = useMaterial && this.hasMaterialAtlas ? 1 : 0;
 
     flags[SurfaceBitIndex.ApplyLighting] = 0;
     flags[SurfaceBitIndex.NoFaceFront] = 0;

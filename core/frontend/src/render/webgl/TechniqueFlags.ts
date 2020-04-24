@@ -52,9 +52,6 @@ export const enum IsShadowable { No, Yes }
 /** @internal */
 export const enum IsThematic { No, Yes }
 
-/** @internal */
-export const enum HasMaterialAtlas { No, Yes }
-
 /** Flags used to control which shader program is used by a rendering Technique.
  * @internal
  */
@@ -68,8 +65,6 @@ export class TechniqueFlags {
   public isClassified: IsClassified = IsClassified.No;
   public isShadowable: IsShadowable = IsShadowable.No;
   public isThematic: IsThematic = IsThematic.No;
-  public hasMaterialAtlas: HasMaterialAtlas = HasMaterialAtlas.No;
-  public usesLogZ = false;
   private _isHilite = false;
 
   public constructor(translucent: boolean = false) {
@@ -78,10 +73,10 @@ export class TechniqueFlags {
 
   public get hasClip(): boolean { return this.clip.type !== ClippingType.None; }
 
-  public init(target: Target, pass: RenderPass, instanced: IsInstanced, animated: IsAnimated = IsAnimated.No, classified = IsClassified.No, shadowable = IsShadowable.No, hasMaterialAtlas = HasMaterialAtlas.No, thematic = IsThematic.No): void {
+  public init(target: Target, pass: RenderPass, instanced: IsInstanced, animated: IsAnimated = IsAnimated.No, classified = IsClassified.No, shadowable = IsShadowable.No, thematic = IsThematic.No): void {
     if (RenderPass.Hilite === pass || RenderPass.HiliteClassification === pass || RenderPass.HilitePlanarClassification === pass) {
       const isClassified = (classified === IsClassified.Yes && RenderPass.HilitePlanarClassification === pass) ? IsClassified.Yes : IsClassified.No;
-      this.initForHilite(target.clipDef, instanced, isClassified, target.wantLogZ);
+      this.initForHilite(target.clipDef, instanced, isClassified);
     } else {
       this._isHilite = false;
       this.isTranslucent = RenderPass.Translucent === pass;
@@ -91,8 +86,6 @@ export class TechniqueFlags {
       this.isClassified = classified;
       this.isShadowable = shadowable;
       this.isThematic = thematic;
-      this.hasMaterialAtlas = hasMaterialAtlas;
-      this.usesLogZ = target.wantLogZ;
       this.featureMode = target.uniforms.batch.featureMode;
 
       // Determine if we should use the shaders which support discarding surfaces in favor of their edges (and discarding non-planar surfaces in favor of coincident planar surfaces).
@@ -129,8 +122,6 @@ export class TechniqueFlags {
     this.isInstanced = instanced;
     this.isShadowable = shadowable;
     this.isThematic = thematic;
-    this.hasMaterialAtlas = HasMaterialAtlas.No;
-    this.usesLogZ = false;
     this.clip.type = ClippingType.None;
     this.clip.numberOfPlanes = 0;
   }
@@ -142,10 +133,9 @@ export class TechniqueFlags {
   public setClassified(classified: boolean) {
     this.isClassified = classified ? IsClassified.Yes : IsClassified.No;
   }
-  public setHasMaterialAtlas(has: boolean) { this.hasMaterialAtlas = has ? HasMaterialAtlas.Yes : HasMaterialAtlas.No; }
 
   public get isHilite() { return this._isHilite; }
-  public initForHilite(clip: ClipDef, instanced: IsInstanced, classified: IsClassified, logZ: boolean) {
+  public initForHilite(clip: ClipDef, instanced: IsInstanced, classified: IsClassified) {
     this.featureMode = classified ? FeatureMode.None : FeatureMode.Overrides;
     this._isHilite = true;
     this.isTranslucent = false;
@@ -153,10 +143,7 @@ export class TechniqueFlags {
     this.isAnimated = IsAnimated.No;
     this.isInstanced = instanced;
     this.isClassified = classified;
-    this.hasMaterialAtlas = HasMaterialAtlas.No;
-    this.usesLogZ = false;
     this.clip = clip;
-    this.usesLogZ = logZ;
   }
 
   public buildDescription(): string {
@@ -170,8 +157,6 @@ export class TechniqueFlags {
     if (this.isShadowable) parts.push("shadowable");
     if (this.isThematic) parts.push("thematic");
     if (this.hasFeatures) parts.push(FeatureMode.Pick === this.featureMode ? "pick" : "overrides");
-    if (this.hasMaterialAtlas) parts.push("materialAtlas");
-    if (this.usesLogZ) parts.push("logZ");
     return parts.join("; ");
   }
 

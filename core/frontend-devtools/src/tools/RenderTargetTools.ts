@@ -42,18 +42,6 @@ export class ToggleReadPixelsTool extends RenderTargetDebugControlTool {
   }
 }
 
-/** The first time this tool runs, it disables the use of logarithmic depth buffer-enabled shaders. The second time, it re-enables them.
- * This affects *only* the choice of shader programs. It does not affect the frustum nor does it override the RenderSystem.Options.logarithmicDepthBuffer option.
- * @alpha
- */
-export class ToggleLogZTool extends RenderTargetDebugControlTool {
-  public static toolId = "ToggleLogZ";
-  public execute(control: RenderTargetDebugControl, vp: ScreenViewport): void {
-    control.useLogZ = !control.useLogZ;
-    vp.invalidateRenderPlan();
-  }
-}
-
 /** Turn on the display of the draping frustum.
  * @alpha
  */
