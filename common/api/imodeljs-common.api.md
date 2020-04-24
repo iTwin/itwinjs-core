@@ -3316,7 +3316,7 @@ export abstract class IModelWriteRpcInterface extends RpcInterface {
     // (undocumented)
     createAndInsertSpatialCategory(_tokenProps: IModelRpcProps, _scopeModelId: Id64String, _categoryName: string, _appearance: SubCategoryAppearance.Props): Promise<Id64String>;
     // (undocumented)
-    deleteElements(_tokenProps: IModelRpcProps, _ids: Id64Array): Promise<any>;
+    deleteElements(_tokenProps: IModelRpcProps, _ids: Id64Array): Promise<void>;
     // (undocumented)
     doConcurrencyControlRequest(_tokenProps: IModelRpcProps): Promise<void>;
     static getClient(): IModelWriteRpcInterface;

@@ -109,6 +109,8 @@ alpha;DrawClipOptions
 public;DrawingModelState 
 public;DrawingViewState 
 public;DynamicsContext 
+alpha;EditingFunctions
+alpha;EditingFunctions
 alpha;EditManipulator
 internal;ElementAgenda
 alpha;ElementEditor3d
@@ -212,9 +214,6 @@ public;IModelApp
 public;IModelAppOptions
 public;class IModelConnection 
 public;IModelConnection
-alpha;EditingFunctions
-alpha;EditingFunctions
-beta;Tiles
 internal;IModelFrameLifecycle
 internal;IModelTile 
 internal;IModelTileContent 
@@ -294,6 +293,7 @@ public;OrthographicViewState
 public;OutputMessageAlert
 public;OutputMessagePriority
 public;OutputMessageType
+internal;overrideRequestTileTreeProps(func: RequestTileTreePropsFunc | undefined): void
 public;PanViewTool 
 alpha;ParseAndRunResult
 alpha;ParsedKeyin
@@ -340,6 +340,7 @@ internal;class RenderTarget
 beta;RenderTargetDebugControl
 internal;class RenderTerrainMeshGeometry 
 internal;class RenderTextureDrape 
+internal;RequestTileTreePropsFunc = (iModel: IModelConnection, treeId: string) => Promise
 public;RotateViewTool 
 alpha;RotationMode
 internal;RoundOff
@@ -424,6 +425,7 @@ beta;TileParams
 beta;TileRequest
 beta;TileRequest
 internal;State
+beta;Tiles
 beta;class TileTree
 beta;TileTreeDiscloser
 beta;TileTreeLoadStatus

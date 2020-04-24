@@ -2169,6 +2169,44 @@ export class DynamicsContext extends RenderContext {
     }
 
 // @alpha
+export class EditingFunctions {
+    constructor(c: IModelConnection);
+    get categories(): EditingFunctions.CategoryEditor;
+    get codes(): EditingFunctions.Codes;
+    get concurrencyControl(): EditingFunctions.ConcurrencyControl;
+    deleteElements(ids: Id64Array): Promise<void>;
+    getParentChangeset(): Promise<string>;
+    hasPendingTxns(): Promise<boolean>;
+    hasUnsavedChanges(): Promise<boolean>;
+    get models(): EditingFunctions.ModelEditor;
+    saveChanges(description?: string): Promise<void>;
+    updateProjectExtents(newExtents: AxisAlignedBox3d): Promise<void>;
+}
+
+// @alpha (undocumented)
+export namespace EditingFunctions {
+    export class CategoryEditor {
+        constructor(c: IModelConnection);
+        createAndInsertSpatialCategory(scopeModelId: Id64String, categoryName: string, appearance: SubCategoryAppearance.Props): Promise<Id64String>;
+        }
+    export class Codes {
+        constructor(c: IModelConnection);
+        makeCode(specName: string, scope: Id64String, value: string): Promise<CodeProps>;
+        makeModelCode(scope: Id64String, value: string): Promise<CodeProps>;
+    }
+    export class ConcurrencyControl {
+        constructor(c: IModelConnection);
+        lockModel(modelId: Id64String, level?: LockLevel): Promise<void>;
+        pullMergePush(comment: string, doPush?: boolean): Promise<GuidString>;
+        request(): Promise<void>;
+        }
+    export class ModelEditor {
+        constructor(c: IModelConnection);
+        createAndInsertPhysicalModel(newModelCode: CodeProps, privateModel?: boolean): Promise<Id64String>;
+        }
+}
+
+// @alpha
 export namespace EditManipulator {
     // (undocumented)
     export enum EventType {
@@ -3866,7 +3904,7 @@ export abstract class IModelConnection extends IModel {
     // @internal
     readonly displayedExtents: AxisAlignedBox3d;
     // @alpha
-    get editing(): IModelConnection.EditingFunctions;
+    get editing(): EditingFunctions;
     readonly elements: IModelConnection.Elements;
     // @internal
     readonly eventSource: EventSource | undefined;
@@ -3921,7 +3959,7 @@ export abstract class IModelConnection extends IModel {
     // @internal
     readonly subcategories: SubCategoriesCache;
     // @beta
-    readonly tiles: IModelConnection.Tiles;
+    readonly tiles: Tiles;
     readonly transientIds: TransientIdSequence;
     updateProjectExtents(newExtents: AxisAlignedBox3d): Promise<void>;
     readonly views: IModelConnection.Views;
@@ -3935,42 +3973,6 @@ export namespace IModelConnection {
         getById(codeSpecId: Id64String): Promise<CodeSpec>;
         getByName(name: string): Promise<CodeSpec>;
         }
-    // @alpha
-    export class EditingFunctions {
-        constructor(c: IModelConnection);
-        get categories(): IModelConnection.EditingFunctions.CategoryEditor;
-        get codes(): IModelConnection.EditingFunctions.Codes;
-        get concurrencyControl(): IModelConnection.EditingFunctions.ConcurrencyControl;
-        deleteElements(ids: Id64Array): Promise<any>;
-        getParentChangeset(): Promise<string>;
-        hasPendingTxns(): Promise<boolean>;
-        hasUnsavedChanges(): Promise<boolean>;
-        get models(): IModelConnection.EditingFunctions.ModelEditor;
-        saveChanges(description?: string): Promise<void>;
-        updateProjectExtents(newExtents: AxisAlignedBox3d): Promise<void>;
-    }
-    // @alpha (undocumented)
-    export namespace EditingFunctions {
-        export class CategoryEditor {
-            constructor(c: IModelConnection);
-            createAndInsertSpatialCategory(scopeModelId: Id64String, categoryName: string, appearance: SubCategoryAppearance.Props): Promise<Id64String>;
-            }
-        export class Codes {
-            constructor(c: IModelConnection);
-            makeCode(specName: string, scope: Id64String, value: string): Promise<CodeProps>;
-            makeModelCode(scope: Id64String, value: string): Promise<CodeProps>;
-        }
-        export class ConcurrencyControl {
-            constructor(c: IModelConnection);
-            lockModel(modelId: Id64String, level?: LockLevel): Promise<void>;
-            pullMergePush(comment: string, doPush?: boolean): Promise<GuidString>;
-            request(): Promise<void>;
-            }
-        export class ModelEditor {
-            constructor(c: IModelConnection);
-            createAndInsertPhysicalModel(newModelCode: CodeProps, privateModel?: boolean): Promise<Id64String>;
-            }
-    }
     export class Elements {
         // @internal
         constructor(_iModel: IModelConnection);
@@ -3995,28 +3997,6 @@ export namespace IModelConnection {
         queryProps(queryParams: ModelQueryParams): Promise<ModelProps[]>;
         get repositoryModelId(): string;
     }
-    // @beta
-    export class Tiles {
-        constructor(iModel: IModelConnection);
-        // @internal (undocumented)
-        dispose(): void;
-        dropSupplier(supplier: TileTreeSupplier): void;
-        forEachTreeOwner(func: (owner: TileTreeOwner) => void): void;
-        // @internal (undocumented)
-        getTileContent(treeId: string, contentId: string, isCanceled: () => boolean, guid: string | undefined, qualifier: string | undefined): Promise<Uint8Array>;
-        getTileTreeOwner(id: any, supplier: TileTreeSupplier): TileTreeOwner;
-        // @internal (undocumented)
-        getTileTreeProps(id: string): Promise<TileTreeProps>;
-        // @internal (undocumented)
-        get isDisposed(): boolean;
-        // @internal (undocumented)
-        onEcefChanged(): void;
-        purge(olderThan: BeTimePoint, exclude?: Set<TileTree>): void;
-        // @internal (undocumented)
-        purgeTileTrees(modelIds: Id64Array | undefined): Promise<void>;
-        // @internal
-        reset(): void;
-        }
     export class Views {
         // @internal
         constructor(_iModel: IModelConnection);
@@ -5717,6 +5697,9 @@ export enum OutputMessageType {
     Toast = 0
 }
 
+// @internal
+export function overrideRequestTileTreeProps(func: RequestTileTreePropsFunc | undefined): void;
+
 // @public
 export class PanViewTool extends ViewManip {
     constructor(vp: ScreenViewport | undefined, oneShot?: boolean, isDraggingRequired?: boolean);
@@ -6947,6 +6930,9 @@ export abstract class RenderTextureDrape implements IDisposable {
     // (undocumented)
     abstract dispose(): void;
 }
+
+// @internal (undocumented)
+export type RequestTileTreePropsFunc = (iModel: IModelConnection, treeId: string) => Promise<TileTreeProps>;
 
 // @public
 export class RotateViewTool extends ViewManip {
@@ -8558,6 +8544,7 @@ export namespace TileAdmin {
         // @internal
         ignoreMinimumExpirationTimes?: boolean;
         maxActiveRequests?: number;
+        maxActiveTileTreePropsRequests?: number;
         maximumLevelsToSkip?: number;
         // @internal
         maximumMajorTileFormatVersion?: number;
@@ -8569,8 +8556,10 @@ export namespace TileAdmin {
     }
     export interface Statistics {
         numActiveRequests: number;
+        numActiveTileTreePropsRequests: number;
         numCanceled: number;
         numPendingRequests: number;
+        numPendingTileTreePropsRequests: number;
         totalAbortedRequests: number;
         totalCacheMisses: number;
         totalCompletedRequests: number;
@@ -8735,6 +8724,29 @@ export namespace TileRequest {
         Queued = 0
     }
 }
+
+// @beta
+export class Tiles {
+    constructor(iModel: IModelConnection);
+    // @internal (undocumented)
+    dispose(): void;
+    dropSupplier(supplier: TileTreeSupplier): void;
+    forEachTreeOwner(func: (owner: TileTreeOwner) => void): void;
+    // @internal (undocumented)
+    getTileContent(treeId: string, contentId: string, isCanceled: () => boolean, guid: string | undefined, qualifier: string | undefined): Promise<Uint8Array>;
+    getTileTreeOwner(id: any, supplier: TileTreeSupplier): TileTreeOwner;
+    // @internal (undocumented)
+    getTileTreeProps(id: string): Promise<TileTreeProps>;
+    // @internal (undocumented)
+    get isDisposed(): boolean;
+    // @internal (undocumented)
+    onEcefChanged(): void;
+    purge(olderThan: BeTimePoint, exclude?: Set<TileTree>): void;
+    // @internal (undocumented)
+    purgeTileTrees(modelIds: Id64Array | undefined): Promise<void>;
+    // @internal
+    reset(): void;
+    }
 
 // @beta
 export abstract class TileTree {
