@@ -507,7 +507,7 @@ function addNormal(builder: ProgramBuilder, animated: IsAnimated) {
 
 function addTexture(builder: ProgramBuilder, animated: IsAnimated, isThematic: IsThematic) {
   if (isThematic)
-    builder.addInlineComputedVarying("v_thematicIndex", VariableType.Float, getComputeThematicIndex(builder.vert.usesInstancedGeometry));
+    builder.addInlineComputedVarying("v_thematicIndex", VariableType.Vec3, getComputeThematicIndex(builder.vert.usesInstancedGeometry));
   else {
     builder.vert.addFunction(unquantize2d);
     addChooseWithBitFlagFunctions(builder.vert);

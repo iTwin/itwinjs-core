@@ -74,7 +74,10 @@ export enum TextureUnit {
   AuxChannelLUT = Six,
   PlanarClassification = Six,
   PlanarClassificationHilite = Six,
+
+  // Texture unit 7 is overloaded. Therefore receiving shadows and thematic display are mutually exclusive.
   ShadowMap = Seven,
+  ThematicSensors = Seven,
 }
 
 /**

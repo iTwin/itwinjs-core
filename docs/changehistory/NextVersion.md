@@ -89,11 +89,16 @@ Previously, shader programs used by the [RenderSystem]($frontend) were never com
 ## Thematic Display
 
 [ViewFlags]($common) now contains a `thematicDisplay` property of type `boolean`; when set to `true`, this will enable thematic display for surfaces.
+
+*Note that the renderer currently does not allow surfaces which are thematically displayed to receive shadows.*
+
 * The thematic display will be configured based on the `thematic` property of type [ThematicDisplay]($common) on [DisplayStyle3dSettings]($common).
   * This property controls the thematic display settings of the 3d display style when thematic display is enabled.
   * [ThematicDisplay]($common) is immutable and must be constructed and altered using an underlying JSON representation. See the corresponding underlying [ThematicDisplayProps]($common) on the [DisplayStyle3dSettingsProps]($common).
 * Within the `gradientSettings` property on [ThematicDisplay]($common), the display system currently supports a `mode` value of `ThematicGradientMode.Smooth` of type [ThematicGradientMode]($common). Using this mode, the color gradient will be smoothly interpolated based on the value specified for `colorScheme` on the `gradientSettings` property of [ThematicDisplay]($common). If the `colorScheme` property of `gradientSettings` is `ThematicGradientColorScheme.Custom`, then the `customKeys` property must be properly configured with values.
-* For the `displayMode` property of [ThematicDisplay]($common), the display system currently supports a value of `ThematicDisplayMode.Height`. Using this mode, the color gradient will be mapped to surface geometry based on world height in meters.
+* For the `displayMode` property of [ThematicDisplay]($common), the display system currently supports the following values:
+  * `ThematicDisplayMode.Height`. Using this mode, the color gradient will be mapped to surface geometry based on world height in meters.
+  * `ThematicDisplayMode.InverseDistanceWeightedSensors`. Using this mode, the color gradient will be mapped to surface geometry using inverse distance weighting based on world positions and corresponding values from a list of sensors.
 
 See the following snippet for the JSON representation of a [ThematicDisplay]($common) configuration object:
 
@@ -110,6 +115,10 @@ export interface ThematicDisplayProps {
   range?: Range1dProps;
   /** For [[ThematicDisplayMode.Height]], this is the axis along which to apply the thematic gradient in the scene. Defaults to {0,0,0}. */
   axis?: XYZProps;
+  /** For [[ThematicDisplayMode.InverseDistanceWeightedSensors]], these are the settings that control the sensors. Defaults to an instantiation using [[ThematicDisplaySensorSettings.fromJSON]] with no arguments.
+   * @alpha
+   */
+  sensorSettings?: ThematicDisplaySensorSettingsProps;
 }
 ```
 
@@ -133,7 +142,7 @@ function enableAndConfigureThematicDisplay(viewport: Viewport): boolean {
 
   // Create a ThematicDisplayProps object with the desired thematic settings
   const thematicProps: ThematicDisplayProps = {
-    displayMode: ThematicDisplayMode.Height, // The only currently supported thematic display mode
+    displayMode: ThematicDisplayMode.Height, // The thematic display mode; could also be ThematicDisplayMode.InverseDistanceWeightedSensors
     gradientSettings: {
       mode: ThematicGradientMode.Smooth, // The only currently supported thematic gradient mode
       stepCount: 0, // Only relevant for ThematicGradientMode.Stepped, which is currently unsupported.
@@ -142,6 +151,9 @@ function enableAndConfigureThematicDisplay(viewport: Viewport): boolean {
     },
     range: { low: -900.0, high: 1000.0 }, // For ThematicDisplayMode.Height, the range in world meters to apply the gradient
     axis: [0.0, 0.0, 1.0], // For ThematicDisplayMode.Height, the axis (direction) along which to apply the gradient (Up along Z in this case)
+    sensorSettings: { // For ThematicDisplayMode.InverseDistanceWeightedSensors, specify sensor settings here.
+      sensors: [], // put any sensors in this array.
+    },
   };
 
   // Create a ThematicDisplay object using the props created above
@@ -154,8 +166,11 @@ function enableAndConfigureThematicDisplay(viewport: Viewport): boolean {
   viewport.synchWithView();
 }
 ```
-![Thematic height mode with a smooth "sea mountain" color gradient applied to surfaces](assets/ThematicDisplay_HeightSmooth.png)
-<p align="center">Thematic height mode with a smooth "sea mountain" color gradient applied to surfaces</p>
+![Thematic height mode with a smooth "sea mountain" color gradient applied to surfaces with lighting enabled](assets/ThematicDisplay_HeightSmooth.png)
+<p align="center">Thematic height mode with a smooth "sea mountain" color gradient applied to surfaces with lighting enabled</p>
+
+![Four thematic sensors applied using inverse distance weighting with a smooth "blue-red" color gradient applied to surfaces with lighting disabled](assets/ThematicDisplay_InverseDistanceWeightedSensorsSmooth.png)
+<p align="center">Four thematic sensors applied using inverse distance weighting with a smooth "blue-red" color gradient applied to surfaces with lighting disabled</p>
 
 ## Solar Calculation APIs
 

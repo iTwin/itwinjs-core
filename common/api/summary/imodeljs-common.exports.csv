@@ -450,6 +450,10 @@ beta;TextureProps
 beta;ThematicDisplay
 beta;ThematicDisplayMode
 beta;ThematicDisplayProps
+alpha;ThematicDisplaySensor
+alpha;ThematicDisplaySensorProps
+alpha;ThematicDisplaySensorSettings
+alpha;ThematicDisplaySensorSettingsProps
 beta;ThematicGradientColorScheme
 beta;ThematicGradientMode
 beta;ThematicGradientSettings

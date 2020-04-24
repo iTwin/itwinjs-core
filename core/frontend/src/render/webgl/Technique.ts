@@ -232,15 +232,19 @@ class SurfaceTechnique extends VariedTechnique {
   private static readonly _kAnimated = 4;
   private static readonly _kShadowable = 8;
   private static readonly _kThematic = 16;
-  private static readonly _kFeature = 32;
+  private static readonly _kFeature = 24;
   private static readonly _kEdgeTestNeeded = SurfaceTechnique._kFeature * 3; // only when hasFeatures
   private static readonly _kHilite = SurfaceTechnique._kEdgeTestNeeded + SurfaceTechnique._kFeature * 2;
-  // Classifiers are never animated or instanced. They do support shadows and translucency.
-  // There are 3 base variations - 1 per feature mode - each with translucent and/or shadowed variants; plus 1 for hilite.
+  // Classifiers are never animated or instanced. They do support shadows, thematic display, and translucency.
+  // There are 3 base variations - 1 per feature mode - each with translucent/shadowed/thematic variants; plus 1 for hilite.
   private static readonly _kClassified = SurfaceTechnique._kHilite + numHiliteVariants;
 
   public constructor(gl: WebGLRenderingContext | WebGL2RenderingContext) {
-    super(SurfaceTechnique._kClassified + 25);
+    // 3 base classified variations - 1 per feature mode.
+    // Plus thematic variant of each and shadowable variant of each = 9
+    // Plus translucent variant of each of those = 18
+    // Plus 1 hilite shader = 19
+    super(SurfaceTechnique._kClassified + 19);
     const flags = scratchTechniqueFlags;
 
     for (let instanced = IsInstanced.No; instanced <= IsInstanced.Yes; instanced++) {
@@ -252,6 +256,9 @@ class SurfaceTechnique extends VariedTechnique {
               for (const featureMode of featureModes) {
                 for (let iTranslucent = 0; iTranslucent <= 1; iTranslucent++) {
                   if (FeatureMode.None !== featureMode || IsEdgeTestNeeded.No === edgeTestNeeded) {
+                    if (IsThematic.Yes === thematic && IsShadowable.Yes === shadowable)
+                      continue; // currently this combination is disallowed.
+
                     flags.reset(featureMode, instanced, shadowable, thematic);
                     flags.isAnimated = iAnimate;
                     flags.isEdgeTestNeeded = edgeTestNeeded;
@@ -273,6 +280,9 @@ class SurfaceTechnique extends VariedTechnique {
       for (let shadowable = IsShadowable.No; shadowable <= IsShadowable.Yes; shadowable++) {
         for (let thematic = IsThematic.No; thematic <= IsThematic.Yes; thematic++) {
           for (const featureMode of featureModes) {
+            if (IsThematic.Yes === thematic && IsShadowable.Yes === shadowable)
+              continue; // currently this combination is disallowed.
+
             flags.reset(featureMode, IsInstanced.No, shadowable, thematic);
             flags.isClassified = IsClassified.Yes;
             flags.isTranslucent = (0 !== translucent);
@@ -293,6 +303,8 @@ class SurfaceTechnique extends VariedTechnique {
   protected get _debugDescription() { return "Surface"; }
 
   public computeShaderIndex(flags: TechniqueFlags): number {
+    assert(!(flags.isThematic && flags.isShadowable));
+
     if (flags.isClassified) {
       assert(!flags.isAnimated);
       assert(!flags.isInstanced);
@@ -302,9 +314,8 @@ class SurfaceTechnique extends VariedTechnique {
       if (flags.isHilite)
         return SurfaceTechnique._kClassified;
 
-      // The rest are organized in 3 groups of eight - one group per feature mode.
-      // Each group contains opaque, opaque+thematic, translucent, translucent+thematic, shadowable, shadowable+thematic, translucent+shadowable, and
-      // translucent+shadowable+thematic variants.
+      // The rest are organized in 3 groups of 6 - one group per feature mode.
+      // Each group contains opaque, translucent, opaque+thematic, translucent+thematic, opaque+shadowable, and translucent+shadowable variants.
       let baseIndex = SurfaceTechnique._kClassified + 1;
       if (flags.isTranslucent)
         baseIndex += 1;
@@ -313,7 +324,7 @@ class SurfaceTechnique extends VariedTechnique {
       if (flags.isThematic)
         baseIndex += 4;
 
-      const featureOffset = 8 * flags.featureMode;
+      const featureOffset = 6 * flags.featureMode;
       return baseIndex + featureOffset;
     } else if (flags.isHilite) {
       assert(flags.hasFeatures);

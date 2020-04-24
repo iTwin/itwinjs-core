@@ -6100,13 +6100,17 @@ export class ThematicDisplay {
     static fromJSON(json?: ThematicDisplayProps): ThematicDisplay;
     readonly gradientSettings: ThematicGradientSettings;
     readonly range: Range1d;
+    // @alpha
+    readonly sensorSettings: ThematicDisplaySensorSettings;
     // (undocumented)
     toJSON(): ThematicDisplayProps;
 }
 
 // @beta
 export enum ThematicDisplayMode {
-    Height = 0
+    Height = 0,
+    // @alpha
+    InverseDistanceWeightedSensors = 1
 }
 
 // @beta
@@ -6115,6 +6119,42 @@ export interface ThematicDisplayProps {
     displayMode?: ThematicDisplayMode;
     gradientSettings?: ThematicGradientSettingsProps;
     range?: Range1dProps;
+    // @alpha
+    sensorSettings?: ThematicDisplaySensorSettingsProps;
+}
+
+// @alpha
+export class ThematicDisplaySensor {
+    // (undocumented)
+    equals(other: ThematicDisplaySensor): boolean;
+    // (undocumented)
+    static fromJSON(json?: ThematicDisplaySensorProps): ThematicDisplaySensor;
+    position: Readonly<Point3d>;
+    // (undocumented)
+    toJSON(): ThematicDisplaySensorProps;
+    readonly value: number;
+}
+
+// @alpha
+export interface ThematicDisplaySensorProps {
+    position?: XYZProps;
+    value?: number;
+}
+
+// @alpha
+export class ThematicDisplaySensorSettings {
+    // (undocumented)
+    equals(other: ThematicDisplaySensorSettings): boolean;
+    // (undocumented)
+    static fromJSON(json?: ThematicDisplaySensorSettingsProps): ThematicDisplaySensorSettings;
+    readonly sensors: ThematicDisplaySensor[];
+    // (undocumented)
+    toJSON(): ThematicDisplaySensorSettingsProps;
+}
+
+// @alpha
+export interface ThematicDisplaySensorSettingsProps {
+    sensors?: ThematicDisplaySensorProps[];
 }
 
 // @beta (undocumented)

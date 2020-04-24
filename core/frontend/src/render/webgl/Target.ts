@@ -956,15 +956,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
   private getViewFlagsForReadPixels(): ViewFlags {
     const vf = this.currentViewFlags.clone(this._scratchViewFlags);
-    vf.transparency = false;
-    vf.lighting = false;
-    vf.shadows = false;
+    vf.transparency = vf.lighting = vf.shadows = vf.acsTriad = vf.grid = vf.monochrome = vf.materials = vf.ambientOcclusion = vf.thematicDisplay = false;
     vf.noGeometryMap = true;
-    vf.acsTriad = false;
-    vf.grid = false;
-    vf.monochrome = false;
-    vf.materials = false;
-    vf.ambientOcclusion = false;
     return vf;
   }
 
