@@ -23,7 +23,6 @@ describe.skip("ExtensionClient CLI (#integration)", () => {
     });
     await client.initialize(requestContext);
     await (client as any)._tokenStore.delete();
-    client.dispose();
 
     const token = await signIn();
     assert.exists(token);

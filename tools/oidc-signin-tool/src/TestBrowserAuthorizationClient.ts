@@ -2,13 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, ClientRequestContext, Config } from "@bentley/bentleyjs-core";
-import { AccessToken, AuthorizationClient, UrlDiscoveryClient } from "@bentley/itwin-client";
+import { assert, ClientRequestContext, Config, BeEvent } from "@bentley/bentleyjs-core";
+import { AccessToken, UrlDiscoveryClient } from "@bentley/itwin-client";
 import { AuthorizationParameters, Client, generators, Issuer, OpenIDCallbackChecks, TokenSet } from "openid-client";
 import * as os from "os";
 import * as puppeteer from "puppeteer";
 import * as url from "url";
 import { TestBrowserAuthorizationClientConfiguration, TestUserCredentials } from "./TestUsers";
+import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 
 /**
  * Implementation of AuthorizationClient used for the iModel.js integration tests.
@@ -18,7 +19,7 @@ import { TestBrowserAuthorizationClientConfiguration, TestUserCredentials } from
  *   spawning a headless browser, and automatically filling in the supplied user credentials.
  * @alpha
  */
-export class TestBrowserAuthorizationClient implements AuthorizationClient {
+export class TestBrowserAuthorizationClient implements FrontendAuthorizationClient {
   private _client!: Client;
   private _issuer!: Issuer<Client>;
   private _imsUrl!: string;
@@ -60,6 +61,8 @@ export class TestBrowserAuthorizationClient implements AuthorizationClient {
     this._client = new this._issuer.Client({ client_id: this._config.clientId, token_endpoint_auth_method: "none" });
   }
 
+  public readonly onUserStateChanged = new BeEvent<(token: AccessToken | undefined) => void>();
+
   /** Returns true if there's a current authorized user or client (in the case of agent applications).
    * Returns true if signed in and the access token has not expired, and false otherwise.
    */
@@ -95,7 +98,7 @@ export class TestBrowserAuthorizationClient implements AuthorizationClient {
     let numRetries = 0;
     while (numRetries < 3) {
       try {
-        this._accessToken = await this.signIn();
+        await this.signIn();
       } catch (err) {
         // rethrow error if hit max number of retries or if it's not a navigation failure (i.e. a flaky failure)
         if (numRetries === 2 ||
@@ -111,7 +114,7 @@ export class TestBrowserAuthorizationClient implements AuthorizationClient {
     return this._accessToken!;
   }
 
-  private async signIn(): Promise<AccessToken> {
+  public async signIn(): Promise<void> {
     if (this._client === undefined)
       await this.initialize();
 
@@ -157,7 +160,16 @@ export class TestBrowserAuthorizationClient implements AuthorizationClient {
     // tslint:disable-next-line:no-console
     // console.log(`Finished OIDC signin for ${this._user.email} ...`);
 
-    return this.tokenSetToAccessToken(tokenSet);
+    const token = await this.tokenSetToAccessToken(tokenSet);
+    this._accessToken = token;
+    this.onUserStateChanged.raiseEvent(this._accessToken);
+    return Promise.resolve();
+  }
+
+  public async signOut(): Promise<void> {
+    this._accessToken = undefined;
+    this.onUserStateChanged.raiseEvent(this._accessToken);
+    return Promise.resolve();
   }
 
   private async tokenSetToAccessToken(tokenSet: TokenSet): Promise<AccessToken> {

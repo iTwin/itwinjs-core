@@ -1083,7 +1083,6 @@ export class DefinitionPartition extends InformationPartitionElement {
 // @alpha
 export class DesktopAuthorizationClient extends ImsAuthorizationClient implements FrontendAuthorizationClient {
     constructor(clientConfiguration: DesktopAuthorizationClientConfiguration);
-    dispose(): void;
     getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
     get hasExpired(): boolean;
     get hasSignedIn(): boolean;

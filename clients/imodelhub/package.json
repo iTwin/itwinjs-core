@@ -38,11 +38,13 @@
   },
   "peerDependencies": {
     "@bentley/bentleyjs-core": "^2.0.0-dev.79",
+    "@bentley/frontend-authorization-client": "^2.0.0-dev.79",
     "@bentley/itwin-client": "^2.0.0-dev.79"
   },
   "devDependencies": {
     "@bentley/bentleyjs-core": "2.0.0-dev.79",
     "@bentley/build-tools": "2.0.0-dev.79",
+    "@bentley/frontend-authorization-client": "2.0.0-dev.79",
     "@bentley/itwin-client": "2.0.0-dev.79",
     "@types/deep-assign": "^0.1.0",
     "@types/js-base64": "^2.3.1",

@@ -17,6 +17,8 @@ import { PresentationManagerProps as PresentationFrontendProps } from "@bentley/
 import { NoRenderApp, IModelAppOptions } from "@bentley/imodeljs-frontend";
 import { initialize as initializeTesting, terminate as terminateTesting, PresentationTestingInitProps } from "@bentley/presentation-testing";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
+import { TestUtility } from "@bentley/oidc-signin-tool/lib/TestUtility";
+import { TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
 
 chai.use(sinonChai);
 
@@ -81,11 +83,17 @@ const initializeCommon = async (props: { backendTimeout?: number, useClientServi
     activeLocale: "en-PSEUDO",
   };
 
+  const frontendAppOptions: IModelAppOptions = {
+    authorizationClient: props.useClientServices
+      ? TestUtility.getAuthorizationClient(TestUsers.regular)
+      : undefined,
+  };
+
   const presentationTestingInitProps: PresentationTestingInitProps = {
     backendProps: backendInitProps,
     frontendProps: frontendInitProps,
     frontendApp: IntegrationTestsApp,
-    useClientServices: props.useClientServices ?? false,
+    frontendAppOptions,
   };
 
   await initializeTesting(presentationTestingInitProps);

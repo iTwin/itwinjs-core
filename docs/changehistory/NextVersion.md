@@ -488,6 +488,10 @@ The deprecated ToolSettingsValue.ts has been removed.
 
 - `UlasUtilities` has been renamed to `UsageLoggingUtilities` to better align with name of the newly created `usage-logging-client` package
 
+### API changes in `imodeljs-frontend` package
+
+- [IModelApp]($frontend)`.authorizationClient` has been changed from [AuthorizationClient]($itwin-client) to the more specific type [FrontendAuthorizationClient]($frontend-authorization-client)
+
 ### API changes in `ui-components` package
 
 #### Hard-Deprecation

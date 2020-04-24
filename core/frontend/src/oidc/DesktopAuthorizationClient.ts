@@ -146,9 +146,4 @@ export class DesktopAuthorizationClient implements FrontendAuthorizationClient {
       });
     });
   }
-
-  /** Disposes of any resources owned */
-  public dispose(): void {
-    this.ipcSend("DesktopAuthorizationClient.dispose");
-  }
 }

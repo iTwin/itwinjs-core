@@ -7,7 +7,7 @@
  * @module BrowserAuthorization
  */
 
-import { assert, AuthStatus, BeEvent, BentleyError, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
+import { assert, AuthStatus, BeEvent, BentleyError, ClientRequestContext, Logger, IDisposable } from "@bentley/bentleyjs-core";
 import { AccessToken, ImsAuthorizationClient } from "@bentley/itwin-client";
 import { User, UserManager, UserManagerSettings } from "oidc-client";
 import { FrontendAuthorizationClient } from "../../FrontendAuthorizationClient";
@@ -42,7 +42,7 @@ export interface BrowserAuthorizationClientConfiguration {
 /**
  * @beta
  */
-export class BrowserAuthorizationClient extends BrowserAuthorizationBase<BrowserAuthorizationClientConfiguration> implements FrontendAuthorizationClient {
+export class BrowserAuthorizationClient extends BrowserAuthorizationBase<BrowserAuthorizationClientConfiguration> implements FrontendAuthorizationClient, IDisposable {
   public readonly onUserStateChanged = new BeEvent<(token: AccessToken | undefined) => void>();
 
   protected _accessToken?: AccessToken;

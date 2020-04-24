@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ClientRequestContext } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, BeEvent } from "@bentley/bentleyjs-core";
 import { AccessToken, IncludePrefix, UserInfo } from "@bentley/itwin-client";
-import { IModelAuthorizationClient } from "../IModelCloudEnvironment";
+import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 
 /**
  * Implements AccessToken that uses Basic access authentication
@@ -41,16 +41,41 @@ export class BasicAccessToken extends AccessToken {
  * be able to tolerate this BasicAccessToken.
  * @internal
  */
-export class BasicAuthorizationClient implements IModelAuthorizationClient {
+export class IModelBankBasicAuthorizationClient implements FrontendAuthorizationClient {
   private _token?: AccessToken;
 
-  public async authorizeUser(_requestContext: ClientRequestContext, _userInfo: UserInfo | undefined, userCredentials: any): Promise<AccessToken> {
-    this._token = BasicAccessToken.fromCredentials(userCredentials);
-    return Promise.resolve(this._token);
+  public constructor(_userInfo: UserInfo | undefined, private _userCredentials: any) {
   }
 
-  public isAuthorized = true;
-  public hasExpired = true;
-  public hasSignedIn = true;
-  public async getAccessToken(_requestContext?: ClientRequestContext): Promise<AccessToken> { return Promise.resolve(this._token!); }
+  public async signIn(_requestContext: ClientRequestContext): Promise<void> {
+    _requestContext.enter();
+    this._token = BasicAccessToken.fromCredentials(this._userCredentials);
+    this.onUserStateChanged.raiseEvent(this._token);
+    return Promise.resolve();
+  }
+
+  public async signOut(_requestContext: ClientRequestContext): Promise<void> {
+    _requestContext.enter();
+    this._token = undefined;
+    this.onUserStateChanged.raiseEvent(this._token);
+    return Promise.resolve();
+  }
+
+  public readonly onUserStateChanged = new BeEvent<(token: AccessToken | undefined) => void>();
+  public get isAuthorized(): boolean {
+    return !!this._token;
+  }
+  public get hasExpired(): boolean {
+    return !this._token;
+  }
+  public get hasSignedIn(): boolean {
+    return !!this._token;
+  }
+
+  public async getAccessToken(_requestContext?: ClientRequestContext): Promise<AccessToken> {
+    if (!this._token) {
+      return Promise.reject("User is not signed in.");
+    }
+    return Promise.resolve(this._token);
+  }
 }

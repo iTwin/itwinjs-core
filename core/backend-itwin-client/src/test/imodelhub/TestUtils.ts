@@ -17,7 +17,7 @@ import {
   MultiLock, Lock, VersionQuery, IModelBaseHandler, ChangeSetQuery, IModelCloudEnvironment,
   IModelBankClient, IModelBankFileSystemContextClient,
 } from "@bentley/imodelhub-client";
-import { TestUsers, TestUserCredentials } from "@bentley/oidc-signin-tool";
+import { TestUserCredentials } from "@bentley/oidc-signin-tool";
 import { AzureFileHandler } from "../../imodelhub/AzureFileHandler";
 import { ResponseBuilder, RequestType, ScopeType, UrlDiscoveryMock } from "../ResponseBuilder";
 import { TestConfig } from "../TestConfig";
@@ -242,8 +242,11 @@ export async function delay(ms: number) {
 export async function login(userCredentials?: TestUserCredentials): Promise<AccessToken> {
   if (TestConfig.enableMocks)
     return new MockAccessToken();
-  userCredentials = userCredentials || TestUsers.regular;
-  return getCloudEnv().authorization.authorizeUser(new ClientRequestContext(), undefined, userCredentials);
+  const authorizationClient = getCloudEnv().getAuthorizationClient(undefined, userCredentials);
+  const requestContext = new ClientRequestContext();
+
+  await authorizationClient.signIn(requestContext);
+  return authorizationClient.getAccessToken(requestContext);
 }
 
 export async function bootstrapBankProject(requestContext: AuthorizedClientRequestContext, projectName: string): Promise<void> {

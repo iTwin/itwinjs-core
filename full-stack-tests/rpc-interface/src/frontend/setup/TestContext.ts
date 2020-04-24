@@ -7,13 +7,12 @@ import { expect } from "chai";
 
 import { OpenAPIInfo, BentleyCloudRpcManager, RpcConfiguration } from "@bentley/imodeljs-common";
 import { AccessToken } from "@bentley/itwin-client";
-import { NoRenderApp, IModelApp } from "@bentley/imodeljs-frontend";
+import { NoRenderApp } from "@bentley/imodeljs-frontend";
 import { Logger, LogLevel, Config } from "@bentley/bentleyjs-core";
-import { getAccessTokenFromBackend, TestUserCredentials, TestBrowserAuthorizationClientConfiguration } from "@bentley/oidc-signin-tool/lib/frontend";
+import { getAccessTokenFromBackend, TestUserCredentials, TestBrowserAuthorizationClientConfiguration, TestFrontendAuthorizationClient } from "@bentley/oidc-signin-tool/lib/frontend";
 
 import { Settings, getRpcInterfaces } from "../../common/Settings";
 import { IModelSession } from "./IModelSession";
-import { BasicAuthorizationClient } from "./BasicAuthorizationClient";
 
 import { getProcessEnvFromBackend } from "../../common/SideChannels";
 
@@ -84,9 +83,11 @@ export class TestContext {
 
     this.initializeRpcInterfaces({ title: this.settings.Backend.name, version: this.settings.Backend.version });
 
-    await NoRenderApp.startup({ applicationVersion: PACKAGE_VERSION, applicationId: this.settings.gprid });
-
-    IModelApp.authorizationClient = new BasicAuthorizationClient(this.adminUserAccessToken);
+    await NoRenderApp.startup({
+      applicationVersion: PACKAGE_VERSION,
+      applicationId: this.settings.gprid,
+      authorizationClient: new TestFrontendAuthorizationClient(this.adminUserAccessToken),
+    });
 
     console.log("TestSetup: Done");
   }

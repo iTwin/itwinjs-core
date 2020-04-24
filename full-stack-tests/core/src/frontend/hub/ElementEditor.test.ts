@@ -32,10 +32,10 @@ describe("Element editor tests (#integration)", async () => {
 
   before(async () => {
 
-    await TestUtility.initializeTestProject(testProjectName, TestUsers.regular);
+    const authorizationClient = await TestUtility.initializeTestProject(testProjectName, TestUsers.regular);
 
     const options: IModelAppOptions = {
-      authorizationClient: TestUtility.imodelCloudEnv.authorization,
+      authorizationClient,
       imodelClient: TestUtility.imodelCloudEnv.imodelClient,
       applicationVersion: "1.2.1.1",
     };

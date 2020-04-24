@@ -10,7 +10,6 @@ import { AnalysisStyle } from '@bentley/imodeljs-common';
 import { Angle } from '@bentley/geometry-core';
 import { AngleSweep } from '@bentley/geometry-core';
 import { Arc3d } from '@bentley/geometry-core';
-import { AuthorizationClient } from '@bentley/itwin-client';
 import { AuthorizedClientRequestContext } from '@bentley/itwin-client';
 import { AuxCoordSystem2dProps } from '@bentley/imodeljs-common';
 import { AuxCoordSystem3dProps } from '@bentley/imodeljs-common';
@@ -2016,7 +2015,6 @@ export interface DepthRangeNpc {
 // @alpha
 export class DesktopAuthorizationClient implements FrontendAuthorizationClient {
     constructor(clientConfiguration: DesktopAuthorizationClientConfiguration);
-    dispose(): void;
     getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
     get hasExpired(): boolean;
     get hasSignedIn(): boolean;
@@ -3779,7 +3777,7 @@ export class IModelApp {
     // @beta
     static applicationLogoCard?: () => HTMLTableRowElement;
     static get applicationVersion(): string;
-    static authorizationClient?: AuthorizationClient;
+    static authorizationClient?: FrontendAuthorizationClient;
     // @internal (undocumented)
     static createRenderSys(opts?: RenderSystem.Options): RenderSystem;
     // @internal
@@ -3858,7 +3856,7 @@ export interface IModelAppOptions {
     accuSnap?: AccuSnap;
     applicationId?: string;
     applicationVersion?: string;
-    authorizationClient?: AuthorizationClient;
+    authorizationClient?: FrontendAuthorizationClient;
     // @internal (undocumented)
     extensionAdmin?: ExtensionAdmin;
     // @internal

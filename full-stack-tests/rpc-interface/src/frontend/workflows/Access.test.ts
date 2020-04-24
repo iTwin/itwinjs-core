@@ -6,8 +6,8 @@ import { OpenMode } from "@bentley/bentleyjs-core";
 import { Range3d } from "@bentley/geometry-core";
 import { IModelError } from "@bentley/imodeljs-common";
 import { RemoteBriefcaseConnection, IModelApp } from "@bentley/imodeljs-frontend";
-import { BasicAuthorizationClient } from "../setup/BasicAuthorizationClient";
 import { TestContext } from "../setup/TestContext";
+import { TestFrontendAuthorizationClient } from "@bentley/oidc-signin-tool/lib/frontend";
 
 import * as chai from "chai";
 const expect = chai.expect;
@@ -28,7 +28,7 @@ describe("Access", () => {
     const openMode = OpenMode.Readonly;
 
     const accessToken = testContext.adminUserAccessToken;
-    (IModelApp.authorizationClient as BasicAuthorizationClient).setAccessToken(accessToken);
+    IModelApp.authorizationClient = new TestFrontendAuthorizationClient(accessToken);
     const iModel = await RemoteBriefcaseConnection.open(contextId, iModelId, openMode);
 
     await expect(iModel.saveChanges(), "Expected writing to iModel in read mode to fail").to.be.rejectedWith(IModelError);
@@ -41,7 +41,7 @@ describe("Access", () => {
     const contextId = testContext.iModelWithChangesets!.contextId;
     const openMode = OpenMode.ReadWrite;
     const accessToken = testContext.adminUserAccessToken;
-    (IModelApp.authorizationClient as BasicAuthorizationClient).setAccessToken(accessToken);
+    IModelApp.authorizationClient = new TestFrontendAuthorizationClient(accessToken);
     await expect(RemoteBriefcaseConnection.open(contextId, iModelId, openMode), "Expected opening iModel for write to fail").to.be.rejectedWith(IModelError);
   });
 

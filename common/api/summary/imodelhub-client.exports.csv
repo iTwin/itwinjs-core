@@ -52,7 +52,6 @@ internal;HardiModelDeleteEvent
 alpha;HubCode 
 beta;HubIModel 
 alpha;HubUserInfo 
-internal;IModelAuthorizationClient 
 internal;IModelBankClient 
 internal;IModelBankFileSystemContextClient 
 beta;IModelBankHandler 

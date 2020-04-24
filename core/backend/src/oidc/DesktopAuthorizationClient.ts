@@ -285,10 +285,6 @@ export class DesktopAuthorizationClient extends ImsAuthorizationClient implement
     return !!this._tokenResponse;
   }
 
-  /** Disposes the resources held by this client */
-  public dispose(): void {
-  }
-
   /** Swap the authorization code for a refresh token and access token */
   private async swapAuthorizationCodeForTokens(requestContext: ClientRequestContext, authCode: string, codeVerifier: string): Promise<TokenResponse> {
     requestContext.enter();

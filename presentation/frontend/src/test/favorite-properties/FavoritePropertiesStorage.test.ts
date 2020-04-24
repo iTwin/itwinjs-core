@@ -12,17 +12,17 @@ import { ResolvablePromise } from "@bentley/presentation-common/lib/test/_helper
 import { BeEvent } from "@bentley/bentleyjs-core";
 import { InternetConnectivityStatus } from "@bentley/imodeljs-common";
 import { AuthorizedFrontendRequestContext, IModelApp } from "@bentley/imodeljs-frontend";
-import { AuthorizationClient } from "@bentley/itwin-client";
 import { SettingsStatus, SettingsAdmin } from "@bentley/product-settings-client";
 import { IModelAppFavoritePropertiesStorage, OfflineCachingFavoritePropertiesStorage } from "../../presentation-frontend/favorite-properties/FavoritePropertiesStorage";
 import { PropertyFullName, FavoritePropertiesOrderInfo } from "../../presentation-frontend/favorite-properties/FavoritePropertiesManager";
 import { IConnectivityInformationProvider } from "../../presentation-frontend/ConnectivityInformationProvider";
+import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 
 describe("IModelAppFavoritePropertiesStorage", () => {
 
   let storage: IModelAppFavoritePropertiesStorage;
   let settingsAdminMock: moq.IMock<SettingsAdmin>;
-  let authorizationClientMock: moq.IMock<AuthorizationClient>;
+  let authorizationClientMock: moq.IMock<FrontendAuthorizationClient>;
 
   beforeEach(async () => {
     const requestConextMock = moq.Mock.ofType<AuthorizedFrontendRequestContext>();
@@ -30,7 +30,7 @@ describe("IModelAppFavoritePropertiesStorage", () => {
     sinon.stub(AuthorizedFrontendRequestContext, "create").resolves(requestConextMock.object);
     sinon.stub(IModelApp, "settings").get(() => settingsAdminMock.object);
 
-    authorizationClientMock = moq.Mock.ofType<AuthorizationClient>();
+    authorizationClientMock = moq.Mock.ofType<FrontendAuthorizationClient>();
     authorizationClientMock.setup((x) => x.hasSignedIn).returns(() => true);
     IModelApp.authorizationClient = authorizationClientMock.object;
 

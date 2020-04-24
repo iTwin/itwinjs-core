@@ -2,8 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { AuthStatus, BentleyError, Config } from "@bentley/bentleyjs-core";
-import { AccessToken, AuthorizationClient } from "@bentley/itwin-client";
+import { Config } from "@bentley/bentleyjs-core";
 
 // Keep the dependencies of this file to only ones that can be used from both the frontend and backend.  This allows the same class for
 // test users to be used in either case.
@@ -77,35 +76,5 @@ export class TestUsers {
       redirectUri: Config.App.getString("imjs_oidc_browser_test_redirect_uri"),
       scope: Config.App.getString("imjs_oidc_browser_test_scopes"),
     };
-  }
-}
-
-/**
- * Basic AuthorizationClient to use with an already created access token.
- * @internal
- */
-export class TestAuthorizationClient implements AuthorizationClient {
-  constructor(private _accessToken?: AccessToken) { }
-
-  public get isAuthorized(): boolean {
-    return !!this._accessToken;
-  }
-
-  public get hasExpired(): boolean {
-    return !this._accessToken;
-  }
-
-  public get hasSignedIn(): boolean {
-    return !!this._accessToken;
-  }
-
-  public async getAccessToken(): Promise<AccessToken> {
-    if (!this._accessToken)
-      throw new BentleyError(AuthStatus.Error, "Cannot get access token");
-    return this._accessToken;
-  }
-
-  public setAccessToken(accessToken?: AccessToken) {
-    this._accessToken = accessToken;
   }
 }

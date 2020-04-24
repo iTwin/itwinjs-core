@@ -8,8 +8,8 @@ import { AccessToken } from "@bentley/itwin-client";
 import { Briefcase as HubBriefcase, BriefcaseQuery } from "@bentley/imodelhub-client";
 import { RemoteBriefcaseConnection, IModelApp, IModelConnection, AuthorizedFrontendRequestContext } from "@bentley/imodeljs-frontend";
 import { assert, expect } from "chai";
-import { BasicAuthorizationClient } from "./setup/BasicAuthorizationClient";
 import { TestContext } from "./setup/TestContext";
+import { TestFrontendAuthorizationClient } from "@bentley/oidc-signin-tool/lib/frontend";
 
 describe("IModel Read/Write Connection", () => {
   let accessToken: AccessToken;
@@ -22,7 +22,7 @@ describe("IModel Read/Write Connection", () => {
       this.skip();
 
     accessToken = testContext.adminUserAccessToken;
-    (IModelApp.authorizationClient as BasicAuthorizationClient).setAccessToken(accessToken);
+    IModelApp.authorizationClient = new TestFrontendAuthorizationClient(accessToken);
   });
 
   after(async function () {

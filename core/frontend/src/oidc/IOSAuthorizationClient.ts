@@ -76,8 +76,5 @@ export class IOSAuthorizationClient extends ImsAuthorizationClient implements Fr
     return !!this._accessToken; // Always silently refreshed
   }
 
-  public dispose(): void {
-  }
-
   public readonly onUserStateChanged = new BeEvent<(token: AccessToken | undefined, message: string) => void>();
 }
