@@ -7,8 +7,7 @@ import { HubIModel } from "@bentley/imodelhub-client";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { IModelVersion } from "@bentley/imodeljs-common";
 import { RemoteBriefcaseConnection, IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
-import { TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
-import { TestUtility } from "@bentley/oidc-signin-tool/lib/TestUtility";
+import { TestFrontendAuthorizationClient } from "@bentley/oidc-signin-tool/lib/frontend";
 import { ProjectShareClient } from "@bentley/projectshare-client";
 import * as chai from "chai";
 import { PhotoFile, PhotoFolder, PhotoTree } from "../../PhotoTree";
@@ -125,9 +124,8 @@ describe("GeoPhoto (#integration)", () => {
   const subFolders = true;
 
   before(async () => {
-    const authorizationClient = TestUtility.getAuthorizationClient(TestUsers.regular);
-    const accessToken = await authorizationClient.getAccessToken();
-    requestContext = new AuthorizedClientRequestContext(accessToken);
+    requestContext = await TestConfig.getAuthorizedClientRequestContext();
+    const authorizationClient = new TestFrontendAuthorizationClient(requestContext.accessToken);
     await IModelApp.startup({ authorizationClient });
 
     const project = await TestConfig.queryProject(requestContext, "iModelJsGeoPhotoTestProject");
