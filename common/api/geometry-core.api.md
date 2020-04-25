@@ -1403,6 +1403,7 @@ export class CurveFactory {
     static appendToArcInPlace(arcA: Arc3d, arcB: Arc3d, allowReverse?: boolean): boolean;
     static assembleArcChainOnEllipsoid(ellipsoid: Ellipsoid, pathPoints: GeodesicPathPoint[], fractionForIntermediateNormal?: number): Path;
     static createFilletsInLineString(points: LineString3d | IndexedXYZCollection | Point3d[], radius: number | number[], allowBackupAlongEdge?: boolean): Path | undefined;
+    static createMiteredPipeSections(centerline: IndexedXYZCollection, radius: number): Arc3d[];
     static createPipeSegments(centerline: CurvePrimitive | CurveChain, pipeRadius: number): GeometryQuery | GeometryQuery[] | undefined;
     static createRectangleXY(x0: number, y0: number, x1: number, y1: number, z?: number, filletRadius?: number): Loop;
 }
@@ -3791,6 +3792,8 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     addIndexedPolyface(source: IndexedPolyface, reversed: boolean, transform?: Transform): void;
     addLinearSweep(surface: LinearSweep): void;
     addLinearSweepLineStringsXYZOnly(contour: AnyCurve, vector: Vector3d): void;
+    // (undocumented)
+    addMiteredPipes(centerline: IndexedXYZCollection | Point3d[] | CurvePrimitive, radius: number, numFacetAround?: number): void;
     addPolygon(points: Point3d[], numPointsToUse?: number): void;
     addPolygonGrowableXYZArray(points: GrowableXYZArray): void;
     addQuadFacet(points: Point3d[] | GrowableXYZArray, params?: Point2d[], normals?: Vector3d[]): void;
@@ -4525,6 +4528,8 @@ export class Sample {
     static createPlane(x: number, y: number, z: number, u: number, v: number, w: number): Plane3dByOriginAndUnitNormal;
     static createPoint2dLattice(low: number, step: number, high: number): Point2d[];
     static createPoint3dLattice(low: number, step: number, high: number): Point3d[];
+    static createPointsByIndexFunctions(numInterval: number, fx: SteppedIndexFunction, fy: SteppedIndexFunction, fz?: SteppedIndexFunction): Point3d[];
+    static createPointSineWave(origin: XYAndZ | undefined, numInterval?: number, xStep?: number, a?: number, thetaSweep?: AngleSweep, b?: number, betaSweep?: AngleSweep): Point3d[];
     static createPseudoTorusBsplineSurface(radiusU: number, radiusV: number, numU: number, numV: number, orderU: number, orderV: number): BSplineSurface3d | undefined;
     static createRange3ds(): Range3d[];
     static createRangeEdges(range: Range3d): BagOfCurves | undefined;
@@ -4730,6 +4735,17 @@ export enum StandardViewIndex {
     Right = 4,
     RightIso = 8,
     Top = 1
+}
+
+// @alpha
+export type SteppedIndexFunction = (i: number, n: number) => number;
+
+// @alpha
+export class SteppedIndexFunctionFactory {
+    static createConstant(value?: number): SteppedIndexFunction;
+    static createCosine(amplitude: number, sweep?: AngleSweep, f0?: number): SteppedIndexFunction;
+    static createLinear(a: number, f0?: number): SteppedIndexFunction;
+    static createSine(amplitude: number, sweep?: AngleSweep, f0?: number): SteppedIndexFunction;
 }
 
 // @public

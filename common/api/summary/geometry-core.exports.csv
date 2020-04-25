@@ -224,6 +224,8 @@ public;SolidPrimitiveType = "box" | "cone" | "sphere" | "linearSweep" | "rotatio
 public;Sphere 
 internal;SphereImplicit
 public;StandardViewIndex
+alpha;SteppedIndexFunction = (i: number, n: number) => number
+alpha;SteppedIndexFunctionFactory
 public;StrokeCountMap
 public;StrokeOptions
 public;SweepContour

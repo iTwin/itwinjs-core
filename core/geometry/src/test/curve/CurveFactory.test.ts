@@ -17,6 +17,10 @@ import { Arc3d } from "../../curve/Arc3d";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import * as fs from "fs";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
+import { Sample } from "../../serialization/GeometrySamples";
+import { Point3dArrayCarrier } from "../../geometry3d/Point3dArrayCarrier";
+import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
+import { CurvePrimitive } from "../../curve/CurvePrimitive";
 /* tslint:disable:no-console */
 
 describe("CurveFactory", () => {
@@ -218,6 +222,36 @@ describe("PipeConnections", () => {
       }
       GeometryCoreTestIO.saveGeometry(allGeometry, "PipeConnections", filename);
     }
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("createMiteredPipeSections", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let x0 = 0.0;
+    let y0 = 0.0;
+    const radius = 0.25;
+    const allPaths: Array<Point3dArrayCarrier | CurvePrimitive> = [];
+    for (const numPoints of [8, 20, 40]) {
+      const path = new Point3dArrayCarrier(
+        Sample.createPointSineWave(undefined, numPoints, 10.0 / numPoints,
+          5.0, AngleSweep.createStartEndDegrees(0, 520),
+          3.0, AngleSweep.createStartEndDegrees(0, 100)));
+      allPaths.push(path);
+    }
+    const bsplines = Sample.createBsplineCurves(false);
+    for (const b of bsplines)
+      allPaths.push(b);
+    for (const path of allPaths) {
+      y0 = 0;
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, path, x0, y0);
+      y0 += 10.0;
+      const builder = PolyfaceBuilder.create();
+      builder.addMiteredPipes(path, radius);
+      const mesh = builder.claimPolyface();
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, x0, y0);
+      x0 += 10;
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveFactory", "createMiteredPipeSections");
     expect(ck.getNumErrors()).equals(0);
   });
 });

@@ -64,7 +64,7 @@ export class GeometryCoreTestIO {
     this.captureGeometry(collection, Loop.createPolygon(points), dx, dy, dz);
   }
 
-  public static captureCloneGeometry(collection: GeometryQuery[], newGeometry: GeometryQuery | GeometryQuery[] | undefined, dx: number = 0, dy: number = 0, dz: number = 0) {
+  public static captureCloneGeometry(collection: GeometryQuery[], newGeometry: GeometryQuery | GeometryQuery[] | IndexedXYZCollection | Point3d[] | undefined, dx: number = 0, dy: number = 0, dz: number = 0) {
     if (!newGeometry)
       return;
     if (newGeometry instanceof GeometryQuery) {
@@ -73,9 +73,19 @@ export class GeometryCoreTestIO {
         GeometryCoreTestIO.captureGeometry(collection, g1, dx, dy, dz);
       return;
     }
-    if (Array.isArray(newGeometry)) {
+    if (newGeometry instanceof IndexedXYZCollection) {
+      const linestring = LineString3d.create(newGeometry);
+      this.captureGeometry(collection, linestring, dx, dy, dz);
+      return;
+    }
+    if (Array.isArray(newGeometry) && newGeometry.length > 0) {
+      if (newGeometry[0] instanceof Point3d) {
+        const linestring = LineString3d.create(newGeometry);
+        this.captureGeometry(collection, linestring, dx, dy, dz);
+        return;
+      }
       for (const g of newGeometry)
-        this.captureCloneGeometry(collection, g, dx, dy, dz);
+        this.captureCloneGeometry(collection, g as GeometryQuery, dx, dy, dz);
     }
   }
   /**

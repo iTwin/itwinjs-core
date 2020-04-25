@@ -19,6 +19,10 @@ import { Transform } from "./Transform";
  * PackedMatrix3dOps contains static methods for matrix operations where the matrix is a Float64Array.
  * * The Float64Array contains the matrix entries in row-major order
  * @internal
+ * ```
+ * equation
+ * \newcommand[1]\mij{#1_{00}\ #1_{01}\ a_{02}}
+ * ```
  */
 export class PackedMatrix3dOps {
   /**
@@ -155,11 +159,17 @@ export enum InverseMatrixState {
 /** A Matrix3d is a 3x3 matrix.
  * * A very common use is to hold a rigid body rotation (which has no scaling or skew), but the 3x3 contents can
  * also hold scaling and skewing.
- * * The 9 entries are stored in row-major order in the coffs array.
+ * * The matrix with 2-dimensional layout
+ * ```equation
+ *      \matrixXY{A}
+ * ```
+ * is stored as 9 numbers in "row-major" order in a `Float64Array`, viz
+ * ```equation
+ *      \rowMajorMatrixXY{A}
+ * ```
  * * If the matrix inverse is known it is stored in the inverseCoffs array.
- * * The inverse status (unknown, inverseStored, singular) status is indicated by the inverseState property.
- * * constructions method that are able to determine the inverse store it immediately and
- *     note that in the inverseState.
+ * * The inverse status (`unknown`, `inverseStored`, `singular`) status is indicated by the `inverseState` property.
+ * * construction methods that are able to trivially construct the inverse store it immediately and note that in the inverseState.
  * * constructions (e.g. createRowValues) for which the inverse is not immediately known mark the
  *     inverseState as unknown.
  * * Later queries for the inverse trigger full computation if needed at that time.
@@ -176,11 +186,21 @@ export class Matrix3d implements BeJSONFunctions {
   /** total number of times a cached inverse was computed. */
   public static numComputeCache = 0;
   /** Matrix contents as a flat array of numbers in row-major order.
+   * ```
+   * equation
+   * \mxy{B}
+   * \mij{B}
+   * ```
    * * DO NOT directly modify this array.  It will destroy safety of the cached inverse state.
    */
   public coffs: Float64Array;
   /** matrix inverse contents.
    * * DO NOT directly modify this array.  It will destroy integrity of the cached inverse state.
+   * ```
+   * equation
+   * \mxy{A}
+   * ```
+   *
    *
    */
   public inverseCoffs: Float64Array | undefined;
@@ -289,7 +309,11 @@ export class Matrix3d implements BeJSONFunctions {
   private static _create(result?: Matrix3d): Matrix3d { return result ? result : new Matrix3d(); }
 
   /** Returns a Matrix3d populated by numeric values given in row-major order.
-   *  set all entries in the matrix from call parameters appearing in row - major order.
+   *  set all entries in the matrix from call parameters appearing in row - major order, i.e.
+   * ```
+   * equation
+   * \begin{bmatrix}a_{xx}\ a_{xy}\ a_{xz}\\ a_{yx}\ a_{yy}\ a_{yz}\\ a_{zx}\ a_{zy}\ a_{zz}\end{bmatrix}
+   * ```
    * @param axx Row x, column x(0, 0) entry
    * @param axy Row x, column y(0, 1) entry
    * @param axz Row x, column z(0, 2) entry
@@ -417,6 +441,10 @@ export class Matrix3d implements BeJSONFunctions {
    * * Note that for geometry transformations "all zeros" is not a useful default state.
    * * Hence almost always use `createIdentity` for graphics transformations.
    * * "all zeros" is appropriate for summing moment data.
+   * ```
+   * equation
+   * \begin{bmatrix}0 0 0 \\ 0 0 0 \\ 0 0 0\end{bmatrix}
+   * ```
    */
   public static createZero(): Matrix3d {
     const retVal = new Matrix3d();
@@ -427,6 +455,11 @@ export class Matrix3d implements BeJSONFunctions {
    * * all diagonal entries (xx,yy,zz) are one
    * * all others are zero.
    * * This (rather than all zeros) is the useful state for most graphics transformations.
+   * ```
+   * equation
+   * \begin{bmatrix}1 0 0 \\ 0 1 0 \\ 0 0 1\end{bmatrix}
+   * ```
+   *
    */
   public static createIdentity(result?: Matrix3d): Matrix3d {
     result = result ? result : new Matrix3d();
@@ -434,7 +467,13 @@ export class Matrix3d implements BeJSONFunctions {
     return result;
   }
 
-  /** Create a matrix with uniform scale factors */
+  /**
+   * Create a matrix with uniform scale factors, viz (with `s=scaleFactor`)
+   * ```
+   * equation
+   * \begin{bmatrix}s\ 0\ 0\ 0\\ 0\ s\ 0\\ 0\ 0\ s\end{bmatrix}
+   * ```
+   */
   public static createUniformScale(scaleFactor: number): Matrix3d {
     return Matrix3d.createScale(scaleFactor, scaleFactor, scaleFactor);
   }
@@ -481,7 +520,12 @@ export class Matrix3d implements BeJSONFunctions {
     return vector.crossProduct(result, result);
   }
 
-  /** Create a matrix with distinct x,y,z diagonal (scale) entries */
+  /** Create a matrix with distinct x,y,z diagonal (scale) entries.
+   * ```
+   * equation
+   * \begin{bmatrix}s_x\ 0\ 0\ 0\\ 0\ s_y\ 0\\ 0\ 0\ s_z\end{bmatrix}
+   * ```
+   */
   public static createScale(scaleFactorX: number, scaleFactorY: number, scaleFactorZ: number, result?: Matrix3d): Matrix3d {
     if (result)
       result.setZero();

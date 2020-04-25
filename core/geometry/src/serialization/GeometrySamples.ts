@@ -57,8 +57,46 @@ import { CurveChainWithDistanceIndex } from "../curve/CurveChainWithDistanceInde
 import { KnotVector, BSplineWrapMode } from "../bspline/KnotVector";
 import { SolidPrimitive } from "../solid/SolidPrimitive";
 import { CoordinateXYZ } from "../curve/CoordinateXYZ";
+import { XYAndZ } from "../geometry3d/XYZProps";
 
 /* tslint:disable:no-console */
+/**
+ * Function to be called to obtain function value at (i,n), for
+ * * n fixed over many calls
+ *   * n may be assumed 1 or greater (so fraction = i/n is safe)
+ * * i varies from 0 to n
+ * @alpha
+ */
+export type SteppedIndexFunction = (i: number, n: number) => number;
+/**
+ * Static methods to create functions of type SteppedIndexFunction
+ * * Convention: constant value is optional last argument, with default value 0
+ * @alpha
+ */
+export class SteppedIndexFunctionFactory {
+  /** Returns a callable function that returns a constant value. */
+  public static createConstant(value: number = 0): SteppedIndexFunction {
+    return (_i: number, _n: number) => value;
+  }
+  /** Return a function that steps linearly
+   * *  f(i,n) = y0 + (i/n) * a
+   */
+  public static createLinear(a: number, f0: number = 0): SteppedIndexFunction {
+    return (i: number, n: number) => (f0 + a * (i / n));
+  }
+  /** Return a function that steps with cosine of angles in sweep
+   * *  f(i,n) = y0 + amplitude * cos(i/n)
+   */
+  public static createCosine(amplitude: number, sweep: AngleSweep = AngleSweep.create360(), f0: number = 0): SteppedIndexFunction {
+    return (i: number, n: number) => (f0 + amplitude * Math.cos(sweep.fractionToRadians(i / n)));
+  }
+  /** Return a function that steps with cosine of angles in sweep.
+   * *  f(i,n) = y0 + amplitude * sin(i/n)
+   */
+  public static createSine(amplitude: number, sweep: AngleSweep = AngleSweep.create360(), f0: number = 0): SteppedIndexFunction {
+    return (i: number, n: number) => (f0 + amplitude * Math.sin(sweep.fractionToRadians(i / n)));
+  }
+}
 /**
  * `Sample` has static methods to create a variety of geometry samples useful in testing.
  * @alpha
@@ -2222,5 +2260,31 @@ export class Sample {
     this.appendGeometry(this.createBagOfCurves(), result);
 
     return result;
+  }
+  /** Create points on a sine wave
+   * Point i is origin + (i * xStep, a *sin(theta0 + i * dTheta), b * sin(beta0 + i * dBeta))
+   * * Default b is zero, so it is a simple sine wave
+   * * If the dTheta and dBeta are equal, it is a sine wave in a tilted plane.
+   * * If dTheta and dBeta are different it is a non-planar curve
+   */
+  public static createPointSineWave(origin: XYAndZ | undefined, numInterval: number = 24,
+    xStep: number = Math.PI / 12,
+    a: number = 1, thetaSweep: AngleSweep = AngleSweep.createStartEndDegrees(0, 360),
+    b: number = 0, betaSweep: AngleSweep = AngleSweep.createStartEndDegrees(0, 180)): Point3d[] {
+    return this.createPointsByIndexFunctions(numInterval, SteppedIndexFunctionFactory.createLinear(xStep, origin ? origin.x : 0),
+      SteppedIndexFunctionFactory.createCosine(a, thetaSweep, origin ? origin.y : 0),
+      SteppedIndexFunctionFactory.createCosine(b, betaSweep, origin ? origin.z : 0));
+  }
+  /** Create points with x,y,z independent functions of i and numInterval,
+   *    Point3d.create (fx(i,numInterval), fy(i,numInterval), fz(i, numInterval));
+   */
+  public static createPointsByIndexFunctions(numInterval: number, fx: SteppedIndexFunction, fy: SteppedIndexFunction, fz?: SteppedIndexFunction): Point3d[] {
+    const points = [];
+    if (numInterval > 0) {
+      for (let i = 0; i <= numInterval; i++) {
+        points.push(Point3d.create(fx(i, numInterval), fy(i, numInterval), fz ? fz(i, numInterval) : 0));
+      }
+    }
+    return points;
   }
 }

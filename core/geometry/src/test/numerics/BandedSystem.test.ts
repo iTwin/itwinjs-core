@@ -12,6 +12,7 @@ import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { Sample } from "../../serialization/GeometrySamples";
+import { AngleSweep } from "../../geometry3d/AngleSweep";
 /* tslint:disable:no-console */
 function maxDiff(arrayA: Float64Array, arrayB: Float64Array): number {
   let diff = 0.0;
@@ -132,12 +133,16 @@ describe("BandedSystem", () => {
     }
     for (const count of [5, 6, 10])
       allPoints.push(Sample.createGrowableArrayCirclePoints(3, count, true, 0, 0));
+    allPoints.push(GrowableXYZArray.create(
+      Sample.createPointSineWave(undefined, 25, 0.25,
+        2.0, AngleSweep.createStartEndDegrees(0, 300),
+        0.5, AngleSweep.createStartEndDegrees(0, 200))));
     for (const points of allPoints) {
       let y0 = 0;
       for (const order of [4, 3, 5, 7]) {
         if (points.length >= order) {
           for (const q of points.points) GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, q, 0.15, x0, y0);
-          const curve = BSplineCurve3d.createThroughPoints(points, 4);
+          const curve = BSplineCurve3d.createThroughPoints(points, order);
           if (curve) {
             GeometryCoreTestIO.captureCloneGeometry(allGeometry, curve, x0, y0);
             for (const f of [0.25, 0.50, 0.75]) GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, 4, curve.fractionToPoint(f), 0.10, x0, y0);
