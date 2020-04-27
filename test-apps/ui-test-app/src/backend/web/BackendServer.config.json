@@ -81,6 +81,10 @@
       {
         "category": "IModelDb.open",
         "logLevel": "Trace"
+      },
+      {
+        "category": "backend-itwin-client.FileHandlers",
+        "logLevel": "Trace"
       }
     ]
   },

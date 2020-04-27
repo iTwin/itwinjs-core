@@ -10,10 +10,10 @@ import {
   Briefcase as HubBriefcase, IModelHubClient, ChangeSet, ChangesType, Briefcase, HubCode, IModelHubError,
   CheckpointQuery, Checkpoint, BriefcaseQuery, ChangeSetQuery, ConflictingCodesError, IModelClient, HubIModel, IModelBankClient,
 } from "@bentley/imodelhub-client";
-import { AuthorizedClientRequestContext, CancelRequest, ProgressCallback, UserCancelledError } from "@bentley/itwin-client";
+import { AuthorizedClientRequestContext, CancelRequest, ProgressCallback, ProgressInfo, UserCancelledError } from "@bentley/itwin-client";
 import { AzureFileHandler, IOSAzureFileHandler } from "@bentley/backend-itwin-client";
 import {
-  ChangeSetApplyOption, BeEvent, DbResult, OpenMode, assert, Logger, ChangeSetStatus,
+  ChangeSetApplyOption, BeEvent, DbResult, OpenMode, assert, Logger, LogLevel, ChangeSetStatus,
   BentleyStatus, IModelHubStatus, PerfLogger, GuidString, Id64, IModelStatus, AsyncMutex, BeDuration,
 } from "@bentley/bentleyjs-core";
 import { BriefcaseStatus, CreateIModelProps, IModelError, IModelVersion, MobileRpcConfiguration, BriefcaseProps, DownloadBriefcaseStatus, SyncMode, BriefcaseDownloader, BriefcaseKey, RequestBriefcaseProps, DownloadBriefcaseOptions } from "@bentley/imodeljs-common";
@@ -770,10 +770,6 @@ export class BriefcaseManager {
     const { briefcaseProps, downloadPromise } = await BriefcaseManager.requestDownload(requestContext, contextId, iModelId, downloadOptions, version, downloadProgress);
     requestContext.enter();
 
-    // Setup the async-s after the download completes
-    const perfLogger = new PerfLogger("BriefcaseManager.downloadBriefcase", () => briefcaseProps);
-
-    // Finish the download
     try {
       await downloadPromise;
       requestContext.enter();
@@ -782,8 +778,6 @@ export class BriefcaseManager {
       requestContext.enter();
       Logger.logError(loggerCategory, "BriefcaseManager.downloadBriefcase failed", () => briefcaseProps);
       throw error;
-    } finally {
-      perfLogger.dispose();
     }
 
     return briefcaseProps;
@@ -912,7 +906,7 @@ export class BriefcaseManager {
 
   private static validateBriefcase(briefcase: BriefcaseEntry, requiredChangeSetId: GuidString, requiredBriefcaseId: BriefcaseId): BriefcaseValidity {
     if (briefcase.downloadStatus === DownloadBriefcaseStatus.Error) {
-      Logger.logError(loggerCategory, "Briefcase found that had downlaod errors. Must recreate it.", () => ({ ...briefcase.getDebugInfo(), requiredBriefcaseId }));
+      Logger.logError(loggerCategory, "Briefcase found that had download errors. Must recreate it.", () => ({ ...briefcase.getDebugInfo(), requiredBriefcaseId }));
       return BriefcaseValidity.Recreate;
     }
 
@@ -1076,8 +1070,9 @@ export class BriefcaseManager {
 
   private static async finishCreateBriefcase(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseEntry): Promise<void> {
     requestContext.enter();
-
     try {
+      const perfLogger = new PerfLogger("BriefcaseManager - downloading briefcase", () => briefcase.getDebugInfo());
+
       // Download checkpoint
       let checkpointQuery = new CheckpointQuery().selectDownloadUrl();
       checkpointQuery = checkpointQuery.precedingCheckpoint(briefcase.targetChangeSetId);
@@ -1130,9 +1125,11 @@ export class BriefcaseManager {
 
       // Set the flag to mark that briefcase download has completed
       briefcase.downloadStatus = DownloadBriefcaseStatus.Complete;
+
+      perfLogger.dispose();
     } catch (error) {
       requestContext.enter();
-      Logger.logWarning(loggerCategory, "Error downloading briefcase - deleting it", () => briefcase.getDebugInfo());
+      Logger.logError(loggerCategory, "Error downloading briefcase - deleting it", () => briefcase.getDebugInfo());
 
       briefcase.downloadStatus = DownloadBriefcaseStatus.Error;
       await BriefcaseManager.deleteBriefcase(requestContext, briefcase);
@@ -1167,14 +1164,52 @@ export class BriefcaseManager {
     return briefcase;
   }
 
+  private static enableDownloadTrace(checkpoint: Checkpoint, progressCallback?: ProgressCallback): ProgressCallback {
+    const sasUrl = new URL(checkpoint.downloadUrl!);
+    const se = sasUrl.searchParams.get("se");
+    if (se) {
+      const expiresAt = new Date(se);
+      const now = new Date();
+      const expiresInSeconds = (expiresAt.getTime() - now.getTime()) / 1000;
+      Logger.logTrace(loggerCategory, "Downloading checkpoint (started)...", () => ({
+        expiresInSeconds,
+        fileSizeInBytes: checkpoint.fileSize,
+      }));
+    }
+
+    let lastReported = 0;
+    const startedTime = (new Date()).getTime();
+    const progressCallbackWrapper = (progressInfo: ProgressInfo) => {
+      if (progressCallback)
+        progressCallback(progressInfo);
+      if (progressInfo.percent === undefined)
+        return;
+      if (progressInfo.percent - lastReported > 5.0) {
+        lastReported = progressInfo.percent;
+        const currentTime = (new Date()).getTime();
+        const elapsedSeconds = (currentTime - startedTime) / 1000;
+        const remainingSeconds = (elapsedSeconds * (100.0 - progressInfo.percent)) / progressInfo.percent;
+        Logger.logTrace(loggerCategory, "Downloading checkpoint (progress)...", () => ({
+          downloadedBytes: progressInfo.loaded, totalBytes: progressInfo.total, percentComplete: progressInfo.percent?.toFixed(2),
+          elapsedSeconds: elapsedSeconds.toFixed(0), remainingSeconds: remainingSeconds.toFixed(0),
+        }));
+      }
+    };
+    return progressCallbackWrapper;
+  }
+
   /** Downloads the checkpoint file */
   private static async downloadCheckpoint(requestContext: AuthorizedClientRequestContext, checkpoint: Checkpoint, seedPathname: string, progressCallback?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void> {
     requestContext.enter();
     if (IModelJsFs.existsSync(seedPathname))
       return;
 
+    let progressCallbackWrapper: ProgressCallback | undefined = progressCallback;
+    if (Logger.isEnabled(loggerCategory, LogLevel.Trace))
+      progressCallbackWrapper = this.enableDownloadTrace(checkpoint, progressCallback);
+
     try {
-      await BriefcaseManager.imodelClient.checkpoints.download(requestContext, checkpoint, seedPathname, progressCallback, cancelRequest);
+      await BriefcaseManager.imodelClient.checkpoints.download(requestContext, checkpoint, seedPathname, progressCallbackWrapper, cancelRequest);
     } catch (error) {
       requestContext.enter();
       if (!(error instanceof UserCancelledError))

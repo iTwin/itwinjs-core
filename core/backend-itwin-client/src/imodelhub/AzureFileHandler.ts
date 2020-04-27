@@ -155,7 +155,7 @@ export class AzureFileHandler implements FileHandler {
     const azcopy = new AzCopy({ logLocation: azLogDir });
     if (progressCallback) {
       const cb = (args: ProgressEventArgs) => {
-        progressCallback({ total: args.TotalBytesEnumerated, loaded: args.BytesOverWire, percent: args.BytesOverWire ? (args.BytesOverWire / args.TotalBytesEnumerated) : 0 });
+        progressCallback({ total: args.TotalBytesEnumerated, loaded: args.BytesOverWire, percent: args.BytesOverWire ? (args.BytesOverWire / args.TotalBytesEnumerated) * 100.0 : 0 });
       };
 
       azcopy.on("azprogress", cb);

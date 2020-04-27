@@ -537,7 +537,7 @@ describe("ChangeSummary (#integration)", () => {
     }
   });
 
-  it("Create ChangeSummary-s for changes to parent elements", async () => {
+  it.skip("Create ChangeSummary-s for changes to parent elements", async () => {
     // Generate a unique name for the iModel (so that this test can be run simultaneously by multiple users+hosts simultaneously)
     const iModelName = HubUtility.generateUniqueName("ParentElementChangeTest");
 
