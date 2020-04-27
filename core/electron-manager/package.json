@@ -1,6 +1,6 @@
 {
   "name": "@bentley/electron-manager",
-  "version": "2.0.0-dev.80",
+  "version": "2.0.0-dev.81",
   "description": "iModel.js electron utilities",
   "main": "lib/ElectronManager.js",
   "typings": "lib/ElectronManager",
@@ -32,19 +32,19 @@
   },
   "peerDependencies": {
     "electron": "^8.2.1",
-    "@bentley/bentleyjs-core": "^2.0.0-dev.80",
-    "@bentley/imodeljs-backend": "^2.0.0-dev.80"
+    "@bentley/bentleyjs-core": "^2.0.0-dev.81",
+    "@bentley/imodeljs-backend": "^2.0.0-dev.81"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/build-tools": "2.0.0-dev.80",
-    "@bentley/bentleyjs-core": "2.0.0-dev.80",
-    "@bentley/itwin-client": "2.0.0-dev.80",
-    "@bentley/imodeljs-common": "2.0.0-dev.80",
-    "@bentley/imodeljs-backend": "2.0.0-dev.80",
+    "@bentley/build-tools": "2.0.0-dev.81",
+    "@bentley/bentleyjs-core": "2.0.0-dev.81",
+    "@bentley/itwin-client": "2.0.0-dev.81",
+    "@bentley/imodeljs-common": "2.0.0-dev.81",
+    "@bentley/imodeljs-backend": "2.0.0-dev.81",
     "@types/node": "10.14.1",
     "electron": "^8.2.1",
     "rimraf": "^3.0.2",

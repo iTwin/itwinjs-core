@@ -1,6 +1,6 @@
 {
   "name": "@bentley/hypermodeling-extension",
-  "version": "2.0.0-dev.80",
+  "version": "2.0.0-dev.81",
   "description": "Hyper modeling markers",
   "main": "index.js",
   "license": "MIT",
@@ -25,10 +25,10 @@
     "url": "http://www.bentley.com"
   },
   "devDependencies": {
-    "@bentley/certa": "2.0.0-dev.80",
-    "@bentley/build-tools": "2.0.0-dev.80",
-    "@bentley/config-loader": "2.0.0-dev.80",
-    "@bentley/extension-webpack-tools": "2.0.0-dev.80",
+    "@bentley/certa": "2.0.0-dev.81",
+    "@bentley/build-tools": "2.0.0-dev.81",
+    "@bentley/config-loader": "2.0.0-dev.81",
+    "@bentley/extension-webpack-tools": "2.0.0-dev.81",
     "@types/node": "10.14.1",
     "chai": "^4.1.2",
     "cpx": "^1.5.0",
@@ -38,12 +38,12 @@
     "typescript": "~3.7.4"
   },
   "dependencies": {
-    "@bentley/bentleyjs-core": "2.0.0-dev.80",
-    "@bentley/geometry-core": "2.0.0-dev.80",
-    "@bentley/itwin-client": "2.0.0-dev.80",
-    "@bentley/imodeljs-common": "2.0.0-dev.80",
-    "@bentley/imodeljs-i18n": "2.0.0-dev.80",
-    "@bentley/imodeljs-frontend": "2.0.0-dev.80",
-    "@bentley/ui-abstract": "2.0.0-dev.80"
+    "@bentley/bentleyjs-core": "2.0.0-dev.81",
+    "@bentley/geometry-core": "2.0.0-dev.81",
+    "@bentley/itwin-client": "2.0.0-dev.81",
+    "@bentley/imodeljs-common": "2.0.0-dev.81",
+    "@bentley/imodeljs-i18n": "2.0.0-dev.81",
+    "@bentley/imodeljs-frontend": "2.0.0-dev.81",
+    "@bentley/ui-abstract": "2.0.0-dev.81"
   }
 }
