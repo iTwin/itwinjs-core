@@ -81,6 +81,7 @@ export interface BrowserAuthorizationClientConfiguration {
 
 // @beta (undocumented)
 export interface FrontendAuthorizationClient extends AuthorizationClient {
+    hasSignedIn: boolean;
     readonly onUserStateChanged: BeEvent<(token: AccessToken | undefined) => void>;
     signIn(requestContext: ClientRequestContext): Promise<void>;
     signOut(requestContext: ClientRequestContext): Promise<void>;

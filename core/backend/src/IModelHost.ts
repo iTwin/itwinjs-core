@@ -259,8 +259,6 @@ export class IModelHost {
     requestContext.enter();
     if (!this.authorizationClient)
       throw new BentleyError(AuthStatus.Error, "No AuthorizationClient has been supplied to IModelHost", Logger.logError, loggerCategory);
-    if (!this.authorizationClient.hasSignedIn)
-      throw new BentleyError(AuthStatus.Error, "AuthorizationClient has not been used to sign in", Logger.logError, loggerCategory);
     return this.authorizationClient.getAccessToken(requestContext);
   }
 

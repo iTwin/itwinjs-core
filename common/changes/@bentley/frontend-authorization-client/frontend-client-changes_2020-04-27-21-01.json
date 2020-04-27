@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/frontend-authorization-client",
+      "comment": "Removed/moved some properties from AuthorizationClient interface. ",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/frontend-authorization-client",
+  "email": "Ramanujam.Raman@bentley.com"
+}

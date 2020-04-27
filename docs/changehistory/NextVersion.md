@@ -231,7 +231,11 @@ to align with the splitting of the `imodeljs-clients` package, `imodeljs-clients
 * The deprecated SAML based authentication utilities, ImsActiveSecureTokenClient and ImsDelegationSecureTokenClient have now been removed. All authentication must be done using OIDC.
 * [AccessToken]($clients) cannot hold SAML tokens anymore.
 * The deprecated OidcAgentClientV1 for SAML based authentication of agents has been removed.
+
+#### Authorization interfaces
 * The `IAuthorizationClient` interface has been renamed to [AuthorizationClient]($itwin-client)
+  - The `hasExpired` field in this interface has been removed.
+  - The `hasSignedIn` field in this interface has been moved to [FrontendAuthorizationClient]($frontend-authorization-client)
 
 #### Authorization in Browsers
 

@@ -1622,8 +1622,6 @@ describe("iModel", () => {
         return fakeAccessToken2;
       },
       isAuthorized: true,
-      hasExpired: false,
-      hasSignedIn: true,
     };
 
     lastPushTimeMillis = 0;
