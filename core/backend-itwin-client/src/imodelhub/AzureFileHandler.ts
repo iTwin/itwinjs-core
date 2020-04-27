@@ -7,7 +7,7 @@
  */
 
 import { Logger, BriefcaseStatus } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext, FileHandler, ProgressInfo, ProgressCallback, request, RequestOptions, ResponseError, CancelRequest, UserCancelledError } from "@bentley/itwin-client";
+import { AuthorizedClientRequestContext, FileHandler, ProgressInfo, ProgressCallback, request, RequestOptions, ResponseError, CancelRequest, UserCancelledError, SasUrlExpired, DownloadFailed } from "@bentley/itwin-client";
 import { Transform, TransformCallback, PassThrough } from "stream";
 import { BackendITwinClientLoggerCategory } from "../BackendITwinClientLoggerCategory";
 import WriteStreamAtomic = require("fs-write-stream-atomic");
@@ -209,6 +209,10 @@ export class AzureFileHandler implements FileHandler {
 
     const promise = new Promise<void>((resolve, reject) => {
       const downloadCallback = ((res: http.IncomingMessage) => {
+        if (res.statusCode && (res.statusCode <= 0 || res.statusCode >= 400)) {
+          reject(new DownloadFailed(res.statusCode, res.statusMessage ? res.statusMessage : "Download failed"));
+          return;
+        }
         res.pipe(bufferedStream)
           .on("data", (chunk: any) => {
             bytesWritten += chunk.length;
@@ -269,6 +273,27 @@ export class AzureFileHandler implements FileHandler {
       safeToLogDownloadUrl.hash = "...";
     return safeToLogDownloadUrl.toString();
   }
+
+  /**
+   * Check if sas url has expired
+   * @param download sas url for download
+   * @param futureSeconds should be valid in future for given seconds.
+   */
+  public static isUrlExpired(downloadUrl: string, futureSeconds?: number): boolean {
+    const sasUrl = new URL(downloadUrl);
+    const se = sasUrl.searchParams.get("se");
+    if (se) {
+      const expiryUTC = new Date(se);
+      const now = new Date();
+      const currentUTC = new Date(now.toUTCString());
+      if (futureSeconds) {
+        currentUTC.setSeconds(futureSeconds + currentUTC.getSeconds());
+      }
+      return expiryUTC <= currentUTC;
+    }
+    return false;
+  }
+
   /**
    * Download a file from AzureBlobStorage for iModelHub. Creates the directory containing the file if necessary. If there is an error in the operation, incomplete file is deleted from disk.
    * @param requestContext The client request context
@@ -286,7 +311,10 @@ export class AzureFileHandler implements FileHandler {
     Logger.logInfo(loggerCategory, `Downloading file from ${safeToLogUrl}`);
     ArgumentCheck.defined("downloadUrl", downloadUrl);
     ArgumentCheck.defined("downloadToPathname", downloadToPathname);
-
+    if (AzureFileHandler.isUrlExpired(downloadUrl)) {
+      Logger.logError(loggerCategory, `Sas url has expired ${safeToLogUrl}`);
+      throw new SasUrlExpired(403, "Download URL has expired");
+    }
     if (fs.existsSync(downloadToPathname))
       fs.unlinkSync(downloadToPathname);
 
@@ -305,6 +333,13 @@ export class AzureFileHandler implements FileHandler {
       if (!(err instanceof UserCancelledError))
         Logger.logError(loggerCategory, `Error downloading file`);
       return Promise.reject(err);
+    }
+    if (fileSize && fs.existsSync(downloadToPathname)) {
+      if (fs.lstatSync(downloadToPathname).size !== fileSize) {
+        fs.unlinkSync(downloadToPathname);
+        Logger.logError(loggerCategory, `Downloaded file is of incorrect size ${safeToLogUrl}`);
+        throw new DownloadFailed(403, "Download failed. Expected filesize does not match");
+      }
     }
     requestContext.enter();
     Logger.logTrace(loggerCategory, `Downloaded file from ${safeToLogUrl}`);

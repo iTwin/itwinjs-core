@@ -12,6 +12,7 @@ beta;class Client
 internal;ConstructorType = new () => any
 internal;DefaultRequestOptionsProvider
 internal;DefaultWsgRequestOptionsProvider 
+internal;DownloadFailed 
 beta;class ECInstance
 internal;ECJsonTypeMap
 beta;FileHandler
@@ -36,6 +37,7 @@ beta;ResponseError
 internal;SamlAccessToken 
 internal;SamlAuthorizationToken 
 internal;class SamlToken
+beta;SasUrlExpired 
 internal;UrlDiscoveryClient 
 internal;UserCancelledError 
 beta;UserInfo

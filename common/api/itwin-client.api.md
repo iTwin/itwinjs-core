@@ -101,6 +101,11 @@ export class DefaultWsgRequestOptionsProvider extends DefaultRequestOptionsProvi
     constructor();
 }
 
+// @internal
+export class DownloadFailed extends BentleyError {
+    constructor(errorNumber: number, message: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction);
+}
+
 // @beta
 export abstract class ECInstance {
     // (undocumented)
@@ -347,6 +352,11 @@ export abstract class SamlToken {
     protected _userInfo?: UserInfo;
     // (undocumented)
     protected _x509Certificate?: string;
+}
+
+// @beta
+export class SasUrlExpired extends BentleyError {
+    constructor(errorNumber: number, message: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction);
 }
 
 // @internal

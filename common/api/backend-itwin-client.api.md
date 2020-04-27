@@ -45,6 +45,7 @@ export class AzureFileHandler implements FileHandler {
     exists(filePath: string): boolean;
     getFileSize(filePath: string): number;
     isDirectory(filePath: string): boolean;
+    static isUrlExpired(downloadUrl: string, futureSeconds?: number): boolean;
     join(...paths: string[]): string;
     uploadFile(requestContext: AuthorizedClientRequestContext, uploadUrlString: string, uploadFromPathname: string, progressCallback?: ProgressCallback): Promise<void>;
     }

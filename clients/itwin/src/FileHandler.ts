@@ -28,6 +28,26 @@ export class UserCancelledError extends BentleyError {
   }
 }
 
+/** Error thrown when sas-url provided for download has expired
+ * @beta
+ */
+export class SasUrlExpired extends BentleyError {
+  public constructor(errorNumber: number, message: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction) {
+    super(errorNumber, message, log, category, getMetaData);
+    this.name = "SaS url has expired";
+  }
+}
+
+/** Error thrown fail to download file. ErrorNumber will correspond to HTTP error code.
+ * @internal
+ */
+export class DownloadFailed extends BentleyError {
+  public constructor(errorNumber: number, message: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction) {
+    super(errorNumber, message, log, category, getMetaData);
+    this.name = "Fail to download file";
+  }
+}
+
 /** Handler for file system, and upload / download. TODO: Move this to parent directory -- it is not iModelHub-specific.
  * @beta
  */
