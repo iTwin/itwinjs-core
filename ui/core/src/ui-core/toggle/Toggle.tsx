@@ -50,6 +50,7 @@ interface ToggleState {
   height: number;
   width: number;
   checked: boolean;
+  toggling: boolean;
 }
 
 /**
@@ -63,7 +64,12 @@ export class Toggle extends React.PureComponent<ToggleProps, ToggleState> {
   constructor(props: ToggleProps) {
     super(props);
 
-    this.state = { height: 0, width: 0, checked: this.props.isOn! };
+    this.state = {
+      height: 0,
+      width: 0,
+      checked: this.props.isOn!,
+      toggling: false,
+    };
   }
 
   public static defaultProps: Partial<ToggleProps> = {
@@ -90,8 +96,10 @@ export class Toggle extends React.PureComponent<ToggleProps, ToggleState> {
 
   private _handleChange = () => {
     this.setState(
-      (prevState) => ({ checked: !prevState.checked }),
+      (prevState) => ({ checked: !prevState.checked, toggling: true }),
       () => { this.props.onChange && this.props.onChange(this.state.checked); });
+
+    setTimeout(() => this.setState({ toggling: false }), 250);
   }
 
   private _handleBlur = (event: React.FocusEvent) => {
@@ -101,6 +109,7 @@ export class Toggle extends React.PureComponent<ToggleProps, ToggleState> {
   }
 
   private _setHeight = (newHeight: number, newWidth: number) => {
+    // istanbul ignore next
     if (this.state.height !== newHeight || this.state.width !== newWidth) {
       this.setState({ height: newHeight, width: newWidth });
     }
@@ -112,7 +121,12 @@ export class Toggle extends React.PureComponent<ToggleProps, ToggleState> {
 
   public render(): JSX.Element {
     const halfHeight = this.state.height / 2;
-    const checkmarkClassName = classnames("core-toggle-checkmark", "icon", "icon-checkmark", this.props.showCheckmark && "visible");
+    const checkmarkClassName = classnames(
+      "core-toggle-checkmark",
+      "icon", "icon-checkmark",
+      this.props.showCheckmark && "visible",
+      this.state.toggling && "core-toggling",
+    );
     const toggleStyle: React.CSSProperties = { borderRadius: this.props.rounded ? halfHeight : 3, fontSize: halfHeight, ...this.props.style };
     const toggleClassName = classnames(
       "core-toggle",
@@ -128,6 +142,11 @@ export class Toggle extends React.PureComponent<ToggleProps, ToggleState> {
       bottom: this._padding,
       left: this._padding,
     };
+    const handleClassName = classnames(
+      "core-toggle-handle",
+      this.state.toggling && "core-toggling",
+    );
+
     return (
       <label ref={(el) => { if (el) this._setHeight(el.clientHeight, el.clientWidth); }} style={toggleStyle} className={toggleClassName}>
         <input type="checkbox" ref={this._inputElement} className="core-toggle-input"
@@ -135,7 +154,7 @@ export class Toggle extends React.PureComponent<ToggleProps, ToggleState> {
           onChange={this._handleChange} onBlur={this._handleBlur} />
         <span className="core-toggle-background" />
         <span className={checkmarkClassName} />
-        <span className="core-toggle-handle" style={toggleHandleStyle} />
+        <span className={handleClassName} style={toggleHandleStyle} />
       </label>
     );
   }

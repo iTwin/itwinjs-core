@@ -9,6 +9,7 @@ import { expect } from "chai";
 import { render } from "@testing-library/react";
 
 import { Toggle, ToggleButtonType } from "../../ui-core";
+import { TestUtils } from "../TestUtils";
 
 describe("<Toggle />", () => {
   it("should render", () => {
@@ -34,7 +35,7 @@ describe("<Toggle />", () => {
     shallow(<Toggle large={true} />).should.matchSnapshot();
   });
 
-  it("Toggle should call onChange handler", () => {
+  it("Toggle should call onChange handler", async () => {
     const spyMethod = sinon.spy();
     const handleChange = (_checked: boolean) => {
       spyMethod();
@@ -48,7 +49,18 @@ describe("<Toggle />", () => {
     input.length.should.eq(1);
 
     input.simulate("change", { checked: true });
+    wrapper.update();
+
+    let toggling = wrapper.find(".core-toggling");
+    toggling.length.should.not.eq(0);
+
+    await TestUtils.flushAsyncOperations();
     spyMethod.calledOnce.should.true;
+
+    await TestUtils.tick(1000);
+    wrapper.update();
+    toggling = wrapper.find(".core-toggling");
+    toggling.length.should.eq(0);
 
     wrapper.unmount();
   });

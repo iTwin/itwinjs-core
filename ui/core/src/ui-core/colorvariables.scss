@@ -31,6 +31,9 @@
 
   --buic-foreground-primary:      rgb(var(--buic-foreground-primary-rgb));
 
+  --buic-background-active-overlay:          rgba(var(--buic-foreground-primary-rgb), 0.2);
+  --buic-background-hover-overlay:           rgba(var(--buic-foreground-primary-rgb), 0.1);
+
   /** background.5 */
   --buic-background-titlebar:                 var(--buic-background-5);
   --buic-background-dialog-stroke:            var(--buic-background-5);

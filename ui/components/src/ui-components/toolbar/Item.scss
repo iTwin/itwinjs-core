@@ -43,7 +43,7 @@
   }
 
   &:hover {
-    background-color: rgba( $buic-foreground-primary-rgb, .2 );
+    background-color: $buic-background-active-overlay;
 
     svg {
       opacity: 1;
@@ -51,7 +51,7 @@
   }
 
   &:active {
-    background-color: rgba( $buic-foreground-primary-rgb, .2 );
+    background-color: $buic-background-active-overlay;
     border: solid 2px $buic-foreground-primary;
 
     > .components-icon {
@@ -71,7 +71,7 @@
   }
 
   &.components-active {
-    background-color: rgba( $buic-foreground-primary-rgb, .2 );
+    background-color: $buic-background-active-overlay;
     border: solid 2px $buic-foreground-primary;
 
     &:not(:active):not(.components-disabled) {
