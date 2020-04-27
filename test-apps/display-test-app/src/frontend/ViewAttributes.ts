@@ -810,11 +810,13 @@ export class ViewAttributes {
 
   private addHiddenLineEditor(forHiddenEdges: boolean): HTMLDivElement {
     const style = this._vp.view.is3d() ? this.edgeSettings : HiddenLine.Settings.defaults;
-    const settingsName = forHiddenEdges ? "hidden" : "visible";
-    const settings = style[settingsName];
+    const settings = forHiddenEdges ? style.hidden : style.visible;
     const div = document.createElement("div");
     div.style.paddingLeft = "10px";
     div.hidden = forHiddenEdges ? !this._vp.view.viewFlags.hiddenEdges : !this._vp.view.viewFlags.visibleEdges;
+
+    const getSettings = () => forHiddenEdges ? this.edgeSettings.hidden : this.edgeSettings.visible;
+    const overrideSettings = (newSettings: HiddenLine.Style) => this.overrideEdgeSettings(forHiddenEdges ? { hidden: newSettings.toJSON() } : { visible: newSettings.toJSON() });
 
     // Color override (visible only)
     let colorCb: HTMLInputElement | undefined;
@@ -837,12 +839,10 @@ export class ViewAttributes {
         value: color,
         display: "inline",
         disabled: !settings.ovrColor,
-        handler: (value: string) => this.overrideEdgeSettings({ [settingsName]: this.edgeSettings[settingsName].overrideColor(ColorDef.create(value)) }),
+        handler: (value: string) => overrideSettings(getSettings().overrideColor(ColorDef.create(value))),
       }).input;
 
-      colorCb.addEventListener("click", () => {
-        this.overrideEdgeSettings({ [settingsName]: this.edgeSettings[settingsName].overrideColor(colorCb!.checked ? ColorDef.create(colorInput!.value) : undefined) });
-      });
+      colorCb.addEventListener("click", () => overrideSettings(getSettings().overrideColor(colorCb!.checked ? ColorDef.create(colorInput!.value) : undefined)));
     }
 
     // Width override
@@ -867,17 +867,14 @@ export class ViewAttributes {
       min: 1,
       max: 31,
       step: 1,
-      handler: (value) => this.overrideEdgeSettings({ [settingsName]: this.edgeSettings[settingsName].overrideWidth(value) }),
+      handler: (value) => overrideSettings(getSettings().overrideWidth(value)),
     });
     widthDiv.appendChild(width);
-
-    widthCb.addEventListener("click", () => {
-      this.overrideEdgeSettings({ [settingsName]: this.edgeSettings[settingsName].overrideWidth(widthCb.checked ? parseInt(width.value, 10) : undefined) });
-    });
+    widthCb.addEventListener("click", () => overrideSettings(getSettings().overrideWidth(widthCb.checked ? parseInt(width.value, 10) : undefined)));
 
     // Line style override
     const patternCb = Settings.addStyle(div, settings.pattern ? settings.pattern : LinePixels.Invalid, (select) => {
-      this.overrideEdgeSettings({ [settingsName]: this.edgeSettings[settingsName].overridePattern(parseInt(select.value, 10)) });
+      overrideSettings(getSettings().overridePattern(parseInt(select.value, 10)));
     });
 
     // Synchronization
@@ -887,7 +884,7 @@ export class ViewAttributes {
         return;
       }
 
-      const curStyle = this.edgeSettings[settingsName];
+      const curStyle = getSettings();
       if (undefined !== colorCb && undefined !== colorInput) {
         colorCb.checked = undefined !== curStyle.color;
         colorInput.disabled = !colorCb.checked;
