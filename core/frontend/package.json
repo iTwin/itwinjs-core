@@ -90,7 +90,7 @@
     "@bentley/context-registry-client": "2.0.0-dev.82",
     "@bentley/extension-client": "2.0.0-dev.82",
     "@bentley/reality-data-client": "2.0.0-dev.82",
-    "@bentley/usage-logging-client": "^2.0.0-dev.82",
+    "@bentley/usage-logging-client": "2.0.0-dev.82",
     "fuse.js": "^3.3.0",
     "js-base64": "^2.4.5",
     "ldclient-js": "^2.6.0",
