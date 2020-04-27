@@ -14,7 +14,7 @@
     width: $uifw-popup-border-width;
   }
 
-  background-color: rgba(var(--buic-background-2-rgb), $uifw-popup-opacity);
+  background-color: rgba($buic-background-2-rgb, $uifw-popup-opacity);
 
   .uifw-pointer-message-content {
     display: flex;

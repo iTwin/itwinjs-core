@@ -129,7 +129,7 @@ describe("StatusBar", () => {
     wrapper.unmount();
   });
 
-  it("Sticky message should close on button click", () => {
+  it("Sticky message should close on button click", async () => {
     const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
 
     const details = new NotifyMessageDetails(OutputMessagePriority.Error, "A brief message.", "A detailed message.", OutputMessageType.Sticky);
@@ -139,6 +139,7 @@ describe("StatusBar", () => {
     expect(wrapper.find(MessageButton).length).to.eq(1);
 
     wrapper.find(MessageButton).simulate("click");
+    await TestUtils.tick(2000);
     wrapper.update();
     expect(wrapper.find(Message).length).to.eq(0);
 
@@ -191,6 +192,23 @@ describe("StatusBar", () => {
     wrapper.find(MessageButton).simulate("click");
     wrapper.update();
     expect(wrapper.find(Message).length).to.eq(0);
+
+    wrapper.unmount();
+  });
+
+  it("StatusBar should render Toast, Sticky & Activity messages", async () => {
+    const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
+
+    const details1 = new NotifyMessageDetails(OutputMessagePriority.None, "A brief message.", "A detailed message.");
+    notifications.outputMessage(details1);
+    const details2 = new NotifyMessageDetails(OutputMessagePriority.None, "A brief message.", "A detailed message.", OutputMessageType.Sticky);
+    notifications.outputMessage(details2);
+    const details3 = new ActivityMessageDetails(true, true, true);
+    notifications.setupActivityMessage(details3);
+    notifications.outputActivityMessage("Message text", 50);
+    wrapper.update();
+
+    expect(wrapper.find(Message).length).to.eq(3);
 
     wrapper.unmount();
   });

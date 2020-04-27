@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 @import "~@bentley/ui-core/lib/ui-core/text/mixins";
 @import "~@bentley/ui-core/lib/ui-core/icons/index";
+@import "~@bentley/ui-core/lib/ui-core/scrollbar";
 
 .uifw-statusbar-message-label {
   color: $buic-text-color;
@@ -59,3 +60,38 @@
   align-content: center;
   width: fit-content;
 }
+
+.uifw-statusbar-messages-container {
+  max-height: 66vh;
+
+  &.uifw-scrollable {
+    overflow-y: auto;
+
+    @include uicore-touch-scrolling;
+    @include uicore-scrollbar();
+  }
+
+  >.uifw-statusbar-message-list {
+    display:          block;
+    list-style:       none;
+    padding:          0;
+    margin:           0;
+
+    > li {
+      display:        block;
+      position:       relative;
+      padding:        4px 0;
+
+      >.uifw-statusbar-sticky-message {
+        max-height: 100px;
+        transition: max-height 0.5s ease;
+
+        &.uifw-closing {
+          max-height: 0;
+          opacity: 0;
+        }
+      }
+    }
+  }
+}
+

@@ -172,7 +172,8 @@ export class Frontstage4 extends FrontstageProvider {
               direction={Direction.Right}
             />
             <ToolButton toolId={AppTools.tool2.id} iconSpec={AppTools.tool2.iconSpec!} labelKey={AppTools.tool2.label} execute={AppTools.tool2.execute} />
-            <ToolButton toolId={AppTools.addMessageCommand.commandId} iconSpec={AppTools.addMessageCommand.iconSpec!} labelKey={AppTools.addMessageCommand.label} execute={AppTools.addMessageCommand.execute} />
+            <ToolButton toolId={AppTools.addMessageCommand.commandId} iconSpec={AppTools.addMessageCommand.iconSpec!} labelKey={AppTools.addMessageCommand.label}
+              execute={AppTools.addMessageCommand.execute} />
           </>
         }
       />;

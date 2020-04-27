@@ -512,12 +512,16 @@ export class AppTools {
     return new CommandItemDef({
       commandId: "addMessage",
       iconSpec: "icon-status-warning",
-      labelKey: "SampleApp:buttons.openMessageBox",
+      labelKey: "SampleApp:buttons.openSeveralMessages",
       execute: async () => {
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, AppTools._infoStr));
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, AppTools._warningStr));
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, AppTools._errorStr));
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Fatal, AppTools._fatalStr));
+        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, AppTools._infoStr, undefined, OutputMessageType.Sticky));
+        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, AppTools._warningStr, undefined, OutputMessageType.Sticky));
+        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, AppTools._errorStr, undefined, OutputMessageType.Sticky));
+        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Fatal, AppTools._fatalStr, undefined, OutputMessageType.Sticky));
       },
     });
   }
