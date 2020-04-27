@@ -21,8 +21,13 @@ export class ExternalServerExtensionLoader implements ExtensionLoader {
   }
 
   public getExtensionName(extensionRoot: string): string {
-    const slashPos = extensionRoot.lastIndexOf("/");
-    return extensionRoot.slice(slashPos + 1);
+    const parts = extensionRoot.split("/");
+
+    for (let i = parts.length - 1; i >= 0; i--) {
+      if (parts[i] !== "")
+        return parts[i];
+    }
+    return extensionRoot;
   }
 
   public async loadExtension(extensionName: string, _extensionVersion?: string, args?: string[]): Promise<PendingExtension | undefined> {

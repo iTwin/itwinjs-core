@@ -2644,7 +2644,8 @@ export abstract class Extension {
 // @beta
 export class ExtensionAdmin {
     constructor(props?: ExtensionAdminProps);
-    addExtensionLoader(extensionLoader: ExtensionLoader, priority: number): void;
+    addExtensionLoader(extensionLoader: ExtensionLoader): void;
+    addExtensionLoaderFront(extensionLoader: ExtensionLoader): void;
     // @internal (undocumented)
     addPendingExtension(extensionRootName: string, pendingExtension: PendingExtension): void;
     loadExtension(extensionRoot: string, extensionVersion?: string, args?: string[]): Promise<Extension | undefined>;

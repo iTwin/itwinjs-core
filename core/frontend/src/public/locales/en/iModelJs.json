@@ -50,11 +50,7 @@
     "PackagedIncorrectly": "The Extension has not been packaged correctly",
     "NoVersionSpecified": "No version specified for module {{moduleName}}",
     "VersionMismatch": "Version {{versionLoaded}} of {{moduleName}} is not compatible with {{versionRequired}}",
-    "UnableToLoad": "Unable to load Extension {{- extensionName}}",
-    "AllSavedExtensionsFailed": "Unable to load Saved Extensions:",
-    "SomeSavedExtensionsFailed": "Unable to load some Saved Extensions:",
-    "InvalidSavedExtensionsSettings": "The settings for saved extensions was invalid.",
-    "SavedExtensionsSuccess": "The saved extensions were loaded:"
+    "UnableToLoad": "Unable to load Extension {{- extensionName}}"
   },
   "Errors": {
     "ReloadPage": "😞 Oops, something went wrong - please reload the page.",
