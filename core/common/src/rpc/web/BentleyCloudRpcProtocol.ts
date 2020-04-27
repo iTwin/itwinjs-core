@@ -90,21 +90,25 @@ export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
       iModelId = "{iModelId}";
       routeChangeSetId = "{changeSetId}";
     } else {
-      const token = operation.policy.token(request) || RpcOperation.fallbackToken;
-      if (!RpcConfiguration.disableRoutingValidation) {
-        if (!token || !token.iModelId)
-          throw new IModelError(BentleyStatus.ERROR, "Invalid iModelToken for RPC operation request", Logger.logError, CommonLoggerCategory.RpcInterfaceFrontend);
+      let token = operation.policy.token(request) || RpcOperation.fallbackToken;
 
-        contextId = encodeURIComponent(token.contextId || "");
-        iModelId = encodeURIComponent(token.iModelId);
-
-        if (token.openMode === OpenMode.Readonly) {
-          appMode = AppMode.MilestoneReview;
-          assert(token.changeSetId !== undefined, "ChangeSetId needs to be setup in IModelRpcProps before open");
-          routeChangeSetId = token.changeSetId === "" ? "0" : token.changeSetId;
+      if (!token || !token.iModelId) {
+        if (RpcConfiguration.disableRoutingValidation) {
+          token = { key: "" };
         } else {
-          appMode = AppMode.WorkGroupEdit;
+          throw new IModelError(BentleyStatus.ERROR, "Invalid iModelToken for RPC operation request", Logger.logError, CommonLoggerCategory.RpcInterfaceFrontend);
         }
+      }
+
+      contextId = encodeURIComponent(token.contextId || "");
+      iModelId = encodeURIComponent(token.iModelId!);
+
+      if (token.openMode === OpenMode.Readonly) {
+        appMode = AppMode.MilestoneReview;
+        assert(token.changeSetId !== undefined, "ChangeSetId needs to be setup in IModelRpcProps before open");
+        routeChangeSetId = token.changeSetId === "" ? "0" : token.changeSetId;
+      } else {
+        appMode = AppMode.WorkGroupEdit;
       }
     }
 
