@@ -29,6 +29,7 @@ import { GraphicBranch } from "../render/GraphicBranch";
 import { RenderClipVolume } from "../render/RenderClipVolume";
 import { RenderPlanarClassifier } from "../render/RenderPlanarClassifier";
 import { RenderTextureDrape } from "../render/RenderSystem";
+import { CoordSystem } from "../Viewport";
 
 const scratchRange = new Range3d();
 const scratchPoint = Point3d.create();
@@ -66,13 +67,29 @@ export class TileDrawArgs {
   public parentsAndChildrenExclusive: boolean;
   /** Tiles that we want to draw and that are ready to draw. May not actually be selected, e.g. if sibling tiles are not yet ready. */
   public readonly readyTiles = new Set<Tile>();
+  /** For perspective views, the view-Z of the near plane. */
+  private readonly _nearViewZ?: number;
 
   /** Compute the size of this tile on screen in pixels. */
   public getPixelSize(tile: Tile): number {
     const radius = this.getTileRadius(tile); // use a sphere to test pixel size. We don't know the orientation of the image within the bounding box.
     const center = this.getTileCenter(tile);
 
+    if (this.context.viewport.view.isCameraEnabled()) {
+      // Find point on tile bounding sphere closest to eye.
+      const toEye = center.unitVectorTo(this.context.viewport.view.camera.eye);
+      if (toEye) {
+        toEye.scaleInPlace(radius);
+        center.addInPlace(toEye);
+      }
+    }
+
     const viewPt = this.worldToViewMap.transform0.multiplyPoint3dQuietNormalize(center);
+    if (undefined !== this._nearViewZ && viewPt.z > this._nearViewZ) {
+      // Limit closest point on tile bounding sphere to the near plane.
+      viewPt.z = this._nearViewZ;
+    }
+
     const viewPt2 = new Point3d(viewPt.x + 1.0, viewPt.y, viewPt.z);
     const pixelSizeAtPt = this.worldToViewMap.transform1.multiplyPoint3dQuietNormalize(viewPt).distance(this.worldToViewMap.transform1.multiplyPoint3dQuietNormalize(viewPt2));
     return 0 !== pixelSizeAtPt ? radius / pixelSizeAtPt : 1.0e-3;
@@ -136,6 +153,8 @@ export class TileDrawArgs {
       this.viewClip = undefined === context.viewport.outsideClipColor ? context.viewport.view.getViewClip() : undefined;
 
     this.parentsAndChildrenExclusive = parentsAndChildrenExclusive;
+    if (context.viewport.view.isCameraEnabled())
+      this._nearViewZ = context.viewport.getFrustum(CoordSystem.View).frontCenter.z;
   }
 
   /** A multiplier applied to a [[Tile]]'s `maximumSize` property to adjust level of detail.
