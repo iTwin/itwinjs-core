@@ -1,6 +1,6 @@
 {
   "name": "@bentley/backend-itwin-client",
-  "version": "2.0.0-dev.82",
+  "version": "2.0.0-dev.83",
   "description": "Clients for various Bentley Services used by iModel.js at the backend",
   "main": "lib/backend-itwin-client.js",
   "browser": {
@@ -38,28 +38,28 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.0.0-dev.82",
-    "@bentley/geometry-core": "^2.0.0-dev.82",
-    "@bentley/frontend-authorization-client": "^2.0.0-dev.82",
-    "@bentley/imodelhub-client": "^2.0.0-dev.82",
-    "@bentley/itwin-client": "^2.0.0-dev.82",
-    "@bentley/imodeljs-common": "^2.0.0-dev.82"
+    "@bentley/bentleyjs-core": "^2.0.0-dev.83",
+    "@bentley/geometry-core": "^2.0.0-dev.83",
+    "@bentley/frontend-authorization-client": "^2.0.0-dev.83",
+    "@bentley/imodelhub-client": "^2.0.0-dev.83",
+    "@bentley/itwin-client": "^2.0.0-dev.83",
+    "@bentley/imodeljs-common": "^2.0.0-dev.83"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.0.0-dev.82",
-    "@bentley/build-tools": "2.0.0-dev.82",
-    "@bentley/config-loader": "2.0.0-dev.82",
-    "@bentley/context-registry-client": "2.0.0-dev.82",
-    "@bentley/frontend-authorization-client": "2.0.0-dev.82",
-    "@bentley/geometry-core": "2.0.0-dev.82",
-    "@bentley/imodelhub-client": "2.0.0-dev.82",
-    "@bentley/itwin-client": "2.0.0-dev.82",
-    "@bentley/imodeljs-common": "2.0.0-dev.82",
-    "@bentley/oidc-signin-tool": "2.0.0-dev.82",
+    "@bentley/bentleyjs-core": "2.0.0-dev.83",
+    "@bentley/build-tools": "2.0.0-dev.83",
+    "@bentley/config-loader": "2.0.0-dev.83",
+    "@bentley/context-registry-client": "2.0.0-dev.83",
+    "@bentley/frontend-authorization-client": "2.0.0-dev.83",
+    "@bentley/geometry-core": "2.0.0-dev.83",
+    "@bentley/imodelhub-client": "2.0.0-dev.83",
+    "@bentley/itwin-client": "2.0.0-dev.83",
+    "@bentley/imodeljs-common": "2.0.0-dev.83",
+    "@bentley/oidc-signin-tool": "2.0.0-dev.83",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
     "@types/nock": "^9.1.2",
