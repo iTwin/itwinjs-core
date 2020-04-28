@@ -213,8 +213,8 @@ class Timeline extends React.PureComponent<TimelineProps> {
             <span className="solar-tooltip-text">{sunRiseFormat}</span>
           </div>
         </span>
-        <ReactResizeDetector handleWidth>
-          {(width: number) =>
+        <ReactResizeDetector handleWidth
+          render={({ width }) => (
             <Slider
               mode={(curr, next) => {
                 // hodgepodge way to get around type issue in react-compound-slider package
@@ -266,8 +266,8 @@ class Timeline extends React.PureComponent<TimelineProps> {
                 </Ticks>
               }
             </Slider>
-          }
-        </ReactResizeDetector>
+          )}
+        />
         <span className="sunset">
           &#x263D;
           <div className="sunrise-tip">

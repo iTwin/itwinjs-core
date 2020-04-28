@@ -63,10 +63,12 @@ $arrow-margin: -3px;
               flex-grow: 1;
             }
             &.hover {
+              color: $buic-foreground-activehover;
               background: $buic-background-active-overlay;
             }
             &.active {
-              background: $buic-background-active-overlay;
+              color: $buic-foreground-activehover;
+              background: $buic-background-pressed-overlay;
             }
           }
           &.center .face-cell.center {
@@ -116,7 +118,7 @@ $arrow-margin: -3px;
       display: none;
     }
     &:hover {
-      color: $buic-background-active-overlay;
+      color: $buic-row-selection;
     }
     &.up {
       margin: $arrow-margin auto;

@@ -210,7 +210,7 @@ public;TimeFormat
 public;Timer
 public;Title(props: TextProps): JSX.Element
 public;Title2(props: TextProps): JSX.Element
-public;Toggle 
+public;Toggle(props: ToggleProps): JSX.Element
 public;ToggleButtonType
 public;ToggleProps 
 internal;TOOLBAR_BACKDROP_FILTER_BLUR_DEFAULT = 10

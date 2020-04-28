@@ -37,7 +37,9 @@ describe("<Toggle />", () => {
 
   it("Toggle should call onChange handler", async () => {
     const spyMethod = sinon.spy();
+    let checked = false;
     const handleChange = (_checked: boolean) => {
+      checked = _checked;
       spyMethod();
     };
 
@@ -56,6 +58,7 @@ describe("<Toggle />", () => {
 
     await TestUtils.flushAsyncOperations();
     spyMethod.calledOnce.should.true;
+    expect(checked).to.be.true;
 
     await TestUtils.tick(1000);
     wrapper.update();
@@ -87,17 +90,17 @@ describe("<Toggle />", () => {
       spyMethod();
     };
 
-    const wrapper = mount(
-      <Toggle isOn={false} onChange={handleChange} />,
-    );
+    const component = render(<Toggle isOn={false} onChange={handleChange} />);
+    let input = component.container.querySelector("input[type='checkbox']");
+    expect((input as HTMLInputElement).checked).to.be.false;
 
-    wrapper.setProps({ isOn: true });
-    expect(wrapper.state("checked")).to.be.true;
+    component.rerender(<Toggle isOn={true} onChange={handleChange} />);
+    input = component.container.querySelector("input[type='checkbox']");
+    expect((input as HTMLInputElement).checked).to.be.true;
 
-    wrapper.setProps({ isOn: false });
-    expect(wrapper.state("checked")).to.be.false;
-
-    wrapper.unmount();
+    component.rerender(<Toggle isOn={false} onChange={handleChange} />);
+    input = component.container.querySelector("input[type='checkbox']");
+    expect((input as HTMLInputElement).checked).to.be.false;
   });
 
   it("Toggle should update on props.disabled change", () => {

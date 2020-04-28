@@ -214,8 +214,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
     const maxHeight = Math.floor(window.innerHeight * 0.66);
 
     return (
-      <ReactResizeDetector
-        handleHeight
+      <ReactResizeDetector handleHeight
         render={({ height }) => (
           <div className={classnames("uifw-statusbar-messages-container", (height >= maxHeight) && "uifw-scrollable")}>
             <ul className="uifw-statusbar-message-list">

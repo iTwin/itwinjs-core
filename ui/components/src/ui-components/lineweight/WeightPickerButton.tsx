@@ -191,8 +191,8 @@ export class WeightPickerButton extends React.PureComponent<WeightPickerProps, W
     );
 
     return (
-      <ReactResizeDetector handleWidth>
-        {(width: number) =>
+      <ReactResizeDetector handleWidth
+        render={({ width }) => (
           <>
             <div ref={this._setTarget} >
               <LineWeightSwatch
@@ -222,8 +222,8 @@ export class WeightPickerButton extends React.PureComponent<WeightPickerProps, W
               {this.renderPopup(this.props.dropDownTitle)}
             </Popup>
           </>
-        }
-      </ReactResizeDetector>
+        )}
+      />
     );
   }
 }

@@ -857,9 +857,10 @@ export class Table extends React.Component<TableProps, TableState> {
         this.props.onRowsLoaded(index, index + loadResult.rows.length - 1);
 
       const showFilter = this._isShowFilterRow();
-      if (showFilter) {
-        await this.loadDistinctValues();
-        this.toggleFilterRow();
+      if (showFilter !== this._filterRowShown) {
+        if (showFilter)
+          await this.loadDistinctValues();
+        this.toggleFilterRow(showFilter);
       }
     });
   });
@@ -1309,20 +1310,17 @@ export class Table extends React.Component<TableProps, TableState> {
     return this.state.columns.some((tableColumn: TableColumn) => tableColumn.filterable);
   }
 
-  private toggleFilterRow(): void {
-    const showFilter = this._isShowFilterRow();
-
-    // Turn on filter row
-    if (showFilter && !this._filterRowShown) {
+  /** Turn on/off filter row */
+  private toggleFilterRow(showFilter: boolean): void {
+    // istanbul ignore else
+    if (this._gridRef.current) {
+      const grid = this._gridRef.current as any;
       // istanbul ignore else
-      if (this._gridRef.current) {
-        const grid = this._gridRef.current as any;
-        // istanbul ignore else
-        if (grid.onToggleFilter)
-          grid.onToggleFilter();
-      }
+      if (grid.onToggleFilter) {
+        grid.onToggleFilter();
 
-      this._filterRowShown = true;
+        this._filterRowShown = showFilter;
+      }
     }
   }
 
@@ -1366,7 +1364,7 @@ export class Table extends React.Component<TableProps, TableState> {
     }
   }
 
-  private _handleOnClearFilters() {
+  private _handleOnClearFilters = () => {
     this.filterDescriptors.clear();
 
     this._applyFilter();  // tslint:disable-line:no-floating-promises
@@ -1430,8 +1428,8 @@ export class Table extends React.Component<TableProps, TableState> {
               onClose={this._hideContextMenu}
               onShowHideChange={this._handleShowHideChange} />
           }
-          <ReactResizeDetector handleWidth handleHeight >
-            {(width: number, height: number) =>
+          <ReactResizeDetector handleWidth handleHeight
+            render={({ width, height }) => (
               <ReactDataGrid
                 ref={this._gridRef}
                 columns={visibleColumns}
@@ -1453,8 +1451,9 @@ export class Table extends React.Component<TableProps, TableState> {
                 headerFiltersHeight={TABLE_FILTER_ROW_HEIGHT}
                 getValidFilterValues={this._getValidFilterValues}
                 onScroll={this._onScroll}
-              />}
-          </ReactResizeDetector>
+              />
+            )}
+          />
         </div>
         <div ref={this._tableRef}>
           {this.state.dialog

@@ -11,7 +11,7 @@ import {
   SimpleTableDataProvider, TableSelectionTarget, SelectionMode,
   PropertyUpdatedArgs, TableCellUpdatedArgs, TableCellContextMenuArgs,
 } from "@bentley/ui-components";
-import { BodyText } from "@bentley/ui-core";
+import { BodyText, Toggle } from "@bentley/ui-core";
 import { LoremIpsum } from "lorem-ipsum";
 
 class TableExampleContentControl extends ContentControl {
@@ -29,6 +29,7 @@ interface TableExampleState {
   selectedIndexes: any[];
   requestedTopRow: number;
   topRow: number;
+  filtering: boolean;
 }
 
 const createPropertyRecord = (value: any, column: ColumnDescription, typename: string) => {
@@ -91,70 +92,70 @@ const createLoremPropertyRecord = (column: ColumnDescription) => {
 class TableExampleContent extends React.Component<{}, TableExampleState>  {
   public readonly state: Readonly<TableExampleState>;
 
+  private _columns: ColumnDescription[] = [
+    {
+      key: "id",
+      label: "ID",
+      resizable: true,
+      sortable: true,
+      width: 90,
+      filterable: true,
+      filterRenderer: FilterRenderer.Numeric,
+    },
+    {
+      key: "title",
+      label: "Title",
+      sortable: true,
+      resizable: true,
+      editable: true,
+      filterable: true,
+      filterRenderer: FilterRenderer.MultiSelect,
+    },
+    {
+      key: "color",
+      label: "Color",
+      sortable: true,
+      resizable: true,
+      editable: true,
+      width: 180,
+      filterable: true,
+      filterRenderer: FilterRenderer.SingleSelect,
+    },
+    {
+      key: "lorem",
+      label: "Lorem",
+      resizable: true,
+      filterable: true,
+      filterRenderer: FilterRenderer.Text,
+    },
+  ];
+
   constructor(props: any) {
     super(props);
-
-    const columns: ColumnDescription[] = [
-      {
-        key: "id",
-        label: "ID",
-        resizable: true,
-        sortable: true,
-        width: 90,
-        filterable: true,
-        filterRenderer: FilterRenderer.Numeric,
-      },
-      {
-        key: "title",
-        label: "Title",
-        sortable: true,
-        resizable: true,
-        editable: true,
-        filterable: true,
-        filterRenderer: FilterRenderer.MultiSelect,
-      },
-      {
-        key: "color",
-        label: "Color",
-        sortable: true,
-        resizable: true,
-        editable: true,
-        width: 180,
-        filterable: true,
-        filterRenderer: FilterRenderer.SingleSelect,
-      },
-      {
-        key: "lorem",
-        label: "Lorem",
-        resizable: true,
-        filterable: true,
-        filterRenderer: FilterRenderer.Text,
-      },
-    ];
 
     const rows = new Array<RowItem>();
     for (let i = 1; i <= 100000; i++) {
       const row: RowItem = { key: i.toString(), cells: [] };
       row.cells.push({
-        key: columns[0].key,
-        record: createPropertyRecord(i, columns[0], "int"),
+        key: this._columns[0].key,
+        record: createPropertyRecord(i, this._columns[0], "int"),
       });
       row.cells.push({
-        key: columns[1].key,
-        record: createPropertyRecord("Title " + i, columns[1], "text"),
+        key: this._columns[1].key,
+        record: createPropertyRecord("Title " + i, this._columns[1], "text"),
       });
       row.cells.push({
-        key: columns[2].key,
-        record: createEnumPropertyRecord(i, columns[2]),
+        key: this._columns[2].key,
+        record: createEnumPropertyRecord(i, this._columns[2]),
       });
       row.cells.push({
-        key: columns[3].key,
-        record: createLoremPropertyRecord(columns[3]),
+        key: this._columns[3].key,
+        record: createLoremPropertyRecord(this._columns[3]),
       });
       rows.push(row);
     }
 
-    const dataProvider = new SimpleTableDataProvider(columns);
+    const dataProvider = new SimpleTableDataProvider(this._columns);
     dataProvider.setItems(rows);
 
     this.state = {
@@ -164,6 +165,7 @@ class TableExampleContent extends React.Component<{}, TableExampleState>  {
       tableSelectionTarget: TableSelectionTarget.Row,
       requestedTopRow: 0,
       topRow: 0,
+      filtering: true,
     };
   }
 
@@ -237,6 +239,14 @@ class TableExampleContent extends React.Component<{}, TableExampleState>  {
     console.log(`rowIndex ${args.rowIndex}, colIndex ${args.colIndex}, cellKey ${args.cellKey}`);
   }
 
+  private _onFilteringChange = (checked: boolean) => {
+    this._columns.forEach((column: ColumnDescription) => {
+      column.filterable = checked;
+    });
+    this.state.dataProvider.onColumnsChanged.raiseEvent();
+    this.state.dataProvider.onRowsChanged.raiseEvent();
+  }
+
   public render(): React.ReactNode {
     return (
       <div style={{ width: "100%", height: "100%", display: "flex", flexFlow: "column" }}>
@@ -247,14 +257,24 @@ class TableExampleContent extends React.Component<{}, TableExampleState>  {
             < option value={SelectionMode.Multiple} > Multiple </option>
             < option value={SelectionMode.Extended} > Extended </option>
           </select>
+          <Gap />
           <select onChange={this._onChangeTableSelectionTarget} >
             <option value={TableSelectionTarget.Row}> Row </option>
             < option value={TableSelectionTarget.Cell} > Cell </option>
           </select>
+          <Gap />
           <label>
             <BodyText>Top row:</BodyText>
+            &nbsp;
             <input onChange={this._onRequestedTopRowChange} style={{ width: "100px" }} />
+            &nbsp;
             <span>({this.state.topRow})</span>
+          </label>
+          <Gap />
+          <label>
+            <BodyText>Filtering:</BodyText>
+            &nbsp;
+            <Toggle isOn={this.state.filtering} onChange={this._onFilteringChange} />
           </label>
         </div>
         <div style={{ flex: "1", height: "calc(100% - 22px)" }}>
@@ -271,6 +291,12 @@ class TableExampleContent extends React.Component<{}, TableExampleState>  {
       </div>
     );
   }
+}
+
+function Gap() {
+  return (
+    <span style={{ paddingLeft: "10px" }} />
+  );
 }
 
 ConfigurableUiManager.registerControl("TableExampleContent", TableExampleContentControl);

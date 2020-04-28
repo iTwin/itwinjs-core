@@ -85,12 +85,10 @@ import { AppStatusBarWidgetControl } from "../statusbars/AppStatusBar";
 import { VerticalPropertyGridWidgetControl } from "../widgets/PropertyGridDemoWidget";
 import { NavigationTreeWidgetControl } from "../widgets/NavigationTreeWidget";
 import { VisibilityTreeWidgetControl } from "../widgets/VisibilityTreeWidget";
-import { BreadcrumbDemoWidgetControl } from "../widgets/BreadcrumbDemoWidget";
 
-import { FeedbackDemoWidget } from "../widgets/FeedbackWidget";
 import { UnifiedSelectionPropertyGridWidgetControl } from "../widgets/UnifiedSelectionPropertyGridWidget";
 import { UnifiedSelectionTableWidgetControl } from "../widgets/UnifiedSelectionTableWidget";
-import {/* ViewportWidgetControl, */ ViewportWidget } from "../widgets/ViewportWidget";
+import { ViewportWidget } from "../widgets/ViewportWidget";
 import { NestedAnimationStage } from "./NestedAnimationStage";
 import { ExampleForm } from "../forms/ExampleForm";
 
@@ -208,14 +206,6 @@ export class ViewsFrontstage extends FrontstageProvider {
             initialWidth={250}
             widgets={
               [
-                <Widget defaultState={WidgetState.Closed} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.FeedbackDemo" control={FeedbackDemoWidget}
-                  syncEventIds={[SampleAppUiActionId.setTestProperty]}
-                  stateFunc={(): WidgetState => SampleAppIModelApp.getTestProperty() !== "HIDE" ? WidgetState.Closed : WidgetState.Hidden}
-                />,
-                <Widget defaultState={WidgetState.Closed} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.BreadcrumbDemo" control={BreadcrumbDemoWidgetControl}
-                  syncEventIds={[SampleAppUiActionId.setTestProperty]}
-                  stateFunc={(): WidgetState => SampleAppIModelApp.getTestProperty() !== "HIDE" ? WidgetState.Closed : WidgetState.Hidden}
-                />,
                 <Widget defaultState={WidgetState.Closed} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.ModelSelector" control={ModelSelectorWidgetControl}
                   applicationData={{ iModelConnection: this.iModelConnection }} fillZone={true}
                   syncEventIds={[SampleAppUiActionId.setTestProperty]}
@@ -232,8 +222,6 @@ export class ViewsFrontstage extends FrontstageProvider {
             widgets={[
               <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.NavigationTree" control={NavigationTreeWidgetControl}
                 applicationData={{ iModelConnection: this.iModelConnection, rulesetId: "Items" }} fillZone={true} />,
-              /*<Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.VisibilityTree" control={VisibilityTreeWidgetControl}
-                applicationData={{ iModelConnection: this.iModelConnection }} fillZone={true} />,*/
               <Widget iconSpec="icon-visibility" label="Searchable Tree" control={VisibilityWidgetControl}
                 applicationData={{
                   iModelConnection: this.iModelConnection, enableHierarchiesPreloading: [VisibilityComponentHierarchy.Categories],

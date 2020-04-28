@@ -124,8 +124,10 @@ export class RadialMenu extends React.Component<RadialMenuProps, RadialMenuState
   public componentDidMount() {
     this._generateAnnularSectors();
 
-    window.addEventListener("keyup", this._handleKeyUp);
-    window.addEventListener("mouseup", this._handleClick);
+    setTimeout(() => {
+      window.addEventListener("keyup", this._handleKeyUp);
+      window.addEventListener("mouseup", this._handleClick);
+    });
   }
 
   public componentWillUnmount() {

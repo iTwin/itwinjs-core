@@ -1835,17 +1835,7 @@ export function Title(props: TextProps): JSX.Element;
 export function Title2(props: TextProps): JSX.Element;
 
 // @public
-export class Toggle extends React.PureComponent<ToggleProps, ToggleState> {
-    constructor(props: ToggleProps);
-    // (undocumented)
-    componentDidMount(): void;
-    // (undocumented)
-    componentDidUpdate(prevProps: ToggleProps): void;
-    // (undocumented)
-    static defaultProps: Partial<ToggleProps>;
-    // (undocumented)
-    render(): JSX.Element;
-    }
+export function Toggle(props: ToggleProps): JSX.Element;
 
 // @public
 export enum ToggleButtonType {
