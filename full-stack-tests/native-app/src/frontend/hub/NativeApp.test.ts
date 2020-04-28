@@ -34,6 +34,8 @@ describe("NativeApp (#integration)", () => {
     await TestUtility.initializeTestProject(testProjectName, TestUsers.regular);
     testProjectId = await TestUtility.getTestProjectId(testProjectName);
     testIModelId = await TestUtility.getTestIModelId(testProjectId, testIModelName);
+
+    await TestUtility.purgeAcquiredBriefcases(testIModelId);
   });
 
   after(async () => {

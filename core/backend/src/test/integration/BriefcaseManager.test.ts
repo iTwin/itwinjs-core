@@ -27,6 +27,7 @@ async function createIModelOnHub(requestContext: AuthorizedBackendRequestContext
 
 describe("BriefcaseManager (#integration)", () => {
   let testProjectId: string;
+  const testProjectName = "iModelJsIntegrationTest";
 
   let readOnlyTestIModel: TestIModelInfo;
   const readOnlyTestVersions = ["FirstVersion", "SecondVersion", "ThirdVersion"];
@@ -62,16 +63,20 @@ describe("BriefcaseManager (#integration)", () => {
     // IModelTestUtils.setupDebugLogLevels();
 
     requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
-    testProjectId = await HubUtility.queryProjectIdByName(requestContext, "iModelJsIntegrationTest");
+    testProjectId = await HubUtility.queryProjectIdByName(requestContext, testProjectName);
     readOnlyTestIModel = await IModelTestUtils.getTestModelInfo(requestContext, testProjectId, "ReadOnlyTest");
     noVersionsTestIModel = await IModelTestUtils.getTestModelInfo(requestContext, testProjectId, "NoVersionsTest");
     readWriteTestIModel = await IModelTestUtils.getTestModelInfo(requestContext, testProjectId, "ReadWriteTest");
 
     // Purge briefcases that are close to reaching the acquire limit
+    await HubUtility.purgeAcquiredBriefcases(requestContext, testProjectName, "ReadOnlyTest");
+    await HubUtility.purgeAcquiredBriefcases(requestContext, testProjectName, "NoVersionsTest");
+    await HubUtility.purgeAcquiredBriefcases(requestContext, testProjectName, "ReadWriteTest");
+    await HubUtility.purgeAcquiredBriefcases(requestContext, testProjectName, "Stadium Dataset 1");
     managerRequestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.manager);
-    await HubUtility.purgeAcquiredBriefcases(managerRequestContext, "iModelJsIntegrationTest", "ReadOnlyTest");
-    await HubUtility.purgeAcquiredBriefcases(managerRequestContext, "iModelJsIntegrationTest", "NoVersionsTest");
-    await HubUtility.purgeAcquiredBriefcases(managerRequestContext, "iModelJsIntegrationTest", "ReadWriteTest");
+    await HubUtility.purgeAcquiredBriefcases(managerRequestContext, testProjectName, "ReadOnlyTest");
+    await HubUtility.purgeAcquiredBriefcases(managerRequestContext, testProjectName, "NoVersionsTest");
+    await HubUtility.purgeAcquiredBriefcases(managerRequestContext, testProjectName, "ReadWriteTest");
   });
 
   after(() => {
@@ -479,7 +484,7 @@ describe("BriefcaseManager (#integration)", () => {
   });
 
   it("Open iModel-s with various names causing potential issues on Windows/Unix", async () => {
-    const projectId: string = await HubUtility.queryProjectIdByName(managerRequestContext, "iModelJsIntegrationTest");
+    const projectId: string = await HubUtility.queryProjectIdByName(managerRequestContext, testProjectName);
 
     let iModelName = "iModel Name With Spaces";
     let iModelId = await createIModelOnHub(managerRequestContext, projectId, iModelName);
