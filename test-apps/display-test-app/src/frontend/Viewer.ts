@@ -173,7 +173,7 @@ export class Viewer extends Window {
   }
 
   private constructor(surface: Surface, view: ViewState, views: ViewList, props: ViewerProps) {
-    super(surface);
+    super(surface, { scrollbars: true });
     surface.element.appendChild(this.container);
 
     this.disableEdges = true === props.disableEdges;
