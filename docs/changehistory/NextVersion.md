@@ -593,6 +593,8 @@ These items define the label and editor to use for each value when the Tool Sett
 
 *When using the DefaultToolSettingsProvider as specified in the `ToolUiManager`, the toolSettingsProperty argument to `ToolUiManager.initializeToolSettingsData()` has been changed from `ToolSettingsPropertyRecord[]` to `DialogItem[]`. `DialogItem` is an interface that you will find in the ui-abstract package in the file DialogItem.ts. The classes in the file ToolSettingsValue.ts have been deprecated and removed from the source tree.
 
+`redux` and `react-redux` dependencies are moved from dependencies to peerDependencies.
+
 ### API changes in `ui-core` package
 
 #### Removal of Deprecated APIs

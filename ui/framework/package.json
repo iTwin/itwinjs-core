@@ -51,7 +51,9 @@
     "@bentley/ui-components": "^2.0.0-dev.83",
     "@bentley/ui-ninezone": "^2.0.0-dev.83",
     "react": "^16.8.0",
-    "react-dom": "^16.8.0"
+    "redux": "^4.0.3",
+    "react-dom": "^16.8.0",
+    "react-redux": "^7.2.0"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
@@ -142,10 +144,8 @@
     "lodash": "^4.17.10",
     "react-dnd": "^5.0.0",
     "react-dnd-html5-backend": "^5.0.1",
-    "react-redux": "^7.2.0",
     "react-resize-detector": "^4.2.3",
     "react-split-pane": "0.1.77",
-    "redux": "^4.0.3",
     "rxjs": "^6.5.2",
     "svg-sprite-loader": "4.2.1"
   },
