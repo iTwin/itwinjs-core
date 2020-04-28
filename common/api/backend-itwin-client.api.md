@@ -47,6 +47,7 @@ export class AzureFileHandler implements FileHandler {
     isDirectory(filePath: string): boolean;
     static isUrlExpired(downloadUrl: string, futureSeconds?: number): boolean;
     join(...paths: string[]): string;
+    unlink(filePath: string): void;
     uploadFile(requestContext: AuthorizedClientRequestContext, uploadUrlString: string, uploadFromPathname: string, progressCallback?: ProgressCallback): Promise<void>;
     }
 
@@ -102,6 +103,7 @@ export class IOSAzureFileHandler implements FileHandler {
     getFileSize(filePath: string): number;
     isDirectory(filePath: string): boolean;
     join(...paths: string[]): string;
+    unlink(filePath: string): void;
     uploadFile(requestContext: AuthorizedClientRequestContext, uploadUrlString: string, uploadFromPathname: string): Promise<void>;
 }
 
@@ -139,6 +141,7 @@ export class UrlFileHandler implements FileHandler {
     getFileSize(filePath: string): number;
     isDirectory(filePath: string): boolean;
     join(...paths: string[]): string;
+    unlink(filePath: string): void;
     // (undocumented)
     uploadFile(_requestContext: AuthorizedClientRequestContext, uploadUrlString: string, uploadFromPathname: string, progressCallback?: ProgressCallback): Promise<void>;
     // (undocumented)

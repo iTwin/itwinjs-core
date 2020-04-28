@@ -101,16 +101,9 @@ export class HubUtility {
   /** Download all change sets of the specified iModel */
   private static async downloadChangeSets(requestContext: AuthorizedClientRequestContext, changeSetsPath: string, _projectId: string, iModelId: GuidString): Promise<ChangeSet[]> {
     const query = new ChangeSetQuery();
-    query.selectDownloadUrl();
 
-    let perfLogger = new PerfLogger("HubUtility.downloadChangeSets -> Get ChangeSet Infos");
-    const changeSets: ChangeSet[] = await BriefcaseManager.imodelClient.changeSets.get(requestContext, iModelId, query);
-    perfLogger.dispose();
-    if (changeSets.length === 0)
-      return new Array<ChangeSet>();
-
-    perfLogger = new PerfLogger("HubUtility.downloadChangeSets -> Download ChangeSets");
-    await BriefcaseManager.imodelClient.changeSets.download(requestContext, changeSets, changeSetsPath);
+    const perfLogger = new PerfLogger("HubUtility.downloadChangeSets -> Download ChangeSets");
+    const changeSets = await BriefcaseManager.imodelClient.changeSets.download(requestContext, iModelId, query, changeSetsPath);
     perfLogger.dispose();
     return changeSets;
   }

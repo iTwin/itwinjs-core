@@ -130,6 +130,7 @@ export interface FileHandler {
     getFileSize(filePath: string): number;
     isDirectory(filePath: string): boolean;
     join(...paths: string[]): string;
+    unlink(filePath: string): void;
     uploadFile(requestContext: AuthorizedClientRequestContext, uploadUrlString: string, path: string, progress?: ProgressCallback): Promise<void>;
 }
 

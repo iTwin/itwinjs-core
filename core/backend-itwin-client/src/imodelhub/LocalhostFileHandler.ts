@@ -92,6 +92,14 @@ export class LocalhostHandler implements FileHandler {
   }
 
   /**
+   * Deletes file.
+   * @param filePath Path of the file.
+   */
+  public unlink(filePath: string): void {
+    fs.unlinkSync(filePath);
+  }
+
+  /**
    * Get file name from the path.
    * @param filePath Path of the file.
    * @returns File name.

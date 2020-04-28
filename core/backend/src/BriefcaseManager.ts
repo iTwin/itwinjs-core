@@ -1332,77 +1332,22 @@ export class BriefcaseManager {
     Logger.logTrace(loggerCategory, "Finished deleting briefcase", () => briefcase.getDebugInfo());
   }
 
-  /** Get change sets in the specified range
-   *  * Gets change sets *after* the specified fromChangeSetId, up to and including the toChangeSetId
-   *  * If the ids are the same returns an empty array
-   */
-  private static async getChangeSets(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, includeDownloadLink: boolean, fromChangeSetId: string, toChangeSetId: string): Promise<ChangeSet[]> {
-    requestContext.enter();
-    if (toChangeSetId === "" /* first version */ || fromChangeSetId === toChangeSetId)
-      return new Array<ChangeSet>();
-
-    const query = new ChangeSetQuery();
-    if (fromChangeSetId)
-      query.fromId(fromChangeSetId);
-    if (includeDownloadLink)
-      query.selectDownloadUrl();
-    const allChangeSets: ChangeSet[] = await BriefcaseManager.imodelClient.changeSets.get(requestContext, iModelId, query);
-    requestContext.enter();
-
-    const changeSets = new Array<ChangeSet>();
-    for (const changeSet of allChangeSets) {
-      changeSets.push(changeSet);
-      if (changeSet.wsgId === toChangeSetId)
-        return changeSets;
-    }
-
-    return Promise.reject(new IModelError(BriefcaseStatus.VersionNotFound, "Version not found", Logger.logWarning, loggerCategory));
-  }
-
-  private static wasChangeSetDownloaded(changeSet: ChangeSet, changeSetsPath: string): boolean {
-    const pathname = path.join(changeSetsPath, changeSet.fileName!);
-
-    // Was the file downloaded?
-    if (!IModelJsFs.existsSync(pathname))
-      return false;
-
-    // Was the download complete?
-    const actualFileSize: number = IModelJsFs.lstatSync(pathname)!.size;
-    const expectedFileSize: number = +changeSet.fileSize!;
-    if (actualFileSize === expectedFileSize)
-      return true;
-
-    Logger.logError(loggerCategory, `ChangeSet size ${actualFileSize} does not match the expected size ${expectedFileSize}. Deleting it so that it can be refetched`, () => (changeSet));
-    try {
-      IModelJsFs.unlinkSync(pathname);
-    } catch (error) {
-      Logger.logError(loggerCategory, `Cannot delete ChangeSet file at ${pathname}`);
-    }
-    return false;
-  }
-
-  private static async downloadChangeSetsInternal(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, changeSets: ChangeSet[]): Promise<void> {
+  private static async downloadChangeSetsInternal(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, query: ChangeSetQuery): Promise<ChangeSet[]> {
     requestContext.enter();
     const changeSetsPath: string = BriefcaseManager.getChangeSetsPath(iModelId);
 
-    const perfLogger = new PerfLogger("BriefcaseManager.downloadChangeSets", () => ({ iModelId, count: changeSets.length }));
-    for (const changeSet of changeSets) {
-      if (BriefcaseManager.wasChangeSetDownloaded(changeSet, changeSetsPath))
-        continue;
-      try {
-        const changeSetsToDownload = new Array<ChangeSet>(changeSet);
-        await BriefcaseManager.imodelClient.changeSets.download(requestContext, changeSetsToDownload, changeSetsPath);
-        requestContext.enter();
-      } catch (error) {
-        requestContext.enter();
-        // Note: If the cache was shared across processes, it's possible that the download was completed by another process
-        if (BriefcaseManager.wasChangeSetDownloaded(changeSet, changeSetsPath))
-          continue;
-        Logger.logError(loggerCategory, "Could not download changesets", () => ({ iModelId }));
-        throw error;
-      }
+    const perfLogger = new PerfLogger("BriefcaseManager.downloadChangeSets", () => ({ iModelId }));
+    let changeSets;
+    try {
+      changeSets = await BriefcaseManager.imodelClient.changeSets.download(requestContext, iModelId, query, changeSetsPath);
+      requestContext.enter();
+    } catch (error) {
+      requestContext.enter();
+      Logger.logError(loggerCategory, "Could not download changesets", () => ({ iModelId }));
+      throw error;
     }
     perfLogger.dispose();
+    return changeSets;
   }
 
   /** Downloads change sets in the specified range.
@@ -1413,15 +1358,13 @@ export class BriefcaseManager {
   public static async downloadChangeSets(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, fromChangeSetId: string, toChangeSetId: string): Promise<ChangeSet[]> {
     requestContext.enter();
 
-    const changeSets = await BriefcaseManager.getChangeSets(requestContext, iModelId, true /*includeDownloadLink*/, fromChangeSetId, toChangeSetId);
-    requestContext.enter();
-    if (changeSets.length === 0)
+    if (toChangeSetId === "" /* first version */ || fromChangeSetId === toChangeSetId)
       return new Array<ChangeSet>();
 
-    await BriefcaseManager.downloadChangeSetsInternal(requestContext, iModelId, changeSets);
-    requestContext.enter();
+    const query = new ChangeSetQuery();
+    query.betweenChangeSets(toChangeSetId, fromChangeSetId);
 
-    return changeSets;
+    return BriefcaseManager.downloadChangeSetsInternal(requestContext, iModelId, query);
   }
 
   /** Deletes a file
@@ -1923,10 +1866,7 @@ export class BriefcaseManager {
     pendingChangeSets = pendingChangeSets.slice(0, 100);
 
     const query = new ChangeSetQuery().filter(`$id+in+[${pendingChangeSets.map((value: string) => `'${value}'`).join(",")}]`).selectDownloadUrl();
-    const changeSets: ChangeSet[] = await BriefcaseManager.imodelClient.changeSets.get(requestContext, briefcase.iModelId, query);
-    requestContext.enter();
-
-    await BriefcaseManager.downloadChangeSetsInternal(requestContext, briefcase.iModelId, changeSets);
+    const changeSets = await BriefcaseManager.downloadChangeSetsInternal(requestContext, briefcase.iModelId, query);
     requestContext.enter();
 
     const changeSetsPath = BriefcaseManager.getChangeSetsPath(briefcase.iModelId);

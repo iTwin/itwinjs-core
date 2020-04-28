@@ -94,6 +94,12 @@ export interface FileHandler {
   exists(filePath: string): boolean;
 
   /**
+   * Deletes file.
+   * @param filePath Path of the file.
+   */
+  unlink(filePath: string): void;
+
+  /**
    * Get file name from the path.
    * @param filePath Path of the file.
    * @returns File name.

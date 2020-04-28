@@ -81,7 +81,9 @@ export function addSelectFileAccessKey(query: RequestQueryOptions) {
   if (!query.$select)
     query.$select = "*";
 
-  query.$select += ",FileAccessKey-forward-AccessKey.DownloadURL";
+  const fileAccessKeySelector = "FileAccessKey-forward-AccessKey.DownloadURL";
+  if (query.$select.indexOf(fileAccessKeySelector) === -1)
+    query.$select += "," + fileAccessKeySelector;
 }
 
 /**

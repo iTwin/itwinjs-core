@@ -378,14 +378,22 @@ export class ChangeSetHandler {
    *
    * This method creates the directory containing the ChangeSets if necessary. If there is an error in downloading some of the ChangeSets, all partially downloaded ChangeSets are deleted from disk.
    * @param requestContext The client request context
-   * @param changeSets ChangeSets to download. These need to include a download link. See [[ChangeSetQuery.selectDownloadUrl]].
+   * @param iModelId Id of the iModel. See [[HubIModel]].
+   * @param query Query that defines ChangeSets to download.
    * @param path Path of directory where the ChangeSets should be downloaded.
    * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley), if one of the required arguments is undefined or empty.
    * @param progressCallback Callback for tracking progress.
    * @throws [[ResponseError]] if the download fails.
    */
-  public async download(requestContext: AuthorizedClientRequestContext, changeSets: ChangeSet[], path: string, progressCallback?: ProgressCallback): Promise<void> {
+  public async download(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, query: ChangeSetQuery, path: string, progressCallback?: ProgressCallback): Promise<ChangeSet[]> {
     requestContext.enter();
+    query.selectDownloadUrl();
+    const changeSets = await this.get(requestContext, iModelId, query);
+
+    requestContext.enter();
+    if (changeSets.length === 0)
+      return new Array<ChangeSet>();
+
     Logger.logInfo(loggerCategory, `Downloading ${changeSets.length} changesets`);
     ArgumentCheck.nonEmptyArray("changeSets", changeSets);
     ArgumentCheck.defined("path", path);
@@ -411,6 +419,7 @@ export class ChangeSetHandler {
       queue.push(async () => {
         const downloadUrl: string = changeSet.downloadUrl!;
         const downloadPath: string = fileHandler.join(path, changeSet.fileName!);
+        const changeSetSize = parseInt(changeSet.fileSize!, 10);
 
         let previouslyDownloaded = 0;
         const callback: ProgressCallback = (progress: ProgressInfo) => {
@@ -418,12 +427,58 @@ export class ChangeSetHandler {
           previouslyDownloaded = progress.loaded;
           progressCallback!({ loaded: downloadedSize, total: totalSize, percent: downloadedSize / totalSize });
         };
-        return fileHandler.downloadFile(requestContext, downloadUrl, downloadPath, parseInt(changeSet.fileSize!, 10), progressCallback ? callback : undefined);
+
+        if (this.wasChangeSetDownloaded(downloadPath, changeSetSize, changeSet)) {
+          if (progressCallback)
+            callback({ percent: 100, total: changeSetSize, loaded: changeSetSize });
+          return Promise.resolve();
+        }
+
+        try {
+          await fileHandler.downloadFile(requestContext, downloadUrl, downloadPath, parseInt(changeSet.fileSize!, 10), progressCallback ? callback : undefined);
+          requestContext.enter();
+        } catch (error) {
+          requestContext.enter();
+          // Note: If the cache was shared across processes, it's possible that the download was completed by another process
+          if (this.wasChangeSetDownloaded(downloadPath, changeSetSize, changeSet))
+            return Promise.resolve();
+          throw error;
+        }
+
+        return Promise.resolve();
       }));
 
     await queue.waitAll();
     requestContext.enter();
     Logger.logTrace(loggerCategory, `Downloaded ${changeSets.length} changesets`);
+
+    return changeSets;
+  }
+
+  /** Checks if ChangeSet file was already downloaded.
+   * @param path Path of file where the ChangeSet should be downloaded.
+   * @param expectedFileSize Size of the file that's being downloaded.
+   * @param changeSet ChangeSet that's being downloaded.
+   * @internal
+   */
+  private wasChangeSetDownloaded(path: string, expectedFileSize: number, changeSet: ChangeSet): boolean {
+    if (!this._fileHandler)
+      return false;
+
+    if (!this._fileHandler.exists(path))
+      return false;
+
+    const actualFileSize = this._fileHandler.getFileSize(path);
+    if (actualFileSize === expectedFileSize)
+      return true;
+
+    Logger.logError(loggerCategory, `ChangeSet size ${actualFileSize} does not match the expected size ${expectedFileSize}. Deleting it so that it can be refetched`, () => (changeSet));
+    try {
+      this._fileHandler.unlink(path);
+    } catch (error) {
+      Logger.logError(loggerCategory, `Cannot delete ChangeSet file at ${path}`);
+    }
+    return false;
   }
 
   /**
