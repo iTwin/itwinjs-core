@@ -73,9 +73,6 @@
     },
     "RecordFps": {
       "keyin": "dta record fps"
-    },
-    "Toggle3dManipulations": {
-      "keyin": "dta manip3d"
     }
   }
 }

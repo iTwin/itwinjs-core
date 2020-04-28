@@ -59,6 +59,7 @@ The key-ins below enable, disable, or toggle a specific feature. They take at mo
 * `fdt metric` - Toggles use of metric quantity formatting, e.g. as used to format output from the measure tools. Turning metric "off" switches to use of imperial units.
 * `fdt fadeout` - Toggles "fade-out" transparency mode for the selected viewport.
 * `fdt tile requests` - When enabled, displays in each viewport the bounding boxes of all tiles currently requested for loading by the viewport that was selected at the time the key-in was executed. Green boxes indicate pending requests; red indicate requests being actively processed.
+* `fdt 3dmanip` - Change the `allow3dManipulations` flag for the 3d view associated with the active viewport.
 
 ### Other key-ins
 

@@ -974,6 +974,16 @@ export class TileStatisticsTracker {
     }
 
 // @alpha
+export class Toggle3dManipulationsTool extends Tool {
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    run(allow?: boolean): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @alpha
 export class ToggleDrapeFrustumTool extends RenderTargetDebugControlTool {
     // (undocumented)
     execute(control: RenderTargetDebugControl, vp: ScreenViewport): void;

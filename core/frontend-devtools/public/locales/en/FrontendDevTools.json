@@ -143,6 +143,9 @@
     },
     "ElementIdFromSourceAspectId": {
       "keyin": "fdt elemId from sourceId"
+    },
+    "Toggle3dManipulations": {
+      "keyin": "fdt 3dmanip"
     }
   }
 }

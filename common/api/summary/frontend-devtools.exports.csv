@@ -100,6 +100,7 @@ alpha;TextBoxHandler = (textbox: HTMLInputElement) => void
 alpha;TextBoxKeyPressHandler = (textbox: HTMLInputElement, ev: KeyboardEvent) => void
 alpha;TextBoxProps
 beta;TileStatisticsTracker
+alpha;Toggle3dManipulationsTool 
 alpha;ToggleDrapeFrustumTool 
 beta;ToggleFrustumSnapshotTool 
 beta;TogglePrimitiveVisibilityTool 

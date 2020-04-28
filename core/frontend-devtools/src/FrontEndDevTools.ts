@@ -52,6 +52,7 @@ import {
   FreezeSceneTool,
   SetAspectRatioSkewTool,
   ShowTileVolumesTool,
+  Toggle3dManipulationsTool,
   ViewportTileSizeModifierTool,
   ViewportAddRealityModel,
 } from "./tools/ViewportTools";
@@ -126,6 +127,7 @@ export class FrontendDevTools {
       SetVolClassIntersectOn,
       ShowTileVolumesTool,
       SourceAspectIdFromElementIdTool,
+      Toggle3dManipulationsTool,
       ToggleDrapeFrustumTool,
       ToggleFrustumSnapshotTool,
       TogglePrimitiveVisibilityTool,
