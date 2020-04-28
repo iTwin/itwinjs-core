@@ -401,8 +401,6 @@ export class SolarShadowMap implements RenderMemory.Consumer, WebGLDisposable {
         Geometry.isAlmostEqualNumber(shadowRange.low.z, shadowRange.high.z)) {
         this.clearGraphics(true);
         return;
-        this._shadowFrustum.initFromRange(shadowRange);
-        mapToWorld.multiplyPoint3dArrayQuietNormalize(this._shadowFrustum.points);
       }
 
       const frustumMap = this._shadowFrustum.toMap4d();
