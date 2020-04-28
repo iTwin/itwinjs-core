@@ -183,7 +183,7 @@ export class Angle implements BeJSONFunctions {
     const radians1 = Angle.adjustDegrees0To360(-degrees);
     return 360.0 - radians1;
   }
-  /** Adjust a radians value so it is positive in -180..180 */
+  /** Adjust a radians value so it is in -180..180 */
   public static adjustDegreesSigned180(degrees: number): number {
     if (Math.abs(degrees) <= 180.0)
       return degrees;

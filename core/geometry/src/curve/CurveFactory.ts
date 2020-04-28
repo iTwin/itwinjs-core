@@ -40,6 +40,35 @@ export class CurveFactory {
     }
   }
   /**
+   * Create a circular arc from start point, tangent at start, and another point (endpoint) on the arc.
+   * @param pointA
+   * @param tangentA
+   * @param pointB
+   */
+  public static createArcPointTangentPoint(pointA: Point3d, tangentA: Vector3d, pointB: Point3d): Arc3d | undefined {
+    const vectorV = Vector3d.createStartEnd(pointA, pointB);
+    const frame = Matrix3d.createRigidFromColumns(tangentA, vectorV, AxisOrder.XYZ);
+    if (frame !== undefined) {
+      const vv = vectorV.dotProduct(vectorV);
+      const vw = frame.dotColumnY(vectorV);
+      const alpha = Geometry.conditionalDivideCoordinate(vv, 2 * vw);
+      if (alpha !== undefined) {
+        const vector0 = frame.columnY();
+        vector0.scaleInPlace(-alpha);
+        const vector90 = frame.columnX();
+        vector90.scaleInPlace(alpha);
+        const centerToEnd = vector0.plus(vectorV);
+        const sweepAngle = vector0.angleTo(centerToEnd);
+        let sweepRadians = sweepAngle.radians;  // That's always positive and less than PI.
+        if (tangentA.dotProduct(centerToEnd) < 0.0) // ah, sweepRadians is the wrong way
+          sweepRadians = 2.0 * Math.PI - sweepRadians;
+        const center = pointA.plusScaled(vector0, -1.0);
+        return Arc3d.create(center, vector0, vector90, AngleSweep.createStartEndRadians(0.0, sweepRadians));
+      }
+    }
+    return undefined;
+  }
+  /**
    * Construct a sequence of alternating lines and arcs with the arcs creating tangent transition between consecutive edges.
    *  * If the radius parameter is a number, that radius is used throughout.
    *  * If the radius parameter is an array of numbers, `radius[i]` is applied at `point[i]`.

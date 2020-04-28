@@ -21,8 +21,21 @@ import { CurveFactory } from "../../curve/CurveFactory";
 import { RegionOps } from "../../curve/RegionOps";
 import { BezierCurve3d } from "../../bspline/BezierCurve3d";
 import { Arc3d } from "../../curve/Arc3d";
+import { IModelJson } from "../../serialization/IModelJsonSchema";
+import * as fs from "fs";
 /* tslint:disable:no-console */
 
+const consolidateAdjacentPath = "./src/test/testInputs/curve/";
+/**
+ * mutate data so it is an array or undefined.
+ */
+function resolveToArray(data: any) {
+  if (data === undefined)
+    return data;
+  if (Array.isArray(data))
+    return data;
+  return [data];
+}
 function verifyCurveCollection(ck: Checker, collection: CurveCollection) {
   const scaleFactor = 3.0;
   const scaleTransform = Transform.createScaleAboutPoint(Point3d.createZero(), scaleFactor);
@@ -227,6 +240,41 @@ describe("ConsolidateAdjacentPrimitives", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "ConsolidateAdjacentPrimitives", "LinesAndArcs");
     expect(ck.getNumErrors()).equals(0);
   });
+  it("consolidateAdjacentFiles", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let x0 = 0;
+    const y0 = 0;
+    for (const filename of ["consolidateAdjacent00"]) {
+      const stringData = fs.readFileSync(consolidateAdjacentPath + filename + ".imjs", "utf8");
+      if (stringData) {
+        const jsonData = JSON.parse(stringData);
+        const fragments = resolveToArray(IModelJson.Reader.parse(jsonData));
+        if (Array.isArray(fragments)) {
+          for (const g of fragments) {
+            let g1 = g;
+            if (g instanceof CurvePrimitive)
+              g1 = Path.create(g);
+            if (g1 instanceof CurveCollection) {
+              const range = g.range();
+              const dx = 2.0 * range.xLength();
+              const dy = 1.1 * range.yLength();
+              const lengthA = g1.sumLengths ();
+              GeometryCoreTestIO.captureCloneGeometry(allGeometry, g1, x0, y0);
+              RegionOps.consolidateAdjacentPrimitives(g1);
+              const lengthB = g1.sumLengths ();
+              ck.testCoordinate (lengthA, lengthB, "consolidateAdjacentPrimitives should not change length");
+              GeometryCoreTestIO.captureCloneGeometry(allGeometry, g1, x0, y0 + dy);
+              x0 += dx;
+            }
+          }
+        }
+      }
+      GeometryCoreTestIO.saveGeometry(allGeometry, "ConsolidateAdjacent", filename);
+    }
+    expect(ck.getNumErrors()).equals(0);
+  });
+
   it("Misc", () => {
     const ck = new Checker();
     const unitCircle = Arc3d.createUnitCircle();

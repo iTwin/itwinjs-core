@@ -250,4 +250,31 @@ export class PolylineCompressionContext {
       data.moveIndexToIndex(i1, ++lastAcceptedIndex);
     data.length = lastAcceptedIndex + 1;
   }
+  /**
+   * IF the first and last points are close AND first and last segments are colinear, remove first and last points.  Prior second to last becomes replicated start and end.
+   * * Expected to be called "last" after other compressions, so points "next to" shared first and last are good to keep.
+   * @param points
+   * @param perpendicularDistance
+   */
+  public static compressColinearWrapInPlace(points: Point3d[], tolerance: number) {
+    const lastIndex = points.length - 1;
+    if (lastIndex >= 3 && points[0].distance(points[lastIndex]) < tolerance) {
+      // indices of 3 points potentially colinear.
+      const indexA = lastIndex - 1;
+      const indexB = 0;
+      const indexC = 1;
+      const vectorU = Vector3d.createStartEnd(points[indexA], points[indexC]);
+      const vectorV = Vector3d.createStartEnd(points[indexA], points[indexB]);
+      const uDotU = vectorU.dotProduct(vectorU);
+      const uDotV = vectorU.dotProduct(vectorV);
+      const fraction = Geometry.conditionalDivideFraction(uDotV, uDotU);
+      if (fraction !== undefined && fraction > 0.0 && fraction < 1.0) {
+        const h2 = vectorV.magnitudeSquared() - fraction * fraction * uDotU;
+        if (Math.sqrt(Math.abs(h2)) < tolerance) {
+          points[0] = points[indexA];
+          points.pop();
+        }
+      }
+    }
+  }
 }

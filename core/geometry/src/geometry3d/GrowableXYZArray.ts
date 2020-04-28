@@ -451,7 +451,7 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
     let j0, j1;
     let a;
     const data = this._data;
-    for (let i0 = 0, i1 = n - 1; i0 < i1; i0++ , i1--) {
+    for (let i0 = 0, i1 = n - 1; i0 < i1; i0++, i1--) {
       j0 = 3 * i0;
       j1 = 3 * i1;
       a = data[j0]; data[j0] = data[j1]; data[j1] = a;
@@ -906,6 +906,15 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
       i++;
     }
     return range;
+  }
+  /**
+   * remove trailing point(s) within tolerance of the start point.
+   * @param points
+   * @param tolerance
+   */
+  public static removeClosure(points: IndexedReadWriteXYZCollection, tolerance: number = Geometry.smallMetricDistance) {
+    while (points.length > 1 && points.distanceIndexIndex(0, points.length - 1)! < tolerance)
+      points.pop();
   }
   /**
    * * Triangle for (unchecked!) for three points identified by index
