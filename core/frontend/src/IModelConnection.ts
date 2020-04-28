@@ -884,6 +884,8 @@ export class SnapshotConnection extends IModelConnection {
    * @note This method is intended for desktop or mobile applications and should not be used for web applications.
    */
   public static async openFile(filePath: string): Promise<SnapshotConnection> {
+    RpcManager.setIModel({ iModelId: "undefined", key: filePath });
+
     const openResponse = await SnapshotIModelRpcInterface.getClient().openFile(filePath);
     Logger.logTrace(loggerCategory, "SnapshotConnection.openFile", () => ({ filePath }));
     const connection = new SnapshotConnection(openResponse);
@@ -895,6 +897,8 @@ export class SnapshotConnection extends IModelConnection {
    * @note This method is primarily intended for web applications.
    */
   public static async openRemote(fileKey: string): Promise<SnapshotConnection> {
+    RpcManager.setIModel({ iModelId: "undefined", key: fileKey });
+
     const openResponse = await SnapshotIModelRpcInterface.getClient().openRemote(fileKey);
     Logger.logTrace(loggerCategory, "SnapshotConnection.openRemote", () => ({ fileKey }));
     const connection = new SnapshotConnection(openResponse);
