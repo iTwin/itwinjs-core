@@ -1,6 +1,6 @@
 {
   "name": "@bentley/product-settings-client",
-  "version": "2.0.0-dev.83",
+  "version": "2.0.0-dev.84",
   "description": "iModel.js Product Settings Client",
   "main": "lib/product-settings-client.js",
   "typings": "lib/product-settings-client",
@@ -35,16 +35,16 @@
   },
   "dependencies": {},
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.0.0-dev.83",
-    "@bentley/itwin-client": "^2.0.0-dev.83"
+    "@bentley/bentleyjs-core": "^2.0.0-dev.84",
+    "@bentley/itwin-client": "^2.0.0-dev.84"
   },
   "devDependencies": {
-    "@bentley/build-tools": "2.0.0-dev.83",
-    "@bentley/certa": "2.0.0-dev.83",
-    "@bentley/config-loader": "2.0.0-dev.83",
-    "@bentley/context-registry-client": "2.0.0-dev.83",
-    "@bentley/imodelhub-client": "2.0.0-dev.83",
-    "@bentley/oidc-signin-tool": "2.0.0-dev.83",
+    "@bentley/build-tools": "2.0.0-dev.84",
+    "@bentley/certa": "2.0.0-dev.84",
+    "@bentley/config-loader": "2.0.0-dev.84",
+    "@bentley/context-registry-client": "2.0.0-dev.84",
+    "@bentley/imodelhub-client": "2.0.0-dev.84",
+    "@bentley/oidc-signin-tool": "2.0.0-dev.84",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
     "@types/node": "10.14.1",
