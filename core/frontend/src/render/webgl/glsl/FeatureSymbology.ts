@@ -476,10 +476,6 @@ const checkForEarlySurfaceDiscardWithFeatureID = `
   if (kFrustumType_Ortho2d == u_frustum.z)
     return false;
 
-  // Only planar stuff is permitted to show through other, non-planar surfaces.
-  if (depthAndOrder.x < kRenderOrder_PlanarBit || u_renderOrder >= kRenderOrder_PlanarBit)
-    return false;
-
   // Use a tighter tolerance for two different elements since we're only fighting roundoff error.
   return depthDelta <= 4.0e-5;
 `;
