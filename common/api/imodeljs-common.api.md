@@ -1375,8 +1375,11 @@ export interface ContextRealityModelProps {
     tilesetUrl: string;
 }
 
-// @beta
+// @public
 export type CreateEmptySnapshotIModelProps = CreateIModelProps & CreateSnapshotIModelProps;
+
+// @internal
+export type CreateEmptyStandaloneIModelProps = CreateIModelProps & CreateStandaloneIModelProps;
 
 // @public
 export interface CreateIModelProps extends IModelProps {
@@ -1416,9 +1419,14 @@ export interface CreatePolyfaceResponseResult {
     materialDiffuseColor?: ColorDefProps;
 }
 
-// @beta
+// @public
 export interface CreateSnapshotIModelProps extends IModelEncryptionProps {
     createClassViews?: boolean;
+}
+
+// @internal
+export interface CreateStandaloneIModelProps extends IModelEncryptionProps {
+    allowEdit?: string;
 }
 
 // @internal (undocumented)
@@ -3186,7 +3194,7 @@ export interface IModelCoordinatesResponseProps {
     iModelCoords: PointWithStatus[];
 }
 
-// @beta
+// @public
 export interface IModelEncryptionProps {
     password?: string;
 }

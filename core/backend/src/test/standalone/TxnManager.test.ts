@@ -2,11 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
+import { assert, expect } from "chai";
 import { BeDuration, DbResult, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
 import { LineSegment3d, Point3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import { Code, ColorByName, GeometryStreamBuilder, IModel, IModelError, SubCategoryAppearance } from "@bentley/imodeljs-common";
-import { assert, expect } from "chai";
-import { BackendRequestContext, IModelHost, IModelJsFs, IModelJsNative, PhysicalModel, SpatialCategory, StandaloneDb, TxnAction, UpdateModelOptions } from "../../imodeljs-backend";
+import { BriefcaseIdValue } from "../../BriefcaseManager";
+import {
+  BackendRequestContext, IModelHost, IModelJsFs, IModelJsNative, PhysicalModel, SpatialCategory, StandaloneDb, TxnAction, UpdateModelOptions,
+} from "../../imodeljs-backend";
 import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject, TestPhysicalObjectProps } from "../IModelTestUtils";
 
 describe("TxnManager", () => {
@@ -18,8 +22,10 @@ describe("TxnManager", () => {
   const performUpgrade = (pathname: string): DbResult => {
     const nativeDb = new IModelHost.platform.DgnDb();
     const res = nativeDb.openIModel(pathname, OpenMode.ReadWrite, IModelJsNative.UpgradeMode.Domain);
-    if (DbResult.BE_SQLITE_OK === res)
+    if (DbResult.BE_SQLITE_OK === res) {
+      nativeDb.resetBriefcaseId(BriefcaseIdValue.Standalone); // clears txn table
       nativeDb.closeIModel();
+    }
     return res;
   };
 
@@ -50,7 +56,7 @@ describe("TxnManager", () => {
     };
 
     imodel.saveChanges("schema change");
-    imodel.nativeDb.enableTxnTesting();
+    imodel.nativeDb.resetBriefcaseId(imodel.getBriefcaseId()); // clears txns
   });
 
   after(() => imodel.close());
@@ -251,7 +257,6 @@ describe("TxnManager", () => {
     // test the ability to undo/redo from previous sessions
     imodel.close();
     imodel = StandaloneDb.openFile(testFileName, OpenMode.ReadWrite);
-    imodel.nativeDb.enableTxnTesting();
     txns = imodel.txns;
 
     assert.isFalse(txns.isUndoPossible);

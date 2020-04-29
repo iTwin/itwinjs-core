@@ -44,6 +44,7 @@ import { ConflictingCodesError } from '@bentley/imodelhub-client';
 import { ContextRealityModelProps } from '@bentley/imodeljs-common';
 import { ContextRegistryClient } from '@bentley/context-registry-client';
 import { CreateEmptySnapshotIModelProps } from '@bentley/imodeljs-common';
+import { CreateEmptyStandaloneIModelProps } from '@bentley/imodeljs-common';
 import { CreateIModelProps } from '@bentley/imodeljs-common';
 import { CreatePolyfaceRequestProps } from '@bentley/imodeljs-common';
 import { CreatePolyfaceResponseProps } from '@bentley/imodeljs-common';
@@ -2317,6 +2318,8 @@ export abstract class IModelDb extends IModel {
     static readonly defaultLimit = 1000;
     deleteFileProperty(prop: FilePropertyProps): DbResult;
     // (undocumented)
+    protected static readonly _edit = "StandaloneEdit";
+    // (undocumented)
     readonly elements: IModelDb.Elements;
     // (undocumented)
     embedFont(prop: FontProps): FontProps;
@@ -3803,7 +3806,7 @@ export enum SqliteValueType {
 export class StandaloneDb extends IModelDb {
     get changeSetId(): undefined;
     close(): void;
-    static createEmpty(filePath: string, args: CreateIModelProps): StandaloneDb;
+    static createEmpty(filePath: string, args: CreateEmptyStandaloneIModelProps): StandaloneDb;
     get filePath(): string;
     static openFile(filePath: string, openMode?: OpenMode): StandaloneDb;
     static tryFindByKey(key: string): StandaloneDb | undefined;
