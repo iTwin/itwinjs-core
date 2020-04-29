@@ -68,6 +68,7 @@ exports[`FrameworkStagePanel should render SplitterPaneTarget 1`] = `
 
 exports[`FrameworkStagePanel should render StagePanelTarget 1`] = `
 <StagePanelTarget
+  className=""
   onTargetChanged={[Function]}
   safeAreaInsets={0}
   type={2}

@@ -1724,6 +1724,8 @@ export interface FrameworkStagePanelProps {
     // (undocumented)
     panel: NineZoneStagePanelManagerProps;
     // (undocumented)
+    panelState: StagePanelState;
+    // (undocumented)
     renderPane: (index: number) => React.ReactNode;
     // (undocumented)
     resizable: boolean;
@@ -4125,7 +4127,12 @@ export interface SplitterPaneTargetProps {
 }
 
 // @alpha
-export class StagePanel extends React.Component<StagePanelProps> {
+export class StagePanel extends React.Component<StagePanelProps, StagePanelComponentState> {
+    constructor(props: StagePanelProps);
+    // (undocumented)
+    componentDidMount(): void;
+    // (undocumented)
+    componentWillUnmount(): void;
     // (undocumented)
     static readonly defaultProps: StagePanelDefaultProps;
     // (undocumented)

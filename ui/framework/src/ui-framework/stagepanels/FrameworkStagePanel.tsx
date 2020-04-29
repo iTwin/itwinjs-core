@@ -27,6 +27,7 @@ import { ZoneLocation } from "../zones/Zone";
 import { SafeAreaContext } from "../safearea/SafeAreaContext";
 import { getStagePanelType, getNestedStagePanelKey } from "./StagePanel";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
+import { StagePanelState } from "./StagePanelDef";
 import "./FrameworkStagePanel.scss";
 
 /** Properties of a [[FrameworkStagePanel]] component
@@ -45,6 +46,7 @@ export interface FrameworkStagePanelProps {
   minSize?: number;
   location: StagePanelLocation;
   panel: NineZoneStagePanelManagerProps;
+  panelState: StagePanelState;
   renderPane: (index: number) => React.ReactNode;
   resizable: boolean;
   widgetChangeHandler: WidgetChangeHandler;
@@ -70,10 +72,10 @@ export class FrameworkStagePanel extends React.PureComponent<FrameworkStagePanel
   }
 
   public render(): React.ReactNode {
-    const className = classnames("uifw-stagepanel");
+    const panelStateClassName = classnames(this.props.panelState === StagePanelState.Off && "uifw-stagepanel-off");
+    const className = classnames("uifw-stagepanel", panelStateClassName);
     const paneCount = this.props.widgetCount + this.props.panel.panes.length;
     const type = getStagePanelType(this.props.location);
-
     const isTargetVisible = !!this.props.draggedWidgetId && this.props.allowedZones && this.props.allowedZones.some((z) => this.props.draggedWidgetId === z);
     if (paneCount === 0) {
       if (!isTargetVisible)
@@ -82,6 +84,7 @@ export class FrameworkStagePanel extends React.PureComponent<FrameworkStagePanel
         <SafeAreaContext.Consumer>
           {(safeAreaInsets) => (
             <StagePanelTarget
+              className={panelStateClassName}
               onTargetChanged={this._handleTargetChanged}
               safeAreaInsets={safeAreaInsets}
               type={type}
