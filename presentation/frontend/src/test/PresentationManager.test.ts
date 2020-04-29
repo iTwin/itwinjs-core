@@ -73,9 +73,10 @@ describe("PresentationManager", () => {
   };
 
   const toIModelTokenOptions = <TOptions extends { imodel: IModelConnection, locale?: string, unitSystem?: PresentationUnitSystem }>(requestOptions: TOptions) => {
-    return Object.assign({}, requestOptions, {
+    return {
+      ...requestOptions,
       imodel: requestOptions.imodel.getRpcProps(),
-    });
+    };
   };
 
   const addRulesetAndVariablesToOptions = <TOptions extends { rulesetId?: string, rulesetOrId?: Ruleset | string }>(options: TOptions) => {

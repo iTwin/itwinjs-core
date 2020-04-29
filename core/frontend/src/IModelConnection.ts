@@ -1020,7 +1020,7 @@ export namespace IModelConnection {
       const iModel = this._iModel;
       if (!iModel.isOpen)
         return [];
-      const params: ModelQueryParams = Object.assign({}, queryParams); // make a copy
+      const params: ModelQueryParams = { ...queryParams }; // make a copy
       params.from = queryParams.from || ModelState.classFullName; // use "BisCore:Model" as default class name
       params.where = queryParams.where || "";
       if (!queryParams.wantPrivate) {
@@ -1136,7 +1136,7 @@ export namespace IModelConnection {
       if (iModel.isClosed)
         return [];
 
-      const params: ViewQueryParams = Object.assign({}, queryParams); // make a copy
+      const params: ViewQueryParams = { ...queryParams }; // make a copy
       params.from = queryParams.from || ViewState.classFullName; // use "BisCore:ViewDefinition" as default class name
       params.where = queryParams.where || "";
       if (queryParams.wantPrivate === undefined || !queryParams.wantPrivate) {

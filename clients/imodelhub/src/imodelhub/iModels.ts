@@ -298,7 +298,7 @@ export class DefaultIModelCreateOptionsProvider {
    * @param options Options that should be augmented.
    */
   public async assignOptions(options: IModelCreateOptions): Promise<void> {
-    const clonedOptions: IModelCreateOptions = Object.assign({}, options);
+    const clonedOptions: IModelCreateOptions = { ...options };
     deepAssign(options, this._defaultOptions);
     deepAssign(options, clonedOptions); // ensure the supplied options override the defaults
     if (!options.template) // this assignment works incorrectly through deepAssign

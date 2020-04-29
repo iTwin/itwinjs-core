@@ -66,7 +66,7 @@ export class Element extends Entity implements ElementProps {
     this.parent = RelatedElement.fromJSON(props.parent);
     this.federationGuid = props.federationGuid;
     this.userLabel = props.userLabel;
-    this.jsonProperties = Object.assign({}, props.jsonProperties); // make sure we have our own copy
+    this.jsonProperties = { ...props.jsonProperties }; // make sure we have our own copy
   }
 
   /** Disclose the codes and locks needed to perform the specified operation on this element

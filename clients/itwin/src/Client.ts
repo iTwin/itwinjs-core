@@ -33,7 +33,7 @@ export class DefaultRequestOptionsProvider {
    * @param options Options that should be augmented.
    */
   public async assignOptions(options: RequestOptions): Promise<void> {
-    const clonedOptions: RequestOptions = Object.assign({}, options);
+    const clonedOptions: RequestOptions = { ...options };
     deepAssign(options, this._defaultOptions);
     deepAssign(options, clonedOptions); // ensure the supplied options override the defaults
     return Promise.resolve();

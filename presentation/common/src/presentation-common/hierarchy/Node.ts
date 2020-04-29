@@ -85,10 +85,11 @@ export namespace Node {
     if (typeof json === "string")
       return JSON.parse(json, reviver);
     const { labelDefinition, ...baseJson } = json;
-    return Object.assign({}, baseJson, {
+    return {
+      ...baseJson,
       key: NodeKey.fromJSON(json.key),
       label: LabelDefinition.fromJSON(labelDefinition),
-    });
+    };
   }
 
   /**

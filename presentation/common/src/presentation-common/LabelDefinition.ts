@@ -33,9 +33,10 @@ export namespace LabelCompositeValue {
 
   /** Deserialize [[LabelCompositeValue]] from JSON */
   export function fromJSON(json: LabelCompositeValueJSON): LabelCompositeValue {
-    return Object.assign({}, json, {
+    return {
+      ...json,
       values: json.values.map(LabelDefinition.fromJSON),
-    });
+    };
   }
 }
 
@@ -89,9 +90,10 @@ export namespace LabelDefinition {
   export function fromJSON(json: LabelDefinitionJSON | string): LabelDefinition {
     if (typeof json === "string")
       return JSON.parse(json, reviver);
-    return Object.assign({}, json, {
+    return {
+      ...json,
       rawValue: isCompositeDefinition(json) ? LabelCompositeValue.fromJSON(json.rawValue) : json.rawValue,
-    });
+    };
   }
 
   /**

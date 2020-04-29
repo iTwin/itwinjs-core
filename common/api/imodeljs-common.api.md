@@ -4931,7 +4931,7 @@ export class ResponseLike implements Response {
     // (undocumented)
     get bodyUsed(): boolean;
     // (undocumented)
-    clone(): {} & this;
+    clone(): this;
     // (undocumented)
     formData(): Promise<FormData>;
     // (undocumented)
