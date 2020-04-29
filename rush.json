@@ -503,12 +503,6 @@
       "projectFolder": "test-apps/simple-editor-app",
       "reviewCategory": "internal",
       "shouldPublish": false
-    },
-    {
-      "packageName": "@bentley/dialog-items-sample",
-      "projectFolder": "extensions/dialog-items-sample",
-      "reviewCategory": "internal",
-      "shouldPublish": false
     }
   ]
 }
