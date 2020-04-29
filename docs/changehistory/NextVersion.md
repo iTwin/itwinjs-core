@@ -1,24 +1,87 @@
 ---
 ignore: true
 ---
-# NextVersion
+# Next Version <!-- omit in toc -->
 
-## Update to iModel.js Build System
+## Table of Contents <!-- omit in toc -->
+- [What's New?](#whats-new)
+  - [3D Globe Background Map Display](#3d-globe-background-map-display)
+    - [Globe View Tools](#globe-view-tools)
+  - [Customizable Scene Lighting](#customizable-scene-lighting)
+  - [Monochrome Mode](#monochrome-mode)
+  - [Colorizing Clip Regions](#colorizing-clip-regions)
+  - [Incremental Precompilation of Shaders](#incremental-precompilation-of-shaders)
+  - [Thematic Display](#thematic-display)
+- [Breaking API changes](#breaking-api-changes)
+  - [Installation and Builds](#installation-and-builds)
+    - [Increase minimum Node version](#increase-minimum-node-version)
+    - [Update to Electron 8](#update-to-electron-8)
+    - [Update to iModel.js Build System](#update-to-imodeljs-build-system)
+    - [Deprecation Errors](#deprecation-errors)
+  - [Module @bentley/imodeljs-clients](#module-bentleyimodeljs-clients)
+    - [iTwin client packages](#itwin-client-packages)
+    - [Removed support for SAML based authorization](#removed-support-for-saml-based-authorization)
+    - [Authorization interfaces](#authorization-interfaces)
+    - [Config](#config)
+  - [Module @bentley/imodeljs-clients-backend](#module-bentleyimodeljs-clients-backend)
+    - [iTwin client-backend package rename](#itwin-client-backend-package-rename)
+    - [Authorization for Agent Applications](#authorization-for-agent-applications)
+  - [Module @bentley/imodeljs-common](#module-bentleyimodeljs-common)
+    - [Solar Calculation APIs](#solar-calculation-apis)
+    - [GeometryStream Iteration](#geometrystream-iteration)
+    - [Immutable Color Types](#immutable-color-types)
+  - [Module @bentley/imodeljs-backend](#module-bentleyimodeljs-backend)
+    - [Async startup and shutdown](#async-startup-and-shutdown)
+    - [Specifying cache locations](#specifying-cache-locations)
+    - [Briefcase iModels - Managing Briefcases at the Backend](#briefcase-imodels---managing-briefcases-at-the-backend)
+    - [Snapshot iModels](#snapshot-imodels)
+    - [BriefcaseId / ReservedBriefcaseId](#briefcaseid--reservedbriefcaseid)
+    - [API changes in `imodeljs-backend` package](#api-changes-in-imodeljs-backend-package)
+  - [Module @bentley/imodeljs-frontend](#module-bentleyimodeljs-frontend)
+    - [Authorization in Browsers](#authorization-in-browsers)
+    - [Authorization for Desktop Applications](#authorization-for-desktop-applications)
+    - [IModel, IModelConnection, IModelDb](#imodel-imodelconnection-imodeldb)
+    - [Managing Briefcases at the Frontend](#managing-briefcases-at-the-frontend)
+    - [Snapshot iModels](#snapshot-imodels-1)
+    - [BlankConnection](#blankconnection)
+    - [ViewChangeOptions Interface](#viewchangeoptions-interface)
+    - [API changes in `imodeljs-frontend` package](#api-changes-in-imodeljs-frontend-package)
+    - [PropertyRecord classes moved to `ui-abstract` package](#propertyrecord-classes-moved-to-ui-abstract-package)
+  - [Module @bentley/ui-components](#module-bentleyui-components)
+    - [Hard Deprecations](#hard-deprecations)
+    - [Removals and Changes](#removals-and-changes)
+  - [Module @bentley/ui-framework](#module-bentleyui-framework)
+    - [Renames](#renames)
+    - [Removal of Deprecated APIs](#removal-of-deprecated-apis)
+    - [Other changes](#other-changes)
+  - [Module @bentley/ui-core](#module-bentleyui-core)
+    - [Removal of Deprecated APIs](#removal-of-deprecated-apis-1)
+    - [React dependency changes](#react-dependency-changes)
+  - [Module @bentley/presentation-common](#module-bentleypresentation-common)
+    - [RPC Changes](#rpc-changes)
+    - [Hard Deprecations](#hard-deprecations-1)
+    - [Removals and Changes](#removals-and-changes-1)
+  - [Module @bentley/presentation-backend](#module-bentleypresentation-backend)
+    - [Removals and Changes](#removals-and-changes-2)
+  - [Module @bentley/presentation-frontend](#module-bentleypresentation-frontend)
+    - [Removals and Changes](#removals-and-changes-3)
+  - [Module @bentley/presentation-components](#module-bentleypresentation-components)
+    - [Hard Deprecations](#hard-deprecations-2)
+    - [Removals and Changes](#removals-and-changes-4)
+  - [Module @bentley/presentation-testing](#module-bentleypresentation-testing)
+    - [Removals and Changes](#removals-and-changes-5)
+  - [Module @bentley/geometry-core](#module-bentleygeometry-core)
+    - [Remove deprecated methods](#remove-deprecated-methods)
+    - [Various method name changes (breaking)](#various-method-name-changes-breaking)
+    - [Bug fixes](#bug-fixes)
+    - [Small angle arc issues](#small-angle-arc-issues)
+    - [Polyface clipping](#polyface-clipping)
+  - [Module @bentley/ecschema-metadata](#module-bentleyecschema-metadata)
+    - [Remove deprecated API](#remove-deprecated-api)
 
-The iModel.js 1.0 build system relied on a single package (`@bentley/webpack-tools`) to build iModel.js frontends and extensions. With the release of 2.0, there are significant improvements to the build system to help with both clarity and usability to enable creating an app based on the latest technologies easier. To aid in this, the build system is now split into 2 separate components:
+## What's New?
 
-- Webpack/bundling of an iModel.js Extension (formerly Plugin) with `@bentley/extension-webpack-tools`
-- The iModel.js frontend build system is now based on [Create-React-App](https://create-react-app.dev/). More details visit the [Build Migration Guide](./migration-guides/migratingbuildsystems.md).
-
-## Update to Electron 8
-
-iModel.js has officially moved up to the [latest stable version](https://www.electronjs.org/docs/tutorial/electron-timelines) of Electron.
-
-## Increase minimum Node version
-
-The minimum Node version required for an iModel.js application is `10.16.0`.
-
-## 3D Globe Background Map Display
+### 3D Globe Background Map Display
 
 The background map can now be displayed as either a plane or a three-dimensional globe. This is controlled by the [GlobeMode]($common) property of the [DisplayStyleSettings.backgroundMap]($common) associated with a [DisplayStyleState]($frontend) or [DisplayStyle]($backend).
 
@@ -33,7 +96,7 @@ In Plane mode, or in 3d mode when sufficiently zoomed-in on the iModel, the iMod
 ![Globe mode](assets/3DMapProjection.png)
 <p align="center">Ellipsoid mode</p>
 
-### Globe View Tools
+#### Globe View Tools
 
 The following are view tools that allow a user to navigate a plane or three-dimensional globe. All of these tools operate on the selected view.
 
@@ -54,21 +117,21 @@ The following are view tools that allow a user to navigate a plane or three-dime
 * To navigate to a precise latitude/longitude location on the map, specify exactly two numeric arguments to `parseAndRun`. The first will be the latitude and the second will be the longitude. These are specified in degrees.
 * To search for and possibly navigate to a named location, specify any number of string arguments to `parseAndRun`. They will be joined with single spaces between them. If a location corresponding to the joined strings can be found, the tool will navigate there.
 
-## Customizable Scene Lighting
+### Customizable Scene Lighting
 
 Previously, lighting of 3d scenes was entirely hard-coded with the exception of the sun direction used only when shadows were enabled. Now, nearly all lighting parameters can be customized using the [LightSettings]($common) associated with a [DisplayStyle3dSettings]($common). This includes new support for hemisphere lighting, greatly expanding the variety of display styles that can be achieved.
 
 ![Example display styles](assets/display-styles.jpg)
 <p align="center">Clockwise from top-left: Default, Illustration, Sun-dappled, Moonlit, Glossy, Soft</p>
 
-## Monochrome Mode
+### Monochrome Mode
 
 iModel.js now supports two monochrome display modes via [DisplayStyleSettings.monochromeMode]($common). The original mode, `Scaled`, preserves contrast and material textures. The new mode, `Flat`, applies the monochrome color uniformly to all surfaces.
 
 ![Scaled (left) vs Flat (right) monochrome modes](assets/monochrome-mode.png)
 <p align="center">Scaled (left) vs Flat (right) monochrome modes</p>
 
-## Colorizing Clip Regions
+### Colorizing Clip Regions
 
 [Viewport]($frontend) now contains the following properties which control the color of pixels outside or inside a clip region. If either of these are defined, the corresponding pixels will be shown using the specified color; otherwise, no color override occurs and clipping proceeds normally for that area of the clip region. By default, these are both undefined.
 
@@ -78,7 +141,7 @@ iModel.js now supports two monochrome display modes via [DisplayStyleSettings.mo
 ![Clipped geometry drawn in yellow](assets/section-color.png)
 <p align="center">Clipped geometry drawn in yellow - arrow indicates direction of clip plane</p>
 
-## Incremental Precompilation of Shaders
+### Incremental Precompilation of Shaders
 
 Previously, shader programs used by the [RenderSystem]($frontend) were never compiled until the first time they were used. This could produce very noticeable delays when the user interacts with a [Viewport]($frontend). The [RenderSystem]($frontend) can now precompile shader programs before any [Viewport]($frontend) is opened.
 
@@ -86,7 +149,7 @@ Previously, shader programs used by the [RenderSystem]($frontend) were never com
 * Applications should consider enabling this feature if they do not open a Viewport immediately upon startup - for example, if the user is first expected to select an iModel and  a view through the user interface.
 * Shader precompilation will cease once all shader programs have been compiled, or when a Viewport is opened (registered with the [ViewManager]($frontend)).
 
-## Thematic Display
+### Thematic Display
 
 [ViewFlags]($common) now contains a `thematicDisplay` property of type `boolean`; when set to `true`, this will enable thematic display for surfaces.
 
@@ -172,44 +235,37 @@ function enableAndConfigureThematicDisplay(viewport: Viewport): boolean {
 ![Four thematic sensors applied using inverse distance weighting with a smooth "blue-red" color gradient applied to surfaces with lighting disabled](assets/ThematicDisplay_InverseDistanceWeightedSensorsSmooth.png)
 <p align="center">Four thematic sensors applied using inverse distance weighting with a smooth "blue-red" color gradient applied to surfaces with lighting disabled</p>
 
-## Solar Calculation APIs
-
-The solar calculation functions [calculateSolarAngles]($common), [calculateSolarDirection]($common), and [calculateSunriseOrSunset]($common) have moved from imodeljs-frontend to imodeljs-common.
-
-## Deprecation Errors
-
-Previously, the default tslint configuration reported [usage of deprecated APIs](https://palantir.github.io/tslint/rules/deprecation/) as warnings. It will now produce errors instead. Before deprecating an API, please first remove all usage of it within the iModel.js repository.
-
 ## Breaking API changes
 
 With a new major version of the iModel.js library come breaking API changes. The majority of those changes result from the removal of previously deprecated APIs. In addition, the following APIs have changed in ways that may require calling code to be adjusted:
 
-### Async startup and shutdown
+### Installation and Builds
 
-The following methods are now `async` and return `Promise<void>`:
+#### Increase minimum Node version
 
-- [IModelHost.startup]($backend)
-- [IModelHost.shutdown]($backend)
-- [IModelApp.startup]($frontend)
-- [IModelApp.shutdown]($frontend)
+The minimum Node version required for an iModel.js application is `10.16.0`, but it's recommended that the latest version of Node 12 be installed.
 
-Calling code should be updated to `await` these Promises.
+#### Update to Electron 8
 
-### Specifying cache locations
+iModel.js has officially moved up to the [latest stable version](https://www.electronjs.org/docs/tutorial/electron-timelines) of Electron.
 
-The existing method to specify the briefcase cache location by passing [IModelHostConfiguration.briefcaseCacheDir]($backend) to [IModelHost.startup]($backend) has been deprecated. However, this can still be used to match the existing behavior, even if use of it will cause deprecation warnings during compilation.
+#### Update to iModel.js Build System
 
-Starting with this version, a new [IModelHostConfiguration.cacheDir]($backend) has been introduced to specify a root location for all caches including the briefcase cache. The briefcases are organized under the "bc" sub-folder of this location.
+The iModel.js 1.0 build system relied on a single package (`@bentley/webpack-tools`) to build iModel.js frontends and extensions. With the release of 2.0, there are significant improvements to the build system to help with both clarity and usability to enable creating an app based on the latest technologies easier. To aid in this, the build system is now split into 2 separate components:
 
-If [IModelHostConfiguration.cacheDir]($backend) and the legacy [IModelHostConfiguration.briefcaseCacheDir]($backend) are both not specified, the existing default behavior was to pick a location underneath the temporary directory. This is no more the case.
+- Webpack/bundling of an iModel.js Extension (formerly Plugin) with `@bentley/extension-webpack-tools`
+- The iModel.js frontend build system is now based on [Create-React-App](https://create-react-app.dev/). More details visit the [Build Migration Guide](./migration-guides/migratingbuildsystems.md).
 
-Starting with version, the default behavior is to instead pick a location outside of the temporary directory, but still under the home directory. For more details on the new location see [IModelHostConfiguration.cacheDir]($backend).
+#### Deprecation Errors
 
-Use [IModelHost.cacheDir]($backend) to query the resolved cache location after startup.
+If you were using or extending the tslint configuration supplied by iModel.js, please note - previously, the default tslint configuration reported [usage of deprecated APIs](https://palantir.github.io/tslint/rules/deprecation/) as warnings. It will now produce errors instead. Before deprecating an API, please first remove all usage of it within the iModel.js repository.
 
-### iTwin client packages
+### Module @bentley/imodeljs-clients
 
-the `imodeljs-clients` package has been split into the following packages, all of which are hosted in the `/clients/` directory alongside the existing `extension-client`:
+#### iTwin client packages
+
+The `imodeljs-clients` package has been split into the following packages, all of which are hosted in the `/clients/` directory:
+
 - `context-registry-client`
 - `forms-data-management`
 - `frontend-authorization`
@@ -221,12 +277,6 @@ the `imodeljs-clients` package has been split into the following packages, all o
 - `reality-data-client`
 - `usage-logging-client`
 
-### iTwin client-backend package rename
-
-to align with the splitting of the `imodeljs-clients` package, `imodeljs-clients-backend` has been renamed to `backend-itwin-client`
-
-### Authentication and Authorization
-
 #### Removed support for SAML based authorization
 * The deprecated SAML based authentication utilities, ImsActiveSecureTokenClient and ImsDelegationSecureTokenClient have now been removed. All authentication must be done using OIDC.
 * [AccessToken]($clients) cannot hold SAML tokens anymore.
@@ -236,6 +286,187 @@ to align with the splitting of the `imodeljs-clients` package, `imodeljs-clients
 * The `IAuthorizationClient` interface has been renamed to [AuthorizationClient]($itwin-client)
   - The `hasExpired` field in this interface has been removed.
   - The `hasSignedIn` field in this interface has been moved to [FrontendAuthorizationClient]($frontend-authorization-client)
+
+#### Config
+
+[Config]($bentley) has been relocated to `bentleyjs-core` from `itwin-client`
+
+### Module @bentley/imodeljs-clients-backend
+
+#### iTwin client-backend package rename
+
+to align with the splitting of the `imodeljs-clients` package, `imodeljs-clients-backend` has been renamed to `backend-itwin-client`
+
+#### Authorization for Agent Applications
+
+The OidcAgentClient utility has been renamed to [AgentAuthorizationClient]($clients-backend) and OidcAgentClientConfiguration is now renamed to [AgentAuthorizationClientConfiguration]($clients-backend) for consistency.
+
+### Module @bentley/imodeljs-common
+
+#### Solar Calculation APIs
+
+The solar calculation functions [calculateSolarAngles]($common), [calculateSolarDirection]($common), and [calculateSunriseOrSunset]($common) have moved from imodeljs-frontend to imodeljs-common.
+
+#### GeometryStream Iteration
+
+The [GeometryStreamIteratorEntry]($common) exposed by a [GeometryStreamIterator]($common) has been simplified down to only four members. Access the geometric primitive associated with the entry by type-switching on its `type` property. For example, code that previously looked like:
+
+```ts
+function tryTransformGeometry(entry: GeometryStreamIteratorEntry, transform: Transform): void {
+  if (undefined !== entry.geometryQuery)
+    return entry.geometryQuery.tryTransformInPlace(transform);
+
+  if (undefined !== entry.textString) {
+    entry.textString.transformInPlace(transform);
+    return true;
+  } else if (undefined !== entry.image)
+    entry.image.transformInPlace(transform);
+    return true;
+  }
+  // etc...
+}
+```
+
+Is now written as:
+
+```ts
+function tryTransformGeometry(entry: GeometryStreamIteratorEntry, transform: Transform): void {
+  switch (entry.primitive.type) {
+    case "geometryQuery":
+      // The compiler knows that entry.primitive is of type AnyGeometryQuery
+      return entry.primitive.geometryQuery.tryTransformInPlace(transform);
+    case "textString":
+    case "image":
+      // The compiler knows that entry.primitive is a TextString or an ImageGraphic, both of which have a transformInPlace() method
+      entry.primitive.transformInPlace(transform);
+      return true;
+    // etc...
+  }
+}
+```
+
+#### Immutable Color Types
+
+[ColorDef]($common) is now an immutable type. Naturally, mutating methods like `setTransparency` have been removed; they are replaced by methods like `withTransparency` which return a modified copy of the original `ColorDef`. The constructor is now private; replace `new ColorDef(x)` with `ColorDef.create(x)`.
+
+[HSVColor]($common) and [HSLColor]($common) are also now immutable.
+
+### Module @bentley/imodeljs-backend
+
+#### Async startup and shutdown
+
+The following methods are now `async` and return `Promise<void>`:
+
+- [IModelHost.startup]($backend)
+- [IModelHost.shutdown]($backend)
+- [IModelApp.startup]($frontend)
+- [IModelApp.shutdown]($frontend)
+
+Calling code should be updated to `await` these Promises.
+
+#### Specifying cache locations
+
+The existing method to specify the briefcase cache location by passing [IModelHostConfiguration.briefcaseCacheDir]($backend) to [IModelHost.startup]($backend) has been deprecated. However, this can still be used to match the existing behavior, even if use of it will cause deprecation warnings during compilation.
+
+Starting with this version, a new [IModelHostConfiguration.cacheDir]($backend) has been introduced to specify a root location for all caches including the briefcase cache. The briefcases are organized under the "bc" sub-folder of this location.
+
+If [IModelHostConfiguration.cacheDir]($backend) and the legacy [IModelHostConfiguration.briefcaseCacheDir]($backend) are both not specified, the existing default behavior was to pick a location underneath the temporary directory. This is no more the case.
+
+Starting with version, the default behavior is to instead pick a location outside of the temporary directory, but still under the home directory. For more details on the new location see [IModelHostConfiguration.cacheDir]($backend).
+
+Use [IModelHost.cacheDir]($backend) to query the resolved cache location after startup.
+
+#### Briefcase iModels - Managing Briefcases at the Backend
+
+
+The methods for working with Briefcase iModels (those that are synchronized with iModelHub) have been refactored. At the backend many of the methods have been moved from (the now abstract) [IModelDb]($backend) class to the [BriefcaseDb]($backend) class. At the frontend, the methods have been moved from (the now abstract) [IModelConnection]($frontend) class to the [RemoteBriefcaseConnection]($frontend) class. More details below -
+
+* Opening an iModel from iModel Hub at the backend involves two steps - downloading a briefcase of the iModel, and then opening that briefcase. These two operations have been separated out now, and require two different API calls - await the asynchronous call to [BriefcaseManager.download]($backend) to complete the download, and open the briefcase with a synchronous call to [BriefcaseDb.open]($backend).
+  * Before change:
+
+    ```ts
+    const iModelDb = await IModelDb.open(requestContext, projectId, iModelId, OpenParams.fixedVersion(), IModelVersion.latest());
+    ```
+
+  * After change:
+
+    ```ts
+      const downloadOptions: DownloadOptions = {syncMode: FixedVersion};
+      const briefcaseProps: BriefcaseProps = await BriefcaseManager.download(requestContext, contextId, iModelId, downloadOptions, version);
+      requestContext.enter();
+
+      const briefcaseDb = BriefcaseDb.open(requestContext, briefcaseProps.key);
+    ```
+
+* The parameter OpenParams to the open call has been removed, and instead replaced with  [OpenBriefcaseOptions]($common). The download call takes [DownloadBriefcaseOptions]($common). See above example. Also, the [SyncMode]($common) option that's part of [DownloadBriefcaseOptions]($common) has been moved from the imodeljs-backend package to imodeljs-common package. Update your imports like below -
+
+  ```ts
+  import {SyncMode} from "@bentley/imodeljs-common";
+  ```
+
+* The API now allows downloading briefcases at the backend with a new [SyncMode.PullOnly]($common) option. e.g.,
+
+  ```ts
+  const downloadOptions: DownloadOptions = {syncMode: FixedVersion};
+  const briefcaseProps: BriefcaseProps = await BriefcaseManager.download(requestContext, projectId, iModelId, downloadOptions);
+  requestContext.enter();
+
+  const briefcaseDb = BriefcaseDb.open(requestContext, briefcaseProps.key);
+  ```
+
+  * Downloading iModels with this new option establishes a local briefcase that allows change sets to be pulled from the iModel Hub and merged in, but disallows pushes back to the iModel Hub. e.g.,
+
+    ```ts
+    briefcaseDb.pullAndMergeChanges(requestContext, IModelVersion.latest());
+    ```
+
+  * Upon open, a new briefcase is acquired from the iModel Hub and is meant for exclusive use by that user.
+  * The briefcase is opened ReadWrite to allow merging of change sets even if no changes can be made to it.
+* [BriefcaseDb.onOpen]($backend) and [BriefcaseDb.onOpened]($backend) events pass a context that may or may not include an AccessToken. i.e., they take [AuthorizedClientRequestContext]($clients) | [ClientRequestContext]($bentleyjs-core) as a parameter instead of [AuthorizedClientRequestContext]($clients)
+
+* Removed the option to delete the briefcase on close (i.e., KeepBriefcase). Very similar to the open, it should be done in two separate steps, with the close being a synchronous operation now.
+  * Before change:
+
+    ```ts
+    await iModelDb.close(requestContext, KeepBriefcase.No);
+    ```
+
+  * After change:
+
+    ```
+    briefcaseDb.close();
+    await BriefcaseManager.delete(requestContext, briefcaseDb.key);
+    ```
+
+* The following methods have been moved from (the now abstract) [IModelDb]($backend) class to the [BriefcaseDb]($backend):
+  * `IModelDb.pullAndMergeChanges` --> [BriefcaseDb.pullAndMergeChanges]($backend)
+  * `IModelDb.pushChanges` --> [BriefcaseDb.pushChanges]($backend)
+  * `IModelDb.reverseChanges` --> [BriefcaseDb.reverseChanges]($backend)
+  * `IModelDb.reinstateChanges` --> [BriefcaseDb.reinstateChanges]($backend)
+  * `IModelDb.concurrencyControl` --> [BriefcaseDb.concurrencyControl]($backend)
+
+* The following methods have been moved from [IModelDb]($backend) to [BriefcaseManager]($backend)
+  * `IModelDb.create` --> [BriefcaseManager.create]($backend)
+
+#### Snapshot iModels
+
+The methods for working with snapshot iModels have been moved into a new [SnapshotDb]($backend) class, which is a breaking change.
+The following renames are required:
+
+* `IModelDb.createSnapshot` (static) --> [SnapshotDb.createEmpty]($backend)
+* `IModelDb.createSnapshot` --> [SnapshotDb.createFrom]($backend)
+* `IModelDb.openSnapshot` --> [SnapshotDb.openFile]($backend)
+* `IModelDb.closeSnapshot` --> [SnapshotDb.close]($backend)
+
+#### BriefcaseId / ReservedBriefcaseId
+
+The former `BriefcaseId` class has been replaced by the [BriefcaseId]($backend) type (which is just `number`) and the [ReservedBriefcaseId]($backend) enumeration.
+
+#### API changes in `imodeljs-backend` package
+
+- `UlasUtilities` has been renamed to `UsageLoggingUtilities` to better align with name of the newly created `usage-logging-client` package
+
+### Module @bentley/imodeljs-frontend
 
 #### Authorization in Browsers
 
@@ -288,10 +519,8 @@ For situations where a signin is delayed until after app startup, `signInPopup()
 
 Signin callbacks generated by any of the `signIn` methods can be handled easily using a single call to [BrowserAuthorizationCallbackHandler]($frontend-authorization-client)`.handleSigninCallback()`.
 
-### Authorization for Agent Applications
-The OidcAgentClient utility has been renamed to [AgentAuthorizationClient]($clients-backend) and OidcAgentClientConfiguration is now renamed to [AgentAuthorizationClientConfiguration]($clients-backend) for consistency.
+#### Authorization for Desktop Applications
 
-### Authorization for Desktop Applications
 [DesktopAuthorizationClient]($frontend) is available for authorization in Desktop Applications. This is meant for use in the renderer process. A configured instance of this class can be used to setup [IModelApp.authorizationClient]($frontend).
 
 ```ts
@@ -306,7 +535,7 @@ await desktopClient.initialize(new ClientRequestContext());
 await desktopClient.signIn();
 ```
 
-### IModel, IModelConnection, IModelDb
+#### IModel, IModelConnection, IModelDb
 
 The properties formerly under `IModel.iModelToken` have been promoted to [IModel]($common). These renames affect [IModelConnection]($frontend) and [IModelDb]($backend):
 
@@ -323,66 +552,6 @@ And the following method has been renamed/refactored to *find* based on a key:
 
 * `IModelDb.find` --> [IModelDb.findByKey]
 
-### Briefcase iModels
-
-The methods for working with Briefcase iModels (those that are synchronized with iModelHub) have been refactored. At the backend many of the methods have been moved from (the now abstract) [IModelDb]($backend) class to the [BriefcaseDb]($backend) class. At the frontend, the methods have been moved from (the now abstract) [IModelConnection]($frontend) class to the [RemoteBriefcaseConnection]($frontend) class. More details below -
-
-#### Managing Briefcases at the Backend
-
-* Opening an iModel from iModel Hub at the backend involves two steps - downloading a briefcase of the iModel, and then opening that briefcase. These two operations have been separated out now, and require two different API calls - await the asynchronous call to [BriefcaseManager.download]($backend) to complete the download, and open the briefcase with a synchronous call to [BriefcaseDb.open]($backend).
-  * Before change:
-    ```ts
-    const iModelDb = await IModelDb.open(requestContext, projectId, iModelId, OpenParams.fixedVersion(), IModelVersion.latest());
-    ```
-  * After change:
-    ```ts
-      const downloadOptions: DownloadOptions = {syncMode: FixedVersion};
-      const briefcaseProps: BriefcaseProps = await BriefcaseManager.download(requestContext, contextId, iModelId, downloadOptions, version);
-      requestContext.enter();
-
-      const briefcaseDb = BriefcaseDb.open(requestContext, briefcaseProps.key);
-    ```
-* The parameter OpenParams to the open call has been removed, and instead replaced with  [OpenBriefcaseOptions]($common). The download call takes [DownloadBriefcaseOptions]($common). See above example. Also, the [SyncMode]($common) option that's part of [DownloadBriefcaseOptions]($common) has been moved from the imodeljs-backend package to imodeljs-common package. Update your imports like below -
-  ```ts
-  import {SyncMode} from "@bentley/imodeljs-common";
-  ```
-* The API now allows downloading briefcases at the backend with a new [SyncMode.PullOnly]($common) option. e.g.,
-  ```ts
-  const downloadOptions: DownloadOptions = {syncMode: FixedVersion};
-  const briefcaseProps: BriefcaseProps = await BriefcaseManager.download(requestContext, projectId, iModelId, downloadOptions);
-  requestContext.enter();
-
-  const briefcaseDb = BriefcaseDb.open(requestContext, briefcaseProps.key);
-  ```
-  * Downloading iModels with this new option establishes a local briefcase that allows change sets to be pulled from the iModel Hub and merged in, but disallows pushes back to the iModel Hub. e.g.,
-    ```ts
-    briefcaseDb.pullAndMergeChanges(requestContext, IModelVersion.latest());
-    ```
-  *  Upon open, a new briefcase is acquired from the iModel Hub and is meant for exclusive use by that user.
-  * The briefcase is opened ReadWrite to allow merging of change sets even if no changes can be made to it.
-* [BriefcaseDb.onOpen]($backend) and [BriefcaseDb.onOpened]($backend) events pass a context that may or may not include an AccessToken. i.e., they take [AuthorizedClientRequestContext]($clients) | [ClientRequestContext]($bentleyjs-core) as a parameter instead of [AuthorizedClientRequestContext]($clients)
-
-* Removed the option to delete the briefcase on close (i.e., KeepBriefcase). Very similar to the open, it should be done in two separate steps, with the close being a synchronous operation now.
-  * Before change:
-    ```ts
-    await iModelDb.close(requestContext, KeepBriefcase.No);
-    ```
-  * After change:
-    ```
-    briefcaseDb.close();
-    await BriefcaseManager.delete(requestContext, briefcaseDb.key);
-    ```
-
-* The following methods have been moved from (the now abstract) [IModelDb]($backend) class to the [BriefcaseDb]($backend):
-  * `IModelDb.pullAndMergeChanges` --> [BriefcaseDb.pullAndMergeChanges]($backend)
-  * `IModelDb.pushChanges` --> [BriefcaseDb.pushChanges]($backend)
-  * `IModelDb.reverseChanges` --> [BriefcaseDb.reverseChanges]($backend)
-  * `IModelDb.reinstateChanges` --> [BriefcaseDb.reinstateChanges]($backend)
-  * `IModelDb.concurrencyControl` --> [BriefcaseDb.concurrencyControl]($backend)
-
-* The following methods have been moved from [IModelDb]($backend) to [BriefcaseManager]($backend)
-  * `IModelDb.create` --> [BriefcaseManager.create]($backend)
-
 #### Managing Briefcases at the Frontend
 
 Similar to the backend, at the frontend, the following method has been moved from (the now abstract) [IModelConnection]($frontend) class:
@@ -391,77 +560,21 @@ Similar to the backend, at the frontend, the following method has been moved fro
 
 Like before this causes the briefcase to be downloaded at the backend (if necessary) before opening it.
 
-### Snapshot iModels
+#### Snapshot iModels
 
-The methods for working with snapshot iModels have been moved into a new [SnapshotDb]($backend) class, which is a breaking change.
-The following renames are required:
-
-* `IModelDb.createSnapshot` (static) --> [SnapshotDb.createEmpty]($backend)
-* `IModelDb.createSnapshot` --> [SnapshotDb.createFrom]($backend)
-* `IModelDb.openSnapshot` --> [SnapshotDb.openFile]($backend)
-* `IModelDb.closeSnapshot` --> [SnapshotDb.close]($backend)
-
-Corresponding changes have been made to the frontend. The following methods have been moved from (the now abstract) [IModelConnection]($frontend) class:
+Changes corresponding to the backend have been made to the frontend. The following methods have been moved from (the now abstract) [IModelConnection]($frontend) class:
 
 * `IModelConnection.openSnapshot` --> [SnapshotConnection.openFile]($frontend)
 * `IModelConnection.closeSnapshot` --> [IModelConnection.close]($frontend) (abstract) and [SnapshotConnection.close]($frontend) (concrete)
 
-### BlankConnection
+#### BlankConnection
 
 A new [BlankConnection]($frontend) subclass of of [IModelConnection]($frontend) has been introduced for working with reality data services without requiring an iModel.
 The following renames are required:
 
 * `IModelConnection.createBlank` --> [BlankConnection.create]($frontend)
 
-### BriefcaseId / ReservedBriefcaseId
-
-The former `BriefcaseId` class has been replaced by the [BriefcaseId]($backend) type (which is just `number`) and the [ReservedBriefcaseId]($backend) enumeration.
-
-### GeometryStream Iteration
-
-The [GeometryStreamIteratorEntry]($common) exposed by a [GeometryStreamIterator]($common) has been simplified down to only four members. Access the geometric primitive associated with the entry by type-switching on its `type` property. For example, code that previously looked like:
-
-```ts
-function tryTransformGeometry(entry: GeometryStreamIteratorEntry, transform: Transform): void {
-  if (undefined !== entry.geometryQuery)
-    return entry.geometryQuery.tryTransformInPlace(transform);
-
-  if (undefined !== entry.textString) {
-    entry.textString.transformInPlace(transform);
-    return true;
-  } else if (undefined !== entry.image)
-    entry.image.transformInPlace(transform);
-    return true;
-  }
-  // etc...
-}
-```
-
-Is now written as:
-
-```ts
-function tryTransformGeometry(entry: GeometryStreamIteratorEntry, transform: Transform): void {
-  switch (entry.primitive.type) {
-    case "geometryQuery":
-      // The compiler knows that entry.primitive is of type AnyGeometryQuery
-      return entry.primitive.geometryQuery.tryTransformInPlace(transform);
-    case "textString":
-    case "image":
-      // The compiler knows that entry.primitive is a TextString or an ImageGraphic, both of which have a transformInPlace() method
-      entry.primitive.transformInPlace(transform);
-      return true;
-    // etc...
-  }
-}
-```
-
-### Immutable Color Types
-
-[ColorDef]($common) is now an immutable type. Naturally, mutating methods like `setTransparency` have been removed; they are replaced by methods like `withTransparency` which return a modified copy of the original `ColorDef`. The constructor is now private; replace `new ColorDef(x)` with `ColorDef.create(x)`.
-
-[HSVColor]($common) and [HSLColor]($common) are also now immutable.
-
-### ViewChangeOptions Interface
+#### ViewChangeOptions Interface
 
 The [ViewChangeOptions]($frontend) interface now has a new optional member, `onExtentsError`. It provides a way for applications to be notified when a viewing operation hits the view-specific limits for extents (either minimum or maximum size.) If possible, the viewing api will adjust the extents value to the limit, but if `onExtentsError` is provided, it is called with the error value so it can show a message to the user. If the error should be ignored (i.e. the adjusted value is acceptable), return `ViewStatus.Success` from `onExtentsError`.
 
@@ -472,11 +585,11 @@ The signatures of several `ViewState` methods have been modified to accept a `Vi
 - [ViewState.lookAtVolume]($frontend)
 - [ViewState.lookAtViewAlignedVolume]($frontend)
 
-### iModelJs Config
+#### API changes in `imodeljs-frontend` package
 
-[Config]($bentley) has been relocated to `bentleyjs-core` from `itwin-client`
+- [IModelApp]($frontend)`.authorizationClient` has been changed from [AuthorizationClient]($itwin-client) to the more specific type [FrontendAuthorizationClient]($frontend-authorization-client)
 
-### PropertyRecord classes moved to `ui-abstract` package
+#### PropertyRecord classes moved to `ui-abstract` package
 
 This includes the classes in the following files:
 
@@ -488,17 +601,9 @@ This includes the classes in the following files:
 
 The deprecated ToolSettingsValue.ts has been removed.
 
-### API changes in `imodeljs-backend` package
+### Module @bentley/ui-components
 
-- `UlasUtilities` has been renamed to `UsageLoggingUtilities` to better align with name of the newly created `usage-logging-client` package
-
-### API changes in `imodeljs-frontend` package
-
-- [IModelApp]($frontend)`.authorizationClient` has been changed from [AuthorizationClient]($itwin-client) to the more specific type [FrontendAuthorizationClient]($frontend-authorization-client)
-
-### API changes in `ui-components` package
-
-#### Hard-Deprecation
+#### Hard Deprecations
 
 A couple of already `@deprecated` APIs are now being hard-deprecated by adding a `DEPRECATED_` prefix to increase consumers' awareness about future removal of the APIs:
 
@@ -551,7 +656,7 @@ import { DEPRECATED_Tree as Tree } from "@bentley/ui-components";
 
 * Removed `HorizontalAlignment`. Use the `HorizontalAlignment` in @bentley/ui-core instead.
 
-### API Changes in `ui-framework` Package
+### Module @bentley/ui-framework
 
 #### Renames
 
@@ -595,7 +700,7 @@ These items define the label and editor to use for each value when the Tool Sett
 
 `redux` and `react-redux` dependencies are moved from dependencies to peerDependencies.
 
-### API changes in `ui-core` package
+### Module @bentley/ui-core
 
 #### Removal of Deprecated APIs
 
@@ -604,11 +709,13 @@ The following items that were marked as @deprecated in the 1.x time frame have b
 * UiError (use UiError in @bentley/ui-abstract instead)
 * Position for Popup component (Use RelativePosition in @bentley/ui-abstract instead)
 
-### React dependency changes
+#### React dependency changes
 
 `react` and `react-dom` dependencies are moved from `dependencies` to `peerDependencies`.
 
-### API Changes in `presentation-common` Package
+<!-- Write what customers need to do to react to this change -->
+
+### Module @bentley/presentation-common
 
 #### RPC Changes
 
@@ -623,7 +730,7 @@ In addition, support for stateful backed was removed.
 
 Because of the above breaking `PresentationRpcInterface` changes its version was changed to `2.0`.
 
-#### Hard-Deprecation
+#### Hard Deprecations
 
 Some of already `@deprecated` APIs are now being hard-deprecated by adding a `DEPRECATED_` prefix to increase consumers' awareness about future removal of the APIs:
 
@@ -647,7 +754,7 @@ import { DEPRECATED_PropertiesDisplaySpecification as PropertiesDisplaySpecifica
 * Removed `PersistentKeysContainer`. Instead, `KeySetJSON` should be used.
 * Changed `RulesetsFactory.createSimilarInstancesRuleset` to async. Removed `RulesetsFactory.createSimilarInstancesRulesetAsync`.
 
-### API Changes in `presentation-backend` Package
+### Module @bentley/presentation-backend
 
 #### Removals and Changes
 
@@ -666,7 +773,7 @@ import { DEPRECATED_PropertiesDisplaySpecification as PropertiesDisplaySpecifica
   const embedder = new RulesetEmbedder(imodel);
   ```
 
-### API Changes in `presentation-frontend` Package
+### Module @bentley/presentation-frontend
 
 #### Removals and Changes
 
@@ -687,9 +794,9 @@ import { DEPRECATED_PropertiesDisplaySpecification as PropertiesDisplaySpecifica
   const provider = new HiliteSetProvider(imodel);
   ```
 
-### API Changes in `presentation-components` Package
+### Module @bentley/presentation-components
 
-#### Hard-Deprecation
+#### Hard Deprecations
 
 Some of already `@deprecated` APIs are now being hard-deprecated by adding a `DEPRECATED_` prefix to increase consumers' awareness about future removal of the APIs:
 
@@ -746,7 +853,7 @@ import { DEPRECATED_treeWithUnifiedSelection as treeWithUnifiedSelection } from 
 * Renamed `useUnifiedSelectionEventHandler` to `useUnifiedSelectionTreeEventHandler`.
 * Removed attributes from `UnifiedSelectionTreeEventHandlerParams`: `dataProvider`, `modelSource`. They're now taken from `nodeLoader`.
 
-### API Changes in `presentation-testing` Package
+### Module @bentley/presentation-testing
 
 #### Removals and Changes
 
@@ -763,9 +870,9 @@ import { DEPRECATED_treeWithUnifiedSelection as treeWithUnifiedSelection } from 
   const builder = new ContentBuilder(imodel, dataProvider);
   ```
 
-## Geometry
+### Module @bentley/geometry-core
 
-### Remove deprecated methods
+#### Remove deprecated methods
 
 * `CurveCurve` intersection methods which formerly returned a pair of arrays (with matched length and corresponding CurveLocationDetail entries) now return a single array whose entries each have the two corresponding CurveLocationDetails.
   * The affected methods are
@@ -808,7 +915,7 @@ import { DEPRECATED_treeWithUnifiedSelection as treeWithUnifiedSelection } from 
 * Various methods (usually static createXXXX) that accept `MultiLineStringDataVariant` have previously been marked as deprecated, with replacement methods that include the words `FromVariant` data.  This decision has been reversed, and that short names are again considered ok.   This includes:
   * `LineString3d.createArrayOfLineString3d (variantLinestringData:MultiLineStringDataVariant): LineString3d[]` is un-deprecated, and the mangled name `createArrayOfLineString3dFromVariantData` is deprecated.
 
-### Various method name changes (breaking)
+#### Various method name changes (breaking)
 
 * On Arc3d, there were previously (confusingly) two "get" properties for the internal matrix of the Arc3d.
   * arc.matrixRef
@@ -830,19 +937,19 @@ import { DEPRECATED_treeWithUnifiedSelection as treeWithUnifiedSelection } from 
     * `SurfaceLocationDetail` has a new (constructor-like) static method `createUVNumbersPoint (surface, u, v, point)` with the surface `u` and `v` parameters as separate numeric values (previously packaged as `Point2d`)
     * `SphereImplicit.intersectSphereRay` returns its surface angle data as `LongitudeLatitudePoint` instead of as `Point2d`.
 
-### Bug fixes
+#### Bug fixes
 
-* Apply on-plane tolerances in mesh-plane clip. (https://bentleycs.visualstudio.com/iModelTechnologies/_workitems/edit/273249/)
+* Apply on-plane tolerances in mesh-plane clip. (<https://bentleycs.visualstudio.com/iModelTechnologies/_workitems/edit/273249/)>
 * `ClipUtils.selectIntervals01` announces fractional intervals of clipped geometry.  The logic previously considered any non-zero interval to be a valid candidate, resulting in extremely small arcs with seep angle less than the smallest non-zero angle.   This logic is modified so that any fractional interval shorter than `Geometry.smallFractionalResult` is ignored.
 
-### Small angle arc issues
+#### Small angle arc issues
 
 * Angle methods for converting an angle to a fraction of an `AngleSweep` interval have added args to specify default return value on near-zero length intervals.
   * static `AngleSweep.radiansToPositivePeriodicFraction(radians: number, zeroSweepDefault?: number): number;`
   * instance method `angleSweep.radiansToPositivePeriodicFraction(radians: number, zeroSweepDefault?: number): number;`
 * static const `Geometry.smallFraction` is a typical value (1.0e-10) to consider a fraction interval small.
 
-### Polyface clipping
+#### Polyface clipping
 
 * New class `ClippedPolyfaceBuilders` is carries output data and options from clip operations
 * static `ClipUtilities.announceLoopsOfConvexClipPlaneSetIntersectRange(convexSet: ConvexClipPlaneSet | ClipPlane, range: Range3d, loopFunction: (loopPoints: GrowableXYZArray) => void, includeConvexSetFaces?: boolean, includeRangeFaces?: boolean, ignoreInvisiblePlanes?: boolean): void;`
@@ -855,9 +962,9 @@ import { DEPRECATED_treeWithUnifiedSelection as treeWithUnifiedSelection } from 
   * static `PolyfaceClip.clipPolyfaceClipPlane(polyface: Polyface, clipper: ClipPlane, insideClip?: boolean, buildClosureFaces?: boolean): Polyface;`
   * static `PolyfaceClip.clipPolyfaceClipPlaneWithClosureFace(polyface: Polyface, clipper: ClipPlane, insideClip?: boolean, buildClosureFaces?: boolean): Polyface;`
 
-## ecschema-metadata Package
+### Module @bentley/ecschema-metadata
 
-### Remove deprecated API
+#### Remove deprecated API
 
 * Class `SchemaFileLocater` has been moved to the `ecschema-locaters` package.
 * Class `SchemaJsonFileLocater` has been moved to the `ecschema-locaters` package.
