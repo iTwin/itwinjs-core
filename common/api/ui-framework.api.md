@@ -131,6 +131,7 @@ import { TimelineDataProvider } from '@bentley/ui-components';
 import { Tool } from '@bentley/imodeljs-frontend';
 import { ToolAssistanceInstruction } from '@bentley/imodeljs-frontend';
 import { ToolAssistanceInstructions } from '@bentley/imodeljs-frontend';
+import { ToolbarItem } from '@bentley/ui-abstract';
 import { ToolbarItemsManager } from '@bentley/ui-abstract';
 import { ToolbarOrientation } from '@bentley/ui-abstract';
 import { ToolbarPanelAlignment } from '@bentley/ui-ninezone';
@@ -4740,9 +4741,9 @@ export class ToolbarHelper {
     static createCustomDefinitionToolbarItem(itemPriority: number, itemDef: CustomItemDef, overrides?: Partial<CustomButtonDefinition>): CustomToolbarItem;
     // (undocumented)
     static createNodeForToolbarItem(item: CommonToolbarItem, onItemExecuted?: OnItemExecutedFunc): React.ReactNode;
-    static createToolbarItemFromItemDef(itemPriority: number, itemDef: AnyItemDef): CommonToolbarItem;
+    static createToolbarItemFromItemDef(itemPriority: number, itemDef: AnyItemDef, overrides?: Partial<ToolbarItem>): CommonToolbarItem;
     // (undocumented)
-    static createToolbarItemsFromItemDefs(itemDefs: AnyItemDef[], startingItemPriority?: number): CommonToolbarItem[];
+    static createToolbarItemsFromItemDefs(itemDefs: AnyItemDef[], startingItemPriority?: number, overrides?: Partial<ToolbarItem>): CommonToolbarItem[];
     // (undocumented)
     static getIconReactNode(item: ActionButton | GroupButton_2): React.ReactNode;
     // @alpha

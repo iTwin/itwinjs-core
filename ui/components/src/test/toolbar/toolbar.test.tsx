@@ -165,6 +165,32 @@ describe("<ToolbarWithOverflow />", () => {
       expect(renderedComponent.queryByTitle("Entry5")).not.to.be.null;
       expect(renderedComponent.queryByTitle("Group6")).not.to.be.null;
       // renderedComponent.debug();
+      // since group priorities are not defined no separator class should be found.
+      expect(renderedComponent.container.querySelectorAll(".components-toolbar-button-add-gap-before").length).to.be.eq(0);
+    });
+
+    it("will render with separator when group priority changes ", () => {
+      const toolbarItemsWithGroupPriority: CommonToolbarItem[] = [
+        ToolbarItemUtilities.createActionButton("Entry1", 10, "icon-developer", "Entry1", (): void => { }),
+        ToolbarItemUtilities.createActionButton("Entry2", 20, "icon-developer", "Entry2", (): void => { }, { groupPriority: 5 }),
+        ToolbarItemUtilities.createActionButton("Entry3", 30, "icon-developer", "Entry3", (): void => { }, { groupPriority: 5 }),
+        ToolbarItemUtilities.createActionButton("Entry4", 40, "icon-developer", "Entry4", (): void => { }, { groupPriority: 10 }),
+        ToolbarItemUtilities.createActionButton("Entry5", 50, "icon-developer", "Entry5", (): void => { }, { groupPriority: 10 }),
+      ];
+
+      // tslint:disable-next-line: only-arrow-functions
+      sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
+        if (this.classList.contains("components-toolbar-overflow-sizer")) {
+          return createDOMRect({ width: 300 }); // plenty of room not no need overflow
+        } else if (this.classList.contains("components-toolbar-item-container")) {
+          return createDOMRect({ width: 40 });
+        }
+        return createDOMRect();
+      });
+      const renderedComponent = render(<ToolbarWithOverflow items={toolbarItemsWithGroupPriority} />);
+      expect(renderedComponent).not.to.be.undefined;
+
+      expect(renderedComponent.container.querySelectorAll(".components-toolbar-item-container.components-horizontal.components-direction-bottom.components-toolbar-button-add-gap-before").length).to.be.eq(2);
     });
   });
 

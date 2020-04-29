@@ -3509,6 +3509,7 @@ export const ToolbarButtonItem: React.MemoExoticComponent<React.FC<ToolbarButton
 
 // @beta
 export interface ToolbarButtonItemProps extends CommonProps {
+    addGroupSeparator?: boolean;
     badge?: React.ReactNode;
     icon?: React.ReactNode;
     isActive?: boolean;

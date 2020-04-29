@@ -13,6 +13,7 @@ import {
   OnItemExecutedFunc,
   ConditionalStringValue,
   StringGetter,
+  ToolbarItem,
 } from "@bentley/ui-abstract";
 
 import { IconHelper } from "@bentley/ui-core";
@@ -81,7 +82,7 @@ export class ToolbarHelper {
   }
 
   /** Helper method to creates a generic toolbar item entry */
-  public static createToolbarItemFromItemDef(itemPriority: number, itemDef: AnyItemDef): CommonToolbarItem {
+  public static createToolbarItemFromItemDef(itemPriority: number, itemDef: AnyItemDef, overrides?: Partial<ToolbarItem>): CommonToolbarItem {
     const isHidden = itemDef.isHidden;
     const isDisabled = itemDef.isDisabled;
     const internalData = new Map<string, any>();  // used to store ReactNode if iconSpec hold a ReactNode
@@ -102,9 +103,10 @@ export class ToolbarHelper {
         execute: itemDef.execute,
         badgeType,
         internalData,
+        ...overrides,
       };
     } else if (itemDef instanceof CustomItemDef) {
-      return ToolbarHelper.createCustomDefinitionToolbarItem(itemPriority, itemDef);
+      return ToolbarHelper.createCustomDefinitionToolbarItem(itemPriority, itemDef, overrides);
     } else if (itemDef instanceof GroupItemDef) {
       const children: Array<ActionButton | GroupButton> = this.constructChildToolbarItems(itemDef.items);
       return {
@@ -119,6 +121,7 @@ export class ToolbarHelper {
         isActive: false,
         badgeType,
         internalData,
+        ...overrides,
       };
     } else if (itemDef instanceof ToolItemDef) {
       return {
@@ -132,16 +135,17 @@ export class ToolbarHelper {
         execute: itemDef.execute,
         badgeType,
         internalData,
+        ...overrides,
       };
     } else {
       throw new Error(`Invalid Item type encountered, item id=${itemDef.id}`);
     }
   }
 
-  public static createToolbarItemsFromItemDefs(itemDefs: AnyItemDef[], startingItemPriority = 10): CommonToolbarItem[] {
+  public static createToolbarItemsFromItemDefs(itemDefs: AnyItemDef[], startingItemPriority = 10, overrides?: Partial<ToolbarItem>): CommonToolbarItem[] {
     let itemPriority = startingItemPriority;
     const items = itemDefs.map((itemDef: AnyItemDef) => {
-      const item = ToolbarHelper.createToolbarItemFromItemDef(itemPriority, itemDef);
+      const item = ToolbarHelper.createToolbarItemFromItemDef(itemPriority, itemDef, overrides);
       itemPriority = itemPriority + 10;
       return item;
     });

@@ -5,6 +5,8 @@
 @import "~@bentley/ui-core/lib/ui-core/style/themecolors";
 @import "variables";
 
+$separator-color: $buic-text-color-muted;
+
 .components-toolbar-items-container {
   $border-radius: 3px;
 
@@ -68,4 +70,25 @@
   > * {
     vertical-align: bottom;
   }
+}
+
+/* modifications to the style to support the appearance of a tool button separator  */
+.components-toolbar-item-container.components-horizontal.components-toolbar-button-add-gap-before {
+  margin-left: $components-desktop-separator-gap-between-toolbar-items;
+}
+
+.components-toolbar-item-container.components-horizontal.components-toolbar-button-add-gap-before:before {
+  width: $components-desktop-separator-thickness;
+  background-color: $separator-color;
+  left: $components-desktop-separator-center-offset;
+}
+
+.components-toolbar-item-container.components-vertical.components-toolbar-button-add-gap-before {
+  margin-top: $components-desktop-separator-gap-between-toolbar-items;
+}
+
+.components-toolbar-item-container.components-vertical.components-toolbar-button-add-gap-before:before {
+  height: $components-desktop-separator-thickness;
+  background-color: $separator-color;
+  top: $components-desktop-separator-center-offset;
 }

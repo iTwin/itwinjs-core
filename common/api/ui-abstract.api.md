@@ -803,6 +803,7 @@ export interface ToolbarItem extends ProvidedItem {
     readonly applicationData?: any;
     readonly badgeType?: BadgeType;
     readonly description?: string | ConditionalStringValue;
+    readonly groupPriority?: number;
     readonly id: string;
     readonly internalData?: Map<string, any>;
     readonly isActive?: boolean;

@@ -29,8 +29,9 @@ export interface CommonBackstageItem extends ProvidedItem {
   applicationData?: any;
   /** Describes badge. Renders no badge if not specified. */
   readonly badgeType?: BadgeType;
-  /** The group an item is in (recommend using values 1 through 100). Items are sorted by group and then item priority. When
-   * group priority changes a separator is inserted.
+  /** Specifies the item's grouping value. Items are sorted by group and then item priority. When
+   * group priority changes a separator is inserted. It is recommended using values 10 through 100, incrementing by 10. This
+   * allows extensions enough gaps to insert their own groups.
    */
   readonly groupPriority: number;
   /** Name of icon WebFont entry or if specifying an SVG symbol added by plug on use "svg:" prefix to imported symbol Id. */
