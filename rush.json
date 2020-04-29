@@ -365,13 +365,6 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/geo-photo-extension",
-      "projectFolder": "extensions/geo-photo",
-      "reviewCategory": "extensions",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
       "packageName": "@bentley/hypermodeling-extension",
       "projectFolder": "extensions/hypermodeling",
       "reviewCategory": "extensions",
