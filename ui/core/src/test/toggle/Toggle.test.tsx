@@ -79,6 +79,12 @@ describe("<Toggle />", () => {
     input.length.should.eq(1);
 
     input.simulate("blur");
+    spyMethod.calledOnce.should.false;
+
+    const label = wrapper.find("label.core-toggle");
+    label.length.should.eq(1);
+
+    label.simulate("blur");
     spyMethod.calledOnce.should.true;
 
     wrapper.unmount();

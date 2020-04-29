@@ -72,13 +72,14 @@ export function Toggle(props: ToggleProps) {
     setToggling(true);
     setChecked(newChecked);
 
+    // istanbul ignore else
     if (props.onChange)
       props.onChange(newChecked);
 
     setTimeout(() => {
-      if (inputElement.current) {
+      // istanbul ignore else
+      if (inputElement.current)
         setToggling(false);
-      }
     }, 250);
   }, [props, checked]);
 
@@ -87,6 +88,10 @@ export function Toggle(props: ToggleProps) {
     if (props.onBlur)
       props.onBlur(event);
   }, [props]);
+
+  const handleCheckboxBlur = React.useCallback((event: React.FocusEvent) => {
+    event.stopPropagation();
+  }, []);
 
   const setHeightFromRef = React.useCallback((el: HTMLLabelElement | null) => {
     if (el !== null) {
@@ -135,10 +140,10 @@ export function Toggle(props: ToggleProps) {
   );
 
   return (
-    <label ref={setHeightFromRef} style={toggleStyle} className={toggleClassName}>
+    <label ref={setHeightFromRef} style={toggleStyle} className={toggleClassName} onBlur={handleBlur}>
       <input type="checkbox" ref={inputElement} className="core-toggle-input"
         checked={checked} disabled={props.disabled}
-        onChange={handleChange} onBlur={handleBlur} />
+        onChange={handleChange} onBlur={handleCheckboxBlur} />
       <span className="core-toggle-background" />
       <span className={checkmarkClassName} />
       <span className={handleClassName} style={toggleHandleStyle} />

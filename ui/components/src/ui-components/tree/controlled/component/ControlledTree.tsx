@@ -10,7 +10,7 @@ import * as React from "react";
 // tslint:disable-next-line: no-duplicate-imports
 import { useCallback, useEffect, useMemo } from "react";
 import { from } from "rxjs/internal/observable/from";
-import { CommonProps, Spinner, SpinnerSize } from "@bentley/ui-core";
+import { CommonProps, Spinner, SpinnerSize, FillCentered } from "@bentley/ui-core";
 import { TreeModelNode, VisibleTreeNodes, isTreeModelNode, TreeModelNodePlaceholder } from "../TreeModel";
 import { TreeNodeRenderer, TreeNodeRendererProps } from "./TreeNodeRenderer";
 import { TreeRenderer, TreeRendererProps } from "./TreeRenderer";
@@ -137,9 +137,11 @@ function Loader(props: LoaderProps) {
     return props.noDataRenderer
       ? props.noDataRenderer()
       : (
-        <p className="components-tree-errormessage">
-          {UiComponents.translate("general.noData")}
-        </p>
+        <FillCentered>
+          <p className="components-controlledTree-errorMessage">
+            {UiComponents.translate("general.noData")}
+          </p>
+        </FillCentered>
       );
   }
 

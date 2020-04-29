@@ -59,7 +59,7 @@ class SamplePropertyDataProvider extends SimplePropertyDataProvider {
           { label: "Blue", value: 3 },
         ];
 
-        const booleanPropertyRecord = new SamplePropertyRecord("Boolean", iVolume, true, "boolean");
+        const booleanPropertyRecord = new SamplePropertyRecord("Boolean", iVolume, true, "boolean", iVolume % 2 ? "toggle" : undefined);
         // booleanPropertyRecord.editorLabel = "Optional CheckBox Label";
 
         const propData = [
