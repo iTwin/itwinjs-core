@@ -120,7 +120,6 @@ Locks are normally released when the briefcase pushes its changes, or they may b
  |update|delete|AcceptIncomingChange (reject not support)
  |delete|update|RejectIncomingChange (accept not supported)
 
-
  Property-level change-merging is very fine-grained, and so it allows many kinds of changes to be made simultaneously without conflicts. A schema may also specify rules to check for conflicts on a higher level.
  <!-- TBD: Link to ElementDrivesElement -->
 
@@ -130,7 +129,7 @@ Locks are normally released when the briefcase pushes its changes, or they may b
 
 This section describes how an app reserves Codes and/or acquires locks. There are two options for when and how to do this during a local transaction: before making changes (pessimistic) or after making changes (optimistic).
 
-### Acquiring locks and/or codes pessimistically.
+### Acquiring locks and/or codes pessimistically
 
  1. Call [Model.buildConcurrencyControlRequest]($backend) and [Element.buildConcurrencyControlRequest]($backend) to discover what locks and codes would be needed before making local changes.
 
@@ -140,7 +139,7 @@ This section describes how an app reserves Codes and/or acquires locks. There ar
 
 This approach is the safest way to avoid conflicts. It requires that the app must plan ahead before making local changes.
 
-This aproach is *required* when the iModel's locking policy is set to pessimistic.
+This approach is *required* when the iModel's locking policy is set to pessimistic.
 This approach may be used when the iModel's locking policy is set to optimistic.
 
 Note that sending a request to iModelHub is a relatively expensive operation. Therefore it is important to batch up requests for locks and/or Codes.

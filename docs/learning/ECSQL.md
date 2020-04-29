@@ -243,6 +243,7 @@ ECSQL | Description
 `SELECT Name FROM myschema.Company WHERE PhoneNumbers=?` | Returns the companies that match the bound PhoneNumber array. The array must be bound as a whole.
 
 based on this ECSchema snippet:
+
 ```xml
 <ECEntityClass typeName="Company">
   <ECProperty propertyName="Name" typeName="string" />

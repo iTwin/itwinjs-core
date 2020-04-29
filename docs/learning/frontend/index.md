@@ -1,10 +1,12 @@
 # The App Frontend
 
 The frontend of an app is concerned mainly with data display and user interaction. Frontend code:
+
 * Always runs in a web browser.
 * Gets access to the data in an iModel by making requests on a [backend](../backend/index.md).
 
 The following app configurations are supported:
+
 * [Web app](../App.md#web-apps) - See [browser compatibility](#web-browser-compatibility)
 * [Desktop app](../App.md#desktop-apps)
 * [Mobile app](../App.md#mobile-apps)

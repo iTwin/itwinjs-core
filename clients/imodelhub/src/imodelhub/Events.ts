@@ -421,7 +421,7 @@ export class EventHandler extends EventBaseHandler {
    * @param timeout Optional timeout duration in seconds for request, when using long polling.
    * @return IModelHubEvent if it exists, undefined otherwise.
    * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if one of the arguments is undefined or has an invalid value.
-   * @throws [[ResponseError]] if request has failed.
+   * @throws [ResponseError]($itwin-client) if request has failed.
    */
   public async getEvent(requestContext: ClientRequestContext, sasToken: string, baseAddress: string, subscriptionId: string, timeout?: number): Promise<IModelHubEvent | undefined> {
     requestContext.enter();
@@ -444,7 +444,7 @@ export class EventHandler extends EventBaseHandler {
     return Promise.resolve(event);
   }
 
-  /** Create a listener for long polling events from an [[EventSubscription]]. When event is received from the subscription, every registered listener callback is called. This continuously waits for events until all created listeners for that subscriptionId are deleted. [[EventSAS]] token expirations are handled automatically, [[AccessToken]] expiration is handled by calling authenticationCallback to get a new token.
+  /** Create a listener for long polling events from an [[EventSubscription]]. When event is received from the subscription, every registered listener callback is called. This continuously waits for events until all created listeners for that subscriptionId are deleted. [[EventSAS]] token expirations are handled automatically, [AccessToken]($itwin-client) expiration is handled by calling authenticationCallback to get a new token.
    * @param requestContext The client request context
    * @param authenticationCallback Callback used to get AccessToken. Only the first registered authenticationCallback for this subscriptionId will be used.
    * @param subscriptionId Id of EventSubscription.

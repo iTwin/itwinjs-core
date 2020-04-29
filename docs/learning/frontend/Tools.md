@@ -66,4 +66,3 @@ For touch devices, the Idle tool associates the following touch events with view
 ## Selection Tool
 
 iModel.js also provides [SelectionTool]($frontend). SelectionTool is a subclass of [PrimitiveTool]($frontend) for creating and managing a [SelectionSet]($frontend) from existing elements. A SelectionSet identifies elements of particular interest for examining properties and other interactions.
-

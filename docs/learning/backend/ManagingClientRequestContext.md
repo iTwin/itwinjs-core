@@ -42,7 +42,8 @@ If a callback does any logging or calls functions that do:
 * The callback must, on its first line, call the ClientRequestContext.enter method on that local variable in the enclosing scope.
 
 There are two possible cases:
-### 1. Asynchronous function invokes an asynchronous function, passing it a callback.
+
+### 1. Asynchronous function invokes an asynchronous function, passing it a callback
 
 In this case, the calling function will take the ClientRequestContext as an argument. The callback must use that object.
 
@@ -52,7 +53,7 @@ In this case, the calling function will take the ClientRequestContext as an argu
 [[include:ClientRequestContext.asyncCallback]]
 ```
 
-### 2. Synchronous function invokes an asynchronous function, passing it a callback.
+### 2. Synchronous function invokes an asynchronous function, passing it a callback
 
 In this case, the calling function must save a reference to the ClientRequestContext.current property and transmit that to the callback.
 

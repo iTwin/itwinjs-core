@@ -231,6 +231,7 @@
         "pseudolocalize",
         "readlink",
         "readonly",
+        "rebased",
         "Rect's",
         "recurse",
         "recurses",

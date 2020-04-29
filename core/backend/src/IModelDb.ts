@@ -2107,7 +2107,7 @@ export class BriefcaseDb extends IModelDb {
   }
 
   /** Event raised just before a BriefcaseDb is opened.
-   *  * If the open requires authorization [[AuthorizedClientRequestContext]] is passed in to the event handler. Otherwise [[ClientRequestContext]] is passed in
+   *  * If the open requires authorization [AuthorizedClientRequestContext]($itwin-client) is passed in to the event handler. Otherwise [[ClientRequestContext]] is passed in
    * **Example:**
    * ``` ts
    * [[include:BriefcaseDb.onOpen]]
@@ -2328,9 +2328,9 @@ export class SnapshotDb extends IModelDb {
  *
  * Some additional details:
  * - Standalone iModels are known to the application developer and end user as unmanaged files
- * - Standalone iModels are read/write
+ * - Standalone iModels can be read/write
  * - Cannot apply a changeset to nor generate a changeset from a Standalone iModel
- * - Standalone iModels support undo/redo via txns
+ * - Standalone iModels can optionally support undo/redo via txns
  * - The Standalone iModel capability is only available to authorized applications
  *
  * @internal
@@ -2343,7 +2343,7 @@ export class StandaloneDb extends IModelDb {
   /** The full path to the snapshot iModel file. */
   public get filePath(): string { return this.nativeDb.getFilePath(); }
 
-  /** This property is always undefined as a StandaloneDb does not accept or generate changesets. */
+  /** This property is always undefined as a StandaloneDb does not accept nor generate changesets. */
   public get changeSetId(): undefined { return undefined; } // string | undefined for the superclass, but always undefined for StandaloneDb
 
   private constructor(nativeDb: IModelJsNative.DgnDb, openMode: OpenMode) {
@@ -2357,7 +2357,7 @@ export class StandaloneDb extends IModelDb {
   }
 
   /** Create an *empty* standalone iModel.
-   * @param filePath The name for the iModel
+   * @param filePath The file path for the iModel
    * @param args The parameters that define the new iModel
    */
   public static createEmpty(filePath: string, args: CreateEmptyStandaloneIModelProps): StandaloneDb {
@@ -2399,9 +2399,7 @@ export class StandaloneDb extends IModelDb {
     return new StandaloneDb(nativeDb, openMode);
   }
 
-  /** Close this standalone iModel, if it is currently open
-   * @throws [[IModelError]] if the iModel is not open, or is not standalone
-   */
+  /** Close this standalone iModel, if it is currently open */
   public close(): void {
     if (!this.isOpen) {
       return; // don't continue if already closed
@@ -2413,7 +2411,7 @@ export class StandaloneDb extends IModelDb {
     (this as any)._nativeDb = undefined; // the underlying nativeDb has been freed by closeIModel
   }
 
-  /** Used to find open standalone iModels.
+  /** Used to find open standalone iModels. Commonly used in RPC scenarios.
    * @param key The full path to the standalone iModel file.
    * @returns The matching StandaloneDb or `undefined`.
    * @internal

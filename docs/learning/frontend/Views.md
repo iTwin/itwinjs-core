@@ -128,13 +128,14 @@ additional, non-persistent, information to convey context or call attention to i
 
 DisplayStyles describe the *styling* that should be applied to the contents of a View.
 
-This includes the :
-  * [ViewFlags]($common)
-  * [SubCategoryAppearance]($common) visibility and overrides
-  * Background color
-  * [RenderMode]($common)
-  * [Environment]($frontend)
-  * Other view-specific parameters
+This includes the:
+
+* [ViewFlags]($common)
+* [SubCategoryAppearance]($common) visibility and overrides
+* Background color
+* [RenderMode]($common)
+* [Environment]($frontend)
+* Other view-specific parameters
 
 They are loaded in memory in the frontend with the [DisplayStyleState]($frontend) class.
 
