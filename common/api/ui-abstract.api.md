@@ -11,7 +11,6 @@ import { GetMetaDataFunction } from '@bentley/bentleyjs-core';
 import { I18N } from '@bentley/imodeljs-i18n';
 import { Id64String } from '@bentley/bentleyjs-core';
 import { LogFunction } from '@bentley/bentleyjs-core';
-import { TranslationOptions } from '@bentley/imodeljs-i18n';
 import { XAndY } from '@bentley/geometry-core';
 
 // @beta
@@ -878,7 +877,7 @@ export class UiAbstract {
     static get packageName(): string;
     static terminate(): void;
     // @internal
-    static translate(key: string | string[], options?: TranslationOptions): string;
+    static translate(key: string | string[]): string;
 }
 
 // @beta

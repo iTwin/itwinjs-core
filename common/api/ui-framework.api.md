@@ -137,7 +137,6 @@ import { ToolbarPanelAlignment } from '@bentley/ui-ninezone';
 import { ToolbarUsage } from '@bentley/ui-abstract';
 import { ToolSettingsWidgetManagerProps } from '@bentley/ui-ninezone';
 import { ToolTipOptions } from '@bentley/imodeljs-frontend';
-import { TranslationOptions } from '@bentley/imodeljs-i18n';
 import { TreeCheckboxStateChangeEventArgs } from '@bentley/ui-components';
 import { TreeDataChangesListener } from '@bentley/ui-components';
 import { TreeNodeItem } from '@bentley/ui-components';
@@ -5092,7 +5091,7 @@ export class UiFramework {
     static get store(): Store<any>;
     static terminate(): void;
     // @internal
-    static translate(key: string | string[], options?: TranslationOptions): string;
+    static translate(key: string | string[]): string;
     // @alpha (undocumented)
     static get widgetManager(): WidgetManager;
     }

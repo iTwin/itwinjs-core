@@ -7,7 +7,7 @@
  */
 
 import { Logger } from "@bentley/bentleyjs-core";
-import { I18N, TranslationOptions } from "@bentley/imodeljs-i18n";
+import { I18N } from "@bentley/imodeljs-i18n";
 
 import { UiError } from "./utils/UiError";
 import { getClassName } from "./utils/getClassName";
@@ -61,8 +61,8 @@ export class UiAbstract {
   /** Calls i18n.translateWithNamespace with the "UiAbstract" namespace. Do NOT include the namespace in the key.
    * @internal
    */
-  public static translate(key: string | string[], options?: TranslationOptions): string {
-    return UiAbstract.i18n.translateWithNamespace(UiAbstract.i18nNamespace, key, options);
+  public static translate(key: string | string[]): string {
+    return UiAbstract.i18n.translateWithNamespace(UiAbstract.i18nNamespace, key);
   }
 
   /** @internal */

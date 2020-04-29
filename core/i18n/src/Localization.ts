@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module AppAdministration
+ * @module Localization
  */
 
 import * as i18next from "i18next";
@@ -16,10 +16,6 @@ export interface I18NOptions {
   urlTemplate?: I18NextXhrBackend.LoadPathOption;
 }
 
-/** @internal */
-// tslint:disable-next-line: no-empty-interface
-export interface TranslationOptions extends i18next.TranslationOptions { }
-
 /** Supplies Internationalization services.
  * @note Internally, this class uses the [i18next](https://www.i18next.com/) package.
  * @public
@@ -28,7 +24,7 @@ export class I18N {
   private _i18next: i18next.i18n;
   private readonly _namespaceRegistry: Map<string, I18NNamespace> = new Map<string, I18NNamespace>();
 
-  /** constructor for I18N.
+  /** Constructor for I18N.
    * @param nameSpaces either the name of the default namespace, an array of namespaces, or undefined. If an array, the first entry is the default.
    * @param options object with I18NOptions (optional)
    * @param renderFunction optional i18next.Callback function
@@ -119,7 +115,7 @@ export class I18N {
    * @throws Error if no keys resolve to a string.
    * @internal
    */
-  public translateWithNamespace(namespace: string, key: string | string[], options?: TranslationOptions): string {
+  public translateWithNamespace(namespace: string, key: string | string[], options?: i18next.TranslationOptions): string {
     let fullKey: string | string[] = "";
 
     if (typeof key === "string") {
@@ -140,7 +136,7 @@ export class I18N {
    * @throws Error if no keys resolve to a string.
    * @internal
    */
-  public getEnglishTranslation(namespace: string, key: string | string[], options?: TranslationOptions): string {
+  public getEnglishTranslation(namespace: string, key: string | string[], options?: i18next.TranslationOptions): string {
     const en = this._i18next.getFixedT("en", namespace);
     const str = en(key, options);
     if (typeof str !== "string")

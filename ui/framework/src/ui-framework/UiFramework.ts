@@ -11,7 +11,7 @@ import { Store } from "redux";
 import { Logger } from "@bentley/bentleyjs-core";
 import { UserInfo, AccessToken } from "@bentley/itwin-client";
 import { MobileRpcConfiguration } from "@bentley/imodeljs-common";
-import { I18N, TranslationOptions } from "@bentley/imodeljs-i18n";
+import { I18N } from "@bentley/imodeljs-i18n";
 import { IModelConnection, SnapMode, ViewState, IModelApp } from "@bentley/imodeljs-frontend";
 import { isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { UiError, getClassName } from "@bentley/ui-abstract";
@@ -225,8 +225,8 @@ export class UiFramework {
   /** Calls i18n.translateWithNamespace with the "UiFramework" namespace. Do NOT include the namespace in the key.
    * @internal
    */
-  public static translate(key: string | string[], options?: TranslationOptions): string {
-    return UiFramework.i18n.translateWithNamespace(UiFramework.i18nNamespace, key, options);
+  public static translate(key: string | string[]): string {
+    return UiFramework.i18n.translateWithNamespace(UiFramework.i18nNamespace, key);
   }
 
   /** @internal */

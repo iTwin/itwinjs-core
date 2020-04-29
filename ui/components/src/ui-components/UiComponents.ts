@@ -7,7 +7,7 @@
  */
 
 import { Logger } from "@bentley/bentleyjs-core";
-import { I18N, TranslationOptions } from "@bentley/imodeljs-i18n";
+import { I18N } from "@bentley/imodeljs-i18n";
 import { UiError, getClassName } from "@bentley/ui-abstract";
 import { IModelApp } from "@bentley/imodeljs-frontend";
 import { enablePatches } from "immer";
@@ -74,8 +74,8 @@ export class UiComponents {
   /** Calls i18n.translateWithNamespace with the "UiComponents" namespace. Do NOT include the namespace in the key.
    * @internal
    */
-  public static translate(key: string | string[], options?: TranslationOptions): string {
-    return UiComponents.i18n.translateWithNamespace(UiComponents.i18nNamespace, key, options);
+  public static translate(key: string | string[]): string {
+    return UiComponents.i18n.translateWithNamespace(UiComponents.i18nNamespace, key);
   }
 
   /** @internal */

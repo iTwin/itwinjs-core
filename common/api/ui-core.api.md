@@ -13,7 +13,6 @@ import { Matrix3d } from '@bentley/geometry-core';
 import * as React from 'react';
 import { RelativePosition } from '@bentley/ui-abstract';
 import { SliderModeFunction } from 'react-compound-slider';
-import { TranslationOptions } from '@bentley/imodeljs-i18n';
 
 // @internal
 export class AnnularSector {
@@ -1976,7 +1975,7 @@ export class UiCore {
     static get packageName(): string;
     static terminate(): void;
     // @internal
-    static translate(key: string | string[], options?: TranslationOptions): string;
+    static translate(key: string | string[]): string;
 }
 
 // @public

@@ -7,7 +7,7 @@
  */
 
 import { Logger } from "@bentley/bentleyjs-core";
-import { I18N, TranslationOptions } from "@bentley/imodeljs-i18n";
+import { I18N } from "@bentley/imodeljs-i18n";
 import { UiError, getClassName, UiAbstract } from "@bentley/ui-abstract";
 
 /** Import color themes and Sass classes barrel file */
@@ -66,8 +66,8 @@ export class UiCore {
   /** Calls i18n.translateWithNamespace with the "UiCore" namespace. Do NOT include the namespace in the key.
    * @internal
    */
-  public static translate(key: string | string[], options?: TranslationOptions): string {
-    return UiCore.i18n.translateWithNamespace(UiCore.i18nNamespace, key, options);
+  public static translate(key: string | string[]): string {
+    return UiCore.i18n.translateWithNamespace(UiCore.i18nNamespace, key);
   }
 
   /** @internal */

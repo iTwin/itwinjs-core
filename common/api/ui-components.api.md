@@ -58,7 +58,6 @@ import { SortDirection } from '@bentley/ui-core';
 import { StandardViewId } from '@bentley/imodeljs-frontend';
 import { TentativePoint } from '@bentley/imodeljs-frontend';
 import { TimeFormat } from '@bentley/ui-core';
-import { TranslationOptions } from '@bentley/imodeljs-i18n';
 import { UiEvent } from '@bentley/ui-core';
 import { UiSettings } from '@bentley/ui-core';
 import { Vector3d } from '@bentley/geometry-core';
@@ -4105,7 +4104,7 @@ export class UiComponents {
     static get packageName(): string;
     static terminate(): void;
     // @internal
-    static translate(key: string | string[], options?: TranslationOptions): string;
+    static translate(key: string | string[]): string;
 }
 
 // @alpha
