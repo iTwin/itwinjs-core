@@ -1,6 +1,6 @@
 {
   "name": "@bentley/projectshare-client",
-  "version": "2.0.0-dev.86",
+  "version": "2.0.0-dev.87",
   "description": "iModel.js ProjectShare Client",
   "main": "lib/projectshare-client.js",
   "typings": "lib/projectshare-client",
@@ -35,17 +35,17 @@
   },
   "dependencies": {},
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.0.0-dev.86",
-    "@bentley/itwin-client": "^2.0.0-dev.86"
+    "@bentley/bentleyjs-core": "^2.0.0-dev.87",
+    "@bentley/itwin-client": "^2.0.0-dev.87"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.0.0-dev.86",
-    "@bentley/build-tools": "2.0.0-dev.86",
-    "@bentley/certa": "2.0.0-dev.86",
-    "@bentley/config-loader": "2.0.0-dev.86",
-    "@bentley/context-registry-client": "2.0.0-dev.86",
-    "@bentley/itwin-client": "2.0.0-dev.86",
-    "@bentley/oidc-signin-tool": "2.0.0-dev.86",
+    "@bentley/bentleyjs-core": "2.0.0-dev.87",
+    "@bentley/build-tools": "2.0.0-dev.87",
+    "@bentley/certa": "2.0.0-dev.87",
+    "@bentley/config-loader": "2.0.0-dev.87",
+    "@bentley/context-registry-client": "2.0.0-dev.87",
+    "@bentley/itwin-client": "2.0.0-dev.87",
+    "@bentley/oidc-signin-tool": "2.0.0-dev.87",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
     "@types/node": "10.14.1",
