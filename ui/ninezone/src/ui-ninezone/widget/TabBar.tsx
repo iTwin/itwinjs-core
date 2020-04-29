@@ -16,10 +16,11 @@ import { assert } from "../base/assert";
 import { useDragWidget, UseDragWidgetArgs, isTabTarget } from "../base/DragManager";
 import { FloatingWidgetIdContext } from "./FloatingWidget";
 import { NineZoneDispatchContext, getUniqueId } from "../base/NineZone";
-import "./TitleBar.scss";
+import { TabBarButtons } from "./Buttons";
+import "./TabBar.scss";
 
 /** @internal */
-export const WidgetTitleBar = React.memo(function WidgetTitleBar() { // tslint:disable-line: variable-name no-shadowed-variable
+export const WidgetTabBar = React.memo(function WidgetTabBar() { // tslint:disable-line: variable-name no-shadowed-variable
   const dispatch = React.useContext(NineZoneDispatchContext);
   const id = React.useContext(WidgetIdContext);
   assert(id);
@@ -91,13 +92,14 @@ export const WidgetTitleBar = React.memo(function WidgetTitleBar() { // tslint:d
   const ref = usePointerCaptor(handlePointerDown, handlePointerMove, handlePointerUp);
   return (
     <div
-      className="nz-widget-titleBar"
+      className="nz-widget-tabBar"
     >
       <div
         className="nz-handle"
         ref={ref}
       />
       <WidgetTabs />
+      <TabBarButtons />
     </div>
   );
 });

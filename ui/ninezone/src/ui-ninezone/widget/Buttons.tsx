@@ -2,19 +2,18 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-.uifw-widgetPanels-toolbars {
-  display: grid;
-  height: 100%;
-  width: 100%;
-  padding: 0.75em;
-  box-sizing: border-box;
-  grid-template-columns: 1fr 1fr;
+/** @packageDocumentation
+ * @module Widget
+ */
 
-  .nz-tools-widget {
-    grid-column: 1;
+import * as React from "react";
+import { SendBack } from "./SendBack";
 
-    &.nz-widget-navigationArea {
-      grid-column: 2;
-    }
-  }
-}
+/** @internal */
+export const TabBarButtons = React.memo(function TabBarButtons() { // tslint:disable-line: variable-name no-shadowed-variable
+  return (
+    <>
+      <SendBack />
+    </>
+  );
+});

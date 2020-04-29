@@ -116,11 +116,25 @@ export interface VerticalPanelState extends PanelState {
 }
 
 /** @internal future */
+export interface DockedToolSettingsState {
+  readonly type: "docked";
+}
+
+/** @internal future */
+export interface WidgetToolSettingsState {
+  readonly type: "widget";
+}
+
+/** @internal future */
+export type ToolSettingsState = DockedToolSettingsState | WidgetToolSettingsState;
+
+/** @internal future */
 export interface NineZoneState {
   readonly draggedTab: DraggedTabState | undefined;
   readonly floatingWidgets: FloatingWidgetsState;
   readonly panels: PanelsState;
   readonly tabs: TabsState;
+  readonly toolSettings: ToolSettingsState;
   readonly widgets: WidgetsState;
 }
 
@@ -145,6 +159,8 @@ export const WIDGET_DRAG = "WIDGET_DRAG";
 /** @internal future */
 export const WIDGET_DRAG_END = "WIDGET_DRAG_END";
 /** @internal future */
+export const WIDGET_SEND_BACK = "WIDGET_SEND_BACK";
+/** @internal future */
 export const WIDGET_TAB_CLICK = "WIDGET_TAB_CLICK";
 /** @internal future */
 export const WIDGET_TAB_DOUBLE_CLICK = "WIDGET_TAB_DOUBLE_CLICK";
@@ -154,6 +170,8 @@ export const WIDGET_TAB_DRAG_START = "WIDGET_TAB_DRAG_START";
 export const WIDGET_TAB_DRAG = "WIDGET_TAB_DRAG";
 /** @internal future */
 export const WIDGET_TAB_DRAG_END = "WIDGET_TAB_DRAG_END";
+/** @internal future */
+export const TOOL_SETTINGS_DRAG_START = "TOOL_SETTINGS_DRAG_START";
 
 /** @internal future */
 export interface PanelToggleCollapsedAction {
@@ -224,6 +242,14 @@ export interface WidgetDragEndAction {
 }
 
 /** @internal future */
+export interface WidgetSendBackAction {
+  readonly type: typeof WIDGET_SEND_BACK;
+  readonly floatingWidgetId: FloatingWidgetState["id"] | undefined;
+  readonly side: PanelSide | undefined;
+  readonly widgetId: WidgetState["id"];
+}
+
+/** @internal future */
 export interface WidgetTabClickAction {
   readonly type: typeof WIDGET_TAB_CLICK;
   readonly side: PanelSide | undefined;
@@ -264,6 +290,12 @@ export interface WidgetTabDragEndAction {
 }
 
 /** @internal future */
+export interface ToolSettingsDragStartAction {
+  readonly type: typeof TOOL_SETTINGS_DRAG_START;
+  readonly newFloatingWidgetId: FloatingWidgetState["id"];
+}
+
+/** @internal future */
 export type NineZoneActionTypes =
   PanelToggleCollapsedAction |
   PanelToggleSpanAction |
@@ -275,11 +307,16 @@ export type NineZoneActionTypes =
   PanelWidgetDragStartAction |
   WidgetDragAction |
   WidgetDragEndAction |
+  WidgetSendBackAction |
   WidgetTabClickAction |
   WidgetTabDoubleClickAction |
   WidgetTabDragStartAction |
   WidgetTabDragAction |
-  WidgetTabDragEndAction;
+  WidgetTabDragEndAction |
+  ToolSettingsDragStartAction;
+
+/** @internal */
+export const toolSettingsTabId = "nz-tool-settings-tab";
 
 /** @internal future */
 export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneActionTypes) => NineZoneState = produce(( // tslint:disable-line: variable-name
@@ -390,6 +427,15 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
       state.floatingWidgets.allIds.splice(idIndex, 1);
       return;
     }
+    case WIDGET_SEND_BACK: {
+      if (isWidgetToolSettingsState(state.toolSettings)) {
+        removeWidgetTab(state, action.widgetId, action.floatingWidgetId, action.side, toolSettingsTabId);
+        state.toolSettings = {
+          type: "docked",
+        };
+      }
+      return;
+    }
     case FLOATING_WIDGET_RESIZE: {
       const { resizeBy } = action;
       const floatingWidget = state.floatingWidgets.byId[action.id];
@@ -457,37 +503,7 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
         tabId,
         position: action.position,
       };
-      const widget = state.widgets[action.widgetId];
-      const tabs = widget.tabs;
-      const index = tabs.indexOf(action.id);
-      if (index < 0)
-        return;
-
-      tabs.splice(index, 1);
-      if (tabId === widget.activeTabId) {
-        widget.activeTabId = widget.tabs.length > 0 ? widget.tabs[0] : undefined;
-      }
-
-      if (tabs.length === 0) {
-        if (action.floatingWidgetId !== undefined) {
-          delete state.floatingWidgets.byId[action.floatingWidgetId];
-          const idIndex = state.floatingWidgets.allIds.indexOf(action.floatingWidgetId);
-          state.floatingWidgets.allIds.splice(idIndex, 1);
-        }
-        if (action.side) {
-          const widgets = state.panels[action.side].widgets;
-          const widgetIndex = widgets.indexOf(action.widgetId);
-          widgets.splice(widgetIndex, 1);
-
-          const expandedWidget = widgets.find((widgetId) => {
-            return state.widgets[widgetId].minimized === false;
-          });
-          if (!expandedWidget && widgets.length > 0) {
-            const firstWidget = state.widgets[widgets[0]];
-            firstWidget.minimized = false;
-          }
-        }
-      }
+      removeWidgetTab(state, action.widgetId, action.floatingWidgetId, action.side, action.id);
       return;
     }
     case WIDGET_TAB_DRAG: {
@@ -534,8 +550,67 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
       state.draggedTab = undefined;
       return;
     }
+    case TOOL_SETTINGS_DRAG_START: {
+      if (isDockedToolSettingsState(state.toolSettings)) {
+        state.toolSettings = {
+          type: "widget",
+        };
+        state.widgets[action.newFloatingWidgetId] = {
+          activeTabId: toolSettingsTabId,
+          id: action.newFloatingWidgetId,
+          minimized: false,
+          tabs: [toolSettingsTabId],
+        };
+        state.floatingWidgets.byId[action.newFloatingWidgetId] = {
+          bounds: Rectangle.createFromSize({ height: 200, width: 300 }).offset({ x: 0, y: 0 }).toProps(),
+          id: action.newFloatingWidgetId,
+        };
+        state.floatingWidgets.allIds.push(action.newFloatingWidgetId);
+      }
+      return;
+    }
   }
 });
+
+function removeWidgetTab(
+  state: Draft<NineZoneState>,
+  widgetId: WidgetState["id"],
+  floatingWidgetId: FloatingWidgetState["id"] | undefined,
+  side: PanelSide | undefined,
+  tabId: TabState["id"],
+) {
+  const widget = state.widgets[widgetId];
+  const tabs = widget.tabs;
+  const tabIndex = tabs.indexOf(tabId);
+  if (tabIndex < 0)
+    return;
+
+  tabs.splice(tabIndex, 1);
+  if (tabId === widget.activeTabId) {
+    widget.activeTabId = widget.tabs.length > 0 ? widget.tabs[0] : undefined;
+  }
+
+  if (tabs.length === 0) {
+    if (floatingWidgetId !== undefined) {
+      delete state.floatingWidgets.byId[floatingWidgetId];
+      const idIndex = state.floatingWidgets.allIds.indexOf(floatingWidgetId);
+      state.floatingWidgets.allIds.splice(idIndex, 1);
+    }
+    if (side) {
+      const widgets = state.panels[side].widgets;
+      const widgetIndex = widgets.indexOf(widgetId);
+      widgets.splice(widgetIndex, 1);
+
+      const expandedWidget = widgets.find((wId) => {
+        return state.widgets[wId].minimized === false;
+      });
+      if (!expandedWidget && widgets.length > 0) {
+        const firstWidget = state.widgets[widgets[0]];
+        firstWidget.minimized = false;
+      }
+    }
+  }
+}
 
 /** @internal */
 export function createPanelsState(): PanelsState {
@@ -557,7 +632,15 @@ export function createNineZoneState(): NineZoneState {
     },
     panels: createPanelsState(),
     widgets: {},
-    tabs: {},
+    tabs: {
+      [toolSettingsTabId]: {
+        id: toolSettingsTabId,
+        label: "Tool Settings",
+      },
+    },
+    toolSettings: {
+      type: "docked",
+    },
   };
 }
 
@@ -650,6 +733,16 @@ export function isTabTargetWidgetState(state: TabTargetState): state is TabTarge
 /** @internal */
 export function isHorizontalPanelState(state: PanelState): state is HorizontalPanelState {
   return isHorizontalPanelSide(state.side);
+}
+
+/** @internal */
+export function isDockedToolSettingsState(state: ToolSettingsState): state is DockedToolSettingsState {
+  return state.type === "docked";
+}
+
+/** @internal */
+export function isWidgetToolSettingsState(state: ToolSettingsState): state is WidgetToolSettingsState {
+  return state.type === "widget";
 }
 
 function setRectangleProps(props: Draft<RectangleProps>, bounds: RectangleProps) {

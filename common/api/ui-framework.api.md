@@ -4869,6 +4869,12 @@ export interface ToolItemProps extends ItemProps, CommandHandler {
     toolId: string;
 }
 
+// @internal (undocumented)
+export function ToolSettingsContent(): JSX.Element | null;
+
+// @internal (undocumented)
+export function ToolSettingsDockedContent(): JSX.Element;
+
 // @beta
 export interface ToolSettingsEntry {
     // (undocumented)
@@ -4885,6 +4891,9 @@ export interface ToolSettingsGridProps {
     // (undocumented)
     settings?: ToolSettingsEntry[];
 }
+
+// @internal (undocumented)
+export function ToolSettingsWidgetContent(): JSX.Element;
 
 // @internal
 export class ToolSettingsZone extends React.PureComponent<ToolSettingsZoneProps, ToolSettingsZoneState> {
@@ -5169,6 +5178,9 @@ export function useFrontstageDefNineZone(frontstage?: FrontstageDef): [Frontstag
 // @internal (undocumented)
 export const useGroupedItems: (items: readonly BackstageItem[]) => GroupedItems;
 
+// @internal (undocumented)
+export function useHorizontalToolSettingNodes(): ToolSettingsEntry[] | undefined;
+
 // @beta
 export const useIsBackstageOpen: (manager: BackstageManager) => boolean;
 
@@ -5193,7 +5205,7 @@ export function useSaveFrontstageSettings(frontstageState: FrontstageState_2): v
 export function useStatusBarEntry(): DockedStatusBarEntryContextArg;
 
 // @internal (undocumented)
-export function useToolSettings(): ToolSettingsEntry[] | undefined;
+export function useToolSettingsNode(): React.ReactNode;
 
 // @beta
 export const useUiItemsProviderStatusBarItems: (manager: StatusBarItemsManager_2) => readonly CommonStatusBarItem[];
@@ -5643,15 +5655,6 @@ export class WidgetManager {
     get widgets(): ReadonlyArray<WidgetInfo>;
     set widgets(w: ReadonlyArray<WidgetInfo>);
     }
-
-// @internal (undocumented)
-export function WidgetPanelsDefaultToolSettings(props: WidgetPanelsDefaultToolSettingsProps): JSX.Element;
-
-// @internal (undocumented)
-export interface WidgetPanelsDefaultToolSettingsProps {
-    // (undocumented)
-    itemsManager: DialogItemsManager;
-}
 
 // @internal (undocumented)
 export const WidgetPanelsFrontstage: React.NamedExoticComponent<object>;

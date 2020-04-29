@@ -18,6 +18,9 @@ import { RectangleProps } from '@bentley/ui-core';
 import { SizeProps } from '@bentley/ui-core';
 
 // @internal (undocumented)
+export const ActiveTabIdContext: React.Context<string | undefined>;
+
+// @internal (undocumented)
 export function addPanelWidget(state: NineZoneState, side: PanelSide, id: WidgetState["id"], widgetArgs?: Partial<WidgetState>): NineZoneState;
 
 // @internal (undocumented)
@@ -328,6 +331,12 @@ export interface DockedToolSettingsOverflowProps extends ToolSettingProps {
 export interface DockedToolSettingsProps extends CommonProps {
     children?: React.ReactNode;
     panelContainer?: React.ComponentType;
+}
+
+// @internal
+export interface DockedToolSettingsState {
+    // (undocumented)
+    readonly type: "docked";
 }
 
 // @internal (undocumented)
@@ -805,6 +814,9 @@ export interface HorizontalPanelState extends PanelState {
 }
 
 // @internal (undocumented)
+export function isDockedToolSettingsState(state: ToolSettingsState): state is DockedToolSettingsState;
+
+// @internal (undocumented)
 export const isHorizontalPanelSide: (side: PanelSide) => side is HorizontalPanelSide;
 
 // @internal (undocumented)
@@ -821,6 +833,9 @@ export function isTabTargetTabState(state: TabTargetState): state is TabTargetTa
 
 // @internal (undocumented)
 export function isTabTargetWidgetState(state: TabTargetState): state is TabTargetWidgetState;
+
+// @internal (undocumented)
+export function isWidgetToolSettingsState(state: ToolSettingsState): state is WidgetToolSettingsState;
 
 // @beta
 export class Item extends React.PureComponent<ItemProps> {
@@ -972,10 +987,7 @@ export class MessageProgress extends React.PureComponent<ProgressProps> {
 }
 
 // @alpha
-export class NavigationArea extends React.PureComponent<NavigationAreaProps> {
-    // (undocumented)
-    render(): JSX.Element;
-}
+export const NavigationArea: React.NamedExoticComponent<NavigationAreaProps>;
 
 // @alpha
 export interface NavigationAreaProps extends CommonProps, NoChildrenProps {
@@ -1043,7 +1055,7 @@ export interface NestedToolSettingsProps extends CommonProps {
 }
 
 // @internal
-export type NineZoneActionTypes = PanelToggleCollapsedAction | PanelToggleSpanAction | PanelTogglePinnedAction | PanelResizeAction | PanelInitializeAction | FloatingWidgetResizeAction | FloatingWidgetBringToFrontAction | PanelWidgetDragStartAction | WidgetDragAction | WidgetDragEndAction | WidgetTabClickAction | WidgetTabDoubleClickAction | WidgetTabDragStartAction | WidgetTabDragAction | WidgetTabDragEndAction;
+export type NineZoneActionTypes = PanelToggleCollapsedAction | PanelToggleSpanAction | PanelTogglePinnedAction | PanelResizeAction | PanelInitializeAction | FloatingWidgetResizeAction | FloatingWidgetBringToFrontAction | PanelWidgetDragStartAction | WidgetDragAction | WidgetDragEndAction | WidgetSendBackAction | WidgetTabClickAction | WidgetTabDoubleClickAction | WidgetTabDragStartAction | WidgetTabDragAction | WidgetTabDragEndAction | ToolSettingsDragStartAction;
 
 // @internal (undocumented)
 export const NineZoneContext: React.Context<NineZoneState>;
@@ -1153,6 +1165,8 @@ export interface NineZoneProviderProps {
     // (undocumented)
     state: NineZoneState;
     // (undocumented)
+    toolSettingsContent?: React.ReactNode;
+    // (undocumented)
     widgetContent?: React.ReactNode;
 }
 
@@ -1233,6 +1247,8 @@ export interface NineZoneState {
     readonly panels: PanelsState;
     // (undocumented)
     readonly tabs: TabsState;
+    // (undocumented)
+    readonly toolSettings: ToolSettingsState;
     // (undocumented)
     readonly widgets: WidgetsState;
 }
@@ -1602,6 +1618,9 @@ export interface ScrollableWidgetContentProps {
     // (undocumented)
     children?: React.ReactNode;
 }
+
+// @internal (undocumented)
+export const SendBack: React.NamedExoticComponent<object>;
 
 // @internal (undocumented)
 export function sideToCursorType(side: PanelSide): CursorType;
@@ -2062,6 +2081,9 @@ export interface ToastProps extends CommonProps, NoChildrenProps {
 // @alpha
 export type ToastStyle = Pick<React.CSSProperties, "width" | "height">;
 
+// @internal
+export const TOOL_SETTINGS_DRAG_START = "TOOL_SETTINGS_DRAG_START";
+
 // @beta
 export class ToolAssistance extends React.PureComponent<ToolAssistanceProps> {
     // (undocumented)
@@ -2239,6 +2261,17 @@ export class ToolSettings extends React.PureComponent<ToolSettingsProps> {
     }
 
 // @internal
+export interface ToolSettingsDragStartAction {
+    // (undocumented)
+    readonly newFloatingWidgetId: FloatingWidgetState["id"];
+    // (undocumented)
+    readonly type: typeof TOOL_SETTINGS_DRAG_START;
+}
+
+// @internal (undocumented)
+export const ToolSettingsNodeContext: React.Context<React.ReactNode>;
+
+// @internal
 export const ToolSettingsOverflowPanel: React.ForwardRefExoticComponent<ToolSettingsOverflowPanelProps & React.RefAttributes<HTMLDivElement>>;
 
 // @internal
@@ -2276,11 +2309,20 @@ export interface ToolSettingsProps extends CommonProps {
     title?: string;
 }
 
+// @internal
+export type ToolSettingsState = DockedToolSettingsState | WidgetToolSettingsState;
+
+// @internal (undocumented)
+export const ToolSettingsStateContext: React.Context<ToolSettingsState>;
+
 // @beta
 export class ToolSettingsTab extends React.PureComponent<ToolSettingsTabProps> {
     // (undocumented)
     render(): JSX.Element;
 }
+
+// @internal (undocumented)
+export const toolSettingsTabId = "nz-tool-settings-tab";
 
 // @beta
 export interface ToolSettingsTabProps extends CommonProps {
@@ -2400,6 +2442,15 @@ export interface UseDragTabArgs {
     onDragEnd?: (target: DragTarget | undefined, widgetSize: SizeProps) => void;
     // (undocumented)
     tabId: TabState["id"];
+}
+
+// @internal (undocumented)
+export function useDragToolSettings(args: UseDragToolSettingsArgs): ({ initialPointerPosition }: DragItemDragStartArgs) => void;
+
+// @internal (undocumented)
+export interface UseDragToolSettingsArgs {
+    // (undocumented)
+    newWidgetDragItemId: WidgetDragItem["id"];
 }
 
 // @internal (undocumented)
@@ -2531,6 +2582,9 @@ export const WIDGET_DRAG = "WIDGET_DRAG";
 
 // @internal
 export const WIDGET_DRAG_END = "WIDGET_DRAG_END";
+
+// @internal
+export const WIDGET_SEND_BACK = "WIDGET_SEND_BACK";
 
 // @internal
 export const WIDGET_TAB_CLICK = "WIDGET_TAB_CLICK";
@@ -2740,6 +2794,18 @@ export interface WidgetProviderProps {
 }
 
 // @internal
+export interface WidgetSendBackAction {
+    // (undocumented)
+    readonly floatingWidgetId: FloatingWidgetState["id"] | undefined;
+    // (undocumented)
+    readonly side: PanelSide | undefined;
+    // (undocumented)
+    readonly type: typeof WIDGET_SEND_BACK;
+    // (undocumented)
+    readonly widgetId: WidgetState["id"];
+}
+
+// @internal
 export interface WidgetsState {
     // (undocumented)
     readonly [id: string]: WidgetState;
@@ -2765,6 +2831,9 @@ export const WidgetStateContext: React.Context<WidgetState | undefined>;
 
 // @internal
 export const WidgetTab: React.NamedExoticComponent<WidgetTabProps>;
+
+// @internal (undocumented)
+export const WidgetTabBar: React.NamedExoticComponent<object>;
 
 // @internal
 export interface WidgetTabClickAction {
@@ -2892,8 +2961,11 @@ export interface WidgetTargetProps {
 // @internal
 export type WidgetTargetState = TabTargetPanelState | TabTargetWidgetState | TabTargetTabState;
 
-// @internal (undocumented)
-export const WidgetTitleBar: React.NamedExoticComponent<object>;
+// @internal
+export interface WidgetToolSettingsState {
+    // (undocumented)
+    readonly type: "widget";
+}
 
 // @internal (undocumented)
 export const widgetZoneColumnIds: ReadonlyArray<WidgetZoneId>;

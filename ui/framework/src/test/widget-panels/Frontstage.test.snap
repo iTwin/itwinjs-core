@@ -56,10 +56,19 @@ exports[`WidgetPanelsFrontstage should render 1`] = `
           "widgets": Array [],
         },
       },
-      "tabs": Object {},
+      "tabs": Object {
+        "nz-tool-settings-tab": Object {
+          "id": "nz-tool-settings-tab",
+          "label": "Tool Settings",
+        },
+      },
+      "toolSettings": Object {
+        "type": "docked",
+      },
       "widgets": Object {},
     }
   }
+  toolSettingsContent={<ToolSettingsContent />}
   widgetContent={<WidgetContent />}
 >
   <WidgetPanelsFrontstageComponent />
@@ -120,10 +129,19 @@ exports[`WidgetPanelsFrontstage should render modal stage content 1`] = `
           "widgets": Array [],
         },
       },
-      "tabs": Object {},
+      "tabs": Object {
+        "nz-tool-settings-tab": Object {
+          "id": "nz-tool-settings-tab",
+          "label": "Tool Settings",
+        },
+      },
+      "toolSettings": Object {
+        "type": "docked",
+      },
       "widgets": Object {},
     }
   }
+  toolSettingsContent={<ToolSettingsContent />}
   widgetContent={<WidgetContent />}
 >
   <WidgetPanelsFrontstageComponent />
@@ -184,9 +202,18 @@ Object {
           "widgets": Array [],
         },
       },
-      "tabs": Object {},
+      "tabs": Object {
+        "nz-tool-settings-tab": Object {
+          "id": "nz-tool-settings-tab",
+          "label": "Tool Settings",
+        },
+      },
+      "toolSettings": Object {
+        "type": "docked",
+      },
       "widgets": Object {},
     },
+    "stateVersion": 0,
     "version": 0,
   },
   "status": "LOADING",

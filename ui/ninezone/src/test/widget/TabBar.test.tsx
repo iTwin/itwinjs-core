@@ -42,7 +42,7 @@ describe("WidgetTitleBar", () => {
         />
       </NineZoneProvider>,
     );
-    const titleBar = container.getElementsByClassName("nz-widget-titleBar")[0];
+    const titleBar = container.getElementsByClassName("nz-widget-tabBar")[0];
     const handle = titleBar.getElementsByClassName("nz-handle")[0];
     act(() => {
       fireEvent.pointerDown(handle);
@@ -83,7 +83,7 @@ describe("WidgetTitleBar", () => {
         </WidgetIdContext.Provider>
       </NineZoneProvider>,
     );
-    const titleBar = container.getElementsByClassName("nz-widget-titleBar")[0];
+    const titleBar = container.getElementsByClassName("nz-widget-tabBar")[0];
     const handle = titleBar.getElementsByClassName("nz-handle")[0];
     const target = container.getElementsByClassName("nz-widget-tabTarget")[0];
     act(() => {
@@ -129,7 +129,7 @@ describe("WidgetTitleBar", () => {
         </PanelStateContext.Provider>
       </NineZoneProvider>,
     );
-    const titleBar = container.getElementsByClassName("nz-widget-titleBar")[0];
+    const titleBar = container.getElementsByClassName("nz-widget-tabBar")[0];
     const handle = titleBar.getElementsByClassName("nz-handle")[0];
     const target = container.getElementsByClassName("nz-widgetPanels-panelTarget")[0];
     act(() => {

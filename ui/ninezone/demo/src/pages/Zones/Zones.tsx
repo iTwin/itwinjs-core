@@ -20,7 +20,6 @@ import { NineZoneProvider, NineZoneDispatchContext } from "@src/base/NineZone";
 import {
   NineZoneStateReducer, createNineZoneState, addPanelWidget, addTab, PANEL_TOGGLE_PINNED, PANEL_TOGGLE_SPAN, PANEL_TOGGLE_COLLAPSED,
 } from "@src/base/NineZoneState";
-
 import { PanelSideContext, PanelPinnedContext, PanelSpanContext, isHorizontalPanelSide } from "@src/widget-panels/Panel";
 import { assert } from "@src/base/assert";
 import { TabIdContext, useTransientState } from "@src/widget/ContentRenderer";
@@ -278,6 +277,7 @@ export default function Zones() {
     };
   }, []);
   const { settings, remove, removeFromStart, add, addToStart, update } = useSettings();
+  const settingsStr = React.useMemo(() => JSON.stringify(settings), [settings]);
   const [state, dispatch] = React.useReducer(NineZoneStateReducer, {}, () => {
     let initialState = createNineZoneState();
     initialState = addPanelWidget(initialState, "left", "topLeft", { activeTabId: "topLeft_1" });
@@ -302,6 +302,7 @@ export default function Zones() {
     return initialState;
   });
   const widget = React.useMemo(() => <WidgetContent />, []);
+  const toolSettings = React.useMemo(() => <div>{settingsStr}</div>, [settingsStr]);
   const ui = React.useMemo(() => <div className="nzdemo-toolbars">
     <DemoToolWidget />
     <DemoNavigationWidget />
@@ -337,6 +338,7 @@ export default function Zones() {
         dispatch={dispatch}
         state={state}
         widgetContent={widget}
+        toolSettingsContent={toolSettings}
       >
         {nineZone}
       </NineZoneProvider>

@@ -16,7 +16,7 @@ import { useActiveFrontstageDef } from "../frontstage/Frontstage";
 import { WidgetPanelsStatusBar } from "./StatusBar";
 import { FrontstageDef } from "../frontstage/FrontstageDef";
 import { WidgetPanelsToolbars } from "./Toolbars";
-import { WidgetPanelsToolSettings } from "./ToolSettings";
+import { WidgetPanelsToolSettings, ToolSettingsContent } from "./ToolSettings";
 import { WidgetPanelsFrontstageContent } from "./FrontstageContent";
 import { WidgetContent } from "./Content";
 import { WidgetDef } from "../widgets/WidgetDef";
@@ -25,24 +25,6 @@ import { StagePanelState, StagePanelZoneDefKeys } from "../stagepanels/StagePane
 import { ModalFrontstageComposer, useActiveModalFrontstageInfo } from "./ModalFrontstageComposer";
 import { useUiSettingsContext } from "../uisettings/useUiSettings";
 import "./Frontstage.scss";
-
-/** @internal */
-export const WidgetPanelsFrontstage = React.memo(function WidgetPanelsFrontstage() { // tslint:disable-line: variable-name no-shadowed-variable
-  const frontstageDef = useActiveFrontstageDef();
-  const [frontstageState, nineZoneDispatch] = useFrontstageDefNineZone(frontstageDef);
-  useSaveFrontstageSettings(frontstageState);
-  if (!frontstageDef)
-    return null;
-  return (
-    <NineZoneProvider
-      dispatch={nineZoneDispatch}
-      state={frontstageState.setting.nineZone}
-      widgetContent={<WidgetContent />}
-    >
-      <WidgetPanelsFrontstageComponent />
-    </NineZoneProvider >
-  );
-});
 
 // istanbul ignore next
 const WidgetPanelsFrontstageComponent = React.memo(function WidgetPanelsFrontstageComponent() { // tslint:disable-line: variable-name no-shadowed-variable
@@ -62,6 +44,29 @@ const WidgetPanelsFrontstageComponent = React.memo(function WidgetPanelsFrontsta
       <WidgetPanelsStatusBar className="uifw-statusBar" />
       <FloatingWidgets />
     </div>
+  );
+});
+
+const widgetContent = <WidgetContent />;
+const toolSettingsContent = <ToolSettingsContent />;
+const widgetPanelsFrontstage = <WidgetPanelsFrontstageComponent />;
+
+/** @internal */
+export const WidgetPanelsFrontstage = React.memo(function WidgetPanelsFrontstage() { // tslint:disable-line: variable-name no-shadowed-variable
+  const frontstageDef = useActiveFrontstageDef();
+  const [frontstageState, nineZoneDispatch] = useFrontstageDefNineZone(frontstageDef);
+  useSaveFrontstageSettings(frontstageState);
+  if (!frontstageDef)
+    return null;
+  return (
+    <NineZoneProvider
+      dispatch={nineZoneDispatch}
+      state={frontstageState.setting.nineZone}
+      widgetContent={widgetContent}
+      toolSettingsContent={toolSettingsContent}
+    >
+      {widgetPanelsFrontstage}
+    </NineZoneProvider >
   );
 });
 
@@ -202,6 +207,8 @@ function isFrontstageStateSettingResult(settingsResult: UiSettingsResult): setti
   return false;
 }
 
+const stateVersion = 0; // this needs to be bumped when NineZoneState is changed (to recreate layout).
+
 /** @internal */
 export function initializeFrontstageState({ frontstage }: InitializeFrontstageStateArgs): FrontstageState {
   let nineZone = createNineZoneState();
@@ -240,6 +247,7 @@ export function initializeFrontstageState({ frontstage }: InitializeFrontstageSt
       id: getFrontstageId(frontstage),
       nineZone,
       version: getFrontstageVersion(frontstage),
+      stateVersion,
     },
     status: "LOADING",
   };
@@ -285,6 +293,7 @@ interface FrontstageStateSetting {
   nineZone: NineZoneState;
   id: FrontstageDef["id"];
   version: number;
+  stateVersion: number;
 }
 
 /** @internal */
@@ -317,7 +326,10 @@ export function useFrontstageDefNineZone(frontstage?: FrontstageDef): [Frontstag
       const id = getFrontstageId(frontstage);
       const version = getFrontstageVersion(frontstage);
       const settingsResult = await uiSettingsRef.current.getSetting(FRONTSTAGE_SETTINGS_NAMESPACE, getFrontstageStateSettingName(id));
-      if (isFrontstageStateSettingResult(settingsResult) && settingsResult.setting.version >= version) {
+      if (isFrontstageStateSettingResult(settingsResult) &&
+        settingsResult.setting.version >= version &&
+        settingsResult.setting.stateVersion >= stateVersion
+      ) {
         dispatch({
           type: FRONTSTAGE_STATE_SETTING_LOAD,
           setting: settingsResult.setting,

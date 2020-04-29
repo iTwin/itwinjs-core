@@ -8,8 +8,11 @@
 
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps, useRefs, useResizeObserver } from "@bentley/ui-core";
+import { CommonProps, useRefs, useResizeObserver, Point } from "@bentley/ui-core";
 import { usePointerCaptor } from "../base/PointerCaptor";
+import { useDragToolSettings } from "../base/DragManager";
+import { NineZoneDispatchContext, getUniqueId } from "../base/NineZone";
+import { TOOL_SETTINGS_DRAG_START } from "../base/NineZoneState";
 import "./Handle.scss";
 
 /** Properties of [[DockedToolSettingsHandle]] component.
@@ -23,9 +26,23 @@ export interface DockedToolSettingsHandleProps extends CommonProps {
  * @internal
  */
 export const DockedToolSettingsHandle = React.memo(function DockedToolSettingsHandle(props: DockedToolSettingsHandleProps) { // tslint:disable-line: variable-name no-shadowed-variable
+  const dispatch = React.useContext(NineZoneDispatchContext);
   const resizeObserverRef = useResizeObserver<HTMLDivElement>(props.onResize);
   const pointerCaptorRef = usePointerCaptor<HTMLDivElement>();
-  const ref = useRefs(pointerCaptorRef, resizeObserverRef);
+  const newWidgetDragItemId = React.useMemo(() => getUniqueId(), []);
+  const onDragStart = useDragToolSettings({ newWidgetDragItemId });
+  const handlePointerDown = React.useCallback((e: React.PointerEvent) => {
+    e.preventDefault();
+    const initialPointerPosition = new Point(e.clientX, e.clientY);
+    onDragStart({
+      initialPointerPosition,
+    });
+    dispatch({
+      type: TOOL_SETTINGS_DRAG_START,
+      newFloatingWidgetId: newWidgetDragItemId,
+    });
+  }, [dispatch, newWidgetDragItemId, onDragStart]);
+  const refs = useRefs(pointerCaptorRef, resizeObserverRef);
   const className = classnames(
     "nz-toolSettings-handle",
     props.className,
@@ -33,7 +50,8 @@ export const DockedToolSettingsHandle = React.memo(function DockedToolSettingsHa
   return (
     <div
       className={className}
-      ref={ref}
+      ref={refs}
+      onPointerDown={handlePointerDown}
       style={props.style}
     >
       <div className="nz-row">

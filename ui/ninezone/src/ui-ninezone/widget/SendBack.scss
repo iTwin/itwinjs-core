@@ -1,0 +1,30 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@bentley/ui-core/lib/ui-core/style/themecolors";
+
+.nz-widget-sendBack {
+  height: 100%;
+  position: relative;
+  padding: 0 0.5em;
+  border: 0;
+  background: none;
+  cursor: pointer;
+
+  > i {
+    width: 1.2em;
+    height: 1em;
+    border-width: 0.15em;
+    border-style: solid;
+    border-color: $buic-background-5;
+    display: block;
+
+    &:after {
+      content: '';
+      background: $buic-background-5;
+      height: 33%;
+      display: block;
+    }
+  }
+}

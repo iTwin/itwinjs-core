@@ -5,9 +5,10 @@
 import * as React from "react";
 import * as sinon from "sinon";
 import { act, render, fireEvent } from "@testing-library/react";
-import { createNineZoneState, NineZoneProvider, addPanelWidget, NineZoneDispatch, PanelWidget, PANEL_WIDGET_DRAG_START, PanelSideContext } from "../../ui-ninezone";
+import { createNineZoneState, NineZoneProvider, addPanelWidget, NineZoneDispatch, PanelWidget, PANEL_WIDGET_DRAG_START, PanelSideContext, Widget, WidgetIdContext } from "../../ui-ninezone";
 import * as NineZoneModule from "../../ui-ninezone/base/NineZone";
-import { addTab } from "../../ui-ninezone/base/NineZoneState";
+import { addTab, FLOATING_WIDGET_BRING_TO_FRONT } from "../../ui-ninezone/base/NineZoneState";
+import { FloatingWidgetIdContext } from "../../ui-ninezone/widget/FloatingWidget";
 
 describe("PanelWidget", () => {
   const sandbox = sinon.createSandbox();
@@ -32,7 +33,7 @@ describe("PanelWidget", () => {
       </NineZoneProvider>,
     );
 
-    const titleBar = container.getElementsByClassName("nz-widget-titleBar")[0];
+    const titleBar = container.getElementsByClassName("nz-widget-tabBar")[0];
     const handle = titleBar.getElementsByClassName("nz-handle")[0];
     act(() => {
       fireEvent.pointerDown(handle);
@@ -76,5 +77,31 @@ describe("PanelWidget", () => {
     });
 
     spy.calledOnce.should.true;
+  });
+
+  it("should dispatch FLOATING_WIDGET_BRING_TO_FRONT", () => {
+    const dispatch = sinon.stub<NineZoneDispatch>();
+    let nineZone = createNineZoneState();
+    nineZone = addPanelWidget(nineZone, "left", "w1");
+    const { container } = render(
+      <NineZoneProvider
+        state={nineZone}
+        dispatch={dispatch}
+      >
+        <WidgetIdContext.Provider value="w1">
+          <FloatingWidgetIdContext.Provider value="fw1">
+            <Widget />
+          </FloatingWidgetIdContext.Provider>
+        </WidgetIdContext.Provider>
+      </NineZoneProvider>,
+    );
+
+    const widgetElement = container.getElementsByClassName("nz-widget-widget")[0];
+    fireEvent.click(widgetElement);
+
+    dispatch.calledOnceWithExactly({
+      type: FLOATING_WIDGET_BRING_TO_FRONT,
+      id: "fw1",
+    }).should.true;
   });
 });

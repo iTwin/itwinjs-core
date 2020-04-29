@@ -210,7 +210,6 @@ export * from "./ui-framework/utils/UiShowHideManager";
 export * from "./ui-framework/utils/ToolbarButtonHelper";
 
 export * from "./ui-framework/widget-panels/Content";
-export * from "./ui-framework/widget-panels/DefaultToolSettings";
 export * from "./ui-framework/widget-panels/Frontstage";
 export * from "./ui-framework/widget-panels/FrontstageContent";
 export * from "./ui-framework/widget-panels/StatusBar";

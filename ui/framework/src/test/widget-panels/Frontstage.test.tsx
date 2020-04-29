@@ -142,6 +142,7 @@ describe("useFrontstageDefNineZone", () => {
   it("should dispatch FRONTSTAGE_STATE_LOAD", async () => {
     const setting = {
       version: 0,
+      stateVersion: 0,
     };
     const uiSettings = new UiSettingsStub();
     sinon.stub(uiSettings, "getSetting").returns(Promise.resolve<UiSettingsResult>({

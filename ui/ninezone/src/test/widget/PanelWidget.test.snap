@@ -6,7 +6,7 @@ exports[`PanelWidget should render 1`] = `
   style="flex-grow: 1;"
 >
   <div
-    class="nz-widget-titleBar"
+    class="nz-widget-tabBar"
   >
     <div
       class="nz-handle"
@@ -35,7 +35,7 @@ exports[`PanelWidget should render minimized 1`] = `
   class="nz-widget-widget nz-widget-panelWidget"
 >
   <div
-    class="nz-widget-titleBar"
+    class="nz-widget-tabBar"
   >
     <div
       class="nz-handle"

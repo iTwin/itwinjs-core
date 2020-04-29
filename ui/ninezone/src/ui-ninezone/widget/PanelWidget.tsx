@@ -13,7 +13,7 @@ import { WidgetsStateContext } from "../base/NineZone";
 import { WidgetState } from "../base/NineZoneState";
 import { isHorizontalPanelSide, PanelSideContext } from "../widget-panels/Panel";
 import { Widget, WidgetProvider } from "./Widget";
-import { WidgetTitleBar } from "./TitleBar";
+import { WidgetTabBar } from "./TabBar";
 import { WidgetContentContainer } from "./ContentContainer";
 import "./PanelWidget.scss";
 
@@ -52,7 +52,7 @@ const PanelWidgetComponent = React.memo<CommonProps>(function PanelWidgetCompone
       className={props.className}
       style={props.style}
     >
-      <WidgetTitleBar />
+      <WidgetTabBar />
       <WidgetContentContainer />
     </Widget>
   );

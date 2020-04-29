@@ -5,6 +5,7 @@
 import * as React from "react";
 import { DockedToolSettings } from "@src/tool-settings/Docked";
 import { ToolSettingProps, ToolSetting } from "./ToolSetting";
+import { ToolSettingsStateContext } from "@src/base/NineZone";
 
 export interface ToolSettingsProps {
   readonly settings: ReadonlyArray<ToolSettingProps>;
@@ -15,6 +16,9 @@ function PanelContainer(props: { children?: React.ReactNode }) {
 }
 
 export default function ToolSettings(props: ToolSettingsProps) {
+  const toolSettingsState = React.useContext(ToolSettingsStateContext);
+  if (toolSettingsState.type !== "docked")
+    return null;
   return (
     <DockedToolSettings
       panelContainer={PanelContainer}

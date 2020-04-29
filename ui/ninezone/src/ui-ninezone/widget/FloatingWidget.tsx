@@ -11,7 +11,7 @@ import classnames from "classnames";
 import { Rectangle, CommonProps, Point, PointProps } from "@bentley/ui-core";
 import { Widget, WidgetProvider } from "./Widget";
 import { FloatingWidgetState, WidgetState, FLOATING_WIDGET_RESIZE } from "../base/NineZoneState";
-import { WidgetTitleBar } from "./TitleBar";
+import { WidgetTabBar } from "./TabBar";
 import { assert } from "../base/assert";
 import { useIsDraggedItem, useDragResizeHandle, UseDragResizeHandleArgs } from "../base/DragManager";
 import { NineZoneDispatchContext } from "../base/NineZone";
@@ -81,7 +81,7 @@ const FloatingWidgetComponent = React.memo<CommonProps>(function FloatingWidgetC
       className={className}
       style={props.style}
     >
-      <WidgetTitleBar />
+      <WidgetTabBar />
       <WidgetContentContainer />
       <FloatingWidgetHandle handle="left" />
       <FloatingWidgetHandle handle="top" />
