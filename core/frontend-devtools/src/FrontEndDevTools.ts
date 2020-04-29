@@ -74,6 +74,10 @@ import {
   ElementIdFromSourceAspectIdTool,
   SourceAspectIdFromElementIdTool,
 } from "./tools/SourceAspectIdTools";
+import {
+  AttachRealityModelTool,
+  SaveRealityModelTool,
+} from "./tools/RealityModelTools";
 
 /** Entry-point for the package. Before using the package you *must* call [[FrontendDevTools.initialize]].
  * @beta
@@ -146,6 +150,8 @@ export class FrontendDevTools {
       ToggleRealityTileFreeze,
       ViewportAddRealityModel,
       ViewportTileSizeModifierTool,
+      AttachRealityModelTool,
+      SaveRealityModelTool,
     ];
 
     for (const tool of tools)

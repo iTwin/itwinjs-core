@@ -3,6 +3,7 @@ Release Tag;API Item
 beta;AnimationIntervalTool 
 alpha;appendDataListEntries(dl: DataList, entries: DataListEntry[]): void
 beta;ApplyViewTool 
+alpha;AttachRealityModelTool 
 alpha;Button
 alpha;ButtonHandler = (button: HTMLInputElement) => void
 alpha;ButtonProps
@@ -83,6 +84,7 @@ alpha;RealityTransitionTool
 beta;class RenderSystemDebugControlTool 
 beta;class RenderTargetDebugControlTool 
 beta;ReportWebGLCompatibilityTool 
+alpha;SaveRealityModelTool 
 beta;SaveViewTool 
 beta;SelectElementsByIdTool 
 beta;serializeViewState(view: ViewState): ViewStateProps

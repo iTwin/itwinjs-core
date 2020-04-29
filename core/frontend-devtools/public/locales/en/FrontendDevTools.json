@@ -146,6 +146,12 @@
     },
     "Toggle3dManipulations": {
       "keyin": "fdt 3dmanip"
+    },
+    "AttachRealityModelTool": {
+      "keyin": "fdt attach reality properties"
+    },
+    "SaveRealityModelTool": {
+      "keyin": "fdt save reality properties"
     }
   }
 }
