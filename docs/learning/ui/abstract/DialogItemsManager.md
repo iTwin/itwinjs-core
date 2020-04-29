@@ -29,7 +29,7 @@ To handle UI changes in your app, simply set up your own method to override the 
     this._itemsManager.applyUiPropertyChange = this.applyUiPropertyChange;
 ```
 
-The applyUIPropertyChange should set any app variables controlled by the UI component that has changed. Here's an example from the dialogItemsSample extension:
+The applyUIPropertyChange should set any app variables controlled by the UI component that has changed. Here's an example:
 
 ```ts
   public applyUiPropertyChange = (updatedValue: DialogPropertySyncItem): void => {
