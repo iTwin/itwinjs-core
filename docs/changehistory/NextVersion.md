@@ -33,6 +33,7 @@ With this annual major release of iModel.js comes new features and some breaking
     - [Solar Calculation APIs](#solar-calculation-apis)
     - [GeometryStream Iteration](#geometrystream-iteration)
     - [Immutable Color Types](#immutable-color-types)
+    - [Gradient API](#gradient-api)
     - [Other changes](#other-changes)
   - [Package @bentley/imodeljs-backend](#package-bentleyimodeljs-backend)
     - [Async startup and shutdown](#async-startup-and-shutdown)
@@ -385,6 +386,15 @@ function tryTransformGeometry(entry: GeometryStreamIteratorEntry, transform: Tra
 [ColorDef]($common) is now an immutable type. Naturally, mutating methods like `setTransparency` have been removed; they are replaced by methods like `withTransparency` which return a modified copy of the original `ColorDef`. The constructor is now private; replace `new ColorDef(x)` with `ColorDef.create(x)`.
 
 [HSVColor]($common) and [HSLColor]($common) are also now immutable.
+
+#### Gradient API
+The following have been removed from the [Gradient]($common) namespace and renamed:
+- [Gradient.ThematicMode]($common) has become [ThematicGradientMode]($common).
+- [Gradient.ThematicColorScheme]($common) has become [ThematicGradientColorScheme]($common).
+- [Gradient.ThematicSettingsProps]($common) has become [ThematicGradientSettingsProps]($common).
+- [Gradient.ThematicSettings]($common) has become [ThematicGradientSettings]($common).
+
+[Gradient.Symb.createThematic]($common) now takes a [ThematicGradientSettings]($common) argument.
 
 #### Other changes
 
