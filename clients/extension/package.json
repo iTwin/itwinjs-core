@@ -1,6 +1,6 @@
 {
   "name": "@bentley/extension-client",
-  "version": "2.0.0-dev.87",
+  "version": "2.0.0-dev.88",
   "description": "IModel.js Extension Client",
   "main": "lib/extension-client.js",
   "typings": "lib/extension-client",
@@ -34,16 +34,16 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "@bentley/itwin-client": "2.0.0-dev.87",
-    "@bentley/imodeljs-common": "2.0.0-dev.87",
-    "@bentley/bentleyjs-core": "2.0.0-dev.87"
+    "@bentley/itwin-client": "2.0.0-dev.88",
+    "@bentley/imodeljs-common": "2.0.0-dev.88",
+    "@bentley/bentleyjs-core": "2.0.0-dev.88"
   },
   "devDependencies": {
-    "@bentley/build-tools": "2.0.0-dev.87",
-    "@bentley/certa": "2.0.0-dev.87",
-    "@bentley/context-registry-client": "2.0.0-dev.87",
-    "@bentley/config-loader": "2.0.0-dev.87",
-    "@bentley/oidc-signin-tool": "2.0.0-dev.87",
+    "@bentley/build-tools": "2.0.0-dev.88",
+    "@bentley/certa": "2.0.0-dev.88",
+    "@bentley/context-registry-client": "2.0.0-dev.88",
+    "@bentley/config-loader": "2.0.0-dev.88",
+    "@bentley/oidc-signin-tool": "2.0.0-dev.88",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
     "@types/node": "10.14.1",
