@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { RpcInterface, RpcManager } from "@bentley/imodeljs-common";
+import { RpcInterface, RpcManager, RpcRequestTokenSupplier_T, RpcOperation } from "@bentley/imodeljs-common";
+
+const localDeploymentOnly: RpcRequestTokenSupplier_T = () => ({ iModelId: "none", key: "" });
 
 /** Sample RPC interface. */
 export default abstract class SampleRpcInterface extends RpcInterface {
@@ -14,6 +16,9 @@ export default abstract class SampleRpcInterface extends RpcInterface {
 
   public static getClient(): SampleRpcInterface { return RpcManager.getClientForInterface(SampleRpcInterface); }
 
+  @RpcOperation.setRoutingProps(localDeploymentOnly)
   public async getSampleImodels(): Promise<string[]> { return this.forward(arguments); }
+
+  @RpcOperation.setRoutingProps(localDeploymentOnly)
   public async getAvailableRulesets(): Promise<string[]> { return this.forward(arguments); }
 }
