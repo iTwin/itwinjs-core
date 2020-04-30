@@ -8,7 +8,7 @@ import {
   createNineZoneState, NineZoneStateReducer, PANEL_TOGGLE_COLLAPSED, PANEL_TOGGLE_SPAN, PANEL_TOGGLE_PINNED, PANEL_RESIZE,
   PANEL_INITIALIZE, WIDGET_TAB_CLICK, addPanelWidget, addTab, WIDGET_TAB_DOUBLE_CLICK, isHorizontalPanelState, createVerticalPanelState,
   createHorizontalPanelState, PANEL_WIDGET_DRAG_START, WIDGET_DRAG, WIDGET_DRAG_END, FloatingWidgetState, NineZoneState,
-  createWidgetState, FLOATING_WIDGET_RESIZE, WIDGET_TAB_DRAG_START, WIDGET_TAB_DRAG, WIDGET_TAB_DRAG_END, WidgetState, FLOATING_WIDGET_BRING_TO_FRONT,
+  createWidgetState, FLOATING_WIDGET_RESIZE, WIDGET_TAB_DRAG_START, WIDGET_TAB_DRAG, WIDGET_TAB_DRAG_END, WidgetState, FLOATING_WIDGET_BRING_TO_FRONT, WIDGET_SEND_BACK, TOOL_SETTINGS_DRAG_START,
 } from "../../ui-ninezone";
 
 /** @internal */
@@ -705,6 +705,65 @@ describe("NineZoneStateReducer", () => {
         });
         (!!newState.floatingWidgets.byId.newId).should.true;
       });
+    });
+  });
+
+  describe("WIDGET_SEND_BACK", () => {
+    it("should change widget type to docked", () => {
+      let state = createNineZoneState();
+      state = addPanelWidget(state, "left", "w1");
+      state = produce(state, (draft) => {
+        draft.toolSettings = {
+          type: "widget",
+        };
+      });
+      const newState = NineZoneStateReducer(state, {
+        type: WIDGET_SEND_BACK,
+        floatingWidgetId: undefined,
+        side: "left",
+        widgetId: "w1",
+      });
+      newState.toolSettings.type.should.eq("docked");
+    });
+
+    it("should do nothing if tool settings is already docked", () => {
+      let state = createNineZoneState();
+      state = addPanelWidget(state, "left", "w1");
+      state = produce(state, (draft) => {
+        draft.toolSettings = {
+          type: "docked",
+        };
+      });
+      const newState = NineZoneStateReducer(state, {
+        type: WIDGET_SEND_BACK,
+        floatingWidgetId: undefined,
+        side: "left",
+        widgetId: "w1",
+      });
+      newState.should.eq(state);
+    });
+  });
+
+  describe("TOOL_SETTINGS_DRAG_START", () => {
+    it("should convert to floating widget", () => {
+      const state = createNineZoneState();
+      const newState = NineZoneStateReducer(state, {
+        type: TOOL_SETTINGS_DRAG_START,
+        newFloatingWidgetId: "new-fw1",
+      });
+      newState.toolSettings.type.should.eq("widget");
+      newState.floatingWidgets.byId["new-fw1"].id.should.eq("new-fw1");
+    });
+
+    it("should skip if not docked", () => {
+      const state = produce(createNineZoneState(), (draft) => {
+        draft.toolSettings.type = "widget";
+      });
+      const newState = NineZoneStateReducer(state, {
+        type: TOOL_SETTINGS_DRAG_START,
+        newFloatingWidgetId: "new-fw1",
+      });
+      newState.should.eq(state);
     });
   });
 });

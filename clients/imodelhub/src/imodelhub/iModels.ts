@@ -298,7 +298,7 @@ export class DefaultIModelCreateOptionsProvider {
    * @param options Options that should be augmented.
    */
   public async assignOptions(options: IModelCreateOptions): Promise<void> {
-    const clonedOptions: IModelCreateOptions = Object.assign({}, options);
+    const clonedOptions: IModelCreateOptions = { ...options };
     deepAssign(options, this._defaultOptions);
     deepAssign(options, clonedOptions); // ensure the supplied options override the defaults
     if (!options.template) // this assignment works incorrectly through deepAssign
@@ -356,7 +356,7 @@ export class IModelsHandler {
    * @param contextId Id for the iModel's context. For iModelHub it should be the id of the iTwin context ([[Project]] or [[Asset]]).
    * @param query Optional query object to filter the queried iModels or select different data from them.
    * @returns [[HubIModel]] instances that match the query.
-   * @throws [[WsgError]] with [WSStatus.InstanceNotFound]($bentley) if [[InstanceIdQuery.byId]] is used and an HubIModel with the specified id could not be found.
+   * @throws [WsgError]($itwin-client) with [WSStatus.InstanceNotFound]($bentley) if [[InstanceIdQuery.byId]] is used and an HubIModel with the specified id could not be found.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
   public async get(requestContext: AuthorizedClientRequestContext, contextId: string, query: IModelQuery = new IModelQuery()): Promise<HubIModel[]> {

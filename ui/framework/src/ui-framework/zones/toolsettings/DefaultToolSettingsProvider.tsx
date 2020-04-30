@@ -18,9 +18,6 @@ import { ConfigurableCreateInfo } from "../../configurableui/ConfigurableUiContr
 import { ToolUiProvider } from "./ToolUiProvider";
 import { ConfigurableUiManager } from "../../configurableui/ConfigurableUiManager";
 import { ToolUiManager, SyncToolSettingsPropertiesEventArgs } from "../toolsettings/ToolUiManager";
-
-import { FrameworkVersionSwitch } from "../../hooks/useFrameworkVersion";
-import { WidgetPanelsDefaultToolSettings } from "../../widget-panels/DefaultToolSettings";
 import { DefaultDialogGridContainer } from "../../uiprovider/DefaultDialogGridContainer";
 import { ComponentGenerator } from "../../uiprovider/ComponentGenerator";
 
@@ -31,6 +28,7 @@ import { ComponentGenerator } from "../../uiprovider/ComponentGenerator";
 /** DataProvider that keeps underlying data in sync with UI display */
 class ToolSettingsDataProvider extends DialogItemsManager {
   private static _thisInstance?: ToolSettingsDataProvider;
+  public onUiPropertyChanged = () => { };
 
   constructor() {
     super();
@@ -67,6 +65,7 @@ class ToolSettingsDataProvider extends DialogItemsManager {
       return;
 
     activeTool.applyToolSettingPropertyChange(syncItem);
+    this.onUiPropertyChanged();
   }
 }
 
@@ -82,6 +81,7 @@ export class DefaultToolSettingsProvider extends ToolUiProvider {
     super(info, options);
 
     this.toolSettingsDP.items = ToolUiManager.toolSettingsProperties;
+    this.toolSettingsDP.onUiPropertyChanged = this._handleUiPropertyChanged;
   }
 
   public applyUiPropertyChange(syncItem: DialogPropertySyncItem) {
@@ -92,10 +92,7 @@ export class DefaultToolSettingsProvider extends ToolUiProvider {
     // istanbul ignore else
     if ((this.toolSettingsDP as DialogItemsManager).layoutDialogRows()) {
       this.toolSettingsNode = (
-        <FrameworkVersionSwitch
-          v1={<DefaultDialogGridContainer itemsManager={this.toolSettingsDP} componentGenerator={this._componentGenerator} isToolSettings={true} key={Date.now()} />}
-          v2={<WidgetPanelsDefaultToolSettings itemsManager={this.toolSettingsDP} />}
-        />
+        <DefaultDialogGridContainer itemsManager={this.toolSettingsDP} componentGenerator={this._componentGenerator} isToolSettings={true} key={Date.now()} />
       );
       this.horizontalToolSettingNodes = this._componentGenerator.getToolSettingsEntries();
     } else {
@@ -105,6 +102,11 @@ export class DefaultToolSettingsProvider extends ToolUiProvider {
   }
   public onInitialize(): void {
     // update the items to be from the active tool
+    this.toolSettingsDP.items = ToolUiManager.toolSettingsProperties;
+    this.updateToolSettingsNodes();
+  }
+
+  private _handleUiPropertyChanged = () => {
     this.toolSettingsDP.items = ToolUiManager.toolSettingsProperties;
     this.updateToolSettingsNodes();
   }

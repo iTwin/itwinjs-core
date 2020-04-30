@@ -112,7 +112,8 @@ $bottom-position: 4px;
 
     > .no-loop-playback {
       font-size: 16px;
-      color: $buic-foreground-muted;
+      color: $buic-foreground-body;
+
       cursor: pointer;
 
       &:hover {

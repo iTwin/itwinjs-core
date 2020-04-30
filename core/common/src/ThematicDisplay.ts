@@ -6,7 +6,7 @@
  * @module Symbology
  */
 
-import { XYZProps, Range1d, Vector3d, Range1dProps } from "@bentley/geometry-core";
+import { XYZProps, Range1d, Vector3d, Range1dProps, Point3d } from "@bentley/geometry-core";
 import { ColorDefProps, ColorDef } from "./ColorDef";
 import { Gradient } from "./Gradient";
 
@@ -159,12 +159,119 @@ export class ThematicGradientSettings {
   }
 }
 
+/** JSON representation of a [[ThematicDisplaySensor]].
+ * @alpha
+ */
+export interface ThematicDisplaySensorProps {
+  /** The world position of the sensor in X, Y, and Z. Defaults to {0,0,0}. */
+  position?: XYZProps;
+  /** The value of the sensor used when accessing the thematic gradient texture; expected range is 0 to 1. Defaults to 0. */
+  value?: number;
+}
+
+/** A sensor in world space, used for [[ThematicDisplayMode.InverseDistanceWeightedSensors]].
+ * @alpha
+ */
+export class ThematicDisplaySensor {
+  /** The world position of the sensor in X, Y, and Z. Defaults to {0,0,0}. */
+  public position: Readonly<Point3d>;
+  /** The value of the sensor used when accessing the thematic gradient texture; expected range is 0 to 1. Defaults to 0. */
+  public readonly value: number;
+
+  private constructor(json?: ThematicDisplaySensorProps) {
+    if (undefined === json) {
+      this.position = Point3d.fromJSON();
+      this.value = 0;
+    } else {
+      this.position = Point3d.fromJSON(json.position);
+      this.value = (typeof json.value !== "number") ? 0 : json.value;
+      if (this.value < 0)
+        this.value = 0;
+      else if (this.value > 1)
+        this.value = 1;
+    }
+  }
+
+  public equals(other: ThematicDisplaySensor): boolean {
+    return (this.value === other.value) && this.position.isAlmostEqual(other.position);
+  }
+
+  public static fromJSON(json?: ThematicDisplaySensorProps) {
+    return new ThematicDisplaySensor(json);
+  }
+
+  public toJSON(): ThematicDisplaySensorProps {
+    return {
+      position: this.position.toJSON(),
+      value: this.value,
+    };
+  }
+}
+
+/** JSON representation of a [[ThematicDisplaySensorSettings]] for [[ThematicDisplayMode.InverseDistanceWeightedSensors]].
+ * @alpha
+ */
+export interface ThematicDisplaySensorSettingsProps {
+  /** This is the list of sensors. Defaults to an empty array. */
+  sensors?: ThematicDisplaySensorProps[];
+}
+
+/** Settings for sensor-based thematic display for [[ThematicDisplayMode.InverseDistanceWeightedSensors]].
+ * @alpha
+ */
+export class ThematicDisplaySensorSettings {
+  /** This is the list of sensors. Defaults to an empty array. */
+  public readonly sensors: ThematicDisplaySensor[];
+
+  private constructor(json?: ThematicDisplaySensorSettingsProps) {
+    this.sensors = [];
+    if (undefined !== json) {
+      if (json.sensors !== undefined && json.sensors !== null) {
+        json.sensors.forEach((sensorJSON) => this.sensors!.push(ThematicDisplaySensor.fromJSON(sensorJSON)));
+      }
+    }
+  }
+
+  public equals(other: ThematicDisplaySensorSettings): boolean {
+    const thisSensors = this.sensors;
+    const otherSensors = other.sensors;
+
+    if (thisSensors.length !== otherSensors.length)
+      return false;
+
+    for (let i = 0; i < thisSensors.length; i++) {
+      if (!thisSensors[i].equals(otherSensors[i]))
+        return false;
+    }
+
+    return true;
+  }
+
+  public static fromJSON(json?: ThematicDisplaySensorSettingsProps) {
+    return new ThematicDisplaySensorSettings(json);
+  }
+
+  public toJSON(): ThematicDisplaySensorSettingsProps {
+    const json: ThematicDisplaySensorSettingsProps = {};
+
+    json.sensors = [];
+    this.sensors.forEach((sensor) => json.sensors!.push(sensor.toJSON()));
+
+    return json;
+  }
+}
+
 /** The thematic display mode. This determines how to apply the thematic color gradient to the geometry.
  * @beta
  */
 export enum ThematicDisplayMode {
   /** The color gradient will be mapped to surface geometry based on world height in meters. */
   Height = 0,
+  /** The color gradient will be mapped to surface geometry using inverse distance weighting based on world positions and corresponding values from a list of sensors.
+   * @note In its alpha state, this mode has been measured to run at 60 frames per second with 64 sensors, and 30 frames per second with 150 sensors. Performance continues to decrease as more sensors are added. These measurements were recorded using a developer laptop running on a 1080p monitor.
+   * @alpha
+   */
+  InverseDistanceWeightedSensors = 1,
 }
 
 /** JSON representation of the thematic display setup of a [[DisplayStyle3d]].
@@ -179,6 +286,10 @@ export interface ThematicDisplayProps {
   range?: Range1dProps;
   /** For [[ThematicDisplayMode.Height]], this is the axis along which to apply the thematic gradient in the scene. Defaults to {0,0,0}. */
   axis?: XYZProps;
+  /** For [[ThematicDisplayMode.InverseDistanceWeightedSensors]], these are the settings that control the sensors. Defaults to an instantiation using [[ThematicDisplaySensorSettings.fromJSON]] with no arguments.
+   * @alpha
+   */
+  sensorSettings?: ThematicDisplaySensorSettingsProps;
 }
 
 /** The thematic display setup of a [[DisplayStyle3d]].
@@ -193,6 +304,10 @@ export class ThematicDisplay {
   public readonly range: Range1d;
   /** For [[ThematicDisplayMode.Height]], this is the axis along which to apply the thematic gradient in the scene. Defaults to {0,0,0}. */
   public readonly axis: Vector3d;
+  /** For [[ThematicDisplayMode.InverseDistanceWeightedSensors]], these are the settings that control the sensors. Defaults to an instantiation using [[ThematicDisplaySensorSettings.fromJSON]] with no arguments.
+   * @alpha
+   */
+  public readonly sensorSettings: ThematicDisplaySensorSettings;
 
   public equals(other: ThematicDisplay): boolean {
     if (this.displayMode !== other.displayMode)
@@ -202,6 +317,8 @@ export class ThematicDisplay {
     if (!this.range.isAlmostEqual(other.range))
       return false;
     if (!this.axis.isAlmostEqual(other.axis))
+      return false;
+    if (!this.sensorSettings.equals(other.sensorSettings))
       return false;
 
     return true;
@@ -213,13 +330,15 @@ export class ThematicDisplay {
       this.gradientSettings = ThematicGradientSettings.fromJSON();
       this.axis = Vector3d.fromJSON();
       this.range = Range1d.fromJSON();
+      this.sensorSettings = ThematicDisplaySensorSettings.fromJSON();
     } else {
       this.displayMode = (json.displayMode !== undefined && json.displayMode !== null) ? json.displayMode : ThematicDisplayMode.Height;
-      if (this.displayMode < ThematicDisplayMode.Height || this.displayMode > ThematicDisplayMode.Height)
+      if (this.displayMode < ThematicDisplayMode.Height || this.displayMode > ThematicDisplayMode.InverseDistanceWeightedSensors)
         this.displayMode = ThematicDisplayMode.Height;
       this.gradientSettings = ThematicGradientSettings.fromJSON(json.gradientSettings);
       this.axis = Vector3d.fromJSON(json.axis);
       this.range = Range1d.fromJSON(json.range);
+      this.sensorSettings = ThematicDisplaySensorSettings.fromJSON(json.sensorSettings);
     }
   }
 
@@ -228,11 +347,17 @@ export class ThematicDisplay {
   }
 
   public toJSON(): ThematicDisplayProps {
-    return {
+    const json: ThematicDisplayProps = {
       displayMode: this.displayMode,
       gradientSettings: this.gradientSettings.toJSON(),
       axis: this.axis.toJSON(),
       range: this.range.toJSON(),
     };
+
+    if (this.sensorSettings.sensors.length > 0) {
+      json.sensorSettings = this.sensorSettings.toJSON();
+    }
+
+    return json;
   }
 }

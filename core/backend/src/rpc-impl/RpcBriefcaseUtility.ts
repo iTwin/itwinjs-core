@@ -6,7 +6,7 @@
  * @module RpcInterface
  */
 
-import { Logger, PerfLogger, BeDuration, OpenMode } from "@bentley/bentleyjs-core";
+import { Logger, BeDuration, OpenMode } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BriefcaseProps, IModelVersion, IModelRpcProps, SyncMode, IModelConnectionProps, RpcPendingResponse } from "@bentley/imodeljs-common";
 import { BriefcaseManager } from "../BriefcaseManager";
@@ -20,30 +20,6 @@ const loggerCategory: string = BackendLoggerCategory.IModelDb;
  * @internal
  */
 export class RpcBriefcaseUtility {
-
-  // Download and open the iModel
-  private static async open(requestContext: AuthorizedClientRequestContext, tokenProps: IModelRpcProps, syncMode: SyncMode): Promise<BriefcaseDb> {
-    requestContext.enter();
-    const { contextId, iModelId, changeSetId } = tokenProps;
-
-    const perfLogger = new PerfLogger("Opening iModel", () => ({ contextId, iModelId, syncMode }));
-
-    let briefcaseDb: BriefcaseDb;
-    try {
-      const briefcaseProps: BriefcaseProps = await BriefcaseManager.download(requestContext, contextId!, iModelId!, { syncMode }, IModelVersion.asOfChangeSet(changeSetId!));
-      requestContext.enter();
-
-      briefcaseDb = await BriefcaseDb.open(requestContext, briefcaseProps.key);
-      requestContext.enter();
-    } catch (error) {
-      requestContext.enter();
-      Logger.logError(loggerCategory, "Failed opening iModel", () => ({ ...tokenProps, syncMode }));
-      throw error;
-    }
-
-    perfLogger.dispose();
-    return briefcaseDb;
-  }
 
   /**
    * Download and open a briefcase, ensuring the operation completes within a default timeout. If the time to open exceeds the timeout period,
@@ -59,21 +35,20 @@ export class RpcBriefcaseUtility {
      * timeout happens first. If timeout is undefined, simply waits for the open to complete. */
 
     const timeout = 1000; // 1 second
-    let db: BriefcaseDb | undefined;
-    const finishOpen = async (locRequestContext: AuthorizedClientRequestContext): Promise<void> => {
-      locRequestContext.enter();
-      db = await RpcBriefcaseUtility.open(locRequestContext, tokenProps, syncMode);
-    };
-
-    await BeDuration.race(timeout, finishOpen(requestContext));
+    const { contextId, iModelId, changeSetId } = tokenProps;
+    const briefcaseProps: BriefcaseProps | void = await BeDuration.race(timeout, BriefcaseManager.download(requestContext, contextId!, iModelId!, { syncMode }, IModelVersion.asOfChangeSet(changeSetId!)));
     requestContext.enter();
 
-    if (db === undefined) {
+    if (briefcaseProps === undefined) {
       Logger.logTrace(loggerCategory, "Issuing pending status in BriefcaseOpenUtility.openWithTimeout", () => ({ ...tokenProps, syncMode }));
       throw new RpcPendingResponse();
     }
 
-    return db.getConnectionProps();
+    // Find existing or open a new briefcase
+    let briefcaseDb: BriefcaseDb | undefined = BriefcaseDb.tryFindByKey(briefcaseProps.key);
+    if (briefcaseDb === undefined)
+      briefcaseDb = await BriefcaseDb.open(requestContext, briefcaseProps.key);
+    return briefcaseDb.getConnectionProps();
   }
 
   /** Close the briefcase if necessary */

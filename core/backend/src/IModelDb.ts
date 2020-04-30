@@ -6,23 +6,29 @@
  * @module iModels
  */
 
-// cspell:ignore ulas postrc pollrc
-import { assert, BeEvent, BentleyStatus, ChangeSetStatus, ClientRequestContext, DbResult, Guid, GuidString, Id64, Id64Arg, Id64Set, Id64String, JsonUtils, Logger, OpenMode } from "@bentley/bentleyjs-core";
+// cspell:ignore ulas postrc pollrc CANTOPEN
+
+import * as os from "os";
+import {
+  assert, BeEvent, BentleyStatus, ChangeSetStatus, ClientRequestContext, DbResult, Guid, GuidString, Id64, Id64Arg, Id64Set, Id64String, JsonUtils,
+  Logger, OpenMode,
+} from "@bentley/bentleyjs-core";
 import { Range3d } from "@bentley/geometry-core";
 import {
-  AxisAlignedBox3d, BriefcaseKey, BriefcaseProps, CategorySelectorProps, Code, CodeSpec, CreateEmptySnapshotIModelProps, CreateIModelProps, CreatePolyfaceRequestProps, CreatePolyfaceResponseProps,
-  CreateSnapshotIModelProps, DisplayStyleProps, DownloadBriefcaseStatus, EcefLocation, ElementAspectProps, ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams,
-  FilePropertyProps, FontMap, FontMapProps, FontProps, GeoCoordinatesResponseProps, IModel, IModelCoordinatesResponseProps, IModelEncryptionProps, IModelError, IModelNotFoundResponse,
-  IModelProps, IModelRpcProps, IModelStatus, IModelVersion, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelProps, ModelSelectorProps, OpenBriefcaseOptions, PropertyCallback,
-  QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus, SheetProps, SnapRequestProps, SnapResponseProps, SpatialViewDefinitionProps, SyncMode, ThumbnailProps,
+  AxisAlignedBox3d, BriefcaseKey, BriefcaseProps, CategorySelectorProps, Code, CodeSpec, CreateEmptySnapshotIModelProps,
+  CreateEmptyStandaloneIModelProps, CreatePolyfaceRequestProps, CreatePolyfaceResponseProps, CreateSnapshotIModelProps, DisplayStyleProps,
+  DownloadBriefcaseStatus, EcefLocation, ElementAspectProps, ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams,
+  FilePropertyProps, FontMap, FontMapProps, FontProps, GeoCoordinatesResponseProps, IModel, IModelCoordinatesResponseProps, IModelEncryptionProps,
+  IModelError, IModelNotFoundResponse, IModelProps, IModelRpcProps, IModelStatus, IModelVersion, MassPropertiesRequestProps,
+  MassPropertiesResponseProps, ModelProps, ModelSelectorProps, OpenBriefcaseOptions, PropertyCallback, QueryLimit, QueryPriority, QueryQuota,
+  QueryResponse, QueryResponseStatus, SheetProps, SnapRequestProps, SnapResponseProps, SpatialViewDefinitionProps, SyncMode, ThumbnailProps,
   TileTreeProps, ViewDefinitionProps, ViewQueryParams, ViewStateProps,
 } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import * as os from "os";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BinaryPropertyTypeConverter } from "./BinaryPropertyTypeConverter";
-import { BriefcaseEntry, BriefcaseId, BriefcaseManager, BriefcaseIdValue } from "./BriefcaseManager";
+import { BriefcaseEntry, BriefcaseId, BriefcaseIdValue, BriefcaseManager } from "./BriefcaseManager";
 import { ClassRegistry, MetaDataRegistry } from "./ClassRegistry";
 import { CodeSpecs } from "./CodeSpecs";
 import { ConcurrencyControl } from "./ConcurrencyControl";
@@ -87,6 +93,7 @@ export interface IModelJsAdditionalFeatureData extends AdditionalFeatureData {
  * @public
  */
 export abstract class IModelDb extends IModel {
+  protected static readonly _edit = "StandaloneEdit";
   public static readonly defaultLimit = 1000; // default limit for batching queries
   public static readonly maxLimit = 10000; // maximum limit for batching queries
   public readonly models = new IModelDb.Models(this);
@@ -1919,6 +1926,8 @@ export class BriefcaseDb extends IModelDb {
     if (briefcaseEntry.downloadStatus !== DownloadBriefcaseStatus.Complete)
       throw new IModelError(IModelStatus.BadRequest, "Cannot open a briefcase that has not been completely downloaded", Logger.logError, loggerCategory, () => briefcaseEntry.getDebugInfo());
 
+    Logger.logTrace(loggerCategory, "Opening briefcase", () => briefcaseEntry.getDebugInfo());
+
     let briefcaseProps = briefcaseEntry.getBriefcaseProps();
     BriefcaseDb.onOpen.raiseEvent(requestContext, briefcaseProps);
 
@@ -2098,7 +2107,7 @@ export class BriefcaseDb extends IModelDb {
   }
 
   /** Event raised just before a BriefcaseDb is opened.
-   *  * If the open requires authorization [[AuthorizedClientRequestContext]] is passed in to the event handler. Otherwise [[ClientRequestContext]] is passed in
+   *  * If the open requires authorization [AuthorizedClientRequestContext]($itwin-client) is passed in to the event handler. Otherwise [[ClientRequestContext]] is passed in
    * **Example:**
    * ``` ts
    * [[include:BriefcaseDb.onOpen]]
@@ -2235,12 +2244,11 @@ export class SnapshotDb extends IModelDb {
     IModelJsFs.copySync(iModelDb.nativeDb.getFilePath(), snapshotFile);
     const optionsString: string | undefined = options ? JSON.stringify(options) : undefined;
     if (options?.password) {
-      const status: DbResult = IModelHost.platform.DgnDb.encryptDb(snapshotFile, optionsString!);
-      if (DbResult.BE_SQLITE_OK !== status) {
+      const status = IModelHost.platform.DgnDb.encryptDb(snapshotFile, optionsString!);
+      if (DbResult.BE_SQLITE_OK !== status)
         throw new IModelError(status, "Problem encrypting snapshot iModel", Logger.logError, loggerCategory);
-      }
     } else {
-      const status: DbResult = IModelHost.platform.DgnDb.vacuum(snapshotFile);
+      const status = IModelHost.platform.DgnDb.vacuum(snapshotFile);
       if (DbResult.BE_SQLITE_OK !== status) {
         throw new IModelError(status, "Error initializing snapshot iModel", Logger.logError, loggerCategory);
       }
@@ -2254,6 +2262,9 @@ export class SnapshotDb extends IModelDb {
     if (!BriefcaseManager.isValidBriefcaseId(nativeDb.getBriefcaseId()))
       nativeDb.setDbGuid(Guid.createValue());
 
+    nativeDb.deleteLocalValue(IModelDb._edit);
+    nativeDb.saveChanges();
+    nativeDb.deleteAllTxns();
     nativeDb.resetBriefcaseId(BriefcaseIdValue.Standalone);
 
     const snapshotDb = new SnapshotDb(nativeDb, OpenMode.ReadWrite); // WIP: clean up copied file on error?
@@ -2274,10 +2285,10 @@ export class SnapshotDb extends IModelDb {
     }
     const encryptionPropsString: string | undefined = encryptionProps ? JSON.stringify(encryptionProps) : undefined;
     const nativeDb = new IModelHost.platform.DgnDb();
-    const status: DbResult = nativeDb.openIModel(filePath, OpenMode.Readonly, undefined, encryptionPropsString);
-    if (DbResult.BE_SQLITE_OK !== status) {
+    const status = nativeDb.openIModel(filePath, OpenMode.Readonly, undefined, encryptionPropsString);
+    if (DbResult.BE_SQLITE_OK !== status)
       throw new IModelError(status, "Could not open snapshot iModel", Logger.logError, loggerCategory, () => ({ filePath }));
-    }
+
     return new SnapshotDb(nativeDb, OpenMode.Readonly);
   }
 
@@ -2318,9 +2329,9 @@ export class SnapshotDb extends IModelDb {
  *
  * Some additional details:
  * - Standalone iModels are known to the application developer and end user as unmanaged files
- * - Standalone iModels are read/write
+ * - Standalone iModels can be read/write
  * - Cannot apply a changeset to nor generate a changeset from a Standalone iModel
- * - Standalone iModels support undo/redo via txns
+ * - Standalone iModels can optionally support undo/redo via txns
  * - The Standalone iModel capability is only available to authorized applications
  *
  * @internal
@@ -2333,7 +2344,7 @@ export class StandaloneDb extends IModelDb {
   /** The full path to the snapshot iModel file. */
   public get filePath(): string { return this.nativeDb.getFilePath(); }
 
-  /** This property is always undefined as a StandaloneDb does not accept or generate changesets. */
+  /** This property is always undefined as a StandaloneDb does not accept nor generate changesets. */
   public get changeSetId(): undefined { return undefined; } // string | undefined for the superclass, but always undefined for StandaloneDb
 
   private constructor(nativeDb: IModelJsNative.DgnDb, openMode: OpenMode) {
@@ -2341,26 +2352,28 @@ export class StandaloneDb extends IModelDb {
     const iModelRpcProps: IModelRpcProps = { key: filePath, iModelId: nativeDb.getDbGuid(), openMode };
     super(nativeDb, iModelRpcProps, openMode);
     if (!BriefcaseManager.isStandaloneBriefcaseId(this.getBriefcaseId()))
-      throw new IModelError(IModelStatus.BadRequest, `Not a standalone iModel`, Logger.logError, loggerCategory);
+      throw new IModelError(IModelStatus.BadRequest, "Not a standalone iModel", Logger.logError, loggerCategory);
 
     StandaloneDb._openDbs.set(filePath, this);
   }
 
   /** Create an *empty* standalone iModel.
-   * @param filePath The name for the iModel
+   * @param filePath The file path for the iModel
    * @param args The parameters that define the new iModel
    */
-  public static createEmpty(filePath: string, args: CreateIModelProps): StandaloneDb {
+  public static createEmpty(filePath: string, args: CreateEmptyStandaloneIModelProps): StandaloneDb {
     const nativeDb = new IModelHost.platform.DgnDb();
     const argsString = JSON.stringify(args);
-    let status: DbResult = nativeDb.createIModel(filePath, argsString);
-    if (DbResult.BE_SQLITE_OK !== status) {
+    let status = nativeDb.createIModel(filePath, argsString);
+    if (DbResult.BE_SQLITE_OK !== status)
       throw new IModelError(status, "Could not create standalone iModel", Logger.logError, loggerCategory, () => ({ filePath }));
-    }
+
+    nativeDb.saveLocalValue(IModelDb._edit, undefined === args.allowEdit ? "" : args.allowEdit);
+
     status = nativeDb.resetBriefcaseId(BriefcaseIdValue.Standalone);
-    if (DbResult.BE_SQLITE_OK !== status) {
-      throw new IModelError(status, "Could not set briefcaseId for standalone iModel", Logger.logError, loggerCategory, () => ({ filePath }));
-    }
+    if (DbResult.BE_SQLITE_OK !== status)
+      throw new IModelError(status, "Could not set briefcaseId", Logger.logError, loggerCategory, () => ({ filePath }));
+
     nativeDb.saveChanges();
     return new StandaloneDb(nativeDb, OpenMode.ReadWrite);
   }
@@ -2375,16 +2388,19 @@ export class StandaloneDb extends IModelDb {
       throw new IModelError(DbResult.BE_SQLITE_CANTOPEN, `Cannot open snapshot iModel at ${filePath} again - it has already been opened once`, Logger.logError, loggerCategory);
     }
     const nativeDb = new IModelHost.platform.DgnDb();
-    const status: DbResult = nativeDb.openIModel(filePath, openMode);
-    if (DbResult.BE_SQLITE_OK !== status) {
-      throw new IModelError(status, "Could not open standalone iModel", Logger.logError, loggerCategory, () => ({ filePath }));
+    const status = nativeDb.openIModel(filePath, openMode);
+    if (DbResult.BE_SQLITE_OK !== status)
+      throw new IModelError(status, "Could not open iModel as Standalone", Logger.logError, loggerCategory, () => ({ filePath }));
+
+    if (openMode === OpenMode.ReadWrite && undefined === nativeDb.queryLocalValue(IModelDb._edit)) {
+      nativeDb.closeIModel();
+      throw new IModelError(IModelStatus.ReadOnly, "iModel is not editable", Logger.logError, loggerCategory, () => ({ filePath }));
     }
+
     return new StandaloneDb(nativeDb, openMode);
   }
 
-  /** Close this standalone iModel, if it is currently open
-   * @throws [[IModelError]] if the iModel is not open, or is not standalone
-   */
+  /** Close this standalone iModel, if it is currently open */
   public close(): void {
     if (!this.isOpen) {
       return; // don't continue if already closed
@@ -2396,7 +2412,7 @@ export class StandaloneDb extends IModelDb {
     (this as any)._nativeDb = undefined; // the underlying nativeDb has been freed by closeIModel
   }
 
-  /** Used to find open standalone iModels.
+  /** Used to find open standalone iModels. Commonly used in RPC scenarios.
    * @param key The full path to the standalone iModel file.
    * @returns The matching StandaloneDb or `undefined`.
    * @internal

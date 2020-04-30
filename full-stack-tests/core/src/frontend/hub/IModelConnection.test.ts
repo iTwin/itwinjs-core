@@ -6,7 +6,7 @@ import { Id64, Logger, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
 import { Range3d, Transform, XYAndZ } from "@bentley/geometry-core";
 import { BisCodeSpec, CodeSpec, IModelVersion, NavigationValue, RelatedElement } from "@bentley/imodeljs-common";
 import { RemoteBriefcaseConnection, CategorySelectorState, DisplayStyle2dState, DisplayStyle3dState, DrawingViewState, IModelApp, IModelConnection, MockRender, ModelSelectorState, OrthographicViewState, ViewState } from "@bentley/imodeljs-frontend";
-import { TestAuthorizationClient, TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
+import { TestUsers, TestFrontendAuthorizationClient } from "@bentley/oidc-signin-tool/lib/frontend";
 import { assert, expect } from "chai";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
 import { TestUtility } from "./TestUtility";
@@ -31,7 +31,7 @@ describe("IModelConnection (#integration)", () => {
     Logger.setLevel("imodeljs-frontend.IModelConnection", LogLevel.Error); // Change to trace to debug
 
     const requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
-    IModelApp.authorizationClient = new TestAuthorizationClient(requestContext.accessToken);
+    IModelApp.authorizationClient = new TestFrontendAuthorizationClient(requestContext.accessToken);
 
     const testProjectId = await TestUtility.getTestProjectId("iModelJsIntegrationTest");
     const testIModelId = await TestUtility.getTestIModelId(testProjectId, "ConnectionReadTest");

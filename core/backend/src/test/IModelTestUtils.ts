@@ -5,7 +5,7 @@
 import { BeEvent, BentleyLoggerCategory, ChangeSetStatus, DbResult, GuidString, Id64, Id64String, IDisposable, IModelStatus, Logger, LogLevel, OpenMode, Config } from "@bentley/bentleyjs-core";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 import { IModelHubClientLoggerCategory, ChangeSet } from "@bentley/imodelhub-client";
-import { AuthorizedClientRequestContext, ClientsLoggerCategory } from "@bentley/itwin-client";
+import { AuthorizedClientRequestContext, ITwinClientLoggerCategory } from "@bentley/itwin-client";
 import { BriefcaseProps, Code, CodeProps, ElementProps, GeometricElement3dProps, IModel, IModelError, IModelReadRpcInterface, IModelVersion, RelatedElement, RpcConfiguration, RpcManager, SyncMode } from "@bentley/imodeljs-common";
 import { assert } from "chai";
 import * as path from "path";
@@ -142,10 +142,6 @@ export class IModelTestUtils {
   public static async getTestModelInfo(requestContext: AuthorizedClientRequestContext, testProjectId: string, iModelName: string): Promise<TestIModelInfo> {
     const iModelInfo = new TestIModelInfo(iModelName);
     iModelInfo.id = await HubUtility.queryIModelIdByName(requestContext, testProjectId, iModelInfo.name);
-
-    const cacheDir = IModelHost.configuration!.briefcaseCacheDir;
-    iModelInfo.localReadonlyPath = path.join(cacheDir, iModelInfo.id, "readOnly");
-    iModelInfo.localReadWritePath = path.join(cacheDir, iModelInfo.id, "readWrite");
 
     iModelInfo.changeSets = await BriefcaseManager.imodelClient.changeSets.get(requestContext, iModelInfo.id);
     return iModelInfo;
@@ -345,9 +341,9 @@ export class IModelTestUtils {
     Logger.setLevelDefault(reset ? LogLevel.Error : LogLevel.Warning);
     Logger.setLevel(BentleyLoggerCategory.Performance, reset ? LogLevel.Error : LogLevel.Info);
     Logger.setLevel(BackendLoggerCategory.IModelDb, reset ? LogLevel.Error : LogLevel.Trace);
-    Logger.setLevel(ClientsLoggerCategory.Clients, reset ? LogLevel.Error : LogLevel.Trace);
+    Logger.setLevel(ITwinClientLoggerCategory.Clients, reset ? LogLevel.Error : LogLevel.Trace);
     Logger.setLevel(IModelHubClientLoggerCategory.IModelHub, reset ? LogLevel.Error : LogLevel.Trace);
-    Logger.setLevel(ClientsLoggerCategory.Request, reset ? LogLevel.Error : LogLevel.Trace);
+    Logger.setLevel(ITwinClientLoggerCategory.Request, reset ? LogLevel.Error : LogLevel.Trace);
     Logger.setLevel(NativeLoggerCategory.DgnCore, reset ? LogLevel.Error : LogLevel.Trace);
     Logger.setLevel(NativeLoggerCategory.BeSQLite, reset ? LogLevel.Error : LogLevel.Trace);
     Logger.setLevel(NativeLoggerCategory.Licensing, reset ? LogLevel.Error : LogLevel.Trace);

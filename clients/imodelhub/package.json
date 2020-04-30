@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodelhub-client",
-  "version": "2.0.0-dev.77",
+  "version": "2.0.0-dev.88",
   "description": "iModel.js iModelHub Client",
   "main": "lib/imodelhub-client.js",
   "typings": "lib/imodelhub-client",
@@ -32,18 +32,20 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "@bentley/context-registry-client": "2.0.0-dev.77",
+    "@bentley/context-registry-client": "2.0.0-dev.88",
     "deep-assign": "^2.0.0",
     "js-base64": "^2.4.5"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.0.0-dev.77",
-    "@bentley/itwin-client": "^2.0.0-dev.77"
+    "@bentley/bentleyjs-core": "^2.0.0-dev.88",
+    "@bentley/frontend-authorization-client": "^2.0.0-dev.88",
+    "@bentley/itwin-client": "^2.0.0-dev.88"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.0.0-dev.77",
-    "@bentley/build-tools": "2.0.0-dev.77",
-    "@bentley/itwin-client": "2.0.0-dev.77",
+    "@bentley/bentleyjs-core": "2.0.0-dev.88",
+    "@bentley/build-tools": "2.0.0-dev.88",
+    "@bentley/frontend-authorization-client": "2.0.0-dev.88",
+    "@bentley/itwin-client": "2.0.0-dev.88",
     "@types/deep-assign": "^0.1.0",
     "@types/js-base64": "^2.3.1",
     "@types/node": "10.14.1",

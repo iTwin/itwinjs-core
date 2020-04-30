@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/backend-itwin-client",
+      "comment": "Throw exception if sas url is expired",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/backend-itwin-client",
+  "email": "Affan.Khan@Bentley.com"
+}

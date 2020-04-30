@@ -31,6 +31,8 @@ export interface ToolbarButtonItemProps extends CommonProps {
   title: string;
   /** A badge to draw. */
   badge?: React.ReactNode;
+  /** If true add a gap before button. Default to false. */
+  addGroupSeparator?: boolean;
 }
 
 /** Toolbar item component. Used in [[Toolbar]] component.

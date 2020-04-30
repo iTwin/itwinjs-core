@@ -138,4 +138,23 @@ describe("AppNotificationManager", () => {
     expect(notifications.isToolTipSupported).to.be.true;
   });
 
+  it("ElementTooltip with a React component", () => {
+    const showMethod = sinon.spy(ElementTooltip, "showTooltip");
+    const hideMethod = sinon.spy(ElementTooltip, "hideTooltip");
+    let divElement: HTMLElement | null;
+    mount(<div ref={(el) => { divElement = el; }} />);
+    const reactNode = <span>Tooltip message</span>;
+    MessageManager.openToolTip(divElement!, { reactNode });
+    notifications.clearToolTip();
+    expect(showMethod.calledOnce).to.be.true;
+    expect(hideMethod.calledOnce).to.be.true;
+  });
+
+  it("ActivityMessage with a React component", () => {
+    const spyMethod = sinon.spy(MessageManager, "setupActivityMessageValues");
+    const reactNode = <span>Activity message</span>;
+    MessageManager.outputActivityMessage({ reactNode }, 50);
+    expect(spyMethod.calledOnce).to.be.true;
+  });
+
 });

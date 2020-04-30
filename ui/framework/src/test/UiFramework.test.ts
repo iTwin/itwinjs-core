@@ -3,11 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import * as sinon from "sinon";
 import * as moq from "typemoq";
+
+import { Id64String, Logger } from "@bentley/bentleyjs-core";
 import { Presentation } from "@bentley/presentation-frontend";
-import { IModelApp, IModelConnection, ViewState } from "@bentley/imodeljs-frontend";
-import { Id64String } from "@bentley/bentleyjs-core";
+import { IModelApp, IModelConnection, ViewState, MockRender } from "@bentley/imodeljs-frontend";
 import { initialize as initializePresentationTesting, terminate as terminatePresentationTesting } from "@bentley/presentation-testing";
+
 import TestUtils, { mockUserInfo } from "./TestUtils";
 import { UiFramework, ColorTheme, CursorMenuData } from "../ui-framework";
 import { DefaultIModelServices } from "../ui-framework/clientservices/DefaultIModelServices";
@@ -47,6 +50,25 @@ describe("UiFramework", () => {
   it("loggerCategory should correctly handle null or undefined object", () => {
     expect(UiFramework.loggerCategory(null)).to.eq(UiFramework.packageName);
     expect(UiFramework.loggerCategory(undefined)).to.eq(UiFramework.packageName);
+  });
+
+  it("calling initialize twice should log", async () => {
+    const spyLogger = sinon.spy(Logger, "logInfo");
+    expect(UiFramework.initialized).to.be.false;
+    await UiFramework.initialize(TestUtils.store, TestUtils.i18n);
+    expect(UiFramework.initialized).to.be.true;
+    await UiFramework.initialize(TestUtils.store, TestUtils.i18n);
+    spyLogger.calledOnce.should.true;
+    (Logger.logInfo as any).restore();
+  });
+
+  it("calling initialize without I18N will use IModelApp.i18n", async () => {
+    await MockRender.App.startup();
+
+    await UiFramework.initialize(TestUtils.store);
+    expect(UiFramework.i18n).to.eq(IModelApp.i18n);
+
+    await MockRender.App.shutdown();
   });
 
   it("projectServices should throw Error without initialize", () => {

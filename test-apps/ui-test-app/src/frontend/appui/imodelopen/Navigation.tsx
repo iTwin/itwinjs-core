@@ -26,11 +26,6 @@ export interface NavigationItemProps {
  * A single navigation item
  */
 export class NavigationItem extends React.Component<NavigationItemProps> {
-
-  constructor(props: NavigationItemProps, context?: any) {
-    super(props, context);
-  }
-
   public static defaultProps: Partial<NavigationItemProps> = {
     label: "",
     icon: "",

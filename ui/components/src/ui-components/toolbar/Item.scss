@@ -43,7 +43,8 @@
   }
 
   &:hover {
-    background-color: rgba( $buic-foreground-primary-rgb, .2 );
+    color: $hovered-icon-color;
+    background-color: $buic-background-active-overlay;
 
     svg {
       opacity: 1;
@@ -51,7 +52,8 @@
   }
 
   &:active {
-    background-color: rgba( $buic-foreground-primary-rgb, .2 );
+    color: $active-icon-color;
+    background-color: $buic-background-active-overlay;
     border: solid 2px $buic-foreground-primary;
 
     > .components-icon {
@@ -64,14 +66,15 @@
   }
 
   &:active:not(.components-disabled) {
-    background: $buic-foreground-primary-tone;
-    color: $buic-text-color-reverse;
+    background: $buic-background-pressed-overlay;
+    color: $pressed-icon-color;
     transition-duration: 150ms;
     transition-timing-function: cubic-bezier(1, 0.1, 1, 0.5);
   }
 
   &.components-active {
-    background-color: rgba( $buic-foreground-primary-rgb, .2 );
+    color: $active-icon-color;
+    background-color: $buic-background-active-overlay;
     border: solid 2px $buic-foreground-primary;
 
     &:not(:active):not(.components-disabled) {

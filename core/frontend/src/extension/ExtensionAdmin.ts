@@ -24,11 +24,6 @@ export interface ExtensionAdminProps {
   configureExtensionServiceLoader?: boolean;
 }
 
-interface PriorityLoaderPair {
-  priority: number;
-  loader: ExtensionLoader;
-}
-
 /** Handles the loading of Extensions, and maintains a list of registered, currently loaded, and currently being downloaded extensions.
  *
  * Extensions are loaded asynchronously, leading to them being loaded in a different order than they are requested. To wait for a
@@ -38,7 +33,7 @@ interface PriorityLoaderPair {
  */
 export class ExtensionAdmin {
   private _extensionAdminProps?: ExtensionAdminProps;
-  private _extensionLoaders: PriorityLoaderPair[] = [];
+  private _extensionLoaders: ExtensionLoader[] = [];
   private _pendingExtensions: Map<string, PendingExtension> = new Map<string, PendingExtension>();
   private _registeredExtensions: Map<string, Extension> = new Map<string, Extension>();
 
@@ -55,8 +50,8 @@ export class ExtensionAdmin {
    * @beta
    */
   public onInitialized() {
-    if (this._extensionAdminProps && this._extensionAdminProps.configureExtensionServiceLoader)
-      this.addExtensionLoader(new ExtensionServiceExtensionLoader("00000000-0000-0000-0000-000000000000"), 100);
+    if (this._extensionAdminProps?.configureExtensionServiceLoader ?? true)
+      this.addExtensionLoaderFront(new ExtensionServiceExtensionLoader("00000000-0000-0000-0000-000000000000"));
   }
 
   /** @internal */
@@ -66,18 +61,21 @@ export class ExtensionAdmin {
   }
 
   /**
-   * Adds an ExtensionLoader to the list of extension loaders in use. Extension loaders will be invoked in the ascending order of priority.
-   * By default, the list consists of Extension service with priority 100.
+   * Adds an ExtensionLoader to the front of the list of extension loaders in use. Extension loaders will be invoked front to back.
+   * By default, the list consists of public Extension Service context, unless disabled via props.
    * @param extensionLoader Extension loader to add
-   * @param priority Priority to assign to the added extension loader
-   *
    */
-  public addExtensionLoader(extensionLoader: ExtensionLoader, priority: number) {
-    this._extensionLoaders.push({
-      loader: extensionLoader,
-      priority,
-    });
-    this._extensionLoaders = this._extensionLoaders.sort((a, b) => a.priority - b.priority);
+  public addExtensionLoaderFront(extensionLoader: ExtensionLoader) {
+    this._extensionLoaders.unshift(extensionLoader);
+  }
+
+  /**
+   * Adds an ExtensionLoader to the list of extension loaders in use.
+   * By default, the list consists of public Extension Service context, unless disabled via props.
+   * @param extensionLoader Extension loader to add
+   */
+  public addExtensionLoader(extensionLoader: ExtensionLoader) {
+    this._extensionLoaders.push(extensionLoader);
   }
 
   /**
@@ -89,8 +87,7 @@ export class ExtensionAdmin {
    * @returns Promise that resolves to an Extension as soon as the extension has started loading. Note that this does not mean the extension is ready to use, see [[ExtensionAdmin.onExtensionLoaded]] instead.
    */
   public async loadExtension(extensionRoot: string, extensionVersion?: string, args?: string[]): Promise<Extension | undefined> {
-    for (const loaderPriorityPair of this._extensionLoaders) {
-      const extensionLoader = loaderPriorityPair.loader;
+    for (const extensionLoader of this._extensionLoaders) {
       const extensionName = extensionLoader.getExtensionName(extensionRoot);
       // make sure there's an args and make sure the first element is the extension name.
       if (!args) {

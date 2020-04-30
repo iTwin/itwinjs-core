@@ -64,9 +64,10 @@ export class RpcRequestsHandler implements IDisposable {
   private get rpcClient(): PresentationRpcInterface { return RpcManager.getClientForInterface(PresentationRpcInterface); }
 
   private injectClientId<T>(options: T): PresentationRpcRequestOptions<T> {
-    return Object.assign({}, options, {
+    return {
+      ...options,
       clientId: this.clientId,
-    });
+    };
   }
 
   private async requestRepeatedly<TResult, TOptions extends PresentationRpcRequestOptions<unknown>>(func: (opts: TOptions) => PresentationRpcResponse<TResult>, options: TOptions, repeatCount: number = 1): Promise<TResult> {

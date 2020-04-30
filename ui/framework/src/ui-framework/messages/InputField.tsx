@@ -14,6 +14,7 @@ import { Popup } from "@bentley/ui-core";
 
 import { MessageManager, InputFieldMessageEventArgs } from "../messages/MessageManager";
 import { MessageDiv } from "./MessageSpan";
+import { NotifyMessageType } from "./ReactNotifyMessageDetails";
 
 import "./InputField.scss";
 
@@ -30,8 +31,8 @@ interface InputFieldMessageProps {
 interface InputFieldMessageState {
   isVisible: boolean;
   priority: OutputMessagePriority;
-  message: HTMLElement | string;
-  detailedMessage?: HTMLElement | string;
+  message: NotifyMessageType;
+  detailedMessage?: NotifyMessageType;
   inputFieldElement?: HTMLElement;
   showCloseButton?: boolean;
 }

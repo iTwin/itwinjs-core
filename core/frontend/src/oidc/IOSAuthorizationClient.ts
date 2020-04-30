@@ -7,7 +7,7 @@
  */
 
 import { AuthStatus, BeEvent, BentleyError, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
-import { AccessToken, UserInfo, ImsAuthorizationClient } from "@bentley/itwin-client";
+import { AccessToken, ImsAuthorizationClient } from "@bentley/itwin-client";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
 
@@ -37,10 +37,7 @@ export class IOSAuthorizationClient extends ImsAuthorizationClient implements Fr
   private reloadInfo() {
     const settings = window.localStorage.getItem("ios:oidc_info");
     const info = JSON.parse(settings!);
-    const startsAt: Date = new Date(info!.expires_at - info!.expires_in);
-    const expiresAt: Date = new Date(info!.expires_at);
-    const userInfo = UserInfo.fromTokenResponseJson(info.user_info);
-    this._accessToken = AccessToken.fromJsonWebTokenString(info.access_token, startsAt, expiresAt, userInfo);
+    this._accessToken = AccessToken.fromTokenResponseJson(info, info.user_info);
   }
 
   /** Start the sign-in process */
@@ -77,9 +74,6 @@ export class IOSAuthorizationClient extends ImsAuthorizationClient implements Fr
   /** Set to true if signed in - the accessToken may be active or may have expired and require a refresh */
   public get hasSignedIn(): boolean {
     return !!this._accessToken; // Always silently refreshed
-  }
-
-  public dispose(): void {
   }
 
   public readonly onUserStateChanged = new BeEvent<(token: AccessToken | undefined, message: string) => void>();

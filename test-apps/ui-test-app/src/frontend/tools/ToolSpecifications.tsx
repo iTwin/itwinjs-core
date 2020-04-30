@@ -8,14 +8,14 @@ import {
   IModelApp, NotifyMessageDetails, OutputMessagePriority, MessageBoxValue, SelectionTool,
   OutputMessageType, SnapMode, MessageBoxType, MessageBoxIconType, OutputMessageAlert,
 } from "@bentley/imodeljs-frontend";
-import { MessageSeverity, SvgSprite, SvgPath } from "@bentley/ui-core";
+import { MessageSeverity, SvgSprite, SvgPath, UnderlinedButton } from "@bentley/ui-core";
 import {
   BackstageItem, StatusBarSection, UiItemsManager, CommonStatusBarItem, StageUsage, UiItemsProvider,
   ConditionalBooleanValue, ConditionalStringValue, BackstageItemUtilities,
 } from "@bentley/ui-abstract";
 import {
   CommandItemDef, ToolItemDef, WidgetState, FrontstageManager, ModalDialogManager, BaseItemState, ContentViewManager,
-  SyncUiEventId, Backstage, StatusBarItemUtilities, withStatusFieldProps, SyncUiEventDispatcher,
+  SyncUiEventId, Backstage, StatusBarItemUtilities, withStatusFieldProps, SyncUiEventDispatcher, ReactMessage, MessageManager, ReactNotifyMessageDetails,
 } from "@bentley/ui-framework";
 import { SampleAppIModelApp } from "../";
 import { Tool1 } from "../tools/Tool1";
@@ -295,12 +295,25 @@ export class AppTools {
     return span;
   }
 
+  private static get _reactMessage(): ReactMessage {
+    const reactNode = (
+      <span>
+        For more details, <UnderlinedButton onClick={this._handleLink}>click here</UnderlinedButton>.
+      </span>
+    );
+    return ({ reactNode });
+  }
+
+  private static _handleLink = () => {
+    window.alert("The link was clicked");
+  }
+
   public static get infoMessageCommand() {
     return new CommandItemDef({
       commandId: "infoMessage",
       iconSpec: "icon-info",
       labelKey: "SampleApp:buttons.informationMessageBox",
-      execute: () => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "This is an info message", this._detailedMessage)),
+      execute: () => MessageManager.outputMessage(new ReactNotifyMessageDetails(OutputMessagePriority.Info, "This is an info message", this._reactMessage)),
     });
   }
 
@@ -309,7 +322,7 @@ export class AppTools {
       commandId: "warningMessage",
       iconSpec: "icon-status-warning",
       labelKey: "SampleApp:buttons.warningMessageBox",
-      execute: () => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, "This is a warning message", this._detailedMessage, OutputMessageType.Sticky)),
+      execute: () => MessageManager.outputMessage(new ReactNotifyMessageDetails(OutputMessagePriority.Warning, "This is a warning message", this._reactMessage, OutputMessageType.Sticky)),
     });
   }
 
@@ -499,12 +512,16 @@ export class AppTools {
     return new CommandItemDef({
       commandId: "addMessage",
       iconSpec: "icon-status-warning",
-      labelKey: "SampleApp:buttons.openMessageBox",
+      labelKey: "SampleApp:buttons.openSeveralMessages",
       execute: async () => {
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, AppTools._infoStr));
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, AppTools._warningStr));
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, AppTools._errorStr));
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Fatal, AppTools._fatalStr));
+        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, AppTools._infoStr, undefined, OutputMessageType.Sticky));
+        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, AppTools._warningStr, undefined, OutputMessageType.Sticky));
+        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, AppTools._errorStr, undefined, OutputMessageType.Sticky));
+        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Fatal, AppTools._fatalStr, undefined, OutputMessageType.Sticky));
       },
     });
   }

@@ -7,7 +7,7 @@
  */
 
 import { AuthStatus, BeEvent, BentleyError, ClientRequestContext, Logger, LogLevel, assert } from "@bentley/bentleyjs-core";
-import { AccessToken, UserInfo, ImsAuthorizationClient } from "@bentley/itwin-client";
+import { AccessToken, ImsAuthorizationClient } from "@bentley/itwin-client";
 import { User, UserManager, UserManagerSettings, WebStorageStateStore, Log as OidcClientLog, Logger as IOidcClientLogger } from "oidc-client";
 import { FrontendRequestContext } from "../FrontendRequestContext";
 import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
@@ -346,10 +346,7 @@ export class OidcBrowserClient extends ImsAuthorizationClient implements Fronten
       return;
     }
 
-    const startsAt: Date = new Date((user.expires_at - user.expires_in!) * 1000);
-    const expiresAt: Date = new Date(user.expires_at * 1000);
-    const userInfo = UserInfo.fromJson(user.profile);
-    this._accessToken = AccessToken.fromJsonWebTokenString(user.access_token, startsAt, expiresAt, userInfo);
+    this._accessToken = AccessToken.fromTokenResponseJson(user, user.profile);
   }
 
   private _onUserStateChanged = (user: User | undefined) => {

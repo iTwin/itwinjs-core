@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import {
-  ConfigurableUiManager, ConfigurableCreateInfo,
-  StatusBarWidgetControl, StatusBarWidgetControlArgs, StatusBarComposer,
+  ConfigurableUiManager, StatusBarWidgetControl,
+  StatusBarWidgetControlArgs, StatusBarComposer,
   ToolAssistanceField, ActivityCenterField, MessageCenterField,
   SnapModeField, ViewAttributesStatusField, SectionsStatusField,
   SelectionScopeField, SelectionInfoField, ClearEmphasisStatusField,
@@ -50,10 +50,6 @@ const PushPull = withStatusFieldProps(PushPullStatusField);
 
 export class AppStatusBarWidgetControl extends StatusBarWidgetControl {
   private _statusBarItems: StatusBarItem[] | undefined;
-
-  constructor(info: ConfigurableCreateInfo, options: any) {
-    super(info, options);
-  }
 
   public get statusBarItems(): StatusBarItem[] {
     if (!this._statusBarItems) {

@@ -9,27 +9,41 @@
 import * as React from "react";
 import classnames from "classnames";
 import { DialogItemsManager, DialogRow } from "@bentley/ui-abstract";
+import { ScrollableWidgetContent } from "@bentley/ui-ninezone";
 import { ToolSettingsContentContext } from "../widgets/ToolSettingsContent";
 import { ComponentGenerator } from "./ComponentGenerator";
-
+import { FrameworkVersionSwitch, useFrameworkVersion } from "../hooks/useFrameworkVersion";
 import "./DefaultDialogGridContainer.scss";
+
 enum LayoutMode {
   Wide = 0,
   Narrow = 1,
 }
 function ToolSettingsGridContainer({ itemsManager, componentGenerator }: { itemsManager: DialogItemsManager, componentGenerator: ComponentGenerator }) {
   const { availableContentWidth } = React.useContext(ToolSettingsContentContext);
+  const version = useFrameworkVersion();
   const layoutMode = toLayoutMode(availableContentWidth);
   const className = classnames(
     "uifw-default-container",
+    version === "1" && "uifw-fill",
     LayoutMode.Narrow === layoutMode && "uifw-default-narrow",
   );
-  return (
+  const container = (
     <div className="uifw-default-resizer-parent">
       <div className={className} >
         {itemsManager.rows.map((row: DialogRow, index: number) => componentGenerator.getRow(row, index))}
       </div>
     </div>
+  );
+  return (
+    <FrameworkVersionSwitch
+      v1={container}
+      v2={
+        <ScrollableWidgetContent>
+          {container}
+        </ScrollableWidgetContent>
+      }
+    />
   );
 }
 
@@ -51,8 +65,8 @@ export function DefaultDialogGridContainer({ itemsManager, componentGenerator, i
     componentGenerator = new ComponentGenerator(itemsManager);
 
   return (!!isToolSettings ?
-      <ToolSettingsGridContainer itemsManager={itemsManager} componentGenerator={componentGenerator}/> :
-      <DialogGridContainer itemsManager={itemsManager} componentGenerator={componentGenerator}/>);
+    <ToolSettingsGridContainer itemsManager={itemsManager} componentGenerator={componentGenerator} /> :
+    <DialogGridContainer itemsManager={itemsManager} componentGenerator={componentGenerator} />);
 }
 
 const toLayoutMode = (width: number) => {

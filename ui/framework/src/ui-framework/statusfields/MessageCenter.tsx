@@ -8,7 +8,7 @@
 
 import * as React from "react";
 
-import { NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
+import { OutputMessagePriority } from "@bentley/imodeljs-frontend";
 import {
   MessageCenter, MessageCenterTab, MessageCenterMessage, MessageCenterDialog, FooterPopup,
 } from "@bentley/ui-ninezone";
@@ -19,6 +19,7 @@ import { StatusBarFieldId } from "../statusbar/StatusBarWidgetControl";
 import { MessageManager } from "../messages/MessageManager";
 import { StatusFieldProps } from "./StatusFieldProps";
 import { MessageSpan } from "../messages/MessageSpan";
+import { NotifyMessageDetailsType } from "../messages/ReactNotifyMessageDetails";
 
 /** Enum for the [[MessageCenterField]] active tab
  * @internal
@@ -171,7 +172,7 @@ export class MessageCenterField extends React.Component<MessageCenterFieldProps,
     const messages = MessageManager.messages.slice(0).reverse();
     const tabRows: React.ReactChild[] = new Array<React.ReactChild>();
 
-    messages.forEach((details: NotifyMessageDetails, index: number) => {
+    messages.forEach((details: NotifyMessageDetailsType, index: number) => {
       /* istanbul ignore else */
       if (this.state.activeTab === MessageCenterActiveTab.AllMessages || this.isProblemStatus(details.priority)) {
 

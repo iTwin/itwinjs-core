@@ -9,7 +9,7 @@
  */
 
 import { BeEvent, BentleyError, AuthStatus, Logger, assert, ClientRequestContext } from "@bentley/bentleyjs-core";
-import { AccessToken, UserInfo, ImsAuthorizationClient, request, RequestOptions } from "@bentley/itwin-client";
+import { AccessToken, ImsAuthorizationClient, request, RequestOptions } from "@bentley/itwin-client";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { DesktopAuthorizationClientConfiguration, defaultDesktopAuthorizationClientExpiryBuffer } from "@bentley/imodeljs-common";
 import {
@@ -175,7 +175,7 @@ export class DesktopAuthorizationClient extends ImsAuthorizationClient implement
     await this.makeRevokeTokenRequest(requestContext);
   }
 
-  private async getUserInfo(requestContext: ClientRequestContext, tokenResponse: TokenResponse): Promise<UserInfo | undefined> {
+  private async getUserProfile(requestContext: ClientRequestContext, tokenResponse: TokenResponse): Promise<any | undefined> {
     requestContext.enter();
     const options: RequestOptions = {
       method: "GET",
@@ -186,15 +186,19 @@ export class DesktopAuthorizationClient extends ImsAuthorizationClient implement
     };
 
     const response = await request(requestContext, this._configuration!.userInfoEndpoint!, options);
-    return UserInfo.fromTokenResponseJson(response.body);
+    return response?.body;
   }
 
   private async createAccessTokenFromResponse(requestContext: ClientRequestContext, tokenResponse: TokenResponse): Promise<AccessToken> {
-    const startsAt: Date = new Date(tokenResponse.issuedAt * 1000);
-    const expiresAt: Date = new Date((tokenResponse.issuedAt + tokenResponse.expiresIn!) * 1000);
-    const userInfo: UserInfo | undefined = await this.getUserInfo(requestContext, tokenResponse);
-    const accessToken = AccessToken.fromJsonWebTokenString(tokenResponse.accessToken, startsAt, expiresAt, userInfo);
-    return accessToken;
+    const profile = await this.getUserProfile(requestContext, tokenResponse);
+
+    const json = {
+      access_token: tokenResponse.accessToken,
+      expires_at: tokenResponse.issuedAt + (tokenResponse.expiresIn ?? 0),
+      expires_in: tokenResponse.expiresIn,
+    };
+
+    return AccessToken.fromTokenResponseJson(json, profile);
   }
 
   private async setTokenResponse(requestContext: ClientRequestContext, tokenResponse: TokenResponse | undefined) {
@@ -279,10 +283,6 @@ export class DesktopAuthorizationClient extends ImsAuthorizationClient implement
   /** Set to true if signed in - the accessToken may be active or may have expired and require a refresh */
   public get hasSignedIn(): boolean {
     return !!this._tokenResponse;
-  }
-
-  /** Disposes the resources held by this client */
-  public dispose(): void {
   }
 
   /** Swap the authorization code for a refresh token and access token */

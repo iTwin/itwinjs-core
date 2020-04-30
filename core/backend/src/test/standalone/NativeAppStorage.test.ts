@@ -4,12 +4,20 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { NativeAppStorage } from "../../NativeAppStorage";
+import { NativeAppBackend } from "../../NativeAppBackend";
 import { IModelJsFs } from "../../IModelJsFs";
 import { IModelHost } from "../../IModelHost";
 
 describe("NativeApp Storage", () => {
-  before(() => {
-    IModelJsFs.purgeDirSync(IModelHost.configuration!.nativeAppCacheDir!);
+  before(async () => {
+    await IModelHost.shutdown();
+    await NativeAppBackend.startup();
+    IModelJsFs.purgeDirSync(NativeAppBackend.appSettingsCacheDir);
+  });
+
+  after(async () => {
+    await NativeAppBackend.shutdown();
+    await IModelHost.startup();
   });
 
   it("Primitive Type", () => {

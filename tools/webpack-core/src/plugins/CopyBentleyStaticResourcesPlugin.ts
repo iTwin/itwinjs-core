@@ -16,7 +16,7 @@ abstract class AbstractAsyncStartupPlugin {
   }
 
   public apply(compiler: Compiler) {
-    compiler.hooks.beforeRun.tap(this._name, () => {
+    compiler.hooks.emit.tap(this._name, () => {
       this._promise = this.runAsync(compiler);
     });
 

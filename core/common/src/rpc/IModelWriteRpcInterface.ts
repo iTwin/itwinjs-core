@@ -49,7 +49,7 @@ export abstract class IModelWriteRpcInterface extends RpcInterface {
   public async getModelsAffectedByWrites(_tokenProps: IModelRpcProps): Promise<Id64String[]> { return this.forward(arguments); }
   public async getParentChangeset(_iModelToken: IModelRpcProps): Promise<string> { return this.forward(arguments); }
 
-  public async deleteElements(_tokenProps: IModelRpcProps, _ids: Id64Array) { return this.forward(arguments); }
+  public async deleteElements(_tokenProps: IModelRpcProps, _ids: Id64Array): Promise<void> { return this.forward(arguments); }
   public async createAndInsertPhysicalModel(_tokenProps: IModelRpcProps, _newModelCode: CodeProps, _privateModel: boolean): Promise<Id64String> { return this.forward(arguments); }
   public async createAndInsertSpatialCategory(_tokenProps: IModelRpcProps, _scopeModelId: Id64String, _categoryName: string, _appearance: SubCategoryAppearance.Props): Promise<Id64String> { return this.forward(arguments); }
 }

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/oidc-signin-tool",
+      "comment": "update TestOidcClient to implement FrontendAuthorizationClient; add universal TestFrontendAuthorizationClient",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/oidc-signin-tool",
+  "email": "evan.preslar@bentley.com"
+}

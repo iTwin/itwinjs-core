@@ -39,7 +39,7 @@ export class ResponseLike implements Response {
   public get trailer(): Promise<Headers> { throw new IModelError(BentleyStatus.ERROR, "Not implemented."); }
   public get type(): ResponseType { return "basic"; }
   public get url() { return ""; }
-  public clone() { return Object.assign({}, this); }
+  public clone() { return { ...this }; }
 
   public constructor(data: any) {
     this._data = Promise.resolve(data);

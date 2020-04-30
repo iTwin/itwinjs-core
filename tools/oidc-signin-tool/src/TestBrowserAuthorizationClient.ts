@@ -2,13 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, ClientRequestContext, Config } from "@bentley/bentleyjs-core";
-import { AccessToken, AuthorizationClient, UrlDiscoveryClient, UserInfo } from "@bentley/itwin-client";
-import { AuthorizationParameters, Client, generators, Issuer, OpenIDCallbackChecks, TokenSet, UserinfoResponse as OIDCUserInfo } from "openid-client";
+import { assert, ClientRequestContext, Config, BeEvent } from "@bentley/bentleyjs-core";
+import { AccessToken, UrlDiscoveryClient } from "@bentley/itwin-client";
+import { AuthorizationParameters, Client, generators, Issuer, OpenIDCallbackChecks, TokenSet } from "openid-client";
 import * as os from "os";
 import * as puppeteer from "puppeteer";
 import * as url from "url";
 import { TestBrowserAuthorizationClientConfiguration, TestUserCredentials } from "./TestUsers";
+import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 
 /**
  * Implementation of AuthorizationClient used for the iModel.js integration tests.
@@ -18,7 +19,7 @@ import { TestBrowserAuthorizationClientConfiguration, TestUserCredentials } from
  *   spawning a headless browser, and automatically filling in the supplied user credentials.
  * @alpha
  */
-export class TestBrowserAuthorizationClient implements AuthorizationClient {
+export class TestBrowserAuthorizationClient implements FrontendAuthorizationClient {
   private _client!: Client;
   private _issuer!: Issuer<Client>;
   private _imsUrl!: string;
@@ -60,6 +61,8 @@ export class TestBrowserAuthorizationClient implements AuthorizationClient {
     this._client = new this._issuer.Client({ client_id: this._config.clientId, token_endpoint_auth_method: "none" });
   }
 
+  public readonly onUserStateChanged = new BeEvent<(token: AccessToken | undefined) => void>();
+
   /** Returns true if there's a current authorized user or client (in the case of agent applications).
    * Returns true if signed in and the access token has not expired, and false otherwise.
    */
@@ -95,7 +98,7 @@ export class TestBrowserAuthorizationClient implements AuthorizationClient {
     let numRetries = 0;
     while (numRetries < 3) {
       try {
-        this._accessToken = await this.signIn();
+        await this.signIn();
       } catch (err) {
         // rethrow error if hit max number of retries or if it's not a navigation failure (i.e. a flaky failure)
         if (numRetries === 2 ||
@@ -111,7 +114,7 @@ export class TestBrowserAuthorizationClient implements AuthorizationClient {
     return this._accessToken!;
   }
 
-  private async signIn(): Promise<AccessToken> {
+  public async signIn(): Promise<void> {
     if (this._client === undefined)
       await this.initialize();
 
@@ -157,28 +160,21 @@ export class TestBrowserAuthorizationClient implements AuthorizationClient {
     // tslint:disable-next-line:no-console
     // console.log(`Finished OIDC signin for ${this._user.email} ...`);
 
-    return this.tokenSetToAccessToken(tokenSet);
+    const token = await this.tokenSetToAccessToken(tokenSet);
+    this._accessToken = token;
+    this.onUserStateChanged.raiseEvent(this._accessToken);
+    return Promise.resolve();
   }
 
-  private static oidcInfoToUserInfo(info: OIDCUserInfo): UserInfo {
-    const { sub, email, given_name, family_name, org, org_name, preferred_username, ultimate_site, usage_country_iso } = info;
-    const emailObj = (email) ? { id: email } : undefined;
-    const profile = (given_name && family_name) ? { firstName: given_name, lastName: family_name, preferredUserName: preferred_username } : undefined;
-    const organization = (org && org_name) ? { id: org as string, name: org_name as string } : undefined;
-    const featureTracking = (ultimate_site && usage_country_iso) ? { ultimateSite: ultimate_site as string, usageCountryIso: usage_country_iso as string } : undefined;
-
-    return new UserInfo(sub, emailObj, profile, organization, featureTracking);
+  public async signOut(): Promise<void> {
+    this._accessToken = undefined;
+    this.onUserStateChanged.raiseEvent(this._accessToken);
+    return Promise.resolve();
   }
 
   private async tokenSetToAccessToken(tokenSet: TokenSet): Promise<AccessToken> {
     const userInfo = await this._client.userinfo(tokenSet);
-    const startsAt: Date = new Date((tokenSet.expires_at! - tokenSet.expires_in!) * 1000);
-    const expiresAt: Date = new Date(tokenSet.expires_at! * 1000);
-    return AccessToken.fromJsonWebTokenString(
-      tokenSet.access_token!,
-      startsAt,
-      expiresAt,
-      TestBrowserAuthorizationClient.oidcInfoToUserInfo(userInfo));
+    return AccessToken.fromTokenResponseJson(tokenSet, userInfo)!;
   }
 
   private createAuthParams(scope: string): [AuthorizationParameters, OpenIDCallbackChecks] {

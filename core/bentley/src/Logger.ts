@@ -144,7 +144,7 @@ export class Logger {
 
   /** Compose the metadata for a log message.  */
   public static makeMetaData(getMetaData?: GetMetaDataFunction): any {
-    const metaData: any = getMetaData ? Object.assign({}, getMetaData()) : {}; // Copy object to avoid mutating the original
+    const metaData: any = getMetaData ? { ...getMetaData() } : {}; // Copy object to avoid mutating the original
     Logger.addClientRequestContext(metaData);
     return metaData;
   }

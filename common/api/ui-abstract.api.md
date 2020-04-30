@@ -11,7 +11,6 @@ import { GetMetaDataFunction } from '@bentley/bentleyjs-core';
 import { I18N } from '@bentley/imodeljs-i18n';
 import { Id64String } from '@bentley/bentleyjs-core';
 import { LogFunction } from '@bentley/bentleyjs-core';
-import { TranslationOptions } from '@bentley/imodeljs-i18n';
 import { XAndY } from '@bentley/geometry-core';
 
 // @beta
@@ -804,6 +803,7 @@ export interface ToolbarItem extends ProvidedItem {
     readonly applicationData?: any;
     readonly badgeType?: BadgeType;
     readonly description?: string | ConditionalStringValue;
+    readonly groupPriority?: number;
     readonly id: string;
     readonly internalData?: Map<string, any>;
     readonly isActive?: boolean;
@@ -871,13 +871,14 @@ export class UiAbstract {
     static get i18n(): I18N;
     static get i18nNamespace(): string;
     static initialize(i18n: I18N): Promise<void>;
+    static get initialized(): boolean;
     // @internal (undocumented)
     static loggerCategory(obj: any): string;
     // @internal (undocumented)
     static get packageName(): string;
     static terminate(): void;
     // @internal
-    static translate(key: string | string[], options?: TranslationOptions): string;
+    static translate(key: string | string[]): string;
 }
 
 // @beta

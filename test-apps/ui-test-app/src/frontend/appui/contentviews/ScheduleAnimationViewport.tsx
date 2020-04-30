@@ -117,7 +117,7 @@ class ScheduleAnimationViewport extends React.Component<ScheduleAnimationViewpor
       const activeContentControl = ContentViewManager.getActiveContentControl();
       if (activeContentControl && activeContentControl.viewport) {
         if (this.state.viewId === activeContentControl.viewport.view.id)
-          this.state.dataProvider.viewport = activeContentControl.viewport;
+          this.state.dataProvider.viewport = activeContentControl.viewport; // eslint-disable-line react/no-direct-mutation-state
       }
     }
 

@@ -16,7 +16,7 @@ exports[`WidgetPanel should render captured 1`] = `
         style="flex-grow: 1;"
       >
         <div
-          class="nz-widget-titleBar"
+          class="nz-widget-tabBar"
         >
           <div
             class="nz-handle"
@@ -78,7 +78,7 @@ exports[`WidgetPanel should render collapsed 1`] = `
         style="flex-grow: 1;"
       >
         <div
-          class="nz-widget-titleBar"
+          class="nz-widget-tabBar"
         >
           <div
             class="nz-handle"
@@ -141,7 +141,7 @@ exports[`WidgetPanel should render horizontal 1`] = `
         style="flex-grow: 1;"
       >
         <div
-          class="nz-widget-titleBar"
+          class="nz-widget-tabBar"
         >
           <div
             class="nz-handle"
@@ -203,7 +203,7 @@ exports[`WidgetPanel should render multiple widgets 1`] = `
         style="flex-grow: 1;"
       >
         <div
-          class="nz-widget-titleBar"
+          class="nz-widget-tabBar"
         >
           <div
             class="nz-handle"
@@ -233,7 +233,7 @@ exports[`WidgetPanel should render multiple widgets 1`] = `
         style="flex-grow: 1;"
       >
         <div
-          class="nz-widget-titleBar"
+          class="nz-widget-tabBar"
         >
           <div
             class="nz-handle"
@@ -295,7 +295,7 @@ exports[`WidgetPanel should render spanned 1`] = `
         style="flex-grow: 1;"
       >
         <div
-          class="nz-widget-titleBar"
+          class="nz-widget-tabBar"
         >
           <div
             class="nz-handle"
@@ -358,7 +358,7 @@ exports[`WidgetPanel should render vertical 1`] = `
         style="flex-grow: 1;"
       >
         <div
-          class="nz-widget-titleBar"
+          class="nz-widget-tabBar"
         >
           <div
             class="nz-handle"
@@ -420,7 +420,7 @@ exports[`WidgetPanel should render with span bottom 1`] = `
         style="flex-grow: 1;"
       >
         <div
-          class="nz-widget-titleBar"
+          class="nz-widget-tabBar"
         >
           <div
             class="nz-handle"
@@ -482,7 +482,7 @@ exports[`WidgetPanel should render with top spanned 1`] = `
         style="flex-grow: 1;"
       >
         <div
-          class="nz-widget-titleBar"
+          class="nz-widget-tabBar"
         >
           <div
             class="nz-handle"

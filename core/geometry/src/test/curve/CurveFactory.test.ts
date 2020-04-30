@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Point3d } from "../../geometry3d/Point3dVector3d";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Checker } from "../Checker";
 import { expect } from "chai";
 import { LineString3d } from "../../curve/LineString3d";
@@ -17,6 +17,10 @@ import { Arc3d } from "../../curve/Arc3d";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import * as fs from "fs";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
+import { Sample } from "../../serialization/GeometrySamples";
+import { Point3dArrayCarrier } from "../../geometry3d/Point3dArrayCarrier";
+import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
+import { CurvePrimitive } from "../../curve/CurvePrimitive";
 /* tslint:disable:no-console */
 
 describe("CurveFactory", () => {
@@ -220,4 +224,67 @@ describe("PipeConnections", () => {
     }
     expect(ck.getNumErrors()).equals(0);
   });
+  it("createMiteredPipeSections", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let x0 = 0.0;
+    let y0 = 0.0;
+    const radius = 0.25;
+    const allPaths: Array<Point3dArrayCarrier | CurvePrimitive> = [];
+    for (const numPoints of [8, 20, 40]) {
+      const path = new Point3dArrayCarrier(
+        Sample.createPointSineWave(undefined, numPoints, 10.0 / numPoints,
+          5.0, AngleSweep.createStartEndDegrees(0, 520),
+          3.0, AngleSweep.createStartEndDegrees(0, 100)));
+      allPaths.push(path);
+    }
+    const bsplines = Sample.createBsplineCurves(false);
+    for (const b of bsplines)
+      allPaths.push(b);
+    for (const path of allPaths) {
+      y0 = 0;
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, path, x0, y0);
+      y0 += 10.0;
+      const builder = PolyfaceBuilder.create();
+      builder.addMiteredPipes(path, radius);
+      const mesh = builder.claimPolyface();
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, x0, y0);
+      x0 += 10;
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveFactory", "createMiteredPipeSections");
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("createArcPointTangentPoint", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const pointA = Point3d.create(0.5, 0.2, 0.4);
+    let x0 = 0;
+
+    for (const tangentA of [Vector3d.create(1, 0, 0), Vector3d.create(-2, 3, 6), Vector3d.create(-1, -2, -5)]) {
+      let y0 = 0.0;
+      GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, pointA, 0.1, x0, y0);
+      GeometryCoreTestIO.captureGeometry(allGeometry, LineSegment3d.create(pointA, pointA.plus(tangentA)), x0, y0);
+      for (const pointB of [pointA.plus(Vector3d.create(3, 2, 0)), Point3d.create(0, 5, 2), Point3d.create(-2, -1, 5)]) {
+        GeometryCoreTestIO.captureGeometry(allGeometry, LineSegment3d.create(pointA, pointA.plus(tangentA)), x0, y0);
+        GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, pointB, 0.1, x0, y0);
+        const arc = CurveFactory.createArcPointTangentPoint(pointA, tangentA, pointB);
+        ck.testDefined(arc, "Expect arc Point Tangent Point", pointA, tangentA, pointB);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, arc, x0, y0);
+        if (arc) {
+          const point90 = arc.radiansToPointAndDerivative(0.5 * Math.PI);
+          GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, point90.origin, 0.05, x0, y0);
+          GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create([pointA, arc.center, point90.origin]), x0, y0);
+          ck.testPoint3d(pointA, arc.startPoint(), "arc start");
+          ck.testPoint3d(pointB, arc.endPoint(), "arc end");
+          const tangentRay = arc.fractionToPointAndDerivative(0.0);
+          ck.testParallel(tangentA, tangentRay.direction, "arc tangent");
+        }
+        y0 += 20;
+      }
+      x0 += 20.0;
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveFactory", "createArcPointTangentPoint");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
 });

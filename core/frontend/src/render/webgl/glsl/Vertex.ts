@@ -232,7 +232,6 @@ export function replaceLineCode(vert: VertexShaderBuilder, func: string): void {
 
 /** @internal */
 export function addFeatureAndMaterialLookup(vert: VertexShaderBuilder): void {
-  assert(!vert.usesInstancedGeometry);
   if (undefined !== vert.find("g_featureAndMaterialIndex"))
     return;
 
@@ -242,7 +241,10 @@ export function addFeatureAndMaterialLookup(vert: VertexShaderBuilder): void {
   g_featureAndMaterialIndex = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);`;
 
   vert.addGlobal("g_featureAndMaterialIndex", VariableType.Vec4);
-  vert.addInitializer(computeFeatureAndMaterialIndex);
+  if (!vert.usesInstancedGeometry) {
+    // Only needed for material atlas, and instanced geometry never uses material atlas.
+    vert.addInitializer(computeFeatureAndMaterialIndex);
+  }
 }
 
 // This vertex belongs to a triangle which should not be rendered. Produce a degenerate triangle.

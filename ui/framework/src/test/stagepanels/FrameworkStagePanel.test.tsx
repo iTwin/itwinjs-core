@@ -15,6 +15,7 @@ import {
   FrameworkStagePanel,
   FrameworkStagePanelProps,
   SplitterPaneTarget,
+  StagePanelState,
 } from "../../ui-framework";
 
 describe("FrameworkStagePanel", () => {
@@ -37,6 +38,7 @@ describe("FrameworkStagePanel", () => {
     widgetChangeHandler: widgetChangeHandler.object,
     widgets: widgets.object,
     widgetTabs: widgetTabs.object,
+    panelState: StagePanelState.Open,
   };
 
   beforeEach(() => {

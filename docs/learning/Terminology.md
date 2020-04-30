@@ -35,6 +35,7 @@ Example: requesting content for *Window* and *Door* classes which both have prop
 both *Window* and *Door* instances will be put under that field.
 
 Properties are considered similar if:
+
 - Names are equal
 - Types are equal
 - Editors are equal
@@ -71,6 +72,7 @@ one-to-many or many-to-many relationship which creates, what we call,
 nested content.
 
 Example:
+
 ```
            Model
           /  |  \
@@ -78,6 +80,7 @@ Example:
         /    |    \
 Element1 Element2 Element3
 ```
+
 In the above example *Model* has 3 related *Element* instances. We can
 request content for *Model* and ask to additionally show related *Element*
 properties. In this case element properties are be called

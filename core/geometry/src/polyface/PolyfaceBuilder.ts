@@ -49,6 +49,7 @@ import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
 import { Point3dArrayCarrier } from "../geometry3d/Point3dArrayCarrier";
 import { GreedyTriangulationBetweenLineStrings } from "./GreedyTriangulationBetweenLineStrings";
 import { BarycentricTriangle } from "../geometry3d/BarycentricTriangle";
+import { CurveFactory } from "../curve/CurveFactory";
 
 /* tslint:disable:variable-name prefer-for-of*/
 /**
@@ -343,7 +344,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       let numEdge = n;
       if (ls.isPhysicallyClosed)
         numEdge--;
-      for (let i = 2; i < numEdge; i++ , pointIndex1 = pointIndex2, paramIndex1 = paramIndex2) {
+      for (let i = 2; i < numEdge; i++, pointIndex1 = pointIndex2, paramIndex1 = paramIndex2) {
         pointIndex2 = this.findOrAddPointInLineString(ls, i)!;
         this.addIndexedTrianglePointIndexes(pointIndex0, pointIndex1, pointIndex2, false);
         if (normalIndex !== undefined)
@@ -1691,6 +1692,44 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       (triangle: BarycentricTriangle) => {
         this.addTriangleFacet(triangle.points);
       });
+  }
+
+  private addMiteredPipesFromPoints(centerline: IndexedXYZCollection, radius: number, numFacetAround: number = 12) {
+    const sections = CurveFactory.createMiteredPipeSections(centerline, radius);
+    const pointA0 = Point3d.create();
+    const pointA1 = Point3d.create();
+    const pointB0 = Point3d.create();
+    const pointB1 = Point3d.create();
+    if (numFacetAround < 3)
+      numFacetAround = 3;
+    const df = 1.0 / numFacetAround;
+    for (let i = 1; i < sections.length; i++) {
+      const arcA = sections[i - 1];
+      const arcB = sections[i];
+      arcA.fractionToPoint(0.0, pointA0);
+      arcB.fractionToPoint(0.0, pointB0);
+      for (let k = 1; k <= numFacetAround; k++, pointA0.setFromPoint3d(pointA1), pointB0.setFromPoint3d(pointB1)) {
+        const f = k * df;
+        arcA.fractionToPoint(f, pointA1);
+        arcB.fractionToPoint(f, pointB1);
+        this.addQuadFacet([pointA0, pointB0, pointB1, pointA1]);
+      }
+    }
+  }
+  public addMiteredPipes(centerline: IndexedXYZCollection | Point3d[] | CurvePrimitive, radius: number, numFacetAround: number = 12) {
+    if (Array.isArray(centerline)) {
+      this.addMiteredPipesFromPoints(new Point3dArrayCarrier(centerline), radius, numFacetAround);
+    } else if (centerline instanceof GrowableXYZArray) {
+      this.addMiteredPipesFromPoints(centerline, radius, numFacetAround);
+    } else if (centerline instanceof IndexedXYZCollection) {
+      this.addMiteredPipesFromPoints(centerline, radius, numFacetAround);
+    } else if (centerline instanceof LineString3d) {
+      this.addMiteredPipesFromPoints(centerline.packedPoints, radius, numFacetAround);
+    } else if (centerline instanceof GeometryQuery) {
+      const linestring = LineString3d.create();
+      centerline.emitStrokes(linestring);
+      this.addMiteredPipesFromPoints(linestring.packedPoints, radius, numFacetAround);
+    }
   }
 }
 

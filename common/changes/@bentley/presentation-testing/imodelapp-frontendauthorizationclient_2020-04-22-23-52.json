@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/presentation-testing",
+      "comment": "update tests to utilize FrontendAuthorizationClient",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-testing",
+  "email": "evan.preslar@bentley.com"
+}

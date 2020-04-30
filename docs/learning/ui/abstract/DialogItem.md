@@ -2,14 +2,14 @@
 
 The [DialogItem]($ui-abstract:Dialog) interface is used to specify user interface components in a technology-agnostic way. The [DialogItemsManager]($ui-abstract:Dialog) uses DialogItem specifications to create React components in our AppUI system.
 
-For example, in this excerpt from the DialogItemsSample extension, this code:
+For example, this code:
 ```ts
   // ------------- boolean based toggle button ---------------
   private static _lockToggleName = "lockToggle";
   private static _getLockToggleDescription = (): PropertyDescription => {
     return {
       name: SampleTool._lockToggleName,
-      displayLabel: SampleTool.i18n.translate("dialogItemsSample:tools.SampleTool.Prompts.Lock"),
+      displayLabel: SampleTool.i18n.translate("sampleNameSpace:tools.SampleTool.Prompts.Lock"),
       typename: "boolean",
       editor: { name: "toggle" },
     };

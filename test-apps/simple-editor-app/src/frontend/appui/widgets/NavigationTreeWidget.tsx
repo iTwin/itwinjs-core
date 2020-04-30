@@ -25,10 +25,6 @@ interface NavigationTreeWidgetProps {
 }
 
 class NavigationTreeWidget extends React.Component<NavigationTreeWidgetProps> {
-  constructor(props?: any, context?: any) {
-    super(props, context);
-  }
-
   private renderVariousControls() {
     return (
       <div>

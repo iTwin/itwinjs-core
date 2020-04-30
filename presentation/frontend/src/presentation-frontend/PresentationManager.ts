@@ -226,9 +226,11 @@ export class PresentationManager implements IDisposable {
       managerOptions.locale = this.activeLocale;
     if (this.activeUnitSystem)
       managerOptions.unitSystem = this.activeUnitSystem;
-    return Object.assign({}, managerOptions, requestOptions, {
-      imodel: requestOptions.imodel.getRpcProps(),
-    });
+    return {
+      ...managerOptions,
+      ...requestOptions,
+      ...{ imodel: requestOptions.imodel.getRpcProps() },
+    };
   }
 
   private async addRulesetAndVariablesToOptions<TOptions extends { rulesetOrId: Ruleset | string, rulesetVariables?: RulesetVariable[] }>(options: TOptions) {

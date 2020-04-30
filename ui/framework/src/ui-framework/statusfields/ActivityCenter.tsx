@@ -14,12 +14,13 @@ import { Status, MessageLayout, MessageProgress } from "@bentley/ui-ninezone";
 import { MessageManager, ActivityMessageEventArgs } from "../messages/MessageManager";
 import { UiFramework } from "../UiFramework";
 import { StatusFieldProps } from "./StatusFieldProps";
+import { NotifyMessageType } from "../messages/ReactNotifyMessageDetails";
 
 /** State for the [[ActivityCenterField]] component
  * @internal
  */
 interface ActivityCenterState {
-  message: HTMLElement | string;
+  message: NotifyMessageType;
   percentage: number;
   isActivityMessageVisible: boolean;
 }

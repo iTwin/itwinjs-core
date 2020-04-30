@@ -25,14 +25,13 @@ export class UnifiedSelectionPropertyGridWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
 
-    if (options && options.iModelConnection && options.rulesetId)
-      this.reactNode = <UnifiedSelectionPropertyGridWidget iModelConnection={options.iModelConnection} rulesetId={options.rulesetId} />;
+    if (options && options.iModelConnection)
+      this.reactNode = <UnifiedSelectionPropertyGridWidget iModelConnection={options.iModelConnection} />;
   }
 }
 
 interface UnifiedSelectionPropertyGridWidgetProps {
   iModelConnection: IModelConnection;
-  rulesetId: string;
 }
 
 export type ContextMenuItemInfo = ContextMenuItemProps & React.Attributes & { label: string };
@@ -48,7 +47,7 @@ class UnifiedSelectionPropertyGridWidget extends React.Component<UnifiedSelectio
   constructor(props: UnifiedSelectionPropertyGridWidgetProps) {
     super(props);
     this.state = {
-      dataProvider: createDataProvider(this.props.iModelConnection, this.props.rulesetId),
+      dataProvider: createDataProvider(this.props.iModelConnection),
     };
   }
 
@@ -153,7 +152,7 @@ class UnifiedSelectionPropertyGridWidget extends React.Component<UnifiedSelectio
 
   public render() {
     const actionButtonRenderers = [this._favoriteActionButtonRenderer];
-    if (this.props.iModelConnection && this.props.rulesetId)
+    if (this.props.iModelConnection)
       return (
         <div style={{ height: "100%" }}>
           <UnifiedSelectionPropertyGrid
@@ -171,8 +170,8 @@ class UnifiedSelectionPropertyGridWidget extends React.Component<UnifiedSelectio
   }
 }
 
-function createDataProvider(imodel: IModelConnection, rulesetId: string): PresentationPropertyDataProvider {
-  return new PresentationPropertyDataProvider({ imodel, ruleset: rulesetId });
+function createDataProvider(imodel: IModelConnection): PresentationPropertyDataProvider {
+  return new PresentationPropertyDataProvider({ imodel });
 }
 
 ConfigurableUiManager.registerControl("UnifiedSelectionPropertyGridDemoWidget", UnifiedSelectionPropertyGridWidgetControl);

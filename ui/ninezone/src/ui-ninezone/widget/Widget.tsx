@@ -9,7 +9,7 @@
 import classnames from "classnames";
 import * as React from "react";
 import { CommonProps, Rectangle, SizeProps } from "@bentley/ui-core";
-import { WidgetState, PANEL_WIDGET_DRAG_START } from "../base/NineZoneState";
+import { WidgetState, PANEL_WIDGET_DRAG_START, FLOATING_WIDGET_BRING_TO_FRONT } from "../base/NineZoneState";
 import { getUniqueId, NineZoneDispatchContext } from "../base/NineZone";
 import { PanelSideContext } from "../widget-panels/Panel";
 import { FloatingWidgetIdContext } from "./FloatingWidget";
@@ -28,7 +28,9 @@ export const WidgetProvider = React.memo<WidgetProviderProps>(function WidgetPro
   return (
     <WidgetStateContext.Provider value={props.widget}>
       <WidgetIdContext.Provider value={props.widget.id}>
-        {props.children}
+        <ActiveTabIdContext.Provider value={props.widget.activeTabId}>
+          {props.children}
+        </ActiveTabIdContext.Provider>
       </WidgetIdContext.Provider>
     </WidgetStateContext.Provider>
   );
@@ -69,16 +71,16 @@ export const Widget = React.memo<WidgetProps>(function Widget(props) { // tslint
     onDragStart,
   });
   React.useEffect(() => {
-    const onPointerDown = () => {
+    const listener = () => {
       floatingWidgetId && dispatch({
-        type: "FLOATING_WIDGET_BRING_TO_FRONT",
+        type: FLOATING_WIDGET_BRING_TO_FRONT,
         id: floatingWidgetId,
       });
     };
     const element = ref.current!;
-    element.addEventListener("pointerdown", onPointerDown, true);
+    element.addEventListener("click", listener);
     return () => {
-      element.removeEventListener("pointerdown", onPointerDown, true);
+      element.removeEventListener("click", listener);
     };
   }, [dispatch, floatingWidgetId]);
   const measure = React.useCallback<WidgetContextArgs["measure"]>(() => {
@@ -112,6 +114,10 @@ WidgetIdContext.displayName = "nz:WidgetIdContext";
 /** @internal */
 export const WidgetStateContext = React.createContext<WidgetState | undefined>(undefined); // tslint:disable-line: variable-name
 WidgetStateContext.displayName = "nz:WidgetStateContext";
+
+/** @internal */
+export const ActiveTabIdContext = React.createContext<WidgetState["activeTabId"]>(undefined); // tslint:disable-line: variable-name
+ActiveTabIdContext.displayName = "nz:ActiveTabIdContext";
 
 /** @internal */
 export interface WidgetContextArgs {

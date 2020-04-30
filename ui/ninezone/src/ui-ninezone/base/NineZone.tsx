@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import { v4 } from "uuid";
-import { NineZoneState, TabsState, WidgetsState, PanelsState, FloatingWidgetsState, NineZoneActionTypes, DraggedTabState } from "./NineZoneState";
+import { NineZoneState, TabsState, WidgetsState, PanelsState, FloatingWidgetsState, NineZoneActionTypes, DraggedTabState, ToolSettingsState } from "./NineZoneState";
 import { CursorType } from "../widget-panels/CursorOverlay";
 import { DragProvider, DraggedWidgetContext, DraggedResizeHandleContext, DraggedPanelSideContext } from "./DragManager";
 import { PanelSide } from "../widget-panels/Panel";
@@ -23,6 +23,7 @@ export interface NineZoneProviderProps {
   dispatch: NineZoneDispatch;
   state: NineZoneState;
   widgetContent?: React.ReactNode;
+  toolSettingsContent?: React.ReactNode;
 }
 
 /** @internal future */
@@ -31,25 +32,29 @@ export function NineZoneProvider(props: NineZoneProviderProps) {
     <NineZoneContext.Provider value={props.state}>
       <NineZoneDispatchContext.Provider value={props.dispatch}>
         <WidgetContentNodeContext.Provider value={props.widgetContent}>
-          <DraggedTabStateContext.Provider value={props.state.draggedTab}>
-            <DraggedTabContext.Provider value={!!props.state.draggedTab}>
-              <TabsStateContext.Provider value={props.state.tabs}>
-                <WidgetsStateContext.Provider value={props.state.widgets}>
-                  <PanelsStateContext.Provider value={props.state.panels}>
-                    <FloatingWidgetsStateContext.Provider value={props.state.floatingWidgets}>
-                      <DragProvider>
-                        <CursorTypeProvider>
-                          <WidgetContentManager>
-                            {props.children}
-                          </WidgetContentManager>
-                        </CursorTypeProvider>
-                      </DragProvider>
-                    </FloatingWidgetsStateContext.Provider>
-                  </PanelsStateContext.Provider>
-                </WidgetsStateContext.Provider>
-              </TabsStateContext.Provider>
-            </DraggedTabContext.Provider>
-          </DraggedTabStateContext.Provider>
+          <ToolSettingsNodeContext.Provider value={props.toolSettingsContent}>
+            <DraggedTabStateContext.Provider value={props.state.draggedTab}>
+              <DraggedTabContext.Provider value={!!props.state.draggedTab}>
+                <TabsStateContext.Provider value={props.state.tabs}>
+                  <WidgetsStateContext.Provider value={props.state.widgets}>
+                    <PanelsStateContext.Provider value={props.state.panels}>
+                      <FloatingWidgetsStateContext.Provider value={props.state.floatingWidgets}>
+                        <ToolSettingsStateContext.Provider value={props.state.toolSettings}>
+                          <DragProvider>
+                            <CursorTypeProvider>
+                              <WidgetContentManager>
+                                {props.children}
+                              </WidgetContentManager>
+                            </CursorTypeProvider>
+                          </DragProvider>
+                        </ToolSettingsStateContext.Provider>
+                      </FloatingWidgetsStateContext.Provider>
+                    </PanelsStateContext.Provider>
+                  </WidgetsStateContext.Provider>
+                </TabsStateContext.Provider>
+              </DraggedTabContext.Provider>
+            </DraggedTabStateContext.Provider>
+          </ToolSettingsNodeContext.Provider>
         </WidgetContentNodeContext.Provider>
       </NineZoneDispatchContext.Provider>
     </NineZoneContext.Provider>
@@ -95,6 +100,14 @@ CursorTypeContext.displayName = "nz:CursorTypeContext";
 /** @internal */
 export const WidgetContentNodeContext = React.createContext<React.ReactNode>(null); // tslint:disable-line: variable-name
 WidgetContentNodeContext.displayName = "nz:WidgetContentNodeContext";
+
+/** @internal */
+export const ToolSettingsNodeContext = React.createContext<React.ReactNode>(null); // tslint:disable-line: variable-name
+ToolSettingsNodeContext.displayName = "nz:ToolSettingsNodeContext";
+
+/** @internal */
+export const ToolSettingsStateContext = React.createContext<ToolSettingsState>(null!); // tslint:disable-line: variable-name
+ToolSettingsStateContext.displayName = "nz:ToolSettingsStateContext";
 
 function CursorTypeProvider(props: { children?: React.ReactNode }) {
   const draggedTab = React.useContext(DraggedTabContext);

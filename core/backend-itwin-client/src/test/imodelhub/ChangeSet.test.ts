@@ -164,13 +164,11 @@ describe("iModelHub ChangeSetHandler", () => {
 
   it("should download ChangeSets (#iModelBank)", async () => {
     utils.mockGetChangeSet(imodelId, true, `&$top=${ChangeSetQuery.defaultPageSize}`, utils.generateChangeSet(), utils.generateChangeSet());
-    const changeSets: ChangeSet[] = await iModelClient.changeSets.get(requestContext, imodelId, new ChangeSetQuery().selectDownloadUrl());
-
     const downloadChangeSetsToPath: string = path.join(utils.workDir, imodelId.toString());
 
     utils.mockFileResponse(2);
     const progressTracker = new utils.ProgressTracker();
-    await iModelClient.changeSets.download(requestContext, changeSets, downloadChangeSetsToPath, progressTracker.track());
+    const changeSets = await iModelClient.changeSets.download(requestContext, imodelId, new ChangeSetQuery(), downloadChangeSetsToPath, progressTracker.track());
     fs.existsSync(downloadChangeSetsToPath).should.be.equal(true);
     progressTracker.check();
     for (const changeSet of changeSets) {
@@ -184,13 +182,11 @@ describe("iModelHub ChangeSetHandler", () => {
   it("should download ChangeSets with Buffering (#iModelBank)", async () => {
     iModelClient.setFileHandler(utils.createFileHandler(true));
     utils.mockGetChangeSet(imodelId, true, `&$top=${ChangeSetQuery.defaultPageSize}`, utils.generateChangeSet(), utils.generateChangeSet());
-    const changeSets: ChangeSet[] = await iModelClient.changeSets.get(requestContext, imodelId, new ChangeSetQuery().selectDownloadUrl());
-
     const downloadChangeSetsToPath: string = path.join(utils.workDir, imodelId.toString());
 
     utils.mockFileResponse(2);
     const progressTracker = new utils.ProgressTracker();
-    await iModelClient.changeSets.download(requestContext, changeSets, downloadChangeSetsToPath, progressTracker.track());
+    const changeSets = await iModelClient.changeSets.download(requestContext, imodelId, new ChangeSetQuery(), downloadChangeSetsToPath, progressTracker.track());
     fs.existsSync(downloadChangeSetsToPath).should.be.equal(true);
     progressTracker.check();
     for (const changeSet of changeSets) {
@@ -298,32 +294,21 @@ describe("iModelHub ChangeSetHandler", () => {
   });
 
   it("should fail downloading ChangeSets with no file handler", async () => {
+    utils.IModelHubUrlMock.mockGetUrl();
     const mockChangeSets = utils.getMockChangeSets(briefcase);
-    utils.mockGetChangeSet(imodelId, false, "?$orderby=Index+desc&$top=1", mockChangeSets[2]);
-    const changeSets: ChangeSet[] = await iModelClient.changeSets.get(requestContext, imodelId, new ChangeSetQuery().latest().top(1));
+    utils.mockGetChangeSet(imodelId, true, "&$orderby=Index+desc&$top=1", mockChangeSets[2]);
 
     let error: IModelHubClientError | undefined;
     const invalidClient = new IModelHubClient();
     try {
-      await invalidClient.changeSets.download(requestContext, changeSets, utils.workDir);
+      const query = new ChangeSetQuery().selectDownloadUrl().latest().top(1);
+      await invalidClient.changeSets.download(requestContext, imodelId, query, utils.workDir);
     } catch (err) {
       if (err instanceof IModelHubClientError)
         error = err;
     }
     chai.assert(error);
     chai.expect(error!.errorNumber).to.be.equal(IModelHubStatus.FileHandlerNotSet);
-  });
-
-  it("should fail downloading ChangeSets with no file url", async () => {
-    let error: IModelHubClientError | undefined;
-    try {
-      await iModelClient.changeSets.download(requestContext, [new ChangeSet()], utils.workDir);
-    } catch (err) {
-      if (err instanceof IModelHubClientError)
-        error = err;
-    }
-    chai.assert(error);
-    chai.expect(error!.errorNumber).to.be.equal(IModelHubStatus.MissingDownloadUrlError);
   });
 
   it("should fail creating a ChangeSet with no file handler", async () => {

@@ -16,7 +16,7 @@ import { LineSegment3d } from "./LineSegment3d";
 import { Point3dArrayCarrier } from "../geometry3d/Point3dArrayCarrier";
 import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
 import { Path } from "./Path";
-import { Geometry } from "../Geometry";
+import { Geometry, AxisOrder } from "../Geometry";
 import { Ellipsoid, GeodesicPathPoint } from "../geometry3d/Ellipsoid";
 import { Loop } from "./Loop";
 import { AngleSweep } from "../geometry3d/AngleSweep";
@@ -25,6 +25,8 @@ import { Cone } from "../solid/Cone";
 import { TorusPipe } from "../solid/TorusPipe";
 import { CurvePrimitive } from "./CurvePrimitive";
 import { GeometryQuery } from "./GeometryQuery";
+import { Matrix3d } from "../geometry3d/Matrix3d";
+import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
 /**
  * The `CurveFactory` class contains methods for specialized curve constructions.
  * @public
@@ -36,6 +38,35 @@ export class CurveFactory {
       if (pointA !== undefined && pointB !== undefined && !Geometry.isAlmostEqualNumber(fraction0, fraction1))
         path.tryAddChild(LineSegment3d.create(pointA.interpolate(fraction0, pointB), pointA.interpolate(fraction1, pointB)));
     }
+  }
+  /**
+   * Create a circular arc from start point, tangent at start, and another point (endpoint) on the arc.
+   * @param pointA
+   * @param tangentA
+   * @param pointB
+   */
+  public static createArcPointTangentPoint(pointA: Point3d, tangentA: Vector3d, pointB: Point3d): Arc3d | undefined {
+    const vectorV = Vector3d.createStartEnd(pointA, pointB);
+    const frame = Matrix3d.createRigidFromColumns(tangentA, vectorV, AxisOrder.XYZ);
+    if (frame !== undefined) {
+      const vv = vectorV.dotProduct(vectorV);
+      const vw = frame.dotColumnY(vectorV);
+      const alpha = Geometry.conditionalDivideCoordinate(vv, 2 * vw);
+      if (alpha !== undefined) {
+        const vector0 = frame.columnY();
+        vector0.scaleInPlace(-alpha);
+        const vector90 = frame.columnX();
+        vector90.scaleInPlace(alpha);
+        const centerToEnd = vector0.plus(vectorV);
+        const sweepAngle = vector0.angleTo(centerToEnd);
+        let sweepRadians = sweepAngle.radians;  // That's always positive and less than PI.
+        if (tangentA.dotProduct(centerToEnd) < 0.0) // ah, sweepRadians is the wrong way
+          sweepRadians = 2.0 * Math.PI - sweepRadians;
+        const center = pointA.plusScaled(vector0, -1.0);
+        return Arc3d.create(center, vector0, vector90, AngleSweep.createStartEndRadians(0.0, sweepRadians));
+      }
+    }
+    return undefined;
   }
   /**
    * Construct a sequence of alternating lines and arcs with the arcs creating tangent transition between consecutive edges.
@@ -215,6 +246,10 @@ export class CurveFactory {
       return Cone.createAxisPoints(centerline.startPoint(), centerline.endPoint(), pipeRadius, pipeRadius, false);
     } else if (centerline instanceof Arc3d) {
       return TorusPipe.createAlongArc(centerline, pipeRadius, false);
+    } else if (centerline instanceof CurvePrimitive) {
+      const builder = PolyfaceBuilder.create();
+      builder.addMiteredPipes(centerline, pipeRadius);
+      return builder.claimPolyface();
     } else if (centerline instanceof CurveChain) {
       const result: GeometryQuery[] = [];
       for (const p of centerline.children) {
@@ -225,4 +260,62 @@ export class CurveFactory {
     }
     return undefined;
   }
+  /**
+   * * Create section arcs for mitered pipe.
+   * * At each end of each pipe, the pipe is cut by the plane that bisects the angle between successive pipe centerlines.
+   * * The arc definitions are constructed so that lines between corresponding fractional positions on the arcs are
+   *     axial lines on the pipes.
+   *   * This means that each arc definition axes (aka vector0 and vector90) are _not_ perpendicular to each other.
+   * @param centerline centerline of pipe
+   * @param radius radius of arcs
+   */
+  public static createMiteredPipeSections(centerline: IndexedXYZCollection, radius: number): Arc3d[] {
+    const arcs: Arc3d[] = [];
+    if (centerline.length < 2)
+      return [];
+    const vectorAB = Vector3d.create();
+    const vectorBC = Vector3d.create();
+    const bisector = Vector3d.create();
+    const vector0 = Vector3d.create();
+    const vector90 = Vector3d.create();
+    const currentCenter = centerline.getPoint3dAtUncheckedPointIndex(0);
+    centerline.vectorIndexIndex(0, 1, vectorBC)!;
+    const baseFrame = Matrix3d.createRigidHeadsUp(vectorBC, AxisOrder.ZXY);
+    baseFrame.columnX(vector0);
+    baseFrame.columnY(vector90);
+    vector0.scaleInPlace(radius);
+    vector90.scaleInPlace(radius);
+    // circular section on base plane ....
+    const ellipseA = Arc3d.create(currentCenter, vector0, vector90, AngleSweep.create360());
+    arcs.push(ellipseA);
+    for (let i = 1; i < centerline.length; i++) {
+      vectorAB.setFromVector3d(vectorBC);
+      centerline.getPoint3dAtUncheckedPointIndex(i, currentCenter);
+      if (i + 1 < centerline.length) {
+        centerline.vectorIndexIndex(i, i + 1, vectorBC)!;
+      } else {
+        vectorBC.setFromVector3d(vectorAB);
+      }
+      if (vectorAB.normalizeInPlace() && vectorBC.normalizeInPlace()) {
+        vectorAB.interpolate(0.5, vectorBC, bisector);
+        // On the end ellipse for this pipe section. ..
+        // center comes directly from centerline[i]
+        // vector0 and vector90 are obtained by sweeping the corresponding vectors of the start ellipse to the split plane.
+        moveVectorToPlane(vector0, vectorAB, bisector, vector0);
+        moveVectorToPlane(vector90, vectorAB, bisector, vector90);
+        arcs.push(Arc3d.create(currentCenter, vector0, vector90, AngleSweep.create360()));
+      }
+    }
+    return arcs;
+  }
+}
+/**
+ * Starting at vectorR, move parallel to vectorV until perpendicular to planeNormal
+ */
+function moveVectorToPlane(vectorR: Vector3d, vectorV: Vector3d, planeNormal: Vector3d, result?: Vector3d): Vector3d {
+  // find s such that (vectorR + s * vectorV) DOT planeNormal = 0.
+  const dotRN = vectorR.dotProduct(planeNormal);
+  const dotVN = vectorV.dotProduct(planeNormal);
+  const s = Geometry.safeDivideFraction(dotRN, dotVN, 0.0);
+  return vectorR.plusScaled(vectorV, -s, result);
 }

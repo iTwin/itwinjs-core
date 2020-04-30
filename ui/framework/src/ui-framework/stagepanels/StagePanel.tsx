@@ -12,12 +12,13 @@ import {
   StagePanelType as NZ_StagePanelType, NestedStagePanelKey, NestedStagePanelsManagerProps,
   NineZoneStagePanelManagerProps, WidgetZoneId, ZonesManagerWidgetsProps,
 } from "@bentley/ui-ninezone";
-import { StagePanelState as StagePanelState, StagePanelDef } from "./StagePanelDef";
+import { StagePanelState as StagePanelState, StagePanelDef, PanelStateChangedEventArgs } from "./StagePanelDef";
 import { WidgetProps } from "../widgets/WidgetProps";
 import { WidgetTabs } from "../widgets/WidgetStack";
 import { StagePanelChangeHandler, WidgetChangeHandler, ZoneDefProvider } from "../frontstage/FrontstageComposer";
 import { ZoneLocation } from "../zones/Zone";
 import { FrameworkStagePanel } from "./FrameworkStagePanel";
+import { FrontstageManager } from "../frontstage/FrontstageManager";
 
 /** Available StagePanel locations.
  * ------------------------------------------------------------------------------------
@@ -112,16 +113,36 @@ export interface StagePanelRuntimeProps {
   zoneDefProvider: ZoneDefProvider;
 }
 
+interface StagePanelComponentState {
+  panelState: StagePanelState;
+}
+
 /** Frontstage Panel React component.
  * @alpha
  */
-export class StagePanel extends React.Component<StagePanelProps> {
+export class StagePanel extends React.Component<StagePanelProps, StagePanelComponentState> {
   public static readonly defaultProps: StagePanelDefaultProps = {
     resizable: true,
   };
 
+  public constructor(props: StagePanelProps) {
+    super(props);
+
+    this.state = {
+      panelState: this.props.runtimeProps?.panelDef.panelState || StagePanelState.Open,
+    };
+  }
+
   public static initializeStagePanelDef(panelDef: StagePanelDef, props: StagePanelProps, panelLocation: StagePanelLocation): void {
     panelDef.initializeFromProps(props, panelLocation);
+  }
+
+  public componentDidMount() {
+    FrontstageManager.onPanelStateChangedEvent.addListener(this._handlePanelStateChangedEvent);
+  }
+
+  public componentWillUnmount() {
+    FrontstageManager.onPanelStateChangedEvent.removeListener(this._handlePanelStateChangedEvent);
   }
 
   public render(): React.ReactNode {
@@ -137,6 +158,7 @@ export class StagePanel extends React.Component<StagePanelProps> {
         location={panelDef.location}
         renderPane={this._handleRenderPane}
         widgetCount={panelDef.widgetCount}
+        panelState={this.state.panelState}
         {...props}
         {...otherRuntimeProps}
       />
@@ -161,6 +183,14 @@ export class StagePanel extends React.Component<StagePanelProps> {
         {widgetDef.reactNode}
       </div>
     );
+  }
+
+  private _handlePanelStateChangedEvent = ({ panelDef, panelState }: PanelStateChangedEventArgs) => {
+    if (panelDef !== this.props.runtimeProps?.panelDef)
+      return;
+    this.setState({
+      panelState,
+    });
   }
 }
 

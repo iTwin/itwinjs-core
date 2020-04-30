@@ -11,7 +11,7 @@ import { Store } from "redux";
 import { Logger } from "@bentley/bentleyjs-core";
 import { UserInfo, AccessToken } from "@bentley/itwin-client";
 import { MobileRpcConfiguration } from "@bentley/imodeljs-common";
-import { I18N, TranslationOptions } from "@bentley/imodeljs-i18n";
+import { I18N } from "@bentley/imodeljs-i18n";
 import { IModelConnection, SnapMode, ViewState, IModelApp } from "@bentley/imodeljs-frontend";
 import { isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { UiError, getClassName } from "@bentley/ui-abstract";
@@ -31,6 +31,7 @@ import { UiShowHideManager } from "./utils/UiShowHideManager";
 import { BackstageManager } from "./backstage/BackstageManager";
 import { WidgetManager } from "./widgets/WidgetManager";
 import { StateManager } from "./redux/StateManager";
+import { UiComponents } from "@bentley/ui-components";
 
 // cSpell:ignore Mobi
 
@@ -64,6 +65,7 @@ export class FrameworkVersionChangedEvent extends UiEvent<FrameworkVersionChange
  * @public
  */
 export class UiFramework {
+  private static _initialized = false;
   private static _projectServices?: ProjectServices;
   private static _iModelServices?: IModelServices;
   private static _i18n?: I18N;
@@ -85,29 +87,34 @@ export class UiFramework {
   public static readonly onFrameworkVersionChangedEvent = new FrameworkVersionChangedEvent();
 
   /**
-   * Called by the app to initialize the UiFramework
+   * Called by the application to initialize the UiFramework. Also initializes UiComponents, UiCore and UiAbstract.
    * @param store The single Redux store created by the host application. If this is `undefined` then it is assumed that the [[StateManager]] is being used to provide the Redux store.
-   * @param i18n The internationalization service created by the app.
+   * @param i18n The internationalization service created by the application. Defaults to IModelApp.i18n.
    * @param frameworkStateKey The name of the key used by the app when adding the UiFramework state into the Redux store. If not defined "frameworkState" is assumed. This value is ignored if [[StateManager]] is being used. The StateManager use "frameworkState".
    */
-  public static async initialize(store: Store<any> | undefined, i18n: I18N, frameworkStateKey?: string): Promise<void> {
+  public static async initialize(store: Store<any> | undefined, i18n?: I18N, frameworkStateKey?: string): Promise<void> {
     return this.initializeEx(store, i18n, frameworkStateKey);
   }
 
   /**
-   * Called by the app to initialize the UiFramework
+   * Called by the application to initialize the UiFramework. Also initializes UiComponents, UiCore and UiAbstract.
    * @param store The single Redux store created by the host application. If this is `undefined` then it is assumed that the [[StateManager]] is being used to provide the Redux store.
-   * @param i18n The internationalization service created by the app.
+   * @param i18n The internationalization service created by the application. Defaults to IModelApp.i18n.
    * @param frameworkStateKey The name of the key used by the app when adding the UiFramework state into the Redux store. If not defined "frameworkState" is assumed. This value is ignored if [[StateManager]] is being used. The StateManager use "frameworkState".
    * @param projectServices Optional app defined projectServices. If not specified DefaultProjectServices will be used.
    * @param iModelServices Optional app defined iModelServices. If not specified DefaultIModelServices will be used.
    *
    * @internal
    */
-  public static async initializeEx(store: Store<any> | undefined, i18n: I18N, frameworkStateKey?: string, projectServices?: ProjectServices, iModelServices?: IModelServices): Promise<void> {
+  public static async initializeEx(store: Store<any> | undefined, i18n?: I18N, frameworkStateKey?: string, projectServices?: ProjectServices, iModelServices?: IModelServices): Promise<void> {
+    if (UiFramework._initialized) {
+      Logger.logInfo(UiFramework.loggerCategory(UiFramework), `UiFramework.initialize already called`);
+      return;
+    }
+
     // if store is undefined then the StateManager class should have been initialized by parent app and the apps default set of reducer registered with it.
     UiFramework._store = store;
-    UiFramework._i18n = i18n;
+    UiFramework._i18n = i18n || IModelApp.i18n;
     // ignore setting _frameworkStateKeyInStore if not using store
     if (frameworkStateKey && store)
       UiFramework._frameworkStateKeyInStore = frameworkStateKey;
@@ -133,6 +140,11 @@ export class UiFramework {
       oidcClient.onUserStateChanged.addListener(UiFramework._handleUserStateChanged);
     }
 
+    // Initialize ui-components, ui-core & ui-abstract
+    await UiComponents.initialize(UiFramework._i18n);
+
+    UiFramework._initialized = true;
+
     return readFinishedPromise;
   }
 
@@ -150,7 +162,13 @@ export class UiFramework {
     UiFramework._widgetManager = undefined;
 
     UiFramework.onFrameworkVersionChangedEvent.removeListener(UiFramework._handleFrameworkVersionChangedEvent);
+
+    UiComponents.terminate();
+    UiFramework._initialized = false;
   }
+
+  /** Determines if UiFramework has been initialized */
+  public static get initialized(): boolean { return UiFramework._initialized; }
 
   /** @beta */
   public static get frameworkStateKey(): string {
@@ -207,8 +225,8 @@ export class UiFramework {
   /** Calls i18n.translateWithNamespace with the "UiFramework" namespace. Do NOT include the namespace in the key.
    * @internal
    */
-  public static translate(key: string | string[], options?: TranslationOptions): string {
-    return UiFramework.i18n.translateWithNamespace(UiFramework.i18nNamespace, key, options);
+  public static translate(key: string | string[]): string {
+    return UiFramework.i18n.translateWithNamespace(UiFramework.i18nNamespace, key);
   }
 
   /** @internal */

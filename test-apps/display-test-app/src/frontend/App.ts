@@ -20,7 +20,7 @@ import {
   ToolTipOptions,
   ExternalServerExtensionLoader,
 } from "@bentley/imodeljs-frontend";
-import { FrontendDevTools, parseToggle } from "@bentley/frontend-devtools";
+import { FrontendDevTools } from "@bentley/frontend-devtools";
 import ToolTip from "tooltip.js";
 import { DrawingAidTestTool } from "./DrawingAidTestTool";
 import { showError, showStatus } from "./Utils";
@@ -203,28 +203,6 @@ class ShutDownTool extends Tool {
   }
 }
 
-class Toggle3dManipulationsTool extends Tool {
-  public static toolId = "Toggle3dManipulations";
-  public run(allow?: boolean): boolean {
-    const vp = IModelApp.viewManager.selectedView;
-    if (undefined === vp || !vp.view.is3d())
-      return false;
-    if (undefined === allow)
-      allow = !vp.view.allow3dManipulations();
-    if (allow !== vp.view.allow3dManipulations()) {
-      vp.view.setAllow3dManipulations(allow);
-      IModelApp.toolAdmin.startDefaultTool();
-    }
-    return true;
-  }
-  public parseAndRun(...args: string[]): boolean {
-    const enable = parseToggle(args[0]);
-    if (typeof enable !== "string")
-      this.run(enable);
-    return true;
-  }
-}
-
 export class DisplayTestApp {
   public static tileAdminProps: TileAdmin.Props = {
     retryInterval: 50,
@@ -243,7 +221,7 @@ export class DisplayTestApp {
     await IModelApp.startup(opts);
 
     // For testing local extensions only, should not be used in production.
-    IModelApp.extensionAdmin.addExtensionLoader(new ExternalServerExtensionLoader("http://localhost:3000"), 50);
+    IModelApp.extensionAdmin.addExtensionLoaderFront(new ExternalServerExtensionLoader("http://localhost:3000"));
 
     IModelApp.applicationLogoCard =
       () => IModelApp.makeLogoCard({ iconSrc: "DTA.png", iconWidth: 100, heading: "Display Test App", notice: "For internal testing" });
@@ -271,7 +249,6 @@ export class DisplayTestApp {
       SaveImageTool,
       ShutDownTool,
       SVTSelectionTool,
-      Toggle3dManipulationsTool,
       ToggleShadowMapTilesTool,
       VersionComparisonTool,
       ZoomToSelectedElementsTool,

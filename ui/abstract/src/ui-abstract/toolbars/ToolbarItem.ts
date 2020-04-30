@@ -53,6 +53,11 @@ export interface ToolbarItem extends ProvidedItem {
   readonly isDisabled?: boolean | ConditionalBooleanValue;
   /** Describes if the item should appear pressed (used for displaying toggle state). */
   readonly isPressed?: boolean;
+  /** Specifies the item's grouping value. Items are sorted by group and then item priority. When
+   * group priority changes a separator is inserted. It is recommended using values 10 through 100, incrementing by 10. This
+   * allows extensions enough gaps to insert their own groups. If the value is not specified a groupPriority of 0 is used.
+   */
+  readonly groupPriority?: number;
   /** Priority within a toolbar or group. */
   readonly itemPriority: number;
   /** Optional parent tool group to add tool. */

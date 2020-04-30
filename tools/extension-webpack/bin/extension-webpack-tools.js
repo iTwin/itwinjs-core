@@ -17,6 +17,7 @@ require('yargonaut')
 const chalk = require("chalk");
 const yargs = require("yargs");
 const argv = yargs
+  .showHelpOnFail(false)
   .wrap(Math.min(120, yargs.terminalWidth()))
   .usage(`\n${chalk.bold("$0")} ${chalk.yellow("<command>")}`)
   .command(require("../scripts/build"))

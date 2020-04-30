@@ -3,6 +3,7 @@ Release Tag;API Item
 beta;AnimationIntervalTool 
 alpha;appendDataListEntries(dl: DataList, entries: DataListEntry[]): void
 beta;ApplyViewTool 
+alpha;AttachRealityModelTool 
 alpha;Button
 alpha;ButtonHandler = (button: HTMLInputElement) => void
 alpha;ButtonProps
@@ -83,6 +84,7 @@ alpha;RealityTransitionTool
 beta;class RenderSystemDebugControlTool 
 beta;class RenderTargetDebugControlTool 
 beta;ReportWebGLCompatibilityTool 
+alpha;SaveRealityModelTool 
 beta;SaveViewTool 
 beta;SelectElementsByIdTool 
 beta;serializeViewState(view: ViewState): ViewStateProps
@@ -100,9 +102,9 @@ alpha;TextBoxHandler = (textbox: HTMLInputElement) => void
 alpha;TextBoxKeyPressHandler = (textbox: HTMLInputElement, ev: KeyboardEvent) => void
 alpha;TextBoxProps
 beta;TileStatisticsTracker
+alpha;Toggle3dManipulationsTool 
 alpha;ToggleDrapeFrustumTool 
 beta;ToggleFrustumSnapshotTool 
-alpha;ToggleLogZTool 
 beta;TogglePrimitiveVisibilityTool 
 beta;toggleProjectExtents(imodel: IModelConnection, enabled?: boolean): boolean
 beta;ToggleProjectExtentsTool 

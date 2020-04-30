@@ -221,7 +221,7 @@ describe("iModelHub EventHandler", () => {
 
     let receivedEventsCount = 0;
     const deleteListener = imodelHubClient.events.createListener(requestContext, async () => {
-      return utils.login();
+      return TestConfig.enableMocks ? new utils.MockAccessToken() : utils.login(TestUsers.super);
     }, subscription.wsgId, imodelId, (receivedEvent: IModelHubEvent) => {
       if (receivedEvent instanceof CodeEvent)
         receivedEventsCount++;

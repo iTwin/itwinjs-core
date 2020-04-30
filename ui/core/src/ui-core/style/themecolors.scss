@@ -3,6 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+$buic-background-1-rgb:                   var(--buic-background-1-rgb);
+$buic-background-2-rgb:                   var(--buic-background-2-rgb);
+$buic-background-3-rgb:                   var(--buic-background-3-rgb);
+$buic-background-4-rgb:                   var(--buic-background-4-rgb);
+$buic-background-5-rgb:                   var(--buic-background-5-rgb);
+
 $buic-background-1:                       var(--buic-background-1);
 $buic-background-2:                       var(--buic-background-2);
 $buic-background-3:                       var(--buic-background-3);
@@ -42,6 +48,10 @@ $buic-background-toolbar:                 var(--buic-background-toolbar);
 
 $buic-background-card:                    var(--buic-background-card);
 $buic-background-control:                 var(--buic-background-control);
+
+$buic-background-hover-overlay:           var(--buic-background-hover-overlay);
+$buic-background-active-overlay:          var(--buic-background-active-overlay);
+$buic-background-pressed-overlay:         var(--buic-background-pressed-overlay);
 
 /** Text and icons */
 $buic-foreground-body:                    var(--buic-foreground-body);

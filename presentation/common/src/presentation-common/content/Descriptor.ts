@@ -207,9 +207,10 @@ export class Descriptor implements DescriptorSource {
 
   /** Serialize this object to JSON */
   public toJSON(): DescriptorJSON {
-    return Object.assign({}, this, {
+    return {
+      ...this,
       fields: this.fields.map((field: Field) => field.toJSON()),
-    });
+    };
   }
 
   /** Deserialize [[Descriptor]] from JSON */

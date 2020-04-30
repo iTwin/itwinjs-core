@@ -19,7 +19,7 @@ import { StrokeOptions } from "./StrokeOptions";
 import { CurvePrimitive, AnnounceNumberNumberCurvePrimitive } from "./CurvePrimitive";
 import { CurveExtendOptions, VariantCurveExtendParameter } from "./CurveExtendMode";
 import { GeometryQuery } from "./GeometryQuery";
-import { CurveLocationDetail, CurveIntervalRole} from "./CurveLocationDetail";
+import { CurveLocationDetail, CurveIntervalRole } from "./CurveLocationDetail";
 import { LineString3d } from "./LineString3d";
 import { Clipper } from "../clipping/ClipUtils";
 /* tslint:disable:variable-name no-empty*/
@@ -30,8 +30,11 @@ import { Clipper } from "../clipping/ClipUtils";
  *   * startPoint
  *   * endPoint
  * * The segment is parameterized with fraction 0 at the start and fraction 1 at the end, i.e. either of these equivalent forms to map fraction `f` to a point `X(f)`
- *   *  `X(f) = startPoint + f * (endPoint - startPoint)`
- *   * `X(f) = (1-f)*startPoint  + f * endPoint`
+ * ```
+ * equation
+ *  X(f) = P_0 + f * (P_1 - P_0)\newline
+ *  X(f) = (1-f)*P_0  + f * P_0
+ * ```
  * @public
  */
 export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {

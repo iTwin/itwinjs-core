@@ -62,6 +62,20 @@ export class ApplyViewTool extends Tool {
     static toolId: string;
 }
 
+// @alpha (undocumented)
+export class AttachRealityModelTool extends Tool {
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    run(data: string): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
 // @alpha
 export interface Button {
     // (undocumented)
@@ -807,6 +821,20 @@ export class ReportWebGLCompatibilityTool extends Tool {
     static toolId: string;
 }
 
+// @alpha (undocumented)
+export class SaveRealityModelTool extends Tool {
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    run(name: string | undefined): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
 // @beta
 export class SaveViewTool extends Tool {
     // (undocumented)
@@ -974,6 +1002,16 @@ export class TileStatisticsTracker {
     }
 
 // @alpha
+export class Toggle3dManipulationsTool extends Tool {
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    run(allow?: boolean): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @alpha
 export class ToggleDrapeFrustumTool extends RenderTargetDebugControlTool {
     // (undocumented)
     execute(control: RenderTargetDebugControl, vp: ScreenViewport): void;
@@ -991,14 +1029,6 @@ export class ToggleFrustumSnapshotTool extends Tool {
     parseAndRun(...args: string[]): boolean;
     // (undocumented)
     run(enable?: boolean, showPreloadFrustum?: boolean, showBackgroundIntersecctions?: boolean): boolean;
-    // (undocumented)
-    static toolId: string;
-}
-
-// @alpha
-export class ToggleLogZTool extends RenderTargetDebugControlTool {
-    // (undocumented)
-    execute(control: RenderTargetDebugControl, vp: ScreenViewport): void;
     // (undocumented)
     static toolId: string;
 }

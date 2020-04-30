@@ -50,7 +50,6 @@ export class Checkbox extends React.PureComponent<CheckboxProps> {
     e.stopPropagation();
   }
 
-  // istanbul ignore next
   private _onCheckboxBlur = (e: React.FocusEvent) => {
     e.stopPropagation();
   }

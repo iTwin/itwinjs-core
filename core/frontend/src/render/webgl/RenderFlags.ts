@@ -74,7 +74,10 @@ export enum TextureUnit {
   AuxChannelLUT = Six,
   PlanarClassification = Six,
   PlanarClassificationHilite = Six,
+
+  // Texture unit 7 is overloaded. Therefore receiving shadows and thematic display are mutually exclusive.
   ShadowMap = Seven,
+  ThematicSensors = Seven,
 }
 
 /**
@@ -120,55 +123,57 @@ export const enum CompositeFlags {
   AmbientOcclusion = 1 << 2,
 }
 
+/** Location in boolean array of SurfaceFlags above.
+ * @internal
+ */
+export const enum SurfaceBitIndex {
+  HasTexture,
+  ApplyLighting,
+  HasNormals,
+  IgnoreMaterial,
+  TransparencyThreshold,
+  BackgroundFill,
+  HasColorAndNormal,
+  OverrideAlpha,
+  OverrideRgb,
+  NoFaceFront,
+  HasMaterialAtlas,
+  MultiplyAlpha, // IMPORTANT: This must be the last one!
+  Count,
+}
+
 /** Describes attributes of a MeshGeometry object. Used to conditionally execute portion of shader programs.
  * @internal
  */
 export const enum SurfaceFlags {
   None = 0,
-  HasTexture = 1 << 0,
-  ApplyLighting = 1 << 1,
-  HasNormals = 1 << 2,
+  HasTexture = 1 << SurfaceBitIndex.HasTexture,
+  ApplyLighting = 1 << SurfaceBitIndex.ApplyLighting,
+  HasNormals = 1 << SurfaceBitIndex.HasNormals,
 
   // NB: In u_surfaceFlags provided to shader, indicates material color/specular/alpha should be ignored. Has no effect on texture.
   // If a given feature has the 'ignore material' override set, v_surfaceFlags will be modified to turn on IgnoreMaterial and turn off HasTexture.
-  IgnoreMaterial = 1 << 3,
+  IgnoreMaterial = 1 << SurfaceBitIndex.IgnoreMaterial,
 
   // In HiddenLine and SolidFill modes, a transparency threshold is supplied; surfaces that are more transparent than the threshold are not rendered.
-  TransparencyThreshold = 1 << 4,
+  TransparencyThreshold = 1 << SurfaceBitIndex.TransparencyThreshold,
 
   // For HiddenLine mode
-  BackgroundFill = 1 << 5,
+  BackgroundFill = 1 << SurfaceBitIndex.BackgroundFill,
 
   // For textured meshes, the color index in the vertex LUT is unused - we place the normal there instead.
   // For untextured lit meshes, the normal is placed after the feature ID.
-  HasColorAndNormal = 1 << 6,
+  HasColorAndNormal = 1 << SurfaceBitIndex.HasColorAndNormal,
   // For textured meshes, use alpha from v_color instead of from texture. Takes precedence over MultiplyAlpha if both are set.
-  OverrideAlpha = 1 << 7,
+  OverrideAlpha = 1 << SurfaceBitIndex.OverrideAlpha,
   // For textured meshes, use rgb from v_color instead of from texture.
-  OverrideRgb = 1 << 8,
+  OverrideRgb = 1 << SurfaceBitIndex.OverrideRgb,
   // For geometry with fixed normals (terrain meshes) we must avoid front facing normal reversal or skirts will be incorrectly lit.
-  NoFaceFront = 1 << 9,
+  NoFaceFront = 1 << SurfaceBitIndex.NoFaceFront,
+  HasMaterialAtlas = 1 << SurfaceBitIndex.HasMaterialAtlas,
   // For textured meshes, multiplied the texture alpha by v_color's alpha. OverrideAlpha takes precedence if both are set.
-  MultiplyAlpha = 1 << 10,
+  MultiplyAlpha = 1 << SurfaceBitIndex.MultiplyAlpha,
   // MultiplyAlpha must be last -- add additional flags above it, not here.
-}
-
-/** Location in boolean array of SurfaceFlags above.
- * @internal
- */
-export const enum SurfaceBitIndex {
-  HasTexture = 0,
-  ApplyLighting = 1,
-  HasNormals = 2,
-  IgnoreMaterial = 3,
-  TransparencyThreshold = 4,
-  BackgroundFill = 5,
-  HasColorAndNormal = 6,
-  OverrideAlpha = 7,
-  OverrideRgb = 8,
-  NoFaceFront = 9,
-  MultiplyAlpha = 10,
-  Count = 11,
 }
 
 /** @internal */

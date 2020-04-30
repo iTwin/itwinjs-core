@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { Dialog, DialogButtonType } from "@bentley/ui-core";
-import { ModalDialogManager, DefaultDialogGridContainer } from "@bentley/ui-framework";
+import { DefaultDialogGridContainer } from "@bentley/ui-framework";
 import {
   ColorEditorParams,
   InputEditorSizeParams,
@@ -101,15 +101,10 @@ export class TestUiProviderDialog extends React.Component<TestUiProviderDialogPr
     });
   }
 
-  private _closeDialog = (followUp: () => void) => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+  private _closeDialog = (_followUp: () => void) => {
     this.setState({
       opened: false,
-    }), () => {
-      if (!this.state.opened)
-        ModalDialogManager.closeDialog();
-      followUp();
-    };
+    });
   }
   private static _optionsName = "enumAsPicklist";
   private static _getEnumAsPicklistDescription = (): PropertyDescription => {

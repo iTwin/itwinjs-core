@@ -59,8 +59,6 @@ export enum PrimitiveVisibility {
 export interface RenderTargetDebugControl {
   /** If true, render to the screen as if rendering off-screen for readPixels(). */
   drawForReadPixels: boolean;
-  /** If true, use log-z depth buffer (assuming supported by client). */
-  useLogZ: boolean;
   /** @alpha */
   primitiveVisibility: PrimitiveVisibility;
   /** @internal */

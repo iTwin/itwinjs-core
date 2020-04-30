@@ -25,8 +25,8 @@ import { MarkupApp } from "@bentley/imodeljs-markup";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { Presentation } from "@bentley/presentation-frontend";
 import { getClassName } from "@bentley/ui-abstract";
-import { UiCore, UiSettings, LocalUiSettings } from "@bentley/ui-core";
-import { UiComponents, BeDragDropContext } from "@bentley/ui-components";
+import { UiSettings, LocalUiSettings } from "@bentley/ui-core";
+import { BeDragDropContext } from "@bentley/ui-components";
 import {
   UiFramework, FrameworkReducer, AppNotificationManager, FrameworkUiAdmin,   // , FrameworkState
   IModelInfo, FrontstageManager, createAction, ActionsUnion, DeepReadonly, ProjectInfo,
@@ -162,8 +162,8 @@ interface SampleIModelParams {
 
 export class SampleAppIModelApp {
   public static sampleAppNamespace: I18NNamespace;
-  // if using StateManager that supports states from plugins and snippets then we don't explicitly setup redux store in app we just
-  // pass our reducer map to the StateManager constructor.
+  // If we use the StateManager, then the app supports combining reducers from extensions and snippets. If we use the StateManage then don't explicitly setup redux store in app,
+  // just pass the app's reducers to the StateManager constructor.
   // deprecated - public static store: Store<RootState>;
   // deprecated - public static rootReducer: any;
   public static iModelParams: SampleIModelParams | undefined;
@@ -186,7 +186,7 @@ export class SampleAppIModelApp {
     await IModelApp.startup(opts);
 
     // For testing local extensions only, should not be used in production.
-    IModelApp.extensionAdmin.addExtensionLoader(new ExternalServerExtensionLoader("http://localhost:3000"), 50);
+    IModelApp.extensionAdmin.addExtensionLoaderFront(new ExternalServerExtensionLoader("http://localhost:3000"));
 
     this.sampleAppNamespace = IModelApp.i18n.registerNamespace("SampleApp");
 
@@ -198,9 +198,11 @@ export class SampleAppIModelApp {
       });
     }
 
-    ////////////////////////////////////////////////////////
-    // deprecated was of handling state locally.
-    ////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////
+    // Deprecated way of handling state locally. See use of StateManager above.
+    // Using the StateManager allows extensions and snippet packages to incrementally
+    // add their reducers to the global Redux store.
+    //////////////////////////////////////////////////////////////////////////////
     // this is the rootReducer for the sample application.
     // this.rootReducer = combineReducers({
     //   sampleAppState: SampleAppReducer,
@@ -210,6 +212,7 @@ export class SampleAppIModelApp {
     // create the Redux Store.
     // this.store = createStore(this.rootReducer,
     //  (window as any).__REDUX_DEVTOOLS_EXTENSION__ && (window as any).__REDUX_DEVTOOLS_EXTENSION__());
+    //////////////////////////////////////////////////////////////////////////////
 
     // register local commands.
     // register core commands not automatically registered
@@ -224,10 +227,7 @@ export class SampleAppIModelApp {
   }
 
   public static async initialize() {
-    UiCore.initialize(IModelApp.i18n); // tslint:disable-line:no-floating-promises
-    UiComponents.initialize(IModelApp.i18n); // tslint:disable-line:no-floating-promises
-
-    await UiFramework.initialize(undefined, IModelApp.i18n);
+    await UiFramework.initialize(undefined);
 
     // initialize Presentation
     await Presentation.initialize({

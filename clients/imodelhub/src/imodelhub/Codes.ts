@@ -137,7 +137,7 @@ export class DefaultCodeUpdateOptionsProvider {
    * @param options Options that should be augmented.
    */
   public async assignOptions(options: CodeUpdateOptions): Promise<void> {
-    const clonedOptions: CodeUpdateOptions = Object.assign({}, options);
+    const clonedOptions: CodeUpdateOptions = { ...options };
     deepAssign(options, this._defaultOptions);
     deepAssign(options, clonedOptions); // ensure the supplied options override the defaults
     return Promise.resolve();

@@ -10,9 +10,9 @@ import * as deepAssign from "deep-assign";
 import * as https from "https";
 import { IStringifyOptions, stringify } from "qs";
 import * as sarequest from "superagent";
-import { ClientsLoggerCategory } from "./iTwinClientLoggerCategory";
+import { ITwinClientLoggerCategory } from "./ITwinClientLoggerCategory";
 
-const loggerCategory: string = ClientsLoggerCategory.Request;
+const loggerCategory: string = ITwinClientLoggerCategory.Request;
 
 /** @beta */
 export const requestIdHeaderName = "X-Correlation-Id";

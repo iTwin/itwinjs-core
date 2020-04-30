@@ -7,6 +7,7 @@ import { expect } from "chai";
 import {
   Vector3d,
   Range1d,
+  Point3d,
 } from "@bentley/geometry-core";
 import { DisplayStyle3dSettings } from "../DisplayStyleSettings";
 import {
@@ -37,6 +38,7 @@ import {
   ThematicDisplayMode,
   ThematicGradientMode,
   ThematicGradientColorScheme,
+  ThematicDisplaySensorSettings,
 } from "../ThematicDisplay";
 
 describe("PlanProjectionSettings", () => {
@@ -422,6 +424,8 @@ describe("ThematicDisplay", () => {
       expect(thematicDisplay.gradientSettings.marginColor.colors.t).to.equal(0);
       expect(thematicDisplay.gradientSettings.customKeys.length).to.equal(0);
       expect(thematicDisplay.range).to.deep.equal(Range1d.createNull());
+      expect(thematicDisplay.sensorSettings).to.deep.equal(ThematicDisplaySensorSettings.fromJSON());
+      expect(thematicDisplay.sensorSettings.sensors).to.deep.equal([]);
     }
 
     // check if the creation and back-and-forth via JSON works
@@ -448,6 +452,30 @@ describe("ThematicDisplay", () => {
     let td = ThematicDisplay.fromJSON(badThematicProps);
     expect(td.equals(defaultThematicDisplay)).to.be.true;
     verifyBackAndForth(td);
+
+    // verify that sensor settings propagate properly through JSON to the object
+    const sensorSettingsProps = {
+      sensors: [
+        { position: [1.0, 2.0, 3.0], value: 0.25 },
+        { position: [4.0, 5.0, 6.0], value: 0.5 },
+        { position: [7.0, 8.0, 9.0], value: 0.75 },
+        { position: [10.0, 11.0, 12.0], value: -1.0 },
+        { position: [13.0, 14.0, 15.0], value: 2.0 },
+      ],
+    };
+    td = ThematicDisplay.fromJSON({ sensorSettings: sensorSettingsProps });
+    expect(td.sensorSettings.sensors!.length).to.equal(5);
+    expect(td.sensorSettings.sensors![0].position).to.deep.equal(Point3d.fromJSON(sensorSettingsProps.sensors[0].position));
+    expect(td.sensorSettings.sensors![0].value).to.equal(sensorSettingsProps.sensors[0].value);
+    expect(td.sensorSettings.sensors![1].position).to.deep.equal(Point3d.fromJSON(sensorSettingsProps.sensors[1].position));
+    expect(td.sensorSettings.sensors![1].value).to.equal(sensorSettingsProps.sensors[1].value);
+    expect(td.sensorSettings.sensors![2].position).to.deep.equal(Point3d.fromJSON(sensorSettingsProps.sensors[2].position));
+    expect(td.sensorSettings.sensors![2].value).to.equal(sensorSettingsProps.sensors[2].value);
+    expect(td.sensorSettings.sensors![3].position).to.deep.equal(Point3d.fromJSON(sensorSettingsProps.sensors[3].position));
+    expect(td.sensorSettings.sensors![3].value).to.equal(0); // verify that the 'bad' value of -1 gets clamped to 0
+    expect(td.sensorSettings.sensors![4].position).to.deep.equal(Point3d.fromJSON(sensorSettingsProps.sensors[4].position));
+    expect(td.sensorSettings.sensors![4].value).to.equal(1); // verify that the 'bad' value of 2 gets clamped to 1
+    verifyBackAndForth(td); // verify round-trip
 
     // check if configuring custom color scheme incorrectly is resolved as expected
     badThematicProps = {

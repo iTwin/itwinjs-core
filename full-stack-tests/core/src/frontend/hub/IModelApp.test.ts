@@ -7,8 +7,8 @@ import { ClientRequestContext, ClientRequestContextProps } from "@bentley/bentle
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { IModelApp, AuthorizedFrontendRequestContext } from "@bentley/imodeljs-frontend";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
-import { TestAuthorizationClient, TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
 import { TestUtility } from "./TestUtility";
+import { TestUsers, TestFrontendAuthorizationClient } from "@bentley/oidc-signin-tool/lib/frontend";
 
 describe("IModelApp (#integration)", () => {
 
@@ -20,7 +20,7 @@ describe("IModelApp (#integration)", () => {
     });
 
     const requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
-    IModelApp.authorizationClient = new TestAuthorizationClient(requestContext.accessToken);
+    IModelApp.authorizationClient = new TestFrontendAuthorizationClient(requestContext.accessToken);
   });
 
   after(async () => {

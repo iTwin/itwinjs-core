@@ -211,8 +211,8 @@ export class PrimitiveCommand {
       return;
 
     const target = exec.target;
-    const shadowable = (techniqueId === TechniqueId.Surface || techniqueId === TechniqueId.TerrainMesh) && target.solarShadowMap.isReady && target.currentViewFlags.shadows;
     const thematic = this.primitive.cachedGeometry.supportsThematicDisplay && target.wantThematicDisplay;
+    const shadowable = (techniqueId === TechniqueId.Surface || techniqueId === TechniqueId.TerrainMesh) && target.solarShadowMap.isReady && target.currentViewFlags.shadows && !thematic;
     const isShadowable = shadowable ? IsShadowable.Yes : IsShadowable.No;
     const isThematic = thematic ? IsThematic.Yes : IsThematic.No;
     const isClassified = (undefined !== target.currentPlanarClassifierOrDrape || undefined !== target.activeVolumeClassifierTexture) ? IsClassified.Yes : IsClassified.No;
@@ -220,8 +220,7 @@ export class PrimitiveCommand {
     const isAnimated = this.primitive.hasAnimation ? IsAnimated.Yes : IsAnimated.No;
 
     const flags = PrimitiveCommand._scratchTechniqueFlags;
-    flags.init(target, exec.renderPass, isInstanced, isAnimated, isClassified, isShadowable, undefined, isThematic);
-    flags.setHasMaterialAtlas(target.currentViewFlags.materials && this.primitive.hasMaterialAtlas);
+    flags.init(target, exec.renderPass, isInstanced, isAnimated, isClassified, isShadowable, isThematic);
 
     const technique = target.techniques.getTechnique(techniqueId);
     const program = technique.getShader(flags);

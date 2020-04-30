@@ -16,7 +16,6 @@ import {
   NotificationManager,
   NotifyMessageDetails,
   ToolTipOptions,
-  OutputMessageType,
   ToolAssistanceInstructions,
   ToolAssistance,
 } from "@bentley/imodeljs-frontend";
@@ -53,12 +52,7 @@ export class AppNotificationManager extends NotificationManager {
 
   /** Output a message and/or alert to the user. */
   public outputMessage(message: NotifyMessageDetails): void {
-    if (message.msgType === OutputMessageType.Pointer) {
-      PointerMessage.showMessage(message);
-    } else if (message.msgType === OutputMessageType.InputField && message.inputField) {
-      MessageManager.displayInputFieldMessage(message.inputField, message.briefMessage, message.detailedMessage, message.priority);
-    }
-    MessageManager.addMessage(message);
+    MessageManager.outputMessage(message);
   }
 
   /** Output a MessageBox and wait for response from the user.
@@ -109,6 +103,7 @@ export class AppNotificationManager extends NotificationManager {
 
     return result;
   }
+
   /** Update message position created with [[OutputMessageType.Pointer]].
    * @param displayPoint        Point at which to display the Pointer type message.
    * @param relativePosition    Position relative to displayPoint at which to display the Pointer type message.

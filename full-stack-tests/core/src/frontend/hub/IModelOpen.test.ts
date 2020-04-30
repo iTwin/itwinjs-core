@@ -6,7 +6,7 @@ import { BeDuration, GuidString, Logger, OpenMode } from "@bentley/bentleyjs-cor
 import { ChangeSet, ChangeSetQuery, IModelHubClient } from "@bentley/imodelhub-client";
 import { IModelVersion } from "@bentley/imodeljs-common";
 import { AuthorizedFrontendRequestContext, RemoteBriefcaseConnection, IModelApp, IModelConnection, MockRender } from "@bentley/imodeljs-frontend";
-import { TestAuthorizationClient, TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
+import { TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
 import { assert } from "chai";
 import { TestUtility } from "./TestUtility";
 
@@ -24,10 +24,8 @@ describe("Opening IModelConnection (#integration)", () => {
     const testProjectName = "iModelJsIntegrationTest";
     const testIModelName = "Stadium Dataset 1";
 
-    await TestUtility.initializeTestProject(testProjectName, TestUsers.regular);
-
-    const requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
-    IModelApp.authorizationClient = new TestAuthorizationClient(requestContext.accessToken);
+    const authorizationClient = await TestUtility.initializeTestProject(testProjectName, TestUsers.regular);
+    IModelApp.authorizationClient = authorizationClient;
 
     // Setup a model with a large number of change sets
     testProjectId = await TestUtility.getTestProjectId(testProjectName);

@@ -125,6 +125,7 @@
     "alertMessageBox": "Alert",
     "noIconMessageBox": "No Icon Message",
     "openMessageBox": "Open Message Box",
+    "openSeveralMessages": "Open Several Messages",
     "setLengthFormatMetric": "Set Format Metric",
     "setLengthFormatImperial": "Set Format Imperial",
     "toggleLengthFormat": "Toggle Length Format (Imperial/Metric)",

@@ -5,7 +5,7 @@
 @import "./tools/button/variables";
 @import "../widgetopacity";
 
-div.nz-navigation-widget {
+.nz-widget-navigationArea {
   transition: visibility 0.5s ease, opacity 0.5s ease;
 
   &.nz-hidden {
@@ -38,11 +38,11 @@ div.nz-navigation-widget {
       @include nz-widget-opacity;
     }
 
-  > div.nz-horizontal-toolbar-container {
+  > .nz-horizontal-toolbar-container {
     grid-area: htools;
 
     width: 100%;
-    > div.components-toolbar-overflow-sizer{
+    > .components-toolbar-overflow-sizer{
       display: flex;
       justify-content: flex-end;
     }

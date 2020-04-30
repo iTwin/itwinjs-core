@@ -7,9 +7,8 @@
  */
 
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
-import { ImsAuthorizationClient, AccessToken, UserInfo } from "@bentley/itwin-client";
-import { Issuer, Client as OpenIdClient, ClientConfiguration, TokenSet } from "openid-client";
-import { decode } from "jsonwebtoken";
+import { ImsAuthorizationClient } from "@bentley/itwin-client";
+import { Issuer, Client as OpenIdClient, ClientConfiguration } from "openid-client";
 
 /**
  * Client configuration to create OIDC/OAuth tokens for backend applications
@@ -75,15 +74,4 @@ export abstract class BackendAuthorizationClient extends ImsAuthorizationClient 
     return this._client;
   }
 
-  protected createToken(tokenSet: TokenSet, userInfo?: UserInfo): AccessToken {
-    const startsAt: Date = new Date((tokenSet.expires_at - tokenSet.expires_in) * 1000);
-    const expiresAt: Date = new Date(tokenSet.expires_at * 1000);
-    return AccessToken.fromJsonWebTokenString(tokenSet.access_token, startsAt, expiresAt, userInfo);
-  }
-
-  public static parseUserInfo(jwt: string): UserInfo | undefined {
-    const decoded: any = decode(jwt, { json: true, complete: false });
-    const userInfo = UserInfo.fromTokenResponseJson(decoded);
-    return userInfo;
-  }
 }

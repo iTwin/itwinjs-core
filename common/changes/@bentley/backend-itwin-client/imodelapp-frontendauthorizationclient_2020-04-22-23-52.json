@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/backend-itwin-client",
+      "comment": "update imodelbank authorization clients to implement FrontendAuthorizationClient",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/backend-itwin-client",
+  "email": "evan.preslar@bentley.com"
+}

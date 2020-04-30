@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { AccessToken, AuthorizedClientRequestContext, AuthorizationClient } from "@bentley/itwin-client";
+import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { TestBrowserAuthorizationClient } from "./TestBrowserAuthorizationClient";
 import { TestBrowserAuthorizationClientConfiguration, TestUserCredentials, TestUsers } from "./TestUsers";
 
@@ -12,17 +12,17 @@ import { TestBrowserAuthorizationClientConfiguration, TestUserCredentials, TestU
  * @internal
  */
 export class TestUtility {
-  private static _clients = new Map<string, AuthorizationClient>();
+  private static _clients = new Map<string, TestBrowserAuthorizationClient>();
 
   /**
    * Gets the authorization client for the specified iModel.js test user.
    * - Caches the client for future use.
    * - Uses the default iModel.js internal OIDC SPA client registration by default.
    * @param user Test user credentials
-   * @param oidcConfig Test oidc coniguration to use for the provided user
+   * @param oidcConfig Test oidc configuration to use for the provided user
    * @internal
    */
-  public static getAuthorizationClient(user: TestUserCredentials, oidcConfig?: TestBrowserAuthorizationClientConfiguration): AuthorizationClient {
+  public static getAuthorizationClient(user: TestUserCredentials, oidcConfig?: TestBrowserAuthorizationClientConfiguration): TestBrowserAuthorizationClient {
     let client = this._clients.get(user.email);
     if (client !== undefined)
       return client;

@@ -21,7 +21,7 @@ describe("Agent (#integration)", () => {
 
     before(async () => {
       IModelTestUtils.setupLogging();
-      // IModelTestUtils.setupDebugLogLevels();
+      IModelTestUtils.setupDebugLogLevels();
 
       const agentConfiguration: AgentAuthorizationClientConfiguration = {
         clientId: Config.App.getString("imjs_agent_test_client_id"),

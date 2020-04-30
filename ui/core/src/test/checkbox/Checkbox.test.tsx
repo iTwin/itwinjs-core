@@ -6,6 +6,8 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { render, fireEvent } from "@testing-library/react";
 import { expect } from "chai";
+import { mount } from "enzyme";
+
 import { Checkbox } from "../../ui-core/checkbox/Checkbox";
 import { InputStatus } from "../../ui-core/inputs/InputStatus";
 
@@ -62,6 +64,28 @@ describe("Checkbox", () => {
 
     const element = document.activeElement as HTMLElement;
     expect(element && element === input).to.be.true;
+  });
+
+  it("Checkbox should call onBlur handler", () => {
+    const spyMethod = sinon.spy();
+
+    const wrapper = mount(
+      <Checkbox checked={false} onBlur={spyMethod} />,
+    );
+
+    const input = wrapper.find("input");
+    input.length.should.eq(1);
+
+    input.simulate("blur");
+    spyMethod.calledOnce.should.false;
+
+    const label = wrapper.find("label");
+    label.length.should.eq(1);
+
+    label.simulate("blur");
+    spyMethod.calledOnce.should.true;
+
+    wrapper.unmount();
   });
 
 });

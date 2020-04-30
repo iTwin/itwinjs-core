@@ -76,7 +76,7 @@ export class IModelCard extends React.Component<IModelCardProps, IModelCardState
     } else if (this.props.iModel.thumbnail) {
       return (
         <div className="preview-container">
-          <img className="thumbnail" id="base64image" src={this.props.iModel.thumbnail} />
+          <img className="thumbnail" id="base64image" src={this.props.iModel.thumbnail} alt="" />
           <span className="open">Open</span>
         </div>
       );

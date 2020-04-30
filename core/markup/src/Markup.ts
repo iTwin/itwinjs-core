@@ -162,9 +162,12 @@ export class MarkupApp {
   };
 
   private static _saveDefaultToolId = "";
-  public static screenToVbMtx = new Matrix();
+  public static screenToVbMtx(): Matrix {
+    const matrix = this.markup?.svgMarkup?.screenCTM().inverse();
+    return (undefined !== matrix ? matrix : new Matrix());
+  }
   public static getVpToScreenMtx(): Matrix { const rect = this.markup!.markupDiv.getBoundingClientRect(); return (new Matrix()).translateO(rect.left, rect.top); }
-  public static getVpToVbMtx(): Matrix { return this.getVpToScreenMtx().lmultiplyO(this.screenToVbMtx); }
+  public static getVpToVbMtx(): Matrix { return this.getVpToScreenMtx().lmultiplyO(this.screenToVbMtx()); }
   public static convertVpToVb(pt: XAndY): Point3d {
     const pt0 = new Point(pt.x, pt.y);
     pt0.transformO(this.getVpToVbMtx());
@@ -180,11 +183,17 @@ export class MarkupApp {
   protected static lockViewportSize(view: ScreenViewport, markupData?: MarkupSvgData) {
     const parentDiv = view.vpDiv;
     const rect = parentDiv.getBoundingClientRect();
+    let width = rect.width;
     let height = rect.height;
-    if (markupData)
-      height = Math.floor(rect.width * (markupData.rect.height / markupData.rect.width));
+    if (markupData) {
+      const aspect = markupData.rect.height / markupData.rect.width;
+      if ((width * aspect) > height)
+        width = Math.floor(height / aspect);
+      else
+        height = Math.floor(width * aspect);
+    }
     const style = parentDiv.style;
-    style.width = rect.width + "px";
+    style.width = width + "px";
     style.height = height + "px";
   }
 
@@ -267,10 +276,20 @@ export class MarkupApp {
     markup.svgDecorations!.remove(); // we don't want the decorations or dynamics to be included
     markup.svgDynamics!.remove();
     IModelApp.toolAdmin.startDefaultTool();
-    if (!markup.svgContainer.attr("width") || !markup.svgContainer.attr("height")) {
-      markup.svgContainer.attr({ width: markup.svgContainer.viewbox().width }); // Firefox requires width and height on top-level svg or drawImage does nothing...
-      markup.svgContainer.attr({ height: markup.svgContainer.viewbox().height });
-    }
+    return markup.svgContainer.svg(); // string-ize the SVG data
+  }
+
+  /** convert the current markup SVG into a string (after calling readMarkupSvg) making sure width and height are specified.
+   * @internal
+   */
+  protected static readMarkupSvgForDrawImage() {
+    const markup = this.markup;
+    if (!markup || !markup.svgContainer)
+      return undefined;
+    // Firefox requires width and height on top-level svg or drawImage does nothing, passing width/height to drawImage doesn't work.
+    const rect = markup.markupDiv.getBoundingClientRect();
+    markup.svgContainer.width(rect.width);
+    markup.svgContainer.height(rect.height);
     return markup.svgContainer.svg(); // string-ize the SVG data
   }
 
@@ -281,8 +300,9 @@ export class MarkupApp {
     let svg, image;
     try {
       svg = this.readMarkupSvg(); // read the current svg data for the markup
-      if (svg && result.imprintSvgOnImage) {
-        const svgImage = await imageElementFromImageSource(new ImageSource(svg, ImageSourceFormat.Svg));
+      const svgForImage = (svg && result.imprintSvgOnImage ? this.readMarkupSvgForDrawImage() : undefined);
+      if (svgForImage) {
+        const svgImage = await imageElementFromImageSource(new ImageSource(svgForImage, ImageSourceFormat.Svg));
         canvas.getContext("2d")!.drawImage(svgImage, 0, 0); // draw markup svg onto view's canvas2d
       }
 
@@ -415,7 +435,6 @@ export class Markup {
     this.svgDecorations = this.addNested(MarkupApp.decorationsClass); // only for temporary decorations of SVG graphics.
     this.addBorder();
     this.selected = new MarkupSelected(this.svgDecorations);
-    MarkupApp.screenToVbMtx = this.svgMarkup.screenCTM().inverse();
   }
 
   /** Called when the Markup is destroyed */

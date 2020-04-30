@@ -76,17 +76,20 @@ describe("RadialMenu", () => {
       wrapper.unmount();
     });
 
-    it("should call onEsc", () => {
+    it("should call onEsc", async () => {
       const spyMethod = sinon.fake();
       const component = render(<RadialMenu opened={true} left={100} top={100} innerRadius={10} outerRadius={100} onEsc={spyMethod} />);
+      await TestUtils.flushAsyncOperations();
+
       const item = component.getByTestId("core-radial-menu");
       item.dispatchEvent(createBubbledEvent("keyup", { key: "Escape" }));
       spyMethod.should.have.been.called;
     });
 
-    it("should call onBlur on window mouseup", () => {
+    it("should call onBlur on window mouseup", async () => {
       const spyMethod = sinon.fake();
       render(<RadialMenu opened={true} left={100} top={100} innerRadius={10} outerRadius={100} onBlur={spyMethod} />);
+      await TestUtils.flushAsyncOperations();
 
       const mouseUp = document.createEvent("HTMLEvents");
       mouseUp.initEvent("mouseup");

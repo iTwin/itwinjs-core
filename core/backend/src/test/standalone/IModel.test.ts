@@ -2,24 +2,29 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { BeEvent, ClientRequestContext, DbResult, GetMetaDataFunction, Guid, GuidString, Id64, Id64String, Logger, LogLevel, OpenMode, using } from "@bentley/bentleyjs-core";
-import { GeometryQuery, LineString3d, Loop, Matrix4d, Point3d, PolyfaceBuilder, Range3d, StrokeOptions, Transform, YawPitchRollAngles } from "@bentley/geometry-core";
-import { AccessToken, AuthorizationClient } from "@bentley/itwin-client";
-import {
-  AxisAlignedBox3d, Code, CodeScopeSpec, CodeSpec, ColorByName, ElementProps, EntityMetaData, EntityProps, FilePropertyProps, FontMap,
-  FontType, GeometricElementProps, IModel, IModelError, IModelStatus, PrimitiveTypeCode, RelatedElement, SubCategoryAppearance,
-  ViewDefinitionProps, DisplayStyleSettingsProps, ColorDef, ViewFlags, RenderMode, DisplayStyleProps, BisCodeSpec, ImageSourceFormat,
-  TextureFlags, TextureMapping, TextureMapProps, TextureMapUnits, GeometryStreamBuilder, GeometricElement3dProps, GeometryParams,
-  SpatialViewDefinitionProps, ModelProps,
-} from "@bentley/imodeljs-common";
+
 import { assert, expect } from "chai";
 import * as path from "path";
 import {
-  AutoPush, AutoPushParams, AutoPushEventHandler, AutoPushEventType, AutoPushState, BisCoreSchema, Category, ClassRegistry, DefinitionModel, DefinitionPartition,
-  DictionaryModel, DocumentPartition, DrawingGraphic, ECSqlStatement, Element, ElementGroupsMembers, ElementOwnsChildElements, Entity,
-  GeometricElement2d, GeometricElement3d, GeometricModel, GroupInformationPartition, IModelDb, IModelHost, IModelJsFs, InformationPartitionElement,
-  LightLocation, LinkPartition, Model, PhysicalModel, PhysicalPartition, RenderMaterialElement, SpatialCategory, SqliteStatement, SqliteValue,
-  SqliteValueType, SubCategory, Subject, Texture, ViewDefinition, DisplayStyle3d, ElementDrivesElement, PhysicalObject, BackendRequestContext, BriefcaseIdValue, SnapshotDb, StandaloneDb,
+  BeEvent, ClientRequestContext, DbResult, GetMetaDataFunction, Guid, GuidString, Id64, Id64String, Logger, LogLevel, OpenMode, using,
+} from "@bentley/bentleyjs-core";
+import {
+  GeometryQuery, LineString3d, Loop, Matrix4d, Point3d, PolyfaceBuilder, Range3d, StrokeOptions, Transform, YawPitchRollAngles,
+} from "@bentley/geometry-core";
+import {
+  AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeSpec, CodeSpec, ColorByName, ColorDef, DisplayStyleProps, DisplayStyleSettingsProps, ElementProps,
+  EntityMetaData, EntityProps, FilePropertyProps, FontMap, FontType, GeometricElement3dProps, GeometricElementProps, GeometryParams,
+  GeometryStreamBuilder, ImageSourceFormat, IModel, IModelError, IModelStatus, ModelProps, PrimitiveTypeCode, RelatedElement, RenderMode,
+  SpatialViewDefinitionProps, SubCategoryAppearance, TextureFlags, TextureMapping, TextureMapProps, TextureMapUnits, ViewDefinitionProps, ViewFlags,
+} from "@bentley/imodeljs-common";
+import { AccessToken, AuthorizationClient } from "@bentley/itwin-client";
+import {
+  AutoPush, AutoPushEventHandler, AutoPushEventType, AutoPushParams, AutoPushState, BackendRequestContext, BisCoreSchema, BriefcaseIdValue, Category,
+  ClassRegistry, DefinitionModel, DefinitionPartition, DictionaryModel, DisplayStyle3d, DocumentPartition, DrawingGraphic, ECSqlStatement, Element,
+  ElementDrivesElement, ElementGroupsMembers, ElementOwnsChildElements, Entity, GeometricElement2d, GeometricElement3d, GeometricModel,
+  GroupInformationPartition, IModelDb, IModelHost, IModelJsFs, InformationPartitionElement, LightLocation, LinkPartition, Model, PhysicalModel,
+  PhysicalObject, PhysicalPartition, RenderMaterialElement, SnapshotDb, SpatialCategory, SqliteStatement, SqliteValue, SqliteValueType, StandaloneDb,
+  SubCategory, Subject, Texture, ViewDefinition,
 } from "../../imodeljs-backend";
 import { DisableNativeAssertions, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
@@ -1359,10 +1364,8 @@ describe("iModel", () => {
 
   it("should create link table relationship instances", () => {
     const snapshotFile2: string = IModelTestUtils.prepareOutputFile("IModel", "CreateLinkTable.bim");
-    const testImodel = SnapshotDb.createFrom(imodel1, snapshotFile2);
+    const testImodel = StandaloneDb.createEmpty(snapshotFile2, { rootSubject: { name: "test1" }, allowEdit: JSON.stringify({ txns: true }) });
     const elements = testImodel.elements;
-
-    testImodel.nativeDb.enableTxnTesting();
 
     // Create a new physical model
     const newModelId = PhysicalModel.insert(testImodel, IModel.rootSubjectId, "TestModel");
@@ -1622,8 +1625,6 @@ describe("iModel", () => {
         return fakeAccessToken2;
       },
       isAuthorized: true,
-      hasExpired: false,
-      hasSignedIn: true,
     };
 
     lastPushTimeMillis = 0;
@@ -1831,6 +1832,12 @@ describe("iModel", () => {
     snapshotDb1.close();
     snapshotDb2.close();
     snapshotDb3.close();
+
+    assert.throws(() => { StandaloneDb.openFile(snapshotFile1); }); // attempt to open snapshot writeable should throw
+    snapshotDb1 = StandaloneDb.openFile(snapshotFile1, OpenMode.Readonly);
+    assert.isDefined(snapshotDb1, "should open readonly");
+    snapshotDb1.close();
+
     assert.isUndefined(SnapshotDb.tryFindByKey(snapshotFile1));
     assert.isUndefined(SnapshotDb.tryFindByKey(snapshotFile2));
     assert.isUndefined(SnapshotDb.tryFindByKey(snapshotFile3));

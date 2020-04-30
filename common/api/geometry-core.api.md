@@ -1402,7 +1402,9 @@ export class CurveExtendOptions {
 export class CurveFactory {
     static appendToArcInPlace(arcA: Arc3d, arcB: Arc3d, allowReverse?: boolean): boolean;
     static assembleArcChainOnEllipsoid(ellipsoid: Ellipsoid, pathPoints: GeodesicPathPoint[], fractionForIntermediateNormal?: number): Path;
+    static createArcPointTangentPoint(pointA: Point3d, tangentA: Vector3d, pointB: Point3d): Arc3d | undefined;
     static createFilletsInLineString(points: LineString3d | IndexedXYZCollection | Point3d[], radius: number | number[], allowBackupAlongEdge?: boolean): Path | undefined;
+    static createMiteredPipeSections(centerline: IndexedXYZCollection, radius: number): Arc3d[];
     static createPipeSegments(centerline: CurvePrimitive | CurveChain, pipeRadius: number): GeometryQuery | GeometryQuery[] | undefined;
     static createRectangleXY(x0: number, y0: number, x1: number, y1: number, z?: number, filletRadius?: number): Loop;
 }
@@ -2072,6 +2074,7 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
     pushInterpolatedFromGrowableXYZArray(source: GrowableXYZArray, i: number, fraction: number, j: number): void;
     pushWrap(numWrap: number): void;
     pushXYZ(x: number, y: number, z: number): void;
+    static removeClosure(points: IndexedReadWriteXYZCollection, tolerance?: number): void;
     resize(pointCount: number): void;
     reverseInPlace(): void;
     scaleInPlace(factor: number): void;
@@ -2891,7 +2894,7 @@ export class Matrix3d implements BeJSONFunctions {
     static createCapture(coffs: Float64Array, inverseCoffs?: Float64Array): Matrix3d;
     static createColumns(vectorU: Vector3d, vectorV: Vector3d, vectorW: Vector3d, result?: Matrix3d): Matrix3d;
     static createColumnsInAxisOrder(axisOrder: AxisOrder, columnA: Vector3d, columnB: Vector3d, columnC: Vector3d | undefined, result?: Matrix3d): Matrix3d;
-    static createColumnsXYW(vectorU: XAndY, uz: number, vectorV: XAndY, vz: number, vectorW: XAndY, wz: number, result?: Matrix3d): Matrix3d;
+    static createColumnsXYW(vectorU: XAndY, u: number, vectorV: XAndY, v: number, vectorW: XAndY, w: number, result?: Matrix3d): Matrix3d;
     static createDirectionalScale(direction: Vector3d, scale: number, result?: Matrix3d): Matrix3d;
     static createFromQuaternion(quat: Point4d): Matrix3d;
     static createIdentity(result?: Matrix3d): Matrix3d;
@@ -2965,13 +2968,13 @@ export class Matrix3d implements BeJSONFunctions {
     multiplyMatrixInverseMatrix(other: Matrix3d, result?: Matrix3d): Matrix3d | undefined;
     multiplyMatrixMatrix(other: Matrix3d, result?: Matrix3d): Matrix3d;
     multiplyMatrixMatrixInverse(other: Matrix3d, result?: Matrix3d): Matrix3d | undefined;
-    multiplyMatrixMatrixTranspose(other: Matrix3d, result?: Matrix3d): Matrix3d;
+    multiplyMatrixMatrixTranspose(matrixB: Matrix3d, result?: Matrix3d): Matrix3d;
     multiplyMatrixTransform(other: Transform, result?: Transform): Transform;
     multiplyMatrixTransposeMatrix(other: Matrix3d, result?: Matrix3d): Matrix3d;
     multiplyTransposeVector(vector: Vector3d, result?: Vector3d): Vector3d;
-    multiplyTransposeVectorInPlace(xyzData: XYZ): void;
+    multiplyTransposeVectorInPlace(vectorU: XYZ): void;
     multiplyTransposeXYZ(x: number, y: number, z: number, result?: Vector3d): Vector3d;
-    multiplyVector(vector: XYAndZ, result?: Vector3d): Vector3d;
+    multiplyVector(vectorU: XYAndZ, result?: Vector3d): Vector3d;
     multiplyVectorArrayInPlace(data: XYZ[]): void;
     multiplyVectorInPlace(xyzData: XYZ): void;
     multiplyXY(x: number, y: number, result?: Vector3d): Vector3d;
@@ -3791,6 +3794,8 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     addIndexedPolyface(source: IndexedPolyface, reversed: boolean, transform?: Transform): void;
     addLinearSweep(surface: LinearSweep): void;
     addLinearSweepLineStringsXYZOnly(contour: AnyCurve, vector: Vector3d): void;
+    // (undocumented)
+    addMiteredPipes(centerline: IndexedXYZCollection | Point3d[] | CurvePrimitive, radius: number, numFacetAround?: number): void;
     addPolygon(points: Point3d[], numPointsToUse?: number): void;
     addPolygonGrowableXYZArray(points: GrowableXYZArray): void;
     addQuadFacet(points: Point3d[] | GrowableXYZArray, params?: Point2d[], normals?: Vector3d[]): void;
@@ -4525,6 +4530,8 @@ export class Sample {
     static createPlane(x: number, y: number, z: number, u: number, v: number, w: number): Plane3dByOriginAndUnitNormal;
     static createPoint2dLattice(low: number, step: number, high: number): Point2d[];
     static createPoint3dLattice(low: number, step: number, high: number): Point3d[];
+    static createPointsByIndexFunctions(numInterval: number, fx: SteppedIndexFunction, fy: SteppedIndexFunction, fz?: SteppedIndexFunction): Point3d[];
+    static createPointSineWave(origin: XYAndZ | undefined, numInterval?: number, xStep?: number, a?: number, thetaSweep?: AngleSweep, b?: number, betaSweep?: AngleSweep): Point3d[];
     static createPseudoTorusBsplineSurface(radiusU: number, radiusV: number, numU: number, numV: number, orderU: number, orderV: number): BSplineSurface3d | undefined;
     static createRange3ds(): Range3d[];
     static createRangeEdges(range: Range3d): BagOfCurves | undefined;
@@ -4730,6 +4737,17 @@ export enum StandardViewIndex {
     Right = 4,
     RightIso = 8,
     Top = 1
+}
+
+// @alpha
+export type SteppedIndexFunction = (i: number, n: number) => number;
+
+// @alpha
+export class SteppedIndexFunctionFactory {
+    static createConstant(value?: number): SteppedIndexFunction;
+    static createCosine(amplitude: number, sweep?: AngleSweep, f0?: number): SteppedIndexFunction;
+    static createLinear(a: number, f0?: number): SteppedIndexFunction;
+    static createSine(amplitude: number, sweep?: AngleSweep, f0?: number): SteppedIndexFunction;
 }
 
 // @public

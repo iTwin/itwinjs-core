@@ -95,6 +95,7 @@ export * from "./ui-framework/messages/AppNotificationManager";
 export * from "./ui-framework/messages/MessageManager";
 export * from "./ui-framework/messages/InputField";
 export * from "./ui-framework/messages/Pointer";
+export * from "./ui-framework/messages/ReactNotifyMessageDetails";
 
 export * from "./ui-framework/navigationaids/CubeNavigationAidControl";
 export * from "./ui-framework/navigationaids/DrawingNavigationAidControl";
@@ -209,7 +210,6 @@ export * from "./ui-framework/utils/UiShowHideManager";
 export * from "./ui-framework/utils/ToolbarButtonHelper";
 
 export * from "./ui-framework/widget-panels/Content";
-export * from "./ui-framework/widget-panels/DefaultToolSettings";
 export * from "./ui-framework/widget-panels/Frontstage";
 export * from "./ui-framework/widget-panels/FrontstageContent";
 export * from "./ui-framework/widget-panels/StatusBar";

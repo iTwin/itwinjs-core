@@ -1375,8 +1375,11 @@ export interface ContextRealityModelProps {
     tilesetUrl: string;
 }
 
-// @beta
+// @public
 export type CreateEmptySnapshotIModelProps = CreateIModelProps & CreateSnapshotIModelProps;
+
+// @internal
+export type CreateEmptyStandaloneIModelProps = CreateIModelProps & CreateStandaloneIModelProps;
 
 // @public
 export interface CreateIModelProps extends IModelProps {
@@ -1416,9 +1419,14 @@ export interface CreatePolyfaceResponseResult {
     materialDiffuseColor?: ColorDefProps;
 }
 
-// @beta
+// @public
 export interface CreateSnapshotIModelProps extends IModelEncryptionProps {
     createClassViews?: boolean;
+}
+
+// @internal
+export interface CreateStandaloneIModelProps extends IModelEncryptionProps {
+    allowEdit?: string;
 }
 
 // @internal (undocumented)
@@ -3186,7 +3194,7 @@ export interface IModelCoordinatesResponseProps {
     iModelCoords: PointWithStatus[];
 }
 
-// @beta
+// @public
 export interface IModelEncryptionProps {
     password?: string;
 }
@@ -3316,7 +3324,7 @@ export abstract class IModelWriteRpcInterface extends RpcInterface {
     // (undocumented)
     createAndInsertSpatialCategory(_tokenProps: IModelRpcProps, _scopeModelId: Id64String, _categoryName: string, _appearance: SubCategoryAppearance.Props): Promise<Id64String>;
     // (undocumented)
-    deleteElements(_tokenProps: IModelRpcProps, _ids: Id64Array): Promise<any>;
+    deleteElements(_tokenProps: IModelRpcProps, _ids: Id64Array): Promise<void>;
     // (undocumented)
     doConcurrencyControlRequest(_tokenProps: IModelRpcProps): Promise<void>;
     static getClient(): IModelWriteRpcInterface;
@@ -4923,7 +4931,7 @@ export class ResponseLike implements Response {
     // (undocumented)
     get bodyUsed(): boolean;
     // (undocumented)
-    clone(): {} & this;
+    clone(): this;
     // (undocumented)
     formData(): Promise<FormData>;
     // (undocumented)
@@ -6100,13 +6108,17 @@ export class ThematicDisplay {
     static fromJSON(json?: ThematicDisplayProps): ThematicDisplay;
     readonly gradientSettings: ThematicGradientSettings;
     readonly range: Range1d;
+    // @alpha
+    readonly sensorSettings: ThematicDisplaySensorSettings;
     // (undocumented)
     toJSON(): ThematicDisplayProps;
 }
 
 // @beta
 export enum ThematicDisplayMode {
-    Height = 0
+    Height = 0,
+    // @alpha
+    InverseDistanceWeightedSensors = 1
 }
 
 // @beta
@@ -6115,6 +6127,42 @@ export interface ThematicDisplayProps {
     displayMode?: ThematicDisplayMode;
     gradientSettings?: ThematicGradientSettingsProps;
     range?: Range1dProps;
+    // @alpha
+    sensorSettings?: ThematicDisplaySensorSettingsProps;
+}
+
+// @alpha
+export class ThematicDisplaySensor {
+    // (undocumented)
+    equals(other: ThematicDisplaySensor): boolean;
+    // (undocumented)
+    static fromJSON(json?: ThematicDisplaySensorProps): ThematicDisplaySensor;
+    position: Readonly<Point3d>;
+    // (undocumented)
+    toJSON(): ThematicDisplaySensorProps;
+    readonly value: number;
+}
+
+// @alpha
+export interface ThematicDisplaySensorProps {
+    position?: XYZProps;
+    value?: number;
+}
+
+// @alpha
+export class ThematicDisplaySensorSettings {
+    // (undocumented)
+    equals(other: ThematicDisplaySensorSettings): boolean;
+    // (undocumented)
+    static fromJSON(json?: ThematicDisplaySensorSettingsProps): ThematicDisplaySensorSettings;
+    readonly sensors: ThematicDisplaySensor[];
+    // (undocumented)
+    toJSON(): ThematicDisplaySensorSettingsProps;
+}
+
+// @alpha
+export interface ThematicDisplaySensorSettingsProps {
+    sensors?: ThematicDisplaySensorProps[];
 }
 
 // @beta (undocumented)

@@ -8,13 +8,19 @@ import {
   Range3d,
   Transform,
 } from "@bentley/geometry-core";
-import { ViewFlagOverrides } from "@bentley/imodeljs-common";
+import {
+  ServerTimeoutError,
+  TileTreeProps,
+  ViewFlagOverrides,
+} from "@bentley/imodeljs-common";
 import {
   IModelApp,
   IModelConnection,
+  overrideRequestTileTreeProps,
   RenderSystem,
   SnapshotConnection,
   Tile,
+  TileAdmin,
   TileContent,
   TileDrawArgs,
   TileLoadPriority,
@@ -141,5 +147,178 @@ describe("TileTreeSupplier", () => {
 
     expect(ecefTree2).not.to.equal(ecefTree);
     expect(nonEcefTree2).to.equal(nonEcefTree);
+  });
+});
+
+describe("requestTileTreeProps", () => {
+  let imodel: IModelConnection;
+  let imodel2: IModelConnection | undefined;
+  const maxActiveTileTreePropsRequests = 2;
+
+  before(async () => {
+    const tileAdmin = TileAdmin.create({ maxActiveTileTreePropsRequests });
+    await IModelApp.startup({ tileAdmin });
+    imodel = await SnapshotConnection.openFile("mirukuru.ibim");
+  });
+
+  after(async () => {
+    overrideRequestTileTreeProps(undefined);
+
+    if (imodel)
+      await imodel.close();
+
+    if (imodel2)
+      await imodel2.close();
+
+    await IModelApp.shutdown();
+  });
+
+  it("should process requests in FIFO order", async () => {
+    const makePromise = async (id: number) => {
+      try {
+        await imodel.tiles.getTileTreeProps(id.toString());
+      } catch (err) {
+        throw err;
+      }
+    };
+
+    const processed: number[] = [];
+    overrideRequestTileTreeProps(async (_imodel, treeId) => {
+      processed.push(Number.parseInt(treeId, 10));
+      return new Promise((resolve, _reject) => {
+        setTimeout(resolve, 15);
+      });
+    });
+
+    const promises = [];
+    const numRequests = 10;
+    for (let id = 0; id < numRequests; id++)
+      promises.push(makePromise(id));
+
+    await Promise.all(promises);
+    expect(processed.length).to.equal(numRequests);
+    for (let i = 0; i < numRequests; i++)
+      expect(processed[i]).to.equal(i);
+
+    overrideRequestTileTreeProps(undefined);
+  });
+
+  it("should fulfill requests after failed request", async () => {
+    const fulfilled: string[] = [];
+    const getProps = async (id: string) => {
+      try {
+        await imodel.tiles.getTileTreeProps(id);
+        fulfilled.push(id);
+      } catch (_) {
+        //
+      }
+    };
+
+    const promises = [ getProps("0x1c"), getProps("invalid"), getProps("0x1c"), getProps("notanid"), getProps("0x1c") ];
+    await Promise.all(promises);
+    expect(fulfilled.length).to.equal(3);
+    expect(fulfilled.every((x) => x === "0x1c")).to.be.true;
+  });
+
+  it.skip("should throttle requests", async () => {
+    const numRequests = 10;
+    const getProps = async (index: number) => {
+      await imodel.tiles.getTileTreeProps("0x1c");
+      const stats = IModelApp.tileAdmin.statistics;
+
+      const numRemaining = numRequests - index;
+      const expectedNumActive = Math.min(maxActiveTileTreePropsRequests, numRemaining);
+      expect(stats.numActiveTileTreePropsRequests).to.equal(expectedNumActive);
+
+      const expectedNumPending = numRemaining - expectedNumActive;
+
+      // ###TODO The following occassionally fails with 'expected 1 to equal 0'.
+      expect(stats.numPendingTileTreePropsRequests).to.equal(expectedNumPending);
+    };
+
+    const promises = [];
+    for (let i = 1; i <= numRequests; i++)
+      promises.push(getProps(i));
+
+    await Promise.all(promises);
+  });
+
+  it.skip("should reject when iModel closed", async () => {
+    overrideRequestTileTreeProps(async (iModel, _treeId) => {
+      return new Promise((resolve, _reject) => {
+        iModel.onClose.addOnce((_) => {
+          setTimeout(resolve, 15);
+        });
+      });
+    });
+
+    const numRequests = 5;
+    const promises = [];
+    for (let i = 0; i < numRequests; i++)
+      promises.push(imodel.tiles.getTileTreeProps(i.toString()).then((_props) => i).catch((err) => err));
+
+    await imodel.close();
+
+    const results = await Promise.all(promises);
+    expect(results.length).to.equal(numRequests);
+
+    for (let i = 0; i < numRequests; i++) {
+      const result = results[i];
+      if (i < maxActiveTileTreePropsRequests) {
+        // ###TODO the following occassionally fails with "expected 'object' to equal 'number'"
+        expect(typeof result).to.equal("number");
+        expect(result).to.equal(i);
+      } else {
+        expect(result).instanceof(ServerTimeoutError);
+      }
+    }
+
+    overrideRequestTileTreeProps(undefined);
+
+    // We closed the iModel. Reopen it for use by subsequent tests.
+    imodel = await SnapshotConnection.openFile("mirukuru.ibim");
+  });
+
+  // ###TODO This occassionally times out, possibly due to sporadic failures in previous tests
+  it.skip("should fulfill requests for other iModels after a different iModel is closed", async () => {
+    imodel2 = await SnapshotConnection.openFile("test.bim");
+
+    overrideRequestTileTreeProps(async (iModel, treeId) => {
+      if (iModel === imodel2)
+        return Promise.resolve({ id: treeId } as TileTreeProps);
+
+      return new Promise((resolve, _reject) => {
+        iModel.onClose.addOnce((_) => setTimeout(resolve, 15));
+      });
+    });
+
+    const promises = [];
+    for (let i = 0; i < 3; i++)
+      promises.push(imodel.tiles.getTileTreeProps(i.toString()).then((_props) => i).catch((err) => err));
+
+    promises.push(imodel2.tiles.getTileTreeProps("imodel2").then((_props) => "imodel2").catch((err) => err));
+
+    await imodel.close();
+
+    const results = await Promise.all(promises);
+    expect(results.length).to.equal(4);
+
+    // The first 2 requests should have resolved, because they were immediately dispatched.
+    expect(typeof results[0]).to.equal("number");
+    expect(typeof results[1]).to.equal("number");
+
+    // The third request should have been abandoned because the iModel was closed.
+    expect(results[2]).instanceof(ServerTimeoutError);
+
+    // After the first iModel was closed, requests associated with the second iModel should resolve.
+    expect(results[3]).to.equal("imodel2");
+
+    overrideRequestTileTreeProps(undefined);
+
+    // We closed the iModel. Reopen it for use by subsequent tests.
+    imodel = await SnapshotConnection.openFile("mirukuru.ibim");
+
+    await imodel2.close();
+    imodel2 = undefined;
   });
 });

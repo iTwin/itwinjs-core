@@ -211,7 +211,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public terrainTransparency: number = 0.0;
 
   // RenderTargetDebugControl
-  public useLogZ = true;
   public vcSupportIntersectingVolumes: boolean = false;
   public drawForReadPixels = false;
   public drawingBackgroundForReadPixels = false;
@@ -248,7 +247,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public get isReadPixelsInProgress(): boolean { return this._isReadPixelsInProgress; }
   public get readPixelsSelector(): Pixel.Selector { return this._readPixelsSelector; }
   public get drawNonLocatable(): boolean { return this._drawNonLocatable; }
-  public get wantLogZ(): boolean { return undefined !== this.uniforms.frustum.logZ; }
 
   public get transparencyThreshold(): number { return this._transparencyThreshold; }
   public get techniques(): Techniques { return this.renderSystem.techniques!; }
@@ -958,15 +956,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
   private getViewFlagsForReadPixels(): ViewFlags {
     const vf = this.currentViewFlags.clone(this._scratchViewFlags);
-    vf.transparency = false;
-    vf.lighting = false;
-    vf.shadows = false;
+    vf.transparency = vf.lighting = vf.shadows = vf.acsTriad = vf.grid = vf.monochrome = vf.materials = vf.ambientOcclusion = vf.thematicDisplay = false;
     vf.noGeometryMap = true;
-    vf.acsTriad = false;
-    vf.grid = false;
-    vf.monochrome = false;
-    vf.materials = false;
-    vf.ambientOcclusion = false;
     return vf;
   }
 

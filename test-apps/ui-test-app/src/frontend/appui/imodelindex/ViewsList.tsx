@@ -259,7 +259,7 @@ export class ViewsList extends React.Component<ViewsListProps, ViewsListState> {
     });
 
     if (isFiltering && views.length === 0) {
-      const message = "No views matching " + "'" + this.state.filter + "'.";
+      const message = "No views matching '" + this.state.filter + "'.";
       return (
         <div className="view-list-nosearchresults" style={{ fontStyle: "italic" }}>{message}</div>
       );

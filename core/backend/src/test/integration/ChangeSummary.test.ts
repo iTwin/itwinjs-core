@@ -537,7 +537,7 @@ describe("ChangeSummary (#integration)", () => {
     }
   });
 
-  it("Create ChangeSummary-s for changes to parent elements", async () => {
+  it.skip("Create ChangeSummary-s for changes to parent elements", async () => {
     // Generate a unique name for the iModel (so that this test can be run simultaneously by multiple users+hosts simultaneously)
     const iModelName = HubUtility.generateUniqueName("ParentElementChangeTest");
 
@@ -590,9 +590,9 @@ describe("ChangeSummary (#integration)", () => {
       assert.isTrue(ChangeSummaryManager.isChangeCacheAttached(iModel));
 
       const changeSummaryJson = getChangeSummaryAsJson(iModel, changeSummaryIds[0]);
-      // console.log(JSON.stringify(changeSummaryJson)); // tslint:disable-line
+      // console.log(JSON.stringify(changeSummaryJson, undefined, 2)); // tslint:disable-line
 
-      assert.strictEqual(changeSummaryJson.instanceChanges.length, 2);
+      assert.strictEqual(changeSummaryJson.instanceChanges.length, 3);
 
       const instanceChange = changeSummaryJson.instanceChanges[0];
       assert.strictEqual(instanceChange.changedInstance.id, elementId3);
@@ -600,7 +600,13 @@ describe("ChangeSummary (#integration)", () => {
       assert.strictEqual(instanceChange.before["parent.id"], elementId1);
       assert.strictEqual(instanceChange.after["parent.id"], elementId2);
 
-      const relInstanceChange = changeSummaryJson.instanceChanges[1];
+      const modelChange = changeSummaryJson.instanceChanges[1];
+      assert.strictEqual(modelChange.changedInstance.id, modelId);
+      assert.strictEqual(modelChange.changedInstance.className, "[BisCore].[PhysicalModel]");
+      assert.exists(modelChange.before.lastMod);
+      assert.exists(modelChange.after.lastMod);
+
+      const relInstanceChange = changeSummaryJson.instanceChanges[2];
       assert.strictEqual(relInstanceChange.changedInstance.className, "[BisCore].[ElementOwnsChildElements]");
       assert.strictEqual(relInstanceChange.before.sourceId, elementId1);
       assert.strictEqual(relInstanceChange.before.targetId, elementId3);
@@ -639,6 +645,9 @@ describe("ChangeSummary (#integration)", () => {
       throw new Error("ChangeSet summary extraction returned invalid ChangeSet summary IDs.");
 
     const changeSummaryId = changeSummariesIds[0];
+    // const changeSummaryJson = getChangeSummaryAsJson(iModel, changeSummaryId);
+    // console.log(JSON.stringify(changeSummaryJson, undefined, 2)); // tslint:disable-line
+
     iModel.withPreparedStatement(
       "SELECT ECInstanceId FROM ecchange.change.InstanceChange WHERE Summary.Id=? ORDER BY ECInstanceId",
       (sqlStatement: ECSqlStatement) => {
@@ -647,10 +656,11 @@ describe("ChangeSummary (#integration)", () => {
           const instanceChangeId = Id64.fromJSON(sqlStatement.getRow().id);
           const instanceChange = ChangeSummaryManager.queryInstanceChange(iModel, instanceChangeId);
           const changedInstanceClass = instanceChange.changedInstance.className;
+          const isModelChange = changedInstanceClass === "[BisCore].[PhysicalModel]";
           const changedInstanceOp = instanceChange.opCode;
           const changedPropertyValueNames = ChangeSummaryManager.getChangedPropertyValueNames(iModel, instanceChangeId);
           assert.isNotEmpty(changedInstanceClass);
-          assert.strictEqual(ChangeOpCode.Insert, changedInstanceOp);
+          assert.strictEqual(isModelChange ? ChangeOpCode.Update : ChangeOpCode.Insert, changedInstanceOp);
           assert.isAbove(changedPropertyValueNames.length, 0);
         }
       });

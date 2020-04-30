@@ -91,7 +91,7 @@ describe("SelectablePropertyBlock", () => {
 
     it("returns true if props have changed", () => {
       const component = new SelectablePropertyBlock(props);
-      const nextProps = Object.assign({}, props);
+      const nextProps = { ...props };
       nextProps.orientation = Orientation.Vertical;
 
       expect(component.shouldComponentUpdate(nextProps, component.state)).to.be.true;
@@ -99,7 +99,7 @@ describe("SelectablePropertyBlock", () => {
 
     it("returns false if selectedKey has changed but selection happened in a different category and didn't have a selection before", () => {
       const component = new SelectablePropertyBlock(props);
-      const nextProps = Object.assign({}, props);
+      const nextProps = { ...props };
       nextProps.selectedPropertyKey = "randomKey";
       const nextState: SelectablePropertyBlockState = { keyMatched: false, columnRatio: 0.25 };
 
@@ -108,7 +108,7 @@ describe("SelectablePropertyBlock", () => {
 
     it("returns true if selectedKey has changed but selection happened in a different category and this category got deselected", () => {
       const component = new SelectablePropertyBlock(props);
-      const nextProps = Object.assign({}, props);
+      const nextProps = { ...props };
       nextProps.selectedPropertyKey = "randomKey";
       component.state = { keyMatched: true, columnRatio: 0.25 };
       const nextState: SelectablePropertyBlockState = { keyMatched: false, columnRatio: 0.25 };
@@ -118,7 +118,7 @@ describe("SelectablePropertyBlock", () => {
 
     it("returns true if selectedKey has changed in this category", () => {
       const component = new SelectablePropertyBlock(props);
-      const nextProps = Object.assign({}, props);
+      const nextProps = { ...props };
       nextProps.selectedPropertyKey = "randomKey";
       component.state = { keyMatched: true, columnRatio: 0.25 };
       const nextState: SelectablePropertyBlockState = { keyMatched: true, columnRatio: 0.25 };

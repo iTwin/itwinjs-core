@@ -5,13 +5,13 @@
 /** @packageDocumentation
  * @module Authorization
  */
-import { BeEvent, ClientRequestContext, IDisposable } from "@bentley/bentleyjs-core";
+import { BeEvent, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { AuthorizationClient, AccessToken } from "@bentley/itwin-client";
 
 /**
  * @beta
  */
-export interface FrontendAuthorizationClient extends IDisposable, AuthorizationClient {
+export interface FrontendAuthorizationClient extends AuthorizationClient {
   /** Called to start the sign-in process. Subscribe to onUserStateChanged to be notified when sign-in completes */
   signIn(requestContext: ClientRequestContext): Promise<void>;
 
@@ -20,6 +20,9 @@ export interface FrontendAuthorizationClient extends IDisposable, AuthorizationC
 
   /** Event called when the user's sign-in state changes - this may be due to calls to signIn(), signOut() or simply because the token expired */
   readonly onUserStateChanged: BeEvent<(token: AccessToken | undefined) => void>;
+
+  /** Set to true if signed in - the accessToken may be active or may have expired and require a refresh */
+  hasSignedIn: boolean;
 }
 
 /** FrontendAuthorization type guard.

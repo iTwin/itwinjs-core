@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodelhub-client",
+      "comment": "Added unlink for file handler",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodelhub-client",
+  "email": "Algirdas.Mikoliunas@bentley.com"
+}

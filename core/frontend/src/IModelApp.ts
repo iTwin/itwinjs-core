@@ -18,7 +18,7 @@ import {
   dispose,
 } from "@bentley/bentleyjs-core";
 import { IModelClient, IModelHubClient } from "@bentley/imodelhub-client";
-import { AccessToken, IncludePrefix, AuthorizationClient } from "@bentley/itwin-client";
+import { AccessToken, IncludePrefix } from "@bentley/itwin-client";
 import { ConnectSettingsClient, SettingsAdmin } from "@bentley/product-settings-client";
 import { IModelError, IModelStatus, RpcConfiguration, RpcRequest } from "@bentley/imodeljs-common";
 import { I18N, I18NOptions } from "@bentley/imodeljs-i18n";
@@ -58,6 +58,7 @@ import * as displayStyleState from "./DisplayStyleState";
 import * as modelselector from "./ModelSelectorState";
 import * as categorySelectorState from "./CategorySelectorState";
 import * as auxCoordState from "./AuxCoordSys";
+import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 
 // tslint:disable-next-line: no-var-requires
 require("./IModeljs-css");
@@ -95,7 +96,7 @@ export interface IModelAppOptions {
   /** If present, supplies the [[I18N]] for this session. May be either an I18N instance or an I18NOptions used to create an I18N */
   i18n?: I18N | I18NOptions;
   /** If present, supplies the authorization information for various frontend APIs */
-  authorizationClient?: AuthorizationClient;
+  authorizationClient?: FrontendAuthorizationClient;
   /** @internal */
   sessionId?: GuidString;
   /** @internal */
@@ -199,7 +200,7 @@ export class IModelApp {
    */
   public static eventSourceOptions: EventSourceOptions = { pollInterval: 3000, prefetchLimit: 512 };
   /** Provides authorization information for various frontend APIs */
-  public static authorizationClient?: AuthorizationClient;
+  public static authorizationClient?: FrontendAuthorizationClient;
   /** The [[ToolRegistry]] for this session. */
   public static readonly tools = new ToolRegistry();
   /** A uniqueId for this session */

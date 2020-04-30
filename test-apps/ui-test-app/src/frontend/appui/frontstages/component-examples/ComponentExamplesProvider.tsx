@@ -274,13 +274,13 @@ export class ComponentExamplesProvider {
       examples: [
         createComponentExample("Normal Tile", undefined,
           <Tile title="Normal Tile" icon="icon-placeholder">
-            <a>Link 1</a>
-            <a>Link 2</a>
+            <a>Link 1</a> {/* eslint-disable-line jsx-a11y/anchor-is-valid */}
+            <a>Link 2</a> {/* eslint-disable-line jsx-a11y/anchor-is-valid */}
           </Tile>),
         createComponentExample("Featured Tile", undefined,
           <FeaturedTile title="Featured Tile" icon="icon-placeholder">
-            <a>Link 1</a>
-            <a>Link 2</a>
+            <a>Link 1</a> {/* eslint-disable-line jsx-a11y/anchor-is-valid */}
+            <a>Link 2</a> {/* eslint-disable-line jsx-a11y/anchor-is-valid */}
           </FeaturedTile>),
         createComponentExample("Minimal Tile", undefined, <MinimalTile title="Minimal Tile" icon="icon-placeholder" />),
         createComponentExample("Featured Minimal Tile", undefined, <MinimalFeaturedTile title="Minimal Featured Tile" icon="icon-placeholder" />),

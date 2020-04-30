@@ -544,6 +544,7 @@ export class SurfaceGeometry extends MeshGeometry {
 
     const useMaterial = wantMaterials(vf);
     flags[SurfaceBitIndex.IgnoreMaterial] = useMaterial ? 0 : 1;
+    flags[SurfaceBitIndex.HasMaterialAtlas] = useMaterial && this.hasMaterialAtlas ? 1 : 0;
 
     flags[SurfaceBitIndex.ApplyLighting] = 0;
     flags[SurfaceBitIndex.NoFaceFront] = 0;
@@ -577,7 +578,8 @@ export class SurfaceGeometry extends MeshGeometry {
       flags[SurfaceBitIndex.MultiplyAlpha] = 0;
     }
 
-    flags[SurfaceBitIndex.TransparencyThreshold] = 0;
+    // The transparency threshold controls how transparent a surface must be to allow light to pass through; more opaque surfaces cast shadows.
+    flags[SurfaceBitIndex.TransparencyThreshold] = params.target.isDrawingShadowMap ? 1 : 0;
     flags[SurfaceBitIndex.BackgroundFill] = 0;
     switch (params.renderPass) {
       // NB: We need this for opaque pass due to SolidFill (must compute transparency, discard below threshold, render opaque at or above threshold)
@@ -600,8 +602,6 @@ export class SurfaceGeometry extends MeshGeometry {
         }
       }
     }
-
-    flags[SurfaceBitIndex.TransparencyThreshold] = params.target.isDrawingShadowMap ? 1 : 0;
   }
 
   private constructor(indices: BufferHandle, numIndices: number, mesh: MeshData) {

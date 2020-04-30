@@ -88,12 +88,13 @@ export class Item {
   /** Serialize this object to JSON */
   public toJSON(): ItemJSON {
     const { label, ...baseItem } = this;
-    return Object.assign({}, baseItem, {
+    return {
+      ...baseItem,
       classInfo: this.classInfo ? ClassInfo.toJSON(this.classInfo) : undefined,
       values: Value.toJSON(this.values) as ValuesMapJSON,
       displayValues: DisplayValue.toJSON(this.displayValues) as DisplayValuesMapJSON,
       labelDefinition: LabelDefinition.toJSON(label),
-    });
+    };
   }
 
   /** Deserialize [[Item]] from JSON */

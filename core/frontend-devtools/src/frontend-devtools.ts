@@ -27,6 +27,7 @@ export * from "./tools/SourceAspectIdTools";
 export * from "./tools/TileRequestDecoration";
 export * from "./tools/TileTreeBoundsDecoration";
 export * from "./tools/ViewportTools";
+export * from "./tools/RealityModelTools";
 
 export * from "./ui/Button";
 export * from "./ui/CheckBox";

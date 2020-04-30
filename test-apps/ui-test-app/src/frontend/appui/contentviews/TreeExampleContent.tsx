@@ -21,10 +21,6 @@ export class TreeExampleContentControl extends ContentControl {
 }
 
 class EditableSimpleTreeDataProvider extends SimpleTreeDataProvider implements EditableTreeDataProvider {
-  constructor(hierarchy: SimpleTreeDataProviderHierarchy) {
-    super(hierarchy);
-  }
-
   public updateLabel(nodeItem: TreeNodeItem, newLabel: string): void {
     nodeItem.label = PropertyRecord.fromString(newLabel);
     this.onTreeNodeChanged.raiseEvent([nodeItem]);

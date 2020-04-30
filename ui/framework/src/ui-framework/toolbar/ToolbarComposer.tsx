@@ -13,7 +13,7 @@ import {
   GroupButton, ActionButton, ConditionalBooleanValue,
 } from "@bentley/ui-abstract";
 import { Orientation } from "@bentley/ui-core";
-import { ToolbarWithOverflow } from "@bentley/ui-components";
+import { ToolbarWithOverflow, ToolbarItem } from "@bentley/ui-components";
 import { Logger } from "@bentley/bentleyjs-core";
 import { Direction, ToolbarPanelAlignment, Toolbar } from "@bentley/ui-ninezone";
 import { ToolbarHelper } from "./ToolbarHelper";
@@ -133,10 +133,15 @@ function cloneGroup(inGroup: GroupButton): GroupButton {
   return clonedGroup;
 }
 
+function getItemSortValue(item: ToolbarItem) {
+  const groupValue = undefined === item.groupPriority ? 0 : item.groupPriority;
+  return groupValue * 10000 + item.itemPriority;
+}
+
 function getSortedChildren(group: GroupButton): ReadonlyArray<ActionButton | GroupButton> {
   const sortedChildren = group.items
     .filter((item) => !(ConditionalBooleanValue.getValue(item.isHidden)))
-    .sort((a, b) => a.itemPriority - b.itemPriority)
+    .sort((a, b) => getItemSortValue(a) - getItemSortValue(b))
     .map((i) => {
       if (ToolbarItemUtilities.isGroupButton(i)) {
         return { ...i, items: getSortedChildren(i) };
@@ -188,7 +193,7 @@ function combineItems(defaultItems: ReadonlyArray<CommonToolbarItem>, addonItems
 
   const availableItems = items
     .filter((item) => !(ConditionalBooleanValue.getValue(item.isHidden)))
-    .sort((a, b) => a.itemPriority - b.itemPriority)
+    .sort((a, b) => getItemSortValue(a) - getItemSortValue(b))
     .map((i) => {
       if (ToolbarItemUtilities.isGroupButton(i)) {
         return { ...i, items: getSortedChildren(i) };

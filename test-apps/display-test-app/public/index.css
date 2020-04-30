@@ -57,6 +57,10 @@
   z-index: 10;
 }
 
+.overflow-auto {
+  overflow: auto;
+}
+
 .floating-window-container {
   position: absolute;
   display: flex;

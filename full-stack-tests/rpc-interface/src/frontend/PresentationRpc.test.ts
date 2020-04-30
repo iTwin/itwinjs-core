@@ -12,8 +12,8 @@ import * as defaultRuleset from "./rulesets/default.json";
 import * as getRelatedDistinctValues from "./rulesets/DistinctValues/getRelatedDistinctValues.json";
 import * as getFilteredNodePaths from "./rulesets/NodePaths/getFilteredNodePaths.json";
 import * as getNodePaths from "./rulesets/NodePaths/getNodePaths.json";
-import { BasicAuthorizationClient } from "./setup/BasicAuthorizationClient";
 import { TestContext } from "./setup/TestContext";
+import { TestFrontendAuthorizationClient } from "@bentley/oidc-signin-tool/lib/frontend";
 
 describe("PresentationRpcInterface tests", () => {
   let iModel: IModelConnection;
@@ -32,7 +32,7 @@ describe("PresentationRpcInterface tests", () => {
     const iModelId = testContext.iModelWithChangesets!.iModelId;
     const contextId = testContext.iModelWithChangesets!.contextId;
     const accessToken = testContext.adminUserAccessToken;
-    (IModelApp.authorizationClient as BasicAuthorizationClient).setAccessToken(accessToken);
+    IModelApp.authorizationClient = new TestFrontendAuthorizationClient(accessToken);
     iModel = await RemoteBriefcaseConnection.open(contextId, iModelId);
   });
 

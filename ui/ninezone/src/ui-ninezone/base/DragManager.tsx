@@ -82,7 +82,7 @@ export function useDragWidget(args: UseDragWidgetArgs) {
     };
   }, [widgetId]);
   const handleDragStart = React.useCallback<DragEventHandler>((item) => {
-    onDragStart && onDragStart((id: WidgetDragItem["id"]) => {
+    onDragStart && onDragStart((id) => {
       item.id = id;
     });
   }, [onDragStart]);
@@ -93,8 +93,12 @@ export function useDragWidget(args: UseDragWidgetArgs) {
   const handleDragEnd = React.useCallback<DragEventHandler>((_, __, target) => {
     onDragEnd && onDragEnd(target);
   }, [onDragEnd]);
+  const isDragItem = React.useCallback<NonNullable<UseDragItemArgs<WidgetDragItem>["isDragItem"]>>((item, dragged) => {
+    return !!item && defaultIsDragItem(item, dragged);
+  }, []);
   const onItemDragStart = useDragItem({
     item: widgetItem,
+    isDragItem,
     onDragStart: handleDragStart,
     onDrag: handleDrag,
     onDragEnd: handleDragEnd,
@@ -181,6 +185,33 @@ export function useDragResizeHandle(args: UseDragResizeHandleArgs) {
       lastPointerPosition: initialPointerPosition,
     });
   }, [onItemDragStart]);
+  return handleDragStart;
+}
+
+/** @internal */
+export interface UseDragToolSettingsArgs {
+  newWidgetDragItemId: WidgetDragItem["id"];
+}
+
+/** @internal */
+export function useDragToolSettings(args: UseDragToolSettingsArgs) {
+  const { newWidgetDragItemId } = args;
+  const item = React.useMemo<WidgetDragItem>(() => {
+    return {
+      type: "widget",
+      id: newWidgetDragItemId,
+    };
+  }, [newWidgetDragItemId]);
+  const onDragStart = useDragItem({
+    item,
+  });
+  const handleDragStart = React.useCallback(({ initialPointerPosition }: DragItemDragStartArgs) => {
+    onDragStart({
+      initialPointerPosition,
+      pointerPosition: initialPointerPosition,
+      lastPointerPosition: initialPointerPosition,
+    });
+  }, [onDragStart]);
   return handleDragStart;
 }
 
@@ -369,7 +400,7 @@ export interface DragProviderProps {
 
 /** @internal */
 export const DragProvider = React.memo<DragProviderProps>(function DragProvider(props) { // tslint:disable-line: variable-name no-shadowed-variable
-  const dragManager = React.useRef<DragManager>(new DragManager());
+  const dragManager = React.useRef(new DragManager());
   React.useEffect(() => {
     const handlePointerMove = (e: PointerEvent) => {
       dragManager.current.handlePointerMove(e);

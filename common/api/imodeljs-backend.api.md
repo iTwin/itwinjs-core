@@ -44,6 +44,7 @@ import { ConflictingCodesError } from '@bentley/imodelhub-client';
 import { ContextRealityModelProps } from '@bentley/imodeljs-common';
 import { ContextRegistryClient } from '@bentley/context-registry-client';
 import { CreateEmptySnapshotIModelProps } from '@bentley/imodeljs-common';
+import { CreateEmptyStandaloneIModelProps } from '@bentley/imodeljs-common';
 import { CreateIModelProps } from '@bentley/imodeljs-common';
 import { CreatePolyfaceRequestProps } from '@bentley/imodeljs-common';
 import { CreatePolyfaceResponseProps } from '@bentley/imodeljs-common';
@@ -419,6 +420,8 @@ export enum BackendLoggerCategory {
     // @beta
     IModelTransformer = "imodeljs-backend.IModelTransformer",
     LinearReferencing = "imodeljs-backend.LinearReferencing",
+    // @internal
+    NativeApp = "imodeljs-backend.NativeApp",
     PromiseMemoizer = "imodeljs-backend.PromiseMemoizer",
     Relationship = "imodeljs-backend.Relationship",
     Schemas = "imodeljs-backend.Schemas"
@@ -1081,7 +1084,6 @@ export class DefinitionPartition extends InformationPartitionElement {
 // @alpha
 export class DesktopAuthorizationClient extends ImsAuthorizationClient implements FrontendAuthorizationClient {
     constructor(clientConfiguration: DesktopAuthorizationClientConfiguration);
-    dispose(): void;
     getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
     get hasExpired(): boolean;
     get hasSignedIn(): boolean;
@@ -2316,6 +2318,8 @@ export abstract class IModelDb extends IModel {
     static readonly defaultLimit = 1000;
     deleteFileProperty(prop: FilePropertyProps): DbResult;
     // (undocumented)
+    protected static readonly _edit = "StandaloneEdit";
+    // (undocumented)
     readonly elements: IModelDb.Elements;
     // (undocumented)
     embedFont(prop: FontProps): FontProps;
@@ -2527,6 +2531,7 @@ export class IModelHost {
     static set authorizationClient(authorizationClient: AuthorizationClient | undefined);
     // (undocumented)
     static backendVersion: string;
+    static get cacheDir(): string;
     // @internal
     static get compressCachedTiles(): boolean;
     // (undocumented)
@@ -2567,8 +2572,9 @@ export class IModelHostConfiguration {
     appAssetsDir?: string;
     // @alpha
     applicationType?: ApplicationType;
-    get briefcaseCacheDir(): string;
-    set briefcaseCacheDir(cacheDir: string);
+    // @deprecated
+    briefcaseCacheDir?: string;
+    cacheDir?: string;
     // @beta
     compressCachedTiles?: boolean;
     // (undocumented)
@@ -2584,16 +2590,10 @@ export class IModelHostConfiguration {
     // @internal
     eventSinkOptions: EventSinkOptions;
     imodelClient?: IModelClient;
-    // @internal (undocumented)
-    get isDefaultBriefcaseCacheDir(): boolean;
-    // @internal (undocumented)
-    get isDefaultNativeAppCacheDir(): boolean;
     // @internal
     logTileLoadTimeThreshold: number;
     // @internal
     logTileSizeThreshold: number;
-    // @internal
-    nativeAppCacheDir?: string;
     nativePlatform?: any;
     // @beta
     restrictTileUrlsByClientIp?: boolean;
@@ -3265,6 +3265,7 @@ export class ModelSelector extends DefinitionElement implements ModelSelectorPro
 
 // @internal
 export class NativeAppBackend {
+    static get appSettingsCacheDir(): string;
     static checkInternetConnectivity(): InternetConnectivityStatus;
     // (undocumented)
     static onInternetConnectivityChanged: BeEvent<(status: InternetConnectivityStatus) => void>;
@@ -3805,7 +3806,7 @@ export enum SqliteValueType {
 export class StandaloneDb extends IModelDb {
     get changeSetId(): undefined;
     close(): void;
-    static createEmpty(filePath: string, args: CreateIModelProps): StandaloneDb;
+    static createEmpty(filePath: string, args: CreateEmptyStandaloneIModelProps): StandaloneDb;
     get filePath(): string;
     static openFile(filePath: string, openMode?: OpenMode): StandaloneDb;
     static tryFindByKey(key: string): StandaloneDb | undefined;

@@ -21,6 +21,7 @@ import { BackstageStageLauncher as BackstageStageLauncher_2 } from '@bentley/ui-
 import { BadgeType } from '@bentley/ui-abstract';
 import { BaseSolarDataProvider } from '@bentley/ui-components';
 import { BaseTimelineDataProvider } from '@bentley/ui-components';
+import { BeDuration } from '@bentley/bentleyjs-core';
 import { BeEvent } from '@bentley/bentleyjs-core';
 import { BeUiEvent } from '@bentley/bentleyjs-core';
 import { ButtonProps } from '@bentley/ui-core';
@@ -86,11 +87,14 @@ import { OnNumberCommitFunc } from '@bentley/ui-abstract';
 import { OnValueCommitFunc } from '@bentley/ui-abstract';
 import { OpenMode } from '@bentley/bentleyjs-core';
 import { Orientation } from '@bentley/ui-core';
+import { OutputMessageAlert } from '@bentley/imodeljs-frontend';
 import { OutputMessagePriority } from '@bentley/imodeljs-frontend';
+import { OutputMessageType } from '@bentley/imodeljs-frontend';
 import { PageOptions } from '@bentley/ui-components';
 import { PanelSide } from '@bentley/ui-ninezone';
 import { PlaybackSettings } from '@bentley/ui-components';
 import { Point } from '@bentley/ui-core';
+import { Point2d } from '@bentley/geometry-core';
 import { PointProps } from '@bentley/ui-core';
 import { Primitives } from '@bentley/ui-abstract';
 import { PropertyDescription } from '@bentley/ui-abstract';
@@ -127,13 +131,13 @@ import { TimelineDataProvider } from '@bentley/ui-components';
 import { Tool } from '@bentley/imodeljs-frontend';
 import { ToolAssistanceInstruction } from '@bentley/imodeljs-frontend';
 import { ToolAssistanceInstructions } from '@bentley/imodeljs-frontend';
+import { ToolbarItem } from '@bentley/ui-abstract';
 import { ToolbarItemsManager } from '@bentley/ui-abstract';
 import { ToolbarOrientation } from '@bentley/ui-abstract';
 import { ToolbarPanelAlignment } from '@bentley/ui-ninezone';
 import { ToolbarUsage } from '@bentley/ui-abstract';
 import { ToolSettingsWidgetManagerProps } from '@bentley/ui-ninezone';
 import { ToolTipOptions } from '@bentley/imodeljs-frontend';
-import { TranslationOptions } from '@bentley/imodeljs-i18n';
 import { TreeCheckboxStateChangeEventArgs } from '@bentley/ui-components';
 import { TreeDataChangesListener } from '@bentley/ui-components';
 import { TreeNodeItem } from '@bentley/ui-components';
@@ -277,7 +281,7 @@ export class ActivityMessageCancelledEvent extends UiEvent<{}> {
 // @public
 export interface ActivityMessageEventArgs {
     details?: ActivityMessageDetails;
-    message: HTMLElement | string;
+    message: NotifyMessageType;
     percentage: number;
     restored?: boolean;
 }
@@ -1612,7 +1616,7 @@ export class ElementTooltip extends React.Component<CommonProps, ElementTooltipS
     // (undocumented)
     render(): JSX.Element | null;
     // (undocumented)
-    static showTooltip(el: HTMLElement, message: HTMLElement | string, pt?: XAndY, options?: ToolTipOptions): void;
+    static showTooltip(el: HTMLElement, message: NotifyMessageType, pt?: XAndY, options?: ToolTipOptions): void;
     // @internal (undocumented)
     readonly state: Readonly<ElementTooltipState>;
     }
@@ -1628,7 +1632,7 @@ export interface ElementTooltipChangedEventArgs {
     // (undocumented)
     isTooltipVisible: boolean;
     // (undocumented)
-    message: HTMLElement | string;
+    message: NotifyMessageType;
     // (undocumented)
     options?: ToolTipOptions;
     // (undocumented)
@@ -1720,6 +1724,8 @@ export interface FrameworkStagePanelProps {
     minSize?: number;
     // (undocumented)
     panel: NineZoneStagePanelManagerProps;
+    // (undocumented)
+    panelState: StagePanelState;
     // (undocumented)
     renderPane: (index: number) => React.ReactNode;
     // (undocumented)
@@ -2555,8 +2561,8 @@ export class InputFieldMessageAddedEvent extends UiEvent<InputFieldMessageEventA
 
 // @public
 export interface InputFieldMessageEventArgs {
-    detailedMessage: HTMLElement | string;
-    messageText: HTMLElement | string;
+    detailedMessage: NotifyMessageType;
+    messageText: NotifyMessageType;
     priority: OutputMessagePriority;
     target: Element;
 }
@@ -2576,11 +2582,20 @@ export enum InputStatus {
 // @internal (undocumented)
 export const isCollapsedToPanelState: (isCollapsed: boolean) => StagePanelState.Minimized | StagePanelState.Open;
 
+// @internal
+export const isHTMLElement: (message: NotifyMessageType) => message is HTMLElement;
+
 // @beta
 export function isNoSelectionActive(): boolean;
 
 // @internal (undocumented)
 export function isPanelCollapsed(zoneStates: ReadonlyArray<ZoneState | undefined>, panelStates: ReadonlyArray<StagePanelState | undefined>): boolean;
+
+// @internal
+export const isReactMessage: (message: NotifyMessageType) => message is ReactMessage;
+
+// @internal
+export const isReactNotifyMessageDetails: (details: any) => details is ReactNotifyMessageDetails;
 
 // @alpha
 export const isStatusBarItem: (item: CommonStatusBarItem) => item is StatusBarItem;
@@ -3035,7 +3050,7 @@ export class MessageAddedEvent extends UiEvent<MessageAddedEventArgs> {
 
 // @public
 export interface MessageAddedEventArgs {
-    message: NotifyMessageDetails;
+    message: NotifyMessageDetailsType;
 }
 
 // @public
@@ -3058,16 +3073,16 @@ export interface MessageCenterFieldProps extends StatusFieldProps {
 
 // @public
 export class MessageManager {
-    static addMessage(message: NotifyMessageDetails): void;
-    static addToMessageCenter(message: NotifyMessageDetails): void;
+    static addMessage(message: NotifyMessageDetailsType): void;
+    static addToMessageCenter(message: NotifyMessageDetailsType): void;
     static clearMessages(): void;
-    static displayInputFieldMessage(target: HTMLElement, messageText: HTMLElement | string, detailedMessage?: HTMLElement | string, priority?: OutputMessagePriority): void;
+    static displayInputFieldMessage(target: HTMLElement, messageText: NotifyMessageType, detailedMessage?: NotifyMessageType, priority?: OutputMessagePriority): void;
     static endActivityMessage(isCompleted: boolean): boolean;
-    static getIconClassName(details: NotifyMessageDetails): string;
-    static getIconType(details: NotifyMessageDetails): MessageBoxIconType;
-    static getSeverity(details: NotifyMessageDetails): MessageSeverity;
+    static getIconClassName(details: NotifyMessageDetailsType): string;
+    static getIconType(details: NotifyMessageDetailsType): MessageBoxIconType;
+    static getSeverity(details: NotifyMessageDetailsType): MessageSeverity;
     static hideInputFieldMessage(): void;
-    static get messages(): Readonly<NotifyMessageDetails[]>;
+    static get messages(): Readonly<NotifyMessageDetailsType[]>;
     static readonly onActivityMessageCancelledEvent: ActivityMessageCancelledEvent;
     static readonly onActivityMessageUpdatedEvent: ActivityMessageUpdatedEvent;
     // (undocumented)
@@ -3078,15 +3093,18 @@ export class MessageManager {
     static readonly onMessagesUpdatedEvent: MessagesUpdatedEvent;
     // @beta
     static readonly onToolAssistanceChangedEvent: ToolAssistanceChangedEvent;
-    static openMessageBox(mbType: MessageBoxType, message: HTMLElement | string, icon: MessageBoxIconType): Promise<MessageBoxValue>;
+    static openMessageBox(mbType: MessageBoxType, message: NotifyMessageType, icon: MessageBoxIconType): Promise<MessageBoxValue>;
+    static openToolTip(htmlElement: HTMLElement, message: NotifyMessageType, location?: XAndY, options?: ToolTipOptions): void;
+    static outputActivityMessage(message: NotifyMessageType, percentComplete: number): boolean;
+    static outputMessage(message: NotifyMessageDetailsType): void;
     static outputPrompt(prompt: string): void;
     static setMaxCachedMessages(max: number): void;
     // @beta
     static setToolAssistance(instructions: ToolAssistanceInstructions | undefined): void;
     static setupActivityMessageDetails(details: ActivityMessageDetails): boolean;
-    static setupActivityMessageValues(message: HTMLElement | string, percentage: number, restored?: boolean): boolean;
+    static setupActivityMessageValues(message: NotifyMessageType, percentage: number, restored?: boolean): boolean;
     // @internal (undocumented)
-    static showAlertMessageBox(messageDetails: NotifyMessageDetails): void;
+    static showAlertMessageBox(messageDetails: NotifyMessageDetailsType): void;
     }
 
 // @public
@@ -3361,6 +3379,12 @@ export interface NineZoneChangeHandler {
     handleZonesBoundsChange(bounds: RectangleProps): void;
 }
 
+// @public
+export type NotifyMessageDetailsType = NotifyMessageDetails | ReactNotifyMessageDetails;
+
+// @public
+export type NotifyMessageType = string | HTMLElement | ReactMessage;
+
 // @alpha
 export class PanelStateChangedEvent extends UiEvent<PanelStateChangedEventArgs> {
 }
@@ -3389,7 +3413,7 @@ export class PointerMessage extends React.Component<PointerMessageProps, Pointer
     // (undocumented)
     render(): React.ReactNode;
     // (undocumented)
-    static showMessage(message: NotifyMessageDetails): void;
+    static showMessage(message: NotifyMessageDetailsType): void;
     // (undocumented)
     readonly state: Readonly<PointerMessageState>;
     // (undocumented)
@@ -3403,13 +3427,13 @@ export class PointerMessageChangedEvent extends UiEvent<PointerMessageChangedEve
 // @public
 export interface PointerMessageChangedEventArgs {
     // (undocumented)
-    detailedMessage?: HTMLElement | string;
+    detailedMessage?: NotifyMessageType;
     // (undocumented)
     isVisible: boolean;
     // (undocumented)
-    message: HTMLElement | string;
+    message: NotifyMessageType;
     // (undocumented)
-    messageDetails?: NotifyMessageDetails;
+    messageDetails?: NotifyMessageDetailsType;
     // (undocumented)
     priority: OutputMessagePriority;
     // (undocumented)
@@ -3609,6 +3633,37 @@ export class PropsHelper {
     static getStringFromSpec(spec: string | StringGetter | ConditionalStringValue): string;
     static getStringSpec(explicitValue: string | StringGetter | ConditionalStringValue | undefined, stringKey?: string): string | StringGetter | ConditionalStringValue;
     static isShallowEqual(newObj: any, prevObj: any): boolean;
+}
+
+// @public
+export interface ReactMessage {
+    // (undocumented)
+    reactNode: React.ReactNode;
+}
+
+// @public
+export class ReactNotifyMessageDetails {
+    constructor(priority: OutputMessagePriority, briefMessage: NotifyMessageType, detailedMessage?: string | HTMLElement | ReactMessage | undefined, msgType?: OutputMessageType, openAlert?: OutputMessageAlert);
+    // (undocumented)
+    briefMessage: NotifyMessageType;
+    // (undocumented)
+    detailedMessage?: string | HTMLElement | ReactMessage | undefined;
+    get displayPoint(): Point2d | undefined;
+    get displayTime(): BeDuration;
+    set displayTime(duration: BeDuration);
+    get inputField(): HTMLElement | undefined;
+    // @internal (undocumented)
+    get messageDetails(): NotifyMessageDetails;
+    // (undocumented)
+    msgType: OutputMessageType;
+    // (undocumented)
+    openAlert: OutputMessageAlert;
+    // (undocumented)
+    priority: OutputMessagePriority;
+    get relativePosition(): RelativePosition;
+    setInputFieldTypeDetails(inputField: HTMLElement): void;
+    setPointerTypeDetails(viewport: HTMLElement, displayPoint: XAndY, relativePosition?: RelativePosition): void;
+    get viewport(): HTMLElement | undefined;
 }
 
 // @public
@@ -4073,7 +4128,12 @@ export interface SplitterPaneTargetProps {
 }
 
 // @alpha
-export class StagePanel extends React.Component<StagePanelProps> {
+export class StagePanel extends React.Component<StagePanelProps, StagePanelComponentState> {
+    constructor(props: StagePanelProps);
+    // (undocumented)
+    componentDidMount(): void;
+    // (undocumented)
+    componentWillUnmount(): void;
     // (undocumented)
     static readonly defaultProps: StagePanelDefaultProps;
     // (undocumented)
@@ -4681,9 +4741,9 @@ export class ToolbarHelper {
     static createCustomDefinitionToolbarItem(itemPriority: number, itemDef: CustomItemDef, overrides?: Partial<CustomButtonDefinition>): CustomToolbarItem;
     // (undocumented)
     static createNodeForToolbarItem(item: CommonToolbarItem, onItemExecuted?: OnItemExecutedFunc): React.ReactNode;
-    static createToolbarItemFromItemDef(itemPriority: number, itemDef: AnyItemDef): CommonToolbarItem;
+    static createToolbarItemFromItemDef(itemPriority: number, itemDef: AnyItemDef, overrides?: Partial<ToolbarItem>): CommonToolbarItem;
     // (undocumented)
-    static createToolbarItemsFromItemDefs(itemDefs: AnyItemDef[], startingItemPriority?: number): CommonToolbarItem[];
+    static createToolbarItemsFromItemDefs(itemDefs: AnyItemDef[], startingItemPriority?: number, overrides?: Partial<ToolbarItem>): CommonToolbarItem[];
     // (undocumented)
     static getIconReactNode(item: ActionButton | GroupButton_2): React.ReactNode;
     // @alpha
@@ -4816,6 +4876,12 @@ export interface ToolItemProps extends ItemProps, CommandHandler {
     toolId: string;
 }
 
+// @internal (undocumented)
+export function ToolSettingsContent(): JSX.Element | null;
+
+// @internal (undocumented)
+export function ToolSettingsDockedContent(): JSX.Element;
+
 // @beta
 export interface ToolSettingsEntry {
     // (undocumented)
@@ -4832,6 +4898,9 @@ export interface ToolSettingsGridProps {
     // (undocumented)
     settings?: ToolSettingsEntry[];
 }
+
+// @internal (undocumented)
+export function ToolSettingsWidgetContent(): JSX.Element;
 
 // @internal
 export class ToolSettingsZone extends React.PureComponent<ToolSettingsZoneProps, ToolSettingsZoneState> {
@@ -4987,9 +5056,10 @@ export class UiFramework {
     static get i18nNamespace(): string;
     // @internal (undocumented)
     static get iModelServices(): IModelServices;
-    static initialize(store: Store<any> | undefined, i18n: I18N, frameworkStateKey?: string): Promise<void>;
+    static initialize(store: Store<any> | undefined, i18n?: I18N, frameworkStateKey?: string): Promise<void>;
+    static get initialized(): boolean;
     // @internal
-    static initializeEx(store: Store<any> | undefined, i18n: I18N, frameworkStateKey?: string, projectServices?: ProjectServices, iModelServices?: IModelServices): Promise<void>;
+    static initializeEx(store: Store<any> | undefined, i18n?: I18N, frameworkStateKey?: string, projectServices?: ProjectServices, iModelServices?: IModelServices): Promise<void>;
     // @beta (undocumented)
     static isMobile(): boolean;
     // @internal (undocumented)
@@ -5029,7 +5099,7 @@ export class UiFramework {
     static get store(): Store<any>;
     static terminate(): void;
     // @internal
-    static translate(key: string | string[], options?: TranslationOptions): string;
+    static translate(key: string | string[]): string;
     // @alpha (undocumented)
     static get widgetManager(): WidgetManager;
     }
@@ -5115,6 +5185,9 @@ export function useFrontstageDefNineZone(frontstage?: FrontstageDef): [Frontstag
 // @internal (undocumented)
 export const useGroupedItems: (items: readonly BackstageItem[]) => GroupedItems;
 
+// @internal (undocumented)
+export function useHorizontalToolSettingNodes(): ToolSettingsEntry[] | undefined;
+
 // @beta
 export const useIsBackstageOpen: (manager: BackstageManager) => boolean;
 
@@ -5139,7 +5212,7 @@ export function useSaveFrontstageSettings(frontstageState: FrontstageState_2): v
 export function useStatusBarEntry(): DockedStatusBarEntryContextArg;
 
 // @internal (undocumented)
-export function useToolSettings(): ToolSettingsEntry[] | undefined;
+export function useToolSettingsNode(): React.ReactNode;
 
 // @beta
 export const useUiItemsProviderStatusBarItems: (manager: StatusBarItemsManager_2) => readonly CommonStatusBarItem[];
@@ -5589,15 +5662,6 @@ export class WidgetManager {
     get widgets(): ReadonlyArray<WidgetInfo>;
     set widgets(w: ReadonlyArray<WidgetInfo>);
     }
-
-// @internal (undocumented)
-export function WidgetPanelsDefaultToolSettings(props: WidgetPanelsDefaultToolSettingsProps): JSX.Element;
-
-// @internal (undocumented)
-export interface WidgetPanelsDefaultToolSettingsProps {
-    // (undocumented)
-    itemsManager: DialogItemsManager;
-}
 
 // @internal (undocumented)
 export const WidgetPanelsFrontstage: React.NamedExoticComponent<object>;

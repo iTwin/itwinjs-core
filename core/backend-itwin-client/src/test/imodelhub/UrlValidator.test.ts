@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { ClientRequestContext, Logger, LogLevel, Config } from "@bentley/bentleyjs-core";
 import { IModelBaseHandler } from "@bentley/imodelhub-client";
-import { UrlDiscoveryClient, ClientsLoggerCategory } from "@bentley/itwin-client";
+import { UrlDiscoveryClient, ITwinClientLoggerCategory } from "@bentley/itwin-client";
 import { assert, should } from "chai";
 import * as fs from "fs";
 import * as path from "path";
@@ -22,7 +22,7 @@ const urlLogFileStream = fs.createWriteStream(urlLogPath, { flags: "a" });
 // console.log("URL Log file created at: " + urlLogPath);
 
 function logFunction(logLevel: string, category: string, message: string) {
-  if (category === ClientsLoggerCategory.Request)
+  if (category === ITwinClientLoggerCategory.Request)
     urlLogFileStream.write(message + "\n");
   else
     logFileStream.write(logLevel + "|" + category + "|" + message + "\n");
@@ -45,7 +45,7 @@ if (!!loggingConfigFile) {
 }
 
 // log all request URLs as this will be the input to the Hub URL whitelist test
-Logger.setLevel(ClientsLoggerCategory.Request, LogLevel.Trace);
+Logger.setLevel(ITwinClientLoggerCategory.Request, LogLevel.Trace);
 
 // These tests have to run last
 // TODO: Fragile test - need to re-enable this after fixing the failure.

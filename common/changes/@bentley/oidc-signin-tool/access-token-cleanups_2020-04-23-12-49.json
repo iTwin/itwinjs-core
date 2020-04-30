@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/oidc-signin-tool",
+      "comment": "Fixed setup of UserInfo from browser clients, and more cleanups to AccessToken API. ",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/oidc-signin-tool",
+  "email": "Ramanujam.Raman@bentley.com"
+}

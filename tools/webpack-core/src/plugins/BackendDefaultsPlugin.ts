@@ -37,6 +37,7 @@ export class BackendDefaultsPlugin {
       "dtrace-provider",
       "node-report/api",
       "applicationinsights-native-metrics",
+      "@opentelemetry/tracing",
     ]).apply(compiler);
   }
 }

@@ -251,8 +251,11 @@ public;InputFieldMessageEventArgs
 public;InputFieldMessageRemovedEvent 
 alpha;InputStatus
 internal;isCollapsedToPanelState: (isCollapsed: boolean) => StagePanelState.Minimized | StagePanelState.Open
+internal;isHTMLElement: (message: NotifyMessageType) => message is HTMLElement
 beta;isNoSelectionActive(): boolean
 internal;isPanelCollapsed(zoneStates: ReadonlyArray
+internal;isReactMessage: (message: NotifyMessageType) => message is ReactMessage
+internal;isReactNotifyMessageDetails: (details: any) => details is ReactNotifyMessageDetails
 alpha;isStatusBarItem: (item: CommonStatusBarItem) => item is StatusBarItem
 internal;isToolSettingsWidgetManagerProps: (props: WidgetManagerProps | undefined) => props is ToolSettingsWidgetManagerProps
 public;class ItemDefBase
@@ -332,6 +335,8 @@ public;NavigationWidgetProps
 public;NavigationWidgetPropsEx 
 public;NestedFrontstage
 public;NineZoneChangeHandler
+public;NotifyMessageDetailsType = NotifyMessageDetails | ReactNotifyMessageDetails
+public;NotifyMessageType = string | HTMLElement | ReactMessage
 alpha;PanelStateChangedEvent 
 alpha;PanelStateChangedEventArgs
 internal;panelStateToIsCollapsed: (panelState: StagePanelState) => boolean
@@ -359,6 +364,8 @@ internal;ProjectScope
 internal;ProjectServices
 public;PromptField: import("react-redux").ConnectedComponent
 public;PropsHelper
+public;ReactMessage
+public;ReactNotifyMessageDetails
 public;Reducer
 public;ReducerActions
 public;ReducerMapActions
@@ -495,9 +502,12 @@ public;ToolIconChangedEventArgs
 public;ToolInformation
 public;ToolItemDef 
 public;ToolItemProps 
+internal;ToolSettingsContent(): JSX.Element | null
+internal;ToolSettingsDockedContent(): JSX.Element
 beta;ToolSettingsEntry
 beta;ToolSettingsGrid({ settings }: ToolSettingsGridProps): JSX.Element
 beta;ToolSettingsGridProps
+internal;ToolSettingsWidgetContent(): JSX.Element
 internal;ToolSettingsZone 
 internal;ToolSettingsZoneProps 
 internal;ToolUiManager
@@ -527,12 +537,13 @@ beta;useDefaultToolbarItems: (manager: ToolbarItemsManager) => readonly CommonTo
 internal;useFrameworkVersion(): FrameworkVersion
 internal;useFrontstageDefNineZone(frontstage?: FrontstageDef): [FrontstageState_2, React.Dispatch
 internal;useGroupedItems: (items: readonly BackstageItem[]) => GroupedItems
+internal;useHorizontalToolSettingNodes(): ToolSettingsEntry[] | undefined
 beta;useIsBackstageOpen: (manager: BackstageManager) => boolean
 public;UserProfileBackstageItem 
 public;UserProfileBackstageItemProps 
 internal;useSaveFrontstageSettings(frontstageState: FrontstageState_2): void
 internal;useStatusBarEntry(): DockedStatusBarEntryContextArg
-internal;useToolSettings(): ToolSettingsEntry[] | undefined
+internal;useToolSettingsNode(): React.ReactNode
 beta;useUiItemsProviderStatusBarItems: (manager: StatusBarItemsManager_2) => readonly CommonStatusBarItem[]
 beta;useUiItemsProviderToolbarItems: (manager: ToolbarItemsManager, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation) => readonly CommonToolbarItem[]
 internal;useUiSettingsContext(): UiSettings
@@ -575,8 +586,6 @@ public;WidgetDef
 public;WidgetHost
 internal;WidgetInfo
 beta;WidgetManager
-internal;WidgetPanelsDefaultToolSettings(props: WidgetPanelsDefaultToolSettingsProps): JSX.Element
-internal;WidgetPanelsDefaultToolSettingsProps
 internal;WidgetPanelsFrontstage: React.NamedExoticComponent
 internal;WidgetPanelsFrontstageContent(): JSX.Element | null
 internal;WidgetPanelsStatusBar(props: CommonProps): JSX.Element | null

@@ -1,29 +1,95 @@
 ---
 ignore: true
 ---
-# NextVersion
+# Next Version <!-- omit in toc -->
 
-## Update to iModel.js Build System
+With this annual major release of iModel.js comes new features and some breaking API changes. The majority of those changes result from the removal of previously deprecated APIs. In addition, some of the APIs have changed in ways that may require calling code to be adjusted. The goal of this document is to describe these in detail and serve as the upgrade guide.
 
-The iModel.js 1.0 build system relied on a single package (`@bentley/webpack-tools`) to build iModel.js frontends and extensions. With the release of 2.0, there are significant improvements to the build system to help with both clarity and usability to enable creating an app based on the latest technologies easier. To aid in this, the build system is now split into 2 separate components:
+## Table of Contents <!-- omit in toc -->
 
-- Webpack/bundling of an iModel.js Extension (formerly Plugin) with `@bentley/extension-webpack-tools`
-- The iModel.js frontend build system is now based on [Create-React-App](https://create-react-app.dev/). More details visit the [Build Migration Guide](./migration-guides/migratingbuildsystems.md).
+- [What's New?](#whats-new)
+  - [3D Globe Background Map Display](#3d-globe-background-map-display)
+    - [Globe View Tools](#globe-view-tools)
+  - [Customizable Scene Lighting](#customizable-scene-lighting)
+  - [Monochrome Mode](#monochrome-mode)
+  - [Colorizing Clip Regions](#colorizing-clip-regions)
+  - [Incremental Precompilation of Shaders](#incremental-precompilation-of-shaders)
+  - [Thematic Display](#thematic-display)
+- [Breaking API changes](#breaking-api-changes)
+  - [Installation and Builds](#installation-and-builds)
+    - [Increase minimum Node version](#increase-minimum-node-version)
+    - [Update to Electron 8](#update-to-electron-8)
+    - [Update to iModel.js Build System](#update-to-imodeljs-build-system)
+    - [Deprecation Errors](#deprecation-errors)
+  - [Package @bentley/imodeljs-clients](#package-bentleyimodeljs-clients)
+    - [Split package](#split-package)
+    - [Removed support for SAML-based authorization](#removed-support-for-saml-based-authorization)
+    - [Removals and changes](#removals-and-changes)
+  - [Package @bentley/imodeljs-clients-backend](#package-bentleyimodeljs-clients-backend)
+    - [Package rename](#package-rename)
+    - [Authorization for Agent Applications](#authorization-for-agent-applications)
+  - [Package @bentley/imodeljs-common](#package-bentleyimodeljs-common)
+    - [RPC changes](#rpc-changes)
+    - [Solar Calculation APIs](#solar-calculation-apis)
+    - [GeometryStream Iteration](#geometrystream-iteration)
+    - [Immutable Color Types](#immutable-color-types)
+    - [Other changes](#other-changes)
+  - [Package @bentley/imodeljs-backend](#package-bentleyimodeljs-backend)
+    - [Async startup and shutdown](#async-startup-and-shutdown)
+    - [Specifying cache locations](#specifying-cache-locations)
+    - [Briefcase iModels - Managing Briefcases at the Backend](#briefcase-imodels---managing-briefcases-at-the-backend)
+    - [Snapshot iModels](#snapshot-imodels)
+    - [Other Changes](#other-changes-1)
+  - [Package @bentley/imodeljs-frontend](#package-bentleyimodeljs-frontend)
+    - [Authorization in Browsers](#authorization-in-browsers)
+    - [Authorization for Desktop Applications](#authorization-for-desktop-applications)
+    - [IModel, IModelConnection, IModelDb](#imodel-imodelconnection-imodeldb)
+    - [Managing Briefcases at the Frontend](#managing-briefcases-at-the-frontend)
+    - [Snapshot iModels](#snapshot-imodels-1)
+    - [BlankConnection](#blankconnection)
+    - [ViewChangeOptions Interface](#viewchangeoptions-interface)
+    - [API changes in `imodeljs-frontend` package](#api-changes-in-imodeljs-frontend-package)
+    - [PropertyRecord classes moved to `ui-abstract` package](#propertyrecord-classes-moved-to-ui-abstract-package)
+  - [Package @bentley/ui-components](#package-bentleyui-components)
+    - [Hard Deprecations](#hard-deprecations)
+    - [Removals and Changes](#removals-and-changes-1)
+  - [Package @bentley/ui-framework](#package-bentleyui-framework)
+    - [Renames](#renames)
+    - [Removal of Deprecated APIs](#removal-of-deprecated-apis)
+    - [Other changes](#other-changes-2)
+  - [Package @bentley/ui-core](#package-bentleyui-core)
+    - [Removal of Deprecated APIs](#removal-of-deprecated-apis-1)
+    - [React dependency changes](#react-dependency-changes)
+  - [Package @bentley/presentation-common](#package-bentleypresentation-common)
+    - [RPC Changes](#rpc-changes-1)
+    - [Hard Deprecations](#hard-deprecations-1)
+    - [Removals and Changes](#removals-and-changes-2)
+  - [Package @bentley/presentation-backend](#package-bentleypresentation-backend)
+    - [Removals and Changes](#removals-and-changes-3)
+  - [Package @bentley/presentation-frontend](#package-bentleypresentation-frontend)
+    - [Removals and Changes](#removals-and-changes-4)
+  - [Package @bentley/presentation-components](#package-bentleypresentation-components)
+    - [Hard Deprecations](#hard-deprecations-2)
+    - [Removals and Changes](#removals-and-changes-5)
+  - [Package @bentley/presentation-testing](#package-bentleypresentation-testing)
+    - [Removals and Changes](#removals-and-changes-6)
+  - [Package @bentley/geometry-core](#package-bentleygeometry-core)
+    - [Remove deprecated methods](#remove-deprecated-methods)
+    - [Various method name changes (breaking)](#various-method-name-changes-breaking)
+    - [Bug fixes](#bug-fixes)
+    - [Small angle arc issues](#small-angle-arc-issues)
+    - [Polyface clipping](#polyface-clipping)
+  - [Package @bentley/ecschema-metadata](#package-bentleyecschema-metadata)
+    - [Remove deprecated API](#remove-deprecated-api)
 
-## Update to Electron 8
+## What's New?
 
-iModel.js has officially moved up to the [latest stable version](https://www.electronjs.org/docs/tutorial/electron-timelines) of Electron.
-
-## Increase minimum Node version
-
-The minimum Node version required for an iModel.js application is `10.16.0`.
-
-## 3D Globe Background Map Display
+### 3D Globe Background Map Display
 
 The background map can now be displayed as either a plane or a three-dimensional globe. This is controlled by the [GlobeMode]($common) property of the [DisplayStyleSettings.backgroundMap]($common) associated with a [DisplayStyleState]($frontend) or [DisplayStyle]($backend).
 
-* [GlobeMode.Plane]($common) projects the map onto the XY plane.
-* [GlobeMode.Ellipsoid]($common) - the default mode - projects the map onto the [WGS84](https://en.wikipedia.org/wiki/World_Geodetic_System) ellipsoid when sufficiently zoomed-out.
+- [GlobeMode.Plane]($common) projects the map onto the XY plane.
+- [GlobeMode.Ellipsoid]($common) - the default mode - projects the map onto the [WGS84](https://en.wikipedia.org/wiki/World_Geodetic_System) ellipsoid when sufficiently zoomed-out.
 
 In Plane mode, or in 3d mode when sufficiently zoomed-in on the iModel, the iModel's [geographic coordinate system](https://www.imodeljs.org/learning/geolocation/#the-geographic-coordinate-system) is used to transform the map into the iModel's coordinate space.
 
@@ -33,67 +99,72 @@ In Plane mode, or in 3d mode when sufficiently zoomed-in on the iModel, the iMod
 ![Globe mode](assets/3DMapProjection.png)
 <p align="center">Ellipsoid mode</p>
 
-### Globe View Tools
+#### Globe View Tools
 
 The following are view tools that allow a user to navigate a plane or three-dimensional globe. All of these tools operate on the selected view.
 
-* [ViewGlobeSatelliteTool]($frontend) views a location on the background map from a satellite's perspective; the viewed location is derived from the position of the current camera's eye above the map.
-* [ViewGlobeBirdTool]($frontend) views a location on the background map from a bird's eye perspective; the viewed location is derived from the position of the current camera's eye above the globe.
-* [ViewGlobeLocationTool]($frontend) views a location on the background map corresponding to a specified string. This will either look down at the location using a bird's eye height, or, if a range is available, the entire range corresponding to the location will be viewed.
-* [ViewGlobeIModelTool]($frontend) views the current iModel on the background map so that the extent of the project is visible.
+- [ViewGlobeSatelliteTool]($frontend) views a location on the background map from a satellite's perspective; the viewed location is derived from the position of the current camera's eye above the map.
+- [ViewGlobeBirdTool]($frontend) views a location on the background map from a bird's eye perspective; the viewed location is derived from the position of the current camera's eye above the globe.
+- [ViewGlobeLocationTool]($frontend) views a location on the background map corresponding to a specified string. This will either look down at the location using a bird's eye height, or, if a range is available, the entire range corresponding to the location will be viewed.
+- [ViewGlobeIModelTool]($frontend) views the current iModel on the background map so that the extent of the project is visible.
 
 [ViewGlobeSatelliteTool]($frontend), [ViewGlobeBirdTool]($frontend), and [ViewGlobeIModelTool]($frontend) run in the following manner:
 
-* The tool, once constructed, will execute when its `onDataButtonDown` or `onPostInstall` methods are called.
-* `onDataButtonDown` will execute the tool if its `BeButtonEvent` argument has a defined `viewport` property. It will use that viewport.
-* `onPostInstall` will use the viewport specified in the tool's constructor. If that does not exist, it will use `IModelApp.viewManager.selectedView`.
+- The tool, once constructed, will execute when its `onDataButtonDown` or `onPostInstall` methods are called.
+- `onDataButtonDown` will execute the tool if its `BeButtonEvent` argument has a defined `viewport` property. It will use that viewport.
+- `onPostInstall` will use the viewport specified in the tool's constructor. If that does not exist, it will use `IModelApp.viewManager.selectedView`.
 
 [ViewGlobeLocationTool]($frontend) runs in the following manner:
 
-* The tool, once constructed, will execute when its `parseAndRun` method is called.
-* To navigate to a precise latitude/longitude location on the map, specify exactly two numeric arguments to `parseAndRun`. The first will be the latitude and the second will be the longitude. These are specified in degrees.
-* To search for and possibly navigate to a named location, specify any number of string arguments to `parseAndRun`. They will be joined with single spaces between them. If a location corresponding to the joined strings can be found, the tool will navigate there.
+- The tool, once constructed, will execute when its `parseAndRun` method is called.
+- To navigate to a precise latitude/longitude location on the map, specify exactly two numeric arguments to `parseAndRun`. The first will be the latitude and the second will be the longitude. These are specified in degrees.
+- To search for and possibly navigate to a named location, specify any number of string arguments to `parseAndRun`. They will be joined with single spaces between them. If a location corresponding to the joined strings can be found, the tool will navigate there.
 
-## Customizable Scene Lighting
+### Customizable Scene Lighting
 
 Previously, lighting of 3d scenes was entirely hard-coded with the exception of the sun direction used only when shadows were enabled. Now, nearly all lighting parameters can be customized using the [LightSettings]($common) associated with a [DisplayStyle3dSettings]($common). This includes new support for hemisphere lighting, greatly expanding the variety of display styles that can be achieved.
 
 ![Example display styles](assets/display-styles.jpg)
 <p align="center">Clockwise from top-left: Default, Illustration, Sun-dappled, Moonlit, Glossy, Soft</p>
 
-## Monochrome Mode
+### Monochrome Mode
 
 iModel.js now supports two monochrome display modes via [DisplayStyleSettings.monochromeMode]($common). The original mode, `Scaled`, preserves contrast and material textures. The new mode, `Flat`, applies the monochrome color uniformly to all surfaces.
 
 ![Scaled (left) vs Flat (right) monochrome modes](assets/monochrome-mode.png)
 <p align="center">Scaled (left) vs Flat (right) monochrome modes</p>
 
-## Colorizing Clip Regions
+### Colorizing Clip Regions
 
 [Viewport]($frontend) now contains the following properties which control the color of pixels outside or inside a clip region. If either of these are defined, the corresponding pixels will be shown using the specified color; otherwise, no color override occurs and clipping proceeds normally for that area of the clip region. By default, these are both undefined.
 
-* `outsideClipColor` - Either a [ColorDef]($common) or undefined. This setting controls the color override for pixels outside a clip region.
-* `insideClipColor` - Either a [ColorDef]($common) or undefined. This setting controls the color override for pixels inside a clip region.
+- `outsideClipColor` - Either a [ColorDef]($common) or undefined. This setting controls the color override for pixels outside a clip region.
+- `insideClipColor` - Either a [ColorDef]($common) or undefined. This setting controls the color override for pixels inside a clip region.
 
 ![Clipped geometry drawn in yellow](assets/section-color.png)
 <p align="center">Clipped geometry drawn in yellow - arrow indicates direction of clip plane</p>
 
-## Incremental Precompilation of Shaders
+### Incremental Precompilation of Shaders
 
 Previously, shader programs used by the [RenderSystem]($frontend) were never compiled until the first time they were used. This could produce very noticeable delays when the user interacts with a [Viewport]($frontend). The [RenderSystem]($frontend) can now precompile shader programs before any [Viewport]($frontend) is opened.
 
-* To enable this functionality, set the `doIdleWork` property of the `RenderSystem.Options` object passed to `IModelApp.startup` to true.
-* Applications should consider enabling this feature if they do not open a Viewport immediately upon startup - for example, if the user is first expected to select an iModel and  a view through the user interface.
-* Shader precompilation will cease once all shader programs have been compiled, or when a Viewport is opened (registered with the [ViewManager]($frontend)).
+- To enable this functionality, set the `doIdleWork` property of the `RenderSystem.Options` object passed to `IModelApp.startup` to true.
+- Applications should consider enabling this feature if they do not open a Viewport immediately upon startup - for example, if the user is first expected to select an iModel and  a view through the user interface.
+- Shader precompilation will cease once all shader programs have been compiled, or when a Viewport is opened (registered with the [ViewManager]($frontend)).
 
-## Thematic Display
+### Thematic Display
 
 [ViewFlags]($common) now contains a `thematicDisplay` property of type `boolean`; when set to `true`, this will enable thematic display for surfaces.
-* The thematic display will be configured based on the `thematic` property of type [ThematicDisplay]($common) on [DisplayStyle3dSettings]($common).
-  * This property controls the thematic display settings of the 3d display style when thematic display is enabled.
-  * [ThematicDisplay]($common) is immutable and must be constructed and altered using an underlying JSON representation. See the corresponding underlying [ThematicDisplayProps]($common) on the [DisplayStyle3dSettingsProps]($common).
-* Within the `gradientSettings` property on [ThematicDisplay]($common), the display system currently supports a `mode` value of `ThematicGradientMode.Smooth` of type [ThematicGradientMode]($common). Using this mode, the color gradient will be smoothly interpolated based on the value specified for `colorScheme` on the `gradientSettings` property of [ThematicDisplay]($common). If the `colorScheme` property of `gradientSettings` is `ThematicGradientColorScheme.Custom`, then the `customKeys` property must be properly configured with values.
-* For the `displayMode` property of [ThematicDisplay]($common), the display system currently supports a value of `ThematicDisplayMode.Height`. Using this mode, the color gradient will be mapped to surface geometry based on world height in meters.
+
+*Note that the renderer currently does not allow surfaces which are thematically displayed to receive shadows.*
+
+- The thematic display will be configured based on the `thematic` property of type [ThematicDisplay]($common) on [DisplayStyle3dSettings]($common).
+  - This property controls the thematic display settings of the 3d display style when thematic display is enabled.
+  - [ThematicDisplay]($common) is immutable and must be constructed and altered using an underlying JSON representation. See the corresponding underlying [ThematicDisplayProps]($common) on the [DisplayStyle3dSettingsProps]($common).
+- Within the `gradientSettings` property on [ThematicDisplay]($common), the display system currently supports a `mode` value of `ThematicGradientMode.Smooth` of type [ThematicGradientMode]($common). Using this mode, the color gradient will be smoothly interpolated based on the value specified for `colorScheme` on the `gradientSettings` property of [ThematicDisplay]($common). If the `colorScheme` property of `gradientSettings` is `ThematicGradientColorScheme.Custom`, then the `customKeys` property must be properly configured with values.
+- For the `displayMode` property of [ThematicDisplay]($common), the display system currently supports the following values:
+  - `ThematicDisplayMode.Height`. Using this mode, the color gradient will be mapped to surface geometry based on world height in meters.
+  - `ThematicDisplayMode.InverseDistanceWeightedSensors`. Using this mode, the color gradient will be mapped to surface geometry using inverse distance weighting based on world positions and corresponding values from a list of sensors.
 
 See the following snippet for the JSON representation of a [ThematicDisplay]($common) configuration object:
 
@@ -110,6 +181,10 @@ export interface ThematicDisplayProps {
   range?: Range1dProps;
   /** For [[ThematicDisplayMode.Height]], this is the axis along which to apply the thematic gradient in the scene. Defaults to {0,0,0}. */
   axis?: XYZProps;
+  /** For [[ThematicDisplayMode.InverseDistanceWeightedSensors]], these are the settings that control the sensors. Defaults to an instantiation using [[ThematicDisplaySensorSettings.fromJSON]] with no arguments.
+   * @alpha
+   */
+  sensorSettings?: ThematicDisplaySensorSettingsProps;
 }
 ```
 
@@ -133,7 +208,7 @@ function enableAndConfigureThematicDisplay(viewport: Viewport): boolean {
 
   // Create a ThematicDisplayProps object with the desired thematic settings
   const thematicProps: ThematicDisplayProps = {
-    displayMode: ThematicDisplayMode.Height, // The only currently supported thematic display mode
+    displayMode: ThematicDisplayMode.Height, // The thematic display mode; could also be ThematicDisplayMode.InverseDistanceWeightedSensors
     gradientSettings: {
       mode: ThematicGradientMode.Smooth, // The only currently supported thematic gradient mode
       stepCount: 0, // Only relevant for ThematicGradientMode.Stepped, which is currently unsupported.
@@ -142,6 +217,9 @@ function enableAndConfigureThematicDisplay(viewport: Viewport): boolean {
     },
     range: { low: -900.0, high: 1000.0 }, // For ThematicDisplayMode.Height, the range in world meters to apply the gradient
     axis: [0.0, 0.0, 1.0], // For ThematicDisplayMode.Height, the axis (direction) along which to apply the gradient (Up along Z in this case)
+    sensorSettings: { // For ThematicDisplayMode.InverseDistanceWeightedSensors, specify sensor settings here.
+      sensors: [], // put any sensors in this array.
+    },
   };
 
   // Create a ThematicDisplay object using the props created above
@@ -154,22 +232,167 @@ function enableAndConfigureThematicDisplay(viewport: Viewport): boolean {
   viewport.synchWithView();
 }
 ```
-![Thematic height mode with a smooth "sea mountain" color gradient applied to surfaces](assets/ThematicDisplay_HeightSmooth.png)
-<p align="center">Thematic height mode with a smooth "sea mountain" color gradient applied to surfaces</p>
 
-## Solar Calculation APIs
+![Thematic height mode with a smooth "sea mountain" color gradient applied to surfaces with lighting enabled](assets/ThematicDisplay_HeightSmooth.png)
+<p align="center">Thematic height mode with a smooth "sea mountain" color gradient applied to surfaces with lighting enabled</p>
 
-The solar calculation functions [calculateSolarAngles]($common), [calculateSolarDirection]($common), and [calculateSunriseOrSunset]($common) have moved from imodeljs-frontend to imodeljs-common.
-
-## Deprecation Errors
-
-Previously, the default tslint configuration reported [usage of deprecated APIs](https://palantir.github.io/tslint/rules/deprecation/) as warnings. It will now produce errors instead. Before deprecating an API, please first remove all usage of it within the iModel.js repository.
+![Four thematic sensors applied using inverse distance weighting with a smooth "blue-red" color gradient applied to surfaces with lighting disabled](assets/ThematicDisplay_InverseDistanceWeightedSensorsSmooth.png)
+<p align="center">Four thematic sensors applied using inverse distance weighting with a smooth "blue-red" color gradient applied to surfaces with lighting disabled</p>
 
 ## Breaking API changes
 
-With a new major version of the iModel.js library come breaking API changes. The majority of those changes result from the removal of previously deprecated APIs. In addition, the following APIs have changed in ways that may require calling code to be adjusted:
+### Installation and Builds
 
-### Async startup and shutdown
+#### Increase minimum Node version
+
+The minimum version of Node required for iModel.js applications is now `10.16.0`. However, it is recommended that a version of [Node 12](https://nodejs.org/en/) with the latest security patch be installed.
+
+#### Update to Electron 8
+
+iModel.js has officially moved up to the [latest stable version](https://www.electronjs.org/docs/tutorial/electron-timelines) of Electron. If you are building desktop applications, upgrade the version of electron you are setup to use. e.g., in package.json
+
+``` json
+ "dependencies": {
+    ...
+    "electron": "^8.2.1"
+    ...
+  },
+```
+
+#### Update to iModel.js Build System
+
+The iModel.js 1.0 build system relied on a single package (`@bentley/webpack-tools`) to build iModel.js frontends and extensions. With the release of 2.0, there are significant improvements to the build system to help with both clarity and usability to enable creating an app based on the latest technologies easier. To aid in this, the build system is now split into 2 separate components:
+
+- Webpack/bundling of an iModel.js Extension (formerly Plugin) with `@bentley/extension-webpack-tools`
+- The iModel.js frontend build system is now based on [Create-React-App](https://create-react-app.dev/). More details visit the [Build Migration Guide](./migration-guides/migratingbuildsystems.md).
+
+#### Deprecation Errors
+
+If you were using or extending the tslint configuration supplied by iModel.js, please note - previously, the default tslint configuration reported [usage of deprecated APIs](https://palantir.github.io/tslint/rules/deprecation/) as warnings. It will now produce errors instead.
+
+### Package @bentley/imodeljs-clients
+
+#### Split package
+
+The former `@bentley/imodeljs-clients` package that contained clients for various Bentley-hosted services has been split into the following packages that are now underneath the `/clients/` directory:
+
+- `@bentley/itwin-client`
+- `@bentley/context-registry-client`
+- `@bentley/forms-data-management`
+- `@bentley/frontend-authorization`
+- `@bentley/imodelhub-client`
+- `@bentley/product-settings-client`
+- `@bentley/projectshare-client`
+- `@bentley/rbac-client`
+- `@bentley/reality-data-client`
+- `@bentley/usage-logging-client`
+
+The new `@bentley/itwin-client` package contains the base functionality that all other clients leverage. Update your imports to the specific package as necessary.
+
+The logger categories setup in `@bentley/imodeljs-clients` have now migrated to the individual packages, with names consistent with the new location -
+| Old code                           | New package to import from      | New code                                 |
+| ---------------------------------- | ------------------------------- | ---------------------------------------- |
+| `ClientsLoggerCategory.Clients`    | `@bentley/itwin-client`         | ITwinClientLoggerCategory.Clients        |
+| `ClientsLoggerCategory.ECJson`     | `@bentley/itwin-client`         | ITwinClientLoggerCategory.ECJson         |
+| `ClientsLoggerCategory.Request`    | `@bentley/itwin-client`         | ITwinClientLoggerCategory.Request        |
+| `ClientsLoggerCategory.IModelHub`  | `@bentley/imodelhub-client`     | IModelHubClientLoggerCategory.IModelHub  |
+| `ClientsLoggerCategory.IModelBank` | `@bentley/imodelhub-client`     | IModelHubClientLoggerCategory.IModelBank |
+| `ClientsLoggerCategory.ImsClients` | Removed - no SAML support       | Removed - no SAML support                |
+| `ClientsLoggerCategory.UlasClient` | `@bentley/usage-logging-client` | UsageLoggingClientLoggerCategory.Client  |
+
+
+#### Removed support for SAML-based authorization
+
+- *All authentication must now be done using OIDC.* The iModel.js API includes wrappers around popular 3rd party utilities for OIDC based authentication/authorization for web, desktop and agent applications.
+- The previously deprecated SAML-based authentication utilities, ImsActiveSecureTokenClient and ImsDelegationSecureTokenClient, have now been removed.
+- [AccessToken]($clients) cannot hold SAML tokens anymore.
+- The deprecated OidcAgentClientV1 for SAML-based authentication of agents has been removed.
+
+#### Removals and changes
+
+- The `IAuthorizationClient` interface has been renamed to [AuthorizationClient]($itwin-client)
+  - The `hasExpired` field in this interface has been removed.
+  - The `hasSignedIn` field in this interface has been moved to [FrontendAuthorizationClient]($frontend-authorization-client)
+- [Config]($bentley) has been relocated to `@bentley/bentleyjs-core` from `@bentley/imodeljs-clients`. Update your imports:
+
+  ```ts
+  import {Config} from "@bentley/bentleyjs-core";
+  ```
+
+### Package @bentley/imodeljs-clients-backend
+
+#### Package rename
+
+In addition to the `@bentley/imodeljs-clients` package changes described before, the `@bentley/imodeljs-clients-backend` package has been renamed to `@bentley/backend-itwin-client`.
+
+#### Authorization for Agent Applications
+
+The OidcAgentClient utility has been renamed to [AgentAuthorizationClient]($clients-backend) and OidcAgentClientConfiguration is now renamed to [AgentAuthorizationClientConfiguration]($clients-backend) for consistency.
+
+The older names continue to exist as aliases, but are now marked as deprecated.
+
+### Package @bentley/imodeljs-common
+
+#### RPC changes
+
+- The major versions of the RPC interfaces have been updated for iModel.js 2.0, and this makes them incompatible with older versions. *As a result, 1.x frontends/backends cannot be paired with 2.0 frontends/backends*
+- For applications that defined custom RPC interfaces, note that function signatures of RPC operations no longer need to include the [IModelRpcProps]($common) (formerly IModelToken) argument, if not required.
+
+#### Solar Calculation APIs
+
+The solar calculation functions [calculateSolarAngles]($common), [calculateSolarDirection]($common), and [calculateSunriseOrSunset]($common) have moved from the `@bentley/imodeljs-frontend` package to the `@bentley/imodeljs-common` package.
+
+#### GeometryStream Iteration
+
+The [GeometryStreamIteratorEntry]($common) exposed by a [GeometryStreamIterator]($common) has been simplified down to only four members. Access the geometric primitive associated with the entry by type-switching on its `type` property. For example, code that previously looked like:
+
+```ts
+function tryTransformGeometry(entry: GeometryStreamIteratorEntry, transform: Transform): void {
+  if (undefined !== entry.geometryQuery)
+    return entry.geometryQuery.tryTransformInPlace(transform);
+
+  if (undefined !== entry.textString) {
+    entry.textString.transformInPlace(transform);
+    return true;
+  } else if (undefined !== entry.image)
+    entry.image.transformInPlace(transform);
+    return true;
+  }
+  // etc...
+}
+```
+
+Is now written as:
+
+```ts
+function tryTransformGeometry(entry: GeometryStreamIteratorEntry, transform: Transform): void {
+  switch (entry.primitive.type) {
+    case "geometryQuery":
+      // The compiler knows that entry.primitive is of type AnyGeometryQuery
+      return entry.primitive.geometryQuery.tryTransformInPlace(transform);
+    case "textString":
+    case "image":
+      // The compiler knows that entry.primitive is a TextString or an ImageGraphic, both of which have a transformInPlace() method
+      entry.primitive.transformInPlace(transform);
+      return true;
+    // etc...
+  }
+}
+```
+
+#### Immutable Color Types
+
+[ColorDef]($common) is now an immutable type. Naturally, mutating methods like `setTransparency` have been removed; they are replaced by methods like `withTransparency` which return a modified copy of the original `ColorDef`. The constructor is now private; replace `new ColorDef(x)` with `ColorDef.create(x)`.
+
+[HSVColor]($common) and [HSLColor]($common) are also now immutable.
+
+#### Other changes
+
+- The properties formerly under `IModel.iModelToken` have been promoted to [IModel]($common). These renames affect [IModelConnection]($frontend) and [IModelDb]($backend) and are described [later](#imodel-imodelconnection-imodeldb).
+
+### Package @bentley/imodeljs-backend
+
+#### Async startup and shutdown
 
 The following methods are now `async` and return `Promise<void>`:
 
@@ -180,35 +403,110 @@ The following methods are now `async` and return `Promise<void>`:
 
 Calling code should be updated to `await` these Promises.
 
-### iTwin client packages
+#### Specifying cache locations
 
-the `imodeljs-clients` package has been split into the following packages, all of which are hosted in the `/clients/` directory alongside the existing `extension-client`:
-- `context-registry-client`
-- `forms-data-management`
-- `frontend-authorization`
-- `imodelhub-client`
-- `itwin-client`
-- `product-settings-client`
-- `projectshare-client`
-- `rbac-client`
-- `reality-data-client`
-- `usage-logging-client`
+The existing method to specify the briefcase cache location by passing [IModelHostConfiguration.briefcaseCacheDir]($backend) to [IModelHost.startup]($backend) has been deprecated - i.e., this can still be used to match the existing behavior, even if use of it will cause deprecation warnings during compilation.
 
-### iTwin client-backend package rename
+Starting with this version, a new [IModelHostConfiguration.cacheDir]($backend) has been introduced to specify a root location for all caches including the briefcase cache. The briefcases are organized under the "bc" sub-folder of this location.
 
-to align with the splitting of the `imodeljs-clients` package, `imodeljs-clients-backend` has been renamed to `backend-itwin-client`
+If [IModelHostConfiguration.cacheDir]($backend) and the legacy [IModelHostConfiguration.briefcaseCacheDir]($backend) are both not specified, the existing default behavior was to pick a location underneath the temporary directory. This is no more the case.
 
-### Authentication and Authorization
+Starting with version 2.0, the default behavior is to instead pick a location outside of the temporary directory, but still under the home directory of the logged in user. For more details on the new location, see [IModelHostConfiguration.cacheDir]($backend).
 
-#### Removed support for SAML based authorization
-* The deprecated SAML based authentication utilities, ImsActiveSecureTokenClient and ImsDelegationSecureTokenClient have now been removed. All authentication must be done using OIDC.
-* [AccessToken]($clients) cannot hold SAML tokens anymore.
-* The deprecated OidcAgentClientV1 for SAML based authentication of agents has been removed.
-* The `IAuthorizationClient` interface has been renamed to [AuthorizationClient]($itwin-client)
+Use [IModelHost.cacheDir]($backend) to get the resolved cache location after startup.
+
+#### Briefcase iModels - Managing Briefcases at the Backend
+
+The methods for working with Briefcase iModels (those that are synchronized with iModelHub) have been refactored. At the backend many of the methods have been moved from (the now abstract) [IModelDb]($backend) class to either the [BriefcaseDb]($backend) or [BriefcaseManager]($backend) class. At the frontend, the methods have been moved from (the now abstract) [IModelConnection]($frontend) class to the [RemoteBriefcaseConnection]($frontend) class. More details below -
+
+- Opening an iModel from iModelHub at the backend involves two steps - downloading a briefcase of the iModel, and then opening that briefcase. These two operations have been separated out now, and require two different API calls - await the asynchronous call to [BriefcaseManager.download]($backend) to complete the download, and open the briefcase with a synchronous call to [BriefcaseDb.open]($backend).
+  - Before change:
+
+    ```ts
+    const iModelDb = await IModelDb.open(requestContext, projectId, iModelId, OpenParams.fixedVersion(), IModelVersion.latest());
+    ```
+
+  - After change:
+
+    ```ts
+      const downloadOptions: DownloadOptions = {syncMode: FixedVersion};
+      const briefcaseProps: BriefcaseProps = await BriefcaseManager.download(requestContext, contextId, iModelId, downloadOptions, version);
+      requestContext.enter();
+
+      const briefcaseDb = BriefcaseDb.open(requestContext, briefcaseProps.key);
+    ```
+
+- The parameter OpenParams to the open call has been removed, and instead replaced with  [OpenBriefcaseOptions]($common). The download call takes [DownloadBriefcaseOptions]($common). See above example. Also, the [SyncMode]($common) option that is part of [DownloadBriefcaseOptions]($common) has been moved from the `@bentley/imodeljs-backend` package to `@bentley/imodeljs-common` package. Update your imports like below:
+
+  ```ts
+  import {SyncMode} from "@bentley/imodeljs-common";
+  ```
+
+- The API now allows downloading briefcases at the backend with a new [SyncMode.PullOnly]($common) option. e.g.,
+
+  ```ts
+  const downloadOptions: DownloadOptions = {syncMode: FixedVersion};
+  const briefcaseProps: BriefcaseProps = await BriefcaseManager.download(requestContext, projectId, iModelId, downloadOptions);
+  requestContext.enter();
+
+  const briefcaseDb = BriefcaseDb.open(requestContext, briefcaseProps.key);
+  ```
+
+  - Downloading iModels with this new option establishes a local briefcase that allows change sets to be pulled from iModelHub and merged in, but disallows pushes back to the iModelHub. e.g.,
+
+    ```ts
+    briefcaseDb.pullAndMergeChanges(requestContext, IModelVersion.latest());
+    ```
+
+  - Upon open, a new briefcase is acquired from iModelHub and is meant for exclusive use by that user.
+  - The briefcase is opened read/write to allow merging of change sets even if no changes can be made to it.
+- [BriefcaseDb.onOpen]($backend) and [BriefcaseDb.onOpened]($backend) events pass a context that may or may not include an AccessToken. i.e., they take [AuthorizedClientRequestContext]($clients) | [ClientRequestContext]($bentleyjs-core) as a parameter instead of [AuthorizedClientRequestContext]($clients)
+
+- Removed the option to delete the briefcase on close (i.e., KeepBriefcase). Very similar to the open, it should be done in two separate steps, with the close being a synchronous operation now.
+  - Before change:
+
+    ```ts
+    await iModelDb.close(requestContext, KeepBriefcase.No);
+    ```
+
+  - After change:
+
+    ```ts
+    briefcaseDb.close();
+    await BriefcaseManager.delete(requestContext, briefcaseDb.key);
+    ```
+
+- The following methods have been moved from (the now abstract) [IModelDb]($backend) class to the [BriefcaseDb]($backend):
+  - `IModelDb.pullAndMergeChanges` --> [BriefcaseDb.pullAndMergeChanges]($backend)
+  - `IModelDb.pushChanges` --> [BriefcaseDb.pushChanges]($backend)
+  - `IModelDb.reverseChanges` --> [BriefcaseDb.reverseChanges]($backend)
+  - `IModelDb.reinstateChanges` --> [BriefcaseDb.reinstateChanges]($backend)
+  - `IModelDb.concurrencyControl` --> [BriefcaseDb.concurrencyControl]($backend)
+
+- The following methods have been moved from [IModelDb]($backend) to [BriefcaseManager]($backend)
+  - `IModelDb.create` --> [BriefcaseManager.create]($backend)
+
+#### Snapshot iModels
+
+The methods for working with snapshot iModels have been moved into a new [SnapshotDb]($backend) class, which is a breaking change.
+The following renames are required:
+
+- `IModelDb.createSnapshot` (static) --> [SnapshotDb.createEmpty]($backend)
+- `IModelDb.createSnapshot` --> [SnapshotDb.createFrom]($backend)
+- `IModelDb.openSnapshot` --> [SnapshotDb.openFile]($backend)
+- `IModelDb.closeSnapshot` --> [SnapshotDb.close]($backend)
+
+#### Other Changes
+
+- BriefcaseId / ReservedBriefcaseId: The former `BriefcaseId` class has been replaced by the [BriefcaseId]($backend) type (which is just `number`) and the [ReservedBriefcaseId]($backend) enumeration.
+- `UlasUtilities` has been renamed to `UsageLoggingUtilities` to better align with name of the newly created `usage-logging-client` package
+- `ExportGraphicsProps` and associated interfaces have been renamed to `ExportGraphicsOptions` to convey that they are not wire formats.
+
+### Package @bentley/imodeljs-frontend
 
 #### Authorization in Browsers
 
-OIDC functionality in the browser has been overhauled to better support iModel.js Extensions that might require the user to authenticate with other services.
+OIDC functionality in the browser has been overhauled to better support iModel.js Extensions that may require the user to authenticate with other services.
 
 - [IOidcFrontendClient]($clients) has been supplanted by [FrontendAuthorizationClient]($frontend-authorization-client)
   - All existing classes which previously implemented [IOidcFrontendClient]($clients), now implement [FrontendAuthorizationClient]($frontend-authorization-client)
@@ -257,10 +555,8 @@ For situations where a signin is delayed until after app startup, `signInPopup()
 
 Signin callbacks generated by any of the `signIn` methods can be handled easily using a single call to [BrowserAuthorizationCallbackHandler]($frontend-authorization-client)`.handleSigninCallback()`.
 
-### Authorization for Agent Applications
-The OidcAgentClient utility has been renamed to [AgentAuthorizationClient]($clients-backend) and OidcAgentClientConfiguration is now renamed to [AgentAuthorizationClientConfiguration]($clients-backend) for consistency.
+#### Authorization for Desktop Applications
 
-### Authorization for Desktop Applications
 [DesktopAuthorizationClient]($frontend) is available for authorization in Desktop Applications. This is meant for use in the renderer process. A configured instance of this class can be used to setup [IModelApp.authorizationClient]($frontend).
 
 ```ts
@@ -275,162 +571,46 @@ await desktopClient.initialize(new ClientRequestContext());
 await desktopClient.signIn();
 ```
 
-### IModel, IModelConnection, IModelDb
+#### IModel, IModelConnection, IModelDb
 
 The properties formerly under `IModel.iModelToken` have been promoted to [IModel]($common). These renames affect [IModelConnection]($frontend) and [IModelDb]($backend):
 
-* `IModel.iModelToken.contextId` --> [IModel.contextId]($common)
-* `IModel.iModelToken.iModelId` --> [IModel.iModelId]($common)
-* `IModel.iModelToken.changeSetId` --> [IModel.changeSetId]($common)
+- `IModel.iModelToken.contextId` --> [IModel.contextId]($common)
+- `IModel.iModelToken.iModelId` --> [IModel.iModelId]($common)
+- `IModel.iModelToken.changeSetId` --> [IModel.changeSetId]($common)
 
 And for RPC implementations, the following method has been added to replace other uses of `IModel.iModelToken`:
 
-* [IModel.getRpcProps]($common)
-  * This method returns an object of type [IModelRpcProps]($common) which replaces `IModelToken` and `IModelTokenProps` but maintains the same property names as before.
+- [IModel.getRpcProps]($common)
+  - This method returns an object of type [IModelRpcProps]($common) which replaces `IModelToken` and `IModelTokenProps` but maintains the same property names as before.
 
 And the following method has been renamed/refactored to *find* based on a key:
 
-* `IModelDb.find` --> [IModelDb.findByKey]
-
-### Briefcase iModels
-
-The methods for working with Briefcase iModels (those that are synchronized with iModelHub) have been refactored. At the backend many of the methods have been moved from (the now abstract) [IModelDb]($backend) class to the [BriefcaseDb]($backend) class. At the frontend, the methods have been moved from (the now abstract) [IModelConnection]($frontend) class to the [RemoteBriefcaseConnection]($frontend) class. More details below -
-
-#### Managing Briefcases at the Backend
-
-* Opening an iModel from iModel Hub at the backend involves two steps - downloading a briefcase of the iModel, and then opening that briefcase. These two operations have been separated out now, and require two different API calls - await the asynchronous call to [BriefcaseManager.download]($backend) to complete the download, and open the briefcase with a synchronous call to [BriefcaseDb.open]($backend).
-  * Before change:
-    ```ts
-    const iModelDb = await IModelDb.open(requestContext, projectId, iModelId, OpenParams.fixedVersion(), IModelVersion.latest());
-    ```
-  * After change:
-    ```ts
-      const downloadOptions: DownloadOptions = {syncMode: FixedVersion};
-      const briefcaseProps: BriefcaseProps = await BriefcaseManager.download(requestContext, contextId, iModelId, downloadOptions, version);
-      requestContext.enter();
-
-      const briefcaseDb = BriefcaseDb.open(requestContext, briefcaseProps.key);
-    ```
-* The parameter OpenParams to the open call has been removed, and instead replaced with  [OpenBriefcaseOptions]($common). The download call takes [DownloadBriefcaseOptions]($common). See above example. Also, the [SyncMode]($common) option that's part of [DownloadBriefcaseOptions]($common) has been moved from the imodeljs-backend package to imodeljs-common package. Update your imports like below -
-  ```ts
-  import {SyncMode} from "@bentley/imodeljs-common";
-  ```
-* The API now allows downloading briefcases at the backend with a new [SyncMode.PullOnly]($common) option. e.g.,
-  ```ts
-  const downloadOptions: DownloadOptions = {syncMode: FixedVersion};
-  const briefcaseProps: BriefcaseProps = await BriefcaseManager.download(requestContext, projectId, iModelId, downloadOptions);
-  requestContext.enter();
-
-  const briefcaseDb = BriefcaseDb.open(requestContext, briefcaseProps.key);
-  ```
-  * Downloading iModels with this new option establishes a local briefcase that allows change sets to be pulled from the iModel Hub and merged in, but disallows pushes back to the iModel Hub. e.g.,
-    ```ts
-    briefcaseDb.pullAndMergeChanges(requestContext, IModelVersion.latest());
-    ```
-  *  Upon open, a new briefcase is acquired from the iModel Hub and is meant for exclusive use by that user.
-  * The briefcase is opened ReadWrite to allow merging of change sets even if no changes can be made to it.
-* [BriefcaseDb.onOpen]($backend) and [BriefcaseDb.onOpened]($backend) events pass a context that may or may not include an AccessToken. i.e., they take [AuthorizedClientRequestContext]($clients) | [ClientRequestContext]($bentleyjs-core) as a parameter instead of [AuthorizedClientRequestContext]($clients)
-
-* Removed the option to delete the briefcase on close (i.e., KeepBriefcase). Very similar to the open, it should be done in two separate steps, with the close being a synchronous operation now.
-  * Before change:
-    ```ts
-    await iModelDb.close(requestContext, KeepBriefcase.No);
-    ```
-  * After change:
-    ```
-    briefcaseDb.close();
-    await BriefcaseManager.delete(requestContext, briefcaseDb.key);
-    ```
-
-* The following methods have been moved from (the now abstract) [IModelDb]($backend) class to the [BriefcaseDb]($backend):
-  * `IModelDb.pullAndMergeChanges` --> [BriefcaseDb.pullAndMergeChanges]($backend)
-  * `IModelDb.pushChanges` --> [BriefcaseDb.pushChanges]($backend)
-  * `IModelDb.reverseChanges` --> [BriefcaseDb.reverseChanges]($backend)
-  * `IModelDb.reinstateChanges` --> [BriefcaseDb.reinstateChanges]($backend)
-  * `IModelDb.concurrencyControl` --> [BriefcaseDb.concurrencyControl]($backend)
-
-* The following methods have been moved from [IModelDb]($backend) to [BriefcaseManager]($backend)
-  * `IModelDb.create` --> [BriefcaseManager.create]($backend)
+- `IModelDb.find` --> [IModelDb.findByKey]($backend)
 
 #### Managing Briefcases at the Frontend
 
 Similar to the backend, at the frontend, the following method has been moved from (the now abstract) [IModelConnection]($frontend) class:
 
-* `IModelConnection.open` --> [RemoteBriefcaseConnection.open]($frontend)
+- `IModelConnection.open` --> [RemoteBriefcaseConnection.open]($frontend)
 
 Like before this causes the briefcase to be downloaded at the backend (if necessary) before opening it.
 
-### Snapshot iModels
+#### Snapshot iModels
 
-The methods for working with snapshot iModels have been moved into a new [SnapshotDb]($backend) class, which is a breaking change.
-The following renames are required:
+Changes corresponding to the backend have been made to the frontend. The following methods have been moved from (the now abstract) [IModelConnection]($frontend) class:
 
-* `IModelDb.createSnapshot` (static) --> [SnapshotDb.createEmpty]($backend)
-* `IModelDb.createSnapshot` --> [SnapshotDb.createFrom]($backend)
-* `IModelDb.openSnapshot` --> [SnapshotDb.openFile]($backend)
-* `IModelDb.closeSnapshot` --> [SnapshotDb.close]($backend)
+- `IModelConnection.openSnapshot` --> [SnapshotConnection.openFile]($frontend)
+- `IModelConnection.closeSnapshot` --> [IModelConnection.close]($frontend) (abstract) and [SnapshotConnection.close]($frontend) (concrete)
 
-Corresponding changes have been made to the frontend. The following methods have been moved from (the now abstract) [IModelConnection]($frontend) class:
-
-* `IModelConnection.openSnapshot` --> [SnapshotConnection.openFile]($frontend)
-* `IModelConnection.closeSnapshot` --> [IModelConnection.close]($frontend) (abstract) and [SnapshotConnection.close]($frontend) (concrete)
-
-### BlankConnection
+#### BlankConnection
 
 A new [BlankConnection]($frontend) subclass of of [IModelConnection]($frontend) has been introduced for working with reality data services without requiring an iModel.
 The following renames are required:
 
-* `IModelConnection.createBlank` --> [BlankConnection.create]($frontend)
+- `IModelConnection.createBlank` --> [BlankConnection.create]($frontend)
 
-### BriefcaseId / ReservedBriefcaseId
-
-The former `BriefcaseId` class has been replaced by the [BriefcaseId]($backend) type (which is just `number`) and the [ReservedBriefcaseId]($backend) enumeration.
-
-### GeometryStream Iteration
-
-The [GeometryStreamIteratorEntry]($common) exposed by a [GeometryStreamIterator]($common) has been simplified down to only four members. Access the geometric primitive associated with the entry by type-switching on its `type` property. For example, code that previously looked like:
-
-```ts
-function tryTransformGeometry(entry: GeometryStreamIteratorEntry, transform: Transform): void {
-  if (undefined !== entry.geometryQuery)
-    return entry.geometryQuery.tryTransformInPlace(transform);
-
-  if (undefined !== entry.textString) {
-    entry.textString.transformInPlace(transform);
-    return true;
-  } else if (undefined !== entry.image)
-    entry.image.transformInPlace(transform);
-    return true;
-  }
-  // etc...
-}
-```
-
-Is now written as:
-
-```ts
-function tryTransformGeometry(entry: GeometryStreamIteratorEntry, transform: Transform): void {
-  switch (entry.primitive.type) {
-    case "geometryQuery":
-      // The compiler knows that entry.primitive is of type AnyGeometryQuery
-      return entry.primitive.geometryQuery.tryTransformInPlace(transform);
-    case "textString":
-    case "image":
-      // The compiler knows that entry.primitive is a TextString or an ImageGraphic, both of which have a transformInPlace() method
-      entry.primitive.transformInPlace(transform);
-      return true;
-    // etc...
-  }
-}
-```
-
-### Immutable Color Types
-
-[ColorDef]($common) is now an immutable type. Naturally, mutating methods like `setTransparency` have been removed; they are replaced by methods like `withTransparency` which return a modified copy of the original `ColorDef`. The constructor is now private; replace `new ColorDef(x)` with `ColorDef.create(x)`.
-
-[HSVColor]($common) and [HSLColor]($common) are also now immutable.
-
-### ViewChangeOptions Interface
+#### ViewChangeOptions Interface
 
 The [ViewChangeOptions]($frontend) interface now has a new optional member, `onExtentsError`. It provides a way for applications to be notified when a viewing operation hits the view-specific limits for extents (either minimum or maximum size.) If possible, the viewing api will adjust the extents value to the limit, but if `onExtentsError` is provided, it is called with the error value so it can show a message to the user. If the error should be ignored (i.e. the adjusted value is acceptable), return `ViewStatus.Success` from `onExtentsError`.
 
@@ -441,36 +621,32 @@ The signatures of several `ViewState` methods have been modified to accept a `Vi
 - [ViewState.lookAtVolume]($frontend)
 - [ViewState.lookAtViewAlignedVolume]($frontend)
 
-### iModelJs Config
+#### API changes in `imodeljs-frontend` package
 
-[Config]($bentley) has been relocated to `bentleyjs-core` from `itwin-client`
+- [IModelApp]($frontend)`.authorizationClient` has been changed from [AuthorizationClient]($itwin-client) to the more specific type [FrontendAuthorizationClient]($frontend-authorization-client)
 
-### PropertyRecord classes moved to `ui-abstract` package
+#### PropertyRecord classes moved to `ui-abstract` package
 
 This includes the classes in the following files:
 
-* Description.ts
-* EditorParams.ts
-* PrimitiveTypes.ts
-* Record.ts
-* Value.ts
+- Description.ts
+- EditorParams.ts
+- PrimitiveTypes.ts
+- Record.ts
+- Value.ts
 
 The deprecated ToolSettingsValue.ts has been removed.
 
-### API changes in `imodeljs-backend` package
+### Package @bentley/ui-components
 
-- `UlasUtilities` has been renamed to `UsageLoggingUtilities` to better align with name of the newly created `usage-logging-client` package
-
-### API changes in `ui-components` package
-
-#### Hard-Deprecation
+#### Hard Deprecations
 
 A couple of already `@deprecated` APIs are now being hard-deprecated by adding a `DEPRECATED_` prefix to increase consumers' awareness about future removal of the APIs:
 
-* `Tree` to `DEPRECATED_Tree`. Recommended replacement - `ControlledTree`.
-* `withTreeDragDrop` to `DEPRECATED_withTreeDragDrop`. We don't have a replacement for that yet.
+- `Tree` to `DEPRECATED_Tree`. Recommended replacement - `ControlledTree`.
+- `withTreeDragDrop` to `DEPRECATED_withTreeDragDrop`. We don't have a replacement for that yet.
 
-As a short term solution consumers can simply do a rename when importing the module, e.g.:
+As a short term solution consumers can simply do a rename when importing the package, e.g.:
 
 ```ts
 import { DEPRECATED_Tree as Tree } from "@bentley/ui-components";
@@ -478,16 +654,16 @@ import { DEPRECATED_Tree as Tree } from "@bentley/ui-components";
 
 #### Removals and Changes
 
-* Renamed `ITreeNodeLoaderWithProvider.getDataProvider()` to `ITreeNodeLoaderWithProvider.dataProvider`.
-* Renamed `PagedTreeNodeLoader.getPageSize()` to `PagedTreeNodeLoader.pageSize`.
-* Renamed `TreeCheckboxStateChangeEvent` to `TreeCheckboxStateChangeEventArgs`.
-* Renamed `TreeNodeEvent` to `TreeNodeEventArgs`.
-* Renamed `TreeSelectionModificationEvent` to `TreeSelectionModificationEventArgs`.
-* Renamed `TreeSelectionReplacementEvent` to `TreeSelectionReplacementEventArgs`.
-* Renamed `useModelSource` to `useTreeModelSource`.
-* Renamed `useNodeLoader` to `useTreeNodeLoader`.
-* Renamed `usePagedNodeLoader` to `usePagedTreeNodeLoader`.
-* Changed `IPropertyValueRenderer.render` to only be allowed to return `ReactNode` (do not allow `Promise<ReactNode>` anymore). This makes the calling code much simpler at the cost of a few more complex renderers. To help handle async rendering, a helper `useAsyncValue` hook has been added. Example usage:
+- Renamed `ITreeNodeLoaderWithProvider.getDataProvider()` to `ITreeNodeLoaderWithProvider.dataProvider`.
+- Renamed `PagedTreeNodeLoader.getPageSize()` to `PagedTreeNodeLoader.pageSize`.
+- Renamed `TreeCheckboxStateChangeEvent` to `TreeCheckboxStateChangeEventArgs`.
+- Renamed `TreeNodeEvent` to `TreeNodeEventArgs`.
+- Renamed `TreeSelectionModificationEvent` to `TreeSelectionModificationEventArgs`.
+- Renamed `TreeSelectionReplacementEvent` to `TreeSelectionReplacementEventArgs`.
+- Renamed `useModelSource` to `useTreeModelSource`.
+- Renamed `useNodeLoader` to `useTreeNodeLoader`.
+- Renamed `usePagedNodeLoader` to `usePagedTreeNodeLoader`.
+- Changed `IPropertyValueRenderer.render` to only be allowed to return `ReactNode` (do not allow `Promise<ReactNode>` anymore). This makes the calling code much simpler at the cost of a few more complex renderers. To help handle async rendering, a helper `useAsyncValue` hook has been added. Example usage:
 
   ```ts
   import { useAsyncValue } from "@bentley/ui-components";
@@ -497,11 +673,11 @@ import { DEPRECATED_Tree as Tree } from "@bentley/ui-components";
   };
   ```
 
-* Changed type of `label` attribute from `string` to `PropertyRecord` for these types:
-  * `BreadcrumbNodeProps`
-  * `TreeModelNode`
-  * `MutableTreeModelNode`
-  * `TreeModelNodeInput`
+- Changed type of `label` attribute from `string` to `PropertyRecord` for these types:
+  - `BreadcrumbNodeProps`
+  - `TreeModelNode`
+  - `MutableTreeModelNode`
+  - `TreeModelNodeInput`
 
   Also removed `labelDefinition` attribute in `PropertyData` and `TreeNodeItem` in favor of `label` whose type changed from `string` to `PropertyRecord`.
 
@@ -514,90 +690,105 @@ import { DEPRECATED_Tree as Tree } from "@bentley/ui-components";
   };
   ```
 
-* Removed `HorizontalAlignment`. Use the `HorizontalAlignment` in @bentley/ui-core instead.
+- Removed `HorizontalAlignment`. Use the `HorizontalAlignment` in @bentley/ui-core instead.
 
-### API Changes in `ui-framework` Package
+### Package @bentley/ui-framework
 
 #### Renames
 
 A couple of types were renamed to better match their intention:
 
-* `VisibilityTree` to `ModelsTree`
-* `IModelConnectedVisibilityTree` to `IModelConnectedModelsTree`
+- `VisibilityTree` to `ModelsTree`
+- `IModelConnectedVisibilityTree` to `IModelConnectedModelsTree`
 
 #### Removal of Deprecated APIs
 
 The following items that were marked as @deprecated in the 1.x time frame have been removed:
 
-* FrontstageDef.inheritZoneStates (never implemented in iModel.js)
-* FrontstageDef.hubEnabled (never implemented in iModel.js)
-* FrontstageDef.contextToolbarEnabled (never implemented in iModel.js)
-* IconSpec (Use IconSpec in @bentley/ui-core instead)
-* IconProps (Use IconProps in @bentley/ui-core instead)
-* Icon (Use the Icon component in @bentley/ui-core instead)
-* ItemDefBase.betaBadge (use badgeType instead)
-* ItemProps.betaBadge  (use badgeType instead)
-* WidgetDef.betaBadge (use badgeType instead)
-* WidgetProps.betaBadge (use badgeType instead)
+- FrontstageDef.inheritZoneStates (never implemented in iModel.js)
+- FrontstageDef.hubEnabled (never implemented in iModel.js)
+- FrontstageDef.contextToolbarEnabled (never implemented in iModel.js)
+- IconSpec (Use IconSpec in @bentley/ui-core instead)
+- IconProps (Use IconProps in @bentley/ui-core instead)
+- Icon (Use the Icon component in @bentley/ui-core instead)
+- ItemDefBase.betaBadge (use badgeType instead)
+- ItemProps.betaBadge  (use badgeType instead)
+- WidgetDef.betaBadge (use badgeType instead)
+- WidgetProps.betaBadge (use badgeType instead)
 
 #### Other changes
 
-* Removed `useControlledTree` flag from the following *Prop* types:
-  * `CategoryTreeProps`
-  * `ModelsTreeProps`
-  * `SpatialContainmentTreeProps`
-  * `VisibilityComponentProps`
+- Removed `useControlledTree` flag from the following *Prop* types:
+  - `CategoryTreeProps`
+  - `ModelsTreeProps`
+  - `SpatialContainmentTreeProps`
+  - `VisibilityComponentProps`
 
   The components now always use controlled tree as the internal tree implementation.
 
-* Removed `UiFramework.getDefaultRulesetId()` and `UiFramework.setDefaultRulesetId()`. Each component
+- Removed `UiFramework.getDefaultRulesetId()` and `UiFramework.setDefaultRulesetId()`. Each component
 should decide what ruleset it wants to use.
 
-* Custom registered ToolUiProviders should now return a 'horizontalToolSettingNodes' property that contain an array of ToolSettingsEntry items.
+- Custom registered ToolUiProviders should now return a 'horizontalToolSettingNodes' property that contain an array of ToolSettingsEntry items.
 These items define the label and editor to use for each value when the Tool Settings container is in its default Horizontal orientation. The existing 'toolSettingsNode' property is still used to specify the UI if the Tool Settings are shown in a floating/rectangular container.
 
-*When using the DefaultToolSettingsProvider as specified in the `ToolUiManager`, the toolSettingsProperty argument to `ToolUiManager.initializeToolSettingsData()` has been changed from `ToolSettingsPropertyRecord[]` to `DialogItem[]`. `DialogItem` is an interface that you will find in the ui-abstract package in the file DialogItem.ts. The classes in the file ToolSettingsValue.ts have been deprecated and removed from the source tree.
+- When using the DefaultToolSettingsProvider as specified in the `ToolUiManager`, the toolSettingsProperty argument to `ToolUiManager.initializeToolSettingsData()` has been changed from `ToolSettingsPropertyRecord[]` to `DialogItem[]`. `DialogItem` is an interface that you will find in the ui-abstract package in the file DialogItem.ts. The classes in the file ToolSettingsValue.ts have been deprecated and removed from the source tree.
 
-### API changes in `ui-core` package
+- `redux` and `react-redux` dependencies are moved from dependencies to peerDependencies. Applications consuming this package must ensure their minimum versions are setup like below -
+
+  ``` json
+    "dependencies": {
+      ...
+      "react": "^16.8.0",
+      "redux": "^4.0.3",
+      "react-dom": "^16.8.0",
+      "react-redux": "^7.2.0"
+      ...
+    },
+  ```
+
+### Package @bentley/ui-core
 
 #### Removal of Deprecated APIs
 
 The following items that were marked as @deprecated in the 1.x time frame have been removed:
 
-* UiError (use UiError in @bentley/ui-abstract instead)
-* Position for Popup component (Use RelativePosition in @bentley/ui-abstract instead)
+- UiError (use UiError in @bentley/ui-abstract instead)
+- Position for Popup component (Use RelativePosition in @bentley/ui-abstract instead)
 
-### React dependency changes
+#### React dependency changes
 
 `react` and `react-dom` dependencies are moved from `dependencies` to `peerDependencies`.
 
-### API Changes in `presentation-common` Package
+<!-- Write what customers need to do to react to this change -->
+
+### Package @bentley/presentation-common
 
 #### RPC Changes
 
 The following endpoints have been either changed or removed:
 
-* `PresentationRpcInterface.getDisplayLabel` removed in favor of `PresentationRpcInterface.getDisplayLabelDefinition`.
-* `PresentationRpcInterface.getDisplayLabels` removed in favor of `PresentationRpcInterface.getDisplayLabelDefinitions`.
-* `PresentationRpcInterface.getDisplayLabelsDefinitions` renamed to `PresentationRpcInterface.getDisplayLabelDefinitions`.
-* `RequestOptionsWithRuleset` required either `rulesetId` or `rulesetOrId` (both optional). Now it only has a required attribute `rulesetOrId`.
+- `PresentationRpcInterface.getDisplayLabel` removed in favor of `PresentationRpcInterface.getDisplayLabelDefinition`.
+- `PresentationRpcInterface.getDisplayLabels` removed in favor of `PresentationRpcInterface.getDisplayLabelDefinitions`.
+- `PresentationRpcInterface.getDisplayLabelsDefinitions` renamed to `PresentationRpcInterface.getDisplayLabelDefinitions`.
+- `RequestOptionsWithRuleset` required either `rulesetId` or `rulesetOrId` (both optional). Now it only has a required attribute `rulesetOrId`.
 
 In addition, support for stateful backed was removed.
 
 Because of the above breaking `PresentationRpcInterface` changes its version was changed to `2.0`.
 
-#### Hard-Deprecation
+#### Hard Deprecations
 
 Some of already `@deprecated` APIs are now being hard-deprecated by adding a `DEPRECATED_` prefix to increase consumers' awareness about future removal of the APIs:
 
-* `AllInstanceNodesSpecification` to `DEPRECATED_AllInstanceNodesSpecification`. Recommended replacement - `InstanceNodesOfSpecificClassesSpecification`.
-* `AllRelatedInstanceNodesSpecification` to `DEPRECATED_AllRelatedInstanceNodesSpecification`. Recommended replacement - `RelatedInstanceNodesSpecification`.
-* `ChildNodeSpecificationTypes.AllInstanceNodes` to `ChildNodeSpecificationTypes.DEPRECATED_AllInstanceNodes`. Recommended replacement - `ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses`.
-* `ChildNodeSpecificationTypes.AllRelatedInstanceNodes` to `ChildNodeSpecificationTypes.DEPRECATED_AllRelatedInstanceNodes`. Recommended replacement - `ChildNodeSpecificationTypes.RelatedInstanceNodes`.
-* `PropertiesDisplaySpecification` to `DEPRECATED_PropertiesDisplaySpecification`. Recommended replacement - using property overrides of `PropertySpecification` type with `isDisplayed` attribute.
-* `PropertyEditorsSpecification` to `DEPRECATED_PropertyEditorsSpecification`. Recommended replacement - using property overrides of `PropertySpecification` type with `editor` attribute.
+- `AllInstanceNodesSpecification` to `DEPRECATED_AllInstanceNodesSpecification`. Recommended replacement - `InstanceNodesOfSpecificClassesSpecification`.
+- `AllRelatedInstanceNodesSpecification` to `DEPRECATED_AllRelatedInstanceNodesSpecification`. Recommended replacement - `RelatedInstanceNodesSpecification`.
+- `ChildNodeSpecificationTypes.AllInstanceNodes` to `ChildNodeSpecificationTypes.DEPRECATED_AllInstanceNodes`. Recommended replacement - `ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses`.
+- `ChildNodeSpecificationTypes.AllRelatedInstanceNodes` to `ChildNodeSpecificationTypes.DEPRECATED_AllRelatedInstanceNodes`. Recommended replacement - `ChildNodeSpecificationTypes.RelatedInstanceNodes`.
+- `PropertiesDisplaySpecification` to `DEPRECATED_PropertiesDisplaySpecification`. Recommended replacement - using property overrides of `PropertySpecification` type with `isDisplayed` attribute.
+- `PropertyEditorsSpecification` to `DEPRECATED_PropertyEditorsSpecification`. Recommended replacement - using property overrides of `PropertySpecification` type with `editor` attribute.
 
-As a short term solution consumers can simply do a rename when importing the module, e.g.:
+As a short term solution consumers can simply do a rename when importing the package, e.g.:
 
 ```ts
 import { DEPRECATED_PropertiesDisplaySpecification as PropertiesDisplaySpecification } from "@bentley/presentation-common";
@@ -605,19 +796,19 @@ import { DEPRECATED_PropertiesDisplaySpecification as PropertiesDisplaySpecifica
 
 #### Removals and Changes
 
-* Removed `@deprecated` APIs: `ECInstanceNodeKey`, `ECInstanceNodeKeyJSON`, `ECInstancesNodeKey.instanceKey`, `NodeKey.isInstanceNodeKey`, `StandardNodeTypes.ECInstanceNode`. Instead, the multi-ECInstance type of node should be used, since ECInstance nodes may be created off of more than one ECInstance. Matching APIs: `ECInstancesNodeKey`, `ECInstancesNodeKeyJSON`, `ECInstancesNodeKey.instanceKeys`, `NodeKey.isInstancesNodeKey`, `StandardNodeTypes.ECInstancesNode`.
-* Removed `Item.labelDefinition` and `Node.labelDefinition`. Instead, `Item.label` and `Node.label` should be used, whose type has been changed from `string` to `LabelDefinition`. The `LabelDefinition` type has not only display value, but also raw value and type information which allows localizing and formatting raw value.
-* Removed `PersistentKeysContainer`. Instead, `KeySetJSON` should be used.
-* Changed `RulesetsFactory.createSimilarInstancesRuleset` to async. Removed `RulesetsFactory.createSimilarInstancesRulesetAsync`.
+- Removed `@deprecated` APIs: `ECInstanceNodeKey`, `ECInstanceNodeKeyJSON`, `ECInstancesNodeKey.instanceKey`, `NodeKey.isInstanceNodeKey`, `StandardNodeTypes.ECInstanceNode`. Instead, the multi-ECInstance type of node should be used, since ECInstance nodes may be created off of more than one ECInstance. Matching APIs: `ECInstancesNodeKey`, `ECInstancesNodeKeyJSON`, `ECInstancesNodeKey.instanceKeys`, `NodeKey.isInstancesNodeKey`, `StandardNodeTypes.ECInstancesNode`.
+- Removed `Item.labelDefinition` and `Node.labelDefinition`. Instead, `Item.label` and `Node.label` should be used, whose type has been changed from `string` to `LabelDefinition`. The `LabelDefinition` type has not only display value, but also raw value and type information which allows localizing and formatting raw value.
+- Removed `PersistentKeysContainer`. Instead, `KeySetJSON` should be used.
+- Changed `RulesetsFactory.createSimilarInstancesRuleset` to async. Removed `RulesetsFactory.createSimilarInstancesRulesetAsync`.
 
-### API Changes in `presentation-backend` Package
+### Package @bentley/presentation-backend
 
 #### Removals and Changes
 
-* `PresentationManager.getDisplayLabel` was removed in favor of `PresentationManager.getDisplayLabelDefinition`
-* `PresentationManager.getDisplayLabels` was removed in favor of `PresentationManager.getDisplayLabelDefinitions`
-* `PresentationManager.getDisplayLabelsDefinitions` was renamed to `PresentationManager.getDisplayLabelDefinitions`
-* `RulesetEmbedder` now takes a "props" object instead of arguments' list in its constructor. Example fix:
+- `PresentationManager.getDisplayLabel` was removed in favor of `PresentationManager.getDisplayLabelDefinition`
+- `PresentationManager.getDisplayLabels` was removed in favor of `PresentationManager.getDisplayLabelDefinitions`
+- `PresentationManager.getDisplayLabelsDefinitions` was renamed to `PresentationManager.getDisplayLabelDefinitions`
+- `RulesetEmbedder` now takes a "props" object instead of arguments' list in its constructor. Example fix:
 
   ```ts
   const embedder = new RulesetEmbedder({ imodel });
@@ -629,16 +820,16 @@ import { DEPRECATED_PropertiesDisplaySpecification as PropertiesDisplaySpecifica
   const embedder = new RulesetEmbedder(imodel);
   ```
 
-### API Changes in `presentation-frontend` Package
+### Package @bentley/presentation-frontend
 
 #### Removals and Changes
 
-* `Presentation.initialize` is now async.
-* `PresentationManager.getDisplayLabel` was removed in favor of `PresentationManager.getDisplayLabelDefinition`
-* `PresentationManager.getDisplayLabels` was removed in favor of `PresentationManager.getDisplayLabelDefinitions`
-* `PresentationManager.getDisplayLabelsDefinitions` was renamed to `PresentationManager.getDisplayLabelDefinitions`
-* `PersistenceHelper` was removed in favor of `KeySet` and its `toJSON` and `fromJSON` functions.
-* `HiliteSetProvider` and `SelectionHandler` now take a "props" object instead of arguments' list in constructor. Example fix:
+- `Presentation.initialize` is now async.
+- `PresentationManager.getDisplayLabel` was removed in favor of `PresentationManager.getDisplayLabelDefinition`
+- `PresentationManager.getDisplayLabels` was removed in favor of `PresentationManager.getDisplayLabelDefinitions`
+- `PresentationManager.getDisplayLabelsDefinitions` was renamed to `PresentationManager.getDisplayLabelDefinitions`
+- `PersistenceHelper` was removed in favor of `KeySet` and its `toJSON` and `fromJSON` functions.
+- `HiliteSetProvider` and `SelectionHandler` now take a "props" object instead of arguments' list in constructor. Example fix:
 
   ```ts
   const provider = new HiliteSetProvider({ imodel });
@@ -650,18 +841,18 @@ import { DEPRECATED_PropertiesDisplaySpecification as PropertiesDisplaySpecifica
   const provider = new HiliteSetProvider(imodel);
   ```
 
-### API Changes in `presentation-components` Package
+### Package @bentley/presentation-components
 
-#### Hard-Deprecation
+#### Hard Deprecations
 
 Some of already `@deprecated` APIs are now being hard-deprecated by adding a `DEPRECATED_` prefix to increase consumers' awareness about future removal of the APIs:
 
-* `controlledTreeWithFilteringSupport` renamed to `DEPRECATED_controlledTreeWithFilteringSupport`. Recommended replacement - `useControlledTreeFiltering` React hook.
-* `controlledTreeWithVisibleNodes` renamed to `DEPRECATED_controlledTreeWithVisibleNodes`. This HOC is completely unnecessary when using React hooks which is what we recommend to use with the `ControlledTree` component.
-* `treeWithFilteringSupport` renamed to `DEPRECATED_treeWithFilteringSupport`. Recommended replacement - `ControlledTree` and `useControlledTreeFiltering` React hook.
-* `treeWithUnifiedSelection` renamed to `DEPRECATED_treeWithUnifiedSelection`. Recommended replacement - `ControlledTree` and `useUnifiedSelectionTreeEventHandler` React hook.
+- `controlledTreeWithFilteringSupport` renamed to `DEPRECATED_controlledTreeWithFilteringSupport`. Recommended replacement - `useControlledTreeFiltering` React hook.
+- `controlledTreeWithVisibleNodes` renamed to `DEPRECATED_controlledTreeWithVisibleNodes`. This HOC is completely unnecessary when using React hooks which is what we recommend to use with the `ControlledTree` component.
+- `treeWithFilteringSupport` renamed to `DEPRECATED_treeWithFilteringSupport`. Recommended replacement - `ControlledTree` and `useControlledTreeFiltering` React hook.
+- `treeWithUnifiedSelection` renamed to `DEPRECATED_treeWithUnifiedSelection`. Recommended replacement - `ControlledTree` and `useUnifiedSelectionTreeEventHandler` React hook.
 
-As a short term solution consumers can simply do a rename when importing the module, e.g.:
+As a short term solution consumers can simply do a rename when importing the package, e.g.:
 
 ```ts
 import { DEPRECATED_treeWithUnifiedSelection as treeWithUnifiedSelection } from "@bentley/presentation-components";
@@ -669,8 +860,8 @@ import { DEPRECATED_treeWithUnifiedSelection as treeWithUnifiedSelection } from 
 
 #### Removals and Changes
 
-* All presentation data providers that used to memoize all requests now only memoize the last one to preserve consumed memory.
-* All presentation data providers are now `IDisposable`. This means their `dispose()` method has to be called whenever they're stopped being used. In the context of a hooks-based React component this can be done like this:
+- All presentation data providers that used to memoize all requests now only memoize the last one to preserve consumed memory.
+- All presentation data providers are now `IDisposable`. This means their `dispose()` method has to be called whenever they're stopped being used. In the context of a hooks-based React component this can be done like this:
 
   ```ts
   import { useDisposable } from "@bentley/ui-core";
@@ -682,13 +873,13 @@ import { DEPRECATED_treeWithUnifiedSelection as treeWithUnifiedSelection } from 
   ```
 
   In a class based React component the providers have to be disposed in either `componentWillUnmount` or `componentDidUpdate` callbacks, whenever the provider becomes unnecessary.
-* APIs that now take a "props" object instead of arguments' list:
-  * `ContentDataProvider`
-  * `PresentationLabelsProvider`
-  * `PresentationPropertyDataProvider`
-  * `PresentationTreeDataProvider`
-  * `useControlledTreeFiltering`
-  * `useUnifiedSelectionTreeEventHandler`
+- APIs that now take a "props" object instead of arguments' list:
+  - `ContentDataProvider`
+  - `PresentationLabelsProvider`
+  - `PresentationPropertyDataProvider`
+  - `PresentationTreeDataProvider`
+  - `useControlledTreeFiltering`
+  - `useUnifiedSelectionTreeEventHandler`
   Example fix:
 
   ```ts
@@ -701,20 +892,20 @@ import { DEPRECATED_treeWithUnifiedSelection as treeWithUnifiedSelection } from 
   const provider = new PresentationLabelsProvider(imodel);
   ```
 
-* Removed `FavoritePropertiesDataProvider.customRulesetId`. Now it can be supplied when constructing the provider through `FavoritePropertiesDataProviderProps.ruleset`.
-* Renamed `LabelsProvider` to `PresentationLabelsProvider`.
-* Renamed `PresentationNodeLoaderProps` to `PresentationTreeNodeLoaderProps`.
-* Renamed `PresentationTreeNodeLoaderProps.rulesetId` to `PresentationTreeNodeLoaderProps.ruleset`.
-* Renamed `usePresentationNodeLoader` to `usePresentationTreeNodeLoader`.
-* Renamed `useUnifiedSelectionEventHandler` to `useUnifiedSelectionTreeEventHandler`.
-* Removed attributes from `UnifiedSelectionTreeEventHandlerParams`: `dataProvider`, `modelSource`. They're now taken from `nodeLoader`.
+- Removed `FavoritePropertiesDataProvider.customRulesetId`. Now it can be supplied when constructing the provider through `FavoritePropertiesDataProviderProps.ruleset`.
+- Renamed `LabelsProvider` to `PresentationLabelsProvider`.
+- Renamed `PresentationNodeLoaderProps` to `PresentationTreeNodeLoaderProps`.
+- Renamed `PresentationTreeNodeLoaderProps.rulesetId` to `PresentationTreeNodeLoaderProps.ruleset`.
+- Renamed `usePresentationNodeLoader` to `usePresentationTreeNodeLoader`.
+- Renamed `useUnifiedSelectionEventHandler` to `useUnifiedSelectionTreeEventHandler`.
+- Removed attributes from `UnifiedSelectionTreeEventHandlerParams`: `dataProvider`, `modelSource`. They're now taken from `nodeLoader`.
 
-### API Changes in `presentation-testing` Package
+### Package @bentley/presentation-testing
 
 #### Removals and Changes
 
-* `initialize` helper function is now async.
-* `ContentBuilder` and `HierarchyBuilder` now take a "props" object instead of arguments' list. Example fix:
+- `initialize` helper function is now async.
+- `ContentBuilder` and `HierarchyBuilder` now take a "props" object instead of arguments' list. Example fix:
 
   ```ts
   const builder = new ContentBuilder({ imodel, dataProvider });
@@ -726,114 +917,114 @@ import { DEPRECATED_treeWithUnifiedSelection as treeWithUnifiedSelection } from 
   const builder = new ContentBuilder(imodel, dataProvider);
   ```
 
-## Geometry
+### Package @bentley/geometry-core
 
-### Remove deprecated methods
+#### Remove deprecated methods
 
-* `CurveCurve` intersection methods which formerly returned a pair of arrays (with matched length and corresponding CurveLocationDetail entries) now return a single array whose entries each have the two corresponding CurveLocationDetails.
-  * The affected methods are
-    * For computing intersections among of the (simple xy projection of) curves:
-      * old `CurveCurve.intersectionXY (...) : CurveLocationDetailArrayPair`
-      * new `CurveCurve.intersectionXYPairs (...) : CurveLocationDetailPair[]`
-    * For computing intersections among projections of curves with 4d (i.e. perspective) projection:
-      * old `CurveCurve.intersectionProjectedXY (...) : CurveLocationDetailArrayPair`
-      * new `CurveCurve.intersectionProjectedXYPairs (...) : CurveLocationDetailPair[]`
-  * If `oldIntersections` is the old pair of arrays and `newIntersections` is the new array of pairs,
-    * change   `oldIntersections.dataA[i]`
-    * to `newIntersections[i].detailA`
-    * old `intersections.dataB[i]`
-    * to `newIntersections[i].detailB`
-  * The method `CurveCurveIntersectXY.grabResults()` is removed -- `grabPairedResults` is the modernized form.
-* `GrowableXYZArray` method `myArray.distance(i,j)` for distance between points identified by indices `(i,j)` is replaced by
-  * old:   `myArray.distance(i,j)`
-  * new:   `myArray.distanceIndexIndex(i,j)`
-  * this clarifies the difference among distance methods:
-    * `myArray.distanceIndexToPoint(i: number, point: Point3d)`
-    * `myArray.distanceSquaredIndexIndex(i: number, point: Point3d)`
-* In `PointHelpers`, the methods to parse variant XYZ data are removed.
-  * In the replacements, the original single callback is replaced by an callback object that can receive start-end callbacks in addition to the primary xyz or xyz pair callback.
-  * old `Point3dArray.streamXYZ (.. )` is removed.
-  * new `VariantPointDataStream.streamXYZ (..)`
-  * old `Point3dArray.streamXYZXYZ(..)` is removed.
-  * new `VariantPointDataStream.streamXYZXYZ (..)`
-* `PolyfaceBuilder`
-  * old (impropertly cased) method `findOrAddNormalnLineString` is removed. The properly spelled replacement is `findOrAddNormalInLineString` (note the added capital `I`)
-* `ArcSweep`
-  * old (improperly cased) method `radiansArraytoPositivePeriodicFractions` is renamed `radiansArrayToPositivePeriodicFractions` (Note the capital "T")
-* `ClipPlane`
-  * `ClipPlane` supports the `PlaneAltitudeEvaluator` interface.
-  * This allows services previously seen as specific to `ClipPlane` to be supported with other plane types (especially `Plane3dByOriginAndNormal`)
-  * old instance method `myClipPlane.evaluatePoint(point)` is replaced by `myClipPlane.altitude (point)`
-  * old instance method `myClipPlane.dotProductVector(point)` is replaced by `myClipPlane.velocity (point)`
-  * old instance method `myClipPlane.convexPolygonClipInPlace (. . )` is replaced by (static) `Point3dArrayPolygonOps.convexPolygonClipInPlace`
-  * old instance method `myClipPlane.polygonCrossings(polygonPoints, crossings)` is replaced by (static) Point3dArrayPolygonOps.polygonPlaneCrossings (clipPlane, polygonPoints, crossings)`
-  * old static  method `myClipPlane.intersectRangeConvexPolygonInPlace (. . )` is replaced by (static) `IndexedXYZCollectionPolygonOps.intersectRangeConvexPolygonInPlace`
-* Various methods (usually static createXXXX) that accept `MultiLineStringDataVariant` have previously been marked as deprecated, with replacement methods that include the words `FromVariant` data.  This decision has been reversed, and that short names are again considered ok.   This includes:
-  * `LineString3d.createArrayOfLineString3d (variantLinestringData:MultiLineStringDataVariant): LineString3d[]` is un-deprecated, and the mangled name `createArrayOfLineString3dFromVariantData` is deprecated.
+- `CurveCurve` intersection methods which formerly returned a pair of arrays (with matched length and corresponding CurveLocationDetail entries) now return a single array whose entries each have the two corresponding CurveLocationDetails.
+  - The affected methods are
+    - For computing intersections among of the (simple xy projection of) curves:
+      - old `CurveCurve.intersectionXY (...) : CurveLocationDetailArrayPair`
+      - new `CurveCurve.intersectionXYPairs (...) : CurveLocationDetailPair[]`
+    - For computing intersections among projections of curves with 4d (i.e. perspective) projection:
+      - old `CurveCurve.intersectionProjectedXY (...) : CurveLocationDetailArrayPair`
+      - new `CurveCurve.intersectionProjectedXYPairs (...) : CurveLocationDetailPair[]`
+  - If `oldIntersections` is the old pair of arrays and `newIntersections` is the new array of pairs,
+    - change   `oldIntersections.dataA[i]`
+    - to `newIntersections[i].detailA`
+    - old `intersections.dataB[i]`
+    - to `newIntersections[i].detailB`
+  - The method `CurveCurveIntersectXY.grabResults()` is removed -- `grabPairedResults` is the modernized form.
+- `GrowableXYZArray` method `myArray.distance(i,j)` for distance between points identified by indices `(i,j)` is replaced by
+  - old:   `myArray.distance(i,j)`
+  - new:   `myArray.distanceIndexIndex(i,j)`
+  - this clarifies the difference among distance methods:
+    - `myArray.distanceIndexToPoint(i: number, point: Point3d)`
+    - `myArray.distanceSquaredIndexIndex(i: number, point: Point3d)`
+- In `PointHelpers`, the methods to parse variant XYZ data are removed.
+  - In the replacements, the original single callback is replaced by an callback object that can receive start-end callbacks in addition to the primary xyz or xyz pair callback.
+  - old `Point3dArray.streamXYZ (.. )` is removed.
+  - new `VariantPointDataStream.streamXYZ (..)`
+  - old `Point3dArray.streamXYZXYZ(..)` is removed.
+  - new `VariantPointDataStream.streamXYZXYZ (..)`
+- `PolyfaceBuilder`
+  - old (improperly cased) method `findOrAddNormalnLineString` is removed. The properly spelled replacement is `findOrAddNormalInLineString` (note the added capital `I`)
+- `ArcSweep`
+  - old (improperly cased) method `radiansArraytoPositivePeriodicFractions` is renamed `radiansArrayToPositivePeriodicFractions` (Note the capital "T")
+- `ClipPlane`
+  - `ClipPlane` supports the `PlaneAltitudeEvaluator` interface.
+  - This allows services previously seen as specific to `ClipPlane` to be supported with other plane types (especially `Plane3dByOriginAndNormal`)
+  - old instance method `myClipPlane.evaluatePoint(point)` is replaced by `myClipPlane.altitude (point)`
+  - old instance method `myClipPlane.dotProductVector(point)` is replaced by `myClipPlane.velocity (point)`
+  - old instance method `myClipPlane.convexPolygonClipInPlace (. . )` is replaced by (static) `Point3dArrayPolygonOps.convexPolygonClipInPlace`
+  - old instance method `myClipPlane.polygonCrossings(polygonPoints, crossings)` is replaced by (static) Point3dArrayPolygonOps.polygonPlaneCrossings (clipPlane, polygonPoints, crossings)`
+  - old static  method `myClipPlane.intersectRangeConvexPolygonInPlace (. . )` is replaced by (static) `IndexedXYZCollectionPolygonOps.intersectRangeConvexPolygonInPlace`
+- Various methods (usually static createXXXX) that accept `MultiLineStringDataVariant` have previously been marked as deprecated, with replacement methods that include the words `FromVariant` data.  This decision has been reversed, and that short names are again considered ok.   This includes:
+  - `LineString3d.createArrayOfLineString3d (variantLinestringData:MultiLineStringDataVariant): LineString3d[]` is un-deprecated, and the mangled name `createArrayOfLineString3dFromVariantData` is deprecated.
 
-### Various method name changes (breaking)
+#### Various method name changes (breaking)
 
-* On Arc3d, there were previously (confusingly) two "get" properties for the internal matrix of the Arc3d.
-  * arc.matrixRef
-    * This returns a reference to the matrix.
-    * This is not changed.
-    * Direct access to the matrix is dangerous, but the "Ref" qualifier makes that clear.
-  * arc.matrix
-    * this formerly returned a clone of the matrix.
-    * Cloning is expensive.
-    * this is removed.
-    * It is replaced by a method (not property)  `arc3d.matrixClone ()`
-    * `arc3d.matrixClone()` clones the matrix.
-  * `Ellipsoid` API changed to eliminate use of `Point2d` as carrier for a pair of angles.
-    * angle pairs are instead returned in strongly typed`LongitudeLatitudeNumber` objects.
-    * method `ellipsoid.surfaceNormalToRadians` is removed.
+- On Arc3d, there were previously (confusingly) two "get" properties for the internal matrix of the Arc3d.
+  - arc.matrixRef
+    - This returns a reference to the matrix.
+    - This is not changed.
+    - Direct access to the matrix is dangerous, but the "Ref" qualifier makes that clear.
+  - arc.matrix
+    - this formerly returned a clone of the matrix.
+    - Cloning is expensive.
+    - this is removed.
+    - It is replaced by a method (not property)  `arc3d.matrixClone ()`
+    - `arc3d.matrixClone()` clones the matrix.
+  - `Ellipsoid` API changed to eliminate use of `Point2d` as carrier for a pair of angles.
+    - angle pairs are instead returned in strongly typed`LongitudeLatitudeNumber` objects.
+    - method `ellipsoid.surfaceNormalToRadians` is removed.
       Use `ellipsoid.surfaceNormalToAngles` for the same result in proper `LongitudeLatitudeNumber` form.
-    * method `ellipsoid.intersectRay (ray, rayFractions[], xyz[], thetaPhiRadians[])` now returns `thetaPhiRadians` as an array of strongly typed `LongitutdeLatitudeNumber`.
-      * Changes made to callers in core\frontend\BackgroundMapGeometry.ts
-    * `SurfaceLocationDetail` has a new (constructor-like) static method `createUVNumbersPoint (surface, u, v, point)` with the surface `u` and `v` parameters as separate numeric values (previously packaged as `Point2d`)
-    * `SphereImplicit.intersectSphereRay` returns its surface angle data as `LongitudeLatitudePoint` instead of as `Point2d`.
+    - method `ellipsoid.intersectRay (ray, rayFractions[], xyz[], thetaPhiRadians[])` now returns `thetaPhiRadians` as an array of strongly typed `LongitudeLatitudeNumber`.
+      - Changes made to callers in core\frontend\BackgroundMapGeometry.ts
+    - `SurfaceLocationDetail` has a new (constructor-like) static method `createUVNumbersPoint (surface, u, v, point)` with the surface `u` and `v` parameters as separate numeric values (previously packaged as `Point2d`)
+    - `SphereImplicit.intersectSphereRay` returns its surface angle data as `LongitudeLatitudePoint` instead of as `Point2d`.
 
-### Bug fixes
+#### Bug fixes
 
-* Apply on-plane tolerances in mesh-plane clip. (https://bentleycs.visualstudio.com/iModelTechnologies/_workitems/edit/273249/)
-* `ClipUtils.selectIntervals01` announces fractional intervals of clipped geometry.  The logic previously considered any non-zero interval to be a valid candidate, resulting in extremely small arcs with seep angle less than the smallest non-zero angle.   This logic is modified so that any fractional interval shorter than `Geometry.smallFractionalResult` is ignored.
+- Apply on-plane tolerances in mesh-plane clip.
+- `ClipUtils.selectIntervals01` announces fractional intervals of clipped geometry.  The logic previously considered any non-zero interval to be a valid candidate, resulting in extremely small arcs with seep angle less than the smallest non-zero angle.   This logic is modified so that any fractional interval shorter than `Geometry.smallFractionalResult` is ignored.
 
-### Small angle arc issues
+#### Small angle arc issues
 
-* Angle methods for converting an angle to a fraction of an `AngleSweep` interval have added args to specify default return value on near-zero length intervals.
-  * static `AngleSweep.radiansToPositivePeriodicFraction(radians: number, zeroSweepDefault?: number): number;`
-  * instance method `angleSweep.radiansToPositivePeriodicFraction(radians: number, zeroSweepDefault?: number): number;`
-* static const `Geometry.smallFraction` is a typical value (1.0e-10) to consider a fraction interval small.
+- Angle methods for converting an angle to a fraction of an `AngleSweep` interval have added args to specify default return value on near-zero length intervals.
+  - static `AngleSweep.radiansToPositivePeriodicFraction(radians: number, zeroSweepDefault?: number): number;`
+  - instance method `angleSweep.radiansToPositivePeriodicFraction(radians: number, zeroSweepDefault?: number): number;`
+- static const `Geometry.smallFraction` is a typical value (1.0e-10) to consider a fraction interval small.
 
-### Polyface clipping
+#### Polyface clipping
 
-* New class `ClippedPolyfaceBuilders` is carries output data and options from clip operations
-* static `ClipUtilities.announceLoopsOfConvexClipPlaneSetIntersectRange(convexSet: ConvexClipPlaneSet | ClipPlane, range: Range3d, loopFunction: (loopPoints: GrowableXYZArray) => void, includeConvexSetFaces?: boolean, includeRangeFaces?: boolean, ignoreInvisiblePlanes?: boolean): void;`
-  * Accepts simple `ClipPlane` in addition to `ConvexClipPlaneSet`
-* static `ClipUtilities.loopsOfConvexClipPlaneIntersectionWithRange(allClippers: ConvexClipPlaneSet | UnionOfConvexClipPlaneSets | ClipPlane, range: Range3d, includeConvexSetFaces?: boolean, includeRangeFaces?: boolean, ignoreInvisiblePlanes?: boolean): GeometryQuery[]`
-  * accepts `UnionOfConvexClipPlaneSets` and `ClipPlane` in addition to `ConvexClipPlaneSet`
-* static `ConvexClipPlaneSet.clipInsidePushOutside(xyz: GrowableXYZArray, outsideFragments: GrowableXYZArray[], arrayCache: GrowableXYZArrayCache): GrowableXYZArray | undefined;`
-  * clips `xyz` polygon to the clip plane set.   Inside result is the return argument; outside fragments (possibly many) are pushed to the `outsideFragments` array (which is not cleared first.)
-* `PolyfaceClip` methods to do both inside and outside clip of polyfaces.
-  * static `PolyfaceClip.clipPolyfaceClipPlane(polyface: Polyface, clipper: ClipPlane, insideClip?: boolean, buildClosureFaces?: boolean): Polyface;`
-  * static `PolyfaceClip.clipPolyfaceClipPlaneWithClosureFace(polyface: Polyface, clipper: ClipPlane, insideClip?: boolean, buildClosureFaces?: boolean): Polyface;`
+- New class `ClippedPolyfaceBuilders` is carries output data and options from clip operations
+- static `ClipUtilities.announceLoopsOfConvexClipPlaneSetIntersectRange(convexSet: ConvexClipPlaneSet | ClipPlane, range: Range3d, loopFunction: (loopPoints: GrowableXYZArray) => void, includeConvexSetFaces?: boolean, includeRangeFaces?: boolean, ignoreInvisiblePlanes?: boolean): void;`
+  - Accepts simple `ClipPlane` in addition to `ConvexClipPlaneSet`
+- static `ClipUtilities.loopsOfConvexClipPlaneIntersectionWithRange(allClippers: ConvexClipPlaneSet | UnionOfConvexClipPlaneSets | ClipPlane, range: Range3d, includeConvexSetFaces?: boolean, includeRangeFaces?: boolean, ignoreInvisiblePlanes?: boolean): GeometryQuery[]`
+  - accepts `UnionOfConvexClipPlaneSets` and `ClipPlane` in addition to `ConvexClipPlaneSet`
+- static `ConvexClipPlaneSet.clipInsidePushOutside(xyz: GrowableXYZArray, outsideFragments: GrowableXYZArray[], arrayCache: GrowableXYZArrayCache): GrowableXYZArray | undefined;`
+  - clips `xyz` polygon to the clip plane set.   Inside result is the return argument; outside fragments (possibly many) are pushed to the `outsideFragments` array (which is not cleared first.)
+- `PolyfaceClip` methods to do both inside and outside clip of polyfaces.
+  - static `PolyfaceClip.clipPolyfaceClipPlane(polyface: Polyface, clipper: ClipPlane, insideClip?: boolean, buildClosureFaces?: boolean): Polyface;`
+  - static `PolyfaceClip.clipPolyfaceClipPlaneWithClosureFace(polyface: Polyface, clipper: ClipPlane, insideClip?: boolean, buildClosureFaces?: boolean): Polyface;`
 
-## ecschema-metadata Package
+### Package @bentley/ecschema-metadata
 
-### Remove deprecated API
+#### Remove deprecated API
 
-* Class `SchemaFileLocater` has been moved to the `ecschema-locaters` package.
-* Class `SchemaJsonFileLocater` has been moved to the `ecschema-locaters` package.
-* Class `SchemaFileLocater` has been moved to the `ecschema-locaters` package.
-* In `Schema`, the methods for (de)serializing to/from JSON have been renamed.
-  * `Schema.toJson()` renamed to `Schema.toJSON()`
-  * `Schema.deserialize(...)` renamed to `Schema.fromJSON(...)`
-  * `Schema.deserializeSync(...)` renamed to `Schema.fromJSONSync(...)`
-* In `Property` and all classes deriving from `Property`, the methods for (de)serializing to/from JSON have been renamed.
-  * `Property.toJson()` renamed to `Property.toJSON()`
-  * `Property.deserialize(...)` renamed to `Property.fromJSON(s...)`
-  * `Property.deserializeSync(...)` renamed to `Property.fromJSONSync(...)`
-* In `SchemaItem` and all classes deriving directly or indirectly from `SchemaItem`, the methods for (de)serializing to/from JSON have been renamed.
-  * `SchemaItem.toJson()` renamed to `SchemaItem.toJSON()`
-  * `SchemaItem.deserialize(...)` renamed to `SchemaItem.fromJSON(...)`
-  * `SchemaItem.deserializeSync(...)` renamed to `SchemaItem.fromJSONSync(...)`
+- Class `SchemaFileLocater` has been moved to the `ecschema-locaters` package.
+- Class `SchemaJsonFileLocater` has been moved to the `ecschema-locaters` package.
+- Class `SchemaFileLocater` has been moved to the `ecschema-locaters` package.
+- In `Schema`, the methods for (de)serializing to/from JSON have been renamed.
+  - `Schema.toJson()` renamed to `Schema.toJSON()`
+  - `Schema.deserialize(...)` renamed to `Schema.fromJSON(...)`
+  - `Schema.deserializeSync(...)` renamed to `Schema.fromJSONSync(...)`
+- In `Property` and all classes deriving from `Property`, the methods for (de)serializing to/from JSON have been renamed.
+  - `Property.toJson()` renamed to `Property.toJSON()`
+  - `Property.deserialize(...)` renamed to `Property.fromJSON(s...)`
+  - `Property.deserializeSync(...)` renamed to `Property.fromJSONSync(...)`
+- In `SchemaItem` and all classes deriving directly or indirectly from `SchemaItem`, the methods for (de)serializing to/from JSON have been renamed.
+  - `SchemaItem.toJson()` renamed to `SchemaItem.toJSON()`
+  - `SchemaItem.deserialize(...)` renamed to `SchemaItem.fromJSON(...)`
+  - `SchemaItem.deserializeSync(...)` renamed to `SchemaItem.fromJSONSync(...)`

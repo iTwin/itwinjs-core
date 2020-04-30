@@ -98,7 +98,7 @@ describe("ControlledTree", () => {
         selectionMode={SelectionMode.Single}
       />);
 
-    const message = container.querySelector(".components-tree-errormessage");
+    const message = container.querySelector(".components-controlledTree-errorMessage");
     expect(message).to.not.be.null;
   });
 

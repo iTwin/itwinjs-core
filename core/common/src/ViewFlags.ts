@@ -92,7 +92,9 @@ export interface ViewFlagProps {
   backgroundMap?: boolean;
   /** If true, show ambient occlusion. */
   ambientOcclusion?: boolean;
-  /** If true, show thematic display. */
+  /** If true, show thematic display.
+   * @note Currently, thematically displayed geometry will not receive shadows. If thematic display is enabled, shadows will not be received by thematically displayed geometry, even if shadows are enabled.
+   */
   thematicDisplay?: boolean;
   /** Controls whether surface discard is always applied regardless of other ViewFlags.
    * Surface shaders contain complicated logic to ensure that the edges of a surface always draw in front of the surface, and that planar surfaces sketched coincident with
@@ -168,7 +170,9 @@ export class ViewFlags {
   public edgeMask: number = 0;
   /** Controls whether ambient occlusion is used. */
   public ambientOcclusion: boolean = false;
-  /** Controls whether thematic display is used. */
+  /** Controls whether thematic display is used.
+   * @note Currently, thematically displayed geometry will not receive shadows. If thematic display is enabled, shadows will not be received by thematically displayed geometry, even if shadows are enabled.
+   */
   public thematicDisplay: boolean = false;
   /** Controls whether surface discard is always applied regardless of other ViewFlags.
    * Surface shaders contain complicated logic to ensure that the edges of a surface always draw in front of the surface, and that planar surfaces sketched coincident with

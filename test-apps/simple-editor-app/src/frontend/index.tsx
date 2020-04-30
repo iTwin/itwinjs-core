@@ -25,8 +25,7 @@ import { MarkupApp } from "@bentley/imodeljs-markup";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { Presentation } from "@bentley/presentation-frontend";
 import { getClassName } from "@bentley/ui-abstract";
-import { UiCore } from "@bentley/ui-core";
-import { UiComponents, BeDragDropContext } from "@bentley/ui-components";
+import { BeDragDropContext } from "@bentley/ui-components";
 import {
   UiFramework, FrameworkReducer, AppNotificationManager, FrameworkUiAdmin,   // , FrameworkState
   IModelInfo, FrontstageManager, createAction, ActionsUnion, DeepReadonly, ProjectInfo,
@@ -173,7 +172,7 @@ export class SampleAppIModelApp {
     await IModelApp.startup(opts);
 
     // For testing local extensions only, should not be used in production.
-    IModelApp.extensionAdmin.addExtensionLoader(new ExternalServerExtensionLoader("http://localhost:3000"), 50);
+    IModelApp.extensionAdmin.addExtensionLoaderFront(new ExternalServerExtensionLoader("http://localhost:3000"));
 
     this.sampleAppNamespace = IModelApp.i18n.registerNamespace("SampleApp");
 
@@ -211,16 +210,13 @@ export class SampleAppIModelApp {
   }
 
   public static async initialize() {
-    await UiCore.initialize(IModelApp.i18n);
-    await UiComponents.initialize(IModelApp.i18n);
-
     await Presentation.initialize({
       activeLocale: IModelApp.i18n.languageList()[0],
     }).then(() => {
       Presentation.selection.scopes.activeScope = "top-assembly";
     });
 
-    await UiFramework.initialize(undefined, IModelApp.i18n);
+    await UiFramework.initialize(undefined);
 
     // Register tools.
     MoveElementTool.register(this.sampleAppNamespace);

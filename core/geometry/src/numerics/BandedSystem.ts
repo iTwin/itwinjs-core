@@ -19,7 +19,17 @@ export class BandedSystem {
     const n = numRow - 1;
     const sbw = Math.floor(bw / 2); // ASSUMES bw is odd?
     let sum;
-
+// Phase 1:
+//   [A b C]
+//   [d q f]
+//   [G h I]
+// q is a diagonal (pivot
+// d, f are row vectors
+// A,C,I are blocks
+// b,h are column vectors.
+// Phase 1:  [q,f] -= d * [b,C]
+// Phase 2: h = (h- G*b)/q
+// This is standard gaussian elimination, but in row-think rather than the usual column-think
     for (let i = 0; i <= n; i++) {
       const jh = Math.min(n, i + sbw);
       for (let j = i; j <= jh; j++) {

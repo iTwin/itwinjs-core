@@ -2,13 +2,43 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { BufferedStream } from "../../imodelhub/AzureFileHandler";
+import { BufferedStream, AzureFileHandler } from "../../imodelhub/AzureFileHandler";
 import * as chai from "chai";
 import * as stream from "stream";
+import { URL } from "url";
+import { MockAccessToken, workDir } from "./TestUtils";
+import { AuthorizedClientRequestContext, SasUrlExpired } from "@bentley/itwin-client";
 
-describe("iModelHub AzureFileHandler BufferedStream", () => {
+describe("iModelHub AzureFileHandler", () => {
   before(async function () {
     this.enableTimeouts(false);
+  });
+
+  it("Check for expired sas url", () => {
+    const se = new Date(new Date().toUTCString());
+    se.setSeconds(se.getSeconds() - 10);
+    const ur = new URL("http://mock.com");
+    ur.searchParams.append("se", se.toISOString());
+    chai.expect(AzureFileHandler.isUrlExpired(ur.toString())).to.be.true;
+  });
+
+  it("Check for valid sas url", () => {
+    const se = new Date(new Date().toUTCString());
+    se.setSeconds(se.getSeconds() + 10);
+    const ur = new URL("http://mock.com");
+    ur.searchParams.append("se", se.toISOString());
+    chai.expect(AzureFileHandler.isUrlExpired(ur.toString())).to.be.false;
+  });
+
+  it("Check for SasUrlExpired exception", async () => {
+    const expiredLink = "https://imodelhubprodsa01.blob.core.windows.net/imodelhub-04dcd32a-781b-4b4d-8e27-2175793f6ffa/fca1ee0731957db792373f809d0f102bbb9dbe61.cs?sv=2018-03-28&sr=b&sig=NXfWf%2BRZURZHTVX%2B1FPqVc4m%2F5zAC%2BJhAx%2FrcfDoH%2BQ%3D&st=2020-04-07T18%3A16%3A57Z&se=2020-04-07T18%3A26%3A57Z&sp=r%22"; const az = new AzureFileHandler();
+    const mockRequestContext = new AuthorizedClientRequestContext(new MockAccessToken());
+    try {
+      await az.downloadFile(mockRequestContext, expiredLink, workDir);
+      chai.assert(false, "expect SasUrlExpired exception");
+    } catch (err) {
+      chai.expect(err).instanceOf(SasUrlExpired);
+    }
   });
 
   it("should concatenate simple buffer", () => {

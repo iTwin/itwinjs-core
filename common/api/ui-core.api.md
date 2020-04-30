@@ -13,7 +13,6 @@ import { Matrix3d } from '@bentley/geometry-core';
 import * as React from 'react';
 import { RelativePosition } from '@bentley/ui-abstract';
 import { SliderModeFunction } from 'react-compound-slider';
-import { TranslationOptions } from '@bentley/imodeljs-i18n';
 
 // @internal
 export class AnnularSector {
@@ -1555,12 +1554,7 @@ export interface SearchBoxProps extends CommonProps {
 }
 
 // @public
-export class Select extends React.PureComponent<SelectProps> {
-    // (undocumented)
-    componentDidMount(): void;
-    // (undocumented)
-    render(): JSX.Element;
-    }
+export function Select(props: SelectProps): JSX.Element;
 
 // @public
 export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement>, CommonProps {
@@ -1840,17 +1834,7 @@ export function Title(props: TextProps): JSX.Element;
 export function Title2(props: TextProps): JSX.Element;
 
 // @public
-export class Toggle extends React.PureComponent<ToggleProps, ToggleState> {
-    constructor(props: ToggleProps);
-    // (undocumented)
-    componentDidMount(): void;
-    // (undocumented)
-    componentDidUpdate(prevProps: ToggleProps): void;
-    // (undocumented)
-    static defaultProps: Partial<ToggleProps>;
-    // (undocumented)
-    render(): JSX.Element;
-    }
+export function Toggle(props: ToggleProps): JSX.Element;
 
 // @public
 export enum ToggleButtonType {
@@ -1984,13 +1968,14 @@ export class UiCore {
     static get i18n(): I18N;
     static get i18nNamespace(): string;
     static initialize(i18n: I18N): Promise<void>;
+    static get initialized(): boolean;
     // @internal (undocumented)
     static loggerCategory(obj: any): string;
     // @internal (undocumented)
     static get packageName(): string;
     static terminate(): void;
     // @internal
-    static translate(key: string | string[], options?: TranslationOptions): string;
+    static translate(key: string | string[]): string;
 }
 
 // @public

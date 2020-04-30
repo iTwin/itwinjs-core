@@ -90,7 +90,7 @@ export class DefaultLockUpdateOptionsProvider {
    * @param options Options that should be augmented.
    */
   public async assignOptions(options: LockUpdateOptions): Promise<void> {
-    const clonedOptions: LockUpdateOptions = Object.assign({}, options);
+    const clonedOptions: LockUpdateOptions = { ...options };
     deepAssign(options, this._defaultOptions);
     deepAssign(options, clonedOptions); // ensure the supplied options override the defaults
     return Promise.resolve();

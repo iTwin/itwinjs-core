@@ -8,7 +8,7 @@
 import * as path from "path";
 import * as rimraf from "rimraf";
 // common includes
-import { Guid, Config } from "@bentley/bentleyjs-core";
+import { Guid } from "@bentley/bentleyjs-core";
 import { PresentationRpcInterface } from "@bentley/presentation-common";
 // backend includes
 import { IModelHost, KnownLocations } from "@bentley/imodeljs-backend";
@@ -26,8 +26,6 @@ import {
   Presentation as PresentationFrontend,
   PresentationManagerProps as PresentationFrontendProps,
 } from "@bentley/presentation-frontend";
-
-import { AgentAuthorizationClientConfiguration, AgentAuthorizationClient } from "@bentley/backend-itwin-client";
 
 function initializeRpcInterfaces(interfaces: RpcInterfaceDefinition[]) {
   const config = class extends RpcDefaultConfiguration {
@@ -57,8 +55,8 @@ export interface PresentationTestingInitProps {
   frontendProps?: PresentationFrontendProps;
   /** IModelApp implementation */
   frontendApp?: { startup: (opts?: IModelAppOptions) => Promise<void> };
-  /** Whether to use authorization client */
-  useClientServices?: boolean;
+  /** IModelApp options */
+  frontendAppOptions?: IModelAppOptions;
 }
 
 /**
@@ -90,18 +88,7 @@ export const initialize = async (props?: PresentationTestingInitProps) => {
   // init frontend
   if (!props.frontendApp)
     props.frontendApp = NoRenderApp;
-  if (props.useClientServices) {
-    const agentConfiguration: AgentAuthorizationClientConfiguration = {
-      clientId: Config.App.getString("imjs_agent_test_client_id"),
-      clientSecret: Config.App.getString("imjs_agent_test_client_secret"),
-      scope: "imodelhub rbac-user:external-client reality-data:read urlps-third-party context-registry-service:read-only imodeljs-backend-2686 product-settings-service",
-    };
-    const authorizationClient = new AgentAuthorizationClient(agentConfiguration);
-    await authorizationClient.getAccessToken();
-    await props.frontendApp.startup({ authorizationClient });
-  } else {
-    await props.frontendApp.startup();
-  }
+  await props.frontendApp.startup(props.frontendAppOptions);
   const defaultFrontendProps: PresentationFrontendProps = {
     activeLocale: IModelApp.i18n.languageList()[0],
   };

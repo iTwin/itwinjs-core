@@ -342,6 +342,7 @@ export interface WindowProps {
   left?: number;
   width?: number;
   height?: number;
+  scrollbars?: boolean;
 }
 
 export abstract class Window {
@@ -374,6 +375,8 @@ export abstract class Window {
 
     this._header = new WindowHeader(this, this.container, undefined !== props ? props.title : undefined);
     this.contentDiv = IModelApp.makeHTMLElement("div", { className: "floating-window", parent: this.container });
+    if (props && props.scrollbars)
+      this.contentDiv.classList.add("overflow-auto");
   }
 
   // Do not set directly - use Surface.togglePin(window)

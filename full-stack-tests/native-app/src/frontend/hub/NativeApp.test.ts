@@ -7,7 +7,7 @@ import { GuidString, Config } from "@bentley/bentleyjs-core";
 import { NativeApp, IModelApp, NativeAppLogger } from "@bentley/imodeljs-frontend";
 import { IModelVersion, BriefcaseDownloader, SyncMode, BriefcaseProps } from "@bentley/imodeljs-common";
 import { ProgressInfo } from "@bentley/itwin-client";
-import { TestUsers, TestAuthorizationClient } from "@bentley/oidc-signin-tool/lib/TestUsers";
+import { TestFrontendAuthorizationClient, TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
 import { TestUtility } from "./TestUtility";
 import { TestChangeSetUtility } from "./TestChangeSetUtility";
 import { usingOfflineScope } from "./HttpRequestHook";
@@ -26,7 +26,7 @@ describe("NativeApp (#integration)", () => {
     });
 
     const requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
-    IModelApp.authorizationClient = new TestAuthorizationClient(requestContext.accessToken);
+    IModelApp.authorizationClient = new TestFrontendAuthorizationClient(requestContext.accessToken);
 
     testProjectName = Config.App.get("imjs_test_project_name");
     testIModelName = Config.App.get("imjs_test_imodel_name");
@@ -34,6 +34,8 @@ describe("NativeApp (#integration)", () => {
     await TestUtility.initializeTestProject(testProjectName, TestUsers.regular);
     testProjectId = await TestUtility.getTestProjectId(testProjectName);
     testIModelId = await TestUtility.getTestIModelId(testProjectId, testIModelName);
+
+    await TestUtility.purgeAcquiredBriefcases(testIModelId);
   });
 
   after(async () => {

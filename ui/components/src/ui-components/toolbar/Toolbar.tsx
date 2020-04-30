@@ -105,7 +105,7 @@ export const ToolbarWithOverflowDirectionContext = React.createContext<ToolbarOv
   overflowDisplayActive: false,
 });
 
-function CustomItem({ item }: { item: CustomToolbarItem }) {
+function CustomItem({ item, addGroupSeparator }: { item: CustomToolbarItem, addGroupSeparator: boolean }) {
   const { useDragInteraction } = useToolbarWithOverflowDirectionContext();
 
   if (item.panelContentNode) {
@@ -118,6 +118,7 @@ function CustomItem({ item }: { item: CustomToolbarItem }) {
       panel={item.panelContentNode}
       hideIndicator={useDragInteraction}
       badge={badge}
+      addGroupSeparator={addGroupSeparator}
     />;
   }
 
@@ -127,7 +128,7 @@ function CustomItem({ item }: { item: CustomToolbarItem }) {
   return null;
 }
 
-function GroupPopupItem({ item }: { item: GroupButton }) {
+function GroupPopupItem({ item, addGroupSeparator }: { item: GroupButton, addGroupSeparator: boolean }) {
   const { useDragInteraction } = useToolbarWithOverflowDirectionContext();
   const title = ConditionalStringValue.getValue(item.label)!;
   const badge = BadgeUtilities.getComponentForBadgeType(item.badgeType);
@@ -139,6 +140,7 @@ function GroupPopupItem({ item }: { item: GroupButton }) {
       title={title}
       groupItem={item}
       badge={badge}
+      addGroupSeparator={addGroupSeparator}
     />;
   }
   return <PopupItem
@@ -148,10 +150,11 @@ function GroupPopupItem({ item }: { item: GroupButton }) {
     panel={<PopupItemsPanel groupItem={item} activateOnPointerUp={false} />}
     badge={badge}
     hideIndicator={useDragInteraction}
+    addGroupSeparator={addGroupSeparator}
   />;
 }
 
-function ActionItem({ item }: { item: ActionButton }) {
+function ActionItem({ item, addGroupSeparator }: { item: ActionButton, addGroupSeparator: boolean }) {
   const title = ConditionalStringValue.getValue(item.label)!;
   const badge = BadgeUtilities.getComponentForBadgeType(item.badgeType);
 
@@ -162,18 +165,19 @@ function ActionItem({ item }: { item: ActionButton }) {
     isActive={item.isActive}
     onClick={item.execute}
     badge={badge}
+    addGroupSeparator={addGroupSeparator}
   />;
 }
 
-function ToolbarItem({ item }: { item: ToolbarItem }) {
+function ToolbarItem({ item, addGroupSeparator }: { item: ToolbarItem, addGroupSeparator: boolean }) {
   if (ToolbarItemUtilities.isGroupButton(item)) {
-    return <GroupPopupItem item={item} />;
+    return <GroupPopupItem item={item} addGroupSeparator={addGroupSeparator} />;
   } else if (isCustomToolbarItem(item)) {
-    return <CustomItem item={item} />;
+    return <CustomItem item={item} addGroupSeparator={addGroupSeparator} />;
   } else {
     // istanbul ignore else
     if (ToolbarItemUtilities.isActionButton(item)) {
-      return <ActionItem item={item} />;
+      return <ActionItem item={item} addGroupSeparator={addGroupSeparator} />;
     }
   }
   return null;
@@ -188,6 +192,14 @@ function OverflowItemsContainer(p: { children: React.ReactNode }) {
   return <>{p.children}</>;
 }
 
+function getItemWrapperClass(child: React.ReactNode) {
+  if (React.isValidElement(child)) {
+    if (child.props && child.props.addGroupSeparator)
+      return "components-toolbar-button-add-gap-before";
+  }
+  return undefined;
+}
+
 /** Properties of [[ToolbarWithOverflow]] component.
  * @beta
  */
@@ -196,7 +208,7 @@ export interface ToolbarWithOverflowProps extends CommonProps, NoChildrenProps {
   expandsTo?: Direction;
   /** Describes to which direction the overflow popup panels are expanded. Defaults to: [[Direction.Right]] */
   overflowExpandsTo?: Direction;
-  /** definitions for items of the toolbar. i.e. [[CommonToolbarItem]] */
+  /** definitions for items of the toolbar. i.e. [[CommonToolbarItem]]. Items are expected to be already sorted by group and item. */
   items: CommonToolbarItem[];
   /** Describes how expanded panels are aligned. Defaults to: [[ToolbarPanelAlignment.Start]] */
   panelAlignment?: ToolbarPanelAlignment;
@@ -233,11 +245,15 @@ export function ToolbarWithOverflow(props: ToolbarWithOverflowProps) {
   const ref = React.useRef<HTMLDivElement>(null);
   const width = React.useRef<number | undefined>(undefined);
   const availableNodes = React.useMemo<React.ReactNode>(() => {
-    return props.items.map((item) => {
+    return props.items.map((item, index) => {
+      let addGroupSeparator = false;
+      if (index > 0)
+        addGroupSeparator = item.groupPriority !== props.items[index - 1].groupPriority;
       return (
         <ToolbarItem
           key={item.id}
           item={item}
+          addGroupSeparator={!!addGroupSeparator}
         />
       );
     });
@@ -308,7 +324,7 @@ export function ToolbarWithOverflow(props: ToolbarWithOverflowProps) {
                       onResize: () => { },
                     }}
                   >
-                    {<ItemWrapper>{child}</ItemWrapper>}
+                    {<ItemWrapper className={getItemWrapperClass(child)}>{child}</ItemWrapper>}
                   </ToolbarItemContext.Provider>
                 );
               })}
@@ -357,7 +373,7 @@ export function ToolbarWithOverflow(props: ToolbarWithOverflowProps) {
                     onResize: onEntryResize,
                   }}
                 >
-                  {<ItemWrapper >{child}</ItemWrapper>}
+                  {<ItemWrapper className={getItemWrapperClass(child)}>{child}</ItemWrapper>}
                 </ToolbarItemContext.Provider>
               );
             })}

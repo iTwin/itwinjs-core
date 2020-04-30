@@ -185,7 +185,7 @@ export class IModelIndex extends React.Component<IModelIndexProps, IModelIndexSt
       <div className="imodelindex fade-in">
         <div className="imodelindex-header">
           <div className="thumbnail">
-            {this.state.thumbnail && <img id="base64image" src={this.state.thumbnail} />}
+            {this.state.thumbnail && <img alt="thumbnail" id="base64image" src={this.state.thumbnail} />}
             {!this.state.thumbnail && <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" enableBackground="new 0 0 16 16"><g><path d="M10.3 5.9 7.7 9.3 6 7.6 3 11 13 11z" /><circle cx="4.4" cy="5.9" r="1.3" /><path d="M0,2v12h16V2H0z M14,12H2V4h12V12z" /></g></svg>}
           </div>
           <div className="details">

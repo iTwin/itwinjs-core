@@ -1,5 +1,6 @@
 sep=;
 Release Tag;API Item
+internal;ActiveTabIdContext: React.Context
 internal;addPanelWidget(state: NineZoneState, side: PanelSide, id: WidgetState["id"], widgetArgs?: Partial
 internal;addTab(state: NineZoneState, widgetId: WidgetState["id"], id: TabState["id"], tabArgs?: Partial
 alpha;AppButton 
@@ -55,6 +56,7 @@ internal;DockedToolSettingsHandleProps
 internal;DockedToolSettingsOverflow: React.NamedExoticComponent
 internal;DockedToolSettingsOverflowProps 
 internal;DockedToolSettingsProps 
+internal;DockedToolSettingsState
 internal;DraggedPanelSideContext: React.Context
 internal;DraggedResizeHandleContext: React.Context
 internal;DraggedTabContext: React.Context
@@ -145,12 +147,14 @@ beta;HorizontalAnchor
 internal;HorizontalAnchorHelpers
 internal;HorizontalPanelSide = TopPanelSide | BottomPanelSide
 internal;HorizontalPanelState 
+internal;isDockedToolSettingsState(state: ToolSettingsState): state is DockedToolSettingsState
 internal;isHorizontalPanelSide: (side: PanelSide) => side is HorizontalPanelSide
 internal;isHorizontalPanelState(state: PanelState): state is HorizontalPanelState
 internal;isTabTarget(target: DragTarget): target is TabTarget
 internal;isTabTargetPanelState(state: TabTargetState): state is TabTargetPanelState
 internal;isTabTargetTabState(state: TabTargetState): state is TabTargetTabState
 internal;isTabTargetWidgetState(state: TabTargetState): state is TabTargetWidgetState
+internal;isWidgetToolSettingsState(state: ToolSettingsState): state is WidgetToolSettingsState
 beta;Item 
 beta;ItemProps 
 alpha;Items 
@@ -174,7 +178,7 @@ beta;MessageHyperlinkProps
 beta;MessageLayout 
 beta;MessageLayoutProps 
 beta;MessageProgress 
-alpha;NavigationArea 
+alpha;NavigationArea: React.NamedExoticComponent
 alpha;NavigationAreaProps 
 alpha;NestedGroup 
 alpha;NestedGroupProps 
@@ -184,7 +188,7 @@ beta;NestedStagePanelsManager
 beta;NestedStagePanelsManagerProps
 beta;NestedToolSettings 
 beta;NestedToolSettingsProps 
-internal;NineZoneActionTypes = PanelToggleCollapsedAction | PanelToggleSpanAction | PanelTogglePinnedAction | PanelResizeAction | PanelInitializeAction | FloatingWidgetResizeAction | FloatingWidgetBringToFrontAction | PanelWidgetDragStartAction | WidgetDragAction | WidgetDragEndAction | WidgetTabClickAction | WidgetTabDoubleClickAction | WidgetTabDragStartAction | WidgetTabDragAction | WidgetTabDragEndAction
+internal;NineZoneActionTypes = PanelToggleCollapsedAction | PanelToggleSpanAction | PanelTogglePinnedAction | PanelResizeAction | PanelInitializeAction | FloatingWidgetResizeAction | FloatingWidgetBringToFrontAction | PanelWidgetDragStartAction | WidgetDragAction | WidgetDragEndAction | WidgetSendBackAction | WidgetTabClickAction | WidgetTabDoubleClickAction | WidgetTabDragStartAction | WidgetTabDragAction | WidgetTabDragEndAction | ToolSettingsDragStartAction
 internal;NineZoneContext: React.Context
 internal;NineZoneDispatch = (action: NineZoneActionTypes) => void
 internal;NineZoneDispatchContext: React.Context
@@ -258,6 +262,7 @@ beta;ScrollableToolSettings
 beta;ScrollableToolSettingsProps 
 internal;ScrollableWidgetContent: React.NamedExoticComponent
 internal;ScrollableWidgetContentProps
+internal;SendBack: React.NamedExoticComponent
 internal;sideToCursorType(side: PanelSide): CursorType
 beta;Snap 
 beta;SnapMode 
@@ -314,6 +319,7 @@ alpha;Toast
 alpha;ToastDefaultProps = Pick
 alpha;ToastProps 
 alpha;ToastStyle = Pick
+internal;TOOL_SETTINGS_DRAG_START = "TOOL_SETTINGS_DRAG_START"
 beta;ToolAssistance 
 beta;ToolAssistanceDialog 
 beta;ToolAssistanceDialogProps 
@@ -340,12 +346,17 @@ alpha;ToolsArea
 alpha;ToolsAreaProps 
 internal;ToolSettingProps 
 beta;ToolSettings 
+internal;ToolSettingsDragStartAction
+internal;ToolSettingsNodeContext: React.Context
 internal;ToolSettingsOverflowPanel: React.ForwardRefExoticComponent
 internal;ToolSettingsOverflowPanelProps 
 beta;ToolSettingsPopup 
 beta;ToolSettingsPopupProps 
 beta;ToolSettingsProps 
+internal;ToolSettingsState = DockedToolSettingsState | WidgetToolSettingsState
+internal;ToolSettingsStateContext: React.Context
 beta;ToolSettingsTab 
+internal;toolSettingsTabId = "nz-tool-settings-tab"
 beta;ToolSettingsTabProps 
 beta;ToolSettingsWidgetManagerProps 
 beta;ToolSettingsWidgetMode
@@ -363,6 +374,8 @@ internal;useDragResizeHandle(args: UseDragResizeHandleArgs): ({ initialPointerPo
 internal;UseDragResizeHandleArgs
 internal;useDragTab(args: UseDragTabArgs): ({ initialPointerPosition, widgetSize }: DragTabDragStartArgs) => void
 internal;UseDragTabArgs
+internal;useDragToolSettings(args: UseDragToolSettingsArgs): ({ initialPointerPosition }: DragItemDragStartArgs) => void
+internal;UseDragToolSettingsArgs
 internal;useDragWidget(args: UseDragWidgetArgs): ({ initialPointerPosition }: DragItemDragStartArgs) => void
 internal;UseDragWidgetArgs
 internal;useIsDragged(callback: () => boolean): boolean
@@ -389,6 +402,7 @@ internal;VerticalPanelState
 internal;Widget: React.NamedExoticComponent
 internal;WIDGET_DRAG = "WIDGET_DRAG"
 internal;WIDGET_DRAG_END = "WIDGET_DRAG_END"
+internal;WIDGET_SEND_BACK = "WIDGET_SEND_BACK"
 internal;WIDGET_TAB_CLICK = "WIDGET_TAB_CLICK"
 internal;WIDGET_TAB_DOUBLE_CLICK = "WIDGET_TAB_DOUBLE_CLICK"
 internal;WIDGET_TAB_DRAG = "WIDGET_TAB_DRAG"
@@ -427,11 +441,13 @@ internal;WidgetPanelsProps
 internal;WidgetProps 
 internal;WidgetProvider: React.NamedExoticComponent
 internal;WidgetProviderProps
+internal;WidgetSendBackAction
 internal;WidgetsState
 internal;WidgetsStateContext: React.Context
 internal;WidgetState
 internal;WidgetStateContext: React.Context
 internal;WidgetTab: React.NamedExoticComponent
+internal;WidgetTabBar: React.NamedExoticComponent
 internal;WidgetTabClickAction
 internal;WidgetTabDoubleClickAction
 internal;WidgetTabDragAction
@@ -448,7 +464,7 @@ internal;WidgetTabTargetProps
 internal;WidgetTarget: React.NamedExoticComponent
 internal;WidgetTargetProps
 internal;WidgetTargetState = TabTargetPanelState | TabTargetWidgetState | TabTargetTabState
-internal;WidgetTitleBar: React.NamedExoticComponent
+internal;WidgetToolSettingsState
 internal;widgetZoneColumnIds: ReadonlyArray
 beta;WidgetZoneId = 1 | 2 | 3 | 4 | 6 | 7 | 8 | 9
 beta;widgetZoneIds: ReadonlyArray

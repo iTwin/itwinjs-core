@@ -15,7 +15,6 @@ import {
 // __PUBLISH_EXTRACT_START__ Presentation.Frontend.Imports
 import { Presentation } from "@bentley/presentation-frontend";
 // __PUBLISH_EXTRACT_END__
-import { UiCore } from "@bentley/ui-core";
 import { UiComponents } from "@bentley/ui-components";
 import { MyAppFrontend } from "./api/MyAppFrontend";
 import rpcs from "../common/Rpcs";
@@ -54,7 +53,6 @@ export class SampleApp {
       Config.App.set("imjs_dev_cors_proxy_server", `http://${window.location.hostname}:3001`); // By default, this will run on port 3001
 
     readyPromises.push(this.initializePresentation());
-    readyPromises.push(UiCore.initialize(IModelApp.i18n));
     readyPromises.push(UiComponents.initialize(IModelApp.i18n));
     this._ready = Promise.all(readyPromises).then(() => { });
   }

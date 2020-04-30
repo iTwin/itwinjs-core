@@ -6,8 +6,10 @@
  * @module iModels
  */
 
-import { GuidString, Id64, Id64String, IModelStatus, OpenMode, Logger } from "@bentley/bentleyjs-core";
-import { AxisOrder, Matrix3d, Point3d, Range3dProps, Transform, Vector3d, XYAndZ, XYZProps, YawPitchRollAngles, YawPitchRollProps, Range3d, Angle, AxisIndex } from "@bentley/geometry-core";
+import { GuidString, Id64, Id64String, IModelStatus, Logger, OpenMode } from "@bentley/bentleyjs-core";
+import {
+  Angle, AxisIndex, AxisOrder, Matrix3d, Point3d, Range3d, Range3dProps, Transform, Vector3d, XYAndZ, XYZProps, YawPitchRollAngles, YawPitchRollProps,
+} from "@bentley/geometry-core";
 import { Cartographic, LatLongAndHeight } from "./geometry/Cartographic";
 import { AxisAlignedBox3d } from "./geometry/Placement";
 import { IModelError } from "./IModelError";
@@ -85,7 +87,7 @@ export interface CreateIModelProps extends IModelProps {
 }
 
 /** Encryption-related properties that can be supplied when creating or opening snapshot iModels.
- * @beta
+ * @public
  */
 export interface IModelEncryptionProps {
   /** The password used to encrypt/decrypt the snapshot iModel. */
@@ -93,7 +95,7 @@ export interface IModelEncryptionProps {
 }
 
 /** Options that can be supplied when creating snapshot iModels.
- * @beta
+ * @public
  */
 export interface CreateSnapshotIModelProps extends IModelEncryptionProps {
   /** If true, then create SQLite views for Model, Element, ElementAspect, and Relationship classes.
@@ -104,9 +106,23 @@ export interface CreateSnapshotIModelProps extends IModelEncryptionProps {
 
 /** The options that can be specified when creating an *empty* snapshot iModel.
  * @see [SnapshotDb.createEmpty]($backend)
- * @beta
+ * @public
  */
 export type CreateEmptySnapshotIModelProps = CreateIModelProps & CreateSnapshotIModelProps;
+
+/** Options that can be supplied when creating standalone iModels.
+ * @internal
+ */
+export interface CreateStandaloneIModelProps extends IModelEncryptionProps {
+  /** If present, file will allow local editing, but cannot be used to create changesets */
+  allowEdit?: string;
+}
+
+/** The options that can be specified when creating an *empty* standalone iModel.
+ * @see [standalone.createEmpty]($backend)
+ * @internal
+ */
+export type CreateEmptyStandaloneIModelProps = CreateIModelProps & CreateStandaloneIModelProps;
 
 /** @public */
 export interface FilePropertyProps {

@@ -80,8 +80,8 @@ export interface PresentationTestingInitProps {
     frontendApp?: {
         startup: (opts?: IModelAppOptions) => Promise<void>;
     };
+    frontendAppOptions?: IModelAppOptions;
     frontendProps?: PresentationManagerProps_2;
-    useClientServices?: boolean;
 }
 
 // @public

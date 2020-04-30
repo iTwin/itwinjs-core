@@ -9,7 +9,6 @@
 import { IModelApp } from "@bentley/imodeljs-frontend";
 import { ReportWebGLCompatibilityTool } from "./tools/ReportWebGLCompatibilityTool";
 import {
-  ToggleLogZTool,
   TogglePrimitiveVisibilityTool,
   ToggleReadPixelsTool,
   SetVolClassIntersectOn,
@@ -53,6 +52,7 @@ import {
   FreezeSceneTool,
   SetAspectRatioSkewTool,
   ShowTileVolumesTool,
+  Toggle3dManipulationsTool,
   ViewportTileSizeModifierTool,
   ViewportAddRealityModel,
 } from "./tools/ViewportTools";
@@ -74,6 +74,10 @@ import {
   ElementIdFromSourceAspectIdTool,
   SourceAspectIdFromElementIdTool,
 } from "./tools/SourceAspectIdTools";
+import {
+  AttachRealityModelTool,
+  SaveRealityModelTool,
+} from "./tools/RealityModelTools";
 
 /** Entry-point for the package. Before using the package you *must* call [[FrontendDevTools.initialize]].
  * @beta
@@ -127,9 +131,9 @@ export class FrontendDevTools {
       SetVolClassIntersectOn,
       ShowTileVolumesTool,
       SourceAspectIdFromElementIdTool,
+      Toggle3dManipulationsTool,
       ToggleDrapeFrustumTool,
       ToggleFrustumSnapshotTool,
-      ToggleLogZTool,
       TogglePrimitiveVisibilityTool,
       ToggleProjectExtentsTool,
       ToggleReadPixelsTool,
@@ -146,6 +150,8 @@ export class FrontendDevTools {
       ToggleRealityTileFreeze,
       ViewportAddRealityModel,
       ViewportTileSizeModifierTool,
+      AttachRealityModelTool,
+      SaveRealityModelTool,
     ];
 
     for (const tool of tools)

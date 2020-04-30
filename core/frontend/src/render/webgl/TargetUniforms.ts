@@ -145,7 +145,7 @@ export class TargetUniforms {
   private readonly _sunDirection = new SunDirection();
 
   public constructor(target: Target) {
-    this.frustum = new FrustumUniforms(target);
+    this.frustum = new FrustumUniforms();
     this.branch = new BranchUniforms(target);
     this.batch = new BatchUniforms(target, this.branch.createBatchState());
     this.shadow = new ShadowUniforms(target);

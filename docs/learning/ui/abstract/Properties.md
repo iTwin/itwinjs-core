@@ -16,7 +16,7 @@ Property Editor Params are used to specify the type of editor shown in the UI fo
   private static _getCityDescription = (): PropertyDescription => {
     return {
       name: SampleTool._cityName,
-      displayLabel: SampleTool.i18n.translate("dialogItemsSample:tools.SampleTool.Prompts.City"),
+      displayLabel: SampleTool.i18n.translate("sampleNameSpace:tools.SampleTool.Prompts.City"),
       typename: "string",
     };
   }
@@ -30,7 +30,7 @@ The size of the input field can be controlled with [InputEditorSizeParams]($ui-a
   private static _getStateDescription = (): PropertyDescription => {
     return {
       name: SampleTool._stateName,
-      displayLabel: SampleTool.i18n.translate("dialogItemsSample:tools.SampleTool.Prompts.State"),
+      displayLabel: SampleTool.i18n.translate("sampleNameSpace:tools.SampleTool.Prompts.State"),
       typename: "string",
       editor: {
         params: [{
@@ -52,12 +52,12 @@ Enums can be edited as a selection list:
 
 ```ts
   // ------------- Enum based picklist ---------------
-  private static enumAsPicklistMessage(str: string) { return SampleTool.i18n.translate("dialogItemsSample:tools.SampleTool.Options." + str); }
+  private static enumAsPicklistMessage(str: string) { return SampleTool.i18n.translate("sampleNameSpace:tools.SampleTool.Options." + str); }
   private static _optionsName = "enumAsPicklist";
   private static _getEnumAsPicklistDescription = (): PropertyDescription => {
     return {
       name: SampleTool._optionsName,
-      displayLabel: SampleTool.i18n.translate("dialogItemsSample:tools.SampleTool.Prompts.Options"),
+      displayLabel: SampleTool.i18n.translate("sampleNameSpace:tools.SampleTool.Prompts.Options"),
       typename: "enum",
       enum: {
         choices: [
@@ -114,7 +114,7 @@ Colors may be edited in a color picker by specifying the available colors as an 
   private static _getColorDescription = (): PropertyDescription => {
     return {
       name: SampleTool._colorName,
-      displayLabel: SampleTool.i18n.translate("dialogItemsSample:tools.SampleTool.Prompts.Color"),
+      displayLabel: SampleTool.i18n.translate("sampleNameSpace:tools.SampleTool.Prompts.Color"),
       typename: "number",
       editor: {
         name: "color-picker",

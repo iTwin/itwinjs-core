@@ -85,12 +85,10 @@ import { AppStatusBarWidgetControl } from "../statusbars/AppStatusBar";
 import { VerticalPropertyGridWidgetControl } from "../widgets/PropertyGridDemoWidget";
 import { NavigationTreeWidgetControl } from "../widgets/NavigationTreeWidget";
 import { VisibilityTreeWidgetControl } from "../widgets/VisibilityTreeWidget";
-import { BreadcrumbDemoWidgetControl } from "../widgets/BreadcrumbDemoWidget";
 
-import { FeedbackDemoWidget } from "../widgets/FeedbackWidget";
 import { UnifiedSelectionPropertyGridWidgetControl } from "../widgets/UnifiedSelectionPropertyGridWidget";
 import { UnifiedSelectionTableWidgetControl } from "../widgets/UnifiedSelectionTableWidget";
-import {/* ViewportWidgetControl, */ ViewportWidget } from "../widgets/ViewportWidget";
+import { ViewportWidget } from "../widgets/ViewportWidget";
 import { NestedAnimationStage } from "./NestedAnimationStage";
 import { ExampleForm } from "../forms/ExampleForm";
 
@@ -208,14 +206,6 @@ export class ViewsFrontstage extends FrontstageProvider {
             initialWidth={250}
             widgets={
               [
-                <Widget defaultState={WidgetState.Closed} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.FeedbackDemo" control={FeedbackDemoWidget}
-                  syncEventIds={[SampleAppUiActionId.setTestProperty]}
-                  stateFunc={(): WidgetState => SampleAppIModelApp.getTestProperty() !== "HIDE" ? WidgetState.Closed : WidgetState.Hidden}
-                />,
-                <Widget defaultState={WidgetState.Closed} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.BreadcrumbDemo" control={BreadcrumbDemoWidgetControl}
-                  syncEventIds={[SampleAppUiActionId.setTestProperty]}
-                  stateFunc={(): WidgetState => SampleAppIModelApp.getTestProperty() !== "HIDE" ? WidgetState.Closed : WidgetState.Hidden}
-                />,
                 <Widget defaultState={WidgetState.Closed} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.ModelSelector" control={ModelSelectorWidgetControl}
                   applicationData={{ iModelConnection: this.iModelConnection }} fillZone={true}
                   syncEventIds={[SampleAppUiActionId.setTestProperty]}
@@ -232,8 +222,6 @@ export class ViewsFrontstage extends FrontstageProvider {
             widgets={[
               <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.NavigationTree" control={NavigationTreeWidgetControl}
                 applicationData={{ iModelConnection: this.iModelConnection, rulesetId: "Items" }} fillZone={true} />,
-              /*<Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.VisibilityTree" control={VisibilityTreeWidgetControl}
-                applicationData={{ iModelConnection: this.iModelConnection }} fillZone={true} />,*/
               <Widget iconSpec="icon-visibility" label="Searchable Tree" control={VisibilityWidgetControl}
                 applicationData={{
                   iModelConnection: this.iModelConnection, enableHierarchiesPreloading: [VisibilityComponentHierarchy.Categories],
@@ -677,19 +665,19 @@ class AdditionalTools {
       AppTools.setLengthFormatMetricCommand, AppTools.setLengthFormatImperialCommand,
       AppTools.toggleLengthFormatCommand,
     ]);
-    const item = ToolbarItemUtilities.createGroupButton("tool-formatting-setting", 135, "icon-placeholder", "set formatting units", children, { badgeType: BadgeType.New });
+    const item = ToolbarItemUtilities.createGroupButton("tool-formatting-setting", 135, "icon-placeholder", "set formatting units", children, { badgeType: BadgeType.New, groupPriority: 30 });
     return item;
   }
 
   // cSpell:enable
   public additionalHorizontalToolbarItems: CommonToolbarItem[] = [
-    ToolbarHelper.createToolbarItemFromItemDef(0, CoreTools.keyinBrowserButtonItemDef),
-    ToolbarHelper.createToolbarItemFromItemDef(5, this._openNestedAnimationStage),
-    ToolbarHelper.createToolbarItemFromItemDef(115, AppTools.tool1),
-    ToolbarHelper.createToolbarItemFromItemDef(120, AppTools.tool2),
-    ToolbarHelper.createToolbarItemFromItemDef(125, this._viewportPopupButtonItemDef),
-    ToolbarHelper.createToolbarItemFromItemDef(130, AppTools.toolWithSettings),
-    ToolbarHelper.createToolbarItemFromItemDef(135, AppTools.toggleHideShowItemsCommand),
+    ToolbarHelper.createToolbarItemFromItemDef(0, CoreTools.keyinBrowserButtonItemDef, { groupPriority: -10 }),
+    ToolbarHelper.createToolbarItemFromItemDef(5, this._openNestedAnimationStage, { groupPriority: -10 }),
+    ToolbarHelper.createToolbarItemFromItemDef(115, AppTools.tool1, { groupPriority: 20 }),
+    ToolbarHelper.createToolbarItemFromItemDef(120, AppTools.tool2, { groupPriority: 20 }),
+    ToolbarHelper.createToolbarItemFromItemDef(125, this._viewportPopupButtonItemDef, { groupPriority: 20 }),
+    ToolbarHelper.createToolbarItemFromItemDef(130, AppTools.toolWithSettings, { groupPriority: 30 }),
+    ToolbarHelper.createToolbarItemFromItemDef(135, AppTools.toggleHideShowItemsCommand, { groupPriority: 30 }),
     this.formatGroupItemsItem(),
   ];
 
@@ -711,7 +699,7 @@ class AdditionalTools {
     ]);
 
     const groupHiddenCondition = new ConditionalBooleanValue(() => SampleAppIModelApp.getTestProperty() === "HIDE", [SampleAppUiActionId.setTestProperty]);
-    const item = ToolbarItemUtilities.createGroupButton("SampleApp:buttons.anotherGroup", 130, "icon-placeholder", IModelApp.i18n.translate("SampleApp:buttons.anotherGroup"), children, { badgeType: BadgeType.New, isHidden: groupHiddenCondition });
+    const item = ToolbarItemUtilities.createGroupButton("SampleApp:buttons.anotherGroup", 130, "icon-placeholder", IModelApp.i18n.translate("SampleApp:buttons.anotherGroup"), children, { badgeType: BadgeType.New, isHidden: groupHiddenCondition, groupPriority: 30 });
     return item;
   }
 
@@ -739,5 +727,5 @@ class AdditionalTools {
       ],
       badgeType: BadgeType.New,
     }),
-  ], 100), this.getMiscGroupItem()];
+  ], 100, { groupPriority: 20 }), this.getMiscGroupItem()];
 }

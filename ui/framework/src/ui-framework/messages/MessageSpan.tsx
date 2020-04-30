@@ -8,34 +8,37 @@
 
 import * as React from "react";
 import { ClassNameProps } from "@bentley/ui-core";
+import { NotifyMessageType, isHTMLElement, isReactMessage } from "./ReactNotifyMessageDetails";
 
 /** @internal */
 export interface MessageSpanProps extends ClassNameProps {
-  message: HTMLElement | string;
+  message: NotifyMessageType;
 }
 
 /** @internal */
-// tslint:disable-next-line: variable-name
-export const MessageSpan = (props: MessageSpanProps): JSX.Element => {
-  let messageNode: JSX.Element;
+export function MessageSpan(props: MessageSpanProps) {
+  let messageNode = null;
 
   if (typeof props.message === "string")
     messageNode = <span className={props.className}>{props.message}</span>;
-  else
+  else if (isHTMLElement(props.message))
     messageNode = <span className={props.className} dangerouslySetInnerHTML={{ __html: props.message.outerHTML }} />;
+  else if (isReactMessage(props.message))
+    messageNode = <span className={props.className}>{props.message.reactNode}</span>;
 
   return messageNode;
-};
+}
 
 /** @internal */
-// tslint:disable-next-line: variable-name
-export const MessageDiv = (props: MessageSpanProps): JSX.Element => {
-  let messageNode: JSX.Element;
+export function MessageDiv(props: MessageSpanProps) {
+  let messageNode = null;
 
   if (typeof props.message === "string")
     messageNode = <div className={props.className}>{props.message}</div>;
-  else
+  else if (isHTMLElement(props.message))
     messageNode = <div className={props.className} dangerouslySetInnerHTML={{ __html: props.message.outerHTML }} />;
+  else if (isReactMessage(props.message))
+    messageNode = <div className={props.className}>{props.message.reactNode}</div>;
 
   return messageNode;
-};
+}

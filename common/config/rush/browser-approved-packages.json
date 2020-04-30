@@ -32,7 +32,7 @@
     },
     {
       "name": "@bentley/context-registry-client",
-      "allowedCategories": [ "backend", "common", "extensions", "frontend", "internal" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
     },
     {
       "name": "@bentley/ecschema-locaters",
@@ -48,7 +48,7 @@
     },
     {
       "name": "@bentley/express-server",
-      "allowedCategories": [ "extensions", "internal", "tools" ]
+      "allowedCategories": [ "internal", "tools" ]
     },
     {
       "name": "@bentley/extension-client",
@@ -60,7 +60,7 @@
     },
     {
       "name": "@bentley/frontend-authorization-client",
-      "allowedCategories": [ "backend", "frontend", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
     },
     {
       "name": "@bentley/frontend-devtools",
@@ -80,11 +80,11 @@
     },
     {
       "name": "@bentley/imodelhub-client",
-      "allowedCategories": [ "backend", "common", "extensions", "frontend", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
     },
     {
       "name": "@bentley/imodeljs-backend",
-      "allowedCategories": [ "backend", "extensions", "internal", "tools" ]
+      "allowedCategories": [ "backend", "internal", "tools" ]
     },
     {
       "name": "@bentley/imodeljs-common",
@@ -120,7 +120,7 @@
     },
     {
       "name": "@bentley/oidc-signin-tool",
-      "allowedCategories": [ "backend", "common", "extensions", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "internal", "tools" ]
     },
     {
       "name": "@bentley/orbitgt-core",
@@ -152,11 +152,11 @@
     },
     {
       "name": "@bentley/product-settings-client",
-      "allowedCategories": [ "extensions", "frontend", "internal" ]
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "@bentley/projectshare-client",
-      "allowedCategories": [ "extensions", "internal" ]
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "@bentley/react-scripts",
@@ -172,19 +172,19 @@
     },
     {
       "name": "@bentley/ui-components",
-      "allowedCategories": [ "extensions", "frontend", "internal", "tools" ]
+      "allowedCategories": [ "frontend", "internal", "tools" ]
     },
     {
       "name": "@bentley/ui-core",
-      "allowedCategories": [ "extensions", "frontend", "internal" ]
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "@bentley/ui-framework",
-      "allowedCategories": [ "extensions", "internal" ]
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "@bentley/ui-ninezone",
-      "allowedCategories": [ "extensions", "frontend", "internal" ]
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "@bentley/usage-logging-client",
@@ -249,6 +249,10 @@
     {
       "name": "body-parser",
       "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "browserslist",
+      "allowedCategories": [ "tools" ]
     },
     {
       "name": "bunyan",
@@ -556,7 +560,7 @@
     },
     {
       "name": "mocha",
-      "allowedCategories": [ "backend", "common", "extensions", "frontend", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
     },
     {
       "name": "mocha-junit-reporter",
@@ -572,7 +576,7 @@
     },
     {
       "name": "node-sass",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "internal", "tools" ]
     },
     {
       "name": "nodemon",
@@ -584,7 +588,7 @@
     },
     {
       "name": "null-loader",
-      "allowedCategories": [ "backend", "extensions", "internal", "tools" ]
+      "allowedCategories": [ "backend", "internal", "tools" ]
     },
     {
       "name": "nyc",
@@ -656,7 +660,7 @@
     },
     {
       "name": "react",
-      "allowedCategories": [ "extensions", "frontend", "internal" ]
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "react-async-hook",
@@ -800,7 +804,7 @@
     },
     {
       "name": "source-map-loader",
-      "allowedCategories": [ "backend", "common", "extensions", "frontend", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
     },
     {
       "name": "source-map-support",
@@ -856,7 +860,7 @@
     },
     {
       "name": "tsconfig-paths",
-      "allowedCategories": [ "extensions", "frontend", "internal", "tools" ]
+      "allowedCategories": [ "frontend", "tools" ]
     },
     {
       "name": "tslib",
@@ -924,11 +928,11 @@
     },
     {
       "name": "webpack",
-      "allowedCategories": [ "backend", "common", "extensions", "frontend", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
     },
     {
       "name": "webpack-cli",
-      "allowedCategories": [ "extensions", "frontend", "internal", "tools" ]
+      "allowedCategories": [ "frontend", "tools" ]
     },
     {
       "name": "webpack-dev-server",
