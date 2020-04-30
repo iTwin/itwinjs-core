@@ -2002,6 +2002,17 @@ describe("iModel", () => {
     iModel.close();
   });
 
+  it("tryPrepareStatement", () => {
+    const sql = `SELECT * FROM ${Element.classFullName} LIMIT 1`;
+    const invalidSql = "SELECT * FROM InvalidSchemaName:InvalidClassName LIMIT 1";
+    assert.throws(() => imodel1.prepareStatement(invalidSql));
+    assert.isUndefined(imodel1.tryPrepareStatement(invalidSql));
+    const statement: ECSqlStatement | undefined = imodel1.tryPrepareStatement(sql);
+    assert.isDefined(statement);
+    assert.isTrue(statement?.isPrepared);
+    statement!.dispose();
+  });
+
   it("containsClass", () => {
     assert.isTrue(imodel1.containsClass(Element.classFullName));
     assert.isTrue(imodel1.containsClass("BisCore:Element"));

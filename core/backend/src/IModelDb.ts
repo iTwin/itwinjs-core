@@ -11,7 +11,7 @@
 import * as os from "os";
 import {
   assert, BeEvent, BentleyStatus, ChangeSetStatus, ClientRequestContext, DbResult, Guid, GuidString, Id64, Id64Arg, Id64Set, Id64String, JsonUtils,
-  Logger, OpenMode,
+  Logger, OpenMode, StatusCodeWithMessage,
 } from "@bentley/bentleyjs-core";
 import { Range3d } from "@bentley/geometry-core";
 import {
@@ -642,6 +642,16 @@ export abstract class IModelDb extends IModel {
     const stmt = new ECSqlStatement();
     stmt.prepare(this.nativeDb, sql);
     return stmt;
+  }
+
+  /** Prepare an ECSQL statement.
+   * @param sql The ECSQL statement to prepare
+   * @returns `undefined` if there is a problem preparing the statement.
+   */
+  public tryPrepareStatement(sql: string): ECSqlStatement | undefined {
+    const statement = new ECSqlStatement();
+    const result: StatusCodeWithMessage<DbResult> = statement.tryPrepare(this.nativeDb, sql);
+    return DbResult.BE_SQLITE_OK === result.status ? statement : undefined;
   }
 
   /** Construct an entity (Element or Model) from an iModel.
