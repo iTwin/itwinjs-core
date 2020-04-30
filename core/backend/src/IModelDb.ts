@@ -1941,34 +1941,36 @@ export class BriefcaseDb extends IModelDb {
     let briefcaseProps = briefcaseEntry.getBriefcaseProps();
     BriefcaseDb.onOpen.raiseEvent(requestContext, briefcaseProps);
 
-    if (briefcaseEntry.iModelDb !== undefined) {
+    let briefcaseDb: BriefcaseDb;
+    if (briefcaseEntry.iModelDb === undefined) {
+      assert(!briefcaseEntry.isOpen); // All open briefcases should have an iModelDb associated with it
+
+      briefcaseEntry.openMode = openOptions?.openAsReadOnly ? OpenMode.Readonly : briefcaseEntry.openMode; // Override default openMode if user has requested it
+      BriefcaseManager.openBriefcase(briefcaseEntry);
+
+      briefcaseProps = briefcaseEntry.getBriefcaseProps();
+      const iModelRpcProps: IModelRpcProps = {
+        key: briefcaseProps.key,
+        contextId: briefcaseProps.contextId,
+        iModelId: briefcaseProps.iModelId,
+        changeSetId: briefcaseProps.changeSetId,
+        openMode: briefcaseProps.openMode,
+      };
+      briefcaseDb = new BriefcaseDb(briefcaseEntry, iModelRpcProps);
+      briefcaseEntry.iModelDb = briefcaseDb;
+
+      if (briefcaseDb.isPushEnabled) {
+        if (!(requestContext instanceof AuthorizedClientRequestContext))
+          throw new IModelError(BentleyStatus.ERROR, "Opening a briefcase with SyncMode = PullPush requires authorization - pass AuthorizedClientRequestContext instead of ClientRequestContext");
+        await briefcaseDb.concurrencyControl.onOpened(requestContext);
+      }
+      this.onOpened.raiseEvent(requestContext, briefcaseDb);
+    } else {
       assert(briefcaseEntry.isOpen); // All open briefcases should have an iModelDb associated with it
       if (openOptions?.openAsReadOnly && briefcaseEntry.openMode === OpenMode.ReadWrite)
         throw new IModelError(IModelStatus.AlreadyOpen, "The briefcase is already open ReadWrite. Cannot re-open it Readonly now", Logger.logError, loggerCategory, () => briefcaseEntry.getDebugInfo());
-      return briefcaseEntry.iModelDb as BriefcaseDb; // WIP: change iModelDb type in BriefcaseEntry
+      briefcaseDb = briefcaseEntry.iModelDb as BriefcaseDb; // WIP: change iModelDb type in BriefcaseEntry
     }
-    assert(!briefcaseEntry.isOpen); // All open briefcases should have an iModelDb associated with it
-
-    briefcaseEntry.openMode = openOptions?.openAsReadOnly ? OpenMode.Readonly : briefcaseEntry.openMode; // Override default openMode if user has requested it
-    BriefcaseManager.openBriefcase(briefcaseEntry);
-
-    briefcaseProps = briefcaseEntry.getBriefcaseProps();
-    const iModelRpcProps: IModelRpcProps = {
-      key: briefcaseProps.key,
-      contextId: briefcaseProps.contextId,
-      iModelId: briefcaseProps.iModelId,
-      changeSetId: briefcaseProps.changeSetId,
-      openMode: briefcaseProps.openMode,
-    };
-    const briefcaseDb = new BriefcaseDb(briefcaseEntry, iModelRpcProps);
-    briefcaseEntry.iModelDb = briefcaseDb;
-
-    if (briefcaseDb.isPushEnabled) {
-      if (!(requestContext instanceof AuthorizedClientRequestContext))
-        throw new IModelError(BentleyStatus.ERROR, "Opening a briefcase with SyncMode = PullPush requires authorization - pass AuthorizedClientRequestContext instead of ClientRequestContext");
-      await briefcaseDb.concurrencyControl.onOpened(requestContext);
-    }
-    this.onOpened.raiseEvent(requestContext, briefcaseDb);
 
     if (requestContext instanceof AuthorizedClientRequestContext) {
       // NEEDS_WORK: Move usage logging to the native layer, and make it happen even if not authorized
