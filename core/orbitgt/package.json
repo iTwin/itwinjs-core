@@ -8,7 +8,7 @@
   "license": "MIT",
   "scripts": {
     "build": "tsc 1>&2 && npm run copy:test-assets",
-    "clean": "rimraf lib .rush",
+    "clean": "rimraf lib .rush/temp/package-deps*.json",
     "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/test/assets",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-orbitgt/file.json --tsIndexFile=./imodeljs-orbitgt.ts --onlyJson",
     "extract-api": "betools extract-api --entry=imodeljs-orbitgt",

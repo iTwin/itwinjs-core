@@ -1,4 +1,5 @@
 {
+  "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/common-versions.schema.json",
   "preferredVersions": {
     "@types/react": "^16.8.0",
     "event-stream": "~4.0.1",

@@ -11,7 +11,7 @@
   },
   "scripts": {
     "build": "tsc 1>&2",
-    "clean": "rimraf lib .rush",
+    "clean": "rimraf lib .rush/temp/package-deps*.json",
     "cover": "",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/clients/extension-client/file.json --tsIndexFile=./extension-client.ts --onlyJson",
     "extract-api": "betools extract-api --entry=extension-client",

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Upgrade to Rush 5.23.2",
+      "type": "none",
+      "packageName": "@bentley/presentation-testing"
+    }
+  ],
+  "packageName": "@bentley/presentation-testing",
+  "email": "Shaun.Sewall@bentley.com"
+}

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Upgrade to Rush 5.23.2",
+      "type": "none",
+      "packageName": "@bentley/reality-data-client"
+    }
+  ],
+  "packageName": "@bentley/reality-data-client",
+  "email": "Shaun.Sewall@bentley.com"
+}

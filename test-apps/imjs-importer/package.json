@@ -7,7 +7,7 @@
   "main": "./lib/main.js",
   "scripts": {
     "build": "tsc 1>&2",
-    "clean": "rimraf lib .rush",
+    "clean": "rimraf lib .rush/temp/package-deps*.json",
     "docs": "",
     "test": "",
     "cover": "",

@@ -13,7 +13,7 @@
   },
   "scripts": {
     "build": "tsc 1>&2 && npm run copy:test-assets",
-    "clean": "rimraf lib .rush",
+    "clean": "rimraf lib .rush/temp/package-deps*.json",
     "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/test/assets",
     "extract-api": "betools extract-api --entry=ecschema2ts",
     "lint": "tslint --project . 1>&2",

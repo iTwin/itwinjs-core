@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Upgrade to Rush 5.23.2",
+      "type": "none",
+      "packageName": "@bentley/ecschema2ts"
+    }
+  ],
+  "packageName": "@bentley/ecschema2ts",
+  "email": "Shaun.Sewall@bentley.com"
+}

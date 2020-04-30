@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Upgrade to Rush 5.23.2",
+      "type": "none",
+      "packageName": "@bentley/certa"
+    }
+  ],
+  "packageName": "@bentley/certa",
+  "email": "Shaun.Sewall@bentley.com"
+}

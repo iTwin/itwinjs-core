@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Upgrade to Rush 5.23.2",
+      "type": "none",
+      "packageName": "@bentley/rpcinterface-full-stack-tests"
+    }
+  ],
+  "packageName": "@bentley/rpcinterface-full-stack-tests",
+  "email": "Shaun.Sewall@bentley.com"
+}

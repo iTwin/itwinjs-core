@@ -1,5 +1,5 @@
 {
-  "$schema": "https://dev.office.com/json-schemas/rush/command-line.schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/command-line.schema.json",
   "commands": [
     {
       "name": "audit",

@@ -28,7 +28,7 @@
     "copy:assets": "cpx \"./src/**/*.{scss,json}\" ./lib",
     "build": "npm run copy:assets && npm run copy:locale && npm run pseudolocalize && npm run extract && tsc 1>&2",
     "build:watch": "tsc -w",
-    "clean": "rimraf lib .rush",
+    "clean": "rimraf lib .rush/temp/package-deps*.json",
     "cover": "nyc npm test",
     "docs": "npm run docs:reference && npm run docs:changelog",
     "docs:changelog": "cpx ./CHANGELOG.md ../../generated-docs/presentation/presentation-components",

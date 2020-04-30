@@ -14,7 +14,7 @@
     "copy:assets": "cpx \"./src/**/*.{*css,svg}\" ./lib && cpx \"./public/**/*\" ./lib/public",
     "pseudolocalize": "betools pseudolocalize --englishDir ./public/locales/en --out ./lib/public/locales/en-PSEUDO",
     "build": "npm run copy:assets && npm run pseudolocalize && tsc 1>&2",
-    "clean": "rimraf lib .rush",
+    "clean": "rimraf lib .rush/temp/package-deps*.json",
     "cover": "nyc npm test",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/ui/ui-abstract/file.json --tsIndexFile=./ui-abstract.ts --onlyJson",
     "lint": "tslint --project . 1>&2",

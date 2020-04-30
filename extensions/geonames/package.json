@@ -6,7 +6,7 @@
   "license": "MIT",
   "scripts": {
     "build": "extension-webpack-tools build -s ./src/geoNames.ts -o ./lib/extension",
-    "clean": "rimraf lib .rush",
+    "clean": "rimraf lib .rush/temp/package-deps*.json",
     "copy:assets": "cpx \"./src/public/**/*\" ./lib/extension/",
     "cover": "",
     "docs": "",

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Upgrade to Rush 5.23.2",
+      "type": "none",
+      "packageName": "@bentley/orbitgt-core"
+    }
+  ],
+  "packageName": "@bentley/orbitgt-core",
+  "email": "Shaun.Sewall@bentley.com"
+}

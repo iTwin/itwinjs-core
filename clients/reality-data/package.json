@@ -12,7 +12,7 @@
   },
   "scripts": {
     "build": "tsc 1>&2",
-    "clean": "rimraf lib .rush",
+    "clean": "rimraf lib .rush/temp/package-deps*.json",
     "extract-api": "betools extract-api --entry=reality-data-client",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/clients/reality-data-client/file.json --tsIndexFile=reality-data-client.ts --onlyJson",
     "lint": "tslint --project . 1>&2",

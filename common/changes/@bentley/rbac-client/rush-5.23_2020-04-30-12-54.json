@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Upgrade to Rush 5.23.2",
+      "type": "none",
+      "packageName": "@bentley/rbac-client"
+    }
+  ],
+  "packageName": "@bentley/rbac-client",
+  "email": "Shaun.Sewall@bentley.com"
+}

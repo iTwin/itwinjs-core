@@ -19,7 +19,7 @@
   },
   "scripts": {
     "build": "npm run copy:files && tsc 1>&2 && npm run webpack:frontend",
-    "clean": "rimraf lib .rush integration_test_results",
+    "clean": "rimraf lib .rush/temp/package-deps*.json integration_test_results",
     "copy:files": "cpx \"./rulesets/**/*\" ./lib/rulesets/",
     "cover": "",
     "docs": "",

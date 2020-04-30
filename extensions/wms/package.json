@@ -6,7 +6,7 @@
   "scripts": {
     "prebuild": "npm run pseudolocalize && npm run copy:assets",
     "build": "npm run prebuild && extension-webpack-tools build -s ./src/wmsExtension.ts -o ./lib/extension",
-    "clean": "rimraf lib .rush",
+    "clean": "rimraf lib .rush/temp/package-deps*.json",
     "copy:assets": "cpx \"./src/public/locales/**/*\" ./lib/extension/locales/",
     "cover": "",
     "docs": "",

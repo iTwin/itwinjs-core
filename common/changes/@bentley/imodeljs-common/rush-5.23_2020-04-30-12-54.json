@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Upgrade to Rush 5.23.2",
+      "type": "none",
+      "packageName": "@bentley/imodeljs-common"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-common",
+  "email": "Shaun.Sewall@bentley.com"
+}

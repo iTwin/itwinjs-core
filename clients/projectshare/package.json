@@ -12,7 +12,7 @@
   },
   "scripts": {
     "build": "tsc 1>&2",
-    "clean": "rimraf lib .rush",
+    "clean": "rimraf lib .rush/temp/package-deps*.json",
     "cover": "",
     "extract-api": "betools extract-api --entry=projectshare-client",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/clients/projectshare-client/file.json --tsIndexFile=projectshare-client.ts --onlyJson",

@@ -10,7 +10,7 @@
   },
   "scripts": {
     "build": "tsc 1>&2 && npm run copy:assets && npm run copy:test-assets",
-    "clean": "rimraf lib .rush",
+    "clean": "rimraf lib .rush/temp/package-deps*.json",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-backend/file.json --tsIndexFile=./imodeljs-backend.ts --onlyJson",
     "copy:assets": "cpx \"./src/assets/**/*\" ./lib/assets",
     "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/test/assets",

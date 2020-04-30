@@ -6,7 +6,7 @@
   "scripts": {
     "build": "tsc 1>&2",
     "lint": "tslint -p . 1>&2",
-    "clean": "rimraf lib .rush",
+    "clean": "rimraf lib .rush/temp/package-deps*.json",
     "test": "",
     "docs": "",
     "cover": ""

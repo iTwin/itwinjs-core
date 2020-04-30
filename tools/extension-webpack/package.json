@@ -13,7 +13,7 @@
   },
   "scripts": {
     "build": "",
-    "clean": "rimraf lib .rush",
+    "clean": "rimraf lib .rush/temp/package-deps*.json",
     "docs": "",
     "lint": "",
     "test": "",
