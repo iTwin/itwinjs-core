@@ -28,6 +28,7 @@ import {
   IModelReadRpcInterface,
   GeometrySummaryVerbosity,
 } from "@bentley/imodeljs-common";
+import { parseArgs } from "./parseArgs";
 
 /** Creates a readable text summary of a geometric element or geometry part. The keyin takes the following arguments, all of which are optional:
  *  - `id=elementId,elementId,elementId` comma-separated list of element Idswhere each `elementId` is a hexadecimal element Id such as "0x12cb";
@@ -186,62 +187,42 @@ export class InspectElementTool extends PrimitiveTool {
     IModelApp.notifications.outputMessage(messageDetails);
   }
 
-  public parseAndRun(...args: string[]): boolean {
-    for (const arg of args) {
-      const parts = arg.split("=");
-      if (2 !== parts.length)
-        continue;
+  public parseAndRun(...inputArgs: string[]): boolean {
+    const args = parseArgs(inputArgs);
+    const ids = args.get("i");
+    if (undefined !== ids)
+      this._elementIds = ids.split(",");
 
-      const name = parts[0][0].toLowerCase();
-
-      if ("i" === name) {
-        this._elementIds = parts[1].split(",");
-        continue;
-      }
-
-      const value = parseInt(parts[1], 10);
-      if (Number.isNaN(value))
-        continue;
-
-      if ("v" === name) {
-        switch (value) {
-          case 0:
-            this._options.geometryVerbosity = GeometrySummaryVerbosity.Basic;
-            break;
-          case 1:
-            this._options.geometryVerbosity = GeometrySummaryVerbosity.Detailed;
-            break;
-          case 2:
-            this._options.geometryVerbosity = GeometrySummaryVerbosity.Full;
-            break;
-        }
-        continue;
-      }
-
-      if (0 !== value && 1 !== value)
-        continue;
-
-      const flag = 1 === value;
-      switch (name) {
-        case "s":
-          this._options.verboseSymbology = flag;
+    const verbosity = args.getInteger("v");
+    if (undefined !== verbosity) {
+      switch (verbosity) {
+        case 0:
+          this._options.geometryVerbosity = GeometrySummaryVerbosity.Basic;
           break;
-        case "p":
-          this._options.includePlacement = flag;
+        case 1:
+          this._options.geometryVerbosity = GeometrySummaryVerbosity.Detailed;
           break;
-        case "r":
-          const vp = IModelApp.viewManager.selectedView;
-          if (undefined !== vp)
-            this._options.includePartReferences = vp.view.is3d() ? "3d" : "2d";
-          break;
-        case "m":
-          this._modal = flag;
-          break;
-        case "c":
-          this._doCopy = flag;
+        case 2:
+          this._options.geometryVerbosity = GeometrySummaryVerbosity.Full;
           break;
       }
     }
+
+    const symbology = args.getBoolean("s");
+    if (undefined !== symbology)
+      this._options.verboseSymbology = symbology;
+
+    const placement = args.getBoolean("p");
+    if (undefined !== placement)
+      this._options.includePlacement = placement;
+
+    const parts = args.getBoolean("r");
+    if (true === parts && undefined !== IModelApp.viewManager.selectedView)
+      this._options.includePartReferences = IModelApp.viewManager.selectedView.view.is3d() ? "3d" : "2d";
+
+    const modal = args.getBoolean("m");
+    if (undefined !== modal)
+      this._modal = modal;
 
     return this.run();
   }

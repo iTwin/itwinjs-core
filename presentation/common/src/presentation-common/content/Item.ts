@@ -20,7 +20,7 @@ import { LabelDefinition, LabelDefinitionJSON } from "../LabelDefinition";
 
 /**
  * Serialized [[Item]] JSON representation.
- * @internal
+ * @public
  */
 export interface ItemJSON {
   primaryKeys: InstanceKeyJSON[];
@@ -85,7 +85,7 @@ export class Item {
     return -1 !== this.mergedFieldNames.indexOf(fieldName);
   }
 
-  /** @internal */
+  /** Serialize this object to JSON */
   public toJSON(): ItemJSON {
     const { label, ...baseItem } = this;
     return Object.assign({}, baseItem, {
@@ -96,13 +96,7 @@ export class Item {
     });
   }
 
-  /**
-   * Deserialize Item from JSON
-   * @param json JSON or JSON serialized to string to deserialize from
-   * @returns Deserialized item or undefined if deserialization failed
-   *
-   * @internal
-   */
+  /** Deserialize [[Item]] from JSON */
   public static fromJSON(json: ItemJSON | string | undefined): Item | undefined {
     if (!json)
       return undefined;

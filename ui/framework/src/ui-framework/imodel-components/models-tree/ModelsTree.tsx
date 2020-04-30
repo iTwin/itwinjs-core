@@ -32,7 +32,7 @@ const RULESET_MODELS_SEARCH: Ruleset = require("./ModelsTreeSearch.json"); // ts
 
 /**
  * Visibility tree node types.
- * @alpha
+ * @beta
  */
 export enum ModelsTreeNodeType {
   Unknown,
@@ -44,7 +44,7 @@ export enum ModelsTreeNodeType {
 
 /**
  * Type definition of predicate used to decide if node can be selected
- * @alpha
+ * @beta
  */
 export type ModelsTreeSelectionPredicate = (key: NodeKey, type: ModelsTreeNodeType) => boolean;
 

@@ -18,10 +18,10 @@ export interface TestUserCredentials {
 }
 
 /**
- * Configuration used by [[TestOidcClient]]
+ * Configuration used by [[TestBrowserAuthorizationClient]]
  * @alpha
  */
-export interface TestOidcConfiguration {
+export interface TestBrowserAuthorizationClientConfiguration {
   clientId: string;
   redirectUri: string;
   scope: string;
@@ -71,7 +71,7 @@ export class TestUsers {
    *  - imjs_oidc_browser_test_redirect_uri
    *  - imjs_oidc_browser_test_scopes
    */
-  public static getTestOidcConfiguration(): TestOidcConfiguration {
+  public static getTestBrowserAuthorizationClientConfiguration(): TestBrowserAuthorizationClientConfiguration {
     return {
       clientId: Config.App.getString("imjs_oidc_browser_test_client_id"),
       redirectUri: Config.App.getString("imjs_oidc_browser_test_redirect_uri"),

@@ -6,7 +6,6 @@
     "outDir": "./lib",
     "skipLibCheck": true,
     "jsx": "react",
-    "preserveSymlinks": true,
     "types": [
       "sinon-chai",
       "chai-as-promised",

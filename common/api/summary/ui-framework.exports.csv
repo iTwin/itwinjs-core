@@ -226,13 +226,13 @@ public;GroupItemProps
 alpha;HTMLElementPopup 
 alpha;HTMLElementPopupProps 
 alpha;IModelAppUiSettings 
-beta;IModelConnectedCategoryTree: any
-alpha;IModelConnectedModelsTree: any
-beta;IModelConnectedNavigationWidget: any
-beta;IModelConnectedSpatialContainmentTree: any
-beta;IModelConnectedViewport: any
-beta;IModelConnectedViewSelector: any
-beta;IModelConnectedVisibilityComponent: any
+beta;IModelConnectedCategoryTree: import("react-redux").ConnectedComponent
+alpha;IModelConnectedModelsTree: import("react-redux").ConnectedComponent
+beta;IModelConnectedNavigationWidget: import("react-redux").ConnectedComponent
+beta;IModelConnectedSpatialContainmentTree: import("react-redux").ConnectedComponent
+beta;IModelConnectedViewport: import("react-redux").ConnectedComponent
+beta;IModelConnectedViewSelector: import("react-redux").ConnectedComponent
+beta;IModelConnectedVisibilityComponent: import("react-redux").ConnectedComponent
 internal;IModelInfo
 internal;IModelScope
 internal;IModelServices
@@ -313,9 +313,9 @@ public;ModelessDialogRenderer
 internal;ModelSelectorWidget 
 internal;ModelSelectorWidgetControl 
 public;ModelsTree(props: ModelsTreeProps): JSX.Element
-alpha;ModelsTreeNodeType
+beta;ModelsTreeNodeType
 public;ModelsTreeProps
-alpha;ModelsTreeSelectionPredicate = (key: NodeKey, type: ModelsTreeNodeType) => boolean
+beta;ModelsTreeSelectionPredicate = (key: NodeKey, type: ModelsTreeNodeType) => boolean
 public;MouseDownChangedEvent 
 public;MouseDownChangedEventArgs
 beta;NameToReducerMap
@@ -357,7 +357,7 @@ internal;ProjectInfo
 internal;ProjectReadStatus
 internal;ProjectScope
 internal;ProjectServices
-public;PromptField: any
+public;PromptField: import("react-redux").ConnectedComponent
 public;PropsHelper
 public;Reducer
 public;ReducerActions
@@ -381,8 +381,8 @@ beta;SectionsStatusFieldProps
 beta;selectionContextStateFunc(state: Readonly
 beta;SelectionContextToolDefinitions
 alpha;SelectionContextUtilities
-public;SelectionInfoField: any
-public;SelectionScopeField: any
+public;SelectionInfoField: import("react-redux").ConnectedComponent
+public;SelectionScopeField: import("react-redux").ConnectedComponent
 public;SeparatorBackstageItem 
 beta;SessionState
 beta;SessionStateActionId
@@ -402,7 +402,7 @@ alpha;SheetsModalFrontstage
 public;SignIn 
 public;SignInProps 
 public;SignOutModalFrontstage 
-public;SnapModeField: any
+public;SnapModeField: import("react-redux").ConnectedComponent
 alpha;SolarTimelineDataProvider 
 public;SpatialContainmentTree(props: SpatialContainmentTreeProps): JSX.Element
 public;SpatialContainmentTreeProps
@@ -466,7 +466,7 @@ public;TaskLaunchBackstageItemProps
 public;TaskManager
 public;TaskProps 
 public;TaskPropsList
-beta;ThemeManager: any
+beta;ThemeManager: import("react-redux").ConnectedComponent
 beta;TileLoadingIndicator 
 alpha;toggleAllCategories(viewManager: ViewManager, imodel: IModelConnection, display: boolean, viewport?: Viewport, forAllViewports?: boolean, filteredProvider?: IPresentationTreeDataProvider): Promise
 public;ToolActivatedEvent 
@@ -551,10 +551,10 @@ beta;ViewSelectorChangedEventArgs
 beta;ViewSelectorDefaultProps = Pick
 beta;ViewSelectorProps
 public;ViewUtilities
-alpha;VisibilityComponent 
-alpha;VisibilityComponentConfig
+beta;VisibilityComponent 
+beta;VisibilityComponentConfig
 public;VisibilityComponentHierarchy
-alpha;VisibilityComponentProps
+beta;VisibilityComponentProps
 internal;VisibilityHandler 
 internal;VisibilityHandlerProps
 alpha;VisibilityStatus
@@ -565,7 +565,7 @@ alpha;visibilityTreeNodeCheckboxRenderer: (props: NodeCheckboxRenderProps) => JS
 alpha;VisibilityTreeNoFilteredData(props: VisibilityTreeNoFilteredDataProps): JSX.Element
 alpha;VisibilityTreeNoFilteredDataProps
 alpha;VisibilityTreeSelectionPredicate = (key: NodeKey, node: TreeNodeItem) => boolean
-alpha;VisibilityWidget 
+beta;VisibilityWidget 
 public;Widget 
 beta;WIDGET_OPACITY_DEFAULT = 0.9
 public;WidgetChangeHandler

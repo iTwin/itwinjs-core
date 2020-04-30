@@ -3,6 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 @import "~@bentley/ui-core/lib/ui-core/style/themecolors";
+@import "~@bentley/ui-core/lib/ui-core/z-index";
+
+.tooltip-rail {
+  div.tooltip {
+    @include uicore-z-index(tooltip);
+  }
+}
 
 .scrubber-rail {
   position: absolute;

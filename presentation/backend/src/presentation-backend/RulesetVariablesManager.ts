@@ -7,8 +7,7 @@
  */
 
 import { Id64String, Id64 } from "@bentley/bentleyjs-core";
-import { VariableValueTypes, VariableValue } from "@bentley/presentation-common";
-import { VariableValueJSON } from "@bentley/presentation-common/lib/presentation-common/RulesetVariables";
+import { VariableValueTypes, VariableValue, VariableValueJSON } from "@bentley/presentation-common";
 import { NativePlatformDefinition } from "./NativePlatform";
 
 /**

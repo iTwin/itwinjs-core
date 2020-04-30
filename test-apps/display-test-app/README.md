@@ -146,6 +146,8 @@ You can use these environment variables to alter the default behavior of various
   * The number of levels of iModel tile trees to skip before loading graphics.
 * SVT_DISABLE_IDLE_WORK
   * If defined, do not try to perform idle work (precompiling shader) when there are no viewports.
+* SVT_WINDOW_SIZE
+  * If defined, a comma-separated startup size for the electron application window as `width,height`.
 
 ## Key-ins
 

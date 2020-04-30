@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, ChangeSetApplyOption, ChangeSetStatus, GuidString, Logger, OpenMode, PerfLogger } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { Briefcase as HubBriefcase, BriefcaseQuery, ChangeSet, ChangeSetQuery, ChangesType, HubIModel, IModelHubClient, IModelQuery, Version, VersionQuery } from "@bentley/imodelhub-client";
 import { Project } from "@bentley/context-registry-client";
+import { Briefcase as HubBriefcase, BriefcaseQuery, ChangeSet, ChangeSetQuery, HubIModel, IModelHubClient, IModelQuery, Version, VersionQuery } from "@bentley/imodelhub-client";
+import { BriefcaseIdValue, BriefcaseManager, ChangeSetToken, IModelDb, IModelHost, IModelJsFs, StandaloneDb } from "@bentley/imodeljs-backend";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import * as os from "os";
 import * as path from "path";
-import { BriefcaseManager, ChangeSetToken, IModelDb, IModelJsFs, BriefcaseIdValue, StandaloneDb, IModelHost } from "@bentley/imodeljs-backend";
 
 /** Utility to work with iModelHub */
 export class HubUtility {
@@ -382,7 +382,7 @@ export class HubUtility {
       if (!IModelJsFs.existsSync(changeSetPathname)) {
         throw new Error("Cannot find the ChangeSet file: " + changeSetPathname);
       }
-      tokens.push(new ChangeSetToken(changeSetJson.id, changeSetJson.parentId, +changeSetJson.index, changeSetPathname, changeSetJson.changesType === ChangesType.Schema));
+      tokens.push(new ChangeSetToken(changeSetJson.id, changeSetJson.parentId, +changeSetJson.index, changeSetPathname, changeSetJson.changesType!));
     }
 
     return tokens;

@@ -8,7 +8,7 @@ import { AuthorizationParameters, Client, generators, Issuer, OpenIDCallbackChec
 import * as os from "os";
 import * as puppeteer from "puppeteer";
 import * as url from "url";
-import { TestOidcConfiguration, TestUserCredentials } from "./TestUsers";
+import { TestBrowserAuthorizationClientConfiguration, TestUserCredentials } from "./TestUsers";
 
 /**
  * Implementation of AuthorizationClient used for the iModel.js integration tests.
@@ -18,11 +18,11 @@ import { TestOidcConfiguration, TestUserCredentials } from "./TestUsers";
  *   spawning a headless browser, and automatically filling in the supplied user credentials.
  * @alpha
  */
-export class TestOidcClient implements AuthorizationClient {
+export class TestBrowserAuthorizationClient implements AuthorizationClient {
   private _client!: Client;
   private _issuer!: Issuer<Client>;
   private _imsUrl!: string;
-  private readonly _config: TestOidcConfiguration;
+  private readonly _config: TestBrowserAuthorizationClientConfiguration;
   private readonly _user: TestUserCredentials;
   private _accessToken?: AccessToken;
   private _deploymentRegion?: number;
@@ -32,7 +32,7 @@ export class TestOidcClient implements AuthorizationClient {
    * @param config OIDC configuration
    * @param user Test user to be logged in
    */
-  public constructor(config: TestOidcConfiguration, user: TestUserCredentials) {
+  public constructor(config: TestBrowserAuthorizationClientConfiguration, user: TestUserCredentials) {
     this._config = config;
     this._user = user;
   }
@@ -178,7 +178,7 @@ export class TestOidcClient implements AuthorizationClient {
       tokenSet.access_token!,
       startsAt,
       expiresAt,
-      TestOidcClient.oidcInfoToUserInfo(userInfo));
+      TestBrowserAuthorizationClient.oidcInfoToUserInfo(userInfo));
   }
 
   private createAuthParams(scope: string): [AuthorizationParameters, OpenIDCallbackChecks] {
@@ -413,8 +413,8 @@ export class TestOidcClient implements AuthorizationClient {
  * @param deploymentRegion Deployment region. If unspecified, it's inferred from configuration, or simply defaults to "0" for PROD use
  * @alpha
  */
-export async function getTestOidcToken(config: TestOidcConfiguration, user: TestUserCredentials, deploymentRegion?: number): Promise<AccessToken> {
-  const client = new TestOidcClient(config, user);
+export async function getTestAccessToken(config: TestBrowserAuthorizationClientConfiguration, user: TestUserCredentials, deploymentRegion?: number): Promise<AccessToken> {
+  const client = new TestBrowserAuthorizationClient(config, user);
   if (undefined !== deploymentRegion)
     client.deploymentRegion = deploymentRegion;
   return client.getAccessToken();

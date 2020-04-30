@@ -32,8 +32,8 @@ export interface SelectClassInfo {
 }
 
 /**
- * Serialized [[SelectClassInfo]]
- * @internal
+ * Serialized [[SelectClassInfo]] JSON representation
+ * @public
  */
 export interface SelectClassInfoJSON {
   selectClassInfo: ClassInfoJSON;
@@ -44,16 +44,20 @@ export interface SelectClassInfoJSON {
   relatedInstanceClasses: RelatedClassInfoJSON[];
 }
 
-const selectClassInfoFromJSON = (json: SelectClassInfoJSON): SelectClassInfo => {
-  return {
-    ...json,
-    selectClassInfo: ClassInfo.fromJSON(json.selectClassInfo),
-    pathToPrimaryClass: json.pathToPrimaryClass.map((p) => RelatedClassInfo.fromJSON(p)),
-    relatedPropertyPaths: json.relatedPropertyPaths.map((rp) => (rp.map((p) => RelatedClassInfo.fromJSON(p)))),
-    navigationPropertyClasses: json.navigationPropertyClasses.map((p) => RelatedClassInfo.fromJSON(p)),
-    relatedInstanceClasses: json.relatedInstanceClasses.map((p) => RelatedClassInfo.fromJSON(p)),
-  };
-};
+/** @public */
+export namespace SelectClassInfo {
+  /** Deserialize [[SelectClassInfo]] from JSON */
+  export function fromJSON(json: SelectClassInfoJSON): SelectClassInfo {
+    return {
+      ...json,
+      selectClassInfo: ClassInfo.fromJSON(json.selectClassInfo),
+      pathToPrimaryClass: json.pathToPrimaryClass.map((p) => RelatedClassInfo.fromJSON(p)),
+      relatedPropertyPaths: json.relatedPropertyPaths.map((rp) => (rp.map((p) => RelatedClassInfo.fromJSON(p)))),
+      navigationPropertyClasses: json.navigationPropertyClasses.map((p) => RelatedClassInfo.fromJSON(p)),
+      relatedInstanceClasses: json.relatedInstanceClasses.map((p) => RelatedClassInfo.fromJSON(p)),
+    };
+  }
+}
 
 /**
  * Flags that control content format.
@@ -103,7 +107,7 @@ export interface SelectionInfo {
 
 /**
  * Serialized [[Descriptor]] JSON representation.
- * @internal
+ * @public
  */
 export interface DescriptorJSON {
   connectionId: string;
@@ -201,20 +205,14 @@ export class Descriptor implements DescriptorSource {
     });
   }
 
-  /** @internal */
+  /** Serialize this object to JSON */
   public toJSON(): DescriptorJSON {
     return Object.assign({}, this, {
       fields: this.fields.map((field: Field) => field.toJSON()),
     });
   }
 
-  /**
-   * Deserialize Descriptor from JSON
-   * @param json JSON or JSON serialized to string to deserialize from
-   * @returns Deserialized descriptor or undefined if deserialization failed
-   *
-   * @internal
-   */
+  /** Deserialize [[Descriptor]] from JSON */
   public static fromJSON(json: DescriptorJSON | string | undefined): Descriptor | undefined {
     if (!json)
       return undefined;
@@ -228,7 +226,7 @@ export class Descriptor implements DescriptorSource {
           field.rebuildParentship();
         return field;
       }).filter((field) => (undefined !== field)),
-      selectClasses: json.selectClasses.map((selectClass: SelectClassInfoJSON) => selectClassInfoFromJSON(selectClass)),
+      selectClasses: json.selectClasses.map((selectClass: SelectClassInfoJSON) => SelectClassInfo.fromJSON(selectClass)),
     } as Partial<Descriptor>);
   }
 

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/rpcinterface-full-stack-tests",
+      "comment": "Renamed TestOidcClient and related constructs for consistency",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/rpcinterface-full-stack-tests",
+  "email": "Ramanujam.Raman@bentley.com"
+}

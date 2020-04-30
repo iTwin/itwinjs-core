@@ -1635,6 +1635,7 @@ export interface SliderProps extends CommonProps {
     showTicks?: boolean;
     showTooltip?: boolean;
     step?: number;
+    tooltipBelow?: boolean;
     values: number[];
 }
 

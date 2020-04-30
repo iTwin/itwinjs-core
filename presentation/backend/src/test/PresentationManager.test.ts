@@ -27,16 +27,10 @@ import {
   KindOfQuantityInfo, DefaultContentDisplayTypes, LabelRequestOptions, InstanceKey,
   VariableValueTypes, RequestPriority, LabelDefinition, PresentationUnitSystem, SelectionScope,
   PartialHierarchyModification, PartialHierarchyModificationJSON, PresentationDataCompareOptions,
+  getLocalesDirectory, PropertyInfoJSON, NodeKey, StandardNodeTypes, NodeJSON, PropertyJSON,
+  ContentJSON, ItemJSON, PropertiesFieldJSON, NestedContentFieldJSON, FieldJSON,
+  DescriptorJSON, SelectClassInfoJSON,
 } from "@bentley/presentation-common";
-import { getLocalesDirectory } from "@bentley/presentation-common/lib/presentation-common/Utils";
-import { PropertyInfoJSON } from "@bentley/presentation-common/lib/presentation-common/EC";
-import { NodeKey, StandardNodeTypes } from "@bentley/presentation-common/lib/presentation-common/hierarchy/Key";
-import { NodeJSON } from "@bentley/presentation-common/lib/presentation-common/hierarchy/Node";
-import { PropertyJSON } from "@bentley/presentation-common/lib/presentation-common/content/Property";
-import { ContentJSON } from "@bentley/presentation-common/lib/presentation-common/content/Content";
-import { ItemJSON } from "@bentley/presentation-common/lib/presentation-common/content/Item";
-import { PropertiesFieldJSON, NestedContentFieldJSON, FieldJSON } from "@bentley/presentation-common/lib/presentation-common/content/Fields";
-import { DescriptorJSON, SelectClassInfoJSON } from "@bentley/presentation-common/lib/presentation-common/content/Descriptor";
 import { NativePlatformDefinition, NativePlatformRequestTypes } from "../presentation-backend/NativePlatform";
 import { PresentationManager, PresentationManagerMode, PresentationManagerProps } from "../presentation-backend/PresentationManager";
 import { RulesetManagerImpl } from "../presentation-backend/RulesetManager";

@@ -37,7 +37,7 @@ export enum VisibilityComponentHierarchy {
 
 /**
  * Data structure that describes visibility component configuration
- * @alpha
+ * @beta
  */
 export interface VisibilityComponentConfig {
   modelsTree?: {
@@ -48,7 +48,7 @@ export interface VisibilityComponentConfig {
 
 /**
  * Props for `VisibilityComponent`
- * @alpha
+ * @beta
  */
 export interface VisibilityComponentProps {
   /** iModel whose data should be displayed in the component */
@@ -73,7 +73,7 @@ interface VisibilityTreeState {
 }
 
 /** VisibilityComponent React component.
- * @alpha
+ * @beta
  */
 // istanbul ignore next
 export class VisibilityComponent extends React.Component<VisibilityComponentProps, VisibilityTreeState> {
@@ -214,7 +214,7 @@ export class VisibilityComponent extends React.Component<VisibilityComponentProp
 export const IModelConnectedVisibilityComponent = connectIModelConnection(null, null)(VisibilityComponent); // tslint:disable-line:variable-name
 
 /** VisibilityWidget React component.
- * @alpha
+ * @beta
  */
 // istanbul ignore next
 export class VisibilityWidget extends WidgetControl {

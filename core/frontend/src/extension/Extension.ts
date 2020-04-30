@@ -106,13 +106,6 @@ export abstract class Extension {
   public setI18n(defaultNamespace?: string, options?: I18NOptions) {
     this._i18n = new I18N(defaultNamespace, options);
   }
-
-  /** When a Extension has been loaded, and there is a subsequent call to load the same Extension,
-   * returning false from this method prevents the system from reporting the reload.
-   */
-  public reportReload(): boolean {
-    return true;
-  }
 }
 
 /** Represents an Extension that we are attempting to load.

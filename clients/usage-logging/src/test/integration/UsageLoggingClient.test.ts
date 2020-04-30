@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { BentleyStatus, Config, Guid, GuidString } from "@bentley/bentleyjs-core";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { getAccessTokenFromBackend, TestOidcConfiguration, TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
+import { getAccessTokenFromBackend, TestBrowserAuthorizationClientConfiguration, TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
 import { assert } from "chai";
 import * as os from "os";
 import { EndFeatureLogEntry, FeatureLogEntry, LogPostingResponse, StartFeatureLogEntry, UsageLoggingClient, UsageType } from "../../UsageLoggingClient";
@@ -14,7 +14,7 @@ describe("UlasClient - OIDC Token (#integration)", () => {
   let accessToken: AccessToken;
 
   before(async () => {
-    const oidcConfig: TestOidcConfiguration = {
+    const oidcConfig: TestBrowserAuthorizationClientConfiguration = {
       clientId: Config.App.getString("imjs_oidc_ulas_test_client_id"),
       redirectUri: Config.App.getString("imjs_oidc_ulas_test_redirect_uri"),
       scope: Config.App.getString("imjs_oidc_ulas_test_scopes"),

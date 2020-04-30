@@ -16,7 +16,7 @@ import {
 import { using, BeDuration, BeEvent } from "@bentley/bentleyjs-core";
 import { I18N, I18NNamespace } from "@bentley/imodeljs-i18n";
 import { IModelRpcProps } from "@bentley/imodeljs-common";
-import { IModelConnection, EventSource } from "@bentley/imodeljs-frontend";
+import { IModelConnection, EventSource, IModelApp } from "@bentley/imodeljs-frontend";
 import {
   KeySet, Content, HierarchyRequestOptions, Node, Ruleset, VariableValueTypes, RulesetVariable,
   Paged, ContentRequestOptions, RpcRequestsHandler, LabelRequestOptions, NodeKey, NodePathElement,
@@ -123,6 +123,7 @@ describe("PresentationManager", () => {
     });
 
     it("starts listening to update events", async () => {
+      sinon.stub(IModelApp, "isNativeApp").get(() => true);
       const eventSource = sinon.createStubInstance(EventSource) as unknown as EventSource;
       PresentationManager.create({ eventSource });
       expect(eventSource.on).to.be.calledOnceWith(PresentationRpcInterface.interfaceName, PresentationRpcEvents.Update, sinon.match((arg) => typeof arg === "function"));
@@ -138,6 +139,7 @@ describe("PresentationManager", () => {
     });
 
     it("stops listening to update events", async () => {
+      sinon.stub(IModelApp, "isNativeApp").get(() => true);
       const eventSource = sinon.createStubInstance(EventSource) as unknown as EventSource;
       using(PresentationManager.create({ eventSource }), (_) => { });
       expect(eventSource.off).to.be.calledOnceWith(PresentationRpcInterface.interfaceName, PresentationRpcEvents.Update, sinon.match((arg) => typeof arg === "function"));
@@ -948,6 +950,8 @@ describe("PresentationManager", () => {
     let contentUpdatesSpy: sinon.SinonSpy<[Ruleset, ContentUpdateInfo], void>;
 
     beforeEach(() => {
+      sinon.stub(IModelApp, "isNativeApp").get(() => true);
+
       const eventSource = sinon.createStubInstance(EventSource);
       manager = PresentationManager.create({ eventSource: eventSource as unknown as EventSource });
 

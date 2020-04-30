@@ -146,7 +146,6 @@ class FrontendIpcTransport extends ElectronIpcTransport<RpcRequestFulfillment> {
     const message = this.loadMessage(id);
     const protocol = this._protocol;
     const request = protocol.requests.get(message.id) as ElectronRpcRequest;
-    protocol.requests.delete(message.id);
     request.notifyResponse(message);
   }
 }

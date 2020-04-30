@@ -2397,25 +2397,25 @@ export class IModelAppUiSettings implements UiSettings {
 }
 
 // @beta
-export const IModelConnectedCategoryTree: any;
+export const IModelConnectedCategoryTree: import("react-redux").ConnectedComponent<typeof CategoryTree, any>;
 
 // @alpha
-export const IModelConnectedModelsTree: any;
+export const IModelConnectedModelsTree: import("react-redux").ConnectedComponent<typeof ModelsTree, any>;
 
 // @beta @deprecated
-export const IModelConnectedNavigationWidget: any;
+export const IModelConnectedNavigationWidget: import("react-redux").ConnectedComponent<typeof DefaultNavigationWidget, any>;
 
 // @beta
-export const IModelConnectedSpatialContainmentTree: any;
+export const IModelConnectedSpatialContainmentTree: import("react-redux").ConnectedComponent<typeof SpatialContainmentTree, any>;
 
 // @beta
-export const IModelConnectedViewport: any;
+export const IModelConnectedViewport: import("react-redux").ConnectedComponent<React.ComponentType<import("@bentley/ui-components").ViewportProps & import("@bentley/presentation-components").ViewWithUnifiedSelectionProps>, any>;
 
 // @beta
-export const IModelConnectedViewSelector: any;
+export const IModelConnectedViewSelector: import("react-redux").ConnectedComponent<typeof ViewSelector, any>;
 
 // @beta
-export const IModelConnectedVisibilityComponent: any;
+export const IModelConnectedVisibilityComponent: import("react-redux").ConnectedComponent<typeof VisibilityComponent, any>;
 
 // @internal
 export interface IModelInfo {
@@ -3213,7 +3213,7 @@ export class ModelSelectorWidgetControl extends WidgetControl {
 // @public
 export function ModelsTree(props: ModelsTreeProps): JSX.Element;
 
-// @alpha
+// @beta
 export enum ModelsTreeNodeType {
     // (undocumented)
     Category = 3,
@@ -3245,7 +3245,7 @@ export interface ModelsTreeProps {
     selectionPredicate?: ModelsTreeSelectionPredicate;
 }
 
-// @alpha
+// @beta
 export type ModelsTreeSelectionPredicate = (key: NodeKey, type: ModelsTreeNodeType) => boolean;
 
 // @public
@@ -3601,7 +3601,7 @@ export interface ProjectServices {
 }
 
 // @public @deprecated
-export const PromptField: any;
+export const PromptField: import("react-redux").ConnectedComponent<typeof PromptFieldComponent, Pick<PromptFieldProps, "style" | "className" | "isInFooterMode" | "openWidget" | "onOpenWidget">>;
 
 // @public
 export class PropsHelper {
@@ -3782,10 +3782,10 @@ export class SelectionContextUtilities {
     }
 
 // @public
-export const SelectionInfoField: any;
+export const SelectionInfoField: import("react-redux").ConnectedComponent<typeof SelectionInfoFieldComponent, Pick<SelectionInfoFieldProps, "style" | "className" | "isInFooterMode" | "openWidget" | "onOpenWidget">>;
 
 // @public
-export const SelectionScopeField: any;
+export const SelectionScopeField: import("react-redux").ConnectedComponent<typeof SelectionScopeFieldComponent, Pick<SelectionScopeFieldProps, "style" | "className" | "isInFooterMode" | "openWidget" | "onOpenWidget">>;
 
 // @public
 export class SeparatorBackstageItem extends React.PureComponent<BackstageItemProps> {
@@ -3997,7 +3997,7 @@ export class SignOutModalFrontstage implements ModalFrontstageInfo {
     }
 
 // @public
-export const SnapModeField: any;
+export const SnapModeField: import("react-redux").ConnectedComponent<typeof SnapModeFieldComponent, Pick<SnapModeFieldProps, "style" | "className" | "isInFooterMode" | "openWidget" | "onOpenWidget">>;
 
 // @alpha
 export class SolarTimelineDataProvider extends BaseSolarDataProvider {
@@ -4568,7 +4568,7 @@ export interface TaskPropsList {
 }
 
 // @beta
-export const ThemeManager: any;
+export const ThemeManager: import("react-redux").ConnectedComponent<typeof ThemeManagerComponent, Pick<ThemeProps, never>>;
 
 // @beta
 export class TileLoadingIndicator extends React.PureComponent<StatusFieldProps, TileLoadingIndicatorState> {
@@ -5292,7 +5292,7 @@ export class ViewUtilities {
     static viewSupportsCamera(viewport: ScreenViewport): boolean;
 }
 
-// @alpha
+// @beta
 export class VisibilityComponent extends React.Component<VisibilityComponentProps, VisibilityTreeState> {
     constructor(props: any);
     // (undocumented)
@@ -5302,7 +5302,7 @@ export class VisibilityComponent extends React.Component<VisibilityComponentProp
     render(): JSX.Element;
     }
 
-// @alpha
+// @beta
 export interface VisibilityComponentConfig {
     // (undocumented)
     modelsTree?: {
@@ -5321,7 +5321,7 @@ export enum VisibilityComponentHierarchy {
     SpatialContainment = "spatial-containment"
 }
 
-// @alpha
+// @beta
 export interface VisibilityComponentProps {
     activeTreeRef?: React.Ref<HTMLDivElement>;
     activeViewport?: Viewport;
@@ -5408,7 +5408,7 @@ export interface VisibilityTreeNoFilteredDataProps {
 // @alpha
 export type VisibilityTreeSelectionPredicate = (key: NodeKey, node: TreeNodeItem) => boolean;
 
-// @alpha
+// @beta
 export class VisibilityWidget extends WidgetControl {
     constructor(info: ConfigurableCreateInfo, options: any);
     // (undocumented)

@@ -1885,6 +1885,8 @@ export class ElectronRpcProtocol extends RpcProtocol {
 
 // @beta (undocumented)
 export class ElectronRpcRequest extends RpcRequest {
+    // @internal (undocumented)
+    dispose(): void;
     protected load(): Promise<import("../core/RpcMarshaling").RpcSerializedValue>;
     // @internal (undocumented)
     notifyResponse(fulfillment: RpcRequestFulfillment): void;
@@ -5205,6 +5207,7 @@ export namespace RpcOperation {
     export function allowResponseCaching(control?: RpcResponseCacheControl): <T extends RpcInterface>(target: T, propertyKey: string, descriptor: PropertyDescriptor) => void;
     export function setDefaultPolicy(policy: RpcOperationPolicy | RpcOperationPolicyProps): <T extends RpcInterface>(definition: RpcInterfaceDefinition<T>) => void;
     export function setPolicy(policy: RpcOperationPolicy | RpcOperationPolicyProps): <T extends RpcInterface>(target: T, propertyKey: string, descriptor: PropertyDescriptor) => void;
+    export function setRoutingProps(handler: RpcRequestTokenSupplier_T): <T extends RpcInterface>(target: T, propertyKey: string, descriptor: PropertyDescriptor) => void;
 }
 
 // @public
@@ -5492,10 +5495,13 @@ export namespace RpcSerializedValue {
     export function create(objects?: string, data?: Uint8Array[]): RpcSerializedValue;
 }
 
-// @beta
+// @alpha
 export interface SectionLocationProps extends GeometricElement3dProps {
+    // @internal @deprecated
     categorySelectorId?: Id64String;
+    // @internal @deprecated
     clipGeometry?: string;
+    // @internal @deprecated
     modelSelectorId?: Id64String;
     sectionType?: SectionType;
     viewAttachment?: Id64String;

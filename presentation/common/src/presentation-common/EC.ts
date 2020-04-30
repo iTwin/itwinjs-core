@@ -30,12 +30,10 @@ export interface InstanceKey {
   /** ECInstance ID */
   id: InstanceId;
 }
+
 /** @public */
 export namespace InstanceKey {
-  /**
-   * Compare 2 instance keys
-   * @public
-   */
+  /** Compare 2 instance keys */
   export function compare(lhs: InstanceKey, rhs: InstanceKey): number {
     const classNameCompare = lhs.className.localeCompare(rhs.className);
     if (classNameCompare !== 0)
@@ -43,15 +41,12 @@ export namespace InstanceKey {
     return lhs.id.localeCompare(rhs.id);
   }
 
-  /** @internal */
+  /** Serialize [[InstanceKey]] to JSON */
   export function toJSON(json: InstanceKey): InstanceKeyJSON {
     return { ...json, id: json.id.toString() };
   }
 
-  /**
-   * Deserializes [[InstanceKey]] from [[InstanceKeyJSON]]
-   * @internal
-   */
+  /** Deserialize [[InstanceKey]] from JSON */
   export function fromJSON(json: InstanceKeyJSON) {
     return { ...json, id: Id64.fromJSON(json.id) };
   }
@@ -78,16 +73,15 @@ export interface ClassInfo {
   /** ECClass label */
   label: string;
 }
+
 /** @public */
 export namespace ClassInfo {
-  /** @internal */
+  /** Serialize [[ClassInfo]] to JSON */
   export function toJSON(info: ClassInfo): ClassInfoJSON {
     return { ...info, id: info.id.toString() };
   }
-  /**
-   * Deserializes [[ClassInfo]] from [[ClassInfoJSON]]
-   * @internal
-   */
+
+  /** Deserialize [[ClassInfo]] from JSON */
   export function fromJSON(json: ClassInfoJSON): ClassInfo {
     return { ...json, id: Id64.fromJSON(json.id) };
   }
@@ -95,7 +89,7 @@ export namespace ClassInfo {
 
 /**
  * A serialized version of [[ClassInfo]]
- * @internal
+ * @public
  */
 export interface ClassInfoJSON {
   id: string;
@@ -165,16 +159,15 @@ export interface PropertyInfo {
    */
   kindOfQuantity?: KindOfQuantityInfo;
 }
+
 /** @public */
 export namespace PropertyInfo {
-  /** @internal */
+  /** Serialize [[PropertyInfo]] to JSON */
   export function toJSON(info: PropertyInfo): PropertyInfoJSON {
     return { ...info, classInfo: ClassInfo.toJSON(info.classInfo) };
   }
-  /**
-   * Deserializes [[PropertyInfo]] from [[PropertyInfoJSON]]
-   * @internal
-   */
+
+  /** Deserialize [[PropertyInfo]] from JSON */
   export function fromJSON(json: PropertyInfoJSON): PropertyInfo {
     return { ...json, classInfo: ClassInfo.fromJSON(json.classInfo) };
   }
@@ -182,7 +175,7 @@ export namespace PropertyInfo {
 
 /**
  * A serialized version of [[PropertyInfo]]
- * @internal
+ * @public
  */
 export interface PropertyInfoJSON {
   classInfo: ClassInfoJSON;
@@ -212,9 +205,10 @@ export interface RelatedClassInfo {
   /** Is the relationship handled polymorphically */
   isPolymorphicRelationship: boolean;
 }
+
 /** @public */
 export namespace RelatedClassInfo {
-  /** @internal */
+  /** Serialize [[RelatedClassInfo]] to JSON */
   export function toJSON(info: RelatedClassInfo): RelatedClassInfoJSON {
     return {
       ...info,
@@ -223,10 +217,8 @@ export namespace RelatedClassInfo {
       relationshipInfo: ClassInfo.toJSON(info.relationshipInfo),
     };
   }
-  /**
-   * Deserializes [[RelatedClassInfo]] from [[RelatedClassInfoJSON]]
-   * @internal
-   */
+
+  /** Deserialize [[RelatedClassInfo]] from JSON */
   export function fromJSON(json: RelatedClassInfoJSON): RelatedClassInfo {
     return {
       ...json,
@@ -239,7 +231,7 @@ export namespace RelatedClassInfo {
 
 /**
  * A serialized version of [[RelatedClassInfo]]
- * @internal
+ * @public
  */
 export interface RelatedClassInfoJSON {
   sourceClassInfo: ClassInfoJSON;
@@ -256,14 +248,14 @@ export interface RelatedClassInfoJSON {
 export type RelationshipPath = RelatedClassInfo[];
 
 /**
- * Serialized [[RelationshipPathInfo]]
- * @internal
+ * Serialized [[RelationshipPath]]
+ * @public
  */
 export type RelationshipPathJSON = RelatedClassInfoJSON[];
 
 /** @public */
 export namespace RelationshipPath {
-  /** @internal */
+  /** Reverse direction of the given [[RelationshipPath]] */
   export function reverse(path: RelationshipPath): RelationshipPath {
     return [...path].reverse().map((step) => ({
       ...step,

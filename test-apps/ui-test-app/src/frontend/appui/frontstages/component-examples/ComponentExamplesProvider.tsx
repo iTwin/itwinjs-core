@@ -192,6 +192,8 @@ export class ComponentExamplesProvider {
       examples: [
         createComponentExample("Slider", "Basic Slider",
           <Slider min={0} max={100} values={[50]} step={1} showTooltip />),
+        createComponentExample("Slider w/ tooltipBelow", "Slider with Tooltip Below",
+          <Slider min={0} max={100} values={[50]} step={1} showTooltip tooltipBelow />),
         createComponentExample("Slider w/ min/max", "Slider with showMinMax prop",
           <Slider min={0} max={100} values={[50]} step={1} showTooltip showMinMax />),
         createComponentExample("Slider w/ min/max images", "Slider with minImage and maxImage props",
@@ -202,6 +204,9 @@ export class ComponentExamplesProvider {
             showTicks getTickCount={() => 10} />),
         createComponentExample("Slider w/ multiple values", "Slider with array of values",
           <Slider min={0} max={100} values={[30, 70]} step={5} mode={2} showTooltip showMinMax
+            showTicks getTickCount={() => 10} />),
+        createComponentExample("Slider multiple values tooltipBelow", "Slider with multiple values & tooltip below",
+          <Slider min={0} max={100} values={[20, 80]} step={5} mode={2} showTooltip tooltipBelow showMinMax
             showTicks getTickCount={() => 10} />),
         createComponentExample("Slider w/ tick labels", "Slider with showTickLabels prop",
           <Slider min={0} max={100} values={[50]} step={1} showTooltip showMinMax showTickLabels

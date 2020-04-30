@@ -5,9 +5,8 @@ ignore: true
 
 ## Update to iModel.js Build System
 
-The iModel.js 1.0 build system relied on a single package (`@bentley/webpack-tools`) to build iModel.js backends, frontends and extensions. With the release of 2.0, there are significant improvements to the build system to help with both clarity and usability to enable creating an app based on the latest technologies easier. To aid in this, the build system is now split into 3 separate components:
+The iModel.js 1.0 build system relied on a single package (`@bentley/webpack-tools`) to build iModel.js frontends and extensions. With the release of 2.0, there are significant improvements to the build system to help with both clarity and usability to enable creating an app based on the latest technologies easier. To aid in this, the build system is now split into 2 separate components:
 
-- Build of an iModel.js backend, and agent, with the `@bentley/backend-webpack-tools`
 - Webpack/bundling of an iModel.js Extension (formerly Plugin) with `@bentley/extension-webpack-tools`
 - The iModel.js frontend build system is now based on [Create-React-App](https://create-react-app.dev/). More details visit the [Build Migration Guide](./migration-guides/migratingbuildsystems.md).
 
@@ -468,8 +467,8 @@ The deprecated ToolSettingsValue.ts has been removed.
 
 A couple of already `@deprecated` APIs are now being hard-deprecated by adding a `DEPRECATED_` prefix to increase consumers' awareness about future removal of the APIs:
 
-* `Tree` to `DEPRECATED_Tree`
-* `withTreeDragDrop` to `DEPRECATED_withTreeDragDrop`
+* `Tree` to `DEPRECATED_Tree`. Recommended replacement - `ControlledTree`.
+* `withTreeDragDrop` to `DEPRECATED_withTreeDragDrop`. We don't have a replacement for that yet.
 
 As a short term solution consumers can simply do a rename when importing the module, e.g.:
 
@@ -568,6 +567,10 @@ The following items that were marked as @deprecated in the 1.x time frame have b
 * UiError (use UiError in @bentley/ui-abstract instead)
 * Position for Popup component (Use RelativePosition in @bentley/ui-abstract instead)
 
+### React dependency changes
+
+`react` and `react-dom` dependencies are moved from `dependencies` to `peerDependencies`.
+
 ### API Changes in `presentation-common` Package
 
 #### RPC Changes
@@ -587,14 +590,12 @@ Because of the above breaking `PresentationRpcInterface` changes its version was
 
 Some of already `@deprecated` APIs are now being hard-deprecated by adding a `DEPRECATED_` prefix to increase consumers' awareness about future removal of the APIs:
 
-* `AllInstanceNodesSpecification` to `DEPRECATED_AllInstanceNodesSpecification`
-* `AllRelatedInstanceNodesSpecification` to `DEPRECATED_AllRelatedInstanceNodesSpecification`
-* `ChildNodeSpecificationTypes.AllInstanceNodes` to `ChildNodeSpecificationTypes.DEPRECATED_AllInstanceNodes`
-* `ChildNodeSpecificationTypes.AllRelatedInstanceNodes` to `ChildNodeSpecificationTypes.DEPRECATED_AllRelatedInstanceNodes`
-* `PropertiesDisplaySpecification` to `DEPRECATED_PropertiesDisplaySpecification`
-* `PropertyEditorsSpecification` to `DEPRECATED_PropertyEditorsSpecification`
-* `PropertiesDisplaySpecification` to `DEPRECATED_PropertiesDisplaySpecification`
-* `PropertyEditorsSpecification` to `DEPRECATED_PropertyEditorsSpecification`
+* `AllInstanceNodesSpecification` to `DEPRECATED_AllInstanceNodesSpecification`. Recommended replacement - `InstanceNodesOfSpecificClassesSpecification`.
+* `AllRelatedInstanceNodesSpecification` to `DEPRECATED_AllRelatedInstanceNodesSpecification`. Recommended replacement - `RelatedInstanceNodesSpecification`.
+* `ChildNodeSpecificationTypes.AllInstanceNodes` to `ChildNodeSpecificationTypes.DEPRECATED_AllInstanceNodes`. Recommended replacement - `ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses`.
+* `ChildNodeSpecificationTypes.AllRelatedInstanceNodes` to `ChildNodeSpecificationTypes.DEPRECATED_AllRelatedInstanceNodes`. Recommended replacement - `ChildNodeSpecificationTypes.RelatedInstanceNodes`.
+* `PropertiesDisplaySpecification` to `DEPRECATED_PropertiesDisplaySpecification`. Recommended replacement - using property overrides of `PropertySpecification` type with `isDisplayed` attribute.
+* `PropertyEditorsSpecification` to `DEPRECATED_PropertyEditorsSpecification`. Recommended replacement - using property overrides of `PropertySpecification` type with `editor` attribute.
 
 As a short term solution consumers can simply do a rename when importing the module, e.g.:
 
@@ -655,10 +656,10 @@ import { DEPRECATED_PropertiesDisplaySpecification as PropertiesDisplaySpecifica
 
 Some of already `@deprecated` APIs are now being hard-deprecated by adding a `DEPRECATED_` prefix to increase consumers' awareness about future removal of the APIs:
 
-* `controlledTreeWithFilteringSupport` renamed to `DEPRECATED_controlledTreeWithFilteringSupport`.
-* `controlledTreeWithVisibleNodes` renamed to `DEPRECATED_controlledTreeWithVisibleNodes`.
-* `treeWithFilteringSupport` renamed to `DEPRECATED_treeWithFilteringSupport`.
-* `treeWithUnifiedSelection` renamed to `DEPRECATED_treeWithUnifiedSelection`.
+* `controlledTreeWithFilteringSupport` renamed to `DEPRECATED_controlledTreeWithFilteringSupport`. Recommended replacement - `useControlledTreeFiltering` React hook.
+* `controlledTreeWithVisibleNodes` renamed to `DEPRECATED_controlledTreeWithVisibleNodes`. This HOC is completely unnecessary when using React hooks which is what we recommend to use with the `ControlledTree` component.
+* `treeWithFilteringSupport` renamed to `DEPRECATED_treeWithFilteringSupport`. Recommended replacement - `ControlledTree` and `useControlledTreeFiltering` React hook.
+* `treeWithUnifiedSelection` renamed to `DEPRECATED_treeWithUnifiedSelection`. Recommended replacement - `ControlledTree` and `useUnifiedSelectionTreeEventHandler` React hook.
 
 As a short term solution consumers can simply do a rename when importing the module, e.g.:
 

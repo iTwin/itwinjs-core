@@ -120,7 +120,7 @@ export abstract class ChangeHiliteTool extends Tool {
     // (undocumented)
     static get minArgs(): number;
     // (undocumented)
-    parseAndRun(...args: string[]): boolean;
+    parseAndRun(...inputArgs: string[]): boolean;
     // (undocumented)
     run(settings?: Hilite.Settings): boolean;
 }
@@ -134,7 +134,7 @@ export abstract class ChangePlanProjectionSettingsTool extends DisplayStyleTool 
     // (undocumented)
     static get minArgs(): number;
     // (undocumented)
-    protected parse(args: string[]): boolean;
+    protected parse(inputArgs: string[]): boolean;
     // (undocumented)
     protected get require3d(): boolean;
     // (undocumented)
@@ -433,6 +433,14 @@ export class DumpPlanProjectionSettingsTool extends DisplayStyleTool {
 }
 
 // @beta
+export class ElementIdFromSourceAspectIdTool extends SourceAspectIdTool {
+    // (undocumented)
+    protected getECSql(queryId: string): string;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
 export abstract class EmphasizeElementsTool extends Tool {
     // (undocumented)
     protected abstract execute(emph: EmphasizeElements, vp: ScreenViewport): void;
@@ -537,7 +545,7 @@ export class InspectElementTool extends PrimitiveTool {
     // (undocumented)
     onUnsuspend(): void;
     // (undocumented)
-    parseAndRun(...args: string[]): boolean;
+    parseAndRun(...inputArgs: string[]): boolean;
     // (undocumented)
     requireWriteableTarget(): boolean;
     // (undocumented)
@@ -570,9 +578,17 @@ export class KeyinField {
 }
 
 // @beta
+export enum KeyinFieldLocalization {
+    Both = 2,
+    Localized = 1,
+    NonLocalized = 0
+}
+
+// @beta
 export interface KeyinFieldProps {
     baseId: string;
     historyLength?: number;
+    localization?: KeyinFieldLocalization;
     parent?: HTMLElement;
     wantButton?: boolean;
     wantLabel?: boolean;
@@ -690,6 +706,9 @@ export abstract class OverrideSubCategoryPriorityTool extends DisplayStyleTool {
     // (undocumented)
     static toolId: string;
 }
+
+// @beta
+export function parseArgs(args: string[]): ToolArgs;
 
 // @beta
 export function parseToggle(arg: string | undefined): string | boolean | undefined;
@@ -888,6 +907,28 @@ export interface SliderProps {
     step: string;
     // (undocumented)
     value: string;
+}
+
+// @beta
+export class SourceAspectIdFromElementIdTool extends SourceAspectIdTool {
+    // (undocumented)
+    protected getECSql(queryId: string): string;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
+export abstract class SourceAspectIdTool extends Tool {
+    // (undocumented)
+    protected abstract getECSql(queryId: string): string;
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parseAndRun(...keyinArgs: string[]): boolean;
+    // (undocumented)
+    run(idToQuery?: string, copyToClipboard?: boolean): boolean;
 }
 
 // @beta
@@ -1107,6 +1148,14 @@ export class ToggleWiremeshTool extends RenderSystemDebugControlTool {
     execute(control: RenderSystemDebugControl): void;
     // (undocumented)
     static toolId: string;
+}
+
+// @beta
+export interface ToolArgs {
+    get(namePrefix: string): string | undefined;
+    getBoolean(namePrefix: string): boolean | undefined;
+    getFloat(namePrefix: string): number | undefined;
+    getInteger(namePrefix: string): number | undefined;
 }
 
 // @alpha

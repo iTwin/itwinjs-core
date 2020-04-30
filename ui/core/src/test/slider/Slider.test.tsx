@@ -77,10 +77,14 @@ describe("Slider", () => {
     expect(component.getAllByTestId("core-slider-handle").length).to.eq(2);
   });
 
+  it("should render with showTooltip and tooltipBelow", () => {
+    render(<Slider min={0} max={50} values={[0, 25]} showTooltip tooltipBelow />);
+  });
+
   // it.only("should render with showTooltip", () => {
   //   const component = render(<Slider min={0} max={50} values={[0, 25]} showTooltip={true} />);
   //   const item = component.getByTestId("core-slider-track");
-  //   item.dispatchEvent(TestUtils.createBubbledEvent("pointermove", { clientX: 50, clientY: 5 }));
+  //   item.dispatchEvent(TestUtils.createBubbledEvent("mouseenter"));
   //   expect(component.getByTestId("core-slider-tooltip")).to.exist;
   // });
 

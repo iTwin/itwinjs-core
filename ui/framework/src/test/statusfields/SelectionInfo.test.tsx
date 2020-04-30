@@ -36,7 +36,7 @@ describe("SelectionInfoField", () => {
       if (openWidget) { }
       return (
         <>
-          <SelectionInfoField isInFooterMode={isInFooterMode} />
+          <SelectionInfoField isInFooterMode={isInFooterMode} openWidget={null} onOpenWidget={() => { }} />
         </>
       );
     }
