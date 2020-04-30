@@ -100,7 +100,8 @@ export class TechniqueFlags {
             break;
           case RenderMode.SmoothShade:
             if (!target.currentViewFlags.visibleEdges && !target.wantAmbientOcclusion && pass !== RenderPass.PlanarClassification) {
-              // We're only displaying surfaces (ignoring filled planar regions). NB: Filled text with outline is handled by gl.polygonOffset().
+              // We're only displaying surfaces (ignoring filled planar regions).
+              // NB: Filled text (blanking region) is handled by adjusting the depth in the surface vertex shader.
               this.isEdgeTestNeeded = IsEdgeTestNeeded.No;
             }
             break;

@@ -48,12 +48,15 @@ import {
   FeatureSymbologyOptions,
   addFeatureSymbology,
   addMaxAlpha,
+  addRenderOrder,
+  addRenderOrderConstants,
   addSurfaceDiscard,
   addSurfaceHiliter,
 } from "./FeatureSymbology";
 import {
   addChooseWithBitFlagFunctions,
   addExtractNthBit,
+  addFrustum,
   addShaderFlags,
 } from "./Common";
 import {
@@ -234,7 +237,12 @@ function addMaterial(builder: ProgramBuilder): void {
 
 const computePosition = `
   vec4 pos = MAT_MV * rawPos;
+
   v_eyeSpace = pos.xyz;
+  const float blankingRegionOffset = 2.0 / 65536.0;
+  if (kRenderOrder_BlankingRegion == u_renderOrder)
+    v_eyeSpace.z -= blankingRegionOffset * (u_frustum.y - u_frustum.x);
+
   return u_proj * pos;
 `;
 
@@ -251,7 +259,12 @@ function createCommon(instanced: IsInstanced, animated: IsAnimated, shadowable: 
 
   addProjectionMatrix(vert);
   addModelViewMatrix(vert);
+
+  addRenderOrder(builder.vert);
+  addRenderOrderConstants(builder.vert);
+  addFrustum(builder);
   builder.addVarying("v_eyeSpace", VariableType.Vec3);
+
   vert.set(VertexShaderComponent.ComputePosition, computePosition);
 
   return builder;

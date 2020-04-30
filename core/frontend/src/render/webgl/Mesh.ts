@@ -423,23 +423,12 @@ export class SurfaceGeometry extends MeshGeometry {
 
   protected _draw(numInstances: number, instanceBuffersContainer?: BuffersContainer): void {
     const system = System.instance;
-    const gl = system.context;
-    const offset = RenderOrder.BlankingRegion === this.renderOrder;
     const bufs = instanceBuffersContainer !== undefined ? instanceBuffersContainer : this._buffers;
-
-    if (offset) {
-      gl.enable(GL.POLYGON_OFFSET_FILL);
-      gl.polygonOffset(1.0, 1.0);
-    }
 
     bufs.bind();
     const primType = system.drawSurfacesAsWiremesh ? GL.PrimitiveType.Lines : GL.PrimitiveType.Triangles;
     system.drawArrays(primType, 0, this._numIndices, numInstances);
     bufs.unbind();
-
-    if (offset) {
-      gl.disable(GL.POLYGON_OFFSET_FILL);
-    }
   }
 
   public wantMixMonochromeColor(target: Target): boolean {

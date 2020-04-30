@@ -482,6 +482,7 @@ const checkForEarlySurfaceDiscardWithFeatureID = `
 
 // This only adds the constants that are actually used in shader code.
 export function addRenderOrderConstants(builder: ShaderBuilder) {
+  builder.addConstant("kRenderOrder_BlankingRegion", VariableType.Float, RenderOrder.BlankingRegion.toFixed(1));
   builder.addConstant("kRenderOrder_Linear", VariableType.Float, RenderOrder.Linear.toFixed(1));
   builder.addConstant("kRenderOrder_Silhouette", VariableType.Float, RenderOrder.Silhouette.toFixed(1));
   builder.addConstant("kRenderOrder_UnlitSurface", VariableType.Float, RenderOrder.UnlitSurface.toFixed(1));
