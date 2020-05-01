@@ -860,7 +860,7 @@
     },
     {
       "name": "tsconfig-paths",
-      "allowedCategories": [ "frontend", "internal", "tools" ]
+      "allowedCategories": [ "frontend", "tools" ]
     },
     {
       "name": "tslib",
@@ -932,7 +932,7 @@
     },
     {
       "name": "webpack-cli",
-      "allowedCategories": [ "frontend", "internal", "tools" ]
+      "allowedCategories": [ "frontend", "tools" ]
     },
     {
       "name": "webpack-dev-server",
