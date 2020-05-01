@@ -62,7 +62,7 @@
       "comments": {
         "none": [
           {
-            "comment": "upgrade to TypeScript 3.6.2"
+            "comment": "Upgrade to TypeScript 3.6.2"
           }
         ]
       }
@@ -113,10 +113,10 @@
             "comment": "Fixes testSuite and testName output in CSV"
           },
           {
-            "comment": "\"Adds readme to perf-tools\""
+            "comment": "Adds readme to perf-tools"
           },
           {
-            "comment": "Fixes exportCSV and renames variables\""
+            "comment": "Fixes exportCSV and renames variables"
           },
           {
             "comment": "Stringifies JSON values for info"

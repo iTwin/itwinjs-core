@@ -158,7 +158,7 @@
       "comments": {
         "none": [
           {
-            "comment": "added support for blank IModelConnections"
+            "comment": "Added support for blank IModelConnections"
           },
           {
             "comment": "Improved configurability of KeyinField."
@@ -179,10 +179,10 @@
             "comment": "Added key-in to toggle debugging tooltips."
           },
           {
-            "comment": "#168481 Tool assistance: Measure tools, view clip tools, and touch cursor inputs."
+            "comment": "Tool assistance: Measure tools, view clip tools, and touch cursor inputs."
           },
           {
-            "comment": "upgrade to TypeScript 3.6.2"
+            "comment": "Upgrade to TypeScript 3.6.2"
           },
           {
             "comment": "Fix WindowAreaTool full screen cursor. Added selected view frustum debug tool."

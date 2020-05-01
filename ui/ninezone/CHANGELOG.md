@@ -1,6 +1,6 @@
 # Change Log - @bentley/ui-ninezone
 
-This log was last generated on Wed, 04 Mar 2020 16:16:31 GMT and should not be manually modified.
+This log was last generated on Fri, 01 May 2020 15:29:29 GMT and should not be manually modified.
 
 ## 1.13.0
 Wed, 04 Mar 2020 16:16:31 GMT
@@ -39,7 +39,6 @@ Tue, 10 Dec 2019 18:08:56 GMT
 
 - Invoke onTargetChanged when component unmounts.
 - No longer accessing this.state or this.props in setState updater - flagged by lgtm report
-- Update sinon version.
 - Added support for NotifyMessageDetails.displayTime for Toast messages
 - Ability to determine available tool settings width.
 - Fix code analysis report issues.
@@ -109,7 +108,7 @@ Tue, 10 Sep 2019 12:09:49 GMT
 
 ### Updates
 
-- #165662. Allow an app to specify touch-specific instructions in tool assistance.
+- Allow an app to specify touch-specific instructions in tool assistance.
 
 ## 1.3.0
 Tue, 13 Aug 2019 20:25:53 GMT
@@ -119,7 +118,7 @@ Tue, 13 Aug 2019 20:25:53 GMT
 - Update to use latest icon library
 - Add support for BackstageComposer so Plugins can add backstage items.
 - Added CursorPrompt, improved Pointer messages
-- #159907. Fixed Group Button history is overlapping a Popup Button panel when hovering over the Group button
+- Fixed Group Button history is overlapping a Popup Button panel when hovering over the Group button
 - Updated generic icon package
 - Moved Point, PointProps, Rectangle, RectangleProps, Size and SizeProps to ui-core from ui-ninezone
 - Improved ToolAssistance item spacing. ViewSelector shows current view.
@@ -215,7 +214,7 @@ Wed, 06 Mar 2019 15:41:22 GMT
 - Added support for UI color themes
 - Display status message above status indicator popup.
 - Update to use newer generic-icons-webfont package.
-- upgrade to TypeScript 3.2.2
+- Upgrade to TypeScript 3.2.2
 
 ## 0.188.0
 Wed, 16 Jan 2019 16:36:09 GMT
@@ -367,7 +366,7 @@ Thu, 08 Nov 2018 17:59:21 GMT
 ### Updates
 
 - Updated to TypeScript 3.1
-- fixed height issues with widget content
+- Fixed height issues with widget content
 
 ## 0.163.0
 Wed, 31 Oct 2018 20:55:37 GMT

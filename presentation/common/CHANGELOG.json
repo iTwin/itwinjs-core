@@ -134,7 +134,7 @@
             "comment": "Store navigation property classes separate from related property paths"
           },
           {
-            "comment": "upgrade to TypeScript 3.6.2"
+            "comment": "Upgrade to TypeScript 3.6.2"
           }
         ]
       }
@@ -332,7 +332,7 @@
             "comment": "Expose node key type guards through index"
           },
           {
-            "comment": "upgrade to TypeScript 3.2.2"
+            "comment": "Upgrade to TypeScript 3.2.2"
           }
         ]
       }

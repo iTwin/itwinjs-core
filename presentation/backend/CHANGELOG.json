@@ -122,7 +122,7 @@
             "comment": "Added Ruleset and Ruleset variables to request options to make presentation backend stateless"
           },
           {
-            "comment": "upgrade to TypeScript 3.6.2"
+            "comment": "Upgrade to TypeScript 3.6.2"
           }
         ]
       }
@@ -215,7 +215,7 @@
             "comment": "Adds parameter for api-extractor to validate missing release tags"
           },
           {
-            "comment": "remove requirement that JavaScript classnames match BIS classnames"
+            "comment": "Remove requirement that JavaScript classnames match BIS classnames"
           },
           {
             "comment": "Fix broken links"
@@ -296,7 +296,7 @@
             "comment": "RPC Interface changes to optimize getting first page of nodes/content"
           },
           {
-            "comment": "upgrade to TypeScript 3.2.2"
+            "comment": "Upgrade to TypeScript 3.2.2"
           }
         ]
       }
@@ -344,7 +344,7 @@
       "comments": {
         "none": [
           {
-            "comment": "move to Node 10"
+            "comment": "Move to Node 10"
           }
         ]
       }
@@ -356,7 +356,7 @@
       "comments": {
         "none": [
           {
-            "comment": "move to Node 10"
+            "comment": "Move to Node 10"
           }
         ]
       }

@@ -122,7 +122,7 @@
             "comment": "Add tslint rule banning Math.hypot"
           },
           {
-            "comment": "upgrade to TypeScript 3.6.2"
+            "comment": "Upgrade to TypeScript 3.6.2"
           }
         ]
       }
@@ -209,16 +209,13 @@
             "comment": "Adds error handling in api-extractor to handle no lib folder"
           },
           {
-            "comment": "Updates api-=extractor to accept parameters for missing release tags"
-          },
-          {
-            "comment": "\"\""
+            "comment": "Updates api-extractor to accept parameters for missing release tags"
           },
           {
             "comment": "Move to @microsoft/api-extractor 7.0.35 to fix issue when reporting missing tags"
           },
           {
-            "comment": "\"Updates API extractor to v7\""
+            "comment": "Updates API extractor to v7"
           },
           {
             "comment": "Added tools/build/tslint-docs.json. Added SvgPath & SvgSprite to ui-core."
@@ -278,7 +275,7 @@
             "comment": "Changed stripInternal to false so @internal-marked symbols still put in .d.ts files"
           },
           {
-            "comment": "upgrade to TypeScript 3.2.2"
+            "comment": "Upgrade to TypeScript 3.2.2"
           }
         ]
       }
@@ -326,7 +323,7 @@
       "comments": {
         "none": [
           {
-            "comment": "added missing dependencies for tslint"
+            "comment": "Added missing dependencies for tslint"
           },
           {
             "comment": "Move to Node 10"

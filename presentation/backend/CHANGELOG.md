@@ -1,6 +1,6 @@
 # Change Log - @bentley/presentation-backend
 
-This log was last generated on Wed, 04 Mar 2020 16:16:31 GMT and should not be manually modified.
+This log was last generated on Fri, 01 May 2020 15:29:28 GMT and should not be manually modified.
 
 ## 1.13.0
 Wed, 04 Mar 2020 16:16:31 GMT
@@ -69,7 +69,7 @@ Mon, 30 Sep 2019 22:28:48 GMT
 - Add ability to force-load all hierarchy with the given imodel and ruleset
 - Add module descriptions
 - Added Ruleset and Ruleset variables to request options to make presentation backend stateless
-- upgrade to TypeScript 3.6.2
+- Upgrade to TypeScript 3.6.2
 
 ## 1.4.0
 Tue, 10 Sep 2019 12:09:49 GMT
@@ -118,7 +118,7 @@ Mon, 13 May 2019 15:52:05 GMT
 ### Updates
 
 - Adds parameter for api-extractor to validate missing release tags
-- remove requirement that JavaScript classnames match BIS classnames
+- Remove requirement that JavaScript classnames match BIS classnames
 - Fix broken links
 - Fix marshaling class instances through RPC by removing use of Readonly
 - Fix content requests for BisCore.Element instances when only the base class name is specified (usual case when selecting elements from the viewport)
@@ -151,7 +151,7 @@ Wed, 06 Mar 2019 15:41:22 GMT
 - Remove unneeded typedoc plugin dependency
 - Add hardcoded implementations for 'element', 'assembly', 'top-assembly', 'category', 'model' selection scopes
 - RPC Interface changes to optimize getting first page of nodes/content
-- upgrade to TypeScript 3.2.2
+- Upgrade to TypeScript 3.2.2
 
 ## 0.188.0
 Wed, 16 Jan 2019 16:36:09 GMT
@@ -188,14 +188,14 @@ Mon, 07 Jan 2019 13:31:34 GMT
 
 ### Updates
 
-- move to Node 10
+- Move to Node 10
 
 ## 0.181.0
 Fri, 04 Jan 2019 13:02:40 GMT
 
 ### Updates
 
-- move to Node 10
+- Move to Node 10
 
 ## 0.180.0
 Wed, 02 Jan 2019 15:18:23 GMT

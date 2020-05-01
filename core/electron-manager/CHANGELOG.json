@@ -44,7 +44,7 @@
       "comments": {
         "none": [
           {
-            "comment": "Setup OidcDesktopClient for Electron use cases. "
+            "comment": "Setup OidcDesktopClient for Electron use cases."
           },
           {
             "comment": "Switched to electron version 6.1.5 from 7.1.2"
@@ -89,7 +89,7 @@
       "comments": {
         "none": [
           {
-            "comment": "upgrade to TypeScript 3.6.2"
+            "comment": "Upgrade to TypeScript 3.6.2"
           }
         ]
       }
@@ -173,7 +173,7 @@
             "comment": "Remove unneeded typedoc plugin dependency"
           },
           {
-            "comment": "upgrade to TypeScript 3.2.2"
+            "comment": "Upgrade to TypeScript 3.2.2"
           }
         ]
       }

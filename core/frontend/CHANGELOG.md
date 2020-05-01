@@ -1,6 +1,6 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Wed, 04 Mar 2020 16:16:31 GMT and should not be manually modified.
+This log was last generated on Fri, 01 May 2020 15:29:28 GMT and should not be manually modified.
 
 ## 1.13.0
 Wed, 04 Mar 2020 16:16:31 GMT
@@ -112,16 +112,16 @@ Tue, 10 Dec 2019 18:08:56 GMT
 - Animate applying saved views
 - Code quality report fixes
 - Make iModel.js viewports adhere to DPI of a host display.
-- code cleanup from codeQL hits
+- Code cleanup from codeQL hits
 - Setup OidcDesktopClient for Electron use cases. 
 - Don't execute our event loop if there is no need
 - Fix regression causing animation to be uneven.
-- fix warnings from static analysis
+- Fix warnings from static analysis
 - Don't use map tiles until reprojection is complete.
-- #34206 Volume Clasify reality data only
+- Volume Clasify reality data only
 - Don't fade grid refs when camera is off, draw based on count. Simplify modal dialog auto close.
 - Treat half-floats and full-floats the same.
-- added WebGLDisposable interface with defined 'isDisposed' member
+- Added WebGLDisposable interface with defined 'isDisposed' member
 - Fix regression in EmphasizeElements.overrideElements() when both color and alpha are overridden.
 - Prevent touch events from firing mouse events when modal dialog is up.
 - Fix unintentional darkening of views
@@ -140,7 +140,6 @@ Fri, 22 Nov 2019 14:03:34 GMT
 - Clip low resolution terrain tiles to their displayable children ranges.
 - Fix bing tile attribution.  Optimize map reprojection.
 - Logo card link opens in a new tab/window.
-- Fix whitespace
 - Update PluginAdmin.loadPlugin to accept a plugin path with a url scheme already defined.
 - optimized ReadPixels call for when volumes classifiers are in use
 - Flashed element wasn't being cleared after a tentative.
@@ -238,14 +237,14 @@ Wed, 09 Oct 2019 20:28:42 GMT
 - Addressed memory leaks when repeatedly restarting IModelApp (typically only done in tests.)
 - Enable display of non-spatial, spatially-located models in spatial views.
 - Geometry of planar classifier models is not required to itself be planar.
-- #165461 #183765 #184303 Fixes for getting image from readMarkup
+- Fixes for getting image from readMarkup
 - Refine planar texture frustum calculation to handle parallel views.
 - Errors during shader program compilation produce exceptions.
 - Improve shadow lighting to match shadow direction
 - Fixed multiple viewport shadows
 - Refine classification frustum calculation.
 - Support transparency for terrain and planar classification.
-- #168481 Tool assistance for viewing tools. Prompt punctuation consistency.
+- Tool assistance for viewing tools. Prompt punctuation consistency.
 
 ## 1.5.0
 Mon, 30 Sep 2019 22:28:48 GMT
@@ -255,12 +254,12 @@ Mon, 30 Sep 2019 22:28:48 GMT
 - AccuDraw Popup Editors. Improved editor sizes. Editor Params improvements.
 - Support animation and classification in same tiles.
 - Always adjust y dimension for aspectRatioSkew
-- added support for blank IModelConnections
+- Added support for blank IModelConnections
 - Added Cesium ION logo; fixed exception when opening a second viewport while terrain, shadows,  or planar classification are enabled.
-- add checkbrowser.js, refine i18n in Tool
-- #168241 Don't try to correct clip plane handle location when plane has been moved outside project extents. Updated image for two finger drag svg.
+- Add checkbrowser.js, refine i18n in Tool
+- Don't try to correct clip plane handle location when plane has been moved outside project extents. Updated image for two finger drag svg.
 - Refine frustum calculation for planar projection to create a tighter fit. 
-- #136470 Added ViewManager.getElementToolTip for overriding default persistent element tooltip.
+- Added ViewManager.getElementToolTip for overriding default persistent element tooltip.
 - Various EVSM shadow tweaks
 - Fix scenario in which a tile request is canceled after its http request completes and it remains perpetually in the request queue.
 - Fixed elements failing to draw if transparency was overridden to be exactly 15.
@@ -271,7 +270,7 @@ Mon, 30 Sep 2019 22:28:48 GMT
 - Added Viewport.readImageToCanvas() to obtain viewport image as a HTMLCanvasElement with a 2d rendering context.
 - Ensure IModelApp.queryRenderCompatibility() always returns an error message if webgl context creation fails.
 - Fix failure to locate an element if it also serves as a modeled element for a sub-model.
-- #168481 Added missing iconSpec to measure and clipping tools.
+- Added missing iconSpec to measure and clipping tools.
 - Correct ViewClipByPlaneTool icon.
 - Add minArgs, maxArgs, and parseAndRun to PluginTool
 - Added ToolTipProvider interface to augment tool tips.
@@ -285,16 +284,16 @@ Mon, 30 Sep 2019 22:28:48 GMT
 - Add QuantityFormatter.onInitialized method to set up default formatting and parsing Specs. Update SetupCameraTool to use new LengthDescription (PropertyDescription)
 - Only apply pseudo-rtc workaround if no true RTC exist in GLTF
 - Performance optimization (benefits non-chromium-based browsers): Render directly to an on-screen canvas when rendering only a single viewport.
-- #168481 Select elements tool assistance. Add touch inputs, use new qualifier+button mouse inputs.
+- Select elements tool assistance. Add touch inputs, use new qualifier+button mouse inputs.
 - Fix for pinch zoom not being smooth.
 - Added facility to load plugins specified in settings at startup
 - Add ability for QuantityFormatter to generate station formatting.
 - Allow cached tiles to be used across revisions as long as the model geometry has not changed.
 - Tool Assistance changes per UX Design
-- #168481 Tool assistance: Measure tools, view clip tools, and touch cursor inputs.
+- Tool assistance: Measure tools, view clip tools, and touch cursor inputs.
 - Added touch entries to ToolAssistanceImage
 - Only force update of tool assistance for touch tap that creates the touch cursor.
-- upgrade to TypeScript 3.6.2
+- Upgrade to TypeScript 3.6.2
 - Fix WindowAreaTool full screen cursor. Added selected view frustum debug tool.
 
 ## 1.4.0
@@ -303,13 +302,13 @@ Tue, 10 Sep 2019 12:09:49 GMT
 ### Updates
 
 - Register tools for AccuDraw shortcuts to support keyboard shortcuts.
-- Partially support animation of classifiers for MicroSoft Poc.  
+- Partially support animation of classifiers for MicroSoft Poc.
 - Prevent ambient occlusion from being applied to unlit geometry.
 - Add methods for setting render schedule in display style
 - Identify classified reality data to avoid snap using classification element geometry.
 - Apply pseudo bias to batch range when tileset has huge offset.
 - Add workaround for ContextCapture tiles with large offsets.
-- load bentleyjs-core before geometry-core instead of in parallel from the IModelJsLoader script
+- Load bentleyjs-core before geometry-core instead of in parallel from the IModelJsLoader script
 - Refine tile corners on reprojection.  Fix bing HTTP request
 - Added a new component for the Poc, an icon picker.
 - Support symbology overrides with no batchId for render schedules, Plugin case fixes.
@@ -327,7 +326,7 @@ Tue, 10 Sep 2019 12:09:49 GMT
 - Clip volume applied to view also applies to reality models.
 - Added SetupCameraTool for defining camera by eye point and target point.
 - Prioritize requests for reality model tiles based on distance from camera.
-- #165662. Allow an app to specify touch-specific instructions in tool assistance.
+- Allow an app to specify touch-specific instructions in tool assistance.
 - Tweak tile priorities so that reality models don't block quicker maps and classifiers.
 - Call to pickNearestVisibleGeometry on 1st data button almost always succeeds now that acs plane is used, remove from updateTargetCenter.
 
@@ -353,7 +352,7 @@ Tue, 13 Aug 2019 20:25:53 GMT
 - Fix element locate occassionally locating transparent areas of textured surfaces.
 - Fix DecorateContext.addDecoration() ignoring view background graphic type.
 - Fix specular lighting in specific case when specular exponent is zero.
-- #151464 Improved grid display performance.
+- Improved grid display performance.
 - Don't check eyeDot in camera view.
 - Grid - fix loop test point, check spacing once when camera is off, don't fade unless decreasing.
 - Mass properties tool, report error when selection contains no valid elements for operation.
@@ -363,23 +362,23 @@ Tue, 13 Aug 2019 20:25:53 GMT
 - Plugin changes to support building to tar files and hosting by external web servers.
 - Allow defining points with `number[]` and `{x,y}` or `{x,y,z}`
 - Made onClick event handler in LinkElementInfo optional.
-- #139626 Change SelectTool to always start in pick mode, add better filter explanations.
+- Change SelectTool to always start in pick mode, add better filter explanations.
 - Add tool assistance for SelectTool.
 - Update SelectTool to set want tool setting property to true.
 - Rework map imagery and terrain tile trees to improve display fidelity during panning and zooming.
 - If a material specifies a pattern map and transparency, multiply pattern alpha by material alpha.
 - Fix a bug in which a tile request could become stuck in the "loading" state.
 - Added Tool.parseAndRun to make executing Tools from keyins easier.
-- #155077 Project point to ACS plane when zooming if an element isn't identify and no background map is displayed.
+- Project point to ACS plane when zooming if an element isn't identify and no background map is displayed.
 
 ## 1.2.0
 Wed, 24 Jul 2019 11:47:26 GMT
 
 ### Updates
 
-- added optional HTMLElement member to Marker
+- Added optional HTMLElement member to Marker
 - Product Backlog Items 148512: OidcBrowserClient can be used for authorization code workflows; Product Backlog Item 148571: Generalized OidcBrowserClient to work with Cesium and SharePoint.
-- catch load errors for Sprites
+- Catch load errors for Sprites
 - Remove colinear clip shape points. Grid spacing is a double.
 - Added tests for Spatial Classifications
 - Added TileAdmin option to disable "magnification" tile refinement strategy, which can prevent production of extraordinarily large tiles in some cases.
@@ -411,7 +410,7 @@ Mon, 01 Jul 2019 19:04:29 GMT
 - Avoid forwarding tile content request to backend if request is canceled while awaiting content from blob storage.
 - Support batch tables in 3d Tilesets.
 - Added SelectTool.processMiss method to better support clearing logical selections.
-- #128860 Clip from element change to try local range XZ or YZ when XY extents aren't valid.
+- Clip from element change to try local range XZ or YZ when XY extents aren't valid.
 - Added Viewport.onChangeView event to notify listeners when a new ViewState becomes associated with the Viewport.
 - Eliminate need to cache tool setting properties by ensuring active tool is available before activeToolChanged event is fired.
 - Removed missing group descriptions
@@ -422,22 +421,22 @@ Mon, 01 Jul 2019 19:04:29 GMT
 - Fix background map tile when child not found.
 - Fix failure to use geocoordinate system to transform map tiles.
 - Ensure new tiles are loaded when edge display is toggled.
-- fix usage of varyings
+- Fix usage of varyings
 - Fix incorrect range computation when Viewport.zoomToPlacementProps encounters a null range.
 - Added support for 'HTMLElement | string' for message strings
 - Allow index.html to set a CDN from which to load imodeljs external modules.
-- make Viewport.invaildateDecorations @beta, was @internal
-- add default unhandled exception handler to ToolAdmin
+- Make Viewport.invaildateDecorations @beta, was @internal
+- Add default unhandled exception handler to ToolAdmin
 - Added feature tracking info to UserInfo obtained by OidcBrowserClient. 
-- ensure we never have two active snap or tooltip requests
+- Ensure we never have two active snap or tooltip requests
 - Refine tile selection for map tiles
 - Prevent default symbology overrides applying to subcategories whose appearances were explicitly overridden.
 - Add option to periodically purge unused tile trees from memory.
 - Allow Viewport's readImage() method to resize images as requested.
-- Fix Bug 127182 - Force toolsettings to refresh when a tool is started even if new toolId is same as active toolId.
-- #130062 fixed skybox for extreeme otho zoomin
-- exit on uncaught exception in render loop (Electron only)
-- thumbnail size was limited to 64K
+- Force toolsettings to refresh when a tool is started even if new toolId is same as active toolId.
+- Fixed skybox for extreeme otho zoomin
+- Exit on uncaught exception in render loop (Electron only)
+- Thumbnail size was limited to 64K
 - Improve memory management for tile trees.
 - Update to TypeScript 3.5
 - A Viewport can now be instructed to load models when enabling their display.
@@ -449,9 +448,9 @@ Mon, 03 Jun 2019 18:09:39 GMT
 
 - RPC system now accepts only basic values (primitives, "interface" objects, and binary).
 - Updated release tags. 
-- added Viewport.changeViewedModel2d
+- Added Viewport.changeViewedModel2d
 - Clip shape tool should only set AccuDraw rotation on 1st point.
-- #123874 Fix a prompt. #123731 Clip from element change to ignore selection set containing clip transient.
+- Fix a prompt. Clip from element change to ignore selection set containing clip transient.
 - Combine planar classifier textures to converve texture units
 - Removed MaybeRenderApp and WebGLTestContext from tests
 - Remove unnecessary comment and initialization checks from tests
@@ -466,7 +465,7 @@ Mon, 03 Jun 2019 18:09:39 GMT
 - Allow ^ to be used to define angle degrees.
 - Downgraded certain NotificationManager methods to @beta to question styling support
 - Fix erroneous clipping of instanced geometry.
-- constructors for BeButtonEvent classes now take props argument
+- Constructors for BeButtonEvent classes now take props argument
 - Remove back face culling option due to lack of performance benefit and other observations
 - Increase precision of clipping by transforming clip planes off the GPU.
 - Change ModifyElementSource to internal.
@@ -474,7 +473,6 @@ Mon, 03 Jun 2019 18:09:39 GMT
 - Saved clip integration tests. Change view rotate wheel to only zoom about target center when displayed.
 - Support multipass rendering for planar classification for computers that down support multi-target framebuffers
 - Refactored and simplified implementation of IModelDb.open
-- 83505
 - Reduce display performance degradation when non-convex clip shapes are applied to a view.
 - Added Overflow button support
 - PropertyRecord can now optionally have `extendedData` which is a map of `any`
@@ -497,9 +495,9 @@ Mon, 03 Jun 2019 18:09:39 GMT
 - Change to the way the background map is specified, to allow overlays.
 - Introduced tile format v4.0
 - Tool writers only need AccuDrawHintBuilder, AccuDraw should be internal.
-- use HTMLElements for tooltips
+- Use HTMLElements for tooltips
 - Improve touch cursor visibility. Fix tap on canvas decoration when touch cursor is active.
-- loader finds and loads css files in production mode.
+- Loader finds and loads css files in production mode.
 
 ## 0.191.0
 Mon, 13 May 2019 15:52:05 GMT
@@ -512,7 +510,7 @@ Mon, 13 May 2019 15:52:05 GMT
 - Increase ambient light to .2
 - Adds parameter for api-extractor to validate missing release tags
 - Eliminate display performance issue caused by normal matrix computation.
-- remove requirement that JavaScript classnames match BIS classnames
+- Remove requirement that JavaScript classnames match BIS classnames
 - Reduce the number of geocoordination requests produced when loading map tiles.
 - Save ClipVector on ViewState instead of always creating new one from json.
 - Set initial GL state to match default
@@ -523,7 +521,7 @@ Mon, 13 May 2019 15:52:05 GMT
 - ConvexClipPlaneSet modify handles. Make EmphasizeElements internal.
 - ClipShape modify handles.
 - Fix clip to element tool. wip: Compute clp plane offset in world to support tool settings to enter distance.
-- #114939 Fix handle drag test. Support smart lock wth clip shape tool. Offset all clip planes w/shift.
+- Fix handle drag test. Support smart lock wth clip shape tool. Offset all clip planes w/shift.
 - View clip fixes and start of tools.
 - Fit view support for planes clip primitive. View clipping tools.
 - Fix tolerance multiplier for reality models
@@ -532,7 +530,7 @@ Mon, 13 May 2019 15:52:05 GMT
 - Added support for disabling certain capabilities for performance testing
 - Adding support for readPixels performance testing
 - Prevent tooltip from blocking tool event loop.
-- add test coverage in frontend
+- Add test coverage in frontend
 - Debug json clip plane usage.
 - ClipVector and ClipUtilities test and enhancements
 - Add backface culling feature to improve performance.
@@ -544,9 +542,8 @@ Mon, 13 May 2019 15:52:05 GMT
 - Support clipping view volume with multiple convex clipPlane sets.
 - Fix rare failure to refine tiles displayed in view resulting in missing geometry.
 - Fix display of animated edges.
-- fixes for release tags
 - When loading a perspective view, fix up potentially bad camera settings.
-- Reduce mininum front clip (Defect 103868).
+- Reduce mininum front clip.
 - Ensure webgl resources allocated by clip volumes are properly released.
 - Fix broken links
 - LoggerCategory -> FrontendLoggerCategory
@@ -558,9 +555,9 @@ Mon, 13 May 2019 15:52:05 GMT
 - Handle non-rds tile tree URLS when signed in.
 - Fix issue in which tiles of incorrect LOD would be drawn.
 - Fix issue with undo/redo view not having render materials
-- Fixes to web mercator. 
+- Fixes to web mercator.
 - Interfaces used by PropertyRecord are set to either beta or alpha as modules that use them to implement UI are not finalized.
-- eliminate depedency on JavaScript class names for EnityState subclasses
+- Eliminate depedency on JavaScript class names for EnityState subclasses
 - Add support for appending GeoJson to existing IModel
 - Use default background map type if an invalid type is specified in JSON.
 - Ensure queries for large numbers of subcategories are paged appropriately.
@@ -568,25 +565,25 @@ Mon, 13 May 2019 15:52:05 GMT
 - Only use instancing optimization if the system supports instancing.
 - update Sprite after it is loaded
 - Introduce LoggerCategory enum to advertise logger categories used by this package.
-- Logging fixes. 
+- Logging fixes.
 - Put sourcemap in npm package.
-- documentation cleanup
-- add SVG to ImageSourceFormat
-- add imodeljs-markup
-- added vpDiv between parent and canvas
+- Documentation cleanup
+- Add SVG to ImageSourceFormat
+- Add imodeljs-markup
+- Added vpDiv between parent and canvas
 - Allow a view's extent limits to be overridden.
-- #108055 Update measure distance tooltip on click. Improve total distance visibility.
+- Update measure distance tooltip on click. Improve total distance visibility.
 - Add alpha tags to PropertyEditorParams interfaces that are not ready for public use.
 - Improved performance of multipass rendering
-- #96348 Improve default rotate point for navigation cube
-- Fixes to OidcBrowserClient. 
+- Improve default rotate point for navigation cube
+- Fixes to OidcBrowserClient.
 - Optimize frontend renderer's performance by minimizing allocations of float arrays passed to the GPU.
 - Add more discrete, efficient Viewport synchronization events.
 - Added the ability to override category visibility on a per-model basis.
 - Rework projection of planar classifiers
 - Refactor classification  rename to SpatialClassification
 - Remove "assembly lock" from SelectTool now that SelectionScope has been implemented.
-- remove IModelApp subclasses
+- Remove IModelApp subclasses
 - Remove IModelConnection.openStandalone and IModelConnection.closeStandalone
 - Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization. 
 - Allow tile content to be requested without edge data, reducing tile size and download time.
@@ -599,20 +596,20 @@ Mon, 13 May 2019 15:52:05 GMT
 - Refactor solar shadow settings - make these 3d only.
 - Support solar shadow display.
 - Make sky sphere / sky gradient use separate rendering primitive from sky cube.
-- don't draw Sprite before it is loaded
+- Don't draw Sprite before it is loaded
 - Unit tests and fixed ColorEditor alignment
 - Fix errors on Linux caused by case-sensitivity and shader optimizations.
 - Upgrade TypeDoc dependency to 0.14.2
 - Update the primitive types to be within a Primitives namespace.
-- allow IModelApp subclass to override applicationId & applicationVersion
-- revert static inheritance in IModelApp.ts
-- wrap applicationId & applicationVersion in IModelApp
+- Allow IModelApp subclass to override applicationId & applicationVersion
+- Revert static inheritance in IModelApp.ts
+- Wrap applicationId & applicationVersion in IModelApp
 - Changes to build process to put all JavaScript files in version-specific subdirectories to avoid browser caching problems when deploying new versions.
-- view undo only saves changes to ViewState, not categories, models, or diplayStyle
+- View undo only saves changes to ViewState, not categories, models, or diplayStyle
 - Clip tool changes now that undo/redo does not affect clipping. Right-click menu support for clip handles.
-- only save viewing volume for view undo rather than cloning ViewState
+- Only save viewing volume for view undo rather than cloning ViewState
 - Tools to create and modify view clip.
-- VSTS#114189 Reality data shown as Model and picker
+- Reality data shown as Model and picker
 - World decorations ignore symbology overrides defined for the view.
 
 ## 0.190.0
@@ -621,11 +618,11 @@ Thu, 14 Mar 2019 14:26:49 GMT
 ### Updates
 
 - Add ColorEditor to list of available Type Editors including new ColorParams to specify set of colors.
-- #73219 FitViewTool enhancement to fit to isolated elements or clip volume.
+- FitViewTool enhancement to fit to isolated elements or clip volume.
 - Supply additional statistics for monitoring tile requests.
 - Resolve transparency rendering error in multi-pass compositor due to way textures are bound.
 - Cleaned up documentation related to the display system.
-- use bubble-up for keyboard events
+- Use bubble-up for keyboard events
 - Plugin Enhancements
 - Documentation for Skybox
 - Added vertex handles for line/arrow markup.
@@ -635,14 +632,14 @@ Wed, 06 Mar 2019 15:41:22 GMT
 
 ### Updates
 
-- add ios oidc client
+- Add ios oidc client
 - geometry-core camel case
 - Add Selection Scope toolsettings to SelectTool.
-- allow subclasses of Range to use static methods
+- Allow subclasses of Range to use static methods
 - Raise events when a Viewport's always- or never-drawn element sets change.
 - OIDC changes needed for Angular client
 - Changes package.json to include api-extractor and adds api-extractor.json
-- #66826 Default SelectTool to select all members of the selected element's assembly.
+- Default SelectTool to select all members of the selected element's assembly.
 - Default scope to element.
 - Use new buildIModelJsBuild script
 - Generalize support for reading tiles to include tiles generated for Bimium.
@@ -659,7 +656,7 @@ Wed, 06 Mar 2019 15:41:22 GMT
 - Add support for Draco compressed meshes
 - Change drag select to exclude non locatable
 - noMotion doesn't need to call beginDynamicUpdate
-- example code (in comments) for frustum interpolator
+- Example code (in comments) for frustum interpolator
 - Consistent naming of "get" methods in Growable arrays.
 - Add EmphasizeElements to/from wire format methods
 - Draw non-emphasized elements in "fade-out", non-locatable mode.
@@ -667,7 +664,7 @@ Wed, 06 Mar 2019 15:41:22 GMT
 - Rework and simplify ecef transform for reality models.
 - Correct ID for loading classifier trees.
 - Fix clipping volume being inconsistently applied to view.
-- Dont make textures transparent unless technique enables it.
+- Don't make textures transparent unless technique enables it.
 - Fix incorrect "fit view" behavior when empty tiles exist.
 - Handle relative subpaths in reality model tile trees.  Handle Y for axis/ 
 - Fix handling of null animation visibility - should be 100% not 0.
@@ -681,19 +678,18 @@ Wed, 06 Mar 2019 15:41:22 GMT
 - Preliminary support for drawing instanced geometry.
 - Fix branch transform for animation correctly - back out incorrect fix to BranchState.
 - Implemented, then commented out, doing jpeg decompression in a web worker
-- added markup mode
-- events are now on ScreenViewport.parentDiv rather than canvas
-- update for geometry GrowableXYArray usage.
+- Added markup mode
+- Events are now on ScreenViewport.parentDiv rather than canvas
+- Update for geometry GrowableXYArray usage.
 - Measure Distance - change selected segment hilite. Measure Location - WIP use ecef transform.
-- More ui-framework unit tests
 - Make it possible to define editor params for default Type Editors not explicitly specified by name.
 - Fixed a bug which caused non-locatable geometry to be rendered when no other symbology was overridden.
 - Defer loading of edges until needed
 - Omit animation branches that are not visible.
 - Improve efficiency and completeness of SubCategory loading for ViewStates.
 - Save BUILD_SEMVER to globally accessible map. PluginAdmin and Plugin classes defined. IModelJsLoader improved.
-- add optional iModel argument to EntityState.clone 
-- added GeometricModelState.queryModelRange
+- Add optional iModel argument to EntityState.clone 
+- Added GeometricModelState.queryModelRange
 - Added creatorId, new method to list RD per project, identified numerous area for changes WIP
 - IModelConnection.close() always disposes the briefcase held at the backend in the case of ReadWrite connections. 
 - Implemented spatial criterai when searching through all reality data associated to a project.
@@ -704,14 +700,14 @@ Wed, 06 Mar 2019 15:41:22 GMT
 - Retry tile requests on time-out.
 - Remove loadNativeAsset and formatElements RPC calls from the IModelReadRpcInterface
 - Removed IModelConnection.connectionId, added IModelApp.sessionId
-- make view transition animations smoother
+- Make view transition animations smoother
 - Optimizations to tile format and schedule animation.
 - Tile requests can optionally specify a retryInterval.
--  Cleanup of DefaultToolSetting provider and EnumButtonGroup editor including new EditorParams.
+- Cleanup of DefaultToolSetting provider and EnumButtonGroup editor including new EditorParams.
 - Move property definitions to imodeljs-frontend so they could be used by tools to define properties for tool settings. Add toolsettings to Select Tool.
 - Added a new property to PropertyRecord - links.
 - IModelConnection.connectionTimeout is public to allow application customization.
-- upgrade to TypeScript 3.2.2
+- Upgrade to TypeScript 3.2.2
 
 ## 0.188.0
 Wed, 16 Jan 2019 16:36:09 GMT
@@ -794,13 +790,12 @@ Wed, 02 Jan 2019 15:18:23 GMT
 
 - Allow the maximum number of active tile requests to be modified at run-time.
 - Fix excessive memory consumption by polyline graphics.
-- merge
 - Enable path interpolation
 - Enable schedule animation
-- if view delta is too large or small, set it to max/min rather than aborting viewing operations.
+- If view delta is too large or small, set it to max/min rather than aborting viewing operations.
 - Fix transform order when pushing branch.
 - Implement quaternion interpolation for Synchro schedule animation
-- remove trash files
+- Remove trash files
 - Add batch feature overrides to optimize schedule animation.
 - Prioritize tile requests based on tile type and depth.
 - Improve performance by limiting the number of simultaneously-active tile requests.
@@ -834,7 +829,7 @@ Wed, 12 Dec 2018 17:21:31 GMT
 
 - Added TwoWayViewportSync class to connect two Viewports so that changes to one are reflected in the other.
 - Renamed ViewStateData to ViewStateProps and ViewState.createFromStateData to ViewState.createFromProps.
-- turn off locate circle when mouse leaves a view
+- Turn off locate circle when mouse leaves a view
 
 ## 0.176.0
 Mon, 10 Dec 2018 21:19:45 GMT
@@ -851,7 +846,7 @@ Mon, 10 Dec 2018 17:08:55 GMT
 
 ### Updates
 
-- route map tiles over https
+- Route map tiles over https
 
 ## 0.174.0
 Mon, 10 Dec 2018 13:24:09 GMT
@@ -865,12 +860,9 @@ Thu, 06 Dec 2018 22:03:29 GMT
 
 ### Updates
 
-- map api cors fix
+- Map api cors fix
 - Fix failure to display Bing maps logo.
 - Fix "maximum window" error when viewing large drawings.
-- enable tslint rules for asyncs
-- T
-- Custom imodelJs noDirectImport lint rule implemented, noDuplicateImport lint rule turned on.
 
 ## 0.172.0
 Tue, 04 Dec 2018 17:24:39 GMT
@@ -885,8 +877,6 @@ Mon, 03 Dec 2018 18:52:58 GMT
 ### Updates
 
 - WIP: add support for schedule animation (symbology).
-- geometry coverage
-- geometry coverage
 - Fix incorrect length used to create Uint32Array from Uint8Array.
 - Fix incorrect display of raster text.
 - Fix bug in which the frustum of a spatial view was always expanded to include the ground plane even if the ground plane was not displayed.
@@ -953,7 +943,6 @@ Thu, 08 Nov 2018 17:59:20 GMT
 - Fix links in tool docs
 - Added an option to Viewport.readImage() to flip the resultant image vertically.
 - PrimitiveTool isValidLocation shouldn't require write, want check for measure tools too
-- Add Comments
 - Updated to TypeScript 3.1
 
 ## 0.163.0

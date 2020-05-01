@@ -1,6 +1,6 @@
 # Change Log - @bentley/bentleyjs-core
 
-This log was last generated on Wed, 04 Mar 2020 16:16:31 GMT and should not be manually modified.
+This log was last generated on Fri, 01 May 2020 15:29:28 GMT and should not be manually modified.
 
 ## 1.13.0
 Wed, 04 Mar 2020 16:16:31 GMT
@@ -34,7 +34,7 @@ Tue, 10 Dec 2019 18:08:56 GMT
 
 - Setup OidcDesktopClient for Electron use cases. 
 - Added non-static wait and executeAfter to BeDuration
-- fix warnings from static analysis
+- Fix warnings from static analysis
 - Added `BeDuration.race` for common timeout operations.
 
 ## 1.8.0
@@ -84,7 +84,7 @@ Mon, 01 Jul 2019 19:04:29 GMT
 
 ### Updates
 
-- added OneAtATimeActivity class
+- Added OneAtATimeActivity class
 - Introduced AsyncMutex - a utility to run async blocks of code in sequence. 
 - Update to TypeScript 3.5
 
@@ -94,11 +94,11 @@ Mon, 03 Jun 2019 18:09:39 GMT
 ### Updates
 
 - RPC system now accepts only basic values (primitives, "interface" objects, and binary).
-- added Id64.getFirst to get the first value of an Id64Arg
+- Added Id64.getFirst to get the first value of an Id64Arg
 - Added an error for seed file initialization timeout
 - Switched from iModelHub Project API to Context API
 - Refactored and simplified implementation of IModelDb.open
-- add property accessor for empty Guid
+- Add property accessor for empty Guid
 
 ## 0.191.0
 Mon, 13 May 2019 15:52:05 GMT
@@ -110,7 +110,7 @@ Mon, 13 May 2019 15:52:05 GMT
 - Fix broken links
 - LoggerCategory -> BentleyLoggerCategory
 - Logged the fields in ClientRequestContext
-- Logging fixes. 
+- Logging fixes.
 - Put sourcemap in npm package.
 - Fixed logger to not mutate incoming objects. 
 - Improved performance logging
@@ -134,7 +134,7 @@ Wed, 06 Mar 2019 15:41:22 GMT
 - Add release tags to indicate API stability
 - Remove unneeded typedoc plugin dependency
 - Save BUILD_SEMVER to globally accessible map
-- upgrade to TypeScript 3.2.2
+- Upgrade to TypeScript 3.2.2
 
 ## 0.188.0
 Wed, 16 Jan 2019 16:36:09 GMT
@@ -258,7 +258,7 @@ Fri, 16 Nov 2018 21:45:44 GMT
 
 ### Updates
 
-- changes to debug utilities. 
+- Changes to debug utilities. 
 - Fluentd Bunnyan Logger added
 
 ## 0.166.0

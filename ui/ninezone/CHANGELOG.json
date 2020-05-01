@@ -68,9 +68,6 @@
             "comment": "No longer accessing this.state or this.props in setState updater - flagged by lgtm report"
           },
           {
-            "comment": "Update sinon version."
-          },
-          {
             "comment": "Added support for NotifyMessageDetails.displayTime for Toast messages"
           },
           {
@@ -233,7 +230,7 @@
       "comments": {
         "none": [
           {
-            "comment": "#165662. Allow an app to specify touch-specific instructions in tool assistance."
+            "comment": "Allow an app to specify touch-specific instructions in tool assistance."
           }
         ]
       }
@@ -254,7 +251,7 @@
             "comment": "Added CursorPrompt, improved Pointer messages"
           },
           {
-            "comment": "#159907. Fixed Group Button history is overlapping a Popup Button panel when hovering over the Group button"
+            "comment": "Fixed Group Button history is overlapping a Popup Button panel when hovering over the Group button"
           },
           {
             "comment": "Updated generic icon package"
@@ -488,7 +485,7 @@
             "comment": "Update to use newer generic-icons-webfont package."
           },
           {
-            "comment": "upgrade to TypeScript 3.2.2"
+            "comment": "Upgrade to TypeScript 3.2.2"
           }
         ]
       }
@@ -719,7 +716,7 @@
             "comment": "Updated to TypeScript 3.1"
           },
           {
-            "comment": "fixed height issues with widget content"
+            "comment": "Fixed height issues with widget content"
           }
         ]
       }

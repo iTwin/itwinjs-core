@@ -74,7 +74,7 @@
       "comments": {
         "none": [
           {
-            "comment": "upgrade to TypeScript 3.6.2"
+            "comment": "Upgrade to TypeScript 3.6.2"
           }
         ]
       }
@@ -119,7 +119,7 @@
             "comment": "Update to puppeteer 1.13.0 (current chrome-stable)"
           },
           {
-            "comment": "Fixed frontend debugging issues.  "
+            "comment": "Fixed frontend debugging issues."
           }
         ]
       }
@@ -131,7 +131,7 @@
       "comments": {
         "none": [
           {
-            "comment": "\"Adds copyright header to readme\""
+            "comment": "Adds copyright header to readme"
           },
           {
             "comment": "Update the version of nyc to 14.0.0"

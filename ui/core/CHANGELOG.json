@@ -191,7 +191,7 @@
             "comment": "Tool Assistance changes per UX Design"
           },
           {
-            "comment": "upgrade to TypeScript 3.6.2"
+            "comment": "Upgrade to TypeScript 3.6.2"
           }
         ]
       }
@@ -221,7 +221,7 @@
             "comment": "Fixed new lint issue in getDisplayName"
           },
           {
-            "comment": "#165662. Allow an app to specify touch-specific instructions in tool assistance."
+            "comment": "Allow an app to specify touch-specific instructions in tool assistance."
           },
           {
             "comment": "Add a `ScrollPositionMaintainer` helper to recursively save and restore scroll position"
@@ -281,7 +281,7 @@
             "comment": "Remove flex-grow from dialog containers - not supported by Firefox"
           },
           {
-            "comment": "removed flex-grow from dialogs"
+            "comment": "Removed flex-grow from dialogs"
           },
           {
             "comment": "Add missing space in scss files."
@@ -317,7 +317,7 @@
       "comments": {
         "none": [
           {
-            "comment": "#137898 - It is not possible to turn on/off checkbox by clicking on label"
+            "comment": "It is not possible to turn on/off checkbox by clicking on label"
           },
           {
             "comment": "Added prefixes to Dialog & ContextMenu to CSS classes for positioning"
@@ -336,12 +336,6 @@
           },
           {
             "comment": "Update to TypeScript 3.5"
-          },
-          {
-            "comment": "ui-core unit tests"
-          },
-          {
-            "comment": "ui-core unit tests"
           },
           {
             "comment": "ui-component unit tests. NumericInput strict=true default."
@@ -602,7 +596,7 @@
             "comment": "Update to use newer generic-icons-webfont package."
           },
           {
-            "comment": "upgrade to TypeScript 3.2.2"
+            "comment": "Upgrade to TypeScript 3.2.2"
           }
         ]
       }
@@ -780,9 +774,6 @@
           },
           {
             "comment": "Added Omit type definition to Utils."
-          },
-          {
-            "comment": "Unit tests"
           },
           {
             "comment": "Removed ConfigurableUiManager.addFrontstageDef and other unused/old methods and components"

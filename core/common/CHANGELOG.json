@@ -116,7 +116,7 @@
             "comment": "Code quality report fixes"
           },
           {
-            "comment": "fix warnings from static analysis"
+            "comment": "Fix warnings from static analysis"
           },
           {
             "comment": "Add PropertyMetaData.isNavigation"
@@ -149,7 +149,7 @@
             "comment": "Change SectionLocationProps.clipGeometry type to string. Add get/set ClipVector methods on SectionLocation."
           },
           {
-            "comment": "mark bias as alpha"
+            "comment": "Mark bias as alpha"
           },
           {
             "comment": "Update to allow Node 12"
@@ -245,10 +245,10 @@
       "comments": {
         "none": [
           {
-            "comment": "added support for blank IModelConnections"
+            "comment": "Added support for blank IModelConnections"
           },
           {
-            "comment": "Fixed reporting of errors when the ClientRequestContext is established at the backend. "
+            "comment": "Fixed reporting of errors when the ClientRequestContext is established at the backend."
           },
           {
             "comment": "Add DisplayStyleSettings.subCategoryOverrides"
@@ -266,7 +266,7 @@
             "comment": "Refine planar projection frustum calculation"
           },
           {
-            "comment": "upgrade to TypeScript 3.6.2"
+            "comment": "Upgrade to TypeScript 3.6.2"
           }
         ]
       }
@@ -281,10 +281,10 @@
             "comment": "Add documentation for RenderSchedule"
           },
           {
-            "comment": "fix casing of displayStyle.contextRealityModels"
+            "comment": "Fix casing of displayStyle.contextRealityModels"
           },
           {
-            "comment": "Fixed reporting of errors when the ClientRequestContext is established at the backend. "
+            "comment": "Fixed reporting of errors when the ClientRequestContext is established at the backend."
           },
           {
             "comment": "Electron IPC transport fix for large messages."
@@ -446,10 +446,10 @@
             "comment": "Put sourcemap in npm package."
           },
           {
-            "comment": "add SVG to ImageSourceFormat"
+            "comment": "Add SVG to ImageSourceFormat"
           },
           {
-            "comment": "add imodeljs-markup"
+            "comment": "Add imodeljs-markup"
           },
           {
             "comment": "New tile cache naming scheme."
@@ -485,7 +485,7 @@
             "comment": "Upgrade TypeDoc dependency to 0.14.2"
           },
           {
-            "comment": "only save viewing volume for view undo rather than cloning ViewState"
+            "comment": "Only save viewing volume for view undo rather than cloning ViewState"
           }
         ]
       }
@@ -515,10 +515,10 @@
       "comments": {
         "none": [
           {
-            "comment": "allow to check if frontend is ios wkwebview"
+            "comment": "Allow to check if frontend is ios wkwebview"
           },
           {
-            "comment": "allow subclasses of Range to use static methods"
+            "comment": "Allow subclasses of Range to use static methods"
           },
           {
             "comment": "Changes package.json to include api-extractor and adds api-extractor.json"
@@ -593,7 +593,7 @@
             "comment": "Tile requests can optionally specify a retryInterval."
           },
           {
-            "comment": "upgrade to TypeScript 3.2.2"
+            "comment": "Upgrade to TypeScript 3.2.2"
           }
         ]
       }
@@ -608,7 +608,7 @@
             "comment": "Changed Elements Db support for addon changes and generating the changed elements cache. Added WipRpcInterface methods to get changed elements list and check if a changeset is processed in the cache. Bumped WipRpcInterface version. Integration tests for changed elements db."
           },
           {
-            "comment": "Fix error in semver parsing.\""
+            "comment": "Fix error in semver parsing."
           }
         ]
       }
@@ -626,10 +626,10 @@
       "comments": {
         "none": [
           {
-            "comment": "Removed IModelDb's cache of accessToken. For long running operations like AutoPush, the user must explicitly supply an IAccessTokenManager to keep the token current. "
+            "comment": "Removed IModelDb's cache of accessToken. For long running operations like AutoPush, the user must explicitly supply an IAccessTokenManager to keep the token current."
           },
           {
-            "comment": "Add TextureProps for use by new backend Texture API"
+            "comment": "Add TextureProps for use by new backend Texture API."
           }
         ]
       }
@@ -647,7 +647,7 @@
       "comments": {
         "none": [
           {
-            "comment": "Add support for general 3d tilesets"
+            "comment": "Add support for general 3d tilesets."
           },
           {
             "comment": "Fix drag select decorator when cursor moves out of view. Doc fixes."
@@ -665,7 +665,7 @@
             "comment": "Add ambient occlusion structures."
           },
           {
-            "comment": "Change iModelReadRpcInterface' version because Geocoordinate calculation methods added."
+            "comment": "Change iModelReadRpcInterface version because Geocoordinate calculation methods added."
           }
         ]
       }
@@ -688,9 +688,6 @@
       "date": "Wed, 02 Jan 2019 15:18:23 GMT",
       "comments": {
         "none": [
-          {
-            "comment": "merge"
-          },
           {
             "comment": "Do not send X-Application-Version header if empty."
           },

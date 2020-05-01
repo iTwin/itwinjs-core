@@ -113,7 +113,7 @@
             "comment": "Added Ruleset and Ruleset variables to request options to support stateless presentation backend"
           },
           {
-            "comment": "upgrade to TypeScript 3.6.2"
+            "comment": "Upgrade to TypeScript 3.6.2"
           }
         ]
       }
@@ -227,7 +227,7 @@
             "comment": "Always compute selection when syncing tool selection with logical selection - that's necessary to determine concrete element class names. Without that, we're adding keys with \"BisCore:Element\" class to selection and then our keys compare fails (presentation components like the table always have concrete class names). This can cause rows / nodes not to be highlighted in components."
           },
           {
-            "comment": "remove IModelApp subclasses"
+            "comment": "Remove IModelApp subclasses"
           },
           {
             "comment": "Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization. "
@@ -278,7 +278,7 @@
             "comment": "RPC Interface changes to optimize getting first page of nodes/content"
           },
           {
-            "comment": "upgrade to TypeScript 3.2.2"
+            "comment": "Upgrade to TypeScript 3.2.2"
           }
         ]
       }

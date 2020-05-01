@@ -83,7 +83,7 @@
             "comment": "Add module descriptions"
           },
           {
-            "comment": "upgrade to TypeScript 3.6.2"
+            "comment": "Upgrade to TypeScript 3.6.2"
           }
         ]
       }
@@ -143,7 +143,7 @@
             "comment": "Fix tests initializer randomly failing with a file lock error"
           },
           {
-            "comment": "remove IModelApp subclasses"
+            "comment": "Remove IModelApp subclasses"
           },
           {
             "comment": "Upgrade TypeDoc dependency to 0.14.2"
@@ -173,7 +173,7 @@
             "comment": "Move property definitions to imodeljs-frontend so they could be used by tools to define properties for tool settings."
           },
           {
-            "comment": "upgrade to TypeScript 3.2.2"
+            "comment": "Upgrade to TypeScript 3.2.2"
           }
         ]
       }

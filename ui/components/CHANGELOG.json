@@ -290,13 +290,13 @@
             "comment": "Tool Assistance changes per UX Design"
           },
           {
-            "comment": "Joe G required the tree (empty data) be more descriptive and generic."
+            "comment": "Update the tree (empty data) be more descriptive and generic."
           },
           {
             "comment": "In the Model/Category/Spatial trees, center the error message"
           },
           {
-            "comment": "upgrade to TypeScript 3.6.2"
+            "comment": "Upgrade to TypeScript 3.6.2"
           },
           {
             "comment": "Fixed signature of BreadcrumbTreeUtils.aliasNodeListToTableDataProvider for consistent extract-api treatment"
@@ -359,7 +359,7 @@
             "comment": "Added CursorPrompt, improved Pointer messages"
           },
           {
-            "comment": "explicitly set margin for button groups to avoid bleed over from BWC styles."
+            "comment": "Explicitly set margin for button groups to avoid bleed over from BWC styles."
           },
           {
             "comment": "After canceling (clearing) search, set focus back to input field."
@@ -485,9 +485,6 @@
             "comment": "Tree: Fix child node checkbox events affecting parent node's checkbox state"
           },
           {
-            "comment": "Improve test coverage."
-          },
-          {
             "comment": "ui-component unit tests. NumericInput strict=true default."
           }
         ]
@@ -554,7 +551,7 @@
             "comment": "@beta tags for Toolbar. More React.PureComponent usage. Added constructors to prevent deprecated warnings. Coverage minimum thresholds."
           },
           {
-            "comment": "#84584 Add support for a view overlay component. This will provide ability to show animation timeline control in viewport."
+            "comment": "Add support for a view overlay component. This will provide ability to show animation timeline control in viewport."
           },
           {
             "comment": "Update Timeline interfaces."
@@ -602,7 +599,7 @@
             "comment": "Locked react-data-grid at 6.0.1 and @types/react-data-grid at 4.0.2"
           },
           {
-            "comment": "#96348 Improve default rotate point for navigation cube"
+            "comment": "Improve default rotate point for navigation cube"
           },
           {
             "comment": "Fix to SignIn constructor in ui-components"
@@ -746,7 +743,7 @@
             "comment": "Changed CellItem interface property - 'alignment' type to be a restricted string instead of an enum."
           },
           {
-            "comment": " Cleanup of DefaultToolSetting provider and EnumButtonGroup editor"
+            "comment": "Cleanup of DefaultToolSetting provider and EnumButtonGroup editor"
           },
           {
             "comment": "Add EnumButtonGroupEditor."
@@ -893,7 +890,7 @@
             "comment": "Changed property pane css."
           },
           {
-            "comment": " Changed how vertical PropertyPane looks."
+            "comment": "Changed how vertical PropertyPane looks."
           },
           {
             "comment": "Fix BeInspireTree's render suspension not being consistent in some cases"
@@ -1080,9 +1077,6 @@
           },
           {
             "comment": "Enabled table to contain popups and dialog and slightly cleaned up it's CSS."
-          },
-          {
-            "comment": "Unit tests"
           },
           {
             "comment": "Removed ConfigurableUiManager.addFrontstageDef and other unused/old methods and components"

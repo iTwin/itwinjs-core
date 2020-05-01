@@ -359,7 +359,7 @@
             "comment": "Fixed Frontstage resizing problem exposed by Chrome update"
           },
           {
-            "comment": "#168241 Don't try to correct clip plane handle location when plane has been moved outside project extents. Updated image for two finger drag svg."
+            "comment": "Don't try to correct clip plane handle location when plane has been moved outside project extents. Updated image for two finger drag svg."
           },
           {
             "comment": "Changed ToolWidget, NavigatonWidget, and Toolbar render method to only render items in state and to not generate them during render."
@@ -398,19 +398,19 @@
             "comment": "Fixed ToolAssistanceField pin problem"
           },
           {
-            "comment": "#168481 Tool assistance: Measure tools, view clip tools, and touch cursor inputs."
+            "comment": "Tool assistance: Measure tools, view clip tools, and touch cursor inputs."
           },
           {
             "comment": "Added touch entries to ToolAssistanceImage"
           },
           {
-            "comment": "Joe G required the tree (empty data) be more descriptive and generic."
+            "comment": "Update the tree (empty data) be more descriptive and generic."
           },
           {
             "comment": "In the Model/Category/Spatial trees, center the error message"
           },
           {
-            "comment": "upgrade to TypeScript 3.6.2"
+            "comment": "Upgrade to TypeScript 3.6.2"
           },
           {
             "comment": "Ability to collapse stage panel using StagePanelDef."
@@ -452,7 +452,7 @@
             "comment": "Had to back up to react-split-pane 0.1.77"
           },
           {
-            "comment": "#165662. Allow an app to specify touch-specific instructions in tool assistance."
+            "comment": "Allow an app to specify touch-specific instructions in tool assistance."
           },
           {
             "comment": "Visibility Component: Preserve active tree state by saving and restoring scroll position"
@@ -494,7 +494,7 @@
             "comment": "Added @bentley/icons-generic to dependencies which was wrongly set in devDependencies."
           },
           {
-            "comment": "#159907. Fixed Group Button history is overlapping a Popup Button panel when hovering over the Group button"
+            "comment": "Fixed Group Button history is overlapping a Popup Button panel when hovering over the Group button"
           },
           {
             "comment": "Allow enter key in arguments field of keyin browser to trigger command execution. Select text on focus in to allow easy argument replacement"
@@ -566,7 +566,7 @@
             "comment": "Add support for GroupItemInsertSpec, badges, and svg symbolId in ToolbarItemInsertSpecs"
           },
           {
-            "comment": "Bug 148507: Removed redundant call to OidcClient.initialize in UiFramework."
+            "comment": "Removed redundant call to OidcClient.initialize in UiFramework."
           },
           {
             "comment": "Add PluginUiManager class and PluginUiProvider interface that will be used by Plugins to specify UI components to add to an iModeljs application."
@@ -596,7 +596,7 @@
             "comment": "Ability to close Panel of PopupButton."
           },
           {
-            "comment": "remove node selection logic from model Tree"
+            "comment": "Remove node selection logic from model Tree"
           },
           {
             "comment": "Convert Widget, Zone and StagePanel components to PureComponents."
@@ -644,9 +644,6 @@
             "comment": "Fixed Minimum/Maximum window toast message spam"
           },
           {
-            "comment": "Update tests."
-          },
-          {
             "comment": "Fixed ActionButtonItemDef random key unit test"
           },
           {
@@ -656,13 +653,13 @@
             "comment": "Save & Restore View Layouts"
           },
           {
-            "comment": "Fix Bug 127182 - Force toolsettings to refresh when a tool is started even if new toolId is same as active toolId."
+            "comment": "Force toolsettings to refresh when a tool is started even if new toolId is same as active toolId."
           },
           {
             "comment": "Added *.svg to .npmignore file"
           },
           {
-            "comment": "#137311 - Fix issue where cached tool settings values in UI would get out of sync with actual values in tool."
+            "comment": "Fix issue where cached tool settings values in UI would get out of sync with actual values in tool."
           },
           {
             "comment": "Update to TypeScript 3.5"
@@ -779,7 +776,7 @@
             "comment": "Visibility Tree: Enable all subcategories' display when making category visible"
           },
           {
-            "comment": "#124300. Add a notification event when a view is chosen in ViewSelector. #124295. ViewSelector incorrectly handles the case when a selected view has not initialized with a viewport."
+            "comment": "Add a notification event when a view is chosen in ViewSelector. #124295. ViewSelector incorrectly handles the case when a selected view has not initialized with a viewport."
           },
           {
             "comment": "Added ViewSelectorChangedEvent"
@@ -866,7 +863,7 @@
             "comment": "Fixed navigation aid bugs"
           },
           {
-            "comment": "Fixes to OidcBrowserClient. "
+            "comment": "Fixes to OidcBrowserClient."
           },
           {
             "comment": "Added SignIn presentational component to ui-components. Removed --ignoreMissingTags extract-api option."
@@ -875,7 +872,7 @@
             "comment": "Require React & React-dom 16.8"
           },
           {
-            "comment": "remove IModelApp subclasses"
+            "comment": "Remove IModelApp subclasses"
           },
           {
             "comment": "Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization. "
@@ -1142,7 +1139,7 @@
             "comment": "Update to use newer generic-icons-webfont package."
           },
           {
-            "comment": "upgrade to TypeScript 3.2.2"
+            "comment": "Upgrade to TypeScript 3.2.2"
           },
           {
             "comment": "WIP: ViewportComponent unit tests. Removed imodeljs-clients-backend dependency from ui-framework"
@@ -1352,10 +1349,7 @@
       "comments": {
         "none": [
           {
-            "comment": "More information logged from BriefcaseManager.\\nFixed deletion/cleanup of invalid briefcases.\\nAdded OIDC support for simpleviewtest application. "
-          },
-          {
-            "comment": "Unit tests"
+            "comment": "More information logged from BriefcaseManager.\\nFixed deletion/cleanup of invalid briefcases.\\nAdded OIDC support for simpleviewtest application."
           },
           {
             "comment": "Removed ConfigurableUiManager.addFrontstageDef and other unused/old methods and components"
@@ -1370,7 +1364,7 @@
       "comments": {
         "none": [
           {
-            "comment": "Fix to OIDC browser client. "
+            "comment": "Fix to OIDC browser client."
           }
         ]
       }
@@ -1416,9 +1410,6 @@
           },
           {
             "comment": "Hiding items by rendering them conditionally instead of using a CSS class."
-          },
-          {
-            "comment": "Fixed tests"
           },
           {
             "comment": "Tree cell editing unit tests"

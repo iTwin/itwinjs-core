@@ -1,6 +1,6 @@
 # Change Log - @bentley/ui-components
 
-This log was last generated on Wed, 04 Mar 2020 16:16:31 GMT and should not be manually modified.
+This log was last generated on Fri, 01 May 2020 15:29:28 GMT and should not be manually modified.
 
 ## 1.13.0
 Wed, 04 Mar 2020 16:16:31 GMT
@@ -125,9 +125,9 @@ Mon, 30 Sep 2019 22:28:48 GMT
 - Ability to Scroll to Table row via scrollToRow Prop
 - Add alwaysMinimized prop to TimelineComponent.
 - Tool Assistance changes per UX Design
-- Joe G required the tree (empty data) be more descriptive and generic.
+- Update the tree (empty data) be more descriptive and generic.
 - In the Model/Category/Spatial trees, center the error message
-- upgrade to TypeScript 3.6.2
+- Upgrade to TypeScript 3.6.2
 - Fixed signature of BreadcrumbTreeUtils.aliasNodeListToTableDataProvider for consistent extract-api treatment
 - Tree: Clear page caches when reloading tree data
 - this.props.viewportRef(this._vp); callback moved to the end of async componentDidMount(); Additional check if (!this._mounted) after await
@@ -154,7 +154,7 @@ Tue, 13 Aug 2019 20:25:53 GMT
 
 - Update to use latest icon library
 - Added CursorPrompt, improved Pointer messages
-- explicitly set margin for button groups to avoid bleed over from BWC styles.
+- Explicitly set margin for button groups to avoid bleed over from BWC styles.
 - After canceling (clearing) search, set focus back to input field.
 - Skip failing test until UI team can investigate
 - Updated generic icon package
@@ -202,7 +202,6 @@ Mon, 01 Jul 2019 19:04:29 GMT
 - Temporarily lowered ui-components coverage thresholds
 - BeInspireTree: Fix an issue with delay-loaded child nodes sometimes being assigned to expired node objects.
 - Tree: Fix child node checkbox events affecting parent node's checkbox state
-- Improve test coverage.
 - ui-component unit tests. NumericInput strict=true default.
 
 ## 1.0.0
@@ -231,7 +230,7 @@ Mon, 13 May 2019 15:52:05 GMT
 
 - Update to latest version of icon library.
 - @beta tags for Toolbar. More React.PureComponent usage. Added constructors to prevent deprecated warnings. Coverage minimum thresholds.
-- #84584 Add support for a view overlay component. This will provide ability to show animation timeline control in viewport.
+- Add support for a view overlay component. This will provide ability to show animation timeline control in viewport.
 - Update Timeline interfaces.
 - Update CSS for ColorSwatch.
 - Add Unit test for ColorEditor and ColorPickerButton
@@ -247,7 +246,7 @@ Mon, 13 May 2019 15:52:05 GMT
 - Add components to show and select a line weight.
 - Put sourcemap in npm package.
 - Locked react-data-grid at 6.0.1 and @types/react-data-grid at 4.0.2
-- #96348 Improve default rotate point for navigation cube
+- Improve default rotate point for navigation cube
 - Fix to SignIn constructor in ui-components
 - Added SignIn presentational component to ui-components. Removed --ignoreMissingTags extract-api option.
 - Require React & React-dom 16.8
@@ -301,7 +300,7 @@ Wed, 06 Mar 2019 15:41:22 GMT
 - Added TableCell and TableCellContent React components.
 - Changed table css class names.
 - Changed CellItem interface property - 'alignment' type to be a restricted string instead of an enum.
--  Cleanup of DefaultToolSetting provider and EnumButtonGroup editor
+- Cleanup of DefaultToolSetting provider and EnumButtonGroup editor
 - Add EnumButtonGroupEditor.
 - Primitive property value renderers now render links specified in property records.
 - Renamed class names that start with "ui-components-" to start with just "components-"
@@ -377,7 +376,7 @@ Wed, 02 Jan 2019 15:18:23 GMT
 ### Updates
 
 - Changed property pane css.
--  Changed how vertical PropertyPane looks.
+- Changed how vertical PropertyPane looks.
 - Fix BeInspireTree's render suspension not being consistent in some cases
 - Added optional viewState prop to ViewportComponent
 
@@ -467,7 +466,6 @@ Mon, 03 Dec 2018 18:52:58 GMT
 - Refactored PropertyRenderer into smaller pieces and added isSelectable and indentation prop
 - Changed the way PropertyCategoryBlock looks.
 - Enabled table to contain popups and dialog and slightly cleaned up it's CSS.
-- Unit tests
 - Removed ConfigurableUiManager.addFrontstageDef and other unused/old methods and components
 - Implement pagination in Tree component
 

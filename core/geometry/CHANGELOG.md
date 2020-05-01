@@ -1,6 +1,6 @@
 # Change Log - @bentley/geometry-core
 
-This log was last generated on Wed, 04 Mar 2020 16:16:31 GMT and should not be manually modified.
+This log was last generated on Fri, 01 May 2020 15:29:28 GMT and should not be manually modified.
 
 ## 1.13.0
 Wed, 04 Mar 2020 16:16:31 GMT
@@ -53,8 +53,8 @@ Tue, 10 Dec 2019 18:08:56 GMT
 
 - EllipsoidPatch support:  patch.projectPointToSurface, ellipsoid.constantLatitudeArc, ellipsoid.constantLongitudeArc
 - Great Circle extraction on Ellipsoid
-- Correct bug in z part of Vector3d spherical construction.   New method to split mesh by eyevector
-- BUG#220063 linearSystem3d z term
+- Correct bug in z part of Vector3d spherical construction.  New method to split mesh by eyevector
+- linearSystem3d z term
 - Code cleanup from codeQL hits
 - Ellipsoid and EllipsoidPatch classes with range and intersectRay support
 
@@ -64,8 +64,8 @@ Fri, 22 Nov 2019 14:03:34 GMT
 ### Updates
 
 - PolyfaceQuery services: PolyfaceQuery.markAllEdgeVisibility PolyfaceQuery.markPairedEdgesInvisible PolyfaceQuery.setSingleEdgeVisibility PolyfaceQuery.computeFacetUnitNormal 
-- BUG#211602 Correct sectioning of meshes with (a) nonconvex facets and (b) multicomponent plane intersections
-- Feature#211247 Intersect Ray with Sphere
+- Correct sectioning of meshes with (a) nonconvex facets and (b) multicomponent plane intersections
+- Intersect Ray with Sphere
 - Spherical patch range; optional result in range3d.corners()
 - Refactor analysis of range of a+b sin(theta) + c sin(theta)
 - Added missing topic descriptions
@@ -76,7 +76,7 @@ Fri, 01 Nov 2019 13:28:37 GMT
 
 ### Updates
 
-- #193588 bugs in PolygonOffsetContext
+- Fix bugs in PolygonOffsetContext
 - Mesh support: TVertexFixup and ColinearEdgeFixup
 - Lightweight iterator over Point3ds contained in an IndexedXYZCollection; Transform.multiplyRange() returns a null range if input is a null range.
 
@@ -85,9 +85,8 @@ Wed, 09 Oct 2019 20:28:42 GMT
 
 ### Updates
 
-- BUG#184729 and BUG#185436
-- (TASK#175760 Triangulate between linestrings) (TASK#184495 consolidateAdjacentPrimitives) (TASK#184489 Test if points are a rectangle)
-- BUG#184729 General matrix4d inverse
+- Triangulate between linestrings; consolidateAdjacentPrimitives; Test if points are a rectangle
+- General matrix4d inverse
 
 ## 1.5.0
 Mon, 30 Sep 2019 22:28:48 GMT
@@ -95,13 +94,11 @@ Mon, 30 Sep 2019 22:28:48 GMT
 ### Updates
 
 - Eliminate use of Math.hypot
-- add copyright headers to recent new files
-- Task#175760 and Task#175773
 - Polyface mesh "split to components"
 - Fast range filtering for cutFill (and other) searches
 - Incremental Edge Flipping, optimize Delauney circle test
 - Explicit undefined initialization for HalfEdge
-- upgrade to TypeScript 3.6.2
+- Upgrade to TypeScript 3.6.2
 
 ## 1.4.0
 Tue, 10 Sep 2019 12:09:49 GMT
@@ -126,7 +123,7 @@ Tue, 13 Aug 2019 20:25:53 GMT
 - Mesh principal axis computation.
 - Document unit length rows/cols requirement of Matrix3d.toQuaternion
 - Correct point4d normalization to handle small w values (NPC)
-- #151464 Improved grid display performance.
+- Improved grid display performance.
 
 ## 1.2.0
 Wed, 24 Jul 2019 11:47:26 GMT
@@ -150,7 +147,6 @@ Mon, 01 Jul 2019 19:04:29 GMT
 - Add "extend" support to various CurvePrimitive.closestPoint methods.
 - Add PolyfaceQuery methods to drape linestring to facets
 - Priority queue sweep logic in HalfEdgeGraph
-- (imodeljs-markup merge)
 - PolarData class for x-y-r-theta constraint solve.   CurvePathWithDistanceIndex expose path with getter.
 - Region centroid and polygon boolean methods
 - TransitionSpiral bug fixes in transform, use of active interval
@@ -180,7 +176,6 @@ Mon, 13 May 2019 15:52:05 GMT
 - View clip fixes and start of tools.
 - Range1dArray coverage
 - Coverage; enable public/internal verification.
-- y
 - Add doc to many methods.  Modernize ray intersect clip plane logic and methods.
 - closestApproachRay3dRay3d.  centroid bugs
 - ClipPlane enhancements;  method to compute clip faces for convex set intersection with range
@@ -195,7 +190,7 @@ Mon, 13 May 2019 15:52:05 GMT
 - Reduce memory allocations in clipping.
 - Method docs, ConvexClipPlaneSetIntersectRange enhancements
 - new method to check of clipper intersects range, with quick exit
--  ClipVector and ClipUtilities test and enhancements
+- ClipVector and ClipUtilities test and enhancements
 - Triangulation bug (multiple holes not linked correctly)
 - Fix broken links
 - Put sourcemap in npm package.
@@ -215,8 +210,8 @@ Wed, 06 Mar 2019 15:41:22 GMT
 
 ### Updates
 
--  geometry-core camel case
-- allow subclasses of Range to use static methods
+- geometry-core camel case
+- Allow subclasses of Range to use static methods
 - Changes package.json to include api-extractor and adds api-extractor.json
 - Use new buildIModelJsBuild script
 - AxisAlignedBox and ElementAlignedBox are now typed to Range3d rather than classes
@@ -229,13 +224,13 @@ Wed, 06 Mar 2019 15:41:22 GMT
 - Consistent naming of "get" methods in Growable arrays.
 - Distribute .test.ts files to subdirectories
 - Improve polygon triangulations quality by early flipping behind the earcut front
-- added freeze methods to Angle and Point2d
-- bug fixes in PolyfaceBuilder
-- update for geometry GrowableXYArray usage
+- Added freeze methods to Angle and Point2d
+- Bug fixes in PolyfaceBuilder
+- Update for geometry GrowableXYArray usage
 - New class SmoothTransformBetweenFrusta for smooth frustum animation
 - Save BUILD_SEMVER to globally accessible map
 - add optional argument to SmoothTransformBetweenFrusta
-- upgrade to TypeScript 3.2.2
+- Upgrade to TypeScript 3.2.2
 
 ## 0.188.0
 Wed, 16 Jan 2019 16:36:09 GMT
@@ -262,7 +257,7 @@ Thu, 10 Jan 2019 22:46:17 GMT
 
 ### Updates
 
-- code coverage.  sphere and torus derivative errors. solids reject singular transforms.
+- Code coverage.  sphere and torus derivative errors. solids reject singular transforms.
 - Add to quaternion tests
 
 ## 0.183.0
@@ -336,9 +331,7 @@ Tue, 04 Dec 2018 17:24:39 GMT
 ## 0.171.0
 Mon, 03 Dec 2018 18:52:58 GMT
 
-### Updates
-
-- Geometry Coverage
+*Version update only*
 
 ## 0.170.0
 Mon, 26 Nov 2018 19:38:42 GMT
@@ -358,10 +351,7 @@ Sat, 17 Nov 2018 14:20:11 GMT
 ## 0.167.0
 Fri, 16 Nov 2018 21:45:44 GMT
 
-### Updates
-
-- Coverage
-- AnalyticRoots and Polynomial coverage
+*Version update only*
 
 ## 0.166.0
 Mon, 12 Nov 2018 16:42:10 GMT
@@ -373,7 +363,7 @@ Mon, 12 Nov 2018 15:47:00 GMT
 
 ### Updates
 
-- bspline docs.    Add bezier curve left and right subdivision methods"
+- bspline docs.  Add bezier curve left and right subdivision methods"
 - Correct return value (undefined is right!) for LineString3d.pointAt (index)
 
 ## 0.164.0
@@ -383,7 +373,7 @@ Thu, 08 Nov 2018 17:59:20 GMT
 
 - Complete analysis import test application
 - Add support for PolyfaceAuxData to PolyfaceVisitor
-- implement curve method "moveSignedDistanceFromFraction"
+- Implement curve method "moveSignedDistanceFromFraction"
 - polyface.compress performance problem -- extraneous reallocations
 - CurveChainWithDistanceIndex derivative and distance methods
 - PolyfaceAuxData documentation
@@ -395,9 +385,9 @@ Wed, 31 Oct 2018 20:55:37 GMT
 ### Updates
 
 - CurveChainWithDistanceIndex WIP
-- fromJSON tests.    Geometry.isAlmostEqualNumber uses smallAngleRadians as absolute minimum tolerance.
+- fromJSON tests.  Geometry.isAlmostEqualNumber uses smallAngleRadians as absolute minimum tolerance.
 - Add tests for fromJSON methods (small classes)
-- Expand test coverage.    Use small absolute tolerance in Geometry.isAlmostEqualNumber.  "w" component of BezierCurve3d.getPolePoint4d.
+- Expand test coverage.  Use small absolute tolerance in Geometry.isAlmostEqualNumber.  "w" component of BezierCurve3d.getPolePoint4d.
 
 ## 0.162.0
 Wed, 24 Oct 2018 19:20:06 GMT
@@ -405,8 +395,8 @@ Wed, 24 Oct 2018 19:20:06 GMT
 ### Updates
 
 - Merge
-- fromJSON tests.    Geometry.isAlmostEqualNumber uses smallAngleRadians as absolute minimum tolerance.
-- rename PNG files as png
+- fromJSON tests.  Geometry.isAlmostEqualNumber uses smallAngleRadians as absolute minimum tolerance.
+- Rename PNG files as png
 
 ## 0.161.0
 Fri, 19 Oct 2018 13:04:14 GMT

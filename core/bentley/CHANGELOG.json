@@ -53,7 +53,7 @@
             "comment": "Added non-static wait and executeAfter to BeDuration"
           },
           {
-            "comment": "fix warnings from static analysis"
+            "comment": "Fix warnings from static analysis"
           },
           {
             "comment": "Added `BeDuration.race` for common timeout operations."
@@ -131,7 +131,7 @@
       "comments": {
         "none": [
           {
-            "comment": "added OneAtATimeActivity class"
+            "comment": "Added OneAtATimeActivity class"
           },
           {
             "comment": "Introduced AsyncMutex - a utility to run async blocks of code in sequence. "
@@ -152,7 +152,7 @@
             "comment": "RPC system now accepts only basic values (primitives, \"interface\" objects, and binary)."
           },
           {
-            "comment": "added Id64.getFirst to get the first value of an Id64Arg"
+            "comment": "Added Id64.getFirst to get the first value of an Id64Arg"
           },
           {
             "comment": "Added an error for seed file initialization timeout"
@@ -164,7 +164,7 @@
             "comment": "Refactored and simplified implementation of IModelDb.open"
           },
           {
-            "comment": "add property accessor for empty Guid"
+            "comment": "Add property accessor for empty Guid"
           }
         ]
       }
@@ -191,7 +191,7 @@
             "comment": "Logged the fields in ClientRequestContext"
           },
           {
-            "comment": "Logging fixes. "
+            "comment": "Logging fixes."
           },
           {
             "comment": "Put sourcemap in npm package."
@@ -245,7 +245,7 @@
             "comment": "Save BUILD_SEMVER to globally accessible map"
           },
           {
-            "comment": "upgrade to TypeScript 3.2.2"
+            "comment": "Upgrade to TypeScript 3.2.2"
           }
         ]
       }
@@ -419,7 +419,7 @@
       "comments": {
         "none": [
           {
-            "comment": "changes to debug utilities. "
+            "comment": "Changes to debug utilities. "
           },
           {
             "comment": "Fluentd Bunnyan Logger added"

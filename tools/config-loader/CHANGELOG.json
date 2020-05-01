@@ -68,7 +68,7 @@
       "comments": {
         "none": [
           {
-            "comment": "upgrade to TypeScript 3.6.2"
+            "comment": "Upgrade to TypeScript 3.6.2"
           }
         ]
       }
@@ -140,7 +140,7 @@
             "comment": "Use new buildIModelJsBuild script"
           },
           {
-            "comment": "upgrade to TypeScript 3.2.2"
+            "comment": "Upgrade to TypeScript 3.2.2"
           }
         ]
       }

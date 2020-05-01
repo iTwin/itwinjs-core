@@ -80,7 +80,7 @@
       "comments": {
         "none": [
           {
-            "comment": "upgrade to TypeScript 3.6.2"
+            "comment": "Upgrade to TypeScript 3.6.2"
           }
         ]
       }
@@ -125,7 +125,7 @@
             "comment": "Added UI Logger & UiError usage & improved i18n calls"
           },
           {
-            "comment": "change arguments to constructor of I18N to make it mockable for testing"
+            "comment": "Change arguments to constructor of I18N to make it mockable for testing"
           }
         ]
       }
@@ -176,7 +176,7 @@
             "comment": "Remove unneeded typedoc plugin dependency"
           },
           {
-            "comment": "fix imports of i18next-xhr-backend"
+            "comment": "Fix imports of i18next-xhr-backend"
           },
           {
             "comment": "Documentation improvements"
@@ -188,7 +188,7 @@
             "comment": "Fix a broken build by upgrading 'i18next-xhr-backend' dependency to v2"
           },
           {
-            "comment": "upgrade to TypeScript 3.2.2"
+            "comment": "Upgrade to TypeScript 3.2.2"
           }
         ]
       }

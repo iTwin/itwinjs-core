@@ -92,9 +92,6 @@
             "comment": "No longer accessing this.state or this.props in setState updater - flagged by lgtm report"
           },
           {
-            "comment": "Update sinon version."
-          },
-          {
             "comment": "Changed ControlledTree specific hooks and HOCs release tags to beta"
           },
           {
@@ -179,7 +176,7 @@
             "comment": "Add module descriptions"
           },
           {
-            "comment": "upgrade to TypeScript 3.6.2"
+            "comment": "Upgrade to TypeScript 3.6.2"
           }
         ]
       }
@@ -227,7 +224,7 @@
             "comment": "Reorganize docs script output"
           },
           {
-            "comment": "include !lib/**/*.*css in .npmignore for presentation-components to includes css files in lib/module/prod"
+            "comment": "Include !lib/**/*.*css in .npmignore for presentation-components to includes css files in lib/module/prod"
           },
           {
             "comment": "`treeWithFilteringSupport` HOC now sends the filtered data provider as the second parameter to `onFilterApplied` prop callback"
@@ -338,7 +335,7 @@
             "comment": "Require React & React-dom 16.8"
           },
           {
-            "comment": "remove IModelApp subclasses"
+            "comment": "Remove IModelApp subclasses"
           },
           {
             "comment": "Temporarily disable hiliting model and category elements until a more performant way to do that exists"
@@ -410,7 +407,7 @@
             "comment": "Move property definitions to imodeljs-frontend so they could be used by tools to define properties for tool settings."
           },
           {
-            "comment": "upgrade to TypeScript 3.2.2"
+            "comment": "Upgrade to TypeScript 3.2.2"
           }
         ]
       }
