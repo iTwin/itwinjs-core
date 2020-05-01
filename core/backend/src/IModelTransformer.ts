@@ -518,7 +518,7 @@ export class IModelTransformer extends IModelExportHandler {
       if ((PrimitiveTypeCode.Long === propertyMetaData.primitiveType) && ("Id" === propertyMetaData.extendedType)) {
         (targetRelationshipProps as any)[propertyName] = this.context.findTargetElementId(sourceRelationship.asAny[propertyName]);
       }
-    }, true);
+    });
     return targetRelationshipProps;
   }
 
@@ -563,7 +563,7 @@ export class IModelTransformer extends IModelExportHandler {
       if ((PrimitiveTypeCode.Long === propertyMetaData.primitiveType) && ("Id" === propertyMetaData.extendedType)) {
         (targetElementAspectProps as any)[propertyName] = this.context.findTargetElementId(sourceElementAspect.asAny[propertyName]);
       }
-    }, true);
+    });
     return targetElementAspectProps;
   }
 

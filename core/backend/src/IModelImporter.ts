@@ -84,7 +84,7 @@ export class IModelImporter {
           changed = model.asAny[propertyName] !== (modelProps as any)[propertyName];
         }
       }
-    }, true);
+    });
     return changed;
   }
 
@@ -251,7 +251,7 @@ export class IModelImporter {
       if (!changed && (propertyName !== "element") && (aspect.asAny[propertyName] !== (aspectProps as any)[propertyName])) {
         changed = true;
       }
-    }, true);
+    });
     return changed;
   }
 
@@ -321,7 +321,7 @@ export class IModelImporter {
       if (!changed && (relationship.asAny[propertyName] !== (relationshipProps as any)[propertyName])) {
         changed = true;
       }
-    }, true);
+    });
     return changed;
   }
 

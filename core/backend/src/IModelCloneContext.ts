@@ -114,7 +114,7 @@ export class IModelCloneContext {
       if ((meta.isNavigation) && (undefined === (sourceElement as any)[propertyName])) {
         (targetElementProps as any)[propertyName] = RelatedElement.none;
       }
-    });
+    }, false); // exclude custom because C++ has already handled them
     if (this.isBetweenIModels) {
       // The native C++ cloneElement strips off federationGuid, want to put it back if transformation is between iModels
       targetElementProps.federationGuid = sourceElement.federationGuid;

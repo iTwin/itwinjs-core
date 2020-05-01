@@ -520,6 +520,7 @@ The following renames are required:
 - BriefcaseId / ReservedBriefcaseId: The former `BriefcaseId` class has been replaced by the [BriefcaseId]($backend) type (which is just `number`) and the [ReservedBriefcaseId]($backend) enumeration.
 - `UlasUtilities` has been renamed to `UsageLoggingUtilities` to better align with name of the newly created `usage-logging-client` package
 - `ExportGraphicsProps` and associated interfaces have been renamed to `ExportGraphicsOptions` to convey that they are not wire formats.
+- [Entity.forEachProperty]($backend) has moved from `beta` --> `public`. Please note that the default value of `includeCustom` has changed from `false` to `true` to better match typical use.
 
 ### Changes in `@bentley/imodeljs-frontend`
 

@@ -1763,7 +1763,6 @@ export class Entity implements EntityProps {
     get classFullName(): string;
     static get className(): string;
     get className(): string;
-    // @beta
     forEachProperty(func: PropertyCallback, includeCustom?: boolean): void;
     id: Id64String;
     iModel: IModelDb;
@@ -2333,7 +2332,7 @@ export abstract class IModelDb extends IModel {
     get fontMap(): FontMap;
     // (undocumented)
     protected _fontMap?: FontMap;
-    static forEachMetaData(iModel: IModelDb, classFullName: string, wantSuper: boolean, func: PropertyCallback, includeCustom: boolean): void;
+    static forEachMetaData(iModel: IModelDb, classFullName: string, wantSuper: boolean, func: PropertyCallback, includeCustom?: boolean): void;
     getBriefcaseId(): BriefcaseId;
     getGeoCoordinatesFromIModelCoordinates(requestContext: ClientRequestContext, props: string): Promise<GeoCoordinatesResponseProps>;
     getGuid(): GuidString;

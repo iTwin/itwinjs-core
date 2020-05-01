@@ -691,15 +691,15 @@ export abstract class IModelDb extends IModel {
     return metadata;
   }
 
-  /**
-   * Invoke a callback on each property of the specified class, optionally including superclass properties.
+  /** Invoke a callback on each property of the specified class, optionally including superclass properties.
    * @param iModel  The IModel that contains the schema
    * @param classFullName The full class name to load the metadata, if necessary
    * @param wantSuper If true, superclass properties will also be processed
    * @param func The callback to be invoked on each property
-   * @param includeCustom If true, include custom-handled properties in the iteration. Otherwise, skip custom-handled properties.
+   * @param includeCustom If true (default), include custom-handled properties in the iteration. Otherwise, skip custom-handled properties.
+   * @note Custom-handled properties are core properties that have behavior enforced by C++ handlers.
    */
-  public static forEachMetaData(iModel: IModelDb, classFullName: string, wantSuper: boolean, func: PropertyCallback, includeCustom: boolean) {
+  public static forEachMetaData(iModel: IModelDb, classFullName: string, wantSuper: boolean, func: PropertyCallback, includeCustom: boolean = true) {
     const meta = iModel.getMetaData(classFullName); // will load if necessary
     for (const propName in meta.properties) {    // tslint:disable-line: forin
       const propMeta = meta.properties[propName];

@@ -50,7 +50,7 @@ export class Entity implements EntityProps {
     this.iModel = iModel;
     this.id = Id64.fromJSON(props.id);
     // copy all auto-handled properties from input to the object being constructed
-    this.forEachProperty((propName: string, meta: PropertyMetaData) => (this as any)[propName] = meta.createProperty((props as any)[propName]));
+    this.forEachProperty((propName: string, meta: PropertyMetaData) => (this as any)[propName] = meta.createProperty((props as any)[propName]), false);
   }
 
   /** @internal */
@@ -59,7 +59,7 @@ export class Entity implements EntityProps {
     val.classFullName = this.classFullName;
     if (Id64.isValid(this.id))
       val.id = this.id;
-    this.forEachProperty((propName: string) => val[propName] = (this as any)[propName]);
+    this.forEachProperty((propName: string) => val[propName] = (this as any)[propName], false);
     return val;
   }
 
@@ -71,9 +71,11 @@ export class Entity implements EntityProps {
   public buildConcurrencyControlRequest(_opcode: DbOpcode): void { }
 
   /** Call a function for each property of this Entity.
-   * @beta
+   * @param func The callback to be invoked on each property
+   * @param includeCustom If true (default), include custom-handled properties in the iteration. Otherwise, skip custom-handled properties.
+   * @note Custom-handled properties are core properties that have behavior enforced by C++ handlers.
    */
-  public forEachProperty(func: PropertyCallback, includeCustom: boolean = false) { IModelDb.forEachMetaData(this.iModel, this.classFullName, true, func, includeCustom); }
+  public forEachProperty(func: PropertyCallback, includeCustom: boolean = true) { IModelDb.forEachMetaData(this.iModel, this.classFullName, true, func, includeCustom); }
 
   /** Get the full BIS class name of this Entity in the form "schema:class" */
   public static get classFullName(): string { return this.schema.schemaName + ":" + this.className; }

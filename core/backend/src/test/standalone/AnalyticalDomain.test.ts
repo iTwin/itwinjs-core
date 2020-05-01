@@ -121,7 +121,7 @@ describe("Analytical Domain", () => {
         case "codeValue": assert.isFalse(meta.isNavigation); break;
         case "userLabel": assert.isFalse(meta.isNavigation); break;
       }
-    }, true); // `true` means include custom properties
+    });
     // test typeDefinition update scenarios
     assert.isTrue(Id64.isValidId64(elementId));
     assert.isTrue(Id64.isValidId64(iModelDb.elements.getElement<GeometricElement3d>(elementId).typeDefinition!.id), "Expect valid typeDefinition.id");
