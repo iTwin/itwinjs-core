@@ -373,6 +373,12 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
+      "packageName": "internal-tools",
+      "projectFolder": "tools/internal",
+      "reviewCategory": "internal",
+      "shouldPublish": false
+    },
+    {
       "packageName": "example-code-snippets",
       "projectFolder": "example-code/snippets",
       "reviewCategory": "internal",
