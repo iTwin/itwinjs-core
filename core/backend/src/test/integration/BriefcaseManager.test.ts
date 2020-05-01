@@ -12,7 +12,7 @@ import { assert } from "chai";
 import * as os from "os";
 import * as readline from "readline";
 import * as path from "path";
-import { AuthorizedBackendRequestContext, BackendLoggerCategory, BriefcaseDb, BriefcaseEntry, BriefcaseManager, Element, IModelDb, IModelHost, IModelHostConfiguration, IModelJsFs, KnownLocations } from "../../imodeljs-backend";
+import { AuthorizedBackendRequestContext, BackendLoggerCategory, BriefcaseDb, BriefcaseEntry, BriefcaseManager, Element, IModelDb, IModelHost, IModelHostConfiguration, IModelJsFs, KnownLocations, BriefcaseIdValue } from "../../imodeljs-backend";
 import { IModelTestUtils, TestIModelInfo } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
 import { TestChangeSetUtility } from "./TestChangeSetUtility";
@@ -469,17 +469,9 @@ describe("BriefcaseManager (#integration)", () => {
     let exists = await briefcaseExistsOnHub(readOnlyTestIModel.id, briefcaseId1);
     assert.isTrue(exists);
 
-    const iModel2 = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, testProjectId, readOnlyTestIModel.id, SyncMode.PullOnly, IModelVersion.latest());
-    const briefcaseId2: number = iModel2.briefcase.briefcaseId;
-    exists = await briefcaseExistsOnHub(readOnlyTestIModel.id, briefcaseId2);
-    assert.isTrue(exists);
-
     await BriefcaseManager.purgeCache(managerRequestContext);
 
     exists = await briefcaseExistsOnHub(readOnlyTestIModel.id, briefcaseId1);
-    assert.isFalse(exists);
-
-    exists = await briefcaseExistsOnHub(readOnlyTestIModel.id, briefcaseId2);
     assert.isFalse(exists);
   });
 
@@ -510,26 +502,31 @@ describe("BriefcaseManager (#integration)", () => {
     assert.isDefined(iModel);
   });
 
-  it("should reuse a briefcaseId when re-opening iModel-s for pullOnly and pullAndPush workflows", async () => {
+  it("should set appropriate briefcae ids for FixedVersion, PullOnly and PullAndPush workflows", async () => {
+    const iModel1 = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, testProjectId, readOnlyTestIModel.id, SyncMode.FixedVersion, IModelVersion.latest());
+    assert.equal(BriefcaseIdValue.Standalone, iModel1.briefcase.briefcaseId);
+
+    const iModel2 = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, testProjectId, readOnlyTestIModel.id, SyncMode.PullOnly, IModelVersion.latest());
+    assert.equal(BriefcaseIdValue.Standalone, iModel2.briefcase.briefcaseId);
+
+    const iModel3 = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, testProjectId, readOnlyTestIModel.id, SyncMode.PullAndPush, IModelVersion.latest());
+    assert.isTrue(iModel3.briefcase.briefcaseId >= BriefcaseIdValue.FirstValid && iModel3.briefcase.briefcaseId <= BriefcaseIdValue.LastValid);
+
+    await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModel1);
+    await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModel2);
+    await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModel3);
+  });
+
+  it("should reuse a briefcaseId when re-opening iModel-s for pullAndPush workflows", async () => {
     const iModel1 = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, testProjectId, readOnlyTestIModel.id, SyncMode.PullAndPush, IModelVersion.latest());
     const briefcaseId1: number = iModel1.briefcase.briefcaseId;
-    const iModel2 = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, testProjectId, readOnlyTestIModel.id, SyncMode.PullOnly, IModelVersion.latest());
-    const briefcaseId2: number = iModel2.briefcase.briefcaseId;
-    assert.notStrictEqual(briefcaseId1, briefcaseId2); // PullOnly and PullAndPush should allocate different briefcase ids
-
     iModel1.close(); // Keeps the briefcase by default
-    iModel2.close(); // Keeps the briefcase by default
 
     const iModel3 = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, testProjectId, readOnlyTestIModel.id, SyncMode.PullAndPush, IModelVersion.latest());
     const briefcaseId3: number = iModel3.briefcase.briefcaseId;
     assert.strictEqual(briefcaseId3, briefcaseId1);
 
-    const iModel4 = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, testProjectId, readOnlyTestIModel.id, SyncMode.PullOnly, IModelVersion.latest());
-    const briefcaseId4: number = iModel4.briefcase.briefcaseId;
-    assert.strictEqual(briefcaseId4, briefcaseId2);
-
     await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModel3);
-    await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModel4);
   });
 
   it("should reuse a briefcaseId when re-opening iModel-s of different versions for pullAndPush and pullOnly workflows", async () => {
