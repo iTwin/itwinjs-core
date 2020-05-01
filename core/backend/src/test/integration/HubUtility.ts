@@ -2,11 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, ChangeSetApplyOption, ChangeSetStatus, GuidString, Logger, OpenMode, PerfLogger } from "@bentley/bentleyjs-core";
+import { assert, ChangeSetApplyOption, ChangeSetStatus, GuidString, Logger, OpenMode, PerfLogger, DbResult } from "@bentley/bentleyjs-core";
+import { IModelError } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import * as os from "os";
 import * as path from "path";
-import { BriefcaseManager, ChangeSetToken, IModelDb, IModelJsFs, BriefcaseIdValue, StandaloneDb, IModelHost } from "../../imodeljs-backend";
+import { BriefcaseManager, ChangeSetToken, IModelDb, IModelJsFs, StandaloneDb, IModelHost } from "../../imodeljs-backend";
 import { Briefcase as HubBriefcase, BriefcaseQuery, ChangeSet, ChangeSetQuery, HubIModel, IModelHubClient, IModelQuery, Version, VersionQuery } from "@bentley/imodelhub-client";
 import { Project } from "@bentley/context-registry-client";
 
@@ -215,7 +216,7 @@ export class HubUtility {
     const briefcasePathname = HubUtility.getBriefcasePathname(iModelDir);
 
     Logger.logInfo(HubUtility.logCategory, "Creating standalone iModel");
-    HubUtility.createStandaloneIModel(briefcasePathname, iModelDir);
+    HubUtility.createStandaloneIModelFromSeed(briefcasePathname, iModelDir);
     const iModel: StandaloneDb = StandaloneDb.openFile(briefcasePathname, OpenMode.ReadWrite);
 
     const changeSets: ChangeSetToken[] = HubUtility.readChangeSets(iModelDir);
@@ -261,13 +262,13 @@ export class HubUtility {
   /** Validate all change set operations on an iModel on disk - the supplied directory contains a sub folder
    * with the seed files, change sets, etc. in a standard format. This tests merging the change sets, reversing them,
    * and finally reinstating them. The method also logs the necessary performance
-   * metrics with these operations.
+   * metrics with these operations
    */
   public static validateAllChangeSetOperationsOnDisk(iModelDir: string) {
     const briefcasePathname = HubUtility.getBriefcasePathname(iModelDir);
 
     Logger.logInfo(HubUtility.logCategory, "Creating standalone iModel");
-    HubUtility.createStandaloneIModel(briefcasePathname, iModelDir);
+    HubUtility.createStandaloneIModelFromSeed(briefcasePathname, iModelDir);
     const iModel = StandaloneDb.openFile(briefcasePathname, OpenMode.ReadWrite);
 
     const changeSets: ChangeSetToken[] = HubUtility.readChangeSets(iModelDir);
@@ -307,7 +308,7 @@ export class HubUtility {
     this.validateAllChangeSetOperationsOnDisk(iModelDir);
   }
 
-  public static getSeedPathname(iModelDir: string) {
+  private static getSeedPathname(iModelDir: string) {
     const seedFileDir = path.join(iModelDir, "seed");
     const seedFileNames = IModelJsFs.readdirSync(seedFileDir);
     if (seedFileNames.length !== 1) {
@@ -433,16 +434,20 @@ export class HubUtility {
   }
 
   /** Creates a standalone iModel from the seed file (version 0) */
-  public static createStandaloneIModel(iModelPathname: string, iModelDir: string) {
+  private static createStandaloneIModelFromSeed(iModelPathname: string, iModelDir: string) {
     const seedPathname = HubUtility.getSeedPathname(iModelDir);
 
     if (IModelJsFs.existsSync(iModelPathname))
       IModelJsFs.unlinkSync(iModelPathname);
     IModelJsFs.copySync(seedPathname, iModelPathname);
 
-    const iModel = StandaloneDb.openFile(iModelPathname, OpenMode.ReadWrite);
-    iModel.nativeDb.resetBriefcaseId(BriefcaseIdValue.Standalone);
-    iModel.close();
+    const nativeDb = new IModelHost.platform.DgnDb();
+    const status = nativeDb.openIModel(iModelPathname, OpenMode.ReadWrite);
+    if (DbResult.BE_SQLITE_OK !== status)
+      throw new IModelError(status, "Could not open iModel as Standalone");
+    nativeDb.saveLocalValue("StandaloneEdit", "");
+    nativeDb.saveChanges();
+    nativeDb.closeIModel();
 
     return iModelPathname;
   }

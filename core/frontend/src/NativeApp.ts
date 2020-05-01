@@ -131,7 +131,7 @@ export class NativeApp {
   }
 
   public static async deleteBriefcase(briefcaseKey: BriefcaseKey): Promise<void> {
-    const requestContext = await AuthorizedFrontendRequestContext.create();
+    const requestContext = new FrontendRequestContext();
     requestContext.enter();
 
     if (!IModelApp.initialized)

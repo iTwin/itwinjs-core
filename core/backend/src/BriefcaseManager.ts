@@ -14,7 +14,7 @@ import { AuthorizedClientRequestContext, CancelRequest, ProgressCallback, Progre
 import { AzureFileHandler, IOSAzureFileHandler } from "@bentley/backend-itwin-client";
 import {
   ChangeSetApplyOption, BeEvent, DbResult, OpenMode, assert, Logger, LogLevel, ChangeSetStatus,
-  BentleyStatus, IModelHubStatus, PerfLogger, GuidString, Id64, IModelStatus, AsyncMutex, BeDuration,
+  BentleyStatus, IModelHubStatus, PerfLogger, GuidString, Id64, IModelStatus, AsyncMutex, BeDuration, ClientRequestContext,
 } from "@bentley/bentleyjs-core";
 import { BriefcaseStatus, CreateIModelProps, IModelError, IModelVersion, MobileRpcConfiguration, BriefcaseProps, DownloadBriefcaseStatus, SyncMode, BriefcaseDownloader, BriefcaseKey, RequestBriefcaseProps, DownloadBriefcaseOptions } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
@@ -1265,6 +1265,8 @@ export class BriefcaseManager {
   /** Deletes a briefcase from the IModelServer (if it exists) */
   private static async deleteBriefcaseFromServer(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseEntry): Promise<void> {
     requestContext.enter();
+    if (!this.isValidBriefcaseId(briefcase.briefcaseId))
+      return;
     if (!briefcase.iModelId) {
       Logger.logError(loggerCategory, "Briefcase with invalid iModelId detected", () => briefcase.getDebugInfo());
       return;
@@ -1308,26 +1310,29 @@ export class BriefcaseManager {
    * @throws [[IModelError]] If unable to delete the briefcase - e.g., if it wasn't completely downloaded, OR was left open
    * @beta
    */
-  public static async delete(requestContext: AuthorizedClientRequestContext, key: BriefcaseKey): Promise<void> {
-    const briefcaseEntry = BriefcaseManager.findBriefcaseByKey(key);
-    if (briefcaseEntry === undefined)
+  public static async delete(requestContext: ClientRequestContext | AuthorizedClientRequestContext, key: BriefcaseKey): Promise<void> {
+    const briefcase = BriefcaseManager.findBriefcaseByKey(key);
+    if (briefcase === undefined)
       throw new IModelError(IModelStatus.BadRequest, "Cannot delete a briefcase that not been downloaded", Logger.logError, loggerCategory, () => key);
-    if (briefcaseEntry.downloadStatus !== DownloadBriefcaseStatus.Complete && briefcaseEntry.downloadStatus !== DownloadBriefcaseStatus.Error)
-      throw new IModelError(IModelStatus.BadRequest, "Cannot delete a briefcase that's being downloaded", Logger.logError, loggerCategory, () => briefcaseEntry.getDebugInfo());
-    if (briefcaseEntry.isOpen)
-      throw new IModelError(IModelStatus.BadRequest, "Cannot delete a briefcase that's open", Logger.logError, loggerCategory, () => briefcaseEntry.getDebugInfo());
-
-    await BriefcaseManager.deleteBriefcase(requestContext, briefcaseEntry);
+    if (briefcase.downloadStatus !== DownloadBriefcaseStatus.Complete && briefcase.downloadStatus !== DownloadBriefcaseStatus.Error)
+      throw new IModelError(IModelStatus.BadRequest, "Cannot delete a briefcase that's being downloaded", Logger.logError, loggerCategory, () => briefcase.getDebugInfo());
+    if (briefcase.isOpen)
+      throw new IModelError(IModelStatus.BadRequest, "Cannot delete a briefcase that's open", Logger.logError, loggerCategory, () => briefcase.getDebugInfo());
+    await BriefcaseManager.deleteBriefcase(requestContext, briefcase);
   }
 
   /** Deletes a briefcase, and releases its references in iModelHub if necessary */
-  private static async deleteBriefcase(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseEntry): Promise<void> {
+  private static async deleteBriefcase(requestContext: ClientRequestContext | AuthorizedClientRequestContext, briefcase: BriefcaseEntry): Promise<void> {
     requestContext.enter();
     Logger.logTrace(loggerCategory, "Started deleting briefcase", () => briefcase.getDebugInfo());
     BriefcaseManager.closeBriefcase(briefcase, false);
     BriefcaseManager.deleteBriefcaseFromCache(briefcase);
-    await BriefcaseManager.deleteBriefcaseFromServer(requestContext, briefcase);
-    requestContext.enter();
+    if (this.isValidBriefcaseId(briefcase.briefcaseId)) {
+      if (!(requestContext instanceof AuthorizedClientRequestContext))
+        throw new IModelError(BentleyStatus.ERROR, "Deleting a briefcase with SyncMode = PullPush requires authorization - pass AuthorizedClientRequestContext instead of ClientRequestContext");
+      await BriefcaseManager.deleteBriefcaseFromServer(requestContext, briefcase);
+      requestContext.enter();
+    }
     BriefcaseManager.deleteBriefcaseFromLocalDisk(briefcase);
     Logger.logTrace(loggerCategory, "Finished deleting briefcase", () => briefcase.getDebugInfo());
   }

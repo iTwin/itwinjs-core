@@ -543,7 +543,7 @@ export class BriefcaseManager {
     // @internal
     static get connectClient(): ContextRegistryClient;
     static create(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelName: GuidString, args: CreateIModelProps): Promise<GuidString>;
-    static delete(requestContext: AuthorizedClientRequestContext, key: BriefcaseKey): Promise<void>;
+    static delete(requestContext: ClientRequestContext | AuthorizedClientRequestContext, key: BriefcaseKey): Promise<void>;
     // @internal (undocumented)
     static deleteAllBriefcases(requestContext: AuthorizedClientRequestContext, iModelId: GuidString): Promise<void[] | undefined>;
     static download(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelId: GuidString, downloadOptions: DownloadBriefcaseOptions, version?: IModelVersion, downloadProgress?: ProgressCallback): Promise<BriefcaseProps>;

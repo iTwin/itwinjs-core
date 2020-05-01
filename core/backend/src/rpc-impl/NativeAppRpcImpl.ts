@@ -180,7 +180,7 @@ export class NativeAppRpcImpl extends RpcInterface implements NativeAppRpcInterf
    * @param key Key to locate the briefcase in the disk cache
    */
   public async deleteBriefcase(key: BriefcaseKey): Promise<void> {
-    const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
+    const requestContext = ClientRequestContext.current;
     await BriefcaseManager.delete(requestContext, key);
   }
 
