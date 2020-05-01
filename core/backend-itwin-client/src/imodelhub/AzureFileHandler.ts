@@ -6,7 +6,7 @@
  * @module iModelHub
  */
 
-import { Logger, BriefcaseStatus } from "@bentley/bentleyjs-core";
+import { Logger, BriefcaseStatus, Config } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext, FileHandler, ProgressInfo, ProgressCallback, request, RequestOptions, ResponseError, CancelRequest, UserCancelledError, SasUrlExpired, DownloadFailed } from "@bentley/itwin-client";
 import { Transform, TransformCallback, PassThrough } from "stream";
 import { BackendITwinClientLoggerCategory } from "../BackendITwinClientLoggerCategory";
@@ -320,7 +320,14 @@ export class AzureFileHandler implements FileHandler {
 
     AzureFileHandler.makeDirectoryRecursive(path.dirname(downloadToPathname));
     try {
-      if (AzCopy.isAvaliable) {
+      // suppress azcopy for smaller file as it take longer to spawn and exit then it take Http downloader to download it.
+      let useAzcopy = AzCopy.isAvailable;
+      if (useAzcopy && fileSize) {
+        const minFileSize = Config.App.getNumber("imjs_az_min_filesize_threshold", 500 * 1024 * 1024 /** 500 Mb */);
+        if (fileSize < minFileSize)
+          useAzcopy = false;
+      }
+      if (useAzcopy) {
         await this.downloadFileUsingAzCopy(requestContext, downloadUrl, downloadToPathname, fileSize, progressCallback);
       } else {
         await this.downloadFileUsingHttps(requestContext, downloadUrl, downloadToPathname, fileSize, progressCallback, cancelRequest);

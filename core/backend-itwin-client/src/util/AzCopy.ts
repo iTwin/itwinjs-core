@@ -116,7 +116,7 @@ export class AzCopy extends EventEmitter {
   private static _resolvedExecPath?: string;
   private static _minimumAzCopyVersionSupported = "10.1.0";
   private static _currentAzCopyVersion?: string;
-  /** Attempt to initalize azcopy untility class */
+  /** Attempt to initialize azcopy utility class */
   private static init() {
     const currentVersion = this.getVersion();
     if (!semver.gte(currentVersion, AzCopy._minimumAzCopyVersionSupported))
@@ -129,8 +129,8 @@ export class AzCopy extends EventEmitter {
   public constructor(public config: Configuration = {}) {
     super();
   }
-  /** check if azcopy has been configured and also intialize it. */
-  public static get isAvaliable(): boolean {
+  /** check if azcopy has been configured and also initialize it. */
+  public static get isAvailable(): boolean {
     try {
       this.init();
       return true;

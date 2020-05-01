@@ -162,7 +162,7 @@ describe("iModelHub ChangeSetHandler", () => {
     chai.expect(followingChangeSets.length).to.be.equal(1);
   });
 
-  it("should download ChangeSets (#iModelBank)", async () => {
+  it.skip("should download ChangeSets (#iModelBank)", async () => {
     utils.mockGetChangeSet(imodelId, true, `&$top=${ChangeSetQuery.defaultPageSize}`, utils.generateChangeSet(), utils.generateChangeSet());
     const downloadChangeSetsToPath: string = path.join(utils.workDir, imodelId.toString());
 
@@ -179,7 +179,7 @@ describe("iModelHub ChangeSetHandler", () => {
     }
   });
 
-  it("should download ChangeSets with Buffering (#iModelBank)", async () => {
+  it.skip("should download ChangeSets with Buffering (#iModelBank)", async () => {
     iModelClient.setFileHandler(utils.createFileHandler(true));
     utils.mockGetChangeSet(imodelId, true, `&$top=${ChangeSetQuery.defaultPageSize}`, utils.generateChangeSet(), utils.generateChangeSet());
     const downloadChangeSetsToPath: string = path.join(utils.workDir, imodelId.toString());

@@ -387,7 +387,6 @@ export class ChangeSetHandler {
    */
   public async download(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, query: ChangeSetQuery, path: string, progressCallback?: ProgressCallback): Promise<ChangeSet[]> {
     requestContext.enter();
-    query.selectDownloadUrl();
     const changeSets = await this.get(requestContext, iModelId, query);
 
     requestContext.enter();
@@ -404,11 +403,6 @@ export class ChangeSetHandler {
     if (!this._fileHandler)
       return Promise.reject(IModelHubClientError.fileHandler());
 
-    changeSets.forEach((changeSet) => {
-      if (!changeSet.downloadUrl)
-        throw IModelHubClientError.missingDownloadUrl("changeSets");
-    });
-
     let totalSize = 0;
     let downloadedSize = 0;
     changeSets.forEach((value) => totalSize += parseInt(value.fileSize!, 10));
@@ -417,7 +411,6 @@ export class ChangeSetHandler {
     const fileHandler = this._fileHandler;
     changeSets.forEach((changeSet) =>
       queue.push(async () => {
-        const downloadUrl: string = changeSet.downloadUrl!;
         const downloadPath: string = fileHandler.join(path, changeSet.fileName!);
         const changeSetSize = parseInt(changeSet.fileSize!, 10);
 
@@ -435,6 +428,9 @@ export class ChangeSetHandler {
         }
 
         try {
+          // Get downloadUrl just before download start
+          const csWithSasUrl = await this.get(requestContext, iModelId, new ChangeSetQuery().selectDownloadUrl().byId(changeSet.id!));
+          const downloadUrl = csWithSasUrl[0].downloadUrl!;
           await fileHandler.downloadFile(requestContext, downloadUrl, downloadPath, parseInt(changeSet.fileSize!, 10), progressCallback ? callback : undefined);
           requestContext.enter();
         } catch (error) {
