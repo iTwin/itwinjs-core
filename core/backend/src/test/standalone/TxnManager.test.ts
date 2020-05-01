@@ -4,14 +4,42 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { BeDuration, DbResult, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
-import { LineSegment3d, Point3d, YawPitchRollAngles } from "@bentley/geometry-core";
-import { Code, ColorByName, GeometryStreamBuilder, IModel, IModelError, SubCategoryAppearance } from "@bentley/imodeljs-common";
-import { BriefcaseIdValue } from "../../BriefcaseManager";
 import {
-  BackendRequestContext, IModelHost, IModelJsFs, IModelJsNative, PhysicalModel, SpatialCategory, StandaloneDb, TxnAction, UpdateModelOptions,
+  BeDuration,
+  DbResult,
+  IModelStatus,
+  OpenMode,
+} from "@bentley/bentleyjs-core";
+import {
+  LineSegment3d,
+  Point3d,
+  YawPitchRollAngles,
+} from "@bentley/geometry-core";
+import {
+  Code,
+  ColorByName,
+  GeometryStreamBuilder,
+  IModel,
+  IModelError,
+  SubCategoryAppearance,
+} from "@bentley/imodeljs-common";
+import {
+  BackendRequestContext,
+  IModelHost,
+  IModelJsFs,
+  IModelJsNative,
+  PhysicalModel,
+  SpatialCategory,
+  StandaloneDb,
+  TxnAction,
+  UpdateModelOptions,
 } from "../../imodeljs-backend";
-import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject, TestPhysicalObjectProps } from "../IModelTestUtils";
+import {
+  IModelTestUtils,
+  TestElementDrivesElement,
+  TestPhysicalObject,
+  TestPhysicalObjectProps,
+} from "../IModelTestUtils";
 
 describe("TxnManager", () => {
   let imodel: StandaloneDb;
@@ -23,7 +51,7 @@ describe("TxnManager", () => {
     const nativeDb = new IModelHost.platform.DgnDb();
     const res = nativeDb.openIModel(pathname, OpenMode.ReadWrite, IModelJsNative.UpgradeMode.Domain);
     if (DbResult.BE_SQLITE_OK === res) {
-      nativeDb.resetBriefcaseId(BriefcaseIdValue.Standalone); // clears txn table
+      nativeDb.deleteAllTxns();
       nativeDb.closeIModel();
     }
     return res;
@@ -56,7 +84,7 @@ describe("TxnManager", () => {
     };
 
     imodel.saveChanges("schema change");
-    imodel.nativeDb.resetBriefcaseId(imodel.getBriefcaseId()); // clears txns
+    imodel.nativeDb.deleteAllTxns();
   });
 
   after(() => imodel.close());

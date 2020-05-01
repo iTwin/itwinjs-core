@@ -387,6 +387,7 @@ export class ChangeSetHandler {
    */
   public async download(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, query: ChangeSetQuery, path: string, progressCallback?: ProgressCallback): Promise<ChangeSet[]> {
     requestContext.enter();
+    query.selectDownloadUrl();
     const changeSets = await this.get(requestContext, iModelId, query);
 
     requestContext.enter();
