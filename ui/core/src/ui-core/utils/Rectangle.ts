@@ -11,7 +11,7 @@ import { Size, SizeProps } from "./Size";
 import { Geometry } from "@bentley/geometry-core";
 
 /** Describes 2d bounds.
- * @beta
+ * @public
  */
 export interface RectangleProps {
   readonly left: number;

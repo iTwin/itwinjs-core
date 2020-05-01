@@ -51,7 +51,7 @@ import touchCursorTapIcon from "./touch-cursor-point.svg?sprite";
 import touchCursorDragIcon from "./touch-cursor-pan.svg?sprite";
 
 /** Properties of [[ToolAssistanceField]] component.
- * @beta
+ * @public
  */
 export interface ToolAssistanceFieldProps extends StatusFieldProps {
   /** Indicates whether to include promptAtCursor Checkbox. Defaults to true. */
@@ -87,7 +87,7 @@ interface ToolAssistanceFieldState {
 }
 
 /** Tool Assistance Field React component.
- * @beta
+ * @public
  */
 export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProps, ToolAssistanceFieldState> {
   private static _toolAssistanceKey = "ToolAssistance";

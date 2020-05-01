@@ -23,7 +23,7 @@ export enum SplitButtonActionType {
 }
 
 /** Properties for [[SplitButton]] component
- * @beta
+ * @public
  */
 export interface SplitButtonProps extends CommonProps {
   /** Label to display in click area. */
@@ -43,7 +43,7 @@ interface SplitButtonState {
 
 /**
  * SplitButton with an action button on the left and an arrow button that displays a context menu on the right.
- * @beta
+ * @public
  */
 export class SplitButton extends React.Component<SplitButtonProps, SplitButtonState> {
   private _arrowElement: HTMLElement | null = null;

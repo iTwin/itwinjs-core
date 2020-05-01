@@ -326,7 +326,6 @@ export class AppNotificationManager extends NotificationManager {
     outputMessage(message: NotifyMessageDetails): void;
     outputPrompt(prompt: string): void;
     outputPromptByKey(key: string): void;
-    // @beta
     setToolAssistance(instructions: ToolAssistanceInstructions | undefined): void;
     setupActivityMessage(details: ActivityMessageDetails): boolean;
     protected _showToolTip(el: HTMLElement, message: HTMLElement | string, pt?: XAndY, options?: ToolTipOptions): void;
@@ -734,10 +733,10 @@ export interface ChangeSetInfo {
 // @beta
 export function ClearEmphasisStatusField(props: ClearEmphasisStatusFieldProps): JSX.Element;
 
-// @beta
+// @public
 export const COLOR_THEME_DEFAULT = ColorTheme.Light;
 
-// @beta
+// @public
 export enum ColorTheme {
     // (undocumented)
     Dark = "dark",
@@ -950,7 +949,7 @@ export const connectIModelConnection: (mapStateToProps?: any, mapDispatchToProps
 // @beta
 export const connectIModelConnectionAndViewState: (mapStateToProps?: any, mapDispatchToProps?: any) => import("react-redux").InferableComponentEnhancerWithProps<any, any>;
 
-// @beta
+// @public
 export type ContentCallback = (content: ContentProps) => void;
 
 // @public
@@ -999,7 +998,6 @@ export class ContentGroup {
     onFrontstageDeactivated(): void;
     onFrontstageReady(): void;
     refreshContentNodes(): void;
-    // @beta
     toJSON(contentCallback?: ContentCallback): ContentGroupProps;
 }
 
@@ -1068,7 +1066,6 @@ export class ContentLayoutDef {
     priority: number;
     // (undocumented)
     get rootSplit(): LayoutSplit | undefined;
-    // @beta
     toJSON(): ContentLayoutProps;
 }
 
@@ -1171,7 +1168,7 @@ export function createAction<T extends string, P>(type: T, payload: P): ActionWi
 // @alpha
 export const createVisibilityTreeNodeRenderer: (iconsEnabled: boolean, descriptionEnabled: boolean) => (props: TreeNodeRendererProps) => JSX.Element;
 
-// @beta
+// @public
 export class CubeNavigationAidControl extends NavigationAidControl {
     constructor(info: ConfigurableCreateInfo, options: any);
     // (undocumented)
@@ -1180,7 +1177,7 @@ export class CubeNavigationAidControl extends NavigationAidControl {
     static navigationAidId: string;
 }
 
-// @beta
+// @public
 export enum CursorDirection {
     // (undocumented)
     Bottom = 1,
@@ -1202,7 +1199,7 @@ export enum CursorDirection {
     TopRight = 4112
 }
 
-// @beta
+// @public
 export enum CursorDirectionParts {
     // (undocumented)
     Bottom = 1,
@@ -1214,7 +1211,7 @@ export enum CursorDirectionParts {
     Top = 4096
 }
 
-// @beta
+// @public
 export class CursorInformation {
     // @internal
     static clearCursorDirections(): void;
@@ -1236,7 +1233,7 @@ export interface CursorMenuData {
     position: XAndY;
 }
 
-// @beta
+// @public
 export class CursorPopup extends React.Component<CursorPopupProps, CursorPopupState> {
     // @internal
     constructor(props: CursorPopupProps);
@@ -1252,7 +1249,7 @@ export class CursorPopup extends React.Component<CursorPopupProps, CursorPopupSt
     render(): JSX.Element;
     }
 
-// @beta
+// @public
 export function CursorPopupContent(props: CommonDivProps): JSX.Element;
 
 // @internal
@@ -1265,7 +1262,7 @@ export interface CursorPopupFadeOutEventArgs {
     id: string;
 }
 
-// @beta
+// @public
 export class CursorPopupManager {
     // @internal (undocumented)
     static clearPopups(): void;
@@ -1297,7 +1294,7 @@ export class CursorPopupMenu extends React.PureComponent<CommonProps, CursorPopu
     readonly state: CursorPopupMenuState;
 }
 
-// @beta
+// @public
 export interface CursorPopupOptions {
     onApply?: () => void;
     onClose?: () => void;
@@ -1305,7 +1302,7 @@ export interface CursorPopupOptions {
     title?: string;
 }
 
-// @beta
+// @public
 export interface CursorPopupProps extends CommonProps {
     // (undocumented)
     content: React.ReactNode;
@@ -1324,7 +1321,7 @@ export interface CursorPopupProps extends CommonProps {
     title?: string;
 }
 
-// @beta
+// @public
 export class CursorPopupRenderer extends React.Component<any, CursorPopupRendererState> {
     constructor(props: any);
     // (undocumented)
@@ -1353,20 +1350,19 @@ export interface CursorPopupUpdatePositionEventArgs {
     pt: PointProps;
 }
 
-// @alpha (undocumented)
+// @internal (undocumented)
 export class CursorPrompt {
     constructor(timeOut: number, fadeOut: boolean);
-    // @internal
     close(fadeOut: boolean): void;
     // (undocumented)
     display(toolIconSpec: string, instruction: ToolAssistanceInstruction, offset?: PointProps, relativePosition?: RelativePosition): void;
     }
 
-// @beta
+// @public
 export class CursorUpdatedEvent extends UiEvent<CursorUpdatedEventArgs> {
 }
 
-// @beta
+// @public
 export interface CursorUpdatedEventArgs {
     // (undocumented)
     direction: CursorDirection;
@@ -3091,7 +3087,6 @@ export class MessageManager {
     static readonly onInputFieldMessageRemovedEvent: InputFieldMessageRemovedEvent;
     static readonly onMessageAddedEvent: MessageAddedEvent;
     static readonly onMessagesUpdatedEvent: MessagesUpdatedEvent;
-    // @beta
     static readonly onToolAssistanceChangedEvent: ToolAssistanceChangedEvent;
     static openMessageBox(mbType: MessageBoxType, message: NotifyMessageType, icon: MessageBoxIconType): Promise<MessageBoxValue>;
     static openToolTip(htmlElement: HTMLElement, message: NotifyMessageType, location?: XAndY, options?: ToolTipOptions): void;
@@ -3099,7 +3094,6 @@ export class MessageManager {
     static outputMessage(message: NotifyMessageDetailsType): void;
     static outputPrompt(prompt: string): void;
     static setMaxCachedMessages(max: number): void;
-    // @beta
     static setToolAssistance(instructions: ToolAssistanceInstructions | undefined): void;
     static setupActivityMessageDetails(details: ActivityMessageDetails): boolean;
     static setupActivityMessageValues(message: NotifyMessageType, percentage: number, restored?: boolean): boolean;
@@ -3725,7 +3719,7 @@ export const RULESET_SPATIAL_BREAKDOWN: Ruleset;
 // @alpha
 export const SafeAreaContext: React.Context<SafeAreaInsets>;
 
-// @beta
+// @public
 export class SavedView {
     static emphasizeElementsFromProps(vp: ScreenViewport, savedViewProps: SavedViewProps): boolean;
     static emphasizeElementsToProps(vp: ScreenViewport, savedViewProps: SavedViewProps): void;
@@ -3733,14 +3727,14 @@ export class SavedView {
     static viewStateToProps(viewState: ViewState): SavedViewProps;
 }
 
-// @beta
+// @public
 export class SavedViewLayout {
     static emphasizeElementsFromProps(contentGroup: ContentGroup, savedProps: SavedViewLayoutProps): boolean;
     static viewLayoutToProps(contentLayoutDef: ContentLayoutDef, contentGroup: ContentGroup, emphasizeElements?: boolean, contentCallback?: ContentCallback): SavedViewLayoutProps;
     static viewStatesFromProps(iModelConnection: IModelConnection, savedProps: SavedViewLayoutProps): Promise<Array<ViewState | undefined>>;
 }
 
-// @beta
+// @public
 export interface SavedViewLayoutProps {
     // (undocumented)
     contentGroupProps: ContentGroupProps;
@@ -3750,7 +3744,7 @@ export interface SavedViewLayoutProps {
     savedViews: SavedViewProps[];
 }
 
-// @beta
+// @public
 export interface SavedViewProps {
     // (undocumented)
     bisBaseClass: string;
@@ -4366,7 +4360,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
     readonly state: Readonly<StatusBarState>;
 }
 
-// @beta
+// @public
 export function StatusBarCenterSection(props: CommonDivProps): JSX.Element;
 
 // @beta
@@ -4406,7 +4400,7 @@ export class StatusBarItemUtilities {
     static createStatusBarItem: (id: string, section: StatusBarSection, itemPriority: number, reactNode: React.ReactNode, itemProps?: Partial<StatusBarItem> | undefined) => StatusBarItem;
 }
 
-// @beta
+// @public
 export function StatusBarLeftSection(props: CommonDivProps): JSX.Element;
 
 // @public
@@ -4417,10 +4411,10 @@ export interface StatusBarProps extends CommonProps {
     widgetControl?: StatusBarWidgetControl;
 }
 
-// @beta
+// @public
 export function StatusBarRightSection(props: CommonDivProps): JSX.Element;
 
-// @beta
+// @public
 export function StatusBarSpaceBetween(props: CommonDivProps): JSX.Element;
 
 // @public
@@ -4627,7 +4621,7 @@ export interface TaskPropsList {
     tasks: TaskProps[];
 }
 
-// @beta
+// @public
 export const ThemeManager: import("react-redux").ConnectedComponent<typeof ThemeManagerComponent, Pick<ThemeProps, never>>;
 
 // @beta
@@ -4653,16 +4647,16 @@ export interface ToolActivatedEventArgs {
     toolId: string;
 }
 
-// @beta
+// @public
 export class ToolAssistanceChangedEvent extends UiEvent<ToolAssistanceChangedEventArgs> {
 }
 
-// @beta
+// @public
 export interface ToolAssistanceChangedEventArgs {
     instructions: ToolAssistanceInstructions | undefined;
 }
 
-// @beta
+// @public
 export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProps, ToolAssistanceFieldState> {
     constructor(p: ToolAssistanceFieldProps);
     // @internal (undocumented)
@@ -4680,7 +4674,7 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
 // @internal
 export type ToolAssistanceFieldDefaultProps = Pick<ToolAssistanceFieldProps, "includePromptAtCursor" | "uiSettings" | "cursorPromptTimeout" | "fadeOutCursorPrompt" | "defaultPromptAtCursor">;
 
-// @beta
+// @public
 export interface ToolAssistanceFieldProps extends StatusFieldProps {
     cursorPromptTimeout: number;
     defaultPromptAtCursor: boolean;
@@ -4746,7 +4740,7 @@ export class ToolbarHelper {
     static createToolbarItemsFromItemDefs(itemDefs: AnyItemDef[], startingItemPriority?: number, overrides?: Partial<ToolbarItem>): CommonToolbarItem[];
     // (undocumented)
     static getIconReactNode(item: ActionButton | GroupButton_2): React.ReactNode;
-    // @alpha
+    // @internal
     static isCustomToolbarButton: (item: CommonToolbarItem) => item is CustomToolbarItem;
 }
 
@@ -5034,7 +5028,7 @@ export class UiFramework {
     static getActiveSelectionScope(): string;
     // @beta (undocumented)
     static getAvailableSelectionScopes(): PresentationSelectionScope[];
-    // @beta (undocumented)
+    // (undocumented)
     static getColorTheme(): string;
     // @beta (undocumented)
     static getCursorMenuData(): CursorMenuData | undefined;
@@ -5046,11 +5040,11 @@ export class UiFramework {
     static getDefaultViewState(): ViewState | undefined;
     // (undocumented)
     static getIModelConnection(): IModelConnection | undefined;
-    // @beta (undocumented)
+    // (undocumented)
     static getIsUiVisible(): boolean;
     // @beta (undocumented)
     static getUserInfo(): UserInfo | undefined;
-    // @beta (undocumented)
+    // (undocumented)
     static getWidgetOpacity(): number;
     static get i18n(): I18N;
     static get i18nNamespace(): string;
@@ -5060,13 +5054,12 @@ export class UiFramework {
     static get initialized(): boolean;
     // @internal
     static initializeEx(store: Store<any> | undefined, i18n?: I18N, frameworkStateKey?: string, projectServices?: ProjectServices, iModelServices?: IModelServices): Promise<void>;
-    // @beta (undocumented)
+    // (undocumented)
     static isMobile(): boolean;
     // @internal (undocumented)
     static loggerCategory(obj: any): string;
     // @internal
     static readonly onFrameworkVersionChangedEvent: FrameworkVersionChangedEvent;
-    // @beta
     static readonly onUiVisibilityChanged: UiVisibilityChangedEvent;
     // @beta (undocumented)
     static openCursorMenu(menuData: CursorMenuData | undefined): void;
@@ -5080,7 +5073,7 @@ export class UiFramework {
     static setActiveIModelId(iModelId: string): void;
     // (undocumented)
     static setActiveSelectionScope(selectionScopeId: string): void;
-    // @beta (undocumented)
+    // (undocumented)
     static setColorTheme(theme: string): void;
     // (undocumented)
     static setDefaultIModelViewportControlId(iModelViewportControlId: string, immediateSync?: boolean): void;
@@ -5090,11 +5083,11 @@ export class UiFramework {
     static setDefaultViewState(viewState: ViewState, immediateSync?: boolean): void;
     // (undocumented)
     static setIModelConnection(iModelConnection: IModelConnection | undefined, immediateSync?: boolean): void;
-    // @beta (undocumented)
+    // (undocumented)
     static setIsUiVisible(visible: boolean): void;
     // @beta (undocumented)
     static setUserInfo(userInfo: UserInfo | undefined, immediateSync?: boolean): void;
-    // @beta (undocumented)
+    // (undocumented)
     static setWidgetOpacity(opacity: number): void;
     static get store(): Store<any>;
     static terminate(): void;
@@ -5118,7 +5111,7 @@ export interface UiSettingsProviderProps {
     uiSettings: UiSettings;
 }
 
-// @beta
+// @public
 export class UiShowHideManager {
     static get autoHideUi(): boolean;
     static set autoHideUi(autoHide: boolean);
@@ -5139,11 +5132,11 @@ export class UiShowHideManager {
     static set useProximityOpacity(value: boolean);
     }
 
-// @beta
+// @public
 export class UiVisibilityChangedEvent extends UiEvent<UiVisibilityEventArgs> {
 }
 
-// @beta
+// @public
 export interface UiVisibilityEventArgs {
     // (undocumented)
     visible: boolean;
@@ -5273,7 +5266,7 @@ export class ViewAttributesStatusField extends React.Component<StatusFieldProps,
     render(): JSX.Element;
     }
 
-// @beta
+// @public
 export interface ViewLayout {
     // (undocumented)
     contentGroup: ContentGroup;
@@ -5501,7 +5494,7 @@ export class Widget extends React.Component<WidgetProps> {
     render(): null;
 }
 
-// @beta
+// @public
 export const WIDGET_OPACITY_DEFAULT = 0.9;
 
 // @public

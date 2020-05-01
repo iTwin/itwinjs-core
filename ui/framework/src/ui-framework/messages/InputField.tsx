@@ -19,7 +19,7 @@ import { NotifyMessageType } from "./ReactNotifyMessageDetails";
 import "./InputField.scss";
 
 /** Properties of [[InputFieldMessage]] component.
- * @beta
+ * @public
  */
 interface InputFieldMessageProps {
   showCloseButton?: boolean;

@@ -12,7 +12,7 @@ import { CommonProps } from "../utils/Props";
 import "./LoadingBar.scss";
 
 /** Properties for [[LoadingBar]] component
- * @beta
+ * @public
  */
 export interface LoadingBarProps extends CommonProps {
   /** Percent */
@@ -25,7 +25,7 @@ export interface LoadingBarProps extends CommonProps {
 
 /**
  * A loading bar with optional percentage text.
- * @beta
+ * @public
  */
 export class LoadingBar extends React.PureComponent<LoadingBarProps> {
   public static defaultProps: Partial<LoadingBarProps> = {

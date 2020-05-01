@@ -1100,7 +1100,7 @@ export abstract class DateTimeTypeConverterBase extends TypeConverter implements
     sortCompare(valueA: Date, valueB: Date, _ignoreCase?: boolean): number;
 }
 
-// @alpha
+// @internal
 export class DayPicker extends React.Component<DayPickerProps, DayPickerState> {
     constructor(props: DayPickerProps);
     // (undocumented)

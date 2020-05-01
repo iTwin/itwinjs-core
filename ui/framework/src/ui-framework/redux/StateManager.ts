@@ -24,8 +24,8 @@ export interface FrameworkRootState {
 
 /**
  * Centralized state management class using  Redux actions, reducers and store. This class monitors the ReducerRegistry and will
- * automatically update the store when a new reducer is registered.  This allows the store to be incrementally constructed and modules
- * and/or plugin are loaded.
+ * automatically update the store when a new reducer is registered.  This allows the store to be incrementally constructed as modules
+ * and/or extensions are loaded.
  * @beta
  */
 export class StateManager {

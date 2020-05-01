@@ -22,7 +22,7 @@ import "./Slider.scss";
 // cspell:ignore pushable
 
 /** Properties for [[Slider]] component
- * @beta
+ * @public
  */
 export interface SliderProps extends CommonProps {
   /** Minimum value */
@@ -99,7 +99,7 @@ export interface SliderProps extends CommonProps {
  * The Slider component uses various components from the
  * [react-compound-slider](https://www.npmjs.com/package/react-compound-slider)
  * package internally.
- * @beta
+ * @public
  */
 export function Slider(props: SliderProps) {
   const { className, style, min, max, values, step, mode,

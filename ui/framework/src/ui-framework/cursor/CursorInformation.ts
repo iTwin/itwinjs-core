@@ -10,7 +10,7 @@ import { RelativePosition } from "@bentley/ui-abstract";
 import { UiEvent, Point, PointProps } from "@bentley/ui-core";
 
 /** Enum for Cursor Direction parts
- *  @beta
+ *  @public
  */
 export enum CursorDirectionParts {
   Top = 0x1000,
@@ -20,7 +20,7 @@ export enum CursorDirectionParts {
 }
 
 /** Enum for Cursor Direction
- * @beta
+ * @public
  */
 export enum CursorDirection {
   None = 0,
@@ -35,7 +35,7 @@ export enum CursorDirection {
 }
 
 /** Cursor Updated Event Args interface.
- * @beta
+ * @public
  */
 export interface CursorUpdatedEventArgs {
   oldPt: PointProps;
@@ -44,12 +44,12 @@ export interface CursorUpdatedEventArgs {
 }
 
 /** Cursor Updated Event class.
- * @beta
+ * @public
  */
 export class CursorUpdatedEvent extends UiEvent<CursorUpdatedEventArgs> { }
 
 /** Cursor Information class
- * @beta
+ * @public
  */
 export class CursorInformation {
   private static _cursorPosition: Point = new Point();

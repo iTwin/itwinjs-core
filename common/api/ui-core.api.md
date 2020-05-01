@@ -203,19 +203,19 @@ export enum CheckBoxState {
     Partial = 2
 }
 
-// @beta
+// @public
 export class CheckListBox extends React.PureComponent<CommonProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
-// @beta
+// @public
 export class CheckListBoxItem extends React.PureComponent<CheckListBoxItemProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
-// @beta
+// @public
 export interface CheckListBoxItemProps extends CommonProps {
     checked?: boolean;
     disabled?: boolean;
@@ -223,7 +223,7 @@ export interface CheckListBoxItemProps extends CommonProps {
     onClick?: () => any;
 }
 
-// @beta
+// @public
 export function CheckListBoxSeparator(): JSX.Element;
 
 // @internal
@@ -398,7 +398,7 @@ export enum Corner {
     TopRight = 1
 }
 
-// @beta
+// @public
 export class Cube extends React.PureComponent<CubeProps> {
     // (undocumented)
     render(): React.ReactNode;
@@ -418,7 +418,7 @@ export interface CubeFaceProps extends React.AllHTMLAttributes<HTMLDivElement> {
     rotMatrix: Matrix3d;
 }
 
-// @beta
+// @public
 export interface CubeProps extends React.AllHTMLAttributes<HTMLDivElement>, CommonProps {
     // (undocumented)
     faces?: {
@@ -561,7 +561,7 @@ export interface DivProps extends CommonDivProps {
     mainClassName: string;
 }
 
-// @beta
+// @public
 export const DivWithOutsideClick: {
     new (props: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>): {
         ref: React.RefObject<HTMLDivElement>;
@@ -694,7 +694,7 @@ export interface ExpansionToggleProps extends CommonProps {
     onClick?: (e: React.MouseEvent<HTMLDivElement>) => void;
 }
 
-// @beta
+// @public
 export enum Face {
     // (undocumented)
     Back = "back",
@@ -854,16 +854,16 @@ export enum HorizontalAlignment {
     Right = "right"
 }
 
-// @beta
+// @public
 export class HorizontalTabs extends React.PureComponent<TabsProps> {
-    // (undocumented)
+    // @internal (undocumented)
     render(): JSX.Element;
 }
 
 // @public
 export function Icon(props: IconProps): JSX.Element | null;
 
-// @beta
+// @public
 export class IconHelper {
     static getIconData(iconSpec: string | ConditionalStringValue | React.ReactNode, internalData?: Map<string, any>): string | ConditionalStringValue;
     static getIconReactNode(icon: string | ConditionalStringValue | React.ReactNode, internalData?: Map<string, any>): React.ReactNode;
@@ -871,13 +871,13 @@ export class IconHelper {
     static get reactIconKey(): string;
 }
 
-// @beta
+// @public
 export class IconInput extends React.PureComponent<IconInputProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
-// @beta
+// @public
 export interface IconInputProps extends InputProps {
     containerClassName?: string;
     icon: React.ReactNode;
@@ -891,13 +891,13 @@ export interface IconProps {
 // @public
 export type IconSpec = string | ConditionalStringValue | React.ReactNode;
 
-// @beta
+// @public
 export class ImageCheckBox extends React.PureComponent<ImageCheckBoxProps> {
     // @internal (undocumented)
     render(): JSX.Element;
 }
 
-// @beta
+// @public
 export interface ImageCheckBoxProps extends CommonProps {
     checked?: boolean;
     disabled?: boolean;
@@ -1016,7 +1016,7 @@ export class Line {
     p2: Point;
 }
 
-// @beta
+// @public
 export class LoadingBar extends React.PureComponent<LoadingBarProps> {
     // (undocumented)
     static defaultProps: Partial<LoadingBarProps>;
@@ -1024,14 +1024,14 @@ export class LoadingBar extends React.PureComponent<LoadingBarProps> {
     render(): JSX.Element;
 }
 
-// @beta
+// @public
 export interface LoadingBarProps extends CommonProps {
     barHeight: number;
     percent: number;
     showPercentage?: boolean;
 }
 
-// @beta
+// @public
 export class LoadingPrompt extends React.PureComponent<LoadingPromptProps> {
     // (undocumented)
     static defaultProps: Partial<LoadingPromptProps>;
@@ -1039,7 +1039,7 @@ export class LoadingPrompt extends React.PureComponent<LoadingPromptProps> {
     render(): JSX.Element;
 }
 
-// @beta
+// @public
 export interface LoadingPromptProps {
     isDeterminate: boolean;
     // @deprecated
@@ -1054,7 +1054,7 @@ export interface LoadingPromptProps {
     title: string;
 }
 
-// @beta
+// @public
 export class LoadingSpinner extends React.PureComponent<LoadingSpinnerProps> {
     // (undocumented)
     static defaultProps: Partial<LoadingSpinnerProps>;
@@ -1062,13 +1062,13 @@ export class LoadingSpinner extends React.PureComponent<LoadingSpinnerProps> {
     render(): JSX.Element;
 }
 
-// @beta
+// @public
 export interface LoadingSpinnerProps extends SpinnerProps {
     message?: string;
     messageOnTop?: boolean;
 }
 
-// @beta
+// @public
 export class LoadingStatus extends React.PureComponent<LoadingStatusProps> {
     // (undocumented)
     static defaultProps: Partial<LoadingStatusProps>;
@@ -1076,7 +1076,7 @@ export class LoadingStatus extends React.PureComponent<LoadingStatusProps> {
     render(): JSX.Element;
 }
 
-// @beta
+// @public
 export interface LoadingStatusProps extends CommonProps {
     message: string;
     percent: number;
@@ -1095,7 +1095,7 @@ export class LocalUiSettings implements UiSettings {
     w: Window;
 }
 
-// @beta
+// @public
 export interface MainTabsProps extends TabsProps {
     mainClassName: string;
 }
@@ -1174,7 +1174,7 @@ export function MutedText(props: TextProps): JSX.Element;
 // @internal
 export function NewBadge(props: CommonProps): JSX.Element;
 
-// @beta
+// @public
 export interface NoChildrenProps {
     // (undocumented)
     children?: undefined;
@@ -1217,7 +1217,7 @@ export interface NumericInputProps extends Omit<ReactNumericInputProps, "step">,
 // @public
 export type Omit<T, K> = Pick<T, Exclude<keyof T, K>>;
 
-// @beta
+// @public
 export type OmitChildrenProp<T extends {
     children?: React.ReactNode;
 }> = Omit<T, "children">;
@@ -1257,7 +1257,7 @@ export class Point implements PointProps {
     readonly y: number;
 }
 
-// @beta
+// @public
 export interface PointProps {
     // (undocumented)
     readonly x: number;
@@ -1265,7 +1265,7 @@ export interface PointProps {
     readonly y: number;
 }
 
-// @beta
+// @public
 export class Popup extends React.Component<PopupProps, PopupState> {
     constructor(props: PopupProps);
     // (undocumented)
@@ -1280,7 +1280,7 @@ export class Popup extends React.Component<PopupProps, PopupState> {
     render(): React.ReactPortal | null;
     }
 
-// @beta
+// @public
 export interface PopupProps extends CommonProps {
     ariaLabel?: string;
     focusTarget?: React.RefObject<HTMLElement> | string;
@@ -1501,7 +1501,7 @@ export class Rectangle implements RectangleProps {
     toProps(): RectangleProps;
 }
 
-// @beta
+// @public
 export interface RectangleProps {
     // (undocumented)
     readonly bottom: number;
@@ -1595,7 +1595,7 @@ export class Size implements SizeProps {
     readonly width: number;
 }
 
-// @beta
+// @public
 export interface SizeProps {
     // (undocumented)
     readonly height: number;
@@ -1603,10 +1603,10 @@ export interface SizeProps {
     readonly width: number;
 }
 
-// @beta
+// @public
 export function Slider(props: SliderProps): JSX.Element;
 
-// @beta
+// @public
 export interface SliderProps extends CommonProps {
     disabled?: boolean;
     formatTick?: (tick: number) => string;
@@ -1670,7 +1670,7 @@ export enum SpinnerSize {
     XLarge = 3
 }
 
-// @beta
+// @public
 export class SplitButton extends React.Component<SplitButtonProps, SplitButtonState> {
     constructor(props: SplitButtonProps);
     // (undocumented)
@@ -1687,7 +1687,7 @@ export enum SplitButtonActionType {
     List = 1
 }
 
-// @beta
+// @public
 export interface SplitButtonProps extends CommonProps {
     drawBorder?: boolean;
     icon?: IconSpec;
@@ -1698,10 +1698,10 @@ export interface SplitButtonProps extends CommonProps {
 // @beta
 export type StepFunctionProp = number | ((direction: string) => number | undefined);
 
-// @beta
+// @public
 export function StyledText(props: StyledTextProps): JSX.Element;
 
-// @beta
+// @public
 export interface StyledTextProps extends TextProps {
     mainClassName: string;
 }
@@ -1736,13 +1736,13 @@ export interface SvgSpriteProps extends CommonProps {
     src: string;
 }
 
-// @beta
+// @public
 export class Tabs extends React.PureComponent<MainTabsProps> {
-    // (undocumented)
+    // @internal (undocumented)
     render(): JSX.Element;
 }
 
-// @beta
+// @public
 export interface TabsProps extends React.AllHTMLAttributes<HTMLUListElement>, CommonProps {
     activeIndex?: number;
     green?: boolean;
@@ -2059,9 +2059,9 @@ export enum VerticalAlignment {
     Top = 1
 }
 
-// @beta
+// @public
 export class VerticalTabs extends React.PureComponent<TabsProps> {
-    // (undocumented)
+    // @internal (undocumented)
     render(): JSX.Element;
 }
 

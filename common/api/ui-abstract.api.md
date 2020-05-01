@@ -162,7 +162,7 @@ export interface BackstageStageLauncher extends CommonBackstageItem {
     readonly stageId: string;
 }
 
-// @beta
+// @public
 export enum BadgeType {
     New = 2,
     None = 0,
@@ -276,7 +276,7 @@ export type CommonStatusBarItem = AbstractStatusBarActionItem | AbstractStatusBa
 // @beta
 export type CommonToolbarItem = ActionButton | GroupButton | CustomButtonDefinition;
 
-// @beta
+// @public
 export class ConditionalBooleanValue {
     constructor(testFunc: () => boolean, syncEventIds: string[], value?: boolean);
     static getValue(conditionalValue: ConditionalBooleanValue | boolean | undefined): boolean;

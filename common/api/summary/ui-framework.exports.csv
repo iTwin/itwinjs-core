@@ -68,8 +68,8 @@ public;CategoryTree(props: CategoryTreeProps): JSX.Element
 public;CategoryTreeProps
 internal;ChangeSetInfo
 beta;ClearEmphasisStatusField(props: ClearEmphasisStatusFieldProps): JSX.Element
-beta;COLOR_THEME_DEFAULT = ColorTheme.Light
-beta;ColorTheme
+public;COLOR_THEME_DEFAULT = ColorTheme.Light
+public;ColorTheme
 public;CombinedReducerState
 public;combineReducers: CombineReducersFunction
 public;CombineReducersFunction = 
@@ -95,7 +95,7 @@ public;ConfigurableUiReducer(state: ConfigurableUiState | undefined, _action: Co
 public;ConfigurableUiState
 beta;connectIModelConnection: (mapStateToProps?: any, mapDispatchToProps?: any) => import("react-redux").InferableComponentEnhancerWithProps
 beta;connectIModelConnectionAndViewState: (mapStateToProps?: any, mapDispatchToProps?: any) => import("react-redux").InferableComponentEnhancerWithProps
-beta;ContentCallback = (content: ContentProps) => void
+public;ContentCallback = (content: ContentProps) => void
 public;ContentControl 
 public;ContentControlActivatedEvent 
 public;ContentControlActivatedEventArgs
@@ -115,26 +115,26 @@ public;CoreTools
 public;createAction
 public;createAction
 alpha;createVisibilityTreeNodeRenderer: (iconsEnabled: boolean, descriptionEnabled: boolean) => (props: TreeNodeRendererProps) => JSX.Element
-beta;CubeNavigationAidControl 
-beta;CursorDirection
-beta;CursorDirectionParts
-beta;CursorInformation
+public;CubeNavigationAidControl 
+public;CursorDirection
+public;CursorDirectionParts
+public;CursorInformation
 beta;CursorMenuData
-beta;CursorPopup 
-beta;CursorPopupContent(props: CommonDivProps): JSX.Element
+public;CursorPopup 
+public;CursorPopupContent(props: CommonDivProps): JSX.Element
 internal;CursorPopupFadeOutEvent 
 internal;CursorPopupFadeOutEventArgs
-beta;CursorPopupManager
+public;CursorPopupManager
 alpha;CursorPopupMenu 
-beta;CursorPopupOptions
-beta;CursorPopupProps 
-beta;CursorPopupRenderer 
+public;CursorPopupOptions
+public;CursorPopupProps 
+public;CursorPopupRenderer 
 internal;CursorPopupShow
 internal;CursorPopupUpdatePositionEvent 
 internal;CursorPopupUpdatePositionEventArgs
-alpha;CursorPrompt
-beta;CursorUpdatedEvent 
-beta;CursorUpdatedEventArgs
+internal;CursorPrompt
+public;CursorUpdatedEvent 
+public;CursorUpdatedEventArgs
 beta;CustomItemDef 
 beta;CustomItemProps 
 public;DeepReadonly
@@ -378,10 +378,10 @@ internal;RULESET_CATEGORIES: Ruleset
 internal;RULESET_MODELS: Ruleset
 internal;RULESET_SPATIAL_BREAKDOWN: Ruleset
 alpha;SafeAreaContext: React.Context
-beta;SavedView
-beta;SavedViewLayout
-beta;SavedViewLayoutProps
-beta;SavedViewProps
+public;SavedView
+public;SavedViewLayout
+public;SavedViewLayoutProps
+public;SavedViewProps
 alpha;ScheduleAnimationTimelineDataProvider 
 beta;SectionsStatusField(props: SectionsStatusFieldProps): JSX.Element
 beta;SectionsStatusFieldProps 
@@ -439,7 +439,7 @@ alpha;StandardRotationNavigationAidControl
 beta;StateManager
 public;StateType
 public;StatusBar 
-beta;StatusBarCenterSection(props: CommonDivProps): JSX.Element
+public;StatusBarCenterSection(props: CommonDivProps): JSX.Element
 beta;StatusBarComposer(props: StatusBarComposerProps): JSX.Element
 beta;StatusBarComposerProps 
 internal;StatusBarContext: React.Context
@@ -448,10 +448,10 @@ beta;StatusBarItem
 internal;StatusBarItemProps 
 beta;StatusBarItemsManager 
 beta;StatusBarItemUtilities
-beta;StatusBarLeftSection(props: CommonDivProps): JSX.Element
+public;StatusBarLeftSection(props: CommonDivProps): JSX.Element
 public;StatusBarProps 
-beta;StatusBarRightSection(props: CommonDivProps): JSX.Element
-beta;StatusBarSpaceBetween(props: CommonDivProps): JSX.Element
+public;StatusBarRightSection(props: CommonDivProps): JSX.Element
+public;StatusBarSpaceBetween(props: CommonDivProps): JSX.Element
 public;class StatusBarWidgetControl 
 public;StatusBarWidgetControlArgs
 internal;StatusBarZone 
@@ -473,16 +473,16 @@ public;TaskLaunchBackstageItemProps
 public;TaskManager
 public;TaskProps 
 public;TaskPropsList
-beta;ThemeManager: import("react-redux").ConnectedComponent
+public;ThemeManager: import("react-redux").ConnectedComponent
 beta;TileLoadingIndicator 
 alpha;toggleAllCategories(viewManager: ViewManager, imodel: IModelConnection, display: boolean, viewport?: Viewport, forAllViewports?: boolean, filteredProvider?: IPresentationTreeDataProvider): Promise
 public;ToolActivatedEvent 
 public;ToolActivatedEventArgs
-beta;ToolAssistanceChangedEvent 
-beta;ToolAssistanceChangedEventArgs
-beta;ToolAssistanceField 
+public;ToolAssistanceChangedEvent 
+public;ToolAssistanceChangedEventArgs
+public;ToolAssistanceField 
 internal;ToolAssistanceFieldDefaultProps = Pick
-beta;ToolAssistanceFieldProps 
+public;ToolAssistanceFieldProps 
 internal;Toolbar 
 beta;ToolbarButtonHelper
 beta;ToolbarComposer(props: ExtensibleToolbarProps): JSX.Element
@@ -522,9 +522,9 @@ public;UiFramework
 internal;UiSettingsContext: React.Context
 alpha;UiSettingsProvider(props: UiSettingsProviderProps): JSX.Element
 alpha;UiSettingsProviderProps
-beta;UiShowHideManager
-beta;UiVisibilityChangedEvent 
-beta;UiVisibilityEventArgs
+public;UiShowHideManager
+public;UiVisibilityChangedEvent 
+public;UiVisibilityEventArgs
 internal;useActiveFrontstageDef(): FrontstageDef | undefined
 beta;useActiveFrontstageId: () => string
 beta;useActiveIModelConnection(): IModelConnection | undefined
@@ -554,7 +554,7 @@ internal;useWidgetDef(): WidgetDef | undefined
 alpha;ValidationTextbox 
 internal;VersionInfo
 beta;ViewAttributesStatusField 
-beta;ViewLayout
+public;ViewLayout
 public;ViewportContentControl 
 beta;ViewSelector 
 beta;ViewSelectorChangedEvent 
@@ -578,7 +578,7 @@ alpha;VisibilityTreeNoFilteredDataProps
 alpha;VisibilityTreeSelectionPredicate = (key: NodeKey, node: TreeNodeItem) => boolean
 beta;VisibilityWidget 
 public;Widget 
-beta;WIDGET_OPACITY_DEFAULT = 0.9
+public;WIDGET_OPACITY_DEFAULT = 0.9
 public;WidgetChangeHandler
 internal;WidgetContent(): JSX.Element
 public;WidgetControl 

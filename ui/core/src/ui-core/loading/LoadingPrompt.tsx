@@ -13,7 +13,7 @@ import { LoadingStatus } from "./LoadingStatus";
 import "./LoadingPrompt.scss";
 
 /** Properties for [[LoadingPrompt]] component
- * @beta
+ * @public
  */
 export interface LoadingPromptProps {
   /** Title */
@@ -43,7 +43,7 @@ export interface LoadingPromptProps {
 
 /**
  * A component to display during loading that optionally shows percentage, status text and a cancel button.
- * @beta
+ * @public
  */
 export class LoadingPrompt extends React.PureComponent<LoadingPromptProps> {
   public static defaultProps: Partial<LoadingPromptProps> = {

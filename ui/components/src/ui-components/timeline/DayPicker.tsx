@@ -32,7 +32,7 @@ interface DayPickerState {
 }
 
 /** Day Picker for Solar Timeline component
- * @alpha
+ * @internal
  */
 export class DayPicker extends React.Component<DayPickerProps, DayPickerState> {
   private _months = [

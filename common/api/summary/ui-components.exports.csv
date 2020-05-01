@@ -92,7 +92,7 @@ beta;class DataControllerBase
 internal;DataRowItem 
 public;DateTimeTypeConverter 
 public;class DateTimeTypeConverterBase 
-alpha;DayPicker 
+internal;DayPicker 
 public;DelayLoadedTreeNodeItem 
 public;DEPRECATED_Tree 
 beta;DEPRECATED_withTreeDragDrop

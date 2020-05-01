@@ -36,14 +36,14 @@ import { UiComponents } from "@bentley/ui-components";
 // cSpell:ignore Mobi
 
 /** UiVisibility Event Args interface.
- * @beta
+ * @public
  */
 export interface UiVisibilityEventArgs {
   visible: boolean;
 }
 
 /** UiVisibility Event class.
- * @beta
+ * @public
  */
 export class UiVisibilityChangedEvent extends UiEvent<UiVisibilityEventArgs> { }
 
@@ -77,7 +77,7 @@ export class UiFramework {
   private static _version1WidgetOpacity: number = WIDGET_OPACITY_DEFAULT;
 
   /** Get Show Ui event.
-   * @beta
+   * @public
    */
   public static readonly onUiVisibilityChanged = new UiVisibilityChangedEvent();
 
@@ -359,12 +359,12 @@ export class UiFramework {
       [{ id: "element", label: "Element" } as PresentationSelectionScope];
   }
 
-  /** @beta */
+  /** @public */
   public static getIsUiVisible() {
     return UiShowHideManager.isUiVisible;
   }
 
-  /** @beta */
+  /** @public */
   public static setIsUiVisible(visible: boolean) {
     if (UiShowHideManager.isUiVisible !== visible) {
       UiShowHideManager.isUiVisible = visible;
@@ -372,27 +372,27 @@ export class UiFramework {
     }
   }
 
-  /** @beta */
+  /** @public */
   public static setColorTheme(theme: string) {
     UiFramework.store.dispatch({ type: ConfigurableUiActionId.SetTheme, payload: theme });
   }
 
-  /** @beta */
+  /** @public */
   public static getColorTheme(): string {
     return UiFramework.frameworkState ? UiFramework.frameworkState.configurableUiState.theme : /* istanbul ignore next */ COLOR_THEME_DEFAULT;
   }
 
-  /** @beta */
+  /** @public */
   public static setWidgetOpacity(opacity: number) {
     UiFramework.store.dispatch({ type: ConfigurableUiActionId.SetWidgetOpacity, payload: opacity });
   }
 
-  /** @beta */
+  /** @public */
   public static getWidgetOpacity(): number {
     return UiFramework.frameworkState ? UiFramework.frameworkState.configurableUiState.widgetOpacity : /* istanbul ignore next */ WIDGET_OPACITY_DEFAULT;
   }
 
-  /** @beta */
+  /** @public */
   public static isMobile() {  // tslint:disable-line: prefer-get
     let mobile = false;
     if ((/Mobi|Android/i.test(navigator.userAgent))) {

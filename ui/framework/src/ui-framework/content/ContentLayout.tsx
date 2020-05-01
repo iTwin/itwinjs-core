@@ -380,7 +380,7 @@ export class ContentLayoutDef {
   public get rootSplit(): LayoutSplit | undefined { return this._rootSplit; }
 
   /** Creates [[ContentLayoutProps]] for JSON purposes
-   * @beta
+   * @public
    */
   public toJSON(): ContentLayoutProps { return this._layoutProps; }
 

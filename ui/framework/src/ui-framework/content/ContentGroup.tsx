@@ -40,7 +40,7 @@ export interface ContentGroupProps {
 }
 
 /** Callback to process content properties during toJSON method
- * @beta
+ * @public
  */
 export type ContentCallback = (content: ContentProps) => void;
 
@@ -169,7 +169,7 @@ export class ContentGroup {
   }
 
   /** Creates [[ContentGroupProps]] for JSON purposes
-   * @beta
+   * @public
    */
   public toJSON(contentCallback?: ContentCallback): ContentGroupProps {
     const contentGroupProps: ContentGroupProps = {

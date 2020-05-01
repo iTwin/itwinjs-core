@@ -7,7 +7,7 @@
  */
 
 /** Describes 2d points.
- * @beta
+ * @public
  */
 export interface PointProps {
   readonly x: number;

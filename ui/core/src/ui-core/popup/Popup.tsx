@@ -25,7 +25,7 @@ interface PopupPoint {
 }
 
 /** Properties for the [[Popup]] component
- * @beta
+ * @public
  */
 export interface PopupProps extends CommonProps {
   /** Show or hide the box shadow (defaults to true) */
@@ -71,7 +71,7 @@ interface PopupState {
 }
 
 /** Popup React component displays a popup relative to an optional target element.
- * @beta
+ * @public
  */
 export class Popup extends React.Component<PopupProps, PopupState> {
   private _popup: HTMLElement | null = null;

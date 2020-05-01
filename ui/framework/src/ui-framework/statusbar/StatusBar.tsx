@@ -302,7 +302,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
 }
 
 /** StatusBar With Space Between Items React functional component
- * @beta
+ * @public
  */
 export function StatusBarSpaceBetween(props: CommonDivProps) {
   const { className, ...divProps } = props;
@@ -310,7 +310,7 @@ export function StatusBarSpaceBetween(props: CommonDivProps) {
 }
 
 /** StatusBar Left Section React functional component
- * @beta
+ * @public
  */
 export function StatusBarLeftSection(props: CommonDivProps) {
   const { className, ...divProps } = props;
@@ -318,7 +318,7 @@ export function StatusBarLeftSection(props: CommonDivProps) {
 }
 
 /** StatusBar Center Section React functional component
- * @beta
+ * @public
  */
 export function StatusBarCenterSection(props: CommonDivProps) {
   const { className, ...divProps } = props;
@@ -326,7 +326,7 @@ export function StatusBarCenterSection(props: CommonDivProps) {
 }
 
 /** StatusBar Right Section React functional component
- * @beta
+ * @public
  */
 export function StatusBarRightSection(props: CommonDivProps) {
   const { className, ...divProps } = props;
