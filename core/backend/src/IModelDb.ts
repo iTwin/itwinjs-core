@@ -2276,6 +2276,7 @@ export class SnapshotDb extends IModelDb {
 
     nativeDb.deleteLocalValue(IModelDb._edit);
     nativeDb.saveChanges();
+    nativeDb.deleteAllTxns();
     nativeDb.resetBriefcaseId(BriefcaseIdValue.Standalone);
 
     const snapshotDb = new SnapshotDb(nativeDb, OpenMode.ReadWrite); // WIP: clean up copied file on error?
