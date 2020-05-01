@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Id64String } from "@bentley/bentleyjs-core";
+import { Id64String, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { ChangeSet, HubIModel, IModelHubClient, IModelHubError, IModelQuery, ChangesType } from "@bentley/imodelhub-client";
 import { IModel, IModelVersion, SubCategoryAppearance, SyncMode } from "@bentley/imodeljs-common";
@@ -10,9 +10,11 @@ import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { Reporter } from "@bentley/perf-tools/lib/Reporter";
 import { assert } from "chai";
 import * as path from "path";
-import { BriefcaseDb, BriefcaseManager, ConcurrencyControl, DictionaryModel, Element, IModelDb, IModelJsFs, SpatialCategory } from "../imodeljs-backend";
+import { BriefcaseManager, ConcurrencyControl, DictionaryModel, Element, IModelDb, IModelJsFs, SpatialCategory } from "../imodeljs-backend";
 import { IModelTestUtils, TestIModelInfo } from "../test/IModelTestUtils";
 import { KnownTestLocations } from "../test/KnownTestLocations";
+import { HubUtility } from "../test/integration/HubUtility";
+import { RevisionUtility } from "../test/RevisionUtility";
 
 async function getIModelAfterApplyingCS(requestContext: AuthorizedClientRequestContext, reporter: Reporter, projectId: string, imodelId: string, client: IModelHubClient) {
   const changeSets: ChangeSet[] = await client.changeSets.get(requestContext, imodelId);
@@ -333,7 +335,7 @@ describe("ImodelChangesetPerformance", () => {
 
 });
 
-describe("ImodelChangesetPerformance big datasets", () => {
+describe.skip("ImodelChangesetPerformance big datasets", () => {
   const reporter = new Reporter();
   const configData = require(path.join(__dirname, "CSPerfConfig.json"));
   const csvPath = path.join(KnownTestLocations.outputDir, "ApplyCSPerf.csv");
@@ -448,4 +450,92 @@ describe("ImodelChangesetPerformance big datasets", () => {
       reporter.clearEntries();
     }
   });
+});
+
+describe("ImodelChangesetPerformance Apply Local", () => {
+  let iModelRootDir: string;
+  const configData = require(path.join(__dirname, "CSPerfConfig.json"));
+  const csvPath = path.join(KnownTestLocations.outputDir, "ApplyCSLocalPerf.csv");
+
+  before(async () => {
+    iModelRootDir = configData.rootDir;
+    if (!IModelJsFs.existsSync(KnownTestLocations.outputDir))
+      IModelJsFs.mkdirSync(KnownTestLocations.outputDir);
+  });
+
+  async function downloadFromHub(modelInfo: any) {
+    const downloadDir: string = path.join(iModelRootDir, modelInfo.modelName);
+    // if folder exists, we'll just use the local copy
+    if (!IModelJsFs.existsSync(downloadDir)) {
+      const requestContext: AuthorizedClientRequestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
+      await HubUtility.downloadIModelById(requestContext, modelInfo.projId, modelInfo.modelId, downloadDir);
+    }
+  }
+
+  function getStats(changesetFilePath: string) {
+    const stats = RevisionUtility.computeStatistics(changesetFilePath, true);
+    const details = {
+      rowsDeleted: stats.statistics.byOp.rowDeleted,
+      rowsInserted: stats.statistics.byOp.rowInserted,
+      rowsUpdated: stats.statistics.byOp.rowsUpdated,
+      rowsChanged: stats.statistics.rowsChanged,
+      tablesChanged: stats.statistics.tablesChanged,
+      schemaChangesTable: 0,
+      schemaChangesIndex: 0,
+    };
+    if (stats.hasSchemaChanges) {
+      const parts: string[] = stats.schemaChanges.toString().split(";");
+      const indexParts = parts.filter((obj) => obj.includes("INDEX"));
+      const tableParts = parts.filter((obj) => obj.includes("TABLE"));
+
+      details.schemaChangesTable = tableParts.length;
+      details.schemaChangesIndex = indexParts.length;
+    }
+    return details;
+  }
+
+  it("apply all changesets", async () => {
+    Logger.initializeToConsole();
+    Logger.setLevelDefault(LogLevel.Error);
+    Logger.setLevel("HubUtility", LogLevel.Info);
+    Logger.setLevel("Performance", LogLevel.Info);
+
+    for (const ds of configData.bigDatasets) {
+      const modelInfo = {
+        projId: ds.projId,
+        projName: ds.projName,
+        modelId: ds.modelId,
+        modelName: ds.modelName,
+      };
+      const csStart = ds.csStart;
+      const csEnd = ds.csEnd;
+      const iModelDir: string = path.join(iModelRootDir, modelInfo.modelName);
+      await downloadFromHub(modelInfo);
+      const results = HubUtility.getApplyChangeSetTime(iModelDir, csStart, csEnd);
+
+      const changeSetJsonPathname = path.join(iModelDir, "changeSets.json");
+      const jsonStr = IModelJsFs.readFileSync(changeSetJsonPathname) as string;
+      const changeSetsJson = JSON.parse(jsonStr);
+
+      const changesetsInfo = [];
+      for (const changeSetJson of changeSetsJson) {
+        changesetsInfo.push(changeSetJson);
+      }
+
+      const reporter = new Reporter();
+      for (const result of results) {
+        const csDetail = changesetsInfo.filter((obj) => obj.id === result.csId);
+        const csInfo = {
+          GUID: result.csId,
+          fileSize: csDetail[0].fileSize,
+          type: csDetail[0].changesType,
+          desc: csDetail[0].description,
+        };
+        const stats = getStats(path.join(iModelDir, "changeSets", result.csId + ".cs"));
+        reporter.addEntry("ImodelChangesetPerformance", "ApplyChangesetLocal", "Time(s)", result.time, { csNum: result.csNum, csDetail: csInfo, csStats: stats, modelDetail: modelInfo });
+      }
+      reporter.exportCSV(csvPath);
+    }
+  });
+
 });

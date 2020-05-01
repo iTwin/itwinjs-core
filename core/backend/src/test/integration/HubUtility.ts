@@ -207,6 +207,57 @@ export class HubUtility {
     return path.join(iModelDir, path.basename(seedPathname));
   }
 
+  /** Apply change set with Merge operation on an iModel on disk - the supplied directory contains a sub folder
+   * with the seed files, change sets, etc. in a standard format.
+   * Returns time taken for each changeset. Returns on first apply changeset error.
+   */
+  public static getApplyChangeSetTime(iModelDir: string, startCS: number = 0, endCS: number = 0): any[] {
+    const briefcasePathname = HubUtility.getBriefcasePathname(iModelDir);
+
+    Logger.logInfo(HubUtility.logCategory, "Creating standalone iModel");
+    HubUtility.createStandaloneIModel(briefcasePathname, iModelDir);
+    const iModel: StandaloneDb = StandaloneDb.openFile(briefcasePathname, OpenMode.ReadWrite);
+
+    const changeSets: ChangeSetToken[] = HubUtility.readChangeSets(iModelDir);
+    const endNum: number = endCS ? endCS : changeSets.length;
+    const filteredCS = changeSets.filter((obj) => obj.index >= startCS && obj.index <= endNum);
+
+    Logger.logInfo(HubUtility.logCategory, "Merging all available change sets");
+    const applyOption = ChangeSetApplyOption.Merge;
+    const perfLogger = new PerfLogger(`Applying change sets for operation ${ChangeSetApplyOption[applyOption]}`);
+
+    const results = [];
+    // Apply change sets one by one to debug any issues
+    for (const changeSet of filteredCS) {
+      const tempChangeSets = [changeSet];
+
+      const startTime = new Date().getTime();
+      const status: ChangeSetStatus = IModelHost.platform.ApplyChangeSetsRequest.doApplySync(iModel.nativeDb, JSON.stringify(tempChangeSets), applyOption);
+      const endTime = new Date().getTime();
+      const elapsedTime = (endTime - startTime) / 1000.0;
+
+      if (status === ChangeSetStatus.Success) {
+        Logger.logInfo(HubUtility.logCategory, "Successfully applied ChangeSet", () => ({ ...changeSet, status, applyOption }));
+      } else {
+        Logger.logError(HubUtility.logCategory, "Error applying ChangeSet", () => ({ ...changeSet, status, applyOption }));
+      }
+      results.push({
+        csNum: changeSet.index,
+        csId: changeSet.id,
+        csApplyOption: ChangeSetApplyOption[applyOption],
+        csResult: ChangeSetStatus[status],
+        time: elapsedTime,
+      });
+      if (status !== ChangeSetStatus.Success)
+        return results;
+    }
+
+    perfLogger.dispose();
+    iModel.close();
+
+    return results;
+  }
+
   /** Validate all change set operations on an iModel on disk - the supplied directory contains a sub folder
    * with the seed files, change sets, etc. in a standard format. This tests merging the change sets, reversing them,
    * and finally reinstating them. The method also logs the necessary performance

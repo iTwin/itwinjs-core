@@ -85,7 +85,7 @@ function testCommand(options) {
   const testDirOpt = options.testDir ? ["--testDir", options.testDir] : [];
   // NOTE: We use `mochaOpts` as the cli arg instead of `opts` because of conflicts on the commander options object
   const optionsOpt = options.mochaOpts ? ["--opts", options.mochaOpts] : [];
-  const timeoutOpt = options.timeout ? ["--timeouts", options.timeout] : [];
+  const timeoutOpt = options.timeout ? ["--timeout", options.timeout] : [];
   const grepOpt = options.grep ? ["--grep", `\"${options.grep}\"`] : [];
   const offlineOpt = options.offline ? ["--offline", options.offline] : [];
   const watchOpt = options.watch ? ["--watch"] : [];
