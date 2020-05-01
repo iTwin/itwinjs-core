@@ -1,6 +1,6 @@
 {
   "name": "@bentley/itwin-client",
-  "version": "2.0.0-dev.90",
+  "version": "2.0.0-dev.91",
   "description": "Base client package for iTwin applications",
   "main": "lib/itwin-client.js",
   "typings": "lib/itwin-client",
@@ -31,18 +31,18 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.0.0-dev.90"
+    "@bentley/bentleyjs-core": "^2.0.0-dev.91"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/certa": "2.0.0-dev.90",
-    "@bentley/bentleyjs-core": "2.0.0-dev.90",
-    "@bentley/build-tools": "2.0.0-dev.90",
-    "@bentley/config-loader": "2.0.0-dev.90",
-    "@bentley/geometry-core": "2.0.0-dev.90",
+    "@bentley/certa": "2.0.0-dev.91",
+    "@bentley/bentleyjs-core": "2.0.0-dev.91",
+    "@bentley/build-tools": "2.0.0-dev.91",
+    "@bentley/config-loader": "2.0.0-dev.91",
+    "@bentley/geometry-core": "2.0.0-dev.91",
     "@bentley/oidc-signin-tool": "2.0.0-dev.71",
     "@types/chai": "^4.1.4",
     "@types/deep-assign": "^0.1.0",
