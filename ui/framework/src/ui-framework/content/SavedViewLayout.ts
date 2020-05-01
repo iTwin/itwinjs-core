@@ -13,7 +13,7 @@ import { ContentLayoutDef } from "./ContentLayout";
 import { ViewState, IModelConnection } from "@bentley/imodeljs-frontend";
 
 /** SavedViewLayoutProps interface for sharing view layout information.
- * @beta
+ * @public
  */
 export interface SavedViewLayoutProps {
   contentLayoutProps: ContentLayoutProps;
@@ -22,7 +22,7 @@ export interface SavedViewLayoutProps {
 }
 
 /** ViewLayout interface for sharing view layout information.
- * @beta
+ * @public
  */
 export interface ViewLayout {
   contentLayoutDef: ContentLayoutDef;
@@ -31,7 +31,7 @@ export interface ViewLayout {
 }
 
 /** SavedViewLayout class. Used to serialize/deserialize a View Layout with Saved Views.
- * @beta
+ * @public
  */
 export class SavedViewLayout {
 

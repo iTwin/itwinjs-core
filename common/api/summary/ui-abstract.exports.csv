@@ -18,7 +18,7 @@ internal;BackstageItemsManager
 beta;BackstageItemType
 beta;BackstageItemUtilities
 beta;BackstageStageLauncher 
-beta;BadgeType
+public;BadgeType
 beta;BaseDialogItem
 beta;BasePropertyEditorParams
 beta;BasePropertyValue
@@ -30,7 +30,7 @@ beta;CommonBackstageItem
 beta;CommonItemProps
 beta;CommonStatusBarItem = AbstractStatusBarActionItem | AbstractStatusBarLabelItem | AbstractStatusBarCustomItem
 beta;CommonToolbarItem = ActionButton | GroupButton | CustomButtonDefinition
-beta;ConditionalBooleanValue
+public;ConditionalBooleanValue
 beta;ConditionalStringValue
 beta;CustomButtonDefinition 
 beta;CustomFormattedNumberParams 

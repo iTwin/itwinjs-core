@@ -17,7 +17,7 @@ import { Omit } from "../utils/typeUtils";
 import "./Node.scss";
 import { CommonProps } from "../utils/Props";
 
-/** Props for node checkbox renderer
+/** Props for node Checkbox renderer
  * @beta
  */
 export type NodeCheckboxRenderProps = Omit<CheckboxProps, "onChange" | "onClick"> & {
@@ -25,7 +25,7 @@ export type NodeCheckboxRenderProps = Omit<CheckboxProps, "onChange" | "onClick"
   onClick: (e: React.MouseEvent) => void,
 };
 
-/** Type for node checkbox renderer
+/** Type for node Checkbox renderer
  * @beta
  */
 export type NodeCheckboxRenderer = (props: NodeCheckboxRenderProps) => React.ReactNode;

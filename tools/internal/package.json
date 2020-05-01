@@ -3,16 +3,24 @@
   "version": "0.0.0",
   "description": "Internal build tools for Tools for collecting and reporting performance data",
   "license": "MIT",
-  "main": "bin/cli.js",
+  "main": "bin/internal-tools.js",
   "bin": {
-    "extension-cli": "./bin/cli.js"
+    "internal-tools": "./bin/internal-tools.js"
   },
-  "scripts": {},
+  "scripts": {
+    "build": "",
+    "clean": "",
+    "docs": "",
+    "lint": "",
+    "test": "",
+    "cover": ""
+  },
   "author": {
     "name": "Bentley Systems, Inc.",
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "@microsoft/rush-lib": "5.14.0"
-  }
+    "yargs": "^15.0.0"
+  },
+  "devDependencies": {}
 }

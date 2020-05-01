@@ -5415,7 +5415,6 @@ export class NotificationManager {
     outputMessage(_message: NotifyMessageDetails): void;
     outputPrompt(_prompt: string): void;
     outputPromptByKey(key: string): void;
-    // @alpha
     setToolAssistance(instructions: ToolAssistanceInstructions | undefined): void;
     setupActivityMessage(_details: ActivityMessageDetails): boolean;
     protected _showToolTip(_htmlElement: HTMLElement, _message: HTMLElement | string, _location?: XAndY, _options?: ToolTipOptions): void;
@@ -9079,7 +9078,7 @@ export namespace ToolAdmin {
     }
 }
 
-// @beta
+// @public
 export class ToolAssistance {
     static get altKey(): string;
     static get altKeyboardInfo(): ToolAssistanceKeyboardInfo;
@@ -9109,7 +9108,7 @@ export class ToolAssistance {
     static readonly upSymbol: string;
 }
 
-// @beta
+// @public
 export enum ToolAssistanceImage {
     AcceptPoint = 1,
     CursorClick = 2,
@@ -9130,14 +9129,14 @@ export enum ToolAssistanceImage {
     TwoTouchTap = 12
 }
 
-// @beta
+// @public
 export enum ToolAssistanceInputMethod {
     Both = 0,
     Mouse = 1,
     Touch = 2
 }
 
-// @beta
+// @public
 export interface ToolAssistanceInstruction {
     image: string | ToolAssistanceImage;
     inputMethod?: ToolAssistanceInputMethod;
@@ -9146,19 +9145,19 @@ export interface ToolAssistanceInstruction {
     text: string;
 }
 
-// @beta
+// @public
 export interface ToolAssistanceInstructions {
     mainInstruction: ToolAssistanceInstruction;
     sections?: ToolAssistanceSection[];
 }
 
-// @beta
+// @public
 export interface ToolAssistanceKeyboardInfo {
     bottomKeys?: string[];
     keys: string[];
 }
 
-// @beta
+// @public
 export interface ToolAssistanceSection {
     instructions: ToolAssistanceInstruction[];
     label?: string;

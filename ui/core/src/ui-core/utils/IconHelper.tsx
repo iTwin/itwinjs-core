@@ -11,7 +11,7 @@ import { ConditionalStringValue } from "@bentley/ui-abstract";
 import { Icon } from "../icons/IconComponent";
 
 /** Icon Helper Class used to store the data needed to generate an <Icon> for use in any control that shows an icon.
- * @beta
+ * @public
  */
 export class IconHelper {
   public static get reactIconKey(): string {

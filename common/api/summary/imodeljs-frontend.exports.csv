@@ -441,13 +441,13 @@ public;Tool
 public;ToolAdmin
 public;ToolAdmin
 alpha;ActiveSettings
-beta;ToolAssistance
-beta;ToolAssistanceImage
-beta;ToolAssistanceInputMethod
-beta;ToolAssistanceInstruction
-beta;ToolAssistanceInstructions
-beta;ToolAssistanceKeyboardInfo
-beta;ToolAssistanceSection
+public;ToolAssistance
+public;ToolAssistanceImage
+public;ToolAssistanceInputMethod
+public;ToolAssistanceInstruction
+public;ToolAssistanceInstructions
+public;ToolAssistanceKeyboardInfo
+public;ToolAssistanceSection
 public;ToolList = ToolType[]
 public;ToolRegistry
 public;ToolSettings

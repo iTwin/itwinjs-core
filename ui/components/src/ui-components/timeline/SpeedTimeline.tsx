@@ -59,7 +59,7 @@ interface SpeedProps extends CommonProps {
 }
 
 /** Speed Timeline used in Solar Timeline component
- * @alpha
+ * @internal
  */
 // tslint:disable-next-line: variable-name
 export function SpeedTimeline(props: SpeedProps) {

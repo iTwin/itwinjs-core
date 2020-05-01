@@ -13,7 +13,7 @@ import { CommonProps } from "../utils/Props";
 import "./CheckListBox.scss";
 
 /** Properties for the [[CheckListBoxItem]] component
- * @beta
+ * @public
  */
 export interface CheckListBoxItemProps extends CommonProps {
   /** Label */
@@ -27,7 +27,7 @@ export interface CheckListBoxItemProps extends CommonProps {
 }
 
 /** Item with a checkbox added to a [[CheckListBox]].
- * @beta
+ * @public
  */
 export class CheckListBoxItem extends React.PureComponent<CheckListBoxItemProps> {
   public render() {
@@ -43,7 +43,7 @@ export class CheckListBoxItem extends React.PureComponent<CheckListBoxItemProps>
 }
 
 /** Separator added to a [[CheckListBox]].
- * @beta
+ * @public
  */
 export function CheckListBoxSeparator() {
   return (
@@ -52,7 +52,7 @@ export function CheckListBoxSeparator() {
 }
 
 /** React component showing a list of Checkbox items.
- * @beta
+ * @public
  */
 export class CheckListBox extends React.PureComponent<CommonProps> {
   public render() {

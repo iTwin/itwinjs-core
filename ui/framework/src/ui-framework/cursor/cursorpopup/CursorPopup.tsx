@@ -17,7 +17,7 @@ import { CursorPopupFadeOutEventArgs, CursorPopupManager } from "./CursorPopupMa
 import classnames = require("classnames");
 
 /** Properties for the [[CursorPopup]] React component
- * @beta
+ * @public
  */
 export interface CursorPopupProps extends CommonProps {
   id: string;
@@ -48,7 +48,7 @@ interface CursorPopupState {
 }
 
 /** CursorPopup React component
- * @beta
+ * @public
  */
 export class CursorPopup extends React.Component<CursorPopupProps, CursorPopupState> {
 
@@ -194,7 +194,7 @@ export class CursorPopup extends React.Component<CursorPopupProps, CursorPopupSt
 }
 
 /** CursorPopup content with padding
- * @beta
+ * @public
  */
 export function CursorPopupContent(props: CommonDivProps) {
   return <Div {...props} mainClassName="uifw-cursorpopup-content" />;

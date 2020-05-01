@@ -257,7 +257,6 @@ export class NotificationManager {
 
   /** Setup tool assistance instructions for a tool. The instructions include the main instruction, which includes the current prompt.
    * @param instructions The tool assistance instructions.
-   * @alpha
    */
   public setToolAssistance(instructions: ToolAssistanceInstructions | undefined) {
     this.outputPrompt(instructions ? instructions.mainInstruction.text : "");

@@ -10,9 +10,10 @@ import * as React from "react";
 import { TabsProps, Tabs } from "./Tabs";
 
 /** Vertical tabs meant to represent the current position in a page/section
- * @beta
+ * @public
  */
 export class VerticalTabs extends React.PureComponent<TabsProps> {
+  /** @internal */
   public render(): JSX.Element {
     return (
       <Tabs mainClassName="uicore-tabs-vertical" {...this.props} />

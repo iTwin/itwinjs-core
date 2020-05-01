@@ -11,6 +11,6 @@ import { withOnOutsideClick } from "../hocs/withOnOutsideClick";
 import { CommonDivProps } from "../utils/Props";
 
 /** Div element with Outside Click behavior
- * @beta
+ * @public
  */
 export const DivWithOutsideClick = withOnOutsideClick((props: CommonDivProps) => (<div {...props} />)); // tslint:disable-line:variable-name

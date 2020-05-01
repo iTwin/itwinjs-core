@@ -16,7 +16,7 @@ import { CursorPopupManager } from "../cursorpopup/CursorPopupManager";
 
 import "./CursorPrompt.scss";
 
-/** @alpha */
+/** @internal */
 export class CursorPrompt {
   private _timeOut: number;
   private _fadeOut: boolean;

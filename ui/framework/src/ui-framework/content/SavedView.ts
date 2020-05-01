@@ -29,7 +29,7 @@ import { Id64Array } from "@bentley/bentleyjs-core";
 import { ViewUtilities } from "../utils/ViewUtilities";
 
 /** SavedViewProps interface for sharing ViewState and EmphasizeElements information.
- * @beta
+ * @public
  */
 export interface SavedViewProps {
   bisBaseClass: string;
@@ -43,7 +43,7 @@ export interface SavedViewProps {
 }
 
 /** SavedView class. Used to serialize/deserialize a ViewState.
- * @beta
+ * @public
  */
 export class SavedView {
 

@@ -169,7 +169,7 @@ export class ToolbarHelper {
   }
 
   /** CustomToolbarButton type guard.
-   * @alpha
+   * @internal
    */
   public static isCustomToolbarButton = (item: CommonToolbarItem): item is CustomToolbarItem => {
     return !!(item as CustomToolbarItem).isCustom && ("buttonNode" in item);

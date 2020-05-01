@@ -54,6 +54,9 @@ With this annual major release comes many new features and some breaking API cha
     - [ViewChangeOptions Interface](#viewchangeoptions-interface)
     - [Controlling Schedule Script Playback](#controlling-schedule-script-playback)
     - [PropertyRecord classes moved to `ui-abstract` package](#propertyrecord-classes-moved-to-ui-abstract-package)
+  - [React dependency changes](#react-dependency-changes)
+  - [Changes in `@bentley/ui-core`](#changes-in-bentleyui-core)
+    - [Removal of Deprecated APIs](#removal-of-deprecated-apis-1)
   - [Changes in `@bentley/ui-components`](#changes-in-bentleyui-components)
     - [Hard Deprecations](#hard-deprecations)
     - [Removals and Changes](#removals-and-changes-1)
@@ -61,9 +64,6 @@ With this annual major release comes many new features and some breaking API cha
     - [Renames](#renames)
     - [Removal of Deprecated APIs](#removal-of-deprecated-apis)
     - [Other changes](#other-changes-2)
-  - [Changes in `@bentley/ui-core`](#changes-in-bentleyui-core)
-    - [Removal of Deprecated APIs](#removal-of-deprecated-apis-1)
-    - [React dependency changes](#react-dependency-changes)
   - [Changes in `@bentley/presentation-common`](#changes-in-bentleypresentation-common)
     - [RPC Changes](#rpc-changes-1)
     - [Hard Deprecations](#hard-deprecations-1)
@@ -650,6 +650,33 @@ This includes the classes in the following files:
 
 The deprecated ToolSettingsValue.ts has been removed.
 
+### React dependency changes
+
+For the iModel.js Ui packages, `react`, `react-dom`, `redux` and `react-redux` dependencies were moved from `dependencies` to `peerDependencies`.
+The `react-redux` package was upgraded to "^7.2.0".
+
+Applications with a dependency on the Ui packages must ensure their minimum versions are setup like below -
+
+  ``` json
+    "dependencies": {
+      ...
+      "react": "^16.8.0",
+      "redux": "^4.0.3",
+      "react-dom": "^16.8.0",
+      "react-redux": "^7.2.0"
+      ...
+    },
+  ```
+
+### Changes in `@bentley/ui-core`
+
+#### Removal of Deprecated APIs
+
+The following items that were marked as @deprecated in the 1.x time frame have been removed:
+
+- UiError (use UiError in @bentley/ui-abstract instead)
+- Position for Popup component (Use RelativePosition in @bentley/ui-abstract instead)
+
 ### Changes in `@bentley/ui-components`
 
 #### Hard Deprecations
@@ -731,6 +758,8 @@ The following items that were marked as @deprecated in the 1.x time frame have b
 
 #### Other changes
 
+- Add Support for a `StateManager` class that can be instantiated by the host application. This manager provides centralized state management using Redux actions, reducers and store. This class monitors the `ReducerRegistry` and will automatically update the `Redux` store when a new reducer is registered.  This allows the store to be incrementally constructed as modules and extensions are loaded.
+
 - Removed `useControlledTree` flag from the following *Prop* types:
   - `CategoryTreeProps`
   - `ModelsTreeProps`
@@ -746,34 +775,6 @@ should decide what ruleset it wants to use.
 These items define the label and editor to use for each value when the Tool Settings container is in its default Horizontal orientation. The existing 'toolSettingsNode' property is still used to specify the UI if the Tool Settings are shown in a floating/rectangular container.
 
 - When using the DefaultToolSettingsProvider as specified in the `ToolUiManager`, the toolSettingsProperty argument to `ToolUiManager.initializeToolSettingsData()` has been changed from `ToolSettingsPropertyRecord[]` to `DialogItem[]`. `DialogItem` is an interface that you will find in the ui-abstract package in the file DialogItem.ts. The classes in the file ToolSettingsValue.ts have been deprecated and removed from the source tree.
-
-- `redux` and `react-redux` dependencies are moved from dependencies to peerDependencies. Applications consuming this package must ensure their minimum versions are setup like below -
-
-  ``` json
-    "dependencies": {
-      ...
-      "react": "^16.8.0",
-      "redux": "^4.0.3",
-      "react-dom": "^16.8.0",
-      "react-redux": "^7.2.0"
-      ...
-    },
-  ```
-
-### Changes in `@bentley/ui-core`
-
-#### Removal of Deprecated APIs
-
-The following items that were marked as @deprecated in the 1.x time frame have been removed:
-
-- UiError (use UiError in @bentley/ui-abstract instead)
-- Position for Popup component (Use RelativePosition in @bentley/ui-abstract instead)
-
-#### React dependency changes
-
-`react` and `react-dom` dependencies are moved from `dependencies` to `peerDependencies`.
-
-<!-- Write what customers need to do to react to this change -->
 
 ### Changes in `@bentley/presentation-common`
 

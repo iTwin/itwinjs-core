@@ -483,6 +483,10 @@
       "allowedCategories": [ "frontend" ]
     },
     {
+      "name": "internal-tools",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "istanbul-instrumenter-loader",
       "allowedCategories": [ "internal" ]
     },
