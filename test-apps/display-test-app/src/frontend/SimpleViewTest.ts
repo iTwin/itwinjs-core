@@ -174,6 +174,7 @@ async function main() {
     doIdleWork: false !== configuration.doIdleWork,
     useWebGL2: true === configuration.useWebGL2,
     planProjections: true,
+    debugShaders: true === configuration.debugShaders,
   };
 
   const tileAdminProps = DisplayTestApp.tileAdminProps;

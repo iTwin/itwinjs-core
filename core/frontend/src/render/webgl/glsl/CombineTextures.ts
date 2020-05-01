@@ -43,5 +43,8 @@ export function createCombineTexturesProgram(context: WebGLRenderingContext | We
 
   frag.set(FragmentShaderComponent.AssignFragData, assignFragData);
 
+  builder.vert.headerComment = "//!V! CombineTextures";
+  builder.frag.headerComment = "//!F! CombineTextures";
+
   return builder.buildProgram(context);
 }

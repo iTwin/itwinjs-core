@@ -86,5 +86,8 @@ export function createBlurProgram(context: WebGLRenderingContext | WebGL2Renderi
     });
   }, VariablePrecision.High);
 
+  builder.vert.headerComment = "//!V! Blur";
+  builder.frag.headerComment = "//!F! Blur";
+
   return builder.buildProgram(context);
 }

@@ -11,16 +11,14 @@ import { ShaderBuilder } from "../ShaderBuilder";
 /** @internal */
 export const decodeUint16 = `
 float decodeUInt16(vec2 v) {
-  v = v * vec2(1.0, 256.0); // v.y <<= 8
-  return dot(v, vec2(1.0)); // v.x+v.y => v.x | v.y
+  return dot(v, vec2(1.0, 256.0)); // v.x | (v.y << 8)
 }
 `;
 
 /** @internal */
 export const decodeUint24 = `
 float decodeUInt24(vec3 v) {
-  v = v * vec3(1.0, 256.0, 256.0*256.0); // v.y <<= 8; v.z <<= 16
-  return dot(v, vec3(1.0)); // v.x+v.y+v.z => v.x | v.y | v.z
+  return dot(v, vec3(1.0, 256.0, 256.0*256.0)); // v.x | (v.y << 8) | (v.z << 16)
 }
 `;
 

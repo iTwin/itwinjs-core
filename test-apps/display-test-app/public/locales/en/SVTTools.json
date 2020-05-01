@@ -47,6 +47,9 @@
     "SaveImage": {
       "keyin": "dta save image"
     },
+    "OutputShaders": {
+      "keyin": "dta output shaders"
+    },
     "ZoomToSelectedElements": {
       "keyin": "dta zoom selected"
     },

@@ -186,5 +186,9 @@ export function createCompositeProgram(flags: CompositeFlags, context: WebGLRend
       frag.set(FragmentShaderComponent.ComputeBaseColor, computeAmbientOcclusionBaseColor);
   }
 
+  const flagString = (wantHilite ? "-Hilite" : "") + (wantTranslucent ? "-Translucent" : "") + (wantOcclusion ? "-Occlusion" : "");
+  builder.vert.headerComment = "//!V! CombineTextures" + flagString;
+  builder.frag.headerComment = "//!F! CombineTextures" + flagString;
+
   return builder.buildProgram(context);
 }

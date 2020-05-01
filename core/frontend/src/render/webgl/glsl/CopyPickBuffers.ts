@@ -48,5 +48,8 @@ export function createCopyPickBuffersProgram(context: WebGLRenderingContext | We
     frag.set(FragmentShaderComponent.AssignFragData, assignFragData);
   }
 
+  builder.vert.headerComment = "//!V! CopyPickBuffers";
+  builder.frag.headerComment = "//!F! CopyPickBuffers";
+
   return builder.buildProgram(context);
 }

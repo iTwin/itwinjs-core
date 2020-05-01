@@ -26,5 +26,8 @@ export function createClipMaskProgram(context: WebGLRenderingContext | WebGL2Ren
   builder.frag.set(FragmentShaderComponent.ComputeBaseColor, computeBaseColor);
   builder.frag.set(FragmentShaderComponent.AssignFragData, assignFragColor);
 
+  builder.vert.headerComment = "//!V! ClipMask";
+  builder.frag.headerComment = "//!F! ClipMask";
+
   return builder.buildProgram(context);
 }

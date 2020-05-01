@@ -77,5 +77,8 @@ export function createEVSMProgram(context: WebGLRenderingContext | WebGL2Renderi
   frag.set(FragmentShaderComponent.ComputeBaseColor, computeEVSM);
   frag.set(FragmentShaderComponent.AssignFragData, assignFragColor);
 
+  builder.vert.headerComment = "//!V! EVSMFromDepth";
+  builder.frag.headerComment = "//!F! EVSMFromDepth";
+
   return builder.buildProgram(context);
 }

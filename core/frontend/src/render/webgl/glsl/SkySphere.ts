@@ -222,8 +222,8 @@ export function createSkySphereProgram(context: WebGLRenderingContext | WebGL2Re
   }
   frag.set(FragmentShaderComponent.AssignFragData, assignFragColor);
 
-  builder.vert.headerComment = "// ----- SkySphere -----";
-  builder.frag.headerComment = "// ----- SkySphere -----";
+  builder.vert.headerComment = "//!V! SkySphere-" + (isGradient ? "Gradient" : "Texture");
+  builder.frag.headerComment = "//!F! SkySphere-" + (isGradient ? "Gradient" : "Texture");
 
   return builder.buildProgram(context);
 }

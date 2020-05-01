@@ -146,6 +146,8 @@ You can use these environment variables to alter the default behavior of various
   * The number of levels of iModel tile trees to skip before loading graphics.
 * SVT_DISABLE_IDLE_WORK
   * If defined, do not try to perform idle work (precompiling shader) when there are no viewports.
+* SVT_DEBUG_SHADERS
+  * If defined, and the WEBGL_debug_shaders extension is supported, collect debug info during shader compilation. See the `dta output shaders` key-in.
 * SVT_WINDOW_SIZE
   * If defined, a comma-separated startup size for the electron application window as `width,height`.
 
@@ -165,6 +167,12 @@ display-test-app has access to all key-ins defined in the imodeljs-frontend and 
 * **dta zoom selected** - zoom the selected viewport to the elements in the selection set.
 * **dta incident markers** - toggle incident marker demo in the selected viewport.
 * **dta markup** - toggle markup on the selected viewport.
+* **dta output shaders** - output debug information for compiled shaders. Requires SVT_DEBUG_SHADERS to have been set. Accepts 0-2 arguments:
+  * `d=output\directory\` - directory into which to put the output files.
+  * filter string: a combination of the following characters to filter the output (e.g., `gu` outputs all used glsl shaders, both fragment and vertex):
+    * `f` or `v`: output only fragment or vertex shaders, respectively.
+    * `g` or `h`: output only glsl or hlsl code, respectively.
+    * `u` or `n`: output only used or not-used shaders, respectively.
 * **dta drawing aid points** - start tool for testing AccuSnap.
 * **dta refresh tiles** *modelId* - reload tile trees for the specified model, or all models if no modelId is specified.
 * **dta shutdown** - Closes all open viewports and iModels, invokes IModelApp.shutdown(), and finally breaks in the debugger (if debugger is open). Useful for diagnosing memory leaks.

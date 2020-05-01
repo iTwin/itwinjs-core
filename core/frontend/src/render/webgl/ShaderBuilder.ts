@@ -1070,10 +1070,14 @@ export class ClippingShaders {
 
   public constructor(prog: ProgramBuilder, context: WebGLRenderingContext | WebGL2RenderingContext, wantMask: boolean) {
     this.builder = prog.clone();
+    this.builder.vert.headerComment += "-ClipPlanes";
+    this.builder.frag.headerComment += "-ClipPlanes";
     addClipping(this.builder, ClipDef.forPlanes(6));
 
     if (wantMask) {
       const maskBuilder = prog.clone();
+      maskBuilder.vert.headerComment += "-ClipMask";
+      maskBuilder.frag.headerComment += "-ClipMask";
       addClipping(maskBuilder, ClipDef.forMask());
       this.maskShader = maskBuilder.buildProgram(context);
       assert(this.maskShader !== undefined);
@@ -1114,7 +1118,13 @@ export class ClippingShaders {
           return shader;
 
       this.builder.frag.maxClippingPlanes = numClips;
+      const saveVHeader = this.builder.vert.headerComment;
+      const saveFHeader = this.builder.frag.headerComment;
+      this.builder.vert.headerComment += numClips.toString();
+      this.builder.frag.headerComment += numClips.toString();
       const newProgram = this.builder.buildProgram(System.instance.context);
+      this.builder.vert.headerComment = saveVHeader;
+      this.builder.frag.headerComment = saveFHeader;
       this.shaders.push(newProgram);
       return newProgram;
     } else {
@@ -1222,7 +1232,7 @@ export class ProgramBuilder {
       }
     }
 
-    const prog = new ShaderProgram(gl, vertSource, fragSource, this._attrMap, this.vert.headerComment, this.frag.maxClippingPlanes);
+    const prog = new ShaderProgram(gl, vertSource, fragSource, this._attrMap, this.vert.headerComment, this.frag.headerComment, this.frag.maxClippingPlanes);
     this.vert.addBindings(prog);
     this.frag.addBindings(prog, this.vert);
     return prog;

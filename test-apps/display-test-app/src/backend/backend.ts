@@ -66,6 +66,9 @@ function setupStandaloneConfiguration(): SVTConfiguration {
   if (undefined !== process.env.SVT_DISABLE_IDLE_WORK)
     configuration.doIdleWork = false;
 
+  if (undefined !== process.env.SVT_DEBUG_SHADERS)
+    configuration.debugShaders = true;
+
   configuration.useProjectExtents = undefined === process.env.SVT_NO_USE_PROJECT_EXTENTS;
 
   const parseSeconds = (key: string) => {

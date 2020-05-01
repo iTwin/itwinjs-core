@@ -19,4 +19,5 @@ export default class SVTRpcInterface extends RpcInterface {
 
   public async readExternalSavedViews(_filename: string): Promise<string> { return this.forward(arguments); }
   public async writeExternalSavedViews(_filename: string, _namedViews: string): Promise<void> { return this.forward(arguments); }
+  public async writeExternalFile(_filename: string, _content: string): Promise<void> { return this.forward(arguments); }
 }

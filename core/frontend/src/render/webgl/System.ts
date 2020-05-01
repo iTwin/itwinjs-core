@@ -59,6 +59,7 @@ import {
   RenderSystemDebugControl,
   RenderTerrainMeshGeometry,
   TerrainTexture,
+  DebugShaderFile,
 } from "../RenderSystem";
 import { SkyBox } from "../../DisplayStyleState";
 import { OnScreenTarget, OffScreenTarget } from "./Target";
@@ -370,6 +371,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   private _lineCodeTexture?: TextureHandle;
   private _noiseTexture?: TextureHandle;
   private _techniques?: Techniques;
+  public readonly debugShaderFiles: DebugShaderFile[] = [];
 
   public static get instance() { return IModelApp.renderSystem as System; }
 

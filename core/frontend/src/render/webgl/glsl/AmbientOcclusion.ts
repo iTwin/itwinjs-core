@@ -216,5 +216,8 @@ export function createAmbientOcclusionProgram(context: WebGLRenderingContext | W
     });
   }, VariablePrecision.High);
 
+  builder.vert.headerComment = "//!V! AmbientOcclusion";
+  builder.frag.headerComment = "//!F! AmbientOcclusion";
+
   return builder.buildProgram(context);
 }

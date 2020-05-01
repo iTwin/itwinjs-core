@@ -32,4 +32,5 @@ export interface SVTConfiguration {
   disableEdges?: boolean; // default OFF
   useWebGL2?: boolean; // default OFF
   doIdleWork?: boolean; // default ON
+  debugShaders?: boolean; // default OFF
 }

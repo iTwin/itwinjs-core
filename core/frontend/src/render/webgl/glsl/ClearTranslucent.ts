@@ -32,5 +32,8 @@ export function createClearTranslucentProgram(context: WebGLRenderingContext | W
     frag.set(FragmentShaderComponent.AssignFragData, assignFragColor);
   }
 
+  builder.vert.headerComment = "//!V! ClearTranslucent";
+  builder.frag.headerComment = "//!F! ClearTranslucent";
+
   return builder.buildProgram(context);
 }

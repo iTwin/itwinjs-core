@@ -28,6 +28,7 @@ import { MarkupSelectTestTool } from "./MarkupSelectTestTool";
 import { VersionComparisonTool } from "./VersionComparison";
 import { IncidentMarkerDemoTool } from "./IncidentMarkerDemo";
 import { MarkupTool, SaveImageTool, ZoomToSelectedElementsTool } from "./Viewer";
+import { OutputShadersTool } from "./OutputShadersTool";
 import { ToggleShadowMapTilesTool } from "./ShadowMapDecoration";
 import { RecordFpsTool } from "./FpsMonitor";
 import {
@@ -240,6 +241,7 @@ export class DisplayTestApp {
       MarkupTool,
       MaximizeWindowTool,
       OpenIModelTool,
+      OutputShadersTool,
       PurgeTileTreesTool,
       RecordFpsTool,
       RefreshTilesTool,

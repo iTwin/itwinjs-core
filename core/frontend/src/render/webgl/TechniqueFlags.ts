@@ -149,16 +149,16 @@ export class TechniqueFlags {
 
   public buildDescription(): string {
     const parts = [this.isTranslucent ? "Translucent" : "Opaque"];
-    if (this.isInstanced) parts.push("instanced");
-    if (this.isEdgeTestNeeded) parts.push("edgeTestNeeded");
-    if (this.isAnimated) parts.push("animated");
-    if (this.isHilite) parts.push("hilite");
-    if (this.isClassified) parts.push("classified");
-    if (this.hasClip) parts.push("clip");
-    if (this.isShadowable) parts.push("shadowable");
-    if (this.isThematic) parts.push("thematic");
-    if (this.hasFeatures) parts.push(FeatureMode.Pick === this.featureMode ? "pick" : "overrides");
-    return parts.join("; ");
+    if (this.isInstanced) parts.push("Instanced");
+    if (this.isEdgeTestNeeded) parts.push("EdgeTestNeeded");
+    if (this.isAnimated) parts.push("Animated");
+    if (this.isHilite) parts.push("Hilite");
+    if (this.isClassified) parts.push("Classified");
+    if (this.hasClip) parts.push("Clip");
+    if (this.isShadowable) parts.push("Shadowable");
+    if (this.isThematic) parts.push("Thematic");
+    if (this.hasFeatures) parts.push(FeatureMode.Pick === this.featureMode ? "Pick" : "Overrides");
+    return parts.join("-");
   }
 
   public static readonly defaults = new TechniqueFlags();

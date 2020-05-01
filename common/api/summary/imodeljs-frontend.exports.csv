@@ -91,6 +91,7 @@ internal;createRealityTileTreeReference(props: RealityModelTileTree.ReferencePro
 internal;createTileTreeFromImageryProvider(imageryProvider: ImageryProvider, bimElevationBias: number, filterTextures: boolean, globeMode: GlobeMode, useDepthBuffer: boolean, iModel: IModelConnection, forDrape?: boolean): Promise
 internal;CurrentInputState
 internal;CurrentState
+internal;DebugShaderFile
 public;DecorateContext 
 public;Decorations 
 public;Decorator

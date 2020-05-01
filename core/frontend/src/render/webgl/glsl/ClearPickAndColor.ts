@@ -39,5 +39,8 @@ export function createClearPickAndColorProgram(context: WebGLRenderingContext | 
     frag.set(FragmentShaderComponent.AssignFragData, assignFragData);
   }
 
+  builder.vert.headerComment = "//!V! ClearPickAndColor";
+  builder.frag.headerComment = "//!F! ClearPickAndColor";
+
   return builder.buildProgram(context);
 }

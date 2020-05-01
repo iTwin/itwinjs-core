@@ -1887,6 +1887,21 @@ export enum CurrentState {
     NotEnabled = 0
 }
 
+// @internal (undocumented)
+export class DebugShaderFile {
+    constructor(filename: string, src: string, isVS: boolean, isGL: boolean, isUsed: boolean);
+    // (undocumented)
+    readonly filename: string;
+    // (undocumented)
+    isGL: boolean;
+    // (undocumented)
+    isUsed: boolean;
+    // (undocumented)
+    isVS: boolean;
+    // (undocumented)
+    readonly src: string;
+}
+
 // @public
 export class DecorateContext extends RenderContext {
     // @internal
@@ -6784,6 +6799,8 @@ export namespace RenderSystem {
         // @internal
         contextAttributes?: WebGLContextAttributes;
         // @internal
+        debugShaders?: boolean;
+        // @internal
         disabledExtensions?: WebGLExtensionName[];
         displaySolarShadows?: boolean;
         doIdleWork?: boolean;
@@ -6806,6 +6823,8 @@ export namespace RenderSystem {
 export interface RenderSystemDebugControl {
     // @internal
     compileAllShaders(): boolean;
+    // @internal
+    debugShaderFiles?: DebugShaderFile[];
     drawSurfacesAsWiremesh: boolean;
     // @internal
     readonly isGLTimerSupported: boolean;

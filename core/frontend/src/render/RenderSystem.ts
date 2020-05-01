@@ -131,16 +131,20 @@ class GraphicOwner extends RenderGraphicOwner {
 export interface RenderSystemDebugControl {
   /** Destroy this system's webgl context. Returns false if this behavior is not supported. */
   loseContext(): boolean;
+
   /** Draw surfaces as "pseudo-wiremesh", using GL_LINES instead of GL_TRIANGLES. Useful for visualizing faces of a mesh. Not suitable for real wiremesh display. */
   drawSurfacesAsWiremesh: boolean;
+
   /** Record GPU profiling information for each frame drawn. Check isGLTimerSupported before using.
    * @internal
    */
   resultsCallback?: GLTimerResultCallback;
+
   /** Returns true if the browser supports GPU profiling queries.
    * @internal
    */
   readonly isGLTimerSupported: boolean;
+
   /** Attempts to compile all shader programs and returns true if all were successful. May throw exceptions on errors.
    * This is useful for debugging shader compilation on specific platforms - especially those which use neither ANGLE nor SwiftShader (e.g., linux, mac, iOS)
    * because our unit tests which also compile all shaders run in software mode and therefore may not catch some "errors" (especially uniforms that have no effect on
@@ -148,6 +152,11 @@ export interface RenderSystemDebugControl {
    * @internal
    */
   compileAllShaders(): boolean;
+
+  /** Obtain accumulated debug info collected during shader compilation. See `RenderSystem.Options.debugShaders`.
+   * @internal
+   */
+  debugShaderFiles?: DebugShaderFile[];
 }
 
 /** @internal */
@@ -159,6 +168,12 @@ export abstract class RenderTerrainMeshGeometry implements IDisposable, RenderMe
 /** @internal */
 export class TerrainTexture {
   public constructor(public readonly texture: RenderTexture, public readonly scale: Vector2d, public readonly translate: Vector2d, public readonly clipRectangle?: Range2d) {
+  }
+}
+
+/** @internal */
+export class DebugShaderFile {
+  public constructor(public readonly filename: string, public readonly src: string, public isVS: boolean, public isGL: boolean, public isUsed: boolean) {
   }
 }
 
@@ -556,5 +571,12 @@ export namespace RenderSystem {
      * @internal
      */
     contextAttributes?: WebGLContextAttributes;
+
+    /** If true, and the `WEBGL_debug_shaders` extension is available, accumulate debug information during shader compilation.
+     * This information can be accessed via `RenderSystemDebugControl.debugShaderFiles`.
+     * Default value: false
+     * @internal
+     */
+    debugShaders?: boolean;
   }
 }

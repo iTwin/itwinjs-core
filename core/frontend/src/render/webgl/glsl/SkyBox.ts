@@ -47,5 +47,8 @@ export function createSkyBoxProgram(context: WebGLRenderingContext | WebGL2Rende
   });
   prog.addInlineComputedVarying("v_texDir", VariableType.Vec3, computeTexDir);
 
+  prog.vert.headerComment = "//!V! SkyBox";
+  prog.frag.headerComment = "//!F! SkyBox";
+
   return prog.buildProgram(context);
 }
