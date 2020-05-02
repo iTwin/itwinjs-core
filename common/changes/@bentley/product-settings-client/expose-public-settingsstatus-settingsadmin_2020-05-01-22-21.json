@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/product-settings-client",
+      "comment": "change SettingsAdmin to beta instead of public",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/product-settings-client",
+  "email": "evan.preslar@bentley.com"
+}

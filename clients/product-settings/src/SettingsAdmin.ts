@@ -9,7 +9,7 @@
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 
 /** Possible values for SettingsResults.status
- * @alpha
+ * @beta
  */
 export enum SettingsStatus {
   SETTINGS_ERROR_BASE = 0x1b000,
@@ -33,7 +33,7 @@ export enum SettingsStatus {
 
 /** The result of the SettingsAdmin methods to save, retrieve, and delete settings.
  * These are constructed by the SettingsAdmin methods and examined by applications.
- * @alpha
+ * @beta
  */
 export class SettingsResult {
   /** Construct a new SettingsResult. SettingsResult objects are created by the SettingsAdmin methods.
@@ -48,7 +48,7 @@ export class SettingsResult {
 
 /** The result of the SettingsAdmin methods to retrieve all settings by namespace.
  * These are constructed by the SettingsAdmin "getxxxByNamespace" methods and examined by applications.
- * @alpha
+ * @beta
  */
 export class SettingsMapResult {
   /** Construct a new SettingsResult. SettingsResult objects are created by the SettingsAdmin methods.
@@ -61,7 +61,7 @@ export class SettingsMapResult {
   }
 }
 /** Methods available to save and get Settings objects on behalf of combinations of the Application, Project, iModel, and User
- * @alpha
+ * @beta
  */
 export interface SettingsAdmin {
 

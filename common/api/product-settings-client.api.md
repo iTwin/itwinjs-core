@@ -45,7 +45,7 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
     static readonly searchKey: string;
 }
 
-// @alpha
+// @beta
 export interface SettingsAdmin {
     deleteSetting(requestContext: AuthorizedClientRequestContext, namespace: string, name: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
     deleteSharedSetting(requestContext: AuthorizedClientRequestContext, namespace: string, name: string, applicationSpecific: boolean, projectId: string, iModelId?: string): Promise<SettingsResult>;
@@ -61,7 +61,7 @@ export interface SettingsAdmin {
     saveUserSetting(requestContext: AuthorizedClientRequestContext, settings: any, namespace: string, name: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
 }
 
-// @alpha
+// @beta
 export class SettingsMapResult {
     // @internal
     constructor(status: SettingsStatus, errorMessage?: string | undefined, settingsMap?: Map<string, any> | undefined);
@@ -73,7 +73,7 @@ export class SettingsMapResult {
     status: SettingsStatus;
 }
 
-// @alpha
+// @beta
 export class SettingsResult {
     // @internal
     constructor(status: SettingsStatus, errorMessage?: string | undefined, setting?: any);
@@ -85,7 +85,7 @@ export class SettingsResult {
     status: SettingsStatus;
 }
 
-// @alpha
+// @beta
 export enum SettingsStatus {
     AuthorizationError = 110593,
     IModelInvalid = 110596,
