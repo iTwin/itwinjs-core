@@ -103,6 +103,7 @@
     $size: 0.25em;
     width: $size;
     height: $size;
-    background-color: $buic-background-1;
+    border-radius: 50%;
+    background-color: $buic-foreground-disabled;
   }
 }

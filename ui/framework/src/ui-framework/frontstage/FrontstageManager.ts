@@ -305,6 +305,9 @@ export class FrontstageManager {
    * @returns A Promise that is fulfilled when the [[FrontstageDef]] is ready.
    */
   public static async setActiveFrontstageDef(frontstageDef: FrontstageDef | undefined): Promise<void> {
+    if (FrontstageManager._activeFrontstageDef === frontstageDef)
+      return;
+
     FrontstageManager._isLoading = true;
 
     const deactivatedFrontstageDef = FrontstageManager._activeFrontstageDef;

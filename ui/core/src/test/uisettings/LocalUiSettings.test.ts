@@ -2,33 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @packageDocumentation
- * @module UiSettings
- */
-
 import { expect } from "chai";
 import { LocalUiSettings, UiSettingsStatus } from "../../ui-core";
-const storageMock = () => {
-  const storage: { [key: string]: any } = {};
-  return {
-    setItem: (key: string, value: string) => {
-      storage[key] = value || "";
-    },
-    getItem: (key: string) => {
-      return key in storage ? storage[key] : null;
-    },
-    removeItem: (key: string) => {
-      delete storage[key];
-    },
-    get length() {
-      return Object.keys(storage).length;
-    },
-    key: (i: number) => {
-      const keys = Object.keys(storage);
-      return keys[i] || null;
-    },
-  };
-};
+import { storageMock } from "../TestUtils";
+
 describe("LocalUiSettings", () => {
   it("default constructor executes successfully", () => {
     const initialLocalUiSettings = new LocalUiSettings();

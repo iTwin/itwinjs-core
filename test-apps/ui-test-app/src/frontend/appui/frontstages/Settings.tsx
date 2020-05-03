@@ -9,10 +9,13 @@
 import * as React from "react";
 import { connect } from "react-redux";
 import { Dispatch } from "redux";
+
 import { Toggle } from "@bentley/ui-core";
 import { UiFramework, ColorTheme, ModalFrontstageInfo, UiShowHideManager } from "@bentley/ui-framework";
+
+import { RootState, SampleAppActions, SampleAppIModelApp } from "../..";
+
 import "./Settings.scss";
-import { RootState, SampleAppActions } from "../..";
 
 /** Modal frontstage displaying the active settings.
  * @alpha
@@ -42,21 +45,27 @@ class SettingsPageComponent extends React.Component<SettingsPageProps> {
   private _useProximityOpacityTitle: string = UiFramework.i18n.translate("SampleApp:settingsStage.useProximityOpacityTitle");
   private _useProximityOpacityDescription: string = UiFramework.i18n.translate("SampleApp:settingsStage.useProximityOpacityDescription");
 
-  private _onThemeChange = () => {
+  private _onThemeChange = async () => {
     const theme = this._isLightTheme() ? ColorTheme.Dark : ColorTheme.Light;
     UiFramework.setColorTheme(theme);
+
+    await SampleAppIModelApp.appUiSettings.colorTheme.saveSetting(SampleAppIModelApp.uiSettings);
   }
 
   private _isLightTheme(): boolean {
     return (UiFramework.getColorTheme() === ColorTheme.Light);
   }
 
-  private _onAutoHideChange = () => {
+  private _onAutoHideChange = async () => {
     UiShowHideManager.autoHideUi = !UiShowHideManager.autoHideUi;
+
+    await SampleAppIModelApp.appUiSettings.autoHideUi.saveSetting(SampleAppIModelApp.uiSettings);
   }
 
-  private _onUseProximityOpacityChange = () => {
+  private _onUseProximityOpacityChange = async () => {
     UiShowHideManager.useProximityOpacity = !UiShowHideManager.useProximityOpacity;
+
+    await SampleAppIModelApp.appUiSettings.useProximityOpacity.saveSetting(SampleAppIModelApp.uiSettings);
   }
 
   public render(): React.ReactNode {
@@ -123,8 +132,14 @@ function mapStateToProps(state: RootState) {
 
 function mapDispatchToProps(dispatch: Dispatch) {
   return {
-    onToggleDragInteraction: () => dispatch(SampleAppActions.toggleDragInteraction()),
-    onToggleFrameworkVersion: () => dispatch(SampleAppActions.toggleFrameworkVersion()),
+    onToggleDragInteraction: async () => {
+      dispatch(SampleAppActions.toggleDragInteraction());
+      await SampleAppIModelApp.appUiSettings.dragInteraction.saveSetting(SampleAppIModelApp.uiSettings);
+    },
+    onToggleFrameworkVersion: async () => {
+      dispatch(SampleAppActions.toggleFrameworkVersion());
+      await SampleAppIModelApp.appUiSettings.frameworkVersion.saveSetting(SampleAppIModelApp.uiSettings);
+    },
     dispatch,
   };
 }

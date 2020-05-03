@@ -18,7 +18,7 @@ import {
 import { IconSpecUtilities } from "@bentley/ui-abstract";
 import {
   SvgSprite, FillCentered, LocalUiSettings, UiSettingsStatus, UiSettings,
-  HorizontalTabs, UiCore, LabeledToggle, Icon, UiSettingsResult,
+  HorizontalTabs, UiCore, LabeledToggle, Icon, UiSettingsResult, UiSetting,
 } from "@bentley/ui-core";
 import {
   ToolAssistance, ToolAssistanceDialog, FooterPopup,
@@ -93,6 +93,8 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
   private static _toolAssistanceKey = "ToolAssistance";
   private static _showPromptAtCursorKey = "showPromptAtCursor";
   private static _mouseTouchTabIndexKey = "mouseTouchTabIndex";
+  private _showPromptAtCursorSetting: UiSetting<boolean>;
+  private _mouseTouchTabIndexSetting: UiSetting<number>;
   private _target: HTMLElement | null = null;
   private _className: string;
   private _indicator = React.createRef<HTMLDivElement>();
@@ -130,6 +132,10 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
     };
 
     this._cursorPrompt = new CursorPrompt(this.props.cursorPromptTimeout, this.props.fadeOutCursorPrompt);
+    this._showPromptAtCursorSetting = new UiSetting(ToolAssistanceField._toolAssistanceKey, ToolAssistanceField._showPromptAtCursorKey,
+      () => this.state.showPromptAtCursor);
+    this._mouseTouchTabIndexSetting = new UiSetting(ToolAssistanceField._toolAssistanceKey, ToolAssistanceField._mouseTouchTabIndexKey,
+      () => this.state.mouseTouchTabIndex);
   }
 
   /** @internal */
@@ -152,9 +158,9 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
     let getShowPromptAtCursor: Promise<UiSettingsResult> | undefined;
     // istanbul ignore else
     if (this.props.includePromptAtCursor) {
-      getShowPromptAtCursor = this.props.uiSettings.getSetting(ToolAssistanceField._toolAssistanceKey, ToolAssistanceField._showPromptAtCursorKey);
+      getShowPromptAtCursor = this._showPromptAtCursorSetting.getSetting(this.props.uiSettings);
     }
-    const getMouseTouchTabIndex = this.props.uiSettings.getSetting(ToolAssistanceField._toolAssistanceKey, ToolAssistanceField._mouseTouchTabIndexKey);
+    const getMouseTouchTabIndex = this._mouseTouchTabIndexSetting.getSetting(this.props.uiSettings);
     const [showPromptAtCursorResult, mouseTouchTabIndexResult] = await Promise.all([
       getShowPromptAtCursor,
       getMouseTouchTabIndex,
@@ -266,8 +272,9 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
         mouseTouchTabIndex: index,
         showMouseInstructions,
         showTouchInstructions,
+      }, async () => {
+        await this._mouseTouchTabIndexSetting.saveSetting(this.props.uiSettings);
       });
-    await this.props.uiSettings.saveSetting(ToolAssistanceField._toolAssistanceKey, ToolAssistanceField._mouseTouchTabIndexKey, index);
   }
 
   /** @internal */
@@ -406,9 +413,11 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
   private _onPromptAtCursorChange = async (checked: boolean) => {
     // istanbul ignore else
     if (this._isMounted)
-      this.setState({ showPromptAtCursor: checked });
-
-    await this.props.uiSettings.saveSetting(ToolAssistanceField._toolAssistanceKey, ToolAssistanceField._showPromptAtCursorKey, checked);
+      this.setState({
+        showPromptAtCursor: checked,
+      }, async () => {
+        await this._showPromptAtCursorSetting.saveSetting(this.props.uiSettings);
+      });
   }
 
   private _handleClose = () => {

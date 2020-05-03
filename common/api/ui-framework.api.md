@@ -2388,7 +2388,7 @@ export interface HTMLElementPopupProps extends PopupPropsBase {
     relativePosition: RelativePosition;
 }
 
-// @alpha
+// @beta
 export class IModelAppUiSettings implements UiSettings {
     // (undocumented)
     deleteSetting(namespace: string, name: string): Promise<UiSettingsResult>;

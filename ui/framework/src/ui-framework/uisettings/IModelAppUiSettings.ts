@@ -11,8 +11,8 @@ import { SettingsStatus } from "@bentley/product-settings-client";
 import { AuthorizedFrontendRequestContext, IModelApp } from "@bentley/imodeljs-frontend";
 
 /**
- * Implementation of [[UiSettings]] that uses settings admin from [[IModelApp.settings]].
- * @alpha
+ * Implementation of [[UiSettings]] that uses settings admin from `IModelApp.settings`.
+ * @beta
  */
 export class IModelAppUiSettings implements UiSettings {
   public async getSetting(namespace: string, name: string): Promise<UiSettingsResult> {
@@ -47,7 +47,7 @@ export class IModelAppUiSettings implements UiSettings {
 }
 
 /** @internal */
-export function settingsStatusToUiSettingsStatus(status: SettingsStatus) {
+export function settingsStatusToUiSettingsStatus(status: SettingsStatus): UiSettingsStatus {
   if (status === SettingsStatus.Success)
     return UiSettingsStatus.Success;
   else if (status === SettingsStatus.SettingNotFound)

@@ -130,6 +130,7 @@ export { TreeNode, TreeNodeProps, NodeCheckboxProps, NodeCheckboxRenderer, NodeC
 export { Tree, TreeProps } from "./ui-core/tree/Tree";
 export { TreeNodePlaceholder, TreeNodePlaceholderProps } from "./ui-core/tree/Placeholder";
 
+export * from "./ui-core/uisettings/UiSetting";
 export * from "./ui-core/uisettings/UiSettings";
 export * from "./ui-core/uisettings/LocalUiSettings";
 export * from "./ui-core/uisettings/SessionUiSettings";

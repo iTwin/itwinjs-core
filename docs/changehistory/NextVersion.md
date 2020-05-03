@@ -759,7 +759,7 @@ The following items that were marked as @deprecated in the 1.x time frame have b
 
 #### Other changes
 
-- Add Support for a `StateManager` class that can be instantiated by the host application. This manager provides centralized state management using Redux actions, reducers and store. This class monitors the `ReducerRegistry` and will automatically update the `Redux` store when a new reducer is registered.  This allows the store to be incrementally constructed as modules and extensions are loaded.
+- Added support for a `StateManager` class that can be instantiated by the host application. This manager provides centralized state management using Redux actions, reducers and store. This class monitors the `ReducerRegistry` and will automatically update the `Redux` store when a new reducer is registered.  This allows the store to be incrementally constructed as modules and extensions are loaded.
 
 - Removed `useControlledTree` flag from the following *Prop* types:
   - `CategoryTreeProps`

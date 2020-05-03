@@ -58,6 +58,7 @@ import { TestAppConfiguration } from "../common/TestAppConfiguration";
 import { LocalFileOpenFrontstage } from "./appui/frontstages/LocalFileStage";
 import { SafeAreaInsets } from "@bentley/ui-ninezone";
 import { AppBackstageComposer } from "./appui/backstage/AppBackstageComposer";
+import { AppUiSettings } from "./AppUiSettings";
 
 // Initialize my application gateway configuration for the frontend
 RpcConfiguration.developmentMode = true;
@@ -68,7 +69,8 @@ if (isElectronRenderer) {
   BentleyCloudRpcManager.initializeClient({ info: { title: "ui-test-app", version: "v1.0" }, uriPrefix: "http://localhost:3001" }, rpcInterfaces);
 }
 
-// cSpell:ignore setTestProperty sampleapp uitestapp setisimodellocal projectwise
+// cSpell:ignore setTestProperty sampleapp uitestapp setisimodellocal projectwise toggledraginteraction toggleframeworkversion
+// cSpell:ignore mobx setdraginteraction setframeworkversion
 /** Action Ids used by redux and to send sync UI components. Typically used to refresh visibility or enable state of control.
  * Use lower case strings to be compatible with SyncUi processing.
  */
@@ -78,6 +80,8 @@ export enum SampleAppUiActionId {
   setIsIModelLocal = "sampleapp:setisimodellocal",
   toggleDragInteraction = "sampleapp:toggledraginteraction",
   toggleFrameworkVersion = "sampleapp:toggleframeworkversion",
+  setDragInteraction = "sampleapp:setdraginteraction",
+  setFrameworkVersion = "sampleapp:setframeworkversion",
 }
 
 export interface SampleAppState {
@@ -104,6 +108,8 @@ export const SampleAppActions = {
   setIsIModelLocal: (isIModelLocal: boolean) => createAction(SampleAppUiActionId.setIsIModelLocal, isIModelLocal),
   toggleDragInteraction: () => createAction(SampleAppUiActionId.toggleDragInteraction),
   toggleFrameworkVersion: () => createAction(SampleAppUiActionId.toggleFrameworkVersion),
+  setDragInteraction: (dragInteraction: boolean) => createAction(SampleAppUiActionId.setDragInteraction, dragInteraction),
+  setFrameworkVersion: (frameworkVersion: string) => createAction(SampleAppUiActionId.setFrameworkVersion, frameworkVersion),
 };
 
 class SampleAppAccuSnap extends AccuSnap {
@@ -144,6 +150,12 @@ function SampleAppReducer(state: SampleAppState = initialState, action: SampleAp
     case SampleAppUiActionId.toggleFrameworkVersion: {
       return { ...state, frameworkVersion: state.frameworkVersion === "1" ? "2" : "1" };
     }
+    case SampleAppUiActionId.setDragInteraction: {
+      return { ...state, dragInteraction: action.payload };
+    }
+    case SampleAppUiActionId.setFrameworkVersion: {
+      return { ...state, frameworkVersion: action.payload };
+    }
   }
   return state;
 }
@@ -169,14 +181,20 @@ export class SampleAppIModelApp {
   public static iModelParams: SampleIModelParams | undefined;
   private static _appStateManager: StateManager | undefined;
   private static _uiSettings: UiSettings | undefined;
+  private static _appUiSettings = new AppUiSettings();
 
   public static get store(): Store<RootState> {
     return StateManager.store as Store<RootState>;
   }
 
-  public static get uiSettings(): UiSettings | undefined {
-    return SampleAppIModelApp._uiSettings;
+  public static get uiSettings(): UiSettings { return SampleAppIModelApp._uiSettings || new LocalUiSettings(); }
+  public static set uiSettings(v: UiSettings) {
+    SampleAppIModelApp._uiSettings = v;
+
+    SampleAppIModelApp._appUiSettings.apply(v);  // tslint:disable-line: no-floating-promises
   }
+
+  public static get appUiSettings(): AppUiSettings { return SampleAppIModelApp._appUiSettings; }
 
   public static async startup(opts?: IModelAppOptions): Promise<void> {
     opts = opts ? opts : {};
@@ -508,20 +526,29 @@ export class SampleAppViewer extends React.Component<any, { authorized: boolean 
     super(props);
 
     AppUi.initialize();
-    this._initializeSignin(!!IModelApp.authorizationClient && IModelApp.authorizationClient.isAuthorized); // tslint:disable-line:no-floating-promises
+
+    const authorized = !!IModelApp.authorizationClient && IModelApp.authorizationClient.isAuthorized;
+    this._initializeSignin(authorized); // tslint:disable-line:no-floating-promises
 
     this.state = {
-      authorized: !!IModelApp.authorizationClient && IModelApp.authorizationClient.isAuthorized,
+      authorized,
     };
   }
 
   private _initializeSignin = async (authorized: boolean): Promise<void> => {
+    this.setUiSettings(authorized);
     return authorized ? SampleAppIModelApp.showSignedIn() : SampleAppIModelApp.showSignedOut();
   }
 
-  private _onUserStateChanged = (accessToken: AccessToken | undefined) => {
-    this.setState({ authorized: !!IModelApp.authorizationClient && IModelApp.authorizationClient.isAuthorized });
-    this._initializeSignin(accessToken !== undefined); // tslint:disable-line:no-floating-promises
+  private _onUserStateChanged = (_accessToken: AccessToken | undefined) => {
+    const authorized = !!IModelApp.authorizationClient && IModelApp.authorizationClient.isAuthorized;
+
+    this.setState({ authorized });
+    this._initializeSignin(authorized); // tslint:disable-line:no-floating-promises
+  }
+
+  private setUiSettings(authorized: boolean): void {
+    SampleAppIModelApp.uiSettings = authorized ? new IModelAppUiSettings() : new LocalUiSettings();
   }
 
   public componentDidMount() {
@@ -545,7 +572,7 @@ export class SampleAppViewer extends React.Component<any, { authorized: boolean 
               <AppDragInteraction>
                 <AppFrameworkVersion>
                   {/** UiSettingsProvider is optional. By default LocalUiSettings is used to store UI settings. */}
-                  <UiSettingsProvider uiSettings={this.state.authorized ? new IModelAppUiSettings() : new LocalUiSettings()}>
+                  <UiSettingsProvider uiSettings={SampleAppIModelApp.uiSettings}>
                     <ConfigurableUiContent
                       appBackstage={<AppBackstageComposer />}
                     />

@@ -1983,6 +1983,23 @@ export class UiEvent<TEventArgs> extends BeUiEvent<TEventArgs> {
 }
 
 // @beta
+export class UiSetting<T> {
+    constructor(settingNamespace: string, settingName: string, getValue: () => T, applyValue?: ((v: T) => void) | undefined);
+    // (undocumented)
+    applyValue?: ((v: T) => void) | undefined;
+    deleteSetting(uiSettings: UiSettings): Promise<UiSettingsResult>;
+    getSetting(uiSettings: UiSettings): Promise<UiSettingsResult>;
+    getSettingAndApplyValue(uiSettings: UiSettings): Promise<UiSettingsResult>;
+    // (undocumented)
+    getValue: () => T;
+    saveSetting(uiSettings: UiSettings): Promise<UiSettingsResult>;
+    // (undocumented)
+    settingName: string;
+    // (undocumented)
+    settingNamespace: string;
+}
+
+// @beta
 export interface UiSettings {
     // (undocumented)
     deleteSetting(settingNamespace: string, settingName: string): Promise<UiSettingsResult>;
@@ -2006,6 +2023,8 @@ export enum UiSettingsStatus {
     NotFound = 1,
     // (undocumented)
     Success = 0,
+    // (undocumented)
+    Uninitialized = 3,
     // (undocumented)
     UnknownError = 2
 }

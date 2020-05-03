@@ -225,7 +225,7 @@ public;GroupItemDef
 public;GroupItemProps 
 alpha;HTMLElementPopup 
 alpha;HTMLElementPopupProps 
-alpha;IModelAppUiSettings 
+beta;IModelAppUiSettings 
 beta;IModelConnectedCategoryTree: import("react-redux").ConnectedComponent
 alpha;IModelConnectedModelsTree: import("react-redux").ConnectedComponent
 beta;IModelConnectedNavigationWidget: import("react-redux").ConnectedComponent

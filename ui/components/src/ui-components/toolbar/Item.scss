@@ -31,11 +31,6 @@
     filter: $icon-shadow;
     transition: all 250ms ease;
 
-    svg {
-      -webkit-filter: drop-shadow(0 1px 0 rgba( var(--buic-foreground-body-reverse-rgb), .5 ));
-      filter: drop-shadow(0 0.5px 0 rgba( var(--buic-foreground-body-reverse-rgb), .5 ));
-    }
-
     img {
       width: $icon-size;
       height: $icon-size;
