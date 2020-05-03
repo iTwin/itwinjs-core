@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-
 import { ToolAssistanceInstruction } from "../../../ui-ninezone";
 
 describe("<ToolAssistanceInstruction />", () => {

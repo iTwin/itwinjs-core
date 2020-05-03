@@ -3,50 +3,25 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { SurfaceType } from "@bentley/imodeljs-frontend/lib/render-primitives";
-import { Batch, MeshGraphic, GraphicsArray, Primitive, PolylineGeometry, RenderOrder } from "@bentley/imodeljs-frontend/lib/webgl";
-import {
-  BatchType,
-  CloudStorageTileCache,
-  CurrentImdlVersion,
-  ImdlFlags,
-  ImdlHeader,
-  IModelTileRpcInterface,
-  IModelTileTreeId,
-  iModelTileTreeIdToString,
-  IModelRpcProps,
-  ModelProps,
-  RelatedElementProps,
-  ServerTimeoutError,
-  TileContentIdentifier,
-  TileFormat,
-  TileReadStatus,
-} from "@bentley/imodeljs-common";
 import { ByteStream, Id64, Id64String } from "@bentley/bentleyjs-core";
 import {
-  GeometricModelState,
-  ImdlReader,
-  IModelApp,
-  IModelConnection,
-  MockRender,
-  RenderGraphic,
-  TileAdmin,
-  TileRequest,
-  TileTree,
-  TileTreeLoadStatus,
-  IModelTileTree,
-  iModelTileTreeParamsFromJSON,
-  ViewState,
-  SnapshotConnection,
+  BatchType, CloudStorageTileCache, CurrentImdlVersion, ImdlFlags, ImdlHeader, IModelRpcProps, IModelTileRpcInterface, IModelTileTreeId,
+  iModelTileTreeIdToString, ModelProps, RelatedElementProps, ServerTimeoutError, TileContentIdentifier, TileFormat, TileReadStatus,
+} from "@bentley/imodeljs-common";
+import {
+  GeometricModelState, ImdlReader, IModelApp, IModelConnection, IModelTileTree, iModelTileTreeParamsFromJSON, MockRender, RenderGraphic,
+  SnapshotConnection, TileAdmin, TileRequest, TileTree, TileTreeLoadStatus, ViewState,
 } from "@bentley/imodeljs-frontend";
+import { SurfaceType } from "@bentley/imodeljs-frontend/lib/render-primitives";
+import { Batch, GraphicsArray, MeshGraphic, PolylineGeometry, Primitive, RenderOrder } from "@bentley/imodeljs-frontend/lib/webgl";
+import { testOnScreenViewport } from "../TestViewport";
 import { TileTestCase, TileTestData } from "./TileIO.data";
 import { TILE_DATA_1_1 } from "./TileIO.data.1.1";
 import { TILE_DATA_1_2 } from "./TileIO.data.1.2";
 import { TILE_DATA_1_3 } from "./TileIO.data.1.3";
 import { TILE_DATA_1_4 } from "./TileIO.data.1.4";
 import { TILE_DATA_2_0 } from "./TileIO.data.2.0";
-import { changeMinorVersion, changeMajorVersion, changeHeaderLength } from "./TileIO.data.fake";
-import { testOnScreenViewport } from "../TestViewport";
+import { changeHeaderLength, changeMajorVersion, changeMinorVersion } from "./TileIO.data.fake";
 
 const testCases = [
   TILE_DATA_1_1,

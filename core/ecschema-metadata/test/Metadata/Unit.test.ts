@@ -4,13 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
+import { SchemaContext } from "../../src/Context";
+import { ECObjectsError } from "../../src/Exception";
+import { Phenomenon } from "../../src/Metadata/Phenomenon";
 import { Schema } from "../../src/Metadata/Schema";
 import { Unit } from "../../src/Metadata/Unit";
-import { Phenomenon } from "../../src/Metadata/Phenomenon";
 import { UnitSystem } from "../../src/Metadata/UnitSystem";
-import { ECObjectsError } from "../../src/Exception";
-import { SchemaContext } from "../../src/Context";
+import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
 import { createEmptyXmlDocument } from "../TestUtils/SerializationHelper";
 
 describe("Unit", () => {

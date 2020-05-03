@@ -6,12 +6,12 @@
  * @module Widget
  */
 
+import "./ContentRenderer.scss";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import { WidgetContentManagerContext, WidgetContentContainersContext } from "./ContentManager";
-import { TabsStateContext, WidgetContentNodeContext, ToolSettingsNodeContext } from "../base/NineZone";
+import { TabsStateContext, ToolSettingsNodeContext, WidgetContentNodeContext } from "../base/NineZone";
 import { TabState, toolSettingsTabId } from "../base/NineZoneState";
-import "./ContentRenderer.scss";
+import { WidgetContentContainersContext, WidgetContentManagerContext } from "./ContentManager";
 
 /** @internal */
 export const WidgetContentRenderers = React.memo(function WidgetContentRenderers() { // tslint:disable-line: variable-name no-shadowed-variable

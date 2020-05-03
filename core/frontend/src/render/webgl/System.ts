@@ -6,109 +6,63 @@
  * @module WebGL
  */
 
+import { assert, BentleyStatus, Dictionary, dispose, Id64String } from "@bentley/bentleyjs-core";
 import {
-  ColorDef,
-  ElementAlignedBox3d,
-  Gradient,
-  IModelError,
-  ImageBuffer,
-  PackedFeatureTable,
-  QParams3d,
-  QPoint3d,
-  QPoint3dList,
-  RenderMaterial,
-  RenderTexture,
-} from "@bentley/imodeljs-common";
-import {
-  ClipUtilities,
-  ClipVector,
-  HalfEdge,
-  HalfEdgeGraph,
-  HalfEdgeMask,
-  IndexedPolyface,
-  IndexedPolyfaceVisitor,
-  Point2d,
-  Point3d,
-  PolyfaceBuilder,
-  Range3d,
-  StrokeOptions,
-  Transform,
-  Triangulator,
+  ClipUtilities, ClipVector, HalfEdge, HalfEdgeGraph, HalfEdgeMask, IndexedPolyface, IndexedPolyfaceVisitor, Point2d, Point3d, PolyfaceBuilder,
+  Range3d, StrokeOptions, Transform, Triangulator,
 } from "@bentley/geometry-core";
 import {
-  Capabilities,
-  DepthType,
-} from "@bentley/webgl-compatibility";
-import {
-  GraphicBranch,
-  GraphicBranchOptions,
-} from "../GraphicBranch";
-import {
-  GraphicList,
-  RenderGraphic,
-  RenderGraphicOwner,
-} from "../RenderGraphic";
-import { InstancedGraphicParams } from "../InstancedGraphicParams";
-import { RenderClipVolume } from "../RenderClipVolume";
-import { RenderTarget } from "../RenderTarget";
-import { RenderMemory } from "../RenderMemory";
-import {
-  GLTimerResultCallback,
-  RenderDiagnostics,
-  RenderSystem,
-  RenderSystemDebugControl,
-  RenderTerrainMeshGeometry,
-  TerrainTexture,
-  DebugShaderFile,
-} from "../RenderSystem";
+  ColorDef, ElementAlignedBox3d, Gradient, ImageBuffer, IModelError, PackedFeatureTable, QParams3d, QPoint3d, QPoint3dList, RenderMaterial,
+  RenderTexture,
+} from "@bentley/imodeljs-common";
+import { Capabilities, DepthType } from "@bentley/webgl-compatibility";
 import { SkyBox } from "../../DisplayStyleState";
-import { OnScreenTarget, OffScreenTarget } from "./Target";
-import { GraphicBuilder, GraphicType } from "../GraphicBuilder";
-import { PrimitiveBuilder } from "../primitives/geometry/GeometryListBuilder";
-import { PointCloudArgs } from "../primitives/PointCloudPrimitive";
-import { PointStringParams, MeshParams, PolylineParams } from "../primitives/VertexTable";
-import { MeshArgs } from "../primitives/mesh/MeshPrimitives";
-import { TerrainMeshPrimitive } from "../primitives/mesh/TerrainMeshPrimitive";
-import {
-  Batch,
-  Branch,
-  Graphic,
-  GraphicOwner,
-  GraphicsArray,
-} from "./Graphic";
-import {
-  Layer,
-  LayerContainer,
-} from "./Layer";
-import { IModelConnection } from "../../IModelConnection";
-import { assert, BentleyStatus, Dictionary, dispose, Id64String } from "@bentley/bentleyjs-core";
-import { Techniques } from "./Technique";
 import { IModelApp } from "../../IModelApp";
+import { IModelConnection } from "../../IModelConnection";
+import { BackgroundMapTileTreeReference, TileTreeReference } from "../../tile/internal";
+import { ToolAdmin } from "../../tools/ToolAdmin";
 import { Viewport } from "../../Viewport";
 import { ViewRect } from "../../ViewRect";
-import { RenderState } from "./RenderState";
-import { FrameBufferStack, DepthBuffer } from "./FrameBuffer";
-import { RenderBuffer } from "./RenderBuffer";
-import { TextureHandle, Texture } from "./Texture";
+import { GraphicBranch, GraphicBranchOptions } from "../GraphicBranch";
+import { GraphicBuilder, GraphicType } from "../GraphicBuilder";
+import { InstancedGraphicParams } from "../InstancedGraphicParams";
+import { PrimitiveBuilder } from "../primitives/geometry/GeometryListBuilder";
+import { MeshArgs } from "../primitives/mesh/MeshPrimitives";
+import { TerrainMeshPrimitive } from "../primitives/mesh/TerrainMeshPrimitive";
+import { PointCloudArgs } from "../primitives/PointCloudPrimitive";
+import { MeshParams, PointStringParams, PolylineParams } from "../primitives/VertexTable";
+import { RenderClipVolume } from "../RenderClipVolume";
+import { GraphicList, RenderGraphic, RenderGraphicOwner } from "../RenderGraphic";
+import { RenderMemory } from "../RenderMemory";
+import {
+  DebugShaderFile, GLTimerResultCallback, RenderDiagnostics, RenderSystem, RenderSystemDebugControl, RenderTerrainMeshGeometry, TerrainTexture,
+} from "../RenderSystem";
+import { RenderTarget } from "../RenderTarget";
+import { BackgroundMapDrape } from "./BackgroundMapDrape";
+import { CachedGeometry, SkyBoxQuadsGeometry, SkySphereViewportQuadGeometry } from "./CachedGeometry";
+import { ClipMaskVolume, ClipPlanesVolume } from "./ClipVolume";
+import { Debug } from "./Diagnostics";
+import { WebGLDisposable } from "./Disposable";
+import { LineCode } from "./EdgeOverrides";
+import { DepthBuffer, FrameBufferStack } from "./FrameBuffer";
 import { GL } from "./GL";
 import { GLTimer } from "./GLTimer";
-import { PolylineGeometry } from "./Polyline";
-import { PointStringGeometry } from "./PointString";
+import { Batch, Branch, Graphic, GraphicOwner, GraphicsArray } from "./Graphic";
+import { UniformHandle } from "./Handle";
+import { Layer, LayerContainer } from "./Layer";
+import { Material } from "./Material";
 import { MeshGraphic } from "./Mesh";
 import { PointCloudGeometry } from "./PointCloud";
-import { TerrainMeshGeometry } from "./TerrainMesh";
-import { LineCode } from "./EdgeOverrides";
-import { Material } from "./Material";
-import { CachedGeometry, SkyBoxQuadsGeometry, SkySphereViewportQuadGeometry } from "./CachedGeometry";
-import { SkyCubePrimitive, SkySpherePrimitive, Primitive } from "./Primitive";
-import { ClipPlanesVolume, ClipMaskVolume } from "./ClipVolume";
+import { PointStringGeometry } from "./PointString";
+import { PolylineGeometry } from "./Polyline";
+import { Primitive, SkyCubePrimitive, SkySpherePrimitive } from "./Primitive";
+import { RenderBuffer } from "./RenderBuffer";
 import { TextureUnit } from "./RenderFlags";
-import { UniformHandle } from "./Handle";
-import { Debug } from "./Diagnostics";
-import { BackgroundMapTileTreeReference, TileTreeReference } from "../../tile/internal";
-import { BackgroundMapDrape } from "./BackgroundMapDrape";
-import { ToolAdmin } from "../../tools/ToolAdmin";
-import { WebGLDisposable } from "./Disposable";
+import { RenderState } from "./RenderState";
+import { OffScreenTarget, OnScreenTarget } from "./Target";
+import { Techniques } from "./Technique";
+import { TerrainMeshGeometry } from "./TerrainMesh";
+import { Texture, TextureHandle } from "./Texture";
 
 // tslint:disable:no-const-enum
 

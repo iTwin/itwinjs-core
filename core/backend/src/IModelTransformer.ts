@@ -5,11 +5,14 @@
 /** @packageDocumentation
  * @module iModels
  */
+import * as path from "path";
 import { ClientRequestContext, DbResult, Guid, GuidString, Id64, Id64Set, Id64String, IModelStatus, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { Transform } from "@bentley/geometry-core";
+import {
+  Code, CodeSpec, ElementAspectProps, ElementProps, ExternalSourceAspectProps, FontProps, GeometricElement3dProps, IModel, IModelError, ModelProps,
+  Placement3d, PrimitiveTypeCode, PropertyMetaData,
+} from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { Code, CodeSpec, ElementAspectProps, ElementProps, ExternalSourceAspectProps, FontProps, GeometricElement3dProps, IModel, IModelError, ModelProps, Placement3d, PrimitiveTypeCode, PropertyMetaData } from "@bentley/imodeljs-common";
-import * as path from "path";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { DefinitionPartition, Element, GeometricElement3d, InformationPartitionElement, Subject } from "./Element";

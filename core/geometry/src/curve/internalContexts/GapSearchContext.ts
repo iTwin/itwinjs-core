@@ -2,12 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
 /** @packageDocumentation
  * @module Curve
  */
-import { RecursiveCurveProcessorWithStack } from "../CurveProcessor";
+import { CurveChain, CurveCollection } from "../CurveCollection";
 import { CurvePrimitive } from "../CurvePrimitive";
-import { CurveCollection, CurveChain } from "../CurveCollection";
+import { RecursiveCurveProcessorWithStack } from "../CurveProcessor";
+
 // import { SumLengthsContext, GapSearchContext, CountLinearPartsSearchContext, CloneCurvesContext, TransformInPlaceContext } from "./CurveSearches";
 /** Algorithmic class: Accumulate maximum gap between adjacent primitives of CurveChain.
  * @internal

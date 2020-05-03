@@ -2,18 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as moq from "typemoq";
-import * as sinon from "sinon";
 import { expect, use } from "chai";
 import ChaiAsPromised from "chai-as-promised";
-import { Id64String, Guid, BeEvent } from "@bentley/bentleyjs-core";
-import { PresentationManager, Presentation, RulesetManager } from "@bentley/presentation-frontend";
+import * as sinon from "sinon";
+import * as moq from "typemoq";
+import { BeEvent, Guid, Id64String } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import {
-  Content, Descriptor, DefaultContentDisplayTypes, KeySet, Ruleset, ValuesDictionary,
-  Item, RegisteredRuleset, Field, CategoryDescription, PrimitiveTypeDescription,
-  PropertyValueFormat, Value, DisplayValue,
+  CategoryDescription, Content, DefaultContentDisplayTypes, Descriptor, DisplayValue, Field, Item, KeySet, PrimitiveTypeDescription,
+  PropertyValueFormat, RegisteredRuleset, Ruleset, Value, ValuesDictionary,
 } from "@bentley/presentation-common";
+import { Presentation, PresentationManager, RulesetManager } from "@bentley/presentation-frontend";
 import { ContentBuilder, IContentBuilderDataProvider } from "../presentation-testing/ContentBuilder";
 
 use(ChaiAsPromised);

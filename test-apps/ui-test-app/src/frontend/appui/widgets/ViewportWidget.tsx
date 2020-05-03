@@ -4,14 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as React from "react";
-
 import { Id64String } from "@bentley/bentleyjs-core";
 import { IModelApp, IModelConnection, ScreenViewport } from "@bentley/imodeljs-frontend";
-
-import { LoadingSpinner } from "@bentley/ui-core";
 import { ViewportComponent } from "@bentley/ui-components";
-import { WidgetControl, ConfigurableCreateInfo, ViewSelector, ViewSelectorChangedEventArgs } from "@bentley/ui-framework";
-
+import { LoadingSpinner } from "@bentley/ui-core";
+import { ConfigurableCreateInfo, ViewSelector, ViewSelectorChangedEventArgs, WidgetControl } from "@bentley/ui-framework";
 import { ExternalIModel } from "../ExternalIModel";
 
 /** Viewport Widget Control */

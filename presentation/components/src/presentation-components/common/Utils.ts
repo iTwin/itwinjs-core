@@ -7,10 +7,10 @@
  */
 
 import * as React from "react";
+import { Descriptor, Field, LabelCompositeValue, LabelDefinition } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
-import { Descriptor, Field, LabelDefinition, LabelCompositeValue } from "@bentley/presentation-common";
+import { Primitives, PrimitiveValue, PropertyDescription, PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
 import { FIELD_NAMES_SEPARATOR } from "./ContentBuilder";
-import { PropertyRecord, PrimitiveValue, PropertyValueFormat, PropertyDescription, Primitives } from "@bentley/ui-abstract";
 
 /**
  * An interface of something that has a priority.

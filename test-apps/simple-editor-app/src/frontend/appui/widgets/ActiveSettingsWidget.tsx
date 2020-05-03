@@ -3,12 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import {
-  ConfigurableUiManager, WidgetControl, ConfigurableCreateInfo,
-} from "@bentley/ui-framework";
 import { Id64String } from "@bentley/bentleyjs-core";
-import { iModelInfoAvailableEvent, ActiveSettingsManager } from "../../api/ActiveSettingsManager";
 import { IModelApp } from "@bentley/imodeljs-frontend";
+import { ConfigurableCreateInfo, ConfigurableUiManager, WidgetControl } from "@bentley/ui-framework";
+import { ActiveSettingsManager, iModelInfoAvailableEvent } from "../../api/ActiveSettingsManager";
 
 interface ActiveSettingsComponentState {
   modelId: Id64String | undefined;

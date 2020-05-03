@@ -4,15 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { TestSchemaLocater } from "../TestUtils/FormatTestHelper";
-import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
-import { Schema, MutableSchema } from "./../../src/Metadata/Schema";
-import { Format } from "./../../src/Metadata/Format";
-import { ShowSignOption, FormatType, FormatTraits, DecimalPrecision } from "./../../src/utils/FormatEnums";
-import { ECObjectsError } from "./../../src/Exception";
-import { FormatProps } from "../../src/Deserialization/JsonProps";
-import { JsonParser } from "../../src/Deserialization/JsonParser";
 import { SchemaContext } from "../../src/Context";
+import { JsonParser } from "../../src/Deserialization/JsonParser";
+import { FormatProps } from "../../src/Deserialization/JsonProps";
+import { ECObjectsError } from "../../src/Exception";
+import { Format } from "../../src/Metadata/Format";
+import { MutableSchema, Schema } from "../../src/Metadata/Schema";
+import { DecimalPrecision, FormatTraits, FormatType, ShowSignOption } from "../../src/utils/FormatEnums";
+import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
+import { TestSchemaLocater } from "../TestUtils/FormatTestHelper";
 import { createEmptyXmlDocument, getElementChildrenByTagName } from "../TestUtils/SerializationHelper";
 
 type Mutable<T> = { -readonly [P in keyof T]: T[P] };

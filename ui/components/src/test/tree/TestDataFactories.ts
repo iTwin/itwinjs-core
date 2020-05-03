@@ -3,11 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { PropertyRecord } from "@bentley/ui-abstract";
+import { BeInspireTree, DelayLoadedTreeNodeItem, DEPRECATED_Tree as Tree, ITreeDataProvider, PageOptions, TreeNodeItem } from "../../ui-components";
 import { ResolvablePromise } from "../test-helpers/misc";
-import {
-  ITreeDataProvider, DelayLoadedTreeNodeItem, TreeNodeItem,
-  PageOptions, BeInspireTree, DEPRECATED_Tree as Tree,
-} from "../../ui-components";
 
 // tslint:disable:deprecation
 

@@ -7,17 +7,17 @@
  * @module Topology
  */
 
-import { Geometry } from "../Geometry";
 import { LineSegment3d } from "../curve/LineSegment3d";
-import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "./Graph";
-import { ClusterableArray } from "../numerics/ClusterableArray";
-import { Range3d } from "../geometry3d/Range";
-import { HalfEdgePriorityQueueWithPartnerArray } from "./HalfEdgePriorityQueue";
-import { SmallSystem } from "../numerics/Polynomials";
-import { Point2d, Vector2d } from "../geometry3d/Point2dVector2d";
+import { Geometry } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
-import { Triangulator, MultiLineStringDataVariant } from "./Triangulation";
+import { Point2d, Vector2d } from "../geometry3d/Point2dVector2d";
+import { Range3d } from "../geometry3d/Range";
+import { ClusterableArray } from "../numerics/ClusterableArray";
+import { SmallSystem } from "../numerics/Polynomials";
+import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "./Graph";
+import { HalfEdgePriorityQueueWithPartnerArray } from "./HalfEdgePriorityQueue";
 import { RegularizationContext } from "./RegularizeFace";
+import { MultiLineStringDataVariant, Triangulator } from "./Triangulation";
 
 export class GraphSplitData {
   public numUpEdge = 0;

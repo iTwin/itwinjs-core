@@ -6,12 +6,12 @@
  * @module Tooltip
  */
 
+import "./Tooltip.scss";
 import React from "react";
 import { Orientation } from "@bentley/ui-core";
+import { PropertyValueRendererManager } from "../properties/ValueRendererManager";
 import { PropertyList } from "../propertygrid/component/PropertyList";
 import { PropertyData } from "../propertygrid/PropertyDataProvider";
-import "./Tooltip.scss";
-import { PropertyValueRendererManager } from "../properties/ValueRendererManager";
 
 /** Properties for [[Tooltip]] React component
  * @alpha

@@ -2,10 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { DecorateContext, GraphicType, HitDetail, imageElementFromUrl, IModelApp, MarkerSet, Marker, MarkerImage, Cluster, BeButtonEvent, BeButton, MessageBoxType, MessageBoxIconType } from "@bentley/imodeljs-frontend";
-import { ColorDef, NpcCenter, ColorByName, AxisAlignedBox3d } from "@bentley/imodeljs-common";
-import { Point3d, XYAndZ, XAndY, Point2d, AngleSweep, Arc3d } from "@bentley/geometry-core";
 import { Logger } from "@bentley/bentleyjs-core";
+import { AngleSweep, Arc3d, Point2d, Point3d, XAndY, XYAndZ } from "@bentley/geometry-core";
+import { AxisAlignedBox3d, ColorByName, ColorDef, NpcCenter } from "@bentley/imodeljs-common";
+import {
+  BeButton, BeButtonEvent, Cluster, DecorateContext, GraphicType, HitDetail, imageElementFromUrl, IModelApp, Marker, MarkerImage, MarkerSet,
+  MessageBoxIconType, MessageBoxType,
+} from "@bentley/imodeljs-frontend";
 
 /// cSpell:ignore lerp
 

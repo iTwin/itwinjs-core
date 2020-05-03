@@ -7,12 +7,11 @@
  */
 
 // The following definitions are causing extract-api issues on linux so for now just using any until we can figure out the issue.
+import { XAndY } from "@bentley/geometry-core";
 // import { IModelConnection, ViewState } from "@bentley/imodeljs-frontend";
 import { UserInfo } from "@bentley/itwin-client";
-import { createAction, ActionsUnion, DeepReadonly } from "./redux-ts";
-
-import { XAndY } from "@bentley/geometry-core";
 import { MenuItemProps } from "../shared/MenuItem";
+import { ActionsUnion, createAction, DeepReadonly } from "./redux-ts";
 
 // cSpell:ignore configurableui snapmode toolprompt sessionstate imodelid viewid viewportid rulesetid
 

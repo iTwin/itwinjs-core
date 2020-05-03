@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ClientRequestContext, BeEvent } from "@bentley/bentleyjs-core";
-import { UserInfo, AccessToken } from "@bentley/itwin-client";
+import { BeEvent, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
+import { AccessToken, UserInfo } from "@bentley/itwin-client";
 
 class DummyAccessToken extends AccessToken {
   public static foreignProjectAccessTokenJsonProperty = "ForeignProjectAccessToken";

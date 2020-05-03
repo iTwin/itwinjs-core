@@ -7,14 +7,13 @@
  * @module Curve
  */
 
-import { GeometryQuery } from "./GeometryQuery";
-import { NullGeometryHandler } from "../geometry3d/GeometryHandler";
-
-import { LineSegment3d } from "./LineSegment3d";
-import { Arc3d } from "./Arc3d";
-import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
-import { LineString3d } from "./LineString3d";
 import { Geometry } from "../Geometry";
+import { NullGeometryHandler } from "../geometry3d/GeometryHandler";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
+import { Arc3d } from "./Arc3d";
+import { GeometryQuery } from "./GeometryQuery";
+import { LineSegment3d } from "./LineSegment3d";
+import { LineString3d } from "./LineString3d";
 
 /**
  * Context for constructing a curve that is interpolated between two other curves.

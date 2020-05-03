@@ -6,40 +6,16 @@
  * @module Tiles
  */
 
+import { assert, BeDuration, BeTimePoint, Dictionary, Id64Array, PriorityQueue } from "@bentley/bentleyjs-core";
 import {
-  BeDuration,
-  BeTimePoint,
-  Dictionary,
-  Id64Array,
-  PriorityQueue,
-  assert,
-} from "@bentley/bentleyjs-core";
-import {
-  CurrentImdlVersion,
-  getMaximumMajorTileFormatVersion,
-  IModelTileRpcInterface,
-  NativeAppRpcInterface,
-  RpcOperation,
-  RpcRegistry,
-  RpcResponseCacheControl,
-  ServerTimeoutError,
-  TileTreeContentIds,
-  TileTreeProps,
+  CurrentImdlVersion, getMaximumMajorTileFormatVersion, IModelTileRpcInterface, NativeAppRpcInterface, RpcOperation, RpcRegistry,
+  RpcResponseCacheControl, ServerTimeoutError, TileTreeContentIds, TileTreeProps,
 } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
-import {
-  Tile,
-  TileLoadStatus,
-  TileRequest,
-  TileTree,
-  TileTreeSet,
-} from "./internal";
 import { Viewport } from "../Viewport";
-import {
-  ReadonlyViewportSet,
-  UniqueViewportSets,
-} from "../ViewportSet";
+import { ReadonlyViewportSet, UniqueViewportSets } from "../ViewportSet";
+import { Tile, TileLoadStatus, TileRequest, TileTree, TileTreeSet } from "./internal";
 
 /** Details about any tiles not handled by [[TileAdmin]]. At this time, that means OrbitGT point cloud tiles.
  * Used for bookkeeping by SelectedAndReadyTiles

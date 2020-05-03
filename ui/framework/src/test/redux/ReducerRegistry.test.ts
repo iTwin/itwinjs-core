@@ -4,9 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-
-import { createAction, ActionsUnion, ActionCreatorsObject, ReducerRegistryInstance, NameToReducerMap } from "../../ui-framework";
 import { UiError } from "@bentley/ui-abstract";
+import { ActionCreatorsObject, ActionsUnion, createAction, NameToReducerMap, ReducerRegistryInstance } from "../../ui-framework";
 
 // Manages the state for plugin
 interface IPluginState {

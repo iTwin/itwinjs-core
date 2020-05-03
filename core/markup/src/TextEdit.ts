@@ -6,11 +6,14 @@
  * @module MarkupTools
  */
 
-import { BeButtonEvent, EventHandled, InputSource, ToolAssistance, IModelApp, ToolAssistanceInstruction, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceSection, CoreTools } from "@bentley/imodeljs-frontend";
+import {
+  BeButtonEvent, CoreTools, EventHandled, IModelApp, InputSource, ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod,
+  ToolAssistanceInstruction, ToolAssistanceSection,
+} from "@bentley/imodeljs-frontend";
 import { G, Text as MarkupText } from "@svgdotjs/svg.js";
-import { RedlineTool } from "./RedlineTool";
 import { MarkupApp } from "./Markup";
 import { MarkupTool } from "./MarkupTool";
+import { RedlineTool } from "./RedlineTool";
 
 /** Tool to place new text notes on a Markup.
  * @beta

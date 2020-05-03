@@ -7,13 +7,12 @@
  */
 
 import { Logger } from "@bentley/bentleyjs-core";
-
-import { CommonToolbarItem } from "./toolbars/ToolbarItem";
-import { CommonStatusBarItem } from "./statusbar/StatusBarItem";
 import { BackstageItem } from "./backstage/BackstageItem";
-import { AbstractWidgetProps } from "./widget/AbstractWidgetProps";
-import { UiItemsApplicationAction, UiItemsManager } from "./UiItemsManager";
+import { CommonStatusBarItem } from "./statusbar/StatusBarItem";
+import { CommonToolbarItem } from "./toolbars/ToolbarItem";
 import { UiAbstract } from "./UiAbstract";
+import { UiItemsApplicationAction, UiItemsManager } from "./UiItemsManager";
+import { AbstractWidgetProps } from "./widget/AbstractWidgetProps";
 
 /** Application for items provided by a UiItemsProvider
  * @beta

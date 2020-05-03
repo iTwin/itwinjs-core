@@ -4,12 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import {
-  ConfigurableUiManager, WidgetControl, ConfigurableCreateInfo, UiFramework,
-} from "@bentley/ui-framework";
-import { ErrorHandling } from "../../api/ErrorHandling";
-import { IModelApp, SpatialViewState, MessageBoxType, MessageBoxIconType, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
-import { ActiveSettingsManager } from "../../api/ActiveSettingsManager";
+  IModelApp, MessageBoxIconType, MessageBoxType, NotifyMessageDetails, OutputMessagePriority, SpatialViewState,
+} from "@bentley/imodeljs-frontend";
 import { Button } from "@bentley/ui-core";
+import { ConfigurableCreateInfo, ConfigurableUiManager, UiFramework, WidgetControl } from "@bentley/ui-framework";
+import { ActiveSettingsManager } from "../../api/ActiveSettingsManager";
+import { ErrorHandling } from "../../api/ErrorHandling";
 
 const modelNameId = "simple-editor-app-modelcreation-modelname";
 

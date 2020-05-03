@@ -2,15 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { expect } from "chai";
 import { mount } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { expect } from "chai";
 import {
+  calculateBackdropFilterBlur, calculateBoxShadowOpacity, calculateProximityScale, calculateToolbarOpacity, getToolbarBackdropFilter,
+  getToolbarBackgroundColor, getToolbarBoxShadow, TOOLBAR_BACKDROP_FILTER_BLUR_DEFAULT, TOOLBAR_BOX_SHADOW_OPACITY_DEFAULT, TOOLBAR_OPACITY_DEFAULT,
   useProximityToMouse,
-  calculateProximityScale, calculateToolbarOpacity, calculateBoxShadowOpacity, calculateBackdropFilterBlur,
-  getToolbarBackgroundColor, getToolbarBoxShadow, getToolbarBackdropFilter,
-  TOOLBAR_OPACITY_DEFAULT, TOOLBAR_BOX_SHADOW_OPACITY_DEFAULT, TOOLBAR_BACKDROP_FILTER_BLUR_DEFAULT,
 } from "../../../ui-core/utils/hooks/useProximityToMouse";
 
 // tslint:disable-next-line: variable-name

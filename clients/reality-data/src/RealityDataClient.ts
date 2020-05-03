@@ -2,12 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
 /** @packageDocumentation
  * @module RealityData
  */
-import { ClientRequestContext, Config, Guid } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext, ECJsonTypeMap, request, RequestOptions, RequestQueryOptions, WsgClient, WsgInstance } from "@bentley/itwin-client";
 import { URL } from "url";
+import { ClientRequestContext, Config, Guid } from "@bentley/bentleyjs-core";
+import {
+  AuthorizedClientRequestContext, ECJsonTypeMap, request, RequestOptions, RequestQueryOptions, WsgClient, WsgInstance,
+} from "@bentley/itwin-client";
 
 /** RealityData
  * This class implements a Reality Data stored in ProjectWise Context Share (Reality Data Service)

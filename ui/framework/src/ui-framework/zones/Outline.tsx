@@ -8,9 +8,7 @@
 
 import * as React from "react";
 import { RectangleProps } from "@bentley/ui-core";
-import {
-  Outline as NZ_Outline,
-} from "@bentley/ui-ninezone";
+import { Outline as NZ_Outline } from "@bentley/ui-ninezone";
 
 /** @internal */
 export interface OutlineProps {

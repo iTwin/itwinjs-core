@@ -2,14 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
 import { expect } from "chai";
 import * as enzyme from "enzyme";
+import * as React from "react";
 import * as sinon from "sinon";
-import TestUtils from "../TestUtils";
-import { PointerMessage, AppNotificationManager } from "../../ui-framework";
-import { RelativePosition } from "@bentley/ui-abstract";
 import { NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@bentley/imodeljs-frontend";
+import { RelativePosition } from "@bentley/ui-abstract";
+import { AppNotificationManager, PointerMessage } from "../../ui-framework";
+import TestUtils from "../TestUtils";
 
 describe("PointerMessage", () => {
   const sandbox = sinon.createSandbox();

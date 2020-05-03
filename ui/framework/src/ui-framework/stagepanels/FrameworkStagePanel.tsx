@@ -6,29 +6,21 @@
  * @module Frontstage
  */
 
-import * as React from "react";
+import "./FrameworkStagePanel.scss";
 import classnames from "classnames";
+import * as React from "react";
 import { StagePanelLocation } from "@bentley/ui-abstract";
 import {
-  StagePanel as NZ_StagePanel,
-  StagePanelTypeHelpers,
-  NineZoneStagePanelManagerProps,
-  StagePanelTarget,
-  Splitter,
-  WidgetZoneId,
-  SplitterTarget,
-  SplitterPaneTarget as NZ_SplitterPaneTarget,
-  ZonesManagerWidgetsProps,
-  SafeAreaInsets,
+  NineZoneStagePanelManagerProps, SafeAreaInsets, Splitter, SplitterPaneTarget as NZ_SplitterPaneTarget, SplitterTarget, StagePanel as NZ_StagePanel,
+  StagePanelTarget, StagePanelTypeHelpers, WidgetZoneId, ZonesManagerWidgetsProps,
 } from "@bentley/ui-ninezone";
-import { WidgetStack, WidgetTabs } from "../widgets/WidgetStack";
 import { StagePanelChangeHandler, WidgetChangeHandler } from "../frontstage/FrontstageComposer";
-import { ZoneLocation } from "../zones/Zone";
-import { SafeAreaContext } from "../safearea/SafeAreaContext";
-import { getStagePanelType, getNestedStagePanelKey } from "./StagePanel";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
+import { SafeAreaContext } from "../safearea/SafeAreaContext";
+import { WidgetStack, WidgetTabs } from "../widgets/WidgetStack";
+import { ZoneLocation } from "../zones/Zone";
+import { getNestedStagePanelKey, getStagePanelType } from "./StagePanel";
 import { StagePanelState } from "./StagePanelDef";
-import "./FrameworkStagePanel.scss";
 
 /** Properties of a [[FrameworkStagePanel]] component
  * @internal

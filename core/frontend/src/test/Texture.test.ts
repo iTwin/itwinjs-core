@@ -3,23 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect, assert } from "chai";
+import { assert, expect } from "chai";
+import { ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat, RenderTexture } from "@bentley/imodeljs-common";
+import { extractImageSourceDimensions, imageBufferToPngDataUrl, imageElementFromImageSource, imageElementFromUrl } from "../ImageUtil";
 import { IModelApp } from "../IModelApp";
-import {
-  imageElementFromImageSource,
-  extractImageSourceDimensions,
-  imageBufferToPngDataUrl,
-  imageElementFromUrl,
-} from "../ImageUtil";
-import { TextureHandle } from "../render/webgl/Texture";
 import { GL } from "../render/webgl/GL";
-import {
-  ImageBuffer,
-  ImageBufferFormat,
-  ImageSource,
-  ImageSourceFormat,
-  RenderTexture,
-} from "@bentley/imodeljs-common";
+import { TextureHandle } from "../render/webgl/Texture";
 
 // This is an encoded png containing a 3x3 square with white in top left pixel, blue in middle pixel, and green in
 // bottom right pixel.  The rest of the square is red.

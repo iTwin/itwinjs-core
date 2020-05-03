@@ -8,56 +8,20 @@
 
 /// cSpell:ignore quadkey
 
+import { assert, compareBooleans, compareNumbers, compareStrings, Id64String } from "@bentley/bentleyjs-core";
+import { Range1d, Range3d, Transform, XYZProps } from "@bentley/geometry-core";
 import {
-  Id64String,
-  assert,
-  compareBooleans,
-  compareNumbers,
-  compareStrings,
-} from "@bentley/bentleyjs-core";
-import {
-  Range1d,
-  Range3d,
-  Transform,
-  XYZProps,
-} from "@bentley/geometry-core";
-import {
-  BackgroundMapProviderName,
-  BackgroundMapType,
-  Feature,
-  FeatureTable,
-  GeoCoordStatus,
-  GlobeMode,
-  ImageSource,
-  ImageSourceFormat,
-  PackedFeatureTable,
+  BackgroundMapProviderName, BackgroundMapType, Feature, FeatureTable, GeoCoordStatus, GlobeMode, ImageSource, ImageSourceFormat, PackedFeatureTable,
   RenderTexture,
 } from "@bentley/imodeljs-common";
-import {
-  RealityTileLoader,
-  ImageryProvider,
-  MapTile,
-  MapTileGeometryAttributionProvider,
-  MapTileTree,
-  MapTileTreeReference,
-  MapTilingScheme,
-  QuadId,
-  RealityTile,
-  RealityTileTreeParams,
-  Tile,
-  TileContent,
-  TileGraphicType,
-  TileLoadPriority,
-  TileRequest,
-  TileTree,
-  TileTreeOwner,
-  TileTreeSupplier,
-  WebMercatorTilingScheme,
-  calculateEcefToDb,
-} from "./internal";
 import { imageElementFromImageSource } from "../ImageUtil";
 import { IModelConnection } from "../IModelConnection";
 import { RenderSystem } from "../render/RenderSystem";
+import {
+  calculateEcefToDb, ImageryProvider, MapTile, MapTileGeometryAttributionProvider, MapTileTree, MapTileTreeReference, MapTilingScheme, QuadId,
+  RealityTile, RealityTileLoader, RealityTileTreeParams, Tile, TileContent, TileGraphicType, TileLoadPriority, TileRequest, TileTree, TileTreeOwner,
+  TileTreeSupplier, WebMercatorTilingScheme,
+} from "./internal";
 
 /** @internal */
 export class WebMapTileTreeProps implements RealityTileTreeParams {

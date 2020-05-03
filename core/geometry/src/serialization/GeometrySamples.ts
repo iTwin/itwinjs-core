@@ -7,57 +7,55 @@
  * @module Serialization
  */
 
-import { Geometry, AxisOrder } from "../Geometry";
-import { AngleSweep } from "../geometry3d/AngleSweep";
-import { Angle } from "../geometry3d/Angle";
-import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
-import { Ray3d } from "../geometry3d/Ray3d";
-import { Point2d, Vector2d } from "../geometry3d/Point2dVector2d";
-import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
-import { Segment1d } from "../geometry3d/Segment1d";
-import { Transform } from "../geometry3d/Transform";
-import { Matrix3d } from "../geometry3d/Matrix3d";
-
-import { Range1d, Range2d, Range3d } from "../geometry3d/Range";
+import { BezierCurve3d } from "../bspline/BezierCurve3d";
+import { BezierCurve3dH } from "../bspline/BezierCurve3dH";
+import { BSplineCurve3d, BSplineCurve3dBase } from "../bspline/BSplineCurve";
+import { BSplineCurve3dH } from "../bspline/BSplineCurve3dH";
+import { BSplineSurface3d, BSplineSurface3dH, WeightStyle } from "../bspline/BSplineSurface";
+import { BSplineWrapMode, KnotVector } from "../bspline/KnotVector";
+import { ClipPlane } from "../clipping/ClipPlane";
+import { ConvexClipPlaneSet } from "../clipping/ConvexClipPlaneSet";
+import { UnionOfConvexClipPlaneSets } from "../clipping/UnionOfConvexClipPlaneSets";
+import { Arc3d } from "../curve/Arc3d";
+import { CoordinateXYZ } from "../curve/CoordinateXYZ";
+import { CurveChainWithDistanceIndex } from "../curve/CurveChainWithDistanceIndex";
+import { BagOfCurves } from "../curve/CurveCollection";
 import { CurvePrimitive } from "../curve/CurvePrimitive";
 import { GeometryQuery } from "../curve/GeometryQuery";
+import { LineSegment3d } from "../curve/LineSegment3d";
+import { LineString3d } from "../curve/LineString3d";
+import { Loop } from "../curve/Loop";
+import { ParityRegion } from "../curve/ParityRegion";
+import { Path } from "../curve/Path";
+import { PointString3d } from "../curve/PointString3d";
+import { TransitionSpiral3d } from "../curve/TransitionSpiral";
+import { UnionRegion } from "../curve/UnionRegion";
+import { AxisOrder, Geometry } from "../Geometry";
+import { Angle } from "../geometry3d/Angle";
+import { AngleSweep } from "../geometry3d/AngleSweep";
+import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
+import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
+import { Matrix3d } from "../geometry3d/Matrix3d";
+import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
+import { Point2d, Vector2d } from "../geometry3d/Point2dVector2d";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
+import { Range1d, Range2d, Range3d } from "../geometry3d/Range";
+import { Ray3d } from "../geometry3d/Ray3d";
+import { Segment1d } from "../geometry3d/Segment1d";
+import { Transform } from "../geometry3d/Transform";
+import { XYAndZ } from "../geometry3d/XYZProps";
 import { Map4d } from "../geometry4d/Map4d";
 import { Matrix4d } from "../geometry4d/Matrix4d";
 import { Point4d } from "../geometry4d/Point4d";
-import { UnionRegion } from "../curve/UnionRegion";
-import { BagOfCurves } from "../curve/CurveCollection";
-import { ParityRegion } from "../curve/ParityRegion";
-import { Loop } from "../curve/Loop";
-import { Path } from "../curve/Path";
 import { IndexedPolyface } from "../polyface/Polyface";
-import { BSplineCurve3d, BSplineCurve3dBase } from "../bspline/BSplineCurve";
-import { BSplineSurface3d, BSplineSurface3dH, WeightStyle } from "../bspline/BSplineSurface";
-import { Sphere } from "../solid/Sphere";
-import { Cone } from "../solid/Cone";
 import { Box } from "../solid/Box";
-import { TorusPipe } from "../solid/TorusPipe";
+import { Cone } from "../solid/Cone";
 import { LinearSweep } from "../solid/LinearSweep";
 import { RotationalSweep } from "../solid/RotationalSweep";
 import { RuledSweep } from "../solid/RuledSweep";
-
-import { LineSegment3d } from "../curve/LineSegment3d";
-import { Arc3d } from "../curve/Arc3d";
-import { TransitionSpiral3d } from "../curve/TransitionSpiral";
-import { LineString3d } from "../curve/LineString3d";
-import { PointString3d } from "../curve/PointString3d";
-import { ClipPlane } from "../clipping/ClipPlane";
-import { ConvexClipPlaneSet } from "../clipping/ConvexClipPlaneSet";
-import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
-import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
-import { UnionOfConvexClipPlaneSets } from "../clipping/UnionOfConvexClipPlaneSets";
-import { BSplineCurve3dH } from "../bspline/BSplineCurve3dH";
-import { BezierCurve3d } from "../bspline/BezierCurve3d";
-import { BezierCurve3dH } from "../bspline/BezierCurve3dH";
-import { CurveChainWithDistanceIndex } from "../curve/CurveChainWithDistanceIndex";
-import { KnotVector, BSplineWrapMode } from "../bspline/KnotVector";
 import { SolidPrimitive } from "../solid/SolidPrimitive";
-import { CoordinateXYZ } from "../curve/CoordinateXYZ";
-import { XYAndZ } from "../geometry3d/XYZProps";
+import { Sphere } from "../solid/Sphere";
+import { TorusPipe } from "../solid/TorusPipe";
 
 /* tslint:disable:no-console */
 /**

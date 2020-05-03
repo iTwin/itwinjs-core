@@ -6,10 +6,10 @@
  * @module Schema
  */
 
-import { ClassRegistry } from "../ClassRegistry";
-import { Schema, Schemas } from "../Schema";
-import { KnownLocations } from "../IModelHost";
 import * as path from "path";
+import { ClassRegistry } from "../ClassRegistry";
+import { KnownLocations } from "../IModelHost";
+import { Schema, Schemas } from "../Schema";
 import * as elementsModule from "./AnalyticalElements";
 import * as modelsModule from "./AnalyticalModels";
 import * as relationshipsModule from "./AnalyticalRelationships";

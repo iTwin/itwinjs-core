@@ -6,13 +6,13 @@
  * @module WebGL
  */
 
-import { FragmentShaderComponent, ProgramBuilder, VertexShaderComponent, VariableType } from "../ShaderBuilder";
-import { ShaderProgram } from "../ShaderProgram";
-import { TextureUnit } from "../RenderFlags";
-import { Texture } from "../Texture";
-import { Matrix3 } from "../Matrix";
-import { SkyBoxQuadsGeometry } from "../CachedGeometry";
 import { AttributeMap } from "../AttributeMap";
+import { SkyBoxQuadsGeometry } from "../CachedGeometry";
+import { Matrix3 } from "../Matrix";
+import { TextureUnit } from "../RenderFlags";
+import { FragmentShaderComponent, ProgramBuilder, VariableType, VertexShaderComponent } from "../ShaderBuilder";
+import { ShaderProgram } from "../ShaderProgram";
+import { Texture } from "../Texture";
 
 const computeBaseColor = `return vec4(0, 0, 0, 0);`;
 const assignFragData = `FragColor = TEXTURE_CUBE(s_cube, v_texDir);`;

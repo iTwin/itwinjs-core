@@ -8,6 +8,7 @@
 
 import { Range2d } from "../../geometry3d/Range";
 import { LowAndHighXY } from "../../geometry3d/XYZProps";
+
 /**
  * Interface for classes that can search with range optimizations.
  * @public

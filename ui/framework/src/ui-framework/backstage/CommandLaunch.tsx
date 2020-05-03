@@ -7,14 +7,13 @@
  */
 
 import * as React from "react";
-
 import { Logger } from "@bentley/bentleyjs-core";
 import { CommandHandler } from "@bentley/ui-abstract";
 import { BackstageItem as NZ_BackstageItem } from "@bentley/ui-ninezone";
 import { withSafeArea } from "../safearea/SafeAreaContext";
-import { SyncUiEventDispatcher, SyncUiEventArgs } from "../syncui/SyncUiEventDispatcher";
-import { PropsHelper } from "../utils/PropsHelper";
+import { SyncUiEventArgs, SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
 import { UiFramework } from "../UiFramework";
+import { PropsHelper } from "../utils/PropsHelper";
 import { Backstage } from "./Backstage";
 import { BackstageItemProps, BackstageItemState } from "./BackstageItemProps";
 import { BackstageItemUtilities } from "./BackstageItemUtilities";

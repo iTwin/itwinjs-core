@@ -5,9 +5,11 @@
 
 import * as chai from "chai";
 import { ClientRequestContext, Config } from "@bentley/bentleyjs-core";
-import { AccessToken, SamlAccessToken } from "@bentley/itwin-client";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
-import { DelegationAuthorizationClient, DelegationAuthorizationClientConfiguration, AgentAuthorizationClient, AgentAuthorizationClientConfiguration } from "../backend-itwin-client";
+import { AccessToken, SamlAccessToken } from "@bentley/itwin-client";
+import {
+  AgentAuthorizationClient, AgentAuthorizationClientConfiguration, DelegationAuthorizationClient, DelegationAuthorizationClientConfiguration,
+} from "../backend-itwin-client";
 import { HubAccessTestValidator } from "./HubAccessTestValidator";
 
 IModelJsConfig.init(true /* suppress exception */, false /* suppress error message */, Config.App);

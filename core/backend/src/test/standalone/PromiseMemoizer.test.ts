@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
+import { BeDuration } from "@bentley/bentleyjs-core";
 import { IModelVersion, SyncMode } from "@bentley/imodeljs-common";
-import { AuthorizedClientRequestContext, AccessToken } from "@bentley/itwin-client";
+import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { AuthorizedBackendRequestContext } from "../../imodeljs-backend";
 import { PromiseMemoizer, QueryablePromise } from "../../PromiseMemoizer";
-import { TestMemoizer, testFn } from "./TestMemoizer";
-import { BeDuration } from "@bentley/bentleyjs-core";
+import { testFn, TestMemoizer } from "./TestMemoizer";
 
 describe("PromiseMemoizer", () => {
   let requestContextRegular: AuthorizedBackendRequestContext;

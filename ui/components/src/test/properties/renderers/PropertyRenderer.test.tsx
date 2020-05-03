@@ -3,17 +3,17 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import sinon from "sinon";
 import { mount } from "enzyme";
 import * as React from "react";
-import { Orientation } from "@bentley/ui-core";
-import { PropertyRenderer } from "../../../ui-components/properties/renderers/PropertyRenderer";
-import TestUtils from "../../TestUtils";
-import { PropertyValueRendererManager } from "../../../ui-components/properties/ValueRendererManager";
-import { PrimitivePropertyRenderer } from "../../../ui-components/properties/renderers/PrimitivePropertyRenderer";
+import sinon from "sinon";
 import { PropertyRecord } from "@bentley/ui-abstract";
-import { NonPrimitivePropertyRenderer } from "../../../ui-components/properties/renderers/NonPrimitivePropertyRenderer";
+import { Orientation } from "@bentley/ui-core";
 import { LinksRenderer } from "../../../ui-components/properties/LinkHandler";
+import { NonPrimitivePropertyRenderer } from "../../../ui-components/properties/renderers/NonPrimitivePropertyRenderer";
+import { PrimitivePropertyRenderer } from "../../../ui-components/properties/renderers/PrimitivePropertyRenderer";
+import { PropertyRenderer } from "../../../ui-components/properties/renderers/PropertyRenderer";
+import { PropertyValueRendererManager } from "../../../ui-components/properties/ValueRendererManager";
+import TestUtils from "../../TestUtils";
 
 describe("PropertyRenderer", () => {
   describe("getLabelOffset", () => {

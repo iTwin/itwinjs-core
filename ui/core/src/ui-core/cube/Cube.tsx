@@ -6,11 +6,9 @@
  * @module Cube
  */
 
-import * as React from "react";
-import classnames from "classnames";
-
 import "./Cube.scss";
-
+import classnames from "classnames";
+import * as React from "react";
 import { Matrix3d } from "@bentley/geometry-core";
 import { CommonProps } from "../utils/Props";
 

@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { PrimitiveType, primitiveTypeToString } from "../ECObjects";
+import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { CustomAttribute } from "../Metadata/CustomAttribute";
 import { CustomAttributeClass } from "../Metadata/CustomAttributeClass";
-import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { Property, ArrayProperty, StructProperty, PrimitiveProperty, EnumerationProperty, PrimitiveOrEnumPropertyBase } from "../Metadata/Property";
-import { primitiveTypeToString, PrimitiveType } from "../ECObjects";
+import { ArrayProperty, EnumerationProperty, PrimitiveOrEnumPropertyBase, PrimitiveProperty, Property, StructProperty } from "../Metadata/Property";
 import { Schema } from "../Metadata/Schema";
 
 /**

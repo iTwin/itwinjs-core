@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { AgentAuthorizationClient, BackendAuthorizationClientConfiguration } from "@bentley/backend-itwin-client";
 import { ClientRequestContext, Config, Logger } from "@bentley/bentleyjs-core";
 import { GetEventOperationType, GlobalEventSAS, GlobalEventSubscription, IModelHubClient, IModelHubGlobalEvent } from "@bentley/imodelhub-client";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { AgentAuthorizationClient, BackendAuthorizationClientConfiguration } from "@bentley/backend-itwin-client";
 
 class MockAccessToken extends AccessToken {
   public constructor() { super(""); }

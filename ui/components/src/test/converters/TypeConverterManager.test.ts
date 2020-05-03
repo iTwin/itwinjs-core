@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { TypeConverterManager, TypeConverter, StringTypeConverter } from "../../ui-components";
+import { StringTypeConverter, TypeConverter, TypeConverterManager } from "../../ui-components";
 
 describe("TypeConverterManager", () => {
 

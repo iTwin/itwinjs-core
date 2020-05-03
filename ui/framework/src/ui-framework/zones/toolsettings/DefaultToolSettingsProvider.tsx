@@ -7,19 +7,15 @@
  */
 
 import * as React from "react";
-
-// cSpell:Ignore configurableui
-
-import {
-  DialogItem, DialogPropertySyncItem, DialogItemsManager, SyncPropertiesChangeEventArgs,
-} from "@bentley/ui-abstract";
 import { IModelApp } from "@bentley/imodeljs-frontend";
+// cSpell:Ignore configurableui
+import { DialogItem, DialogItemsManager, DialogPropertySyncItem, SyncPropertiesChangeEventArgs } from "@bentley/ui-abstract";
 import { ConfigurableCreateInfo } from "../../configurableui/ConfigurableUiControl";
-import { ToolUiProvider } from "./ToolUiProvider";
 import { ConfigurableUiManager } from "../../configurableui/ConfigurableUiManager";
-import { ToolUiManager, SyncToolSettingsPropertiesEventArgs } from "../toolsettings/ToolUiManager";
-import { DefaultDialogGridContainer } from "../../uiprovider/DefaultDialogGridContainer";
 import { ComponentGenerator } from "../../uiprovider/ComponentGenerator";
+import { DefaultDialogGridContainer } from "../../uiprovider/DefaultDialogGridContainer";
+import { SyncToolSettingsPropertiesEventArgs, ToolUiManager } from "../toolsettings/ToolUiManager";
+import { ToolUiProvider } from "./ToolUiProvider";
 
 /** Responsive Layout Mode */
 

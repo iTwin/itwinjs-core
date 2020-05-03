@@ -7,9 +7,8 @@ import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import * as UiCore from "@bentley/ui-core";
-import { createBoundingClientRect } from "../../Utils";
-
 import { Toast } from "../../../ui-ninezone";
+import { createBoundingClientRect } from "../../Utils";
 
 describe("<Toast />", () => {
   let timerConstructorStub: sinon.SinonStub | undefined;

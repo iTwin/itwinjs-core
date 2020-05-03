@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { render, fireEvent } from "@testing-library/react";
-import * as React from "react";
 import { expect } from "chai";
+import * as React from "react";
 import * as sinon from "sinon";
+import { fireEvent, render } from "@testing-library/react";
 import { UnderlinedButton } from "../../ui-core/button/UnderlinedButton";
 
 describe("<UnderlinedButton />", () => {

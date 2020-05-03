@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-
 import { SchemaContext } from "../../src/Context";
 import { DelayedPromiseWithProps } from "../../src/DelayedPromise";
 import { PrimitiveType, StrengthDirection } from "../../src/ECObjects";
@@ -14,13 +13,16 @@ import { CustomAttribute } from "../../src/Metadata/CustomAttribute";
 import { EntityClass } from "../../src/Metadata/EntityClass";
 import { Enumeration } from "../../src/Metadata/Enumeration";
 import { KindOfQuantity } from "../../src/Metadata/KindOfQuantity";
-import { EnumerationArrayProperty, EnumerationProperty, MutableProperty, NavigationProperty, PrimitiveArrayProperty, PrimitiveProperty, Property, StructArrayProperty, StructProperty } from "../../src/Metadata/Property";
+import {
+  EnumerationArrayProperty, EnumerationProperty, MutableProperty, NavigationProperty, PrimitiveArrayProperty, PrimitiveProperty, Property,
+  StructArrayProperty, StructProperty,
+} from "../../src/Metadata/Property";
 import { PropertyCategory } from "../../src/Metadata/PropertyCategory";
 import { RelationshipClass } from "../../src/Metadata/RelationshipClass";
 import { MutableSchema, Schema } from "../../src/Metadata/Schema";
 import { PropertyType } from "../../src/PropertyTypes";
-import { createEmptyXmlDocument } from "../TestUtils/SerializationHelper";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
+import { createEmptyXmlDocument } from "../TestUtils/SerializationHelper";
 
 describe("Property", () => {
   let testClass: EntityClass;

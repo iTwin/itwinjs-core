@@ -6,7 +6,7 @@
  * @module Common
  */
 
-import { PropertyRecord, PropertyValueFormat, PrimitiveValue } from "@bentley/ui-abstract";
+import { PrimitiveValue, PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
 
 /**
  * @internal

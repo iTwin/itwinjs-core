@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { createRandomECInstancesNode, createRandomECInstancesNodeJSON } from "./_helpers/random";
 import {
-  UpdateInfo, UpdateInfoJSON, HierarchyUpdateInfo, HierarchyUpdateInfoJSON, PartialHierarchyModification,
-  NodeInsertionInfo, NodeUpdateInfo, NodeDeletionInfo, NodeDeletionInfoJSON, NodeUpdateInfoJSON, NodeInsertionInfoJSON,
+  HierarchyUpdateInfo, HierarchyUpdateInfoJSON, NodeDeletionInfo, NodeDeletionInfoJSON, NodeInsertionInfo, NodeInsertionInfoJSON, NodeUpdateInfo,
+  NodeUpdateInfoJSON, PartialHierarchyModification, UpdateInfo, UpdateInfoJSON,
 } from "../presentation-common";
+import { createRandomECInstancesNode, createRandomECInstancesNodeJSON } from "./_helpers/random";
 
 describe("UpdateInfo", () => {
 

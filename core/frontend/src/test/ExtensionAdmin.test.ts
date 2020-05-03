@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
-import { IModelApp } from "../IModelApp";
 import { PendingExtension } from "../extension/Extension";
+import { IModelApp } from "../IModelApp";
 
 describe("ExtensionAdmin tests", () => {
   beforeEach(async () => IModelApp.startup());

@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import { ClassNameProps } from "@bentley/ui-core";
-import { NotifyMessageType, isHTMLElement, isReactMessage } from "./ReactNotifyMessageDetails";
+import { isHTMLElement, isReactMessage, NotifyMessageType } from "./ReactNotifyMessageDetails";
 
 /** @internal */
 export interface MessageSpanProps extends ClassNameProps {

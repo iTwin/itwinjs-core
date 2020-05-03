@@ -6,16 +6,16 @@
  * @module Widget
  */
 
+import "./Widget.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { CommonProps, Rectangle, SizeProps } from "@bentley/ui-core";
-import { WidgetState, PANEL_WIDGET_DRAG_START, FLOATING_WIDGET_BRING_TO_FRONT } from "../base/NineZoneState";
-import { getUniqueId, NineZoneDispatchContext } from "../base/NineZone";
-import { PanelSideContext } from "../widget-panels/Panel";
-import { FloatingWidgetIdContext } from "./FloatingWidget";
 import { assert } from "../base/assert";
 import { useDragWidget, UseDragWidgetArgs } from "../base/DragManager";
-import "./Widget.scss";
+import { getUniqueId, NineZoneDispatchContext } from "../base/NineZone";
+import { FLOATING_WIDGET_BRING_TO_FRONT, PANEL_WIDGET_DRAG_START, WidgetState } from "../base/NineZoneState";
+import { PanelSideContext } from "../widget-panels/Panel";
+import { FloatingWidgetIdContext } from "./FloatingWidget";
 
 /** @internal */
 export interface WidgetProviderProps {

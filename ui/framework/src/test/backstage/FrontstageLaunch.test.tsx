@@ -2,26 +2,20 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-import { mount, shallow } from "enzyme";
 import { expect } from "chai";
+import { mount, shallow } from "enzyme";
+import * as React from "react";
 import * as sinon from "sinon";
-import {
-  FrontstageLaunchBackstageItem,
-  FrontstageManager,
-  FrontstageActivatedEventArgs,
-  ConfigurableUiManager,
-  FrontstageProvider,
-  Frontstage,
-  FrontstageProps,
-  BackstageItemState,
-} from "../../ui-framework";
-import TestUtils from "../TestUtils";
+import { Logger } from "@bentley/bentleyjs-core";
+import { IModelApp, NoRenderApp } from "@bentley/imodeljs-frontend";
 import { BackstageItem as NZ_BackstageItem } from "@bentley/ui-ninezone";
+import {
+  BackstageItemState, ConfigurableUiManager, Frontstage, FrontstageActivatedEventArgs, FrontstageLaunchBackstageItem, FrontstageManager,
+  FrontstageProps, FrontstageProvider,
+} from "../../ui-framework";
 import { CoreTools } from "../../ui-framework/CoreToolDefinitions";
 import { SyncUiEventDispatcher } from "../../ui-framework/syncui/SyncUiEventDispatcher";
-import { Logger } from "@bentley/bentleyjs-core";
-import { NoRenderApp, IModelApp } from "@bentley/imodeljs-frontend";
+import TestUtils from "../TestUtils";
 
 describe("Backstage", () => {
   const testEventId = "test-state-function-event";

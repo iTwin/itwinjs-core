@@ -4,14 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Point3d } from "@bentley/geometry-core";
+import placeholderSvg from "@bentley/icons-generic/icons/placeholder.svg?sprite";
 import {
-  IModelApp, PrimitiveTool,
-  BeButtonEvent, EventHandled,
-  ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod,
+  BeButtonEvent, EventHandled, IModelApp, PrimitiveTool, ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod,
 } from "@bentley/imodeljs-frontend";
 import { IconSpecUtilities } from "@bentley/ui-abstract";
-
-import placeholderSvg from "@bentley/icons-generic/icons/placeholder.svg?sprite";
 
 export class Tool2 extends PrimitiveTool {
   public static toolId = "Tool2";

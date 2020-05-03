@@ -3,26 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import {
-  HitDetail,
-  IModelApp,
-  NotifyMessageDetails,
-  OutputMessagePriority,
-  Extension,
-  RenderScheduleState,
-  ToolTipProvider,
-  ScreenViewport,
-} from "@bentley/imodeljs-frontend";
-import { Gradient, ColorDef, ThematicGradientSettings, ThematicGradientColorScheme, ThematicGradientMode } from "@bentley/imodeljs-common";
-import { I18NNamespace } from "@bentley/imodeljs-i18n";
-import { UiItemsManager } from "@bentley/ui-abstract";
 import { ClientRequestContext, Id64String } from "@bentley/bentleyjs-core";
-import { request, Response, RequestOptions } from "@bentley/itwin-client";
-
-import { IotUiProvider } from "./ui/IotUiProvider";
-import { IoTDeviceType, AnimationType } from "./IoTDefinitions";
+import { ColorDef, Gradient, ThematicGradientColorScheme, ThematicGradientMode, ThematicGradientSettings } from "@bentley/imodeljs-common";
+import {
+  Extension, HitDetail, IModelApp, NotifyMessageDetails, OutputMessagePriority, RenderScheduleState, ScreenViewport, ToolTipProvider,
+} from "@bentley/imodeljs-frontend";
+import { I18NNamespace } from "@bentley/imodeljs-i18n";
+import { request, RequestOptions, Response } from "@bentley/itwin-client";
+import { UiItemsManager } from "@bentley/ui-abstract";
+import { AnimationType, IoTDeviceType } from "./IoTDefinitions";
 import { IoTMonitor } from "./iotMonitor";
 import { IoTSimulator } from "./simulator/IoTSimulator";
+import { IotUiProvider } from "./ui/IotUiProvider";
 
 export class ColorValue {
   constructor(public red: number, public blue: number, public green: number) { }

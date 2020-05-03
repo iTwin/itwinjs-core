@@ -7,10 +7,9 @@ import { expect } from "chai";
 import * as sinon from "sinon";
 import { Logger } from "@bentley/bentleyjs-core";
 import {
-  StageUsage, UiItemsProvider, ToolbarUsage, ToolbarOrientation, CommonToolbarItem, ToolbarItemUtilities,
-  UiItemsApplicationAction, UiItemsManager, CommonStatusBarItem, AbstractStatusBarItemUtilities, StatusBarSection,
-  BackstageItem, BackstageItemUtilities, StagePanelLocation, StagePanelSection, AbstractWidgetProps,
-  UiItemsArbiter, UiItemsApplication,
+  AbstractStatusBarItemUtilities, AbstractWidgetProps, BackstageItem, BackstageItemUtilities, CommonStatusBarItem, CommonToolbarItem,
+  StagePanelLocation, StagePanelSection, StageUsage, StatusBarSection, ToolbarItemUtilities, ToolbarOrientation, ToolbarUsage, UiItemsApplication,
+  UiItemsApplicationAction, UiItemsArbiter, UiItemsManager, UiItemsProvider,
 } from "../ui-abstract";
 
 describe("UiItemsArbiter", () => {

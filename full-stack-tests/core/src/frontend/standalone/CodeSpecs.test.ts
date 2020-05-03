@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { assert } from "chai";
 import { BisCodeSpec, CodeScopeSpec, CodeSpec } from "@bentley/imodeljs-common";
 import { IModelApp, IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
-import { assert } from "chai";
 
 describe("CodeSpecs", async () => {
   let iModel: IModelConnection;

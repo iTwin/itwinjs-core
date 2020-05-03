@@ -8,12 +8,12 @@
 
 import { assert, dispose } from "@bentley/bentleyjs-core";
 import { ImageBuffer, ImageBufferFormat, isPowerOfTwo, nextHighestPowerOfTwo, RenderTexture } from "@bentley/imodeljs-common";
-import { GL } from "./GL";
-import { System } from "./System";
-import { UniformHandle } from "./Handle";
-import { TextureUnit, OvrFlags } from "./RenderFlags";
 import { imageBufferToPngDataUrl, openImageDataUrlInNewWindow } from "../../ImageUtil";
 import { WebGLDisposable } from "./Disposable";
+import { GL } from "./GL";
+import { UniformHandle } from "./Handle";
+import { OvrFlags, TextureUnit } from "./RenderFlags";
+import { System } from "./System";
 
 type CanvasOrImage = HTMLCanvasElement | HTMLImageElement;
 

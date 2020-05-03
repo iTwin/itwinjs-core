@@ -3,15 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { Transform } from "../../geometry3d/Transform";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
-import { Ray3d } from "../../geometry3d/Ray3d";
-import { Checker } from "../Checker";
 import { expect } from "chai";
 import { CurveCurveApproachType } from "../../curve/CurveLocationDetail";
 import { AxisOrder, Geometry } from "../../Geometry";
-import { Range3d, Range1d } from "../../geometry3d/Range";
+import { Matrix3d } from "../../geometry3d/Matrix3d";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
+import { Range1d, Range3d } from "../../geometry3d/Range";
+import { Ray3d } from "../../geometry3d/Ray3d";
+import { Transform } from "../../geometry3d/Transform";
+import { Checker } from "../Checker";
 import { prettyPrint } from "../testFunctions";
 
 /** create rays, using optional result (which may be undefined)

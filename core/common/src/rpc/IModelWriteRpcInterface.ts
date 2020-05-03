@@ -6,14 +6,14 @@
  * @module RpcInterface
  */
 
+import { DbOpcode, GuidString, Id64Array, Id64String } from "@bentley/bentleyjs-core";
+import { LockLevel } from "@bentley/imodelhub-client";
+import { CodeProps } from "../Code";
+import { AxisAlignedBox3dProps } from "../geometry/Placement";
+import { IModelConnectionProps, IModelRpcProps } from "../IModel";
 import { RpcInterface } from "../RpcInterface";
 import { RpcManager } from "../RpcManager";
-import { IModelConnectionProps, IModelRpcProps } from "../IModel";
-import { AxisAlignedBox3dProps } from "../geometry/Placement";
-import { Id64String, Id64Array, DbOpcode, GuidString } from "@bentley/bentleyjs-core";
 import { SubCategoryAppearance } from "../SubCategoryAppearance";
-import { CodeProps } from "../Code";
-import { LockLevel } from "@bentley/imodelhub-client";
 
 /** The RPC interface for writing to an iModel.
  * All operations require read+write access.

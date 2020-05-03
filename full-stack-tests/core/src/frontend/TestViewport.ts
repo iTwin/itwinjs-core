@@ -4,16 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Id64String, SortedArray } from "@bentley/bentleyjs-core";
-import {
-  IModelApp,
-  IModelConnection,
-  OffScreenViewport,
-  Pixel,
-  ScreenViewport,
-  ViewRect,
-  Viewport,
-} from "@bentley/imodeljs-frontend";
 import { Feature, GeometryClass } from "@bentley/imodeljs-common";
+import { IModelApp, IModelConnection, OffScreenViewport, Pixel, ScreenViewport, Viewport, ViewRect } from "@bentley/imodeljs-frontend";
 
 function compareFeatures(lhs?: Feature, rhs?: Feature): number {
   if (undefined === lhs && undefined === rhs)

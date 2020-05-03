@@ -5,10 +5,10 @@
 /** @packageDocumentation
  * @module Notifications
  */
-import { Point2d, XAndY } from "@bentley/geometry-core";
-import { IModelApp } from "./IModelApp";
 import { BeDuration } from "@bentley/bentleyjs-core";
+import { Point2d, XAndY } from "@bentley/geometry-core";
 import { RelativePosition } from "@bentley/ui-abstract";
+import { IModelApp } from "./IModelApp";
 import { ToolAssistanceInstructions } from "./tools/ToolAssistance";
 
 // cSpell:words messagebox

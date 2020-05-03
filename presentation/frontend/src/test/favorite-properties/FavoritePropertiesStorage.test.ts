@@ -7,16 +7,18 @@
 import { expect } from "chai";
 import sinon from "sinon";
 import * as moq from "typemoq";
-import { configureForPromiseResult } from "@bentley/presentation-common/lib/test/_helpers/Mocks";
-import { ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises";
 import { BeEvent } from "@bentley/bentleyjs-core";
+import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { InternetConnectivityStatus } from "@bentley/imodeljs-common";
 import { AuthorizedFrontendRequestContext, IModelApp } from "@bentley/imodeljs-frontend";
-import { SettingsStatus, SettingsAdmin } from "@bentley/product-settings-client";
-import { IModelAppFavoritePropertiesStorage, OfflineCachingFavoritePropertiesStorage } from "../../presentation-frontend/favorite-properties/FavoritePropertiesStorage";
-import { PropertyFullName, FavoritePropertiesOrderInfo } from "../../presentation-frontend/favorite-properties/FavoritePropertiesManager";
+import { configureForPromiseResult } from "@bentley/presentation-common/lib/test/_helpers/Mocks";
+import { ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises";
+import { SettingsAdmin, SettingsStatus } from "@bentley/product-settings-client";
 import { IConnectivityInformationProvider } from "../../presentation-frontend/ConnectivityInformationProvider";
-import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
+import { FavoritePropertiesOrderInfo, PropertyFullName } from "../../presentation-frontend/favorite-properties/FavoritePropertiesManager";
+import {
+  IModelAppFavoritePropertiesStorage, OfflineCachingFavoritePropertiesStorage,
+} from "../../presentation-frontend/favorite-properties/FavoritePropertiesStorage";
 
 describe("IModelAppFavoritePropertiesStorage", () => {
 

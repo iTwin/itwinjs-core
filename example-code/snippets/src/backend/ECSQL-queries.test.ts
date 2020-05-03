@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { assert } from "chai";
 import { DbResult, Id64Set, Id64String } from "@bentley/bentleyjs-core";
 import { ECSqlStatement, Element, IModelDb, PhysicalPartition, SnapshotDb, Subject } from "@bentley/imodeljs-backend";
-import { assert } from "chai";
 import { IModelTestUtils } from "./IModelTestUtils";
 
 /** Useful ECSQL queries organized as tests to make sure that they build and run successfully. */

@@ -6,10 +6,10 @@ import { expect } from "chai";
 import { mount } from "enzyme";
 import * as faker from "faker";
 import * as React from "react";
-import { PropertyCategory, PropertyData } from "../../ui-components/propertygrid/PropertyDataProvider";
 import { PropertyRecord } from "@bentley/ui-abstract";
-import TestUtils from "../TestUtils";
+import { PropertyCategory, PropertyData } from "../../ui-components/propertygrid/PropertyDataProvider";
 import { Tooltip } from "../../ui-components/tooltip/Tooltip";
+import TestUtils from "../TestUtils";
 
 describe("Tooltip", () => {
 

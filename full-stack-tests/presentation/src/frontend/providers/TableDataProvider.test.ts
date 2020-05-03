@@ -4,14 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { initialize, terminate } from "../../IntegrationTests";
 import { Id64 } from "@bentley/bentleyjs-core";
 import { ModelProps } from "@bentley/imodeljs-common";
 import { IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
-import { KeySet, InstanceKey, ContentSpecificationTypes, Ruleset, RuleTypes } from "@bentley/presentation-common";
+import { ContentSpecificationTypes, InstanceKey, KeySet, Ruleset, RuleTypes } from "@bentley/presentation-common";
 import { PresentationTableDataProvider } from "@bentley/presentation-components";
 import { Presentation } from "@bentley/presentation-frontend";
 import { SortDirection } from "@bentley/ui-core";
+import { initialize, terminate } from "../../IntegrationTests";
 
 const RULESET: Ruleset = {
   id: "localization test",

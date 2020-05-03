@@ -6,8 +6,8 @@
  * @module PresentationRules
  */
 
-import { ChildNodeSpecificationBase, ChildNodeSpecificationTypes, DefaultGroupingPropertiesContainer } from "./ChildNodeSpecification";
 import { SingleSchemaClassSpecification } from "../ClassSpecifications";
+import { ChildNodeSpecificationBase, ChildNodeSpecificationTypes, DefaultGroupingPropertiesContainer } from "./ChildNodeSpecification";
 
 /**
  * Creates nodes for instances which are returned by an ECSQL query.

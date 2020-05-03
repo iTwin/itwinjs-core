@@ -5,9 +5,9 @@
 import { expect } from "chai";
 import { mount } from "enzyme";
 import * as React from "react";
-import TestUtils from "../../../TestUtils";
 import { MergedPropertyValueRenderer } from "../../../../ui-components/properties/renderers/value/MergedPropertyValueRenderer";
 import { UiComponents } from "../../../../ui-components/UiComponents";
+import TestUtils from "../../../TestUtils";
 
 describe("MergedPropertyValueRenderer", () => {
   before(async () => {

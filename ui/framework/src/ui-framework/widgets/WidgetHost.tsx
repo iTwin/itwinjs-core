@@ -7,9 +7,9 @@
  */
 
 import { StagePanelLocation, StagePanelSection } from "@bentley/ui-abstract";
-import { WidgetDef } from "./WidgetDef";
 import { UiFramework } from "../UiFramework";
 import { ZoneLocation } from "../zones/Zone";
+import { WidgetDef } from "./WidgetDef";
 
 /**
  * A WidgetHost represents a definition that hosts one or most Widgets in a Frontstage.

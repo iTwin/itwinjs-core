@@ -14,15 +14,14 @@ type int32 = number;
 type float32 = number;
 type float64 = number;
 
+import { Numbers } from "../../system/runtime/Numbers";
+import { CRSEngine } from "../crs/CRSEngine";
+import { Bounds } from "../geom/Bounds";
+import { Coordinate } from "../geom/Coordinate";
 import { CRS } from "./CRS";
 import { OnlineRegistry } from "./OnlineRegistry";
 import { Registry } from "./Registry";
 import { Transform } from "./Transform";
-
-import { CRSEngine } from "../crs/CRSEngine";
-import { Bounds } from "../geom/Bounds";
-import { Coordinate } from "../geom/Coordinate";
-import { Numbers } from "../../system/runtime/Numbers";
 
 /**
  * Class OnlineEngine implements a CRS engine that reads CRS declarations from an online server.

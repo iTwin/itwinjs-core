@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { mount } from "enzyme";
-import * as sinon from "sinon";
 import * as React from "react";
+import * as sinon from "sinon";
 import { ElementSeparator } from "../../ui-core/elementseparator/ElementSeparator";
 import { Orientation } from "../../ui-core/enums/Orientation";
 

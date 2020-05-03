@@ -2,17 +2,18 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Point2d } from "../../geometry3d/Point2dVector2d";
-import { Vector3d, Point3d } from "../../geometry3d/Point3dVector3d";
-import { Matrix3d, InverseMatrixState, PackedMatrix3dOps } from "../../geometry3d/Matrix3d";
-import { Transform } from "../../geometry3d/Transform";
-import { AxisOrder, Geometry, AxisIndex } from "../../Geometry";
-import { Angle } from "../../geometry3d/Angle";
-import { Sample } from "../../serialization/GeometrySamples";
-import { Checker } from "../Checker";
 // import { prettyPrint } from "./testFunctions";
 import { expect } from "chai";
+import { AxisIndex, AxisOrder, Geometry } from "../../Geometry";
+import { Angle } from "../../geometry3d/Angle";
+import { InverseMatrixState, Matrix3d, PackedMatrix3dOps } from "../../geometry3d/Matrix3d";
+import { Point2d } from "../../geometry3d/Point2dVector2d";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
+import { Transform } from "../../geometry3d/Transform";
 import { XYAndZ } from "../../geometry3d/XYZProps";
+import { Sample } from "../../serialization/GeometrySamples";
+import { Checker } from "../Checker";
+
 /* tslint:disable:no-console */
 // cSpell:words XXYZ YXYZ ZXYZ XYZAs Eigen dgnplatform VTAT
 

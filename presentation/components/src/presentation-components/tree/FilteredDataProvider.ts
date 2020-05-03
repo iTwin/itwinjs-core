@@ -8,14 +8,12 @@
 
 import memoize from "micro-memoize";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { NodePathElement, NodeKey } from "@bentley/presentation-common";
+import { NodeKey, NodePathElement } from "@bentley/presentation-common";
 import {
-  SimpleTreeDataProvider, SimpleTreeDataProviderHierarchy,
-  DelayLoadedTreeNodeItem, TreeNodeItem,
-  PageOptions, ActiveMatchInfo,
+  ActiveMatchInfo, DelayLoadedTreeNodeItem, PageOptions, SimpleTreeDataProvider, SimpleTreeDataProviderHierarchy, TreeNodeItem,
 } from "@bentley/ui-components";
-import { createTreeNodeItem } from "./Utils";
 import { IPresentationTreeDataProvider } from "./IPresentationTreeDataProvider";
+import { createTreeNodeItem } from "./Utils";
 
 /** @internal */
 export interface FilteredPresentationTreeDataProviderProps {

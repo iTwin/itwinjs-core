@@ -2,13 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
 import { expect } from "chai";
+import * as React from "react";
 import * as sinon from "sinon";
-import TestUtils from "../TestUtils";
-import { MessageManager, ReactNotifyMessageDetails } from "../../ui-framework";
-import { NotifyMessageDetails, OutputMessagePriority, MessageBoxIconType } from "@bentley/imodeljs-frontend";
+import { MessageBoxIconType, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
 import { MessageSeverity, UnderlinedButton } from "@bentley/ui-core";
+import { MessageManager, ReactNotifyMessageDetails } from "../../ui-framework";
+import TestUtils from "../TestUtils";
 
 describe("MessageManager", () => {
 

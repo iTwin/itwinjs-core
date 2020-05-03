@@ -7,10 +7,10 @@
  */
 
 import * as React from "react";
-import { PrimitiveValue, PropertyRecord, PropertyValueFormat, PropertyDescription } from "@bentley/ui-abstract";
-import { BeInspireTreeNode } from "./component/BeInspireTree";
+import { PrimitiveValue, PropertyDescription, PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
+import { EditorContainer, PropertyUpdatedArgs } from "../../editors/EditorContainer";
 import { TreeNodeItem } from "../TreeDataProvider";
-import { PropertyUpdatedArgs, EditorContainer } from "../../editors/EditorContainer";
+import { BeInspireTreeNode } from "./component/BeInspireTree";
 
 // tslint:disable:deprecation
 

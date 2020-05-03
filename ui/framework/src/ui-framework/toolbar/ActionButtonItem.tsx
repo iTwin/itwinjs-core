@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { ActionButton, ConditionalBooleanValue, OnItemExecutedFunc, ConditionalStringValue } from "@bentley/ui-abstract";
+import { ActionButton, ConditionalBooleanValue, ConditionalStringValue, OnItemExecutedFunc } from "@bentley/ui-abstract";
 import { BadgeUtilities } from "@bentley/ui-core";
 import { Item } from "@bentley/ui-ninezone";
 import { KeyboardShortcutManager } from "../../ui-framework";

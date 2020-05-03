@@ -3,21 +3,21 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import sinon from "sinon";
 import { Observable } from "rxjs/internal/Observable";
-import { ObservableInput, SchedulerLike } from "rxjs/internal/types";
 import { from } from "rxjs/internal/observable/from";
 import { throwError } from "rxjs/internal/observable/throwError";
-import { tap } from "rxjs/internal/operators/tap";
 import { timer } from "rxjs/internal/observable/timer";
 import { takeUntil } from "rxjs/internal/operators/takeUntil";
+import { tap } from "rxjs/internal/operators/tap";
 import { scheduled } from "rxjs/internal/scheduled/scheduled";
 import { asap as asapScheduler } from "rxjs/internal/scheduler/asap";
 import { async as asyncScheduler } from "rxjs/internal/scheduler/async";
 import { queue as queueScheduler } from "rxjs/internal/scheduler/queue";
-import { SubscriptionScheduler, scheduleSubscription } from "../../../../ui-components/tree/controlled/internal/SubscriptionScheduler";
-import { extractSequence, waitForUnsubscription } from "../../ObservableTestHelpers";
+import { ObservableInput, SchedulerLike } from "rxjs/internal/types";
+import sinon from "sinon";
+import { scheduleSubscription, SubscriptionScheduler } from "../../../../ui-components/tree/controlled/internal/SubscriptionScheduler";
 import { ResolvablePromise } from "../../../test-helpers/misc";
+import { extractSequence, waitForUnsubscription } from "../../ObservableTestHelpers";
 
 async function expectSequence<T>(expectedSequence: T[], observable: Observable<T>): Promise<void> {
   const actualSequence = await extractSequence(observable);

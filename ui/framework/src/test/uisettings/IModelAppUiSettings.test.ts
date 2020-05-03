@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as sinon from "sinon";
-import { IModelApp, AuthorizedFrontendRequestContext } from "@bentley/imodeljs-frontend";
-import { IModelAppUiSettings, settingsStatusToUiSettingsStatus } from "../../ui-framework";
-import { SettingsResult, SettingsStatus, SettingsAdmin } from "@bentley/product-settings-client";
+import { AuthorizedFrontendRequestContext, IModelApp } from "@bentley/imodeljs-frontend";
+import { SettingsAdmin, SettingsResult, SettingsStatus } from "@bentley/product-settings-client";
 import { UiSettingsStatus } from "@bentley/ui-core";
+import { IModelAppUiSettings, settingsStatusToUiSettingsStatus } from "../../ui-framework";
 
 describe("IModelAppUiSettings", () => {
   const sandbox = sinon.createSandbox();

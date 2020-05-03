@@ -7,65 +7,17 @@
  */
 
 import {
-  assert,
-  BeEvent,
-  BentleyStatus,
-  DbResult,
-  GuidString,
-  Id64,
-  Id64Arg,
-  Id64Set,
-  Id64String,
-  Logger,
-  OneAtATimeAction,
-  OpenMode,
-  TransientIdSequence,
+  assert, BeEvent, BentleyStatus, DbResult, GuidString, Id64, Id64Arg, Id64Set, Id64String, Logger, OneAtATimeAction, OpenMode, TransientIdSequence,
 } from "@bentley/bentleyjs-core";
 import { Point3d, Range3d, Range3dProps, XYAndZ, XYZProps } from "@bentley/geometry-core";
 import {
-  AxisAlignedBox3d,
-  BriefcaseProps,
-  Cartographic,
-  CodeSpec,
-  EcefLocation,
-  EcefLocationProps,
-  ElementProps,
-  EntityQueryParams,
-  FontMap,
-  FontMapProps,
-  GeoCoordStatus,
-  IModel,
-  IModelConnectionProps,
-  IModelError,
-  IModelReadRpcInterface,
-  IModelRpcProps,
-  IModelStatus,
-  IModelVersion,
-  IModelWriteRpcInterface,
-  ImageSourceFormat,
-  MassPropertiesRequestProps,
-  MassPropertiesResponseProps,
-  ModelProps,
-  ModelQueryParams,
-  NativeAppRpcInterface,
-  QueryLimit,
-  QueryPriority,
-  QueryQuota,
-  QueryResponse,
-  QueryResponseStatus,
-  RpcManager,
-  RpcNotFoundResponse,
-  RpcOperation,
-  RpcRequest,
-  RpcRequestEvent,
-  SnapRequestProps,
-  SnapResponseProps,
-  SnapshotIModelRpcInterface,
-  ThumbnailProps,
-  ViewDefinitionProps,
-  ViewQueryParams,
-  WipRpcInterface,
+  AxisAlignedBox3d, BriefcaseProps, Cartographic, CodeSpec, EcefLocation, EcefLocationProps, ElementProps, EntityQueryParams, FontMap, FontMapProps,
+  GeoCoordStatus, ImageSourceFormat, IModel, IModelConnectionProps, IModelError, IModelReadRpcInterface, IModelRpcProps, IModelStatus, IModelVersion,
+  IModelWriteRpcInterface, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelProps, ModelQueryParams, NativeAppRpcInterface, QueryLimit,
+  QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus, RpcManager, RpcNotFoundResponse, RpcOperation, RpcRequest, RpcRequestEvent,
+  SnapRequestProps, SnapResponseProps, SnapshotIModelRpcInterface, ThumbnailProps, ViewDefinitionProps, ViewQueryParams, WipRpcInterface,
 } from "@bentley/imodeljs-common";
+import { EditingFunctions } from "./EditingFunctions";
 import { EntityState } from "./EntityState";
 import { EventSource, EventSourceManager } from "./EventSource";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
@@ -75,9 +27,8 @@ import { IModelApp } from "./IModelApp";
 import { ModelState } from "./ModelState";
 import { HiliteSet, SelectionSet } from "./SelectionSet";
 import { SubCategoriesCache } from "./SubCategoriesCache";
-import { ViewState } from "./ViewState";
 import { Tiles } from "./Tiles";
-import { EditingFunctions } from "./EditingFunctions";
+import { ViewState } from "./ViewState";
 
 const loggerCategory: string = FrontendLoggerCategory.IModelConnection;
 

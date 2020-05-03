@@ -7,11 +7,8 @@
  */
 
 import { JsonUtils } from "@bentley/bentleyjs-core";
-import {
-  ColorDef,
-  ColorDefProps,
-} from "./ColorDef";
 import { ColorByName } from "./ColorByName";
+import { ColorDef, ColorDefProps } from "./ColorDef";
 import { Gradient } from "./Gradient";
 
 /** JSON representation of a [[GroundPlane]].

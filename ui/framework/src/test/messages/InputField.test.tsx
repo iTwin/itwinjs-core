@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-import * as enzyme from "enzyme";
 import { expect } from "chai";
-import TestUtils from "../TestUtils";
-import { InputFieldMessage, KeyboardShortcutManager, MessageManager } from "../../ui-framework";
+import * as enzyme from "enzyme";
+import * as React from "react";
 import { NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@bentley/imodeljs-frontend";
+import { InputFieldMessage, KeyboardShortcutManager, MessageManager } from "../../ui-framework";
+import TestUtils from "../TestUtils";
 
 describe("InputFieldMessage", () => {
   before(async () => {

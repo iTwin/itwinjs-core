@@ -7,7 +7,9 @@
  */
 
 import * as React from "react";
-import { UiItemsManager, UiItemsArbiter, StatusBarItemsManager, StageUsage, StatusBarItemsChangedArgs, CommonStatusBarItem } from "@bentley/ui-abstract";
+import {
+  CommonStatusBarItem, StageUsage, StatusBarItemsChangedArgs, StatusBarItemsManager, UiItemsArbiter, UiItemsManager,
+} from "@bentley/ui-abstract";
 import { useActiveStageId } from "../hooks/useActiveStageId";
 import { useAvailableUiItemsProviders } from "../hooks/useAvailableUiItemsProviders";
 

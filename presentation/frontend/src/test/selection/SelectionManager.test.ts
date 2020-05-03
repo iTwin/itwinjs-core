@@ -6,15 +6,15 @@
 
 import { expect } from "chai";
 import * as sinon from "sinon";
+import { Id64, Id64Arg, Id64String, using } from "@bentley/bentleyjs-core";
+import { IModelApp, IModelConnection, SelectionSet, SelectionSetEventType } from "@bentley/imodeljs-frontend";
+import { InstanceKey, KeySet, SelectionScope } from "@bentley/presentation-common";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
-import {
-  createRandomECInstanceKey, createRandomSelectionScope, createRandomId, createRandomTransientId,
-} from "@bentley/presentation-common/lib/test/_helpers/random";
 import { waitForPendingAsyncs } from "@bentley/presentation-common/lib/test/_helpers/PendingAsyncsHelper";
-import { Id64String, Id64, Id64Arg, using } from "@bentley/bentleyjs-core";
-import { IModelConnection, SelectionSet, IModelApp, SelectionSetEventType } from "@bentley/imodeljs-frontend";
-import { KeySet, InstanceKey, SelectionScope } from "@bentley/presentation-common";
-import { SelectionManager, SelectionScopesManager, HiliteSetProvider } from "../../presentation-frontend";
+import {
+  createRandomECInstanceKey, createRandomId, createRandomSelectionScope, createRandomTransientId,
+} from "@bentley/presentation-common/lib/test/_helpers/random";
+import { HiliteSetProvider, SelectionManager, SelectionScopesManager } from "../../presentation-frontend";
 import { ToolSelectionSyncHandler, TRANSIENT_ELEMENT_CLASSNAME } from "../../presentation-frontend/selection/SelectionManager";
 
 const generateSelection = (): InstanceKey[] => {

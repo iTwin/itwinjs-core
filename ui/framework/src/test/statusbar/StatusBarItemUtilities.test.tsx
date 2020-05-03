@@ -2,10 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
 import { expect } from "chai";
-
-import { StatusBarSection, ConditionalBooleanValue } from "@bentley/ui-abstract";
+import * as React from "react";
+import { ConditionalBooleanValue, StatusBarSection } from "@bentley/ui-abstract";
 import { StatusBarItemUtilities } from "../../ui-framework";
 
 describe("StatusBarItemUtilities", () => {

@@ -7,8 +7,8 @@
  */
 
 import { ShaderBuilder, VariableType, VertexShaderBuilder } from "../ShaderBuilder";
-import { addModelViewProjectionMatrix } from "./Vertex";
 import { addRenderPass } from "./RenderPass";
+import { addModelViewProjectionMatrix } from "./Vertex";
 
 /** @internal */
 export function addViewport(shader: ShaderBuilder) {

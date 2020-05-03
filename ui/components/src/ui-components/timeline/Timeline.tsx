@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-import classnames from "classnames";
-import { CommonProps } from "@bentley/ui-core";
-import { Slider, Rail, Handles, Ticks, SliderItem } from "react-compound-slider";
-import { Milestone } from "./interfaces";
 import "./Timeline.scss";
+import classnames from "classnames";
+import * as React from "react";
+import { Handles, Rail, Slider, SliderItem, Ticks } from "react-compound-slider";
+import { CommonProps } from "@bentley/ui-core";
+import { Milestone } from "./interfaces";
 
 // istanbul ignore next - WIP
 const formatDate = (value: number) => {

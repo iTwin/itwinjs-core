@@ -5,24 +5,24 @@
 /** @packageDocumentation
  * @module Curve
  */
+import { Clipper } from "../clipping/ClipUtils";
+import { StrokeCountMap } from "../curve/Query/StrokeCountMap";
 import { AxisOrder, Geometry, PlaneAltitudeEvaluator } from "../Geometry";
-import { StrokeOptions } from "./StrokeOptions";
-import { Order2Bezier } from "../numerics/BezierPolynomials";
-import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
-import { Transform } from "../geometry3d/Transform";
+import { IStrokeHandler } from "../geometry3d/GeometryHandler";
 import { Matrix3d } from "../geometry3d/Matrix3d";
 import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
-import { Ray3d } from "../geometry3d/Ray3d";
 import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
-import { NewtonEvaluatorRtoR, Newton1dUnboundedApproximateDerivative } from "../numerics/Newton";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
+import { Ray3d } from "../geometry3d/Ray3d";
+import { Transform } from "../geometry3d/Transform";
+import { Order2Bezier } from "../numerics/BezierPolynomials";
+import { Newton1dUnboundedApproximateDerivative, NewtonEvaluatorRtoR } from "../numerics/Newton";
 import { GaussMapper } from "../numerics/Quadrature";
-import { IStrokeHandler } from "../geometry3d/GeometryHandler";
-import { LineString3d } from "./LineString3d";
-import { Clipper } from "../clipping/ClipUtils";
-import { CurveLocationDetail, CurveSearchStatus, CurveIntervalRole } from "./CurveLocationDetail";
+import { CurveExtendOptions, VariantCurveExtendParameter } from "./CurveExtendMode";
+import { CurveIntervalRole, CurveLocationDetail, CurveSearchStatus } from "./CurveLocationDetail";
 import { GeometryQuery } from "./GeometryQuery";
-import { StrokeCountMap } from "../curve/Query/StrokeCountMap";
-import { VariantCurveExtendParameter, CurveExtendOptions } from "./CurveExtendMode";
+import { LineString3d } from "./LineString3d";
+import { StrokeOptions } from "./StrokeOptions";
 
 /** Describes the concrete type of a [[CurvePrimitive]]. Each type name maps to a specific subclass and can be used for type-switching in conditional statements.
  *  - "arc" => [[Arc3d]]

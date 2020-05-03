@@ -8,9 +8,8 @@
 
 import { Logger } from "@bentley/bentleyjs-core";
 import { I18N } from "@bentley/imodeljs-i18n";
-
-import { UiError } from "./utils/UiError";
 import { getClassName } from "./utils/getClassName";
+import { UiError } from "./utils/UiError";
 
 /**
  * Entry point for static initialization required by various components used in the package.

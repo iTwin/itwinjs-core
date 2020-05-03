@@ -6,7 +6,11 @@
  * @module iModels
  */
 
-import { BentleyStatus, BentleyError, IModelStatus, BriefcaseStatus, GetMetaDataFunction, LogFunction, DbResult, AuthStatus, RepositoryStatus, ChangeSetStatus, RpcInterfaceStatus } from "@bentley/bentleyjs-core";
+import {
+  AuthStatus, BentleyError, BentleyStatus, BriefcaseStatus, ChangeSetStatus, DbResult, GetMetaDataFunction, IModelStatus, LogFunction,
+  RepositoryStatus, RpcInterfaceStatus,
+} from "@bentley/bentleyjs-core";
+
 export { BentleyStatus, BentleyError, IModelStatus, BriefcaseStatus, GetMetaDataFunction, LogFunction, DbResult, AuthStatus, RepositoryStatus, ChangeSetStatus, RpcInterfaceStatus } from "@bentley/bentleyjs-core";
 
 /** The error type thrown by this module. See [[IModelStatus]] for `errorNumber` values.

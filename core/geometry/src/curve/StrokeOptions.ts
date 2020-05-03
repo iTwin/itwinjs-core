@@ -9,6 +9,7 @@
 
 import { Geometry } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
+
 /* tslint:disable:variable-name no-empty */
 
 /** tolerance blob for various stroking methods.

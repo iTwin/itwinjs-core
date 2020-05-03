@@ -5,7 +5,7 @@
 import * as React from "react";
 import * as sinon from "sinon";
 import { act, render } from "@testing-library/react";
-import { WidgetContentManagerContext, TabState, TabIdContext, ScrollableWidgetContent } from "../../ui-ninezone";
+import { ScrollableWidgetContent, TabIdContext, TabState, WidgetContentManagerContext } from "../../ui-ninezone";
 import { EventEmitter } from "../../ui-ninezone/base/Event";
 
 describe("ScrollableWidgetContent", () => {

@@ -3,12 +3,9 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { LogLevel } from "@bentley/bentleyjs-core";
-import {
-  IModelReadRpcInterface, IModelWriteRpcInterface,
-  IModelTileRpcInterface, DevToolsRpcInterface,
-} from "@bentley/imodeljs-common";
-import { PresentationRpcInterface } from "@bentley/presentation-common";
+import { DevToolsRpcInterface, IModelReadRpcInterface, IModelTileRpcInterface, IModelWriteRpcInterface } from "@bentley/imodeljs-common";
 import { TestUserCredentials } from "@bentley/oidc-signin-tool";
+import { PresentationRpcInterface } from "@bentley/presentation-common";
 
 // tslint:disable:ter-indent
 

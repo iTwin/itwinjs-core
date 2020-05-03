@@ -6,9 +6,9 @@
  * @module Utilities
  */
 
+import { Geometry } from "@bentley/geometry-core";
 import { Point, PointProps } from "./Point";
 import { Size, SizeProps } from "./Size";
-import { Geometry } from "@bentley/geometry-core";
 
 /** Describes 2d bounds.
  * @public

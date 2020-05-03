@@ -6,20 +6,19 @@
  * @module IModelComponents
  */
 
-import * as React from "react";
-import { useDisposable } from "@bentley/ui-core";
-import { IModelConnection, IModelApp, ViewManager, Viewport, SpatialViewState } from "@bentley/imodeljs-frontend";
-import { ControlledTree, SelectionMode, useVisibleTreeNodes } from "@bentley/ui-components";
-import { Presentation } from "@bentley/presentation-frontend";
-import { IPresentationTreeDataProvider, usePresentationTreeNodeLoader } from "@bentley/presentation-components";
-import { Ruleset } from "@bentley/presentation-common";
-import { CategoryVisibilityHandler, Category, useCategories, loadCategoriesFromViewport } from "./CategoryVisibilityHandler";
-import { connectIModelConnection } from "../../redux/connectIModel";
-import { useVisibilityTreeRenderer, useVisibilityTreeFiltering, VisibilityTreeNoFilteredData } from "../VisibilityTreeRenderer";
-import { VisibilityTreeEventHandler, VisibilityTreeFilterInfo } from "../VisibilityTreeEventHandler";
-import { UiFramework } from "../../UiFramework";
-
 import "./CategoriesTree.scss";
+import * as React from "react";
+import { IModelApp, IModelConnection, SpatialViewState, ViewManager, Viewport } from "@bentley/imodeljs-frontend";
+import { Ruleset } from "@bentley/presentation-common";
+import { IPresentationTreeDataProvider, usePresentationTreeNodeLoader } from "@bentley/presentation-components";
+import { Presentation } from "@bentley/presentation-frontend";
+import { ControlledTree, SelectionMode, useVisibleTreeNodes } from "@bentley/ui-components";
+import { useDisposable } from "@bentley/ui-core";
+import { connectIModelConnection } from "../../redux/connectIModel";
+import { UiFramework } from "../../UiFramework";
+import { VisibilityTreeEventHandler, VisibilityTreeFilterInfo } from "../VisibilityTreeEventHandler";
+import { useVisibilityTreeFiltering, useVisibilityTreeRenderer, VisibilityTreeNoFilteredData } from "../VisibilityTreeRenderer";
+import { Category, CategoryVisibilityHandler, loadCategoriesFromViewport, useCategories } from "./CategoryVisibilityHandler";
 
 const PAGING_SIZE = 20;
 

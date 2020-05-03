@@ -6,13 +6,13 @@
  * @module WebGL
  */
 
-import { TextureUnit } from "../RenderFlags";
-import { VariableType, VariablePrecision, FragmentShaderComponent } from "../ShaderBuilder";
-import { ShaderProgram } from "../ShaderProgram";
 import { CopyPickBufferGeometry } from "../CachedGeometry";
+import { TextureUnit } from "../RenderFlags";
+import { FragmentShaderComponent, VariablePrecision, VariableType } from "../ShaderBuilder";
+import { ShaderProgram } from "../ShaderProgram";
+import { System } from "../System";
 import { Texture2DHandle } from "../Texture";
 import { createViewportQuadBuilder } from "./ViewportQuad";
-import { System } from "../System";
 
 const computeBaseColor = "return vec4(1.0);";
 

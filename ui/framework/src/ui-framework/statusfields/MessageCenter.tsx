@@ -7,19 +7,14 @@
  */
 
 import * as React from "react";
-
 import { OutputMessagePriority } from "@bentley/imodeljs-frontend";
-import {
-  MessageCenter, MessageCenterTab, MessageCenterMessage, MessageCenterDialog, FooterPopup,
-} from "@bentley/ui-ninezone";
-
-import { UiFramework } from "../UiFramework";
-
-import { StatusBarFieldId } from "../statusbar/StatusBarWidgetControl";
+import { FooterPopup, MessageCenter, MessageCenterDialog, MessageCenterMessage, MessageCenterTab } from "@bentley/ui-ninezone";
 import { MessageManager } from "../messages/MessageManager";
-import { StatusFieldProps } from "./StatusFieldProps";
 import { MessageSpan } from "../messages/MessageSpan";
 import { NotifyMessageDetailsType } from "../messages/ReactNotifyMessageDetails";
+import { StatusBarFieldId } from "../statusbar/StatusBarWidgetControl";
+import { UiFramework } from "../UiFramework";
+import { StatusFieldProps } from "./StatusFieldProps";
 
 /** Enum for the [[MessageCenterField]] active tab
  * @internal

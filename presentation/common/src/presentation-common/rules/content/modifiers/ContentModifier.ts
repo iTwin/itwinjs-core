@@ -6,14 +6,14 @@
  * @module PresentationRules
  */
 
-import { RuleBase, RuleTypes } from "../../Rule";
 import { SingleSchemaClassSpecification } from "../../ClassSpecifications";
+import { RuleBase, RuleTypes } from "../../Rule";
+import { PropertySpecification } from "../PropertySpecification";
 import { CalculatedPropertiesSpecification } from "./CalculatedPropertiesSpecification";
 import { DEPRECATED_PropertiesDisplaySpecification } from "./PropertiesDisplaySpecification";
+import { PropertyCategorySpecification } from "./PropertyCategorySpecification";
 import { DEPRECATED_PropertyEditorsSpecification } from "./PropertyEditorsSpecification";
 import { RelatedPropertiesSpecification } from "./RelatedPropertiesSpecification";
-import { PropertySpecification } from "../PropertySpecification";
-import { PropertyCategorySpecification } from "./PropertyCategorySpecification";
 
 /**
  * Contains various rule attributes that allow modifying returned content.

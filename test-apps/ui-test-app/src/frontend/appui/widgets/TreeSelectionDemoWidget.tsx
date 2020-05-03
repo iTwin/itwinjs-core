@@ -3,16 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { useMemo, useCallback } from "react"; // tslint:disable-line: no-duplicate-imports
-import {
-  ControlledTree, TreeNodeItem, SelectionMode, ITreeDataProvider, DelayLoadedTreeNodeItem,
-  useTreeModelSource, useTreeNodeLoader, useVisibleTreeNodes, TreeEventHandler, useTreeEventsHandler,
-  AbstractTreeNodeLoaderWithProvider, TreeCheckboxStateChangeEventArgs, TreeSelectionReplacementEventArgs,
-  TreeSelectionModificationEventArgs, Subscription, TreeModel, TreeModelChanges, TreeModelNode, MutableTreeModel,
-} from "@bentley/ui-components";
-import { ConfigurableCreateInfo, WidgetControl } from "@bentley/ui-framework";
-import { CheckBoxState } from "@bentley/ui-core";
 import { PropertyRecord } from "@bentley/ui-abstract";
+import {
+  AbstractTreeNodeLoaderWithProvider, ControlledTree, DelayLoadedTreeNodeItem, ITreeDataProvider, MutableTreeModel, SelectionMode, Subscription,
+  TreeCheckboxStateChangeEventArgs, TreeEventHandler, TreeModel, TreeModelChanges, TreeModelNode, TreeNodeItem, TreeSelectionModificationEventArgs,
+  TreeSelectionReplacementEventArgs, useTreeEventsHandler, useTreeModelSource, useTreeNodeLoader, useVisibleTreeNodes,
+} from "@bentley/ui-components";
+import { CheckBoxState } from "@bentley/ui-core";
+import { ConfigurableCreateInfo, WidgetControl } from "@bentley/ui-framework";
 
 export class TreeSelectionDemoWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
@@ -22,11 +20,11 @@ export class TreeSelectionDemoWidgetControl extends WidgetControl {
 }
 
 function TreeSelectionDemoWidget() {
-  const dataProvider = useMemo(createDataProvider, []);
+  const dataProvider = React.useMemo(createDataProvider, []);
   const modelSource = useTreeModelSource(dataProvider);
   const nodeLoader = useTreeNodeLoader(dataProvider, modelSource);
   const visibleNodes = useVisibleTreeNodes(modelSource);
-  const eventsHandler = useTreeEventsHandler(useCallback(() => new DemoTreeEventsHandler(nodeLoader), [nodeLoader]));
+  const eventsHandler = useTreeEventsHandler(React.useCallback(() => new DemoTreeEventsHandler(nodeLoader), [nodeLoader]));
   return (
     <div style={{ height: "100%" }}>
       <ControlledTree

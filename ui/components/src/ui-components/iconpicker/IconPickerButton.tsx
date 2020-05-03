@@ -6,11 +6,11 @@
  * @module IconPicker
  */
 
-import * as React from "react";
-import classnames from "classnames";
-import { RelativePosition } from "@bentley/ui-abstract";
-import { Popup, CommonProps, SvgSprite } from "@bentley/ui-core";
 import "./IconPickerButton.scss";
+import classnames from "classnames";
+import * as React from "react";
+import { RelativePosition } from "@bentley/ui-abstract";
+import { CommonProps, Popup, SvgSprite } from "@bentley/ui-core";
 
 /** Properties for the [[IconItem]] React component
  * @alpha

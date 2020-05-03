@@ -6,13 +6,13 @@
  * @module Color
  */
 
-import * as React from "react";
-import classnames from "classnames";
-import { ColorDef, ColorByName } from "@bentley/imodeljs-common";
-import { RelativePosition } from "@bentley/ui-abstract";
-import { Popup, CommonProps } from "@bentley/ui-core";
-import { ColorSwatch } from "./Swatch";
 import "./ColorPickerButton.scss";
+import classnames from "classnames";
+import * as React from "react";
+import { ColorByName, ColorDef } from "@bentley/imodeljs-common";
+import { RelativePosition } from "@bentley/ui-abstract";
+import { CommonProps, Popup } from "@bentley/ui-core";
+import { ColorSwatch } from "./Swatch";
 
 // cSpell:ignore colorpicker
 

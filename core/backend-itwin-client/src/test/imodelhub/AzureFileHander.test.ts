@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { BufferedStream, AzureFileHandler } from "../../imodelhub/AzureFileHandler";
 import * as chai from "chai";
 import * as stream from "stream";
 import { URL } from "url";
-import { MockAccessToken, workDir } from "./TestUtils";
 import { AuthorizedClientRequestContext, SasUrlExpired } from "@bentley/itwin-client";
+import { AzureFileHandler, BufferedStream } from "../../imodelhub/AzureFileHandler";
+import { MockAccessToken, workDir } from "./TestUtils";
 
 describe("iModelHub AzureFileHandler", () => {
   before(async function () {

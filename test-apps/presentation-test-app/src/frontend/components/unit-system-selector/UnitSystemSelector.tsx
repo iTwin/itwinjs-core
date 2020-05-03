@@ -3,12 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import * as React from "react";
-import { useCallback } from "react"; // tslint:disable-line: no-duplicate-imports
-import { PresentationUnitSystem } from "@bentley/presentation-common";
-
 import "./UnitSystemSelector.css";
+import * as React from "react";
 import { IModelApp } from "@bentley/imodeljs-frontend";
+import { PresentationUnitSystem } from "@bentley/presentation-common";
 
 export interface UnitSystemSelectorProps {
   selectedUnitSystem: PresentationUnitSystem | undefined;
@@ -17,7 +15,7 @@ export interface UnitSystemSelectorProps {
 
 export default function UnitSystemSelector(props: UnitSystemSelectorProps) {
   const { selectedUnitSystem, onUnitSystemSelected } = props;
-  const memoizedOnUnitSystemSelected = useCallback((evt: React.ChangeEvent<HTMLSelectElement>) => {
+  const memoizedOnUnitSystemSelected = React.useCallback((evt: React.ChangeEvent<HTMLSelectElement>) => {
     if (!onUnitSystemSelected)
       return;
     switch (evt.target.value) {

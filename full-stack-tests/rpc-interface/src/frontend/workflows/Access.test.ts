@@ -2,14 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+import * as chai from "chai";
 import { OpenMode } from "@bentley/bentleyjs-core";
 import { Range3d } from "@bentley/geometry-core";
 import { IModelError } from "@bentley/imodeljs-common";
-import { RemoteBriefcaseConnection, IModelApp } from "@bentley/imodeljs-frontend";
-import { TestContext } from "../setup/TestContext";
+import { IModelApp, RemoteBriefcaseConnection } from "@bentley/imodeljs-frontend";
 import { TestFrontendAuthorizationClient } from "@bentley/oidc-signin-tool/lib/frontend";
+import { TestContext } from "../setup/TestContext";
 
-import * as chai from "chai";
 const expect = chai.expect;
 
 import chaiAsPromised = require("chai-as-promised");

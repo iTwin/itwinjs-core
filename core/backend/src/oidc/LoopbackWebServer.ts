@@ -8,10 +8,10 @@
  * @module Authentication
  */
 
-import { AuthorizationErrorJson, AuthorizationResponseJson } from "@openid/appauth";
 import * as Http from "http";
 import * as Url from "url";
 import { DesktopAuthorizationClientConfiguration } from "@bentley/imodeljs-common";
+import { AuthorizationErrorJson, AuthorizationResponseJson } from "@openid/appauth";
 import { ElectronAuthorizationEvents } from "./ElectronAuthorizationEvents";
 
 type StateEventsPair = [string, ElectronAuthorizationEvents];

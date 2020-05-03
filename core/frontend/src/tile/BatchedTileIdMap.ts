@@ -6,10 +6,7 @@
  * @module Tiles
  */
 
-import {
-  assert,
-  Id64String,
-} from "@bentley/bentleyjs-core";
+import { assert, Id64String } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "../IModelConnection";
 
 /**

@@ -3,20 +3,21 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { Transform } from "../../geometry3d/Transform";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
-import { LineString3d } from "../../curve/LineString3d";
-import { Checker } from "../Checker";
 import { expect } from "chai";
 import { ClipPlane } from "../../clipping/ClipPlane";
-import { CurvePrimitive } from "../../curve/CurvePrimitive";
-import { Point2d } from "../../geometry3d/Point2dVector2d";
-import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
-import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
 import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
+import { CurvePrimitive } from "../../curve/CurvePrimitive";
 import { LineSegment3d } from "../../curve/LineSegment3d";
+import { LineString3d } from "../../curve/LineString3d";
 import { StrokeOptions } from "../../curve/StrokeOptions";
+import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
+import { Matrix3d } from "../../geometry3d/Matrix3d";
+import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
+import { Point2d } from "../../geometry3d/Point2dVector2d";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
+import { Transform } from "../../geometry3d/Transform";
+import { Checker } from "../Checker";
+
 /* tslint:disable:no-console */
 
 function exerciseLineString3d(ck: Checker, lsA: LineString3d) {

@@ -6,14 +6,14 @@
  * @module UiItemsProvider
  */
 
-import { Logger, BeEvent } from "@bentley/bentleyjs-core";
-import { CommonStatusBarItem } from "./statusbar/StatusBarItem";
-import { StageUsage } from "./items/StageUsage";
-import { CommonToolbarItem, ToolbarUsage, ToolbarOrientation } from "./toolbars/ToolbarItem";
+import { BeEvent, Logger } from "@bentley/bentleyjs-core";
 import { BackstageItem } from "./backstage/BackstageItem";
-import { StagePanelLocation, StagePanelSection } from "./widget/StagePanel";
-import { AbstractWidgetProps } from "./widget/AbstractWidgetProps";
+import { StageUsage } from "./items/StageUsage";
+import { CommonStatusBarItem } from "./statusbar/StatusBarItem";
+import { CommonToolbarItem, ToolbarOrientation, ToolbarUsage } from "./toolbars/ToolbarItem";
 import { UiAbstract } from "./UiAbstract";
+import { AbstractWidgetProps } from "./widget/AbstractWidgetProps";
+import { StagePanelLocation, StagePanelSection } from "./widget/StagePanel";
 
 /** Action taken by the application on item provided by a UiItemsProvider
  * @beta

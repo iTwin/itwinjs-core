@@ -6,12 +6,10 @@
  * @module Timeline
  */
 
-import { Cartographic, ColorDef, ColorByName, calculateSunriseOrSunset } from "@bentley/imodeljs-common";
 import { Point3d } from "@bentley/geometry-core";
+import { calculateSunriseOrSunset, Cartographic, ColorByName, ColorDef } from "@bentley/imodeljs-common";
 import { IModelConnection, ScreenViewport } from "@bentley/imodeljs-frontend";
-import {
-  SolarDataProvider,
-} from "./interfaces";
+import { SolarDataProvider } from "./interfaces";
 
 // the interface and class are in alpha state - it may change after usability testing - test coverage not complete
 /* istanbul ignore file */

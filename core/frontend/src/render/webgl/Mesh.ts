@@ -6,32 +6,32 @@
  * @module WebGL
  */
 
-import { dispose, assert } from "@bentley/bentleyjs-core";
+import { assert, dispose } from "@bentley/bentleyjs-core";
 import { Point3d } from "@bentley/geometry-core";
-import { SurfaceBitIndex, RenderPass, RenderOrder } from "./RenderFlags";
-import { LUTGeometry, PolylineBuffers, CachedGeometry } from "./CachedGeometry";
-import { VertexIndices, SurfaceType, MeshParams, SegmentEdgeParams, SilhouetteParams, TesselatedPolyline } from "../primitives/VertexTable";
-import { LineCode } from "./EdgeOverrides";
-import { ColorInfo } from "./ColorInfo";
-import { Graphic } from "./Graphic";
-import { VertexLUT } from "./VertexLUT";
-import { Primitive } from "./Primitive";
-import { FloatRgba } from "./FloatRGBA";
-import { ShaderProgramParams } from "./DrawCommand";
-import { RenderCommands } from "./RenderCommands";
-import { Target } from "./Target";
-import { createMaterialInfo, MaterialInfo } from "./Material";
-import { Texture } from "./Texture";
-import { FeatureIndexType, FillFlags, RenderMode, LinePixels, ViewFlags } from "@bentley/imodeljs-common";
-import { System } from "./System";
-import { BufferHandle, BuffersContainer, BufferParameters } from "./Handle";
-import { GL } from "./GL";
-import { TechniqueId } from "./TechniqueId";
+import { FeatureIndexType, FillFlags, LinePixels, RenderMode, ViewFlags } from "@bentley/imodeljs-common";
 import { InstancedGraphicParams } from "../InstancedGraphicParams";
+import { MeshParams, SegmentEdgeParams, SilhouetteParams, SurfaceType, TesselatedPolyline, VertexIndices } from "../primitives/VertexTable";
 import { RenderMemory } from "../RenderMemory";
-import { InstanceBuffers } from "./InstancedGeometry";
 import { AttributeMap } from "./AttributeMap";
+import { CachedGeometry, LUTGeometry, PolylineBuffers } from "./CachedGeometry";
+import { ColorInfo } from "./ColorInfo";
 import { WebGLDisposable } from "./Disposable";
+import { ShaderProgramParams } from "./DrawCommand";
+import { LineCode } from "./EdgeOverrides";
+import { FloatRgba } from "./FloatRGBA";
+import { GL } from "./GL";
+import { Graphic } from "./Graphic";
+import { BufferHandle, BufferParameters, BuffersContainer } from "./Handle";
+import { InstanceBuffers } from "./InstancedGeometry";
+import { createMaterialInfo, MaterialInfo } from "./Material";
+import { Primitive } from "./Primitive";
+import { RenderCommands } from "./RenderCommands";
+import { RenderOrder, RenderPass, SurfaceBitIndex } from "./RenderFlags";
+import { System } from "./System";
+import { Target } from "./Target";
+import { TechniqueId } from "./TechniqueId";
+import { Texture } from "./Texture";
+import { VertexLUT } from "./VertexLUT";
 
 /** @internal */
 export class MeshData implements WebGLDisposable {

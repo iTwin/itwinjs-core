@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ResponseError } from "@bentley/itwin-client";
-import { IModelApp } from "@bentley/imodeljs-frontend";
 import { Logger } from "@bentley/bentleyjs-core";
+import { IModelApp } from "@bentley/imodeljs-frontend";
+import { ResponseError } from "@bentley/itwin-client";
 
 export class ErrorHandling {
   public static onUnexpectedError(err: Error) {

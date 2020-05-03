@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { ECVersion } from "./../src/SchemaKey";
-import { ECObjectsError } from "./../src/Exception";
+import { ECObjectsError } from "../src/Exception";
+import { ECVersion } from "../src/SchemaKey";
 
 describe("ECVersion", () => {
   describe("fromString", () => {

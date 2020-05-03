@@ -5,8 +5,8 @@
 /** @packageDocumentation
  * @module PresentationRules
  */
-import { ChildNodeSpecificationBase, ChildNodeSpecificationTypes, DefaultGroupingPropertiesContainer } from "./ChildNodeSpecification";
 import { SchemasSpecification } from "../SchemasSpecification";
+import { ChildNodeSpecificationBase, ChildNodeSpecificationTypes, DefaultGroupingPropertiesContainer } from "./ChildNodeSpecification";
 
 /**
  * Creates nodes for all available instances filtered only by the

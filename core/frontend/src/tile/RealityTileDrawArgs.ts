@@ -6,22 +6,9 @@
  * @module Tiles
  */
 
-import {
-  Matrix4d,
-  Point3d,
-  Point4d,
-  Range1d,
-  Map4d,
-} from "@bentley/geometry-core";
-import {
-  MapTile,
-  Tile,
-  TileDrawArgs,
-} from "./internal";
-
-import {
-  FrustumPlanes,
-} from "@bentley/imodeljs-common";
+import { Map4d, Matrix4d, Point3d, Point4d, Range1d } from "@bentley/geometry-core";
+import { FrustumPlanes } from "@bentley/imodeljs-common";
+import { MapTile, Tile, TileDrawArgs } from "./internal";
 
 const scratchXRange = Range1d.createNull();
 const scratchYRange = Range1d.createNull();

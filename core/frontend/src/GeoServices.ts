@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { IModelConnection } from "./IModelConnection";
-import {
-  IModelReadRpcInterface,
-  PointWithStatus, IModelCoordinatesRequestProps, IModelCoordinatesResponseProps, GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeoCoordStatus,
-} from "@bentley/imodeljs-common";
 import { XYZProps } from "@bentley/geometry-core";
+import {
+  GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeoCoordStatus, IModelCoordinatesRequestProps, IModelCoordinatesResponseProps,
+  IModelReadRpcInterface, PointWithStatus,
+} from "@bentley/imodeljs-common";
+import { IModelConnection } from "./IModelConnection";
 
 /** Response to a request to obtain imodel coordinates from cache.
  * @internal

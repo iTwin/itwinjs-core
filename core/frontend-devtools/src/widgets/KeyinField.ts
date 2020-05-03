@@ -7,15 +7,10 @@
  * @module Widgets
  */
 
-import {
-  IModelApp,
-  MessageBoxIconType,
-  MessageBoxType,
-  ParseAndRunResult,
-} from "@bentley/imodeljs-frontend";
+import { IModelApp, MessageBoxIconType, MessageBoxType, ParseAndRunResult } from "@bentley/imodeljs-frontend";
 import { createButton } from "../ui/Button";
+import { appendDataListEntries, createDataList, DataList, DataListEntry } from "../ui/DataList";
 import { createTextBox, TextBox } from "../ui/TextBox";
-import { createDataList, DataList, DataListEntry, appendDataListEntries } from "../ui/DataList";
 
 function keyinsToDataListEntries(keyins: string[]): DataListEntry[] {
   const entries: DataListEntry[] = [];

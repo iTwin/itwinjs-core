@@ -11,7 +11,9 @@ import { AccessToken, AuthorizedClientRequestContext, ECJsonTypeMap, request, Re
 import { IModelHubClientLoggerCategory } from "../IModelHubClientLoggerCategories";
 import { IModelBaseHandler } from "./BaseHandler";
 import { ArgumentCheck } from "./Errors";
-import { BaseEventSAS, EventBaseHandler, EventListener, GetEventOperationToRequestType, IModelHubBaseEvent, ListenerSubscription } from "./EventsBase";
+import {
+  BaseEventSAS, EventBaseHandler, EventListener, GetEventOperationToRequestType, IModelHubBaseEvent, ListenerSubscription,
+} from "./EventsBase";
 
 const loggerCategory: string = IModelHubClientLoggerCategory.IModelHub;
 

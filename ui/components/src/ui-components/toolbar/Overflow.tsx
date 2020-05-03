@@ -6,12 +6,11 @@
  * @module ToolSettings
  */
 
+import "./Overflow.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { CommonProps, NoChildrenProps, useResizeObserver } from "@bentley/ui-core";
 import { useToolItemEntryContext } from "./Toolbar";
-
-import "./Overflow.scss";
 
 /** Properties of [[ToolbarOverflowButton]] component.
  * @internal

@@ -4,8 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 import { Id64, Id64String, OpenMode } from "@bentley/bentleyjs-core";
 import { Angle, Arc3d, GeometryQuery, LineString3d, Loop, Range3d, StandardViewIndex } from "@bentley/geometry-core";
-import { CategorySelector, DefinitionModel, DisplayStyle3d, IModelDb, ModelSelector, OrthographicViewDefinition, PhysicalModel, SnapshotDb, SpatialCategory, SpatialModel, StandaloneDb, ViewDefinition } from "@bentley/imodeljs-backend";
-import { AxisAlignedBox3d, BackgroundMapProps, BackgroundMapType, Cartographic, Code, ColorByName, ColorDef, EcefLocation, GeometricElement3dProps, GeometryParams, GeometryStreamBuilder, GeometryStreamProps, IModel, RenderMode, ViewFlags } from "@bentley/imodeljs-common";
+import {
+  CategorySelector, DefinitionModel, DisplayStyle3d, IModelDb, ModelSelector, OrthographicViewDefinition, PhysicalModel, SnapshotDb, SpatialCategory,
+  SpatialModel, StandaloneDb, ViewDefinition,
+} from "@bentley/imodeljs-backend";
+import {
+  AxisAlignedBox3d, BackgroundMapProps, BackgroundMapType, Cartographic, Code, ColorByName, ColorDef, EcefLocation, GeometricElement3dProps,
+  GeometryParams, GeometryStreamBuilder, GeometryStreamProps, IModel, RenderMode, ViewFlags,
+} from "@bentley/imodeljs-common";
 import { insertClassifiedRealityModel } from "./ClassifyRealityModel";
 import { GeoJson } from "./GeoJson";
 

@@ -6,10 +6,10 @@ import { expect } from "chai";
 import { mount } from "enzyme";
 import * as React from "react";
 import { Orientation } from "@bentley/ui-core";
-import TestUtils from "../../../TestUtils";
-import { PropertyContainerType } from "../../../../ui-components/properties/ValueRendererManager";
 import { ArrayPropertyValueRenderer } from "../../../../ui-components/properties/renderers/value/ArrayPropertyValueRenderer";
 import { TableNonPrimitiveValueRenderer } from "../../../../ui-components/properties/renderers/value/table/NonPrimitiveValueRenderer";
+import { PropertyContainerType } from "../../../../ui-components/properties/ValueRendererManager";
+import TestUtils from "../../../TestUtils";
 
 describe("ArrayPropertyValueRenderer", () => {
   before(async () => {

@@ -8,8 +8,8 @@
 
 import { BadgeType } from "../items/BadgeType";
 import { ConditionalBooleanValue } from "../items/ConditionalBooleanValue";
-import { ProvidedItem } from "../items/ProvidedItem";
 import { ConditionalStringValue } from "../items/ConditionalStringValue";
+import { ProvidedItem } from "../items/ProvidedItem";
 
 /** Status bar Groups/Sections from Left to Right
  * @beta

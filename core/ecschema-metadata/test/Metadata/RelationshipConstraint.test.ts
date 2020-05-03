@@ -3,13 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-
-import { Schema } from "../../src/Metadata/Schema";
+import { SchemaContext } from "../../src/Context";
+import { RelationshipEnd } from "../../src/ECObjects";
 import { ECObjectsError } from "../../src/Exception";
 import { RelationshipClass, RelationshipConstraint } from "../../src/Metadata/RelationshipClass";
-import { RelationshipEnd } from "../../src/ECObjects";
+import { Schema } from "../../src/Metadata/Schema";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
-import { SchemaContext } from "../../src/Context";
 
 function createSchemaJson(sourceConst: any, targetConst: any) {
   return createSchemaJsonWithItems({

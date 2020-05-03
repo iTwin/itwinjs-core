@@ -7,22 +7,22 @@
  * @module CartesianGeometry
  */
 
-import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
-import { Transform } from "../geometry3d/Transform";
-import { Matrix3d } from "../geometry3d/Matrix3d";
-import { Matrix4d } from "../geometry4d/Matrix4d";
+import { Arc3d } from "../curve/Arc3d";
+import { AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive";
 import { Geometry } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
-import { PolygonOps, IndexedXYZCollectionPolygonOps } from "../geometry3d/PolygonOps";
 import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
-import { Arc3d } from "../curve/Arc3d";
-import { ClipPlane } from "./ClipPlane";
-import { ClipPlaneContainment, Clipper, ClipUtilities } from "./ClipUtils";
-import { AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive";
-import { Range3d, Range1d } from "../geometry3d/Range";
-import { Ray3d } from "../geometry3d/Ray3d";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
+import { Matrix3d } from "../geometry3d/Matrix3d";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
+import { IndexedXYZCollectionPolygonOps, PolygonOps } from "../geometry3d/PolygonOps";
+import { Range1d, Range3d } from "../geometry3d/Range";
+import { Ray3d } from "../geometry3d/Ray3d";
 import { GrowableXYZArrayCache } from "../geometry3d/ReusableObjectCache";
+import { Transform } from "../geometry3d/Transform";
+import { Matrix4d } from "../geometry4d/Matrix4d";
+import { ClipPlane } from "./ClipPlane";
+import { Clipper, ClipPlaneContainment, ClipUtilities } from "./ClipUtils";
 
 /**
  * A ConvexClipPlaneSet is a collection of ClipPlanes, often used for bounding regions of space.

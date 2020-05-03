@@ -7,25 +7,23 @@
  */
 
 import * as React from "react";
-
 import { WidgetState } from "@bentley/ui-abstract";
 import { CommonProps, RectangleProps } from "@bentley/ui-core";
 import {
-  ZoneTargetType, ZoneManagerProps, WidgetZoneId, DraggedWidgetManagerProps, WidgetManagerProps, ToolSettingsWidgetManagerProps,
-  ToolSettingsWidgetMode, DisabledResizeHandles,
+  DisabledResizeHandles, DraggedWidgetManagerProps, ToolSettingsWidgetManagerProps, ToolSettingsWidgetMode, WidgetManagerProps, WidgetZoneId,
+  ZoneManagerProps, ZoneTargetType,
 } from "@bentley/ui-ninezone";
-
 import { ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";
-import { WidgetChangeHandler, TargetChangeHandler, ZoneDefProvider } from "../frontstage/FrontstageComposer";
+import { TargetChangeHandler, WidgetChangeHandler, ZoneDefProvider } from "../frontstage/FrontstageComposer";
+import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { StatusBarWidgetControl } from "../statusbar/StatusBarWidgetControl";
-import { WidgetProps } from "../widgets/WidgetProps";
 import { WidgetDef, WidgetStateChangedEventArgs, WidgetType } from "../widgets/WidgetDef";
+import { WidgetProps } from "../widgets/WidgetProps";
 import { WidgetTabs } from "../widgets/WidgetStack";
 import { FrameworkZone } from "./FrameworkZone";
 import { StatusBarZone } from "./StatusBarZone";
-import { ZoneState, ZoneDef } from "./ZoneDef";
 import { ToolSettingsZone } from "./toolsettings/ToolSettingsZone";
-import { FrontstageManager } from "../frontstage/FrontstageManager";
+import { ZoneDef, ZoneState } from "./ZoneDef";
 
 /** Enum for [[Zone]] Location.
  * @public

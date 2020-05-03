@@ -6,16 +6,16 @@
  * @module WidgetPanels
  */
 
+import "./PanelTarget.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { DraggedTabContext, CursorTypeContext } from "../base/NineZone";
-import { getCursorClassName } from "../widget-panels/CursorOverlay";
+import { assert } from "../base/assert";
 import { DraggedWidgetContext, usePanelTarget } from "../base/DragManager";
+import { CursorTypeContext, DraggedTabContext } from "../base/NineZone";
+import { isHorizontalPanelState } from "../base/NineZoneState";
+import { getCursorClassName } from "../widget-panels/CursorOverlay";
 import { useTarget } from "../widget/TabTarget";
 import { PanelStateContext } from "./Panel";
-import { assert } from "../base/assert";
-import { isHorizontalPanelState } from "../base/NineZoneState";
-import "./PanelTarget.scss";
 
 /** @internal */
 export const PanelTarget = React.memo(function PanelTarget() { // tslint:disable-line: variable-name no-shadowed-variable

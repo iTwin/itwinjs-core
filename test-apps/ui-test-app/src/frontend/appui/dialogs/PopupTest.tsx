@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import "./PopupTest.scss";
 import * as React from "react";
 import { RelativePosition } from "@bentley/ui-abstract";
-import { Popup, Toggle, Dialog, DialogButtonType } from "@bentley/ui-core";
+import { Dialog, DialogButtonType, Popup, Toggle } from "@bentley/ui-core";
 import { ModalDialogManager } from "@bentley/ui-framework";
-import "./PopupTest.scss";
 
 interface PopupTestProps {
   opened: boolean;

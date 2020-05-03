@@ -6,12 +6,11 @@
  * @module Notification
  */
 
-import * as React from "react";
-import classnames from "classnames";
-import { MessageManager } from "../messages/MessageManager";
-
 import "./ValidationTextbox.scss";
+import classnames from "classnames";
+import * as React from "react";
 import { CommonProps } from "@bentley/ui-core";
+import { MessageManager } from "../messages/MessageManager";
 
 /** Enum for Input Status used in [[ValidationTextbox]]
  * @alpha

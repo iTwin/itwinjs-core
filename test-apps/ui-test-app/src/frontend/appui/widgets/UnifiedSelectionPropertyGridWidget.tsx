@@ -3,19 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-// tslint:disable-next-line: no-duplicate-imports
-import { useMemo } from "react";
-import {
-  ConfigurableUiManager,
-  ConfigurableCreateInfo,
-  WidgetControl,
-} from "@bentley/ui-framework";
-import { Orientation, GlobalContextMenu, ContextMenuItem, ContextMenuItemProps } from "@bentley/ui-core";
-import { PropertyGrid, PropertyGridContextMenuArgs, ActionButtonRendererProps, useAsyncValue } from "@bentley/ui-components";
-import { PresentationPropertyDataProvider, propertyGridWithUnifiedSelection } from "@bentley/presentation-components";
-import { Field } from "@bentley/presentation-common";
-import { Presentation, FavoritePropertiesScope } from "@bentley/presentation-frontend";
 import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
+import { Field } from "@bentley/presentation-common";
+import { PresentationPropertyDataProvider, propertyGridWithUnifiedSelection } from "@bentley/presentation-components";
+import { FavoritePropertiesScope, Presentation } from "@bentley/presentation-frontend";
+import { ActionButtonRendererProps, PropertyGrid, PropertyGridContextMenuArgs, useAsyncValue } from "@bentley/ui-components";
+import { ContextMenuItem, ContextMenuItemProps, GlobalContextMenu, Orientation } from "@bentley/ui-core";
+import { ConfigurableCreateInfo, ConfigurableUiManager, WidgetControl } from "@bentley/ui-framework";
 
 // create a HOC property grid component that supports unified selection
 // tslint:disable-next-line:variable-name
@@ -135,7 +129,7 @@ class UnifiedSelectionPropertyGridWidget extends React.Component<UnifiedSelectio
   private _favoriteActionButtonRenderer = (props: ActionButtonRendererProps) => {
     const { dataProvider } = this.state;
     const { property } = props;
-    const field = useAsyncValue(useMemo(() => dataProvider.getFieldByPropertyRecord(property), [dataProvider, property]));
+    const field = useAsyncValue(React.useMemo(() => dataProvider.getFieldByPropertyRecord(property), [dataProvider, property]));
 
     return (
       <div>

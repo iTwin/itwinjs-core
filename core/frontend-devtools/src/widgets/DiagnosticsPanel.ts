@@ -7,14 +7,14 @@
  * @module Widgets
  */
 
-import { ToolSettingsTracker } from "./ToolSettingsTracker";
+import { dispose } from "@bentley/bentleyjs-core";
+import { Viewport } from "@bentley/imodeljs-frontend";
 import { FpsTracker } from "./FpsTracker";
+import { GpuProfiler } from "./GpuProfiler";
+import { KeyinField } from "./KeyinField";
 import { MemoryTracker } from "./MemoryTracker";
 import { TileStatisticsTracker } from "./TileStatisticsTracker";
-import { Viewport } from "@bentley/imodeljs-frontend";
-import { dispose } from "@bentley/bentleyjs-core";
-import { KeyinField } from "./KeyinField";
-import { GpuProfiler } from "./GpuProfiler";
+import { ToolSettingsTracker } from "./ToolSettingsTracker";
 
 /** Options for configuring a [[DiagnosticsPanel]].
  * @beta

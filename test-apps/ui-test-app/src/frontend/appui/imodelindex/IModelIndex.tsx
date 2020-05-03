@@ -2,16 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import "./IModelIndex.scss";
 import * as React from "react";
-import { Tab, Tabs } from "./Tabs";
-import { IModelConnection, AuthorizedFrontendRequestContext } from "@bentley/imodeljs-frontend";
 import { Id64String } from "@bentley/bentleyjs-core";
-import { IModelHubClient, IModelClient, IModelQuery, VersionQuery, Version } from "@bentley/imodelhub-client";
+import { IModelClient, IModelHubClient, IModelQuery, Version, VersionQuery } from "@bentley/imodelhub-client";
+import { AuthorizedFrontendRequestContext, IModelConnection } from "@bentley/imodeljs-frontend";
+import { LoadingSpinner } from "@bentley/ui-core";
+import { UiFramework } from "@bentley/ui-framework";
 import { ModelsTab } from "./ModelsTab";
 import { SheetsTab } from "./SheetsTab";
-import { UiFramework } from "@bentley/ui-framework";
-import { LoadingSpinner } from "@bentley/ui-core";
-import "./IModelIndex.scss";
+import { Tab, Tabs } from "./Tabs";
 
 /* represents a tab item on the IModelIndex page */
 interface Category {

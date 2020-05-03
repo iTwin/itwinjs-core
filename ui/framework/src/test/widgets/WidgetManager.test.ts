@@ -4,12 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
-
 import { Logger } from "@bentley/bentleyjs-core";
-import { StageUsage, StagePanelSection, StagePanelLocation, UiItemsProvider, AbstractWidgetProps, UiItemsManager } from "@bentley/ui-abstract";
-
-import { WidgetManager, WidgetProvider } from "../../ui-framework/widgets/WidgetManager";
+import { AbstractWidgetProps, StagePanelLocation, StagePanelSection, StageUsage, UiItemsManager, UiItemsProvider } from "@bentley/ui-abstract";
 import { WidgetDef } from "../../ui-framework/widgets/WidgetDef";
+import { WidgetManager, WidgetProvider } from "../../ui-framework/widgets/WidgetManager";
 import { ZoneLocation } from "../../ui-framework/zones/Zone";
 import { TestUtils } from "../TestUtils";
 

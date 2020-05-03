@@ -5,11 +5,11 @@
 /** @packageDocumentation
  * @module Breadcrumb
  */
-import { TreeNodeItem, ImmediatelyLoadedTreeNodeItem, DelayLoadedTreeNodeItem, TreeDataProvider, hasChildren } from "../tree/TreeDataProvider";
-import { TableDataProvider, TableDataChangeEvent, RowItem, CellItem, ColumnDescription } from "../table/TableDataProvider";
 import { PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
-import { UiComponents } from "../UiComponents";
 import { getPropertyRecordAsString } from "../common/getPropertyRecordAsString";
+import { CellItem, ColumnDescription, RowItem, TableDataChangeEvent, TableDataProvider } from "../table/TableDataProvider";
+import { DelayLoadedTreeNodeItem, hasChildren, ImmediatelyLoadedTreeNodeItem, TreeDataProvider, TreeNodeItem } from "../tree/TreeDataProvider";
+import { UiComponents } from "../UiComponents";
 
 // tslint:disable:deprecation
 

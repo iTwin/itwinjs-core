@@ -6,25 +6,23 @@
 
 import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
 import { expect } from "chai";
-import * as sinon from "sinon";
 import * as faker from "faker";
+import * as sinon from "sinon";
+import { BeEvent } from "@bentley/bentleyjs-core";
+import { IModelConnection } from "@bentley/imodeljs-frontend";
+import {
+  Content, ContentUpdateInfo, Descriptor, DescriptorOverrides, Field, Item, KeySet, NestedContentField, RegisteredRuleset, Ruleset, SelectionInfo,
+} from "@bentley/presentation-common";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { PromiseContainer, ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises";
 import {
-  createRandomDescriptor, createRandomRuleset, createRandomContent,
-  createRandomECInstanceKey, createRandomPropertiesField, createRandomPrimitiveField, createRandomCategory,
-  createRandomPrimitiveTypeDescription, createRandomECClassInfo, createRandomRelationshipPath,
+  createRandomCategory, createRandomContent, createRandomDescriptor, createRandomECClassInfo, createRandomECInstanceKey, createRandomPrimitiveField,
+  createRandomPrimitiveTypeDescription, createRandomPropertiesField, createRandomRelationshipPath, createRandomRuleset,
 } from "@bentley/presentation-common/lib/test/_helpers/random";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { PrimitiveValue, PropertyDescription, PropertyRecord } from "@bentley/ui-abstract";
-import {
-  Descriptor, Field, SelectionInfo, Item, KeySet, RegisteredRuleset,
-  Content, DescriptorOverrides, NestedContentField, Ruleset, ContentUpdateInfo,
-} from "@bentley/presentation-common";
 import { Presentation, PresentationManager, RulesetManager } from "@bentley/presentation-frontend";
-import { ContentDataProvider, CacheInvalidationProps, ContentDataProviderProps } from "../../presentation-components/common/ContentDataProvider";
+import { PrimitiveValue, PropertyDescription, PropertyRecord } from "@bentley/ui-abstract";
 import { FIELD_NAMES_SEPARATOR } from "../../presentation-components/common/ContentBuilder";
-import { BeEvent } from "@bentley/bentleyjs-core";
+import { CacheInvalidationProps, ContentDataProvider, ContentDataProviderProps } from "../../presentation-components/common/ContentDataProvider";
 
 /**
  * The Provider class is used to make protected ContentDataProvider

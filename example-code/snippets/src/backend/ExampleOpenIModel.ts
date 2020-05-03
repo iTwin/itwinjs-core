@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ClientRequestContext, EnvMacroSubst, OpenMode, Config } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, Config, EnvMacroSubst, OpenMode } from "@bentley/bentleyjs-core";
 import { BriefcaseDb, ConcurrencyControl } from "@bentley/imodeljs-backend";
-import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BriefcaseProps, IModelError, IModelStatus } from "@bentley/imodeljs-common";
+import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { TestUserCredentials, TestUtility } from "@bentley/oidc-signin-tool";
 
 async function getUserAccessToken(userCredentials: TestUserCredentials): Promise<AccessToken> {

@@ -6,79 +6,32 @@
  * @module Tiles
  */
 
+import { assert, BeTimePoint, compareNumbers, compareStrings, dispose } from "@bentley/bentleyjs-core";
 import {
-  assert,
-  dispose,
-  compareNumbers,
-  compareStrings,
-  BeTimePoint,
-} from "@bentley/bentleyjs-core";
-import {
-  AxisOrder,
-  BilinearPatch,
-  EllipsoidPatch,
-  LongitudeLatitudeNumber,
-  Matrix3d,
-  Point3d,
-  Range1d,
-  Range2d,
-  Range3d,
-  Ray3d,
-  Transform,
-  Vector2d,
+  AxisOrder, BilinearPatch, EllipsoidPatch, LongitudeLatitudeNumber, Matrix3d, Point3d, Range1d, Range2d, Range3d, Ray3d, Transform, Vector2d,
   Vector3d,
 } from "@bentley/geometry-core";
 import {
-  BackgroundMapProviderName,
-  BackgroundMapType,
-  BackgroundMapSettings,
-  GlobeMode,
-  TerrainHeightOriginMode,
-  TerrainProviderName,
-  TerrainSettings,
+  BackgroundMapProviderName, BackgroundMapSettings, BackgroundMapType, GlobeMode, TerrainHeightOriginMode, TerrainProviderName, TerrainSettings,
 } from "@bentley/imodeljs-common";
-import {
-  BackgroundMapTileTreeReference,
-  BingElevationProvider,
-  createDefaultViewFlagOverrides,
-  GeographicTilingScheme,
-  MapTile,
-  MapCartoRectangle,
-  MapTileTree,
-  MapTilingScheme,
-  QuadId,
-  RealityTile,
-  RealityTileDrawArgs,
-  RealityTileTree,
-  TerrainTileLoaderBase,
-  TileContent,
-  TileDrawArgs,
-  TileParams,
-  TileTree,
-  TileTreeOwner,
-  RealityTileTreeParams,
-  TileTreeReference,
-  TileTreeSet,
-  TileTreeSupplier,
-  TraversalSelectionContext,
-  WebMapTileLoader,
-  WebMapTileTreeProps,
-  getCesiumWorldTerrainLoader,
-  getGcsConverterAvailable,
-  calculateEcefToDb,
-} from "./internal";
-import { IModelConnection } from "../IModelConnection";
-import { SceneContext } from "../ViewContext";
-import { RenderGraphic } from "../render/RenderGraphic";
-import { TerrainTexture, RenderTerrainMeshGeometry } from "../render/RenderSystem";
-import { HitDetail } from "../HitDetail";
-import { FeatureSymbology } from "../render/FeatureSymbology";
-import { ScreenViewport } from "../Viewport";
-import { IModelApp } from "../IModelApp";
-import { TerrainMeshPrimitive } from "../render/primitives/mesh/TerrainMeshPrimitive";
 import { ApproximateTerrainHeights } from "../ApproximateTerrainHeights";
-import { TileLoadStatus } from "./Tile";
+import { HitDetail } from "../HitDetail";
+import { IModelApp } from "../IModelApp";
+import { IModelConnection } from "../IModelConnection";
+import { FeatureSymbology } from "../render/FeatureSymbology";
+import { TerrainMeshPrimitive } from "../render/primitives/mesh/TerrainMeshPrimitive";
+import { RenderGraphic } from "../render/RenderGraphic";
 import { RenderMemory } from "../render/RenderMemory";
+import { RenderTerrainMeshGeometry, TerrainTexture } from "../render/RenderSystem";
+import { SceneContext } from "../ViewContext";
+import { ScreenViewport } from "../Viewport";
+import {
+  BackgroundMapTileTreeReference, BingElevationProvider, calculateEcefToDb, createDefaultViewFlagOverrides, GeographicTilingScheme,
+  getCesiumWorldTerrainLoader, getGcsConverterAvailable, MapCartoRectangle, MapTile, MapTileTree, MapTilingScheme, QuadId, RealityTile,
+  RealityTileDrawArgs, RealityTileTree, RealityTileTreeParams, TerrainTileLoaderBase, TileContent, TileDrawArgs, TileParams, TileTree, TileTreeOwner,
+  TileTreeReference, TileTreeSet, TileTreeSupplier, TraversalSelectionContext, WebMapTileLoader, WebMapTileTreeProps,
+} from "./internal";
+import { TileLoadStatus } from "./Tile";
 
 interface BackgroundTerrainTreeId {
   providerName: TerrainProviderName;

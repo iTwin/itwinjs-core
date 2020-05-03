@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Id64String, BeEvent, Id64Array, IModelStatus, Logger } from "@bentley/bentleyjs-core";
-import { IModelApp, ViewState, ViewState2d, SpatialViewState } from "@bentley/imodeljs-frontend";
-import { UiFramework } from "@bentley/ui-framework";
+import { BeEvent, Id64Array, Id64String, IModelStatus, Logger } from "@bentley/bentleyjs-core";
 import { IModelError } from "@bentley/imodeljs-common";
+import { IModelApp, SpatialViewState, ViewState, ViewState2d } from "@bentley/imodeljs-frontend";
+import { UiFramework } from "@bentley/ui-framework";
 import { ErrorHandling } from "./ErrorHandling";
 
 export const iModelInfoAvailableEvent = new BeEvent();

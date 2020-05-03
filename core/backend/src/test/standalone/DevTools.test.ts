@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { DevTools, DevToolsStatsFormatter } from "../../imodeljs-backend";
 import { assert } from "chai";
-import { IModelTestUtils } from "../IModelTestUtils";
 import * as os from "os";
+import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { MobileRpcConfiguration } from "@bentley/imodeljs-common";
+import { DevTools, DevToolsStatsFormatter } from "../../imodeljs-backend";
+import { IModelTestUtils } from "../IModelTestUtils";
 
 interface StringIndexedObject<T> {
   [index: string]: T;

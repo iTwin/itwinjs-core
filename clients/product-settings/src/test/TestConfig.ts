@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { GuidString, Logger } from "@bentley/bentleyjs-core";
+import { ContextRegistryClient, Project } from "@bentley/context-registry-client";
+import { HubIModel, IModelClient, IModelHubClient } from "@bentley/imodelhub-client";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { getAccessTokenFromBackend, TestUserCredentials, TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
-import { IModelHubClient, HubIModel, IModelClient } from "@bentley/imodelhub-client";
-import { ContextRegistryClient, Project } from "@bentley/context-registry-client";
 
 // Note: Turn this off unless really necessary - it causes Error messages on the
 // console with the existing suite of tests, and this is quite misleading,

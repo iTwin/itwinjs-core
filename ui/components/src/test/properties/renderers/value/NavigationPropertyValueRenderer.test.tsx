@@ -3,14 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { render } from "@testing-library/react";
 import * as React from "react";
 import * as sinon from "sinon";
 import { Id64 } from "@bentley/bentleyjs-core";
-import TestUtils from "../../../TestUtils";
+import { Primitives, PrimitiveValue } from "@bentley/ui-abstract";
+import { render } from "@testing-library/react";
 import { NavigationPropertyValueRenderer } from "../../../../ui-components/properties/renderers/value/NavigationPropertyValueRenderer";
-import { PrimitiveValue, Primitives } from "@bentley/ui-abstract";
 import { PropertyValueRendererContext } from "../../../../ui-components/properties/ValueRendererManager";
+import TestUtils from "../../../TestUtils";
 
 function createNavigationProperty(value: Primitives.Hexadecimal, displayValue?: string) {
   const property = TestUtils.createPrimitiveStringProperty("Category", "", displayValue);

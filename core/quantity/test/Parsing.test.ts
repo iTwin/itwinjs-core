@@ -3,14 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Parser, ParserSpec } from "../src/Parser";
-import { BadUnit } from "../src/Unit";
 import { QuantityStatus } from "../src/Exception";
-import { UnitProps } from "../src/Interfaces";
 import { Format, FormatterSpec } from "../src/Formatter/Format";
-import { Quantity } from "../src/Quantity";
-import { TestUnitsProvider } from "./TestUtils/TestHelper";
 import { Formatter } from "../src/Formatter/Formatter";
+import { UnitProps } from "../src/Interfaces";
+import { Parser, ParserSpec } from "../src/Parser";
+import { Quantity } from "../src/Quantity";
+import { BadUnit } from "../src/Unit";
+import { TestUnitsProvider } from "./TestUtils/TestHelper";
 
 const logTestOutput = false;
 

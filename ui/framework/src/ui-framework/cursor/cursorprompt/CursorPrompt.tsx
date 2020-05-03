@@ -6,15 +6,13 @@
  * @module Notification
  */
 
+import "./CursorPrompt.scss";
 import * as React from "react";
-
-import { RelativePosition } from "@bentley/ui-abstract";
 import { ToolAssistanceInstruction } from "@bentley/imodeljs-frontend";
-import { Timer, BodyText, Point, PointProps, Icon } from "@bentley/ui-core";
+import { RelativePosition } from "@bentley/ui-abstract";
+import { BodyText, Icon, Point, PointProps, Timer } from "@bentley/ui-core";
 import { CursorInformation, CursorUpdatedEventArgs } from "../CursorInformation";
 import { CursorPopupManager } from "../cursorpopup/CursorPopupManager";
-
-import "./CursorPrompt.scss";
 
 /** @internal */
 export class CursorPrompt {

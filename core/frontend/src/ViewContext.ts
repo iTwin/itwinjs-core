@@ -7,32 +7,24 @@
  */
 
 import { Id64String } from "@bentley/bentleyjs-core";
-import { ConvexClipPlaneSet, Geometry, Matrix3d, Point2d, Point3d, Transform, Vector2d, Vector3d, XAndY, Plane3dByOriginAndUnitNormal, ClipUtilities, ClipPlane, Loop, LineString3d, Range3d, GrowableXYZArray, Ray3d, Range1d } from "@bentley/geometry-core";
+import {
+  ClipPlane, ClipUtilities, ConvexClipPlaneSet, Geometry, GrowableXYZArray, LineString3d, Loop, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d,
+  Point3d, Range1d, Range3d, Ray3d, Transform, Vector2d, Vector3d, XAndY,
+} from "@bentley/geometry-core";
 import { ColorDef, Frustum, FrustumPlanes, LinePixels, SpatialClassificationProps, ViewFlags } from "@bentley/imodeljs-common";
-import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
+import { IModelApp } from "./IModelApp";
 import { CanvasDecoration } from "./render/CanvasDecoration";
 import { Decorations } from "./render/Decorations";
-import {
-  GraphicBranch,
-  GraphicBranchOptions,
-} from "./render/GraphicBranch";
-import {
-  GraphicList,
-  RenderGraphic,
-} from "./render/RenderGraphic";
-import { RenderTarget } from "./render/RenderTarget";
+import { GraphicBranch, GraphicBranchOptions } from "./render/GraphicBranch";
+import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
+import { GraphicList, RenderGraphic } from "./render/RenderGraphic";
 import { RenderPlanarClassifier } from "./render/RenderPlanarClassifier";
 import { RenderTextureDrape } from "./render/RenderSystem";
-import { ScreenViewport, Viewport } from "./Viewport";
-import { ViewingSpace } from "./ViewingSpace";
-import {
-  Tile,
-  TileGraphicType,
-  TileLoadStatus,
-  TileTreeReference,
-} from "./tile/internal";
-import { IModelApp } from "./IModelApp";
+import { RenderTarget } from "./render/RenderTarget";
 import { Scene } from "./render/Scene";
+import { Tile, TileGraphicType, TileLoadStatus, TileTreeReference } from "./tile/internal";
+import { ViewingSpace } from "./ViewingSpace";
+import { ScreenViewport, Viewport } from "./Viewport";
 
 const gridConstants = { minSeparation: 20, maxRefLines: 100, gridTransparency: 220, refTransparency: 150, planeTransparency: 225 };
 

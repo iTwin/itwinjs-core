@@ -6,12 +6,12 @@
  * @module Tools
  */
 
-import { BeButtonEvent, InteractiveTool, BeButton, CoordinateLockOverrides, CoreTools } from "./Tool";
-import { Viewport } from "../Viewport";
-import { IModelConnection } from "../IModelConnection";
 import { IModelApp } from "../IModelApp";
-import { AccuDrawShortcuts } from "./AccuDrawTool";
+import { IModelConnection } from "../IModelConnection";
 import { NotifyMessageDetails, OutputMessagePriority } from "../NotificationManager";
+import { Viewport } from "../Viewport";
+import { AccuDrawShortcuts } from "./AccuDrawTool";
+import { BeButton, BeButtonEvent, CoordinateLockOverrides, CoreTools, InteractiveTool } from "./Tool";
 
 /** The PrimitiveTool class can be used to implement tools to create or modify geometric elements.
  * @see [Writing a PrimitiveTool]($docs/learning/frontend/primitivetools.md)

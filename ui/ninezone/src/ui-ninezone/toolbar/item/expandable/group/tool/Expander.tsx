@@ -6,11 +6,11 @@
  * @module Toolbar
  */
 
+import "./Expander.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { Omit, NoChildrenProps } from "@bentley/ui-core";
+import { NoChildrenProps, Omit } from "@bentley/ui-core";
 import { GroupTool, GroupToolProps } from "./Tool";
-import "./Expander.scss";
 
 /** Properties of [[GroupToolExpander]] component.
  * @alpha

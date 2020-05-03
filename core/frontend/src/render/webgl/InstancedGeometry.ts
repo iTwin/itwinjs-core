@@ -7,17 +7,17 @@
  */
 
 import { assert, dispose } from "@bentley/bentleyjs-core";
-import { Range3d, Point3d, Transform } from "@bentley/geometry-core";
+import { Point3d, Range3d, Transform } from "@bentley/geometry-core";
 import { InstancedGraphicParams } from "../InstancedGraphicParams";
 import { RenderMemory } from "../RenderMemory";
-import { CachedGeometry, LUTGeometry } from "./CachedGeometry";
-import { Target } from "./Target";
-import { ShaderProgramParams } from "./DrawCommand";
-import { BufferHandle, BufferParameters, BuffersContainer } from "./Handle";
-import { GL } from "./GL";
 import { AttributeMap } from "./AttributeMap";
-import { TechniqueId } from "./TechniqueId";
+import { CachedGeometry, LUTGeometry } from "./CachedGeometry";
 import { WebGLDisposable } from "./Disposable";
+import { ShaderProgramParams } from "./DrawCommand";
+import { GL } from "./GL";
+import { BufferHandle, BufferParameters, BuffersContainer } from "./Handle";
+import { Target } from "./Target";
+import { TechniqueId } from "./TechniqueId";
 
 /** @internal */
 export class InstanceBuffers implements WebGLDisposable {

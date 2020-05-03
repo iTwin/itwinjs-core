@@ -2,24 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
-import { expect } from "chai";
 import { render } from "@testing-library/react";
-import TestUtils from "../TestUtils";
-
 import {
-  ContentControl,
-  ConfigurableCreateInfo,
-  ContentGroup,
-  ContentLayoutDef,
+  ConfigurableCreateInfo, ContentControl, ContentGroup, ContentLayout, ContentLayoutDef, FrontstageManager, INACTIVITY_TIME_DEFAULT, UiFramework,
   UiShowHideManager,
-  UiFramework,
-  INACTIVITY_TIME_DEFAULT,
-  FrontstageManager,
-  ContentLayout,
 } from "../../ui-framework";
 import { TestFrontstage } from "../frontstage/FrontstageTestUtils";
+import TestUtils from "../TestUtils";
 
 describe("UiShowHideManager", () => {
 

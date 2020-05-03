@@ -4,13 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { Schema } from "../../src/Metadata/Schema";
-import { InvertedUnit } from "../../src/Metadata/InvertedUnit";
-import { ECObjectsError } from "../../src/Exception";
-import { UnitSystem } from "../../src/Metadata/UnitSystem";
-import { Unit } from "../../src/Metadata/Unit";
-import { schemaItemTypeToString, SchemaItemType } from "../../src/ECObjects";
 import { SchemaContext } from "../../src/Context";
+import { SchemaItemType, schemaItemTypeToString } from "../../src/ECObjects";
+import { ECObjectsError } from "../../src/Exception";
+import { InvertedUnit } from "../../src/Metadata/InvertedUnit";
+import { Schema } from "../../src/Metadata/Schema";
+import { Unit } from "../../src/Metadata/Unit";
+import { UnitSystem } from "../../src/Metadata/UnitSystem";
 import { createEmptyXmlDocument } from "../TestUtils/SerializationHelper";
 
 describe("Inverted Unit tests", () => {

@@ -6,34 +6,20 @@
  * @module Geometry
  */
 
-import {
-  Angle,
-  AnyGeometryQuery,
-  GeometryQuery,
-  IModelJson as GeomJson,
-  LowAndHighXYZ,
-  Matrix3d,
-  Point2d,
-  Point3d,
-  Range3d,
-  Transform,
-  TransformProps,
-  Vector3d,
-  XYZProps,
-  YawPitchRollAngles,
-  YawPitchRollProps,
-} from "@bentley/geometry-core";
-
 import { Id64, Id64String, IModelStatus } from "@bentley/bentleyjs-core";
+import {
+  Angle, AnyGeometryQuery, GeometryQuery, IModelJson as GeomJson, LowAndHighXYZ, Matrix3d, Point2d, Point3d, Range3d, Transform, TransformProps,
+  Vector3d, XYZProps, YawPitchRollAngles, YawPitchRollProps,
+} from "@bentley/geometry-core";
 import { ColorDef, ColorDefProps } from "../ColorDef";
-import { GeometryClass, GeometryParams, FillDisplay, BackgroundFill } from "../GeometryParams";
+import { GeometricElement2dProps, GeometricElement3dProps, GeometryPartProps } from "../ElementProps";
+import { BackgroundFill, FillDisplay, GeometryClass, GeometryParams } from "../GeometryParams";
 import { Gradient } from "../Gradient";
-import { TextStringProps, TextString } from "./TextString";
+import { IModelError } from "../IModelError";
+import { AreaPattern } from "./AreaPattern";
 import { ImageGraphic, ImageGraphicProps } from "./ImageGraphic";
 import { LineStyle } from "./LineStyle";
-import { AreaPattern } from "./AreaPattern";
-import { GeometricElement3dProps, GeometricElement2dProps, GeometryPartProps } from "../ElementProps";
-import { IModelError } from "../IModelError";
+import { TextString, TextStringProps } from "./TextString";
 
 /** Establish a non-default [[SubCategory]] or to override [[SubCategoryAppearance]] for the geometry that follows.
  * A GeometryAppearanceProps always signifies a reset to the [[SubCategoryAppearance]] for subsequent [[GeometryStreamProps]] entries for undefined values.

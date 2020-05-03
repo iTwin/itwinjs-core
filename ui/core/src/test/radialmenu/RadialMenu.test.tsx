@@ -2,13 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { expect } from "chai";
+import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { mount, shallow } from "enzyme";
-import { expect } from "chai";
 import { render } from "@testing-library/react";
-
-import { RadialMenu, RadialButton } from "../../ui-core";
+import { RadialButton, RadialMenu } from "../../ui-core";
 import { TestUtils } from "../TestUtils";
 
 describe("RadialMenu", () => {

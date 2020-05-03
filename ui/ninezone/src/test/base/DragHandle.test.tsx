@@ -6,8 +6,8 @@ import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { DragHandle, DragHandleProps } from "../../ui-ninezone/base/DragHandle";
-import { createPointerEvent } from "../Utils";
 import { PointerCaptor } from "../../ui-ninezone/base/PointerCaptor";
+import { createPointerEvent } from "../Utils";
 
 describe("<DragHandle />", () => {
   it("should render", () => {

@@ -3,9 +3,9 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { DockedToolSettings } from "@src/tool-settings/Docked";
-import { ToolSettingProps, ToolSetting } from "./ToolSetting";
 import { ToolSettingsStateContext } from "@src/base/NineZone";
+import { DockedToolSettings } from "@src/tool-settings/Docked";
+import { ToolSetting, ToolSettingProps } from "./ToolSetting";
 
 export interface ToolSettingsProps {
   readonly settings: ReadonlyArray<ToolSettingProps>;

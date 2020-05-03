@@ -6,10 +6,10 @@
  * @module Loading
  */
 
-import * as React from "react";
-import classnames from "classnames";
-import { CommonProps } from "../utils/Props";
 import "./LoadingStatus.scss";
+import classnames from "classnames";
+import * as React from "react";
+import { CommonProps } from "../utils/Props";
 
 /** Properties for [[LoadingStatus]] component
  * @public

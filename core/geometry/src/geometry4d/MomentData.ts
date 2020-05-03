@@ -10,14 +10,15 @@
 // import { Point2d } from "./Geometry2d";
 /* tslint:disable:variable-name jsdoc-format no-empty no-console*/
 
-import { XYZ, Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
-import { Transform } from "../geometry3d/Transform";
-import { Matrix3d } from "../geometry3d/Matrix3d";
-import { Matrix4d } from "./Matrix4d";
-import { Point4d } from "./Point4d";
-import { XAndY, XYAndZ } from "../geometry3d/XYZProps";
 import { Geometry } from "../Geometry";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
+import { Matrix3d } from "../geometry3d/Matrix3d";
+import { Point3d, Vector3d, XYZ } from "../geometry3d/Point3dVector3d";
+import { Transform } from "../geometry3d/Transform";
+import { XAndY, XYAndZ } from "../geometry3d/XYZProps";
+import { Matrix4d } from "./Matrix4d";
+import { Point4d } from "./Point4d";
+
 /**
  * A MomentData structure exists in several levels:
  * * First level: as a carrier of sums of inertial products that determine moments.

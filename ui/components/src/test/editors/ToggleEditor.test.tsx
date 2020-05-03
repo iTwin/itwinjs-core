@@ -3,14 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import * as React from "react";
-import { mount, shallow } from "enzyme";
 import { expect } from "chai";
+import { mount, shallow } from "enzyme";
+import * as React from "react";
 import sinon from "sinon";
-import { ToggleEditor } from "../../ui-components/editors/ToggleEditor";
-import { EditorContainer, PropertyUpdatedArgs } from "../../ui-components/editors/EditorContainer";
-import TestUtils from "../TestUtils";
 import { PrimitiveValue } from "@bentley/ui-abstract";
+import { EditorContainer, PropertyUpdatedArgs } from "../../ui-components/editors/EditorContainer";
+import { ToggleEditor } from "../../ui-components/editors/ToggleEditor";
+import TestUtils from "../TestUtils";
 
 describe("<ToggleEditor />", () => {
   it("should render", () => {

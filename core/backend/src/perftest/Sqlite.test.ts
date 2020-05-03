@@ -2,16 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { using, DbResult, StopWatch } from "@bentley/bentleyjs-core";
-import { ECDb, ECDbOpenMode } from "../ECDb";
-import { SqliteStatement } from "../SqliteStatement";
-import * as readline from "readline";
+import * as fs from "fs";
 import * as os from "os";
 import * as path from "path";
-import * as fs from "fs";
+import * as readline from "readline";
+import { DbResult, StopWatch, using } from "@bentley/bentleyjs-core";
+import { ECDb, ECDbOpenMode } from "../ECDb";
 import { IModelHost } from "../IModelHost";
-import { KnownTestLocations } from "../test/KnownTestLocations";
+import { SqliteStatement } from "../SqliteStatement";
 import { IModelTestUtils } from "../test/IModelTestUtils";
+import { KnownTestLocations } from "../test/KnownTestLocations";
+
 IModelTestUtils.init();
 function makeRandStr(length: number) {
   let text = "";

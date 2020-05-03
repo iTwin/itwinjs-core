@@ -7,98 +7,43 @@
  */
 
 import {
-  assert,
-  BeDuration,
-  BeEvent,
-  BeTimePoint,
-  compareStrings,
-  dispose,
-  IDisposable,
-  Id64,
-  Id64Arg,
-  Id64Set,
-  Id64String,
-  SortedArray,
-  StopWatch,
+  assert, BeDuration, BeEvent, BeTimePoint, compareStrings, dispose, Id64, Id64Arg, Id64Set, Id64String, IDisposable, SortedArray, StopWatch,
 } from "@bentley/bentleyjs-core";
 import {
-  Angle,
-  AngleSweep,
-  Arc3d,
-  Geometry,
-  LowAndHighXY,
-  LowAndHighXYZ,
-  Map4d,
-  Matrix3d,
-  Plane3dByOriginAndUnitNormal,
-  Point2d,
-  Point3d,
-  Point4d,
-  Range1d,
-  Range3d,
-  Ray3d,
-  SmoothTransformBetweenFrusta,
-  Transform,
-  Vector3d,
-  XAndY,
-  XYAndZ,
-  XYZ,
+  Angle, AngleSweep, Arc3d, Geometry, LowAndHighXY, LowAndHighXYZ, Map4d, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point4d, Range1d,
+  Range3d, Ray3d, SmoothTransformBetweenFrusta, Transform, Vector3d, XAndY, XYAndZ, XYZ,
 } from "@bentley/geometry-core";
 import {
-  AnalysisStyle,
-  BackgroundMapProps,
-  BackgroundMapSettings,
-  Camera,
-  Cartographic,
-  ColorDef,
-  Easing,
-  EasingFunction,
-  ElementProps,
-  Frustum,
-  GlobeMode,
-  GridOrientationType,
-  Hilite,
-  ImageBuffer,
-  Interpolation,
-  LightSettings,
-  NpcCenter,
-  Placement2d,
-  Placement2dProps,
-  Placement3d,
-  Placement3dProps,
-  PlacementProps,
-  SolarShadowSettings,
-  SubCategoryAppearance,
-  SubCategoryOverride,
-  Tweens,
-  ViewFlags,
+  AnalysisStyle, BackgroundMapProps, BackgroundMapSettings, Camera, Cartographic, ColorDef, Easing, EasingFunction, ElementProps, Frustum, GlobeMode,
+  GridOrientationType, Hilite, ImageBuffer, Interpolation, LightSettings, NpcCenter, Placement2d, Placement2dProps, Placement3d, Placement3dProps,
+  PlacementProps, SolarShadowSettings, SubCategoryAppearance, SubCategoryOverride, Tweens, ViewFlags,
 } from "@bentley/imodeljs-common";
 import { AuxCoordSystemState } from "./AuxCoordSys";
+import { BackgroundMapGeometry } from "./BackgroundMapGeometry";
 import { DisplayStyleState } from "./DisplayStyleState";
 import { ElementPicker, LocateOptions } from "./ElementLocateManager";
 import { HitDetail, SnapDetail } from "./HitDetail";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { ToolTipOptions } from "./NotificationManager";
+import { Decorations } from "./render/Decorations";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { GraphicType } from "./render/GraphicBuilder";
-import { GraphicList } from "./render/RenderGraphic";
-import { RenderPlan } from "./render/RenderPlan";
 import { Pixel } from "./render/Pixel";
-import { Decorations } from "./render/Decorations";
-import { RenderTarget } from "./render/RenderTarget";
+import { GraphicList } from "./render/RenderGraphic";
 import { RenderMemory } from "./render/RenderMemory";
+import { RenderPlan } from "./render/RenderPlan";
+import { RenderTarget } from "./render/RenderTarget";
 import { StandardView, StandardViewId } from "./StandardView";
 import { SubCategoriesCache } from "./SubCategoriesCache";
-import { TileTreeReference, TileTreeSet, TileBoundingBoxes } from "./tile/internal";
-import { BackgroundMapGeometry } from "./BackgroundMapGeometry";
+import { TileBoundingBoxes, TileTreeReference, TileTreeSet } from "./tile/internal";
 import { EventController } from "./tools/EventController";
-import { DecorateContext, SceneContext } from "./ViewContext";
-import { MarginPercent, ViewState, ViewStatus, ViewState3d, ViewState2d, ViewPose, ViewPose3d } from "./ViewState";
-import { ViewRect } from "./ViewRect";
-import { ViewingSpace } from "./ViewingSpace";
 import { ToolSettings } from "./tools/ToolSettings";
-import { GlobalLocation, eyeToCartographicOnGlobe, metersToRange, ViewGlobalLocationConstants, areaToEyeHeight } from "./ViewGlobalLocation";
+import { DecorateContext, SceneContext } from "./ViewContext";
+import { areaToEyeHeight, eyeToCartographicOnGlobe, GlobalLocation, metersToRange, ViewGlobalLocationConstants } from "./ViewGlobalLocation";
+import { ViewingSpace } from "./ViewingSpace";
+import { ViewRect } from "./ViewRect";
+import { MarginPercent, ViewPose, ViewPose3d, ViewState, ViewState2d, ViewState3d, ViewStatus } from "./ViewState";
 
 // cSpell:Ignore rect's ovrs subcat subcats unmounting UI's
 

@@ -6,7 +6,7 @@
  * @module Polyface
  */
 import { IndexedEdgeMatcher, SortableEdge } from "./IndexedEdgeMatcher";
-import { PolyfaceVisitor, IndexedPolyface } from "./Polyface";
+import { IndexedPolyface, PolyfaceVisitor } from "./Polyface";
 import { PolyfaceQuery } from "./PolyfaceQuery";
 
 class OrientedComponentData {

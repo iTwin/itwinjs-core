@@ -6,21 +6,21 @@
  * @module Curve
  */
 
+import { Geometry } from "../../Geometry";
+import { Angle } from "../../geometry3d/Angle";
+import { AngleSweep } from "../../geometry3d/AngleSweep";
 /* tslint:disable: no-console */
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
+import { Ray3d } from "../../geometry3d/Ray3d";
+import { Arc3d } from "../Arc3d";
 import { CurveCollection } from "../CurveCollection";
+import { CurveCurve } from "../CurveCurve";
+import { CurveCurveApproachType, CurveLocationDetailPair } from "../CurveLocationDetail";
 import { CurvePrimitive } from "../CurvePrimitive";
 import { LineSegment3d } from "../LineSegment3d";
-import { Ray3d } from "../../geometry3d/Ray3d";
-import { CurveCurveApproachType, CurveLocationDetailPair } from "../CurveLocationDetail";
 import { LineString3d } from "../LineString3d";
-import { Path } from "../Path";
 import { Loop } from "../Loop";
-import { Arc3d } from "../Arc3d";
-import { CurveCurve } from "../CurveCurve";
-import { Angle } from "../../geometry3d/Angle";
-import { Geometry } from "../../Geometry";
-import { AngleSweep } from "../../geometry3d/AngleSweep";
+import { Path } from "../Path";
 import { RegionOps } from "../RegionOps";
 
 /**

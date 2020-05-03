@@ -4,17 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as faker from "faker";
-import * as moq from "./_helpers/Mocks";
-import { createRandomDescriptor, createRandomECInstancesNodeKey, createRandomECInstanceKey } from "./_helpers/random";
-import { using, Id64String } from "@bentley/bentleyjs-core";
-import { RpcRegistry, RpcOperation, RpcRequest, RpcSerializedValue, IModelRpcProps } from "@bentley/imodeljs-common";
+import { Id64String, using } from "@bentley/bentleyjs-core";
+import { IModelRpcProps, RpcOperation, RpcRegistry, RpcRequest, RpcSerializedValue } from "@bentley/imodeljs-common";
 import {
-  PresentationRpcInterface,
-  KeySet, Paged, LabelRpcRequestOptions,
-  HierarchyRpcRequestOptions, ContentRpcRequestOptions,
-  SelectionScopeRpcRequestOptions,
-  PresentationDataCompareRpcOptions,
+  ContentRpcRequestOptions, HierarchyRpcRequestOptions, KeySet, LabelRpcRequestOptions, Paged, PresentationDataCompareRpcOptions,
+  PresentationRpcInterface, SelectionScopeRpcRequestOptions,
 } from "../presentation-common";
+import * as moq from "./_helpers/Mocks";
+import { createRandomDescriptor, createRandomECInstanceKey, createRandomECInstancesNodeKey } from "./_helpers/random";
 
 describe("PresentationRpcInterface", () => {
   class TestRpcRequest extends RpcRequest {

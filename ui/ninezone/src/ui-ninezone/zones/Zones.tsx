@@ -6,10 +6,10 @@
  * @module Zone
  */
 
+import "./Zones.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { CommonProps } from "@bentley/ui-core";
-import "./Zones.scss";
 
 /** Properties of [[Zones]] component.
  * @beta

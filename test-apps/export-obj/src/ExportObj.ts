@@ -2,13 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import * as fs from "fs";
+import * as path from "path";
+import * as Yargs from "yargs";
 import { DbResult, Id64Array, Id64String, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { Angle } from "@bentley/geometry-core";
 import { ECSqlStatement, ExportGraphicsInfo, IModelHost, SnapshotDb, Texture } from "@bentley/imodeljs-backend";
 import { ColorDef, ImageSourceFormat } from "@bentley/imodeljs-common";
-import * as fs from "fs";
-import * as path from "path";
-import * as Yargs from "yargs";
 
 async function doExport(iModelName: string, objName: string, mtlName: string): Promise<void> {
   await IModelHost.startup();

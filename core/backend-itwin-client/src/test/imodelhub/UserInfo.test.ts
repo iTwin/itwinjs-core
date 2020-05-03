@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-import { IModelHubStatus, GuidString } from "@bentley/bentleyjs-core";
-import { AccessToken, UserInfo, AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { GuidString, IModelHubStatus } from "@bentley/bentleyjs-core";
+import { HubUserInfo, IModelClient, IModelHubClientError, UserInfoQuery } from "@bentley/imodelhub-client";
+import { AccessToken, AuthorizedClientRequestContext, UserInfo } from "@bentley/itwin-client";
 import { TestUsers } from "@bentley/oidc-signin-tool";
-import { ResponseBuilder, ScopeType, RequestType } from "../ResponseBuilder";
+import { RequestType, ResponseBuilder, ScopeType } from "../ResponseBuilder";
 import { TestConfig } from "../TestConfig";
 import * as utils from "./TestUtils";
-import { HubUserInfo, IModelClient, UserInfoQuery, IModelHubClientError } from "@bentley/imodelhub-client";
 
 function mockGetUserInfo(imodelId: GuidString, userInfo: HubUserInfo[], query?: string) {
   if (!TestConfig.enableMocks)

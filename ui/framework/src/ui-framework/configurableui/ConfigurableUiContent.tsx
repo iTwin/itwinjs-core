@@ -6,24 +6,23 @@
  * @module ConfigurableUi
  */
 
+import "./configurableui.scss";
 import * as React from "react";
 import { CommonProps, Point } from "@bentley/ui-core";
-
+import { CursorInformation } from "../cursor/CursorInformation";
+import { CursorPopupMenu } from "../cursor/cursormenu/CursorMenu";
+import { CursorPopupRenderer } from "../cursor/cursorpopup/CursorPopupManager";
 import { ModalDialogRenderer } from "../dialog/ModalDialogManager";
 import { ModelessDialogRenderer } from "../dialog/ModelessDialogManager";
 import { ElementTooltip } from "../feedback/ElementTooltip";
 import { FrontstageComposer } from "../frontstage/FrontstageComposer";
+import { useFrameworkVersion } from "../hooks/useFrameworkVersion";
 import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
 import { KeyboardShortcutMenu } from "../keyboardshortcut/KeyboardShortcutMenu";
-import { PointerMessage } from "../messages/Pointer";
 import { InputFieldMessage } from "../messages/InputField";
-import { CursorInformation } from "../cursor/CursorInformation";
-import { CursorPopupRenderer } from "../cursor/cursorpopup/CursorPopupManager";
-import { CursorPopupMenu } from "../cursor/cursormenu/CursorMenu";
+import { PointerMessage } from "../messages/Pointer";
 import { PopupRenderer } from "../popup/PopupManager";
-import { useFrameworkVersion } from "../hooks/useFrameworkVersion";
 import { WidgetPanelsFrontstage } from "../widget-panels/Frontstage";
-import "./configurableui.scss";
 
 // cSpell:ignore cursormenu
 

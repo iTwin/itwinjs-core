@@ -4,24 +4,19 @@
 *--------------------------------------------------------------------------------------------*/
 // cSpell:ignore picklist
 
-import {
-  IModelApp, PrimitiveTool,
-  BeButtonEvent, EventHandled,
-  AngleDescription, LengthDescription, SurveyLengthDescription,
-  NotifyMessageDetails, OutputMessagePriority,
-  QuantityType, ToolAssistance, ToolAssistanceImage,
-} from "@bentley/imodeljs-frontend";
-import {
-  DialogItem, PropertyDescription, DialogItemValue, DialogPropertySyncItem,
-  PropertyEditorParamTypes,
-  ColorEditorParams, InputEditorSizeParams, SuppressLabelEditorParams,
-} from "@bentley/ui-abstract";
-
 import { Logger } from "@bentley/bentleyjs-core";
 import { Point3d } from "@bentley/geometry-core";
-import { ColorDef, ColorByName } from "@bentley/imodeljs-common";
+import { ColorByName, ColorDef } from "@bentley/imodeljs-common";
+import {
+  AngleDescription, BeButtonEvent, EventHandled, IModelApp, LengthDescription, NotifyMessageDetails, OutputMessagePriority, PrimitiveTool,
+  QuantityType, SurveyLengthDescription, ToolAssistance, ToolAssistanceImage,
+} from "@bentley/imodeljs-frontend";
 import { FormatterSpec } from "@bentley/imodeljs-quantity";
-import { UiFramework, CursorInformation, MenuItemProps } from "@bentley/ui-framework";
+import {
+  ColorEditorParams, DialogItem, DialogItemValue, DialogPropertySyncItem, InputEditorSizeParams, PropertyDescription, PropertyEditorParamTypes,
+  SuppressLabelEditorParams,
+} from "@bentley/ui-abstract";
+import { CursorInformation, MenuItemProps, UiFramework } from "@bentley/ui-framework";
 
 enum ToolOptions {
   Red,

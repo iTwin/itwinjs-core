@@ -8,26 +8,12 @@
  */
 
 import { Id64, Id64Array, Id64String } from "@bentley/bentleyjs-core";
-import { copyStringToClipboard } from "../ClipboardUtilities";
+import { GeometrySummaryOptions, GeometrySummaryVerbosity, IModelReadRpcInterface } from "@bentley/imodeljs-common";
 import {
-  PrimitiveTool,
-  EventHandled,
-  BeButtonEvent,
-  HitDetail,
-  IModelApp,
-  LocateFilterStatus,
-  LocateResponse,
-  MessageBoxIconType,
-  MessageBoxType,
-  NotifyMessageDetails,
-  OutputMessagePriority,
-  CoreTools,
+  BeButtonEvent, CoreTools, EventHandled, HitDetail, IModelApp, LocateFilterStatus, LocateResponse, MessageBoxIconType, MessageBoxType,
+  NotifyMessageDetails, OutputMessagePriority, PrimitiveTool,
 } from "@bentley/imodeljs-frontend";
-import {
-  GeometrySummaryOptions,
-  IModelReadRpcInterface,
-  GeometrySummaryVerbosity,
-} from "@bentley/imodeljs-common";
+import { copyStringToClipboard } from "../ClipboardUtilities";
 import { parseArgs } from "./parseArgs";
 
 /** Creates a readable text summary of a geometric element or geometry part. The keyin takes the following arguments, all of which are optional:

@@ -6,11 +6,11 @@
  * @module Toolbar
  */
 
+import "./Tool.scss";
 import classnames from "classnames";
 import * as React from "react";
+import { ActionButton, GroupButton } from "@bentley/ui-abstract";
 import { CommonProps, useTargeted } from "@bentley/ui-core";
-import "./Tool.scss";
-import { GroupButton, ActionButton } from "@bentley/ui-abstract";
 
 /** Properties of [[GroupTool]] component.
  * @internal

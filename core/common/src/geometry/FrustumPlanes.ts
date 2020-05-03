@@ -7,11 +7,7 @@
  */
 
 import { assert } from "@bentley/bentleyjs-core";
-import {
-  ClipPlane,
-  Point3d,
-  Vector3d,
-} from "@bentley/geometry-core";
+import { ClipPlane, Point3d, Vector3d } from "@bentley/geometry-core";
 import { Frustum } from "../Frustum";
 import { BoundingSphere } from "./BoundingSphere";
 

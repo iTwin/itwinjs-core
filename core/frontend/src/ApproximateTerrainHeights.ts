@@ -2,14 +2,16 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-/** @module Views */
+/** @packageDocumentation
+ * @module Views
+ */
 
+import { assert } from "@bentley/bentleyjs-core";
+import { Point2d, Range1d, Range2d } from "@bentley/geometry-core";
+import { Cartographic } from "@bentley/imodeljs-common";
 import { getJson } from "@bentley/itwin-client";
 import { FrontendRequestContext } from "./FrontendRequestContext";
-import { Cartographic } from "@bentley/imodeljs-common";
-import { Point2d, Range1d, Range2d } from "@bentley/geometry-core";
 import { GeographicTilingScheme, QuadId } from "./tile/internal";
-import { assert } from "@bentley/bentleyjs-core";
 
 let instance: ApproximateTerrainHeights | undefined;
 

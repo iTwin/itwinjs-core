@@ -6,10 +6,10 @@
  * @module Tree
  */
 
-import { StyleHelper } from "../common/StyleHelper";
-import { CheckBoxState } from "@bentley/ui-core";
 import { Node, PageOptions as PresentationPageOptions } from "@bentley/presentation-common";
-import { DelayLoadedTreeNodeItem, PageOptions as UiPageOptions, ItemStyle, ItemColorOverrides } from "@bentley/ui-components";
+import { DelayLoadedTreeNodeItem, ItemColorOverrides, ItemStyle, PageOptions as UiPageOptions } from "@bentley/ui-components";
+import { CheckBoxState } from "@bentley/ui-core";
+import { StyleHelper } from "../common/StyleHelper";
 import { createLabelRecord } from "../common/Utils";
 
 /** @internal */

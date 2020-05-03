@@ -7,21 +7,9 @@
  * @module Tools
  */
 
+import { CodeProps, SheetProps, ViewStateProps } from "@bentley/imodeljs-common";
 import {
-  CodeProps,
-  SheetProps,
-  ViewStateProps,
-} from "@bentley/imodeljs-common";
-import {
-  EntityState,
-  IModelApp,
-  IModelConnection,
-  NotifyMessageDetails,
-  OutputMessagePriority,
-  SheetViewState,
-  SpatialViewState,
-  Tool,
-  ViewState,
+  EntityState, IModelApp, IModelConnection, NotifyMessageDetails, OutputMessagePriority, SheetViewState, SpatialViewState, Tool, ViewState,
 } from "@bentley/imodeljs-frontend";
 
 function copyStringToClipboard(str: string): void {

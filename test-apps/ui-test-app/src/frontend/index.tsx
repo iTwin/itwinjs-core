@@ -2,62 +2,48 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import "./index.scss";
+// Mobx demo
+import { configure as mobxConfigure } from "mobx";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import { Store } from "redux";  // createStore,
-import { Provider, connect } from "react-redux";
-import { Id64String, Logger, LogLevel, isElectronRenderer, ClientRequestContext, Config } from "@bentley/bentleyjs-core";
-import { AccessToken } from "@bentley/itwin-client";
+import { connect, Provider } from "react-redux";
+import { Store } from "redux"; // createStore,
+import { ClientRequestContext, Config, Id64String, isElectronRenderer, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import {
-  FrontendAuthorizationClient, BrowserAuthorizationClient,
-  BrowserAuthorizationCallbackHandler, BrowserAuthorizationClientConfiguration,
+  BrowserAuthorizationCallbackHandler, BrowserAuthorizationClient, BrowserAuthorizationClientConfiguration, FrontendAuthorizationClient,
   isFrontendAuthorizationClient,
 } from "@bentley/frontend-authorization-client";
+import { BentleyCloudRpcManager, DesktopAuthorizationClientConfiguration, ElectronRpcManager, RpcConfiguration } from "@bentley/imodeljs-common";
 import {
-  RpcConfiguration, ElectronRpcManager,
-  BentleyCloudRpcManager, DesktopAuthorizationClientConfiguration,
-} from "@bentley/imodeljs-common";
-import {
-  IModelApp, IModelConnection, SnapMode, AccuSnap, ViewClipByPlaneTool, RenderSystem, IModelAppOptions, SelectionTool, ViewState,
-  ExternalServerExtensionLoader, DesktopAuthorizationClient,
+  AccuSnap, DesktopAuthorizationClient, ExternalServerExtensionLoader, IModelApp, IModelAppOptions, IModelConnection, RenderSystem, SelectionTool,
+  SnapMode, ViewClipByPlaneTool, ViewState,
 } from "@bentley/imodeljs-frontend";
-import { MarkupApp } from "@bentley/imodeljs-markup";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
+import { MarkupApp } from "@bentley/imodeljs-markup";
+import { AccessToken } from "@bentley/itwin-client";
 import { Presentation } from "@bentley/presentation-frontend";
 import { getClassName } from "@bentley/ui-abstract";
-import { UiSettings, LocalUiSettings } from "@bentley/ui-core";
 import { BeDragDropContext } from "@bentley/ui-components";
+import { LocalUiSettings, UiSettings } from "@bentley/ui-core";
 import {
-  UiFramework, FrameworkReducer, AppNotificationManager, FrameworkUiAdmin,   // , FrameworkState
-  IModelInfo, FrontstageManager, createAction, ActionsUnion, DeepReadonly, ProjectInfo,
-  ConfigurableUiContent, ThemeManager, DragDropLayerRenderer, SyncUiEventDispatcher, // combineReducers,
-  FrontstageDef,
-  SafeAreaContext,
-  ToolbarDragInteractionContext,
-  StateManager,
-  FrameworkRootState,
-  FrameworkVersion,
-  UiSettingsProvider,
-  IModelAppUiSettings,
+  ActionsUnion, AppNotificationManager, ConfigurableUiContent, createAction, DeepReadonly, DragDropLayerRenderer, FrameworkReducer,
+  FrameworkRootState, FrameworkUiAdmin, FrameworkVersion, FrontstageDef, FrontstageManager, IModelAppUiSettings, IModelInfo, ProjectInfo,
+  SafeAreaContext, StateManager, SyncUiEventDispatcher, ThemeManager, ToolbarDragInteractionContext, UiFramework, UiSettingsProvider,
 } from "@bentley/ui-framework";
+import { SafeAreaInsets } from "@bentley/ui-ninezone";
 import getSupportedRpcs from "../common/rpcs";
+import { TestAppConfiguration } from "../common/TestAppConfiguration";
 import { AppUi } from "./appui/AppUi";
+import { AppBackstageComposer } from "./appui/backstage/AppBackstageComposer";
+import { IModelViewportControl } from "./appui/contentviews/IModelViewport";
+import { LocalFileOpenFrontstage } from "./appui/frontstages/LocalFileStage";
 import { ViewsFrontstage } from "./appui/frontstages/ViewsFrontstage";
+import { AnalysisAnimationTool } from "./tools/AnalysisAnimation";
 import { Tool1 } from "./tools/Tool1";
 import { Tool2 } from "./tools/Tool2";
 import { ToolWithSettings } from "./tools/ToolWithSettings";
-import { AnalysisAnimationTool } from "./tools/AnalysisAnimation";
 import { UiProviderTool } from "./tools/UiProviderTool";
-import { IModelViewportControl } from "./appui/contentviews/IModelViewport";
-
-// Mobx demo
-import { configure as mobxConfigure } from "mobx";
-
-import "./index.scss";
-import { TestAppConfiguration } from "../common/TestAppConfiguration";
-import { LocalFileOpenFrontstage } from "./appui/frontstages/LocalFileStage";
-import { SafeAreaInsets } from "@bentley/ui-ninezone";
-import { AppBackstageComposer } from "./appui/backstage/AppBackstageComposer";
 import { AppUiSettings } from "./AppUiSettings";
 
 // Initialize my application gateway configuration for the frontend

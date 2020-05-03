@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect, assert } from "chai";
-import { IModelApp } from "../IModelApp";
-import { System, RenderBuffer, TextureHandle, FrameBuffer, GL, Debug } from "../webgl";
+import { assert, expect } from "chai";
 import { Capabilities } from "@bentley/webgl-compatibility";
+import { IModelApp } from "../IModelApp";
+import { Debug, FrameBuffer, GL, RenderBuffer, System, TextureHandle } from "../webgl";
 
 describe("FrameBuffer tests", () => {
   before(async () => IModelApp.startup());

@@ -14,12 +14,11 @@ type int32 = number;
 type float32 = number;
 type float64 = number;
 
-import { PointData } from "./PointData";
-
+import { Bounds } from "../../spatial/geom/Bounds";
 import { ABuffer } from "../../system/buffer/ABuffer";
 import { Uint16Buffer } from "../../system/buffer/Uint16Buffer";
 import { Uint8Buffer } from "../../system/buffer/Uint8Buffer";
-import { Bounds } from "../../spatial/geom/Bounds";
+import { PointData } from "./PointData";
 import { TileIndex } from "./TileIndex";
 
 /**

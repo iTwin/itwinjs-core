@@ -6,18 +6,15 @@
  * @module ContextMenu
  */
 
+import "./ContextMenu.scss";
+import classnames from "classnames";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import classnames from "classnames";
-
 import { BadgeType } from "@bentley/ui-abstract";
-
-import { withOnOutsideClick } from "../hocs/withOnOutsideClick";
-import { Omit } from "../utils/typeUtils";
-import { CommonProps } from "../utils/Props";
-
-import "./ContextMenu.scss";
 import { BadgeUtilities } from "../badge/BadgeUtilities";
+import { withOnOutsideClick } from "../hocs/withOnOutsideClick";
+import { CommonProps } from "../utils/Props";
+import { Omit } from "../utils/typeUtils";
 
 const DivWithOutsideClick = withOnOutsideClick((props) => (<div {...props} />)); // tslint:disable-line:variable-name
 

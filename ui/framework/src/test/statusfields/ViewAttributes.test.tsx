@@ -2,22 +2,20 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-import { mount } from "enzyme";
 import { expect } from "chai";
+import { mount } from "enzyme";
+import * as React from "react";
 // import * as sinon from "sinon";
 import { Provider } from "react-redux";
-
 import { MockRender } from "@bentley/imodeljs-frontend";
 import { WidgetState } from "@bentley/ui-abstract";
 import { Checkbox } from "@bentley/ui-core";
-
-import TestUtils from "../TestUtils";
-import { WidgetDef } from "../../ui-framework/widgets/WidgetDef";
-import { ConfigurableUiControlType, ConfigurableCreateInfo } from "../../ui-framework/configurableui/ConfigurableUiControl";
+import { ConfigurableCreateInfo, ConfigurableUiControlType } from "../../ui-framework/configurableui/ConfigurableUiControl";
+import { StatusBar } from "../../ui-framework/statusbar/StatusBar";
 import { StatusBarWidgetControl, StatusBarWidgetControlArgs } from "../../ui-framework/statusbar/StatusBarWidgetControl";
 import { ViewAttributesStatusField } from "../../ui-framework/statusfields/ViewAttributes";
-import { StatusBar } from "../../ui-framework/statusbar/StatusBar";
+import { WidgetDef } from "../../ui-framework/widgets/WidgetDef";
+import TestUtils from "../TestUtils";
 
 describe("ViewAttributes", () => {
   class AppStatusBarWidgetControl extends StatusBarWidgetControl {

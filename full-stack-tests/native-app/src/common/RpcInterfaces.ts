@@ -2,14 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { AuthorizedClientRequestContextProps } from "@bentley/itwin-client";
-import {
-  IModelReadRpcInterface,
-  IModelWriteRpcInterface, RpcInterface, RpcManager,
-  IModelRpcProps,
-  NativeAppRpcInterface,
-} from "@bentley/imodeljs-common";
 import { ClientRequestContextProps } from "@bentley/bentleyjs-core";
+import {
+  IModelReadRpcInterface, IModelRpcProps, IModelWriteRpcInterface, NativeAppRpcInterface, RpcInterface, RpcManager,
+} from "@bentley/imodeljs-common";
+import { AuthorizedClientRequestContextProps } from "@bentley/itwin-client";
 
 export interface CloudEnvProps {
   iModelBank?: {

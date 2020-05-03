@@ -2,21 +2,9 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import {
-  Logger, Id64String,
-} from "@bentley/bentleyjs-core";
-import {
-  IModelApp,
-  PrimitiveTool,
-  ElementEditor3d,
-  Viewport,
-  NotifyMessageDetails,
-  OutputMessagePriority,
-} from "@bentley/imodeljs-frontend";
-import {
-  IModelError,
-  IModelStatus,
-} from "@bentley/imodeljs-common";
+import { Id64String, Logger } from "@bentley/bentleyjs-core";
+import { IModelError, IModelStatus } from "@bentley/imodeljs-common";
+import { ElementEditor3d, IModelApp, NotifyMessageDetails, OutputMessagePriority, PrimitiveTool, Viewport } from "@bentley/imodeljs-frontend";
 
 const loggingCategory = "TestPrimitiveTools";
 

@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { CloudStorageProvider, CloudStorageContainerDescriptor, CloudStorageContainerUrl } from "@bentley/imodeljs-common";
-import { CloudStorageService, CloudStorageUploadOptions, CloudStorageServiceCredentials } from "./CloudStorageBackend";
 import { PassThrough, Readable } from "stream";
 import * as zlib from "zlib";
+import { CloudStorageContainerDescriptor, CloudStorageContainerUrl, CloudStorageProvider } from "@bentley/imodeljs-common";
+import { CloudStorageService, CloudStorageServiceCredentials, CloudStorageUploadOptions } from "./CloudStorageBackend";
 
 declare class OSS {
   constructor(params: { region: string, accessKeyId: string, accessKeySecret: string })

@@ -7,22 +7,22 @@
  */
 
 import * as React from "react";
+import { Logger } from "@bentley/bentleyjs-core";
 import { StagePanelLocation, WidgetState } from "@bentley/ui-abstract";
 import { CommonProps, PointProps, Rectangle, RectangleProps } from "@bentley/ui-core";
-import { Logger } from "@bentley/bentleyjs-core";
-import { UiFramework } from "../UiFramework";
 import {
-  ResizeHandle, NineZoneManagerProps, WidgetZoneId, ZoneTargetType, getDefaultZonesManagerProps,
-  getDefaultNineZoneStagePanelsManagerProps, StagePanelType, widgetZoneIds, StagePanelsManager,
+  getDefaultNineZoneStagePanelsManagerProps, getDefaultZonesManagerProps, NineZoneManagerProps, ResizeHandle, StagePanelsManager, StagePanelType,
+  WidgetZoneId, widgetZoneIds, ZoneTargetType,
 } from "@bentley/ui-ninezone";
 import { getNestedStagePanelKey } from "../stagepanels/StagePanel";
+import { PanelStateChangedEventArgs, StagePanelState } from "../stagepanels/StagePanelDef";
+import { UiFramework } from "../UiFramework";
 import { WidgetDef } from "../widgets/WidgetDef";
+import { WidgetTab, WidgetTabs } from "../widgets/WidgetStack";
 import { ZoneDef, ZoneState } from "../zones/ZoneDef";
 import { FrontstageDef } from "./FrontstageDef";
-import { FrontstageManager, FrontstageActivatedEventArgs, ModalFrontstageInfo, ModalFrontstageChangedEventArgs } from "./FrontstageManager";
+import { FrontstageActivatedEventArgs, FrontstageManager, ModalFrontstageChangedEventArgs, ModalFrontstageInfo } from "./FrontstageManager";
 import { ModalFrontstage } from "./ModalFrontstage";
-import { WidgetTabs, WidgetTab } from "../widgets/WidgetStack";
-import { PanelStateChangedEventArgs, StagePanelState } from "../stagepanels/StagePanelDef";
 
 /** Interface defining callbacks for widget changes
  * @public

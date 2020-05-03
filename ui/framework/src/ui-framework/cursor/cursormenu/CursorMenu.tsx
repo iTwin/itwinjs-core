@@ -7,11 +7,11 @@
  */
 
 import * as React from "react";
-import { GlobalContextMenu, CommonProps } from "@bentley/ui-core"; // ContextSubMenu,
-import { SyncUiEventDispatcher, SyncUiEventArgs } from "../../syncui/SyncUiEventDispatcher";
+import { CommonProps, GlobalContextMenu } from "@bentley/ui-core"; // ContextSubMenu,
 import { SessionStateActionId } from "../../redux/SessionState";
+import { MenuItemHelpers, MenuItemProps } from "../../shared/MenuItem";
+import { SyncUiEventArgs, SyncUiEventDispatcher } from "../../syncui/SyncUiEventDispatcher";
 import { UiFramework } from "../../UiFramework";
-import { MenuItemProps, MenuItemHelpers } from "../../shared/MenuItem";
 
 /** State for [[CursorPopupMenu]] component
  * @alpha

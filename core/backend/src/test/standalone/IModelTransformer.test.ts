@@ -2,18 +2,21 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { assert } from "chai";
+import * as path from "path";
 import { DbResult, Id64, Id64String, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { Point3d, Range3d, Transform, YawPitchRollAngles } from "@bentley/geometry-core";
 import { AxisAlignedBox3d, Code, ColorDef, CreateIModelProps, GeometricElement3dProps, IModel, Placement3d } from "@bentley/imodeljs-common";
-import { assert } from "chai";
-import * as path from "path";
 import {
   BackendLoggerCategory, BackendRequestContext, DefinitionPartition, ECSqlStatement, Element, ElementMultiAspect, ElementRefersToElements,
   ElementUniqueAspect, ExternalSourceAspect, IModelCloneContext, IModelDb, IModelExporter, IModelJsFs, IModelTransformer, InformationRecordModel,
-  InformationRecordPartition, PhysicalModel, PhysicalObject, PhysicalPartition, SnapshotDb, SpatialCategory, Subject, TemplateModelCloner, TemplateRecipe3d,
+  InformationRecordPartition, PhysicalModel, PhysicalObject, PhysicalPartition, SnapshotDb, SpatialCategory, Subject, TemplateModelCloner,
+  TemplateRecipe3d,
 } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { ClassCounter, IModelToTextFileExporter, IModelTransformer3d, IModelTransformerUtils, RecordingIModelImporter, TestIModelTransformer } from "../IModelTransformerUtils";
+import {
+  ClassCounter, IModelToTextFileExporter, IModelTransformer3d, IModelTransformerUtils, RecordingIModelImporter, TestIModelTransformer,
+} from "../IModelTransformerUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 
 describe("IModelTransformer", () => {

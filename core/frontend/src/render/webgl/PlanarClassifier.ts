@@ -2,34 +2,36 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
 /** @packageDocumentation
  * @module WebGL
  */
-import { GL } from "./GL";
+
 import { dispose } from "@bentley/bentleyjs-core";
-import { FrameBuffer } from "./FrameBuffer";
-import { RenderGraphic } from "../RenderGraphic";
-import { RenderPlanarClassifier } from "../RenderPlanarClassifier";
-import { RenderMemory } from "../RenderMemory";
-import { Texture, TextureHandle } from "./Texture";
-import { Target } from "./Target";
-import { SceneContext } from "../../ViewContext";
+import { Matrix4d, Plane3dByOriginAndUnitNormal, Point3d, Vector3d } from "@bentley/geometry-core";
+import { ColorDef, Frustum, FrustumPlanes, RenderMode, RenderTexture, SpatialClassificationProps, ViewFlags } from "@bentley/imodeljs-common";
 import { GraphicsCollectorDrawArgs, TileTreeReference } from "../../tile/internal";
-import { Frustum, FrustumPlanes, RenderTexture, RenderMode, SpatialClassificationProps, ViewFlags, ColorDef } from "@bentley/imodeljs-common";
-import { ViewportQuadGeometry, CombineTexturesGeometry } from "./CachedGeometry";
-import { Plane3dByOriginAndUnitNormal, Point3d, Vector3d, Matrix4d } from "@bentley/geometry-core";
-import { System } from "./System";
-import { TechniqueId } from "./TechniqueId";
-import { getDrawParams } from "./ScratchDrawParams";
+import { SceneContext } from "../../ViewContext";
+import { ViewState3d } from "../../ViewState";
+import { RenderGraphic } from "../RenderGraphic";
+import { RenderMemory } from "../RenderMemory";
+import { RenderPlanarClassifier } from "../RenderPlanarClassifier";
 import { BatchState, BranchStack } from "./BranchState";
-import { Batch, Branch } from "./Graphic";
-import { RenderState } from "./RenderState";
+import { CombineTexturesGeometry, ViewportQuadGeometry } from "./CachedGeometry";
+import { WebGLDisposable } from "./Disposable";
 import { DrawCommands } from "./DrawCommand";
+import { FrameBuffer } from "./FrameBuffer";
+import { GL } from "./GL";
+import { Batch, Branch } from "./Graphic";
+import { PlanarTextureProjection } from "./PlanarTextureProjection";
 import { RenderCommands } from "./RenderCommands";
 import { RenderPass } from "./RenderFlags";
-import { ViewState3d } from "../../ViewState";
-import { PlanarTextureProjection } from "./PlanarTextureProjection";
-import { WebGLDisposable } from "./Disposable";
+import { RenderState } from "./RenderState";
+import { getDrawParams } from "./ScratchDrawParams";
+import { System } from "./System";
+import { Target } from "./Target";
+import { TechniqueId } from "./TechniqueId";
+import { Texture, TextureHandle } from "./Texture";
 
 class Textures implements WebGLDisposable {
   private constructor(

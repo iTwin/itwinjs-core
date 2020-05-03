@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { MeshParams } from "../render/primitives/VertexTable";
-import { MeshArgs } from "../render/primitives/mesh/MeshPrimitives";
-import { MockRender } from "../render/MockRender";
-import { RenderTexture, QParams2d, QPoint3dList, QParams3d, QPoint3d, ColorIndex, FeatureIndexType } from "@bentley/imodeljs-common";
 import { Point2d } from "@bentley/geometry-core";
+import { ColorIndex, FeatureIndexType, QParams2d, QParams3d, QPoint3d, QPoint3dList, RenderTexture } from "@bentley/imodeljs-common";
+import { MockRender } from "../render/MockRender";
+import { MeshArgs } from "../render/primitives/mesh/MeshPrimitives";
+import { MeshParams } from "../render/primitives/VertexTable";
 
 function expectMeshParams(args: MeshArgs, colorIndex: ColorIndex, vertexBytes: number[][], expectedColors?: number[], quvParams?: QParams2d) {
   const params = MeshParams.create(args);

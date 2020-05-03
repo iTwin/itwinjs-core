@@ -6,10 +6,10 @@
  * @module Toggle
  */
 
-import * as React from "react";
-import classnames from "classnames";
-import { CommonProps } from "../utils/Props";
 import "./Toggle.scss";
+import classnames from "classnames";
+import * as React from "react";
+import { CommonProps } from "../utils/Props";
 
 /** Toggle display types
  * @public

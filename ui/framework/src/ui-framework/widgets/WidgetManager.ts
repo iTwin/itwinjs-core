@@ -6,12 +6,11 @@
  * @module Widget
  */
 
-import { Logger, BeUiEvent } from "@bentley/bentleyjs-core";
-import { StagePanelLocation, StagePanelSection, UiItemsManager, UiItemsArbiter } from "@bentley/ui-abstract";
-
-import { WidgetDef } from "./WidgetDef";
-import { ZoneLocation } from "../zones/Zone";
+import { BeUiEvent, Logger } from "@bentley/bentleyjs-core";
+import { StagePanelLocation, StagePanelSection, UiItemsArbiter, UiItemsManager } from "@bentley/ui-abstract";
 import { UiFramework } from "../UiFramework";
+import { ZoneLocation } from "../zones/Zone";
+import { WidgetDef } from "./WidgetDef";
 
 /** Information about WidgetDefs in the WidgetManager
  * @internal

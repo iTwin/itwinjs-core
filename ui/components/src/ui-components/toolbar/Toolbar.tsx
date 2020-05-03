@@ -6,20 +6,22 @@
  * @module Toolbar
  */
 
+import "./Toolbar.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { CommonToolbarItem, ToolbarItemUtilities, ActionButton, ConditionalBooleanValue, ConditionalStringValue, CustomButtonDefinition, GroupButton } from "@bentley/ui-abstract";
-import { CommonProps, NoChildrenProps, IconHelper, useRefs, useResizeObserver, useOnOutsideClick, BadgeUtilities } from "@bentley/ui-core";
+import {
+  ActionButton, CommonToolbarItem, ConditionalBooleanValue, ConditionalStringValue, CustomButtonDefinition, GroupButton, ToolbarItemUtilities,
+} from "@bentley/ui-abstract";
+import { BadgeUtilities, CommonProps, IconHelper, NoChildrenProps, useOnOutsideClick, useRefs, useResizeObserver } from "@bentley/ui-core";
+import { ToolbarButtonItem } from "./Item";
+import { ToolbarItems } from "./Items";
+import { ItemWrapper } from "./ItemWrapper";
 import { ToolbarOverflowButton } from "./Overflow";
 import { ToolbarOverflowPanel } from "./OverflowPanel";
-import { ToolbarItems } from "./Items";
-import { Direction, DirectionHelpers, OrthogonalDirectionHelpers, OrthogonalDirection } from "./utilities/Direction";
-import { ItemWrapper } from "./ItemWrapper";
 import { PopupItem } from "./PopupItem";
 import { PopupItemsPanel } from "./PopupItemsPanel";
 import { PopupItemWithDrag } from "./PopupItemWithDrag";
-import { ToolbarButtonItem } from "./Item";
-import "./Toolbar.scss";
+import { Direction, DirectionHelpers, OrthogonalDirection, OrthogonalDirectionHelpers } from "./utilities/Direction";
 
 /** Describes the data needed to insert a custom framework-specific button into an ToolbarWithOverflow.
  * @beta

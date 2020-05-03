@@ -5,7 +5,9 @@
 import * as React from "react";
 import * as sinon from "sinon";
 import { fireEvent, render } from "@testing-library/react";
-import { DockedToolSettingsHandle, NineZoneDispatch, NineZoneDispatchContext, DragManagerContext, DragManager, TOOL_SETTINGS_DRAG_START } from "../../ui-ninezone";
+import {
+  DockedToolSettingsHandle, DragManager, DragManagerContext, NineZoneDispatch, NineZoneDispatchContext, TOOL_SETTINGS_DRAG_START,
+} from "../../ui-ninezone";
 
 describe("DockedToolSettingsHandle", () => {
   it("should dispatch TOOL_SETTINGS_DRAG_START", () => {

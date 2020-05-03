@@ -6,13 +6,13 @@
  * @module WebGL
  */
 
-import { desync, sync } from "./Sync";
-import { UniformHandle } from "./Handle";
-import { Target } from "./Target";
 import { BatchState } from "./BranchState";
 import { FeatureOverrides } from "./FeatureOverrides";
-import { FeatureMode } from "./TechniqueFlags";
 import { Batch } from "./Graphic";
+import { UniformHandle } from "./Handle";
+import { desync, sync } from "./Sync";
+import { Target } from "./Target";
+import { FeatureMode } from "./TechniqueFlags";
 
 /** Maintains uniform variable state associated with the Batch currently being drawn by a Target.
  * @internal

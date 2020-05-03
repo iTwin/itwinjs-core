@@ -6,62 +6,18 @@
  * @module ViewDefinitions
  */
 
+import { Id64, Id64Array, Id64Set, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import {
-  Id64,
-  Id64Array,
-  Id64Set,
-  Id64String,
-  JsonUtils,
-} from "@bentley/bentleyjs-core";
-import {
-  Angle,
-  Matrix3d,
-  Point2d,
-  Point3d,
-  Range2d,
-  Range3d,
-  StandardViewIndex,
-  Transform,
-  Vector3d,
-  YawPitchRollAngles,
+  Angle, Matrix3d, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Transform, Vector3d, YawPitchRollAngles,
 } from "@bentley/geometry-core";
 import {
-  AnalysisStyleProps,
-  AuxCoordSystem2dProps,
-  AuxCoordSystem3dProps,
-  AuxCoordSystemProps,
-  BackgroundMapProps,
-  BisCodeSpec,
-  Camera,
-  CategorySelectorProps,
-  Code,
-  CodeScopeProps,
-  CodeSpec,
-  ColorDef,
-  ContextRealityModelProps,
-  DisplayStyle3dProps,
-  DisplayStyle3dSettings,
-  DisplayStyleProps,
-  DisplayStyleSettings,
-  LightLocationProps,
-  ModelSelectorProps,
-  PlanProjectionSettingsProps,
-  RelatedElement,
-  SkyBoxImageProps,
-  SpatialViewDefinitionProps,
-  ViewAttachmentProps,
-  ViewDefinition2dProps,
-  ViewDefinition3dProps,
-  ViewDefinitionProps,
-  ViewDetails,
-  ViewDetails3d,
+  AnalysisStyleProps, AuxCoordSystem2dProps, AuxCoordSystem3dProps, AuxCoordSystemProps, BackgroundMapProps, BisCodeSpec, Camera,
+  CategorySelectorProps, Code, CodeScopeProps, CodeSpec, ColorDef, ContextRealityModelProps, DisplayStyle3dProps, DisplayStyle3dSettings,
+  DisplayStyleProps, DisplayStyleSettings, LightLocationProps, ModelSelectorProps, PlanProjectionSettingsProps, RelatedElement, SkyBoxImageProps,
+  SpatialViewDefinitionProps, ViewAttachmentProps, ViewDefinition2dProps, ViewDefinition3dProps, ViewDefinitionProps, ViewDetails, ViewDetails3d,
   ViewFlags,
 } from "@bentley/imodeljs-common";
-import {
-  DefinitionElement,
-  GraphicalElement2d,
-  SpatialLocationElement,
-} from "./Element";
+import { DefinitionElement, GraphicalElement2d, SpatialLocationElement } from "./Element";
 import { IModelCloneContext } from "./IModelCloneContext";
 import { IModelDb } from "./IModelDb";
 

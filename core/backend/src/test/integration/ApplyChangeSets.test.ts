@@ -2,15 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { GuidString, Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { IModelVersion, SyncMode } from "@bentley/imodeljs-common";
-import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { assert } from "chai";
 import * as path from "path";
+import { GuidString, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { IModelVersion, SyncMode } from "@bentley/imodeljs-common";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { AuthorizedBackendRequestContext, KnownLocations, NativeLoggerCategory } from "../../imodeljs-backend";
-import { HubUtility } from "./HubUtility";
 import { IModelTestUtils } from "../IModelTestUtils";
+import { HubUtility } from "./HubUtility";
 
 // Useful utilities to download/upload test cases from/to iModelHub
 describe("ApplyChangeSets (#integration)", () => {

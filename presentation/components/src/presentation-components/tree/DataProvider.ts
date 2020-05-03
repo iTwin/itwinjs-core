@@ -7,14 +7,14 @@
  */
 
 import memoize from "micro-memoize";
+import { IDisposable, Logger } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { Logger, IDisposable } from "@bentley/bentleyjs-core";
-import { NodeKey, NodePathElement, HierarchyRequestOptions, Ruleset } from "@bentley/presentation-common";
+import { HierarchyRequestOptions, NodeKey, NodePathElement, Ruleset } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
-import { DelayLoadedTreeNodeItem, TreeNodeItem, PageOptions } from "@bentley/ui-components";
-import { PRESENTATION_TREE_NODE_KEY, createTreeNodeItems, pageOptionsUiToPresentation } from "./Utils";
-import { IPresentationTreeDataProvider } from "./IPresentationTreeDataProvider";
+import { DelayLoadedTreeNodeItem, PageOptions, TreeNodeItem } from "@bentley/ui-components";
 import { RulesetRegistrationHelper } from "../common/RulesetRegistrationHelper";
+import { IPresentationTreeDataProvider } from "./IPresentationTreeDataProvider";
+import { createTreeNodeItems, pageOptionsUiToPresentation, PRESENTATION_TREE_NODE_KEY } from "./Utils";
 
 /**
  * Properties for creating a `PresentationTreeDataProvider` instance.

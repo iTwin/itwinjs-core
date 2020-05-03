@@ -2,16 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Vector3d, Point3d } from "../../geometry3d/Point3dVector3d";
-import { YawPitchRollAngles } from "../../geometry3d/YawPitchRollAngles";
-import { Transform } from "../../geometry3d/Transform";
-
+// import { Sample } from "../serialization/GeometrySamples";
+import { assert, expect } from "chai";
 import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
-import * as bsiChecker from "../Checker";
-// import { Sample } from "../serialization/GeometrySamples";
-import { expect, assert } from "chai";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
+import { Transform } from "../../geometry3d/Transform";
+import { YawPitchRollAngles } from "../../geometry3d/YawPitchRollAngles";
+import * as bsiChecker from "../Checker";
+
 /* tslint:disable:no-console */
 describe("YPR", () => {
   it("hello", () => {

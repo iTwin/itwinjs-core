@@ -7,18 +7,10 @@
  * @module Tools
  */
 
-import {
-  ColorDef,
-  Hilite,
-} from "@bentley/imodeljs-common";
-import {
-  IModelApp,
-  TileBoundingBoxes,
-  Tool,
-  Viewport,
-} from "@bentley/imodeljs-frontend";
-import { parseToggle } from "./parseToggle";
+import { ColorDef, Hilite } from "@bentley/imodeljs-common";
+import { IModelApp, TileBoundingBoxes, Tool, Viewport } from "@bentley/imodeljs-frontend";
 import { parseArgs } from "./parseArgs";
+import { parseToggle } from "./parseToggle";
 
 /** Freeze or unfreeze the scene for the selected viewport. While the scene is frozen, no new tiles will be selected for drawing within the viewport.
  * @beta

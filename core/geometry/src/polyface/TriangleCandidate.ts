@@ -6,10 +6,10 @@
  * @module Polyface
  */
 
-import { Point3d } from "../geometry3d/Point3dVector3d";
 import { Geometry } from "../Geometry";
-import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
 import { BarycentricTriangle } from "../geometry3d/BarycentricTriangle";
+import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
+import { Point3d } from "../geometry3d/Point3dVector3d";
 
 /**
  * `TriangleCandidate` is a `BarycentricTriangle` with additional application-specific label data:

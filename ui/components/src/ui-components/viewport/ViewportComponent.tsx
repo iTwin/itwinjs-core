@@ -8,28 +8,17 @@
 
 import * as React from "react";
 import { Id64String } from "@bentley/bentleyjs-core";
+import { Point3d, Transform } from "@bentley/geometry-core";
+import { NpcCenter } from "@bentley/imodeljs-common";
 import {
-  IModelApp,
-  IModelConnection,
-  ViewState,
-  ScreenViewport,
-  Viewport,
-  ToolSettings,
-  ViewManager,
-  TentativePoint,
+  IModelApp, IModelConnection, ScreenViewport, TentativePoint, ToolSettings, ViewManager, Viewport, ViewState,
 } from "@bentley/imodeljs-frontend";
-import { Transform, Point3d } from "@bentley/geometry-core";
 import { UiError } from "@bentley/ui-abstract";
 import { CommonProps } from "@bentley/ui-core";
-
-import {
-  ViewportComponentEvents,
-  CubeRotationChangeEventArgs,
-  StandardRotationChangeEventArgs,
-  DrawingViewportChangeEventArgs,
-} from "./ViewportComponentEvents";
-import { NpcCenter } from "@bentley/imodeljs-common";
 import { UiComponents } from "../UiComponents";
+import {
+  CubeRotationChangeEventArgs, DrawingViewportChangeEventArgs, StandardRotationChangeEventArgs, ViewportComponentEvents,
+} from "./ViewportComponentEvents";
 
 /**
  * Properties for [[ViewportComponent]] component.

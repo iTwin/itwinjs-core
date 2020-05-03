@@ -7,18 +7,19 @@
  * @module Numerics
  */
 
-import { Point2d, Vector2d } from "../geometry3d/Point2dVector2d";
-import { Point3d, Vector3d, XYZ } from "../geometry3d/Point3dVector3d";
 // import { Angle, AngleSweep, Geometry } from "../Geometry";
 import { Geometry } from "../Geometry";
-import { OptionalGrowableFloat64Array, GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
-import { Point4d } from "../geometry4d/Point4d";
-import { XAndY } from "../geometry3d/XYZProps";
-import { Range3d, Range1d } from "../geometry3d/Range";
-import { AngleSweep } from "../geometry3d/AngleSweep";
 import { Angle } from "../geometry3d/Angle";
-import { Ray3d } from "../geometry3d/Ray3d";
+import { AngleSweep } from "../geometry3d/AngleSweep";
+import { GrowableFloat64Array, OptionalGrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
 import { LongitudeLatitudeNumber } from "../geometry3d/LongitudeLatitudeAltitude";
+import { Point2d, Vector2d } from "../geometry3d/Point2dVector2d";
+import { Point3d, Vector3d, XYZ } from "../geometry3d/Point3dVector3d";
+import { Range1d, Range3d } from "../geometry3d/Range";
+import { Ray3d } from "../geometry3d/Ray3d";
+import { XAndY } from "../geometry3d/XYZProps";
+import { Point4d } from "../geometry4d/Point4d";
+
 // import { Arc3d } from "../curve/Arc3d";
 // cspell:word Cardano
 // cspell:word CCminusSS

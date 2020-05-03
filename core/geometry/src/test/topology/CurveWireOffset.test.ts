@@ -6,19 +6,16 @@
 /* tslint:disable: no-console */
 
 import { expect } from "chai";
-import { Checker } from "../Checker";
-
-import { Sample } from "../../serialization/GeometrySamples";
-
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-
-import { JointOptions } from "../../curve/internalContexts/PolygonOffsetContext";
-import { Loop } from "../../curve/Loop";
 import { AnyCurve } from "../../curve/CurveChain";
-import { Path } from "../../curve/Path";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { JointOptions } from "../../curve/internalContexts/PolygonOffsetContext";
 import { LineString3d } from "../../curve/LineString3d";
+import { Loop } from "../../curve/Loop";
+import { Path } from "../../curve/Path";
 import { RegionOps } from "../../curve/RegionOps";
+import { Sample } from "../../serialization/GeometrySamples";
+import { Checker } from "../Checker";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
 /**
  * Exercise PolygonWireOffset and output to a file.

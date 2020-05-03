@@ -2,23 +2,23 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
 /** @packageDocumentation
  * @module PropertyGrid
  */
-import * as React from "react";
+import "./PropertyGrid.scss";
 import classnames from "classnames";
+import * as React from "react";
 import ReactResizeDetector from "react-resize-detector";
-
 import { DisposeFunc } from "@bentley/bentleyjs-core";
-import { Orientation, Spinner, SpinnerSize, CommonProps } from "@bentley/ui-core";
-import { PropertyRecord, PropertyValueFormat, ArrayValue, StructValue } from "@bentley/ui-abstract";
+import { ArrayValue, PropertyRecord, PropertyValueFormat, StructValue } from "@bentley/ui-abstract";
+import { CommonProps, Orientation, Spinner, SpinnerSize } from "@bentley/ui-core";
+import { matchLinks } from "../../common/Links";
+import { PropertyUpdatedArgs } from "../../editors/EditorContainer";
+import { ActionButtonRenderer } from "../../properties/renderers/ActionButtonRenderer";
+import { PropertyValueRendererManager } from "../../properties/ValueRendererManager";
 import { IPropertyDataProvider, PropertyCategory, PropertyData } from "../PropertyDataProvider";
 import { SelectablePropertyBlock } from "./SelectablePropertyBlock";
-import { PropertyValueRendererManager } from "../../properties/ValueRendererManager";
-import { PropertyUpdatedArgs } from "../../editors/EditorContainer";
-import { matchLinks } from "../../common/Links";
-import { ActionButtonRenderer } from "../../properties/renderers/ActionButtonRenderer";
-import "./PropertyGrid.scss";
 
 /** Properties for [[PropertyGrid]] React component
  * @public

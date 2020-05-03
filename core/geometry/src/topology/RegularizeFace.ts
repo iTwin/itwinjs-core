@@ -9,6 +9,7 @@
 
 import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "./Graph";
 import { HalfEdgeGraphOps } from "./Merging";
+
 //   /* tslint:disable:no-console */
 /**
  * * Context for regularizing single faces.

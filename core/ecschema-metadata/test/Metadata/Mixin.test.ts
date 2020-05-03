@@ -4,19 +4,18 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
-
-import { Schema, MutableSchema } from "../../src/Metadata/Schema";
+import { SchemaContext } from "../../src/Context";
+import { DelayedPromiseWithProps } from "../../src/DelayedPromise";
+import { StrengthDirection } from "../../src/ECObjects";
+import { ECObjectsError } from "../../src/Exception";
 import { EntityClass } from "../../src/Metadata/EntityClass";
 import { Mixin } from "../../src/Metadata/Mixin";
-import { ECObjectsError } from "../../src/Exception";
 import { NavigationProperty } from "../../src/Metadata/Property";
-import { StrengthDirection } from "../../src/ECObjects";
-import sinon = require("sinon");
-import { DelayedPromiseWithProps } from "../../src/DelayedPromise";
-import { SchemaContext } from "../../src/Context";
+import { MutableSchema, Schema } from "../../src/Metadata/Schema";
+import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
 import { createEmptyXmlDocument, getElementChildrenByTagName } from "../TestUtils/SerializationHelper";
 
+import sinon = require("sinon");
 describe("Mixin", () => {
 
   function createSchemaJson(mixinJson: any): any {

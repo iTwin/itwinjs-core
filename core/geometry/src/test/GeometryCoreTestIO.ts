@@ -2,25 +2,26 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { GeometryQuery } from "../curve/GeometryQuery";
-import { prettyPrint } from "./testFunctions";
-import { Geometry } from "../Geometry";
 import * as fs from "fs";
-import { IModelJson } from "../serialization/IModelJsonSchema";
 import { Arc3d } from "../curve/Arc3d";
-import { Point3d } from "../geometry3d/Point3dVector3d";
-import { Range3d, Range2d } from "../geometry3d/Range";
-import { LineString3d } from "../curve/LineString3d";
-import { MomentData } from "../geometry4d/MomentData";
-import { AngleSweep } from "../geometry3d/AngleSweep";
-import { Polyface } from "../polyface/Polyface";
-import { PolygonOps } from "../geometry3d/PolygonOps";
-import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
-import { Loop } from "../curve/Loop";
-import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
-import { UVSurface } from "../geometry3d/GeometryHandler";
 import { CurveLocationDetail, CurveLocationDetailPair } from "../curve/CurveLocationDetail";
+import { GeometryQuery } from "../curve/GeometryQuery";
 import { CurveChainWireOffsetContext } from "../curve/internalContexts/PolygonOffsetContext";
+import { LineString3d } from "../curve/LineString3d";
+import { Loop } from "../curve/Loop";
+import { Geometry } from "../Geometry";
+import { AngleSweep } from "../geometry3d/AngleSweep";
+import { UVSurface } from "../geometry3d/GeometryHandler";
+import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
+import { Point3d } from "../geometry3d/Point3dVector3d";
+import { PolygonOps } from "../geometry3d/PolygonOps";
+import { Range2d, Range3d } from "../geometry3d/Range";
+import { MomentData } from "../geometry4d/MomentData";
+import { Polyface } from "../polyface/Polyface";
+import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
+import { IModelJson } from "../serialization/IModelJsonSchema";
+import { prettyPrint } from "./testFunctions";
+
 /* tslint:disable:no-console */
 
 // Methods (called from other files in the test suite) for doing I/O of tests files.

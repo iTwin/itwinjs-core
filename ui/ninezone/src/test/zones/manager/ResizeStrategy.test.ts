@@ -4,12 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 import * as sinon from "sinon";
 import * as Moq from "typemoq";
-import { RectangleProps, Rectangle } from "@bentley/ui-core";
-import { ZonesManagerProps, ZonesManager } from "../../../ui-ninezone";
-import { GrowStrategy, ResizeStrategy, GrowTop, ShrinkBottom, GrowBottom, ShrinkTop, GrowLeft, ShrinkRight, GrowRight, ShrinkLeft, ShrinkStrategy, ShrinkHorizontalStrategy, ShrinkVerticalStrategy, UpdateWindowResizeSettings } from "../../../ui-ninezone/zones/manager/ResizeStrategy";
-import { WidgetZoneId } from "../../../ui-ninezone/zones/manager/Zones";
+import { Rectangle, RectangleProps } from "@bentley/ui-core";
+import { ZonesManager, ZonesManagerProps } from "../../../ui-ninezone";
 import { HorizontalAnchor } from "../../../ui-ninezone/widget/Stacked";
-import { TopZones, LeftZones, BottomZones, RightZones } from "../../../ui-ninezone/zones/manager/AdjacentZones";
+import { BottomZones, LeftZones, RightZones, TopZones } from "../../../ui-ninezone/zones/manager/AdjacentZones";
+import {
+  GrowBottom, GrowLeft, GrowRight, GrowStrategy, GrowTop, ResizeStrategy, ShrinkBottom, ShrinkHorizontalStrategy, ShrinkLeft, ShrinkRight,
+  ShrinkStrategy, ShrinkTop, ShrinkVerticalStrategy, UpdateWindowResizeSettings,
+} from "../../../ui-ninezone/zones/manager/ResizeStrategy";
+import { WidgetZoneId } from "../../../ui-ninezone/zones/manager/Zones";
 import TestProps from "./TestProps";
 
 const zonesManagerMock = Moq.Mock.ofType<ZonesManager>();

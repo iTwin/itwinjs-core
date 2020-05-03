@@ -6,7 +6,7 @@
  * @module Geometry
  */
 
-import { Id64Array, BentleyStatus } from "@bentley/bentleyjs-core";
+import { BentleyStatus, Id64Array } from "@bentley/bentleyjs-core";
 import { XYZProps } from "@bentley/geometry-core";
 
 /** Specify whether to accumulate volumes, areas, or lengths for the supplied elements.

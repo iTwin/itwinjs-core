@@ -6,10 +6,10 @@ import { expect } from "chai";
 import { mount } from "enzyme";
 import * as React from "react";
 import { Orientation } from "@bentley/ui-core";
-import TestUtils from "../../TestUtils";
-import { NonPrimitivePropertyRenderer } from "../../../ui-components/properties/renderers/NonPrimitivePropertyRenderer";
 import { NonPrimitivePropertyLabelRenderer, PrimitivePropertyLabelRenderer } from "../../../ui-components";
+import { NonPrimitivePropertyRenderer } from "../../../ui-components/properties/renderers/NonPrimitivePropertyRenderer";
 import { PropertyRenderer } from "../../../ui-components/properties/renderers/PropertyRenderer";
+import TestUtils from "../../TestUtils";
 
 describe("NonPrimitivePropertyRenderer", () => {
   before(async () => {

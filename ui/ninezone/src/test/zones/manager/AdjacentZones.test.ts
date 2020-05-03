@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as Moq from "typemoq";
 import * as sinon from "sinon";
-import { ZonesManagerProps, ZonesManager, WidgetZoneId } from "../../../ui-ninezone";
-import { AdjacentZonesStrategy, TopZones, BottomZones, LeftZones, RightZones } from "../../../ui-ninezone/zones/manager/AdjacentZones";
+import * as Moq from "typemoq";
+import { WidgetZoneId, ZonesManager, ZonesManagerProps } from "../../../ui-ninezone";
+import { AdjacentZonesStrategy, BottomZones, LeftZones, RightZones, TopZones } from "../../../ui-ninezone/zones/manager/AdjacentZones";
 
 describe("AdjacentZonesStrategy", () => {
   class AdjacentZones extends AdjacentZonesStrategy {

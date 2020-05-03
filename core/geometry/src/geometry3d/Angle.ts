@@ -6,7 +6,8 @@
  * @module CartesianGeometry
  */
 
-import { BeJSONFunctions, AngleProps, Geometry, TrigValues } from "../Geometry";
+import { AngleProps, BeJSONFunctions, Geometry, TrigValues } from "../Geometry";
+
 /**
  * An `Angle` carries the numeric value of an angle, with methods to allow (require!) callers to be clear about whether their angle is degrees or radians.
  * * The numeric value is private, and callers should not know or care whether it is in degrees or radians.

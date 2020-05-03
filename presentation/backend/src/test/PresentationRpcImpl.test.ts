@@ -2,33 +2,29 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import "./IModelHostSetup";
 import { expect } from "chai";
-import * as sinon from "sinon";
 import * as faker from "faker";
+import * as sinon from "sinon";
+import { ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
+import { IModelDb } from "@bentley/imodeljs-backend";
+import { IModelNotFoundResponse, IModelRpcProps } from "@bentley/imodeljs-common";
+import {
+  Content, ContentRequestOptions, Descriptor, DescriptorOverrides, HierarchyRequestOptions, HierarchyRpcRequestOptions, HierarchyUpdateInfo,
+  InstanceKey, KeySet, Node, NodeKey, NodePathElement, Omit, Paged, PageOptions, PartialHierarchyModification, PresentationDataCompareOptions,
+  PresentationError, PresentationRpcRequestOptions, PresentationStatus, SelectionScope, SelectionScopeRequestOptions,
+} from "@bentley/presentation-common";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises";
 import {
-  createRandomECInstanceKey,
-  createRandomECInstancesNodeKey, createRandomECInstancesNode, createRandomNodePathElement,
-  createRandomDescriptor, createRandomId, createRandomSelectionScope, createRandomContent, createRandomLabelDefinitionJSON,
+  createRandomContent, createRandomDescriptor, createRandomECInstanceKey, createRandomECInstancesNode, createRandomECInstancesNodeKey, createRandomId,
+  createRandomLabelDefinitionJSON, createRandomNodePathElement, createRandomSelectionScope,
 } from "@bentley/presentation-common/lib/test/_helpers/random";
-import { ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
-import { IModelRpcProps, IModelNotFoundResponse } from "@bentley/imodeljs-common";
-import { IModelDb } from "@bentley/imodeljs-backend";
-import {
-  PresentationRpcRequestOptions, ContentRequestOptions, HierarchyRequestOptions,
-  SelectionScopeRequestOptions,
-  HierarchyRpcRequestOptions,
-  Node, PageOptions, KeySet, InstanceKey, NodeKey,
-  Paged, Omit, PresentationStatus, DescriptorOverrides, NodePathElement, PresentationError,
-  SelectionScope, Content, Descriptor, PresentationDataCompareOptions, PartialHierarchyModification, HierarchyUpdateInfo,
-} from "@bentley/presentation-common";
-import { RulesetVariablesManager } from "../presentation-backend/RulesetVariablesManager";
+import { Presentation } from "../presentation-backend/Presentation";
 import { PresentationManager } from "../presentation-backend/PresentationManager";
 import { PresentationRpcImpl } from "../presentation-backend/PresentationRpcImpl";
-import { Presentation } from "../presentation-backend/Presentation";
 import { RulesetManager } from "../presentation-backend/RulesetManager";
-import "./IModelHostSetup";
+import { RulesetVariablesManager } from "../presentation-backend/RulesetVariablesManager";
 
 describe("PresentationRpcImpl", () => {
 

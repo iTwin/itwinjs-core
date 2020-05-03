@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import * as sinon from "sinon";
 import * as faker from "faker";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
+import * as sinon from "sinon";
 import { RegisteredRuleset } from "@bentley/presentation-common";
+import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { NativePlatformDefinition } from "../presentation-backend/NativePlatform";
 import { RulesetManagerImpl } from "../presentation-backend/RulesetManager";
 

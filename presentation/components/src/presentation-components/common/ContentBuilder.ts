@@ -7,18 +7,15 @@
  */
 import { assert } from "@bentley/bentleyjs-core";
 import {
-  ValuesDictionary, PresentationError, PresentationStatus,
-  Field, Item, DisplayValue, Value, PropertyValueFormat,
-  NestedContentValue, NestedContentField,
-  TypeDescription, StructTypeDescription, ArrayTypeDescription,
+  ArrayTypeDescription, DisplayValue, Field, Item, NestedContentField, NestedContentValue, PresentationError, PresentationStatus, PropertyValueFormat,
+  StructTypeDescription, TypeDescription, Value, ValuesDictionary,
 } from "@bentley/presentation-common";
-import { Omit } from "@bentley/ui-core";
 import {
-  PropertyRecord, PropertyValue, PropertyValueFormat as UiPropertyValueFormat,
-  ArrayValue, StructValue, PrimitiveValue,
-  PropertyDescription, PropertyEditorInfo, EnumerationChoicesInfo,
+  ArrayValue, EnumerationChoicesInfo, PrimitiveValue, PropertyDescription, PropertyEditorInfo, PropertyRecord, PropertyValue,
+  PropertyValueFormat as UiPropertyValueFormat, StructValue,
 } from "@bentley/ui-abstract";
 import { matchLinks } from "@bentley/ui-components";
+import { Omit } from "@bentley/ui-core";
 
 const createArrayValue = (propertyDescription: PropertyDescription, arrayDescription: ArrayTypeDescription, values: Value[], displayValues: DisplayValue[]): ArrayValue => {
   const records = new Array<PropertyRecord>();

@@ -8,14 +8,14 @@
 
 import { IModelApp } from "@bentley/imodeljs-frontend";
 import { ConditionalBooleanValue } from "@bentley/ui-abstract";
-import { SelectionContextUtilities } from "./SelectionContextUtilities";
-import { CommandItemDef } from "../shared/CommandItemDef";
-import { BaseItemState } from "../shared/ItemDefBase";
-import { GroupItemDef } from "../toolbar/GroupItem";
-import { SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
 import { ContentViewManager } from "../content/ContentViewManager";
 import { SessionStateActionId } from "../redux/SessionState";
+import { CommandItemDef } from "../shared/CommandItemDef";
+import { BaseItemState } from "../shared/ItemDefBase";
+import { SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
+import { GroupItemDef } from "../toolbar/GroupItem";
 import { UiFramework } from "../UiFramework";
+import { SelectionContextUtilities } from "./SelectionContextUtilities";
 
 /** return SyncEventIds that trigger selection state function refresh.
  * @beta

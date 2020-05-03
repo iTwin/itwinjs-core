@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { BadgeType, ConditionalStringValue, StringGetter, ConditionalBooleanValue } from "@bentley/ui-abstract";
+import { BadgeType, ConditionalBooleanValue, ConditionalStringValue, StringGetter } from "@bentley/ui-abstract";
 import { PropsHelper } from "../utils/PropsHelper";
 import { ItemProps } from "./ItemProps";
 

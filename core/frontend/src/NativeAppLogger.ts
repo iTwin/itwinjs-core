@@ -2,9 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module NativeApp */
-import { IModelStatus, Logger, LogLevel, GetMetaDataFunction } from "@bentley/bentleyjs-core";
-import { NativeAppRpcInterface, RpcRegistry, IModelError } from "@bentley/imodeljs-common";
+/** @packageDocumentation
+ * @module NativeApp
+ */
+
+import { GetMetaDataFunction, IModelStatus, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { IModelError, NativeAppRpcInterface, RpcRegistry } from "@bentley/imodeljs-common";
+
 /**
  * Describe log message
  * @internal

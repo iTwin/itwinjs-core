@@ -6,12 +6,12 @@
  * @module Properties
  */
 
-import * as React from "react";
-import { Orientation, ElementSeparator } from "@bentley/ui-core";
-import { SharedRendererProps } from "./PropertyRenderer";
-import { PropertyValueFormat } from "@bentley/ui-abstract";
-import { ActionButtonList } from "./ActionButtonList";
 import "./PropertyView.scss";
+import * as React from "react";
+import { PropertyValueFormat } from "@bentley/ui-abstract";
+import { ElementSeparator, Orientation } from "@bentley/ui-core";
+import { ActionButtonList } from "./ActionButtonList";
+import { SharedRendererProps } from "./PropertyRenderer";
 
 /** Properties of [[PropertyView]] React component
  * @public

@@ -7,33 +7,13 @@
  */
 
 import {
-  AxisOrder,
-  ClipPlaneContainment,
-  Constant,
-  Map4d,
-  Matrix3d,
-  Point3d,
-  Point4d,
-  Range1d,
-  Range2d,
-  Range3d,
-  Transform,
-  Vector3d,
-  XYZ,
-  XYAndZ,
+  AxisOrder, ClipPlaneContainment, Constant, Map4d, Matrix3d, Point3d, Point4d, Range1d, Range2d, Range3d, Transform, Vector3d, XYAndZ, XYZ,
 } from "@bentley/geometry-core";
-import {
-  Frustum,
-  Npc,
-  NpcCorners,
-} from "@bentley/imodeljs-common";
+import { Frustum, Npc, NpcCorners } from "@bentley/imodeljs-common";
+import { ApproximateTerrainHeights } from "./ApproximateTerrainHeights";
+import { CoordSystem, Viewport } from "./Viewport";
 import { ViewRect } from "./ViewRect";
 import { ViewState } from "./ViewState";
-import { ApproximateTerrainHeights } from "./ApproximateTerrainHeights";
-import {
-  CoordSystem,
-  Viewport,
-} from "./Viewport";
 
 /** Describes a [[Viewport]]'s viewing volume, plus its size on the screen. A new
  * instance of ViewingSpace is created every time the Viewport's camera or volume changes.

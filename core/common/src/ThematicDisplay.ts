@@ -6,8 +6,8 @@
  * @module Symbology
  */
 
-import { XYZProps, Range1d, Vector3d, Range1dProps, Point3d } from "@bentley/geometry-core";
-import { ColorDefProps, ColorDef } from "./ColorDef";
+import { Point3d, Range1d, Range1dProps, Vector3d, XYZProps } from "@bentley/geometry-core";
+import { ColorDef, ColorDefProps } from "./ColorDef";
 import { Gradient } from "./Gradient";
 
 /** @beta */

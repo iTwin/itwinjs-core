@@ -14,6 +14,11 @@ type int32 = number;
 type float32 = number;
 type float64 = number;
 
+import { AList } from "../../system/collection/AList";
+import { ASystem } from "../../system/runtime/ASystem";
+import { Message } from "../../system/runtime/Message";
+import { Numbers } from "../../system/runtime/Numbers";
+import { Strings } from "../../system/runtime/Strings";
 import { CRS } from "./CRS";
 import { Datum } from "./Datum";
 import { Ellipsoid } from "./Ellipsoid";
@@ -22,10 +27,6 @@ import { OperationMethod } from "./OperationMethod";
 import { ParameterValue } from "./ParameterValue";
 import { ParameterValueList } from "./ParameterValueList";
 import { PrimeMeridian } from "./PrimeMeridian";
-import { Registry } from "./Registry";
-import { Unit } from "./Unit";
-import { WellKnownTextNode } from "./WellKnownTextNode";
-
 import { HotineObliqueMercator } from "./projection/HotineObliqueMercator";
 import { KrovakObliqueConformalConic } from "./projection/KrovakObliqueConformalConic";
 import { KrovakObliqueConformalConicEN } from "./projection/KrovakObliqueConformalConicEN";
@@ -35,12 +36,10 @@ import { Mercator1SP } from "./projection/Mercator1SP";
 import { ObliqueMercator } from "./projection/ObliqueMercator";
 import { ObliqueStereographic } from "./projection/ObliqueStereographic";
 import { TransverseMercator } from "./projection/TransverseMercator";
+import { Registry } from "./Registry";
 import { PositionVector } from "./transformation/PositionVector";
-import { AList } from "../../system/collection/AList";
-import { ASystem } from "../../system/runtime/ASystem";
-import { Message } from "../../system/runtime/Message";
-import { Numbers } from "../../system/runtime/Numbers";
-import { Strings } from "../../system/runtime/Strings";
+import { Unit } from "./Unit";
+import { WellKnownTextNode } from "./WellKnownTextNode";
 
 /**
  * Class WellKnownText parses Well-known Text Representations of Spatial Reference Systems.

@@ -4,17 +4,17 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import * as path from "path";
-import { Guid, Id64String, Id64 } from "@bentley/bentleyjs-core";
+import { Guid, Id64, Id64String } from "@bentley/bentleyjs-core";
 import {
-  CategoryProps, Code, IModel, ILinearElementProps, InformationPartitionElementProps, GeometricElement3dProps,
-  LinearlyLocatedAttributionProps, LinearlyReferencedFromToLocationProps,
+  CategoryProps, Code, GeometricElement3dProps, ILinearElementProps, IModel, InformationPartitionElementProps, LinearlyLocatedAttributionProps,
+  LinearlyReferencedFromToLocationProps,
 } from "@bentley/imodeljs-common";
+import { LinearElement, LinearlyLocated, LinearlyLocatedAttribution, LinearlyLocatedSingleFromTo } from "../../domains/LinearReferencingElements";
 import {
-  BackendRequestContext, LinearReferencingSchema,
-  PhysicalModel, IModelDb, SpatialCategory, PhysicalPartition, SubjectOwnsPartitionElements, LinearlyReferencedFromToLocation, Schema, Schemas, ClassRegistry, SnapshotDb,
+  BackendRequestContext, ClassRegistry, IModelDb, LinearlyReferencedFromToLocation, LinearReferencingSchema, PhysicalModel, PhysicalPartition, Schema,
+  Schemas, SnapshotDb, SpatialCategory, SubjectOwnsPartitionElements,
 } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { LinearElement, LinearlyLocated, LinearlyLocatedAttribution, LinearlyLocatedSingleFromTo } from "../../domains/LinearReferencingElements";
 
 class TestLinearReferencingSchema extends Schema {
   public static get schemaName(): string { return "TestLinearReferencing"; }

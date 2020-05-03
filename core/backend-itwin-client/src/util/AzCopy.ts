@@ -6,10 +6,10 @@
  * @module AzCopy
  */
 
-import { spawn, execFileSync } from "child_process";
+import { execFileSync, spawn } from "child_process";
+import { EventEmitter } from "events";
 import * as fs from "fs";
 import * as semver from "semver";
-import { EventEmitter } from "events";
 
 /** Integerity check constraint
  * @internal

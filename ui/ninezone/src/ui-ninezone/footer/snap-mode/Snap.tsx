@@ -6,10 +6,10 @@
  * @module SnapMode
  */
 
+import "./Snap.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { CommonProps } from "@bentley/ui-core";
-import "./Snap.scss";
 
 /** Properties of [[Snap]] component.
  * @beta

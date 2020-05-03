@@ -14,13 +14,12 @@ type int32 = number;
 type float32 = number;
 type float64 = number;
 
-import { CRS } from "./CRS";
-import { Registry } from "./Registry";
-import { WellKnownText } from "./WellKnownText";
-
 import { Downloader } from "../../system/runtime/Downloader";
 import { Message } from "../../system/runtime/Message";
 import { Strings } from "../../system/runtime/Strings";
+import { CRS } from "./CRS";
+import { Registry } from "./Registry";
+import { WellKnownText } from "./WellKnownText";
 
 /**
  * Class OnlineRegistry downloads the CRS definitions from an online server.

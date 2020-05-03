@@ -6,20 +6,20 @@
  * @module WebGL
  */
 
-import { Target } from "./Target";
-import { Graphic } from "./Graphic";
-import { CachedGeometry, LUTGeometry, SkySphereViewportQuadGeometry } from "./CachedGeometry";
-import { RenderPass, RenderOrder } from "./RenderFlags";
-import { ShaderProgramExecutor } from "./ShaderProgram";
-import { DrawParams, PrimitiveCommand } from "./DrawCommand";
-import { RenderCommands } from "./RenderCommands";
-import { TechniqueId } from "./TechniqueId";
 import { assert, dispose } from "@bentley/bentleyjs-core";
 import { InstancedGraphicParams } from "../InstancedGraphicParams";
-import { PrimitiveVisibility } from "../RenderTarget";
 import { RenderMemory } from "../RenderMemory";
+import { PrimitiveVisibility } from "../RenderTarget";
+import { CachedGeometry, LUTGeometry, SkySphereViewportQuadGeometry } from "./CachedGeometry";
+import { DrawParams, PrimitiveCommand } from "./DrawCommand";
+import { Graphic } from "./Graphic";
+import { InstanceBuffers, InstancedGeometry } from "./InstancedGeometry";
+import { RenderCommands } from "./RenderCommands";
+import { RenderOrder, RenderPass } from "./RenderFlags";
+import { ShaderProgramExecutor } from "./ShaderProgram";
 import { System } from "./System";
-import { InstancedGeometry, InstanceBuffers } from "./InstancedGeometry";
+import { Target } from "./Target";
+import { TechniqueId } from "./TechniqueId";
 
 /** @internal */
 export class Primitive extends Graphic {

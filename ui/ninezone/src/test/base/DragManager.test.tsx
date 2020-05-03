@@ -5,7 +5,7 @@
 import * as React from "react";
 import * as sinon from "sinon";
 import { renderHook } from "@testing-library/react-hooks";
-import { useTabTarget, DragManagerContext } from "../../ui-ninezone";
+import { DragManagerContext, useTabTarget } from "../../ui-ninezone";
 import { DragManager, usePanelTarget, useWidgetTarget } from "../../ui-ninezone/base/DragManager";
 
 describe("useTabTarget", () => {

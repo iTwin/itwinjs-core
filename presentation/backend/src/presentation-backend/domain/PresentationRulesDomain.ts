@@ -6,7 +6,7 @@
  * @module Core
  */
 
-import { Schema, Schemas, ClassRegistry } from "@bentley/imodeljs-backend";
+import { ClassRegistry, Schema, Schemas } from "@bentley/imodeljs-backend";
 import * as RulesetElements from "./RulesetElements";
 
 /** @internal */

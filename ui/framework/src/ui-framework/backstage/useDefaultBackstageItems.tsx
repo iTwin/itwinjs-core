@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { BackstageItemsManager, BackstageItem, BackstageItemsChangedArgs } from "@bentley/ui-abstract";
+import { BackstageItem, BackstageItemsChangedArgs, BackstageItemsManager } from "@bentley/ui-abstract";
 
 /** Hook that returns items from [[BackstageItemsManager]].
  * @internal

@@ -6,12 +6,12 @@
  * @module Widget
  */
 
-import * as React from "react";
+import "./ContentContainer.scss";
 import classnames from "classnames";
-import { WidgetStateContext } from "./Widget";
+import * as React from "react";
 import { assert } from "../base/assert";
 import { WidgetContentManagerContext } from "./ContentManager";
-import "./ContentContainer.scss";
+import { WidgetStateContext } from "./Widget";
 
 /** @internal */
 export const WidgetContentContainer = React.memo(function WidgetContentContainer() { // tslint:disable-line: no-shadowed-variable variable-name

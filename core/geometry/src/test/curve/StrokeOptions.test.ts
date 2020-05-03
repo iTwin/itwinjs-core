@@ -3,14 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { Checker } from "../Checker";
 import { expect } from "chai";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { StrokeOptions } from "../../curve/StrokeOptions";
 import { Arc3d } from "../../curve/Arc3d";
-import { Point3d } from "../../geometry3d/Point3dVector3d";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { StrokeOptions } from "../../curve/StrokeOptions";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
+import { Point3d } from "../../geometry3d/Point3dVector3d";
+import { Checker } from "../Checker";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
 /* tslint:disable:no-console */
 

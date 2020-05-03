@@ -2,33 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Logger, Id64Array, Id64 } from "@bentley/bentleyjs-core";
-import { Point2d, XYAndZ, XAndY, Point3d, ClipVector, Transform } from "@bentley/geometry-core";
-import { SectionLocationProps, SectionType, Placement3d, ViewAttachmentProps, RelatedElement } from "@bentley/imodeljs-common";
+import { Id64, Id64Array, Logger } from "@bentley/bentleyjs-core";
+import { ClipVector, Point2d, Point3d, Transform, XAndY, XYAndZ } from "@bentley/geometry-core";
+import { Placement3d, RelatedElement, SectionLocationProps, SectionType, ViewAttachmentProps } from "@bentley/imodeljs-common";
 import {
-  BeButton,
-  BeButtonEvent,
-  Cluster,
-  DecorateContext,
-  IModelApp,
-  IModelConnection,
-  InputSource,
-  Marker,
-  MarkerImage,
-  MarkerSet,
-  NotifyMessageDetails,
-  OutputMessagePriority,
-  OutputMessageType,
-  ScreenViewport,
-  TiledGraphicsProvider,
-  ViewClipTool,
-  ViewState,
-  Viewport,
-  imageElementFromUrl,
+  BeButton, BeButtonEvent, Cluster, DecorateContext, imageElementFromUrl, IModelApp, IModelConnection, InputSource, Marker, MarkerImage, MarkerSet,
+  NotifyMessageDetails, OutputMessagePriority, OutputMessageType, ScreenViewport, TiledGraphicsProvider, ViewClipTool, Viewport, ViewState,
 } from "@bentley/imodeljs-frontend";
+import { AbstractToolbarProps, BadgeType } from "@bentley/ui-abstract";
 import { HyperModelingExtension } from "./HyperModeling";
 import { createSectionGraphicsProvider } from "./SectionGraphicsProvider";
-import { AbstractToolbarProps, BadgeType } from "@bentley/ui-abstract";
 
 // cSpell:ignore hotspot sectionmarkersprite detailmarkersprite elevationmarkersprite planmarkersprite
 

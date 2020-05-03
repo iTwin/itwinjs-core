@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ECJsonTypeMap, ECInstance, WsgInstance, ChangeState } from "@bentley/itwin-client";
-import nock = require("nock");
-import { TestConfig } from "./TestConfig";
 import { Config } from "@bentley/bentleyjs-core";
+import { ChangeState, ECInstance, ECJsonTypeMap, WsgInstance } from "@bentley/itwin-client";
+import { TestConfig } from "./TestConfig";
 
+import nock = require("nock");
 export enum RequestType {
   Get,
   Post,

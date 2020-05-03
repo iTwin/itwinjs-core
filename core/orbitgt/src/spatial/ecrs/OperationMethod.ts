@@ -14,12 +14,11 @@ type int32 = number;
 type float32 = number;
 type float64 = number;
 
+import { Strings } from "../../system/runtime/Strings";
+import { Coordinate } from "../geom/Coordinate";
 import { CRS } from "./CRS";
 import { Operation } from "./Operation";
 import { ParameterValueList } from "./ParameterValueList";
-
-import { Coordinate } from "../geom/Coordinate";
-import { Strings } from "../../system/runtime/Strings";
 
 /**
  * Class OperationMethod defines a general method for transforming coordinates.

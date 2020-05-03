@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import "./ComponentExamples.scss";
 import * as React from "react";
 import { Toggle, VerticalTabs } from "@bentley/ui-core";
-import { UiFramework, ColorTheme, ModalFrontstageInfo } from "@bentley/ui-framework";
-import "./ComponentExamples.scss";
+import { ColorTheme, ModalFrontstageInfo, UiFramework } from "@bentley/ui-framework";
 import { ComponentExamplesProvider } from "./ComponentExamplesProvider";
 
 export interface ComponentExampleCategory {

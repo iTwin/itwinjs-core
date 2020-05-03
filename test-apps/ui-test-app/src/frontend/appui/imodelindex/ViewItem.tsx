@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-import classnames from "classnames";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { ThumbnailProps, ViewDefinitionProps } from "@bentley/imodeljs-common";
-import { CommonProps, LoadingSpinner } from "@bentley/ui-core";
 import "./ViewItem.scss";
+import classnames from "classnames";
+import * as React from "react";
+import { ThumbnailProps, ViewDefinitionProps } from "@bentley/imodeljs-common";
+import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { CommonProps, LoadingSpinner } from "@bentley/ui-core";
 
 class ThumbnailCache {
   private static _thumbnails: Map<string, ThumbnailProps | undefined> = new Map<string, ThumbnailProps>();

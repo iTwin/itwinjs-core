@@ -6,19 +6,18 @@
  * @module IModelComponents
  */
 
+import "./ModelsTree.scss";
 import * as React from "react";
 import { Id64String, IDisposable } from "@bentley/bentleyjs-core";
+import { IModelConnection, PerModelCategoryVisibility, Viewport } from "@bentley/imodeljs-frontend";
+import { ContentFlags, DescriptorOverrides, InstanceKey, KeySet, NodeKey, Ruleset } from "@bentley/presentation-common";
+import { ContentDataProvider, IPresentationTreeDataProvider, usePresentationTreeNodeLoader } from "@bentley/presentation-components";
+import { ControlledTree, SelectionMode, TreeNodeItem, useVisibleTreeNodes } from "@bentley/ui-components";
 import { useDisposable } from "@bentley/ui-core";
-import { IModelConnection, Viewport, PerModelCategoryVisibility } from "@bentley/imodeljs-frontend";
-import { NodeKey, Ruleset, InstanceKey, KeySet, DescriptorOverrides, ContentFlags } from "@bentley/presentation-common";
-import { ContentDataProvider, usePresentationTreeNodeLoader, IPresentationTreeDataProvider } from "@bentley/presentation-components";
-import { TreeNodeItem, ControlledTree, useVisibleTreeNodes, SelectionMode } from "@bentley/ui-components";
-import { UiFramework } from "../../../ui-framework/UiFramework";
 import { connectIModelConnection } from "../../../ui-framework/redux/connectIModel";
+import { UiFramework } from "../../../ui-framework/UiFramework";
 import { IVisibilityHandler, VisibilityStatus, VisibilityTreeEventHandler, VisibilityTreeFilterInfo } from "../VisibilityTreeEventHandler";
-import { useVisibilityTreeRenderer, useVisibilityTreeFiltering, VisibilityTreeNoFilteredData } from "../VisibilityTreeRenderer";
-
-import "./ModelsTree.scss";
+import { useVisibilityTreeFiltering, useVisibilityTreeRenderer, VisibilityTreeNoFilteredData } from "../VisibilityTreeRenderer";
 
 const PAGING_SIZE = 20;
 

@@ -6,16 +6,16 @@
  * @module PropertyEditors
  */
 
-import * as React from "react";
-import classnames from "classnames";
-import {
-  PropertyValueFormat, PrimitiveValue, PropertyValue, EnumerationChoice,
-  PropertyEditorParamTypes, IconDefinition, PropertyEditorParams, ButtonGroupEditorParams, PropertyRecord,
-} from "@bentley/ui-abstract";
-import { PropertyEditorManager, PropertyEditorBase } from "./PropertyEditorManager";
-import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
 import "./EnumButtonGroupEditor.scss";
+import classnames from "classnames";
+import * as React from "react";
+import {
+  ButtonGroupEditorParams, EnumerationChoice, IconDefinition, PrimitiveValue, PropertyEditorParams, PropertyEditorParamTypes, PropertyRecord,
+  PropertyValue, PropertyValueFormat,
+} from "@bentley/ui-abstract";
 import { Icon } from "@bentley/ui-core";
+import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
+import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
 
 /** @internal */
 interface EnumEditorState {

@@ -2,12 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
 import { mount, shallow } from "enzyme";
-import TestUtils from "../TestUtils";
-
-import { ToolWidgetComposer, BackstageAppButton } from "../../ui-framework/widgets/ToolWidgetComposer";
+import * as React from "react";
 import { FrameworkVersion } from "../../ui-framework/hooks/useFrameworkVersion";
+import { BackstageAppButton, ToolWidgetComposer } from "../../ui-framework/widgets/ToolWidgetComposer";
+import TestUtils from "../TestUtils";
 
 describe("ToolWidgetComposer", () => {
 

@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as sinon from "sinon";
-import { act, render, fireEvent } from "@testing-library/react";
+import { act, fireEvent, render } from "@testing-library/react";
 import { PanelTarget } from "../../ui-ninezone";
-import { NineZoneProvider, CursorTypeContext } from "../../ui-ninezone/base/NineZone";
+import { CursorTypeContext, NineZoneProvider } from "../../ui-ninezone/base/NineZone";
 import { createNineZoneState } from "../../ui-ninezone/base/NineZoneState";
 import { PanelStateContext } from "../../ui-ninezone/widget-panels/Panel";
 

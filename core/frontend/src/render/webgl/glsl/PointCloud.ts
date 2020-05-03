@@ -6,13 +6,13 @@
  * @module WebGL
  */
 
-import { addModelViewProjectionMatrix, addLineWeight } from "./Vertex";
-import { addUniformHiliter } from "./FeatureSymbology";
-import { ProgramBuilder, VertexShaderComponent, FragmentShaderComponent, VariableType } from "../ShaderBuilder";
-import { addColorPlanarClassifier, addHilitePlanarClassifier, addFeaturePlanarClassifier } from "./PlanarClassification";
-import { IsClassified, FeatureMode, IsThematic } from "../TechniqueFlags";
 import { AttributeMap } from "../AttributeMap";
+import { FragmentShaderComponent, ProgramBuilder, VariableType, VertexShaderComponent } from "../ShaderBuilder";
+import { FeatureMode, IsClassified, IsThematic } from "../TechniqueFlags";
 import { TechniqueId } from "../TechniqueId";
+import { addUniformHiliter } from "./FeatureSymbology";
+import { addColorPlanarClassifier, addFeaturePlanarClassifier, addHilitePlanarClassifier } from "./PlanarClassification";
+import { addLineWeight, addModelViewProjectionMatrix } from "./Vertex";
 import { addViewportTransformation } from "./Viewport";
 
 const computeColor = "return (u_pointCloudParams.x == 1.0)?  vec4(a_color.z, a_color.y, a_color.x, 1.0) : vec4(a_color, 1.0);";

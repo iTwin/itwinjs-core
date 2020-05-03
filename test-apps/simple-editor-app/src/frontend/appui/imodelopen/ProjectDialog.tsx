@@ -2,13 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-import classnames from "classnames";
-import { UiFramework, ProjectInfo, ProjectScope } from "@bentley/ui-framework";
-import { ProjectTabs, ProjectTab } from "./ProjectTabs";
-import { SearchBox, Spinner, SpinnerSize } from "@bentley/ui-core";
 import "./Common.scss";
 import "./ProjectDialog.scss";
+import classnames from "classnames";
+import * as React from "react";
+import { SearchBox, Spinner, SpinnerSize } from "@bentley/ui-core";
+import { ProjectInfo, ProjectScope, UiFramework } from "@bentley/ui-framework";
+import { ProjectTab, ProjectTabs } from "./ProjectTabs";
 
 /** Properties for the [[ProjectDialog]] component */
 export interface ProjectDialogProps {

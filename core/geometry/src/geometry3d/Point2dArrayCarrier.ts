@@ -6,10 +6,10 @@
  * @module CartesianGeometry
  */
 
+import { IndexedXYCollection } from "./IndexedXYCollection";
 /* tslint:disable:variable-name jsdoc-format no-empty */
 import { Point2d, Vector2d, XY } from "./Point2dVector2d";
 import { XAndY } from "./XYZProps";
-import { IndexedXYCollection } from "./IndexedXYCollection";
 
 /**
  * Helper object to access members of a Point2d[] in geometric calculations.

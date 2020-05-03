@@ -3,14 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { useMemo, useState, useCallback } from "react"; // tslint:disable-line: no-duplicate-imports
-import { ConfigurableUiManager, ConfigurableCreateInfo, ContentControl } from "@bentley/ui-framework";
-import {
-  SelectionMode, DelayLoadedTreeNodeItem, SimpleTreeDataProvider, SimpleTreeDataProviderHierarchy,
-  ControlledTree, TreeNodeItem, EditableTreeDataProvider, TreeModelNode,
-  useTreeModelSource, useTreeNodeLoader, useVisibleTreeNodes, useTreeEventsHandler,
-} from "@bentley/ui-components";
 import { PropertyRecord } from "@bentley/ui-abstract";
+import {
+  ControlledTree, DelayLoadedTreeNodeItem, EditableTreeDataProvider, SelectionMode, SimpleTreeDataProvider, SimpleTreeDataProviderHierarchy,
+  TreeModelNode, TreeNodeItem, useTreeEventsHandler, useTreeModelSource, useTreeNodeLoader, useVisibleTreeNodes,
+} from "@bentley/ui-components";
+import { ConfigurableCreateInfo, ConfigurableUiManager, ContentControl } from "@bentley/ui-framework";
 
 export class TreeExampleContentControl extends ContentControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
@@ -28,8 +26,8 @@ class EditableSimpleTreeDataProvider extends SimpleTreeDataProvider implements E
 }
 
 function TreeExampleContent() {
-  const [selectionMode, setSelectionMode] = useState(SelectionMode.Single);
-  const onChangeSelectionMode = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+  const [selectionMode, setSelectionMode] = React.useState(SelectionMode.Single);
+  const onChangeSelectionMode = React.useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
     let value: SelectionMode;
     switch (e.target.value) {
       case "1":
@@ -50,7 +48,7 @@ function TreeExampleContent() {
     setSelectionMode(value);
   }, []);
 
-  const dataProvider = useMemo(() => {
+  const dataProvider = React.useMemo(() => {
     const hierarchy = new Map();
     createNodes(5, "A", 3, hierarchy);
     return new EditableSimpleTreeDataProvider(hierarchy);
@@ -58,7 +56,7 @@ function TreeExampleContent() {
   const modelSource = useTreeModelSource(dataProvider);
   const nodeLoader = useTreeNodeLoader(dataProvider, modelSource);
   const visibleNodes = useVisibleTreeNodes(modelSource);
-  const nodeUpdatedCallback = useCallback((node: TreeModelNode, newValue: string) => {
+  const nodeUpdatedCallback = React.useCallback((node: TreeModelNode, newValue: string) => {
     modelSource.modifyModel((model) => {
       const modelNode = model.getNode(node.id);
       if (modelNode) {
@@ -66,7 +64,7 @@ function TreeExampleContent() {
       }
     });
   }, [modelSource]);
-  const eventsHandler = useTreeEventsHandler(useMemo(() => ({
+  const eventsHandler = useTreeEventsHandler(React.useMemo(() => ({
     modelSource,
     nodeLoader,
     editingParams: {

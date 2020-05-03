@@ -15,11 +15,11 @@ type float32 = number;
 type float64 = number;
 
 
-import { BlockIndex } from "../model/BlockIndex";
-import { TileIndex } from "../model/TileIndex";
-import { PointData } from "../model/PointData";
-import { Level } from "./Level";
 import { AList } from "../../system/collection/AList";
+import { BlockIndex } from "../model/BlockIndex";
+import { PointData } from "../model/PointData";
+import { TileIndex } from "../model/TileIndex";
+import { Level } from "./Level";
 
 /**
  * Class FrameData bundles the data needed to render a certain view, some data is available, some data needs to be loaded.

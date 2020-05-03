@@ -2,34 +2,18 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-/** @module Views */
+/** @packageDocumentation
+ * @module Views
+ */
 
 import {
-  Angle,
-  ClipPlane,
-  ClipPlaneContainment,
-  Constant,
-  CurvePrimitive,
-  Ellipsoid,
-  GrowableXYZArray,
-  Plane3dByOriginAndUnitNormal,
-  Point2d,
-  Point3d,
-  Point4d,
-  Range1d,
-  Range3d,
-  Ray3d,
-  Transform,
-  Vector3d,
-  Matrix3d,
-  XYAndZ,
-  Arc3d,
-  LongitudeLatitudeNumber,
+  Angle, Arc3d, ClipPlane, ClipPlaneContainment, Constant, CurvePrimitive, Ellipsoid, GrowableXYZArray, LongitudeLatitudeNumber, Matrix3d,
+  Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point4d, Range1d, Range3d, Ray3d, Transform, Vector3d, XYAndZ,
 } from "@bentley/geometry-core";
-import { Cartographic, GlobeMode, Frustum, ColorDef, ColorByName } from "@bentley/imodeljs-common";
+import { Cartographic, ColorByName, ColorDef, Frustum, GlobeMode } from "@bentley/imodeljs-common";
 import { IModelConnection } from "./IModelConnection";
-import { MapTile, WebMercatorTilingScheme } from "./tile/internal";
 import { GraphicBuilder } from "./render/GraphicBuilder";
+import { MapTile, WebMercatorTilingScheme } from "./tile/internal";
 
 const scratchRange = Range3d.createNull();
 const scratchZeroPoint = Point3d.createZero();

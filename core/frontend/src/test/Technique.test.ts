@@ -2,26 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect, assert } from "chai";
+import { assert, expect } from "chai";
 import { IModelApp } from "../IModelApp";
 import { ClippingType } from "../render/RenderClipVolume";
 import { RenderSystem } from "../render/RenderSystem";
 import {
-  AttributeMap,
-  DrawParams,
-  FeatureMode,
-  FragmentShaderComponent,
-  ProgramBuilder,
-  ShaderProgramParams,
-  SingularTechnique,
-  System,
-  Target,
-  TechniqueFlags,
-  TechniqueId,
-  VariableType,
-  VertexShaderComponent,
-  ViewportQuadGeometry,
-  CompileStatus,
+  AttributeMap, CompileStatus, DrawParams, FeatureMode, FragmentShaderComponent, ProgramBuilder, ShaderProgramParams, SingularTechnique, System,
+  Target, TechniqueFlags, TechniqueId, VariableType, VertexShaderComponent, ViewportQuadGeometry,
 } from "../webgl";
 
 function createPurpleQuadBuilder(): ProgramBuilder {

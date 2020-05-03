@@ -5,13 +5,15 @@
 import { assert } from "chai";
 import { IModelApp, IModelConnection, NoRenderApp, SnapshotConnection } from "@bentley/imodeljs-frontend";
 import { IModelJsFs, PhysicalModel, StandaloneDb } from "@bentley/imodeljs-backend";
-import { SnapshotIModelRpcInterface, IModel, IModelReadRpcInterface, IModelWriteRpcInterface, TestRpcManager, IModelRpcProps, GeometricElement3dProps } from "@bentley/imodeljs-common";
+import {
+  GeometricElement3dProps, IModel, IModelReadRpcInterface, IModelRpcProps, IModelWriteRpcInterface, SnapshotIModelRpcInterface, TestRpcManager,
+} from "@bentley/imodeljs-common";
 import { RobotWorldReadRpcInterface, RobotWorldWriteRpcInterface } from "../../common/RobotWorldRpcInterface";
 import { RobotWorldEngine } from "../RobotWorldEngine";
 import { KnownTestLocations } from "./KnownTestLocations";
-import { OpenMode, Id64String, Id64, ClientRequestContext } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, Id64, Id64String, OpenMode } from "@bentley/bentleyjs-core";
 import { IModelTestUtils } from "./Utils";
-import { Point3d, Angle } from "@bentley/geometry-core";
+import { Angle, Point3d } from "@bentley/geometry-core";
 import { RobotWorld } from "../RobotWorldSchema";
 
 const requestContext = new ClientRequestContext();

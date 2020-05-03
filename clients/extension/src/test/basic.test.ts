@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import * as chai from "chai";
 import { Config, ExtensionStatus, Guid, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { ContextRegistryClient } from "@bentley/context-registry-client";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { getAccessTokenFromBackend, TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
-import * as chai from "chai";
-import { ExtensionProps } from "../ExtensionProps";
 import { ExtensionClient } from "../ExtensionClient";
+import { ExtensionProps } from "../ExtensionProps";
 
 const assert = chai.assert;
 

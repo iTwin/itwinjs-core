@@ -3,20 +3,19 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import * as React from "react";
-// tslint:disable-next-line: no-duplicate-imports
-import { useMemo } from "react";
-import { PropertyRecord } from "@bentley/ui-abstract";
-import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
-import {
-  PresentationPropertyDataProvider, propertyGridWithUnifiedSelection,
-  IPresentationPropertyDataProvider,
-} from "@bentley/presentation-components";
-import { Field } from "@bentley/presentation-common";
-import { GlobalContextMenu, ContextMenuItem, ContextMenuItemProps, Orientation } from "@bentley/ui-core";
-import { PropertyGrid, PropertyData, PropertyCategory, PropertyGridContextMenuArgs, ActionButtonRendererProps, useAsyncValue } from "@bentley/ui-components";
-import { Presentation } from "@bentley/presentation-frontend";
 import "./PropertiesWidget.css";
+import * as React from "react";
+import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
+import { Field } from "@bentley/presentation-common";
+import {
+  IPresentationPropertyDataProvider, PresentationPropertyDataProvider, propertyGridWithUnifiedSelection,
+} from "@bentley/presentation-components";
+import { Presentation } from "@bentley/presentation-frontend";
+import { PropertyRecord } from "@bentley/ui-abstract";
+import {
+  ActionButtonRendererProps, PropertyCategory, PropertyData, PropertyGrid, PropertyGridContextMenuArgs, useAsyncValue,
+} from "@bentley/ui-components";
+import { ContextMenuItem, ContextMenuItemProps, GlobalContextMenu, Orientation } from "@bentley/ui-core";
 
 // tslint:disable-next-line:variable-name naming-convention
 const SamplePropertyGrid = propertyGridWithUnifiedSelection(PropertyGrid);
@@ -137,7 +136,7 @@ export default class PropertiesWidget extends React.Component<Props, State> {
   private _favoriteActionButtonRenderer = (props: ActionButtonRendererProps) => {
     const { dataProvider } = this.state;
     const { property } = props;
-    const field = useAsyncValue(useMemo(() => dataProvider.getFieldByPropertyRecord(property), [dataProvider, property]));
+    const field = useAsyncValue(React.useMemo(() => dataProvider.getFieldByPropertyRecord(property), [dataProvider, property]));
 
     return (
       <div>

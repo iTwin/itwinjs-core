@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { render } from "@testing-library/react";
 import * as React from "react";
 import * as sinon from "sinon";
-import TestUtils from "../../../TestUtils";
+import { render } from "@testing-library/react";
 import { PrimitivePropertyValueRenderer } from "../../../../ui-components";
+import TestUtils from "../../../TestUtils";
 
 describe("PrimitivePropertyValueRenderer", () => {
   describe("render", () => {

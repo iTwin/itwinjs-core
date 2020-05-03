@@ -6,10 +6,10 @@
  * @module Logging
  */
 
-import { GetMetaDataFunction, IModelStatus, BentleyError } from "./BentleyError";
-import { IDisposable } from "./Disposable";
-import { ClientRequestContext } from "./ClientRequestContext";
+import { BentleyError, GetMetaDataFunction, IModelStatus } from "./BentleyError";
 import { BentleyLoggerCategory } from "./BentleyLoggerCategory";
+import { ClientRequestContext } from "./ClientRequestContext";
+import { IDisposable } from "./Disposable";
 
 /** Defines the *signature* for a log function.
  * @public

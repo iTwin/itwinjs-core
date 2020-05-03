@@ -2,13 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { IModelJson as GeomJson, Point3d, Vector3d, LineString3d, YawPitchRollAngles, LineSegment3d } from "@bentley/geometry-core";
+import { IModelJson as GeomJson, LineSegment3d, LineString3d, Point3d, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
+import { Code, ColorDef, GeometricElement3dProps, GeometryStreamProps } from "@bentley/imodeljs-common";
 import {
-  IModelApp, BeButtonEvent, EventHandled,
-  AccuDrawHintBuilder, HitDetail, DecorateContext, GraphicType, DynamicsContext, SnapStatus, NotifyMessageDetails, OutputMessagePriority, AccuDrawShortcuts,
+  AccuDrawHintBuilder, AccuDrawShortcuts, BeButtonEvent, DecorateContext, DynamicsContext, EventHandled, GraphicType, HitDetail, IModelApp,
+  NotifyMessageDetails, OutputMessagePriority, SnapStatus,
 } from "@bentley/imodeljs-frontend";
 import { PrimitiveToolEx } from "./PrimitiveToolEx";
-import { GeometryStreamProps, ColorDef, GeometricElement3dProps, Code } from "@bentley/imodeljs-common";
 
 export class PlaceLineStringTool extends PrimitiveToolEx {
   public static toolId = "PlaceLinestringTool";

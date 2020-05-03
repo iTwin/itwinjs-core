@@ -4,11 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
-
 import {
-  AbstractStatusBarItemUtilities, StatusBarItemsManager, StatusBarSection,
-  isAbstractStatusBarLabelItem, isAbstractStatusBarActionItem, isAbstractStatusBarCustomItem,
-  AbstractStatusBarCustomItem, CommonStatusBarItem, ConditionalBooleanValue, ConditionalStringValue,
+  AbstractStatusBarCustomItem, AbstractStatusBarItemUtilities, CommonStatusBarItem, ConditionalBooleanValue, ConditionalStringValue,
+  isAbstractStatusBarActionItem, isAbstractStatusBarCustomItem, isAbstractStatusBarLabelItem, StatusBarItemsManager, StatusBarSection,
 } from "../../ui-abstract";
 
 describe("StatusBarItemsManager", () => {

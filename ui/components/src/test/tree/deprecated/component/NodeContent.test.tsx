@@ -6,14 +6,14 @@ import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { render } from "@testing-library/react";
 import { PropertyRecord } from "@bentley/ui-abstract";
-import TestUtils from "../../../TestUtils";
-import { TreeNodeItem } from "../../../../ui-components/tree/TreeDataProvider";
+import { render } from "@testing-library/react";
 import { PropertyValueRendererManager } from "../../../../ui-components/properties/ValueRendererManager";
-import { DEPRECATED_Tree as Tree } from "../../../../ui-components/tree/deprecated/component/Tree";
 import { BeInspireTree, BeInspireTreeNode } from "../../../../ui-components/tree/deprecated/component/BeInspireTree";
 import { TreeNodeContent } from "../../../../ui-components/tree/deprecated/component/NodeContent";
+import { DEPRECATED_Tree as Tree } from "../../../../ui-components/tree/deprecated/component/Tree";
+import { TreeNodeItem } from "../../../../ui-components/tree/TreeDataProvider";
+import TestUtils from "../../../TestUtils";
 
 // tslint:disable:deprecation
 

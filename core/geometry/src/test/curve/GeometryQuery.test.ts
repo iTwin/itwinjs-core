@@ -3,36 +3,36 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Checker } from "../Checker";
 import { expect } from "chai";
-import { Sample } from "../../serialization/GeometrySamples";
-import { NullGeometryHandler, RecurseToCurvesGeometryHandler, GeometryHandler } from "../../geometry3d/GeometryHandler";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { LineString3d } from "../../curve/LineString3d";
-import { Arc3d } from "../../curve/Arc3d";
+import { BezierCurve3d } from "../../bspline/BezierCurve3d";
+import { BezierCurve3dH } from "../../bspline/BezierCurve3dH";
 import { BSplineCurve3d } from "../../bspline/BSplineCurve";
 import { BSplineCurve3dH } from "../../bspline/BSplineCurve3dH";
+import { BSplineSurface3d, BSplineSurface3dH } from "../../bspline/BSplineSurface";
+import { Arc3d } from "../../curve/Arc3d";
 import { CoordinateXYZ } from "../../curve/CoordinateXYZ";
-import { BSplineSurface3dH, BSplineSurface3d } from "../../bspline/BSplineSurface";
-import { IndexedPolyface } from "../../polyface/Polyface";
+import { CurveCollection } from "../../curve/CurveCollection";
+import { LineSegment3d } from "../../curve/LineSegment3d";
+import { LineString3d } from "../../curve/LineString3d";
+import { Path } from "../../curve/Path";
+import { PointString3d } from "../../curve/PointString3d";
+import { CylindricalRangeQuery } from "../../curve/Query/CylindricalRange";
+import { StrokeCountSection } from "../../curve/Query/StrokeCountChain";
+import { StrokeOptions } from "../../curve/StrokeOptions";
 import { TransitionSpiral3d } from "../../curve/TransitionSpiral";
-import { Sphere } from "../../solid/Sphere";
-import { Cone } from "../../solid/Cone";
+import { GeometryHandler, NullGeometryHandler, RecurseToCurvesGeometryHandler } from "../../geometry3d/GeometryHandler";
+import { Vector3d } from "../../geometry3d/Point3dVector3d";
+import { Ray3d } from "../../geometry3d/Ray3d";
+import { IndexedPolyface } from "../../polyface/Polyface";
+import { Sample } from "../../serialization/GeometrySamples";
 import { Box } from "../../solid/Box";
-import { TorusPipe } from "../../solid/TorusPipe";
+import { Cone } from "../../solid/Cone";
 import { LinearSweep } from "../../solid/LinearSweep";
 import { RotationalSweep } from "../../solid/RotationalSweep";
 import { RuledSweep } from "../../solid/RuledSweep";
-import { PointString3d } from "../../curve/PointString3d";
-import { BezierCurve3d } from "../../bspline/BezierCurve3d";
-import { BezierCurve3dH } from "../../bspline/BezierCurve3dH";
-import { CurveCollection } from "../../curve/CurveCollection";
-import { Path } from "../../curve/Path";
-import { CylindricalRangeQuery } from "../../curve/Query/CylindricalRange";
-import { Ray3d } from "../../geometry3d/Ray3d";
-import { Vector3d } from "../../geometry3d/Point3dVector3d";
-import { StrokeCountSection } from "../../curve/Query/StrokeCountChain";
-import { StrokeOptions } from "../../curve/StrokeOptions";
+import { Sphere } from "../../solid/Sphere";
+import { TorusPipe } from "../../solid/TorusPipe";
+import { Checker } from "../Checker";
 
 /** Like  NullGeometryHandler, but allow various CurveCollections to flow to base class, where they reach handleCurveCollection. */
 export class MinimalGeometryHandler extends GeometryHandler {

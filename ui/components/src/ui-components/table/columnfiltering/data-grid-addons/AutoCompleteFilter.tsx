@@ -8,14 +8,13 @@
 * [react-data-grid-addons](https://github.com/adazzle/react-data-grid/tree/master/packages/react-data-grid-addons).
 *--------------------------------------------------------------------------------------------*/
 
-import React from "react";
+import "react-select/dist/react-select.css";
 import * as _ from "lodash";
+import React from "react";
 import Select from "react-select";
+import { UiComponents } from "../../../UiComponents";
 import { ReactDataGridColumn } from "../../component/TableColumn";
 import { TableDistinctValue } from "../../TableDataProvider";
-import { UiComponents } from "../../../UiComponents";
-
-import "react-select/dist/react-select.css";
 
 /** @internal */
 export interface AutoCompleteFilterProps {

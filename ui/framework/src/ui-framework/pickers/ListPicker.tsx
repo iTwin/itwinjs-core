@@ -6,20 +6,17 @@
  * @module Picker
  */
 
-import * as React from "react";
-import { CommonProps, withOnOutsideClick, SizeProps } from "@bentley/ui-core";
-import { PopupItem } from "@bentley/ui-components";
-import {
-  Group, Panel, GroupColumn, ExpandableItem, withContainIn, Item, containHorizontally,
-} from "@bentley/ui-ninezone";
-import classnames from "classnames";
-import { UiFramework } from "../UiFramework";
 import "@bentley/ui-ninezone/lib/ui-ninezone/toolbar/item/expandable/group/tool/Tool.scss";
-import { FrontstageManager } from "../frontstage/FrontstageManager";
-import { ToolbarDragInteractionContext } from "../toolbar/DragInteraction";
-import { FrameworkVersionSwitch } from "../hooks/useFrameworkVersion";
-
 import "./ListPicker.scss";
+import classnames from "classnames";
+import * as React from "react";
+import { PopupItem } from "@bentley/ui-components";
+import { CommonProps, SizeProps, withOnOutsideClick } from "@bentley/ui-core";
+import { containHorizontally, ExpandableItem, Group, GroupColumn, Item, Panel, withContainIn } from "@bentley/ui-ninezone";
+import { FrontstageManager } from "../frontstage/FrontstageManager";
+import { FrameworkVersionSwitch } from "../hooks/useFrameworkVersion";
+import { ToolbarDragInteractionContext } from "../toolbar/DragInteraction";
+import { UiFramework } from "../UiFramework";
 
 // tslint:disable-next-line:variable-name
 const ContainedGroup = withOnOutsideClick(withContainIn(Group), undefined, false);

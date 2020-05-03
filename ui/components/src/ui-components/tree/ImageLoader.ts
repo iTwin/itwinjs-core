@@ -7,8 +7,8 @@
  */
 
 import { IImageLoader, LoadedImage } from "../common/IImageLoader";
-import { TreeNodeItem } from "./TreeDataProvider";
 import { BeInspireTreeNodeITree } from "./deprecated/component/BeInspireTree";
+import { TreeNodeItem } from "./TreeDataProvider";
 
 // tslint:disable:deprecation
 

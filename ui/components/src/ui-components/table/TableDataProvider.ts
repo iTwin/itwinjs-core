@@ -7,10 +7,10 @@
  */
 
 import { BeEvent } from "@bentley/bentleyjs-core";
-import { PropertyRecord, PropertyDescription, Primitives } from "@bentley/ui-abstract";
-import { SortDirection, HorizontalAlignment } from "@bentley/ui-core";
+import { Primitives, PropertyDescription, PropertyRecord } from "@bentley/ui-abstract";
+import { HorizontalAlignment, SortDirection } from "@bentley/ui-core";
 import { ItemColorOverrides, ItemStyle } from "../properties/ItemStyle";
-import { DistinctValueCollection, CompositeFilterDescriptorCollection } from "./columnfiltering/ColumnFiltering";
+import { CompositeFilterDescriptorCollection, DistinctValueCollection } from "./columnfiltering/ColumnFiltering";
 
 /** Filter Renderer for a Table column
  * @beta

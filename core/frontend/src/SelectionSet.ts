@@ -5,9 +5,9 @@
 /** @packageDocumentation
  * @module SelectionSet
  */
-import { BeEvent, Id64String, Id64, Id64Arg } from "@bentley/bentleyjs-core";
-import { IModelConnection } from "./IModelConnection";
+import { BeEvent, Id64, Id64Arg, Id64String } from "@bentley/bentleyjs-core";
 import { IModelApp } from "./IModelApp";
+import { IModelConnection } from "./IModelConnection";
 
 /** Identifies the type of changes made to the [[SelectionSet]] to produce a [[SelectionSetEvent]].
  * @public

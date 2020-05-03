@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { ExpandableBlock, CommonProps } from "@bentley/ui-core";
+import { CommonProps, ExpandableBlock } from "@bentley/ui-core";
 import { PropertyCategory } from "../PropertyDataProvider";
 
 /**

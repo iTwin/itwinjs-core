@@ -6,12 +6,12 @@
  * @module Core
  */
 
-import { Dictionary, compareStrings, OrderedComparator, Guid, IDisposable } from "@bentley/bentleyjs-core";
+import { compareStrings, Dictionary, Guid, IDisposable, OrderedComparator } from "@bentley/bentleyjs-core";
 import { InternetConnectivityStatus } from "@bentley/imodeljs-common";
 import { AuthorizedFrontendRequestContext, IModelApp } from "@bentley/imodeljs-frontend";
-import { PropertyFullName, FavoritePropertiesOrderInfo } from "./FavoritePropertiesManager";
-import { IConnectivityInformationProvider } from "../ConnectivityInformationProvider";
 import { PresentationError, PresentationStatus } from "@bentley/presentation-common";
+import { IConnectivityInformationProvider } from "../ConnectivityInformationProvider";
+import { FavoritePropertiesOrderInfo, PropertyFullName } from "./FavoritePropertiesManager";
 
 const IMODELJS_PRESENTATION_SETTING_NAMESPACE = "imodeljs.presentation";
 const DEPRECATED_PROPERTIES_SETTING_NAMESPACE = "Properties";

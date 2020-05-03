@@ -2,12 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
 /** @packageDocumentation
  * @module Settings
  */
-import { SettingsAdmin, SettingsStatus, SettingsResult, SettingsMapResult } from "./SettingsAdmin";
 import { BentleyError, BentleyStatus } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext, RequestOptions, request, Response, Client } from "@bentley/itwin-client";
+import { AuthorizedClientRequestContext, Client, request, RequestOptions, Response } from "@bentley/itwin-client";
+import { SettingsAdmin, SettingsMapResult, SettingsResult, SettingsStatus } from "./SettingsAdmin";
 
 // this internal class is used to collect the settings when we are asking for them by namespace, because in that case there is a continuationToken when
 // there are more than 20, so we have to continue to call the Setting Service to get more.

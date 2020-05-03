@@ -6,14 +6,8 @@
  * @module Rendering
  */
 
-import {
-  ElectronRpcConfiguration,
-  ImageBuffer,
-  ImageBufferFormat,
-  ImageSource,
-  ImageSourceFormat,
-} from "@bentley/imodeljs-common";
 import { Point2d } from "@bentley/geometry-core";
+import { ElectronRpcConfiguration, ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat } from "@bentley/imodeljs-common";
 import { ViewRect } from "./ViewRect";
 
 interface Rgba {

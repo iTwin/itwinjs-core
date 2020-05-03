@@ -6,10 +6,10 @@
  * @module Footer
  */
 
+import "./Indicator.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { CommonProps } from "@bentley/ui-core";
-import "./Indicator.scss";
 
 /** Properties of [[FooterIndicator]] component.
  * @beta

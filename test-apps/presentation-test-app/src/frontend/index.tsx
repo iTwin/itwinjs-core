@@ -3,24 +3,22 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import "./index.css";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import { Logger, LogLevel, Config } from "@bentley/bentleyjs-core";
-import { IModelApp } from "@bentley/imodeljs-frontend";
+import { Config, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import {
-  BentleyCloudRpcManager, BentleyCloudRpcParams,
-  ElectronRpcManager, ElectronRpcConfiguration,
-  RpcConfiguration,
+  BentleyCloudRpcManager, BentleyCloudRpcParams, ElectronRpcConfiguration, ElectronRpcManager, RpcConfiguration,
 } from "@bentley/imodeljs-common";
+import { IModelApp } from "@bentley/imodeljs-frontend";
+import { PresentationUnitSystem } from "@bentley/presentation-common";
 // __PUBLISH_EXTRACT_START__ Presentation.Frontend.Imports
 import { Presentation } from "@bentley/presentation-frontend";
 // __PUBLISH_EXTRACT_END__
 import { UiComponents } from "@bentley/ui-components";
-import { MyAppFrontend } from "./api/MyAppFrontend";
 import rpcs from "../common/Rpcs";
+import { MyAppFrontend } from "./api/MyAppFrontend";
 import App from "./components/app/App";
-import "./index.css";
-import { PresentationUnitSystem } from "@bentley/presentation-common";
 
 // initialize logging
 Logger.initializeToConsole();

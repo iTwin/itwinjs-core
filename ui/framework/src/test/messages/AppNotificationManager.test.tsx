@@ -3,13 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import * as React from "react";
 import { expect } from "chai";
 import { mount } from "enzyme";
+import * as React from "react";
 import * as sinon from "sinon";
+import {
+  ActivityMessageDetails, ActivityMessageEndReason, MessageBoxIconType, MessageBoxType, MessageBoxValue, NotifyMessageDetails, OutputMessageAlert,
+  OutputMessagePriority, OutputMessageType,
+} from "@bentley/imodeljs-frontend";
+import { AppNotificationManager, ElementTooltip, MessageManager, ModalDialogManager, ModalDialogRenderer } from "../../ui-framework";
 import TestUtils from "../TestUtils";
-import { AppNotificationManager, MessageManager, ElementTooltip, ModalDialogManager, ModalDialogRenderer } from "../../ui-framework";
-import { NotifyMessageDetails, OutputMessagePriority, MessageBoxType, MessageBoxIconType, ActivityMessageDetails, ActivityMessageEndReason, OutputMessageType, OutputMessageAlert, MessageBoxValue } from "@bentley/imodeljs-frontend";
 
 describe("AppNotificationManager", () => {
 

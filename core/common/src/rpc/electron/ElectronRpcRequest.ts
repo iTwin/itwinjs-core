@@ -6,10 +6,10 @@
  * @module RpcInterface
  */
 
-import { RpcRequest } from "../core/RpcRequest";
-import { RpcRequestFulfillment } from "../core/RpcProtocol";
-import { ElectronRpcProtocol } from "./ElectronRpcProtocol";
 import { RpcProtocolEvent } from "../core/RpcConstants";
+import { RpcRequestFulfillment } from "../core/RpcProtocol";
+import { RpcRequest } from "../core/RpcRequest";
+import { ElectronRpcProtocol } from "./ElectronRpcProtocol";
 
 /** @beta */
 export class ElectronRpcRequest extends RpcRequest {

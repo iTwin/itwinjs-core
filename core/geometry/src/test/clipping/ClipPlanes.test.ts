@@ -4,36 +4,34 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { Checker } from "../Checker";
-import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
-import { Geometry } from "../../Geometry";
-import { AngleSweep } from "../../geometry3d/AngleSweep";
-import { Angle } from "../../geometry3d/Angle";
-import { Point3d, Vector3d, XYZ } from "../../geometry3d/Point3dVector3d";
-import { Segment1d } from "../../geometry3d/Segment1d";
-import { Range1d, Range3d } from "../../geometry3d/Range";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
-import { Transform } from "../../geometry3d/Transform";
-import { PolygonOps, Point3dArrayPolygonOps, IndexedXYZCollectionPolygonOps } from "../../geometry3d/PolygonOps";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { Arc3d } from "../../curve/Arc3d";
-import { LineString3d } from "../../curve/LineString3d";
-
-import { CurvePrimitive, AnnounceNumberNumberCurvePrimitive } from "../../curve/CurvePrimitive";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-
-import { ClipPlaneContainment, Clipper, ClipUtilities, ClipStatus } from "../../clipping/ClipUtils";
 import { ClipPlane } from "../../clipping/ClipPlane";
+import { Clipper, ClipPlaneContainment, ClipStatus, ClipUtilities } from "../../clipping/ClipUtils";
 import { ConvexClipPlaneSet } from "../../clipping/ConvexClipPlaneSet";
 import { UnionOfConvexClipPlaneSets } from "../../clipping/UnionOfConvexClipPlaneSets";
-import { Sample } from "../../serialization/GeometrySamples";
-
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
+import { Arc3d } from "../../curve/Arc3d";
+import { AnnounceNumberNumberCurvePrimitive, CurvePrimitive } from "../../curve/CurvePrimitive";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { LineSegment3d } from "../../curve/LineSegment3d";
+import { LineString3d } from "../../curve/LineString3d";
 import { Loop } from "../../curve/Loop";
-import { prettyPrint } from "../testFunctions";
-import { Matrix4d } from "../../geometry4d/Matrix4d";
+import { Geometry } from "../../Geometry";
+import { Angle } from "../../geometry3d/Angle";
+import { AngleSweep } from "../../geometry3d/AngleSweep";
+import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
+import { Matrix3d } from "../../geometry3d/Matrix3d";
+import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
+import { Point3d, Vector3d, XYZ } from "../../geometry3d/Point3dVector3d";
+import { IndexedXYZCollectionPolygonOps, Point3dArrayPolygonOps, PolygonOps } from "../../geometry3d/PolygonOps";
+import { Range1d, Range3d } from "../../geometry3d/Range";
 import { Ray3d } from "../../geometry3d/Ray3d";
+import { Segment1d } from "../../geometry3d/Segment1d";
+import { Transform } from "../../geometry3d/Transform";
+import { Matrix4d } from "../../geometry4d/Matrix4d";
+import { Sample } from "../../serialization/GeometrySamples";
+import { Checker } from "../Checker";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { prettyPrint } from "../testFunctions";
+
 /* tslint:disable:no-console no-trailing-whitespace */
 
 Checker.noisy.clipPlane = false;

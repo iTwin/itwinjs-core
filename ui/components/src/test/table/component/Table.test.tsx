@@ -4,28 +4,24 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import * as moq from "typemoq";
 import * as enzyme from "enzyme";
 import * as React from "react";
-import * as sinon from "sinon";
-import TestBackend from "react-dnd-test-backend";
 import { DragDropContext } from "react-dnd";
-
+import TestBackend from "react-dnd-test-backend";
+import * as sinon from "sinon";
+import * as moq from "typemoq";
 import { BeDuration } from "@bentley/bentleyjs-core";
-import { LocalUiSettings, HorizontalAlignment } from "@bentley/ui-core";
+import { PrimitiveValue, PropertyDescription, PropertyRecord, PropertyValue, PropertyValueFormat } from "@bentley/ui-abstract";
+import { HorizontalAlignment, LocalUiSettings } from "@bentley/ui-core";
 import {
-  PropertyRecord, PropertyValue, PropertyValueFormat, PropertyDescription, PrimitiveValue,
-} from "@bentley/ui-abstract";
-
-import TestUtils from "../../TestUtils";
-import {
-  Table, TableDataProvider, RowItem, TableDataChangeEvent, TableDataChangesListener, CellItem,
-  TableSelectionTarget, TableProps, ColumnDescription, SelectionMode, PropertyUpdatedArgs, EditorContainer,
+  CellItem, ColumnDescription, EditorContainer, PropertyUpdatedArgs, RowItem, SelectionMode, Table, TableDataChangeEvent, TableDataChangesListener,
+  TableDataProvider, TableProps, TableSelectionTarget,
 } from "../../../ui-components";
-import { waitForSpy, ResolvablePromise } from "../../test-helpers/misc";
 import { DragDropHeaderWrapper } from "../../../ui-components/table/component/DragDropHeaderCell";
-import { FilterRenderer } from "../../../ui-components/table/TableDataProvider";
 import { SimpleTableDataProvider } from "../../../ui-components/table/SimpleTableDataProvider";
+import { FilterRenderer } from "../../../ui-components/table/TableDataProvider";
+import { ResolvablePromise, waitForSpy } from "../../test-helpers/misc";
+import TestUtils from "../../TestUtils";
 
 describe("Table", () => {
 

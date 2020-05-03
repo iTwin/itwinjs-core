@@ -6,32 +6,22 @@
  * @module WebGL
  */
 
-import {
-  ProgramBuilder,
-  ShaderBuilderFlags,
-  VariableType,
-  FragmentShaderComponent,
-  VertexShaderComponent,
-  FragmentShaderBuilder,
-} from "../ShaderBuilder";
-import {
-  addModelViewMatrix,
-  addProjectionMatrix,
-  addLineWeight,
-  addLineCode as addLineCodeUniform,
-} from "./Vertex";
-import { addFrustum, addShaderFlags } from "./Common";
-import { addViewport, addModelToWindowCoordinates } from "./Viewport";
-import { unquantize2d } from "./Decode";
-import { addColor } from "./Color";
-import { addWhiteOnWhiteReversal } from "./Fragment";
-import { System } from "../System";
-import { TextureUnit } from "../RenderFlags";
-import { addHiliter } from "./FeatureSymbology";
 import { assert } from "@bentley/bentleyjs-core";
-import { IsInstanced } from "../TechniqueFlags";
 import { AttributeMap } from "../AttributeMap";
+import { TextureUnit } from "../RenderFlags";
+import {
+  FragmentShaderBuilder, FragmentShaderComponent, ProgramBuilder, ShaderBuilderFlags, VariableType, VertexShaderComponent,
+} from "../ShaderBuilder";
+import { System } from "../System";
+import { IsInstanced } from "../TechniqueFlags";
 import { TechniqueId } from "../TechniqueId";
+import { addColor } from "./Color";
+import { addFrustum, addShaderFlags } from "./Common";
+import { unquantize2d } from "./Decode";
+import { addHiliter } from "./FeatureSymbology";
+import { addWhiteOnWhiteReversal } from "./Fragment";
+import { addLineCode as addLineCodeUniform, addLineWeight, addModelViewMatrix, addProjectionMatrix } from "./Vertex";
+import { addModelToWindowCoordinates, addViewport } from "./Viewport";
 
 const checkForDiscard = "return discardByLineCode;";
 

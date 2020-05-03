@@ -7,8 +7,13 @@
  */
 
 import { Id64String } from "@bentley/bentleyjs-core";
-import { CalloutProps, ElementProps, GeometricElement2dProps, GeometricElement3dProps, IModel, InformationPartitionElementProps, ModelProps, ViewAttachmentLabelProps } from "@bentley/imodeljs-common";
-import { GraphicalElement2d, GraphicalElement3d, GroupInformationElement, GroupInformationPartition, PhysicalElement, SpatialLocationElement } from "../Element";
+import {
+  CalloutProps, ElementProps, GeometricElement2dProps, GeometricElement3dProps, IModel, InformationPartitionElementProps, ModelProps,
+  ViewAttachmentLabelProps,
+} from "@bentley/imodeljs-common";
+import {
+  GraphicalElement2d, GraphicalElement3d, GroupInformationElement, GroupInformationPartition, PhysicalElement, SpatialLocationElement,
+} from "../Element";
 import { IModelDb } from "../IModelDb";
 import { GroupInformationModel } from "../Model";
 import { SubjectOwnsPartitionElements } from "../NavigationRelationship";

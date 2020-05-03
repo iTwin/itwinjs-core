@@ -7,9 +7,9 @@
  */
 
 import * as React from "react";
-import { ShowHideItem, ShowHideID } from "./ShowHideItem";
-import { GlobalDialog, GlobalDialogProps, DialogButtonType } from "@bentley/ui-core";
+import { DialogButtonType, GlobalDialog, GlobalDialogProps } from "@bentley/ui-core";
 import { UiComponents } from "../../UiComponents";
+import { ShowHideID, ShowHideItem } from "./ShowHideItem";
 
 /** Properties for the [[ShowHideDialog]] component
  * @public

@@ -6,13 +6,10 @@
  * @module AccuDraw
  */
 
-import * as React from "react";
-
-import { PointProps, ContextMenu, SizeProps, Size, Icon } from "@bentley/ui-core";
-
-import { SquareButton, SquareButtonProps } from "./SquareButton";
-
 import "./MenuButton.scss";
+import * as React from "react";
+import { ContextMenu, Icon, PointProps, Size, SizeProps } from "@bentley/ui-core";
+import { SquareButton, SquareButtonProps } from "./SquareButton";
 
 /** @alpha */
 export interface MenuButtonProps extends SquareButtonProps {

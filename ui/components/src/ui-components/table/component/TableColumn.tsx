@@ -12,9 +12,9 @@
 // https://github.com/Microsoft/TypeScript-Handbook/blob/master/pages/Modules.md#export--and-import--require
 import ReactDataGrid = require("react-data-grid");
 
-import { ColumnDescription, TableDataProvider } from "../TableDataProvider";
-import { FilterableTable, DistinctValueCollection } from "../columnfiltering/ColumnFiltering";
+import { DistinctValueCollection, FilterableTable } from "../columnfiltering/ColumnFiltering";
 import { FilterableColumnBase } from "../columnfiltering/FilterableColumnBase";
+import { ColumnDescription, TableDataProvider } from "../TableDataProvider";
 
 /** ReactDataGrid.Column with additional properties
  * @public

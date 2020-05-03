@@ -11,7 +11,9 @@ import { IModelHubClientLoggerCategory } from "../IModelHubClientLoggerCategorie
 import { IModelBaseHandler } from "./BaseHandler";
 import { CodeState } from "./Codes";
 import { ArgumentCheck } from "./Errors";
-import { BaseEventSAS, EventBaseHandler, EventListener, GetEventOperationToRequestType, IModelHubBaseEvent, ListenerSubscription } from "./EventsBase";
+import {
+  BaseEventSAS, EventBaseHandler, EventListener, GetEventOperationToRequestType, IModelHubBaseEvent, ListenerSubscription,
+} from "./EventsBase";
 import { LockLevel, LockType } from "./Locks";
 
 const loggerCategory: string = IModelHubClientLoggerCategory.IModelHub;

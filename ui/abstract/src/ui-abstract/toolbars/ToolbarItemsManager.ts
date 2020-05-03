@@ -7,9 +7,9 @@
  */
 
 import { BeEvent } from "@bentley/bentleyjs-core";
-import { CommonToolbarItem, ToolbarItemId, ToolbarItemUtilities, GroupButton, ActionButton } from "./ToolbarItem";
 import { ConditionalBooleanValue } from "../items/ConditionalBooleanValue";
 import { ConditionalStringValue } from "../items/ConditionalStringValue";
+import { ActionButton, CommonToolbarItem, GroupButton, ToolbarItemId, ToolbarItemUtilities } from "./ToolbarItem";
 
 type InstanceOrArray<T> = T | ReadonlyArray<T>;
 

@@ -7,58 +7,23 @@
  */
 
 import { assert } from "@bentley/bentleyjs-core";
-import {
-  Range3d,
-} from "@bentley/geometry-core";
-import {
-  Frustum,
-  FrustumPlanes,
-  RenderMode,
-  ViewFlags,
-} from "@bentley/imodeljs-common";
-import {
-  GraphicList,
-  RenderGraphic,
-} from "../RenderGraphic";
+import { Range3d } from "@bentley/geometry-core";
+import { Frustum, FrustumPlanes, RenderMode, ViewFlags } from "@bentley/imodeljs-common";
 import { Decorations } from "../Decorations";
 import { SurfaceType } from "../primitives/VertexTable";
+import { GraphicList, RenderGraphic } from "../RenderGraphic";
+import { BatchState, BranchStack, BranchState } from "./BranchState";
 import {
-  DrawCommand,
-  DrawCommands,
-  getAnimationBranchState,
-  PopBatchCommand,
-  PopBranchCommand,
-  PopCommand,
-  PrimitiveCommand,
-  PushBatchCommand,
-  PushBranchCommand,
-  PushStateCommand,
-  PushCommand,
+  DrawCommand, DrawCommands, getAnimationBranchState, PopBatchCommand, PopBranchCommand, PopCommand, PrimitiveCommand, PushBatchCommand,
+  PushBranchCommand, PushCommand, PushStateCommand,
 } from "./DrawCommand";
-import {
-  BatchState,
-  BranchStack,
-  BranchState,
-} from "./BranchState";
-import { Target } from "./Target";
-import {
-  CompositeFlags,
-  RenderOrder,
-  RenderPass,
-} from "./RenderFlags";
-import {
-  Batch,
-  Branch,
-  Graphic,
-  GraphicsArray,
-} from "./Graphic";
-import { Primitive } from "./Primitive";
-import { MeshGraphic } from "./Mesh";
-import {
-  Layer,
-  LayerContainer,
-} from "./Layer";
+import { Batch, Branch, Graphic, GraphicsArray } from "./Graphic";
+import { Layer, LayerContainer } from "./Layer";
 import { LayerCommandLists } from "./LayerCommands";
+import { MeshGraphic } from "./Mesh";
+import { Primitive } from "./Primitive";
+import { CompositeFlags, RenderOrder, RenderPass } from "./RenderFlags";
+import { Target } from "./Target";
 
 /** A list of DrawCommands to be rendered, ordered by render pass.
  * @internal

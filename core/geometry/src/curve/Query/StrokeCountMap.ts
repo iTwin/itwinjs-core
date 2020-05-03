@@ -6,8 +6,9 @@
  * @module Curve
  */
 
-import { CurvePrimitive } from "../CurvePrimitive";
 import { Geometry } from "../../Geometry";
+import { CurvePrimitive } from "../CurvePrimitive";
+
 /**
  * data carrier interface for per-primitive stroke counts and distances used by PolyfaceBuilder.
  * * For a simple primitive (Line segment or arc) that is stroked with uniform fraction, the members are:

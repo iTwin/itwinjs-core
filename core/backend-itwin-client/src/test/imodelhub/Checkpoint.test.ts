@@ -6,14 +6,12 @@ import * as chai from "chai";
 import * as fs from "fs";
 import * as path from "path";
 import { GuidString } from "@bentley/bentleyjs-core";
-import {
-  AccessToken, AuthorizedClientRequestContext,
-} from "@bentley/itwin-client";
+import { Briefcase, ChangeSet, Checkpoint, CheckpointQuery, IModelClient } from "@bentley/imodelhub-client";
+import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { TestUsers } from "@bentley/oidc-signin-tool";
-import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
+import { RequestType, ResponseBuilder, ScopeType } from "../ResponseBuilder";
 import { TestConfig } from "../TestConfig";
 import * as utils from "./TestUtils";
-import { Checkpoint, Briefcase, IModelClient, ChangeSet, CheckpointQuery } from "@bentley/imodelhub-client";
 
 chai.should();
 

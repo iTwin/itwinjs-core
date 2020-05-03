@@ -3,26 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as enzyme from "enzyme";
+import { createStore, Store } from "redux";
 import * as sinon from "sinon";
 import { I18N } from "@bentley/imodeljs-i18n";
-import {
-  UiFramework,
-  FrameworkReducer,
-  FrameworkState,
-  DeepReadonly,
-  ActionsUnion,
-  createAction,
-  ConfigurableUiManager,
-  ContentLayoutProps,
-  ContentGroupProps,
-  combineReducers,
-} from "../ui-framework";
-import { UiSettings, UiSettingsStatus, UiSettingsResult } from "@bentley/ui-core";
-import { Store, createStore } from "redux";
-import { TestContentControl } from "./frontstage/FrontstageTestUtils";
-import { ToolUiManager } from "../ui-framework/zones/toolsettings/ToolUiManager";
-import { SyncUiEventDispatcher } from "../ui-framework/syncui/SyncUiEventDispatcher";
 import { UserInfo } from "@bentley/itwin-client";
+import { UiSettings, UiSettingsResult, UiSettingsStatus } from "@bentley/ui-core";
+import {
+  ActionsUnion, combineReducers, ConfigurableUiManager, ContentGroupProps, ContentLayoutProps, createAction, DeepReadonly, FrameworkReducer,
+  FrameworkState, UiFramework,
+} from "../ui-framework";
+import { SyncUiEventDispatcher } from "../ui-framework/syncui/SyncUiEventDispatcher";
+import { ToolUiManager } from "../ui-framework/zones/toolsettings/ToolUiManager";
+import { TestContentControl } from "./frontstage/FrontstageTestUtils";
 
 // tslint:disable: completed-docs
 

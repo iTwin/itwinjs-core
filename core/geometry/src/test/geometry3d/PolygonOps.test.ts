@@ -3,21 +3,22 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Checker } from "../Checker";
 import { expect } from "chai";
-import { Range2d } from "../../geometry3d/Range";
-import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
-import { PolygonOps } from "../../geometry3d/PolygonOps";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { LineString3d } from "../../curve/LineString3d";
 import { GeometryQuery } from "../../curve/GeometryQuery";
-import { ParityRegion } from "../../curve/ParityRegion";
+import { LineSegment3d } from "../../curve/LineSegment3d";
+import { LineString3d } from "../../curve/LineString3d";
 import { Loop } from "../../curve/Loop";
+import { ParityRegion } from "../../curve/ParityRegion";
 import { RegionOps } from "../../curve/RegionOps";
 import { UnionRegion } from "../../curve/UnionRegion";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { Sample } from "../../serialization/GeometrySamples";
+import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
+import { PolygonOps } from "../../geometry3d/PolygonOps";
+import { Range2d } from "../../geometry3d/Range";
 import { SortablePolygon } from "../../geometry3d/SortablePolygon";
+import { Sample } from "../../serialization/GeometrySamples";
+import { Checker } from "../Checker";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+
 /* tslint:disable:no-console */
 
 function makeLoop(range: Range2d, close: boolean, ySign: number = 1): GrowableXYZArray {

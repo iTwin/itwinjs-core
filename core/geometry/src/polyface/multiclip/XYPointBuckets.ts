@@ -6,11 +6,12 @@
  * @module RangeSearch
  */
 
-import { Range2d, Range3d } from "../../geometry3d/Range";
-import { LowAndHighXY } from "../../geometry3d/XYZProps";
 import { Geometry } from "../../Geometry";
 import { IndexedXYZCollection } from "../../geometry3d/IndexedXYZCollection";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
+import { Range2d, Range3d } from "../../geometry3d/Range";
+import { LowAndHighXY } from "../../geometry3d/XYZProps";
+
 /** Type for a value which may be either (a) undefined or (b) an array of type []. */
 export type OptionalArray<T> = T[] | undefined;
 /**

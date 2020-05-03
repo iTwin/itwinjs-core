@@ -6,8 +6,8 @@
  * @module Timeline
  */
 
-import { ScreenViewport } from "@bentley/imodeljs-frontend";
 import { ColorDef } from "@bentley/imodeljs-common";
+import { ScreenViewport } from "@bentley/imodeljs-frontend";
 
 /**
  * A range of time which can be used to focus in on activities scheduled around a milestone.

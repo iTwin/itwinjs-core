@@ -3,16 +3,19 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BriefcaseStatus, ClientRequestContext, GuidString, IModelStatus, Logger, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
-import { Briefcase as HubBriefcase, BriefcaseQuery, HubIModel } from "@bentley/imodelhub-client";
-import { AuthorizedClientRequestContext, ProgressInfo, UserCancelledError } from "@bentley/itwin-client";
-import { BriefcaseDownloader, BriefcaseProps, IModelError, IModelVersion, SyncMode } from "@bentley/imodeljs-common";
-import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { assert } from "chai";
 import * as os from "os";
-import * as readline from "readline";
 import * as path from "path";
-import { AuthorizedBackendRequestContext, BackendLoggerCategory, BriefcaseDb, BriefcaseEntry, BriefcaseManager, Element, IModelDb, IModelHost, IModelHostConfiguration, IModelJsFs, KnownLocations, BriefcaseIdValue } from "../../imodeljs-backend";
+import * as readline from "readline";
+import { BriefcaseStatus, ClientRequestContext, GuidString, IModelStatus, Logger, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
+import { Briefcase as HubBriefcase, BriefcaseQuery, HubIModel } from "@bentley/imodelhub-client";
+import { BriefcaseDownloader, BriefcaseProps, IModelError, IModelVersion, SyncMode } from "@bentley/imodeljs-common";
+import { AuthorizedClientRequestContext, ProgressInfo, UserCancelledError } from "@bentley/itwin-client";
+import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
+import {
+  AuthorizedBackendRequestContext, BackendLoggerCategory, BriefcaseDb, BriefcaseEntry, BriefcaseIdValue, BriefcaseManager, Element, IModelDb,
+  IModelHost, IModelHostConfiguration, IModelJsFs, KnownLocations,
+} from "../../imodeljs-backend";
 import { IModelTestUtils, TestIModelInfo } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
 import { TestChangeSetUtility } from "./TestChangeSetUtility";

@@ -2,13 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ClientRequestContext, BeEvent } from "@bentley/bentleyjs-core";
+import { BeEvent, ClientRequestContext } from "@bentley/bentleyjs-core";
+import { Asset, ContextRegistryClient, Project } from "@bentley/context-registry-client";
+import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { ContextManagerClient, IModelCloudEnvironment } from "@bentley/imodelhub-client";
 import { AccessToken, AuthorizedClientRequestContext, UserInfo } from "@bentley/itwin-client";
 import { TestUtility } from "@bentley/oidc-signin-tool";
 import { getImodelHubClient } from "./TestUtils";
-import { ContextRegistryClient, Project, Asset } from "@bentley/context-registry-client";
-import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 
 /** An implementation of IModelProjectAbstraction backed by a iModelHub/iTwin project */
 class TestContextManagerClient implements ContextManagerClient {

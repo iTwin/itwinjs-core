@@ -6,7 +6,7 @@
  * @module Utilities
  */
 
-import { useEffect, useRef, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { IDisposable } from "@bentley/bentleyjs-core";
 
 /**

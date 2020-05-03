@@ -6,9 +6,9 @@
  * @module Features
  */
 
+import { initialize, LDClient, LDFlagValue, LDUser } from "ldclient-js";
 import { assert, Config, Guid, Logger } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/itwin-client";
-import { initialize, LDClient, LDFlagValue, LDUser } from "ldclient-js";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 
 /** Client-side class for checking and toggling feature flags

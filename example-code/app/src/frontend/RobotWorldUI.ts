@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { IModelApp, IModelConnection, ViewState, SpatialViewState, ScreenViewport, DrawingViewState } from "@bentley/imodeljs-frontend";
 import { Id64String } from "@bentley/bentleyjs-core";
+import { DrawingViewState, IModelApp, IModelConnection, ScreenViewport, SpatialViewState, ViewState } from "@bentley/imodeljs-frontend";
 
 export class RobotWorldApp {
 

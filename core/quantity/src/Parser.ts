@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { QuantityStatus } from "./Exception";
 import { QuantityConstants } from "./Constants";
-import { QuantityProps, UnitsProvider, UnitProps, UnitConversionSpec, UnitConversion, PotentialParseUnit } from "./Interfaces";
-import { Quantity } from "./Quantity";
+import { QuantityStatus } from "./Exception";
 import { Format } from "./Formatter/Format";
-import { FormatType, FormatTraits } from "./Formatter/FormatEnums";
+import { FormatTraits, FormatType } from "./Formatter/FormatEnums";
+import { PotentialParseUnit, QuantityProps, UnitConversion, UnitConversionSpec, UnitProps, UnitsProvider } from "./Interfaces";
+import { Quantity } from "./Quantity";
 
 /**
  * Defines Results of parsing a string input by a user into its desired value type

@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { RpcRequestEvent, RpcRequest, RpcOperation, ServerError, ServerTimeoutError } from "@bentley/imodeljs-common";
-import { TestRpcInterface, TestOp1Params } from "../common/TestRpcInterface";
 import { assert } from "chai";
+import { RpcOperation, RpcRequest, RpcRequestEvent, ServerError, ServerTimeoutError } from "@bentley/imodeljs-common";
+import { TestOp1Params, TestRpcInterface } from "../common/TestRpcInterface";
 
 if (false) {
   describe("Rpc.HttpProtocol", () => {

@@ -5,8 +5,8 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { GroupTool } from "../../../../../../ui-ninezone";
 import * as useTargetedModule from "@bentley/ui-core";
+import { GroupTool } from "../../../../../../ui-ninezone";
 
 describe("<GroupTool />", () => {
   const sandbox = sinon.createSandbox();

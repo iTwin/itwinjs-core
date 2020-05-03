@@ -3,8 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-
-import { PropertyValue, PropertyDescription, PropertyRecord, PropertyValueFormat } from "../../ui-abstract";
+import { PropertyDescription, PropertyRecord, PropertyValue, PropertyValueFormat } from "../../ui-abstract";
 
 const value1: PropertyValue = { valueFormat: PropertyValueFormat.Primitive, value: 3 };
 const value2: PropertyValue = { valueFormat: PropertyValueFormat.Primitive, value: 10 };

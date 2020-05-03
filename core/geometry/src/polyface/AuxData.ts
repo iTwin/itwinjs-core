@@ -9,9 +9,9 @@
 
 // import { Point2d } from "./Geometry2d";
 /* tslint:disable:variable-name jsdoc-format no-empty*/
+import { NumberArray } from "../geometry3d/PointHelpers";
 // import { Geometry } from "./Geometry";
 import { Range1d } from "../geometry3d/Range";
-import { NumberArray } from "../geometry3d/PointHelpers";
 
 /** The data types of [[AuxChannel]].  The scalar types are used to produce thematic  vertex colors.
  * @public

@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import TestUtils from "../TestUtils";
-import { PropsHelper } from "../../ui-framework";
 import { ConditionalStringValue } from "@bentley/ui-abstract";
+import { PropsHelper } from "../../ui-framework";
+import TestUtils from "../TestUtils";
 
 describe("PropsHelper", () => {
   before(async () => {

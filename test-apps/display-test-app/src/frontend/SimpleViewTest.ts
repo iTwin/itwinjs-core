@@ -4,40 +4,24 @@
 *--------------------------------------------------------------------------------------------*/
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
 import {
-  BentleyCloudRpcManager,
-  CloudStorageContainerUrl,
-  CloudStorageTileCache,
-  ElectronRpcConfiguration,
-  ElectronRpcManager,
-  IModelReadRpcInterface,
-  IModelTileRpcInterface,
-  MobileRpcConfiguration,
-  MobileRpcManager,
-  NativeAppRpcInterface,
-  DesktopAuthorizationClientConfiguration,
-  RpcConfiguration,
-  RpcInterfaceDefinition,
-  SnapshotIModelRpcInterface,
-  TileContentIdentifier,
-} from "@bentley/imodeljs-common";
-import { AccessToken } from "@bentley/itwin-client";
-import { BrowserAuthorizationClientConfiguration, BrowserAuthorizationClient, BrowserAuthorizationCallbackHandler } from "@bentley/frontend-authorization-client";
+  BrowserAuthorizationCallbackHandler, BrowserAuthorizationClient, BrowserAuthorizationClientConfiguration,
+} from "@bentley/frontend-authorization-client";
 import {
-  FrontendRequestContext,
-  IModelApp,
-  IModelConnection,
-  RenderDiagnostics,
-  RenderSystem,
-  DesktopAuthorizationClient,
-  SnapshotConnection,
+  BentleyCloudRpcManager, CloudStorageContainerUrl, CloudStorageTileCache, DesktopAuthorizationClientConfiguration, ElectronRpcConfiguration,
+  ElectronRpcManager, IModelReadRpcInterface, IModelTileRpcInterface, MobileRpcConfiguration, MobileRpcManager, NativeAppRpcInterface,
+  RpcConfiguration, RpcInterfaceDefinition, SnapshotIModelRpcInterface, TileContentIdentifier,
+} from "@bentley/imodeljs-common";
+import {
+  DesktopAuthorizationClient, FrontendRequestContext, IModelApp, IModelConnection, RenderDiagnostics, RenderSystem, SnapshotConnection,
 } from "@bentley/imodeljs-frontend";
+import { AccessToken } from "@bentley/itwin-client";
 import { WebGLExtensionName } from "@bentley/webgl-compatibility";
-import { showStatus } from "./Utils";
 import { SVTConfiguration } from "../common/SVTConfiguration";
-import { DisplayTestApp } from "./App";
 import SVTRpcInterface from "../common/SVTRpcInterface";
-import { setTitle } from "./Title";
+import { DisplayTestApp } from "./App";
 import { Surface } from "./Surface";
+import { setTitle } from "./Title";
+import { showStatus } from "./Utils";
 import { Dock } from "./Window";
 
 RpcConfiguration.developmentMode = true; // needed for snapshots in web apps

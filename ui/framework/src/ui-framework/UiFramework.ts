@@ -7,31 +7,29 @@
  */
 
 import { Store } from "redux";
-
 import { Logger } from "@bentley/bentleyjs-core";
-import { UserInfo, AccessToken } from "@bentley/itwin-client";
-import { MobileRpcConfiguration } from "@bentley/imodeljs-common";
-import { I18N } from "@bentley/imodeljs-i18n";
-import { IModelConnection, SnapMode, ViewState, IModelApp } from "@bentley/imodeljs-frontend";
 import { isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
-import { UiError, getClassName } from "@bentley/ui-abstract";
-import { UiEvent } from "@bentley/ui-core";
+import { MobileRpcConfiguration } from "@bentley/imodeljs-common";
+import { IModelApp, IModelConnection, SnapMode, ViewState } from "@bentley/imodeljs-frontend";
+import { I18N } from "@bentley/imodeljs-i18n";
+import { AccessToken, UserInfo } from "@bentley/itwin-client";
 import { Presentation } from "@bentley/presentation-frontend";
-
-import { ProjectServices } from "./clientservices/ProjectServices";
+import { getClassName, UiError } from "@bentley/ui-abstract";
+import { UiComponents } from "@bentley/ui-components";
+import { UiEvent } from "@bentley/ui-core";
+import { BackstageManager } from "./backstage/BackstageManager";
+import { DefaultIModelServices } from "./clientservices/DefaultIModelServices";
 import { DefaultProjectServices } from "./clientservices/DefaultProjectServices";
 import { IModelServices } from "./clientservices/IModelServices";
-import { DefaultIModelServices } from "./clientservices/DefaultIModelServices";
-import { SyncUiEventDispatcher } from "./syncui/SyncUiEventDispatcher";
-import { FrameworkState } from "./redux/FrameworkState";
+import { ProjectServices } from "./clientservices/ProjectServices";
 import { ConfigurableUiActionId } from "./configurableui/state";
-import { SessionStateActionId, PresentationSelectionScope, CursorMenuData } from "./redux/SessionState";
+import { FrameworkState } from "./redux/FrameworkState";
+import { CursorMenuData, PresentationSelectionScope, SessionStateActionId } from "./redux/SessionState";
+import { StateManager } from "./redux/StateManager";
+import { SyncUiEventDispatcher } from "./syncui/SyncUiEventDispatcher";
 import { COLOR_THEME_DEFAULT, WIDGET_OPACITY_DEFAULT } from "./theme/ThemeManager";
 import { UiShowHideManager } from "./utils/UiShowHideManager";
-import { BackstageManager } from "./backstage/BackstageManager";
 import { WidgetManager } from "./widgets/WidgetManager";
-import { StateManager } from "./redux/StateManager";
-import { UiComponents } from "@bentley/ui-components";
 
 // cSpell:ignore Mobi
 

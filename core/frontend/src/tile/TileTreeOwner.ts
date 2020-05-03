@@ -6,10 +6,7 @@
  * @module Tiles
  */
 
-import {
-  TileTreeLoadStatus,
-  TileTree,
-} from "./internal";
+import { TileTree, TileTreeLoadStatus } from "./internal";
 
 /** Owns and manages the lifecycle of a [[TileTree]]. It is in turn owned by an IModelConnection.Tiles object.
  * @note The *only* legitimate way to obtain a TileTreeOwner is via [[IModelConnection.Tiles.getTileTreeOwner]].

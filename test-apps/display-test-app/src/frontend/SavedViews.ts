@@ -3,22 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import {
-  IModelConnection,
-  Viewport,
-  ViewState,
-} from "@bentley/imodeljs-frontend";
-import {
-  createTextBox,
-  createButton,
-  deserializeViewState,
-  serializeViewState,
-} from "@bentley/frontend-devtools";
 import { Id64Arg } from "@bentley/bentleyjs-core";
+import { createButton, createTextBox, deserializeViewState, serializeViewState } from "@bentley/frontend-devtools";
+import { IModelConnection, Viewport, ViewState } from "@bentley/imodeljs-frontend";
 import SVTRpcInterface from "../common/SVTRpcInterface";
+import { Provider } from "./FeatureOverrides";
 import { NamedViewStatePropsString, NamedVSPSList } from "./NamedVSPSList";
 import { ToolBarDropDown } from "./ToolBar";
-import { Provider } from "./FeatureOverrides";
 
 export interface ApplySavedView {
   applySavedView(view: ViewState): Promise<void>;

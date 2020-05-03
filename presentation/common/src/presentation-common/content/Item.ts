@@ -6,17 +6,10 @@
  * @module Content
  */
 
-import {
-  ClassInfo, ClassInfoJSON,
-  InstanceKey, InstanceKeyJSON,
-} from "../EC";
-import { ValuesDictionary } from "../Utils";
-import {
-  Value, DisplayValue,
-  DisplayValueJSON, ValueJSON,
-  ValuesMapJSON, DisplayValuesMapJSON,
-} from "./Value";
+import { ClassInfo, ClassInfoJSON, InstanceKey, InstanceKeyJSON } from "../EC";
 import { LabelDefinition, LabelDefinitionJSON } from "../LabelDefinition";
+import { ValuesDictionary } from "../Utils";
+import { DisplayValue, DisplayValueJSON, DisplayValuesMapJSON, Value, ValueJSON, ValuesMapJSON } from "./Value";
 
 /**
  * Serialized [[Item]] JSON representation.

@@ -7,15 +7,15 @@
  * @module CartesianGeometry
  */
 
-import { ClipPrimitive, ClipMaskXYZRangePlanes, ClipShape } from "./ClipPrimitive";
-import { ClipPlaneContainment } from "./ClipUtils";
-import { Point3d } from "../geometry3d/Point3dVector3d";
-import { Segment1d } from "../geometry3d/Segment1d";
-import { Range3d } from "../geometry3d/Range";
-import { Transform } from "../geometry3d/Transform";
-import { Geometry } from "../Geometry";
-import { Matrix4d } from "../geometry4d/Matrix4d";
 import { LineSegment3d } from "../curve/LineSegment3d";
+import { Geometry } from "../Geometry";
+import { Point3d } from "../geometry3d/Point3dVector3d";
+import { Range3d } from "../geometry3d/Range";
+import { Segment1d } from "../geometry3d/Segment1d";
+import { Transform } from "../geometry3d/Transform";
+import { Matrix4d } from "../geometry4d/Matrix4d";
+import { ClipMaskXYZRangePlanes, ClipPrimitive, ClipShape } from "./ClipPrimitive";
+import { ClipPlaneContainment } from "./ClipUtils";
 
 /** Class holding an array structure of shapes defined by `ClipPrimitive`
  * * The `ClipVector` defines an intersection of the member `ClipPrimitive` regions.

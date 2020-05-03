@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { System } from "../webgl";
 import { IModelApp } from "../IModelApp";
 import { MockRender } from "../render/MockRender";
-import { TileAdmin } from "../tile/internal";
 import { RenderSystem } from "../render/RenderSystem";
+import { TileAdmin } from "../tile/internal";
+import { System } from "../webgl";
 
 function _createCanvas(): HTMLCanvasElement | undefined {
   const canvas = document.createElement("canvas") as HTMLCanvasElement;

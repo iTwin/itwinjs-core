@@ -2,13 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as path from "path";
-
-import { ElectronRpcManager } from "@bentley/imodeljs-common";
-import { initializeBackend, getRpcInterfaces } from "./backend";
-import { IModelJsElectronManager, WebpackDevServerElectronManager, StandardElectronManager } from "@bentley/electron-manager";
-
 import * as electron from "electron";
+import * as path from "path";
+import { IModelJsElectronManager, StandardElectronManager, WebpackDevServerElectronManager } from "@bentley/electron-manager";
+import { ElectronRpcManager } from "@bentley/imodeljs-common";
+import { getRpcInterfaces, initializeBackend } from "./backend";
 
 (async () => { // tslint:disable-line:no-floating-promises
   // Start the backend

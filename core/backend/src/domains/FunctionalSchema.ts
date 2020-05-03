@@ -6,10 +6,10 @@
  * @module Schema
  */
 
-import { AuthStatus, ClientRequestContext, DbResult, Logger } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { IModelError } from "@bentley/imodeljs-common";
 import * as path from "path";
+import { AuthStatus, ClientRequestContext, DbResult, Logger } from "@bentley/bentleyjs-core";
+import { IModelError } from "@bentley/imodeljs-common";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { ClassRegistry } from "../ClassRegistry";
 import { IModelDb } from "../IModelDb";

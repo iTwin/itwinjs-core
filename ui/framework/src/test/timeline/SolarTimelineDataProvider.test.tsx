@@ -2,12 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as moq from "typemoq";
 import { expect } from "chai";
-
-import { SolarTimelineDataProvider } from "../../ui-framework/timeline/SolarTimelineDataProvider";
-import { ScreenViewport, ViewState3d, DisplayStyle3dState, IModelConnection } from "@bentley/imodeljs-frontend";
+import * as moq from "typemoq";
 import { ViewFlags } from "@bentley/imodeljs-common";
+import { DisplayStyle3dState, IModelConnection, ScreenViewport, ViewState3d } from "@bentley/imodeljs-frontend";
+import { SolarTimelineDataProvider } from "../../ui-framework/timeline/SolarTimelineDataProvider";
 
 describe("SolarTimelineDataProvider", () => {
 

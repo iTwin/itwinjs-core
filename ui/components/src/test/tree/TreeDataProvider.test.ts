@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import {
-  TreeDataProviderRaw, TreeDataProviderPromise, TreeDataProviderMethod, ITreeDataProvider,
-  isTreeDataProviderRaw, isTreeDataProviderInterface, isTreeDataProviderMethod, isTreeDataProviderPromise,
+  isTreeDataProviderInterface, isTreeDataProviderMethod, isTreeDataProviderPromise, isTreeDataProviderRaw, ITreeDataProvider, TreeDataProviderMethod,
+  TreeDataProviderPromise, TreeDataProviderRaw,
 } from "../../ui-components/tree/TreeDataProvider";
 
 describe("TreeDataProvider", () => {

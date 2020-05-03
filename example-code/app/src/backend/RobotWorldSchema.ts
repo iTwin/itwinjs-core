@@ -2,18 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ClassRegistry, Schema, Schemas, IModelDb, SpatialCategory, IModelHost } from "@bentley/imodeljs-backend";
-import { IModelError, IModelStatus, SubCategoryAppearance, ColorByName } from "@bentley/imodeljs-common";
 import * as path from "path";
+import { ClientRequestContext } from "@bentley/bentleyjs-core";
+import { ClassRegistry, IModelDb, IModelHost, Schema, Schemas, SpatialCategory } from "@bentley/imodeljs-backend";
+import { ColorByName, IModelError, IModelStatus, SubCategoryAppearance } from "@bentley/imodeljs-common";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import * as _schemaNames from "../common/RobotWorldSchema";
-
+import * as obstacles from "./BarrierElement";
 // __PUBLISH_EXTRACT_START__ ClassRegistry.registerModule
-
 // Import all modules that define classes in this schema.
 import * as robots from "./RobotElement";
-import * as obstacles from "./BarrierElement";
-import { ClientRequestContext } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+
 // ... other modules ...
 
 /** An example of defining a class that represents a schema.

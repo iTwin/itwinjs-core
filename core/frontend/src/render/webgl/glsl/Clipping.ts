@@ -7,14 +7,14 @@
  */
 
 import { assert } from "@bentley/bentleyjs-core";
-import { ProgramBuilder, VariableType, VariablePrecision, FragmentShaderComponent } from "../ShaderBuilder";
-import { addModelViewMatrix } from "./Vertex";
-import { addWindowToTexCoords } from "./Fragment";
+import { ClippingType } from "../../RenderClipVolume";
 import { TextureUnit } from "../RenderFlags";
+import { FragmentShaderComponent, ProgramBuilder, VariablePrecision, VariableType } from "../ShaderBuilder";
 import { System } from "../System";
 import { ClipDef } from "../TechniqueFlags";
 import { addEyeSpace } from "./Common";
-import { ClippingType } from "../../RenderClipVolume";
+import { addWindowToTexCoords } from "./Fragment";
+import { addModelViewMatrix } from "./Vertex";
 
 const getClipPlaneFloat = `
   vec4 getClipPlane(int index) {

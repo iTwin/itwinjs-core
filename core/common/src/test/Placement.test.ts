@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Point3d, Range3d, Transform, Vector3d, YawPitchRollAngles, Angle, Point2d, Range2d, Matrix3d } from "@bentley/geometry-core";
 import { assert } from "chai";
-import { Placement3d, Placement2d } from "../imodeljs-common";
+import { Angle, Matrix3d, Point2d, Point3d, Range2d, Range3d, Transform, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
+import { Placement2d, Placement3d } from "../imodeljs-common";
 
 describe("Placement", () => {
   it("Placement3d", () => {

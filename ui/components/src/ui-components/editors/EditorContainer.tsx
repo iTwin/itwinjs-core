@@ -6,13 +6,12 @@
  * @module PropertyEditors
  */
 
+import "./EditorContainer.scss";
 import * as React from "react";
 import { IModelApp, NotifyMessageDetails } from "@bentley/imodeljs-frontend";
 import { PropertyRecord, PropertyValue } from "@bentley/ui-abstract";
-import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
-
-import "./EditorContainer.scss";
 import { CommonProps } from "@bentley/ui-core";
+import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
 
 /** Arguments for the Property Updated event callback
  * @beta

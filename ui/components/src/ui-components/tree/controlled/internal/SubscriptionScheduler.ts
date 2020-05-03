@@ -9,7 +9,6 @@
 import { BehaviorSubject } from "rxjs/internal/BehaviorSubject";
 import { Observable } from "rxjs/internal/Observable";
 import { ConnectableObservable } from "rxjs/internal/observable/ConnectableObservable";
-import { Subject } from "rxjs/internal/Subject";
 import { defer } from "rxjs/internal/observable/defer";
 import { finalize } from "rxjs/internal/operators/finalize";
 import { mergeMap } from "rxjs/internal/operators/mergeMap";
@@ -19,8 +18,9 @@ import { publish } from "rxjs/internal/operators/publish";
 import { refCount } from "rxjs/internal/operators/refCount";
 import { subscribeOn } from "rxjs/internal/operators/subscribeOn";
 import { switchAll } from "rxjs/internal/operators/switchAll";
-import { queue as queueScheduler } from "rxjs/internal/scheduler/queue";
 import { asap as asapScheduler } from "rxjs/internal/scheduler/asap";
+import { queue as queueScheduler } from "rxjs/internal/scheduler/queue";
+import { Subject } from "rxjs/internal/Subject";
 
 const MAX_CONCURRENT_SUBSCRIPTIONS = 1;
 

@@ -7,28 +7,25 @@
 import { expect } from "chai";
 import * as faker from "faker";
 import sinon from "sinon";
+import { BeDuration, BeEvent, using } from "@bentley/bentleyjs-core";
+import { IModelRpcProps } from "@bentley/imodeljs-common";
+import { EventSource, IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
+import { I18N, I18NNamespace } from "@bentley/imodeljs-i18n";
+import {
+  Content, ContentRequestOptions, ContentUpdateInfo, Descriptor, HierarchyRequestOptions, HierarchyUpdateInfo, InstanceKey, KeySet,
+  LabelRequestOptions, Node, NodeKey, NodePathElement, Paged, PartialHierarchyModification, PartialHierarchyModificationJSON,
+  PresentationDataCompareOptions, PresentationError, PresentationRpcEvents, PresentationRpcInterface, PresentationStatus, PresentationUnitSystem,
+  RegisteredRuleset, RequestPriority, RpcRequestsHandler, Ruleset, RulesetVariable, UpdateInfo, VariableValueTypes,
+} from "@bentley/presentation-common";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import {
-  createRandomDescriptor, createRandomECInstancesNodeJSON,
-  createRandomECInstancesNode, createRandomECInstancesNodeKey, createRandomNodePathElement,
-  createRandomECInstanceKey, createRandomRuleset, createRandomLabelDefinition,
+  createRandomDescriptor, createRandomECInstanceKey, createRandomECInstancesNode, createRandomECInstancesNodeJSON, createRandomECInstancesNodeKey,
+  createRandomLabelDefinition, createRandomNodePathElement, createRandomRuleset,
 } from "@bentley/presentation-common/lib/test/_helpers/random";
-import { using, BeDuration, BeEvent } from "@bentley/bentleyjs-core";
-import { I18N, I18NNamespace } from "@bentley/imodeljs-i18n";
-import { IModelRpcProps } from "@bentley/imodeljs-common";
-import { IModelConnection, EventSource, IModelApp } from "@bentley/imodeljs-frontend";
-import {
-  KeySet, Content, HierarchyRequestOptions, Node, Ruleset, VariableValueTypes, RulesetVariable,
-  Paged, ContentRequestOptions, RpcRequestsHandler, LabelRequestOptions, NodeKey, NodePathElement,
-  InstanceKey, Descriptor, RequestPriority, PresentationRpcInterface, PresentationRpcEvents,
-  PresentationUnitSystem, UpdateInfo, HierarchyUpdateInfo, ContentUpdateInfo, RegisteredRuleset,
-  PresentationDataCompareOptions, PartialHierarchyModification, PartialHierarchyModificationJSON,
-  PresentationError, PresentationStatus,
-} from "@bentley/presentation-common";
-import { PresentationManager } from "../presentation-frontend/PresentationManager";
-import { RulesetVariablesManagerImpl } from "../presentation-frontend/RulesetVariablesManager";
-import { RulesetManagerImpl, RulesetManagerImplProps } from "../presentation-frontend/RulesetManager";
 import { Presentation } from "../presentation-frontend/Presentation";
+import { PresentationManager } from "../presentation-frontend/PresentationManager";
+import { RulesetManagerImpl, RulesetManagerImplProps } from "../presentation-frontend/RulesetManager";
+import { RulesetVariablesManagerImpl } from "../presentation-frontend/RulesetVariablesManager";
 
 describe("PresentationManager", () => {
 

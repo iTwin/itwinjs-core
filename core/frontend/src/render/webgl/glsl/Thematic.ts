@@ -6,21 +6,13 @@
  * @module WebGL
  */
 
-import {
-  FragmentShaderComponent,
-  ProgramBuilder,
-  VariableType,
-  ShaderBuilder,
-} from "../ShaderBuilder";
-import {
-  addInstancedRtcMatrix,
-  addProjectionMatrix,
-} from "./Vertex";
-import { addRenderPass } from "./RenderPass";
 import { ThematicDisplayMode } from "@bentley/imodeljs-common";
 import { TextureUnit } from "../RenderFlags";
+import { FragmentShaderComponent, ProgramBuilder, ShaderBuilder, VariableType } from "../ShaderBuilder";
 import { System } from "../System";
 import { unpackFloat } from "./Clipping";
+import { addRenderPass } from "./RenderPass";
+import { addInstancedRtcMatrix, addProjectionMatrix } from "./Vertex";
 
 const getSensorFloat = `
   vec4 getSensor(int index) {

@@ -2,13 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
 import { expect } from "chai";
-import * as sinon from "sinon";
+import * as React from "react";
 import ReactTestUtils from "react-dom/test-utils";
-import { render, cleanup } from "@testing-library/react";
+import * as sinon from "sinon";
+import { cleanup, render } from "@testing-library/react";
+import {
+  DragSourceArguments, DragSourceProps, DropEffects, DropStatus, DropTargetArguments, DropTargetProps,
+} from "../../../ui-components/dragdrop/DragDropDef";
 import { DragDropRow, DragDropRowWrapper } from "../../../ui-components/table/hocs/DragDropRow";
-import { DropTargetProps, DragSourceProps, DragSourceArguments, DropEffects, DropStatus, DropTargetArguments } from "../../../ui-components/dragdrop/DragDropDef";
 
 describe("DragDropRow", () => {
   interface DragDropObject {

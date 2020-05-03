@@ -4,18 +4,19 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import * as path from "path";
-import { Guid, Id64String, Id64 } from "@bentley/bentleyjs-core";
+import * as semver from "semver";
+import { Guid, Id64, Id64String } from "@bentley/bentleyjs-core";
 import {
-  CategoryProps, Code, IModel, InformationPartitionElementProps, GeometricElement3dProps, TypeDefinitionElementProps, ColorDef, ModelProps, PropertyMetaData, RelatedElement,
+  CategoryProps, Code, ColorDef, GeometricElement3dProps, IModel, InformationPartitionElementProps, ModelProps, PropertyMetaData, RelatedElement,
+  TypeDefinitionElementProps,
 } from "@bentley/imodeljs-common";
 import {
-  BackendRequestContext, AnalyticalSchema, AnalyticalModel, AnalyticalElement, AnalyticalPartition,
-  IModelDb, SpatialCategory, SubjectOwnsPartitionElements, Schema,
-  Schemas, ClassRegistry, KnownLocations, IModelJsFs, BisCoreSchema, GenericSchema, PhysicalPartition, GeometricElement3d, SnapshotDb,
+  AnalyticalElement, AnalyticalModel, AnalyticalPartition, AnalyticalSchema, BackendRequestContext, BisCoreSchema, ClassRegistry, GenericSchema,
+  GeometricElement3d, IModelDb, IModelJsFs, KnownLocations, PhysicalPartition, Schema, Schemas, SnapshotDb, SpatialCategory,
+  SubjectOwnsPartitionElements,
 } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
-import * as semver from "semver";
 
 class TestAnalyticalSchema extends Schema {
   public static get schemaName(): string { return "TestAnalytical"; }

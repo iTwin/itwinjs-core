@@ -6,42 +6,18 @@
  * @module Tiles
  */
 
-import {
-  assert,
-  compareBooleans,
-  compareStrings,
-  Id64String,
-} from "@bentley/bentleyjs-core";
-import {
-  Range3d,
-  Transform,
-} from "@bentley/geometry-core";
-import {
-  BatchType,
-  compareIModelTileTreeIds,
-  iModelTileTreeIdToString,
-  PrimaryTileTreeId,
-  ViewFlagOverrides,
-} from "@bentley/imodeljs-common";
-import { IModelConnection } from "../IModelConnection";
-import {
-  IModelTileTree,
-  IModelTileTreeParams,
-  iModelTileTreeParamsFromJSON,
-  TileDrawArgs,
-  TileGraphicType,
-  TileTree,
-  TileTreeOwner,
-  TileTreeReference,
-  TileTreeSupplier,
-} from "./internal";
-import {
-  ViewState,
-  ViewState3d,
-} from "../ViewState";
+import { assert, compareBooleans, compareStrings, Id64String } from "@bentley/bentleyjs-core";
+import { Range3d, Transform } from "@bentley/geometry-core";
+import { BatchType, compareIModelTileTreeIds, iModelTileTreeIdToString, PrimaryTileTreeId, ViewFlagOverrides } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
+import { IModelConnection } from "../IModelConnection";
 import { GeometricModelState } from "../ModelState";
 import { SceneContext } from "../ViewContext";
+import { ViewState, ViewState3d } from "../ViewState";
+import {
+  IModelTileTree, IModelTileTreeParams, iModelTileTreeParamsFromJSON, TileDrawArgs, TileGraphicType, TileTree, TileTreeOwner, TileTreeReference,
+  TileTreeSupplier,
+} from "./internal";
 
 interface PrimaryTreeId {
   readonly treeId: PrimaryTileTreeId;

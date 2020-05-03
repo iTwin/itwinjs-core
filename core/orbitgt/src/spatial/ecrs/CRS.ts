@@ -14,6 +14,10 @@ type int32 = number;
 type float32 = number;
 type float64 = number;
 
+import { AList } from "../../system/collection/AList";
+import { ASystem } from "../../system/runtime/ASystem";
+import { Strings } from "../../system/runtime/Strings";
+import { Coordinate } from "../geom/Coordinate";
 import { Axis } from "./Axis";
 import { CoordinateSystem } from "./CoordinateSystem";
 import { Datum } from "./Datum";
@@ -24,11 +28,6 @@ import { Registry } from "./Registry";
 import { Transform } from "./Transform";
 import { Unit } from "./Unit";
 import { VerticalModel } from "./VerticalModel";
-
-import { Coordinate } from "../geom/Coordinate";
-import { AList } from "../../system/collection/AList";
-import { ASystem } from "../../system/runtime/ASystem";
-import { Strings } from "../../system/runtime/Strings";
 
 /**
  * Class CRS defines the parameters of a coordinate reference system.

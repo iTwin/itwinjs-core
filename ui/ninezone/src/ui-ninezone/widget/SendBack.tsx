@@ -6,14 +6,14 @@
  * @module Widget
  */
 
-import * as React from "react";
-import { NineZoneDispatchContext } from "../base/NineZone";
-import { ActiveTabIdContext, WidgetIdContext } from "./Widget";
-import { WIDGET_SEND_BACK, toolSettingsTabId } from "../base/NineZoneState";
-import { assert } from "../base/assert";
-import { FloatingWidgetIdContext } from "./FloatingWidget";
-import { PanelSideContext } from "../widget-panels/Panel";
 import "./SendBack.scss";
+import * as React from "react";
+import { assert } from "../base/assert";
+import { NineZoneDispatchContext } from "../base/NineZone";
+import { toolSettingsTabId, WIDGET_SEND_BACK } from "../base/NineZoneState";
+import { PanelSideContext } from "../widget-panels/Panel";
+import { FloatingWidgetIdContext } from "./FloatingWidget";
+import { ActiveTabIdContext, WidgetIdContext } from "./Widget";
 
 /** @internal */
 export const SendBack = React.memo(function SendBack() { // tslint:disable-line: variable-name no-shadowed-variable

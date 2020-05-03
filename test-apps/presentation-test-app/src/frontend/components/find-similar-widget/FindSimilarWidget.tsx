@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import "./FindSimilarWidget.css";
 import * as React from "react";
 import { IModelApp } from "@bentley/imodeljs-frontend";
-import { tableWithUnifiedSelection, IPresentationTableDataProvider } from "@bentley/presentation-components";
-import { Table, SelectionMode } from "@bentley/ui-components";
-import "./FindSimilarWidget.css";
+import { IPresentationTableDataProvider, tableWithUnifiedSelection } from "@bentley/presentation-components";
+import { SelectionMode, Table } from "@bentley/ui-components";
 
 // tslint:disable-next-line:variable-name naming-convention
 const SampleTable = tableWithUnifiedSelection(Table);

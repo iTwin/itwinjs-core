@@ -2,39 +2,20 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { BentleyStatus, Id64, Id64String, IModelStatus } from "@bentley/bentleyjs-core";
-import { Angle, Arc3d, Box, Geometry, LineSegment3d, LineString3d, Loop, Point2d, Point3d, Range3d, Transform, YawPitchRollAngles, IModelJson } from "@bentley/geometry-core";
-import {
-  AreaPattern,
-  BackgroundFill,
-  BRepEntity,
-  Code,
-  ColorByName,
-  ColorDef,
-  FillDisplay,
-  FontProps,
-  FontType,
-  GeometricElement3dProps,
-  GeometricElementProps,
-  GeometryParams,
-  GeometryPartProps,
-  GeometryStreamBuilder,
-  GeometryStreamFlags,
-  GeometryStreamIterator,
-  GeometryStreamProps,
-  Gradient,
-  IModel,
-  LinePixels,
-  LineStyle,
-  MassPropertiesOperation,
-  MassPropertiesRequestProps,
-  TextString,
-  TextStringProps,
-  CreatePolyfaceRequestProps,
-  CreatePolyfaceResponseProps,
-} from "@bentley/imodeljs-common";
 import { assert, expect } from "chai";
-import { BackendRequestContext, GeometricElement, GeometryPart, LineStyleDefinition, PhysicalObject, Platform, SnapshotDb } from "../../imodeljs-backend";
+import { BentleyStatus, Id64, Id64String, IModelStatus } from "@bentley/bentleyjs-core";
+import {
+  Angle, Arc3d, Box, Geometry, IModelJson, LineSegment3d, LineString3d, Loop, Point2d, Point3d, Range3d, Transform, YawPitchRollAngles,
+} from "@bentley/geometry-core";
+import {
+  AreaPattern, BackgroundFill, BRepEntity, Code, ColorByName, ColorDef, CreatePolyfaceRequestProps, CreatePolyfaceResponseProps, FillDisplay,
+  FontProps, FontType, GeometricElement3dProps, GeometricElementProps, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamFlags,
+  GeometryStreamIterator, GeometryStreamProps, Gradient, IModel, LinePixels, LineStyle, MassPropertiesOperation, MassPropertiesRequestProps,
+  TextString, TextStringProps,
+} from "@bentley/imodeljs-common";
+import {
+  BackendRequestContext, GeometricElement, GeometryPart, LineStyleDefinition, PhysicalObject, Platform, SnapshotDb,
+} from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
 function assertTrue(expr: boolean): asserts expr {

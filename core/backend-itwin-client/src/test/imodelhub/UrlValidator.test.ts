@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ClientRequestContext, Logger, LogLevel, Config } from "@bentley/bentleyjs-core";
-import { IModelBaseHandler } from "@bentley/imodelhub-client";
-import { UrlDiscoveryClient, ITwinClientLoggerCategory } from "@bentley/itwin-client";
 import { assert, should } from "chai";
 import * as fs from "fs";
 import * as path from "path";
+import { ClientRequestContext, Config, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { IModelBaseHandler } from "@bentley/imodelhub-client";
+import { ITwinClientLoggerCategory, UrlDiscoveryClient } from "@bentley/itwin-client";
 
 export const whitelistRelPath: string = "../assets/whitelist.txt";
 

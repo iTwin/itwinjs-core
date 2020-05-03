@@ -6,7 +6,7 @@
  * @module Core
  */
 
-import { Id64String, Id64 } from "@bentley/bentleyjs-core";
+import { Id64, Id64String } from "@bentley/bentleyjs-core";
 
 /**
  * Type of an ECClass ID.

@@ -10,8 +10,8 @@ import * as path from "path";
 import { ClassRegistry } from "../ClassRegistry";
 import { KnownLocations } from "../IModelHost";
 import { Schema, Schemas } from "../Schema";
-import * as elementsModule from "./LinearReferencingElements";
 import * as aspectsModule from "./LinearReferencingElementAspects";
+import * as elementsModule from "./LinearReferencingElements";
 import * as relationshipsModule from "./LinearReferencingRelationships";
 
 /** Schema class for the LinearReferencing domain.

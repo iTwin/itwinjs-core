@@ -6,16 +6,15 @@
 /* tslint:disable: no-console */
 
 import { expect } from "chai";
-import { Checker } from "../Checker";
-
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { IModelJson } from "../../serialization/IModelJsonSchema";
 import * as fs from "fs";
-import { OffsetHelpers } from "./ChainCollectorContextA";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { LineSegment3d } from "../../curve/LineSegment3d";
 import { Range3d } from "../../geometry3d/Range";
 import { Sample, SteppedIndexFunctionFactory } from "../../serialization/GeometrySamples";
-import { LineSegment3d } from "../../curve/LineSegment3d";
+import { IModelJson } from "../../serialization/IModelJsonSchema";
+import { Checker } from "../Checker";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { OffsetHelpers } from "./ChainCollectorContextA";
 
 const chainCollectorInputDirectory = "./src/test/testInputs/ChainCollector/";
 

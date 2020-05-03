@@ -3,17 +3,17 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { DelayedPromiseWithProps } from "../DelayedPromise";
+import { UnitProps } from "../Deserialization/JsonProps";
+import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
+import { SchemaItemType } from "../ECObjects";
+import { ECObjectsError, ECObjectsStatus } from "../Exception";
+import { LazyLoadedPhenomenon, LazyLoadedUnitSystem } from "../Interfaces";
+import { SchemaItemKey } from "../SchemaKey";
+import { Phenomenon } from "./Phenomenon";
 import { Schema } from "./Schema";
 import { SchemaItem } from "./SchemaItem";
-import { Phenomenon } from "./Phenomenon";
 import { UnitSystem } from "./UnitSystem";
-import { DelayedPromiseWithProps } from "./../DelayedPromise";
-import { SchemaItemType } from "./../ECObjects";
-import { UnitProps } from "./../Deserialization/JsonProps";
-import { ECObjectsError, ECObjectsStatus } from "./../Exception";
-import { LazyLoadedPhenomenon, LazyLoadedUnitSystem } from "./../Interfaces";
-import { SchemaItemKey } from "./../SchemaKey";
-import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
 
 /**
  * An abstract class that adds the ability to define Units and everything that goes with them, within an ECSchema as a

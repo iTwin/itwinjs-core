@@ -8,19 +8,19 @@
 
 import { assert, DbOpcode, GuidString, Id64, Id64Set, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import { Range3d, Transform } from "@bentley/geometry-core";
+import { LockLevel } from "@bentley/imodelhub-client";
 import {
   AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeProps, CodeSpec, DefinitionElementProps, ElementAlignedBox3d, ElementProps, EntityMetaData,
-  GeometricElement2dProps, GeometricElement3dProps, GeometricElementProps, GeometricModel3dProps, GeometryPartProps, GeometryStreamProps,
-  IModel, InformationPartitionElementProps, LineStyleProps, Placement2d, Placement3d, RelatedElement,
-  SectionLocationProps, SectionType, SheetBorderTemplateProps, SheetProps, SheetTemplateProps, SubjectProps, TypeDefinition, TypeDefinitionElementProps,
+  GeometricElement2dProps, GeometricElement3dProps, GeometricElementProps, GeometricModel3dProps, GeometryPartProps, GeometryStreamProps, IModel,
+  InformationPartitionElementProps, LineStyleProps, Placement2d, Placement3d, RelatedElement, SectionLocationProps, SectionType,
+  SheetBorderTemplateProps, SheetProps, SheetTemplateProps, SubjectProps, TypeDefinition, TypeDefinitionElementProps,
 } from "@bentley/imodeljs-common";
+import { ConcurrencyControl } from "./ConcurrencyControl";
 import { Entity } from "./Entity";
 import { IModelCloneContext } from "./IModelCloneContext";
 import { IModelDb } from "./IModelDb";
 import { DrawingModel, PhysicalModel } from "./Model";
 import { SubjectOwnsSubjects } from "./NavigationRelationship";
-import { ConcurrencyControl } from "./ConcurrencyControl";
-import { LockLevel } from "@bentley/imodelhub-client";
 
 /** Elements are the smallest individually identifiable building blocks for modeling the real world in an iModel.
  * Each element represents an entity in the real world. Sets of Elements (contained in [[Model]]s) are used to model

@@ -5,8 +5,8 @@
 /** @packageDocumentation
  * @module iTwinServiceClients
  */
-import { BentleyError, GetMetaDataFunction, LogFunction } from "@bentley/bentleyjs-core";
 import * as https from "https";
+import { BentleyError, GetMetaDataFunction, LogFunction } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext } from "./AuthorizedClientRequestContext";
 import { ProgressCallback } from "./Request";
 

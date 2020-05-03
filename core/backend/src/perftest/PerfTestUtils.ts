@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Code, ColorDef, DbResult, IModel, SubCategoryAppearance } from "@bentley/imodeljs-common";
 import { assert } from "chai";
 import * as path from "path";
-import { BackendRequestContext, IModelJsFs, SnapshotDb, SpatialCategory, BriefcaseIdValue } from "../imodeljs-backend";
+import { Code, ColorDef, DbResult, IModel, SubCategoryAppearance } from "@bentley/imodeljs-common";
+import { BackendRequestContext, BriefcaseIdValue, IModelJsFs, SnapshotDb, SpatialCategory } from "../imodeljs-backend";
 import { IModelTestUtils } from "../test/IModelTestUtils";
 
 export class PerfTestDataMgr {

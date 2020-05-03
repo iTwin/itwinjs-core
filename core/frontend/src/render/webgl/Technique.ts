@@ -6,42 +6,47 @@
  * @module WebGL
  */
 
-import { assert, using, dispose } from "@bentley/bentleyjs-core";
-import { ShaderProgram, ShaderProgramExecutor, CompileStatus } from "./ShaderProgram";
-import { TechniqueId, computeCompositeTechniqueId } from "./TechniqueId";
-import { IsInstanced, IsAnimated, IsClassified, IsShadowable, TechniqueFlags, FeatureMode, ClipDef, IsEdgeTestNeeded, IsThematic } from "./TechniqueFlags";
-import { ProgramBuilder, ClippingShaders } from "./ShaderBuilder";
-import { DrawParams, DrawCommands } from "./DrawCommand";
-import { Target } from "./Target";
-import { RenderPass } from "./RenderFlags";
-import { createClearTranslucentProgram } from "./glsl/ClearTranslucent";
-import { createClearPickAndColorProgram } from "./glsl/ClearPickAndColor";
-import { createCopyColorProgram } from "./glsl/CopyColor";
-import { createCopyPickBuffersProgram } from "./glsl/CopyPickBuffers";
-import { createVolClassCopyZProgram, createVolClassSetBlendProgram, createVolClassBlendProgram, createVolClassColorUsingStencilProgram, createVolClassCopyZUsingPointsProgram } from "./glsl/CopyStencil";
-import { createCompositeProgram } from "./glsl/Composite";
-import { createClipMaskProgram } from "./glsl/ClipMask";
-import { createEVSMProgram } from "./glsl/EVSMFromDepth";
-import { addTranslucency } from "./glsl/Translucency";
-import { addUnlitMonochrome } from "./glsl/Monochrome";
-import { createSurfaceBuilder, createSurfaceHiliter } from "./glsl/Surface";
-import { createPointStringBuilder, createPointStringHiliter } from "./glsl/PointString";
-import { createPointCloudBuilder, createPointCloudHiliter } from "./glsl/PointCloud";
-import createTerrainMeshBuilder from "./glsl/TerrainMesh";
-import { addFeatureId, addFeatureSymbology, addUniformFeatureSymbology, addRenderOrder, FeatureSymbologyOptions } from "./glsl/FeatureSymbology";
-import { addFragColorWithPreMultipliedAlpha, addPickBufferOutputs } from "./glsl/Fragment";
-import { addFrustum, addEyeSpace, addShaderFlags } from "./glsl/Common";
-import { addModelViewMatrix } from "./glsl/Vertex";
-import { createPolylineBuilder, createPolylineHiliter } from "./glsl/Polyline";
-import { createEdgeBuilder } from "./glsl/Edge";
-import { createSkyBoxProgram } from "./glsl/SkyBox";
-import { createSkySphereProgram } from "./glsl/SkySphere";
+import { assert, dispose, using } from "@bentley/bentleyjs-core";
+import { WebGLDisposable } from "./Disposable";
+import { DrawCommands, DrawParams } from "./DrawCommand";
 import { createAmbientOcclusionProgram } from "./glsl/AmbientOcclusion";
 import { createBlurProgram } from "./glsl/Blur";
+import { createClearPickAndColorProgram } from "./glsl/ClearPickAndColor";
+import { createClearTranslucentProgram } from "./glsl/ClearTranslucent";
+import { createClipMaskProgram } from "./glsl/ClipMask";
 import { createCombineTexturesProgram } from "./glsl/CombineTextures";
+import { addEyeSpace, addFrustum, addShaderFlags } from "./glsl/Common";
+import { createCompositeProgram } from "./glsl/Composite";
+import { createCopyColorProgram } from "./glsl/CopyColor";
+import { createCopyPickBuffersProgram } from "./glsl/CopyPickBuffers";
+import {
+  createVolClassBlendProgram, createVolClassColorUsingStencilProgram, createVolClassCopyZProgram, createVolClassCopyZUsingPointsProgram,
+  createVolClassSetBlendProgram,
+} from "./glsl/CopyStencil";
+import { createEdgeBuilder } from "./glsl/Edge";
+import { createEVSMProgram } from "./glsl/EVSMFromDepth";
+import { addFeatureId, addFeatureSymbology, addRenderOrder, addUniformFeatureSymbology, FeatureSymbologyOptions } from "./glsl/FeatureSymbology";
+import { addFragColorWithPreMultipliedAlpha, addPickBufferOutputs } from "./glsl/Fragment";
 import { addLogDepth } from "./glsl/LogarithmicDepthBuffer";
+import { addUnlitMonochrome } from "./glsl/Monochrome";
+import { createPointCloudBuilder, createPointCloudHiliter } from "./glsl/PointCloud";
+import { createPointStringBuilder, createPointStringHiliter } from "./glsl/PointString";
+import { createPolylineBuilder, createPolylineHiliter } from "./glsl/Polyline";
+import { createSkyBoxProgram } from "./glsl/SkyBox";
+import { createSkySphereProgram } from "./glsl/SkySphere";
+import { createSurfaceBuilder, createSurfaceHiliter } from "./glsl/Surface";
+import createTerrainMeshBuilder from "./glsl/TerrainMesh";
+import { addTranslucency } from "./glsl/Translucency";
+import { addModelViewMatrix } from "./glsl/Vertex";
+import { RenderPass } from "./RenderFlags";
+import { ClippingShaders, ProgramBuilder } from "./ShaderBuilder";
+import { CompileStatus, ShaderProgram, ShaderProgramExecutor } from "./ShaderProgram";
 import { System } from "./System";
-import { WebGLDisposable } from "./Disposable";
+import { Target } from "./Target";
+import {
+  ClipDef, FeatureMode, IsAnimated, IsClassified, IsEdgeTestNeeded, IsInstanced, IsShadowable, IsThematic, TechniqueFlags,
+} from "./TechniqueFlags";
+import { computeCompositeTechniqueId, TechniqueId } from "./TechniqueId";
 
 /** Defines a rendering technique implemented using one or more shader programs.
  * @internal

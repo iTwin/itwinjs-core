@@ -15,8 +15,8 @@ type float32 = number;
 type float64 = number;
 
 
-import { Coordinate } from "./Coordinate";
 import { ASystem } from "../../system/runtime/ASystem";
+import { Coordinate } from "./Coordinate";
 
 /**
  * Class Line defines a line between two 3D XYZ points.

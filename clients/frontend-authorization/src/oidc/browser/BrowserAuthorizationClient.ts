@@ -7,13 +7,13 @@
  * @module BrowserAuthorization
  */
 
-import { assert, AuthStatus, BeEvent, BentleyError, ClientRequestContext, Logger, IDisposable } from "@bentley/bentleyjs-core";
-import { AccessToken, ImsAuthorizationClient } from "@bentley/itwin-client";
 import { User, UserManager, UserManagerSettings } from "oidc-client";
+import { assert, AuthStatus, BeEvent, BentleyError, ClientRequestContext, IDisposable, Logger } from "@bentley/bentleyjs-core";
+import { AccessToken, ImsAuthorizationClient } from "@bentley/itwin-client";
 import { FrontendAuthorizationClient } from "../../FrontendAuthorizationClient";
+import { FrontendAuthorizationClientLoggerCategory } from "../../FrontendAuthorizationClientLoggerCategory";
 import { BrowserAuthorizationBase } from "./BrowserAuthorizationBase";
 import { BrowserAuthorizationClientRedirectState } from "./BrowserAuthorizationClientRedirectState";
-import { FrontendAuthorizationClientLoggerCategory } from "../../FrontendAuthorizationClientLoggerCategory";
 
 /**
  * @beta

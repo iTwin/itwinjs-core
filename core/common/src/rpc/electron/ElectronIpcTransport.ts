@@ -8,10 +8,10 @@
 
 import { BentleyStatus } from "@bentley/bentleyjs-core";
 import { IModelError } from "../../IModelError";
-import { SerializedRpcRequest, RpcRequestFulfillment } from "../core/RpcProtocol";
-import { ElectronRpcRequest } from "./ElectronRpcRequest";
 import { RpcSerializedValue } from "../core/RpcMarshaling";
+import { RpcRequestFulfillment, SerializedRpcRequest } from "../core/RpcProtocol";
 import { ElectronRpcProtocol } from "./ElectronRpcProtocol";
+import { ElectronRpcRequest } from "./ElectronRpcRequest";
 
 const OBJECTS_CHANNEL = "@bentley/imodeljs-common/ElectronRpcProtocol/objects";
 const DATA_CHANNEL = "@bentley/imodeljs-common/ElectronRpcProtocol/data";

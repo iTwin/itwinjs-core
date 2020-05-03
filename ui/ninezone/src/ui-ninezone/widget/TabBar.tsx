@@ -6,18 +6,18 @@
  * @module Widget
  */
 
-import * as React from "react";
-import { Timer, Point } from "@bentley/ui-core";
-import { WidgetTabs } from "./Tabs";
-import { usePointerCaptor } from "../base/PointerCaptor";
-import { WIDGET_DRAG, WIDGET_DRAG_END, WidgetDragEndAction } from "../base/NineZoneState";
-import { WidgetIdContext } from "./Widget";
-import { assert } from "../base/assert";
-import { useDragWidget, UseDragWidgetArgs, isTabTarget } from "../base/DragManager";
-import { FloatingWidgetIdContext } from "./FloatingWidget";
-import { NineZoneDispatchContext, getUniqueId } from "../base/NineZone";
-import { TabBarButtons } from "./Buttons";
 import "./TabBar.scss";
+import * as React from "react";
+import { Point, Timer } from "@bentley/ui-core";
+import { assert } from "../base/assert";
+import { isTabTarget, useDragWidget, UseDragWidgetArgs } from "../base/DragManager";
+import { getUniqueId, NineZoneDispatchContext } from "../base/NineZone";
+import { WIDGET_DRAG, WIDGET_DRAG_END, WidgetDragEndAction } from "../base/NineZoneState";
+import { usePointerCaptor } from "../base/PointerCaptor";
+import { TabBarButtons } from "./Buttons";
+import { FloatingWidgetIdContext } from "./FloatingWidget";
+import { WidgetTabs } from "./Tabs";
+import { WidgetIdContext } from "./Widget";
 
 /** @internal */
 export const WidgetTabBar = React.memo(function WidgetTabBar() { // tslint:disable-line: variable-name no-shadowed-variable

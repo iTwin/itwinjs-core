@@ -6,29 +6,30 @@
  * @module Measure
  */
 
+import { Id64, Id64Array, Id64String } from "@bentley/bentleyjs-core";
 import {
-  DialogItem, DialogPropertySyncItem, DialogItemValue,
-  PropertyDescription,
-} from "@bentley/ui-abstract";
+  AxisOrder, IModelJson, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, PointString3d, PolygonOps, Vector3d, XAndY, XYAndZ,
+} from "@bentley/geometry-core";
+import {
+  BentleyStatus, ColorDef, GeometryStreamProps, LinePixels, MassPropertiesOperation, MassPropertiesRequestProps, MassPropertiesResponseProps,
+} from "@bentley/imodeljs-common";
+import { DialogItem, DialogItemValue, DialogPropertySyncItem, PropertyDescription } from "@bentley/ui-abstract";
+import { AccuDrawHintBuilder } from "../AccuDraw";
+import { LocateFilterStatus, LocateResponse } from "../ElementLocateManager";
+import { HitDetail, HitGeomType } from "../HitDetail";
+import { IModelApp } from "../IModelApp";
+import { Marker } from "../Marker";
+import { NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "../NotificationManager";
+import { QuantityType } from "../QuantityFormatter";
 import { CanvasDecoration } from "../render/CanvasDecoration";
 import { GraphicType } from "../render/GraphicBuilder";
-import { Point3d, XYAndZ, XAndY, Vector3d, Matrix3d, PointString3d, AxisOrder, Point2d, IModelJson, Plane3dByOriginAndUnitNormal, PolygonOps } from "@bentley/geometry-core";
-import { Viewport } from "../Viewport";
 import { DecorateContext } from "../ViewContext";
-import { Marker } from "../Marker";
-import { PrimitiveTool } from "./PrimitiveTool";
-import { IModelApp } from "../IModelApp";
-import { HitDetail, HitGeomType } from "../HitDetail";
-import { GeometryStreamProps, ColorDef, MassPropertiesRequestProps, MassPropertiesOperation, BentleyStatus, MassPropertiesResponseProps, LinePixels } from "@bentley/imodeljs-common";
-import { QuantityType } from "../QuantityFormatter";
-import { BeButtonEvent, EventHandled, InputSource, CoreTools } from "./Tool";
-import { NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "../NotificationManager";
+import { Viewport } from "../Viewport";
 import { AccuDrawShortcuts } from "./AccuDrawTool";
-import { AccuDrawHintBuilder } from "../AccuDraw";
-import { LocateResponse, LocateFilterStatus } from "../ElementLocateManager";
-import { Id64String, Id64Array, Id64 } from "@bentley/bentleyjs-core";
-import { ToolAssistance, ToolAssistanceSection, ToolAssistanceInstruction, ToolAssistanceImage, ToolAssistanceInputMethod } from "./ToolAssistance";
 import { EditManipulator } from "./EditManipulator";
+import { PrimitiveTool } from "./PrimitiveTool";
+import { BeButtonEvent, CoreTools, EventHandled, InputSource } from "./Tool";
+import { ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection } from "./ToolAssistance";
 
 function translateBold(key: string) { return "<b>" + CoreTools.translate("Measure.Labels." + key) + ":</b> "; }
 

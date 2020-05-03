@@ -2,29 +2,30 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
 /** @packageDocumentation
  * @module Frontstage
  */
-import * as React from "react";
+import "./Frontstage.scss";
 import produce, { castDraft } from "immer";
-import { UiSettingsStatus, UiSettingsResult } from "@bentley/ui-core";
+import * as React from "react";
+import { UiSettingsResult, UiSettingsStatus } from "@bentley/ui-core";
 import {
-  WidgetPanels, NineZoneStateReducer, createNineZoneState, NineZoneProvider, NineZoneState, addPanelWidget, addTab, PanelSide, NineZoneActionTypes,
-  FloatingWidgets,
+  addPanelWidget, addTab, createNineZoneState, FloatingWidgets, NineZoneActionTypes, NineZoneProvider, NineZoneState, NineZoneStateReducer, PanelSide,
+  WidgetPanels,
 } from "@bentley/ui-ninezone";
 import { useActiveFrontstageDef } from "../frontstage/Frontstage";
-import { WidgetPanelsStatusBar } from "./StatusBar";
 import { FrontstageDef } from "../frontstage/FrontstageDef";
-import { WidgetPanelsToolbars } from "./Toolbars";
-import { WidgetPanelsToolSettings, ToolSettingsContent } from "./ToolSettings";
-import { WidgetPanelsFrontstageContent } from "./FrontstageContent";
-import { WidgetContent } from "./Content";
+import { StagePanelState, StagePanelZoneDefKeys } from "../stagepanels/StagePanelDef";
+import { useUiSettingsContext } from "../uisettings/useUiSettings";
 import { WidgetDef } from "../widgets/WidgetDef";
 import { ZoneState } from "../zones/ZoneDef";
-import { StagePanelState, StagePanelZoneDefKeys } from "../stagepanels/StagePanelDef";
+import { WidgetContent } from "./Content";
+import { WidgetPanelsFrontstageContent } from "./FrontstageContent";
 import { ModalFrontstageComposer, useActiveModalFrontstageInfo } from "./ModalFrontstageComposer";
-import { useUiSettingsContext } from "../uisettings/useUiSettings";
-import "./Frontstage.scss";
+import { WidgetPanelsStatusBar } from "./StatusBar";
+import { WidgetPanelsToolbars } from "./Toolbars";
+import { ToolSettingsContent, WidgetPanelsToolSettings } from "./ToolSettings";
 
 // istanbul ignore next
 const WidgetPanelsFrontstageComponent = React.memo(function WidgetPanelsFrontstageComponent() { // tslint:disable-line: variable-name no-shadowed-variable

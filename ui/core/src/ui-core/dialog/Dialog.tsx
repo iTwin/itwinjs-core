@@ -6,16 +6,14 @@
  * @module Dialog
  */
 
+import "./Dialog.scss";
+import classnames from "classnames";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import classnames from "classnames";
-
-import { UiCore } from "../UiCore";
-import { Omit } from "../utils/typeUtils";
-import { CommonProps } from "../utils/Props";
 import { DivWithOutsideClick } from "../base/DivWithOutsideClick";
-
-import "./Dialog.scss";
+import { UiCore } from "../UiCore";
+import { CommonProps } from "../utils/Props";
+import { Omit } from "../utils/typeUtils";
 
 /** Enum for button types. Determines button label, and default button style.
  * @public

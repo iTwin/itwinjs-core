@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import * as sinon from "sinon";
 import {
-  StagePanelType, NineZoneStagePanelsManager, NineZoneStagePanelsManagerProps, NineZoneStagePanelManager,
-  NineZoneStagePanelManagerProps, getDefaultNineZoneStagePanelsManagerProps, getDefaultNineZoneStagePanelManagerProps,
+  getDefaultNineZoneStagePanelManagerProps, getDefaultNineZoneStagePanelsManagerProps, NineZoneStagePanelManager, NineZoneStagePanelManagerProps,
+  NineZoneStagePanelsManager, NineZoneStagePanelsManagerProps, StagePanelType,
 } from "../../ui-ninezone";
 
 describe("NineZoneStagePanelsManager", () => {

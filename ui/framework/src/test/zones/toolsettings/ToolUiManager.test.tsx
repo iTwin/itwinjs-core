@@ -4,14 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
-
-import TestUtils from "../../TestUtils";
-import { ToolUiManager, SyncToolSettingsPropertiesEventArgs, SyncUiEventDispatcher } from "../../../ui-framework";
-import {
-  DialogItemValue, DialogItem, PropertyDescription, PropertyEditorParamTypes,
-  SuppressLabelEditorParams, DialogPropertySyncItem,
-} from "@bentley/ui-abstract";
 import { IModelApp, NoRenderApp } from "@bentley/imodeljs-frontend";
+import {
+  DialogItem, DialogItemValue, DialogPropertySyncItem, PropertyDescription, PropertyEditorParamTypes, SuppressLabelEditorParams,
+} from "@bentley/ui-abstract";
+import { SyncToolSettingsPropertiesEventArgs, SyncUiEventDispatcher, ToolUiManager } from "../../../ui-framework";
+import TestUtils from "../../TestUtils";
 
 // cSpell:Ignore USELENGTH
 

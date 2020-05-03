@@ -6,75 +6,28 @@
  * @module Tiles
  */
 
+import { assert, ByteStream, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
+import { Point3d, Range2d, Range3d, Transform } from "@bentley/geometry-core";
 import {
-  assert,
-  ByteStream,
-  Id64String,
-  JsonUtils,
-} from "@bentley/bentleyjs-core";
-import {
-  Point3d,
-  Range2d,
-  Range3d,
-  Transform,
-} from "@bentley/geometry-core";
-import {
-  BatchType,
-  ColorDef,
-  ElementAlignedBox3d,
-  FeatureTableHeader,
-  FillFlags,
-  Gradient,
-  ImageSource,
-  ImageSourceFormat,
-  ImdlHeader,
-  LinePixels,
-  PackedFeatureTable,
-  PolylineTypeFlags,
-  QParams2d,
-  QParams3d,
-  readTileContentDescription,
-  RenderMaterial,
-  RenderTexture,
-  TextureMapping,
-  TileReadError,
-  TileReadStatus,
+  BatchType, ColorDef, ElementAlignedBox3d, FeatureTableHeader, FillFlags, Gradient, ImageSource, ImageSourceFormat, ImdlHeader, LinePixels,
+  PackedFeatureTable, PolylineTypeFlags, QParams2d, QParams3d, readTileContentDescription, RenderMaterial, RenderTexture, TextureMapping,
+  TileReadError, TileReadStatus,
 } from "@bentley/imodeljs-common";
-import {
-  GltfReader,
-  GltfReaderProps,
-  IModelTileContent,
-  ShouldAbortReadGltf,
-} from "./internal";
-import { DisplayParams } from "../render/primitives/DisplayParams";
-import {
-  EdgeParams,
-  MeshParams,
-  PointStringParams,
-  PolylineParams,
-  SegmentEdgeParams,
-  SilhouetteParams,
-  SurfaceMaterial,
-  SurfaceParams,
-  SurfaceType,
-  TesselatedPolyline,
-  VertexIndices,
-  VertexTable,
-  createSurfaceMaterial,
-  isValidSurfaceType,
-} from "../render/primitives/VertexTable";
-import {
-  AuxChannelTable,
-  AuxChannelTableProps,
-} from "../render/primitives/AuxChannelTable";
-import { RenderGraphic } from "../render/RenderGraphic";
-import { InstancedGraphicParams } from "../render/InstancedGraphicParams";
-import { GraphicBranch } from "../render/GraphicBranch";
-import { RenderSystem } from "../render/RenderSystem";
 import { imageElementFromImageSource } from "../ImageUtil";
-import { IModelConnection } from "../IModelConnection";
-import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { IModelApp } from "../IModelApp";
+import { IModelConnection } from "../IModelConnection";
+import { GraphicBranch } from "../render/GraphicBranch";
+import { InstancedGraphicParams } from "../render/InstancedGraphicParams";
+import { AuxChannelTable, AuxChannelTableProps } from "../render/primitives/AuxChannelTable";
+import { DisplayParams } from "../render/primitives/DisplayParams";
+import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
+import {
+  createSurfaceMaterial, EdgeParams, isValidSurfaceType, MeshParams, PointStringParams, PolylineParams, SegmentEdgeParams, SilhouetteParams,
+  SurfaceMaterial, SurfaceParams, SurfaceType, TesselatedPolyline, VertexIndices, VertexTable,
+} from "../render/primitives/VertexTable";
+import { RenderGraphic } from "../render/RenderGraphic";
+import { RenderSystem } from "../render/RenderSystem";
+import { GltfReader, GltfReaderProps, IModelTileContent, ShouldAbortReadGltf } from "./internal";
 
 // tslint:disable:no-const-enum
 

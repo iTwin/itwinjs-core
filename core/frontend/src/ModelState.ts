@@ -8,19 +8,13 @@
 
 import { Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import { Point2d, Range3d } from "@bentley/geometry-core";
-import {
-  GeometricModel2dProps,
-  GeometricModel3dProps,
-  GeometricModelProps,
-  ModelProps,
-  RelatedElement,
-} from "@bentley/imodeljs-common";
+import { GeometricModel2dProps, GeometricModel3dProps, GeometricModelProps, ModelProps, RelatedElement } from "@bentley/imodeljs-common";
 import { EntityState } from "./EntityState";
-import { IModelConnection } from "./IModelConnection";
-import { createPrimaryTileTreeReference, createRealityTileTreeReference, TileTreeReference } from "./tile/internal";
 import { HitDetail } from "./HitDetail";
-import { ViewState } from "./ViewState";
+import { IModelConnection } from "./IModelConnection";
 import { SpatialClassifiers } from "./SpatialClassifiers";
+import { createPrimaryTileTreeReference, createRealityTileTreeReference, TileTreeReference } from "./tile/internal";
+import { ViewState } from "./ViewState";
 
 /** Represents the front-end state of a [Model]($backend).
  * @public

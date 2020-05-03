@@ -7,13 +7,11 @@
  */
 
 import * as React from "react";
-
 import { OnCancelFunc, RelativePosition } from "@bentley/ui-abstract";
-import { DivWithOutsideClick, Orientation, Point, SizeProps, Size } from "@bentley/ui-core";
-
-import { PositionPopup } from "./PositionPopup";
-import { PopupManager, PopupPropsBase } from "./PopupManager";
+import { DivWithOutsideClick, Orientation, Point, Size, SizeProps } from "@bentley/ui-core";
 import { CursorPopup } from "../cursor/cursorpopup/CursorPopup";
+import { PopupManager, PopupPropsBase } from "./PopupManager";
+import { PositionPopup } from "./PositionPopup";
 
 /** @alpha */
 export interface HTMLElementPopupProps extends PopupPropsBase {

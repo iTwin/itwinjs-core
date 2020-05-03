@@ -6,8 +6,8 @@
  * @module Hierarchies
  */
 
+import { LabelDefinition, LabelDefinitionJSON } from "../LabelDefinition";
 import { NodeKey, NodeKeyJSON } from "./Key";
-import { LabelDefinitionJSON, LabelDefinition } from "../LabelDefinition";
 
 /**
  * Data structure that describes a tree node.

@@ -2,26 +2,26 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Checker } from "../Checker";
 import { expect } from "chai";
-import { Sample } from "../../serialization/GeometrySamples";
-import { Loop } from "../../curve/Loop";
-import { LineString3d } from "../../curve/LineString3d";
-import { Point3d } from "../../geometry3d/Point3dVector3d";
-import { MomentData } from "../../geometry4d/MomentData";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { CurveChain, CurveCollection } from "../../curve/CurveCollection";
-import { Angle } from "../../geometry3d/Angle";
-import { StrokeOptions } from "../../curve/StrokeOptions";
 import { BSplineCurve3d } from "../../bspline/BSplineCurve";
-import { RegionOps } from "../../curve/RegionOps";
-import { CurvePrimitive } from "../../curve/CurvePrimitive";
 import { Arc3d } from "../../curve/Arc3d";
-import { Transform } from "../../geometry3d/Transform";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { AnyRegion } from "../../curve/CurveChain";
+import { CurveChain, CurveCollection } from "../../curve/CurveCollection";
+import { CurvePrimitive } from "../../curve/CurvePrimitive";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { LineSegment3d } from "../../curve/LineSegment3d";
+import { LineString3d } from "../../curve/LineString3d";
+import { Loop } from "../../curve/Loop";
+import { RegionOps } from "../../curve/RegionOps";
+import { StrokeOptions } from "../../curve/StrokeOptions";
+import { Angle } from "../../geometry3d/Angle";
+import { Matrix3d } from "../../geometry3d/Matrix3d";
+import { Point3d } from "../../geometry3d/Point3dVector3d";
+import { Transform } from "../../geometry3d/Transform";
+import { MomentData } from "../../geometry4d/MomentData";
+import { Sample } from "../../serialization/GeometrySamples";
+import { Checker } from "../Checker";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
 /* tslint:disable:no-console variable-name */
 /** Add individual segments of  xyz array to parent. */

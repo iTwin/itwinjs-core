@@ -7,27 +7,10 @@
  * @module Tools
  */
 
+import { Map4d, Point3d } from "@bentley/geometry-core";
+import { ColorByName, ColorDef, Frustum, LinePixels, Npc } from "@bentley/imodeljs-common";
 import {
-  Point3d, Map4d,
-} from "@bentley/geometry-core";
-import {
-  ColorDef,
-  ColorByName,
-  Frustum,
-  LinePixels,
-  Npc,
-} from "@bentley/imodeljs-common";
-import {
-  CoordSystem,
-  DecorateContext,
-  Decorator,
-  GraphicBuilder,
-  GraphicType,
-  IModelApp,
-  Tool,
-  Viewport,
-  ViewState3d,
-  ViewState,
+  CoordSystem, DecorateContext, Decorator, GraphicBuilder, GraphicType, IModelApp, Tool, Viewport, ViewState, ViewState3d,
 } from "@bentley/imodeljs-frontend";
 import { parseToggle } from "./parseToggle";
 

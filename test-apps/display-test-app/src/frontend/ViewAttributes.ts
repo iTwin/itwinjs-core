@@ -3,56 +3,23 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { Id64String } from "@bentley/bentleyjs-core";
 import {
-  Id64String,
-} from "@bentley/bentleyjs-core";
+  CheckBox, ComboBox, ComboBoxEntry, createCheckBox, createColorInput, createComboBox, createNestedMenu, createNumericInput, createSlider, Slider,
+} from "@bentley/frontend-devtools";
 import {
-  AmbientOcclusion,
-  BackgroundMapProps,
-  BackgroundMapProviderName,
-  BackgroundMapType,
-  ColorDef,
-  ColorDefProps,
-  EnvironmentProps,
-  GlobeMode,
-  HiddenLine,
-  LightSettings,
-  LightSettingsProps,
-  LinePixels,
-  MonochromeMode,
-  RenderMode,
-  SolarShadowSettings,
-  SolarShadowSettingsProps,
-  TerrainProps,
-  ViewFlags,
-  ViewFlagProps,
+  AmbientOcclusion, BackgroundMapProps, BackgroundMapProviderName, BackgroundMapType, ColorDef, ColorDefProps, EnvironmentProps, GlobeMode,
+  HiddenLine, LightSettings, LightSettingsProps, LinePixels, MonochromeMode, RenderMode, SolarShadowSettings, SolarShadowSettingsProps, TerrainProps,
+  ViewFlagProps, ViewFlags,
 } from "@bentley/imodeljs-common";
 import {
-  DisplayStyle2dState,
-  DisplayStyle3dState,
-  DisplayStyleState,
-  Environment,
-  ViewState,
-  ViewState3d,
-  Viewport,
+  DisplayStyle2dState, DisplayStyle3dState, DisplayStyleState, Environment, Viewport, ViewState, ViewState3d,
 } from "@bentley/imodeljs-frontend";
-import {
-  CheckBox,
-  createCheckBox,
-  ComboBox,
-  ComboBoxEntry,
-  createComboBox,
-  createColorInput,
-  createNestedMenu,
-  createNumericInput,
-  createSlider,
-  Slider,
-} from "@bentley/frontend-devtools";
-import { ToolBarDropDown } from "./ToolBar";
-import { Settings } from "./FeatureOverrides";
 import { AmbientOcclusionEditor } from "./AmbientOcclusion";
 import { EnvironmentEditor } from "./EnvironmentEditor";
+import { Settings } from "./FeatureOverrides";
 import { ThematicDisplayEditor } from "./ThematicDisplay";
+import { ToolBarDropDown } from "./ToolBar";
 
 type UpdateAttribute = (view: ViewState) => void;
 

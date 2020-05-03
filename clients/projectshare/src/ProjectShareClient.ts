@@ -5,8 +5,10 @@
 /** @packageDocumentation
  * @module ProductShareClient
  */
-import { BentleyError, BentleyStatus, GuidString, Logger, Config } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext, ITwinClientLoggerCategory, ECJsonTypeMap, request, RequestOptions, WsgClient, WsgInstance, WsgQuery } from "@bentley/itwin-client";
+import { BentleyError, BentleyStatus, Config, GuidString, Logger } from "@bentley/bentleyjs-core";
+import {
+  AuthorizedClientRequestContext, ECJsonTypeMap, ITwinClientLoggerCategory, request, RequestOptions, WsgClient, WsgInstance, WsgQuery,
+} from "@bentley/itwin-client";
 
 const loggerCategory = ITwinClientLoggerCategory.Clients;
 

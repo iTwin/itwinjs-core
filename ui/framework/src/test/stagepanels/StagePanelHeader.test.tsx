@@ -2,19 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { mount, shallow } from "enzyme";
 import { expect } from "chai";
+import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-
 import { StagePanelLocation } from "@bentley/ui-abstract";
-
-import {
-  StagePanelHeader,
-  FrontstageManager,
-  StagePanelDef,
-  StagePanelState,
-} from "../../ui-framework";
+import { FrontstageManager, StagePanelDef, StagePanelHeader, StagePanelState } from "../../ui-framework";
 
 describe("StagePanelHeader", () => {
   it("should mount", () => {

@@ -7,23 +7,24 @@
  */
 
 import * as React from "react";
-import classnames = require("classnames");
-
 import { Logger } from "@bentley/bentleyjs-core";
-import { ActionButton, GroupButton, ToolbarItemUtilities, ConditionalBooleanValue, OnItemExecutedFunc, ConditionalStringValue } from "@bentley/ui-abstract";
-import { withOnOutsideClick, CommonProps, BadgeUtilities } from "@bentley/ui-core";
 import {
-  Item, ExpandableItem, GroupColumn, GroupTool, GroupToolExpander, Group as ToolGroupComponent,
-  NestedGroup as NestedToolGroupComponent, withDragInteraction, ToolbarDirectionContext,
+  ActionButton, ConditionalBooleanValue, ConditionalStringValue, GroupButton, OnItemExecutedFunc, ToolbarItemUtilities,
+} from "@bentley/ui-abstract";
+import { BadgeUtilities, CommonProps, withOnOutsideClick } from "@bentley/ui-core";
+import {
+  ExpandableItem, Group as ToolGroupComponent, GroupColumn, GroupTool, GroupToolExpander, Item, NestedGroup as NestedToolGroupComponent,
+  ToolbarDirectionContext, withDragInteraction,
 } from "@bentley/ui-ninezone";
-
-import { PropsHelper } from "../utils/PropsHelper";
+import { ToolGroupPanelContext } from "../frontstage/FrontstageComposer";
+import { FrontstageManager, ToolActivatedEventArgs } from "../frontstage/FrontstageManager";
 import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
 import { UiFramework } from "../UiFramework";
-import { FrontstageManager, ToolActivatedEventArgs } from "../frontstage/FrontstageManager";
-import { ToolGroupPanelContext } from "../frontstage/FrontstageComposer";
+import { PropsHelper } from "../utils/PropsHelper";
 import { ToolbarDragInteractionContext } from "./DragInteraction";
 import { ToolbarHelper } from "./ToolbarHelper";
+
+import classnames = require("classnames");
 
 // tslint:disable-next-line: variable-name
 const ToolGroup = withOnOutsideClick(ToolGroupComponent, undefined, false);

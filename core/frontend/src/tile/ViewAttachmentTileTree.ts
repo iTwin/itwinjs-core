@@ -6,69 +6,31 @@
  * @module Tiles
  */
 
+import { assert, BeDuration, BeTimePoint, dispose, Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import {
-  assert,
-  BeDuration,
-  BeTimePoint,
-  dispose,
-  Id64,
-  Id64String,
-  JsonUtils,
-} from "@bentley/bentleyjs-core";
-import {
-  Angle,
-  ClipVector,
-  IndexedPolyface,
-  IndexedPolyfaceVisitor,
-  Matrix3d,
-  Point2d,
-  Point3d,
-  Range2d,
-  Range3d,
-  Transform,
+  Angle, ClipVector, IndexedPolyface, IndexedPolyfaceVisitor, Matrix3d, Point2d, Point3d, Range2d, Range3d, Transform,
 } from "@bentley/geometry-core";
 import {
-  ColorDef,
-  ElementAlignedBox2d,
-  ElementAlignedBox3d,
-  Feature,
-  FeatureTable,
-  ImageBuffer,
-  PackedFeatureTable,
-  Placement2d,
-  RenderMode,
-  RenderTexture,
-  ViewAttachmentProps,
-  ViewFlagOverrides,
-  ViewFlags,
+  ColorDef, ElementAlignedBox2d, ElementAlignedBox3d, Feature, FeatureTable, ImageBuffer, PackedFeatureTable, Placement2d, RenderMode, RenderTexture,
+  ViewAttachmentProps, ViewFlagOverrides, ViewFlags,
 } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { FeatureSymbology } from "../render/FeatureSymbology";
-import { Scene } from "../render/Scene";
-import { RenderPlan } from "../render/RenderPlan";
 import { RenderClipVolume } from "../render/RenderClipVolume";
-import { RenderTarget } from "../render/RenderTarget";
+import { RenderPlan } from "../render/RenderPlan";
 import { RenderSystem } from "../render/RenderSystem";
-import {
-  SelectParent,
-  Tile,
-  TileContent,
-  TileDrawArgs,
-  TileLoadPriority,
-  TileParams,
-  TileRequest,
-  TileTree,
-  TileTreeLoadStatus,
-  TileTreeReference,
-  TileTreeSet,
-  TileVisibility,
-} from "./internal";
+import { RenderTarget } from "../render/RenderTarget";
+import { Scene } from "../render/Scene";
+import { SheetViewState } from "../Sheet";
 import { SceneContext } from "../ViewContext";
 import { ChangeFlags, CoordSystem, OffScreenViewport } from "../Viewport";
 import { ViewRect } from "../ViewRect";
 import { SpatialViewState, ViewState, ViewState2d, ViewState3d } from "../ViewState";
-import { SheetViewState } from "../Sheet";
+import {
+  SelectParent, Tile, TileContent, TileDrawArgs, TileLoadPriority, TileParams, TileRequest, TileTree, TileTreeLoadStatus, TileTreeReference,
+  TileTreeSet, TileVisibility,
+} from "./internal";
 
 const enum Tile3dPlacement {
   UpperLeft,

@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import * as fs from "fs";
+import * as path from "path";
 import { Logger } from "@bentley/bentleyjs-core";
 import { IModelHost } from "@bentley/imodeljs-backend";
 import { AnalysisImporter } from "./AnalysisImporter";
-import * as path from "path";
-import * as fs from "fs";
 
 (async () => {
   await IModelHost.startup();

@@ -4,8 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as path from "path";
-import { SchemaFileLocater, FileSchemaKey } from "./SchemaFileLocater";
-import { ISchemaLocater, Schema, SchemaContext, SchemaMatchType, SchemaKey, ECObjectsError, ECObjectsStatus, ECVersion } from "@bentley/ecschema-metadata";
+import {
+  ECObjectsError, ECObjectsStatus, ECVersion, ISchemaLocater, Schema, SchemaContext, SchemaKey, SchemaMatchType,
+} from "@bentley/ecschema-metadata";
+import { FileSchemaKey, SchemaFileLocater } from "./SchemaFileLocater";
 
 function isECv2Schema(schemaText: string): boolean {
   return /<ECSchema[^>]*xmlns=".*ECXML.2.0"/.test(schemaText);

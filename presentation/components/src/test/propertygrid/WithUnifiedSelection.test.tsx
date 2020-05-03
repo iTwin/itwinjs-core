@@ -5,27 +5,23 @@
 /* tslint:disable:no-direct-imports */
 
 import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
-import * as React from "react";
 import { expect } from "chai";
 import { mount, shallow } from "enzyme";
-import * as path from "path";
 import * as faker from "faker";
+import * as path from "path";
+import * as React from "react";
+import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { I18N } from "@bentley/imodeljs-i18n";
+import { KeySet } from "@bentley/presentation-common";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { createRandomECInstanceKey } from "@bentley/presentation-common/lib/test/_helpers/random";
-import { I18N } from "@bentley/imodeljs-i18n";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { KeySet } from "@bentley/presentation-common";
 import {
-  Presentation,
-  SelectionHandler, SelectionManager, SelectionChangeEvent, SelectionChangeType, ISelectionProvider, PresentationManager,
+  ISelectionProvider, Presentation, PresentationManager, SelectionChangeEvent, SelectionChangeType, SelectionHandler, SelectionManager,
 } from "@bentley/presentation-frontend";
 import { PropertyRecord } from "@bentley/ui-abstract";
+import { PropertyData, PropertyDataChangeEvent, PropertyGrid, PropertyGridProps } from "@bentley/ui-components";
 import { Orientation } from "@bentley/ui-core";
-import { PropertyGrid, PropertyGridProps, PropertyData, PropertyDataChangeEvent } from "@bentley/ui-components";
-import {
-  IPresentationPropertyDataProvider, IUnifiedSelectionComponent,
-  propertyGridWithUnifiedSelection,
-} from "../../presentation-components";
+import { IPresentationPropertyDataProvider, IUnifiedSelectionComponent, propertyGridWithUnifiedSelection } from "../../presentation-components";
 import { initializeLocalization } from "../../presentation-components/common/Utils";
 
 // tslint:disable-next-line:variable-name naming-convention

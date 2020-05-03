@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { Schema } from "../../src/Metadata/Schema";
-import { Enumeration, MutableEnumeration } from "./../../src/Metadata/Enumeration";
-import { ECObjectsError } from "./../../src/Exception";
-import { PrimitiveType } from "./../../src/ECObjects";
 import { SchemaContext } from "../../src/Context";
+import { PrimitiveType } from "../../src/ECObjects";
+import { ECObjectsError } from "../../src/Exception";
+import { Enumeration, MutableEnumeration } from "../../src/Metadata/Enumeration";
+import { Schema } from "../../src/Metadata/Schema";
 import { createEmptyXmlDocument, getElementChildrenByTagName } from "../TestUtils/SerializationHelper";
 
 describe("Enumeration", () => {

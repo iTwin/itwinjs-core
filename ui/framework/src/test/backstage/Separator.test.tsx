@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
 import { mount, shallow } from "enzyme";
-import TestUtils from "../TestUtils";
+import * as React from "react";
 import { SeparatorBackstageItem } from "../../ui-framework/backstage/Separator";
+import TestUtils from "../TestUtils";
 
 describe("Backstage", () => {
 

@@ -6,11 +6,11 @@
  * @module ContentView
  */
 
-import { ContentLayoutProps } from "./ContentLayoutProps";
-import { ContentGroupProps, ContentGroup, ContentCallback } from "./ContentGroup";
-import { SavedViewProps, SavedView } from "./SavedView";
+import { IModelConnection, ViewState } from "@bentley/imodeljs-frontend";
+import { ContentCallback, ContentGroup, ContentGroupProps } from "./ContentGroup";
 import { ContentLayoutDef } from "./ContentLayout";
-import { ViewState, IModelConnection } from "@bentley/imodeljs-frontend";
+import { ContentLayoutProps } from "./ContentLayoutProps";
+import { SavedView, SavedViewProps } from "./SavedView";
 
 /** SavedViewLayoutProps interface for sharing view layout information.
  * @public

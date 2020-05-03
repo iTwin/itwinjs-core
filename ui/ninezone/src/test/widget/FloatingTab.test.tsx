@@ -2,14 +2,14 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+import produce from "immer";
 import * as React from "react";
 import * as sinon from "sinon";
-import produce from "immer";
-import { act, render, fireEvent } from "@testing-library/react";
 import { Point } from "@bentley/ui-core";
+import { act, fireEvent, render } from "@testing-library/react";
 import {
-  createNineZoneState, addTab, NineZoneProvider, FloatingTab, addPanelWidget, WIDGET_TAB_DRAG, TabState, WIDGET_TAB_DRAG_END, DragManagerContext,
-  DragTarget, NineZoneDispatch,
+  addPanelWidget, addTab, createNineZoneState, DragManagerContext, DragTarget, FloatingTab, NineZoneDispatch, NineZoneProvider, TabState,
+  WIDGET_TAB_DRAG, WIDGET_TAB_DRAG_END,
 } from "../../ui-ninezone";
 
 interface DragStarterProps {

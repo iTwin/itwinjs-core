@@ -2,14 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { assert, expect } from "chai";
 import { BeDuration, Id64, Id64Arg, Id64String, using } from "@bentley/bentleyjs-core";
 import { Angle, Point3d } from "@bentley/geometry-core";
-import { BackgroundMapProps, BackgroundMapSettings, BackgroundMapType, Cartographic, ColorDef, Feature, FontMap, FontType, SubCategoryOverride, ViewFlags } from "@bentley/imodeljs-common";
 import {
-  ChangeFlag, ChangeFlags, CompassMode, FeatureSymbology, IModelApp, IModelConnection, MockRender, PanViewTool,
-  PerModelCategoryVisibility, ScreenViewport, SpatialViewState, StandardViewId, TwoWayViewportSync, Viewport, RenderPlan, SnapshotConnection,
+  BackgroundMapProps, BackgroundMapSettings, BackgroundMapType, Cartographic, ColorDef, Feature, FontMap, FontType, SubCategoryOverride, ViewFlags,
+} from "@bentley/imodeljs-common";
+import {
+  ChangeFlag, ChangeFlags, CompassMode, FeatureSymbology, IModelApp, IModelConnection, MockRender, PanViewTool, PerModelCategoryVisibility,
+  RenderPlan, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId, TwoWayViewportSync, Viewport,
 } from "@bentley/imodeljs-frontend";
-import { assert, expect } from "chai";
 
 // cSpell:ignore calibri subcats subcat pmcv ovrs
 

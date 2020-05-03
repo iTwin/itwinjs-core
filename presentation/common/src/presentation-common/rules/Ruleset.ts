@@ -7,8 +7,8 @@
  */
 
 import { Rule } from "./Rule";
-import { VariablesGroup } from "./Variables";
 import { SchemasSpecification } from "./SchemasSpecification";
+import { VariablesGroup } from "./Variables";
 
 /**
  * Presentation ruleset is a list of rules that define tree hierarchy and content provided by

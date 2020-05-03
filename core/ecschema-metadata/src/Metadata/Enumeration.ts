@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { EnumerationProps, EnumeratorProps } from "../Deserialization/JsonProps";
+import { PrimitiveType, primitiveTypeToString, SchemaItemType } from "../ECObjects";
+import { ECObjectsError, ECObjectsStatus } from "../Exception";
+import { ECName } from "../SchemaKey";
 import { Schema } from "./Schema";
 import { SchemaItem } from "./SchemaItem";
-import { EnumerationProps, EnumeratorProps } from "./../Deserialization/JsonProps";
-import { PrimitiveType, SchemaItemType, primitiveTypeToString } from "./../ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "./../Exception";
-import { ECName } from "./../SchemaKey";
 
 /** @beta */
 export interface Enumerator<T> {

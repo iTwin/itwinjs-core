@@ -6,26 +6,23 @@
  * @module Tree
  */
 
-import * as React from "react";
-// tslint:disable-next-line: no-duplicate-imports
-import { useCallback, useContext, useEffect, useMemo, useRef } from "react";
-import { ListChildComponentProps, VariableSizeList, areEqual } from "react-window";
 import classnames from "classnames";
+import * as React from "react";
 import AutoSizer, { Size } from "react-virtualized-auto-sizer";
+import { areEqual, ListChildComponentProps, VariableSizeList } from "react-window";
 import { concat } from "rxjs/internal/observable/concat";
-import { timer } from "rxjs/internal/observable/timer";
 import { EMPTY } from "rxjs/internal/observable/empty";
-import { UiError, getClassName } from "@bentley/ui-abstract";
+import { timer } from "rxjs/internal/observable/timer";
+import { getClassName, UiError } from "@bentley/ui-abstract";
 import { Tree as CoreTree, TreeNodePlaceholder } from "@bentley/ui-core";
+import { UiComponents } from "../../../UiComponents";
+import { HighlightableTreeProps, HighlightingEngine } from "../../HighlightingEngine";
 import { TreeActions } from "../TreeActions";
+import {
+  isTreeModelNode, isTreeModelNodePlaceholder, isTreeModelRootNode, TreeModelNode, TreeModelNodePlaceholder, VisibleTreeNodes,
+} from "../TreeModel";
 import { ITreeNodeLoader } from "../TreeNodeLoader";
 import { TreeNodeRenderer, TreeNodeRendererProps } from "./TreeNodeRenderer";
-import {
-  TreeModelNode, TreeModelNodePlaceholder, VisibleTreeNodes,
-  isTreeModelNode, isTreeModelNodePlaceholder, isTreeModelRootNode,
-} from "../TreeModel";
-import { UiComponents } from "../../../UiComponents";
-import { HighlightingEngine, HighlightableTreeProps } from "../../HighlightingEngine";
 
 const NODE_LOAD_DELAY = 500;
 
@@ -105,10 +102,10 @@ export const [
  * @beta
  */
 export function TreeRenderer(props: TreeRendererProps) {
-  const coreTreeRef = useRef<CoreTree>(null);
+  const coreTreeRef = React.useRef<CoreTree>(null);
   const previousVisibleNodes = usePrevious(props.visibleNodes);
   const previousNodeHeight = usePrevious(props.nodeHeight);
-  const variableSizeListRef = useRef<VariableSizeList>(null);
+  const variableSizeListRef = React.useRef<VariableSizeList>(null);
   if ((previousVisibleNodes !== undefined && previousVisibleNodes !== props.visibleNodes)
     || (previousNodeHeight !== undefined && previousNodeHeight !== props.nodeHeight)) {
     /* istanbul ignore else */
@@ -118,9 +115,9 @@ export function TreeRenderer(props: TreeRendererProps) {
   }
 
   const onLabelRendered = useScrollToActiveMatch(coreTreeRef, props.nodeHighlightingProps);
-  const highlightingEngine = useMemo(() => props.nodeHighlightingProps ? new HighlightingEngine(props.nodeHighlightingProps) : undefined, [props.nodeHighlightingProps]);
+  const highlightingEngine = React.useMemo(() => props.nodeHighlightingProps ? new HighlightingEngine(props.nodeHighlightingProps) : undefined, [props.nodeHighlightingProps]);
 
-  const rendererContext = useMemo<TreeRendererContext>(() => ({
+  const rendererContext = React.useMemo<TreeRendererContext>(() => ({
     nodeRenderer: props.nodeRenderer ? props.nodeRenderer : (nodeProps) => (<TreeNodeRenderer {...nodeProps} />),
     treeActions: props.treeActions,
     nodeLoader: props.nodeLoader,
@@ -129,19 +126,19 @@ export function TreeRenderer(props: TreeRendererProps) {
     highlightingEngine,
   }), [props.nodeRenderer, props.treeActions, props.nodeLoader, props.visibleNodes, onLabelRendered, highlightingEngine]);
 
-  const itemKey = useCallback(
+  const itemKey = React.useCallback(
     (index: number) => getNodeKey(props.visibleNodes.getAtIndex(index)!),
     [props.visibleNodes],
   );
 
   const { nodeHeight, visibleNodes } = props;
-  const itemSize = useCallback(
+  const itemSize = React.useCallback(
     (index: number) => nodeHeight(visibleNodes.getAtIndex(index)!, index),
     [nodeHeight, visibleNodes],
   );
 
   const { nodeHighlightingProps } = props;
-  useEffect(() => {
+  React.useEffect(() => {
     const highlightedNodeId = getHighlightedNodeId(nodeHighlightingProps);
     if (!highlightedNodeId || !variableSizeListRef.current)
       return;
@@ -199,7 +196,7 @@ const Node = React.memo<React.FC<ListChildComponentProps>>( // tslint:disable-li
     // Mark selected node's wrapper to make detecting consecutively selected nodes with css selectors possible
     const className = classnames("node-wrapper", { "is-selected": isTreeModelNode(node) && node.isSelected });
 
-    useEffect(() => {
+    React.useEffect(() => {
       const loadNode = (parentId: string | undefined, nodeIndex: number) => {
         const parentNode = parentId ? visibleNodes.getModel().getNode(parentId) : visibleNodes.getModel().getRootNode();
         if (!isTreeModelNode(parentNode) && !isTreeModelRootNode(parentNode))
@@ -221,7 +218,7 @@ const Node = React.memo<React.FC<ListChildComponentProps>>( // tslint:disable-li
 
     return (
       <div className={className} style={style}>
-        {useMemo(() => {
+        {React.useMemo(() => {
           if (isTreeModelNode(node)) {
             const nodeHighlightProps = highlightingEngine ? highlightingEngine.createRenderProps(node) : undefined;
             return nodeRenderer({ node, treeActions, onLabelRendered, nodeHighlightProps });
@@ -236,9 +233,9 @@ const Node = React.memo<React.FC<ListChildComponentProps>>( // tslint:disable-li
 );
 
 function usePrevious<T>(value: T): T | undefined {
-  const ref = useRef<T>();
+  const ref = React.useRef<T>();
 
-  useEffect(() => {
+  React.useEffect(() => {
     ref.current = value;
   }, [value]);
 
@@ -252,12 +249,12 @@ function getHighlightedNodeId(highlightableTreeProps?: HighlightableTreeProps) {
 }
 
 function useScrollToActiveMatch(treeRef: React.RefObject<CoreTree>, highlightableTreeProps?: HighlightableTreeProps) {
-  const scrollToActive = useRef(false);
-  useEffect(() => {
+  const scrollToActive = React.useRef(false);
+  React.useEffect(() => {
     scrollToActive.current = true;
   }, [highlightableTreeProps]);
 
-  const onLabelRendered = useCallback(
+  const onLabelRendered = React.useCallback(
     (node: TreeModelNode) => {
       const highlightedNodeId = getHighlightedNodeId(highlightableTreeProps);
       if (!treeRef.current || !scrollToActive.current || !highlightedNodeId || highlightedNodeId !== node.id)
@@ -282,7 +279,7 @@ function createContextWithMandatoryProvider<T>(
   const context = React.createContext<T>(undefined as any as T);
   // tslint:disable-next-line: variable-name
   function useContextWithoutDefaultValue<P>(ConsumingComponent: React.ComponentType<P>) {
-    const value = useContext(context);
+    const value = React.useContext(context);
     /* istanbul ignore if */
     if (value === undefined) {
       throw new UiError(

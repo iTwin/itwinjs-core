@@ -4,8 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as sinon from "sinon";
 import {
-  StagePanelsManager, getDefaultStagePanelsManagerProps, StagePanelManager, StagePanelType, StagePanelManagerProps,
-  getDefaultStagePanelManagerProps,
+  getDefaultStagePanelManagerProps, getDefaultStagePanelsManagerProps, StagePanelManager, StagePanelManagerProps, StagePanelsManager, StagePanelType,
 } from "../../../ui-ninezone";
 import { StagePanelsManagerProps } from "../../../ui-ninezone/stage-panels/manager/StagePanels";
 

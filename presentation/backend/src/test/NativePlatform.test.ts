@@ -2,16 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
-import * as moq from "typemoq";
-import * as faker from "faker";
 import "@bentley/presentation-common/lib/test/_helpers/Promises";
-import { ClientRequestContext } from "@bentley/bentleyjs-core";
-import { IModelHost, IModelDb, IModelJsNative } from "@bentley/imodeljs-backend";
-import { PresentationError, VariableValueTypes, UpdateInfo } from "@bentley/presentation-common";
-import { NativePlatformDefinition, createDefaultNativePlatform } from "../presentation-backend/NativePlatform";
-import { PresentationManagerMode } from "../presentation-backend/PresentationManager";
 import "./IModelHostSetup";
+import { expect } from "chai";
+import * as faker from "faker";
+import * as moq from "typemoq";
+import { ClientRequestContext } from "@bentley/bentleyjs-core";
+import { IModelDb, IModelHost, IModelJsNative } from "@bentley/imodeljs-backend";
+import { PresentationError, UpdateInfo, VariableValueTypes } from "@bentley/presentation-common";
+import { createDefaultNativePlatform, NativePlatformDefinition } from "../presentation-backend/NativePlatform";
+import { PresentationManagerMode } from "../presentation-backend/PresentationManager";
 
 describe("default NativePlatform", () => {
 

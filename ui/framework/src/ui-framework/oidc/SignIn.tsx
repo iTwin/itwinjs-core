@@ -7,13 +7,12 @@
  */
 
 import * as React from "react";
-
 import { ClientRequestContext, isElectronRenderer } from "@bentley/bentleyjs-core";
 import { FrontendAuthorizationClient, isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
-import { CommonProps } from "@bentley/ui-core";
-import { SignIn as SignInBase } from "@bentley/ui-components";
-import { UiFramework } from "../UiFramework";
 import { IModelApp } from "@bentley/imodeljs-frontend";
+import { SignIn as SignInBase } from "@bentley/ui-components";
+import { CommonProps } from "@bentley/ui-core";
+import { UiFramework } from "../UiFramework";
 
 /** Properties for the [[SignIn]] component
  * @public

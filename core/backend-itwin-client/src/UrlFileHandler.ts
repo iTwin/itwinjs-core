@@ -2,19 +2,20 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
 /** @packageDocumentation
  * @module Utils
  */
-import { BriefcaseStatus, Logger } from "@bentley/bentleyjs-core";
-import { FileHandler, AuthorizedClientRequestContext, CancelRequest, ProgressCallback, UserCancelledError } from "@bentley/itwin-client";
 import * as fs from "fs-extra";
-import * as path from "path";
-import * as https from "https";
-import { URL } from "url";
-import WriteStreamAtomic = require("fs-write-stream-atomic");
 import * as http from "http";
+import * as https from "https";
+import * as path from "path";
 import { PassThrough } from "stream";
+import { URL } from "url";
+import { BriefcaseStatus, Logger } from "@bentley/bentleyjs-core";
+import { AuthorizedClientRequestContext, CancelRequest, FileHandler, ProgressCallback, UserCancelledError } from "@bentley/itwin-client";
 
+import WriteStreamAtomic = require("fs-write-stream-atomic");
 /**
  * Provides methods to upload and download files from the Internet
  * @internal

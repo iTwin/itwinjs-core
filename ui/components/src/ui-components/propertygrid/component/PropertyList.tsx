@@ -6,17 +6,15 @@
  * @module PropertyGrid
  */
 
-import * as React from "react";
 import classnames from "classnames";
-
-import { Orientation, CommonProps } from "@bentley/ui-core";
+import * as React from "react";
 import { PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
-
-import { PropertyRenderer } from "../../properties/renderers/PropertyRenderer";
-import { ActionButtonRenderer } from "../../properties/renderers/ActionButtonRenderer";
-import { PropertyCategory } from "../PropertyDataProvider";
-import { PropertyValueRendererManager } from "../../properties/ValueRendererManager";
+import { CommonProps, Orientation } from "@bentley/ui-core";
 import { PropertyUpdatedArgs } from "../../editors/EditorContainer";
+import { ActionButtonRenderer } from "../../properties/renderers/ActionButtonRenderer";
+import { PropertyRenderer } from "../../properties/renderers/PropertyRenderer";
+import { PropertyValueRendererManager } from "../../properties/ValueRendererManager";
+import { PropertyCategory } from "../PropertyDataProvider";
 
 /** Properties of [[PropertyList]] React component
  * @public

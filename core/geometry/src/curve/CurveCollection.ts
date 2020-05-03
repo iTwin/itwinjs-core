@@ -6,24 +6,24 @@
 /** @packageDocumentation
  * @module Curve
  */
-import { StrokeOptions } from "./StrokeOptions";
-import { GeometryQuery } from "./GeometryQuery";
+import { Geometry } from "../Geometry";
+import { GeometryHandler } from "../geometry3d/GeometryHandler";
+import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { Range3d } from "../geometry3d/Range";
 import { Transform } from "../geometry3d/Transform";
-import { RecursiveCurveProcessor } from "./CurveProcessor";
 import { AnyCurve } from "./CurveChain";
-import { CurvePrimitive } from "./CurvePrimitive";
-import { LineString3d } from "./LineString3d";
-import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
-import { GeometryHandler } from "../geometry3d/GeometryHandler";
-import { Geometry } from "../Geometry";
 import { CurveLocationDetail } from "./CurveLocationDetail";
-import { GapSearchContext } from "./internalContexts/GapSearchContext";
-import { CountLinearPartsSearchContext } from "./internalContexts/CountLinearPartsSearchContext";
-import { TransformInPlaceContext } from "./internalContexts/TransformInPlaceContext";
-import { SumLengthsContext } from "./internalContexts/SumLengthsContext";
+import { CurvePrimitive } from "./CurvePrimitive";
+import { RecursiveCurveProcessor } from "./CurveProcessor";
+import { GeometryQuery } from "./GeometryQuery";
 import { CloneCurvesContext } from "./internalContexts/CloneCurvesContext";
 import { CloneWithExpandedLineStrings } from "./internalContexts/CloneWithExpandedLineStrings";
+import { CountLinearPartsSearchContext } from "./internalContexts/CountLinearPartsSearchContext";
+import { GapSearchContext } from "./internalContexts/GapSearchContext";
+import { SumLengthsContext } from "./internalContexts/SumLengthsContext";
+import { TransformInPlaceContext } from "./internalContexts/TransformInPlaceContext";
+import { LineString3d } from "./LineString3d";
+import { StrokeOptions } from "./StrokeOptions";
 
 /** Describes the concrete type of a [[CurveCollection]]. Each type name maps to a specific subclass and can be used in conditional statements for type-switching.
  *    - "loop" => [[Loop]]

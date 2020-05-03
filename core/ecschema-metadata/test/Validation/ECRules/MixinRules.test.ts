@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-
 import { SchemaContext } from "../../../src/Context";
 import { DelayedPromiseWithProps } from "../../../src/DelayedPromise";
 import { EntityClass, MutableEntityClass } from "../../../src/Metadata/EntityClass";

@@ -7,23 +7,9 @@
  */
 
 import { Id64Array } from "@bentley/bentleyjs-core";
+import { Angle, Constant, Point2d, Point3d, Range2d, Range3d } from "@bentley/geometry-core";
 import {
-  Angle,
-  Constant,
-  Point2d,
-  Point3d,
-  Range2d,
-  Range3d,
-} from "@bentley/geometry-core";
-import {
-  AxisAlignedBox3d,
-  ColorDef,
-  Gradient,
-  GraphicParams,
-  SheetProps,
-  ViewAttachmentProps,
-  ViewDefinition2dProps,
-  ViewStateProps,
+  AxisAlignedBox3d, ColorDef, Gradient, GraphicParams, SheetProps, ViewAttachmentProps, ViewDefinition2dProps, ViewStateProps,
 } from "@bentley/imodeljs-common";
 import { CategorySelectorState } from "./CategorySelectorState";
 import { DisplayStyle2dState } from "./DisplayStyleState";
@@ -31,15 +17,10 @@ import { IModelConnection } from "./IModelConnection";
 import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
 import { RenderGraphic } from "./render/RenderGraphic";
 import { RenderTarget } from "./render/RenderTarget";
+import { AttachmentList, AttachmentSceneState, createAttachment, TileTreeSet } from "./tile/internal";
 import { DecorateContext, SceneContext } from "./ViewContext";
 import { Viewport } from "./Viewport";
 import { ViewState, ViewState2d } from "./ViewState";
-import {
-  AttachmentList,
-  AttachmentSceneState,
-  createAttachment,
-  TileTreeSet,
-} from "./tile/internal";
 
 // cSpell:ignore ovrs
 

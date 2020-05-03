@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { SchemaContext, ISchemaLocater } from "../../src/Context";
-import { SchemaMatchType } from "./../../src/ECObjects";
-import { SchemaKey } from "../../src/SchemaKey";
+import { ISchemaLocater, SchemaContext } from "../../src/Context";
+import { SchemaMatchType } from "../../src/ECObjects";
 import { Schema } from "../../src/Metadata/Schema";
+import { SchemaKey } from "../../src/SchemaKey";
 
 const formatsKey = new SchemaKey("Formats", 1, 0, 0);
 

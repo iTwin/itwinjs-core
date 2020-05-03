@@ -2,18 +2,18 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Id64String, Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { ChangeSet, HubIModel, IModelHubClient, IModelHubError, IModelQuery, ChangesType } from "@bentley/imodelhub-client";
-import { IModel, IModelVersion, SubCategoryAppearance, SyncMode } from "@bentley/imodeljs-common";
-import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
-import { Reporter } from "@bentley/perf-tools/lib/Reporter";
 import { assert } from "chai";
 import * as path from "path";
+import { Id64String, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { ChangeSet, ChangesType, HubIModel, IModelHubClient, IModelHubError, IModelQuery } from "@bentley/imodelhub-client";
+import { IModel, IModelVersion, SubCategoryAppearance, SyncMode } from "@bentley/imodeljs-common";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
+import { Reporter } from "@bentley/perf-tools/lib/Reporter";
 import { BriefcaseManager, ConcurrencyControl, DictionaryModel, Element, IModelDb, IModelJsFs, SpatialCategory } from "../imodeljs-backend";
 import { IModelTestUtils, TestIModelInfo } from "../test/IModelTestUtils";
-import { KnownTestLocations } from "../test/KnownTestLocations";
 import { HubUtility } from "../test/integration/HubUtility";
+import { KnownTestLocations } from "../test/KnownTestLocations";
 import { RevisionUtility } from "../test/RevisionUtility";
 
 async function getIModelAfterApplyingCS(requestContext: AuthorizedClientRequestContext, reporter: Reporter, projectId: string, imodelId: string, client: IModelHubClient) {

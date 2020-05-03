@@ -5,10 +5,11 @@
 /** @packageDocumentation
  * @module Curve
  */
-import { Point3d } from "../geometry3d/Point3dVector3d";
+import { CurveLocationDetail } from "../curve/CurveLocationDetail";
 import { UVSurface } from "../geometry3d/GeometryHandler";
 import { Point2d } from "../geometry3d/Point2dVector2d";
-import { CurveLocationDetail } from "../curve/CurveLocationDetail";
+import { Point3d } from "../geometry3d/Point3dVector3d";
+
 /**
  * CurveLocationDetail carries point and paramter data about a point evaluated on a curve.
  * * These are returned by a variety of queries.

@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { DbResult, Id64String } from "@bentley/bentleyjs-core";
-import { BisCodeSpec, ColorDef, DisplayStyleProps, DisplayStyleSettingsProps, IModel, RenderMode, ViewFlags } from "@bentley/imodeljs-common";
 import { expect } from "chai";
 import * as path from "path";
+import { DbResult, Id64String } from "@bentley/bentleyjs-core";
+import { BisCodeSpec, ColorDef, DisplayStyleProps, DisplayStyleSettingsProps, IModel, RenderMode, ViewFlags } from "@bentley/imodeljs-common";
 import { BackendRequestContext, DictionaryModel, DisplayStyle3d, ECSqlStatement, Element, SnapshotDb } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";

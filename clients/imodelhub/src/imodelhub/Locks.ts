@@ -6,9 +6,9 @@
  * @module iModelHubClient
  */
 
+import * as deepAssign from "deep-assign";
 import { GuidString, Id64String, IModelHubStatus, Logger } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext, ECJsonTypeMap, ResponseError, WsgInstance, WsgQuery, WsgRequestOptions } from "@bentley/itwin-client";
-import * as deepAssign from "deep-assign";
 import { IModelHubClientLoggerCategory } from "../IModelHubClientLoggerCategories";
 import { IModelBaseHandler } from "./BaseHandler";
 import { AggregateResponseError, ArgumentCheck, IModelHubError } from "./Errors";

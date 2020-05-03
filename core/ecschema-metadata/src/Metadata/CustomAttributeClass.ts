@@ -3,11 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { CustomAttributeClassProps } from "../Deserialization/JsonProps";
+import {
+  containerTypeToString, CustomAttributeContainerType, ECClassModifier, parseCustomAttributeContainerType, SchemaItemType,
+} from "../ECObjects";
+import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { ECClass } from "./Class";
 import { Schema } from "./Schema";
-import { CustomAttributeClassProps } from "./../Deserialization/JsonProps";
-import { containerTypeToString, CustomAttributeContainerType, ECClassModifier, parseCustomAttributeContainerType, SchemaItemType } from "./../ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "./../Exception";
 
 /**
  * A Typescript class representation of an ECCustomAttributeClass.

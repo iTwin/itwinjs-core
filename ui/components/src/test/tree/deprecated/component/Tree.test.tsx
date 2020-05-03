@@ -3,31 +3,30 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import * as moq from "typemoq";
 import * as React from "react";
 import * as sinon from "sinon";
-import { RenderResult, render, within, fireEvent, cleanup, waitForElement, wait } from "@testing-library/react";
+import * as moq from "typemoq";
 import { BeEvent } from "@bentley/bentleyjs-core";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { CheckBoxState } from "@bentley/ui-core";
+import { cleanup, fireEvent, render, RenderResult, wait, waitForElement, within } from "@testing-library/react";
 import {
-  SelectionMode, PageOptions, TreeDataProviderMethod, TreeNodeItem, TreeDataProviderRaw,
-  ImmediatelyLoadedTreeNodeItem, DelayLoadedTreeNodeItem, ITreeDataProvider, TreeDataChangesListener, TreeCellUpdatedArgs,
+  DelayLoadedTreeNodeItem, ImmediatelyLoadedTreeNodeItem, ITreeDataProvider, PageOptions, SelectionMode, TreeCellUpdatedArgs, TreeDataChangesListener,
+  TreeDataProviderMethod, TreeDataProviderRaw, TreeNodeItem,
 } from "../../../../ui-components";
+import { getPropertyRecordAsString } from "../../../../ui-components/common/getPropertyRecordAsString";
 import { LoadedImage } from "../../../../ui-components/common/IImageLoader";
-import { ITreeImageLoader } from "../../../../ui-components/tree/ImageLoader";
-import { HighlightingEngine, HighlightableTreeProps } from "../../../../ui-components/tree/HighlightingEngine";
-import { TreeComponentTestId } from "../../../../ui-components/tree/TreeComponentTestId";
-import { TestTreeDataProvider } from "../../TestDataFactories";
-import { waitForUpdate, ResolvablePromise } from "../../../test-helpers/misc";
-import TestUtils from "../../../TestUtils";
-import {
-  DEPRECATED_Tree as Tree, TreeProps,
-  NodesSelectedCallback, NodesDeselectedCallback,
-} from "../../../../ui-components/tree/deprecated/component/Tree";
 import { BeInspireTreeNode, BeInspireTreeNodeConfig } from "../../../../ui-components/tree/deprecated/component/BeInspireTree";
 import { TreeNodeProps } from "../../../../ui-components/tree/deprecated/component/Node";
-import { getPropertyRecordAsString } from "../../../../ui-components/common/getPropertyRecordAsString";
+import {
+  DEPRECATED_Tree as Tree, NodesDeselectedCallback, NodesSelectedCallback, TreeProps,
+} from "../../../../ui-components/tree/deprecated/component/Tree";
+import { HighlightableTreeProps, HighlightingEngine } from "../../../../ui-components/tree/HighlightingEngine";
+import { ITreeImageLoader } from "../../../../ui-components/tree/ImageLoader";
+import { TreeComponentTestId } from "../../../../ui-components/tree/TreeComponentTestId";
+import { ResolvablePromise, waitForUpdate } from "../../../test-helpers/misc";
+import TestUtils from "../../../TestUtils";
+import { TestTreeDataProvider } from "../../TestDataFactories";
 
 // tslint:disable:deprecation
 

@@ -6,19 +6,19 @@
  * @module Widget
  */
 
+import "./Tab.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { useResizeObserver, useRefs, Timer, Rectangle, Point } from "@bentley/ui-core";
-import { NineZoneDispatchContext } from "../base/NineZone";
-import { WIDGET_TAB_CLICK, WIDGET_TAB_DOUBLE_CLICK, TabState, WIDGET_TAB_DRAG_START } from "../base/NineZoneState";
+import { Point, Rectangle, Timer, useRefs, useResizeObserver } from "@bentley/ui-core";
 import { assert } from "../base/assert";
-import { usePointerCaptor } from "../base/PointerCaptor";
-import { WidgetTabsEntryContext } from "./Tabs";
-import { FloatingWidgetIdContext } from "./FloatingWidget";
-import { WidgetStateContext, WidgetContext } from "./Widget";
-import { PanelSideContext } from "../widget-panels/Panel";
 import { useDragTab } from "../base/DragManager";
-import "./Tab.scss";
+import { NineZoneDispatchContext } from "../base/NineZone";
+import { TabState, WIDGET_TAB_CLICK, WIDGET_TAB_DOUBLE_CLICK, WIDGET_TAB_DRAG_START } from "../base/NineZoneState";
+import { usePointerCaptor } from "../base/PointerCaptor";
+import { PanelSideContext } from "../widget-panels/Panel";
+import { FloatingWidgetIdContext } from "./FloatingWidget";
+import { WidgetTabsEntryContext } from "./Tabs";
+import { WidgetContext, WidgetStateContext } from "./Widget";
 
 /** Properties of [[WidgetTab]] component.
  * @internal

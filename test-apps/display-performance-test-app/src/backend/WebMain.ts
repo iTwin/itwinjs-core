@@ -2,13 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as path from "path";
-import * as express from "express";
 import * as child_process from "child_process";
 import * as chromeLauncher from "chrome-launcher";
-import { BentleyCloudRpcManager, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface } from "@bentley/imodeljs-common";
-import { initializeBackend } from "./backend";
+import * as express from "express";
+import * as path from "path";
+import { BentleyCloudRpcManager, IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface } from "@bentley/imodeljs-common";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
+import { initializeBackend } from "./backend";
 
 // tslint:disable:no-console
 

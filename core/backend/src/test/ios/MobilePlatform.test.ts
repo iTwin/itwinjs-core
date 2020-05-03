@@ -2,11 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as path from "path";
-import { KnownTestLocations } from "../KnownTestLocations";
 import { assert } from "chai";
 import * as fs from "fs-extra";
+import * as path from "path";
 import { MobileRpcConfiguration } from "@bentley/imodeljs-common";
+import { KnownTestLocations } from "../KnownTestLocations";
+
 if (MobileRpcConfiguration.isMobileBackend) {
   describe.skip("IOS Platform Test", () => {
     it("Filesystem (Uint8Array) - writeFileSync, appendFileSync and readFileSync", () => {

@@ -6,40 +6,15 @@
  * @module Views
  */
 
+import { assert, BeTimePoint, Id64, Id64Arg, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import {
-  BeTimePoint,
-  Id64,
-  Id64Arg,
-  Id64String,
-  JsonUtils,
-  assert,
-} from "@bentley/bentleyjs-core";
-import {
-  Angle, AxisOrder, ClipVector, Constant, Geometry, LowAndHighXY, LowAndHighXYZ, Map4d, Matrix3d, Plane3dByOriginAndUnitNormal,
-  Point2d, Point3d, PolyfaceBuilder, Range3d, Ray3d, StrokeOptions, Transform, Vector2d, Vector3d, XAndY, XYAndZ, YawPitchRollAngles, XYZ,
+  Angle, AxisOrder, ClipVector, Constant, Geometry, LowAndHighXY, LowAndHighXYZ, Map4d, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d,
+  PolyfaceBuilder, Range3d, Ray3d, StrokeOptions, Transform, Vector2d, Vector3d, XAndY, XYAndZ, XYZ, YawPitchRollAngles,
 } from "@bentley/geometry-core";
 import {
-  AnalysisStyle,
-  AxisAlignedBox3d,
-  Camera,
-  Cartographic,
-  ColorDef,
-  Frustum,
-  GlobeMode,
-  GraphicParams,
-  GridOrientationType,
-  Npc,
-  RenderMaterial,
-  SpatialViewDefinitionProps,
-  SubCategoryOverride,
-  TextureMapping,
-  ViewDefinition2dProps,
-  ViewDefinition3dProps,
-  ViewDefinitionProps,
-  ViewDetails,
-  ViewDetails3d,
-  ViewFlags,
-  ViewStateProps,
+  AnalysisStyle, AxisAlignedBox3d, Camera, Cartographic, ColorDef, Frustum, GlobeMode, GraphicParams, GridOrientationType, Npc, RenderMaterial,
+  SpatialViewDefinitionProps, SubCategoryOverride, TextureMapping, ViewDefinition2dProps, ViewDefinition3dProps, ViewDefinitionProps, ViewDetails,
+  ViewDetails3d, ViewFlags, ViewStateProps,
 } from "@bentley/imodeljs-common";
 import { AuxCoordSystem2dState, AuxCoordSystem3dState, AuxCoordSystemSpatialState, AuxCoordSystemState } from "./AuxCoordSys";
 import { CategorySelectorState } from "./CategorySelectorState";
@@ -48,16 +23,16 @@ import { ElementState } from "./EntityState";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { ModelSelectorState } from "./ModelSelectorState";
-import { GeometricModel2dState, GeometricModelState, GeometricModel3dState } from "./ModelState";
+import { GeometricModel2dState, GeometricModel3dState, GeometricModelState } from "./ModelState";
 import { NotifyMessageDetails, OutputMessagePriority } from "./NotificationManager";
 import { GraphicType } from "./render/GraphicBuilder";
 import { RenderScheduleState } from "./RenderScheduleState";
 import { StandardView, StandardViewId } from "./StandardView";
 import { TileTreeReference, TileTreeSet } from "./tile/internal";
 import { DecorateContext, SceneContext } from "./ViewContext";
-import { Viewport, ViewChangeOptions } from "./Viewport";
-import { GlobalLocation, areaToEyeHeight } from "./ViewGlobalLocation";
+import { areaToEyeHeight, GlobalLocation } from "./ViewGlobalLocation";
 import { ViewingSpace } from "./ViewingSpace";
+import { ViewChangeOptions, Viewport } from "./Viewport";
 
 /** Describes the result of a viewing operation such as those exposed by [[ViewState]] and [[Viewport]].
  * @public

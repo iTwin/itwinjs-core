@@ -4,12 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
-
 import {
-  AbstractStatusBarItemUtilities, StatusBarSection,
-  CommonStatusBarItem, UiItemsProvider, CommonToolbarItem, StageUsage, UiItemsManager, AbstractWidgetProps,
-  ToolbarUsage, ToolbarOrientation, ToolbarItemUtilities, BackstageItem, BackstageItemUtilities,
-  StagePanelLocation, StagePanelSection,
+  AbstractStatusBarItemUtilities, AbstractWidgetProps, BackstageItem, BackstageItemUtilities, CommonStatusBarItem, CommonToolbarItem,
+  StagePanelLocation, StagePanelSection, StageUsage, StatusBarSection, ToolbarItemUtilities, ToolbarOrientation, ToolbarUsage, UiItemsManager,
+  UiItemsProvider,
 } from "../ui-abstract";
 
 const testStageUsage = StageUsage.General;

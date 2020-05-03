@@ -9,17 +9,16 @@
 
 /* tslint:disable:variable-name jsdoc-format no-empty */
 import { Geometry } from "../Geometry";
-import { Point2d } from "./Point2dVector2d";
-import { XYAndZ, XAndY } from "./XYZProps";
-import { Point3d, Vector3d, XYZ } from "./Point3dVector3d";
-import { Transform } from "./Transform";
-import { MultiLineStringDataVariant } from "../topology/Triangulation";
-
 import { Point4d } from "../geometry4d/Point4d";
-import { Plane3dByOriginAndUnitNormal } from "./Plane3dByOriginAndUnitNormal";
+import { MultiLineStringDataVariant } from "../topology/Triangulation";
 import { IndexedXYZCollection } from "./IndexedXYZCollection";
-import { VariantPointDataStream, PointStringDeepXYZArrayCollector } from "./PointStreaming";
+import { Plane3dByOriginAndUnitNormal } from "./Plane3dByOriginAndUnitNormal";
+import { Point2d } from "./Point2dVector2d";
+import { Point3d, Vector3d, XYZ } from "./Point3dVector3d";
+import { PointStringDeepXYZArrayCollector, VariantPointDataStream } from "./PointStreaming";
 import { Range3d } from "./Range";
+import { Transform } from "./Transform";
+import { XAndY, XYAndZ } from "./XYZProps";
 
 /**
  * The `NumberArray` class contains static methods that act on arrays of numbers.

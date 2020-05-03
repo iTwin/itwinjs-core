@@ -3,9 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { expect } from "chai";
 import { Newton1dUnbounded, NewtonEvaluatorRtoRD } from "../../numerics/Newton";
 import { Checker } from "../Checker";
-import { expect } from "chai";
+
 /* tslint:disable:no-console */
 
 export class HornerEvaluator extends NewtonEvaluatorRtoRD {

@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { assert } from "chai";
 import { DbResult, Guid, GuidString, Id64, Id64String, using } from "@bentley/bentleyjs-core";
 import { Point2d, Point3d, Range3d, XAndY, XYAndZ } from "@bentley/geometry-core";
 import { NavigationValue, QueryResponseStatus } from "@bentley/imodeljs-common";
-import { assert } from "chai";
 import { ECDb, ECEnumValue, ECSqlInsertResult, ECSqlStatement, ECSqlValue, SnapshotDb } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";

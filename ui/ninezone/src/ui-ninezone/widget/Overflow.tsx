@@ -6,11 +6,11 @@
  * @module Widget
  */
 
+import "./Overflow.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { useResizeObserver, useOnOutsideClick, useRefs } from "@bentley/ui-core";
+import { useOnOutsideClick, useRefs, useResizeObserver } from "@bentley/ui-core";
 import { WidgetMenu } from "./Menu";
-import "./Overflow.scss";
 
 /** @internal */
 export interface WidgetOverflowProps {

@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as moq from "typemoq";
+import { Keys, KeySet } from "../../presentation-common";
+
 export * from "typemoq";
 const deepEqual = require("deep-equal"); // tslint:disable-line:no-var-requires
-import { KeySet, Keys } from "../../presentation-common";
-
 /**
  * Should be called if mock.object is used to resolve a Promise. Otherwise
  * typemoq tries to handle 'then' method of the mocked object and the promise

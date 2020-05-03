@@ -15,10 +15,10 @@ type float32 = number;
 type float64 = number;
 
 
+import { AList } from "../../../system/collection/AList";
+import { PointAttribute } from "../../model/PointAttribute";
 import { AttributeReader } from "./AttributeReader";
 import { FileReader } from "./FileReader";
-import { PointAttribute } from "../../model/PointAttribute";
-import { AList } from "../../../system/collection/AList";
 
 /**
  * Class AttributeMask defines a mask of attributes to read.

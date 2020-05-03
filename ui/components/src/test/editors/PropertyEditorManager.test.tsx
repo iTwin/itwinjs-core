@@ -3,13 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import * as React from "react";
 import { expect } from "chai";
-import { PropertyEditorManager, BasicPropertyEditor, PropertyEditorBase, DataControllerBase } from "../../ui-components/editors/PropertyEditorManager";
-import { TextEditor } from "../../ui-components/editors/TextEditor";
-
-import { PropertyValue, PropertyValueFormat, PropertyDescription, PropertyRecord, PropertyEditorParams, PropertyEditorParamTypes, IconEditorParams } from "@bentley/ui-abstract";
+import * as React from "react";
+import {
+  IconEditorParams, PropertyDescription, PropertyEditorParams, PropertyEditorParamTypes, PropertyRecord, PropertyValue, PropertyValueFormat,
+} from "@bentley/ui-abstract";
 import { AsyncValueProcessingResult } from "../../ui-components/converters/TypeConverter";
+import {
+  BasicPropertyEditor, DataControllerBase, PropertyEditorBase, PropertyEditorManager,
+} from "../../ui-components/editors/PropertyEditorManager";
+import { TextEditor } from "../../ui-components/editors/TextEditor";
 
 describe("PropertyEditorManager", () => {
   it("createEditor should create a BasicPropertyEditor for unknown type", () => {

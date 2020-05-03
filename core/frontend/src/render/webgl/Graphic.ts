@@ -6,28 +6,23 @@
  * @module WebGL
  */
 
-import { dispose, assert } from "@bentley/bentleyjs-core";
-import { ViewFlags, ElementAlignedBox3d, PackedFeatureTable } from "@bentley/imodeljs-common";
+import { assert, dispose } from "@bentley/bentleyjs-core";
 import { Transform } from "@bentley/geometry-core";
-import { Primitive } from "./Primitive";
+import { ElementAlignedBox3d, PackedFeatureTable, ViewFlags } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../../IModelConnection";
-import {
-  GraphicList,
-  RenderGraphic,
-} from "../RenderGraphic";
-import {
-  GraphicBranch,
-  GraphicBranchOptions,
-} from "../GraphicBranch";
-import { RenderMemory } from "../RenderMemory";
-import { RenderCommands } from "./RenderCommands";
 import { FeatureSymbology } from "../FeatureSymbology";
-import { FeatureOverrides } from "./FeatureOverrides";
-import { Target } from "./Target";
-import { RenderPass } from "./RenderFlags";
-import { ClipPlanesVolume, ClipMaskVolume } from "./ClipVolume";
-import { TextureDrape } from "./TextureDrape";
+import { GraphicBranch, GraphicBranchOptions } from "../GraphicBranch";
+import { GraphicList, RenderGraphic } from "../RenderGraphic";
+import { RenderMemory } from "../RenderMemory";
+import { ClipMaskVolume, ClipPlanesVolume } from "./ClipVolume";
 import { WebGLDisposable } from "./Disposable";
+import { FeatureOverrides } from "./FeatureOverrides";
+import { PlanarClassifier } from "./PlanarClassifier";
+import { Primitive } from "./Primitive";
+import { RenderCommands } from "./RenderCommands";
+import { RenderPass } from "./RenderFlags";
+import { Target } from "./Target";
+import { TextureDrape } from "./TextureDrape";
 
 /** @internal */
 export abstract class Graphic extends RenderGraphic implements WebGLDisposable {
@@ -172,9 +167,6 @@ export class Batch extends Graphic {
     }
   }
 }
-
-// NB: This import MUST happen after Graphic is defined or a circular dependency is introduced.
-import { PlanarClassifier } from "./PlanarClassifier";
 
 /** @internal */
 export class Branch extends Graphic {

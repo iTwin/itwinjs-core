@@ -7,16 +7,13 @@
  */
 
 import { Matrix4d } from "@bentley/geometry-core";
-import {
-  ColorDef,
-  RgbColor,
-} from "@bentley/imodeljs-common";
+import { ColorDef, RgbColor } from "@bentley/imodeljs-common";
+import { FloatRgba } from "./FloatRGBA";
+import { UniformHandle } from "./Handle";
+import { Matrix4 } from "./Matrix";
+import { SolarShadowMap } from "./SolarShadowMap";
 import { desync, sync, SyncToken } from "./Sync";
 import { Target } from "./Target";
-import { FloatRgba } from "./FloatRGBA";
-import { SolarShadowMap } from "./SolarShadowMap";
-import { Matrix4 } from "./Matrix";
-import { UniformHandle } from "./Handle";
 
 /** Maintains state of uniforms used for applying shadows.
  * @internal

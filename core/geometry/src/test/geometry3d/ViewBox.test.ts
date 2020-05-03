@@ -2,23 +2,24 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { IndexedPolyface } from "../../polyface/Polyface";
-import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { YawPitchRollAngles } from "../../geometry3d/YawPitchRollAngles";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
-import { Transform } from "../../geometry3d/Transform";
-import { Loop } from "../../curve/Loop";
-import { Checker } from "../Checker";
 import { expect } from "chai";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { Arc3d } from "../../curve/Arc3d";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
-import { Arc3d } from "../../curve/Arc3d";
+import { Loop } from "../../curve/Loop";
 import { StandardViewIndex } from "../../Geometry";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
+import { Matrix3d } from "../../geometry3d/Matrix3d";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
+import { Transform } from "../../geometry3d/Transform";
+import { YawPitchRollAngles } from "../../geometry3d/YawPitchRollAngles";
+import { IndexedPolyface } from "../../polyface/Polyface";
+import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 import { Sample } from "../../serialization/GeometrySamples";
+import { Checker } from "../Checker";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+
 /* tslint:disable:no-console */
 /* Create an XYZ triad with arcs to clarify XY and XYZ planes
  */

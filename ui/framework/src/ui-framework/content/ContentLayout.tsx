@@ -6,18 +6,17 @@
  * @module ContentView
  */
 
-import * as React from "react";
-import classnames from "classnames";
-
-import { Orientation, UiEvent, CommonProps } from "@bentley/ui-core";
-
-import { FrontstageManager } from "../frontstage/FrontstageManager";
-import { ContentGroup } from "./ContentGroup";
-import { ContentViewManager, ActiveContentChangedEventArgs } from "./ContentViewManager";
-import { UiShowHideManager } from "../utils/UiShowHideManager";
-import { LayoutHorizontalSplitProps, LayoutVerticalSplitProps, ContentLayoutProps, LayoutFragmentProps, LayoutSplitPropsBase } from "./ContentLayoutProps";
-
 import "./ContentLayout.scss";
+import classnames from "classnames";
+import * as React from "react";
+import { CommonProps, Orientation, UiEvent } from "@bentley/ui-core";
+import { FrontstageManager } from "../frontstage/FrontstageManager";
+import { UiShowHideManager } from "../utils/UiShowHideManager";
+import { ContentGroup } from "./ContentGroup";
+import {
+  ContentLayoutProps, LayoutFragmentProps, LayoutHorizontalSplitProps, LayoutSplitPropsBase, LayoutVerticalSplitProps,
+} from "./ContentLayoutProps";
+import { ActiveContentChangedEventArgs, ContentViewManager } from "./ContentViewManager";
 
 // There is a problem with this import and a different tsconfig being used. Using the require statement instead.
 // Locking into react-split-pane release 0.1.87 and using the require statement works for browser, electron and mocha test environment.

@@ -7,26 +7,24 @@
  */
 
 import * as React from "react";
-
 import { Logger } from "@bentley/bentleyjs-core";
-import { IModelConnection, IModelApp, Tool, StartOrResume, InteractiveTool, SelectedViewportChangedArgs } from "@bentley/imodeljs-frontend";
+import { IModelApp, IModelConnection, InteractiveTool, SelectedViewportChangedArgs, StartOrResume, Tool } from "@bentley/imodeljs-frontend";
 import { WidgetState } from "@bentley/ui-abstract";
 import { UiEvent } from "@bentley/ui-core";
 import { NineZoneManager } from "@bentley/ui-ninezone";
-
-import { FrontstageDef } from "./FrontstageDef";
 import { ContentControlActivatedEvent } from "../content/ContentControl";
-import { WidgetDef, WidgetStateChangedEvent } from "../widgets/WidgetDef";
-import { ToolInformation } from "../zones/toolsettings/ToolInformation";
-import { FrontstageProvider } from "./FrontstageProvider";
-import { ToolUiManager } from "../zones/toolsettings/ToolUiManager";
+import { ContentGroup } from "../content/ContentGroup";
 import { ContentLayoutActivatedEvent, ContentLayoutDef } from "../content/ContentLayout";
 import { NavigationAidActivatedEvent } from "../navigationaids/NavigationAidControl";
-import { UiShowHideManager } from "../utils/UiShowHideManager";
-import { UiFramework } from "../UiFramework";
-import { ContentGroup } from "../content/ContentGroup";
 import { PanelStateChangedEvent } from "../stagepanels/StagePanelDef";
+import { UiFramework } from "../UiFramework";
+import { UiShowHideManager } from "../utils/UiShowHideManager";
+import { WidgetDef, WidgetStateChangedEvent } from "../widgets/WidgetDef";
+import { ToolInformation } from "../zones/toolsettings/ToolInformation";
+import { ToolUiManager } from "../zones/toolsettings/ToolUiManager";
 import { ToolUiProvider } from "../zones/toolsettings/ToolUiProvider";
+import { FrontstageDef } from "./FrontstageDef";
+import { FrontstageProvider } from "./FrontstageProvider";
 
 // -----------------------------------------------------------------------------
 // Frontstage Events

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { ViewFlags, RenderMode } from "../ViewFlags";
+import { RenderMode, ViewFlags } from "../ViewFlags";
 
 describe("ViewFlags", () => {
   it("should initialize to expected defaults", () => {

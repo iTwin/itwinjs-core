@@ -6,17 +6,15 @@
  * @module PropertyEditors
  */
 
-import * as React from "react";
-import classnames from "classnames";
-import {
-  PropertyValueFormat, PropertyValue, PrimitiveValue,
-  PropertyEditorParams, PropertyEditorParamTypes, InputEditorSizeParams, IconEditorParams,
-} from "@bentley/ui-abstract";
-import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
-import { TypeConverterManager } from "../converters/TypeConverterManager";
-
 import "./TextEditor.scss";
-import { Input, IconInput, Icon, InputProps } from "@bentley/ui-core";
+import classnames from "classnames";
+import * as React from "react";
+import {
+  IconEditorParams, InputEditorSizeParams, PrimitiveValue, PropertyEditorParams, PropertyEditorParamTypes, PropertyValue, PropertyValueFormat,
+} from "@bentley/ui-abstract";
+import { Icon, IconInput, Input, InputProps } from "@bentley/ui-core";
+import { TypeConverterManager } from "../converters/TypeConverterManager";
+import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
 
 /** @internal */
 interface TextEditorState {

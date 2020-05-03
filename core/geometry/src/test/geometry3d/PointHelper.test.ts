@@ -2,37 +2,37 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { expect } from "chai";
+import { Arc3d } from "../../curve/Arc3d";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { LineSegment3d } from "../../curve/LineSegment3d";
+import { LineString3d } from "../../curve/LineString3d";
+import { Loop } from "../../curve/Loop";
+import { StrokeOptions } from "../../curve/StrokeOptions";
 import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
-import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
-import { Matrix4d } from "../../geometry4d/Matrix4d";
-import { Point2d, Vector2d } from "../../geometry3d/Point2dVector2d";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { Range3d } from "../../geometry3d/Range";
-import { Transform } from "../../geometry3d/Transform";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
-import { LineString3d } from "../../curve/LineString3d";
-import { Arc3d } from "../../curve/Arc3d";
-import { StrokeOptions } from "../../curve/StrokeOptions";
-import { Point3dArray, Point2dArray, Vector3dArray, Point4dArray, NumberArray } from "../../geometry3d/PointHelpers";
-import { Point3dArrayCarrier } from "../../geometry3d/Point3dArrayCarrier";
-import { PolygonOps } from "../../geometry3d/PolygonOps";
 import { FrameBuilder } from "../../geometry3d/FrameBuilder";
-import { Checker } from "../Checker";
-import { expect } from "chai";
-import { Sample } from "../../serialization/GeometrySamples";
-import { MomentData } from "../../geometry4d/MomentData";
 import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
-import { Point4d } from "../../geometry4d/Point4d";
-import { HalfEdgeGraphSearch } from "../../topology/HalfEdgeGraphSearch";
-import { HalfEdgeGraph } from "../../topology/Graph";
-
-import { Triangulator } from "../../topology/Triangulation";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { Loop } from "../../curve/Loop";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { GeometryQuery } from "../../curve/GeometryQuery";
+import { Matrix3d } from "../../geometry3d/Matrix3d";
+import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
+import { Point2d, Vector2d } from "../../geometry3d/Point2dVector2d";
+import { Point3dArrayCarrier } from "../../geometry3d/Point3dArrayCarrier";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
+import { NumberArray, Point2dArray, Point3dArray, Point4dArray, Vector3dArray } from "../../geometry3d/PointHelpers";
+import { PolygonOps } from "../../geometry3d/PolygonOps";
+import { Range3d } from "../../geometry3d/Range";
 import { Ray3d } from "../../geometry3d/Ray3d";
+import { Transform } from "../../geometry3d/Transform";
+import { Matrix4d } from "../../geometry4d/Matrix4d";
+import { MomentData } from "../../geometry4d/MomentData";
+import { Point4d } from "../../geometry4d/Point4d";
+import { Sample } from "../../serialization/GeometrySamples";
+import { HalfEdgeGraph } from "../../topology/Graph";
+import { HalfEdgeGraphSearch } from "../../topology/HalfEdgeGraphSearch";
+import { Triangulator } from "../../topology/Triangulation";
+import { Checker } from "../Checker";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+
 /* tslint:disable:no-console */
 /**
  * Return the radius of a circle with area matching centroidData.a

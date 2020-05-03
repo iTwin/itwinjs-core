@@ -5,7 +5,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import * as uuid from "uuid";
-import { spawnChildProcess, onExit } from "./SpawnUtils";
+import { onExit, spawnChildProcess } from "./SpawnUtils";
 
 /**
  * Helper function for relaunching (as a child process) the current process running under `nyc` for measuring code coverage.

@@ -6,64 +6,32 @@
  * @module Rendering
  */
 
+import { base64StringToUint8Array, Id64String, IDisposable } from "@bentley/bentleyjs-core";
+import { ClipVector, IndexedPolyface, Point2d, Point3d, Range2d, Range3d, Transform, Vector2d } from "@bentley/geometry-core";
 import {
-  base64StringToUint8Array,
-  Id64String,
-  IDisposable,
-} from "@bentley/bentleyjs-core";
-import {
-  ClipVector,
-  IndexedPolyface,
-  Point2d,
-  Point3d,
-  Range2d,
-  Range3d,
-  Transform,
-  Vector2d,
-} from "@bentley/geometry-core";
-import {
-  ColorDef,
-  ElementAlignedBox3d,
-  FeatureIndexType,
-  Gradient,
-  ImageBuffer,
-  ImageSource,
-  ImageSourceFormat,
-  isValidImageSourceFormat,
-  PackedFeatureTable,
-  QParams3d,
-  QPoint3dList,
-  RenderMaterial,
-  RenderTexture,
-  TextureProps,
+  ColorDef, ElementAlignedBox3d, FeatureIndexType, Gradient, ImageBuffer, ImageSource, ImageSourceFormat, isValidImageSourceFormat,
+  PackedFeatureTable, QParams3d, QPoint3dList, RenderMaterial, RenderTexture, TextureProps,
 } from "@bentley/imodeljs-common";
 import { WebGLExtensionName } from "@bentley/webgl-compatibility";
 import { SkyBox } from "../DisplayStyleState";
 import { imageElementFromImageSource } from "../ImageUtil";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
-import { Viewport } from "../Viewport";
-import { ViewRect } from "../ViewRect";
-import { GraphicBuilder, GraphicType } from "./GraphicBuilder";
-import { MeshArgs, PolylineArgs } from "./primitives/mesh/MeshPrimitives";
-import { PointCloudArgs } from "./primitives/PointCloudPrimitive";
-import { MeshParams, PointStringParams, PolylineParams } from "./primitives/VertexTable";
-import { TerrainMeshPrimitive } from "./primitives/mesh/TerrainMeshPrimitive";
 import { BackgroundMapTileTreeReference, TileTreeReference } from "../tile/internal";
 import { SceneContext } from "../ViewContext";
-import { RenderTarget } from "./RenderTarget";
-import { RenderMemory } from "./RenderMemory";
+import { Viewport } from "../Viewport";
+import { ViewRect } from "../ViewRect";
+import { GraphicBranch, GraphicBranchOptions } from "./GraphicBranch";
+import { GraphicBuilder, GraphicType } from "./GraphicBuilder";
 import { InstancedGraphicParams } from "./InstancedGraphicParams";
-import {
-  GraphicList,
-  RenderGraphic,
-  RenderGraphicOwner,
-} from "./RenderGraphic";
+import { MeshArgs, PolylineArgs } from "./primitives/mesh/MeshPrimitives";
+import { TerrainMeshPrimitive } from "./primitives/mesh/TerrainMeshPrimitive";
+import { PointCloudArgs } from "./primitives/PointCloudPrimitive";
+import { MeshParams, PointStringParams, PolylineParams } from "./primitives/VertexTable";
 import { RenderClipVolume } from "./RenderClipVolume";
-import {
-  GraphicBranch,
-  GraphicBranchOptions,
-} from "./GraphicBranch";
+import { GraphicList, RenderGraphic, RenderGraphicOwner } from "./RenderGraphic";
+import { RenderMemory } from "./RenderMemory";
+import { RenderTarget } from "./RenderTarget";
 
 // tslint:disable:no-const-enum
 // cSpell:ignore deserializing subcat uninstanced wiremesh qorigin trimesh

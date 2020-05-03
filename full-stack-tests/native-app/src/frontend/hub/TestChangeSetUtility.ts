@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { TestRpcInterface } from "../../common/RpcInterfaces";
-import { IModelApp } from "@bentley/imodeljs-frontend";
-import { TestUsers, TestFrontendAuthorizationClient, TestUserCredentials, getAccessTokenFromBackend } from "@bentley/oidc-signin-tool/lib/frontend";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
+import { IModelApp } from "@bentley/imodeljs-frontend";
+import { getAccessTokenFromBackend, TestFrontendAuthorizationClient, TestUserCredentials, TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
+import { TestRpcInterface } from "../../common/RpcInterfaces";
 
 /** Test utility to push an iModel and ChangeSets */
 export class TestChangeSetUtility {

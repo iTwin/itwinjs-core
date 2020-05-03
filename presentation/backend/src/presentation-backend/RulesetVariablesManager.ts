@@ -6,8 +6,8 @@
  * @module Core
  */
 
-import { Id64String, Id64 } from "@bentley/bentleyjs-core";
-import { VariableValueTypes, VariableValue, VariableValueJSON } from "@bentley/presentation-common";
+import { Id64, Id64String } from "@bentley/bentleyjs-core";
+import { VariableValue, VariableValueJSON, VariableValueTypes } from "@bentley/presentation-common";
 import { NativePlatformDefinition } from "./NativePlatform";
 
 /**

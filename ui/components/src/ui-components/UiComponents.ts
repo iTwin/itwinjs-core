@@ -6,11 +6,11 @@
  * @module Common
  */
 
-import { Logger } from "@bentley/bentleyjs-core";
-import { I18N } from "@bentley/imodeljs-i18n";
-import { UiError, getClassName } from "@bentley/ui-abstract";
-import { IModelApp } from "@bentley/imodeljs-frontend";
 import { enablePatches } from "immer";
+import { Logger } from "@bentley/bentleyjs-core";
+import { IModelApp } from "@bentley/imodeljs-frontend";
+import { I18N } from "@bentley/imodeljs-i18n";
+import { getClassName, UiError } from "@bentley/ui-abstract";
 import { UiCore } from "@bentley/ui-core";
 
 /**

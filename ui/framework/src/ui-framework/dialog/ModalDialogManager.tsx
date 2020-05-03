@@ -7,7 +7,6 @@
  */
 
 import * as React from "react";
-
 import { CommonProps } from "@bentley/ui-core";
 import { DialogChangedEvent, DialogManagerBase, DialogRendererBase } from "./DialogManagerBase";
 

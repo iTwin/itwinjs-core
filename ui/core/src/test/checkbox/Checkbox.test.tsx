@@ -2,12 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-import * as sinon from "sinon";
-import { render, fireEvent } from "@testing-library/react";
 import { expect } from "chai";
 import { mount } from "enzyme";
-
+import * as React from "react";
+import * as sinon from "sinon";
+import { fireEvent, render } from "@testing-library/react";
 import { Checkbox } from "../../ui-core/checkbox/Checkbox";
 import { InputStatus } from "../../ui-core/inputs/InputStatus";
 

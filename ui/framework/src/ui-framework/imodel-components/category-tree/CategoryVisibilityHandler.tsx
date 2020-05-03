@@ -7,10 +7,10 @@
  */
 
 import * as React from "react";
-import { IModelConnection, Viewport, PerModelCategoryVisibility, ViewManager } from "@bentley/imodeljs-frontend";
+import { IModelConnection, PerModelCategoryVisibility, ViewManager, Viewport } from "@bentley/imodeljs-frontend";
 import { NodeKey } from "@bentley/presentation-common";
-import { IVisibilityHandler, VisibilityStatus } from "../VisibilityTreeEventHandler";
 import { TreeNodeItem, useAsyncValue } from "@bentley/ui-components";
+import { IVisibilityHandler, VisibilityStatus } from "../VisibilityTreeEventHandler";
 
 /**
  * Loads categories from viewport or uses provided list of categories.

@@ -7,8 +7,9 @@
  */
 
 import { BentleyStatus, Logger, RpcInterfaceStatus } from "@bentley/bentleyjs-core";
-import { IModelError } from "../../IModelError";
 import { CommonLoggerCategory } from "../../CommonLoggerCategory";
+import { IModelRpcProps } from "../../IModel";
+import { IModelError } from "../../IModelError";
 import { RpcInterface } from "../../RpcInterface";
 import { RpcConfiguration } from "./RpcConfiguration";
 import { RpcProtocolEvent, RpcRequestStatus } from "./RpcConstants";
@@ -17,7 +18,6 @@ import { RpcMarshaling, RpcSerializedValue } from "./RpcMarshaling";
 import { RpcOperation } from "./RpcOperation";
 import { RpcProtocol, RpcRequestFulfillment, SerializedRpcRequest } from "./RpcProtocol";
 import { CURRENT_INVOCATION, RpcRegistry } from "./RpcRegistry";
-import { IModelRpcProps } from "../../IModel";
 
 /** Notification callback for an RPC invocation.
  * @public

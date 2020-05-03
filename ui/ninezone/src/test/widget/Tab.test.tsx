@@ -4,9 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as sinon from "sinon";
-import { act, render, fireEvent } from "@testing-library/react";
+import { act, fireEvent, render } from "@testing-library/react";
 import {
-  WidgetTab, createNineZoneState, addPanelWidget, addTab, NineZoneProvider, WidgetStateContext, NineZoneDispatch, WIDGET_TAB_CLICK, WIDGET_TAB_DOUBLE_CLICK, WIDGET_TAB_DRAG_START,
+  addPanelWidget, addTab, createNineZoneState, NineZoneDispatch, NineZoneProvider, WIDGET_TAB_CLICK, WIDGET_TAB_DOUBLE_CLICK, WIDGET_TAB_DRAG_START,
+  WidgetStateContext, WidgetTab,
 } from "../../ui-ninezone";
 import { PanelSideContext } from "../../ui-ninezone/widget-panels/Panel";
 import { WidgetTabsEntryContext } from "../../ui-ninezone/widget/Tabs";

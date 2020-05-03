@@ -3,11 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as fs from "fs";
-
-import { Id64String, Id64 } from "@bentley/bentleyjs-core";
-import { IModelDb, DefinitionModel, PhysicalModel, SpatialCategory, PhysicalObject, ModelSelector, CategorySelector, DisplayStyle3d, OrthographicViewDefinition, SnapshotDb, SpatialModel } from "@bentley/imodeljs-backend";
-import { GeometricElement3dProps, Code, AxisAlignedBox3d, ViewFlags, RenderMode, ColorDef } from "@bentley/imodeljs-common";
-import { StandardViewIndex, IModelJson, GeometryQuery, Range3d, Transform, Point3d } from "@bentley/geometry-core";
+import { Id64, Id64String } from "@bentley/bentleyjs-core";
+import { GeometryQuery, IModelJson, Point3d, Range3d, StandardViewIndex, Transform } from "@bentley/geometry-core";
+import {
+  CategorySelector, DefinitionModel, DisplayStyle3d, IModelDb, ModelSelector, OrthographicViewDefinition, PhysicalModel, PhysicalObject, SnapshotDb,
+  SpatialCategory, SpatialModel,
+} from "@bentley/imodeljs-backend";
+import { AxisAlignedBox3d, Code, ColorDef, GeometricElement3dProps, RenderMode, ViewFlags } from "@bentley/imodeljs-common";
 
 function collectRange(g: any, rangeToExtend: Range3d) {
   if (g instanceof GeometryQuery) {

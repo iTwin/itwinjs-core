@@ -2,18 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import {
-  KeyinField,
-  parseArgs,
-} from "@bentley/frontend-devtools";
+import { KeyinField, parseArgs } from "@bentley/frontend-devtools";
 import { Range3d } from "@bentley/geometry-core";
 import { Cartographic } from "@bentley/imodeljs-common";
-import {
-  BlankConnection,
-  IModelApp,
-  SnapshotConnection,
-  Tool,
-} from "@bentley/imodeljs-frontend";
+import { BlankConnection, IModelApp, SnapshotConnection, Tool } from "@bentley/imodeljs-frontend";
 import { DisplayTestApp } from "./App";
 import { BrowserFileSelector, selectFileName } from "./FileOpen";
 import { FpsMonitor } from "./FpsMonitor";
@@ -22,13 +14,7 @@ import { addSnapModes } from "./SnapModes";
 import { TileLoadIndicator } from "./TileLoadIndicator";
 import { createToolButton, ToolBar } from "./ToolBar";
 import { Viewer, ViewerProps } from "./Viewer";
-import {
-  Dock,
-  NamedWindow,
-  NamedWindowProps,
-  Window,
-  WindowProps,
-} from "./Window";
+import { Dock, NamedWindow, NamedWindowProps, Window, WindowProps } from "./Window";
 
 export class Surface {
   public readonly element: HTMLElement;

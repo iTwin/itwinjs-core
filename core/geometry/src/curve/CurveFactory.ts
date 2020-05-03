@@ -9,24 +9,25 @@
 
 // import { Geometry, Angle, AngleSweep } from "../Geometry";
 
-import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
-import { Arc3d, ArcBlendData } from "./Arc3d";
-import { LineString3d } from "./LineString3d";
-import { LineSegment3d } from "./LineSegment3d";
-import { Point3dArrayCarrier } from "../geometry3d/Point3dArrayCarrier";
-import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
-import { Path } from "./Path";
-import { Geometry, AxisOrder } from "../Geometry";
-import { Ellipsoid, GeodesicPathPoint } from "../geometry3d/Ellipsoid";
-import { Loop } from "./Loop";
+import { AxisOrder, Geometry } from "../Geometry";
 import { AngleSweep } from "../geometry3d/AngleSweep";
-import { CurveChain } from "./CurveCollection";
+import { Ellipsoid, GeodesicPathPoint } from "../geometry3d/Ellipsoid";
+import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
+import { Matrix3d } from "../geometry3d/Matrix3d";
+import { Point3dArrayCarrier } from "../geometry3d/Point3dArrayCarrier";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
+import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
 import { Cone } from "../solid/Cone";
 import { TorusPipe } from "../solid/TorusPipe";
+import { Arc3d, ArcBlendData } from "./Arc3d";
+import { CurveChain } from "./CurveCollection";
 import { CurvePrimitive } from "./CurvePrimitive";
 import { GeometryQuery } from "./GeometryQuery";
-import { Matrix3d } from "../geometry3d/Matrix3d";
-import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
+import { LineSegment3d } from "./LineSegment3d";
+import { LineString3d } from "./LineString3d";
+import { Loop } from "./Loop";
+import { Path } from "./Path";
+
 /**
  * The `CurveFactory` class contains methods for specialized curve constructions.
  * @public

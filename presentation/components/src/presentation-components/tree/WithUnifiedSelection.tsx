@@ -8,10 +8,10 @@
 
 import * as React from "react";
 import { Keys, NodeKey } from "@bentley/presentation-common";
-import { Presentation, SelectionHandler, SelectionChangeEventArgs, ISelectionProvider, SelectionHelper } from "@bentley/presentation-frontend";
-import { TreeProps, TreeNodeItem } from "@bentley/ui-components";
-import { getDisplayName } from "../common/Utils";
+import { ISelectionProvider, Presentation, SelectionChangeEventArgs, SelectionHandler, SelectionHelper } from "@bentley/presentation-frontend";
+import { TreeNodeItem, TreeProps } from "@bentley/ui-components";
 import { IUnifiedSelectionComponent } from "../common/IUnifiedSelectionComponent";
+import { getDisplayName } from "../common/Utils";
 import { IPresentationTreeDataProvider } from "./IPresentationTreeDataProvider";
 
 // tslint:disable:deprecation

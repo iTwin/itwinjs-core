@@ -7,7 +7,6 @@
  */
 
 import * as React from "react";
-
 import { UiEvent } from "@bentley/ui-core";
 
 /** Dialog Stack Changed Event Args class.

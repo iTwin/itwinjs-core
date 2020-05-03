@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { IModelApp, Extension, Tool, ScreenViewport } from "@bentley/imodeljs-frontend";
+import { Extension, IModelApp, ScreenViewport, Tool } from "@bentley/imodeljs-frontend";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { SectionLocationSetDecoration } from "./HyperModelingMarkers";
 

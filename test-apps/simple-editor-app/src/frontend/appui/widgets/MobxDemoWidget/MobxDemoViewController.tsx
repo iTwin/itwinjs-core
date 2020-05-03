@@ -2,14 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-
 // Mobx demo
 import { action, computed, observable } from "mobx";
-import { MobxDemoModel } from "./MobxDemoModel";
-import { MobxDemoViewModel } from "./MobxDemoViewModel";
 import { inject, observer } from "mobx-react";
+import * as React from "react";
+import { MobxDemoModel } from "./MobxDemoModel";
 import { MobxDemoView } from "./MobxDemoView";
+import { MobxDemoViewModel } from "./MobxDemoViewModel";
 
 interface MobxDemoViewControllerProps {
   model?: MobxDemoModel;

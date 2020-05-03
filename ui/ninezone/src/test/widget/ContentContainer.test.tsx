@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { render } from "@testing-library/react";
-import { WidgetContentContainer, WidgetContentManagerContextArgs, TabState, EventEmitter, WidgetStateContext } from "../../ui-ninezone";
+import { EventEmitter, TabState, WidgetContentContainer, WidgetContentManagerContextArgs, WidgetStateContext } from "../../ui-ninezone";
 import { createWidgetState } from "../../ui-ninezone/base/NineZoneState";
 import { WidgetContentManagerContext } from "../../ui-ninezone/widget/ContentManager";
 

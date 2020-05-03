@@ -2,23 +2,23 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Checker } from "../Checker";
 import { expect } from "chai";
+import { Geometry } from "../../Geometry";
+import { Angle } from "../../geometry3d/Angle";
 import { GrowableFloat64Array } from "../../geometry3d/GrowableFloat64Array";
 import { GrowableXYArray } from "../../geometry3d/GrowableXYArray";
+import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
+import { Matrix3d } from "../../geometry3d/Matrix3d";
+import { Point2dArrayCarrier } from "../../geometry3d/Point2dArrayCarrier";
 // import { ClusterableArray } from "../numerics/ClusterableArray";
 // import { prettyPrint } from "./testFunctions";
 import { Point2d, Vector2d } from "../../geometry3d/Point2dVector2d";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { Transform } from "../../geometry3d/Transform";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
-import { Sample } from "../../serialization/GeometrySamples";
-import { Angle } from "../../geometry3d/Angle";
-import { Point2dArrayCarrier } from "../../geometry3d/Point2dArrayCarrier";
-import { Geometry } from "../../Geometry";
-import { Range2d } from "../../geometry3d/Range";
-import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
 import { Point3dArrayCarrier } from "../../geometry3d/Point3dArrayCarrier";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
+import { Range2d } from "../../geometry3d/Range";
+import { Transform } from "../../geometry3d/Transform";
+import { Sample } from "../../serialization/GeometrySamples";
+import { Checker } from "../Checker";
 
 /* tslint:disable: no-console */
 

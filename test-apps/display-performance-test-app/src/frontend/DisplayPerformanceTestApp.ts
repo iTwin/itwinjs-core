@@ -1,30 +1,31 @@
-
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Id64, Id64Arg, Id64String, OpenMode, StopWatch, ClientRequestContext } from "@bentley/bentleyjs-core";
-import { AccessToken } from "@bentley/itwin-client";
+import * as path from "path";
+import { ClientRequestContext, Id64, Id64Arg, Id64String, OpenMode, StopWatch } from "@bentley/bentleyjs-core";
 import { Project } from "@bentley/context-registry-client";
-import { BrowserAuthorizationClient, FrontendAuthorizationClient, BrowserAuthorizationClientConfiguration } from "@bentley/frontend-authorization-client";
-import { ProjectShareClient, ProjectShareFile, ProjectShareFileQuery, ProjectShareFolderQuery } from "@bentley/projectshare-client";
 import {
-  BackgroundMapProps, BackgroundMapType, BentleyCloudRpcManager, DisplayStyleProps, ElectronRpcConfiguration, ElectronRpcManager, IModelReadRpcInterface,
-  IModelTileRpcInterface, MobileRpcConfiguration, MobileRpcManager, RpcConfiguration, RenderMode,
-  SnapshotIModelRpcInterface, ViewDefinitionProps, DesktopAuthorizationClientConfiguration,
+  BrowserAuthorizationClient, BrowserAuthorizationClientConfiguration, FrontendAuthorizationClient,
+} from "@bentley/frontend-authorization-client";
+import { HubIModel } from "@bentley/imodelhub-client";
+import {
+  BackgroundMapProps, BackgroundMapType, BentleyCloudRpcManager, DesktopAuthorizationClientConfiguration, DisplayStyleProps, ElectronRpcConfiguration,
+  ElectronRpcManager, IModelReadRpcInterface, IModelTileRpcInterface, MobileRpcConfiguration, MobileRpcManager, RenderMode, RpcConfiguration,
+  SnapshotIModelRpcInterface, ViewDefinitionProps,
 } from "@bentley/imodeljs-common";
 import {
-  AuthorizedFrontendRequestContext, FrontendRequestContext, DisplayStyleState, DisplayStyle3dState, IModelApp, IModelConnection, EntityState,
-  PerformanceMetrics, Pixel, RenderSystem, ScreenViewport, Target, TileAdmin, Viewport, ViewRect, ViewState, IModelAppOptions,
-  FeatureOverrideProvider, FeatureSymbology, GLTimerResult, DesktopAuthorizationClient, SnapshotConnection,
+  AuthorizedFrontendRequestContext, DesktopAuthorizationClient, DisplayStyle3dState, DisplayStyleState, EntityState, FeatureOverrideProvider,
+  FeatureSymbology, FrontendRequestContext, GLTimerResult, IModelApp, IModelAppOptions, IModelConnection, PerformanceMetrics, Pixel, RenderSystem,
+  ScreenViewport, SnapshotConnection, Target, TileAdmin, Viewport, ViewRect, ViewState,
 } from "@bentley/imodeljs-frontend";
 import { System } from "@bentley/imodeljs-frontend/lib/webgl";
 import { I18NOptions } from "@bentley/imodeljs-i18n";
+import { AccessToken } from "@bentley/itwin-client";
+import { ProjectShareClient, ProjectShareFile, ProjectShareFileQuery, ProjectShareFolderQuery } from "@bentley/projectshare-client";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import { initializeIModelHub } from "./ConnectEnv";
 import { IModelApi } from "./IModelApi";
-import * as path from "path";
-import { HubIModel } from "@bentley/imodelhub-client";
 
 let curRenderOpts: RenderSystem.Options = {}; // Keep track of the current render options (disabled webgl extensions and enableOptimizedSurfaceShaders flag)
 let curTileProps: TileAdmin.Props = {}; // Keep track of whether or not instancing has been enabled

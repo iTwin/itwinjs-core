@@ -7,13 +7,13 @@
  * @module CartesianGeometry
  */
 
-import { Geometry, AxisOrder, BeJSONFunctions } from "../Geometry";
+import { AxisOrder, BeJSONFunctions, Geometry } from "../Geometry";
 import { Point4d } from "../geometry4d/Point4d";
-import { Range3d } from "./Range";
-import { Point2d } from "./Point2dVector2d";
-import { XAndY, XYAndZ, TransformProps } from "./XYZProps";
-import { XYZ, Point3d, Vector3d } from "./Point3dVector3d";
 import { Matrix3d } from "./Matrix3d";
+import { Point2d } from "./Point2dVector2d";
+import { Point3d, Vector3d, XYZ } from "./Point3dVector3d";
+import { Range3d } from "./Range";
+import { TransformProps, XAndY, XYAndZ } from "./XYZProps";
 
 /** A transform is an origin and a Matrix3d.
  *

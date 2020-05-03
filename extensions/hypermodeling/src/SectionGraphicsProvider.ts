@@ -2,42 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { assert, compareStrings, Id64 } from "@bentley/bentleyjs-core";
+import { Point3d, Range3d } from "@bentley/geometry-core";
+import { Placement3d, RelatedElement, SectionLocationProps, ViewAttachmentProps, ViewFlagOverrides } from "@bentley/imodeljs-common";
 import {
-  assert,
-  compareStrings,
-  Id64,
-} from "@bentley/bentleyjs-core";
-import {
-  Point3d,
-  Range3d,
-} from "@bentley/geometry-core";
-import {
-  Placement3d,
-  RelatedElement,
-  SectionLocationProps,
-  ViewAttachmentProps,
-  ViewFlagOverrides,
-} from "@bentley/imodeljs-common";
-import {
-  FeatureSymbology,
-  GeometricModel2dState,
-  HitDetail,
-  IModelConnection,
-  RenderSystem,
-  Tile,
-  TileContent,
-  TileDrawArgs,
-  TiledGraphicsProvider,
-  TileLoadPriority,
-  TileRequest,
-  TileTree,
-  TileTreeOwner,
-  TileTreeReference,
-  TileTreeSet,
-  TileTreeSupplier,
-  Viewport,
-  ViewState,
-  ViewState2d,
+  FeatureSymbology, GeometricModel2dState, HitDetail, IModelConnection, RenderSystem, Tile, TileContent, TiledGraphicsProvider, TileDrawArgs,
+  TileLoadPriority, TileRequest, TileTree, TileTreeOwner, TileTreeReference, TileTreeSet, TileTreeSupplier, Viewport, ViewState, ViewState2d,
 } from "@bentley/imodeljs-frontend";
 
 class ProxyTreeSupplier implements TileTreeSupplier {

@@ -6,14 +6,8 @@
  * @module Tile
  */
 
-import {
-  ByteStream,
-  utf8ToString,
-} from "@bentley/bentleyjs-core";
-import {
-  TileFormat,
-  TileHeader,
-} from "./TileIO";
+import { ByteStream, utf8ToString } from "@bentley/bentleyjs-core";
+import { TileFormat, TileHeader } from "./TileIO";
 
 /** Header preceding tile content in [i3dm](https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/specification/TileFormats/Instanced3DModel) format.
  * @internal

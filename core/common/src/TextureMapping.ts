@@ -6,13 +6,7 @@
  * @module Rendering
  */
 
-import {
-  IndexedPolyfaceVisitor,
-  Point2d,
-  PolyfaceVisitor,
-  Transform,
-  Vector3d,
-} from "@bentley/geometry-core";
+import { IndexedPolyfaceVisitor, Point2d, PolyfaceVisitor, Transform, Vector3d } from "@bentley/geometry-core";
 import { RenderTexture } from "./RenderTexture";
 
 /** Describes how to map a [[RenderTexture]] image onto a surface.

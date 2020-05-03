@@ -6,49 +6,44 @@
  * @module Notification
  */
 
-import * as React from "react";
+import "./ToolAssistanceField.scss";
 import classnames from "classnames";
-
+import * as React from "react";
 import { Logger } from "@bentley/bentleyjs-core";
 import {
-  IModelApp,
-  ToolAssistanceInstructions, ToolAssistanceInstruction, ToolAssistanceSection, ToolAssistanceImage,
-  ToolAssistanceKeyboardInfo, ToolAssistanceInputMethod,
+  IModelApp, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceInstructions, ToolAssistanceKeyboardInfo,
+  ToolAssistanceSection,
 } from "@bentley/imodeljs-frontend";
 import { IconSpecUtilities } from "@bentley/ui-abstract";
 import {
-  SvgSprite, FillCentered, LocalUiSettings, UiSettingsStatus, UiSettings,
-  HorizontalTabs, UiCore, LabeledToggle, Icon, UiSettingsResult, UiSetting,
+  FillCentered, HorizontalTabs, Icon, LabeledToggle, LocalUiSettings, SvgSprite, UiCore, UiSetting, UiSettings, UiSettingsResult, UiSettingsStatus,
 } from "@bentley/ui-core";
 import {
-  ToolAssistance, ToolAssistanceDialog, FooterPopup,
-  ToolAssistanceInstruction as NZ_ToolAssistanceInstruction, ToolAssistanceSeparator, ToolAssistanceItem, TitleBarButton,
+  FooterPopup, TitleBarButton, ToolAssistance, ToolAssistanceDialog, ToolAssistanceInstruction as NZ_ToolAssistanceInstruction, ToolAssistanceItem,
+  ToolAssistanceSeparator,
 } from "@bentley/ui-ninezone";
-
-import { StatusFieldProps } from "../StatusFieldProps";
 import { CursorPrompt } from "../../cursor/cursorprompt/CursorPrompt";
-import { MessageManager, ToolAssistanceChangedEventArgs } from "../../messages/MessageManager";
 import { FrontstageManager, ToolIconChangedEventArgs } from "../../frontstage/FrontstageManager";
+import { MessageManager, ToolAssistanceChangedEventArgs } from "../../messages/MessageManager";
 import { StatusBarFieldId } from "../../statusbar/StatusBarWidgetControl";
 import { UiFramework } from "../../UiFramework";
-
-import "./ToolAssistanceField.scss";
+import { StatusFieldProps } from "../StatusFieldProps";
 import acceptPointIcon from "./accept-point.svg?sprite";
 import cursorClickIcon from "./cursor-click.svg?sprite";
-import clickLeftIcon from "./mouse-click-left.svg?sprite";
-import clickRightIcon from "./mouse-click-right.svg?sprite";
-import mouseWheelClickIcon from "./mouse-click-wheel.svg?sprite";
-import clickLeftDragIcon from "./mouse-click-left-drag.svg?sprite";
-import clickRightDragIcon from "./mouse-click-right-drag.svg?sprite";
-import clickMouseWheelDragIcon from "./mouse-click-wheel-drag.svg?sprite";
-import oneTouchTapIcon from "./gesture-one-finger-tap.svg?sprite";
-import oneTouchDoubleTapIcon from "./gesture-one-finger-tap-double.svg?sprite";
 import oneTouchDragIcon from "./gesture-one-finger-drag.svg?sprite";
-import twoTouchTapIcon from "./gesture-two-finger-tap.svg?sprite";
-import twoTouchDragIcon from "./gesture-two-finger-drag.svg?sprite";
+import oneTouchDoubleTapIcon from "./gesture-one-finger-tap-double.svg?sprite";
+import oneTouchTapIcon from "./gesture-one-finger-tap.svg?sprite";
 import twoTouchPinchIcon from "./gesture-pinch.svg?sprite";
-import touchCursorTapIcon from "./touch-cursor-point.svg?sprite";
+import twoTouchDragIcon from "./gesture-two-finger-drag.svg?sprite";
+import twoTouchTapIcon from "./gesture-two-finger-tap.svg?sprite";
+import clickLeftDragIcon from "./mouse-click-left-drag.svg?sprite";
+import clickLeftIcon from "./mouse-click-left.svg?sprite";
+import clickRightDragIcon from "./mouse-click-right-drag.svg?sprite";
+import clickRightIcon from "./mouse-click-right.svg?sprite";
+import clickMouseWheelDragIcon from "./mouse-click-wheel-drag.svg?sprite";
+import mouseWheelClickIcon from "./mouse-click-wheel.svg?sprite";
 import touchCursorDragIcon from "./touch-cursor-pan.svg?sprite";
+import touchCursorTapIcon from "./touch-cursor-point.svg?sprite";
 
 /** Properties of [[ToolAssistanceField]] component.
  * @public

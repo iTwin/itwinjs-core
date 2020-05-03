@@ -7,16 +7,16 @@
  * @module Curve
  */
 
-import { Loop } from "../Loop";
-import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
-import { Angle } from "../../geometry3d/Angle";
-import { CurveLocationDetail, CurveIntervalRole } from "../CurveLocationDetail";
-import { CurvePrimitive } from "../CurvePrimitive";
-import { ParityRegion } from "../ParityRegion";
 import { Geometry } from "../../Geometry";
+import { Angle } from "../../geometry3d/Angle";
+import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
-import { UnionRegion } from "../UnionRegion";
 import { AnyRegion } from "../CurveChain";
+import { CurveIntervalRole, CurveLocationDetail } from "../CurveLocationDetail";
+import { CurvePrimitive } from "../CurvePrimitive";
+import { Loop } from "../Loop";
+import { ParityRegion } from "../ParityRegion";
+import { UnionRegion } from "../UnionRegion";
 
 /**
  * Context for testing containment in Loop, ParityRegion and UnionRegion.

@@ -6,11 +6,15 @@
  * @module Schema
  */
 
-import { RelatedElement, DistanceExpressionProps, LinearlyReferencedAtLocationAspectProps, LinearlyReferencedFromToLocationAspectProps } from "@bentley/imodeljs-common";
-import { JsonUtils, Id64String } from "@bentley/bentleyjs-core";
+import { Id64String, JsonUtils } from "@bentley/bentleyjs-core";
+import {
+  DistanceExpressionProps, LinearlyReferencedAtLocationAspectProps, LinearlyReferencedFromToLocationAspectProps, RelatedElement,
+} from "@bentley/imodeljs-common";
 import { ElementMultiAspect } from "../ElementAspect";
 import { IModelDb } from "../IModelDb";
-import { LinearlyReferencedAtPositionRefersToReferent, LinearlyReferencedFromPositionRefersToReferent, LinearlyReferencedToPositionRefersToReferent } from "./LinearReferencingRelationships";
+import {
+  LinearlyReferencedAtPositionRefersToReferent, LinearlyReferencedFromPositionRefersToReferent, LinearlyReferencedToPositionRefersToReferent,
+} from "./LinearReferencingRelationships";
 
 /** Core structure carrying linearly-referenced information.
  * @beta

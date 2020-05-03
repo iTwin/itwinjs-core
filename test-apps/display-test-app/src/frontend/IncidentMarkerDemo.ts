@@ -6,8 +6,8 @@ import { Logger } from "@bentley/bentleyjs-core";
 import { AngleSweep, Arc3d, Point2d, Point3d, XAndY, XYAndZ } from "@bentley/geometry-core";
 import { AxisAlignedBox3d, ColorByName, ColorDef } from "@bentley/imodeljs-common";
 import {
-  BeButton, BeButtonEvent, Cluster, DecorateContext, GraphicType, imageElementFromUrl,
-  IModelApp, Marker, MarkerImage, MarkerSet, MessageBoxIconType, MessageBoxType, Tool,
+  BeButton, BeButtonEvent, Cluster, DecorateContext, GraphicType, imageElementFromUrl, IModelApp, Marker, MarkerImage, MarkerSet, MessageBoxIconType,
+  MessageBoxType, Tool,
 } from "@bentley/imodeljs-frontend";
 
 /** Example Marker to show an *incident*. Each incident has an *id*, a *severity*, and an *icon*. */

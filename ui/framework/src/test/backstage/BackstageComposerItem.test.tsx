@@ -7,14 +7,8 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { BackstageItem as NZ_BackstageItem } from "@bentley/ui-ninezone";
 import {
-  BackstageComposerActionItem,
-  BackstageComposerStageLauncher,
-  UiFramework,
-  BackstageManager,
-  BackstageComposerItem,
-  FrontstageManager,
-  BackstageItemType,
-  BackstageActionItem, BackstageStageLauncher,
+  BackstageActionItem, BackstageComposerActionItem, BackstageComposerItem, BackstageComposerStageLauncher, BackstageItemType, BackstageManager,
+  BackstageStageLauncher, FrontstageManager, UiFramework,
 } from "../../ui-framework";
 import { FrontstageDef } from "../../ui-framework/frontstage/FrontstageDef";
 import TestUtils from "../TestUtils";

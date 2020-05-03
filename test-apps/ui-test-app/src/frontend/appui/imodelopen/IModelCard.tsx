@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import "./IModelCard.scss";
 import * as React from "react";
 import { Spinner, SpinnerSize } from "@bentley/ui-core";
-import { UiFramework, IModelInfo } from "@bentley/ui-framework";
+import { IModelInfo, UiFramework } from "@bentley/ui-framework";
 
-import "./IModelCard.scss";
 // import { IModelViewPicker } from "./IModelViewPicker";
 
 /** Properties for the [[IModelCard]] component */

@@ -6,6 +6,7 @@
  * @module RpcInterface
  */
 
+import "@ungap/url-search-params/index";
 import { BentleyStatus, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
 import { IModelError, ServerError, ServerTimeoutError } from "../../IModelError";
 import { RpcInterface } from "../../RpcInterface";
@@ -16,7 +17,6 @@ import { RpcRequest } from "../core/RpcRequest";
 import { RpcMultipartParser } from "./multipart/RpcMultipartParser";
 import { RpcMultipart } from "./RpcMultipart";
 import { HttpServerRequest, HttpServerResponse, WebAppRpcProtocol } from "./WebAppRpcProtocol";
-import "@ungap/url-search-params/index";
 
 /** @public */
 export type HttpMethod_T = "get" | "put" | "post" | "delete" | "options" | "head" | "patch" | "trace";

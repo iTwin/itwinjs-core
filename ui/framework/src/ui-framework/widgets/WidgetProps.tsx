@@ -7,10 +7,8 @@
  */
 
 import * as React from "react";
-
 import { AbstractWidgetProps } from "@bentley/ui-abstract";
 import { IconProps } from "@bentley/ui-core";
-
 import { ConfigurableUiControlConstructor } from "../configurableui/ConfigurableUiControl";
 
 /** Properties for a [Widget]($ui-framework) component.

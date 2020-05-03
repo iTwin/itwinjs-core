@@ -6,30 +6,36 @@
  * @module Tools
  */
 
+import { BeDuration, BeTimePoint } from "@bentley/bentleyjs-core";
 import {
-  PropertyDescription, PropertyEditorParamTypes, SuppressLabelEditorParams,
-  DialogItemValue, DialogItem, DialogPropertySyncItem,
+  Angle, AngleSweep, Arc3d, ClipUtilities, Constant, Geometry, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Range3d, Transform, Vector2d,
+  Vector3d, XAndY, YawPitchRollAngles,
+} from "@bentley/geometry-core";
+import { Cartographic, ColorDef, Frustum, LinePixels, Npc, NpcCenter } from "@bentley/imodeljs-common";
+import {
+  DialogItem, DialogItemValue, DialogPropertySyncItem, PropertyDescription, PropertyEditorParamTypes, SuppressLabelEditorParams,
 } from "@bentley/ui-abstract";
-import { Angle, Matrix3d, Point2d, Point3d, Range3d, Transform, Vector2d, Vector3d, YawPitchRollAngles, ClipUtilities, Geometry, Constant, Arc3d, AngleSweep, Plane3dByOriginAndUnitNormal, XAndY } from "@bentley/geometry-core";
-import { ColorDef, Frustum, Npc, NpcCenter, LinePixels, Cartographic } from "@bentley/imodeljs-common";
-import { BeTimePoint, BeDuration } from "@bentley/bentleyjs-core";
+import { AccuDraw } from "../AccuDraw";
 import { TentativeOrAccuSnap } from "../AccuSnap";
+import { BingLocationProvider } from "../BingLocation";
 import { IModelApp } from "../IModelApp";
+import { LengthDescription } from "../properties/LengthDescription";
 import { GraphicType } from "../render/GraphicBuilder";
+import { StandardViewId } from "../StandardView";
 import { DecorateContext } from "../ViewContext";
-import { CoordSystem, ScreenViewport, Viewport, Animator, DepthPointSource, ViewChangeOptions } from "../Viewport";
+import {
+  eyeToCartographicOnGlobe, GlobalLocation, queryTerrainElevationOffset, rangeToCartographicArea, viewGlobalLocation, ViewGlobalLocationConstants,
+} from "../ViewGlobalLocation";
+import { Animator, CoordSystem, DepthPointSource, ScreenViewport, ViewChangeOptions, Viewport } from "../Viewport";
 import { ViewRect } from "../ViewRect";
 import { ViewState3d, ViewStatus } from "../ViewState";
-import { BeButton, BeButtonEvent, BeTouchEvent, BeWheelEvent, CoordSource, EventHandled, InteractiveTool, CoreTools, BeModifierKeys, InputSource } from "./Tool";
-import { ToolSettings } from "./ToolSettings";
-import { AccuDraw } from "../AccuDraw";
-import { StandardViewId } from "../StandardView";
 import { AccuDrawShortcuts } from "./AccuDrawTool";
 import { PrimitiveTool } from "./PrimitiveTool";
-import { LengthDescription } from "../properties/LengthDescription";
-import { ToolAssistance, ToolAssistanceInstruction, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceSection } from "./ToolAssistance";
-import { BingLocationProvider } from "../BingLocation";
-import { viewGlobalLocation, GlobalLocation, ViewGlobalLocationConstants, rangeToCartographicArea, queryTerrainElevationOffset, eyeToCartographicOnGlobe } from "../ViewGlobalLocation";
+import {
+  BeButton, BeButtonEvent, BeModifierKeys, BeTouchEvent, BeWheelEvent, CoordSource, CoreTools, EventHandled, InputSource, InteractiveTool,
+} from "./Tool";
+import { ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection } from "./ToolAssistance";
+import { ToolSettings } from "./ToolSettings";
 
 // cspell:ignore wasd, arrowright, arrowleft, pagedown, pageup, arrowup, arrowdown
 

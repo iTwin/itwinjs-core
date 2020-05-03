@@ -7,11 +7,11 @@
  */
 
 import * as React from "react";
-import { PropertyRecord, PropertyValueFormat, PrimitiveValue } from "@bentley/ui-abstract";
-import { IPropertyValueRenderer, PropertyValueRendererContext } from "../../ValueRendererManager";
+import { PrimitiveValue, PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
 import { TypeConverterManager } from "../../../converters/TypeConverterManager";
-import { withContextStyle } from "./WithContextStyle";
 import { LinksRenderer } from "../../LinkHandler";
+import { IPropertyValueRenderer, PropertyValueRendererContext } from "../../ValueRendererManager";
+import { withContextStyle } from "./WithContextStyle";
 
 /** Default Primitive Property Renderer
  * @public

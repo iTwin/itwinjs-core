@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { IModelApp, IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
 import { assert } from "chai";
+import { IModelApp, IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
 
 describe("ECSql Query", () => {
   let imodel1: IModelConnection;

@@ -2,15 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import settingsIconSvg from "@bentley/icons-generic/icons/settings.svg?sprite";
+import { IModelApp } from "@bentley/imodeljs-frontend";
 import { BackstageItem, BackstageItemUtilities, ConditionalBooleanValue, IconSpecUtilities } from "@bentley/ui-abstract";
 import { FrontstageManager } from "@bentley/ui-framework";
-import { LocalFileOpenFrontstage } from "../frontstages/LocalFileStage";
-import { IModelApp } from "@bentley/imodeljs-frontend";
-import { SettingsModalFrontstage } from "../frontstages/Settings";
-import { ComponentExamplesModalFrontstage } from "../frontstages/component-examples/ComponentExamples";
 import { SampleAppIModelApp, SampleAppUiActionId } from "../..";
-
-import settingsIconSvg from "@bentley/icons-generic/icons/settings.svg?sprite";
+import { ComponentExamplesModalFrontstage } from "../frontstages/component-examples/ComponentExamples";
+import { LocalFileOpenFrontstage } from "../frontstages/LocalFileStage";
+import { SettingsModalFrontstage } from "../frontstages/Settings";
 import stageIconSvg from "./imodeljs.svg?sprite";
 
 export class AppBackstageItemProvider {

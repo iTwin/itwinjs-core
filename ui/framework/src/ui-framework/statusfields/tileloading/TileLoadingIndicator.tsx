@@ -6,16 +6,14 @@
  * @module StatusBar
  */
 
-import * as React from "react";
+import "./TileLoadingIndicator.scss";
 import classnames from "classnames";
-
+import * as React from "react";
 import { Logger } from "@bentley/bentleyjs-core";
-import { ScreenViewport, IModelApp } from "@bentley/imodeljs-frontend";
+import { IModelApp, ScreenViewport } from "@bentley/imodeljs-frontend";
 import { LoadingBar } from "@bentley/ui-core";
 import { UiFramework } from "../../UiFramework";
 import { StatusFieldProps } from "../StatusFieldProps";
-
-import "./TileLoadingIndicator.scss";
 
 let onViewOpen: (vp: ScreenViewport) => void;
 let onRenderUpdate: () => void;

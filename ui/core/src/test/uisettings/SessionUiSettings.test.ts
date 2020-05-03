@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { SessionUiSettings, UiSettingsStatus } from "../../ui-core";
+
 import { storageMock } from "../TestUtils";
 
 describe("SessionUiSettings", () => {

@@ -3,12 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import * as sinon from "sinon";
 import deepEqual from "deep-equal";
+import * as sinon from "sinon";
 import { IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
-import {
-  ChildNodeSpecificationTypes, RuleTypes, PartialHierarchyModification, Node, NodeKey,
-} from "@bentley/presentation-common";
+import { ChildNodeSpecificationTypes, Node, NodeKey, PartialHierarchyModification, RuleTypes } from "@bentley/presentation-common";
 import { LabelDefinitionJSON } from "@bentley/presentation-common/lib/presentation-common/LabelDefinition"; // tslint:disable-line: no-direct-imports
 import { Presentation } from "@bentley/presentation-frontend";
 import { initialize, terminate } from "../IntegrationTests";

@@ -6,15 +6,12 @@
  * @module ToolAssistance
  */
 
-import * as React from "react";
+import "./Instruction.scss";
 import classnames from "classnames";
-
+import * as React from "react";
 import { CommonProps } from "@bentley/ui-core";
-
 import { ToolAssistanceItem } from "./Item";
 import { NewDot } from "./NewDot";
-
-import "./Instruction.scss";
 
 /** Properties of [[ToolAssistanceInstruction]] component.
  * @beta

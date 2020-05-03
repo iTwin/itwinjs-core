@@ -4,17 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-
-import { OpenAPIInfo, BentleyCloudRpcManager } from "@bentley/imodeljs-common";
-import { AccessToken } from "@bentley/itwin-client";
+import { Config, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { BentleyCloudRpcManager, OpenAPIInfo } from "@bentley/imodeljs-common";
 import { NoRenderApp } from "@bentley/imodeljs-frontend";
-import { Logger, LogLevel, Config } from "@bentley/bentleyjs-core";
-import { getAccessTokenFromBackend, TestUserCredentials, TestBrowserAuthorizationClientConfiguration, TestFrontendAuthorizationClient } from "@bentley/oidc-signin-tool/lib/frontend";
-
-import { Settings, getRpcInterfaces } from "../../common/Settings";
-import { IModelSession } from "./IModelSession";
-
+import { AccessToken } from "@bentley/itwin-client";
+import {
+  getAccessTokenFromBackend, TestBrowserAuthorizationClientConfiguration, TestFrontendAuthorizationClient, TestUserCredentials,
+} from "@bentley/oidc-signin-tool/lib/frontend";
+import { getRpcInterfaces, Settings } from "../../common/Settings";
 import { getProcessEnvFromBackend } from "../../common/SideChannels";
+import { IModelSession } from "./IModelSession";
 
 declare const PACKAGE_VERSION: string;
 

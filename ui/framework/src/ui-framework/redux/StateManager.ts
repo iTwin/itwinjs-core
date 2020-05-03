@@ -8,11 +8,11 @@
 
 // cSpell:ignore DEVTOOLS
 
-import { createStore, combineReducers, ReducersMapObject, Store } from "redux";
+import { combineReducers, createStore, ReducersMapObject, Store } from "redux";
 import { Logger } from "@bentley/bentleyjs-core";
 import { UiError } from "@bentley/ui-abstract";
-import { ReducerRegistryInstance, NameToReducerMap } from "./ReducerRegistry";
-import { FrameworkState, FrameworkReducer } from "./FrameworkState";
+import { FrameworkReducer, FrameworkState } from "./FrameworkState";
+import { NameToReducerMap, ReducerRegistryInstance } from "./ReducerRegistry";
 
 /** Generic 'root' state for the ui-framework package. Since this state contains common values needed by many iModel.js applications
  * it is automatically added to the Redux store when using [[StateManager]].

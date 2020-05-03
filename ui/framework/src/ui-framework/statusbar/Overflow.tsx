@@ -6,11 +6,11 @@
  * @module StatusBar
  */
 
+import "./Overflow.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { useResizeObserver, CommonProps } from "@bentley/ui-core";
+import { CommonProps, useResizeObserver } from "@bentley/ui-core";
 import { Ellipsis } from "@bentley/ui-ninezone";
-import "./Overflow.scss";
 
 /** Properties of [[StatusBarOverflow]] component.
  * @internal

@@ -2,21 +2,23 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
 /** @packageDocumentation
  * @module WebGL
  */
-import { VariableType, ProgramBuilder, FragmentShaderComponent, ShaderBuilder } from "../ShaderBuilder";
+
 import { assert } from "@bentley/bentleyjs-core";
-import { TextureUnit } from "../RenderFlags";
-import { addUInt32s } from "./Common";
-import { Texture2DHandle } from "../Texture";
-import { addWindowToTexCoords } from "./Fragment";
-import { addClassifierFlash } from "./FeatureSymbology";
-import { SpatialClassificationProps } from "@bentley/imodeljs-common";
 import { Matrix4d } from "@bentley/geometry-core";
+import { SpatialClassificationProps } from "@bentley/imodeljs-common";
 import { Matrix4 } from "../Matrix";
-import { addInstancedRtcMatrix } from "./Vertex";
+import { TextureUnit } from "../RenderFlags";
+import { FragmentShaderComponent, ProgramBuilder, ShaderBuilder, VariableType } from "../ShaderBuilder";
 import { IsThematic } from "../TechniqueFlags";
+import { Texture2DHandle } from "../Texture";
+import { addUInt32s } from "./Common";
+import { addClassifierFlash } from "./FeatureSymbology";
+import { addWindowToTexCoords } from "./Fragment";
+import { addInstancedRtcMatrix } from "./Vertex";
 
 export const volClassOpaqueColor = `
 vec4 volClassColor(vec4 baseColor, float depth) {

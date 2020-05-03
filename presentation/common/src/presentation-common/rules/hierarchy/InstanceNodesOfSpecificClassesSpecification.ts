@@ -6,8 +6,8 @@
  * @module PresentationRules
  */
 
-import { ChildNodeSpecificationBase, ChildNodeSpecificationTypes, DefaultGroupingPropertiesContainer } from "./ChildNodeSpecification";
 import { MultiSchemaClassesSpecification } from "../ClassSpecifications";
+import { ChildNodeSpecificationBase, ChildNodeSpecificationTypes, DefaultGroupingPropertiesContainer } from "./ChildNodeSpecification";
 
 /**
  * Creates nodes for all instances of specified ECClasses.

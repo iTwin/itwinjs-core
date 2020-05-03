@@ -2,15 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-import classnames from "classnames";
-import { IModelConnection, ViewState } from "@bentley/imodeljs-frontend";
-import { ViewsList } from "./ViewsList";
-import { SearchBox, Timer, LoadingBar } from "@bentley/ui-core";
-import { ViewDefinitionProps } from "@bentley/imodeljs-common";
-import { UiFramework } from "@bentley/ui-framework";
-import { Id64String } from "@bentley/bentleyjs-core";
 import "./SheetsTab.scss";
+import classnames from "classnames";
+import * as React from "react";
+import { Id64String } from "@bentley/bentleyjs-core";
+import { ViewDefinitionProps } from "@bentley/imodeljs-common";
+import { IModelConnection, ViewState } from "@bentley/imodeljs-frontend";
+import { LoadingBar, SearchBox, Timer } from "@bentley/ui-core";
+import { UiFramework } from "@bentley/ui-framework";
+import { ViewsList } from "./ViewsList";
 
 /** @internal */
 export interface SheetsProps {

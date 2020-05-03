@@ -4,23 +4,20 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as faker from "faker";
-import * as moq from "typemoq";
 import * as sinon from "sinon";
-import {
-  createRandomECInstancesNodeKeyJSON, createRandomECInstanceKeyJSON,
-  createRandomECInstancesNodeJSON, createRandomNodePathElementJSON,
-  createRandomContentJSON, createRandomDescriptorJSON,
-  createRandomSelectionScope, createRandomLabelDefinitionJSON,
-} from "./_helpers/random";
+import * as moq from "typemoq";
 import { Id64String } from "@bentley/bentleyjs-core";
-import { IModelRpcProps, RpcManager, RpcInterface, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
+import { IModelRpcProps, RpcInterface, RpcInterfaceDefinition, RpcManager } from "@bentley/imodeljs-common";
 import {
-  RpcRequestsHandler, PresentationRpcInterface,
-  KeySet, Paged, SelectionInfo, PresentationStatus,
-  HierarchyRequestOptions, ContentRequestOptions, SelectionScopeRequestOptions, PresentationError, LabelRequestOptions,
-  PresentationRpcRequestOptions, PresentationRpcResponse, PartialHierarchyModificationJSON,
+  ContentRequestOptions, HierarchyRequestOptions, KeySet, LabelRequestOptions, Paged, PartialHierarchyModificationJSON, PresentationError,
+  PresentationRpcInterface, PresentationRpcRequestOptions, PresentationRpcResponse, PresentationStatus, RpcRequestsHandler, SelectionInfo,
+  SelectionScopeRequestOptions,
 } from "../presentation-common";
 import { PresentationDataCompareOptions } from "../presentation-common/PresentationManagerOptions";
+import {
+  createRandomContentJSON, createRandomDescriptorJSON, createRandomECInstanceKeyJSON, createRandomECInstancesNodeJSON,
+  createRandomECInstancesNodeKeyJSON, createRandomLabelDefinitionJSON, createRandomNodePathElementJSON, createRandomSelectionScope,
+} from "./_helpers/random";
 
 describe("RpcRequestsHandler", () => {
 

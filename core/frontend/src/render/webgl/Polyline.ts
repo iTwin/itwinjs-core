@@ -6,22 +6,22 @@
  * @module WebGL
  */
 
-import { Point3d } from "@bentley/geometry-core";
-import { FeatureIndexType, QParams3d, RenderMode, PolylineTypeFlags } from "@bentley/imodeljs-common";
-import { PolylineParams } from "../primitives/VertexTable";
-import { Target } from "./Target";
-import { LUTGeometry, PolylineBuffers } from "./CachedGeometry";
-import { RenderPass, RenderOrder } from "./RenderFlags";
-import { TechniqueId } from "./TechniqueId";
-import { LineCode } from "./EdgeOverrides";
-import { VertexLUT } from "./VertexLUT";
-import { ColorInfo } from "./ColorInfo";
-import { GL } from "./GL";
-import { System } from "./System";
-import { ShaderProgramParams } from "./DrawCommand";
 import { dispose } from "@bentley/bentleyjs-core";
+import { Point3d } from "@bentley/geometry-core";
+import { FeatureIndexType, PolylineTypeFlags, QParams3d, RenderMode } from "@bentley/imodeljs-common";
+import { PolylineParams } from "../primitives/VertexTable";
 import { RenderMemory } from "../RenderMemory";
+import { LUTGeometry, PolylineBuffers } from "./CachedGeometry";
+import { ColorInfo } from "./ColorInfo";
+import { ShaderProgramParams } from "./DrawCommand";
+import { LineCode } from "./EdgeOverrides";
+import { GL } from "./GL";
 import { BuffersContainer } from "./Handle";
+import { RenderOrder, RenderPass } from "./RenderFlags";
+import { System } from "./System";
+import { Target } from "./Target";
+import { TechniqueId } from "./TechniqueId";
+import { VertexLUT } from "./VertexLUT";
 
 /** @internal */
 export class PolylineGeometry extends LUTGeometry {

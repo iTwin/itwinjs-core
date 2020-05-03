@@ -5,13 +5,13 @@
 
 import { expect } from "chai";
 import * as faker from "faker";
-import * as moq from "typemoq";
 import * as sinon from "sinon";
+import * as moq from "typemoq";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { PropertyRecord } from "@bentley/ui-abstract";
-import { PropertyCategory, IElementPropertyDataProvider, PropertyData } from "../../ui-components";
-import TestUtils from "../TestUtils";
+import { IElementPropertyDataProvider, PropertyCategory, PropertyData } from "../../ui-components";
 import { UITooltipRenderer } from "../../ui-components/tooltip/UITooltipRenderer";
+import TestUtils from "../TestUtils";
 
 describe("UITooltipRenderer", () => {
 

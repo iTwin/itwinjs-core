@@ -4,18 +4,19 @@
 *--------------------------------------------------------------------------------------------*/
 // import { Point3d } from "../PointVector";
 
-// import { BSplineSurface3d } from "../BSplineSurface";
-import { Sample } from "../../serialization/GeometrySamples";
-import { Checker } from "../Checker";
+import { expect } from "chai";
+import { BSplineSurface3dH, BSplineSurface3dQuery } from "../../bspline/BSplineSurface";
+import { BSplineWrapMode } from "../../bspline/KnotVector";
 import { Geometry } from "../../Geometry";
+import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { Range3d } from "../../geometry3d/Range";
 import { Transform } from "../../geometry3d/Transform";
-import { BSplineSurface3dQuery, BSplineSurface3dH } from "../../bspline/BSplineSurface";
-import { expect } from "chai";
-import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
+// import { BSplineSurface3d } from "../BSplineSurface";
+import { Sample } from "../../serialization/GeometrySamples";
+import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { BSplineWrapMode } from "../../bspline/KnotVector";
+
 /* tslint:disable:no-console */
 function testBasisValues(ck: Checker, data: Float64Array, expectedValue: number = 1) {
   let s = 0.0; for (const a of data) s += a;

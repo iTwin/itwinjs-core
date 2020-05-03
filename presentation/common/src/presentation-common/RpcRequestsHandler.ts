@@ -6,23 +6,22 @@
  * @module RPC
  */
 
-import { Guid, IDisposable, Id64String } from "@bentley/bentleyjs-core";
+import { Guid, Id64String, IDisposable } from "@bentley/bentleyjs-core";
 import { IModelRpcProps, RpcManager } from "@bentley/imodeljs-common";
-import { KeySetJSON } from "./KeySet";
-import { PresentationStatus, PresentationError } from "./Error";
+import { ContentJSON } from "./content/Content";
+import { DescriptorJSON, DescriptorOverrides, SelectionInfo } from "./content/Descriptor";
 import { InstanceKeyJSON } from "./EC";
+import { PresentationError, PresentationStatus } from "./Error";
 import { NodeKeyJSON } from "./hierarchy/Key";
 import { NodeJSON } from "./hierarchy/Node";
 import { NodePathElementJSON } from "./hierarchy/NodePathElement";
+import { KeySetJSON } from "./KeySet";
 import { LabelDefinitionJSON } from "./LabelDefinition";
-import { SelectionInfo, DescriptorJSON, DescriptorOverrides } from "./content/Descriptor";
-import { ContentJSON } from "./content/Content";
-import { SelectionScope } from "./selection/SelectionScope";
 import {
-  HierarchyRequestOptions, ContentRequestOptions, Paged,
-  SelectionScopeRequestOptions, LabelRequestOptions, PresentationDataCompareOptions,
+  ContentRequestOptions, HierarchyRequestOptions, LabelRequestOptions, Paged, PresentationDataCompareOptions, SelectionScopeRequestOptions,
 } from "./PresentationManagerOptions";
 import { PresentationRpcInterface, PresentationRpcRequestOptions, PresentationRpcResponse } from "./PresentationRpcInterface";
+import { SelectionScope } from "./selection/SelectionScope";
 import { PartialHierarchyModificationJSON } from "./Update";
 import { Omit } from "./Utils";
 

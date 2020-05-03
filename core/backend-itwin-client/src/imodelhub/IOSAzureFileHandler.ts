@@ -2,14 +2,18 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
 /** @packageDocumentation
  * @module iModelHub
  */
-import { Logger, BriefcaseStatus } from "@bentley/bentleyjs-core";
-import { ArgumentCheck } from "@bentley/imodelhub-client";
-import { AuthorizedClientRequestContext, FileHandler, request, RequestOptions, ProgressCallback, UserCancelledError, CancelRequest } from "@bentley/itwin-client";
+
 import * as fs from "fs";
 import * as path from "path";
+import { BriefcaseStatus, Logger } from "@bentley/bentleyjs-core";
+import { ArgumentCheck } from "@bentley/imodelhub-client";
+import {
+  AuthorizedClientRequestContext, CancelRequest, FileHandler, ProgressCallback, request, RequestOptions, UserCancelledError,
+} from "@bentley/itwin-client";
 import { BackendITwinClientLoggerCategory } from "../BackendITwinClientLoggerCategory";
 
 const loggerCategory: string = BackendITwinClientLoggerCategory.FileHandlers;

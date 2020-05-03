@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import TestUtils from "../TestUtils";
-import { ItemMap, ItemList } from "../../ui-framework/shared/ItemMap";
 import { CoreTools } from "../../ui-framework/CoreToolDefinitions";
+import { ItemList, ItemMap } from "../../ui-framework/shared/ItemMap";
+import TestUtils from "../TestUtils";
 
 describe("ItemMap & ItemList", () => {
 

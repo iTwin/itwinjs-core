@@ -3,10 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-
-import { ModalDialogManager, Calculator } from "@bentley/ui-framework";
-import { Dialog, Icon } from "@bentley/ui-core";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
+import { Dialog, Icon } from "@bentley/ui-core";
+import { Calculator, ModalDialogManager } from "@bentley/ui-framework";
 
 export interface CalculatorDialogProps {
   opened: boolean;

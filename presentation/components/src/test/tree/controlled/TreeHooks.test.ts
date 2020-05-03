@@ -4,16 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import * as moq from "typemoq";
 import * as sinon from "sinon";
-import { renderHook } from "@testing-library/react-hooks";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { Ruleset, HierarchyUpdateInfo } from "@bentley/presentation-common";
-import { PresentationManager, Presentation, RulesetManager } from "@bentley/presentation-frontend";
+import * as moq from "typemoq";
 import { BeEvent, IDisposable } from "@bentley/bentleyjs-core";
-import { TreeNodeItem, TreeDataChangesListener } from "@bentley/ui-components";
+import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { HierarchyUpdateInfo, Ruleset } from "@bentley/presentation-common";
+import { Presentation, PresentationManager, RulesetManager } from "@bentley/presentation-frontend";
+import { TreeDataChangesListener, TreeNodeItem } from "@bentley/ui-components";
+import { renderHook } from "@testing-library/react-hooks";
 import { IPresentationTreeDataProvider } from "../../../presentation-components";
-import { usePresentationTreeNodeLoader, PresentationTreeNodeLoaderProps } from "../../../presentation-components/tree/controlled/TreeHooks";
+import { PresentationTreeNodeLoaderProps, usePresentationTreeNodeLoader } from "../../../presentation-components/tree/controlled/TreeHooks";
 
 describe("usePresentationNodeLoader", () => {
 

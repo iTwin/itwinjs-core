@@ -6,12 +6,12 @@
  * @module Tree
  */
 
-import _ from "lodash";
 import { immerable } from "immer";
-import { CheckBoxState } from "@bentley/ui-core";
+import _ from "lodash";
 import { PropertyRecord } from "@bentley/ui-abstract";
-import { SparseTree, SparseArray } from "./internal/SparseTree";
+import { CheckBoxState } from "@bentley/ui-core";
 import { DelayLoadedTreeNodeItem, ImmediatelyLoadedTreeNodeItem, TreeNodeItem } from "../TreeDataProvider";
+import { SparseArray, SparseTree } from "./internal/SparseTree";
 
 /**
  * Immutable data structure that describes tree node.

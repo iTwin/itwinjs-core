@@ -3,12 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import * as React from "react";
 import { expect } from "chai";
-import { render } from "@testing-library/react";
-
+import * as React from "react";
 import { UiError } from "@bentley/ui-abstract";
-
+import { render } from "@testing-library/react";
 import { LoadedBinaryImage } from "../../ui-components/common/IImageLoader";
 import { ImageRenderer } from "../../ui-components/common/ImageRenderer";
 

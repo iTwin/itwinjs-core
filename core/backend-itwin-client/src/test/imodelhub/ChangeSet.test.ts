@@ -3,21 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
+import * as deepAssign from "deep-assign";
 import * as fs from "fs";
 import * as path from "path";
-import * as deepAssign from "deep-assign";
-import { IModelHubStatus, GuidString } from "@bentley/bentleyjs-core";
-import {
-  AccessToken, AuthorizedClientRequestContext,
-} from "@bentley/itwin-client";
+import { GuidString, IModelHubStatus } from "@bentley/bentleyjs-core";
+import { Briefcase, ChangeSet, ChangeSetQuery, IModelClient, IModelHubClient, IModelHubClientError, Version } from "@bentley/imodelhub-client";
+import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { TestUsers } from "@bentley/oidc-signin-tool";
-import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
+import { RequestType, ResponseBuilder, ScopeType } from "../ResponseBuilder";
 import { TestConfig } from "../TestConfig";
 import * as utils from "./TestUtils";
-import {
-  IModelClient, IModelHubClient, Briefcase, ChangeSet, ChangeSetQuery,
-  IModelHubClientError, Version,
-} from "@bentley/imodelhub-client";
 
 chai.should();
 

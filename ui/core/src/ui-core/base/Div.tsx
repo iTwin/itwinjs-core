@@ -6,8 +6,8 @@
  * @module Base
  */
 
-import * as React from "react";
 import classnames from "classnames";
+import * as React from "react";
 import { CommonDivProps } from "../utils/Props";
 
 /** Properties for the [[Div]] component

@@ -3,37 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-
+import { TimelineComponent } from "@bentley/ui-components";
 import {
-  GroupButton,
-  ToolButton,
-  ToolWidget,
-  ZoneState,
-  WidgetState,
-  NavigationWidget,
-  Frontstage,
-  Zone,
-  Widget,
-  FrontstageProvider,
-  FrontstageProps,
-  ZoneLocation,
-  ActionItemButton,
-  CommandItemDef,
-  FrontstageManager,
-  CoreTools,
-  ContentLayoutManager,
-  StagePanel,
+  ActionItemButton, CommandItemDef, ContentLayoutManager, CoreTools, Frontstage, FrontstageManager, FrontstageProps, FrontstageProvider, GroupButton,
+  NavigationWidget, StagePanel, ToolButton, ToolWidget, Widget, WidgetState, Zone, ZoneLocation, ZoneState,
 } from "@bentley/ui-framework";
-
+import { Direction, Toolbar } from "@bentley/ui-ninezone";
+import { AppTools } from "../../tools/ToolSpecifications";
 import { SmallStatusBarWidgetControl } from "../statusbars/SmallStatusBar";
 // import { NavigationTreeWidgetControl } from "../widgets/NavigationTreeWidget";
-import { VerticalPropertyGridWidgetControl, HorizontalPropertyGridWidgetControl } from "../widgets/PropertyGridDemoWidget";
-
-import { Toolbar, Direction } from "@bentley/ui-ninezone";
-import { AppTools } from "../../tools/ToolSpecifications";
-import { NestedFrontstage1 } from "./NestedFrontstage1";
+import { HorizontalPropertyGridWidgetControl, VerticalPropertyGridWidgetControl } from "../widgets/PropertyGridDemoWidget";
 import { TableDemoWidgetControl } from "../widgets/TableDemoWidget";
-import { TimelineComponent } from "@bentley/ui-components";
+import { NestedFrontstage1 } from "./NestedFrontstage1";
 
 function SampleTimelineComponent() {
   const duration = 20 * 1000;

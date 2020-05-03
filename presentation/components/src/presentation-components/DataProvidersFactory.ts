@@ -6,15 +6,12 @@
  * @module Core
  */
 
-import { RulesetsFactory, Omit } from "@bentley/presentation-common";
+import { Omit, RulesetsFactory } from "@bentley/presentation-common";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { TypeConverterManager } from "@bentley/ui-components";
-import { IPresentationPropertyDataProvider } from "./propertygrid/DataProvider";
-import {
-  IPresentationTableDataProvider, PresentationTableDataProvider,
-  PresentationTableDataProviderProps,
-} from "./table/DataProvider";
 import { findField } from "./common/Utils";
+import { IPresentationPropertyDataProvider } from "./propertygrid/DataProvider";
+import { IPresentationTableDataProvider, PresentationTableDataProvider, PresentationTableDataProviderProps } from "./table/DataProvider";
 
 /**
  * Data structure holding initialization properties for [[DataProvidersFactory]]

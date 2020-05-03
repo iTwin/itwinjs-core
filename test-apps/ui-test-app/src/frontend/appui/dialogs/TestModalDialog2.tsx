@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-import { Dialog, DialogButtonType } from "@bentley/ui-core";
 import "./TestModalDialog2.scss";
+import * as React from "react";
 import { ColorDef } from "@bentley/imodeljs-common";
-import { NotifyMessageDetails, IModelApp, OutputMessagePriority } from "@bentley/imodeljs-frontend";
+import { IModelApp, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
 import { ColorPickerButton } from "@bentley/ui-components";
+import { Dialog, DialogButtonType } from "@bentley/ui-core";
 
 export interface TestModalDialog2Props {
   opened: boolean;

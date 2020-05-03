@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { PropertyValue, PropertyRecord, PropertyDescription } from "@bentley/ui-abstract";
+import { PropertyDescription, PropertyRecord, PropertyValue } from "@bentley/ui-abstract";
 import { AsyncValueProcessingResult } from "../converters/TypeConverter";
 import { TextEditor } from "./TextEditor";
 

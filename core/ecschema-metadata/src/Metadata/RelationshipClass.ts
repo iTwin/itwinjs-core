@@ -3,23 +3,23 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { DelayedPromiseWithProps } from "../DelayedPromise";
+import { RelationshipClassProps, RelationshipConstraintProps } from "../Deserialization/JsonProps";
+import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
+import {
+  ECClassModifier, parseStrength, parseStrengthDirection, RelationshipEnd, SchemaItemType, StrengthDirection, strengthDirectionToString,
+  strengthToString, StrengthType,
+} from "../ECObjects";
+import { ECObjectsError, ECObjectsStatus } from "../Exception";
+import { LazyLoadedRelationshipConstraintClass } from "../Interfaces";
+import { SchemaItemKey } from "../SchemaKey";
 import { ECClass } from "./Class";
-import { CustomAttributeContainerProps, CustomAttributeSet, serializeCustomAttributes, CustomAttribute } from "./CustomAttribute";
-import { EntityClass, createNavigationProperty, createNavigationPropertySync } from "./EntityClass";
+import { CustomAttribute, CustomAttributeContainerProps, CustomAttributeSet, serializeCustomAttributes } from "./CustomAttribute";
+import { createNavigationProperty, createNavigationPropertySync, EntityClass } from "./EntityClass";
 import { Mixin } from "./Mixin";
 import { NavigationProperty } from "./Property";
 import { Schema } from "./Schema";
-import { DelayedPromiseWithProps } from "./../DelayedPromise";
-import { RelationshipClassProps, RelationshipConstraintProps } from "./../Deserialization/JsonProps";
-import {
-  ECClassModifier, SchemaItemType, StrengthDirection,
-  strengthDirectionToString, strengthToString, StrengthType, RelationshipEnd, parseStrength, parseStrengthDirection,
-} from "./../ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "./../Exception";
-import { LazyLoadedRelationshipConstraintClass } from "./../Interfaces";
-import { SchemaItemKey } from "./../SchemaKey";
 import { SchemaItem } from "./SchemaItem";
-import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
 
 type AnyConstraintClass = EntityClass | Mixin | RelationshipClass;
 

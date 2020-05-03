@@ -6,30 +6,19 @@
  * @module Tiles
  */
 
-import {
-  BeTimePoint,
-} from "@bentley/bentleyjs-core";
-import {
-  ClipVector,
-  Map4d,
-  Point3d,
-  Range3d,
-  Transform,
-} from "@bentley/geometry-core";
-import {
-  FrustumPlanes,
-  ViewFlagOverrides,
-} from "@bentley/imodeljs-common";
-import { Tile, TileGraphicType, TileTree } from "./internal";
-import { SceneContext } from "../ViewContext";
-import { ViewingSpace } from "../ViewingSpace";
+import { BeTimePoint } from "@bentley/bentleyjs-core";
+import { ClipVector, Map4d, Point3d, Range3d, Transform } from "@bentley/geometry-core";
+import { FrustumPlanes, ViewFlagOverrides } from "@bentley/imodeljs-common";
 import { FeatureSymbology } from "../render/FeatureSymbology";
-import { RenderGraphic } from "../render/RenderGraphic";
 import { GraphicBranch } from "../render/GraphicBranch";
 import { RenderClipVolume } from "../render/RenderClipVolume";
+import { RenderGraphic } from "../render/RenderGraphic";
 import { RenderPlanarClassifier } from "../render/RenderPlanarClassifier";
 import { RenderTextureDrape } from "../render/RenderSystem";
+import { SceneContext } from "../ViewContext";
+import { ViewingSpace } from "../ViewingSpace";
 import { CoordSystem } from "../Viewport";
+import { Tile, TileGraphicType, TileTree } from "./internal";
 
 const scratchRange = new Range3d();
 const scratchPoint = Point3d.create();

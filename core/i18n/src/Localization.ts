@@ -7,8 +7,8 @@
  */
 
 import * as i18next from "i18next";
-import XHR, { I18NextXhrBackend } from "i18next-xhr-backend";
 import * as i18nextBrowserLanguageDetector from "i18next-browser-languagedetector";
+import XHR, { I18NextXhrBackend } from "i18next-xhr-backend";
 import { BentleyError, Logger } from "@bentley/bentleyjs-core";
 
 /** @public */

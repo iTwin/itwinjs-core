@@ -3,11 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Viewport, DisplayStyle3dState, ContextRealityModelState, SpatialViewState, SpatialModelState, SpatialClassifiers, findAvailableRealityModels, IModelApp } from "@bentley/imodeljs-frontend";
-import { createComboBox, createNumericInput, ComboBoxEntry, ComboBox, createNestedMenu, createCheckBox, NestedMenu } from "@bentley/frontend-devtools";
-import { SpatialClassificationProps, ModelProps, ContextRealityModelProps, CartographicRange } from "@bentley/imodeljs-common";
-import { ToolBarDropDown } from "./ToolBar";
 import { assert, compareStringsOrUndefined } from "@bentley/bentleyjs-core";
+import {
+  ComboBox, ComboBoxEntry, createCheckBox, createComboBox, createNestedMenu, createNumericInput, NestedMenu,
+} from "@bentley/frontend-devtools";
+import { CartographicRange, ContextRealityModelProps, ModelProps, SpatialClassificationProps } from "@bentley/imodeljs-common";
+import {
+  ContextRealityModelState, DisplayStyle3dState, findAvailableRealityModels, IModelApp, SpatialClassifiers, SpatialModelState, SpatialViewState,
+  Viewport,
+} from "@bentley/imodeljs-frontend";
+import { ToolBarDropDown } from "./ToolBar";
 
 function clearElement(element: HTMLElement): void {
   while (element.hasChildNodes())

@@ -6,10 +6,9 @@
  * @module Dialog
  */
 
-import * as React from "react";
-import classnames from "classnames";
-
 import "./MessageBox.scss";
+import classnames from "classnames";
+import * as React from "react";
 import { Dialog, DialogButtonDef } from "../dialog/Dialog";
 import { CommonProps } from "../utils/Props";
 

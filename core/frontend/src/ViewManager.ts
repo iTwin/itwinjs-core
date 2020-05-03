@@ -5,16 +5,16 @@
 /** @packageDocumentation
  * @module Views
  */
-import { BentleyStatus, BeEvent, BeTimePoint, BeUiEvent, Id64Arg } from "@bentley/bentleyjs-core";
+import { BeEvent, BentleyStatus, BeTimePoint, BeUiEvent, Id64Arg } from "@bentley/bentleyjs-core";
 import { GeometryStreamProps } from "@bentley/imodeljs-common";
 import { HitDetail } from "./HitDetail";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
+import { TileTree, TileTreeSet } from "./tile/internal";
 import { EventController } from "./tools/EventController";
 import { BeButtonEvent, EventHandled } from "./tools/Tool";
 import { DecorateContext } from "./ViewContext";
 import { ScreenViewport } from "./Viewport";
-import { TileTree, TileTreeSet } from "./tile/internal";
 
 /** Interface for drawing "decorations" into, or on top of, the active [[Viewport]]s.
  * Decorators generate [[Decorations]].

@@ -7,26 +7,24 @@
  */
 
 import * as React from "react";
-
-import { UiError, StageUsage, StagePanelLocation } from "@bentley/ui-abstract";
 import { IModelApp, ScreenViewport } from "@bentley/imodeljs-frontend";
+import { StagePanelLocation, StageUsage, UiError } from "@bentley/ui-abstract";
 import { NineZoneManagerProps } from "@bentley/ui-ninezone";
-
-import { FrontstageManager } from "./FrontstageManager";
-import { ZoneDef } from "../zones/ZoneDef";
-import { ContentLayoutDef } from "../content/ContentLayout";
-import { ContentLayoutManager } from "../content/ContentLayoutManager";
 import { ContentControl } from "../content/ContentControl";
 import { ContentGroup, ContentGroupManager } from "../content/ContentGroup";
-import { WidgetDef } from "../widgets/WidgetDef";
-import { WidgetControl } from "../widgets/WidgetControl";
-import { Frontstage, FrontstageProps } from "./Frontstage";
-import { FrontstageProvider } from "./FrontstageProvider";
+import { ContentLayoutDef } from "../content/ContentLayout";
+import { ContentLayoutManager } from "../content/ContentLayoutManager";
+import { ContentViewManager } from "../content/ContentViewManager";
 import { ToolItemDef } from "../shared/ToolItemDef";
 import { StagePanelDef } from "../stagepanels/StagePanelDef";
 import { UiFramework } from "../UiFramework";
-import { ContentViewManager } from "../content/ContentViewManager";
+import { WidgetControl } from "../widgets/WidgetControl";
+import { WidgetDef } from "../widgets/WidgetDef";
 import { ZoneLocation } from "../zones/Zone";
+import { ZoneDef } from "../zones/ZoneDef";
+import { Frontstage, FrontstageProps } from "./Frontstage";
+import { FrontstageManager } from "./FrontstageManager";
+import { FrontstageProvider } from "./FrontstageProvider";
 
 /** FrontstageDef class provides an API for a Frontstage.
  * @public

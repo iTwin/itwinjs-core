@@ -6,9 +6,9 @@
  * @module Base
  */
 
-import { produce, castDraft, Draft } from "immer";
-import { PanelSide, HorizontalPanelSide, VerticalPanelSide, isHorizontalPanelSide } from "../widget-panels/Panel";
-import { RectangleProps, PointProps, Rectangle, Point, SizeProps } from "@bentley/ui-core";
+import { castDraft, Draft, produce } from "immer";
+import { Point, PointProps, Rectangle, RectangleProps, SizeProps } from "@bentley/ui-core";
+import { HorizontalPanelSide, isHorizontalPanelSide, PanelSide, VerticalPanelSide } from "../widget-panels/Panel";
 import { assert } from "./assert";
 
 /** @internal future */

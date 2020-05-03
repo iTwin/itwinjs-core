@@ -6,8 +6,8 @@
  * @module Item
  */
 
+import { BadgeType, CommandHandler, ConditionalBooleanValue, ConditionalStringValue, StringGetter } from "@bentley/ui-abstract";
 import { IconProps } from "@bentley/ui-core";
-import { ConditionalBooleanValue, BadgeType, CommandHandler, StringGetter, ConditionalStringValue } from "@bentley/ui-abstract";
 import { BaseItemState } from "./ItemDefBase";
 
 /** Definition that specifies properties shared between many ConfigurableUi components.

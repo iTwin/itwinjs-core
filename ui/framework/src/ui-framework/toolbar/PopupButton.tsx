@@ -6,24 +6,21 @@
  * @module Item
  */
 
-import * as React from "react";
-import classnames from "classnames";
-
-import { StringGetter, ConditionalBooleanValue, ConditionalStringValue } from "@bentley/ui-abstract";
-import { withOnOutsideClick, CommonProps, SizeProps, Icon, BadgeUtilities } from "@bentley/ui-core";
-import { ExpandableItem, Item } from "@bentley/ui-ninezone";
-
-import { BaseItemState } from "../shared/ItemDefBase";
-import { SyncUiEventDispatcher, SyncUiEventArgs } from "../syncui/SyncUiEventDispatcher";
-import { UiFramework } from "../UiFramework";
-import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
-
 import "@bentley/ui-ninezone/lib/ui-ninezone/toolbar/item/expandable/group/Panel.scss";
 import "./PopupButton.scss";
-import { ItemProps } from "../shared/ItemProps";
+import classnames from "classnames";
+import * as React from "react";
+import { ConditionalBooleanValue, ConditionalStringValue, StringGetter } from "@bentley/ui-abstract";
+import { BadgeUtilities, CommonProps, Icon, SizeProps, withOnOutsideClick } from "@bentley/ui-core";
+import { ExpandableItem, Item } from "@bentley/ui-ninezone";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
-import { ToolbarDragInteractionContext } from "./DragInteraction";
+import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
+import { BaseItemState } from "../shared/ItemDefBase";
+import { ItemProps } from "../shared/ItemProps";
+import { SyncUiEventArgs, SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
+import { UiFramework } from "../UiFramework";
 import { PropsHelper } from "../utils/PropsHelper";
+import { ToolbarDragInteractionContext } from "./DragInteraction";
 
 // tslint:disable: deprecation
 

@@ -6,15 +6,14 @@
  * @module Toolbar
  */
 
+import "./PopupItem.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { useOnOutsideClick } from "@bentley/ui-core";
-import { useToolbarWithOverflowDirectionContext, useToolItemEntryContext, ToolbarPanelAlignmentHelpers } from "./Toolbar";
-import { DirectionHelpers, OrthogonalDirectionHelpers } from "./utilities/Direction";
-import { ToolbarButtonItemProps } from "./Item";
-
-import "./PopupItem.scss";
 import { ActionButton } from "@bentley/ui-abstract";
+import { useOnOutsideClick } from "@bentley/ui-core";
+import { ToolbarButtonItemProps } from "./Item";
+import { ToolbarPanelAlignmentHelpers, useToolbarWithOverflowDirectionContext, useToolItemEntryContext } from "./Toolbar";
+import { DirectionHelpers, OrthogonalDirectionHelpers } from "./utilities/Direction";
 
 /** @internal */
 export interface ToolbarPopupContextProps {

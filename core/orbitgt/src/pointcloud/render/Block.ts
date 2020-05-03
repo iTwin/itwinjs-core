@@ -14,14 +14,13 @@ type int32 = number;
 type float32 = number;
 type float64 = number;
 
-import { Level } from "./Level";
-
 import { Bounds } from "../../spatial/geom/Bounds";
+import { AList } from "../../system/collection/AList";
+import { IntMap } from "../../system/collection/IntMap";
 import { BlockIndex } from "../model/BlockIndex";
 import { GridIndex } from "../model/GridIndex";
 import { TileIndex } from "../model/TileIndex";
-import { IntMap } from "../../system/collection/IntMap";
-import { AList } from "../../system/collection/AList";
+import { Level } from "./Level";
 
 /**
  * Class Block defines a block of tiles.

@@ -5,11 +5,12 @@
 /** @packageDocumentation
  * @module iModels
  */
+import * as path from "path";
 import { DbResult, GuidString, Id64, Id64String, IModelStatus, Logger } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { ChangeSet } from "@bentley/imodelhub-client";
 import { CodeSpec, FontProps, IModel, IModelError } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
-import * as path from "path";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { ChangeSummaryExtractContext, ChangeSummaryManager } from "./ChangeSummaryManager";
@@ -19,7 +20,6 @@ import { ElementAspect, ElementMultiAspect, ElementUniqueAspect } from "./Elemen
 import { BriefcaseDb, IModelDb } from "./IModelDb";
 import { DefinitionModel, Model } from "./Model";
 import { ElementRefersToElements, Relationship, RelationshipProps } from "./Relationship";
-import { ChangeSet } from "@bentley/imodelhub-client";
 
 const loggerCategory: string = BackendLoggerCategory.IModelExporter;
 

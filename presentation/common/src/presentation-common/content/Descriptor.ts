@@ -6,10 +6,7 @@
  * @module Content
  */
 
-import {
-  ClassInfo, ClassInfoJSON,
-  RelatedClassInfo, RelationshipPath, RelationshipPathJSON, RelatedClassInfoJSON,
-} from "../EC";
+import { ClassInfo, ClassInfoJSON, RelatedClassInfo, RelatedClassInfoJSON, RelationshipPath, RelationshipPathJSON } from "../EC";
 import { Field, FieldJSON, getFieldByName } from "./Fields";
 
 /**

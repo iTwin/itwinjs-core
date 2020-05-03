@@ -6,8 +6,8 @@
  * @module Dialog
  */
 
-import { DialogPropertyItem, DialogPropertySyncItem } from "./DialogItem";
 import { BeUiEvent } from "@bentley/bentleyjs-core";
+import { DialogPropertyItem, DialogPropertySyncItem } from "./DialogItem";
 
 /** Sync UI Control Properties Event class.
  * @beta

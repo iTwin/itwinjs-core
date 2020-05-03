@@ -6,10 +6,10 @@
  * @module WebGL
  */
 
-import { Target } from "./Target";
-import { RenderPass } from "./RenderFlags";
-import { ClippingType } from "../RenderClipVolume";
 import { RenderMode } from "@bentley/imodeljs-common";
+import { ClippingType } from "../RenderClipVolume";
+import { RenderPass } from "./RenderFlags";
+import { Target } from "./Target";
 
 // tslint:disable:no-const-enum
 

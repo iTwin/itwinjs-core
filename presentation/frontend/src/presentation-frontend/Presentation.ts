@@ -7,16 +7,16 @@
  */
 
 import { isIDisposable } from "@bentley/bentleyjs-core";
-import { I18N } from "@bentley/imodeljs-i18n";
 import { IModelApp } from "@bentley/imodeljs-frontend";
+import { I18N } from "@bentley/imodeljs-i18n";
 import { PresentationError, PresentationStatus } from "@bentley/presentation-common";
+import { ConnectivityInformationProvider, IConnectivityInformationProvider } from "./ConnectivityInformationProvider";
+import { FavoritePropertiesManager } from "./favorite-properties/FavoritePropertiesManager";
+import { IModelAppFavoritePropertiesStorage, OfflineCachingFavoritePropertiesStorage } from "./favorite-properties/FavoritePropertiesStorage";
+import { LocalizationHelper } from "./LocalizationHelper";
 import { PresentationManager, PresentationManagerProps } from "./PresentationManager";
 import { SelectionManager } from "./selection/SelectionManager";
 import { SelectionScopesManager } from "./selection/SelectionScopesManager";
-import { FavoritePropertiesManager } from "./favorite-properties/FavoritePropertiesManager";
-import { LocalizationHelper } from "./LocalizationHelper";
-import { IConnectivityInformationProvider, ConnectivityInformationProvider } from "./ConnectivityInformationProvider";
-import { IModelAppFavoritePropertiesStorage, OfflineCachingFavoritePropertiesStorage } from "./favorite-properties/FavoritePropertiesStorage";
 
 let connectivityInfoProvider: IConnectivityInformationProvider | undefined;
 let i18n: I18N | undefined;

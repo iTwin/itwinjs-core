@@ -6,16 +6,17 @@
  * @module ContentView
  */
 
-import { ScreenViewport, IModelApp, IModelConnection, ViewState, SpatialViewState, OrthographicViewState, DrawingViewState, SheetViewState } from "@bentley/imodeljs-frontend";
 import { Id64String } from "@bentley/bentleyjs-core";
-
-import { ConfigurableUiControlType, ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";
-import { ContentControl, SupportsViewSelectorChange } from "./ContentControl";
-import { ViewUtilities } from "../utils/ViewUtilities";
-import { ContentViewManager } from "./ContentViewManager";
+import {
+  DrawingViewState, IModelApp, IModelConnection, OrthographicViewState, ScreenViewport, SheetViewState, SpatialViewState, ViewState,
+} from "@bentley/imodeljs-frontend";
+import { ConfigurableCreateInfo, ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";
 import { CubeNavigationAidControl } from "../navigationaids/CubeNavigationAidControl";
 import { DrawingNavigationAidControl } from "../navigationaids/DrawingNavigationAidControl";
 import { SheetNavigationAidControl } from "../navigationaids/SheetNavigationAid";
+import { ViewUtilities } from "../utils/ViewUtilities";
+import { ContentControl, SupportsViewSelectorChange } from "./ContentControl";
+import { ContentViewManager } from "./ContentViewManager";
 
 /** The base class for Frontstage Viewport content controls.
  * @public

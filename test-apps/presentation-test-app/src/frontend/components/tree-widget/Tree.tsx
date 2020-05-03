@@ -2,26 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import {
-  ControlledTree,
-  usePagedTreeNodeLoader,
-  SelectionMode,
-  FilteringInput,
-  useTreeModelSource,
-  useVisibleTreeNodes,
-} from "@bentley/ui-components";
-
-import { IModelConnection, IModelApp } from "@bentley/imodeljs-frontend";
-import {
-  useControlledTreeFiltering, useUnifiedSelectionTreeEventHandler,
-} from "@bentley/presentation-components";
-
-import * as React from "react";
-// tslint:disable-next-line: no-duplicate-imports
-import { useState } from "react";
-
 import "./TreeWidget.css";
-import { useDataProvider, PAGING_SIZE } from "./SampleTreeDataProvider";
+import * as React from "react";
+import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
+import { useControlledTreeFiltering, useUnifiedSelectionTreeEventHandler } from "@bentley/presentation-components";
+import {
+  ControlledTree, FilteringInput, SelectionMode, usePagedTreeNodeLoader, useTreeModelSource, useVisibleTreeNodes,
+} from "@bentley/ui-components";
+import { PAGING_SIZE, useDataProvider } from "./SampleTreeDataProvider";
 
 interface Props {
   imodel: IModelConnection;
@@ -34,8 +22,8 @@ export const Tree: React.FC<Props> = (props: Props) => {
   const modelSource = useTreeModelSource(dataProvider);
   const nodeLoader = usePagedTreeNodeLoader(dataProvider, PAGING_SIZE, modelSource);
 
-  const [filter, setFilter] = useState("");
-  const [activeMatchIndex, setActiveMatchIndex] = useState(0);
+  const [filter, setFilter] = React.useState("");
+  const [activeMatchIndex, setActiveMatchIndex] = React.useState(0);
 
   const {
     filteredModelSource,

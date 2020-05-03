@@ -7,8 +7,8 @@
  */
 
 import { Id64String } from "@bentley/bentleyjs-core";
-import { Code } from "@bentley/imodeljs-common";
 import { DefinitionElement, IModelDb } from "@bentley/imodeljs-backend";
+import { Code } from "@bentley/imodeljs-common";
 import { PresentationRules } from "./PresentationRulesDomain";
 
 /** @internal */

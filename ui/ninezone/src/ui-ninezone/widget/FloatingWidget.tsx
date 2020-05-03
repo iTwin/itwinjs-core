@@ -6,17 +6,17 @@
  * @module Widget
  */
 
-import * as React from "react";
-import classnames from "classnames";
-import { Rectangle, CommonProps, Point, PointProps } from "@bentley/ui-core";
-import { Widget, WidgetProvider } from "./Widget";
-import { FloatingWidgetState, WidgetState, FLOATING_WIDGET_RESIZE } from "../base/NineZoneState";
-import { WidgetTabBar } from "./TabBar";
-import { assert } from "../base/assert";
-import { useIsDraggedItem, useDragResizeHandle, UseDragResizeHandleArgs } from "../base/DragManager";
-import { NineZoneDispatchContext } from "../base/NineZone";
-import { WidgetContentContainer } from "./ContentContainer";
 import "./FloatingWidget.scss";
+import classnames from "classnames";
+import * as React from "react";
+import { CommonProps, Point, PointProps, Rectangle } from "@bentley/ui-core";
+import { assert } from "../base/assert";
+import { useDragResizeHandle, UseDragResizeHandleArgs, useIsDraggedItem } from "../base/DragManager";
+import { NineZoneDispatchContext } from "../base/NineZone";
+import { FLOATING_WIDGET_RESIZE, FloatingWidgetState, WidgetState } from "../base/NineZoneState";
+import { WidgetContentContainer } from "./ContentContainer";
+import { WidgetTabBar } from "./TabBar";
+import { Widget, WidgetProvider } from "./Widget";
 
 /** @internal */
 export type FloatingWidgetResizeHandle = "left" | "right" | "top" | "bottom";

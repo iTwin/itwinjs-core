@@ -8,15 +8,14 @@
  */
 
 import { Geometry, PlaneAltitudeEvaluator } from "../Geometry";
-import { XYAndZ } from "./XYZProps";
-import { Point3d, Vector3d } from "./Point3dVector3d";
-import { Range3d, Range1d } from "./Range";
-import { Transform } from "./Transform";
-import { Matrix3d } from "./Matrix3d";
 import { IndexedReadWriteXYZCollection, IndexedXYZCollection } from "./IndexedXYZCollection";
-
+import { Matrix3d } from "./Matrix3d";
 import { Plane3dByOriginAndUnitNormal } from "./Plane3dByOriginAndUnitNormal";
 import { Point2d } from "./Point2dVector2d";
+import { Point3d, Vector3d } from "./Point3dVector3d";
+import { Range1d, Range3d } from "./Range";
+import { Transform } from "./Transform";
+import { XYAndZ } from "./XYZProps";
 
 /** `GrowableXYArray` manages a (possibly growing) Float64Array to pack xy coordinates.
  * @public

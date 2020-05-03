@@ -2,13 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
-import { IModelHost, IModelJsFs } from "@bentley/imodeljs-backend";
-import { RpcManager, MobileRpcConfiguration } from "@bentley/imodeljs-common";
-import { addColumnsToCsvFile, addDataToCsvFile, createFilePath, createNewCsvFile, addEndOfTestToCsvFile } from "./CsvWriter";
-import * as path from "path";
 import { app } from "electron";
+import * as path from "path";
+import { IModelHost, IModelJsFs } from "@bentley/imodeljs-backend";
+import { MobileRpcConfiguration, RpcManager } from "@bentley/imodeljs-common";
 import { Reporter } from "@bentley/perf-tools/lib/Reporter";
+import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
+import { addColumnsToCsvFile, addDataToCsvFile, addEndOfTestToCsvFile, createFilePath, createNewCsvFile } from "./CsvWriter";
 
 /** The backend implementation of DisplayPerfRpcImpl. */
 export default class DisplayPerfRpcImpl extends DisplayPerfRpcInterface {

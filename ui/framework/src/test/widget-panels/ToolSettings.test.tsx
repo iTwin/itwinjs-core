@@ -2,16 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
+import { DragManager, DragManagerContext, ToolSettingsStateContext } from "@bentley/ui-ninezone";
 import { render } from "@testing-library/react";
-import { renderHook, act } from "@testing-library/react-hooks";
-import { shallow } from "enzyme";
+import { act, renderHook } from "@testing-library/react-hooks";
 import {
-  WidgetPanelsToolSettings, useHorizontalToolSettingNodes, FrontstageManager, FrontstageDef, ZoneDef, ToolSettingsEntry, ToolUiProvider, ConfigurableCreateInfo,
-  ToolSettingsGrid, ToolSettingsDockedContent, ToolSettingsContent, useToolSettingsNode,
+  ConfigurableCreateInfo, FrontstageDef, FrontstageManager, ToolSettingsContent, ToolSettingsDockedContent, ToolSettingsEntry, ToolSettingsGrid,
+  ToolUiProvider, useHorizontalToolSettingNodes, useToolSettingsNode, WidgetPanelsToolSettings, ZoneDef,
 } from "../../ui-framework";
-import { ToolSettingsStateContext, DragManager, DragManagerContext } from "@bentley/ui-ninezone";
 
 describe("WidgetPanelsToolSettings", () => {
   const sandbox = sinon.createSandbox();

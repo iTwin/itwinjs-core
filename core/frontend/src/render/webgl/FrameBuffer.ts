@@ -7,11 +7,11 @@
  */
 
 import { assert } from "@bentley/bentleyjs-core";
-import { TextureHandle } from "./Texture";
-import { RenderBuffer } from "./RenderBuffer";
-import { GL } from "./GL";
-import { System } from "./System";
 import { WebGLDisposable } from "./Disposable";
+import { GL } from "./GL";
+import { RenderBuffer } from "./RenderBuffer";
+import { System } from "./System";
+import { TextureHandle } from "./Texture";
 
 /** @internal */
 export type DepthBuffer = RenderBuffer | TextureHandle;

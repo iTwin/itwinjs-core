@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { Config } from "@bentley/bentleyjs-core";
-import { RemoteBriefcaseConnection, IModelConnection } from "@bentley/imodeljs-frontend";
 import { expect } from "chai";
+import { Config } from "@bentley/bentleyjs-core";
+import { IModelConnection, RemoteBriefcaseConnection } from "@bentley/imodeljs-frontend";
 
 // tslint:disable:ter-indent
 

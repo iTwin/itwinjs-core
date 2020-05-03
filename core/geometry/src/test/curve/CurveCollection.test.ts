@@ -3,26 +3,27 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Sample } from "../../serialization/GeometrySamples";
-import { CurveCollection, ConsolidateAdjacentCurvePrimitivesOptions } from "../../curve/CurveCollection";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { Transform } from "../../geometry3d/Transform";
-import { Checker } from "../Checker";
 import { expect } from "chai";
-import { Range3d } from "../../geometry3d/Range";
-import { Loop } from "../../curve/Loop";
-import { Path } from "../../curve/Path";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { LineString3d } from "../../curve/LineString3d";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { CurvePrimitive } from "../../curve/CurvePrimitive";
-import { CurveFactory } from "../../curve/CurveFactory";
-import { RegionOps } from "../../curve/RegionOps";
+import * as fs from "fs";
 import { BezierCurve3d } from "../../bspline/BezierCurve3d";
 import { Arc3d } from "../../curve/Arc3d";
+import { ConsolidateAdjacentCurvePrimitivesOptions, CurveCollection } from "../../curve/CurveCollection";
+import { CurveFactory } from "../../curve/CurveFactory";
+import { CurvePrimitive } from "../../curve/CurvePrimitive";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { LineSegment3d } from "../../curve/LineSegment3d";
+import { LineString3d } from "../../curve/LineString3d";
+import { Loop } from "../../curve/Loop";
+import { Path } from "../../curve/Path";
+import { RegionOps } from "../../curve/RegionOps";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
+import { Range3d } from "../../geometry3d/Range";
+import { Transform } from "../../geometry3d/Transform";
+import { Sample } from "../../serialization/GeometrySamples";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
-import * as fs from "fs";
+import { Checker } from "../Checker";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+
 /* tslint:disable:no-console */
 
 const consolidateAdjacentPath = "./src/test/testInputs/curve/";

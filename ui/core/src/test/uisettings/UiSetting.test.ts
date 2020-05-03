@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { UiSetting, LocalUiSettings, UiSettingsStatus } from "../../ui-core";
+import { LocalUiSettings, UiSetting, UiSettingsStatus } from "../../ui-core";
 import { storageMock } from "../TestUtils";
 
 function getBoolean(): boolean { return true; }

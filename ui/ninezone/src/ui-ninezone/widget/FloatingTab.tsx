@@ -6,13 +6,13 @@
  * @module Widget
  */
 
-import * as React from "react";
-import classnames from "classnames";
-import { DraggedTabStateContext, TabsStateContext, getUniqueId, NineZoneDispatchContext } from "../base/NineZone";
-import { WIDGET_TAB_DRAG, WIDGET_TAB_DRAG_END, TabTargetState } from "../base/NineZoneState";
-import { CssProperties } from "../utilities/Css";
-import { useDragTab, UseDragTabArgs, isTabTarget } from "../base/DragManager";
 import "./FloatingTab.scss";
+import classnames from "classnames";
+import * as React from "react";
+import { isTabTarget, useDragTab, UseDragTabArgs } from "../base/DragManager";
+import { DraggedTabStateContext, getUniqueId, NineZoneDispatchContext, TabsStateContext } from "../base/NineZone";
+import { TabTargetState, WIDGET_TAB_DRAG, WIDGET_TAB_DRAG_END } from "../base/NineZoneState";
+import { CssProperties } from "../utilities/Css";
 
 /** Component that displays a floating tab.
  * @internal

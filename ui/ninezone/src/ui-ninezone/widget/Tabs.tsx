@@ -6,17 +6,17 @@
  * @module Widget
  */
 
+import "./Tabs.scss";
 import * as React from "react";
 import { useResizeObserver } from "@bentley/ui-core";
-import { useOverflow, getChildKey } from "../tool-settings/Docked";
-import { WidgetOverflow } from "./Overflow";
+import { assert } from "../base/assert";
+import { TabsStateContext } from "../base/NineZone";
+import { getChildKey, useOverflow } from "../tool-settings/Docked";
 import { isHorizontalPanelSide, PanelSideContext } from "../widget-panels/Panel";
+import { WidgetOverflow } from "./Overflow";
 import { WidgetTab } from "./Tab";
 import { WidgetTabTarget } from "./TabTarget";
 import { WidgetStateContext } from "./Widget";
-import { assert } from "../base/assert";
-import { TabsStateContext } from "../base/NineZone";
-import "./Tabs.scss";
 
 /** @internal */
 export const WidgetTabs = React.memo(function WidgetTabs() { // tslint:disable-line: variable-name no-shadowed-variable

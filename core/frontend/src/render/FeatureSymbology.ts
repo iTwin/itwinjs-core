@@ -6,17 +6,8 @@
  * @module Rendering
  */
 
-import {
-  BatchType,
-  ColorDef,
-  Feature,
-  GeometryClass,
-  LinePixels,
-  RgbColor,
-  RgbColorProps,
-  SubCategoryOverride,
-} from "@bentley/imodeljs-common";
-import { Id64, Id64String, Id64Set } from "@bentley/bentleyjs-core";
+import { Id64, Id64Set, Id64String } from "@bentley/bentleyjs-core";
+import { BatchType, ColorDef, Feature, GeometryClass, LinePixels, RgbColor, RgbColorProps, SubCategoryOverride } from "@bentley/imodeljs-common";
 import { Viewport } from "../Viewport";
 import { ViewState } from "../ViewState";
 

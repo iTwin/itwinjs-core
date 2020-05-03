@@ -3,8 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { AbstractParser, AbstractParserConstructor, CAProviderTuple } from "./AbstractParser";
-import { SchemaReferenceProps, ClassProps, RelationshipConstraintProps, PropertyProps } from "./JsonProps";
 import { SchemaContext } from "../Context";
 import { parsePrimitiveType, parseSchemaItemType, SchemaItemType, SchemaMatchType } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
@@ -17,14 +15,16 @@ import { Format } from "../Metadata/Format";
 import { InvertedUnit } from "../Metadata/InvertedUnit";
 import { KindOfQuantity } from "../Metadata/KindOfQuantity";
 import { Mixin } from "../Metadata/Mixin";
-import { Property, MutableProperty } from "../Metadata/Property";
-import { RelationshipClass, RelationshipConstraint, MutableRelationshipConstraint } from "../Metadata/RelationshipClass";
-import { Schema, MutableSchema } from "../Metadata/Schema";
+import { MutableProperty, Property } from "../Metadata/Property";
+import { MutableRelationshipConstraint, RelationshipClass, RelationshipConstraint } from "../Metadata/RelationshipClass";
+import { MutableSchema, Schema } from "../Metadata/Schema";
 import { SchemaItem } from "../Metadata/SchemaItem";
 import { Unit } from "../Metadata/Unit";
-import { SchemaKey, ECVersion, SchemaItemKey } from "../SchemaKey";
-import { SchemaPartVisitorDelegate, ISchemaPartVisitor } from "../SchemaPartVisitorDelegate";
+import { ECVersion, SchemaItemKey, SchemaKey } from "../SchemaKey";
+import { ISchemaPartVisitor, SchemaPartVisitorDelegate } from "../SchemaPartVisitorDelegate";
 import { getItemNamesFromFormatString } from "../utils/FormatEnums";
+import { AbstractParser, AbstractParserConstructor, CAProviderTuple } from "./AbstractParser";
+import { ClassProps, PropertyProps, RelationshipConstraintProps, SchemaReferenceProps } from "./JsonProps";
 
 type AnyCAContainer = Schema | ECClass | Property | RelationshipConstraint;
 type AnyMutableCAContainer = MutableSchema | MutableClass | MutableProperty | MutableRelationshipConstraint;

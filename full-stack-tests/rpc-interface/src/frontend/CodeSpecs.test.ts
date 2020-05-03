@@ -4,12 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as chai from "chai";
-const expect = chai.expect;
-
-import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { BisCodeSpec, CodeSpec } from "@bentley/imodeljs-common";
-
+import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { TestContext } from "./setup/TestContext";
+
+const expect = chai.expect;
 
 describe("Get Code Specs", () => {
   let testContext: TestContext;

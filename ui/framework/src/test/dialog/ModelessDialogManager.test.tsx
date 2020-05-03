@@ -2,15 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-import { mount } from "enzyme";
-import * as sinon from "sinon";
 import { expect } from "chai";
-
+import { mount } from "enzyme";
+import * as React from "react";
+import * as sinon from "sinon";
 import { Logger } from "@bentley/bentleyjs-core";
-
+import { DialogChangedEventArgs, ModelessDialog, ModelessDialogManager, ModelessDialogRenderer } from "../../ui-framework";
 import TestUtils from "../TestUtils";
-import { ModelessDialogManager, DialogChangedEventArgs, ModelessDialogRenderer, ModelessDialog } from "../../ui-framework";
 
 describe("ModelessDialogManager", () => {
 

@@ -6,7 +6,7 @@
  * @module Core
  */
 
-import { BentleyError, LogFunction, GetMetaDataFunction } from "@bentley/bentleyjs-core";
+import { BentleyError, GetMetaDataFunction, LogFunction } from "@bentley/bentleyjs-core";
 
 /**
  * Status codes used by Presentation APIs.

@@ -9,10 +9,10 @@
 import { dispose } from "@bentley/bentleyjs-core";
 import { Point3d } from "@bentley/geometry-core";
 import { ThematicDisplaySensor, ThematicDisplaySensorSettings } from "@bentley/imodeljs-common";
-import { Texture2DData, Texture2DHandle } from "./Texture";
+import { WebGLDisposable } from "./Disposable";
 import { GL } from "./GL";
 import { System } from "./System";
-import { WebGLDisposable } from "./Disposable";
+import { Texture2DData, Texture2DHandle } from "./Texture";
 
 /** @internal */
 interface ThematicSensorsTexture {

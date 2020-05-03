@@ -6,22 +6,13 @@
  * @module WebGL
  */
 
-import {
-  InverseMatrixState,
-  Matrix4d,
-  Point3d,
-  Transform,
-  Vector3d,
-} from "@bentley/geometry-core";
-import {
-  Frustum,
-  Npc,
-} from "@bentley/imodeljs-common";
+import { InverseMatrixState, Matrix4d, Point3d, Transform, Vector3d } from "@bentley/geometry-core";
+import { Frustum, Npc } from "@bentley/imodeljs-common";
 import { RenderTarget } from "../RenderTarget";
-import { desync, sync } from "./Sync";
 import { UniformHandle } from "./Handle";
-import { Matrix4 } from "./Matrix";
 import { IModelFrameLifecycle } from "./IModelFrameLifecycle";
+import { Matrix4 } from "./Matrix";
+import { desync, sync } from "./Sync";
 
 /** @internal */
 export const enum FrustumUniformType { // tslint:disable-line:no-const-enum

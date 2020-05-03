@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { assert } from "chai";
 import { BeEvent, Guid, GuidString } from "@bentley/bentleyjs-core";
 import { IModelRpcProps } from "@bentley/imodeljs-common";
 import { IModelApp } from "@bentley/imodeljs-frontend";
 import { EventSourceManager } from "@bentley/imodeljs-frontend/lib/EventSource";
-import { assert } from "chai";
 import { EventsTestRpcInterface } from "../../common/RpcInterfaces";
 
 /**

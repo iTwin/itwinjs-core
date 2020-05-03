@@ -6,12 +6,12 @@
  * @module ToolSettings
  */
 
+import "./OverflowPanel.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { CommonProps } from "@bentley/ui-core";
 import { useToolbarWithOverflowDirectionContext } from "./Toolbar";
-import { OrthogonalDirectionHelpers, DirectionHelpers } from "./utilities/Direction";
-import "./OverflowPanel.scss";
+import { DirectionHelpers, OrthogonalDirectionHelpers } from "./utilities/Direction";
 
 /** Properties of [[ToolbarOverflowPanel]] component.
  * @internal

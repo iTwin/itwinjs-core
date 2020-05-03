@@ -7,15 +7,9 @@
  * @module Widgets
  */
 
-import {
-  IModelApp,
-  RenderMemory,
-  TileTreeOwner,
-  TileTreeSet,
-  Viewport,
-} from "@bentley/imodeljs-frontend";
 import { assert, BeTimePoint } from "@bentley/bentleyjs-core";
-import { createComboBox, ComboBoxEntry } from "../ui/ComboBox";
+import { IModelApp, RenderMemory, TileTreeOwner, TileTreeSet, Viewport } from "@bentley/imodeljs-frontend";
+import { ComboBoxEntry, createComboBox } from "../ui/ComboBox";
 
 function collectTileTreeMemory(stats: RenderMemory.Statistics, owner: TileTreeOwner): void {
   const tree = owner.tileTree;

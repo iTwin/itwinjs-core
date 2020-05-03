@@ -6,12 +6,12 @@
  * @module Authentication
  */
 
-import { GrantParams, TokenSet } from "openid-client";
 import { decode } from "jsonwebtoken";
-import { AccessToken, AuthorizationClient } from "@bentley/itwin-client";
+import { GrantParams, TokenSet } from "openid-client";
 import { AuthStatus, BentleyError, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
-import { BackendAuthorizationClientConfiguration, BackendAuthorizationClient } from "./BackendAuthorizationClient";
+import { AccessToken, AuthorizationClient } from "@bentley/itwin-client";
 import { BackendITwinClientLoggerCategory } from "../BackendITwinClientLoggerCategory";
+import { BackendAuthorizationClient, BackendAuthorizationClientConfiguration } from "./BackendAuthorizationClient";
 
 const loggerCategory = BackendITwinClientLoggerCategory.Authorization;
 

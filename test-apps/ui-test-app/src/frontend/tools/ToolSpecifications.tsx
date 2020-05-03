@@ -3,32 +3,30 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { FooterSeparator } from "@bentley/ui-ninezone";
+import imperialIconSvg from "@bentley/icons-generic/icons/app-2.svg?sprite";
 import {
-  IModelApp, NotifyMessageDetails, OutputMessagePriority, MessageBoxValue, SelectionTool,
-  OutputMessageType, SnapMode, MessageBoxType, MessageBoxIconType, OutputMessageAlert,
+  IModelApp, MessageBoxIconType, MessageBoxType, MessageBoxValue, NotifyMessageDetails, OutputMessageAlert, OutputMessagePriority, OutputMessageType,
+  SelectionTool, SnapMode,
 } from "@bentley/imodeljs-frontend";
-import { MessageSeverity, SvgSprite, SvgPath, UnderlinedButton } from "@bentley/ui-core";
 import {
-  BackstageItem, StatusBarSection, UiItemsManager, CommonStatusBarItem, StageUsage, UiItemsProvider,
-  ConditionalBooleanValue, ConditionalStringValue, BackstageItemUtilities,
+  BackstageItem, BackstageItemUtilities, CommonStatusBarItem, ConditionalBooleanValue, ConditionalStringValue, StageUsage, StatusBarSection,
+  UiItemsManager, UiItemsProvider,
 } from "@bentley/ui-abstract";
+import { MessageSeverity, SvgPath, SvgSprite, UnderlinedButton } from "@bentley/ui-core";
 import {
-  CommandItemDef, ToolItemDef, WidgetState, FrontstageManager, ModalDialogManager, BaseItemState, ContentViewManager,
-  SyncUiEventId, Backstage, StatusBarItemUtilities, withStatusFieldProps, SyncUiEventDispatcher, ReactMessage, MessageManager, ReactNotifyMessageDetails,
+  Backstage, BaseItemState, CommandItemDef, ContentViewManager, FrontstageManager, MessageManager, ModalDialogManager, ReactMessage,
+  ReactNotifyMessageDetails, StatusBarItemUtilities, SyncUiEventDispatcher, SyncUiEventId, ToolItemDef, WidgetState, withStatusFieldProps,
 } from "@bentley/ui-framework";
+import { FooterSeparator } from "@bentley/ui-ninezone";
 import { SampleAppIModelApp } from "../";
+import { AppUi } from "../appui/AppUi";
+// cSpell:ignore appui
+import { TestMessageBox } from "../appui/dialogs/TestMessageBox";
+import { SampleStatusField } from "../appui/statusfields/SampleStatusField";
+import { AnalysisAnimationTool } from "../tools/AnalysisAnimation";
 import { Tool1 } from "../tools/Tool1";
 import { Tool2 } from "../tools/Tool2";
 import { ToolWithSettings } from "../tools/ToolWithSettings";
-import { AnalysisAnimationTool } from "../tools/AnalysisAnimation";
-
-// cSpell:ignore appui
-import { TestMessageBox } from "../appui/dialogs/TestMessageBox";
-import { AppUi } from "../appui/AppUi";
-import { SampleStatusField } from "../appui/statusfields/SampleStatusField";
-
-import imperialIconSvg from "@bentley/icons-generic/icons/app-2.svg?sprite";
 
 // tslint:disable-next-line: variable-name
 const SampleStatus = withStatusFieldProps(SampleStatusField);

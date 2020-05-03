@@ -6,13 +6,12 @@
  * @module Table
  */
 
+import { Primitives, PrimitiveValue, PropertyRecord, PropertyValueFormat, UiError } from "@bentley/ui-abstract";
 import { SortDirection } from "@bentley/ui-core";
-import { Primitives, PropertyRecord, PropertyValueFormat, PrimitiveValue, UiError } from "@bentley/ui-abstract";
-
-import { MutableTableDataProvider, ColumnDescription, RowItem, TableDataChangeEvent, TableDistinctValue } from "./TableDataProvider";
 import { TypeConverterManager } from "../converters/TypeConverterManager";
 import { UiComponents } from "../UiComponents";
-import { DistinctValueCollection, CompositeFilterDescriptorCollection } from "./columnfiltering/ColumnFiltering";
+import { CompositeFilterDescriptorCollection, DistinctValueCollection } from "./columnfiltering/ColumnFiltering";
+import { ColumnDescription, MutableTableDataProvider, RowItem, TableDataChangeEvent, TableDistinctValue } from "./TableDataProvider";
 
 /**
  * A Table Data Provider using an array of items.

@@ -2,18 +2,20 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
 import { expect } from "chai";
+import * as React from "react";
 import * as sinon from "sinon";
-import { waitForUpdate } from "../test-helpers/misc";
-import { render, cleanup, fireEvent, RenderResult, waitForElement } from "@testing-library/react";
 import { PropertyRecord } from "@bentley/ui-abstract";
+import { cleanup, fireEvent, render, RenderResult, waitForElement } from "@testing-library/react";
 import { Breadcrumb, BreadcrumbMode, BreadcrumbPath } from "../../ui-components";
-import { mockRawTreeDataProvider, mockInterfaceTreeDataProvider, mockMutableInterfaceTreeDataProvider, mockRawTreeDataProvider2 } from "./mockTreeDataProvider";
-import TestUtils from "../TestUtils";
-import { BreadcrumbNodeProps, BreadcrumbNode } from "../../ui-components/breadcrumb/Breadcrumb";
-import { TreeNodeItem } from "../../ui-components/tree/TreeDataProvider";
+import { BreadcrumbNode, BreadcrumbNodeProps } from "../../ui-components/breadcrumb/Breadcrumb";
 import { getPropertyRecordAsString } from "../../ui-components/common/getPropertyRecordAsString";
+import { TreeNodeItem } from "../../ui-components/tree/TreeDataProvider";
+import { waitForUpdate } from "../test-helpers/misc";
+import TestUtils from "../TestUtils";
+import {
+  mockInterfaceTreeDataProvider, mockMutableInterfaceTreeDataProvider, mockRawTreeDataProvider, mockRawTreeDataProvider2,
+} from "./mockTreeDataProvider";
 
 // tslint:disable:deprecation
 

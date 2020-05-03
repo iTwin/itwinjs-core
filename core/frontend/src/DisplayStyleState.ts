@@ -5,40 +5,23 @@
 /** @packageDocumentation
  * @module Views
  */
+import { assert, Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
+import { Point3d, Vector3d } from "@bentley/geometry-core";
 import {
-  BackgroundMapProps,
-  BackgroundMapSettings,
-  Cartographic,
-  ColorDef,
-  ContextRealityModelProps,
-  DisplayStyle3dSettings,
-  DisplayStyleProps,
-  DisplayStyleSettings,
-  EnvironmentProps,
-  GlobeMode,
-  GroundPlane,
-  LightSettings,
-  RenderTexture,
-  SkyBoxImageType,
-  SkyBoxProps,
-  SkyCubeProps,
-  SolarShadowSettings,
-  SubCategoryOverride,
-  ViewFlags,
-  calculateSolarDirection,
+  BackgroundMapProps, BackgroundMapSettings, calculateSolarDirection, Cartographic, ColorDef, ContextRealityModelProps, DisplayStyle3dSettings,
+  DisplayStyleProps, DisplayStyleSettings, EnvironmentProps, GlobeMode, GroundPlane, LightSettings, RenderTexture, SkyBoxImageType, SkyBoxProps,
+  SkyCubeProps, SolarShadowSettings, SubCategoryOverride, ViewFlags,
 } from "@bentley/imodeljs-common";
+import { BackgroundMapGeometry } from "./BackgroundMapGeometry";
+import { ContextRealityModelState } from "./ContextRealityModelState";
 import { ElementState } from "./EntityState";
+import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
-import { JsonUtils, Id64, Id64String, assert } from "@bentley/bentleyjs-core";
 import { AnimationBranchStates } from "./render/GraphicBranch";
 import { RenderSystem, TextureImage } from "./render/RenderSystem";
-import { BackgroundMapTileTreeReference, BackgroundTerrainTileTreeReference, TileTreeReference, MapTileTree } from "./tile/internal";
-import { ContextRealityModelState } from "./ContextRealityModelState";
 import { RenderScheduleState } from "./RenderScheduleState";
-import { Viewport, ScreenViewport } from "./Viewport";
-import { IModelApp } from "./IModelApp";
-import { BackgroundMapGeometry } from "./BackgroundMapGeometry";
-import { Vector3d, Point3d } from "@bentley/geometry-core";
+import { BackgroundMapTileTreeReference, BackgroundTerrainTileTreeReference, MapTileTree, TileTreeReference } from "./tile/internal";
+import { ScreenViewport, Viewport } from "./Viewport";
 
 type BackgroundMapOrTerrainTileTreeReference = BackgroundMapTileTreeReference | BackgroundTerrainTileTreeReference;
 

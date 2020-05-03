@@ -2,17 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { LoremIpsum } from "lorem-ipsum";
 import * as React from "react";
-
-import { ConfigurableUiManager, ConfigurableCreateInfo, ContentControl } from "@bentley/ui-framework";
-import { PropertyRecord, PropertyValueFormat, PropertyValue, PropertyDescription } from "@bentley/ui-abstract";
+import { PropertyDescription, PropertyRecord, PropertyValue, PropertyValueFormat } from "@bentley/ui-abstract";
 import {
-  Table, ColumnDescription, RowItem, TableDataProvider, FilterRenderer,
-  SimpleTableDataProvider, TableSelectionTarget, SelectionMode,
-  PropertyUpdatedArgs, TableCellUpdatedArgs, TableCellContextMenuArgs,
+  ColumnDescription, FilterRenderer, PropertyUpdatedArgs, RowItem, SelectionMode, SimpleTableDataProvider, Table, TableCellContextMenuArgs,
+  TableCellUpdatedArgs, TableDataProvider, TableSelectionTarget,
 } from "@bentley/ui-components";
 import { BodyText, Toggle } from "@bentley/ui-core";
-import { LoremIpsum } from "lorem-ipsum";
+import { ConfigurableCreateInfo, ConfigurableUiManager, ContentControl } from "@bentley/ui-framework";
 
 class TableExampleContentControl extends ContentControl {
   constructor(info: ConfigurableCreateInfo, options: any) {

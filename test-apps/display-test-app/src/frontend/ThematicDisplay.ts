@@ -3,31 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import {
-  ViewFlags,
-  ColorDef,
-  ColorByName,
-  ThematicDisplayProps,
-  ThematicDisplay,
-  ThematicDisplayMode,
-  ThematicGradientMode,
-  ThematicGradientColorScheme,
-  ThematicDisplaySensorProps,
-} from "@bentley/imodeljs-common";
-import {
-  Viewport,
-  ViewState,
-  ViewState3d,
-} from "@bentley/imodeljs-frontend";
-import {
-  createCheckBox,
-  createButton,
-  LabeledNumericInput,
-  createLabeledNumericInput,
-  createComboBox,
-  ComboBox,
-} from "@bentley/frontend-devtools";
+import { ComboBox, createButton, createCheckBox, createComboBox, createLabeledNumericInput, LabeledNumericInput } from "@bentley/frontend-devtools";
 import { Point3d, Range1d } from "@bentley/geometry-core";
+import {
+  ColorByName, ColorDef, ThematicDisplay, ThematicDisplayMode, ThematicDisplayProps, ThematicDisplaySensorProps, ThematicGradientColorScheme,
+  ThematicGradientMode, ViewFlags,
+} from "@bentley/imodeljs-common";
+import { Viewport, ViewState, ViewState3d } from "@bentley/imodeljs-frontend";
 
 export class ThematicDisplayEditor {
   private static _defaultSettings: ThematicDisplayProps = {

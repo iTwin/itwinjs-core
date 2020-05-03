@@ -4,12 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as sinon from "sinon";
+import { Point } from "@bentley/ui-core";
 import { act, fireEvent, render } from "@testing-library/react";
 import { renderHook } from "@testing-library/react-hooks";
 import {
-  WidgetPanelGrip, createNineZoneState, addPanelWidget, NineZoneDispatch, PANEL_TOGGLE_COLLAPSED, NineZoneProvider, PanelStateContext, PANEL_RESIZE, useResizeGrip,
+  addPanelWidget, createNineZoneState, NineZoneDispatch, NineZoneProvider, PANEL_RESIZE, PANEL_TOGGLE_COLLAPSED, PanelStateContext, useResizeGrip,
+  WidgetPanelGrip,
 } from "../../ui-ninezone";
-import { Point } from "@bentley/ui-core";
 
 describe("WidgetPanelGrip", () => {
   const sandbox = sinon.createSandbox();

@@ -6,13 +6,9 @@
  * @module Tree
  */
 
-import { BeInspireTree, BeInspireTreeNode, toNode, toNodes } from "./component/BeInspireTree";
-import { TreeNodeItem } from "../TreeDataProvider";
 import { Observable } from "rxjs/internal/Observable";
-import { Subject } from "rxjs/internal/Subject";
-import { Subscriber } from "rxjs/internal/Subscriber";
-import { ConnectableObservable } from "rxjs/internal/observable/ConnectableObservable";
 import { concat } from "rxjs/internal/observable/concat";
+import { ConnectableObservable } from "rxjs/internal/observable/ConnectableObservable";
 import { merge } from "rxjs/internal/observable/merge";
 import { of } from "rxjs/internal/observable/of";
 import { filter } from "rxjs/internal/operators/filter";
@@ -24,6 +20,10 @@ import { share } from "rxjs/internal/operators/share";
 import { takeUntil } from "rxjs/internal/operators/takeUntil";
 import { takeWhile } from "rxjs/internal/operators/takeWhile";
 import { tap } from "rxjs/internal/operators/tap";
+import { Subject } from "rxjs/internal/Subject";
+import { Subscriber } from "rxjs/internal/Subscriber";
+import { TreeNodeItem } from "../TreeDataProvider";
+import { BeInspireTree, BeInspireTreeNode, toNode, toNodes } from "./component/BeInspireTree";
 
 // tslint:disable:deprecation
 

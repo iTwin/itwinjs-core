@@ -2,10 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module NativeApp */
+/** @packageDocumentation
+ * @module NativeApp
+ */
+
 import { BeEvent, Config, IModelStatus } from "@bentley/bentleyjs-core";
+import {
+  BriefcaseDownloader, BriefcaseKey, BriefcaseProps, DownloadBriefcaseOptions, Events, IModelError, IModelVersion, InternetConnectivityStatus,
+  NativeAppRpcInterface, OverriddenBy, RequestBriefcaseProps, RpcRegistry, StorageValue,
+} from "@bentley/imodeljs-common";
 import { ProgressCallback, ProgressInfo, RequestGlobalOptions } from "@bentley/itwin-client";
-import { BriefcaseDownloader, BriefcaseKey, BriefcaseProps, DownloadBriefcaseOptions, Events, IModelError, IModelVersion, InternetConnectivityStatus, NativeAppRpcInterface, OverriddenBy, RequestBriefcaseProps, RpcRegistry, StorageValue } from "@bentley/imodeljs-common";
 import { EventSourceManager } from "./EventSource";
 import { AuthorizedFrontendRequestContext, FrontendRequestContext } from "./FrontendRequestContext";
 import { IModelApp, IModelAppOptions } from "./IModelApp";

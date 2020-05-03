@@ -8,33 +8,13 @@
 
 import { assert, ClientRequestContext, Id64, Id64String, IModelStatus, Logger } from "@bentley/bentleyjs-core";
 import { Range3d, Range3dProps } from "@bentley/geometry-core";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import {
-  ElementProps,
-  EntityMetaData,
-  EntityQueryParams,
-  GeoCoordinatesResponseProps,
-  GeometrySummaryRequestProps,
-  ImageSourceFormat,
-  IModel,
-  IModelConnectionProps,
-  IModelCoordinatesResponseProps,
-  IModelReadRpcInterface,
-  IModelRpcProps,
-  MassPropertiesRequestProps,
-  MassPropertiesResponseProps,
-  ModelProps,
-  QueryLimit,
-  QueryPriority,
-  QueryQuota,
-  QueryResponse,
-  RpcInterface,
-  RpcManager,
-  SnapRequestProps,
-  SnapResponseProps,
-  SyncMode,
-  ViewStateProps,
+  ElementProps, EntityMetaData, EntityQueryParams, GeoCoordinatesResponseProps, GeometrySummaryRequestProps, ImageSourceFormat, IModel,
+  IModelConnectionProps, IModelCoordinatesResponseProps, IModelReadRpcInterface, IModelRpcProps, MassPropertiesRequestProps,
+  MassPropertiesResponseProps, ModelProps, QueryLimit, QueryPriority, QueryQuota, QueryResponse, RpcInterface, RpcManager, SnapRequestProps,
+  SnapResponseProps, SyncMode, ViewStateProps,
 } from "@bentley/imodeljs-common";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { SpatialCategory } from "../Category";
 import { generateGeometrySummaries } from "../GeometrySummary";

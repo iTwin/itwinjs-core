@@ -7,14 +7,12 @@
  */
 
 import * as React from "react";
-
 import { BadgeType, ConditionalStringValue } from "@bentley/ui-abstract";
-import { CommonProps, PointProps, RectangleProps, Rectangle, BadgeUtilities, IconHelper } from "@bentley/ui-core";
+import { BadgeUtilities, CommonProps, IconHelper, PointProps, Rectangle, RectangleProps } from "@bentley/ui-core";
 import {
-  Stacked as NZ_WidgetStack, HorizontalAnchor, VerticalAnchor, ResizeHandle, Tab, TabGroup, TabSeparator,
-  WidgetZoneId, TabMode, HandleMode, DraggedWidgetManagerProps, VerticalAnchorHelpers, DisabledResizeHandles,
+  DisabledResizeHandles, DraggedWidgetManagerProps, HandleMode, HorizontalAnchor, ResizeHandle, Stacked as NZ_WidgetStack, Tab, TabGroup, TabMode,
+  TabSeparator, VerticalAnchor, VerticalAnchorHelpers, WidgetZoneId,
 } from "@bentley/ui-ninezone";
-
 import { WidgetChangeHandler } from "../frontstage/FrontstageComposer";
 import { UiShowHideManager } from "../utils/UiShowHideManager";
 

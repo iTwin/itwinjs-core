@@ -2,14 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
 import { expect } from "chai";
-
+import * as React from "react";
 import { BeDuration } from "@bentley/bentleyjs-core";
-import { RelativePosition } from "@bentley/ui-abstract";
 import { OutputMessagePriority } from "@bentley/imodeljs-frontend";
-
-import { ReactNotifyMessageDetails, isReactMessage, isReactNotifyMessageDetails } from "../../ui-framework";
+import { RelativePosition } from "@bentley/ui-abstract";
+import { isReactMessage, isReactNotifyMessageDetails, ReactNotifyMessageDetails } from "../../ui-framework";
 
 describe("ReactNotifyMessageDetails", () => {
 

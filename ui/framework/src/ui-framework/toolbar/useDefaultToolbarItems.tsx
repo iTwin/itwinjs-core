@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { CommonToolbarItem, ToolbarItemsManager, ToolbarItemsChangedArgs } from "@bentley/ui-abstract";
+import { CommonToolbarItem, ToolbarItemsChangedArgs, ToolbarItemsManager } from "@bentley/ui-abstract";
 
 /** Hook that returns items from [[ToolbarItemsManager]].
  * @beta

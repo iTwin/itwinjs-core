@@ -8,8 +8,8 @@
 
 import * as React from "react";
 import { DrawingNavigationAid } from "@bentley/ui-components";
-import { NavigationAidControl } from "./NavigationAidControl";
 import { ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";
+import { NavigationAidControl } from "./NavigationAidControl";
 
 /** Navigation Aid that displays an interactive mini-map for Drawing views that synchronizes with the iModel Viewport.
  * @beta

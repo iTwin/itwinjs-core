@@ -5,7 +5,7 @@
 import * as React from "react";
 import * as sinon from "sinon";
 import { render } from "@testing-library/react";
-import { createNineZoneState, NineZoneProvider, addPanelWidget, PanelWidget } from "../../ui-ninezone";
+import { addPanelWidget, createNineZoneState, NineZoneProvider, PanelWidget } from "../../ui-ninezone";
 
 describe("PanelWidget", () => {
   it("should render", () => {

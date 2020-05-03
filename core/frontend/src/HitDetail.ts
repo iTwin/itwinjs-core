@@ -5,15 +5,15 @@
 /** @packageDocumentation
  * @module LocatingElements
  */
-import { Point3d, Vector3d, CurvePrimitive, XYZProps, Transform, Arc3d, LineSegment3d, LineString3d, Path } from "@bentley/geometry-core";
-import { IModelConnection } from "./IModelConnection";
-import { ScreenViewport } from "./Viewport";
-import { Sprite, IconSprites } from "./Sprites";
-import { IModelApp } from "./IModelApp";
 import { Id64 } from "@bentley/bentleyjs-core";
-import { DecorateContext } from "./ViewContext";
+import { Arc3d, CurvePrimitive, LineSegment3d, LineString3d, Path, Point3d, Transform, Vector3d, XYZProps } from "@bentley/geometry-core";
+import { GeometryClass, LinePixels } from "@bentley/imodeljs-common";
+import { IModelApp } from "./IModelApp";
+import { IModelConnection } from "./IModelConnection";
 import { GraphicType } from "./render/GraphicBuilder";
-import { LinePixels, GeometryClass } from "@bentley/imodeljs-common";
+import { IconSprites, Sprite } from "./Sprites";
+import { DecorateContext } from "./ViewContext";
+import { ScreenViewport } from "./Viewport";
 
 /** @public */
 export enum SnapMode {

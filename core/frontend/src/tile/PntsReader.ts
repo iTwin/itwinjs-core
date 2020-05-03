@@ -6,35 +6,17 @@
  * @module Tiles
  */
 
+import { assert, ByteStream, Id64String, utf8ToString } from "@bentley/bentleyjs-core";
+import { Angle, Matrix3d, Point3d, Transform, Vector3d } from "@bentley/geometry-core";
 import {
-  assert,
-  ByteStream,
-  Id64String,
-  utf8ToString,
-} from "@bentley/bentleyjs-core";
-import {
-  Angle,
-  Matrix3d,
-  Point3d,
-  Transform,
-  Vector3d,
-} from "@bentley/geometry-core";
-import {
-  BatchType,
-  ElementAlignedBox3d,
-  Feature,
-  FeatureTable,
-  PackedFeatureTable,
-  PntsHeader,
-  QParams3d,
-  Quantization,
+  BatchType, ElementAlignedBox3d, Feature, FeatureTable, PackedFeatureTable, PntsHeader, QParams3d, Quantization,
 } from "@bentley/imodeljs-common";
-import { RenderGraphic } from "../render/RenderGraphic";
-import { GraphicBranch } from "../render/GraphicBranch";
-import { RenderSystem } from "../render/RenderSystem";
-import { PointCloudArgs } from "../render/primitives/PointCloudPrimitive";
-import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { IModelConnection } from "../IModelConnection";
+import { GraphicBranch } from "../render/GraphicBranch";
+import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
+import { PointCloudArgs } from "../render/primitives/PointCloudPrimitive";
+import { RenderGraphic } from "../render/RenderGraphic";
+import { RenderSystem } from "../render/RenderSystem";
 
 /** Deserialize a point cloud tile and return it as a RenderGraphic.
  * @internal

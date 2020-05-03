@@ -7,16 +7,9 @@
  */
 
 import { Range3d } from "@bentley/geometry-core";
-import {
-  createDefaultViewFlagOverrides,
-  ImageryProvider,
-  TileDrawArgs,
-  TileGraphicType,
-  TileTree,
-  TileTreeReference,
-} from "./internal";
-import { ScreenViewport } from "../Viewport";
 import { FeatureSymbology } from "../render/FeatureSymbology";
+import { ScreenViewport } from "../Viewport";
+import { createDefaultViewFlagOverrides, ImageryProvider, TileDrawArgs, TileGraphicType, TileTree, TileTreeReference } from "./internal";
 
 const viewFlagOverrides = createDefaultViewFlagOverrides({ clipVolume: false, thematic: false });
 

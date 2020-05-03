@@ -5,13 +5,13 @@
 /** @packageDocumentation
  * @module iTwinServiceClients
  */
-import { ClientRequestContext, GetMetaDataFunction, HttpStatus, Logger, WSStatus } from "@bentley/bentleyjs-core";
 import * as deepAssign from "deep-assign";
-import { ITwinClientLoggerCategory } from "./ITwinClientLoggerCategory";
-import { ECJsonTypeMap, WsgInstance } from "./ECJsonTypeMap";
-import { ResponseError, RequestOptions, request, Response, RequestQueryOptions } from "./Request";
-import { AuthenticationError, DefaultRequestOptionsProvider, Client } from "./Client";
+import { ClientRequestContext, GetMetaDataFunction, HttpStatus, Logger, WSStatus } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext } from "./AuthorizedClientRequestContext";
+import { AuthenticationError, Client, DefaultRequestOptionsProvider } from "./Client";
+import { ECJsonTypeMap, WsgInstance } from "./ECJsonTypeMap";
+import { ITwinClientLoggerCategory } from "./ITwinClientLoggerCategory";
+import { request, RequestOptions, RequestQueryOptions, Response, ResponseError } from "./Request";
 
 const loggerCategory: string = ITwinClientLoggerCategory.Clients;
 

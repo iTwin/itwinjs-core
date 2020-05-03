@@ -6,13 +6,13 @@
  * @module CartesianGeometry
  */
 
-import { Geometry, AxisOrder, AxisIndex, BeJSONFunctions, StandardViewIndex } from "../Geometry";
-import { Angle } from "./Angle";
+import { AxisIndex, AxisOrder, BeJSONFunctions, Geometry, StandardViewIndex } from "../Geometry";
 import { Point4d } from "../geometry4d/Point4d";
+import { Angle } from "./Angle";
 import { Point2d } from "./Point2dVector2d";
-import { XYAndZ, XAndY, Matrix3dProps, WritableXYAndZ } from "./XYZProps";
-import { XYZ, Point3d, Vector3d } from "./Point3dVector3d";
+import { Point3d, Vector3d, XYZ } from "./Point3dVector3d";
 import { Transform } from "./Transform";
+import { Matrix3dProps, WritableXYAndZ, XAndY, XYAndZ } from "./XYZProps";
 
 /* tslint:disable:prefer-get */
 /**

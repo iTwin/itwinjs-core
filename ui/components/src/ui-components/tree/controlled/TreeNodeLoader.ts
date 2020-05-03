@@ -14,20 +14,18 @@ import { concatMap } from "rxjs/internal/operators/concatMap";
 import { finalize } from "rxjs/internal/operators/finalize";
 import { map } from "rxjs/internal/operators/map";
 import { publish } from "rxjs/internal/operators/publish";
-import { toArray } from "rxjs/internal/operators/toArray";
 import { refCount } from "rxjs/internal/operators/refCount";
+import { toArray } from "rxjs/internal/operators/toArray";
 import { BeUiEvent, IDisposable } from "@bentley/bentleyjs-core";
 import { UiError } from "@bentley/ui-abstract";
-import { Observable } from "./Observable";
-import { SubscriptionScheduler, scheduleSubscription } from "./internal/SubscriptionScheduler";
-import {
-  TreeNodeItemData, isTreeModelNode, TreeModelNode, TreeModelRootNode, MutableTreeModel, TreeModelNodeInput,
-} from "./TreeModel";
-import {
-  TreeDataChangesListener, TreeDataProvider, TreeNodeItem, isTreeDataProviderInterface,
-  isTreeDataProviderMethod, isTreeDataProviderPromise, isTreeDataProviderRaw, TreeDataProviderRaw, ImmediatelyLoadedTreeNodeItem,
-} from "../TreeDataProvider";
 import { UiComponents } from "../../UiComponents";
+import {
+  ImmediatelyLoadedTreeNodeItem, isTreeDataProviderInterface, isTreeDataProviderMethod, isTreeDataProviderPromise, isTreeDataProviderRaw,
+  TreeDataChangesListener, TreeDataProvider, TreeDataProviderRaw, TreeNodeItem,
+} from "../TreeDataProvider";
+import { scheduleSubscription, SubscriptionScheduler } from "./internal/SubscriptionScheduler";
+import { Observable } from "./Observable";
+import { isTreeModelNode, MutableTreeModel, TreeModelNode, TreeModelNodeInput, TreeModelRootNode, TreeNodeItemData } from "./TreeModel";
 import { TreeModelSource } from "./TreeModelSource";
 
 /**

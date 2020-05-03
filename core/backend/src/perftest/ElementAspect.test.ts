@@ -2,17 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Id64String } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { ElementAspectProps, IModel, IModelVersion, SubCategoryAppearance, SyncMode } from "@bentley/imodeljs-common";
-import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
-import { Reporter } from "@bentley/perf-tools/lib/Reporter";
 import { assert } from "chai";
 import * as path from "path";
+import { Id64String } from "@bentley/bentleyjs-core";
+import { IModelHubError } from "@bentley/imodelhub-client";
+import { ElementAspectProps, IModel, IModelVersion, SubCategoryAppearance, SyncMode } from "@bentley/imodeljs-common";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
+import { Reporter } from "@bentley/perf-tools/lib/Reporter";
 import { BriefcaseDb, DictionaryModel, ElementAspect, IModelDb, IModelJsFs, SnapshotDb, SpatialCategory } from "../imodeljs-backend";
 import { IModelTestUtils } from "../test/IModelTestUtils";
 import { KnownTestLocations } from "../test/KnownTestLocations";
-import { IModelHubError } from "@bentley/imodelhub-client";
 
 async function createNewModelAndCategory(requestContext: AuthorizedClientRequestContext, rwIModel: IModelDb) {
   // Create a new physical model.

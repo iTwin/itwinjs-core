@@ -6,32 +6,21 @@
  * @module WebGL
  */
 
-import {
-  Matrix4d,
-  Vector3d,
-} from "@bentley/geometry-core";
-import {
-  FrustumUniforms,
-  FrustumUniformType,
-} from "./FrustumUniforms";
+import { Matrix4d, Vector3d } from "@bentley/geometry-core";
 import { RenderPlan } from "../RenderPlan";
-import { HiliteUniforms } from "./HiliteUniforms";
-import { StyleUniforms } from "./StyleUniforms";
-import { ViewRectUniforms } from "./ViewRectUniforms";
 import { BatchUniforms } from "./BatchUniforms";
 import { BranchUniforms } from "./BranchUniforms";
-import { ShadowUniforms } from "./ShadowUniforms";
-import { LightingUniforms } from "./LightingUniforms";
-import { ThematicUniforms } from "./ThematicUniforms";
+import { FrustumUniforms, FrustumUniformType } from "./FrustumUniforms";
 import { UniformHandle } from "./Handle";
+import { HiliteUniforms } from "./HiliteUniforms";
+import { LightingUniforms } from "./LightingUniforms";
 import { Matrix4 } from "./Matrix";
+import { ShadowUniforms } from "./ShadowUniforms";
+import { StyleUniforms } from "./StyleUniforms";
+import { desync, sync, SyncObserver, SyncToken } from "./Sync";
 import { Target } from "./Target";
-import {
-  desync,
-  sync,
-  SyncObserver,
-  SyncToken,
-} from "./Sync";
+import { ThematicUniforms } from "./ThematicUniforms";
+import { ViewRectUniforms } from "./ViewRectUniforms";
 
 class PixelWidthFactor {
   /** The pixel width factor depends on both the frustum and the view rect. */

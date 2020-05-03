@@ -6,11 +6,11 @@
  * @module Tools
  */
 
-import { FeatureSymbology, EmphasizeElements, Viewport, IModelConnection, FeatureOverrideProvider } from "@bentley/imodeljs-frontend";
-import { Id64String, BeEvent } from "@bentley/bentleyjs-core";
+import { BeEvent, Id64String } from "@bentley/bentleyjs-core";
+import { ElementProps, GeometricElementProps } from "@bentley/imodeljs-common";
+import { EmphasizeElements, FeatureOverrideProvider, FeatureSymbology, IModelConnection, Viewport } from "@bentley/imodeljs-frontend";
 import { Presentation } from "@bentley/presentation-frontend";
 import { UiFramework } from "../UiFramework";
-import { GeometricElementProps, ElementProps } from "@bentley/imodeljs-common";
 
 /** Overrides given models to provide emphasize functionality
  * @alpha

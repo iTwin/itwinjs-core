@@ -6,23 +6,20 @@
  * @module StatusBar
  */
 
-import * as React from "react";
+import "./StatusBar.scss";
 import classnames from "classnames";
+import * as React from "react";
 import ReactResizeDetector from "react-resize-detector";
-
-import { MessageContainer, MessageSeverity, SmallText, CommonProps, CommonDivProps, Div, UiCore, Icon, IconProps } from "@bentley/ui-core";
-import { Footer, Toast, Message, MessageLayout, MessageButton, Status, MessageHyperlink, MessageProgress } from "@bentley/ui-ninezone";
 import { OutputMessageType } from "@bentley/imodeljs-frontend";
-
-import { MessageManager, MessageAddedEventArgs, ActivityMessageEventArgs } from "../messages/MessageManager";
-import { NotifyMessageType, NotifyMessageDetailsType } from "../messages/ReactNotifyMessageDetails";
-import { UiShowHideManager } from "../utils/UiShowHideManager";
+import { CommonDivProps, CommonProps, Div, Icon, IconProps, MessageContainer, MessageSeverity, SmallText, UiCore } from "@bentley/ui-core";
+import { Footer, Message, MessageButton, MessageHyperlink, MessageLayout, MessageProgress, Status, Toast } from "@bentley/ui-ninezone";
+import { ActivityMessageEventArgs, MessageAddedEventArgs, MessageManager } from "../messages/MessageManager";
 import { MessageDiv } from "../messages/MessageSpan";
+import { NotifyMessageDetailsType, NotifyMessageType } from "../messages/ReactNotifyMessageDetails";
 import { SafeAreaContext } from "../safearea/SafeAreaContext";
 import { UiFramework } from "../UiFramework";
+import { UiShowHideManager } from "../utils/UiShowHideManager";
 import { StatusBarFieldId, StatusBarWidgetControl, StatusBarWidgetControlArgs } from "./StatusBarWidgetControl";
-
-import "./StatusBar.scss";
 
 // cspell:ignore safearea
 

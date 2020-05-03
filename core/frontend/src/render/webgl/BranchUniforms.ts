@@ -7,23 +7,17 @@
  */
 
 import { assert } from "@bentley/bentleyjs-core";
-import {
-  Point3d,
-  Matrix3d,
-  Matrix4d,
-  Transform,
-  XYZ,
-} from "@bentley/geometry-core";
+import { Matrix3d, Matrix4d, Point3d, Transform, XYZ } from "@bentley/geometry-core";
 import { ViewFlags } from "@bentley/imodeljs-common";
 import { FeatureSymbology } from "../FeatureSymbology";
-import { desync, sync, SyncToken } from "./Sync";
-import { UniformHandle } from "./Handle";
-import { Target } from "./Target";
 import { BatchState, BranchStack, BranchState } from "./BranchState";
-import { RenderCommands } from "./RenderCommands";
-import { Branch } from "./Graphic";
-import { Matrix4 } from "./Matrix";
 import { CachedGeometry } from "./CachedGeometry";
+import { Branch } from "./Graphic";
+import { UniformHandle } from "./Handle";
+import { Matrix4 } from "./Matrix";
+import { RenderCommands } from "./RenderCommands";
+import { desync, sync, SyncToken } from "./Sync";
+import { Target } from "./Target";
 
 function equalXYZs(a: XYZ | undefined, b: XYZ | undefined): boolean {
   if (a === b)

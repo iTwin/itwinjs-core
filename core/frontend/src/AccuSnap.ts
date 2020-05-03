@@ -6,18 +6,18 @@
  * @module LocatingElements
  */
 
-import { Point3d, Point2d, XAndY, Vector3d, CurveCurve, CurvePrimitive, GeometryQuery, IModelJson as GeomJson } from "@bentley/geometry-core";
-import { Viewport, ScreenViewport } from "./Viewport";
-import { BeButtonEvent, BeTouchEvent, BeButton, InputSource } from "./tools/Tool";
-import { SnapStatus, LocateAction, LocateResponse, HitListHolder, ElementLocateManager, LocateFilterStatus } from "./ElementLocateManager";
-import { SpriteLocation, Sprite, IconSprites } from "./Sprites";
-import { DecorateContext } from "./ViewContext";
-import { HitDetail, HitList, SnapMode, SnapDetail, HitSource, HitDetailType, HitPriority, IntersectDetail, SnapHeat, HitGeomType } from "./HitDetail";
-import { IModelApp } from "./IModelApp";
 import { BeDuration } from "@bentley/bentleyjs-core";
-import { Decorator } from "./ViewManager";
+import { CurveCurve, CurvePrimitive, GeometryQuery, IModelJson as GeomJson, Point2d, Point3d, Vector3d, XAndY } from "@bentley/geometry-core";
 import { SnapRequestProps } from "@bentley/imodeljs-common";
+import { ElementLocateManager, HitListHolder, LocateAction, LocateFilterStatus, LocateResponse, SnapStatus } from "./ElementLocateManager";
+import { HitDetail, HitDetailType, HitGeomType, HitList, HitPriority, HitSource, IntersectDetail, SnapDetail, SnapHeat, SnapMode } from "./HitDetail";
+import { IModelApp } from "./IModelApp";
 import { CanvasDecoration } from "./render/CanvasDecoration";
+import { IconSprites, Sprite, SpriteLocation } from "./Sprites";
+import { BeButton, BeButtonEvent, BeTouchEvent, InputSource } from "./tools/Tool";
+import { DecorateContext } from "./ViewContext";
+import { Decorator } from "./ViewManager";
+import { ScreenViewport, Viewport } from "./Viewport";
 
 // cspell:ignore dont primitivetools
 

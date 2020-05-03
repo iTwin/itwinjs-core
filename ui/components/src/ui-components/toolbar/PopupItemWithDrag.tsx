@@ -6,19 +6,19 @@
  * @module Toolbar
  */
 
+import "./PopupItem.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { GroupButton, ActionButton, ToolbarItemUtilities, ConditionalStringValue } from "@bentley/ui-abstract";
+import { ActionButton, ConditionalStringValue, GroupButton, ToolbarItemUtilities } from "@bentley/ui-abstract";
 import { BadgeUtilities, IconHelper, useOnOutsideClick } from "@bentley/ui-core";
-import { useToolbarWithOverflowDirectionContext, useToolItemEntryContext } from "./Toolbar";
-import { DirectionHelpers, OrthogonalDirectionHelpers } from "./utilities/Direction";
 import { ToolbarPanelAlignmentHelpers } from "../toolbar/Toolbar";
-import { useDragInteraction } from "./useDragInteraction";
 import { ToolbarButtonItemProps } from "./Item";
-import { PopupItemsPanel } from "./PopupItemsPanel";
 import { ToolbarPopupContext } from "./PopupItem";
+import { PopupItemsPanel } from "./PopupItemsPanel";
+import { useToolbarWithOverflowDirectionContext, useToolItemEntryContext } from "./Toolbar";
+import { useDragInteraction } from "./useDragInteraction";
+import { DirectionHelpers, OrthogonalDirectionHelpers } from "./utilities/Direction";
 
-import "./PopupItem.scss";
 /** Properties of [[PopupItem]] component.
  * @beta
  */

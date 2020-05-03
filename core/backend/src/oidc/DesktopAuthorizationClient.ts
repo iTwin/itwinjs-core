@@ -8,22 +8,21 @@
  * @module Authentication
  */
 
-import { BeEvent, BentleyError, AuthStatus, Logger, assert, ClientRequestContext } from "@bentley/bentleyjs-core";
-import { AccessToken, ImsAuthorizationClient, request, RequestOptions } from "@bentley/itwin-client";
+import { assert, AuthStatus, BeEvent, BentleyError, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
-import { DesktopAuthorizationClientConfiguration, defaultDesktopAuthorizationClientExpiryBuffer } from "@bentley/imodeljs-common";
+import { defaultDesktopAuthorizationClientExpiryBuffer, DesktopAuthorizationClientConfiguration } from "@bentley/imodeljs-common";
+import { AccessToken, ImsAuthorizationClient, request, RequestOptions } from "@bentley/itwin-client";
 import {
-  GRANT_TYPE_AUTHORIZATION_CODE, GRANT_TYPE_REFRESH_TOKEN,
-  AuthorizationNotifier, AuthorizationServiceConfiguration, BaseTokenRequestHandler, TokenRequestHandler,
-  AuthorizationRequestJson, AuthorizationRequest, AuthorizationResponse, AuthorizationError,
-  TokenRequestJson, TokenRequest, TokenResponse, RevokeTokenRequestJson, RevokeTokenRequest,
+  AuthorizationError, AuthorizationNotifier, AuthorizationRequest, AuthorizationRequestJson, AuthorizationResponse, AuthorizationServiceConfiguration,
+  BaseTokenRequestHandler, GRANT_TYPE_AUTHORIZATION_CODE, GRANT_TYPE_REFRESH_TOKEN, RevokeTokenRequest, RevokeTokenRequestJson, TokenRequest,
+  TokenRequestHandler, TokenRequestJson, TokenResponse,
 } from "@openid/appauth";
-import { NodeRequestor, NodeCrypto } from "@openid/appauth/built/node_support";
+import { NodeCrypto, NodeRequestor } from "@openid/appauth/built/node_support";
 import { StringMap } from "@openid/appauth/built/types";
-import { ElectronTokenStore } from "./ElectronTokenStore";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
-import { ElectronAuthorizationRequestHandler } from "./ElectronAuthorizationRequestHandler";
 import { ElectronAuthorizationEvents } from "./ElectronAuthorizationEvents";
+import { ElectronAuthorizationRequestHandler } from "./ElectronAuthorizationRequestHandler";
+import { ElectronTokenStore } from "./ElectronTokenStore";
 import { LoopbackWebServer } from "./LoopbackWebServer";
 
 const loggerCategory = BackendLoggerCategory.Authorization;

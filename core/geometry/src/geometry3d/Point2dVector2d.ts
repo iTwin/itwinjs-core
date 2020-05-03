@@ -9,7 +9,7 @@
 // cspell:word JSONXY
 // cspell:word CWXY
 
-import { Geometry, BeJSONFunctions } from "../Geometry";
+import { BeJSONFunctions, Geometry } from "../Geometry";
 import { Angle } from "./Angle";
 import { XAndY, XYProps } from "./XYZProps";
 

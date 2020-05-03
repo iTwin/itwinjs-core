@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { PhenomenonProps } from "../Deserialization/JsonProps";
+import { SchemaItemType } from "../ECObjects";
+import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { Schema } from "./Schema";
 import { SchemaItem } from "./SchemaItem";
-import { PhenomenonProps } from "./../Deserialization/JsonProps";
-import { SchemaItemType } from "./../ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "./../Exception";
 
 /** @beta */
 export class Phenomenon extends SchemaItem {

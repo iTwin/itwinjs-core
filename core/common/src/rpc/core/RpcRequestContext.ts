@@ -6,8 +6,8 @@
  * @module RpcInterface
  */
 import { ClientRequestContext, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
-import { RpcRequest } from "./RpcRequest";
 import { SerializedRpcRequest } from "./RpcProtocol";
+import { RpcRequest } from "./RpcRequest";
 
 /** Interface to enable passing application-specific context with each RPC request.
  * @public

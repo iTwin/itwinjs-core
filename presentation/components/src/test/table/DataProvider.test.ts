@@ -6,27 +6,25 @@
 
 import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
 import { expect } from "chai";
-import * as sinon from "sinon";
 import * as faker from "faker";
 import * as path from "path";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
-import { createRandomDescriptor, createRandomECInstanceKey } from "@bentley/presentation-common/lib/test/_helpers/random";
-import { PromiseContainer } from "@bentley/presentation-common/lib/test/_helpers/Promises";
-import { SortDirection } from "@bentley/ui-core";
+import * as sinon from "sinon";
+import { BeEvent } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { I18N } from "@bentley/imodeljs-i18n";
 import {
-  PresentationError, ValuesDictionary, Content,
-  DefaultContentDisplayTypes, Descriptor, Item,
-  SortDirection as ContentSortDirection, KeySet,
-  Ruleset, ContentUpdateInfo,
+  Content, ContentUpdateInfo, DefaultContentDisplayTypes, Descriptor, Item, KeySet, PresentationError, Ruleset, SortDirection as ContentSortDirection,
+  ValuesDictionary,
 } from "@bentley/presentation-common";
+import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
+import { PromiseContainer } from "@bentley/presentation-common/lib/test/_helpers/Promises";
+import { createRandomDescriptor, createRandomECInstanceKey } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { Presentation, PresentationManager } from "@bentley/presentation-frontend";
 import { RowItem } from "@bentley/ui-components";
+import { SortDirection } from "@bentley/ui-core";
 import { CacheInvalidationProps } from "../../presentation-components/common/ContentDataProvider";
-import { PresentationTableDataProvider } from "../../presentation-components/table/DataProvider";
 import { initializeLocalization } from "../../presentation-components/common/Utils";
-import { I18N } from "@bentley/imodeljs-i18n";
-import { BeEvent } from "@bentley/bentleyjs-core";
+import { PresentationTableDataProvider } from "../../presentation-components/table/DataProvider";
 
 /**
  * This is just a helper class to provide public access to

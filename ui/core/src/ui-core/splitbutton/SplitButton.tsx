@@ -6,14 +6,12 @@
  * @module SplitButton
  */
 
-import * as React from "react";
-import classnames from "classnames";
-
-import { ContextMenu } from "../contextmenu/ContextMenu";
-import { CommonProps } from "../utils/Props";
-import { IconSpec, Icon } from "../icons/IconComponent";
-
 import "./SplitButton.scss";
+import classnames from "classnames";
+import * as React from "react";
+import { ContextMenu } from "../contextmenu/ContextMenu";
+import { Icon, IconSpec } from "../icons/IconComponent";
+import { CommonProps } from "../utils/Props";
 
 // TODO: implement
 /** @internal */

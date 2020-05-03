@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import { IModelApp } from "../IModelApp";
 import { GL } from "../render/webgl/GL";
 import { BufferHandle } from "../render/webgl/Handle";
-import { IModelApp } from "../IModelApp";
 
 describe("Handles", () => {
   before(async () => IModelApp.startup());

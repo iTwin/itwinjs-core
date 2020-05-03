@@ -3,22 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-
-import {
-  ConfigurableUiManager, ConfigurableCreateInfo,
-  WidgetControl,
-  DragDropLayerManager,
-  UiFramework,
-} from "@bentley/ui-framework";
-
-import {
-  Breadcrumb, BreadcrumbProps, BreadcrumbMode, BreadcrumbDetailsProps, BreadcrumbDetails, BreadcrumbPath,
-  withBreadcrumbDragDrop, withBreadcrumbDetailsDragDrop,
-} from "@bentley/ui-components";
-
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { demoMutableTreeDataProvider, treeDragProps, treeDropProps, TreeDragTypes, DemoTreeDragDropType } from "./demodataproviders/demoTreeDataProvider";
+import {
+  Breadcrumb, BreadcrumbDetails, BreadcrumbDetailsProps, BreadcrumbMode, BreadcrumbPath, BreadcrumbProps, withBreadcrumbDetailsDragDrop,
+  withBreadcrumbDragDrop,
+} from "@bentley/ui-components";
+import { ConfigurableCreateInfo, ConfigurableUiManager, DragDropLayerManager, UiFramework, WidgetControl } from "@bentley/ui-framework";
 import { TableDragTypes } from "./demodataproviders/demoTableDataProvider";
+import {
+  demoMutableTreeDataProvider, DemoTreeDragDropType, treeDragProps, TreeDragTypes, treeDropProps,
+} from "./demodataproviders/demoTreeDataProvider";
 import { ChildDragLayer } from "./draglayers/ChildDragLayer";
 import { ParentDragLayer } from "./draglayers/ParentDragLayer";
 

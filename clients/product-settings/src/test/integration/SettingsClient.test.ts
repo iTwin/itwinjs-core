@@ -2,13 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import * as chai from "chai";
 import { GuidString } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
-import * as chai from "chai";
-import { TestConfig } from "../TestConfig";
+import { SettingsMapResult, SettingsResult, SettingsStatus } from "../../SettingsAdmin";
 import { ConnectSettingsClient } from "../../SettingsClient";
-import { SettingsResult, SettingsStatus, SettingsMapResult } from "../../SettingsAdmin";
+import { TestConfig } from "../TestConfig";
 
 // compare simple arrays
 function arraysEqual(array1: any, array2: any) {

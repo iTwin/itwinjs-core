@@ -7,8 +7,8 @@
  */
 
 import { ColorDef } from "./ColorDef";
-import { LinePixels } from "./LinePixels";
 import { Gradient } from "./Gradient";
+import { LinePixels } from "./LinePixels";
 import { RenderMaterial } from "./RenderMaterial";
 
 /** Flags indicating whether and how the interiors of closed planar regions is displayed within a view.

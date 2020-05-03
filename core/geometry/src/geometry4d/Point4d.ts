@@ -6,12 +6,12 @@
 /** @packageDocumentation
  * @module Numerics
  */
-import { Geometry, BeJSONFunctions } from "../Geometry";
-import { XYAndZ } from "../geometry3d/XYZProps";
+import { BeJSONFunctions, Geometry } from "../Geometry";
+import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
+import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Ray3d } from "../geometry3d/Ray3d";
-import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
-import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
+import { XYAndZ } from "../geometry3d/XYZProps";
 
 /**
  * 4d point packed in an array of 4 numbers.

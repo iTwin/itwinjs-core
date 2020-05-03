@@ -6,12 +6,12 @@
  * @module ToolSettings
  */
 
-import * as React from "react";
-import { DockedToolSettings, DockedToolSetting, ScrollableWidgetContent, ToolSettingsStateContext } from "@bentley/ui-ninezone";
-import { FrontstageManager } from "../frontstage/FrontstageManager";
-import { useActiveFrontstageDef } from "../frontstage/Frontstage";
-import { FrameworkVersionSwitch } from "../hooks/useFrameworkVersion";
 import "./ToolSettings.scss";
+import * as React from "react";
+import { DockedToolSetting, DockedToolSettings, ScrollableWidgetContent, ToolSettingsStateContext } from "@bentley/ui-ninezone";
+import { useActiveFrontstageDef } from "../frontstage/Frontstage";
+import { FrontstageManager } from "../frontstage/FrontstageManager";
+import { FrameworkVersionSwitch } from "../hooks/useFrameworkVersion";
 
 /** Defines a ToolSettings property entry.
  * @beta

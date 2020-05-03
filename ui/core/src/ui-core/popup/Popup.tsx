@@ -6,17 +6,14 @@
  * @module Popup
  */
 
+import "./Popup.scss";
+import classnames from "classnames";
 // cSpell:ignore focustrap focusable
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import classnames from "classnames";
-
 import { RelativePosition } from "@bentley/ui-abstract";
-
-import { CommonProps } from "../utils/Props";
 import { FocusTrap } from "../focustrap/FocusTrap";
-
-import "./Popup.scss";
+import { CommonProps } from "../utils/Props";
 
 /** @internal */
 interface PopupPoint {

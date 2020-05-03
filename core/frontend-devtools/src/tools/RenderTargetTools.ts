@@ -7,13 +7,7 @@
  * @module Tools
  */
 
-import {
-  IModelApp,
-  PrimitiveVisibility,
-  RenderTargetDebugControl,
-  ScreenViewport,
-  Tool,
-} from "@bentley/imodeljs-frontend";
+import { IModelApp, PrimitiveVisibility, RenderTargetDebugControl, ScreenViewport, Tool } from "@bentley/imodeljs-frontend";
 
 /** Executes some code against a RenderTargetDebugControl obtained from the selected viewport.
  * @beta

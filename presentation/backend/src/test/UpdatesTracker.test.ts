@@ -3,14 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import * as sinon from "sinon";
 import * as lolex from "lolex";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
+import * as sinon from "sinon";
 import { using } from "@bentley/bentleyjs-core";
 import { EventSink } from "@bentley/imodeljs-backend";
-import { UpdateInfoJSON, PresentationRpcInterface, PresentationRpcEvents } from "@bentley/presentation-common";
-import { UpdatesTracker } from "../presentation-backend/UpdatesTracker";
+import { PresentationRpcEvents, PresentationRpcInterface, UpdateInfoJSON } from "@bentley/presentation-common";
+import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { NativePlatformDefinition } from "../presentation-backend/NativePlatform";
+import { UpdatesTracker } from "../presentation-backend/UpdatesTracker";
 
 describe("UpdatesTracker", () => {
 

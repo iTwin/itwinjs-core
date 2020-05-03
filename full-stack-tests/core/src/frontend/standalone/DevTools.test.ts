@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { assert } from "chai";
 import { LogLevel } from "@bentley/bentleyjs-core";
 import { DevToolsStatsOptions, IModelRpcProps } from "@bentley/imodeljs-common";
 import { DevTools, IModelApp, PingTestResult } from "@bentley/imodeljs-frontend";
 import { EventSourceManager } from "@bentley/imodeljs-frontend/lib/EventSource";
-import { assert } from "chai";
 
 describe("DevTools", () => {
   let devTools: DevTools;

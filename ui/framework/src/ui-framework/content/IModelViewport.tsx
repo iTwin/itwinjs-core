@@ -8,17 +8,17 @@
 
 import * as React from "react";
 import { Id64String } from "@bentley/bentleyjs-core";
-import { ViewportComponent } from "@bentley/ui-components";
+import { IModelConnection, ScreenViewport, ViewState } from "@bentley/imodeljs-frontend";
 import { viewWithUnifiedSelection } from "@bentley/presentation-components";
+import { ViewportComponent } from "@bentley/ui-components";
 import { FillCentered } from "@bentley/ui-core";
-import { ScreenViewport, ViewState, IModelConnection } from "@bentley/imodeljs-frontend";
+import { FrontstageManager } from "../../ui-framework";
 import { ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";
 import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
-import { ViewportContentControl } from "./ViewportContentControl";
-import { DefaultViewOverlay } from "./DefaultViewOverlay";
-import { UiFramework } from "../UiFramework";
 import { connectIModelConnectionAndViewState } from "../redux/connectIModel";
-import { FrontstageManager } from "../../ui-framework";
+import { UiFramework } from "../UiFramework";
+import { DefaultViewOverlay } from "./DefaultViewOverlay";
+import { ViewportContentControl } from "./ViewportContentControl";
 
 // create a HOC viewport component that supports unified selection
 // tslint:disable-next-line:variable-name

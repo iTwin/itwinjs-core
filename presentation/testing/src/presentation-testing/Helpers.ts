@@ -9,23 +9,16 @@ import * as path from "path";
 import * as rimraf from "rimraf";
 // common includes
 import { Guid } from "@bentley/bentleyjs-core";
-import { PresentationRpcInterface } from "@bentley/presentation-common";
 // backend includes
 import { IModelHost, KnownLocations } from "@bentley/imodeljs-backend";
-import { Presentation as PresentationBackend, PresentationManagerProps as PresentationBackendProps } from "@bentley/presentation-backend";
 // frontend includes
 import {
-  SnapshotIModelRpcInterface,
-  IModelReadRpcInterface,
-  RpcConfiguration,
-  RpcInterfaceDefinition,
-  RpcDefaultConfiguration,
+  IModelReadRpcInterface, RpcConfiguration, RpcDefaultConfiguration, RpcInterfaceDefinition, SnapshotIModelRpcInterface,
 } from "@bentley/imodeljs-common";
-import { NoRenderApp, IModelApp, IModelAppOptions } from "@bentley/imodeljs-frontend";
-import {
-  Presentation as PresentationFrontend,
-  PresentationManagerProps as PresentationFrontendProps,
-} from "@bentley/presentation-frontend";
+import { IModelApp, IModelAppOptions, NoRenderApp } from "@bentley/imodeljs-frontend";
+import { Presentation as PresentationBackend, PresentationManagerProps as PresentationBackendProps } from "@bentley/presentation-backend";
+import { PresentationRpcInterface } from "@bentley/presentation-common";
+import { Presentation as PresentationFrontend, PresentationManagerProps as PresentationFrontendProps } from "@bentley/presentation-frontend";
 
 function initializeRpcInterfaces(interfaces: RpcInterfaceDefinition[]) {
   const config = class extends RpcDefaultConfiguration {

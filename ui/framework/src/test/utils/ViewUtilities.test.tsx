@@ -4,11 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 // cSpell:ignore typemoq
 import { expect } from "chai";
-import TestUtils from "../TestUtils";
 import * as moq from "typemoq";
-
+import { DrawingViewState, OrthographicViewState, ScreenViewport, SheetViewState, SpatialViewState } from "@bentley/imodeljs-frontend";
 import { ViewUtilities } from "../../ui-framework";
-import { ScreenViewport, OrthographicViewState, SpatialViewState, DrawingViewState, SheetViewState } from "@bentley/imodeljs-frontend";
+import TestUtils from "../TestUtils";
 
 describe("ViewUtilities", () => {
   before(async () => {

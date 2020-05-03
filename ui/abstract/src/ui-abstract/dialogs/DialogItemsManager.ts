@@ -6,10 +6,10 @@
  * @module Dialog
  */
 
-import { BaseDialogItem, DialogItem, DialogPropertySyncItem } from "./DialogItem";
 import { PropertyEditorParams, PropertyEditorParamTypes, SuppressLabelEditorParams } from "../properties/EditorParams";
 import { PropertyRecord } from "../properties/Record";
-import { PropertyValueFormat, PrimitiveValue } from "../properties/Value";
+import { PrimitiveValue, PropertyValueFormat } from "../properties/Value";
+import { BaseDialogItem, DialogItem, DialogPropertySyncItem } from "./DialogItem";
 import { UiDataProvider } from "./UiDataProvider";
 
 /** [[DialogRow]] is the interface that groups dialog items into rows for building UI

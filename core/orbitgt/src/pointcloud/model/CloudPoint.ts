@@ -14,13 +14,12 @@ type int32 = number;
 type float32 = number;
 type float64 = number;
 
-import { AttributeValue } from "./AttributeValue";
-import { PointAttribute } from "./PointAttribute";
-
 import { Coordinate } from "../../spatial/geom/Coordinate";
 import { ALong } from "../../system/runtime/ALong";
 import { Message } from "../../system/runtime/Message";
 import { Numbers } from "../../system/runtime/Numbers";
+import { AttributeValue } from "./AttributeValue";
+import { PointAttribute } from "./PointAttribute";
 
 /**
  * Class CloudPoint defines a point in the point cloud.

@@ -7,21 +7,19 @@
  */
 
 import * as React from "react";
-
-import { UiError, BadgeType, StringGetter, WidgetState, AbstractWidgetProps, ConditionalStringValue } from "@bentley/ui-abstract";
+import { AbstractWidgetProps, BadgeType, ConditionalStringValue, StringGetter, UiError, WidgetState } from "@bentley/ui-abstract";
 import { UiEvent } from "@bentley/ui-core";
 import { Direction } from "@bentley/ui-ninezone";
-
-import { UiFramework } from "../UiFramework";
-import { WidgetProps } from "./WidgetProps";
+import { ConfigurableCreateInfo, ConfigurableUiControlConstructor, ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";
 import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
-import { WidgetControl } from "./WidgetControl";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
-import { ConfigurableUiControlType, ConfigurableUiControlConstructor, ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";
 import { CommandItemDef } from "../shared/CommandItemDef";
-import { SyncUiEventDispatcher, SyncUiEventArgs } from "../syncui/SyncUiEventDispatcher";
 import { ItemList } from "../shared/ItemMap";
+import { SyncUiEventArgs, SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
+import { UiFramework } from "../UiFramework";
 import { PropsHelper } from "../utils/PropsHelper";
+import { WidgetControl } from "./WidgetControl";
+import { WidgetProps } from "./WidgetProps";
 
 /** Widget State Changed Event Args interface.
  * @public

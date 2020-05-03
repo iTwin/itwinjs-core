@@ -3,36 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { Geometry, Point3d, Vector3d, YawPitchRollAngles, Range3d, Angle, Matrix3d, DeepCompare } from "@bentley/geometry-core";
+import { Angle, DeepCompare, Geometry, Matrix3d, Point3d, Range3d, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import {
-  AmbientOcclusion,
-  BackgroundMapSettings,
-  BackgroundMapType,
-  ColorDef,
-  HiddenLine,
-  RenderMode,
-  SpatialViewDefinitionProps,
-  ViewDefinitionProps,
+  AmbientOcclusion, BackgroundMapSettings, BackgroundMapType, ColorDef, HiddenLine, RenderMode, SpatialViewDefinitionProps, ViewDefinitionProps,
 } from "@bentley/imodeljs-common";
 import {
-  AuxCoordSystemSpatialState,
-  CategorySelectorState,
-  DisplayStyle3dState,
-  DrawingModelState,
-  DrawingViewState,
-  IModelConnection,
-  MarginPercent,
-  MockRender,
-  ModelSelectorState,
-  SheetModelState,
-  SheetViewState,
-  SpatialModelState,
-  SpatialViewState,
-  StandardView,
-  StandardViewId,
-  ViewState3d,
-  ViewStatus,
-  SnapshotConnection,
+  AuxCoordSystemSpatialState, CategorySelectorState, DisplayStyle3dState, DrawingModelState, DrawingViewState, IModelConnection, MarginPercent,
+  MockRender, ModelSelectorState, SheetModelState, SheetViewState, SnapshotConnection, SpatialModelState, SpatialViewState, StandardView,
+  StandardViewId, ViewState3d, ViewStatus,
 } from "@bentley/imodeljs-frontend";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
 

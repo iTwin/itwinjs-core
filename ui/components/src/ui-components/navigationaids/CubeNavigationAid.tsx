@@ -6,17 +6,14 @@
  * @module NavigationAids
  */
 
-import * as React from "react";
+import "./CubeNavigationAid.scss";
 import classnames from "classnames";
-
-import { Geometry, Angle, AxisIndex, Matrix3d, Point2d, Vector2d, Vector3d, XYAndZ, AxisOrder } from "@bentley/geometry-core";
+import * as React from "react";
+import { Angle, AxisIndex, AxisOrder, Geometry, Matrix3d, Point2d, Vector2d, Vector3d, XYAndZ } from "@bentley/geometry-core";
 import { IModelConnection, Viewport } from "@bentley/imodeljs-frontend";
-import { Cube, Face, CommonProps } from "@bentley/ui-core";
-
+import { CommonProps, Cube, Face } from "@bentley/ui-core";
 import { UiComponents } from "../UiComponents";
 import { ViewportComponentEvents, ViewRotationChangeEventArgs } from "../viewport/ViewportComponentEvents";
-
-import "./CubeNavigationAid.scss";
 
 /** @internal */
 export enum HitBoxX {

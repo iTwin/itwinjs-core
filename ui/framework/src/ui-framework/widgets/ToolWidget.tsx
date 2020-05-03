@@ -7,15 +7,13 @@
  */
 
 import * as React from "react";
-
 import { CommonProps, Icon } from "@bentley/ui-core";
-import { AppButton, Tools as NZ_ToolsWidget, Direction } from "@bentley/ui-ninezone";
-
-import { ToolWidgetProps, WidgetType } from "./WidgetDef";
-import { ToolbarWidgetDefBase } from "./ToolbarWidgetBase";
-import { CommandItemDef } from "../shared/CommandItemDef";
+import { AppButton, Direction, Tools as NZ_ToolsWidget } from "@bentley/ui-ninezone";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
+import { CommandItemDef } from "../shared/CommandItemDef";
 import { UiShowHideManager } from "../utils/UiShowHideManager";
+import { ToolbarWidgetDefBase } from "./ToolbarWidgetBase";
+import { ToolWidgetProps, WidgetType } from "./WidgetDef";
 
 /** Definition of a Tool Widget normally displayed in the top left zone in the 9-Zone Layout system.
  *  @public @deprecated use ToolWidgetComposer instead

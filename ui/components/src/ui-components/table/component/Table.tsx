@@ -6,46 +6,38 @@
  * @module Table
  */
 
+import "./Table.scss";
+import "../columnfiltering/ColumnFiltering.scss";
+import classnames from "classnames";
 import { memoize } from "lodash";
 import * as React from "react";
 import ReactResizeDetector from "react-resize-detector";
-import classnames from "classnames";
+import { DisposableList, Guid, GuidString } from "@bentley/bentleyjs-core";
+import { PrimitiveValue, PropertyValueFormat } from "@bentley/ui-abstract";
+import { CommonProps, Dialog, LocalUiSettings, SortDirection, UiSettings, UiSettingsStatus } from "@bentley/ui-core";
+import {
+  MultiSelectionHandler, OnItemsDeselectedCallback, OnItemsSelectedCallback, SelectionHandler, SingleSelectionHandler,
+} from "../../common/selection/SelectionHandler";
+import { SelectionMode } from "../../common/selection/SelectionModes";
+import { ShowHideMenu } from "../../common/showhide/ShowHideMenu";
+import { TypeConverterManager } from "../../converters/TypeConverterManager";
+import { PropertyUpdatedArgs } from "../../editors/EditorContainer";
+import { TableRowStyleProvider } from "../../properties/ItemStyle";
+import { PropertyDialogState, PropertyValueRendererManager } from "../../properties/ValueRendererManager";
+import { CompositeFilterDescriptorCollection, FilterCompositionLogicalOperator } from "../columnfiltering/ColumnFiltering";
+import { MultiSelectFilter } from "../columnfiltering/data-grid-addons/MultiSelectFilter";
+import { NumericFilter } from "../columnfiltering/data-grid-addons/NumericFilter";
+import { SingleSelectFilter } from "../columnfiltering/data-grid-addons/SingleSelectFilter";
+import { DataGridFilterParser, ReactDataGridFilter } from "../columnfiltering/DataGridFilterParser";
+import { TableFilterDescriptorCollection } from "../columnfiltering/TableFilterDescriptorCollection";
+import { CellItem, ColumnDescription, FilterRenderer, RowItem, TableDataProvider } from "../TableDataProvider";
+import { DragDropHeaderCell } from "./DragDropHeaderCell";
+import { TableCell, TableCellContent, TableIconCellContent } from "./TableCell";
+import { ReactDataGridColumn, TableColumn } from "./TableColumn";
 
 // Matches how react-data-grid is exported
 // https://github.com/Microsoft/TypeScript-Handbook/blob/master/pages/Modules.md#export--and-import--require
 import ReactDataGrid = require("react-data-grid");
-
-import { DisposableList, Guid, GuidString } from "@bentley/bentleyjs-core";
-import { PropertyValueFormat, PrimitiveValue } from "@bentley/ui-abstract";
-import {
-  SortDirection, Dialog,
-  LocalUiSettings, UiSettings, UiSettingsStatus, CommonProps,
-} from "@bentley/ui-core";
-
-import { TableDataProvider, ColumnDescription, RowItem, CellItem, FilterRenderer } from "../TableDataProvider";
-import { SelectionMode } from "../../common/selection/SelectionModes";
-import {
-  SelectionHandler, SingleSelectionHandler, MultiSelectionHandler,
-  OnItemsSelectedCallback, OnItemsDeselectedCallback,
-} from "../../common/selection/SelectionHandler";
-import { PropertyUpdatedArgs } from "../../editors/EditorContainer";
-import { PropertyValueRendererManager, PropertyDialogState } from "../../properties/ValueRendererManager";
-import { TypeConverterManager } from "../../converters/TypeConverterManager";
-import { DragDropHeaderCell } from "./DragDropHeaderCell";
-import { ShowHideMenu } from "../../common/showhide/ShowHideMenu";
-import { TableIconCellContent, TableCellContent, TableCell } from "./TableCell";
-import { TableRowStyleProvider } from "../../properties/ItemStyle";
-
-import { ReactDataGridColumn, TableColumn } from "./TableColumn";
-import { CompositeFilterDescriptorCollection, FilterCompositionLogicalOperator } from "../columnfiltering/ColumnFiltering";
-import { ReactDataGridFilter, DataGridFilterParser } from "../columnfiltering/DataGridFilterParser";
-import { TableFilterDescriptorCollection } from "../columnfiltering/TableFilterDescriptorCollection";
-
-import "./Table.scss";
-import "../columnfiltering/ColumnFiltering.scss";
-import { NumericFilter } from "../columnfiltering/data-grid-addons/NumericFilter";
-import { MultiSelectFilter } from "../columnfiltering/data-grid-addons/MultiSelectFilter";
-import { SingleSelectFilter } from "../columnfiltering/data-grid-addons/SingleSelectFilter";
 
 // cspell:ignore Overscan
 

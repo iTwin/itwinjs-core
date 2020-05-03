@@ -2,15 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-import { shallow, mount } from "enzyme";
-import * as moq from "typemoq";
 import { expect } from "chai";
+import { mount, shallow } from "enzyme";
+import * as React from "react";
 import * as sinon from "sinon";
-
-import TestUtils from "../TestUtils";
+import * as moq from "typemoq";
 import { IModelConnection, MockRender } from "@bentley/imodeljs-frontend";
-import { SheetData, FrontstageManager, SheetsModalFrontstage, CardContainer, CardInfo, SheetCard } from "../../ui-framework";
+import { CardContainer, CardInfo, FrontstageManager, SheetCard, SheetData, SheetsModalFrontstage } from "../../ui-framework";
+import TestUtils from "../TestUtils";
 
 describe("SheetsModalFrontstage", () => {
 

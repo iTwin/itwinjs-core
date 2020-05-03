@@ -6,18 +6,16 @@
  * @module Toolbar
  */
 
+import "./Items.scss";
 import classnames from "classnames";
 import * as React from "react";
 import {
-  CommonProps, useProximityToMouse,
-  calculateBoxShadowOpacity, calculateProximityScale, calculateToolbarOpacity, calculateBackdropFilterBlur,
-  getToolbarBackgroundColor, getToolbarBoxShadow, getToolbarBackdropFilter,
-  TOOLBAR_OPACITY_DEFAULT, TOOLBAR_BOX_SHADOW_OPACITY_DEFAULT, TOOLBAR_BACKDROP_FILTER_BLUR_DEFAULT,
+  calculateBackdropFilterBlur, calculateBoxShadowOpacity, calculateProximityScale, calculateToolbarOpacity, CommonProps, getToolbarBackdropFilter,
+  getToolbarBackgroundColor, getToolbarBoxShadow, TOOLBAR_BACKDROP_FILTER_BLUR_DEFAULT, TOOLBAR_BOX_SHADOW_OPACITY_DEFAULT, TOOLBAR_OPACITY_DEFAULT,
+  useProximityToMouse,
 } from "@bentley/ui-core";
-
-import { OrthogonalDirectionHelpers, OrthogonalDirection } from "./utilities/Direction";
 import { useToolbarWithOverflowDirectionContext } from "./Toolbar";
-import "./Items.scss";
+import { OrthogonalDirection, OrthogonalDirectionHelpers } from "./utilities/Direction";
 
 /** Properties of [[ToolbarItems]] component.
  * @internal

@@ -2,13 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Guid, GuidString, IModelHubStatus } from "@bentley/bentleyjs-core";
-import { HubIModel, IModelClient, IModelHubClient, IModelHubClientError, IModelHubError, IModelQuery, InitializationState, SeedFile } from "@bentley/imodelhub-client";
-import { AccessToken, AuthorizedClientRequestContext, RequestGlobalOptions, RequestTimeoutOptions, WsgError } from "@bentley/itwin-client";
-import { TestUsers } from "@bentley/oidc-signin-tool";
 import * as chai from "chai";
 import * as fs from "fs";
 import * as path from "path";
+import { Guid, GuidString, IModelHubStatus } from "@bentley/bentleyjs-core";
+import {
+  HubIModel, IModelClient, IModelHubClient, IModelHubClientError, IModelHubError, IModelQuery, InitializationState, SeedFile,
+} from "@bentley/imodelhub-client";
+import { AccessToken, AuthorizedClientRequestContext, RequestGlobalOptions, RequestTimeoutOptions, WsgError } from "@bentley/itwin-client";
+import { TestUsers } from "@bentley/oidc-signin-tool";
 import { RequestType, ResponseBuilder, ScopeType } from "../ResponseBuilder";
 import { TestConfig } from "../TestConfig";
 import * as utils from "./TestUtils";

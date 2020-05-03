@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-// import { IModelApp } from "@bentley/imodeljs-frontend";
-import { Dialog, Form, FieldDefinitions, FieldValues } from "@bentley/ui-core";
-import { IModelApp, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
-import { ModalDialogManager } from "@bentley/ui-framework";
 import * as React from "react";
+import { IModelApp, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
+// import { IModelApp } from "@bentley/imodeljs-frontend";
+import { Dialog, FieldDefinitions, FieldValues, Form } from "@bentley/ui-core";
+import { ModalDialogManager } from "@bentley/ui-framework";
 
 export class ExampleForm extends React.Component {
   private _title = "Example Form"; // IModelApp.i18n.translate("RiskManagementPlugin:config.title");

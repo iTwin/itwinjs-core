@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Tool, IModelApp, OutputMessagePriority, NotifyMessageDetails } from "@bentley/imodeljs-frontend";
+import { IModelApp, NotifyMessageDetails, OutputMessagePriority, Tool } from "@bentley/imodeljs-frontend";
 import { copyStringToClipboard } from "../ClipboardUtilities";
 
 /** @packageDocumentation

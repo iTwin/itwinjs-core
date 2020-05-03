@@ -5,8 +5,8 @@
 
 /* tslint:disable: no-console */
 
-import { Point3d } from "../geometry3d/Point3dVector3d";
 import { assert } from "chai";
+import { Point3d } from "../geometry3d/Point3dVector3d";
 
 // console.log("=========================");
 // console.log("Standalone Output");

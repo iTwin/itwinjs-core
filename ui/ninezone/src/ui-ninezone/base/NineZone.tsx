@@ -8,11 +8,13 @@
 
 import * as React from "react";
 import { v4 } from "uuid";
-import { NineZoneState, TabsState, WidgetsState, PanelsState, FloatingWidgetsState, NineZoneActionTypes, DraggedTabState, ToolSettingsState } from "./NineZoneState";
 import { CursorType } from "../widget-panels/CursorOverlay";
-import { DragProvider, DraggedWidgetContext, DraggedResizeHandleContext, DraggedPanelSideContext } from "./DragManager";
 import { PanelSide } from "../widget-panels/Panel";
 import { WidgetContentManager } from "../widget/ContentManager";
+import { DraggedPanelSideContext, DraggedResizeHandleContext, DraggedWidgetContext, DragProvider } from "./DragManager";
+import {
+  DraggedTabState, FloatingWidgetsState, NineZoneActionTypes, NineZoneState, PanelsState, TabsState, ToolSettingsState, WidgetsState,
+} from "./NineZoneState";
 
 /** @internal future */
 export type NineZoneDispatch = (action: NineZoneActionTypes) => void;

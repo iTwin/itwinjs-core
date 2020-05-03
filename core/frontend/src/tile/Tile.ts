@@ -6,45 +6,18 @@
  * @module Tiles
  */
 
-import {
-  assert,
-  dispose,
-} from "@bentley/bentleyjs-core";
-import {
-  Arc3d,
-  ClipPlaneContainment,
-  Matrix4d,
-  Point2d,
-  Point3d,
-  Point4d,
-  Range3d,
-  Transform,
-  Vector3d,
-} from "@bentley/geometry-core";
-import {
-  BoundingSphere,
-  ColorDef,
-  ElementAlignedBox3d,
-  Frustum,
-  FrustumPlanes,
-} from "@bentley/imodeljs-common";
+import { assert, dispose } from "@bentley/bentleyjs-core";
+import { Arc3d, ClipPlaneContainment, Matrix4d, Point2d, Point3d, Point4d, Range3d, Transform, Vector3d } from "@bentley/geometry-core";
+import { BoundingSphere, ColorDef, ElementAlignedBox3d, Frustum, FrustumPlanes } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
+import { GraphicBuilder } from "../render/GraphicBuilder";
 import { RenderGraphic } from "../render/RenderGraphic";
 import { RenderMemory } from "../render/RenderMemory";
 import { RenderSystem } from "../render/RenderSystem";
-import { GraphicBuilder } from "../render/GraphicBuilder";
-import { Viewport } from "../Viewport";
 import { SceneContext } from "../ViewContext";
-import {
-  TileContent,
-  TileDrawArgs,
-  TileParams,
-  TileRequest,
-  TileTree,
-  TileTreeLoadStatus,
-  TileUsageMarker,
-} from "./internal";
+import { Viewport } from "../Viewport";
+import { TileContent, TileDrawArgs, TileParams, TileRequest, TileTree, TileTreeLoadStatus, TileUsageMarker } from "./internal";
 
 // cSpell:ignore undisplayable bitfield
 

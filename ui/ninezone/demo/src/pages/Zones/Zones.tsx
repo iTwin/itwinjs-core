@@ -3,28 +3,28 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import "@bentley/icons-generic-webfont/dist/bentley-icons-generic-webfont.css";
+import "./Zones.scss";
 import * as React from "react";
-import { GroupButton, ActionButton } from "@bentley/ui-abstract";
+import { ActionButton, GroupButton } from "@bentley/ui-abstract";
+import { ToolbarItem, ToolbarWithOverflow } from "@bentley/ui-components";
 import { Point } from "@bentley/ui-core";
-import { ToolbarWithOverflow, ToolbarItem } from "@bentley/ui-components";
-import ToolSettings from "./ToolSettings";
-import { ToolSettingProps } from "./ToolSetting";
+import { assert } from "@src/base/assert";
+import { NineZoneDispatchContext, NineZoneProvider } from "@src/base/NineZone";
+import {
+  addPanelWidget, addTab, createNineZoneState, NineZoneStateReducer, PANEL_TOGGLE_COLLAPSED, PANEL_TOGGLE_PINNED, PANEL_TOGGLE_SPAN,
+} from "@src/base/NineZoneState";
+import { Footer } from "@src/footer/Footer";
+import { ToolbarPanelAlignment } from "@src/toolbar/Toolbar";
+import { Direction } from "@src/utilities/Direction";
+import { isHorizontalPanelSide, PanelPinnedContext, PanelSideContext, PanelSpanContext } from "@src/widget-panels/Panel";
 import { WidgetPanels } from "@src/widget-panels/Panels";
+import { TabIdContext, useTransientState } from "@src/widget/ContentRenderer";
+import { FloatingWidgets } from "@src/widget/FloatingWidgets";
+import { NavigationArea } from "@src/widget/NavigationArea";
 import { AppButton } from "@src/widget/tools/button/App";
 import { ToolsArea } from "@src/widget/ToolsArea";
-import { NavigationArea } from "@src/widget/NavigationArea";
-import { FloatingWidgets } from "@src/widget/FloatingWidgets";
-import { Direction } from "@src/utilities/Direction";
-import { ToolbarPanelAlignment } from "@src/toolbar/Toolbar";
-import { NineZoneProvider, NineZoneDispatchContext } from "@src/base/NineZone";
-import {
-  NineZoneStateReducer, createNineZoneState, addPanelWidget, addTab, PANEL_TOGGLE_PINNED, PANEL_TOGGLE_SPAN, PANEL_TOGGLE_COLLAPSED,
-} from "@src/base/NineZoneState";
-import { PanelSideContext, PanelPinnedContext, PanelSpanContext, isHorizontalPanelSide } from "@src/widget-panels/Panel";
-import { assert } from "@src/base/assert";
-import { TabIdContext, useTransientState } from "@src/widget/ContentRenderer";
-import { Footer } from "@src/footer/Footer";
-import "./Zones.scss";
+import { ToolSettingProps } from "./ToolSetting";
+import ToolSettings from "./ToolSettings";
 
 let id = 0;
 const getId = () => {

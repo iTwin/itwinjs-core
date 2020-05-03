@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-import classnames from "classnames";
-import { CommonProps } from "@bentley/ui-core";
 import "./InlineEdit.scss";
+import classnames from "classnames";
+import * as React from "react";
+import { CommonProps } from "@bentley/ui-core";
 
 interface InlineEditProps extends CommonProps {
   defaultValue: string;

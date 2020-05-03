@@ -6,14 +6,14 @@
  * @module ToolSettings
  */
 
+import "./Docked.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps, useRefs, useResizeObserver, useOnOutsideClick } from "@bentley/ui-core";
+import { CommonProps, useOnOutsideClick, useRefs, useResizeObserver } from "@bentley/ui-core";
+import { assert } from "../base/assert";
+import { DockedToolSettingsHandle } from "./Handle";
 import { DockedToolSettingsOverflow } from "./Overflow";
 import { ToolSettingsOverflowPanel } from "./Panel";
-import { DockedToolSettingsHandle } from "./Handle";
-import { assert } from "../base/assert";
-import "./Docked.scss";
 
 /** @internal */
 export function onOverflowLabelAndEditorResize() {

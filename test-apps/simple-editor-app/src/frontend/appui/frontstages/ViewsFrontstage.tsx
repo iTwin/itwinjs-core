@@ -3,64 +3,27 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-
-import {
-  IModelConnection,
-  IModelApp,
-  ViewState,
-} from "@bentley/imodeljs-frontend";
-
-import {
-  ToolbarItemUtilities,
-  CommonToolbarItem, StagePanelLocation, ConditionalBooleanValue,
-} from "@bentley/ui-abstract";
-
+import { IModelApp, IModelConnection, ViewState } from "@bentley/imodeljs-frontend";
 import { NodeKey } from "@bentley/presentation-common";
-
+import { CommonToolbarItem, ConditionalBooleanValue, StagePanelLocation, ToolbarItemUtilities } from "@bentley/ui-abstract";
+// SVG Support - SvgPath or SvgSprite
+// import { SvgPath } from "@bentley/ui-core";
+import { SelectionMode } from "@bentley/ui-components";
 import {
-  FrontstageProvider,
-  ZoneState,
-  ContentLayoutDef,
-  ContentLayoutProps,
-  ContentGroup,
-  ContentProps,
-  IModelConnectedViewSelector,
-  Frontstage,
-  Zone,
-  Widget,
-  CoreTools,
-  WidgetState,
-  StagePanel,
-  CustomItemDef,
-  VisibilityWidget,
-  VisibilityComponentHierarchy,
-  ZoneLocation,
-  StagePanelHeader,
-  StagePanelState,
-  BasicToolWidget,
-  BasicNavigationWidget,
-  ToolbarHelper,
-  ModelsTreeNodeType,
+  BasicNavigationWidget, BasicToolWidget, ContentGroup, ContentLayoutDef, ContentLayoutProps, ContentProps, CoreTools, CustomItemDef, Frontstage,
+  FrontstageProvider, IModelConnectedViewSelector, ModelsTreeNodeType, StagePanel, StagePanelHeader, StagePanelState, ToolbarHelper,
+  VisibilityComponentHierarchy, VisibilityWidget, Widget, WidgetState, Zone, ZoneLocation, ZoneState,
 } from "@bentley/ui-framework";
-
-import { AppUi } from "../AppUi";
-import { AppTools } from "../../tools/ToolSpecifications";
-
 import { SampleAppIModelApp, SampleAppUiActionId } from "../../../frontend/index";
-
+import { AppTools } from "../../tools/ToolSpecifications";
+import { AppUi } from "../AppUi";
 // cSpell:Ignore contentviews statusbars
 import { IModelViewportControl } from "../contentviews/IModelViewport";
 import { AppStatusBarWidgetControl } from "../statusbars/AppStatusBar";
+import { ActiveSettingsWidget } from "../widgets/ActiveSettingsWidget";
+import { ModelCreationWidget } from "../widgets/ModelCreationWidget";
 import { NavigationTreeWidgetControl } from "../widgets/NavigationTreeWidget";
 import { VisibilityTreeWidgetControl } from "../widgets/VisibilityTreeWidget";
-
-import { ActiveSettingsWidget } from "../widgets/ActiveSettingsWidget";
-
-// SVG Support - SvgPath or SvgSprite
-// import { SvgPath } from "@bentley/ui-core";
-
-import { SelectionMode } from "@bentley/ui-components";
-import { ModelCreationWidget } from "../widgets/ModelCreationWidget";
 
 export class ViewsFrontstage extends FrontstageProvider {
   private _additionalTools = new AdditionalTools();

@@ -6,21 +6,21 @@
  * @module CartesianGeometry
  */
 
-import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
-import { Range1d, Range3d } from "../geometry3d/Range";
+import { Arc3d } from "../curve/Arc3d";
+import { AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive, CurvePrimitive } from "../curve/CurvePrimitive";
+import { GeometryQuery } from "../curve/GeometryQuery";
+import { LineString3d } from "../curve/LineString3d";
+import { Loop } from "../curve/Loop";
+import { Geometry } from "../Geometry";
 import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
-import { Arc3d } from "../curve/Arc3d";
-import { UnionOfConvexClipPlaneSets } from "./UnionOfConvexClipPlaneSets";
-import { CurvePrimitive, AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive";
-import { ClipPrimitive } from "./ClipPrimitive";
-import { ConvexClipPlaneSet } from "./ConvexClipPlaneSet";
-import { Loop } from "../curve/Loop";
-import { LineString3d } from "../curve/LineString3d";
-import { GeometryQuery } from "../curve/GeometryQuery";
-import { ClipVector } from "./ClipVector";
-import { Geometry } from "../Geometry";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
+import { Range1d, Range3d } from "../geometry3d/Range";
 import { ClipPlane } from "./ClipPlane";
+import { ClipPrimitive } from "./ClipPrimitive";
+import { ClipVector } from "./ClipVector";
+import { ConvexClipPlaneSet } from "./ConvexClipPlaneSet";
+import { UnionOfConvexClipPlaneSets } from "./UnionOfConvexClipPlaneSets";
 
 /** Enumerated type for describing where geometry lies with respect to clipping planes.
  * @public

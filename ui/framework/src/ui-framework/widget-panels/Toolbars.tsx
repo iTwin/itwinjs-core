@@ -6,9 +6,9 @@
  * @module Item
  */
 
+import "./Toolbars.scss";
 import * as React from "react";
 import { useActiveFrontstageDef } from "../frontstage/Frontstage";
-import "./Toolbars.scss";
 
 /** @internal */
 export function WidgetPanelsToolbars() {

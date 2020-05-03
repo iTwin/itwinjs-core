@@ -6,8 +6,8 @@
  * @module WebGL
  */
 
-import { CompositeFlags } from "./RenderFlags";
 import { assert } from "@bentley/bentleyjs-core";
+import { CompositeFlags } from "./RenderFlags";
 
 // tslint:disable:no-const-enum
 

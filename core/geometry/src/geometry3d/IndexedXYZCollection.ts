@@ -8,10 +8,10 @@
  */
 
 // import { Point2d } from "./Geometry2d";
-/* tslint:disable:variable-name jsdoc-format no-empty */
-import { XYAndZ } from "./XYZProps";
 import { Point3d, Vector3d } from "./Point3dVector3d";
 import { Range3d } from "./Range";
+/* tslint:disable:variable-name jsdoc-format no-empty */
+import { XYAndZ } from "./XYZProps";
 
 class PointsIterator implements Iterator<Point3d>, Iterable<Point3d> {
   private readonly _collection: IndexedXYZCollection;

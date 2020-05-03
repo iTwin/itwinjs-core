@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Surface } from "./Surface";
 import { IModelApp } from "@bentley/imodeljs-frontend";
+import { Surface } from "./Surface";
 
 class DragState {
   private _newX = 0;

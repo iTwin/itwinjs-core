@@ -2,19 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { expect } from "chai";
-import { render, cleanup, fireEvent, wait } from "@testing-library/react";
-
-import { Vector3d, Matrix3d, AxisIndex, Transform } from "@bentley/geometry-core";
-import { IModelConnection, DrawingViewState, ScreenViewport } from "@bentley/imodeljs-frontend";
+import { AxisIndex, Matrix3d, Transform, Vector3d } from "@bentley/geometry-core";
+import { DrawingViewState, IModelConnection, ScreenViewport } from "@bentley/imodeljs-frontend";
 import { Face } from "@bentley/ui-core";
-
-import TestUtils from "../TestUtils";
-import { CubeNavigationAid, NavCubeFace, HitBoxX, HitBoxY, HitBoxZ, FaceCell, CubeHover } from "../../ui-components/navigationaids/CubeNavigationAid";
+import { cleanup, fireEvent, render, wait } from "@testing-library/react";
+import { CubeHover, CubeNavigationAid, FaceCell, HitBoxX, HitBoxY, HitBoxZ, NavCubeFace } from "../../ui-components/navigationaids/CubeNavigationAid";
 import { ViewportComponentEvents } from "../../ui-components/viewport/ViewportComponentEvents";
+import TestUtils from "../TestUtils";
 
 describe("CubeNavigationAid", () => {
 

@@ -14,18 +14,17 @@ type int32 = number;
 type float32 = number;
 type float64 = number;
 
-import { AViewRequest } from "./AViewRequest";
-
 import { Bounds } from "../../spatial/geom/Bounds";
+import { AList } from "../../system/collection/AList";
+import { Message } from "../../system/runtime/Message";
 import { BlockIndex } from "../model/BlockIndex";
 import { GridIndex } from "../model/GridIndex";
 import { PointData } from "../model/PointData";
 import { TileIndex } from "../model/TileIndex";
+import { AViewRequest } from "./AViewRequest";
 import { Block } from "./Block";
 import { DataManager } from "./DataManager";
 import { Level } from "./Level";
-import { AList } from "../../system/collection/AList";
-import { Message } from "../../system/runtime/Message";
 
 /**
  * Class TileSpatialIndex manages a spatial index of levels, blocks and tiles in pointcloud. The index does not store data, only block and tile indexes.

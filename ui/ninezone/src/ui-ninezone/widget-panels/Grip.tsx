@@ -6,15 +6,15 @@
  * @module WidgetPanels
  */
 
+import "./Grip.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { Point, Rectangle, Timer } from "@bentley/ui-core";
-import { PanelSide, isHorizontalPanelSide, PanelStateContext } from "./Panel";
-import { NineZoneDispatchContext } from "../base/NineZone";
-import { PANEL_TOGGLE_COLLAPSED, PANEL_RESIZE } from "../base/NineZoneState";
 import { assert } from "../base/assert";
 import { useDragPanelGrip, UseDragPanelGripArgs } from "../base/DragManager";
-import "./Grip.scss";
+import { NineZoneDispatchContext } from "../base/NineZone";
+import { PANEL_RESIZE, PANEL_TOGGLE_COLLAPSED } from "../base/NineZoneState";
+import { isHorizontalPanelSide, PanelSide, PanelStateContext } from "./Panel";
 
 /** Resize grip of [[WidgetPanel]] component.
  * @internal

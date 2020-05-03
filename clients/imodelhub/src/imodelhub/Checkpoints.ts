@@ -6,9 +6,11 @@
  * @module iModelHubClient
  */
 
-import { GuidString, Logger, PerfLogger } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext, CancelRequest, ECJsonTypeMap, FileHandler, ProgressCallback, WsgInstance, WsgQuery } from "@bentley/itwin-client";
 import * as urllib from "url";
+import { GuidString, Logger, PerfLogger } from "@bentley/bentleyjs-core";
+import {
+  AuthorizedClientRequestContext, CancelRequest, ECJsonTypeMap, FileHandler, ProgressCallback, WsgInstance, WsgQuery,
+} from "@bentley/itwin-client";
 import { IModelHubClientLoggerCategory } from "../IModelHubClientLoggerCategories";
 import { IModelBaseHandler } from "./BaseHandler";
 import { ArgumentCheck, IModelHubClientError } from "./Errors";

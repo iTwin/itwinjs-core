@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-
 import { DelayedPromiseWithProps, ECClassModifier, RelationshipClass, SchemaContext, schemaItemTypeToString } from "../../../src/ecschema-metadata";
 import { EntityClass } from "../../../src/Metadata/EntityClass";
 import { Schema } from "../../../src/Metadata/Schema";

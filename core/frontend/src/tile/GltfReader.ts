@@ -6,60 +6,23 @@
  * @module Tiles
  */
 
+import { assert, ByteStream, Id64String, JsonUtils, utf8ToString } from "@bentley/bentleyjs-core";
+import { Angle, Matrix3d, Point2d, Point3d, Range3d, Transform, Vector3d } from "@bentley/geometry-core";
 import {
-  assert,
-  ByteStream,
-  Id64String,
-  JsonUtils,
-  utf8ToString,
-} from "@bentley/bentleyjs-core";
-import {
-  Angle,
-  Matrix3d,
-  Point2d,
-  Point3d,
-  Range3d,
-  Transform,
-  Vector3d,
-} from "@bentley/geometry-core";
-import {
-  BatchType,
-  ColorDef,
-  ElementAlignedBox3d,
-  FeatureTable,
-  FillFlags,
-  GltfBufferData,
-  GltfBufferView,
-  GltfDataType,
-  GltfHeader,
-  GltfMeshMode,
-  ImageSource,
-  ImageSourceFormat,
-  LinePixels,
-  MeshPolyline,
-  MeshPolylineList,
-  OctEncodedNormal,
-  PackedFeatureTable,
-  QParams3d,
-  QPoint3d,
-  QPoint3dList,
-  RenderTexture,
-  TextureMapping,
-  TileReadStatus,
+  BatchType, ColorDef, ElementAlignedBox3d, FeatureTable, FillFlags, GltfBufferData, GltfBufferView, GltfDataType, GltfHeader, GltfMeshMode,
+  ImageSource, ImageSourceFormat, LinePixels, MeshPolyline, MeshPolylineList, OctEncodedNormal, PackedFeatureTable, QParams3d, QPoint3d, QPoint3dList,
+  RenderTexture, TextureMapping, TileReadStatus,
 } from "@bentley/imodeljs-common";
-import { RenderGraphic } from "../render/RenderGraphic";
+import { getImageSourceFormatForMimeType, imageElementFromImageSource } from "../ImageUtil";
+import { IModelConnection } from "../IModelConnection";
 import { GraphicBranch } from "../render/GraphicBranch";
 import { InstancedGraphicParams } from "../render/InstancedGraphicParams";
-import { RenderSystem } from "../render/RenderSystem";
-import {
-  getImageSourceFormatForMimeType,
-  imageElementFromImageSource,
-} from "../ImageUtil";
-import { IModelConnection } from "../IModelConnection";
-import { TileContent } from "./internal";
 import { DisplayParams } from "../render/primitives/DisplayParams";
+import { Mesh, MeshGraphicArgs, MeshList } from "../render/primitives/mesh/MeshPrimitives";
 import { Triangle } from "../render/primitives/Primitives";
-import { Mesh, MeshList, MeshGraphicArgs } from "../render/primitives/mesh/MeshPrimitives";
+import { RenderGraphic } from "../render/RenderGraphic";
+import { RenderSystem } from "../render/RenderSystem";
+import { TileContent } from "./internal";
 
 // tslint:disable:no-const-enum
 

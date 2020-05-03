@@ -6,20 +6,17 @@
  * @module Notification
  */
 
-import * as React from "react";
-import classnames from "classnames";
-
-import { XAndY } from "@bentley/geometry-core";
-import { RelativePosition } from "@bentley/ui-abstract";
-import { OutputMessagePriority } from "@bentley/imodeljs-frontend";
-import { UiEvent, CommonProps, MessageContainer, MessageSeverity, Point, PointProps, Rectangle, SizeProps } from "@bentley/ui-core";
-import { offsetAndContainInContainer, Tooltip } from "@bentley/ui-ninezone";
-
-import { MessageSpan, MessageDiv } from "./MessageSpan";
-import { MessageManager } from "./MessageManager";
-import { NotifyMessageType, NotifyMessageDetailsType } from "./ReactNotifyMessageDetails";
-
 import "./Pointer.scss";
+import classnames from "classnames";
+import * as React from "react";
+import { XAndY } from "@bentley/geometry-core";
+import { OutputMessagePriority } from "@bentley/imodeljs-frontend";
+import { RelativePosition } from "@bentley/ui-abstract";
+import { CommonProps, MessageContainer, MessageSeverity, Point, PointProps, Rectangle, SizeProps, UiEvent } from "@bentley/ui-core";
+import { offsetAndContainInContainer, Tooltip } from "@bentley/ui-ninezone";
+import { MessageManager } from "./MessageManager";
+import { MessageDiv, MessageSpan } from "./MessageSpan";
+import { NotifyMessageDetailsType, NotifyMessageType } from "./ReactNotifyMessageDetails";
 
 // cSpell:ignore noicon
 

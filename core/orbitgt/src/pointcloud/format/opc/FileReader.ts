@@ -14,23 +14,22 @@ type int32 = number;
 type float32 = number;
 type float64 = number;
 
-import { AttributeReader } from "./AttributeReader";
-
-import { ContainerFile } from "./ContainerFile";
-import { DirectoryReader } from "./DirectoryReader";
-import { DirectoryRecord } from "./DirectoryRecord";
-import { ContainerFilePart } from "./ContainerFilePart";
-import { FileRecord } from "./FileRecord";
-import { GeometryReader } from "./GeometryReader";
-import { EmbeddedAttributeReader } from "./EmbeddedAttributeReader";
 import { Coordinate } from "../../../spatial/geom/Coordinate";
-import { PointAttribute } from "../../model/PointAttribute";
 import { AList } from "../../../system/collection/AList";
 import { ALong } from "../../../system/runtime/ALong";
 import { Message } from "../../../system/runtime/Message";
 import { Strings } from "../../../system/runtime/Strings";
 import { ContentLoader } from "../../../system/storage/ContentLoader";
 import { FileStorage } from "../../../system/storage/FileStorage";
+import { PointAttribute } from "../../model/PointAttribute";
+import { AttributeReader } from "./AttributeReader";
+import { ContainerFile } from "./ContainerFile";
+import { ContainerFilePart } from "./ContainerFilePart";
+import { DirectoryReader } from "./DirectoryReader";
+import { DirectoryRecord } from "./DirectoryRecord";
+import { EmbeddedAttributeReader } from "./EmbeddedAttributeReader";
+import { FileRecord } from "./FileRecord";
+import { GeometryReader } from "./GeometryReader";
 
 /**
  * Class FileReader reads OPC files.

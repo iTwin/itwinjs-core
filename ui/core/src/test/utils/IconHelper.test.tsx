@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-import { IconHelper } from "../../ui-core/utils/IconHelper";
 import { expect } from "chai";
+import * as React from "react";
 import { ConditionalStringValue } from "@bentley/ui-abstract";
+import { IconHelper } from "../../ui-core/utils/IconHelper";
 
 describe("IconHelper", () => {
 

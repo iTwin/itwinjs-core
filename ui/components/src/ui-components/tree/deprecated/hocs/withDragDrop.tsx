@@ -8,13 +8,13 @@
 
 import * as React from "react";
 import { getDisplayName } from "@bentley/ui-core";
-import { DropTargetArguments, DragSourceArguments, DropTargetProps, DragSourceProps } from "../../../dragdrop/DragDropDef";
+import { DragSourceArguments, DragSourceProps, DropTargetArguments, DropTargetProps } from "../../../dragdrop/DragDropDef";
 import { withDropTarget } from "../../../dragdrop/withDropTarget";
-import { TreeProps } from "../component/Tree";
+import { TreeDataProvider, TreeNodeItem } from "../../TreeDataProvider";
 import { BeInspireTreeNode } from "../component/BeInspireTree";
-import { TreeNodeItem, TreeDataProvider } from "../../TreeDataProvider";
+import { TreeNode, TreeNodeProps } from "../component/Node";
+import { TreeProps } from "../component/Tree";
 import { DragDropTreeNode } from "./DragDropTreeNode";
-import { TreeNodeProps, TreeNode } from "../component/Node";
 
 // tslint:disable:deprecation
 

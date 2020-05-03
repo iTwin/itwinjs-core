@@ -2,27 +2,25 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { Arc3d } from "../curve/Arc3d";
+import { GeometryQuery } from "../curve/GeometryQuery";
+import { LineString3d } from "../curve/LineString3d";
 import { Geometry } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
+import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
+import { LongitudeLatitudeNumber } from "../geometry3d/LongitudeLatitudeAltitude";
+import { Matrix3d } from "../geometry3d/Matrix3d";
 import { Point2d, Vector2d } from "../geometry3d/Point2dVector2d";
-import { XYZ, Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
+import { Point3d, Vector3d, XYZ } from "../geometry3d/Point3dVector3d";
+import { Range1d, Range2d, Range3d } from "../geometry3d/Range";
 import { Segment1d } from "../geometry3d/Segment1d";
 import { Transform } from "../geometry3d/Transform";
-import { Matrix3d } from "../geometry3d/Matrix3d";
-
-import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
-import { Range2d, Range3d, Range1d } from "../geometry3d/Range";
-import { GeometryQuery } from "../curve/GeometryQuery";
-import { Arc3d } from "../curve/Arc3d";
-import { LineString3d } from "../curve/LineString3d";
 import { Matrix4d } from "../geometry4d/Matrix4d";
+import { MomentData } from "../geometry4d/MomentData";
 import { Point4d } from "../geometry4d/Point4d";
 import { Complex } from "../numerics/Complex";
-
 import { GeometryCoreTestIO } from "./GeometryCoreTestIO";
 import { prettyPrint } from "./testFunctions";
-import { MomentData } from "../geometry4d/MomentData";
-import { LongitudeLatitudeNumber } from "../geometry3d/LongitudeLatitudeAltitude";
 
 /* tslint:disable:variable-name no-console*/
 

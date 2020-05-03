@@ -6,14 +6,14 @@
  * @module WebGL
  */
 
+import { assert, dispose } from "@bentley/bentleyjs-core";
 import { Gradient, RenderTexture, ThematicDisplay } from "@bentley/imodeljs-common";
+import { RenderPlan } from "../RenderPlan";
+import { WebGLDisposable } from "./Disposable";
 import { UniformHandle } from "./Handle";
+import { TextureUnit } from "./RenderFlags";
 import { desync, sync } from "./Sync";
 import { TextureHandle } from "./Texture";
-import { assert, dispose } from "@bentley/bentleyjs-core";
-import { RenderPlan } from "../RenderPlan";
-import { TextureUnit } from "./RenderFlags";
-import { WebGLDisposable } from "./Disposable";
 import { ThematicSensors } from "./ThematicSensors";
 
 /** Maintains state for uniforms related to thematic display.

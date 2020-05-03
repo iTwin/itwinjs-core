@@ -6,10 +6,9 @@
  * @module Tree
  */
 
+import "./Branch.scss";
 import classnames from "classnames";
 import * as React from "react";
-
-import "./Branch.scss";
 import { CommonProps } from "../utils/Props";
 
 /** Properties for [[TreeBranch]] React component

@@ -2,13 +2,14 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { produce, castDraft } from "immer";
-import { Rectangle, Point } from "@bentley/ui-core";
+import { castDraft, produce } from "immer";
+import { Point, Rectangle } from "@bentley/ui-core";
 import {
-  createNineZoneState, NineZoneStateReducer, PANEL_TOGGLE_COLLAPSED, PANEL_TOGGLE_SPAN, PANEL_TOGGLE_PINNED, PANEL_RESIZE,
-  PANEL_INITIALIZE, WIDGET_TAB_CLICK, addPanelWidget, addTab, WIDGET_TAB_DOUBLE_CLICK, isHorizontalPanelState, createVerticalPanelState,
-  createHorizontalPanelState, PANEL_WIDGET_DRAG_START, WIDGET_DRAG, WIDGET_DRAG_END, FloatingWidgetState, NineZoneState,
-  createWidgetState, FLOATING_WIDGET_RESIZE, WIDGET_TAB_DRAG_START, WIDGET_TAB_DRAG, WIDGET_TAB_DRAG_END, WidgetState, FLOATING_WIDGET_BRING_TO_FRONT, WIDGET_SEND_BACK, TOOL_SETTINGS_DRAG_START,
+  addPanelWidget, addTab, createHorizontalPanelState, createNineZoneState, createVerticalPanelState, createWidgetState,
+  FLOATING_WIDGET_BRING_TO_FRONT, FLOATING_WIDGET_RESIZE, FloatingWidgetState, isHorizontalPanelState, NineZoneState, NineZoneStateReducer,
+  PANEL_INITIALIZE, PANEL_RESIZE, PANEL_TOGGLE_COLLAPSED, PANEL_TOGGLE_PINNED, PANEL_TOGGLE_SPAN, PANEL_WIDGET_DRAG_START, TOOL_SETTINGS_DRAG_START,
+  WIDGET_DRAG, WIDGET_DRAG_END, WIDGET_SEND_BACK, WIDGET_TAB_CLICK, WIDGET_TAB_DOUBLE_CLICK, WIDGET_TAB_DRAG, WIDGET_TAB_DRAG_END,
+  WIDGET_TAB_DRAG_START, WidgetState,
 } from "../../ui-ninezone";
 
 /** @internal */

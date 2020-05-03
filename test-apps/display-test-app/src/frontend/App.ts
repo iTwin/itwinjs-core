@@ -3,48 +3,26 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import ToolTip from "tooltip.js";
+import { FrontendDevTools } from "@bentley/frontend-devtools";
 import { XAndY } from "@bentley/geometry-core";
 import {
-  AccuSnap,
-  IModelApp,
-  IModelAppOptions,
-  MessageBoxIconType,
-  MessageBoxType,
-  MessageBoxValue,
-  NotificationManager,
-  NotifyMessageDetails,
-  SelectionTool,
-  SnapMode,
-  TileAdmin,
-  Tool,
-  ToolTipOptions,
-  ExternalServerExtensionLoader,
+  AccuSnap, ExternalServerExtensionLoader, IModelApp, IModelAppOptions, MessageBoxIconType, MessageBoxType, MessageBoxValue, NotificationManager,
+  NotifyMessageDetails, SelectionTool, SnapMode, TileAdmin, Tool, ToolTipOptions,
 } from "@bentley/imodeljs-frontend";
-import { FrontendDevTools } from "@bentley/frontend-devtools";
-import ToolTip from "tooltip.js";
 import { DrawingAidTestTool } from "./DrawingAidTestTool";
-import { showError, showStatus } from "./Utils";
-import { MarkupSelectTestTool } from "./MarkupSelectTestTool";
-import { VersionComparisonTool } from "./VersionComparison";
+import { RecordFpsTool } from "./FpsMonitor";
 import { IncidentMarkerDemoTool } from "./IncidentMarkerDemo";
-import { MarkupTool, SaveImageTool, ZoomToSelectedElementsTool } from "./Viewer";
+import { MarkupSelectTestTool } from "./MarkupSelectTestTool";
 import { OutputShadersTool } from "./OutputShadersTool";
 import { ToggleShadowMapTilesTool } from "./ShadowMapDecoration";
-import { RecordFpsTool } from "./FpsMonitor";
 import {
-  CloneViewportTool,
-  CloseIModelTool,
-  CloseWindowTool,
-  CreateWindowTool,
-  DockWindowTool,
-  FocusWindowTool,
-  MaximizeWindowTool,
-  OpenIModelTool,
-  ReopenIModelTool,
-  ResizeWindowTool,
-  RestoreWindowTool,
-  Surface,
+  CloneViewportTool, CloseIModelTool, CloseWindowTool, CreateWindowTool, DockWindowTool, FocusWindowTool, MaximizeWindowTool, OpenIModelTool,
+  ReopenIModelTool, ResizeWindowTool, RestoreWindowTool, Surface,
 } from "./Surface";
+import { showError, showStatus } from "./Utils";
+import { VersionComparisonTool } from "./VersionComparison";
+import { MarkupTool, SaveImageTool, ZoomToSelectedElementsTool } from "./Viewer";
 
 class DisplayTestAppAccuSnap extends AccuSnap {
   private readonly _activeSnaps: SnapMode[] = [SnapMode.NearestKeypoint];

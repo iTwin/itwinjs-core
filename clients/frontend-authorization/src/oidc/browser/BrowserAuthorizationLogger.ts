@@ -7,8 +7,8 @@
  * @module BrowserAuthorization
  */
 
-import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { Log as OidcClientLog, Logger as IOidcClientLogger } from "oidc-client";
+import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { FrontendAuthorizationClientLoggerCategory } from "../../FrontendAuthorizationClientLoggerCategory";
 
 /**

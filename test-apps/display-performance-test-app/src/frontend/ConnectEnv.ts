@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { AuthorizedFrontendRequestContext } from "@bentley/imodeljs-frontend";
-import { showStatus } from "./Utils";
 import { ContextRegistryClient, Project } from "@bentley/context-registry-client";
+import { AuthorizedFrontendRequestContext } from "@bentley/imodeljs-frontend";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { showStatus } from "./Utils";
 
 // Logic to establish a connection to a Connect-hosted project and iModel
 let _connectClient!: ContextRegistryClient;

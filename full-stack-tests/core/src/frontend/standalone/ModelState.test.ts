@@ -2,10 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { assert, expect } from "chai";
 import { Id64 } from "@bentley/bentleyjs-core";
 import { Code, IModel, ModelSelectorProps } from "@bentley/imodeljs-common";
-import { DrawingModelState, GeometricModelState, IModelConnection, MockRender, ModelSelectorState, SheetModelState, SnapshotConnection, SpatialModelState } from "@bentley/imodeljs-frontend";
-import { assert, expect } from "chai";
+import {
+  DrawingModelState, GeometricModelState, IModelConnection, MockRender, ModelSelectorState, SheetModelState, SnapshotConnection, SpatialModelState,
+} from "@bentley/imodeljs-frontend";
 
 describe("ModelState", () => {
   let imodel: IModelConnection;

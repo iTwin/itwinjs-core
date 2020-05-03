@@ -6,7 +6,7 @@
  * @module Authentication
  */
 
-import { Guid, ClientRequestContext, ClientRequestContextProps, GuidString } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, ClientRequestContextProps, Guid, GuidString } from "@bentley/bentleyjs-core";
 import { AccessToken } from "./Token";
 
 /** The properties of AuthorizedClientRequestContext.

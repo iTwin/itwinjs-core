@@ -2,13 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
+import "./IModelList.scss";
 import classnames from "classnames";
+import * as React from "react";
+import { SearchBox, Toggle } from "@bentley/ui-core";
 import { IModelInfo } from "@bentley/ui-framework";
 import { IModelCard } from "./IModelCard";
 import { ProjectDialog } from "./ProjectDialog";
-import { SearchBox, Toggle } from "@bentley/ui-core";
-import "./IModelList.scss";
 
 /** Properties for the [[IModelList]] component */
 export interface IModelListProps {

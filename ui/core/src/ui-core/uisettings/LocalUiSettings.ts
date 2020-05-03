@@ -6,7 +6,7 @@
  * @module UiSettings
  */
 
-import { UiSettings, UiSettingsStatus, UiSettingsResult } from "./UiSettings";
+import { UiSettings, UiSettingsResult, UiSettingsStatus } from "./UiSettings";
 
 /**
  * Implementation of [[UiSettings]] using Window.localStorage.

@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
+import "./ContextMenu.scss";
 import classnames from "classnames";
+import * as React from "react";
 import { RelativePosition } from "@bentley/ui-abstract";
 import { CommonProps, Popup } from "@bentley/ui-core";
-import "./ContextMenu.scss";
 
 /** Properties for [[ContextMenuItem]] component
  * @internal

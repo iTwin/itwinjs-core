@@ -7,18 +7,8 @@
  * @module Tools
  */
 
-import {
-  AxisAlignedBox3d,
-  ColorDef,
-  LinePixels,
-} from "@bentley/imodeljs-common";
-import {
-  DecorateContext,
-  GraphicType,
-  IModelApp,
-  IModelConnection,
-  Tool,
-} from "@bentley/imodeljs-frontend";
+import { AxisAlignedBox3d, ColorDef, LinePixels } from "@bentley/imodeljs-common";
+import { DecorateContext, GraphicType, IModelApp, IModelConnection, Tool } from "@bentley/imodeljs-frontend";
 import { parseToggle } from "./parseToggle";
 
 /** @beta */

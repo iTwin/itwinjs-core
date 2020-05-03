@@ -6,12 +6,11 @@
  * @module Properties
  */
 
-import * as React from "react";
-import { Orientation, UnderlinedButton } from "@bentley/ui-core";
-import { PropertyRecord } from "@bentley/ui-abstract";
-import { PropertyDialogState } from "../../../ValueRendererManager";
-
 import "./NonPrimitiveValueRenderer.scss";
+import * as React from "react";
+import { PropertyRecord } from "@bentley/ui-abstract";
+import { Orientation, UnderlinedButton } from "@bentley/ui-core";
+import { PropertyDialogState } from "../../../ValueRendererManager";
 
 /** Properties for [[TableArrayValueRenderer]] and [[TableStructValueRenderer]] React component
  * @public

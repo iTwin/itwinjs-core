@@ -8,14 +8,14 @@
 
 import * as React from "react";
 import { CommonProps, RectangleProps } from "@bentley/ui-core";
-import { ZoneManagerProps, ZoneTargetType, Zone } from "@bentley/ui-ninezone";
-import { TargetChangeHandler, WidgetChangeHandler } from "../frontstage/FrontstageComposer";
+import { Zone, ZoneManagerProps, ZoneTargetType } from "@bentley/ui-ninezone";
 import { ZoneTargets } from "../dragdrop/ZoneTargets";
+import { TargetChangeHandler, WidgetChangeHandler } from "../frontstage/FrontstageComposer";
+import { SafeAreaContext } from "../safearea/SafeAreaContext";
 import { StatusBar } from "../statusbar/StatusBar";
 import { StatusBarWidgetControl } from "../statusbar/StatusBarWidgetControl";
-import { SafeAreaContext } from "../safearea/SafeAreaContext";
-import { Outline } from "./Outline";
 import { getFloatingZoneBounds } from "./FrameworkZone";
+import { Outline } from "./Outline";
 
 // cspell:ignore safearea
 

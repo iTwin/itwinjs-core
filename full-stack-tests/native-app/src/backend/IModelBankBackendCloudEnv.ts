@@ -2,17 +2,17 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+import * as child_process from "child_process";
 import * as fs from "fs";
 import * as fsextra from "fs-extra";
-import * as path from "path";
-import * as child_process from "child_process";
 import * as http from "http";
 import * as https from "https";
+import * as path from "path";
 import { UrlFileHandler } from "@bentley/backend-itwin-client";
-import { Logger, Config } from "@bentley/bentleyjs-core";
-import { IModelCloudEnvironment, IModelBankClient, IModelBankFileSystemContextClient } from "@bentley/imodelhub-client";
-import { IModelBankDummyAuthorizationClient } from "@bentley/imodelhub-client/lib/imodelbank/IModelBankDummyAuthorizationClient";
+import { Config, Logger } from "@bentley/bentleyjs-core";
+import { IModelBankClient, IModelBankFileSystemContextClient, IModelCloudEnvironment } from "@bentley/imodelhub-client";
 import { IModelBankBasicAuthorizationClient } from "@bentley/imodelhub-client/lib/imodelbank/IModelBankBasicAuthorizationClient";
+import { IModelBankDummyAuthorizationClient } from "@bentley/imodelhub-client/lib/imodelbank/IModelBankDummyAuthorizationClient";
 import { UserInfo } from "@bentley/itwin-client";
 
 export const assetsPath = __dirname + "/../../../lib/test/assets/";

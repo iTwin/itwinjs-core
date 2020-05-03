@@ -8,23 +8,20 @@
 
 // cSpell:ignore customnumber testid
 
-import * as React from "react";
-import classnames from "classnames";
-import { Logger } from "@bentley/bentleyjs-core";
-import {
-  IModelApp, NotifyMessageDetails, OutputMessagePriority,
-} from "@bentley/imodeljs-frontend";
-import {
-  PropertyValueFormat, PropertyValue, PrimitiveValue, PropertyRecord, PropertyEditorParams, PropertyEditorParamTypes,
-  InputEditorSizeParams, CustomFormattedNumberParams, IconEditorParams,
-} from "@bentley/ui-abstract";
-import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
-import { PropertyEditorManager, PropertyEditorBase } from "./PropertyEditorManager";
-import { UiComponents } from "../UiComponents";
-
 import "./CustomNumberEditor.scss";
+import classnames from "classnames";
+import * as React from "react";
 import ReactDOM from "react-dom";
-import { Input, IconInput, Icon, InputProps } from "@bentley/ui-core";
+import { Logger } from "@bentley/bentleyjs-core";
+import { IModelApp, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
+import {
+  CustomFormattedNumberParams, IconEditorParams, InputEditorSizeParams, PrimitiveValue, PropertyEditorParams, PropertyEditorParamTypes,
+  PropertyRecord, PropertyValue, PropertyValueFormat,
+} from "@bentley/ui-abstract";
+import { Icon, IconInput, Input, InputProps } from "@bentley/ui-core";
+import { UiComponents } from "../UiComponents";
+import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
+import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
 
 /** @internal */
 interface CustomNumberEditorState {

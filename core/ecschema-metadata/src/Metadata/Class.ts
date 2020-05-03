@@ -3,26 +3,22 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { CustomAttributeContainerProps, CustomAttributeSet, serializeCustomAttributes, CustomAttribute } from "./CustomAttribute";
+import { assert } from "@bentley/bentleyjs-core";
+import { DelayedPromiseWithProps } from "../DelayedPromise";
+import { ClassProps } from "../Deserialization/JsonProps";
+import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
+import { classModifierToString, ECClassModifier, parseClassModifier, parsePrimitiveType, PrimitiveType, SchemaItemType } from "../ECObjects";
+import { ECObjectsError, ECObjectsStatus } from "../Exception";
+import { AnyClass, LazyLoadedECClass } from "../Interfaces";
+import { SchemaItemKey, SchemaKey } from "../SchemaKey";
+import { CustomAttribute, CustomAttributeContainerProps, CustomAttributeSet, serializeCustomAttributes } from "./CustomAttribute";
 import { EntityClass } from "./EntityClass";
 import { Enumeration } from "./Enumeration";
 import {
-  EnumerationArrayProperty, EnumerationProperty, PrimitiveArrayProperty,
-  PrimitiveProperty, Property, StructArrayProperty, StructProperty,
+  EnumerationArrayProperty, EnumerationProperty, PrimitiveArrayProperty, PrimitiveProperty, Property, StructArrayProperty, StructProperty,
 } from "./Property";
 import { Schema } from "./Schema";
 import { SchemaItem } from "./SchemaItem";
-import { DelayedPromiseWithProps } from "./../DelayedPromise";
-import { ClassProps } from "./../Deserialization/JsonProps";
-import {
-  classModifierToString, ECClassModifier,
-  parseClassModifier, parsePrimitiveType, PrimitiveType, SchemaItemType,
-} from "./../ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "./../Exception";
-import { AnyClass, LazyLoadedECClass } from "./../Interfaces";
-import { SchemaItemKey, SchemaKey } from "./../SchemaKey";
-import { assert } from "@bentley/bentleyjs-core";
-import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
 
 /**
  * A common abstract class for all of the ECClass types.

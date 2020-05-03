@@ -3,14 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
+import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { AccuDraw } from "../AccuDraw";
-import { Tool } from "../tools/Tool";
+import { IModelApp, IModelAppOptions } from "../IModelApp";
+import { MockRender } from "../render/MockRender";
 import { IdleTool } from "../tools/IdleTool";
 import { SelectionTool } from "../tools/SelectTool";
-import { RotateViewTool, PanViewTool } from "../tools/ViewTool";
-import { MockRender } from "../render/MockRender";
-import { IModelApp, IModelAppOptions } from "../IModelApp";
-import { I18NNamespace } from "@bentley/imodeljs-i18n";
+import { Tool } from "../tools/Tool";
+import { PanViewTool, RotateViewTool } from "../tools/ViewTool";
 
 /** class to simulate overriding the default AccuDraw */
 class TestAccuDraw extends AccuDraw { }

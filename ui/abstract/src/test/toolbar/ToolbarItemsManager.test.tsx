@@ -4,9 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
-
 import {
-  CommonToolbarItem, ConditionalBooleanValue, ToolbarItemUtilities, ToolbarItemsManager, BadgeType, CustomButtonDefinition, ConditionalStringValue,
+  BadgeType, CommonToolbarItem, ConditionalBooleanValue, ConditionalStringValue, CustomButtonDefinition, ToolbarItemsManager, ToolbarItemUtilities,
 } from "../../ui-abstract";
 
 describe("ToolbarItemsManager", () => {

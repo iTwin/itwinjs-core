@@ -6,85 +6,34 @@
  * @module WebGL
  */
 
-import {
-  ProgramBuilder,
-  VariableType,
-  FragmentShaderComponent,
-  VertexShaderComponent,
-  ShaderBuilder,
-  ShaderBuilderFlags,
-} from "../ShaderBuilder";
-import {
-  FeatureMode,
-  IsAnimated,
-  IsClassified,
-  IsInstanced,
-  IsShadowable,
-  IsThematic,
-  TechniqueFlags,
-} from "../TechniqueFlags";
-import {
-  addAltPickBufferOutputs,
-  addFragColorWithPreMultipliedAlpha,
-  addPickBufferOutputs,
-  addWhiteOnWhiteReversal,
-  assignFragColor,
-} from "./Fragment";
-import {
-  addFeatureAndMaterialLookup,
-  addModelViewMatrix,
-  addNormalMatrix,
-  addProjectionMatrix,
-} from "./Vertex";
+import { assert } from "@bentley/bentleyjs-core";
+import { AttributeMap } from "../AttributeMap";
+import { Material } from "../Material";
+import { SurfaceBitIndex, SurfaceFlags, TextureUnit } from "../RenderFlags";
+import { FragmentShaderComponent, ProgramBuilder, ShaderBuilder, ShaderBuilderFlags, VariableType, VertexShaderComponent } from "../ShaderBuilder";
+import { System } from "../System";
+import { FeatureMode, IsAnimated, IsClassified, IsInstanced, IsShadowable, IsThematic, TechniqueFlags } from "../TechniqueFlags";
+import { TechniqueId } from "../TechniqueId";
+import { Texture } from "../Texture";
 import { addAnimation } from "./Animation";
-import {
-  addUnpackAndNormalize2Bytes,
-  decodeDepthRgb,
-  unquantize2d,
-} from "./Decode";
+import { unpackFloat } from "./Clipping";
 import { addColor } from "./Color";
-import { addLighting } from "./Lighting";
+import { addChooseWithBitFlagFunctions, addExtractNthBit, addFrustum, addShaderFlags } from "./Common";
+import { addUnpackAndNormalize2Bytes, decodeDepthRgb, unquantize2d } from "./Decode";
 import {
-  FeatureSymbologyOptions,
-  addFeatureSymbology,
-  addMaxAlpha,
-  addRenderOrder,
-  addRenderOrderConstants,
-  addSurfaceDiscard,
-  addSurfaceHiliter,
+  addFeatureSymbology, addMaxAlpha, addRenderOrder, addRenderOrderConstants, addSurfaceDiscard, addSurfaceHiliter, FeatureSymbologyOptions,
 } from "./FeatureSymbology";
 import {
-  addChooseWithBitFlagFunctions,
-  addExtractNthBit,
-  addFrustum,
-  addShaderFlags,
-} from "./Common";
-import {
-  SurfaceBitIndex,
-  SurfaceFlags,
-  TextureUnit,
-} from "../RenderFlags";
-import { Texture } from "../Texture";
-import { Material } from "../Material";
-import { System } from "../System";
-import { assert } from "@bentley/bentleyjs-core";
-import {
-  addColorPlanarClassifier,
-  addFeaturePlanarClassifier,
-  addHilitePlanarClassifier,
-  addOverrideClassifierColor,
-} from "./PlanarClassification";
-import { addSolarShadowMap } from "./SolarShadowMapping";
-import { AttributeMap } from "../AttributeMap";
-import { TechniqueId } from "../TechniqueId";
-import { unpackFloat } from "./Clipping";
-import { addRenderPass } from "./RenderPass";
-import { addTranslucency } from "./Translucency";
+  addAltPickBufferOutputs, addFragColorWithPreMultipliedAlpha, addPickBufferOutputs, addWhiteOnWhiteReversal, assignFragColor,
+} from "./Fragment";
+import { addLighting } from "./Lighting";
 import { addSurfaceMonochrome } from "./Monochrome";
-import {
-  addThematicDisplay,
-  getComputeThematicIndex,
-} from "./Thematic";
+import { addColorPlanarClassifier, addFeaturePlanarClassifier, addHilitePlanarClassifier, addOverrideClassifierColor } from "./PlanarClassification";
+import { addRenderPass } from "./RenderPass";
+import { addSolarShadowMap } from "./SolarShadowMapping";
+import { addThematicDisplay, getComputeThematicIndex } from "./Thematic";
+import { addTranslucency } from "./Translucency";
+import { addFeatureAndMaterialLookup, addModelViewMatrix, addNormalMatrix, addProjectionMatrix } from "./Vertex";
 
 // NB: Textures do not contain pre-multiplied alpha.
 const sampleSurfaceTexture = `

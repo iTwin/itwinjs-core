@@ -6,17 +6,18 @@
  * @module Curve
  */
 
-import { ConsolidateAdjacentCurvePrimitivesOptions, CurveChain } from "../CurveCollection";
 import { NullGeometryHandler } from "../../geometry3d/GeometryHandler";
-import { Loop } from "../Loop";
-import { Path } from "../Path";
+import { Point3d } from "../../geometry3d/Point3dVector3d";
+import { PolylineCompressionContext } from "../../geometry3d/PolylineCompressionByEdgeOffset";
+import { PolylineOps } from "../../geometry3d/PolylineOps";
+import { Arc3d } from "../Arc3d";
+import { ConsolidateAdjacentCurvePrimitivesOptions, CurveChain } from "../CurveCollection";
+import { CurveFactory } from "../CurveFactory";
 import { LineSegment3d } from "../LineSegment3d";
 import { LineString3d } from "../LineString3d";
-import { PolylineOps } from "../../geometry3d/PolylineOps";
-import { Point3d } from "../../geometry3d/Point3dVector3d";
-import { Arc3d } from "../Arc3d";
-import { CurveFactory } from "../CurveFactory";
-import { PolylineCompressionContext } from "../../geometry3d/PolylineCompressionByEdgeOffset";
+import { Loop } from "../Loop";
+import { Path } from "../Path";
+
 /**
  * * Implementation class for ConsolidateAdjacentCurvePrimitives.
  *

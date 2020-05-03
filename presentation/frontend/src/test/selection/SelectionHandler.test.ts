@@ -9,8 +9,7 @@ import * as moq from "typemoq";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { KeySet } from "@bentley/presentation-common";
 import {
-  SelectionManager, SelectionHandler, SelectionChangeEvent,
-  SelectionChangeEventArgs, SelectionChangeType, ISelectionProvider,
+  ISelectionProvider, SelectionChangeEvent, SelectionChangeEventArgs, SelectionChangeType, SelectionHandler, SelectionManager,
 } from "../../presentation-frontend";
 
 describe("SelectionHandler", () => {

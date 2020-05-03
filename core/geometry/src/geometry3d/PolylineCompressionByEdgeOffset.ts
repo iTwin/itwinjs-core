@@ -2,11 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Point3d, Vector3d } from "./Point3dVector3d";
-import { IndexedXYZCollection, IndexedReadWriteXYZCollection } from "./IndexedXYZCollection";
-import { Point3dArrayCarrier } from "./Point3dArrayCarrier";
-import { GrowableXYZArray } from "./GrowableXYZArray";
 import { Geometry } from "../Geometry";
+import { GrowableXYZArray } from "./GrowableXYZArray";
+import { IndexedReadWriteXYZCollection, IndexedXYZCollection } from "./IndexedXYZCollection";
+import { Point3dArrayCarrier } from "./Point3dArrayCarrier";
+import { Point3d, Vector3d } from "./Point3dVector3d";
+
 // cspell:word Puecker
 /** context class for Puecker-Douglas polyline compression, viz https://en.wikipedia.org/wiki/Ramer–Douglas–Peucker_algorithm
  * @internal

@@ -2,13 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
 import { mount, shallow } from "enzyme";
-import TestUtils from "../TestUtils";
-
-import { ReviewToolWidget } from "../../ui-framework/widgets/ReviewToolWidget";
-import { ItemList } from "../../ui-framework/shared/ItemMap";
+import * as React from "react";
 import { CommandItemDef } from "../../ui-framework/shared/CommandItemDef";
+import { ItemList } from "../../ui-framework/shared/ItemMap";
+import { ReviewToolWidget } from "../../ui-framework/widgets/ReviewToolWidget";
+import TestUtils from "../TestUtils";
 
 describe("ReviewToolWidget", () => {
 

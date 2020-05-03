@@ -2,10 +2,10 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { ClientRequestContext, BeEvent } from "@bentley/bentleyjs-core";
+import { BeEvent, ClientRequestContext } from "@bentley/bentleyjs-core";
+import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { AccessToken, UserInfo } from "@bentley/itwin-client";
 import { getAccessTokenFromBackend } from "@bentley/oidc-signin-tool/lib/frontend";
-import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 
 export class IModelHubUserMgr implements FrontendAuthorizationClient {
   private _token: AccessToken | undefined;

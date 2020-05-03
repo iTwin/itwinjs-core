@@ -7,8 +7,8 @@
  */
 
 import * as React from "react";
-import { ConfigurableUiControl, ConfigurableCreateInfo, ConfigurableUiControlType } from "../../configurableui/ConfigurableUiControl";
 import { UiDataProvider } from "@bentley/ui-abstract";
+import { ConfigurableCreateInfo, ConfigurableUiControl, ConfigurableUiControlType } from "../../configurableui/ConfigurableUiControl";
 import { ToolSettingsEntry } from "../../widget-panels/ToolSettings";
 
 /**

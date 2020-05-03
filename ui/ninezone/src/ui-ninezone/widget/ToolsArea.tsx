@@ -6,10 +6,10 @@
  * @module Widget
  */
 
+import "./ToolsArea.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { CommonProps, NoChildrenProps } from "@bentley/ui-core";
-import "./ToolsArea.scss";
 
 /** Properties of [[ToolsArea]] component.
  * @alpha

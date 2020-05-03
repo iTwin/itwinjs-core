@@ -2,11 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { BentleyStatus, CloudStorageContainerDescriptor, CloudStorageContainerUrl, CloudStorageProvider, CloudStorageTileCache, IModelError, IModelRpcProps, TileContentIdentifier } from "@bentley/imodeljs-common";
-import * as Azure from "@azure/storage-blob";
-import { Logger, PerfLogger } from "@bentley/bentleyjs-core";
 import { PassThrough, Readable } from "stream";
 import * as zlib from "zlib";
+import * as Azure from "@azure/storage-blob";
+import { Logger, PerfLogger } from "@bentley/bentleyjs-core";
+import {
+  BentleyStatus, CloudStorageContainerDescriptor, CloudStorageContainerUrl, CloudStorageProvider, CloudStorageTileCache, IModelError, IModelRpcProps,
+  TileContentIdentifier,
+} from "@bentley/imodeljs-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { IModelHost } from "./IModelHost";
 

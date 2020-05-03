@@ -5,10 +5,11 @@
 /** @packageDocumentation
  * @module Curve
  */
+import { Geometry } from "../Geometry";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Ray3d } from "../geometry3d/Ray3d";
 import { CurvePrimitive } from "./CurvePrimitive";
-import { Geometry } from "../Geometry";
+
 /**
  * An enumeration of special conditions being described by a CurveLocationDetail.
  * @public

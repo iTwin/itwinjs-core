@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { TabsProps, Tabs } from "./Tabs";
+import { Tabs, TabsProps } from "./Tabs";
 
 /** Horizontal tabs meant to represent the current position in a page/section
  * @public

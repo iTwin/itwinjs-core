@@ -6,10 +6,7 @@
  * @module DisplayStyles
  */
 
-import {
-  TerrainProps,
-  TerrainSettings,
-} from "./TerrainSettings";
+import { TerrainProps, TerrainSettings } from "./TerrainSettings";
 
 /** Describes the type of background map displayed by a [[DisplayStyle]]
  * @see [[BackgroundMapProps]]

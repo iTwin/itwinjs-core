@@ -7,17 +7,17 @@
  */
 
 import { Guid } from "@bentley/bentleyjs-core";
-import { Ruleset } from "./rules/Ruleset";
 import { Field, PropertiesField } from "./content/Fields";
 import { Item } from "./content/Item";
-import { RuleTypes } from "./rules/Rule";
-import { ContentSpecificationTypes } from "./rules/content/ContentSpecification";
-import { Value, DisplayValue } from "./content/Value";
-import { MultiSchemaClassesSpecification, SingleSchemaClassSpecification } from "./rules/ClassSpecifications";
-import { PropertyValueFormat, PrimitiveTypeDescription } from "./content/TypeDescription";
+import { PrimitiveTypeDescription, PropertyValueFormat } from "./content/TypeDescription";
+import { DisplayValue, Value } from "./content/Value";
 import { ClassInfo, RelationshipPath } from "./EC";
+import { MultiSchemaClassesSpecification, SingleSchemaClassSpecification } from "./rules/ClassSpecifications";
+import { ContentSpecificationTypes } from "./rules/content/ContentSpecification";
 import { RelatedInstanceSpecification } from "./rules/RelatedInstanceSpecification";
 import { RelationshipDirection } from "./rules/RelationshipDirection";
+import { RuleTypes } from "./rules/Rule";
+import { Ruleset } from "./rules/Ruleset";
 
 /**
  * A factory class that can be used to create presentation rulesets targeted towards

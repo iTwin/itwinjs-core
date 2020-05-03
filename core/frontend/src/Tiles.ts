@@ -6,22 +6,11 @@
  * @module IModelConnection
  */
 
-import {
-  BeTimePoint,
-  Dictionary,
-  dispose,
-  Id64Array,
-  IModelStatus,
-} from "@bentley/bentleyjs-core";
+import { BeTimePoint, Dictionary, dispose, Id64Array, IModelStatus } from "@bentley/bentleyjs-core";
 import { TileTreeProps } from "@bentley/imodeljs-common";
-import { IModelConnection } from "./IModelConnection";
 import { IModelApp } from "./IModelApp";
-import {
-  TileTree,
-  TileTreeLoadStatus,
-  TileTreeOwner,
-  TileTreeSupplier,
-} from "./tile/internal";
+import { IModelConnection } from "./IModelConnection";
+import { TileTree, TileTreeLoadStatus, TileTreeOwner, TileTreeSupplier } from "./tile/internal";
 
 class TreeOwner implements TileTreeOwner {
   private _tileTree?: TileTree;

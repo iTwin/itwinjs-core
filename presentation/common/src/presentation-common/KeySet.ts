@@ -6,11 +6,11 @@
  * @module Core
  */
 
-import { Id64, GuidString, Guid, Id64String } from "@bentley/bentleyjs-core";
-import { InstanceId, InstanceKey } from "./EC";
-import { NodeKey, NodeKeyJSON } from "./hierarchy/Key";
+import { Guid, GuidString, Id64, Id64String } from "@bentley/bentleyjs-core";
 import { EntityProps } from "@bentley/imodeljs-common";
+import { InstanceId, InstanceKey } from "./EC";
 import { PresentationError, PresentationStatus } from "./Error";
+import { NodeKey, NodeKeyJSON } from "./hierarchy/Key";
 
 /**
  * A single key that identifies something in iModel.js application

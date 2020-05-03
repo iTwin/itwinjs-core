@@ -6,11 +6,11 @@
  * @module Tooltip
  */
 
-import ReactDOM from "react-dom";
 import React from "react";
+import ReactDOM from "react-dom";
+import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { IElementPropertyDataProvider } from "../propertygrid/PropertyDataProvider";
 import { Tooltip } from "./Tooltip";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
 
 /** Renderer for [[Tooltip]] React component
  * @alpha

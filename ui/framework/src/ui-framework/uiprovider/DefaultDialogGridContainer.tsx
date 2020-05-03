@@ -6,14 +6,14 @@
  * @module UiProvider
  */
 
-import * as React from "react";
+import "./DefaultDialogGridContainer.scss";
 import classnames from "classnames";
+import * as React from "react";
 import { DialogItemsManager, DialogRow } from "@bentley/ui-abstract";
 import { ScrollableWidgetContent } from "@bentley/ui-ninezone";
+import { FrameworkVersionSwitch, useFrameworkVersion } from "../hooks/useFrameworkVersion";
 import { ToolSettingsContentContext } from "../widgets/ToolSettingsContent";
 import { ComponentGenerator } from "./ComponentGenerator";
-import { FrameworkVersionSwitch, useFrameworkVersion } from "../hooks/useFrameworkVersion";
-import "./DefaultDialogGridContainer.scss";
 
 enum LayoutMode {
   Wide = 0,

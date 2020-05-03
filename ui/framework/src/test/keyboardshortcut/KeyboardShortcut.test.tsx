@@ -4,23 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
-
-import TestUtils from "../TestUtils";
-
 import { Point } from "@bentley/ui-core";
 import {
-  KeyboardShortcutProps,
-  CommandItemDef,
-  FunctionKey,
-  KeyboardShortcutManager,
+  CommandItemDef, ConfigurableUiManager, FunctionKey, KeyboardShortcut, KeyboardShortcutContainer, KeyboardShortcutManager, KeyboardShortcutProps,
   SpecialKey,
-  KeyboardShortcutContainer,
-  ConfigurableUiManager,
-  KeyboardShortcut,
 } from "../../ui-framework";
-
-import { KeyboardShortcutMenu } from "../../ui-framework/keyboardshortcut/KeyboardShortcutMenu";
 import { CursorInformation } from "../../ui-framework/cursor/CursorInformation";
+import { KeyboardShortcutMenu } from "../../ui-framework/keyboardshortcut/KeyboardShortcutMenu";
+import TestUtils from "../TestUtils";
 
 describe("KeyboardShortcut", () => {
 

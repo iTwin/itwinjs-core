@@ -2,15 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
 import { expect } from "chai";
-import * as sinon from "sinon";
-import { render, cleanup } from "@testing-library/react";
+import * as React from "react";
 import ReactTestUtils from "react-dom/test-utils";
+import * as sinon from "sinon";
 import { PropertyRecord } from "@bentley/ui-abstract";
+import { cleanup, render } from "@testing-library/react";
 import { Breadcrumb } from "../../../ui-components";
 import { withBreadcrumbDragDrop } from "../../../ui-components/breadcrumb/hoc/withDragDrop";
-import { DropTargetProps, DragSourceProps, DragSourceArguments, DropEffects, DropStatus, DropTargetArguments } from "../../../ui-components/dragdrop/DragDropDef";
+import {
+  DragSourceArguments, DragSourceProps, DropEffects, DropStatus, DropTargetArguments, DropTargetProps,
+} from "../../../ui-components/dragdrop/DragDropDef";
 
 describe("Breadcrumb withDragDrop HOC", () => {
 

@@ -8,21 +8,18 @@
 
 import { useCallback } from "react";
 import { from } from "rxjs/internal/observable/from";
-import { tap } from "rxjs/internal/operators/tap";
 import { takeUntil } from "rxjs/internal/operators/takeUntil";
+import { tap } from "rxjs/internal/operators/tap";
 import { Subject } from "rxjs/internal/Subject";
-import { IDisposable, Guid } from "@bentley/bentleyjs-core";
-import { Keys, NodeKey, KeySet } from "@bentley/presentation-common";
+import { Guid, IDisposable } from "@bentley/bentleyjs-core";
+import { Keys, KeySet, NodeKey } from "@bentley/presentation-common";
+import { Presentation, SelectionChangeEventArgs, SelectionChangeType, SelectionHandler, SelectionHelper } from "@bentley/presentation-frontend";
 import {
-  Presentation, SelectionHandler, SelectionChangeEventArgs,
-  SelectionChangeType, SelectionHelper,
-} from "@bentley/presentation-frontend";
-import {
-  TreeNodeItem, TreeModelSource, MutableTreeModel, TreeSelectionModificationEventArgs, TreeSelectionReplacementEventArgs,
-  TreeModelChanges, MutableTreeModelNode, TreeEventHandler, AbstractTreeNodeLoaderWithProvider, TreeEditingParams,
+  AbstractTreeNodeLoaderWithProvider, MutableTreeModel, MutableTreeModelNode, TreeEditingParams, TreeEventHandler, TreeModelChanges, TreeModelSource,
+  TreeNodeItem, TreeSelectionModificationEventArgs, TreeSelectionReplacementEventArgs,
 } from "@bentley/ui-components";
-import { IPresentationTreeDataProvider } from "../IPresentationTreeDataProvider";
 import { useDisposable } from "@bentley/ui-core";
+import { IPresentationTreeDataProvider } from "../IPresentationTreeDataProvider";
 
 /**
  * Data structure that describes parameters for UnifiedSelectionTreeEventHandler

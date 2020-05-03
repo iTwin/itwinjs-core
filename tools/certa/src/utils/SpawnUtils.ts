@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { ChildProcess, spawn, StdioOptions } from "child_process";
 import * as inspector from "inspector";
-import { spawn, ChildProcess, StdioOptions } from "child_process";
 
 /**
  * Helper function for spawning a child process with the same cwd, env, stdout, and stderr as the current process.

@@ -6,12 +6,11 @@
  * @module DragDrop
  */
 
-import * as React from "react";
-import { DragLayer, DndComponentClass, DragLayerMonitor } from "react-dnd";
 import classnames from "classnames";
-
-import { UiEvent, CommonProps } from "@bentley/ui-core";
-import { DragSourceArguments, DragLayerProps } from "@bentley/ui-components";
+import * as React from "react";
+import { DndComponentClass, DragLayer, DragLayerMonitor } from "react-dnd";
+import { DragLayerProps, DragSourceArguments } from "@bentley/ui-components";
+import { CommonProps, UiEvent } from "@bentley/ui-core";
 
 /** Drag/Drop Layer Changed Event Args class.
  * @beta

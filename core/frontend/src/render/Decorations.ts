@@ -6,16 +6,9 @@
  * @module Rendering
  */
 
-import {
-  dispose,
-  disposeArray,
-  IDisposable,
-} from "@bentley/bentleyjs-core";
+import { dispose, disposeArray, IDisposable } from "@bentley/bentleyjs-core";
 import { CanvasDecorationList } from "./CanvasDecoration";
-import {
-  GraphicList,
-  RenderGraphic,
-} from "./RenderGraphic";
+import { GraphicList, RenderGraphic } from "./RenderGraphic";
 
 /** A set of [[RenderGraphic]]s and [[CanvasDecoration]]s produced by [[Tool]]s and [[Decorator]]s, used to decorate the contents of a [[Viewport]].
  * @public

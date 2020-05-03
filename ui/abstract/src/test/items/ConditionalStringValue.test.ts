@@ -4,10 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-
-import {
-  ConditionalStringValue,
-} from "../../ui-abstract";
+import { ConditionalStringValue } from "../../ui-abstract";
 
 const helloValue = "hello";
 const goodByeValue = "goodBye";

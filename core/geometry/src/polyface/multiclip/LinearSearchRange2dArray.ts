@@ -9,6 +9,7 @@
 import { Range2d } from "../../geometry3d/Range";
 import { LowAndHighXY } from "../../geometry3d/XYZProps";
 import { Range2dSearchInterface } from "./Range2dSearchInterface";
+
 /**
  * * Array of Range2d
  * * user data tag attached to each range via cast as (any).userTag.

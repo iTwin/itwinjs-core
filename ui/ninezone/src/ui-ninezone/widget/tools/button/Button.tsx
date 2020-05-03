@@ -6,15 +6,13 @@
  * @module Toolbar
  */
 
+import "./Button.scss";
 import classnames from "classnames";
 import * as React from "react";
 import {
-  CommonProps,
-  calculateToolbarOpacity, calculateBoxShadowOpacity, calculateBackdropFilterBlur,
-  getToolbarBackgroundColor, getToolbarBoxShadow, getToolbarBackdropFilter,
-  TOOLBAR_OPACITY_DEFAULT, TOOLBAR_BOX_SHADOW_OPACITY_DEFAULT, TOOLBAR_BACKDROP_FILTER_BLUR_DEFAULT,
+  calculateBackdropFilterBlur, calculateBoxShadowOpacity, calculateToolbarOpacity, CommonProps, getToolbarBackdropFilter, getToolbarBackgroundColor,
+  getToolbarBoxShadow, TOOLBAR_BACKDROP_FILTER_BLUR_DEFAULT, TOOLBAR_BOX_SHADOW_OPACITY_DEFAULT, TOOLBAR_OPACITY_DEFAULT,
 } from "@bentley/ui-core";
-import "./Button.scss";
 
 /** Properties of [[ToolbarButton]] component.
  * @alpha

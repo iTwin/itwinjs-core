@@ -2,26 +2,27 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
 /** @packageDocumentation
  * @module AccuDraw
  */
-import { IModelApp } from "./IModelApp";
-import {
-  Point3d, Vector3d, Point2d, Matrix3d, Transform, Geometry, Arc3d, LineSegment3d, CurvePrimitive,
-  LineString3d, AxisOrder, CurveCurve, PointString3d, IModelJson as GeomJson,
-} from "@bentley/geometry-core";
-import { Viewport, ScreenViewport, linePlaneIntersect } from "./Viewport";
 import { BentleyStatus } from "@bentley/bentleyjs-core";
-import { StandardViewId } from "./StandardView";
-import { ViewState } from "./ViewState";
-import { ColorDef, ColorByName, LinePixels, GeometryStreamProps } from "@bentley/imodeljs-common";
-import { BeButtonEvent, CoordSource, BeButton, InputCollector, CoordinateLockOverrides } from "./tools/Tool";
-import { SnapMode, SnapDetail, SnapHeat, HitDetail } from "./HitDetail";
+import {
+  Arc3d, AxisOrder, CurveCurve, CurvePrimitive, Geometry, IModelJson as GeomJson, LineSegment3d, LineString3d, Matrix3d, Point2d, Point3d,
+  PointString3d, Transform, Vector3d,
+} from "@bentley/geometry-core";
+import { ColorByName, ColorDef, GeometryStreamProps, LinePixels } from "@bentley/imodeljs-common";
 import { TentativeOrAccuSnap } from "./AccuSnap";
-import { AuxCoordSystemState, ACSDisplayOptions } from "./AuxCoordSys";
+import { ACSDisplayOptions, AuxCoordSystemState } from "./AuxCoordSys";
+import { HitDetail, SnapDetail, SnapHeat, SnapMode } from "./HitDetail";
+import { IModelApp } from "./IModelApp";
 import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
-import { DecorateContext } from "./ViewContext";
+import { StandardViewId } from "./StandardView";
+import { BeButton, BeButtonEvent, CoordinateLockOverrides, CoordSource, InputCollector } from "./tools/Tool";
 import { ViewTool } from "./tools/ViewTool";
+import { DecorateContext } from "./ViewContext";
+import { linePlaneIntersect, ScreenViewport, Viewport } from "./Viewport";
+import { ViewState } from "./ViewState";
 
 // cspell:ignore dont primitivetools
 
@@ -1945,7 +1946,7 @@ export class AccuDraw {
       let angle = 0.0; const delta = (Math.PI * 2) / nSides;
       const pts: Point3d[] = [];
 
-      for (let iSide = 0; iSide < nSides; iSide++ , angle += delta)
+      for (let iSide = 0; iSide < nSides; iSide++, angle += delta)
         pts[iSide] = new Point3d(radius * Math.cos(angle), radius * Math.sin(angle), 0.0);
       pts[nSides] = pts[0].clone();
 

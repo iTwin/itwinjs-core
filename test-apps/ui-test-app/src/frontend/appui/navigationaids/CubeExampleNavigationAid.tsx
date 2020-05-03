@@ -3,7 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-
 import { ConfigurableCreateInfo, ConfigurableUiManager, NavigationAidControl } from "@bentley/ui-framework";
 
 // -----------------------------------------------------------------------------

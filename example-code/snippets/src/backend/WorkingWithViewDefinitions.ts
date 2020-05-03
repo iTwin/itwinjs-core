@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Id64String, Id64 } from "@bentley/bentleyjs-core";
-import { ViewQueryParams, ColorDef } from "@bentley/imodeljs-common";
-import { IModelDb, ViewDefinition, DrawingViewDefinition, DisplayStyle } from "@bentley/imodeljs-backend";
+import { Id64, Id64String } from "@bentley/bentleyjs-core";
+import { DisplayStyle, DrawingViewDefinition, IModelDb, ViewDefinition } from "@bentley/imodeljs-backend";
+import { ColorDef, ViewQueryParams } from "@bentley/imodeljs-common";
 
 // __PUBLISH_EXTRACT_START__ IModelDb.Views.iterateViews
 /**

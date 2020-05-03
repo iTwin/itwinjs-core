@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-import { WsgInstance, ECJsonTypeMap } from "../ECJsonTypeMap";
+import { ECJsonTypeMap, WsgInstance } from "../ECJsonTypeMap";
 
 abstract class TestAbstractBaseClass extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "Abstract_Base_String_Property")

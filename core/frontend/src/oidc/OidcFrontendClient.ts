@@ -8,7 +8,7 @@
  */
 
 import { BeEvent, ClientRequestContext, IDisposable } from "@bentley/bentleyjs-core";
-import { AuthorizationClient, AccessToken } from "@bentley/itwin-client";
+import { AccessToken, AuthorizationClient } from "@bentley/itwin-client";
 
 /**
  * Interface to implement a typical frontend client

@@ -6,12 +6,11 @@
  * @module StatusBar
  */
 
+import "./Indicator.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps, Icon } from "@bentley/ui-core";
 import { ConditionalStringValue } from "@bentley/ui-abstract";
-
-import "./Indicator.scss";
+import { CommonProps, Icon } from "@bentley/ui-core";
 
 /** Properties of [[Indicator]] component. */
 interface IndicatorProps extends CommonProps {

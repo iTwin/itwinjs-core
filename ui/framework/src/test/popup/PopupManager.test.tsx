@@ -2,24 +2,22 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-import { mount } from "enzyme";
 import { expect } from "chai";
+import { mount } from "enzyme";
+import * as React from "react";
 import * as sinon from "sinon";
-
 import { Logger } from "@bentley/bentleyjs-core";
-import { MockRender, AngleDescription, LengthDescription } from "@bentley/imodeljs-frontend";
-import { AbstractToolbarProps, BadgeType, RelativePosition, PropertyDescription } from "@bentley/ui-abstract";
-import { Point } from "@bentley/ui-core";
+import { AngleDescription, LengthDescription, MockRender } from "@bentley/imodeljs-frontend";
+import { AbstractToolbarProps, BadgeType, PropertyDescription, RelativePosition } from "@bentley/ui-abstract";
 import { EditorContainer } from "@bentley/ui-components";
+import { Point } from "@bentley/ui-core";
 import { Toolbar } from "@bentley/ui-ninezone";
-
-import { MenuButton } from "../../ui-framework/accudraw/MenuButton";
-import { Calculator } from "../../ui-framework/accudraw/Calculator";
-import { TestUtils } from "../TestUtils";
-import { PopupManager, PopupRenderer, PopupInfo } from "../../ui-framework/popup/PopupManager";
-import { MenuItemProps } from "../../ui-framework/shared/MenuItem";
 import { AccuDrawPopupManager } from "../../ui-framework/accudraw/AccuDrawPopupManager";
+import { Calculator } from "../../ui-framework/accudraw/Calculator";
+import { MenuButton } from "../../ui-framework/accudraw/MenuButton";
+import { PopupInfo, PopupManager, PopupRenderer } from "../../ui-framework/popup/PopupManager";
+import { MenuItemProps } from "../../ui-framework/shared/MenuItem";
+import { TestUtils } from "../TestUtils";
 
 describe("PopupManager", () => {
 

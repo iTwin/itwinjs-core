@@ -6,18 +6,14 @@
  * @module Slider
  */
 
-import * as React from "react";
-import classnames from "classnames";
-import {
-  Slider as CompoundSlider,
-  Handles, Rail, SliderItem, Tracks, Ticks,
-  GetRailProps, GetTrackProps, SliderModeFunction,
-} from "react-compound-slider";
-
-import { CommonProps } from "../utils/Props";
-import { BodyText } from "../text/BodyText";
-
 import "./Slider.scss";
+import classnames from "classnames";
+import * as React from "react";
+import {
+  GetRailProps, GetTrackProps, Handles, Rail, Slider as CompoundSlider, SliderItem, SliderModeFunction, Ticks, Tracks,
+} from "react-compound-slider";
+import { BodyText } from "../text/BodyText";
+import { CommonProps } from "../utils/Props";
 
 // cspell:ignore pushable
 

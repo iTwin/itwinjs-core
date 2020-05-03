@@ -14,15 +14,14 @@ type int32 = number;
 type float32 = number;
 type float64 = number;
 
+import { AList } from "../../system/collection/AList";
+import { Message } from "../../system/runtime/Message";
+import { Strings } from "../../system/runtime/Strings";
+import { Coordinate } from "../geom/Coordinate";
 import { Axis } from "./Axis";
 import { CRS } from "./CRS";
 import { Registry } from "./Registry";
 import { Unit } from "./Unit";
-
-import { Coordinate } from "../geom/Coordinate";
-import { AList } from "../../system/collection/AList";
-import { Strings } from "../../system/runtime/Strings";
-import { Message } from "../../system/runtime/Message";
 
 /**
  * Class CoordinateSystem manages the different coordinate systems.

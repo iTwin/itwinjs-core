@@ -6,20 +6,23 @@
  * @module iModelHub
  */
 
-import { Logger, BriefcaseStatus, Config } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext, FileHandler, ProgressInfo, ProgressCallback, request, RequestOptions, ResponseError, CancelRequest, UserCancelledError, SasUrlExpired, DownloadFailed } from "@bentley/itwin-client";
-import { Transform, TransformCallback, PassThrough } from "stream";
-import { BackendITwinClientLoggerCategory } from "../BackendITwinClientLoggerCategory";
-import WriteStreamAtomic = require("fs-write-stream-atomic");
-import { AzCopy, ProgressEventArgs, StringEventArgs, InitEventArgs } from "../util/AzCopy";
-import { ArgumentCheck } from "@bentley/imodelhub-client";
 import * as fs from "fs";
-import * as https from "https";
 import * as http from "http";
-import * as path from "path";
+import * as https from "https";
 import * as os from "os";
+import * as path from "path";
+import { PassThrough, Transform, TransformCallback } from "stream";
 import * as urllib from "url";
+import { BriefcaseStatus, Config, Logger } from "@bentley/bentleyjs-core";
+import { ArgumentCheck } from "@bentley/imodelhub-client";
+import {
+  AuthorizedClientRequestContext, CancelRequest, DownloadFailed, FileHandler, ProgressCallback, ProgressInfo, request, RequestOptions, ResponseError,
+  SasUrlExpired, UserCancelledError,
+} from "@bentley/itwin-client";
+import { BackendITwinClientLoggerCategory } from "../BackendITwinClientLoggerCategory";
+import { AzCopy, InitEventArgs, ProgressEventArgs, StringEventArgs } from "../util/AzCopy";
 
+import WriteStreamAtomic = require("fs-write-stream-atomic");
 const loggerCategory: string = BackendITwinClientLoggerCategory.FileHandlers;
 
 /**

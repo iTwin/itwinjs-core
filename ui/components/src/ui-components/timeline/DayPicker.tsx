@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
 import "./DayPicker.scss";
+import * as React from "react";
 import { UiComponents } from "../../ui-components/UiComponents";
 
 // component is in alpha state - it may change after usability testing - test coverage not complete

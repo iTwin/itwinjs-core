@@ -6,8 +6,8 @@
  * @module Table
  */
 
-import { PropertyValueFormat, PropertyRecord, Primitives } from "@bentley/ui-abstract";
-import { RowItem, CellItem } from "../TableDataProvider";
+import { Primitives, PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
+import { CellItem, RowItem } from "../TableDataProvider";
 
 /** Column Filtering utility methods
  * @internal

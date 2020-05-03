@@ -7,25 +7,13 @@
  */
 
 import * as _ from "lodash";
-import {
-  TreeNodeItem,
-  PageOptions,
-  DelayLoadedTreeNodeItem,
-  TreeDataChangesListener,
-} from "@bentley/ui-components";
-import { ListItem } from "../ListPicker";
-import {
-  RegisteredRuleset,
-  NodeKey,
-  NodePathElement,
-} from "@bentley/presentation-common";
-import { Viewport, IModelConnection } from "@bentley/imodeljs-frontend";
-import {
-  PresentationTreeDataProvider,
-  IPresentationTreeDataProvider,
-} from "@bentley/presentation-components";
 import { BeEvent } from "@bentley/bentleyjs-core";
+import { IModelConnection, Viewport } from "@bentley/imodeljs-frontend";
+import { NodeKey, NodePathElement, RegisteredRuleset } from "@bentley/presentation-common";
+import { IPresentationTreeDataProvider, PresentationTreeDataProvider } from "@bentley/presentation-components";
+import { DelayLoadedTreeNodeItem, PageOptions, TreeDataChangesListener, TreeNodeItem } from "@bentley/ui-components";
 import { CheckBoxInfo } from "@bentley/ui-core";
+import { ListItem } from "../ListPicker";
 
 /** @internal */
 export type TreeNodePromise = Promise<DelayLoadedTreeNodeItem | undefined>;

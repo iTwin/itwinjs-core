@@ -4,41 +4,18 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import {
-  Vector3d,
-  Range1d,
-  Point3d,
-} from "@bentley/geometry-core";
-import { DisplayStyle3dSettings } from "../DisplayStyleSettings";
-import {
-  PlanProjectionSettings,
-  PlanProjectionSettingsProps,
-} from "../PlanProjectionSettings";
-import {
-  BackgroundMapProps,
-  BackgroundMapSettings,
-  BackgroundMapType,
-  GlobeMode,
-} from "../BackgroundMapSettings";
-import {
-  SolarShadowSettings,
-  SolarShadowSettingsProps,
-} from "../SolarShadows";
-import { TerrainHeightOriginMode } from "../TerrainSettings";
+import { Point3d, Range1d, Vector3d } from "@bentley/geometry-core";
+import { BackgroundMapProps, BackgroundMapSettings, BackgroundMapType, GlobeMode } from "../BackgroundMapSettings";
 import { ColorByName } from "../ColorByName";
 import { ColorDef } from "../ColorDef";
+import { DisplayStyle3dSettings } from "../DisplayStyleSettings";
+import { LightSettings, LightSettingsProps } from "../LightSettings";
+import { PlanProjectionSettings, PlanProjectionSettingsProps } from "../PlanProjectionSettings";
 import { RgbColor } from "../RgbColor";
+import { SolarShadowSettings, SolarShadowSettingsProps } from "../SolarShadows";
+import { TerrainHeightOriginMode } from "../TerrainSettings";
 import {
-  LightSettings,
-  LightSettingsProps,
-} from "../LightSettings";
-import {
-  ThematicDisplayProps,
-  ThematicDisplay,
-  ThematicDisplayMode,
-  ThematicGradientMode,
-  ThematicGradientColorScheme,
-  ThematicDisplaySensorSettings,
+  ThematicDisplay, ThematicDisplayMode, ThematicDisplayProps, ThematicDisplaySensorSettings, ThematicGradientColorScheme, ThematicGradientMode,
 } from "../ThematicDisplay";
 
 describe("PlanProjectionSettings", () => {

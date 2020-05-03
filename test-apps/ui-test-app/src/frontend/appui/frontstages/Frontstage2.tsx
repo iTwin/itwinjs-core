@@ -3,33 +3,19 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-
 import {
-  GroupButton,
-  ToolButton,
-  ToolWidget,
-  ZoneState,
-  NavigationWidget,
-  Frontstage,
-  Zone,
-  Widget,
-  FrontstageProvider,
-  WidgetState,
-  FrontstageProps,
-  ContentGroup,
-  ContentLayoutDef,
-  ActionItemButton,
-  CoreTools,
+  ActionItemButton, ContentGroup, ContentLayoutDef, CoreTools, Frontstage, FrontstageProps, FrontstageProvider, GroupButton, NavigationWidget,
+  ToolButton, ToolWidget, Widget, WidgetState, Zone, ZoneState,
 } from "@bentley/ui-framework";
-
-import { SmallStatusBarWidgetControl } from "../statusbars/SmallStatusBar";
-import { NavigationTreeWidgetControl } from "../widgets/NavigationTreeWidget";
-import { VerticalPropertyGridWidgetControl, HorizontalPropertyGridWidgetControl, HorizontalPropertyGridContentControl } from "../widgets/PropertyGridDemoWidget";
-import { TreeExampleContentControl } from "../contentviews/TreeExampleContent";
-import { MobxDemoWidgetControl } from "../widgets/MobxDemoWidget/MobxDemoWidgetControl";
-
 import { Direction, Toolbar } from "@bentley/ui-ninezone";
 import { AppTools } from "../../tools/ToolSpecifications";
+import { TreeExampleContentControl } from "../contentviews/TreeExampleContent";
+import { SmallStatusBarWidgetControl } from "../statusbars/SmallStatusBar";
+import { MobxDemoWidgetControl } from "../widgets/MobxDemoWidget/MobxDemoWidgetControl";
+import { NavigationTreeWidgetControl } from "../widgets/NavigationTreeWidget";
+import {
+  HorizontalPropertyGridContentControl, HorizontalPropertyGridWidgetControl, VerticalPropertyGridWidgetControl,
+} from "../widgets/PropertyGridDemoWidget";
 
 export class Frontstage2 extends FrontstageProvider {
 

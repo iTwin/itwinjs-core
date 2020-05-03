@@ -7,19 +7,8 @@
  * @module Tools
  */
 
-import {
-  PlanProjectionSettings,
-  PlanProjectionSettingsProps,
-  SubCategoryOverride,
-} from "@bentley/imodeljs-common";
-import {
-  DisplayStyle3dState,
-  IModelApp,
-  ModelState,
-  NotifyMessageDetails,
-  OutputMessagePriority,
-  Viewport,
-} from "@bentley/imodeljs-frontend";
+import { PlanProjectionSettings, PlanProjectionSettingsProps, SubCategoryOverride } from "@bentley/imodeljs-common";
+import { DisplayStyle3dState, IModelApp, ModelState, NotifyMessageDetails, OutputMessagePriority, Viewport } from "@bentley/imodeljs-frontend";
 import { copyStringToClipboard } from "../ClipboardUtilities";
 import { DisplayStyleTool } from "./DisplayStyleTools";
 import { parseArgs } from "./parseArgs";

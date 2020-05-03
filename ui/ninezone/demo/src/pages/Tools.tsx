@@ -3,24 +3,24 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { Panel } from "@src/toolbar/item/expandable/group/Panel";
-import { Group } from "@src/toolbar/item/expandable/group/Group";
-import { GroupColumn } from "@src/toolbar/item/expandable/group/Column";
-import { NestedGroup } from "@src/toolbar/item/expandable/group/Nested";
-import { GroupTool } from "@src/toolbar/item/expandable/group/tool/Tool";
-import { GroupToolExpander } from "@src/toolbar/item/expandable/group/tool/Expander";
-import { Overflow } from "@src/toolbar/item/Overflow";
+import { RelativePosition } from "@bentley/ui-abstract";
+import { Popup } from "@bentley/ui-core";
 import { ExpandableItem } from "@src/toolbar/item/expandable/Expandable";
+import { GroupColumn } from "@src/toolbar/item/expandable/group/Column";
+import { Group } from "@src/toolbar/item/expandable/group/Group";
+import { NestedGroup } from "@src/toolbar/item/expandable/group/Nested";
+import { Panel } from "@src/toolbar/item/expandable/group/Panel";
+import { GroupToolExpander } from "@src/toolbar/item/expandable/group/tool/Expander";
+import { GroupTool } from "@src/toolbar/item/expandable/group/tool/Tool";
 import { Item } from "@src/toolbar/item/Item";
+import { Overflow } from "@src/toolbar/item/Overflow";
 import { Toolbar } from "@src/toolbar/Toolbar";
 import { Direction } from "@src/utilities/Direction";
-import { ToolbarButton } from "@src/widget/tools/button/Button";
 import { AppButton } from "@src/widget/tools/button/App";
 import { BackButton } from "@src/widget/tools/button/Back";
+import { ToolbarButton } from "@src/widget/tools/button/Button";
 import { ExpandableButton } from "@src/widget/tools/button/Expandable";
 import { ToolbarIcon } from "@src/widget/tools/button/Icon";
-import { Popup } from "@bentley/ui-core";
-import { RelativePosition } from "@bentley/ui-abstract";
 
 interface State {
   direction: RelativePosition;

@@ -2,9 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ColorDef, Feature, LinePixels, RgbColor } from "@bentley/imodeljs-common";
-import { EmphasizeElements, FeatureOverrideType, FeatureSymbology, IModelConnection, MockRender, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId } from "@bentley/imodeljs-frontend";
 import { assert, expect } from "chai";
+import { ColorDef, Feature, LinePixels, RgbColor } from "@bentley/imodeljs-common";
+import {
+  EmphasizeElements, FeatureOverrideType, FeatureSymbology, IModelConnection, MockRender, ScreenViewport, SnapshotConnection, SpatialViewState,
+  StandardViewId,
+} from "@bentley/imodeljs-frontend";
 
 describe("EmphasizeElements tests", () => {
   let imodel: IModelConnection;

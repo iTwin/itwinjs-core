@@ -5,7 +5,7 @@
 import * as React from "react";
 import * as sinon from "sinon";
 import { render } from "@testing-library/react";
-import { NineZoneProvider, createNineZoneState } from "../../ui-ninezone";
+import { createNineZoneState, NineZoneProvider } from "../../ui-ninezone";
 
 describe("<NineZoneProvider />", () => {
   it("renders correctly", () => {

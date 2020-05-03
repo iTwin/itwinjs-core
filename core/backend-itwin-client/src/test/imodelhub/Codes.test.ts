@@ -3,19 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-import * as utils from "./TestUtils";
-
-import { IModelHubStatus, Id64, GuidString } from "@bentley/bentleyjs-core";
+import { GuidString, Id64, IModelHubStatus } from "@bentley/bentleyjs-core";
 import {
-  AccessToken, AuthorizedClientRequestContext,
-} from "@bentley/itwin-client";
+  AggregateResponseError, CodeQuery, CodeSequence, CodeSequenceType, CodeState, ConflictingCodesError, HubCode, IModelClient, IModelHubClientError,
+} from "@bentley/imodelhub-client";
+import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { TestUsers } from "@bentley/oidc-signin-tool";
 import { ResponseBuilder } from "../ResponseBuilder";
 import { TestConfig } from "../TestConfig";
-import {
-  IModelClient, CodeState, HubCode, AggregateResponseError, ConflictingCodesError, CodeQuery,
-  IModelHubClientError, CodeSequence, CodeSequenceType,
-} from "@bentley/imodelhub-client";
+import * as utils from "./TestUtils";
+
 chai.should();
 
 function containsCode(codes: HubCode[], wantCode: HubCode) {

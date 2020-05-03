@@ -6,8 +6,8 @@
  * @module Loading
  */
 
-import * as React from "react";
 import "./LoadingSpinner.scss";
+import * as React from "react";
 import { Spinner, SpinnerProps } from "./Spinner";
 
 /** Properties for [[LoadingSpinner]] component

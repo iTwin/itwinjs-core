@@ -6,11 +6,10 @@
  * @module Inputs
  */
 
-import * as React from "react";
 import classnames from "classnames";
-
-import { Textarea, TextareaProps } from "./Textarea";
+import * as React from "react";
 import { LabeledComponentProps, MessagedComponentProps } from "./LabeledComponentProps";
+import { Textarea, TextareaProps } from "./Textarea";
 
 /** Properties for [[LabeledTextarea]] component
  * @public

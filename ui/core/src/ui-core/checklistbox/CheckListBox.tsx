@@ -6,11 +6,11 @@
  * @module CheckListBox
  */
 
-import * as React from "react";
+import "./CheckListBox.scss";
 import classnames from "classnames";
+import * as React from "react";
 import { Checkbox } from "../checkbox/Checkbox";
 import { CommonProps } from "../utils/Props";
-import "./CheckListBox.scss";
 
 /** Properties for the [[CheckListBoxItem]] component
  * @public

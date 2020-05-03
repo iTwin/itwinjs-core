@@ -6,25 +6,19 @@
  * @module Toolbar
  */
 import * as React from "react";
-
 import {
-  ToolbarItemUtilities, CommonToolbarItem, ActionButton, GroupButton,
-  CustomButtonDefinition,
-  OnItemExecutedFunc,
-  ConditionalStringValue,
-  StringGetter,
-  ToolbarItem,
+  ActionButton, CommonToolbarItem, ConditionalStringValue, CustomButtonDefinition, GroupButton, OnItemExecutedFunc, StringGetter, ToolbarItem,
+  ToolbarItemUtilities,
 } from "@bentley/ui-abstract";
-
-import { IconHelper } from "@bentley/ui-core";
-import { ToolItemDef } from "../shared/ToolItemDef";
-import { CommandItemDef } from "../shared/CommandItemDef";
-import { AnyItemDef } from "../shared/AnyItemDef";
-import { CustomItemDef } from "../shared/CustomItemDef";
-import { GroupItemDef } from "./GroupItem";
-import { GroupButtonItem } from "./GroupButtonItem";
-import { ActionButtonItem } from "./ActionButtonItem";
 import { CustomToolbarItem } from "@bentley/ui-components";
+import { IconHelper } from "@bentley/ui-core";
+import { AnyItemDef } from "../shared/AnyItemDef";
+import { CommandItemDef } from "../shared/CommandItemDef";
+import { CustomItemDef } from "../shared/CustomItemDef";
+import { ToolItemDef } from "../shared/ToolItemDef";
+import { ActionButtonItem } from "./ActionButtonItem";
+import { GroupButtonItem } from "./GroupButtonItem";
+import { GroupItemDef } from "./GroupItem";
 
 /** Helper functions for defining an ToolbarComposer.
  * @beta

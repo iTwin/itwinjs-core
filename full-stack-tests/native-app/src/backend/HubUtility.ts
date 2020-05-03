@@ -2,13 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import * as os from "os";
+import * as path from "path";
 import { GuidString } from "@bentley/bentleyjs-core";
 import { Project } from "@bentley/context-registry-client";
 import { ChangeSet, ChangeSetQuery, HubIModel, IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
 import { BriefcaseManager, IModelJsFs } from "@bentley/imodeljs-backend";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import * as os from "os";
-import * as path from "path";
 
 /** Utility to work with iModelHub */
 export class HubUtility {

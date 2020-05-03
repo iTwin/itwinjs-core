@@ -3,28 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { CheckBox, createButton, createCheckBox, createColorInput, createLabeledNumericInput, createTextBox } from "@bentley/frontend-devtools";
 import { Vector3d } from "@bentley/geometry-core";
-import {
-  ColorDef,
-  LightSettings,
-  LightSettingsProps,
-  RenderMode,
-  RgbColor,
-  SolarShadowSettings,
-  ViewFlags,
-} from "@bentley/imodeljs-common";
-import {
-  Viewport,
-  ViewState,
-} from "@bentley/imodeljs-frontend";
-import {
-  CheckBox,
-  createButton,
-  createCheckBox,
-  createColorInput,
-  createLabeledNumericInput,
-  createTextBox,
-} from "@bentley/frontend-devtools";
+import { ColorDef, LightSettings, LightSettingsProps, RenderMode, RgbColor, SolarShadowSettings, ViewFlags } from "@bentley/imodeljs-common";
+import { Viewport, ViewState } from "@bentley/imodeljs-frontend";
 
 type Update = (view: ViewState) => void;
 

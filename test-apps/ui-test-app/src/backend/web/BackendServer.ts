@@ -5,9 +5,9 @@
 // tslint:disable:no-console
 import * as fs from "fs";
 import * as path from "path";
-import { IModelError, IModelStatus, RpcInterfaceDefinition, BentleyCloudRpcManager } from "@bentley/imodeljs-common";
+import { EnvMacroSubst, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { IModelJsExpressServer } from "@bentley/express-server";
-import { Logger, LogLevel, EnvMacroSubst } from "@bentley/bentleyjs-core";
+import { BentleyCloudRpcManager, IModelError, IModelStatus, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
 import { BunyanLoggerConfig, SeqLoggerConfig } from "@bentley/logger-config";
 import { TestAppConfiguration } from "../../common/TestAppConfiguration";
 

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 // __PUBLISH_EXTRACT_START__ RpcInterface.implementation
-import { RpcInterface, RpcInterfaceDefinition, IModelRpcProps } from "@bentley/imodeljs-common";
+import { IModelRpcProps, RpcInterface, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
 import { Id64String } from "@bentley/bentleyjs-core";
 import { IModelDb } from "@bentley/imodeljs-backend";
 import { RobotWorldEngine } from "./RobotWorldEngine";
@@ -29,7 +29,7 @@ export class RobotWorldReadRpcImpl extends RpcInterface implements RobotWorldRea
 // __PUBLISH_EXTRACT_END__
 
 // tslint:disable:no-duplicate-imports - Disable this because it is intentionally separated.
-import { Point3d, Angle, XYZProps, AngleProps } from "@bentley/geometry-core";
+import { Angle, AngleProps, Point3d, XYZProps } from "@bentley/geometry-core";
 import { RobotWorldWriteRpcInterface } from "../common/RobotWorldRpcInterface";
 
 // Implement RobotWorldWriteRpcInterface

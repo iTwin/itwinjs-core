@@ -6,24 +6,21 @@
  * @module Widget
  */
 
+import "./VisibilityWidget.scss";
 import * as React from "react";
-
-import { IModelApp, SelectedViewportChangedArgs, IModelConnection, Viewport } from "@bentley/imodeljs-frontend";
-import { RelativePosition, IconSpecUtilities } from "@bentley/ui-abstract";
-import { ScrollPositionMaintainer } from "@bentley/ui-core";
 import { BeUiEvent } from "@bentley/bentleyjs-core";
+import hierarchyTreeSvg from "@bentley/icons-generic/icons/hierarchy-tree.svg?sprite";
+import { IModelApp, IModelConnection, SelectedViewportChangedArgs, Viewport } from "@bentley/imodeljs-frontend";
+import { IconSpecUtilities, RelativePosition } from "@bentley/ui-abstract";
 import { ContextMenu, ContextMenuItem, SelectionMode } from "@bentley/ui-components";
-import { connectIModelConnection } from "../redux/connectIModel";
-
+import { ScrollPositionMaintainer } from "@bentley/ui-core";
+import { ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";
+import { CategoryTreeWithSearchBox } from "../imodel-components/category-tree/CategoriesTreeWithSearchBox";
+import { ModelsTree, ModelsTreeSelectionPredicate } from "../imodel-components/models-tree/ModelsTree";
 import { SpatialContainmentTree } from "../imodel-components/spatial-tree/SpatialContainmentTree";
+import { connectIModelConnection } from "../redux/connectIModel";
 import { UiFramework } from "../UiFramework";
 import { WidgetControl } from "../widgets/WidgetControl";
-import { ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";
-import { ModelsTree, ModelsTreeSelectionPredicate } from "../imodel-components/models-tree/ModelsTree";
-import { CategoryTreeWithSearchBox } from "../imodel-components/category-tree/CategoriesTreeWithSearchBox";
-
-import hierarchyTreeSvg from "@bentley/icons-generic/icons/hierarchy-tree.svg?sprite";
-import "./VisibilityWidget.scss";
 
 /**
  * Types of hierarchies displayed in the `VisibilityComponent`

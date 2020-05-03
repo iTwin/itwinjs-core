@@ -6,9 +6,9 @@
  * @module Zone
  */
 
-import { RectangleProps, Rectangle } from "@bentley/ui-core";
-import { WidgetZoneId, getZoneCell } from "./Zones";
-import { RECTANGULAR_DEFAULT_MIN_WIDTH, RECTANGULAR_DEFAULT_MIN_HEIGHT } from "./ResizeStrategy";
+import { Rectangle, RectangleProps } from "@bentley/ui-core";
+import { RECTANGULAR_DEFAULT_MIN_HEIGHT, RECTANGULAR_DEFAULT_MIN_WIDTH } from "./ResizeStrategy";
+import { getZoneCell, WidgetZoneId } from "./Zones";
 
 /** Zone properties used in [[ZonesManagerProps]].
  * @beta

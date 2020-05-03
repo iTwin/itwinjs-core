@@ -6,23 +6,18 @@
  * @module WebGL
  */
 
-import {
-  ProgramBuilder,
-  ShaderBuilderFlags,
-  VariableType,
-  VertexShaderComponent,
-} from "../ShaderBuilder";
-import { addModelViewMatrix, addProjectionMatrix, addLineWeight, addNormalMatrix } from "./Vertex";
+import { AttributeMap } from "../AttributeMap";
+import { ProgramBuilder, ShaderBuilderFlags, VariableType, VertexShaderComponent } from "../ShaderBuilder";
+import { IsAnimated, IsInstanced, IsThematic } from "../TechniqueFlags";
+import { TechniqueId } from "../TechniqueId";
 import { addAnimation } from "./Animation";
-import { addViewport, addModelToWindowCoordinates } from "./Viewport";
 import { addColor } from "./Color";
-import { addWhiteOnWhiteReversal } from "./Fragment";
 import { addShaderFlags } from "./Common";
+import { addWhiteOnWhiteReversal } from "./Fragment";
 import { addLineCode, adjustWidth } from "./Polyline";
 import { octDecodeNormal } from "./Surface";
-import { IsInstanced, IsAnimated, IsThematic } from "../TechniqueFlags";
-import { AttributeMap } from "../AttributeMap";
-import { TechniqueId } from "../TechniqueId";
+import { addLineWeight, addModelViewMatrix, addNormalMatrix, addProjectionMatrix } from "./Vertex";
+import { addModelToWindowCoordinates, addViewport } from "./Viewport";
 
 const decodeEndPointAndQuadIndices = `
   g_otherIndex = decodeUInt24(a_endPointAndQuadIndices.xyz);

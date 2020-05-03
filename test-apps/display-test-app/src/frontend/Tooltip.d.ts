@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 declare module 'tooltip.js' {
-  import { Boundary, Placement, PopperOptions } from 'popper.js';
+import { Boundary, Placement, PopperOptions } from "popper.js";
 
   export type PlacementFunction = (tooltip: HTMLElement, reference: HTMLElement) => string;
 

@@ -6,14 +6,12 @@
  * @module Core
  */
 
-import { DisposeFunc, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
-import { RpcManager } from "@bentley/imodeljs-common";
+import { ClientRequestContext, DisposeFunc, Logger } from "@bentley/bentleyjs-core";
 import { IModelHost } from "@bentley/imodeljs-backend";
-import {
-  PresentationRpcInterface, PresentationError, PresentationStatus,
-} from "@bentley/presentation-common";
-import { PresentationRpcImpl } from "./PresentationRpcImpl";
+import { RpcManager } from "@bentley/imodeljs-common";
+import { PresentationError, PresentationRpcInterface, PresentationStatus } from "@bentley/presentation-common";
 import { PresentationManager, PresentationManagerProps } from "./PresentationManager";
+import { PresentationRpcImpl } from "./PresentationRpcImpl";
 import { TemporaryStorage } from "./TemporaryStorage";
 
 const defaultRequestTimeout: number = 90000;

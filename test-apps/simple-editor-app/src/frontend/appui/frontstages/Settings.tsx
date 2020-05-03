@@ -6,12 +6,12 @@
  * @module Settings
  */
 
+import "./Settings.scss";
 import * as React from "react";
 import { connect } from "react-redux";
 import { Dispatch } from "redux";
 import { Toggle } from "@bentley/ui-core";
-import { UiFramework, ColorTheme, ModalFrontstageInfo, UiShowHideManager } from "@bentley/ui-framework";
-import "./Settings.scss";
+import { ColorTheme, ModalFrontstageInfo, UiFramework, UiShowHideManager } from "@bentley/ui-framework";
 import { RootState, SampleAppActions } from "../..";
 
 /** Modal frontstage displaying the active settings.

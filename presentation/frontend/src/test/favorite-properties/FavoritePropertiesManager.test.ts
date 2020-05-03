@@ -7,14 +7,13 @@
 import { expect } from "chai";
 import sinon from "sinon";
 import * as moq from "typemoq";
-import {
-  createRandomNestedContentField, createRandomPropertiesField, createRandomPrimitiveField, createRandomRelatedClassInfo,
-} from "@bentley/presentation-common/lib/test/_helpers/random";
-import { Field, PropertiesField, NestedContentField, PropertyInfo } from "@bentley/presentation-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { Field, NestedContentField, PropertiesField, PropertyInfo } from "@bentley/presentation-common";
 import {
-  FavoritePropertiesManager, IFavoritePropertiesStorage, FavoritePropertiesOrderInfo,
-  FavoritePropertiesScope, getFieldInfos, createFieldOrderInfos,
+  createRandomNestedContentField, createRandomPrimitiveField, createRandomPropertiesField, createRandomRelatedClassInfo,
+} from "@bentley/presentation-common/lib/test/_helpers/random";
+import {
+  createFieldOrderInfos, FavoritePropertiesManager, FavoritePropertiesOrderInfo, FavoritePropertiesScope, getFieldInfos, IFavoritePropertiesStorage,
 } from "../../presentation-frontend";
 import { PropertyFullName } from "../../presentation-frontend/favorite-properties/FavoritePropertiesManager";
 

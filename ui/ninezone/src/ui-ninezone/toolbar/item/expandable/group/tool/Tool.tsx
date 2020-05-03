@@ -6,10 +6,10 @@
  * @module Toolbar
  */
 
+import "./Tool.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { CommonProps, useTargeted } from "@bentley/ui-core";
-import "./Tool.scss";
 
 /** Properties of [[GroupTool]] component.
  * @alpha

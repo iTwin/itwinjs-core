@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import "webpack-dev-server";
 import * as path from "path";
 import * as merge from "webpack-merge";
-import "webpack-dev-server";
 import commonConfig from "./webpack.common";
 
 const config = merge(commonConfig, {

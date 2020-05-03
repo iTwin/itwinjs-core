@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-import { IModelHubStatus, GuidString } from "@bentley/bentleyjs-core";
+import { GuidString, IModelHubStatus } from "@bentley/bentleyjs-core";
+import { IModelClient, IModelHubClientError, UserStatistics, UserStatisticsQuery } from "@bentley/imodelhub-client";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { TestUsers } from "@bentley/oidc-signin-tool";
-import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
-import * as utils from "./TestUtils";
+import { RequestType, ResponseBuilder, ScopeType } from "../ResponseBuilder";
 import { TestConfig } from "../TestConfig";
-import { UserStatistics, IModelClient, UserStatisticsQuery, IModelHubClientError } from "@bentley/imodelhub-client";
+import * as utils from "./TestUtils";
 
 chai.should();
 

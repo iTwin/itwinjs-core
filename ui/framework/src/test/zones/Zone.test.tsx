@@ -6,11 +6,11 @@ import { expect } from "chai";
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import TestUtils from "../TestUtils";
-import { Zone } from "../../ui-framework";
-import { ZoneRuntimeProps } from "../../ui-framework/zones/Zone";
-import { WidgetDef } from "../../ui-framework/widgets/WidgetDef";
 import { WidgetState } from "@bentley/ui-abstract";
+import { Zone } from "../../ui-framework";
+import { WidgetDef } from "../../ui-framework/widgets/WidgetDef";
+import { ZoneRuntimeProps } from "../../ui-framework/zones/Zone";
+import TestUtils from "../TestUtils";
 
 describe("Zone", () => {
 

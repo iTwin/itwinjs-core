@@ -6,7 +6,7 @@
  * @module Tree
  */
 
-import { produce, Patch } from "immer";
+import { Patch, produce } from "immer";
 import { BeUiEvent } from "@bentley/bentleyjs-core";
 import { MutableTreeModel, TreeModel, VisibleTreeNodes } from "./TreeModel";
 

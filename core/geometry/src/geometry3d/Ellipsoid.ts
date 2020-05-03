@@ -7,31 +7,30 @@
  * @module CartesianGeometry
  */
 
-import { Point3d, Vector3d } from "./Point3dVector3d";
-
-import { Transform } from "./Transform";
-
-import { SphereImplicit, SineCosinePolynomial, TrigPolynomial } from "../numerics/Polynomials";
-import { Ray3d } from "./Ray3d";
-import { Matrix3d } from "./Matrix3d";
-import { Range3d, Range1d } from "./Range";
-import { AngleSweep } from "./AngleSweep";
-import { AxisIndex, Geometry, AxisOrder } from "../Geometry";
-import { Angle } from "./Angle";
-import { UVSurface } from "./GeometryHandler";
-import { Plane3dByOriginAndVectors } from "./Plane3dByOriginAndVectors";
 import { CurveAndSurfaceLocationDetail, UVSurfaceLocationDetail } from "../bspline/SurfaceLocationDetail";
-import { CurveLocationDetail } from "../curve/CurveLocationDetail";
-import { LongitudeLatitudeNumber } from "./LongitudeLatitudeAltitude";
-import { NewtonEvaluatorRRtoRRD, Newton2dUnboundedWithDerivative } from "../numerics/Newton";
-import { Arc3d } from "../curve/Arc3d";
-import { TriDiagonalSystem } from "../numerics/TriDiagonalSystem";
-import { Plane3dByOriginAndUnitNormal } from "./Plane3dByOriginAndUnitNormal";
-import { XYAndZ } from "./XYZProps";
-import { Point4d } from "../geometry4d/Point4d";
 import { Clipper } from "../clipping/ClipUtils";
-import { Order3Bezier } from "../numerics/BezierPolynomials";
+import { Arc3d } from "../curve/Arc3d";
+import { CurveLocationDetail } from "../curve/CurveLocationDetail";
 import { AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive";
+import { AxisIndex, AxisOrder, Geometry } from "../Geometry";
+import { Point4d } from "../geometry4d/Point4d";
+import { Order3Bezier } from "../numerics/BezierPolynomials";
+import { Newton2dUnboundedWithDerivative, NewtonEvaluatorRRtoRRD } from "../numerics/Newton";
+import { SineCosinePolynomial, SphereImplicit, TrigPolynomial } from "../numerics/Polynomials";
+import { TriDiagonalSystem } from "../numerics/TriDiagonalSystem";
+import { Angle } from "./Angle";
+import { AngleSweep } from "./AngleSweep";
+import { UVSurface } from "./GeometryHandler";
+import { LongitudeLatitudeNumber } from "./LongitudeLatitudeAltitude";
+import { Matrix3d } from "./Matrix3d";
+import { Plane3dByOriginAndUnitNormal } from "./Plane3dByOriginAndUnitNormal";
+import { Plane3dByOriginAndVectors } from "./Plane3dByOriginAndVectors";
+import { Point3d, Vector3d } from "./Point3dVector3d";
+import { Range1d, Range3d } from "./Range";
+import { Ray3d } from "./Ray3d";
+import { Transform } from "./Transform";
+import { XYAndZ } from "./XYZProps";
+
 /**
  * For one component (x,y, or z) on the sphere
  *    f(theta,phi) = c + (u * cos(theta) + v * sin(theta)) * cos(phi) + w * sin(phi)

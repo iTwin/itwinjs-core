@@ -7,14 +7,8 @@
  */
 
 import { JsonUtils } from "@bentley/bentleyjs-core";
-import {
-  Vector3d,
-  XYZProps,
-} from "@bentley/geometry-core";
-import {
-  RgbColor,
-  RgbColorProps,
-} from "./RgbColor";
+import { Vector3d, XYZProps } from "@bentley/geometry-core";
+import { RgbColor, RgbColorProps } from "./RgbColor";
 
 function extractIntensity(value: number | undefined, defaultValue: number) {
   const maxIntensity = 5;

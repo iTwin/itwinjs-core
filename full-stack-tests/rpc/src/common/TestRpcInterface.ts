@@ -2,8 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { RpcInterface, RpcManager, RpcOperationsProfile, IModelRpcProps, RpcNotFoundResponse, IModelReadRpcInterface, WipRpcInterface, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
 import { Id64String } from "@bentley/bentleyjs-core";
+import {
+  IModelReadRpcInterface, IModelRpcProps, RpcInterface, RpcInterfaceDefinition, RpcManager, RpcNotFoundResponse, RpcOperationsProfile,
+  WipRpcInterface,
+} from "@bentley/imodeljs-common";
 
 export interface TestOp1Params {
   a: number;

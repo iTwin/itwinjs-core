@@ -7,19 +7,10 @@
  */
 
 import { assert } from "@bentley/bentleyjs-core";
-import {
-  Angle,
-  AngleProps,
-} from "@bentley/geometry-core";
-import {
-  ImageBuffer,
-  ImageBufferFormat,
-} from "./Image";
-import {
-  ColorDef,
-  ColorDefProps,
-} from "./ColorDef";
-import { ThematicGradientSettingsProps, ThematicGradientSettings, ThematicGradientColorScheme, ThematicGradientMode } from "./ThematicDisplay";
+import { Angle, AngleProps } from "@bentley/geometry-core";
+import { ColorDef, ColorDefProps } from "./ColorDef";
+import { ImageBuffer, ImageBufferFormat } from "./Image";
+import { ThematicGradientColorScheme, ThematicGradientMode, ThematicGradientSettings, ThematicGradientSettingsProps } from "./ThematicDisplay";
 
 /** @beta */
 export namespace Gradient {

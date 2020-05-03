@@ -7,12 +7,12 @@
  * @module Authentication
  */
 
-import { BeEvent, ClientRequestContext, isElectronRenderer, electronRenderer, assert, Logger } from "@bentley/bentleyjs-core";
-import { AccessToken } from "@bentley/itwin-client";
+import { assert, BeEvent, ClientRequestContext, electronRenderer, isElectronRenderer, Logger } from "@bentley/bentleyjs-core";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
-import { DesktopAuthorizationClientConfiguration, defaultDesktopAuthorizationClientExpiryBuffer } from "@bentley/imodeljs-common";
-import { FrontendRequestContext } from "../FrontendRequestContext";
+import { defaultDesktopAuthorizationClientExpiryBuffer, DesktopAuthorizationClientConfiguration } from "@bentley/imodeljs-common";
+import { AccessToken } from "@bentley/itwin-client";
 import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
+import { FrontendRequestContext } from "../FrontendRequestContext";
 
 const ipc = isElectronRenderer ? electronRenderer.ipcRenderer : undefined;
 

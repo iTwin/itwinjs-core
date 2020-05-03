@@ -6,11 +6,11 @@
  * @module Widget
  */
 
+import "./Group.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { CommonProps } from "@bentley/ui-core";
 import { HorizontalAnchor, HorizontalAnchorHelpers, VerticalAnchor, VerticalAnchorHelpers } from "../../Stacked";
-import "./Group.scss";
 
 /** Available handle modes.
  * @alpha

@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ZoneManager, getDefaultZoneManagerProps, ZoneManagerFloatingProps, ZoneManagerProps } from "../../../ui-ninezone/zones/manager/Zone";
-import { RectangleProps, Rectangle } from "@bentley/ui-core";
+import { Rectangle, RectangleProps } from "@bentley/ui-core";
+import { getDefaultZoneManagerProps, ZoneManager, ZoneManagerFloatingProps, ZoneManagerProps } from "../../../ui-ninezone/zones/manager/Zone";
 
 describe("ZoneManager", () => {
   describe("setAllowsMerging", () => {

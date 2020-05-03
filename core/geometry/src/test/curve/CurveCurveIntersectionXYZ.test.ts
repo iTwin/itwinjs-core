@@ -2,14 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { CurveLocationDetailArrayPair } from "../../curve/CurveCurveIntersectXY";
-import { CurveCurve } from "../../curve/CurveCurve";
-import { LineString3d } from "../../curve/LineString3d";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { Checker } from "../Checker";
 import { expect } from "chai";
 import { Arc3d } from "../../curve/Arc3d";
+import { CurveCurve } from "../../curve/CurveCurve";
+import { CurveLocationDetailArrayPair } from "../../curve/CurveCurveIntersectXY";
+import { LineSegment3d } from "../../curve/LineSegment3d";
+import { LineString3d } from "../../curve/LineString3d";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
+import { Checker } from "../Checker";
 
 /* tslint:disable:no-console */
 function testIntersectionsXYZ(

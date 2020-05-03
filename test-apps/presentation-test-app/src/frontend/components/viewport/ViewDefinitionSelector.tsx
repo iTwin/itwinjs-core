@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as React from "react";
-import { useState, useCallback, useEffect } from "react"; // tslint:disable-line: no-duplicate-imports
 import { Id64String } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { MyAppFrontend } from "../../api/MyAppFrontend";
@@ -18,14 +17,14 @@ export interface RulesetSelectorState {
   availableViewDefinitions?: string[];
 }
 export default function ViewDefinitionSelector(props: ViewDefinitionSelectorProps) {
-  const [availableViewDefinitions, setAvailableViewDefinitions] = useState<Array<{ id: Id64String, class: string, label: string }> | undefined>();
-  useEffect(() => {
+  const [availableViewDefinitions, setAvailableViewDefinitions] = React.useState<Array<{ id: Id64String, class: string, label: string }> | undefined>();
+  React.useEffect(() => {
     setAvailableViewDefinitions([]);
     // tslint:disable-next-line: no-floating-promises
     MyAppFrontend.getViewDefinitions(props.imodel).then(setAvailableViewDefinitions);
   }, [props.imodel]);
   const onViewDefinitionSelected = props.onViewDefinitionSelected;
-  const memoizedOnViewDefinitionSelected = useCallback((evt: React.ChangeEvent<HTMLSelectElement>) => {
+  const memoizedOnViewDefinitionSelected = React.useCallback((evt: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedId = evt.target.value || undefined;
     if (onViewDefinitionSelected)
       onViewDefinitionSelected(selectedId);

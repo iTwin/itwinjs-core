@@ -6,9 +6,9 @@
  * @module iModelHubClient
  */
 
-import { ArgumentCheck } from "./Errors";
 import { GuidString } from "@bentley/bentleyjs-core";
-import { WsgQuery, RequestQueryOptions } from "@bentley/itwin-client";
+import { RequestQueryOptions, WsgQuery } from "@bentley/itwin-client";
+import { ArgumentCheck } from "./Errors";
 
 /** Query for instances with string based instance ids.
  * @beta

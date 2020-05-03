@@ -3,25 +3,23 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import * as moq from "typemoq";
-import * as sinon from "sinon";
 import { from as rxjsFrom } from "rxjs/internal/observable/from";
+import * as sinon from "sinon";
+import * as moq from "typemoq";
 import { CheckBoxState } from "@bentley/ui-core";
+import { SelectionMode } from "../../../ui-components/common/selection/SelectionModes";
+import { RangeSelection, TreeSelectionManager } from "../../../ui-components/tree/controlled/internal/TreeSelectionManager";
+import { from } from "../../../ui-components/tree/controlled/Observable";
 import { TreeEventDispatcher } from "../../../ui-components/tree/controlled/TreeEventDispatcher";
 import {
-  TreeEvents, TreeSelectionModificationEventArgs,
-  TreeSelectionReplacementEventArgs, TreeCheckboxStateChangeEventArgs,
+  TreeCheckboxStateChangeEventArgs, TreeEvents, TreeSelectionModificationEventArgs, TreeSelectionReplacementEventArgs,
 } from "../../../ui-components/tree/controlled/TreeEvents";
-import { ITreeNodeLoader } from "../../../ui-components/tree/controlled/TreeNodeLoader";
-import { SelectionMode } from "../../../ui-components/common/selection/SelectionModes";
 import {
-  VisibleTreeNodes, MutableTreeModelNode, TreeModel,
-  TreeModelNodePlaceholder, isTreeModelRootNode, isTreeModelNode,
+  isTreeModelNode, isTreeModelRootNode, MutableTreeModelNode, TreeModel, TreeModelNodePlaceholder, VisibleTreeNodes,
 } from "../../../ui-components/tree/controlled/TreeModel";
-import { TreeSelectionManager, RangeSelection } from "../../../ui-components/tree/controlled/internal/TreeSelectionManager";
-import { from } from "../../../ui-components/tree/controlled/Observable";
+import { ITreeNodeLoader } from "../../../ui-components/tree/controlled/TreeNodeLoader";
 import { extractSequence } from "../ObservableTestHelpers";
-import { createRandomMutableTreeModelNodes, createRandomMutableTreeModelNode } from "./RandomTreeNodesHelpers";
+import { createRandomMutableTreeModelNode, createRandomMutableTreeModelNodes } from "./RandomTreeNodesHelpers";
 
 describe("TreeEventDispatcher", () => {
 

@@ -7,18 +7,19 @@
  * @module CartesianGeometry
  */
 import { Geometry, PlaneAltitudeEvaluator } from "../Geometry";
-import { Point2d, Vector2d } from "./Point2dVector2d";
-import { XAndY } from "./XYZProps";
-import { Point3d, Vector3d } from "./Point3dVector3d";
 import { Matrix4d } from "../geometry4d/Matrix4d";
-import { Ray3d } from "./Ray3d";
-import { IndexedXYZCollection, IndexedReadWriteXYZCollection } from "./IndexedXYZCollection";
-import { Point3dArrayCarrier } from "./Point3dArrayCarrier";
+import { Point4d } from "../geometry4d/Point4d";
 import { XYParitySearchContext } from "../topology/XYParitySearchContext";
 import { GrowableXYZArray } from "./GrowableXYZArray";
-import { Range3d, Range1d } from "./Range";
-import { Point4d } from "../geometry4d/Point4d";
+import { IndexedReadWriteXYZCollection, IndexedXYZCollection } from "./IndexedXYZCollection";
+import { Point2d, Vector2d } from "./Point2dVector2d";
+import { Point3dArrayCarrier } from "./Point3dArrayCarrier";
+import { Point3d, Vector3d } from "./Point3dVector3d";
+import { Range1d, Range3d } from "./Range";
+import { Ray3d } from "./Ray3d";
 import { SortablePolygon } from "./SortablePolygon";
+import { XAndY } from "./XYZProps";
+
 /**
  * Carrier for a loop extracted from clip operation, annotated for sorting
  * @internal

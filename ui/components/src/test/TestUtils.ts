@@ -2,21 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { ColorByName } from "@bentley/imodeljs-common";
 import { I18N } from "@bentley/imodeljs-i18n";
 import {
-  PropertyRecord, PrimitiveValue, PropertyValueFormat,
-  PropertyDescription, ArrayValue, StructValue, PropertyEditorParamTypes,
-  ParseResults,
-  ButtonGroupEditorParams,
-  ColorEditorParams,
-  CustomFormattedNumberParams,
-  BasePropertyEditorParams,
-  PropertyEditorInfo,
+  ArrayValue, BasePropertyEditorParams, ButtonGroupEditorParams, ColorEditorParams, CustomFormattedNumberParams, ParseResults, PrimitiveValue,
+  PropertyDescription, PropertyEditorInfo, PropertyEditorParamTypes, PropertyRecord, PropertyValueFormat, StructValue,
 } from "@bentley/ui-abstract";
-import {
-  UiComponents, ColumnDescription, FilterableTable, CompositeFilterDescriptorCollection,
-} from "../ui-components";
-import { ColorByName } from "@bentley/imodeljs-common";
+import { ColumnDescription, CompositeFilterDescriptorCollection, FilterableTable, UiComponents } from "../ui-components";
 import { TableFilterDescriptorCollection } from "../ui-components/table/columnfiltering/TableFilterDescriptorCollection";
 
 // cSpell:ignore buttongroup

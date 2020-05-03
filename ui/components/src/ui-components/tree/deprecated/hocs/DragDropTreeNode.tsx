@@ -6,13 +6,13 @@
  * @module Tree
  */
 
-import * as React from "react";
+import "./DragDropTreeNode.scss";
 import classnames from "classnames";
+import * as React from "react";
 import { DndComponentClass } from "react-dnd";
-import { TreeDragDropType } from "./withDragDrop";
 import { withDragSource, WithDragSourceProps } from "../../../dragdrop/withDragSource";
 import { withDropTarget, WithDropTargetProps } from "../../../dragdrop/withDropTarget";
-import "./DragDropTreeNode.scss";
+import { TreeDragDropType } from "./withDragDrop";
 
 // tslint:disable:deprecation
 

@@ -8,16 +8,15 @@
 
 import { XAndY } from "@bentley/geometry-core";
 import {
-  UiAdmin, AbstractMenuItemProps, AbstractToolbarProps,
-  RelativePosition, OnItemExecutedFunc, OnCancelFunc, OnNumberCommitFunc, Primitives, PropertyDescription, OnValueCommitFunc,
+  AbstractMenuItemProps, AbstractToolbarProps, OnCancelFunc, OnItemExecutedFunc, OnNumberCommitFunc, OnValueCommitFunc, Primitives,
+  PropertyDescription, RelativePosition, UiAdmin,
 } from "@bentley/ui-abstract";
-
-import { CursorInformation } from "../cursor/CursorInformation";
-import { UiFramework } from "../UiFramework";
-import { CursorMenuData } from "../redux/SessionState";
-import { PopupManager } from "../popup/PopupManager";
-import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
 import { AccuDrawPopupManager } from "../accudraw/AccuDrawPopupManager";
+import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
+import { CursorInformation } from "../cursor/CursorInformation";
+import { PopupManager } from "../popup/PopupManager";
+import { CursorMenuData } from "../redux/SessionState";
+import { UiFramework } from "../UiFramework";
 
 /** The UiAdmin controls various UI components and is callable from IModelApp.uiAdmin in the imodeljs-frontend package.
  * @beta

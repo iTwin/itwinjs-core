@@ -6,8 +6,8 @@
  * @module State
  */
 
-import { createAction, ActionsUnion } from "../redux/redux-ts";
 import { SnapMode } from "@bentley/imodeljs-frontend";
+import { ActionsUnion, createAction } from "../redux/redux-ts";
 import { COLOR_THEME_DEFAULT, WIDGET_OPACITY_DEFAULT } from "../theme/ThemeManager";
 
 // cSpell:ignore configurableui snapmode toolprompt

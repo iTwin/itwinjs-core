@@ -2,17 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ClientRequestContext, Id64String, Logger } from "@bentley/bentleyjs-core";
-import { Briefcase as HubBriefcase, BriefcaseQuery, IModelCloudEnvironment, IModelQuery, LockLevel, LockQuery } from "@bentley/imodelhub-client";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { Project } from "@bentley/context-registry-client";
-import { AuthorizedFrontendRequestContext, IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
-import { getAccessTokenFromBackend, TestUserCredentials } from "@bentley/oidc-signin-tool/lib/frontend";
 import { assert } from "chai";
+import { ClientRequestContext, Id64String, Logger } from "@bentley/bentleyjs-core";
+import { Project } from "@bentley/context-registry-client";
+import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
+import { Briefcase as HubBriefcase, BriefcaseQuery, IModelCloudEnvironment, IModelQuery, LockLevel, LockQuery } from "@bentley/imodelhub-client";
+import { AuthorizedFrontendRequestContext, IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { getAccessTokenFromBackend, TestUserCredentials } from "@bentley/oidc-signin-tool/lib/frontend";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
 import { IModelBankCloudEnv } from "./IModelBankCloudEnv";
 import { IModelHubCloudEnv } from "./IModelHubCloudEnv";
-import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 
 export class TestUtility {
   public static imodelCloudEnv: IModelCloudEnvironment;

@@ -4,42 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
+import { BeDuration, DbResult, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
+import { LineSegment3d, Point3d, YawPitchRollAngles } from "@bentley/geometry-core";
+import { Code, ColorByName, GeometryStreamBuilder, IModel, IModelError, SubCategoryAppearance } from "@bentley/imodeljs-common";
 import {
-  BeDuration,
-  DbResult,
-  IModelStatus,
-  OpenMode,
-} from "@bentley/bentleyjs-core";
-import {
-  LineSegment3d,
-  Point3d,
-  YawPitchRollAngles,
-} from "@bentley/geometry-core";
-import {
-  Code,
-  ColorByName,
-  GeometryStreamBuilder,
-  IModel,
-  IModelError,
-  SubCategoryAppearance,
-} from "@bentley/imodeljs-common";
-import {
-  BackendRequestContext,
-  IModelHost,
-  IModelJsFs,
-  IModelJsNative,
-  PhysicalModel,
-  SpatialCategory,
-  StandaloneDb,
-  TxnAction,
-  UpdateModelOptions,
+  BackendRequestContext, IModelHost, IModelJsFs, IModelJsNative, PhysicalModel, SpatialCategory, StandaloneDb, TxnAction, UpdateModelOptions,
 } from "../../imodeljs-backend";
-import {
-  IModelTestUtils,
-  TestElementDrivesElement,
-  TestPhysicalObject,
-  TestPhysicalObjectProps,
-} from "../IModelTestUtils";
+import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject, TestPhysicalObjectProps } from "../IModelTestUtils";
 
 describe("TxnManager", () => {
   let imodel: StandaloneDb;

@@ -6,20 +6,17 @@
  * @module Core
  */
 
-import { IDisposable, BeEvent } from "@bentley/bentleyjs-core";
-import { IModelConnection, EventSource, EventSourceManager, IModelApp } from "@bentley/imodeljs-frontend";
+import { BeEvent, IDisposable } from "@bentley/bentleyjs-core";
+import { EventSource, EventSourceManager, IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
 import {
-  RpcRequestsHandler, RequestPriority, DescriptorOverrides,
-  HierarchyRequestOptions, Node, NodeKey, NodePathElement,
-  ContentRequestOptions, Content, Descriptor, SelectionInfo,
-  Paged, KeySet, InstanceKey, LabelRequestOptions, Ruleset, RulesetVariable, LabelDefinition,
-  PresentationRpcInterface, PresentationRpcEvents, RegisteredRuleset, PresentationUnitSystem,
-  UpdateInfo, HierarchyUpdateInfo, ContentUpdateInfo, PresentationRpcRequestOptions,
-  PartialHierarchyModification, PresentationError, PresentationStatus, PresentationDataCompareOptions,
+  Content, ContentRequestOptions, ContentUpdateInfo, Descriptor, DescriptorOverrides, HierarchyRequestOptions, HierarchyUpdateInfo, InstanceKey,
+  KeySet, LabelDefinition, LabelRequestOptions, Node, NodeKey, NodePathElement, Paged, PartialHierarchyModification, PresentationDataCompareOptions,
+  PresentationError, PresentationRpcEvents, PresentationRpcInterface, PresentationRpcRequestOptions, PresentationStatus, PresentationUnitSystem,
+  RegisteredRuleset, RequestPriority, RpcRequestsHandler, Ruleset, RulesetVariable, SelectionInfo, UpdateInfo,
 } from "@bentley/presentation-common";
-import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager";
-import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
 import { LocalizationHelper } from "./LocalizationHelper";
+import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
+import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager";
 
 /**
  * Properties used to configure [[PresentationManager]]

@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { AccessToken, UserInfo } from "@bentley/itwin-client";
-import { AuthorizedFrontendRequestContext, IModelApp } from "@bentley/imodeljs-frontend";
-import { IModelBankFileSystemContextClient, IModelBankClient } from "@bentley/imodelhub-client";
 import { Project } from "@bentley/context-registry-client";
+import { IModelBankClient, IModelBankFileSystemContextClient } from "@bentley/imodelhub-client";
+import { AuthorizedFrontendRequestContext, IModelApp } from "@bentley/imodeljs-frontend";
+import { AccessToken, UserInfo } from "@bentley/itwin-client";
 
 // A connection to a non-Connect-hosted project and iModel
 export async function initializeCustomCloudEnv(projectName: string | undefined, url: string): Promise<Project | undefined> {

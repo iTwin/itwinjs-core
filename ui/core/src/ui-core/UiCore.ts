@@ -6,13 +6,12 @@
  * @module Utilities
  */
 
-import { Logger } from "@bentley/bentleyjs-core";
-import { I18N } from "@bentley/imodeljs-i18n";
-import { UiError, getClassName, UiAbstract } from "@bentley/ui-abstract";
-
 /** Import color themes and Sass classes barrel file */
 import "./colorthemes.scss";
 import "./classes.scss";
+import { Logger } from "@bentley/bentleyjs-core";
+import { I18N } from "@bentley/imodeljs-i18n";
+import { getClassName, UiAbstract, UiError } from "@bentley/ui-abstract";
 
 /**
  * Manages the I18N service for the ui-core package.

@@ -2,9 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { PrimitiveTool, IModelApp, AccuDrawHintBuilder, BeButtonEvent, DynamicsContext, EventHandled, Viewport, LocateResponse, HitDetail, LocateFilterStatus } from "@bentley/imodeljs-frontend";
 import { Point3d, Vector3d } from "@bentley/geometry-core";
 import { ColorDef } from "@bentley/imodeljs-common";
+import {
+  AccuDrawHintBuilder, BeButtonEvent, DynamicsContext, EventHandled, HitDetail, IModelApp, LocateFilterStatus, LocateResponse, PrimitiveTool,
+  Viewport,
+} from "@bentley/imodeljs-frontend";
 
 export class SamplePrimitiveTool extends PrimitiveTool {
   public static toolId = "Sample.Run";

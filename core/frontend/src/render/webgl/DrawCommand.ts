@@ -6,30 +6,23 @@
  * @module WebGL
  */
 
-import { CachedGeometry } from "./CachedGeometry";
-import { Id64, Id64String, assert } from "@bentley/bentleyjs-core";
+import { assert, Id64, Id64String } from "@bentley/bentleyjs-core";
 import { ViewFlagOverrides } from "@bentley/imodeljs-common";
-import { System } from "./System";
-import { Batch, Branch } from "./Graphic";
-import { BranchState } from "./BranchState";
-import { isFeatureHilited } from "./FeatureOverrides";
-import { Primitive } from "./Primitive";
-import { ShaderProgramExecutor } from "./ShaderProgram";
-import { RenderPass, RenderOrder } from "./RenderFlags";
-import { Target, Hilites } from "./Target";
-import { ClippingType } from "../RenderClipVolume";
 import { AnimationBranchState } from "../GraphicBranch";
-import { TechniqueId } from "./TechniqueId";
+import { ClippingType } from "../RenderClipVolume";
+import { BranchState } from "./BranchState";
+import { CachedGeometry } from "./CachedGeometry";
 import { ClipPlanesVolume } from "./ClipVolume";
+import { isFeatureHilited } from "./FeatureOverrides";
+import { Batch, Branch } from "./Graphic";
 import { UniformHandle } from "./Handle";
-import {
-  IsAnimated,
-  IsClassified,
-  IsInstanced,
-  IsShadowable,
-  TechniqueFlags,
-  IsThematic,
-} from "./TechniqueFlags";
+import { Primitive } from "./Primitive";
+import { RenderOrder, RenderPass } from "./RenderFlags";
+import { ShaderProgramExecutor } from "./ShaderProgram";
+import { System } from "./System";
+import { Hilites, Target } from "./Target";
+import { IsAnimated, IsClassified, IsInstanced, IsShadowable, IsThematic, TechniqueFlags } from "./TechniqueFlags";
+import { TechniqueId } from "./TechniqueId";
 
 // tslint:disable:no-const-enum
 

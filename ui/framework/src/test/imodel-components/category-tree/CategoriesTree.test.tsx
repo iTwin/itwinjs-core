@@ -2,25 +2,24 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { expect } from "chai";
 // tslint:disable: no-direct-imports
 import * as React from "react";
-import { expect } from "chai";
 import * as sinon from "sinon";
-import { render, waitForElement, cleanup, fireEvent } from "@testing-library/react";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
-import { IModelConnection, Viewport, SpatialViewState, ViewManager, ScreenViewport, SubCategoriesCache } from "@bentley/imodeljs-frontend";
-import { PropertyRecord } from "@bentley/ui-abstract";
-import { TreeNodeItem, TreeDataChangesListener } from "@bentley/ui-components";
 import { BeEvent, Id64String } from "@bentley/bentleyjs-core";
+import { IModelConnection, ScreenViewport, SpatialViewState, SubCategoriesCache, ViewManager, Viewport } from "@bentley/imodeljs-frontend";
+import { ECInstancesNodeKey, KeySet, LabelDefinition, Node, NodePathElement, StandardNodeTypes } from "@bentley/presentation-common";
+import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { IPresentationTreeDataProvider } from "@bentley/presentation-components";
 import {
-  SelectionManager, SelectionChangeEvent, Presentation, PresentationManager,
-  RulesetManager, RulesetVariablesManager,
+  Presentation, PresentationManager, RulesetManager, RulesetVariablesManager, SelectionChangeEvent, SelectionManager,
 } from "@bentley/presentation-frontend";
-import { KeySet, ECInstancesNodeKey, StandardNodeTypes, NodePathElement, LabelDefinition, Node } from "@bentley/presentation-common";
-import TestUtils from "../../TestUtils";
+import { PropertyRecord } from "@bentley/ui-abstract";
+import { TreeDataChangesListener, TreeNodeItem } from "@bentley/ui-components";
+import { cleanup, fireEvent, render, waitForElement } from "@testing-library/react";
 import { CategoryTree, toggleAllCategories } from "../../../ui-framework/imodel-components/category-tree/CategoriesTree";
 import { CategoryVisibilityHandler } from "../../../ui-framework/imodel-components/category-tree/CategoryVisibilityHandler";
+import TestUtils from "../../TestUtils";
 
 describe("CategoryTree", () => {
 

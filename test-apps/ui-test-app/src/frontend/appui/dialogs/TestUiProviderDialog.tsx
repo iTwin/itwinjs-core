@@ -3,27 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
+import { ColorByName, ColorDef } from "@bentley/imodeljs-common";
+import { IModelApp, LengthDescription, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
+import {
+  ColorEditorParams, DialogItem, DialogItemsManager, DialogItemValue, DialogPropertySyncItem, InputEditorSizeParams, PropertyDescription,
+  PropertyEditorParamTypes, SuppressLabelEditorParams, SyncPropertiesChangeEventArgs,
+} from "@bentley/ui-abstract";
 import { Dialog, DialogButtonType } from "@bentley/ui-core";
 import { DefaultDialogGridContainer } from "@bentley/ui-framework";
-import {
-  ColorEditorParams,
-  InputEditorSizeParams,
-  DialogItemsManager,
-  DialogItem,
-  DialogItemValue,
-  DialogPropertySyncItem,
-  PropertyDescription,
-  PropertyEditorParamTypes,
-  SuppressLabelEditorParams,
-  SyncPropertiesChangeEventArgs,
-} from "@bentley/ui-abstract";
-import { ColorDef, ColorByName } from "@bentley/imodeljs-common";
-import {
-  IModelApp,
-  LengthDescription,
-  NotifyMessageDetails,
-  OutputMessagePriority,
-} from "@bentley/imodeljs-frontend";
 
 enum ColorOptions {
   Red,

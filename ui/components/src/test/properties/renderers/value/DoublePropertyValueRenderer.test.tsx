@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { render } from "@testing-library/react";
 import * as React from "react";
 import * as sinon from "sinon";
-import TestUtils from "../../../TestUtils";
-import { DoublePropertyValueRenderer } from "../../../../ui-components/properties/renderers/value/DoublePropertyValueRenderer";
 import { PrimitiveValue } from "@bentley/ui-abstract";
+import { render } from "@testing-library/react";
+import { DoublePropertyValueRenderer } from "../../../../ui-components/properties/renderers/value/DoublePropertyValueRenderer";
 import { PropertyValueRendererContext } from "../../../../ui-components/properties/ValueRendererManager";
+import TestUtils from "../../../TestUtils";
 
 function createDoubleProperty(value: number, displayValue?: string) {
   const property = TestUtils.createPrimitiveStringProperty("Length", "", displayValue);

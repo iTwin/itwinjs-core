@@ -6,7 +6,7 @@
  * @module PresentationRules
  */
 
-import { RuleTypes, RuleBase, ConditionContainer } from "../Rule";
+import { ConditionContainer, RuleBase, RuleTypes } from "../Rule";
 
 /**
  * Rule to override labels and descriptions of nodes which pass rule's

@@ -7,17 +7,13 @@
  */
 
 import { ClientRequestContext, Id64String, Logger } from "@bentley/bentleyjs-core";
-import { IModelRpcProps } from "@bentley/imodeljs-common";
 import { IModelDb } from "@bentley/imodeljs-backend";
+import { IModelRpcProps } from "@bentley/imodeljs-common";
 import {
-  Node, NodeJSON, NodeKey, NodeKeyJSON, NodePathElement, NodePathElementJSON,
-  Descriptor, DescriptorJSON, SelectionInfo, ContentJSON,
-  PresentationError, PresentationStatus, Paged, InstanceKey, InstanceKeyJSON, KeySet, KeySetJSON,
-  SelectionScope, DescriptorOverrides, PartialHierarchyModification, PartialHierarchyModificationJSON,
-  PresentationRpcResponse, HierarchyRpcRequestOptions, ContentRpcRequestOptions,
-  SelectionScopeRpcRequestOptions, PresentationDataCompareRpcOptions,
-  LabelRpcRequestOptions, PresentationRpcInterface, Ruleset,
-  LabelDefinition, LabelDefinitionJSON,
+  ContentJSON, ContentRpcRequestOptions, Descriptor, DescriptorJSON, DescriptorOverrides, HierarchyRpcRequestOptions, InstanceKey, InstanceKeyJSON,
+  KeySet, KeySetJSON, LabelDefinition, LabelDefinitionJSON, LabelRpcRequestOptions, Node, NodeJSON, NodeKey, NodeKeyJSON, NodePathElement,
+  NodePathElementJSON, Paged, PartialHierarchyModification, PartialHierarchyModificationJSON, PresentationDataCompareRpcOptions, PresentationError,
+  PresentationRpcInterface, PresentationRpcResponse, PresentationStatus, Ruleset, SelectionInfo, SelectionScope, SelectionScopeRpcRequestOptions,
 } from "@bentley/presentation-common";
 import { Presentation } from "./Presentation";
 import { PresentationManager } from "./PresentationManager";

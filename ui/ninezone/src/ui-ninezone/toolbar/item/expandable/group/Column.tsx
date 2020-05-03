@@ -6,10 +6,10 @@
  * @module Toolbar
  */
 
+import "./Column.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { CommonProps } from "@bentley/ui-core";
-import "./Column.scss";
 
 /** Properties of [[GroupColumn]] component.
  * @alpha

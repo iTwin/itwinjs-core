@@ -2,12 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { expect } from "chai";
 import { Id64 } from "@bentley/bentleyjs-core";
 import { IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
-import { ContentSpecificationTypes, InstanceKey, KeySet, PresentationError, PresentationStatus, Ruleset, RuleTypes } from "@bentley/presentation-common";
+import {
+  ContentSpecificationTypes, InstanceKey, KeySet, PresentationError, PresentationStatus, Ruleset, RuleTypes,
+} from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
-import { expect } from "chai";
 import { initialize, terminate } from "../IntegrationTests";
+
 import sinon = require("sinon");
 
 describe("Content", () => {

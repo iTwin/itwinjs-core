@@ -2,11 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { expect } from "chai";
+import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { mount, shallow } from "enzyme";
-import { expect } from "chai";
-
 import { NumericInput } from "../../../ui-core/inputs/numericinput/NumericInput";
 
 describe("NumericInput", () => {

@@ -6,12 +6,12 @@
  * @module Footer
  */
 
+import "./Dialog.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { CommonProps } from "@bentley/ui-core";
 import { Dialog } from "../dialog/Dialog";
 import { TitleBar } from "../dialog/TitleBar";
-import "./Dialog.scss";
 
 /** Properties of [[ToolAssistanceDialog]] component.
  * @beta

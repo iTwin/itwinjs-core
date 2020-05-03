@@ -3,12 +3,12 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import { OpenMode } from "@bentley/bentleyjs-core";
-import { RemoteBriefcaseConnection, IModelApp } from "@bentley/imodeljs-frontend";
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
-import { TestContext } from "../setup/TestContext";
+import { OpenMode } from "@bentley/bentleyjs-core";
+import { IModelApp, RemoteBriefcaseConnection } from "@bentley/imodeljs-frontend";
 import { TestFrontendAuthorizationClient } from "@bentley/oidc-signin-tool/lib/frontend";
+import { TestContext } from "../setup/TestContext";
 
 const expect = chai.expect;
 

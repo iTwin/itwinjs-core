@@ -6,16 +6,16 @@
  * @module Properties
  */
 
-import * as React from "react";
 import _ from "lodash";
+import * as React from "react";
+import { ArrayValue, PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
 import { Orientation } from "@bentley/ui-core";
-import { PropertyValueFormat, ArrayValue, PropertyRecord } from "@bentley/ui-abstract";
-import { PropertyValueRendererManager, PropertyValueRendererContext, PropertyContainerType } from "../ValueRendererManager";
-import { PrimitiveRendererProps, PrimitivePropertyRenderer } from "./PrimitivePropertyRenderer";
-import { NonPrimitivePropertyRenderer } from "./NonPrimitivePropertyRenderer";
 import { EditorContainer, PropertyUpdatedArgs } from "../../editors/EditorContainer";
 import { UiComponents } from "../../UiComponents";
+import { PropertyContainerType, PropertyValueRendererContext, PropertyValueRendererManager } from "../ValueRendererManager";
 import { ActionButtonRenderer } from "./ActionButtonRenderer";
+import { NonPrimitivePropertyRenderer } from "./NonPrimitivePropertyRenderer";
+import { PrimitivePropertyRenderer, PrimitiveRendererProps } from "./PrimitivePropertyRenderer";
 
 /** Properties shared by all renderers and PropertyView
  * @public

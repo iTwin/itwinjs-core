@@ -6,39 +6,17 @@
  * @module Tiles
  */
 
+import { assert, BeTimePoint, ByteStream } from "@bentley/bentleyjs-core";
+import { Range3d } from "@bentley/geometry-core";
 import {
-  assert,
-  BeTimePoint,
-  ByteStream,
-} from "@bentley/bentleyjs-core";
-import {
-  Range3d,
-} from "@bentley/geometry-core";
-import {
-  ColorDef,
-  computeChildTileProps,
-  computeChildTileRanges,
-  ElementAlignedBox3d,
-  LinePixels,
-  TileFormat,
-  TileProps,
+  ColorDef, computeChildTileProps, computeChildTileRanges, ElementAlignedBox3d, LinePixels, TileFormat, TileProps,
 } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
 import { GraphicBuilder } from "../render/GraphicBuilder";
 import { RenderSystem } from "../render/RenderSystem";
 import {
-  addRangeGraphic,
-  ImdlReader,
-  IModelTileTree,
-  Tile,
-  TileBoundingBoxes,
-  TileContent,
-  TileDrawArgs,
-  TileLoadStatus,
-  TileParams,
-  TileRequest,
-  TileTreeLoadStatus,
-  TileVisibility,
+  addRangeGraphic, ImdlReader, IModelTileTree, Tile, TileBoundingBoxes, TileContent, TileDrawArgs, TileLoadStatus, TileParams, TileRequest,
+  TileTreeLoadStatus, TileVisibility,
 } from "./internal";
 
 /** Parameters used to construct an [[IModelTile]].

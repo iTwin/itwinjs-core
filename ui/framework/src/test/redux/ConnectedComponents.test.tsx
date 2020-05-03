@@ -3,15 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { expect } from "chai";
 import * as React from "react";
 import { Provider } from "react-redux";
-import { render, cleanup, fireEvent } from "@testing-library/react";
-import { expect } from "chai";
-
-import { sessionStateMapDispatchToProps, SessionStateActionsProps } from "../../ui-framework/redux/SessionState";
+import { cleanup, fireEvent, render } from "@testing-library/react";
 import { connectIModelConnection } from "../../ui-framework/redux/connectIModel";
-import TestUtils from "../TestUtils";
+import { SessionStateActionsProps, sessionStateMapDispatchToProps } from "../../ui-framework/redux/SessionState";
 import { UiFramework } from "../../ui-framework/UiFramework";
+import TestUtils from "../TestUtils";
 
 describe("ConnectedContent", () => {
   before(async () => {

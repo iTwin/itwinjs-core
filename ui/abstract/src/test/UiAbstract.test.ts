@@ -4,11 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
-
 import { Logger } from "@bentley/bentleyjs-core";
-
-import TestUtils from "./TestUtils";
 import { UiAbstract } from "../ui-abstract/UiAbstract";
+import TestUtils from "./TestUtils";
 
 describe("UiAbstract", () => {
 

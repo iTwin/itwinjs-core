@@ -7,23 +7,21 @@
  */
 
 import * as React from "react";
-
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { UiError } from "@bentley/ui-abstract";
+import { ViewClassFullNameChangedEventArgs, ViewportComponentEvents } from "@bentley/ui-components";
 import { CommonProps } from "@bentley/ui-core";
-import { ViewportComponentEvents, ViewClassFullNameChangedEventArgs } from "@bentley/ui-components";
-import { Tools as NZ_ToolsWidget, Direction, ToolbarPanelAlignment } from "@bentley/ui-ninezone";
-
+import { Direction, ToolbarPanelAlignment, Tools as NZ_ToolsWidget } from "@bentley/ui-ninezone";
+import { ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";
 import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
+import { ContentControlActivatedEventArgs } from "../content/ContentControl";
+import { ContentViewManager } from "../content/ContentViewManager";
+import { FrontstageManager } from "../frontstage/FrontstageManager";
+import { NavigationAidActivatedEventArgs, NavigationAidControl } from "../navigationaids/NavigationAidControl";
+import { UiFramework } from "../UiFramework";
+import { UiShowHideManager } from "../utils/UiShowHideManager";
 import { ToolbarWidgetDefBase } from "./ToolbarWidgetBase";
 import { NavigationWidgetProps, WidgetType } from "./WidgetDef";
-import { NavigationAidControl, NavigationAidActivatedEventArgs } from "../navigationaids/NavigationAidControl";
-import { FrontstageManager } from "../frontstage/FrontstageManager";
-import { ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";
-import { ContentViewManager } from "../content/ContentViewManager";
-import { ContentControlActivatedEventArgs } from "../content/ContentControl";
-import { UiShowHideManager } from "../utils/UiShowHideManager";
-import { UiFramework } from "../UiFramework";
 
 /** Definition of a Navigation Widget normally displayed in the top right zone in the 9-Zone Layout system.
  *  @public @deprecated use NavigationWidgetComposer instead

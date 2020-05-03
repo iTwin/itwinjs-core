@@ -6,21 +6,8 @@
 import { compareNumbers } from "@bentley/bentleyjs-core";
 import { GlobeMode } from "@bentley/imodeljs-common";
 import {
-  createTileTreeFromImageryProvider,
-  ImageryProviderEPSG3857,
-  IModelApp,
-  IModelConnection,
-  MapTileTreeReference,
-  NotifyMessageDetails,
-  OutputMessagePriority,
-  Extension,
-  ScreenViewport,
-  TiledGraphicsProvider,
-  TileGraphicType,
-  TileTree,
-  TileTreeOwner,
-  TileTreeReference,
-  TileTreeSupplier,
+  createTileTreeFromImageryProvider, Extension, ImageryProviderEPSG3857, IModelApp, IModelConnection, MapTileTreeReference, NotifyMessageDetails,
+  OutputMessagePriority, ScreenViewport, TiledGraphicsProvider, TileGraphicType, TileTree, TileTreeOwner, TileTreeReference, TileTreeSupplier,
   Viewport,
 } from "@bentley/imodeljs-frontend";
 import { I18N, I18NNamespace } from "@bentley/imodeljs-i18n";

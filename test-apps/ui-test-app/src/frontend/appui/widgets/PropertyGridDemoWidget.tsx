@@ -3,17 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-
-import { ConfigurableUiManager, ConfigurableCreateInfo, ContentControl, WidgetControl } from "@bentley/ui-framework";
-import { WidgetContent, HorizontalAnchor, ScrollableWidgetContent } from "@bentley/ui-ninezone";
+import { PrimitiveValue, PropertyDescription, PropertyRecord, PropertyValue, PropertyValueFormat } from "@bentley/ui-abstract";
+import { PropertyCategory, PropertyGrid, PropertyUpdatedArgs, SimplePropertyDataProvider } from "@bentley/ui-components";
 import { Orientation } from "@bentley/ui-core";
-
-import {
-  PropertyDescription, PropertyRecord, PropertyValueFormat, PrimitiveValue, PropertyValue,
-} from "@bentley/ui-abstract";
-import {
-  PropertyGrid, SimplePropertyDataProvider, PropertyUpdatedArgs, PropertyCategory,
-} from "@bentley/ui-components";
+import { ConfigurableCreateInfo, ConfigurableUiManager, ContentControl, WidgetControl } from "@bentley/ui-framework";
+import { HorizontalAnchor, ScrollableWidgetContent, WidgetContent } from "@bentley/ui-ninezone";
 
 class SamplePropertyRecord extends PropertyRecord {
   constructor(name: string, index: number, value: any, typename: string = "string", editor?: string) {

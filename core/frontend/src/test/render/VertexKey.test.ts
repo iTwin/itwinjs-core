@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { QPoint3d, OctEncodedNormal } from "@bentley/imodeljs-common";
+import { OctEncodedNormal, QPoint3d } from "@bentley/imodeljs-common";
 import { VertexKey } from "../../render/primitives/VertexKey";
 
 describe("VertexKey", () => {

@@ -4,31 +4,20 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-
-import { IconSpecUtilities } from "@bentley/ui-abstract";
-import {
-  Input, Radio, Checkbox, Slider, Icon, Select,
-  LabeledInput, Textarea, LabeledTextarea, LabeledSelect, IconInput, NumericInput,
-  BodyText, BlockText, DisabledText, Headline, LeadingText, MutedText, SmallText, Subheading, Title,
-  Button, ButtonType, ButtonSize, UnderlinedButton,
-  SplitButton, ContextMenuItem,
-  NewBadge, BetaBadge,
-  CheckListBox, CheckListBoxItem, CheckListBoxSeparator,
-  ExpandableList, ExpandableBlock,
-  Spinner, SpinnerSize, LoadingSpinner, LoadingStatus, LoadingPrompt,
-  Toggle, ToggleButtonType, LabeledToggle,
-  SearchBox,
-  Tile, FeaturedTile, MinimalTile, MinimalFeaturedTile,
-  HorizontalTabs, VerticalTabs,
-} from "@bentley/ui-core";
-
-import { ComponentExampleCategory, ComponentExampleProps } from "./ComponentExamples";
-import { SampleImageCheckBox } from "./SampleImageCheckBox";
-import { SampleExpandableBlock } from "./SampleExpandableBlock";
-
 import moreSvg from "@bentley/icons-generic/icons/more-circular.svg?sprite";
 import moreVerticalSvg from "@bentley/icons-generic/icons/more-vertical-circular.svg?sprite";
+import { IconSpecUtilities } from "@bentley/ui-abstract";
+import {
+  BetaBadge, BlockText, BodyText, Button, ButtonSize, ButtonType, Checkbox, CheckListBox, CheckListBoxItem, CheckListBoxSeparator, ContextMenuItem,
+  DisabledText, ExpandableBlock, ExpandableList, FeaturedTile, Headline, HorizontalTabs, Icon, IconInput, Input, LabeledInput, LabeledSelect,
+  LabeledTextarea, LabeledToggle, LeadingText, LoadingPrompt, LoadingSpinner, LoadingStatus, MinimalFeaturedTile, MinimalTile, MutedText, NewBadge,
+  NumericInput, Radio, SearchBox, Select, Slider, SmallText, Spinner, SpinnerSize, SplitButton, Subheading, Textarea, Tile, Title, Toggle,
+  ToggleButtonType, UnderlinedButton, VerticalTabs,
+} from "@bentley/ui-core";
+import { ComponentExampleCategory, ComponentExampleProps } from "./ComponentExamples";
 import { SampleContextMenu } from "./SampleContextMenu";
+import { SampleExpandableBlock } from "./SampleExpandableBlock";
+import { SampleImageCheckBox } from "./SampleImageCheckBox";
 
 /** Creates a Component Example */
 export const createComponentExample = (title: string, description: string | undefined, content: React.ReactNode): ComponentExampleProps => {

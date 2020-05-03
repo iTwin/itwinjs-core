@@ -6,19 +6,18 @@
  * @module Table
  */
 
-import * as React from "react";
 import classnames from "classnames";
+import * as React from "react";
 import * as RDG from "react-data-grid";
 import { DndComponentClass } from "react-dnd";
-
-// tslint:disable-next-line:variable-name
-const HeaderCell = (RDG && (RDG as any).HeaderCell); // react-data-grid @types does not support the HeaderCell export, but it is exported in the js-only library.
-
+import { CommonProps } from "@bentley/ui-core";
 import { DragSourceArguments, DropTargetArguments } from "../../dragdrop/DragDropDef";
 import { withDragSource, WithDragSourceProps } from "../../dragdrop/withDragSource";
 import { withDropTarget, WithDropTargetProps } from "../../dragdrop/withDropTarget";
 import { ColumnDragLayer } from "./ColumnDragLayer";
-import { CommonProps } from "@bentley/ui-core";
+
+// tslint:disable-next-line:variable-name
+const HeaderCell = (RDG && (RDG as any).HeaderCell); // react-data-grid @types does not support the HeaderCell export, but it is exported in the js-only library.
 
 /** @internal */
 export interface DragDropHeaderCellProps extends CommonProps {

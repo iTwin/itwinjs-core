@@ -5,9 +5,8 @@
 /** @packageDocumentation
  * @module Extensions
  */
-import { I18N, I18NOptions } from "@bentley/imodeljs-i18n";
 import { ExtensionProps } from "@bentley/extension-client";
-
+import { I18N, I18NOptions } from "@bentley/imodeljs-i18n";
 import { IModelApp } from "../IModelApp";
 
 /**

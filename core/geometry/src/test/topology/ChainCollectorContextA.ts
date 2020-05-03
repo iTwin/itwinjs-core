@@ -6,20 +6,20 @@
 /** @packageDocumentation
  * @module Curve
  */
-import { Point3d } from "../../geometry3d/Point3dVector3d";
-import { BagOfCurves, CurveCollection } from "../../curve/CurveCollection";
-import { CurvePrimitive } from "../../curve/CurvePrimitive";
-import { Path } from "../../curve/Path";
-import { Loop } from "../../curve/Loop";
+import { Arc3d } from "../../curve/Arc3d";
 import { AnyCurve } from "../../curve/CurveChain";
+import { BagOfCurves, CurveCollection } from "../../curve/CurveCollection";
+import { CurveCurve } from "../../curve/CurveCurve";
+import { CurvePrimitive } from "../../curve/CurvePrimitive";
 import { GeometryQuery } from "../../curve/GeometryQuery";
-import { Range3d } from "../../geometry3d/Range";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
-import { XYAndZ } from "../../geometry3d/XYZProps";
+import { Loop } from "../../curve/Loop";
+import { Path } from "../../curve/Path";
 import { Geometry } from "../../Geometry";
-import { CurveCurve } from "../../curve/CurveCurve";
-import { Arc3d } from "../../curve/Arc3d";
+import { Point3d } from "../../geometry3d/Point3dVector3d";
+import { Range3d } from "../../geometry3d/Range";
+import { XYAndZ } from "../../geometry3d/XYZProps";
 import { DesignReviewCurveChainWireOffsetContext } from "./DesignReviewPolygonOffsetContext";
 
 /**

@@ -2,25 +2,22 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
 import { expect } from "chai";
-import { render, cleanup, fireEvent } from "@testing-library/react";
-import * as moq from "typemoq";
+import * as React from "react";
 import * as sinon from "sinon";
-
-import TestUtils from "../TestUtils";
-import { ViewportComponent } from "../../ui-components";
-
-import {
-  IModelConnection, MockRender, ScreenViewport, ViewManager, ViewState, Viewport, ChangeFlags,
-  TentativePoint, ViewRect, SpatialViewState, CategorySelectorState, DisplayStyle3dState,
-  ModelSelectorState, StandardViewId, OrthographicViewState,
-} from "@bentley/imodeljs-frontend";
-import { Frustum, SpatialViewDefinitionProps } from "@bentley/imodeljs-common";
-import { Vector3d, Point3d, Matrix3d, AxisIndex, WritableXAndY } from "@bentley/geometry-core";
+import * as moq from "typemoq";
 import { BeEvent } from "@bentley/bentleyjs-core";
-import { ViewportComponentEvents } from "../../ui-components/viewport/ViewportComponentEvents";
+import { AxisIndex, Matrix3d, Point3d, Vector3d, WritableXAndY } from "@bentley/geometry-core";
+import { Frustum, SpatialViewDefinitionProps } from "@bentley/imodeljs-common";
+import {
+  CategorySelectorState, ChangeFlags, DisplayStyle3dState, IModelConnection, MockRender, ModelSelectorState, OrthographicViewState, ScreenViewport,
+  SpatialViewState, StandardViewId, TentativePoint, ViewManager, Viewport, ViewRect, ViewState,
+} from "@bentley/imodeljs-frontend";
 import { Face } from "@bentley/ui-core";
+import { cleanup, fireEvent, render } from "@testing-library/react";
+import { ViewportComponent } from "../../ui-components";
+import { ViewportComponentEvents } from "../../ui-components/viewport/ViewportComponentEvents";
+import TestUtils from "../TestUtils";
 
 describe("ViewportComponent", () => {
 

@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as moq from "typemoq";
 import { expect } from "chai";
+import * as moq from "typemoq";
 import { Guid } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { Node, NodeKey, Ruleset, RegisteredRuleset, LabelDefinition } from "@bentley/presentation-common";
-import { PresentationManager, Presentation, RulesetManager } from "@bentley/presentation-frontend";
+import { LabelDefinition, Node, NodeKey, RegisteredRuleset, Ruleset } from "@bentley/presentation-common";
+import { Presentation, PresentationManager, RulesetManager } from "@bentley/presentation-frontend";
 import { TreeNodeItem } from "@bentley/ui-components";
 import { HierarchyBuilder, NodeMappingFunc } from "../presentation-testing/HierarchyBuilder";
 

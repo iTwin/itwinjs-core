@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import * as path from "path";
 import { expect, use } from "chai";
 import * as chaiAsPromised from "chai-as-promised";
-import { StubSchemaXmlFileLocater } from "../src/StubSchemaXmlFileLocater";
-import { FileSchemaKey } from "../src/SchemaFileLocater";
+import * as path from "path";
 import * as EC from "@bentley/ecschema-metadata";
+import { FileSchemaKey } from "../src/SchemaFileLocater";
+import { StubSchemaXmlFileLocater } from "../src/StubSchemaXmlFileLocater";
 
 use(chaiAsPromised);
 

@@ -2,24 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
 import { expect } from "chai";
 import * as enzyme from "enzyme";
+import * as React from "react";
 import * as sinon from "sinon";
-import TestUtils from "../TestUtils";
-import {
-  ListPicker,
-  ListItem,
-  ListPickerItem,
-  ExpandableSection,
-  ListPickerBase,
-  ListItemType,
-  ListPickerPropsExtended,
-  FrameworkVersion,
-} from "../../ui-framework";
-import { Item, Group } from "@bentley/ui-ninezone";
-import { WithOnOutsideClickProps } from "@bentley/ui-core";
 import { ToolbarItemContext } from "@bentley/ui-components";
+import { WithOnOutsideClickProps } from "@bentley/ui-core";
+import { Group, Item } from "@bentley/ui-ninezone";
+import {
+  ExpandableSection, FrameworkVersion, ListItem, ListItemType, ListPicker, ListPickerBase, ListPickerItem, ListPickerPropsExtended,
+} from "../../ui-framework";
+import TestUtils from "../TestUtils";
 
 const title = "Test";
 const listItems = new Array<ListItem>();

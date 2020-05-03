@@ -2,10 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Point4d } from "../../geometry4d/Point4d";
-import { Checker } from "../Checker";
 import { expect } from "chai";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
+import { Point4d } from "../../geometry4d/Point4d";
+import { Checker } from "../Checker";
+
 /* tslint:disable:no-console variable-name */
 
 function testExactPoint4dXYZW(ck: Checker, point: Point4d, x: number, y: number, z: number, w: number) {

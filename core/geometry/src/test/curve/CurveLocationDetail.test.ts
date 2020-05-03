@@ -3,13 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { expect } from "chai";
 // import { Sample } from "../serialization/GeometrySamples";
 import { CurveLocationDetail, CurveLocationDetailPair } from "../../curve/CurveLocationDetail";
 import { LineSegment3d } from "../../curve/LineSegment3d";
+import { Geometry } from "../../Geometry";
 // import { Point3d, Transform } from "../PointVector";
 import { Checker } from "../Checker";
-import { expect } from "chai";
-import { Geometry } from "../../Geometry";
+
 /* tslint:disable:no-console */
 describe("CurveLocationDetail", () => {
   it("HelloWorld", () => {

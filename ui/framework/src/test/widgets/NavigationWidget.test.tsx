@@ -2,31 +2,22 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
 import { expect } from "chai";
 import { mount, shallow } from "enzyme";
+import * as React from "react";
 import * as moq from "typemoq";
-
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { WidgetState } from "@bentley/ui-abstract";
-import { Toolbar, Direction } from "@bentley/ui-ninezone";
-
-import TestUtils from "../TestUtils";
+import { Direction, Toolbar } from "@bentley/ui-ninezone";
 import {
-  AnyWidgetProps,
-  NavigationWidgetDef,
+  AnyWidgetProps, ConfigurableCreateInfo, ContentControl, FrontstageManager, ItemList, NavigationAidHost, NavigationWidget, NavigationWidgetDef,
   ToolButton,
-  NavigationWidget,
-  ContentControl,
-  ConfigurableCreateInfo,
-  FrontstageManager,
-  ItemList,
-  NavigationAidHost,
 } from "../../ui-framework";
 import { ConfigurableUiManager } from "../../ui-framework/configurableui/ConfigurableUiManager";
-import { NavigationAidControl } from "../../ui-framework/navigationaids/NavigationAidControl";
 import { CoreTools } from "../../ui-framework/CoreToolDefinitions";
 import { FrameworkVersion } from "../../ui-framework/hooks/useFrameworkVersion";
+import { NavigationAidControl } from "../../ui-framework/navigationaids/NavigationAidControl";
+import TestUtils from "../TestUtils";
 
 describe("NavigationWidget", () => {
 

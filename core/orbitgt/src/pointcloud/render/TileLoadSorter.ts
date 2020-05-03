@@ -17,13 +17,12 @@ type int32 = number;
 type float32 = number;
 type float64 = number;
 
-import { ViewTree } from "./ViewTree";
-
 import { Coordinate } from "../../spatial/geom/Coordinate";
+import { iComparator } from "../../system/runtime/iComparator";
 import { Grid } from "../model/Grid";
 import { GridIndex } from "../model/GridIndex";
 import { TileIndex } from "../model/TileIndex";
-import { iComparator } from "../../system/runtime/iComparator";
+import { ViewTree } from "./ViewTree";
 
 /** @internal */
 export interface IProjectToViewForSort {

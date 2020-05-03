@@ -2,49 +2,19 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import {
-  Id64,
-  Id64Array,
-  Id64String,
-} from "@bentley/bentleyjs-core";
-import {
-  Angle,
-  AuxChannel,
-  AuxChannelData,
-  AuxChannelDataType,
-  IModelJson,
-  Point3d,
-  Polyface,
-  PolyfaceAuxData,
-  PolyfaceBuilder,
-  StrokeOptions,
-} from "@bentley/geometry-core";
-import {
-  CategorySelector,
-  DefinitionModel,
-  DisplayStyle3d,
-  IModelDb,
-  ModelSelector,
-  OrthographicViewDefinition,
-  PhysicalModel,
-  SnapshotDb,
-  SpatialCategory,
-} from "@bentley/imodeljs-backend";
-import {
-  AnalysisStyleProps,
-  Code,
-  ColorDef,
-  GeometricElement3dProps,
-  GeometryStreamBuilder,
-  GeometryStreamProps,
-  RenderMode,
-  ViewFlags,
-  ThematicGradientMode,
-  ThematicGradientColorScheme,
-  ThematicGradientSettingsProps,
-} from "@bentley/imodeljs-common";
 import { readFileSync } from "fs";
 import * as path from "path";
+import { Id64, Id64Array, Id64String } from "@bentley/bentleyjs-core";
+import {
+  Angle, AuxChannel, AuxChannelData, AuxChannelDataType, IModelJson, Point3d, Polyface, PolyfaceAuxData, PolyfaceBuilder, StrokeOptions,
+} from "@bentley/geometry-core";
+import {
+  CategorySelector, DefinitionModel, DisplayStyle3d, IModelDb, ModelSelector, OrthographicViewDefinition, PhysicalModel, SnapshotDb, SpatialCategory,
+} from "@bentley/imodeljs-backend";
+import {
+  AnalysisStyleProps, Code, ColorDef, GeometricElement3dProps, GeometryStreamBuilder, GeometryStreamProps, RenderMode, ThematicGradientColorScheme,
+  ThematicGradientMode, ThematicGradientSettingsProps, ViewFlags,
+} from "@bentley/imodeljs-common";
 
 export class AnalysisImporter {
   public iModelDb: SnapshotDb;

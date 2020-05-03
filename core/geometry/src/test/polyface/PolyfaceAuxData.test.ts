@@ -3,17 +3,17 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Checker } from "../Checker";
-import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
-import { PolyfaceAuxData, AuxChannel, AuxChannelData, AuxChannelDataType } from "../../polyface/AuxData";
-import { StrokeOptions } from "../../curve/StrokeOptions";
+import { expect } from "chai";
 import { Arc3d } from "../../curve/Arc3d";
 import { LineString3d } from "../../curve/LineString3d";
+import { Path } from "../../curve/Path";
+import { StrokeOptions } from "../../curve/StrokeOptions";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Transform } from "../../geometry3d/Transform";
+import { AuxChannel, AuxChannelData, AuxChannelDataType, PolyfaceAuxData } from "../../polyface/AuxData";
+import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
-import { expect } from "chai";
-import { Path } from "../../curve/Path";
+import { Checker } from "../Checker";
 
 /** Create a polyface representing a cantilever beam with [[PolyfaceAuxData]] representing the stress and deflection. */
 function createCantileverBeamPolyface(beamRadius: number = 10.0, beamLength: number = 100.0, facetSize: number = 1.0, zScale: number = 1.0) {

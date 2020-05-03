@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import { UserProfile, SafeAreaInsets } from "../../ui-ninezone";
+import { SafeAreaInsets, UserProfile } from "../../ui-ninezone";
 
 describe("<UserProfile />", () => {
   it("should render", () => {

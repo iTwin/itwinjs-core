@@ -5,14 +5,14 @@
 /* tslint:disable:no-direct-imports */
 
 import { expect } from "chai";
-import { renderHook } from "@testing-library/react-hooks";
 import * as moq from "typemoq";
-import { TreeModelSource, AbstractTreeNodeLoaderWithProvider } from "@bentley/ui-components";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { NodePathElement } from "@bentley/presentation-common";
 import { ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises";
+import { AbstractTreeNodeLoaderWithProvider, TreeModelSource } from "@bentley/ui-components";
+import { renderHook } from "@testing-library/react-hooks";
+import { ControlledTreeFilteringProps, IPresentationTreeDataProvider, useControlledTreeFiltering } from "../../../presentation-components";
 import { FilteredPresentationTreeDataProvider } from "../../../presentation-components/tree/FilteredDataProvider";
-import { useControlledTreeFiltering, ControlledTreeFilteringProps, IPresentationTreeDataProvider } from "../../../presentation-components";
 
 describe("useControlledTreeFiltering", () => {
   const nodeLoaderMock = moq.Mock.ofType<AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider>>();

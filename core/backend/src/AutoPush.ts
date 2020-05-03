@@ -7,8 +7,8 @@
  */
 
 import { assert, BeEvent, IModelStatus, Logger } from "@bentley/bentleyjs-core";
-import { AccessToken } from "@bentley/itwin-client";
 import { IModelError, RpcRequest } from "@bentley/imodeljs-common";
+import { AccessToken } from "@bentley/itwin-client";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { AuthorizedBackendRequestContext } from "./BackendRequestContext";
 import { BriefcaseDb } from "./IModelDb";

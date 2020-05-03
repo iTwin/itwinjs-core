@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 import * as os from "os";
 import * as process from "process";
-import { IModelHost } from "./IModelHost";
+import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
+import { IModelHost } from "./IModelHost";
 
 const loggerCategory: string = BackendLoggerCategory.DevTools;
 

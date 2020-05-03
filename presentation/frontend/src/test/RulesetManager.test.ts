@@ -5,11 +5,11 @@
 /* tslint:disable:no-direct-imports */
 
 import { expect } from "chai";
-import * as sinon from "sinon";
 import * as faker from "faker";
+import * as sinon from "sinon";
+import { RegisteredRuleset, Rule, Ruleset, RuleTypes } from "@bentley/presentation-common";
 import { createRandomRuleset } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { RulesetManagerImpl } from "../presentation-frontend/RulesetManager";
-import { RegisteredRuleset, Ruleset, RuleTypes, Rule } from "@bentley/presentation-common";
 
 describe("RulesetManager", () => {
 

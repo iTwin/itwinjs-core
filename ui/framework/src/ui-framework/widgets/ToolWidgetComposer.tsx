@@ -7,17 +7,14 @@
  */
 
 import * as React from "react";
-
+import widgetIconSvg from "@bentley/icons-generic/icons/home.svg?sprite";
 import { IconSpecUtilities } from "@bentley/ui-abstract";
-import { Icon, CommonProps, useProximityToMouse, calculateProximityScale } from "@bentley/ui-core";
-import { ToolsArea, AppButton } from "@bentley/ui-ninezone";
-
+import { calculateProximityScale, CommonProps, Icon, useProximityToMouse } from "@bentley/ui-core";
+import { AppButton, ToolsArea } from "@bentley/ui-ninezone";
 import { BackstageManager } from "../backstage/BackstageManager";
 import { useFrameworkVersion } from "../hooks/useFrameworkVersion";
-import { UiShowHideManager } from "../utils/UiShowHideManager";
 import { UiFramework } from "../UiFramework";
-
-import widgetIconSvg from "@bentley/icons-generic/icons/home.svg?sprite";
+import { UiShowHideManager } from "../utils/UiShowHideManager";
 
 /** Properties for the [[BackstageAppButton]] React component
  * @beta

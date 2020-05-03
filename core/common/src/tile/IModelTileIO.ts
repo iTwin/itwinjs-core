@@ -6,17 +6,10 @@
  * @module Tile
  */
 
-import {
-  assert,
-  ByteStream,
-} from "@bentley/bentleyjs-core";
+import { assert, ByteStream } from "@bentley/bentleyjs-core";
 import { Range3d } from "@bentley/geometry-core";
 import { ElementAlignedBox3d } from "../geometry/Placement";
-import {
-  nextPoint3d64FromByteStream,
-  TileFormat,
-  TileHeader,
-} from "./TileIO";
+import { nextPoint3d64FromByteStream, TileFormat, TileHeader } from "./TileIO";
 
 /** Flags describing the geometry contained within a tile in iMdl format.
  * @internal

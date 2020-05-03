@@ -8,12 +8,9 @@
 
 import { Map4d } from "@bentley/geometry-core";
 import { FrustumPlanes } from "@bentley/imodeljs-common";
-import {
-  TileDrawArgs,
-  TileTreeReference,
-} from "./internal";
-import { SceneContext } from "../ViewContext";
 import { RenderGraphic } from "../render/RenderGraphic";
+import { SceneContext } from "../ViewContext";
+import { TileDrawArgs, TileTreeReference } from "./internal";
 
 /** @internal */
 export interface GraphicsCollector {

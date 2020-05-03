@@ -6,10 +6,10 @@
  * @module RpcInterface
  */
 
+import { RpcSerializedValue } from "../core/RpcMarshaling";
 import { RpcRequestFulfillment } from "../core/RpcProtocol";
 import { RpcRequest } from "../core/RpcRequest";
 import { MobileRpcProtocol } from "./MobileRpcProtocol";
-import { RpcSerializedValue } from "../core/RpcMarshaling";
 
 /** @beta */
 export class MobileRpcRequest extends RpcRequest {

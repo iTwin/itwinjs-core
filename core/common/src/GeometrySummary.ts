@@ -6,9 +6,7 @@
  * @module Geometry
  */
 
-import {
-  Id64Array,
-} from "@bentley/bentleyjs-core";
+import { Id64Array } from "@bentley/bentleyjs-core";
 
 /** Describes the level of detail with which to report each geometric primitive in a geometrysummary.
  * @alpha

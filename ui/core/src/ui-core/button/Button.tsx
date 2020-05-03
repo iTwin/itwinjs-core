@@ -6,8 +6,8 @@
  * @module Button
  */
 
-import * as React from "react";
 import classnames from "classnames";
+import * as React from "react";
 import { CommonProps } from "../utils/Props";
 
 /** Sizes for [[Button]] component

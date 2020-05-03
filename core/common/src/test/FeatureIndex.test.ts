@@ -5,6 +5,7 @@
 import { assert } from "chai";
 import { ColorDef } from "../ColorDef";
 import { ColorIndex } from "../FeatureIndex";
+
 describe("ColorIndex", () => {
   it("should create, store and retrieve from ColorIndex", () => {
     const ci: ColorIndex = new ColorIndex();

@@ -2,15 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module NativeAppBackend */
+/** @packageDocumentation
+ * @module NativeAppBackend
+ */
 
-import { InternetConnectivityStatus, OverriddenBy, Events } from "@bentley/imodeljs-common";
-import { BeEvent, BentleyError, BentleyStatus, Logger } from "@bentley/bentleyjs-core";
-import { IModelHost, IModelHostConfiguration, ApplicationType } from "./IModelHost";
-import { EventSinkManager, EmitStrategy } from "./EventSink";
 import * as path from "path";
+import { BeEvent, BentleyError, BentleyStatus, Logger } from "@bentley/bentleyjs-core";
+import { Events, InternetConnectivityStatus, OverriddenBy } from "@bentley/imodeljs-common";
 import { RequestGlobalOptions } from "@bentley/itwin-client";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
+import { EmitStrategy, EventSinkManager } from "./EventSink";
+import { ApplicationType, IModelHost, IModelHostConfiguration } from "./IModelHost";
 
 const loggerCategory = BackendLoggerCategory.NativeApp;
 

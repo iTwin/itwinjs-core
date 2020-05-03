@@ -6,15 +6,14 @@
  * @module Table
  */
 
-import * as React from "react";
+import "./DragDropRow.scss";
 import classnames from "classnames";
-import { TableDropTargetProps } from "./withDragDrop";
-import { DragSourceArguments, DropTargetArguments, DragSourceProps, DropTargetProps } from "../../dragdrop/DragDropDef";
+import * as React from "react";
+import { BreadcrumbDetailsDragDropType } from "../../breadcrumb/breadcrumbdetails/hoc/withDragDrop";
+import { DragSourceArguments, DragSourceProps, DropTargetArguments, DropTargetProps } from "../../dragdrop/DragDropDef";
 import { withDragSource, WithDragSourceProps } from "../../dragdrop/withDragSource";
 import { withDropTarget } from "../../dragdrop/withDropTarget";
-
-import "./DragDropRow.scss";
-import { BreadcrumbDetailsDragDropType } from "../../breadcrumb/breadcrumbdetails/hoc/withDragDrop";
+import { TableDropTargetProps } from "./withDragDrop";
 
 /** @internal */
 export interface DragDropRowProps<DragDropObject = any> {

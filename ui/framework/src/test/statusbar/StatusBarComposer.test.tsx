@@ -2,32 +2,22 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-import { mount } from "enzyme";
 import { expect } from "chai";
+import { mount } from "enzyme";
+import * as React from "react";
 import * as sinon from "sinon";
-import { render, cleanup, fireEvent } from "@testing-library/react";
 import { IModelApp, NoRenderApp } from "@bentley/imodeljs-frontend";
+import {
+  AbstractStatusBarItemUtilities, CommonStatusBarItem, ConditionalBooleanValue, StageUsage, StatusBarLabelSide, StatusBarSection, UiItemsManager,
+  UiItemsProvider,
+} from "@bentley/ui-abstract";
+import { cleanup, fireEvent, render } from "@testing-library/react";
+import {
+  ActivityCenterField, ConfigurableCreateInfo, ConfigurableUiControlType, MessageCenterField, StatusBar, StatusBarComposer, StatusBarItem,
+  StatusBarItemUtilities, StatusBarWidgetControl, SyncUiEventDispatcher, WidgetDef, WidgetState, withMessageCenterFieldProps, withStatusFieldProps,
+} from "../../ui-framework";
 import TestUtils from "../TestUtils";
 import { createDOMRect } from "../Utils";
-
-import {
-  StatusBarWidgetControl,
-  ConfigurableCreateInfo,
-  StatusBar,
-  WidgetDef,
-  ConfigurableUiControlType,
-  StatusBarComposer,
-  StatusBarItem,
-  StatusBarItemUtilities,
-  MessageCenterField,
-  withStatusFieldProps,
-  withMessageCenterFieldProps,
-  ActivityCenterField,
-  SyncUiEventDispatcher,
-  WidgetState,
-} from "../../ui-framework";
-import { StatusBarSection, UiItemsProvider, CommonStatusBarItem, StageUsage, AbstractStatusBarItemUtilities, UiItemsManager, StatusBarLabelSide, ConditionalBooleanValue } from "@bentley/ui-abstract";
 
 describe("StatusBarComposer", () => {
   class TestUiProvider implements UiItemsProvider {

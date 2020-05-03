@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { SchemaItemProps } from "../Deserialization/JsonProps";
+import { SchemaItemType, schemaItemTypeToString, schemaItemTypeToXmlString } from "../ECObjects";
+import { ECObjectsError, ECObjectsStatus } from "../Exception";
+import { ECVersion, SchemaItemKey } from "../SchemaKey";
 import { Schema } from "./Schema";
-import { SchemaItemProps } from "./../Deserialization/JsonProps";
-import { SchemaItemType, schemaItemTypeToString, schemaItemTypeToXmlString } from "./../ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "./../Exception";
-import { SchemaItemKey, ECVersion } from "./../SchemaKey";
 
 const SCHEMAURL3_2 = "https://dev.bentley.com/json_schemas/ec/32/schemaitem";
 

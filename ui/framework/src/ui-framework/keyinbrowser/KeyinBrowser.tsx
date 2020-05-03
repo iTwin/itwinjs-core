@@ -6,15 +6,12 @@
  * @module Item
  */
 
+import "./KeyinBrowser.scss";
 // cSpell:ignore Modeless keyins keyinbrowser testid
 import * as React from "react";
-import {
-  InputLabel, LabeledInput, Button, CommonProps,
-  AutoSuggest, AutoSuggestData,
-} from "@bentley/ui-core";
-import { IModelApp, Tool, NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@bentley/imodeljs-frontend";
+import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType, Tool } from "@bentley/imodeljs-frontend";
+import { AutoSuggest, AutoSuggestData, Button, CommonProps, InputLabel, LabeledInput } from "@bentley/ui-core";
 import { UiFramework } from "../UiFramework";
-import "./KeyinBrowser.scss";
 
 /** Data for each key-in.
  */

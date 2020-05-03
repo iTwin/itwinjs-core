@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-
 import { SchemaContext } from "../../../src/Context";
 import { DelayedPromiseWithProps } from "../../../src/DelayedPromise";
+import { PropertyProps } from "../../../src/Deserialization/JsonProps";
 import { PrimitiveType } from "../../../src/ECObjects";
 import { ECClass, MutableClass, StructClass } from "../../../src/Metadata/Class";
 import { EntityClass } from "../../../src/Metadata/EntityClass";
@@ -15,7 +15,6 @@ import { PrimitiveProperty } from "../../../src/Metadata/Property";
 import { MutableSchema, Schema } from "../../../src/Metadata/Schema";
 import { DiagnosticCategory, DiagnosticType } from "../../../src/Validation/Diagnostic";
 import * as Rules from "../../../src/Validation/ECRules";
-import { PropertyProps } from "../../../src/Deserialization/JsonProps";
 
 describe("PropertyRule tests", () => {
   let schema: Schema;

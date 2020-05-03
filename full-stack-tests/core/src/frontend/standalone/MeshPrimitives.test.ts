@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { assert, expect } from "chai";
 import { Point2d, Point3d, Range3d } from "@bentley/geometry-core";
 import { ColorDef, MeshPolyline, OctEncodedNormal, QPoint3d } from "@bentley/imodeljs-common";
 import { IModelConnection, MockRender, SnapshotConnection, SpatialViewState, StandardViewId } from "@bentley/imodeljs-frontend";
 import { DisplayParams, Mesh, Triangle } from "@bentley/imodeljs-frontend/lib/render-primitives";
-import { assert, expect } from "chai";
 
 export class FakeDisplayParams extends DisplayParams {
   public constructor() { super(DisplayParams.Type.Linear, ColorDef.black, ColorDef.black); }

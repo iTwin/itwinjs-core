@@ -2,17 +2,26 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { BeEvent, BentleyLoggerCategory, ChangeSetStatus, DbResult, GuidString, Id64, Id64String, IDisposable, IModelStatus, Logger, LogLevel, OpenMode, Config } from "@bentley/bentleyjs-core";
-import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
-import { IModelHubClientLoggerCategory, ChangeSet } from "@bentley/imodelhub-client";
-import { AuthorizedClientRequestContext, ITwinClientLoggerCategory } from "@bentley/itwin-client";
-import { BriefcaseProps, Code, CodeProps, ElementProps, GeometricElement3dProps, IModel, IModelError, IModelReadRpcInterface, IModelVersion, RelatedElement, RpcConfiguration, RpcManager, SyncMode } from "@bentley/imodeljs-common";
 import { assert } from "chai";
 import * as path from "path";
+import {
+  BeEvent, BentleyLoggerCategory, ChangeSetStatus, Config, DbResult, GuidString, Id64, Id64String, IDisposable, IModelStatus, Logger, LogLevel,
+  OpenMode,
+} from "@bentley/bentleyjs-core";
+import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
+import { ChangeSet, IModelHubClientLoggerCategory } from "@bentley/imodelhub-client";
+import {
+  BriefcaseProps, Code, CodeProps, ElementProps, GeometricElement3dProps, IModel, IModelError, IModelReadRpcInterface, IModelVersion, RelatedElement,
+  RpcConfiguration, RpcManager, SyncMode,
+} from "@bentley/imodeljs-common";
+import { AuthorizedClientRequestContext, ITwinClientLoggerCategory } from "@bentley/itwin-client";
 import { BackendLoggerCategory as BackendLoggerCategory } from "../BackendLoggerCategory";
 import { ClassRegistry } from "../ClassRegistry";
 import { PhysicalElement } from "../Element";
-import { BriefcaseDb, BriefcaseManager, Element, IModelDb, IModelHost, IModelHostConfiguration, IModelJsFs, IModelJsNative, InformationPartitionElement, Model, NativeLoggerCategory, PhysicalModel, PhysicalPartition, SnapshotDb, SpatialCategory, SubjectOwnsPartitionElements } from "../imodeljs-backend";
+import {
+  BriefcaseDb, BriefcaseManager, Element, IModelDb, IModelHost, IModelHostConfiguration, IModelJsFs, IModelJsNative, InformationPartitionElement,
+  Model, NativeLoggerCategory, PhysicalModel, PhysicalPartition, SnapshotDb, SpatialCategory, SubjectOwnsPartitionElements,
+} from "../imodeljs-backend";
 import { ElementDrivesElement, RelationshipProps } from "../Relationship";
 import { Schema, Schemas } from "../Schema";
 import { HubUtility } from "./integration/HubUtility";

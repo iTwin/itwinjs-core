@@ -2,14 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-
-import { Cube } from "@bentley/ui-core";
-import { Matrix3d } from "@bentley/geometry-core";
-import { ConfigurableUiManager, ConfigurableCreateInfo, ContentControl } from "@bentley/ui-framework";
-import { ViewportComponentEvents, CubeRotationChangeEventArgs } from "@bentley/ui-components";
-
 import "./CubeContent.scss";
+import * as React from "react";
+import { Matrix3d } from "@bentley/geometry-core";
+import { CubeRotationChangeEventArgs, ViewportComponentEvents } from "@bentley/ui-components";
+import { Cube } from "@bentley/ui-core";
+import { ConfigurableCreateInfo, ConfigurableUiManager, ContentControl } from "@bentley/ui-framework";
 
 class CubeContentControl extends ContentControl {
   constructor(info: ConfigurableCreateInfo, options: any) {

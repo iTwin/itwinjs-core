@@ -3,19 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-import { GuidString, Guid, IModelHubStatus, Id64, Id64String } from "@bentley/bentleyjs-core";
+import { Guid, GuidString, Id64, Id64String, IModelHubStatus } from "@bentley/bentleyjs-core";
 import {
-  AccessToken, AuthorizedClientRequestContext,
-} from "@bentley/itwin-client";
-import { TestUsers } from "@bentley/oidc-signin-tool";
-import { TestConfig } from "../TestConfig";
-import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
-import * as utils from "./TestUtils";
-import {
-  IModelClient, Lock, Briefcase, ChangeSet, LockType, LockLevel, LockQuery,
-  AggregateResponseError, ConflictingLocksError,
-  IModelHubClientError,
+  AggregateResponseError, Briefcase, ChangeSet, ConflictingLocksError, IModelClient, IModelHubClientError, Lock, LockLevel, LockQuery, LockType,
 } from "@bentley/imodelhub-client";
+import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { TestUsers } from "@bentley/oidc-signin-tool";
+import { RequestType, ResponseBuilder, ScopeType } from "../ResponseBuilder";
+import { TestConfig } from "../TestConfig";
+import * as utils from "./TestUtils";
 
 chai.should();
 

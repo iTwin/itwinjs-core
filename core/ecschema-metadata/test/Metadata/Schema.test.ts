@@ -4,21 +4,20 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-
-import { SchemaContext } from "./../../src/Context";
-import { SchemaMatchType } from "./../../src/ECObjects";
-import { ECObjectsError } from "./../../src/Exception";
-import { ECClass, StructClass } from "./../../src/Metadata/Class";
-import { EntityClass } from "./../../src/Metadata/EntityClass";
-import { Mixin } from "./../../src/Metadata/Mixin";
-import { MutableSchema, Schema } from "./../../src/Metadata/Schema";
-import { SchemaKey } from "./../../src/SchemaKey";
+import { SchemaContext } from "../../src/Context";
+import { SchemaMatchType } from "../../src/ECObjects";
+import { ECObjectsError } from "../../src/Exception";
 import { AnySchemaItem } from "../../src/Interfaces";
-import { Enumeration } from "./../../src/Metadata/Enumeration";
-import { Format } from "./../../src/Metadata/Format";
-import { KindOfQuantity } from "./../../src/Metadata/KindOfQuantity";
-import { PropertyCategory } from "./../../src/Metadata/PropertyCategory";
-import { Unit } from "./../../src/Metadata/Unit";
+import { ECClass, StructClass } from "../../src/Metadata/Class";
+import { EntityClass } from "../../src/Metadata/EntityClass";
+import { Enumeration } from "../../src/Metadata/Enumeration";
+import { Format } from "../../src/Metadata/Format";
+import { KindOfQuantity } from "../../src/Metadata/KindOfQuantity";
+import { Mixin } from "../../src/Metadata/Mixin";
+import { PropertyCategory } from "../../src/Metadata/PropertyCategory";
+import { MutableSchema, Schema } from "../../src/Metadata/Schema";
+import { Unit } from "../../src/Metadata/Unit";
+import { SchemaKey } from "../../src/SchemaKey";
 import { createEmptyXmlDocument, getElementChildren, getElementChildrenByTagName } from "../TestUtils/SerializationHelper";
 
 describe("Schema", () => {

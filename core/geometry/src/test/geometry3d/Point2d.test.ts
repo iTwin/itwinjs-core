@@ -2,14 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+// import { Sample } from "../serialization/GeometrySamples";
+import { expect } from "chai";
+import { Angle } from "../../geometry3d/Angle";
+import { Point2dArrayCarrier } from "../../geometry3d/Point2dArrayCarrier";
 import { Point2d, Vector2d } from "../../geometry3d/Point2dVector2d";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { Sample } from "../../serialization/GeometrySamples";
-import { Angle } from "../../geometry3d/Angle";
 import * as bsiChecker from "../Checker";
-// import { Sample } from "../serialization/GeometrySamples";
-import { expect } from "chai";
-import { Point2dArrayCarrier } from "../../geometry3d/Point2dArrayCarrier";
+
 /* tslint:disable:no-console */
 describe("Point2d", () => {
   it("zeros", () => {

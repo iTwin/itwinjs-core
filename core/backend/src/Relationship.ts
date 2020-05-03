@@ -9,10 +9,10 @@
 import { DbOpcode, DbResult, Id64, Id64String, Logger } from "@bentley/bentleyjs-core";
 import { EntityProps, IModelError, IModelStatus } from "@bentley/imodeljs-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
+import { BinaryPropertyTypeConverter } from "./BinaryPropertyTypeConverter";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
-import { BinaryPropertyTypeConverter } from "./BinaryPropertyTypeConverter";
 
 const loggerCategory = BackendLoggerCategory.Relationship;
 

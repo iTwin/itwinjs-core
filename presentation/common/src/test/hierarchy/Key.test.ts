@@ -3,12 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import {
-  createRandomECClassGroupingNodeKey, createRandomECPropertyGroupingNodeKey,
-  createRandomLabelGroupingNodeKey, createRandomBaseNodeKey,
-  createRandomECInstancesNodeKey, createRandomECInstancesNodeKeyJSON,
-} from "../_helpers/random";
 import { NodeKey } from "../../presentation-common/hierarchy/Key";
+import {
+  createRandomBaseNodeKey, createRandomECClassGroupingNodeKey, createRandomECInstancesNodeKey, createRandomECInstancesNodeKeyJSON,
+  createRandomECPropertyGroupingNodeKey, createRandomLabelGroupingNodeKey,
+} from "../_helpers/random";
 
 describe("NodeKey", () => {
 

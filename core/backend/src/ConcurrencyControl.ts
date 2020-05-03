@@ -6,12 +6,12 @@
  * @module iModels
  */
 
-import { assert, DbOpcode, DbResult, Id64String, Logger, RepositoryStatus } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { CodeProps, ElementProps, IModelError, IModelStatus, IModelWriteRpcInterface, ModelProps, SyncMode } from "@bentley/imodeljs-common";
-import { CodeQuery, CodeState, HubCode, Lock, LockLevel, LockQuery, LockType } from "@bentley/imodelhub-client";
 import * as deepAssign from "deep-assign";
 import * as path from "path";
+import { assert, DbOpcode, DbResult, Id64String, Logger, RepositoryStatus } from "@bentley/bentleyjs-core";
+import { CodeQuery, CodeState, HubCode, Lock, LockLevel, LockQuery, LockType } from "@bentley/imodelhub-client";
+import { CodeProps, ElementProps, IModelError, IModelStatus, IModelWriteRpcInterface, ModelProps, SyncMode } from "@bentley/imodeljs-common";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { ECDb, ECDbOpenMode } from "./ECDb";

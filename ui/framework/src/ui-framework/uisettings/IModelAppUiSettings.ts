@@ -6,9 +6,9 @@
  * @module UiSettings
  */
 
-import { UiSettings, UiSettingsStatus, UiSettingsResult } from "@bentley/ui-core";
-import { SettingsStatus } from "@bentley/product-settings-client";
 import { AuthorizedFrontendRequestContext, IModelApp } from "@bentley/imodeljs-frontend";
+import { SettingsStatus } from "@bentley/product-settings-client";
+import { UiSettings, UiSettingsResult, UiSettingsStatus } from "@bentley/ui-core";
 
 /**
  * Implementation of [[UiSettings]] that uses settings admin from `IModelApp.settings`.

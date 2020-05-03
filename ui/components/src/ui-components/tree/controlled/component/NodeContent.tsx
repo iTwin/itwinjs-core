@@ -6,17 +6,15 @@
  * @module Tree
  */
 
-import * as React from "react";
-// tslint:disable-next-line: no-duplicate-imports
-import { useEffect, useMemo } from "react";
-import classnames from "classnames";
-import { CommonProps, TreeNodePlaceholder } from "@bentley/ui-core";
-import { TreeModelNode } from "../TreeModel";
-import { HighlightingEngine, HighlightableTreeNodeProps } from "../../HighlightingEngine";
-import { PropertyValueRendererManager, PropertyValueRendererContext, PropertyContainerType } from "../../../properties/ValueRendererManager";
-import { ItemStyleProvider, ItemStyle } from "../../../properties/ItemStyle";
-import { TreeNodeEditorRenderer, TreeNodeEditor } from "./TreeNodeEditor";
 import "./NodeContent.scss";
+import classnames from "classnames";
+import * as React from "react";
+import { CommonProps, TreeNodePlaceholder } from "@bentley/ui-core";
+import { ItemStyle, ItemStyleProvider } from "../../../properties/ItemStyle";
+import { PropertyContainerType, PropertyValueRendererContext, PropertyValueRendererManager } from "../../../properties/ValueRendererManager";
+import { HighlightableTreeNodeProps, HighlightingEngine } from "../../HighlightingEngine";
+import { TreeModelNode } from "../TreeModel";
+import { TreeNodeEditor, TreeNodeEditorRenderer } from "./TreeNodeEditor";
 
 /** Properties for [[TreeNodeContent]] component
  * @internal
@@ -36,8 +34,8 @@ export interface TreeNodeContentProps extends CommonProps {
  */
 export function TreeNodeContent(props: TreeNodeContentProps) {
   const { node, valueRendererManager, onLabelRendered, highlightProps } = props;
-  const label = useMemo(() => getLabel(node, valueRendererManager, highlightProps), [node, valueRendererManager, highlightProps]);
-  useEffect(() => {
+  const label = React.useMemo(() => getLabel(node, valueRendererManager, highlightProps), [node, valueRendererManager, highlightProps]);
+  React.useEffect(() => {
     onLabelRendered && onLabelRendered(node);
   }, [label, node, onLabelRendered]);
 

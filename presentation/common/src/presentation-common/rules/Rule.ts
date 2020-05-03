@@ -6,10 +6,10 @@
  * @module PresentationRules
  */
 
-import { CustomizationRule } from "./customization/CustomizationRule";
-import { NavigationRule } from "./hierarchy/NavigationRule";
 import { ContentRule } from "./content/ContentRule";
 import { ContentModifier } from "./content/modifiers/ContentModifier";
+import { CustomizationRule } from "./customization/CustomizationRule";
+import { NavigationRule } from "./hierarchy/NavigationRule";
 
 /**
  * Base interface for all [[Rule]] implementations. Not meant

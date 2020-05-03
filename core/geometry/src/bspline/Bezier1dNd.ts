@@ -6,14 +6,15 @@
  * @module Bspline
  */
 
+import { Geometry } from "../Geometry";
 import { Point2d } from "../geometry3d/Point2dVector2d";
 import { Point3d } from "../geometry3d/Point3dVector3d";
+import { Point3dArray } from "../geometry3d/PointHelpers";
 import { Segment1d } from "../geometry3d/Segment1d";
 import { Point4d } from "../geometry4d/Point4d";
-import { Geometry } from "../Geometry";
-import { Point3dArray } from "../geometry3d/PointHelpers";
 import { BezierCoffs, UnivariateBezier } from "../numerics/BezierPolynomials";
 import { KnotVector } from "./KnotVector";
+
 /**
  * Shared implementation details for derived bezier curve classes
  * * BezierCurve3d implements with blockSize 3.

@@ -3,43 +3,27 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-
-import {
-  FrontstageProps,
-  GroupButton,
-  ToolButton,
-  ToolWidget,
-  WidgetState,
-  NavigationWidget,
-  ContentGroup,
-  ModalDialogManager,
-  FrontstageProvider,
-  Frontstage,
-  Zone,
-  Widget,
-  CoreTools,
-  CommandItemDef,
-  StagePanel,
-  StagePanelState,
-  ZoneState,
-} from "@bentley/ui-framework";
 import { DialogItemsManager } from "@bentley/ui-abstract";
-
-import { NavigationTreeWidgetControl } from "../widgets/NavigationTreeWidget";
-import { VerticalPropertyGridWidgetControl, HorizontalPropertyGridWidgetControl, HorizontalPropertyGridWidgetControl2 } from "../widgets/PropertyGridDemoWidget";
+import {
+  CommandItemDef, ContentGroup, CoreTools, Frontstage, FrontstageProps, FrontstageProvider, GroupButton, ModalDialogManager, NavigationWidget,
+  StagePanel, StagePanelState, ToolButton, ToolWidget, Widget, WidgetState, Zone, ZoneState,
+} from "@bentley/ui-framework";
+import { Direction, Toolbar } from "@bentley/ui-ninezone";
+import { AppTools } from "../../tools/ToolSpecifications";
+import { PopupTestDialog } from "../dialogs/PopupTest";
+import { SpinnerTestDialog } from "../dialogs/SpinnerTestDialog";
+import { TestModalDialog } from "../dialogs/TestModalDialog";
+import { TestModalDialog2 } from "../dialogs/TestModalDialog2";
+import { TestRadialMenu } from "../dialogs/TestRadialMenu";
+import { TestUiProviderDialog } from "../dialogs/TestUiProviderDialog";
 import { BreadcrumbDemoWidgetControl } from "../widgets/BreadcrumbDemoWidget";
+import { NavigationTreeWidgetControl } from "../widgets/NavigationTreeWidget";
+import {
+  HorizontalPropertyGridWidgetControl, HorizontalPropertyGridWidgetControl2, VerticalPropertyGridWidgetControl,
+} from "../widgets/PropertyGridDemoWidget";
 import { TableDemoWidgetControl } from "../widgets/TableDemoWidget";
 import { TreeDemoWidgetControl } from "../widgets/TreeDemoWidget";
 import { TreeSelectionDemoWidgetControl } from "../widgets/TreeSelectionDemoWidget";
-
-import { Toolbar, Direction } from "@bentley/ui-ninezone";
-import { TestModalDialog } from "../dialogs/TestModalDialog";
-import { TestModalDialog2 } from "../dialogs/TestModalDialog2";
-import { TestUiProviderDialog } from "../dialogs/TestUiProviderDialog";
-import { PopupTestDialog } from "../dialogs/PopupTest";
-import { TestRadialMenu } from "../dialogs/TestRadialMenu";
-import { AppTools } from "../../tools/ToolSpecifications";
-import { SpinnerTestDialog } from "../dialogs/SpinnerTestDialog";
 
 export class Frontstage4 extends FrontstageProvider {
 

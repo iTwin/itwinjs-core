@@ -2,24 +2,23 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
-import { PropertyRecord } from "@bentley/ui-abstract";
-import { DefaultContentDisplayTypes, PresentationUnitSystem } from "@bentley/presentation-common";
-import { Presentation, SelectionChangeEventArgs } from "@bentley/presentation-frontend";
-import { ElementSeparator, Orientation } from "@bentley/ui-core";
-import { IPresentationTableDataProvider, IPresentationPropertyDataProvider, DataProvidersFactory } from "@bentley/presentation-components";
-import IModelSelector from "../imodel-selector/IModelSelector";
-import PropertiesWidget from "../properties-widget/PropertiesWidget";
-import GridWidget from "../grid-widget/GridWidget";
-import FindSimilarWidget from "../find-similar-widget/FindSimilarWidget";
-import RulesetSelector from "../ruleset-selector/RulesetSelector";
-import UnitSystemSelector from "../unit-system-selector/UnitSystemSelector";
-import ViewportContentControl from "../viewport/ViewportContentControl";
-import { TreeWidget } from "../tree-widget/TreeWidget";
-
 import "./App.css";
 import "@bentley/icons-generic-webfont/dist/bentley-icons-generic-webfont.css";
+import * as React from "react";
+import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
+import { DefaultContentDisplayTypes, PresentationUnitSystem } from "@bentley/presentation-common";
+import { DataProvidersFactory, IPresentationPropertyDataProvider, IPresentationTableDataProvider } from "@bentley/presentation-components";
+import { Presentation, SelectionChangeEventArgs } from "@bentley/presentation-frontend";
+import { PropertyRecord } from "@bentley/ui-abstract";
+import { ElementSeparator, Orientation } from "@bentley/ui-core";
+import FindSimilarWidget from "../find-similar-widget/FindSimilarWidget";
+import GridWidget from "../grid-widget/GridWidget";
+import IModelSelector from "../imodel-selector/IModelSelector";
+import PropertiesWidget from "../properties-widget/PropertiesWidget";
+import RulesetSelector from "../ruleset-selector/RulesetSelector";
+import { TreeWidget } from "../tree-widget/TreeWidget";
+import UnitSystemSelector from "../unit-system-selector/UnitSystemSelector";
+import ViewportContentControl from "../viewport/ViewportContentControl";
 
 export interface State {
   imodel?: IModelConnection;

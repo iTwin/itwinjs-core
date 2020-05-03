@@ -3,10 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Id64, Id64String, GuidString } from "@bentley/bentleyjs-core";
-import { Code, ElementProps, GeometricElement3dProps, IModel, RelatedElement, CodeProps, BriefcaseProps, SyncMode, IModelVersion } from "@bentley/imodeljs-common";
+import { GuidString, Id64, Id64String } from "@bentley/bentleyjs-core";
+import {
+  BriefcaseDb, BriefcaseManager, Element, IModelDb, InformationPartitionElement, PhysicalModel, PhysicalPartition, SubjectOwnsPartitionElements,
+} from "@bentley/imodeljs-backend";
+import {
+  BriefcaseProps, Code, CodeProps, ElementProps, GeometricElement3dProps, IModel, IModelVersion, RelatedElement, SyncMode,
+} from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { IModelDb, Element, PhysicalPartition, PhysicalModel, SubjectOwnsPartitionElements, InformationPartitionElement, BriefcaseDb, BriefcaseManager } from "@bentley/imodeljs-backend";
 
 export class IModelTestUtils {
   // Helper to open a briefcase db

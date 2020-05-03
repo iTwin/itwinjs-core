@@ -6,12 +6,10 @@
  * @module Inputs
  */
 
-import * as React from "react";
-import classnames from "classnames";
-
-import { Input, InputProps } from "../Input";
-
 import "./IconInput.scss";
+import classnames from "classnames";
+import * as React from "react";
+import { Input, InputProps } from "../Input";
 
 /** Properties for the [[IconInput]] component
  * @public

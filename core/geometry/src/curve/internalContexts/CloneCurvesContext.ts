@@ -7,9 +7,10 @@
  */
 
 import { Transform } from "../../geometry3d/Transform";
-import { RecursiveCurveProcessorWithStack } from "../CurveProcessor";
+import { BagOfCurves, CurveChain, CurveCollection } from "../CurveCollection";
 import { CurvePrimitive } from "../CurvePrimitive";
-import { CurveCollection, BagOfCurves, CurveChain } from "../CurveCollection";
+import { RecursiveCurveProcessorWithStack } from "../CurveProcessor";
+
 /**
  * Algorithmic class for cloning curve collections.
  * * recurse through collection nodes, building image nodes as needed and inserting clones of children.

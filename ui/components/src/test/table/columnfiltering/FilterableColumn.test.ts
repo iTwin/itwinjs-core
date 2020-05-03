@@ -5,14 +5,13 @@
 
 import { expect } from "chai";
 import * as sinon from "sinon";
-
-import { TestUtils, TestFilterableTable } from "../../TestUtils";
-import { ColumnDescription, RowItem } from "../../../ui-components/table/TableDataProvider";
-import { SimpleTableDataProvider } from "../../../ui-components/table/SimpleTableDataProvider";
-import { TableColumn, ReactDataGridColumn } from "../../../ui-components/table/component/TableColumn";
 import { StandardTypeConverterTypeNames } from "../../../ui-components/converters/TypeConverter";
-import { TableColumnFilterDescriptor } from "../../../ui-components/table/columnfiltering/TableColumnFilterDescriptor";
 import { FilterOperator } from "../../../ui-components/table/columnfiltering/ColumnFiltering";
+import { TableColumnFilterDescriptor } from "../../../ui-components/table/columnfiltering/TableColumnFilterDescriptor";
+import { ReactDataGridColumn, TableColumn } from "../../../ui-components/table/component/TableColumn";
+import { SimpleTableDataProvider } from "../../../ui-components/table/SimpleTableDataProvider";
+import { ColumnDescription, RowItem } from "../../../ui-components/table/TableDataProvider";
+import { TestFilterableTable, TestUtils } from "../../TestUtils";
 
 const columns: ColumnDescription[] = [
   {

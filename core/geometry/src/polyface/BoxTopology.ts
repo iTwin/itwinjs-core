@@ -8,6 +8,7 @@
  */
 
 import { Point3d } from "../geometry3d/Point3dVector3d";
+
 //
 //      2------------------3
 //      | \     F4       / |

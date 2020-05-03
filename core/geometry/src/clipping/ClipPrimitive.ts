@@ -7,19 +7,19 @@
  * @module CartesianGeometry
  */
 
-import { ClipPlane } from "./ClipPlane";
-import { ConvexClipPlaneSet } from "./ConvexClipPlaneSet";
-import { ClipPlaneContainment } from "./ClipUtils";
+import { Geometry } from "../Geometry";
 import { Vector2d } from "../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
+import { PolygonOps } from "../geometry3d/PolygonOps";
 import { Range3d } from "../geometry3d/Range";
 import { Transform } from "../geometry3d/Transform";
-import { Geometry } from "../Geometry";
-import { PolygonOps } from "../geometry3d/PolygonOps";
 import { Matrix4d } from "../geometry4d/Matrix4d";
-import { UnionOfConvexClipPlaneSets } from "./UnionOfConvexClipPlaneSets";
+import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "../topology/Graph";
 import { Triangulator } from "../topology/Triangulation";
-import { HalfEdgeGraph, HalfEdge, HalfEdgeMask } from "../topology/Graph";
+import { ClipPlane } from "./ClipPlane";
+import { ClipPlaneContainment } from "./ClipUtils";
+import { ConvexClipPlaneSet } from "./ConvexClipPlaneSet";
+import { UnionOfConvexClipPlaneSets } from "./UnionOfConvexClipPlaneSets";
 
 /**
  * Bit mask type for referencing subsets of 6 planes of range box.

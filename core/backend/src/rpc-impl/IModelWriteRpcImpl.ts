@@ -5,16 +5,18 @@
 /** @packageDocumentation
  * @module RpcInterface
  */
-import { Id64, ClientRequestContext, Id64String, DbOpcode, assert, Id64Array, GuidString } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import {
-  IModelConnectionProps, IModelRpcProps, IModelWriteRpcInterface, RpcInterface, RpcManager, ThumbnailProps, ImageSourceFormat, AxisAlignedBox3dProps,
-  CodeProps, ElementProps, IModel, RelatedElement, SubCategoryAppearance, Code, SyncMode,
-} from "@bentley/imodeljs-common";
+import { assert, ClientRequestContext, DbOpcode, GuidString, Id64, Id64Array, Id64String } from "@bentley/bentleyjs-core";
 import { Range3d } from "@bentley/geometry-core";
 import { LockLevel, LockType } from "@bentley/imodelhub-client";
+import {
+  AxisAlignedBox3dProps, Code, CodeProps, ElementProps, ImageSourceFormat, IModel, IModelConnectionProps, IModelRpcProps, IModelWriteRpcInterface,
+  RelatedElement, RpcInterface, RpcManager, SubCategoryAppearance, SyncMode, ThumbnailProps,
+} from "@bentley/imodeljs-common";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BriefcaseDb, IModelDb } from "../IModelDb";
-import { ConcurrencyControl, AuthorizedBackendRequestContext, PhysicalPartition, SubjectOwnsPartitionElements, PhysicalModel, SpatialCategory, Element } from "../imodeljs-backend";
+import {
+  AuthorizedBackendRequestContext, ConcurrencyControl, Element, PhysicalModel, PhysicalPartition, SpatialCategory, SubjectOwnsPartitionElements,
+} from "../imodeljs-backend";
 import { RpcBriefcaseUtility } from "./RpcBriefcaseUtility";
 
 class EditingFunctions {

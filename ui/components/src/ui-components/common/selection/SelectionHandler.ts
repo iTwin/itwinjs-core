@@ -5,8 +5,8 @@
 /** @packageDocumentation
  * @module Common
  */
-import { SelectionMode, hasFlag, SelectionModeFlags } from "./SelectionModes";
 import { Range2d } from "@bentley/geometry-core";
+import { hasFlag, SelectionMode, SelectionModeFlags } from "./SelectionModes";
 
 /** Prototype for a Selection Changed handler
  * @public

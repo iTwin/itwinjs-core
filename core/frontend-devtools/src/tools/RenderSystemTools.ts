@@ -7,13 +7,7 @@
  * @module Tools
  */
 
-import {
-  IModelApp,
-  NotifyMessageDetails,
-  OutputMessagePriority,
-  RenderSystemDebugControl,
-  Tool,
-} from "@bentley/imodeljs-frontend";
+import { IModelApp, NotifyMessageDetails, OutputMessagePriority, RenderSystemDebugControl, Tool } from "@bentley/imodeljs-frontend";
 
 /** Executes some code against a RenderSystemDebugControl obtained from the IModelApp's RenderSystem.
  * @beta

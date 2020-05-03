@@ -8,19 +8,17 @@
 
 import * as React from "react";
 import ReactResizeDetector from "react-resize-detector";
-
 import { Logger } from "@bentley/bentleyjs-core";
-import { CommonProps, Orientation, NoChildrenProps, Size } from "@bentley/ui-core";
-import { Direction, ToolbarPanelAlignment, Toolbar as NZ_Toolbar } from "@bentley/ui-ninezone";
-import { UiFramework } from "../UiFramework";
-
-import { ItemList } from "../shared/ItemMap";
+import { CommonProps, NoChildrenProps, Orientation, Size } from "@bentley/ui-core";
+import { Direction, Toolbar as NZ_Toolbar, ToolbarPanelAlignment } from "@bentley/ui-ninezone";
 import { ActionButtonItemDef } from "../shared/ActionButtonItemDef";
-import { SyncUiEventDispatcher, SyncUiEventArgs } from "../syncui/SyncUiEventDispatcher";
-import { ItemDefBase } from "../shared/ItemDefBase";
-import { GroupItemDef } from "./GroupItem";
-import { CustomItemDef } from "../shared/CustomItemDef";
 import { AnyItemDef } from "../shared/AnyItemDef";
+import { CustomItemDef } from "../shared/CustomItemDef";
+import { ItemDefBase } from "../shared/ItemDefBase";
+import { ItemList } from "../shared/ItemMap";
+import { SyncUiEventArgs, SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
+import { UiFramework } from "../UiFramework";
+import { GroupItemDef } from "./GroupItem";
 
 /** Properties of [[Toolbar]] component.
  * @internal

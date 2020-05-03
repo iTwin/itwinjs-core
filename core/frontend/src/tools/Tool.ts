@@ -8,12 +8,12 @@
 
 import { Point2d, Point3d, PolygonOps, XAndY } from "@bentley/geometry-core";
 import { GeometryStreamProps, IModelError } from "@bentley/imodeljs-common";
-import { I18NNamespace, I18N } from "@bentley/imodeljs-i18n";
+import { I18N, I18NNamespace } from "@bentley/imodeljs-i18n";
+import { DialogItem, DialogPropertySyncItem } from "@bentley/ui-abstract";
 import { LocateFilterStatus, LocateResponse } from "../ElementLocateManager";
 import { FuzzySearch, FuzzySearchResults } from "../FuzzySearch";
 import { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
-import { DialogItem, DialogPropertySyncItem } from "@bentley/ui-abstract";
 import { DecorateContext, DynamicsContext } from "../ViewContext";
 import { ScreenViewport } from "../Viewport";
 

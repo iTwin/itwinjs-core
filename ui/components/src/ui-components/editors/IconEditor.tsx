@@ -6,16 +6,15 @@
  * @module PropertyEditors
  */
 
-import * as React from "react";
-import classnames from "classnames";
-import {
-  PropertyValueFormat, PropertyValue, PrimitiveValue, PropertyRecord, IconListEditorParams,
-  PropertyEditorParams, PropertyEditorParamTypes,
-} from "@bentley/ui-abstract";
-import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
-import { IconPickerButton } from "../iconpicker/IconPickerButton";
-import { PropertyEditorManager, PropertyEditorBase } from "./PropertyEditorManager";
 import "./IconEditor.scss";
+import classnames from "classnames";
+import * as React from "react";
+import {
+  IconListEditorParams, PrimitiveValue, PropertyEditorParams, PropertyEditorParamTypes, PropertyRecord, PropertyValue, PropertyValueFormat,
+} from "@bentley/ui-abstract";
+import { IconPickerButton } from "../iconpicker/IconPickerButton";
+import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
+import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
 
 /** @internal */
 interface IconEditorState {

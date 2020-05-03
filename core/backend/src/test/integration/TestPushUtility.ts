@@ -2,17 +2,20 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import * as fs from "fs";
+import * as path from "path";
 import { GuidString, Id64String } from "@bentley/bentleyjs-core";
 import { Point3d, Range3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import { Code, CodeScopeSpec, ColorDef, GeometricElement3dProps, IModel, IModelVersion, SyncMode } from "@bentley/imodeljs-common";
-import { TestUsers, TestUtility, TestUserCredentials } from "@bentley/oidc-signin-tool";
-import * as fs from "fs";
-import * as path from "path";
-import { AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseManager, CategorySelector, ConcurrencyControl, DisplayStyle3d, GeometricElement, IModelDb, ModelSelector, OrthographicViewDefinition, PhysicalModel, SnapshotDb, SpatialCategory } from "../../imodeljs-backend";
+import { TestUserCredentials, TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
+import {
+  AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseManager, CategorySelector, ConcurrencyControl, DisplayStyle3d, GeometricElement, IModelDb,
+  ModelSelector, OrthographicViewDefinition, PhysicalModel, SnapshotDb, SpatialCategory,
+} from "../../imodeljs-backend";
+import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { HubUtility } from "./HubUtility";
 import { IModelWriter } from "./IModelWriter";
-import { IModelTestUtils } from "../IModelTestUtils";
 
 const pause = async (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 

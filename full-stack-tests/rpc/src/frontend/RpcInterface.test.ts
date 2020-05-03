@@ -2,38 +2,19 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import {
-  IModelReadRpcInterface,
-  IModelRpcProps,
-  RpcConfiguration,
-  RpcInterface,
-  RpcInterfaceDefinition,
-  RpcManager,
-  RpcOperation,
-  RpcOperationPolicy,
-  RpcRequest,
-  RpcRequestEvent,
-  RpcRequestStatus,
-  RpcResponseCacheControl,
-  RpcSerializedValue,
-  WipRpcInterface,
-} from "@bentley/imodeljs-common";
-import { BentleyError, OpenMode, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
-import {
-  TestRpcInterface,
-  TestOp1Params,
-  TestRpcInterface2,
-  TestNotFoundResponse,
-  TestNotFoundResponseCode,
-  RpcTransportTestImpl,
-  RpcTransportTest,
-  ZeroMajorRpcInterface,
-  TokenValues,
-} from "../common/TestRpcInterface";
 import { assert } from "chai";
-import { BackendTestCallbacks } from "../common/SideChannels";
 import * as semver from "semver";
+import { BentleyError, OpenMode, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
 import { executeBackendCallback } from "@bentley/certa/lib/utils/CallbackUtils";
+import {
+  IModelReadRpcInterface, IModelRpcProps, RpcConfiguration, RpcInterface, RpcInterfaceDefinition, RpcManager, RpcOperation, RpcOperationPolicy,
+  RpcRequest, RpcRequestEvent, RpcRequestStatus, RpcResponseCacheControl, RpcSerializedValue, WipRpcInterface,
+} from "@bentley/imodeljs-common";
+import { BackendTestCallbacks } from "../common/SideChannels";
+import {
+  RpcTransportTest, RpcTransportTestImpl, TestNotFoundResponse, TestNotFoundResponseCode, TestOp1Params, TestRpcInterface, TestRpcInterface2,
+  TokenValues, ZeroMajorRpcInterface,
+} from "../common/TestRpcInterface";
 
 const timeout = async (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 const testToken: IModelRpcProps = { key: "test", contextId: "test", iModelId: "test", changeSetId: "test", openMode: OpenMode.Readonly };

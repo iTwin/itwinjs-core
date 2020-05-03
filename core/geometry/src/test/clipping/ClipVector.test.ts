@@ -4,14 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { Checker } from "../Checker";
+import { ClipMaskXYZRangePlanes, ClipShape } from "../../clipping/ClipPrimitive";
+import { ClipVector } from "../../clipping/ClipVector";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { Range3d } from "../../geometry3d/Range";
 import { Transform } from "../../geometry3d/Transform";
-import { ClipMaskXYZRangePlanes, ClipShape } from "../../clipping/ClipPrimitive";
-import { ClipVector } from "../../clipping/ClipVector";
 import { Matrix4d } from "../../geometry4d/Matrix4d";
-
+import { Checker } from "../Checker";
 // External test functions
 import { clipPrimitivesAreEqual } from "./ClipPrimitives.test";
 

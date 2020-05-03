@@ -7,15 +7,15 @@
  */
 
 import * as React from "react";
-import { CommonProps } from "@bentley/ui-core";
 import { BackstageItem, BackstageItemsManager, ConditionalBooleanValue } from "@bentley/ui-abstract";
+import { CommonProps } from "@bentley/ui-core";
 import { Backstage as NZ_Backstage, BackstageSeparator } from "@bentley/ui-ninezone";
 import { SafeAreaContext } from "../safearea/SafeAreaContext";
+import { SyncUiEventArgs, SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
+import { BackstageComposerItem } from "./BackstageComposerItem";
+import { useBackstageManager, useIsBackstageOpen } from "./BackstageManager";
 import { useDefaultBackstageItems } from "./useDefaultBackstageItems";
 import { useUiItemsProviderBackstageItems } from "./useUiItemsProviderBackstageItems";
-import { useBackstageManager, useIsBackstageOpen } from "./BackstageManager";
-import { BackstageComposerItem } from "./BackstageComposerItem";
-import { SyncUiEventArgs, SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
 
 // cSpell:ignore safearea
 

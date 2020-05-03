@@ -2,9 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Id64, Id64Arg } from "@bentley/bentleyjs-core";
-import { ElementAgenda, HiliteSet, IModelConnection, MockRender, ModifyElementSource, SelectionSet, SelectionSetEventType, SnapshotConnection } from "@bentley/imodeljs-frontend";
 import { assert, expect } from "chai";
+import { Id64, Id64Arg } from "@bentley/bentleyjs-core";
+import {
+  ElementAgenda, HiliteSet, IModelConnection, MockRender, ModifyElementSource, SelectionSet, SelectionSetEventType, SnapshotConnection,
+} from "@bentley/imodeljs-frontend";
 
 describe("Tools", () => {
   let imodel: IModelConnection;

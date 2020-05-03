@@ -6,10 +6,10 @@
  * @module WebGL
  */
 
-import { TextureUnit } from "../RenderFlags";
-import { VariableType, FragmentShaderComponent } from "../ShaderBuilder";
-import { ShaderProgram } from "../ShaderProgram";
 import { SingleTexturedViewportQuadGeometry } from "../CachedGeometry";
+import { TextureUnit } from "../RenderFlags";
+import { FragmentShaderComponent, VariableType } from "../ShaderBuilder";
+import { ShaderProgram } from "../ShaderProgram";
 import { Texture2DHandle } from "../Texture";
 import { assignFragColor } from "./Fragment";
 import { createViewportQuadBuilder } from "./ViewportQuad";

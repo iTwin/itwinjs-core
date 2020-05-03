@@ -3,9 +3,9 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { Guid, GuidString, Logger } from "@bentley/bentleyjs-core";
+import { IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext, IncludePrefix } from "@bentley/itwin-client";
 import { IModelHost } from "../IModelHost";
-import { IModelJsNative } from "@bentley/imodeljs-native";
 
 const loggerCategory: string = "imodeljs-backend.UlasUtilities";
 

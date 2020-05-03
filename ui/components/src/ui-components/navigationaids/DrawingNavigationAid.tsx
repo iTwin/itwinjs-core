@@ -6,18 +6,15 @@
  * @module NavigationAids
  */
 
+import "./DrawingNavigationAid.scss";
+import classnames from "classnames";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import classnames from "classnames";
-
-import { Geometry, Constant, Point2d, Point3d, Vector3d, Matrix3d, Point4d } from "@bentley/geometry-core";
-import { IModelConnection, Viewport, ScreenViewport, ViewState, IModelApp, ViewManager } from "@bentley/imodeljs-frontend";
+import { Constant, Geometry, Matrix3d, Point2d, Point3d, Point4d, Vector3d } from "@bentley/geometry-core";
+import { IModelApp, IModelConnection, ScreenViewport, ViewManager, Viewport, ViewState } from "@bentley/imodeljs-frontend";
 import { CommonProps } from "@bentley/ui-core";
-
 import { UiComponents } from "../UiComponents";
 import { ViewportComponentEvents, ViewRotationChangeEventArgs } from "../viewport/ViewportComponentEvents";
-
-import "./DrawingNavigationAid.scss";
 
 // cSpell:ignore Quaternion Quaternions unrotate
 

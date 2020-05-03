@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ClientRequestContext, Config } from "@bentley/bentleyjs-core";
-import { AccessToken } from "@bentley/itwin-client";
-import { AgentAuthorizationClient, AgentAuthorizationClientConfiguration } from "@bentley/backend-itwin-client";
-import { IModelVersion, MobileRpcConfiguration, SyncMode } from "@bentley/imodeljs-common";
 import { assert } from "chai";
+import { AgentAuthorizationClient, AgentAuthorizationClientConfiguration } from "@bentley/backend-itwin-client";
+import { ClientRequestContext, Config } from "@bentley/bentleyjs-core";
+import { IModelVersion, MobileRpcConfiguration, SyncMode } from "@bentley/imodeljs-common";
+import { AccessToken } from "@bentley/itwin-client";
 import { AuthorizedBackendRequestContext } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";

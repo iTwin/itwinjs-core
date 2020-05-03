@@ -7,12 +7,10 @@
  */
 
 import * as React from "react";
-
-import { ScreenViewport, IModelConnection, ViewState } from "@bentley/imodeljs-frontend";
 import { Id64String } from "@bentley/bentleyjs-core";
+import { IModelConnection, ScreenViewport, ViewState } from "@bentley/imodeljs-frontend";
 import { UiEvent } from "@bentley/ui-core";
-
-import { ConfigurableUiControlType, ConfigurableCreateInfo, ConfigurableUiControl } from "../configurableui/ConfigurableUiControl";
+import { ConfigurableCreateInfo, ConfigurableUiControl, ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";
 
 /** ControlControl Activated Event Args interface.
  * @public

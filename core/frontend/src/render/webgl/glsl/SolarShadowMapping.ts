@@ -7,10 +7,10 @@
  */
 import { assert } from "@bentley/bentleyjs-core";
 import { RenderType } from "@bentley/webgl-compatibility";
-import { VariableType, ProgramBuilder, FragmentShaderBuilder, FragmentShaderComponent } from "../ShaderBuilder";
 import { TextureUnit } from "../RenderFlags";
-import { addInstancedRtcMatrix } from "./Vertex";
+import { FragmentShaderBuilder, FragmentShaderComponent, ProgramBuilder, VariableType } from "../ShaderBuilder";
 import { System } from "../System";
+import { addInstancedRtcMatrix } from "./Vertex";
 
 const computeShadowPos = `
   vec4 shadowProj = u_shadowProj * rawPosition;

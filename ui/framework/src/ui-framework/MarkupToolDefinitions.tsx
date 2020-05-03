@@ -7,17 +7,7 @@
  */
 
 import {
-  SelectTool,
-  LineTool,
-  RectangleTool,
-  PolygonTool,
-  CloudTool,
-  EllipseTool,
-  ArrowTool,
-  DistanceTool,
-  SketchTool,
-  SymbolTool,
-  PlaceTextTool,
+  ArrowTool, CloudTool, DistanceTool, EllipseTool, LineTool, PlaceTextTool, PolygonTool, RectangleTool, SelectTool, SketchTool, SymbolTool,
 } from "@bentley/imodeljs-markup";
 import { ToolItemDef } from "./shared/ToolItemDef";
 

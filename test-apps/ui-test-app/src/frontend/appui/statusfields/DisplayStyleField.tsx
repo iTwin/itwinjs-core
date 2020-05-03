@@ -6,21 +6,14 @@
  * @module StatusBar
  */
 
-import * as React from "react";
-import classnames from "classnames";
-import { Id64String } from "@bentley/bentleyjs-core";
-import { FooterIndicator } from "@bentley/ui-ninezone";
-import { StatusFieldProps, ContentViewManager, FrontstageManager, ContentControlActivatedEventArgs, ContentControl } from "@bentley/ui-framework";
-import { Select } from "@bentley/ui-core";
-import {
-  IModelApp,
-  ScreenViewport,
-  DisplayStyle3dState,
-  DisplayStyle2dState,
-  DisplayStyleState,
-} from "@bentley/imodeljs-frontend";
-
 import "./DisplayStyleField.scss";
+import classnames from "classnames";
+import * as React from "react";
+import { Id64String } from "@bentley/bentleyjs-core";
+import { DisplayStyle2dState, DisplayStyle3dState, DisplayStyleState, IModelApp, ScreenViewport } from "@bentley/imodeljs-frontend";
+import { Select } from "@bentley/ui-core";
+import { ContentControl, ContentControlActivatedEventArgs, ContentViewManager, FrontstageManager, StatusFieldProps } from "@bentley/ui-framework";
+import { FooterIndicator } from "@bentley/ui-ninezone";
 
 interface DisplayStyleFieldState {
   viewport?: ScreenViewport;

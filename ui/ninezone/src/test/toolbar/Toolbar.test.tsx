@@ -6,7 +6,7 @@ import { expect } from "chai";
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { Direction, Toolbar, ToolbarPanelAlignment, PanelsProvider, ToolbarItem, ToolbarItemProps } from "../../ui-ninezone";
+import { Direction, PanelsProvider, Toolbar, ToolbarItem, ToolbarItemProps, ToolbarPanelAlignment } from "../../ui-ninezone";
 import { getToolbarItemProps } from "../../ui-ninezone/toolbar/Toolbar";
 
 class Item extends React.Component implements ToolbarItem {

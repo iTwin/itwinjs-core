@@ -2,27 +2,19 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-import { mount } from "enzyme";
 import { expect } from "chai";
+import { mount } from "enzyme";
+import * as React from "react";
 import { Provider } from "react-redux";
 import * as sinon from "sinon";
-
 import { SnapMode } from "@bentley/imodeljs-frontend";
 import { WidgetState } from "@bentley/ui-abstract";
 import { FooterPopup } from "@bentley/ui-ninezone";
-
-import TestUtils from "../TestUtils";
 import {
-  SnapModeField,
-  StatusBarWidgetControl,
-  StatusBar,
-  ConfigurableCreateInfo,
+  ConfigurableCreateInfo, ConfigurableUiControlType, SnapModeField, StatusBar, StatusBarWidgetControl, StatusBarWidgetControlArgs, UiFramework,
   WidgetDef,
-  ConfigurableUiControlType,
-  UiFramework,
-  StatusBarWidgetControlArgs,
 } from "../../ui-framework";
+import TestUtils from "../TestUtils";
 
 describe("SnapModeField", () => {
 

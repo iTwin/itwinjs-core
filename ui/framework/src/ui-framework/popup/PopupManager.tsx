@@ -7,24 +7,18 @@
  */
 
 import * as React from "react";
-
 import { Logger } from "@bentley/bentleyjs-core";
 import { XAndY } from "@bentley/geometry-core";
 import {
-  OnValueCommitFunc, OnCancelFunc, OnItemExecutedFunc,
-  AbstractToolbarProps, RelativePosition,
-  PrimitiveValue, PropertyValueFormat, PropertyRecord,
-  PropertyDescription,
-  Primitives,
+  AbstractToolbarProps, OnCancelFunc, OnItemExecutedFunc, OnValueCommitFunc, Primitives, PrimitiveValue, PropertyDescription, PropertyRecord,
+  PropertyValueFormat, RelativePosition,
 } from "@bentley/ui-abstract";
-
-import { UiEvent, Rectangle, Point, SizeProps, Orientation } from "@bentley/ui-core";
+import { Orientation, Point, Rectangle, SizeProps, UiEvent } from "@bentley/ui-core";
 import { offsetAndContainInContainer } from "@bentley/ui-ninezone";
-
 import { UiFramework } from "../UiFramework";
-import { InputEditorPopup, InputEditorCommitHandler } from "./InputEditorPopup";
-import { ToolbarPopup } from "./ToolbarPopup";
 import { HTMLElementPopup } from "./HTMLElementPopup";
+import { InputEditorCommitHandler, InputEditorPopup } from "./InputEditorPopup";
+import { ToolbarPopup } from "./ToolbarPopup";
 
 /** Information maintained by PopupManager about a Popup
  * @alpha

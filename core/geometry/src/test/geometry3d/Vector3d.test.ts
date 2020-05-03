@@ -2,11 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { Angle } from "../../geometry3d/Angle";
-import * as bsiChecker from "../Checker";
 // import { Sample } from "../serialization/GeometrySamples";
 import { expect } from "chai";
+import { Angle } from "../../geometry3d/Angle";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
+import * as bsiChecker from "../Checker";
+
 /* tslint:disable:no-console */
 describe("Vector3d", () => {
   it("hello", () => {

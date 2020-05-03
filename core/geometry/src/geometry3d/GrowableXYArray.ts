@@ -8,16 +8,16 @@
  */
 
 import { Geometry } from "../Geometry";
-import { XAndY, XYAndZ } from "./XYZProps";
+import { MultiLineStringDataVariant } from "../topology/Triangulation";
+import { GrowableXYZArray } from "./GrowableXYZArray";
+import { IndexedXYCollection } from "./IndexedXYCollection";
+import { Matrix3d } from "./Matrix3d";
 import { Point2d, Vector2d } from "./Point2dVector2d";
+import { Point3d } from "./Point3dVector3d";
+import { PointStreamGrowableXYZArrayCollector, VariantPointDataStream } from "./PointStreaming";
 import { Range2d } from "./Range";
 import { Transform } from "./Transform";
-import { Matrix3d } from "./Matrix3d";
-import { IndexedXYCollection } from "./IndexedXYCollection";
-import { GrowableXYZArray } from "./GrowableXYZArray";
-import { Point3d } from "./Point3dVector3d";
-import { MultiLineStringDataVariant } from "../topology/Triangulation";
-import { PointStreamGrowableXYZArrayCollector, VariantPointDataStream } from "./PointStreaming";
+import { XAndY, XYAndZ } from "./XYZProps";
 
 /** `GrowableXYArray` manages a (possibly growing) Float64Array to pack xy coordinates.
  * @public

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Point2dTypeConverter, Point3dTypeConverter, ConvertedPrimitives } from "../../ui-components";
+import { ConvertedPrimitives, Point2dTypeConverter, Point3dTypeConverter } from "../../ui-components";
 import TestUtils from "../TestUtils";
 
 describe("Point2dTypeConverter", () => {

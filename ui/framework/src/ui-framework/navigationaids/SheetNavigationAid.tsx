@@ -6,21 +6,18 @@
  * @module NavigationAids
  */
 
-import * as React from "react";
+import "./SheetNavigationAid.scss";
 import classnames from "classnames";
-
-import { IModelConnection, IModelApp, ScreenViewport, SelectedViewportChangedArgs } from "@bentley/imodeljs-frontend";
-import { Spinner, SpinnerSize, CommonProps } from "@bentley/ui-core";
-import { ViewportComponentEvents, ViewIdChangedEventArgs } from "@bentley/ui-components";
-
+import * as React from "react";
+import { IModelApp, IModelConnection, ScreenViewport, SelectedViewportChangedArgs } from "@bentley/imodeljs-frontend";
+import { ViewIdChangedEventArgs, ViewportComponentEvents } from "@bentley/ui-components";
+import { CommonProps, Spinner, SpinnerSize } from "@bentley/ui-core";
+import { ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";
+import { FrontstageManager, ModalFrontstageInfo } from "../frontstage/FrontstageManager";
 import { UiFramework } from "../UiFramework";
 import { ViewUtilities } from "../utils/ViewUtilities";
 import { NavigationAidControl } from "./NavigationAidControl";
-import { ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";
-import { FrontstageManager, ModalFrontstageInfo } from "../frontstage/FrontstageManager";
-import { SheetsModalFrontstage, CardContainer, CardSelectedEventArgs } from "./SheetsModalFrontstage";
-
-import "./SheetNavigationAid.scss";
+import { CardContainer, CardSelectedEventArgs, SheetsModalFrontstage } from "./SheetsModalFrontstage";
 
 /** A Sheet Navigation Aid control.
  * @alpha

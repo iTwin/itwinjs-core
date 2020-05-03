@@ -3,18 +3,17 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-
-import { ViewportComponent, TimelineDataProvider, TimelineComponent } from "@bentley/ui-components";
-import {
-  ConfigurableCreateInfo, ConfigurableUiManager, ViewportContentControl, ContentViewManager,
-  ScheduleAnimationTimelineDataProvider, AnalysisAnimationTimelineDataProvider, UiFramework,
-} from "@bentley/ui-framework";
-import { ScreenViewport, IModelConnection, ViewState } from "@bentley/imodeljs-frontend";
-import { viewWithUnifiedSelection } from "@bentley/presentation-components";
-import { ViewQueryParams, ViewDefinitionProps } from "@bentley/imodeljs-common";
-import { SampleAppIModelApp } from "../..";
 import { Id64String } from "@bentley/bentleyjs-core";
+import { ViewDefinitionProps, ViewQueryParams } from "@bentley/imodeljs-common";
+import { IModelConnection, ScreenViewport, ViewState } from "@bentley/imodeljs-frontend";
+import { viewWithUnifiedSelection } from "@bentley/presentation-components";
+import { TimelineComponent, TimelineDataProvider, ViewportComponent } from "@bentley/ui-components";
 import { LoadingSpinner } from "@bentley/ui-core";
+import {
+  AnalysisAnimationTimelineDataProvider, ConfigurableCreateInfo, ConfigurableUiManager, ContentViewManager, ScheduleAnimationTimelineDataProvider,
+  UiFramework, ViewportContentControl,
+} from "@bentley/ui-framework";
+import { SampleAppIModelApp } from "../..";
 
 // create a HOC viewport component that supports unified selection
 // tslint:disable-next-line:variable-name

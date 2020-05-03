@@ -3,37 +3,37 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Sample } from "../../serialization/GeometrySamples";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { Transform } from "../../geometry3d/Transform";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
-import { SolidPrimitive } from "../../solid/SolidPrimitive";
-import { Checker } from "../Checker";
 import { expect } from "chai";
 import * as fs from "fs";
-import { Cone } from "../../solid/Cone";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { StrokeOptions } from "../../curve/StrokeOptions";
-import { AngleSweep } from "../../geometry3d/AngleSweep";
-import { Sphere } from "../../solid/Sphere";
-import { Angle } from "../../geometry3d/Angle";
-import { Range3d } from "../../geometry3d/Range";
-import { Plane3dByOriginAndVectors } from "../../geometry3d/Plane3dByOriginAndVectors";
-import { IModelJson } from "../../serialization/IModelJsonSchema";
-import { prettyPrint } from "../testFunctions";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { RotationalSweep } from "../../solid/RotationalSweep";
-import { Path } from "../../curve/Path";
-import { Ray3d } from "../../geometry3d/Ray3d";
-import { TorusPipe } from "../../solid/TorusPipe";
-import { SweepContour } from "../../solid/SweepContour";
-import { LineString3d } from "../../curve/LineString3d";
-import { ConstructCurveBetweenCurves } from "../../curve/ConstructCurveBetweenCurves";
-import { Arc3d } from "../../curve/Arc3d";
 import { BSplineCurve3d } from "../../bspline/BSplineCurve";
-import { RuledSweep } from "../../solid/RuledSweep";
+import { Arc3d } from "../../curve/Arc3d";
+import { ConstructCurveBetweenCurves } from "../../curve/ConstructCurveBetweenCurves";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { LineSegment3d } from "../../curve/LineSegment3d";
+import { LineString3d } from "../../curve/LineString3d";
+import { Path } from "../../curve/Path";
+import { StrokeOptions } from "../../curve/StrokeOptions";
+import { Angle } from "../../geometry3d/Angle";
+import { AngleSweep } from "../../geometry3d/AngleSweep";
+import { Matrix3d } from "../../geometry3d/Matrix3d";
+import { Plane3dByOriginAndVectors } from "../../geometry3d/Plane3dByOriginAndVectors";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
+import { Range3d } from "../../geometry3d/Range";
+import { Ray3d } from "../../geometry3d/Ray3d";
+import { Transform } from "../../geometry3d/Transform";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
+import { Sample } from "../../serialization/GeometrySamples";
+import { IModelJson } from "../../serialization/IModelJsonSchema";
+import { Cone } from "../../solid/Cone";
+import { RotationalSweep } from "../../solid/RotationalSweep";
+import { RuledSweep } from "../../solid/RuledSweep";
+import { SolidPrimitive } from "../../solid/SolidPrimitive";
+import { Sphere } from "../../solid/Sphere";
+import { SweepContour } from "../../solid/SweepContour";
+import { TorusPipe } from "../../solid/TorusPipe";
+import { Checker } from "../Checker";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { prettyPrint } from "../testFunctions";
 
 /* tslint:disable:no-console */
 let outputFolderPath = "./src/test/output";

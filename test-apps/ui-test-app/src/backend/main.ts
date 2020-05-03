@@ -2,15 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as path from "path";
 import { app as electron } from "electron";
+import * as path from "path";
+import { Config } from "@bentley/bentleyjs-core";
+import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 import { IModelHost } from "@bentley/imodeljs-backend";
 import { RpcInterfaceDefinition } from "@bentley/imodeljs-common";
 import { Presentation } from "@bentley/presentation-backend";
 import getSupportedRpcs from "../common/rpcs";
-import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 import { initializeLogging, setupSnapshotConfiguration } from "./web/BackendServer";
-import { Config } from "@bentley/bentleyjs-core";
 
 (async () => { // tslint:disable-line:no-floating-promises
   IModelJsConfig.init(true /*suppress error*/, true /* suppress message */, Config.App);

@@ -2,13 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
 import { expect } from "chai";
-import TestUtils from "../TestUtils";
-
+import * as React from "react";
 import { WidgetState } from "@bentley/ui-abstract";
-
-import { WidgetProps, WidgetDef, WidgetControl, ConfigurableCreateInfo, ConfigurableUiControlType } from "../../ui-framework";
+import { ConfigurableCreateInfo, ConfigurableUiControlType, WidgetControl, WidgetDef, WidgetProps } from "../../ui-framework";
+import TestUtils from "../TestUtils";
 
 describe("WidgetControl", () => {
 

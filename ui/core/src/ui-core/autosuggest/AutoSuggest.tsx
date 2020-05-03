@@ -6,11 +6,10 @@
  * @module AutoSuggest
  */
 
+import "./AutoSuggest.scss";
 import * as React from "react";
 import * as ReactAutosuggest from "react-autosuggest";
 import { CommonProps } from "../utils/Props";
-
-import "./AutoSuggest.scss";
 
 /** Data for the [[AutoSuggest]] options
  *  @beta

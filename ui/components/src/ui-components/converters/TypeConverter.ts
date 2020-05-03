@@ -8,20 +8,8 @@
 
 // cSpell:ignore valuetypes shortdate
 
-import {
-  OutputMessagePriority,
-  OutputMessageType,
-  OutputMessageAlert,
-} from "@bentley/imodeljs-frontend";
-import {
-  PropertyDescription,
-  PropertyRecord,
-  Primitives,
-  PropertyValue,
-  PropertyValueFormat,
-  PrimitiveValue,
-} from "@bentley/ui-abstract";
-
+import { OutputMessageAlert, OutputMessagePriority, OutputMessageType } from "@bentley/imodeljs-frontend";
+import { Primitives, PrimitiveValue, PropertyDescription, PropertyRecord, PropertyValue, PropertyValueFormat } from "@bentley/ui-abstract";
 import { ConvertedPrimitives } from "./valuetypes/ConvertedTypes";
 
 /**

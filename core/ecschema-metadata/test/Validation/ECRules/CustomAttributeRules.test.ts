@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-
 import { SchemaContext } from "../../../src/Context";
 import { ECClassModifier } from "../../../src/ECObjects";
 import { MutableClass } from "../../../src/Metadata/Class";

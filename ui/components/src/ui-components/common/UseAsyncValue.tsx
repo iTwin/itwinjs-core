@@ -8,8 +8,8 @@
 
 import * as React from "react";
 import { from } from "rxjs/internal/observable/from";
-import { Subject } from "rxjs/internal/Subject";
 import { takeUntil } from "rxjs/internal/operators/takeUntil";
+import { Subject } from "rxjs/internal/Subject";
 import { isPromiseLike, useEffectSkipFirst } from "@bentley/ui-core";
 
 /**

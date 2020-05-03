@@ -2,13 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { expect } from "chai";
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import { expect } from "chai";
-
-import { MessageBox, MessageSeverity, DialogButtonStyle, DialogButtonType } from "../../ui-core";
-import TestUtils from "../TestUtils";
+import { DialogButtonStyle, DialogButtonType, MessageBox, MessageSeverity } from "../../ui-core";
 import { MessageContainer } from "../../ui-core/messagebox/MessageBox";
+import TestUtils from "../TestUtils";
 
 describe("MessageBox", () => {
 

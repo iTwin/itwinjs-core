@@ -3,20 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-
-import {
-  ConfigurableCreateInfo,
-  WidgetControl,
-  DragDropLayerManager,
-  UiFramework,
-} from "@bentley/ui-framework";
-import {
-  Table,
-  TableProps,
-  withTableDragDrop,
-} from "@bentley/ui-components";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { demoMutableTableDataProvider, tableDragProps, tableDropProps, TableDragTypes, DemoTableDragDropType } from "./demodataproviders/demoTableDataProvider";
+import { Table, TableProps, withTableDragDrop } from "@bentley/ui-components";
+import { ConfigurableCreateInfo, DragDropLayerManager, UiFramework, WidgetControl } from "@bentley/ui-framework";
+import {
+  demoMutableTableDataProvider, DemoTableDragDropType, tableDragProps, TableDragTypes, tableDropProps,
+} from "./demodataproviders/demoTableDataProvider";
 import { TreeDragTypes } from "./demodataproviders/demoTreeDataProvider";
 import { RowDragLayer } from "./draglayers/RowDragLayer";
 

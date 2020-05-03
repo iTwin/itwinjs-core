@@ -6,9 +6,9 @@
  * @module iModelHubClient
  */
 
+import { FileHandler } from "@bentley/itwin-client";
 import { IModelClient } from "../IModelClient";
 import { IModelBaseHandler } from "./BaseHandler";
-import { FileHandler } from "@bentley/itwin-client";
 
 /**
  * Class that allows access to different iModelHub class handlers. Handlers should be accessed through an instance of this class, rather than constructed directly.

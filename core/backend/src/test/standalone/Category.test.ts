@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { Id64 } from "@bentley/bentleyjs-core";
-import { ColorDef, ColorByName, SubCategoryAppearance, SubCategoryOverride } from "@bentley/imodeljs-common";
+import { ColorByName, ColorDef, SubCategoryAppearance, SubCategoryOverride } from "@bentley/imodeljs-common";
 
 // spell-checker: disable
 

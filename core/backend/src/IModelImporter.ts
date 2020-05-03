@@ -6,7 +6,9 @@
  * @module iModels
  */
 import { Id64, Id64String, IModelStatus, Logger } from "@bentley/bentleyjs-core";
-import { AxisAlignedBox3d, ElementAspectProps, ElementProps, GeometricElement3dProps, IModelError, ModelProps, Placement3d } from "@bentley/imodeljs-common";
+import {
+  AxisAlignedBox3d, ElementAspectProps, ElementProps, GeometricElement3dProps, IModelError, ModelProps, Placement3d,
+} from "@bentley/imodeljs-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { Element, GeometricElement3d } from "./Element";
 import { ElementAspect, ElementMultiAspect } from "./ElementAspect";

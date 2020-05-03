@@ -7,12 +7,13 @@
  * @module RpcInterface
  */
 
-import { ClientRequestContext, IModelStatus, Logger, LogLevel, Config } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext, ProgressInfo, ProgressCallback } from "@bentley/itwin-client";
+import { ClientRequestContext, Config, IModelStatus, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import {
   BriefcaseKey, BriefcaseProps, DownloadBriefcaseOptions, Events, IModelError, IModelProps, IModelRpcProps, IModelVersion, InternetConnectivityStatus,
-  NativeAppRpcInterface, OpenBriefcaseOptions, OverriddenBy, QueuedEvent, RequestBriefcaseProps, RpcInterface, RpcManager, StorageValue, TileTreeContentIds,
+  NativeAppRpcInterface, OpenBriefcaseOptions, OverriddenBy, QueuedEvent, RequestBriefcaseProps, RpcInterface, RpcManager, StorageValue,
+  TileTreeContentIds,
 } from "@bentley/imodeljs-common";
+import { AuthorizedClientRequestContext, ProgressCallback, ProgressInfo } from "@bentley/itwin-client";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { BriefcaseManager } from "../BriefcaseManager";
 import { EmitStrategy, EventSinkManager } from "../EventSink";

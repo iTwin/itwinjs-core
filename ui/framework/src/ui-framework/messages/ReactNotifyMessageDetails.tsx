@@ -7,10 +7,10 @@
  */
 
 import * as React from "react";
-import { NotifyMessageDetails, OutputMessagePriority, OutputMessageType, OutputMessageAlert } from "@bentley/imodeljs-frontend";
-import { Point2d, XAndY } from "@bentley/geometry-core";
-import { RelativePosition } from "@bentley/ui-abstract";
 import { BeDuration } from "@bentley/bentleyjs-core";
+import { Point2d, XAndY } from "@bentley/geometry-core";
+import { NotifyMessageDetails, OutputMessageAlert, OutputMessagePriority, OutputMessageType } from "@bentley/imodeljs-frontend";
+import { RelativePosition } from "@bentley/ui-abstract";
 
 /** Describes a React based message
  * @public

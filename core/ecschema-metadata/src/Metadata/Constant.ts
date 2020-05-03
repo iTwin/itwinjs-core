@@ -3,16 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { DelayedPromiseWithProps } from "../DelayedPromise";
+import { ConstantProps } from "../Deserialization/JsonProps";
+import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
+import { SchemaItemType } from "../ECObjects";
+import { ECObjectsError, ECObjectsStatus } from "../Exception";
+import { LazyLoadedPhenomenon } from "../Interfaces";
+import { SchemaItemKey } from "../SchemaKey";
 import { Phenomenon } from "./Phenomenon";
 import { Schema } from "./Schema";
 import { SchemaItem } from "./SchemaItem";
-import { DelayedPromiseWithProps } from "./../DelayedPromise";
-import { ConstantProps } from "./../Deserialization/JsonProps";
-import { SchemaItemType } from "./../ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "./../Exception";
-import { LazyLoadedPhenomenon } from "./../Interfaces";
-import { SchemaItemKey } from "./../SchemaKey";
-import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
 
 /**
  * A Constant is a specific type of Unit that represents a number.

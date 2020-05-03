@@ -5,7 +5,7 @@
 import * as React from "react";
 import * as sinon from "sinon";
 import { fireEvent, render } from "@testing-library/react";
-import { SendBack, WidgetIdContext, ActiveTabIdContext } from "../../ui-ninezone";
+import { ActiveTabIdContext, SendBack, WidgetIdContext } from "../../ui-ninezone";
 import { NineZoneDispatch, NineZoneDispatchContext } from "../../ui-ninezone/base/NineZone";
 import { WIDGET_SEND_BACK } from "../../ui-ninezone/base/NineZoneState";
 

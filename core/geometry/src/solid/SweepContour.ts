@@ -7,26 +7,25 @@
  * @module Solid
  */
 
-import { Vector3d, Point3d } from "../geometry3d/Point3dVector3d";
-import { Transform } from "../geometry3d/Transform";
-
+import { ClipPlane } from "../clipping/ClipPlane";
+import { ConvexClipPlaneSet } from "../clipping/ConvexClipPlaneSet";
+import { UnionOfConvexClipPlaneSets } from "../clipping/UnionOfConvexClipPlaneSets";
+import { AnyCurve } from "../curve/CurveChain";
 import { CurveCollection } from "../curve/CurveCollection";
+import { LineString3d } from "../curve/LineString3d";
+import { Loop } from "../curve/Loop";
+import { ParityRegion } from "../curve/ParityRegion";
+import { RegionOps } from "../curve/RegionOps";
+import { StrokeOptions } from "../curve/StrokeOptions";
 import { FrameBuilder } from "../geometry3d/FrameBuilder";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
+import { PolygonOps } from "../geometry3d/PolygonOps";
 import { Ray3d } from "../geometry3d/Ray3d";
+import { Transform } from "../geometry3d/Transform";
 import { IndexedPolyface } from "../polyface/Polyface";
 import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
-import { Triangulator, MultiLineStringDataVariant } from "../topology/Triangulation";
-import { LineString3d } from "../curve/LineString3d";
-import { AnyCurve } from "../curve/CurveChain";
-import { ParityRegion } from "../curve/ParityRegion";
-import { Loop } from "../curve/Loop";
-import { StrokeOptions } from "../curve/StrokeOptions";
-import { PolygonOps } from "../geometry3d/PolygonOps";
 import { HalfEdgeGraphSearch } from "../topology/HalfEdgeGraphSearch";
-import { RegionOps } from "../curve/RegionOps";
-import { UnionOfConvexClipPlaneSets } from "../clipping/UnionOfConvexClipPlaneSets";
-import { ConvexClipPlaneSet } from "../clipping/ConvexClipPlaneSet";
-import { ClipPlane } from "../clipping/ClipPlane";
+import { MultiLineStringDataVariant, Triangulator } from "../topology/Triangulation";
 
 /**
  * Sweepable contour with Transform for local to world interaction.

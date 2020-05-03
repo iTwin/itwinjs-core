@@ -2,12 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { assert } from "chai";
+import * as os from "os";
 import { BentleyStatus, Config, Guid, GuidString } from "@bentley/bentleyjs-core";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { getAccessTokenFromBackend, TestBrowserAuthorizationClientConfiguration, TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
-import { assert } from "chai";
-import * as os from "os";
-import { EndFeatureLogEntry, FeatureLogEntry, LogPostingResponse, StartFeatureLogEntry, UsageLoggingClient, UsageType } from "../../UsageLoggingClient";
+import {
+  EndFeatureLogEntry, FeatureLogEntry, LogPostingResponse, StartFeatureLogEntry, UsageLoggingClient, UsageType,
+} from "../../UsageLoggingClient";
 
 describe("UlasClient - OIDC Token (#integration)", () => {
   const client: UsageLoggingClient = new UsageLoggingClient();

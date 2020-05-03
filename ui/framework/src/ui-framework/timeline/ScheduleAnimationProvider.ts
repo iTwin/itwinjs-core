@@ -6,8 +6,8 @@
  * @module Timeline
  */
 
-import { BaseTimelineDataProvider, PlaybackSettings, Milestone } from "@bentley/ui-components";
 import { ScreenViewport, ViewState } from "@bentley/imodeljs-frontend";
+import { BaseTimelineDataProvider, Milestone, PlaybackSettings } from "@bentley/ui-components";
 
 /** ScheduleAnimation Timeline Data Provider - handles View that define 'scheduleScript' data.
  * @alpha

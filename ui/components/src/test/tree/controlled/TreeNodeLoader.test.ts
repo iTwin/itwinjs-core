@@ -3,20 +3,24 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import * as moq from "typemoq";
-import sinon from "sinon";
 import * as faker from "faker";
 import { Observable as RxjsObservable } from "rxjs/internal/Observable";
 import { from as rxjsFrom } from "rxjs/internal/observable/from";
+import sinon from "sinon";
+import * as moq from "typemoq";
 import { BeEvent } from "@bentley/bentleyjs-core";
 import { PropertyRecord } from "@bentley/ui-abstract";
-import { ITreeDataProvider, TreeNodeItem, TreeDataProviderRaw, TreeDataChangesListener, ImmediatelyLoadedTreeNodeItem, TreeDataProvider } from "../../../ui-components/tree/TreeDataProvider";
-import { PagedTreeNodeLoader, TreeDataSource, TreeNodeLoader, TreeNodeLoadResult, LoadedNodeHierarchy, handleLoadedNodeHierarchy } from "../../../ui-components/tree/controlled/TreeNodeLoader";
-import { MutableTreeModelNode, TreeNodeItemData, TreeModelRootNode, TreeModelNodeInput } from "../../../ui-components/tree/controlled/TreeModel";
-import { createRandomMutableTreeModelNode, createRandomTreeNodeItems, createRandomTreeNodeItem } from "./RandomTreeNodesHelpers";
-import { extractSequence } from "../ObservableTestHelpers";
 import { Observable } from "../../../ui-components/tree/controlled/Observable";
+import { MutableTreeModelNode, TreeModelNodeInput, TreeModelRootNode, TreeNodeItemData } from "../../../ui-components/tree/controlled/TreeModel";
 import { TreeModelSource } from "../../../ui-components/tree/controlled/TreeModelSource";
+import {
+  handleLoadedNodeHierarchy, LoadedNodeHierarchy, PagedTreeNodeLoader, TreeDataSource, TreeNodeLoader, TreeNodeLoadResult,
+} from "../../../ui-components/tree/controlled/TreeNodeLoader";
+import {
+  ImmediatelyLoadedTreeNodeItem, ITreeDataProvider, TreeDataChangesListener, TreeDataProvider, TreeDataProviderRaw, TreeNodeItem,
+} from "../../../ui-components/tree/TreeDataProvider";
+import { extractSequence } from "../ObservableTestHelpers";
+import { createRandomMutableTreeModelNode, createRandomTreeNodeItem, createRandomTreeNodeItems } from "./RandomTreeNodesHelpers";
 
 const mockDataProvider = (dataProviderMock: moq.IMock<ITreeDataProvider>, pageSize: number) => {
   const rootWithChildren = createRandomMutableTreeModelNode();

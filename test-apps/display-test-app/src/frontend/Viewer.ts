@@ -5,33 +5,24 @@
 import { Id64String } from "@bentley/bentleyjs-core";
 import { Point2d } from "@bentley/geometry-core";
 import {
-  imageBufferToPngDataUrl,
-  IModelApp,
-  IModelConnection,
-  NotifyMessageDetails,
-  openImageDataUrlInNewWindow,
-  OutputMessagePriority,
-  ScreenViewport,
-  Tool,
-  Viewport,
-  ViewState,
-  SnapshotConnection,
+  imageBufferToPngDataUrl, IModelApp, IModelConnection, NotifyMessageDetails, openImageDataUrlInNewWindow, OutputMessagePriority, ScreenViewport,
+  SnapshotConnection, Tool, Viewport, ViewState,
 } from "@bentley/imodeljs-frontend";
 import { MarkupApp, MarkupData } from "@bentley/imodeljs-markup";
-import { createTimeline } from "./Timeline";
-import { CategoryPicker, ModelPicker } from "./IdPicker";
+import { ClassificationsPanel } from "./ClassificationsPanel";
+import { DebugWindow } from "./DebugWindow";
 import { FeatureOverridesPanel } from "./FeatureOverrides";
+import { CategoryPicker, ModelPicker } from "./IdPicker";
+import { SavedViewPicker } from "./SavedViews";
+import { SectionsPanel } from "./SectionTools";
 import { StandardRotations } from "./StandardRotations";
+import { Surface } from "./Surface";
+import { createTimeline } from "./Timeline";
+import { setTitle } from "./Title";
 import { createImageButton, createToolButton, ToolBar } from "./ToolBar";
 import { ViewAttributesPanel } from "./ViewAttributes";
 import { ViewList, ViewPicker } from "./ViewPicker";
-import { SectionsPanel } from "./SectionTools";
-import { SavedViewPicker } from "./SavedViews";
-import { ClassificationsPanel } from "./ClassificationsPanel";
-import { setTitle } from "./Title";
 import { Window } from "./Window";
-import { Surface } from "./Surface";
-import { DebugWindow } from "./DebugWindow";
 
 function saveImage(vp: Viewport) {
   const buffer = vp.readImage(undefined, new Point2d(768, 768), true); // flip vertically...

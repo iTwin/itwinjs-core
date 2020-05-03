@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { RpcInterface, RpcManager, RpcRequestTokenSupplier_T, RpcOperation } from "@bentley/imodeljs-common";
+import { RpcInterface, RpcManager, RpcOperation, RpcRequestTokenSupplier_T } from "@bentley/imodeljs-common";
 
 const localDeploymentOnly: RpcRequestTokenSupplier_T = () => ({ iModelId: "none", key: "" });
 

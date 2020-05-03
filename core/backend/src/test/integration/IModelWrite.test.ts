@@ -2,12 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { assert, expect } from "chai";
 import { DbOpcode, DbResult, Id64String, IModelHubStatus } from "@bentley/bentleyjs-core";
-import { CodeState, HubCode, HubIModel, IModelHubError, IModelQuery, Lock, LockLevel, LockQuery, LockType, MultiCode } from "@bentley/imodelhub-client";
+import {
+  CodeState, HubCode, HubIModel, IModelHubError, IModelQuery, Lock, LockLevel, LockQuery, LockType, MultiCode,
+} from "@bentley/imodelhub-client";
 import { CodeScopeSpec, CodeSpec, IModel, IModelError, IModelVersion, SubCategoryAppearance, SyncMode } from "@bentley/imodeljs-common";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
-import { assert, expect } from "chai";
-import { AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseEntry, BriefcaseManager, ConcurrencyControl, DictionaryModel, Element, IModelJsFs, SpatialCategory, SqliteStatement, SqliteValue, SqliteValueType } from "../../imodeljs-backend";
+import {
+  AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseEntry, BriefcaseManager, ConcurrencyControl, DictionaryModel, Element, IModelJsFs,
+  SpatialCategory, SqliteStatement, SqliteValue, SqliteValueType,
+} from "../../imodeljs-backend";
 import { IModelTestUtils, TestIModelInfo, Timer } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
 

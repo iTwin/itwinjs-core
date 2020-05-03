@@ -6,14 +6,14 @@
  * @module Toolbar
  */
 
+import "./Nested.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { Panel } from "./Panel";
-import { GroupProps } from "./Group";
-import { Columns } from "./Columns";
-import { Title } from "./Title";
 import { BackArrow } from "./BackArrow";
-import "./Nested.scss";
+import { Columns } from "./Columns";
+import { GroupProps } from "./Group";
+import { Panel } from "./Panel";
+import { Title } from "./Title";
 
 /** Properties of [[NestedGroup]] component.
  * @alpha

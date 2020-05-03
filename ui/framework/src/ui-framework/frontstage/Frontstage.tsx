@@ -8,30 +8,28 @@
 
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-
 import { Logger } from "@bentley/bentleyjs-core";
 import { StagePanelLocation, WidgetState } from "@bentley/ui-abstract";
 import { CommonProps, Rectangle } from "@bentley/ui-core";
 import {
-  Zones as NZ_Zones, WidgetZoneId, StagePanels, StagePanelsManager, widgetZoneIds,
-  HorizontalAnchor, ToolSettingsWidgetMode, ZoneManagerProps, ZonesManagerProps,
+  HorizontalAnchor, StagePanels, StagePanelsManager, ToolSettingsWidgetMode, WidgetZoneId, widgetZoneIds, ZoneManagerProps, Zones as NZ_Zones,
+  ZonesManagerProps,
 } from "@bentley/ui-ninezone";
-
-import { ContentLayoutDef, ContentLayout } from "../content/ContentLayout";
 import { ContentGroup } from "../content/ContentGroup";
+import { ContentLayout, ContentLayoutDef } from "../content/ContentLayout";
+import { ToolItemDef } from "../shared/ToolItemDef";
+import { getNestedStagePanelKey, StagePanel, StagePanelProps, StagePanelRuntimeProps } from "../stagepanels/StagePanel";
+import { StagePanelDef } from "../stagepanels/StagePanelDef";
+import { UiFramework, UiVisibilityEventArgs } from "../UiFramework";
+import { UiShowHideManager } from "../utils/UiShowHideManager";
+import { ToolSettingsContent } from "../widgets/ToolSettingsContent";
+import { WidgetDef, WidgetStateChangedEventArgs } from "../widgets/WidgetDef";
+import { WidgetProvidersChangedEventArgs, WidgetsChangedEventArgs } from "../widgets/WidgetManager";
+import { isToolSettingsWidgetManagerProps, Zone, ZoneLocation, ZoneProps, ZoneRuntimeProps } from "../zones/Zone";
+import { ZoneDef } from "../zones/ZoneDef";
 import { FrontstageRuntimeProps, ZoneDefProvider } from "./FrontstageComposer";
 import { FrontstageDef } from "./FrontstageDef";
-import { ToolItemDef } from "../shared/ToolItemDef";
-import { ZoneDef } from "../zones/ZoneDef";
-import { Zone, ZoneProps, ZoneRuntimeProps, ZoneLocation, isToolSettingsWidgetManagerProps } from "../zones/Zone";
-import { UiFramework, UiVisibilityEventArgs } from "../UiFramework";
-import { StagePanelProps, StagePanel, StagePanelRuntimeProps, getNestedStagePanelKey } from "../stagepanels/StagePanel";
-import { StagePanelDef } from "../stagepanels/StagePanelDef";
-import { UiShowHideManager } from "../utils/UiShowHideManager";
-import { WidgetDef, WidgetStateChangedEventArgs } from "../widgets/WidgetDef";
-import { FrontstageManager, FrontstageActivatedEventArgs } from "./FrontstageManager";
-import { ToolSettingsContent } from "../widgets/ToolSettingsContent";
-import { WidgetsChangedEventArgs, WidgetProvidersChangedEventArgs } from "../widgets/WidgetManager";
+import { FrontstageActivatedEventArgs, FrontstageManager } from "./FrontstageManager";
 
 /** Properties for a [[Frontstage]] component.
  * @public

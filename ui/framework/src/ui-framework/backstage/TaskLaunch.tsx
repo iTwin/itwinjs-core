@@ -10,12 +10,12 @@ import * as React from "react";
 import { Logger } from "@bentley/bentleyjs-core";
 import { BackstageItem as NZ_BackstageItem } from "@bentley/ui-ninezone";
 import { withSafeArea } from "../safearea/SafeAreaContext";
-import { SyncUiEventDispatcher, SyncUiEventArgs } from "../syncui/SyncUiEventDispatcher";
-import { PropsHelper } from "../utils/PropsHelper";
-import { WorkflowManager, TaskActivatedEventArgs } from "../workflow/Workflow";
+import { SyncUiEventArgs, SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
 import { UiFramework } from "../UiFramework";
-import { BackstageItemProps, BackstageItemState } from "./BackstageItemProps";
+import { PropsHelper } from "../utils/PropsHelper";
+import { TaskActivatedEventArgs, WorkflowManager } from "../workflow/Workflow";
 import { Backstage } from "./Backstage";
+import { BackstageItemProps, BackstageItemState } from "./BackstageItemProps";
 import { BackstageItemUtilities } from "./BackstageItemUtilities";
 
 // cspell:ignore safearea

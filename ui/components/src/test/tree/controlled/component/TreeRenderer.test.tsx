@@ -4,19 +4,21 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as React from "react";
-import * as moq from "typemoq";
-import sinon from "sinon";
-import { render } from "@testing-library/react";
 import { VariableSizeList } from "react-window";
-import { TreeRenderer } from "../../../../ui-components/tree/controlled/component/TreeRenderer";
-import { VisibleTreeNodes, TreeModelNodePlaceholder, TreeModelNode, TreeModel, TreeModelRootNode } from "../../../../ui-components/tree/controlled/TreeModel";
-import { TreeActions } from "../../../../ui-components/tree/controlled/TreeActions";
-import { ITreeNodeLoader } from "../../../../ui-components/tree/controlled/TreeNodeLoader";
-import { from } from "../../../../ui-components/tree/controlled/Observable";
-import { createRandomMutableTreeModelNode } from "../RandomTreeNodesHelpers";
-import { HighlightableTreeProps, HighlightingEngine } from "../../../../ui-components/tree/HighlightingEngine";
+import sinon from "sinon";
+import * as moq from "typemoq";
+import { render } from "@testing-library/react";
 import { TreeNodeRendererProps } from "../../../../ui-components/tree/controlled/component/TreeNodeRenderer";
+import { TreeRenderer } from "../../../../ui-components/tree/controlled/component/TreeRenderer";
+import { from } from "../../../../ui-components/tree/controlled/Observable";
+import { TreeActions } from "../../../../ui-components/tree/controlled/TreeActions";
+import {
+  TreeModel, TreeModelNode, TreeModelNodePlaceholder, TreeModelRootNode, VisibleTreeNodes,
+} from "../../../../ui-components/tree/controlled/TreeModel";
+import { ITreeNodeLoader } from "../../../../ui-components/tree/controlled/TreeNodeLoader";
+import { HighlightableTreeProps, HighlightingEngine } from "../../../../ui-components/tree/HighlightingEngine";
 import TestUtils from "../../../TestUtils";
+import { createRandomMutableTreeModelNode } from "../RandomTreeNodesHelpers";
 
 describe("TreeRenderer", () => {
 

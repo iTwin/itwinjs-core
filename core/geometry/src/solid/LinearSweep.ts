@@ -7,20 +7,20 @@
  * @module Solid
  */
 
-import { XAndY } from "../geometry3d/XYZProps";
-import { Vector3d } from "../geometry3d/Point3dVector3d";
-import { Range3d } from "../geometry3d/Range";
-import { Transform } from "../geometry3d/Transform";
-
+import { CurveCollection } from "../curve/CurveCollection";
+import { GeometryQuery } from "../curve/GeometryQuery";
+import { LineString3d } from "../curve/LineString3d";
 import { Loop } from "../curve/Loop";
 import { Path } from "../curve/Path";
-import { CurveCollection } from "../curve/CurveCollection";
-import { LineString3d } from "../curve/LineString3d";
-import { GeometryQuery } from "../curve/GeometryQuery";
-import { PolygonOps } from "../geometry3d/PolygonOps";
 import { GeometryHandler } from "../geometry3d/GeometryHandler";
-import { SweepContour } from "./SweepContour";
+import { Vector3d } from "../geometry3d/Point3dVector3d";
+import { PolygonOps } from "../geometry3d/PolygonOps";
+import { Range3d } from "../geometry3d/Range";
+import { Transform } from "../geometry3d/Transform";
+import { XAndY } from "../geometry3d/XYZProps";
 import { SolidPrimitive } from "./SolidPrimitive";
+import { SweepContour } from "./SweepContour";
+
 /**
  * A LinearSweep is a `SolidPrimitive` defined by
  * * A set of curves (any Loop, Path, or parityRegion)

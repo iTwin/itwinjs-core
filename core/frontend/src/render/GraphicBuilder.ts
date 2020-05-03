@@ -6,25 +6,10 @@
  * @module Rendering
  */
 
-import { IModelConnection } from "../IModelConnection";
 import { Id64String } from "@bentley/bentleyjs-core";
-import {
-  Transform,
-  Point3d,
-  Point2d,
-  Range3d,
-  Arc3d,
-  Polyface,
-  Path,
-  Loop,
-} from "@bentley/geometry-core";
-import {
-  ColorDef,
-  Frustum,
-  GraphicParams,
-  LinePixels,
-  Npc,
-} from "@bentley/imodeljs-common";
+import { Arc3d, Loop, Path, Point2d, Point3d, Polyface, Range3d, Transform } from "@bentley/geometry-core";
+import { ColorDef, Frustum, GraphicParams, LinePixels, Npc } from "@bentley/imodeljs-common";
+import { IModelConnection } from "../IModelConnection";
 import { Viewport } from "../Viewport";
 import { RenderGraphic } from "./RenderGraphic";
 

@@ -3,15 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import React from "react";
-import { render, cleanup, fireEvent } from "@testing-library/react";
 import { expect } from "chai";
+import React from "react";
 import * as sinon from "sinon";
-
-import { ToolbarWithOverflow, ToolbarPanelAlignment, ToolbarPanelAlignmentHelpers, CustomToolbarItem } from "../../ui-components/toolbar/Toolbar";
-import { CommonToolbarItem, ToolbarItemUtilities, ActionButton, GroupButton, BadgeType } from "@bentley/ui-abstract";
-import { createDOMRect } from "../Utils";
+import { ActionButton, BadgeType, CommonToolbarItem, GroupButton, ToolbarItemUtilities } from "@bentley/ui-abstract";
+import { cleanup, fireEvent, render } from "@testing-library/react";
+import { CustomToolbarItem, ToolbarPanelAlignment, ToolbarPanelAlignmentHelpers, ToolbarWithOverflow } from "../../ui-components/toolbar/Toolbar";
 import { Direction } from "../../ui-components/toolbar/utilities/Direction";
+import { createDOMRect } from "../Utils";
 
 // cSpell:ignore testid
 

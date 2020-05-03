@@ -6,13 +6,13 @@
  * @module PropertyEditors
  */
 
-import * as React from "react";
-import classnames from "classnames";
-import { PropertyValueFormat, PropertyValue, PrimitiveValue, PropertyRecord } from "@bentley/ui-abstract";
-import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
-import { WeightPickerButton } from "../lineweight/WeightPickerButton";
-import { PropertyEditorManager, PropertyEditorBase } from "./PropertyEditorManager";
 import "./WeightEditor.scss";
+import classnames from "classnames";
+import * as React from "react";
+import { PrimitiveValue, PropertyRecord, PropertyValue, PropertyValueFormat } from "@bentley/ui-abstract";
+import { WeightPickerButton } from "../lineweight/WeightPickerButton";
+import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
+import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
 
 /** @internal */
 interface WeightEditorState {

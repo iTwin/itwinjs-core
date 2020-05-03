@@ -2,14 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, ClientRequestContext, Config, BeEvent } from "@bentley/bentleyjs-core";
+import { assert, BeEvent, ClientRequestContext, Config } from "@bentley/bentleyjs-core";
+import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { AccessToken, UrlDiscoveryClient } from "@bentley/itwin-client";
 import { AuthorizationParameters, Client, generators, Issuer, OpenIDCallbackChecks, TokenSet } from "openid-client";
 import * as os from "os";
 import * as puppeteer from "puppeteer";
 import * as url from "url";
 import { TestBrowserAuthorizationClientConfiguration, TestUserCredentials } from "./TestUsers";
-import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 
 /**
  * Implementation of AuthorizationClient used for the iModel.js integration tests.

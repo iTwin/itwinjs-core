@@ -5,8 +5,8 @@
 import * as React from "react";
 import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
 import { usePresentationTreeNodeLoader, useUnifiedSelectionTreeEventHandler } from "@bentley/presentation-components";
-import { ConfigurableCreateInfo, ConfigurableUiManager, WidgetControl } from "@bentley/ui-framework";
 import { ControlledTree, SelectionMode, useVisibleTreeNodes } from "@bentley/ui-components";
+import { ConfigurableCreateInfo, ConfigurableUiManager, WidgetControl } from "@bentley/ui-framework";
 
 export class NavigationTreeWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {

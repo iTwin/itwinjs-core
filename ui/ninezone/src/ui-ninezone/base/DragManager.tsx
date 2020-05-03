@@ -7,10 +7,10 @@
  */
 import * as React from "react";
 import { Point, PointProps, SizeProps } from "@bentley/ui-core";
-import { TabState, WidgetState } from "./NineZoneState";
-import { Event, EventEmitter } from "./Event";
 import { PanelSide } from "../widget-panels/Panel";
 import { FloatingWidgetResizeHandle } from "../widget/FloatingWidget";
+import { Event, EventEmitter } from "./Event";
+import { TabState, WidgetState } from "./NineZoneState";
 
 /** @internal */
 export interface DragItemDragStartArgs {

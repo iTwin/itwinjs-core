@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { DialogButtonType, DialogButtonStyle, MessageBox, MessageSeverity, Button, ButtonType } from "@bentley/ui-core";
+import { IModelApp, MessageBoxIconType, MessageBoxType } from "@bentley/imodeljs-frontend";
+import { Button, ButtonType, DialogButtonStyle, DialogButtonType, MessageBox, MessageSeverity } from "@bentley/ui-core";
 import { ModalDialogManager } from "@bentley/ui-framework";
-import { IModelApp, MessageBoxType, MessageBoxIconType } from "@bentley/imodeljs-frontend";
 
 export interface TestMessageBoxProps {
   opened: boolean;

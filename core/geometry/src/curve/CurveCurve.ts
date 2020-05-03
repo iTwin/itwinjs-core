@@ -6,13 +6,14 @@
  * @module Curve
  */
 
-import { GeometryQuery } from "./GeometryQuery";
 import { Matrix4d } from "../geometry4d/Matrix4d";
-import { CurveLocationDetailArrayPair, CurveCurveIntersectXY } from "./CurveCurveIntersectXY";
-import { CurveCurveIntersectXYZ } from "./CurveCurveIntersectXYZ";
 import { CurveCollection } from "./CurveCollection";
-import { CurvePrimitive } from "./CurvePrimitive";
+import { CurveCurveIntersectXY, CurveLocationDetailArrayPair } from "./CurveCurveIntersectXY";
+import { CurveCurveIntersectXYZ } from "./CurveCurveIntersectXYZ";
 import { CurveLocationDetailPair } from "./CurveLocationDetail";
+import { CurvePrimitive } from "./CurvePrimitive";
+import { GeometryQuery } from "./GeometryQuery";
+
 /**
  * `CurveCurve` has static method for various computations that work on a pair of curves or curve collections.
  * @public

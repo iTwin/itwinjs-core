@@ -6,11 +6,11 @@
  * @module Zone
  */
 
+import "./Outline.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { CssProperties } from "../utilities/Css";
 import { CommonProps, RectangleProps } from "@bentley/ui-core";
-import "./Outline.scss";
+import { CssProperties } from "../utilities/Css";
 
 /** Properties of [[OutlineProps]] component.
  * @beta

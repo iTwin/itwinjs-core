@@ -2,18 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
 import { expect } from "chai";
+import * as React from "react";
 import * as sinon from "sinon";
-
 import { BadgeType, WidgetState } from "@bentley/ui-abstract";
-
-import TestUtils from "../TestUtils";
 import {
-  WidgetProps, WidgetDef, ConfigurableUiManager, WidgetControl,
-  ConfigurableCreateInfo, ConfigurableUiControlType, SyncUiEventId,
+  ConfigurableCreateInfo, ConfigurableUiControlType, ConfigurableUiManager, SyncUiEventId, WidgetControl, WidgetDef, WidgetProps,
 } from "../../ui-framework";
 import { SyncUiEventDispatcher } from "../../ui-framework/syncui/SyncUiEventDispatcher";
+import TestUtils from "../TestUtils";
 
 // cSpell:ignore widgetstate
 

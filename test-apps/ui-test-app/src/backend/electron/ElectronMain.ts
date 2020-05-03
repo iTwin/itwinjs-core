@@ -2,11 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as path from "path";
 import * as electron from "electron";
-
-import { RpcInterfaceDefinition, ElectronRpcManager } from "@bentley/imodeljs-common";
-import { IModelJsElectronManager, WebpackDevServerElectronManager, StandardElectronManager } from "@bentley/electron-manager";
+import * as path from "path";
+import { IModelJsElectronManager, StandardElectronManager, WebpackDevServerElectronManager } from "@bentley/electron-manager";
+import { ElectronRpcManager, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
 
 /**
  * Initializes Electron backend

@@ -2,16 +2,19 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-
-import { render, cleanup, waitForElement } from "@testing-library/react";
 import { expect } from "chai";
-import TestUtils from "../TestUtils";
+import * as React from "react";
 import {
-  CommandItemDef, GroupItemDef, SyncUiEventDispatcher, CustomItemDef, ToolbarComposer, ToolbarHelper, ToolItemDef, FrontstageManager, FrontstageActivatedEventArgs, FrontstageDef, FrontstageProps, FrameworkVersion,
+  BadgeType, CommonToolbarItem, ConditionalBooleanValue, CustomButtonDefinition, StageUsage, ToolbarItemUtilities, ToolbarOrientation, ToolbarUsage,
+  UiItemsManager, UiItemsProvider,
+} from "@bentley/ui-abstract";
+import { cleanup, render, waitForElement } from "@testing-library/react";
+import {
+  CommandItemDef, CustomItemDef, FrameworkVersion, FrontstageActivatedEventArgs, FrontstageDef, FrontstageManager, FrontstageProps, GroupItemDef,
+  SyncUiEventDispatcher, ToolbarComposer, ToolbarHelper, ToolItemDef,
 } from "../../ui-framework";
-import { ToolbarUsage, ToolbarOrientation, UiItemsProvider, StageUsage, ToolbarItemUtilities, UiItemsManager, CommonToolbarItem, BadgeType, CustomButtonDefinition, ConditionalBooleanValue } from "@bentley/ui-abstract";
 import { CoreTools } from "../../ui-framework/CoreToolDefinitions";
+import TestUtils from "../TestUtils";
 
 class TestUiProvider implements UiItemsProvider {
   public readonly id = "ToolbarComposer-TestUiProvider";

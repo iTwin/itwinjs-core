@@ -6,18 +6,18 @@
  * @module SyncUi
  */
 
+import { Logger } from "@bentley/bentleyjs-core";
+import { IModelApp, IModelConnection, SelectedViewportChangedArgs, SelectionSetEvent } from "@bentley/imodeljs-frontend";
+import { getInstancesCount, SelectionScope } from "@bentley/presentation-common";
+import { ISelectionProvider, Presentation, SelectionChangeEventArgs } from "@bentley/presentation-frontend";
 // cSpell:ignore configurableui
 import { UiEvent } from "@bentley/ui-core";
-import { Logger } from "@bentley/bentleyjs-core";
-import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { Backstage } from "../backstage/Backstage";
-import { WorkflowManager } from "../workflow/Workflow";
 import { ContentViewManager } from "../content/ContentViewManager";
-import { SessionStateActionId, PresentationSelectionScope } from "../redux/SessionState";
+import { FrontstageManager } from "../frontstage/FrontstageManager";
+import { PresentationSelectionScope, SessionStateActionId } from "../redux/SessionState";
 import { UiFramework } from "../UiFramework";
-import { IModelConnection, IModelApp, SelectedViewportChangedArgs, SelectionSetEvent } from "@bentley/imodeljs-frontend";
-import { Presentation, SelectionChangeEventArgs, ISelectionProvider } from "@bentley/presentation-frontend";
-import { SelectionScope, getInstancesCount } from "@bentley/presentation-common";
+import { WorkflowManager } from "../workflow/Workflow";
 
 // cSpell:ignore activecontentchanged, activitymessageupdated, activitymessagecancelled, backstagecloseevent, backstageevent, contentlayoutactivated, contentcontrolactivated,
 // cSpell:ignore elementtooltipchanged, frontstageactivated, inputfieldmessageadded, inputfieldmessageremoved, modalfrontstagechanged, modaldialogchanged

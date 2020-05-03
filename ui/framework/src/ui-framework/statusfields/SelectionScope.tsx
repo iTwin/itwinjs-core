@@ -6,15 +6,14 @@
  * @module StatusBar
  */
 
+import "./SelectionScope.scss";
+import classnames from "classnames";
 import * as React from "react";
 import { connect } from "react-redux";
-import classnames from "classnames";
 import { FooterIndicator } from "@bentley/ui-ninezone";
-import { UiFramework } from "../UiFramework";
 import { PresentationSelectionScope } from "../redux/SessionState";
+import { UiFramework } from "../UiFramework";
 import { StatusFieldProps } from "./StatusFieldProps";
-
-import "./SelectionScope.scss";
 
 /** Defines properties supported by the SelectionScopeField Component.
  * @public

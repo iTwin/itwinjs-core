@@ -2,21 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as sinon from "sinon";
 import { expect } from "chai";
 import * as React from "react";
+import * as sinon from "sinon";
 import {
-  ContentGroup,
-  ContentLayoutDef,
-  ContentControl,
-  ConfigurableCreateInfo,
-  ConfigurableUiManager,
-  FrontstageManager,
-  ContentViewManager,
-  FrontstageProvider,
-  FrontstageProps,
-  Frontstage,
-  CoreTools,
+  ConfigurableCreateInfo, ConfigurableUiManager, ContentControl, ContentGroup, ContentLayoutDef, ContentViewManager, CoreTools, Frontstage,
+  FrontstageManager, FrontstageProps, FrontstageProvider,
 } from "../../ui-framework";
 import TestUtils from "../TestUtils";
 

@@ -9,16 +9,16 @@
 import * as React from "react";
 import { StagePanelLocation } from "@bentley/ui-abstract";
 import {
-  StagePanelType as NZ_StagePanelType, NestedStagePanelKey, NestedStagePanelsManagerProps,
-  NineZoneStagePanelManagerProps, WidgetZoneId, ZonesManagerWidgetsProps,
+  NestedStagePanelKey, NestedStagePanelsManagerProps, NineZoneStagePanelManagerProps, StagePanelType as NZ_StagePanelType, WidgetZoneId,
+  ZonesManagerWidgetsProps,
 } from "@bentley/ui-ninezone";
-import { StagePanelState as StagePanelState, StagePanelDef, PanelStateChangedEventArgs } from "./StagePanelDef";
+import { StagePanelChangeHandler, WidgetChangeHandler, ZoneDefProvider } from "../frontstage/FrontstageComposer";
+import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { WidgetProps } from "../widgets/WidgetProps";
 import { WidgetTabs } from "../widgets/WidgetStack";
-import { StagePanelChangeHandler, WidgetChangeHandler, ZoneDefProvider } from "../frontstage/FrontstageComposer";
 import { ZoneLocation } from "../zones/Zone";
 import { FrameworkStagePanel } from "./FrameworkStagePanel";
-import { FrontstageManager } from "../frontstage/FrontstageManager";
+import { PanelStateChangedEventArgs, StagePanelDef, StagePanelState as StagePanelState } from "./StagePanelDef";
 
 /** Available StagePanel locations.
  * ------------------------------------------------------------------------------------

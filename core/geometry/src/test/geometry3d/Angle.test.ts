@@ -2,24 +2,23 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Matrix3d } from "../../geometry3d/Matrix3d";
-import { Complex } from "../../numerics/Complex";
-import { Range1d, Range2d, Range3d } from "../../geometry3d/Range";
+import { assert, expect } from "chai";
+import { Arc3d } from "../../curve/Arc3d";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { LineString3d } from "../../curve/LineString3d";
+import { AxisOrder, Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
+import { Matrix3d } from "../../geometry3d/Matrix3d";
+import { OrderedRotationAngles } from "../../geometry3d/OrderedRotationAngles";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
+import { Range1d, Range2d, Range3d } from "../../geometry3d/Range";
 import { YawPitchRollAngles } from "../../geometry3d/YawPitchRollAngles";
-import { Geometry, AxisOrder } from "../../Geometry";
-
+import { Complex } from "../../numerics/Complex";
+import { SineCosinePolynomial } from "../../numerics/Polynomials";
 import { Sample } from "../../serialization/GeometrySamples";
 import { Checker } from "../Checker";
-import { expect, assert } from "chai";
-import { OrderedRotationAngles } from "../../geometry3d/OrderedRotationAngles";
-import { SineCosinePolynomial } from "../../numerics/Polynomials";
-import { GeometryQuery } from "../../curve/GeometryQuery";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { LineString3d } from "../../curve/LineString3d";
-import { Arc3d } from "../../curve/Arc3d";
 
 /* tslint:disable:no-console */
 class AngleTests {

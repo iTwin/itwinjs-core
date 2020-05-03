@@ -6,8 +6,8 @@
  * @module Extensions
  */
 
-import { Logger, BeEvent } from "@bentley/bentleyjs-core";
-import { PendingExtension, Extension, ExtensionLoader, loggerCategory } from "./Extension";
+import { BeEvent, Logger } from "@bentley/bentleyjs-core";
+import { Extension, ExtensionLoader, loggerCategory, PendingExtension } from "./Extension";
 import { ExtensionServiceExtensionLoader } from "./loaders/ExtensionServiceExtensionLoader";
 
 /**

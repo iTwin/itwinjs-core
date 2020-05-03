@@ -3,21 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import {
-  Point3d,
-  Range1d,
-} from "@bentley/geometry-core";
-import {
-  calculateSunriseOrSunset,
-  Cartographic,
-} from "@bentley/imodeljs-common";
-import {
-  Viewport,
-} from "@bentley/imodeljs-frontend";
-import {
-  createToolButton,
-  ToolBarDropDown,
-} from "./ToolBar";
+import { Point3d, Range1d } from "@bentley/geometry-core";
+import { calculateSunriseOrSunset, Cartographic } from "@bentley/imodeljs-common";
+import { Viewport } from "@bentley/imodeljs-frontend";
+import { createToolButton, ToolBarDropDown } from "./ToolBar";
 
 interface TimelineProvider {
   /** Time range in any units. */

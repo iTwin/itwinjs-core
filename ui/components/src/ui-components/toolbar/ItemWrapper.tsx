@@ -6,12 +6,12 @@
  * @module ToolSettings
  */
 
+import "./ItemWrapper.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { CommonProps, useResizeObserver } from "@bentley/ui-core";
-import { useToolItemEntryContext, useToolbarWithOverflowDirectionContext } from "./Toolbar";
-import { OrthogonalDirectionHelpers, DirectionHelpers } from "./utilities/Direction";
-import "./ItemWrapper.scss";
+import { useToolbarWithOverflowDirectionContext, useToolItemEntryContext } from "./Toolbar";
+import { DirectionHelpers, OrthogonalDirectionHelpers } from "./utilities/Direction";
 
 /** Properties of [[ItemWrapper]] component.
  * @internal future

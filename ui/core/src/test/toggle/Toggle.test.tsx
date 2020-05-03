@@ -2,12 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-import { mount, shallow } from "enzyme";
-import * as sinon from "sinon";
 import { expect } from "chai";
+import { mount, shallow } from "enzyme";
+import * as React from "react";
+import * as sinon from "sinon";
 import { render } from "@testing-library/react";
-
 import { Toggle, ToggleButtonType } from "../../ui-core";
 import { TestUtils } from "../TestUtils";
 

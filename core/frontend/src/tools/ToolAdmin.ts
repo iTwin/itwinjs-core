@@ -6,29 +6,29 @@
  * @module Tools
  */
 
-import { DialogPropertySyncItem, DialogPropertyItem, DialogItemValue } from "@bentley/ui-abstract";
-import { BeEvent, AbandonedError, Logger, Id64String } from "@bentley/bentleyjs-core";
+import { AbandonedError, BeEvent, Id64String, Logger } from "@bentley/bentleyjs-core";
 import { Matrix3d, Point2d, Point3d, Transform, Vector3d, XAndY } from "@bentley/geometry-core";
-import { GeometryStreamProps, NpcCenter, Easing } from "@bentley/imodeljs-common";
+import { Easing, GeometryStreamProps, NpcCenter } from "@bentley/imodeljs-common";
+import { DialogItemValue, DialogPropertyItem, DialogPropertySyncItem } from "@bentley/ui-abstract";
 import { AccuSnap, TentativeOrAccuSnap } from "../AccuSnap";
 import { LocateOptions } from "../ElementLocateManager";
+import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
 import { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
+import { MessageBoxIconType, MessageBoxType } from "../NotificationManager";
 import { CanvasDecoration } from "../render/CanvasDecoration";
 import { IconSprites } from "../Sprites";
 import { DecorateContext, DynamicsContext } from "../ViewContext";
-import { linePlaneIntersect, ScreenViewport, Viewport, ViewChangeOptions } from "../Viewport";
+import { linePlaneIntersect, ScreenViewport, ViewChangeOptions, Viewport } from "../Viewport";
 import { ViewStatus } from "../ViewState";
 import { IdleTool } from "./IdleTool";
 import { PrimitiveTool } from "./PrimitiveTool";
 import {
-  BeButton, BeButtonEvent, BeButtonState, BeModifierKeys, BeTouchEvent, BeWheelEvent, CoordSource, EventHandled,
-  InputCollector, InputSource, InteractiveTool, Tool, CoordinateLockOverrides,
+  BeButton, BeButtonEvent, BeButtonState, BeModifierKeys, BeTouchEvent, BeWheelEvent, CoordinateLockOverrides, CoordSource, EventHandled,
+  InputCollector, InputSource, InteractiveTool, Tool,
 } from "./Tool";
 import { ToolSettings } from "./ToolSettings";
 import { ViewTool } from "./ViewTool";
-import { MessageBoxType, MessageBoxIconType } from "../NotificationManager";
-import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
 
 /** @public */
 export enum StartOrResume { Start = 1, Resume = 2 }

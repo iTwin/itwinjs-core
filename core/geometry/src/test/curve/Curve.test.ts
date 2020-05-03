@@ -2,46 +2,47 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { AngleSweep } from "../../geometry3d/AngleSweep";
-import { Angle } from "../../geometry3d/Angle";
-import { Point2d } from "../../geometry3d/Point2dVector2d";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { Segment1d } from "../../geometry3d/Segment1d";
-import { Range3d } from "../../geometry3d/Range";
-import { Transform } from "../../geometry3d/Transform";
-import { StrokeOptions } from "../../curve/StrokeOptions";
-import { CurvePrimitive } from "../../curve/CurvePrimitive";
-import { StrokeCountMap } from "../../curve/Query/StrokeCountMap";
-import { NewtonEvaluatorRtoR, Newton1dUnboundedApproximateDerivative } from "../../numerics/Newton";
+import { expect } from "chai";
+import { BezierCurve3d } from "../../bspline/BezierCurve3d";
+import { BezierCurve3dH } from "../../bspline/BezierCurve3dH";
 import { BSplineCurve3d } from "../../bspline/BSplineCurve";
 import { BSplineCurve3dH } from "../../bspline/BSplineCurve3dH";
-import { Sample } from "../../serialization/GeometrySamples";
-import { Geometry } from "../../Geometry";
-import { Ray3d } from "../../geometry3d/Ray3d";
-import { TransitionSpiral3d } from "../../curve/TransitionSpiral";
-import { LineString3d } from "../../curve/LineString3d";
 import { Arc3d } from "../../curve/Arc3d";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
-import { Checker } from "../Checker";
-import { expect } from "chai";
-import { prettyPrint } from "../testFunctions";
-import { IModelJson } from "../../serialization/IModelJsonSchema";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { BezierCurve3dH } from "../../bspline/BezierCurve3dH";
-import { BezierCurve3d } from "../../bspline/BezierCurve3d";
-import { Point4d } from "../../geometry4d/Point4d";
-import { CurveLocationDetail, CurveIntervalRole, CurveSearchStatus } from "../../curve/CurveLocationDetail";
 import { CoordinateXYZ } from "../../curve/CoordinateXYZ";
-import { Path } from "../../curve/Path";
 import { CurveChainWithDistanceIndex } from "../../curve/CurveChainWithDistanceIndex";
-import { RuledSweep } from "../../solid/RuledSweep";
-import { GeometryQuery } from "../../curve/GeometryQuery";
 import { BagOfCurves, CurveCollection } from "../../curve/CurveCollection";
-import { NullGeometryHandler } from "../../geometry3d/GeometryHandler";
-import { CylindricalRangeQuery } from "../../curve/Query/CylindricalRange";
 import { CurveExtendMode } from "../../curve/CurveExtendMode";
+import { CurveIntervalRole, CurveLocationDetail, CurveSearchStatus } from "../../curve/CurveLocationDetail";
+import { CurvePrimitive } from "../../curve/CurvePrimitive";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { LineSegment3d } from "../../curve/LineSegment3d";
+import { LineString3d } from "../../curve/LineString3d";
+import { Path } from "../../curve/Path";
+import { CylindricalRangeQuery } from "../../curve/Query/CylindricalRange";
+import { StrokeCountMap } from "../../curve/Query/StrokeCountMap";
+import { StrokeOptions } from "../../curve/StrokeOptions";
+import { TransitionSpiral3d } from "../../curve/TransitionSpiral";
+import { Geometry } from "../../Geometry";
+import { Angle } from "../../geometry3d/Angle";
+import { AngleSweep } from "../../geometry3d/AngleSweep";
+import { NullGeometryHandler } from "../../geometry3d/GeometryHandler";
+import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
+import { Point2d } from "../../geometry3d/Point2dVector2d";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
+import { Range3d } from "../../geometry3d/Range";
+import { Ray3d } from "../../geometry3d/Ray3d";
+import { Segment1d } from "../../geometry3d/Segment1d";
+import { Transform } from "../../geometry3d/Transform";
+import { Point4d } from "../../geometry4d/Point4d";
+import { Newton1dUnboundedApproximateDerivative, NewtonEvaluatorRtoR } from "../../numerics/Newton";
+import { Sample } from "../../serialization/GeometrySamples";
+import { IModelJson } from "../../serialization/IModelJsonSchema";
+import { RuledSweep } from "../../solid/RuledSweep";
 import { Sphere } from "../../solid/Sphere";
+import { Checker } from "../Checker";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { prettyPrint } from "../testFunctions";
+
 /* tslint:disable:no-console */
 
 class StrokeCountSearch extends NullGeometryHandler {

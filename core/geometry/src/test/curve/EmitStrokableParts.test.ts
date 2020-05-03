@@ -3,18 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-// import { Point3d, Vector3d, Transform, Matrix3d, Range1d } from "../PointVector";
-import { Sample } from "../../serialization/GeometrySamples";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
+import { expect } from "chai";
+import { CurvePrimitive } from "../../curve/CurvePrimitive";
 import { LineString3d } from "../../curve/LineString3d";
 import { StrokeOptions } from "../../curve/StrokeOptions";
-import { CurvePrimitive } from "../../curve/CurvePrimitive";
-import { IStrokeHandler } from "../../geometry3d/GeometryHandler";
 import { FrameBuilder } from "../../geometry3d/FrameBuilder";
+import { IStrokeHandler } from "../../geometry3d/GeometryHandler";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
+// import { Point3d, Vector3d, Transform, Matrix3d, Range1d } from "../PointVector";
+import { Sample } from "../../serialization/GeometrySamples";
 // import { Geometry } from "../Geometry";
-
 import { Checker } from "../Checker";
-import { expect } from "chai";
+
 function maxSegmentLength(linestring: LineString3d): number {
   let aMax = 0;
   for (let i = 0; i + 1 < linestring.numPoints(); i++) {

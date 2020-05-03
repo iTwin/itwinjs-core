@@ -7,9 +7,9 @@
  */
 
 import { Geometry } from "@bentley/geometry-core";
+import { ColorByName } from "./ColorByName";
 import { HSLColor } from "./HSLColor";
 import { HSVColor, HSVConstants } from "./HSVColor";
-import { ColorByName } from "./ColorByName";
 
 // cspell: ignore ttbbggrr bbggrr rrggbb aabbggrr abgr rrbbgg hsla lerp torgb dhue dsaturation dvalue intpart fractpart cyanish
 

@@ -4,11 +4,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { GuidString } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { BriefcaseDb, BriefcaseManager, ConcurrencyControl, SpatialCategory } from "@bentley/imodeljs-backend";
 import { ColorDef, IModel, IModelVersion, SubCategoryAppearance, SyncMode } from "@bentley/imodeljs-common";
-import { BriefcaseDb, BriefcaseManager, SpatialCategory, ConcurrencyControl } from "@bentley/imodeljs-backend";
-import { IModelTestUtils } from "./IModelTestUtils";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { HubUtility } from "./HubUtility";
+import { IModelTestUtils } from "./IModelTestUtils";
 
 /** Test utility to push an iModel and ChangeSets */
 export class TestChangeSetUtility {

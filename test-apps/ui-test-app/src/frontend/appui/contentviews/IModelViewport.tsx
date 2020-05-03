@@ -3,14 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-
 import {
-  ConfigurableUiManager,
-  ContentViewManager,
-  ViewSelector,
+  ConfigurableUiManager, ContentViewManager, IModelViewportControl as UIFW_IModelViewportControl, IModelViewportControlOptions, ViewSelector,
   ViewUtilities,
-  IModelViewportControl as UIFW_IModelViewportControl,
-  IModelViewportControlOptions,
 } from "@bentley/ui-framework";
 
 /** iModel Viewport Control

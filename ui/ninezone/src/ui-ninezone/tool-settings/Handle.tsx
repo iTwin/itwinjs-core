@@ -6,14 +6,14 @@
  * @module ToolSettings
  */
 
+import "./Handle.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps, useRefs, useResizeObserver, Point } from "@bentley/ui-core";
-import { usePointerCaptor } from "../base/PointerCaptor";
+import { CommonProps, Point, useRefs, useResizeObserver } from "@bentley/ui-core";
 import { useDragToolSettings } from "../base/DragManager";
-import { NineZoneDispatchContext, getUniqueId } from "../base/NineZone";
+import { getUniqueId, NineZoneDispatchContext } from "../base/NineZone";
 import { TOOL_SETTINGS_DRAG_START } from "../base/NineZoneState";
-import "./Handle.scss";
+import { usePointerCaptor } from "../base/PointerCaptor";
 
 /** Properties of [[DockedToolSettingsHandle]] component.
  * @internal

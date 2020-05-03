@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { Id64, Id64Arg, GuidString, Guid } from "../bentleyjs-core";
+import { Guid, GuidString, Id64, Id64Arg } from "../bentleyjs-core";
 
 class Uint64Id {
   public constructor(public readonly high: number,

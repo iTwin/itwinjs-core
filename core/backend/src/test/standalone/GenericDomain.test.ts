@@ -2,10 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { assert } from "chai";
 import { Guid, Id64, Id64String } from "@bentley/bentleyjs-core";
 import { CategoryProps, Code, ElementProps, GeometricElement3dProps, IModel, InformationPartitionElementProps } from "@bentley/imodeljs-common";
-import { assert } from "chai";
-import { GenericSchema, Group, GroupInformationPartition, GroupModel, IModelJsFs, PhysicalModel, PhysicalObject, PhysicalPartition, SnapshotDb, SpatialCategory, SubjectOwnsPartitionElements } from "../../imodeljs-backend";
+import {
+  GenericSchema, Group, GroupInformationPartition, GroupModel, IModelJsFs, PhysicalModel, PhysicalObject, PhysicalPartition, SnapshotDb,
+  SpatialCategory, SubjectOwnsPartitionElements,
+} from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
 describe("Generic Domain", () => {

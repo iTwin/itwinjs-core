@@ -6,27 +6,12 @@
  * @module IModelConnection
  */
 
-import {
-  DbOpcode,
-  GuidString,
-  Id64Array,
-  Id64String,
-  IModelStatus,
-  Logger,
-  OpenMode,
-} from "@bentley/bentleyjs-core";
-import {
-  AxisAlignedBox3d,
-  BisCodeSpec,
-  CodeProps,
-  IModelError,
-  IModelWriteRpcInterface,
-  SubCategoryAppearance,
-} from "@bentley/imodeljs-common";
+import { DbOpcode, GuidString, Id64Array, Id64String, IModelStatus, Logger, OpenMode } from "@bentley/bentleyjs-core";
 import { LockLevel } from "@bentley/imodelhub-client";
+import { AxisAlignedBox3d, BisCodeSpec, CodeProps, IModelError, IModelWriteRpcInterface, SubCategoryAppearance } from "@bentley/imodeljs-common";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
-import { IModelConnection } from "./IModelConnection";
 import { IModelApp } from "./IModelApp";
+import { IModelConnection } from "./IModelConnection";
 
 const loggerCategory = FrontendLoggerCategory.IModelConnection;
 

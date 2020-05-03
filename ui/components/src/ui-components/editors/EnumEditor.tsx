@@ -6,13 +6,13 @@
  * @module PropertyEditors
  */
 
-import * as React from "react";
-import classnames from "classnames";
-import { PropertyValueFormat, PrimitiveValue, PropertyValue, EnumerationChoice } from "@bentley/ui-abstract";
-import { PropertyEditorManager, PropertyEditorBase } from "./PropertyEditorManager";
-import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
 import "./EnumEditor.scss";
+import classnames from "classnames";
+import * as React from "react";
+import { EnumerationChoice, PrimitiveValue, PropertyValue, PropertyValueFormat } from "@bentley/ui-abstract";
 import { Select } from "@bentley/ui-core";
+import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
+import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
 
 /** @internal */
 interface EnumEditorState {

@@ -9,16 +9,18 @@ import { expect } from "chai";
 import * as faker from "faker";
 import * as sinon from "sinon";
 import { Logger } from "@bentley/bentleyjs-core";
+import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { Node, RegisteredRuleset } from "@bentley/presentation-common";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { PromiseContainer, ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises";
-import { Node, RegisteredRuleset } from "@bentley/presentation-common";
-import { createRandomECInstancesNodeKey, createRandomECInstancesNode, createRandomNodePathElement, createRandomRuleset } from "@bentley/presentation-common/lib/test/_helpers/random";
-import { createRandomTreeNodeItem } from "../_helpers/UiComponents";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
+import {
+  createRandomECInstancesNode, createRandomECInstancesNodeKey, createRandomNodePathElement, createRandomRuleset,
+} from "@bentley/presentation-common/lib/test/_helpers/random";
 import { Presentation, PresentationManager, RulesetManager } from "@bentley/presentation-frontend";
 import { PageOptions } from "@bentley/ui-components";
 import { PresentationTreeDataProvider } from "../../presentation-components/tree/DataProvider";
 import { pageOptionsUiToPresentation } from "../../presentation-components/tree/Utils";
+import { createRandomTreeNodeItem } from "../_helpers/UiComponents";
 
 describe("TreeDataProvider", () => {
 

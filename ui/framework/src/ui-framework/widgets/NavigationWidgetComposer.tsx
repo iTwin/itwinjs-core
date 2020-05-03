@@ -7,20 +7,18 @@
  */
 
 import * as React from "react";
-
-import { CommonProps, useProximityToMouse } from "@bentley/ui-core";
-import { ViewClassFullNameChangedEventArgs, ViewportComponentEvents } from "@bentley/ui-components";
-import { NavigationArea } from "@bentley/ui-ninezone";
-
 import { ScreenViewport } from "@bentley/imodeljs-frontend";
-import { UiShowHideManager } from "../utils/UiShowHideManager";
-import { FrontstageManager } from "../frontstage/FrontstageManager";
-import { NavigationAidControl } from "../navigationaids/NavigationAidControl";
-import { ContentViewManager } from "../content/ContentViewManager";
-import { ContentControlActivatedEventArgs, ContentControl } from "../content/ContentControl";
+import { ViewClassFullNameChangedEventArgs, ViewportComponentEvents } from "@bentley/ui-components";
+import { CommonProps, useProximityToMouse } from "@bentley/ui-core";
+import { NavigationArea } from "@bentley/ui-ninezone";
 import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
-import { UiFramework } from "../UiFramework";
+import { ContentControl, ContentControlActivatedEventArgs } from "../content/ContentControl";
+import { ContentViewManager } from "../content/ContentViewManager";
+import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { useFrameworkVersion } from "../hooks/useFrameworkVersion";
+import { NavigationAidControl } from "../navigationaids/NavigationAidControl";
+import { UiFramework } from "../UiFramework";
+import { UiShowHideManager } from "../utils/UiShowHideManager";
 
 function createNavigationAidControl(activeContentControl: ContentControl | undefined, navigationAidId: string, activeViewport: ScreenViewport | undefined): NavigationAidControl | undefined {
   // istanbul ignore else

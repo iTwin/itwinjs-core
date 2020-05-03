@@ -5,12 +5,10 @@
 import { mount } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-
-import { RectangleProps, Rectangle } from "@bentley/ui-core";
-
-import { createBoundingClientRect } from "../Utils";
+import { Rectangle, RectangleProps } from "@bentley/ui-core";
 import { withContainIn } from "../../ui-ninezone";
-import { containVertically, containHorizontally } from "../../ui-ninezone/base/WithContainIn";
+import { containHorizontally, containVertically } from "../../ui-ninezone/base/WithContainIn";
+import { createBoundingClientRect } from "../Utils";
 
 const component = () => <div></div>;
 // tslint:disable-next-line:variable-name

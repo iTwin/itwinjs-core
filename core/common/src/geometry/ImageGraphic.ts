@@ -7,12 +7,7 @@
  */
 
 import { Id64String } from "@bentley/bentleyjs-core";
-import {
-  Point3d,
-  Range3d,
-  Transform,
-  XYZProps,
-} from "@bentley/geometry-core";
+import { Point3d, Range3d, Transform, XYZProps } from "@bentley/geometry-core";
 
 /** JSON representation of the 4 corners of an [[ImageGraphicProps]]. @see [[ImageGraphicCorners]].
  * @beta

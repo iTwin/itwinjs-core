@@ -2,16 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Point3d } from "../../geometry3d/Point3dVector3d";
-import { Transform } from "../../geometry3d/Transform";
+import { assert, expect } from "chai";
 import { Geometry } from "../../Geometry";
-import { RangeBase, Range1d, Range2d, Range3d } from "../../geometry3d/Range";
-import { Checker } from "../Checker";
-import { Sample } from "../../serialization/GeometrySamples";
-import { expect, assert } from "chai";
-import { prettyPrint } from "../testFunctions";
 import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
 import { Point2d } from "../../geometry3d/Point2dVector2d";
+import { Point3d } from "../../geometry3d/Point3dVector3d";
+import { Range1d, Range2d, Range3d, RangeBase } from "../../geometry3d/Range";
+import { Transform } from "../../geometry3d/Transform";
+import { Sample } from "../../serialization/GeometrySamples";
+import { Checker } from "../Checker";
+import { prettyPrint } from "../testFunctions";
 
 /* tslint:disable:no-console */
 // (assume points are distinct ...)

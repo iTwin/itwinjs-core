@@ -4,14 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import {
-  IModelApp,
-  NotifyMessageDetails,
-  OutputMessagePriority,
-  PerformanceMetrics,
-  ScreenViewport,
-  Target,
-  Tool,
-  Viewport,
+  IModelApp, NotifyMessageDetails, OutputMessagePriority, PerformanceMetrics, ScreenViewport, Target, Tool, Viewport,
 } from "@bentley/imodeljs-frontend";
 
 export interface FpsMonitorProps {

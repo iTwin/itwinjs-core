@@ -3,21 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-
 import {
-  ButtonGroupEditorParams,
-  isButtonGroupEditorParams,
-  ColorEditorParams,
-  isColorEditorParams,
-  CustomFormattedNumberParams,
-  isCustomFormattedNumberParams,
-  IconListEditorParams,
-  isIconListEditorParams,
-  InputEditorSizeParams,
-  isInputEditorSizeParams,
-  PropertyEditorParamTypes,
-  SuppressLabelEditorParams,
-  isSuppressLabelEditorParams,
+  ButtonGroupEditorParams, ColorEditorParams, CustomFormattedNumberParams, IconListEditorParams, InputEditorSizeParams, isButtonGroupEditorParams,
+  isColorEditorParams, isCustomFormattedNumberParams, isIconListEditorParams, isInputEditorSizeParams, isSuppressLabelEditorParams,
+  PropertyEditorParamTypes, SuppressLabelEditorParams,
 } from "../../ui-abstract";
 
 describe("EditorParams", () => {

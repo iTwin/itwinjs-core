@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Point3d } from "../geometry3d/Point3dVector3d";
-import { HalfEdge } from "./Graph";
 import { Geometry } from "../Geometry";
-import { Ray3d } from "../geometry3d/Ray3d";
 import { Point2d } from "../geometry3d/Point2dVector2d";
+import { Point3d } from "../geometry3d/Point3dVector3d";
+import { Ray3d } from "../geometry3d/Ray3d";
+import { HalfEdge } from "./Graph";
 
 /** @packageDocumentation
  * @module Topology

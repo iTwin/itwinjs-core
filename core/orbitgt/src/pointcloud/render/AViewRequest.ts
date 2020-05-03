@@ -14,10 +14,9 @@ type int32 = number;
 type float32 = number;
 type float64 = number;
 
-import { Level } from "./Level";
-
 import { Bounds } from "../../spatial/geom/Bounds";
 import { TileIndex } from "../model/TileIndex";
+import { Level } from "./Level";
 
 /**
  * Class AViewRequest defines a abstract request the render a view.

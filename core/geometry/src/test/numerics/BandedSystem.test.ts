@@ -3,16 +3,17 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Checker } from "../Checker";
 import { expect } from "chai";
-import { BandedSystem } from "../../numerics/BandedSystem";
 import { BSplineCurve3d } from "../../bspline/BSplineCurve";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { BandedSystem } from "../../numerics/BandedSystem";
 import { Sample } from "../../serialization/GeometrySamples";
-import { AngleSweep } from "../../geometry3d/AngleSweep";
+import { Checker } from "../Checker";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+
 /* tslint:disable:no-console */
 function maxDiff(arrayA: Float64Array, arrayB: Float64Array): number {
   let diff = 0.0;

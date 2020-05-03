@@ -2,12 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { AuthStatus, BentleyError, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
-import { IModelHost, DesktopAuthorizationClient } from "@bentley/imodeljs-backend";
-import { AccessToken } from "@bentley/itwin-client";
-import { DesktopAuthorizationClientConfiguration } from "@bentley/imodeljs-common";
 import * as electron from "electron";
+import { AuthStatus, BentleyError, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
+import { DesktopAuthorizationClient, IModelHost } from "@bentley/imodeljs-backend";
+import { DesktopAuthorizationClientConfiguration } from "@bentley/imodeljs-common";
+import { AccessToken } from "@bentley/itwin-client";
 import { ElectronManagerLoggerCategory } from "./ElectronManagerLoggerCategory";
+
 const { ipcMain: ipc } = electron;
 
 const loggerCategory: string = ElectronManagerLoggerCategory.Authorization;

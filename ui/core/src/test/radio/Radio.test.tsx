@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import { Radio, InputStatus } from "../../ui-core";
+import { InputStatus, Radio } from "../../ui-core";
 
 describe("<Radio />", () => {
   it("should render", () => {

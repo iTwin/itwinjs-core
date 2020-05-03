@@ -7,10 +7,10 @@
  */
 
 import { Geometry } from "../Geometry";
+import { Point4d } from "../geometry4d/Point4d";
 import { Angle } from "./Angle";
 import { Ray3d } from "./Ray3d";
-import { XYAndZ, XAndY, HasZ, XYZProps } from "./XYZProps";
-import { Point4d } from "../geometry4d/Point4d";
+import { HasZ, XAndY, XYAndZ, XYZProps } from "./XYZProps";
 
 /**
  *  * `XYZ` is a minimal object containing x,y,z and operations that are meaningful without change in both point and vector.

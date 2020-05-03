@@ -6,10 +6,10 @@
  * @module Backstage
  */
 
-import { ConditionalBooleanValue } from "../items/ConditionalBooleanValue";
 import { BadgeType } from "../items/BadgeType";
-import { ProvidedItem } from "../items/ProvidedItem";
+import { ConditionalBooleanValue } from "../items/ConditionalBooleanValue";
 import { ConditionalStringValue } from "../items/ConditionalStringValue";
+import { ProvidedItem } from "../items/ProvidedItem";
 
 /** Used to specify the item type added to the backstage menu.
  * @beta

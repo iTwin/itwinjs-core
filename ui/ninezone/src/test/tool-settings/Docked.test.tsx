@@ -4,9 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as sinon from "sinon";
-import { render, act, fireEvent, queryByText } from "@testing-library/react";
-import { DockedToolSettings, getOverflown, DockedToolSetting, onOverflowLabelAndEditorResize, eqlOverflown, DragManager, DragManagerContext } from "../../ui-ninezone";
 import * as ResizeObserverModule from "@bentley/ui-core/lib/ui-core/utils/hooks/ResizeObserverPolyfill"; // tslint:disable-line: no-direct-imports
+import { act, fireEvent, queryByText, render } from "@testing-library/react";
+import {
+  DockedToolSetting, DockedToolSettings, DragManager, DragManagerContext, eqlOverflown, getOverflown, onOverflowLabelAndEditorResize,
+} from "../../ui-ninezone";
 import { createDOMRect, ResizeObserverMock } from "../Utils";
 
 function DragManagerProvider(props: { children?: React.ReactNode }) {

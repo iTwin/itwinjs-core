@@ -7,12 +7,7 @@
  * @module Tools
  */
 
-import {
-  IModelApp,
-  NotifyMessageDetails,
-  OutputMessagePriority,
-  Tool,
-} from "@bentley/imodeljs-frontend";
+import { IModelApp, NotifyMessageDetails, OutputMessagePriority, Tool } from "@bentley/imodeljs-frontend";
 import { copyStringToClipboard } from "../ClipboardUtilities";
 import { parseArgs } from "./parseArgs";
 

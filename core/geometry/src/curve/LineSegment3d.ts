@@ -7,21 +7,22 @@
  * @module Curve
  */
 
-import { Geometry, BeJSONFunctions, PlaneAltitudeEvaluator } from "../Geometry";
-import { Order2Bezier } from "../numerics/BezierPolynomials";
+import { Clipper } from "../clipping/ClipUtils";
+import { BeJSONFunctions, Geometry, PlaneAltitudeEvaluator } from "../Geometry";
+import { GeometryHandler, IStrokeHandler } from "../geometry3d/GeometryHandler";
+import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
 import { Point3d } from "../geometry3d/Point3dVector3d";
 import { Range3d } from "../geometry3d/Range";
-import { Transform } from "../geometry3d/Transform";
 import { Ray3d } from "../geometry3d/Ray3d";
-import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
-import { GeometryHandler, IStrokeHandler } from "../geometry3d/GeometryHandler";
-import { StrokeOptions } from "./StrokeOptions";
-import { CurvePrimitive, AnnounceNumberNumberCurvePrimitive } from "./CurvePrimitive";
+import { Transform } from "../geometry3d/Transform";
+import { Order2Bezier } from "../numerics/BezierPolynomials";
 import { CurveExtendOptions, VariantCurveExtendParameter } from "./CurveExtendMode";
+import { CurveIntervalRole, CurveLocationDetail } from "./CurveLocationDetail";
+import { AnnounceNumberNumberCurvePrimitive, CurvePrimitive } from "./CurvePrimitive";
 import { GeometryQuery } from "./GeometryQuery";
-import { CurveLocationDetail, CurveIntervalRole } from "./CurveLocationDetail";
 import { LineString3d } from "./LineString3d";
-import { Clipper } from "../clipping/ClipUtils";
+import { StrokeOptions } from "./StrokeOptions";
+
 /* tslint:disable:variable-name no-empty*/
 /**
  * A LineSegment3d is:

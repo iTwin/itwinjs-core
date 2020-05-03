@@ -5,20 +5,20 @@
 /* tslint:disable:no-direct-imports */
 
 import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
-import * as React from "react";
 import { expect } from "chai";
-import * as sinon from "sinon";
 import { mount, shallow } from "enzyme";
 import * as faker from "faker";
+import * as React from "react";
+import * as sinon from "sinon";
+import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { InstanceKey, KeySet } from "@bentley/presentation-common";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { createRandomECInstanceKey } from "@bentley/presentation-common/lib/test/_helpers/random";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { KeySet, InstanceKey } from "@bentley/presentation-common";
 import {
-  Presentation, PresentationManager,
-  SelectionHandler, SelectionManager, SelectionChangeEvent, SelectionChangeType, ISelectionProvider, SelectionChangeEventArgs,
+  ISelectionProvider, Presentation, PresentationManager, SelectionChangeEvent, SelectionChangeEventArgs, SelectionChangeType, SelectionHandler,
+  SelectionManager,
 } from "@bentley/presentation-frontend";
-import { Table, TableProps, ColumnDescription, RowItem, TableDataChangeEvent } from "@bentley/ui-components";
+import { ColumnDescription, RowItem, Table, TableDataChangeEvent, TableProps } from "@bentley/ui-components";
 import { IUnifiedSelectionComponent, PresentationTableDataProvider, tableWithUnifiedSelection } from "../../presentation-components";
 import { PresentationTableDataProviderProps } from "../../presentation-components/table/DataProvider";
 

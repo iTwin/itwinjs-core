@@ -9,19 +9,16 @@
 import * as React from "react";
 import { Tool } from "@bentley/imodeljs-frontend";
 import {
-  BadgeType, StageUsage, CommonStatusBarItem, StatusBarSection,
-  UiItemsProvider, UiItemsManager, AbstractStatusBarItemUtilities,
-  ToolbarUsage, ToolbarOrientation, CommonToolbarItem, ToolbarItemUtilities,
-  AbstractWidgetProps,
-  StagePanelLocation, StagePanelSection, ConditionalBooleanValue, ConditionalStringValue,
+  AbstractStatusBarItemUtilities, AbstractWidgetProps, BadgeType, CommonStatusBarItem, CommonToolbarItem, ConditionalBooleanValue,
+  ConditionalStringValue, StagePanelLocation, StagePanelSection, StageUsage, StatusBarSection, ToolbarItemUtilities, ToolbarOrientation, ToolbarUsage,
+  UiItemsManager, UiItemsProvider,
 } from "@bentley/ui-abstract";
-import {
-  withStatusFieldProps, StatusBarItemUtilities,
-  createAction, ActionsUnion, ActionCreatorsObject, ReducerRegistryInstance, StateManager, UiFramework,
-} from "@bentley/ui-framework";
-import { SampleAppIModelApp, SampleAppUiActionId } from "../index";
-import { ShadowField } from "../appui/statusfields/ShadowField";
 import { FillCentered } from "@bentley/ui-core";
+import {
+  ActionCreatorsObject, ActionsUnion, createAction, ReducerRegistryInstance, StateManager, StatusBarItemUtilities, UiFramework, withStatusFieldProps,
+} from "@bentley/ui-framework";
+import { ShadowField } from "../appui/statusfields/ShadowField";
+import { SampleAppIModelApp, SampleAppUiActionId } from "../index";
 
 // Simulate redux state being added via a plugin
 interface ISamplePluginState {

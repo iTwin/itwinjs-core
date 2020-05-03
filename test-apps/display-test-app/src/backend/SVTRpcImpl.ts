@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import SVTRpcInterface from "../common/SVTRpcInterface";
-import { RpcManager, MobileRpcConfiguration } from "@bentley/imodeljs-common";
 import * as fs from "fs";
 import * as path from "path";
+import { MobileRpcConfiguration, RpcManager } from "@bentley/imodeljs-common";
+import SVTRpcInterface from "../common/SVTRpcInterface";
 
 /** The backend implementation of SVTRpcImpl. */
 export default class SVTRpcImpl extends SVTRpcInterface {

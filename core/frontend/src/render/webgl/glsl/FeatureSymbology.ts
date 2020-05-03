@@ -6,47 +6,20 @@
  * @module WebGL
  */
 
+import { assert } from "@bentley/bentleyjs-core";
+import { OvrFlags, RenderOrder, TextureUnit } from "../RenderFlags";
 import {
-  ProgramBuilder,
-  ShaderBuilder,
-  VertexShaderBuilder,
-  FragmentShaderBuilder,
-  VariableType,
+  FragmentShaderBuilder, FragmentShaderComponent, ProgramBuilder, ShaderBuilder, VariablePrecision, VariableType, VertexShaderBuilder,
   VertexShaderComponent,
-  VariablePrecision,
-  FragmentShaderComponent,
 } from "../ShaderBuilder";
-import {
-  OvrFlags,
-  RenderOrder,
-  TextureUnit,
-} from "../RenderFlags";
-import {
-  FeatureMode,
-  TechniqueFlags,
-} from "../TechniqueFlags";
-import {
-  addAlpha,
-  addFeatureAndMaterialLookup,
-  addLineWeight,
-  replaceLineCode,
-  replaceLineWeight,
-} from "./Vertex";
-import {
-  addWindowToTexCoords,
-  assignFragColor,
-  computeLinearDepth,
-} from "./Fragment";
-import {
-  addExtractNthBit,
-  addEyeSpace,
-  addUInt32s,
-} from "./Common";
+import { System } from "../System";
+import { FeatureMode, TechniqueFlags } from "../TechniqueFlags";
+import { addExtractNthBit, addEyeSpace, addUInt32s } from "./Common";
 import { decodeDepthRgb } from "./Decode";
+import { addWindowToTexCoords, assignFragColor, computeLinearDepth } from "./Fragment";
 import { addLookupTable } from "./LookupTable";
 import { addRenderPass } from "./RenderPass";
-import { assert } from "@bentley/bentleyjs-core";
-import { System } from "../System";
+import { addAlpha, addFeatureAndMaterialLookup, addLineWeight, replaceLineCode, replaceLineWeight } from "./Vertex";
 
 // tslint:disable:no-const-enum
 

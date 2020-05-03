@@ -5,17 +5,15 @@
 
 import { expect } from "chai";
 import * as sinon from "sinon";
-
 import { Logger } from "@bentley/bentleyjs-core";
-
-import { TestUtils, TestFilterableTable } from "../../TestUtils";
-import { FilterOperator, OperatorValueFilterDescriptorCollection } from "../../../ui-components/table/columnfiltering/ColumnFiltering";
-import { ColumnDescription, RowItem, CellItem } from "../../../ui-components/table/TableDataProvider";
-import { NumericFilterType, NumericRangeData } from "../../../ui-components/table/columnfiltering/DataGridFilterParser";
-import { StandardTypeConverterTypeNames } from "../../../ui-components/converters/TypeConverter";
 import { BooleanTypeConverter } from "../../../ui-components/converters/BooleanTypeConverter";
+import { StandardTypeConverterTypeNames } from "../../../ui-components/converters/TypeConverter";
+import { FilterOperator, OperatorValueFilterDescriptorCollection } from "../../../ui-components/table/columnfiltering/ColumnFiltering";
 import { ColumnFilteringUtilities } from "../../../ui-components/table/columnfiltering/ColumnFilteringUtilities";
+import { NumericFilterType, NumericRangeData } from "../../../ui-components/table/columnfiltering/DataGridFilterParser";
 import { TableFilterDescriptor } from "../../../ui-components/table/columnfiltering/TableFilterDescriptor";
+import { CellItem, ColumnDescription, RowItem } from "../../../ui-components/table/TableDataProvider";
+import { TestFilterableTable, TestUtils } from "../../TestUtils";
 
 const columns: ColumnDescription[] = [
   {

@@ -2,31 +2,18 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect, assert } from "chai";
+import { assert, expect } from "chai";
 import { ByteStream } from "@bentley/bentleyjs-core";
+import { Arc3d, Point3d, Range3d } from "@bentley/geometry-core";
+import { ColorByName, ColorDef, ImageBuffer, ImageBufferFormat, QParams3d, QPoint3dList, RenderTexture } from "@bentley/imodeljs-common";
 import {
-  Decorations,
-  GraphicList,
-  GraphicType,
-  ImdlReader,
-  IModelApp,
-  IModelConnection,
-  PlanarClassifierMap,
-  RenderMemory,
-  RenderPlanarClassifier,
-  RenderTextureDrape,
-  SceneContext,
-  ScreenViewport,
-  TextureDrapeMap,
-  TileTreeReference,
-  SnapshotConnection,
+  Decorations, GraphicList, GraphicType, ImdlReader, IModelApp, IModelConnection, PlanarClassifierMap, RenderMemory, RenderPlanarClassifier,
+  RenderTextureDrape, SceneContext, ScreenViewport, SnapshotConnection, TextureDrapeMap, TileTreeReference,
 } from "@bentley/imodeljs-frontend";
-import { ColorDef, ImageBuffer, ImageBufferFormat, RenderTexture, QPoint3dList, QParams3d, ColorByName } from "@bentley/imodeljs-common";
 import { MeshArgs } from "@bentley/imodeljs-frontend/lib/render-primitives";
-import { OnScreenTarget, Target, Batch, WorldDecorations, TextureHandle } from "@bentley/imodeljs-frontend/lib/webgl";
-import { Point3d, Range3d, Arc3d } from "@bentley/geometry-core";
-import { FakeGMState, FakeModelProps, FakeREProps } from "./TileIO.test";
+import { Batch, OnScreenTarget, Target, TextureHandle, WorldDecorations } from "@bentley/imodeljs-frontend/lib/webgl";
 import { TILE_DATA_1_1 } from "./TileIO.data.1.1";
+import { FakeGMState, FakeModelProps, FakeREProps } from "./TileIO.test";
 
 let imodel0: IModelConnection;
 let imodel1: IModelConnection;

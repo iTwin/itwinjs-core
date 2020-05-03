@@ -2,15 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { render, cleanup } from "@testing-library/react";
+import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
-import { expect } from "chai";
-
+import { cleanup, render } from "@testing-library/react";
 import { Dialog, DialogButtonType } from "../../ui-core";
-import TestUtils from "../TestUtils";
+import { DialogAlignment, GlobalDialog } from "../../ui-core/dialog/Dialog";
 import { UiCore } from "../../ui-core/UiCore";
-import { GlobalDialog, DialogAlignment } from "../../ui-core/dialog/Dialog";
+import TestUtils from "../TestUtils";
 
 describe("Dialog", () => {
 

@@ -2,18 +2,21 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { DbResult, GuidString, Id64, Id64String, Config } from "@bentley/bentleyjs-core";
-import { RequestGlobalOptions, RequestTimeoutOptions } from "@bentley/itwin-client";
-import { ChangeSetPostPushEvent, HubIModel, IModelQuery, NamedVersionCreatedEvent } from "@bentley/imodelhub-client";
-import { ChangedValueState, ChangeOpCode, IModelVersion, SyncMode } from "@bentley/imodeljs-common";
-import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
+// tslint:disable:import-within-package
 import { assert } from "chai";
 import * as path from "path";
-import { AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseManager, ChangeSummary, ChangeSummaryManager, ConcurrencyControl, ECSqlStatement, IModelJsFs } from "../../imodeljs-backend";
+import { Config, DbResult, GuidString, Id64, Id64String } from "@bentley/bentleyjs-core";
+import { ChangeSetPostPushEvent, HubIModel, IModelQuery, NamedVersionCreatedEvent } from "@bentley/imodelhub-client";
+import { ChangedValueState, ChangeOpCode, IModelVersion, SyncMode } from "@bentley/imodeljs-common";
+import { RequestGlobalOptions, RequestTimeoutOptions } from "@bentley/itwin-client";
+import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
+import * as utils from "../../../../backend-itwin-client/lib/test/imodelhub/TestUtils";
+import { RequestType, ResponseBuilder, ScopeType } from "../../../../backend-itwin-client/lib/test/ResponseBuilder";
+import {
+  AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseManager, ChangeSummary, ChangeSummaryManager, ConcurrencyControl, ECSqlStatement, IModelJsFs,
+} from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
-import * as utils from "./../../../../backend-itwin-client/lib/test/imodelhub/TestUtils";
-import { RequestType, ResponseBuilder, ScopeType } from "./../../../../backend-itwin-client/lib/test/ResponseBuilder";
 import { HubUtility } from "./HubUtility";
 import { createNewModelAndCategory } from "./IModelWrite.test";
 import { TestPushUtility } from "./TestPushUtility";

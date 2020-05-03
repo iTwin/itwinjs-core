@@ -3,16 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-
 import {
-  ButtonGroupEditorParams,
-  DialogItemsManager,
-  DialogItem,
-  DialogItemValue,
-  DialogRow,
-  PropertyEditorParamTypes,
-  PropertyDescription,
-  SuppressLabelEditorParams } from "../../ui-abstract";
+  ButtonGroupEditorParams, DialogItem, DialogItemsManager, DialogItemValue, DialogRow, PropertyDescription, PropertyEditorParamTypes,
+  SuppressLabelEditorParams,
+} from "../../ui-abstract";
 import { PrimitiveValue } from "../../ui-abstract/properties/Value";
 
 const value1: DialogItemValue = { value: 3 };

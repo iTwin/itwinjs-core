@@ -6,17 +6,14 @@
  * @module WebGL
  */
 
+import { BeEvent } from "@bentley/bentleyjs-core";
+import { Point3d, Vector3d } from "@bentley/geometry-core";
+import { Viewport } from "../../Viewport";
+import { FrameBuffer, FrameBufferStack } from "./FrameBuffer";
+import { FrustumUniformType } from "./FrustumUniforms";
 import { RenderCommands } from "./RenderCommands";
 import { CompositeFlags } from "./RenderFlags";
-import { FrameBufferStack, FrameBuffer } from "./FrameBuffer";
-import { FrustumUniformType } from "./FrustumUniforms";
-import {
-  Point3d,
-  Vector3d,
-} from "@bentley/geometry-core";
-import { BeEvent } from "@bentley/bentleyjs-core";
 import { System } from "./System";
-import { Viewport } from "../../Viewport";
 
 /** @internal */
 export interface FrameRenderData {

@@ -7,22 +7,16 @@
  */
 
 import memoize from "micro-memoize";
-import { SortDirection as UiSortDirection } from "@bentley/ui-core";
-import {
-  TableDataProvider as ITableDataProvider, TableDataChangeEvent,
-  ColumnDescription, RowItem, CellItem,
-} from "@bentley/ui-components";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import {
-  PresentationError, PresentationStatus,
-  DefaultContentDisplayTypes, Descriptor, SortDirection,
-  Content, Field, Item, Ruleset,
-  InstanceKey,
+  Content, DefaultContentDisplayTypes, Descriptor, Field, InstanceKey, Item, PresentationError, PresentationStatus, Ruleset, SortDirection,
 } from "@bentley/presentation-common";
-import { ContentDataProvider, CacheInvalidationProps, IContentDataProvider } from "../common/ContentDataProvider";
+import { CellItem, ColumnDescription, RowItem, TableDataChangeEvent, TableDataProvider as ITableDataProvider } from "@bentley/ui-components";
+import { SortDirection as UiSortDirection } from "@bentley/ui-core";
 import { ContentBuilder } from "../common/ContentBuilder";
-import { PageContainer, Page } from "../common/PageContainer";
-import { priorityAndNameSortFunction, createLabelRecord, translate } from "../common/Utils";
+import { CacheInvalidationProps, ContentDataProvider, IContentDataProvider } from "../common/ContentDataProvider";
+import { Page, PageContainer } from "../common/PageContainer";
+import { createLabelRecord, priorityAndNameSortFunction, translate } from "../common/Utils";
 
 interface PromisedPage<TItem> extends Page<TItem> {
   promise?: Promise<void>;

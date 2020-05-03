@@ -7,11 +7,11 @@
  * @module ExtensionService
  */
 
-import { ExtensionStatus, ClientRequestContext } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, ExtensionStatus } from "@bentley/bentleyjs-core";
 import { IModelError } from "@bentley/imodeljs-common";
-import { AuthorizedClientRequestContext, Client, request, RequestOptions, ResponseError, getArrayBuffer } from "@bentley/itwin-client";
-import { ExtensionProps, extensionPropsFromJSON } from "./ExtensionProps";
+import { AuthorizedClientRequestContext, Client, getArrayBuffer, request, RequestOptions, ResponseError } from "@bentley/itwin-client";
 import { ExtensionFile } from "./ExtensionFile";
+import { ExtensionProps, extensionPropsFromJSON } from "./ExtensionProps";
 
 /**
  * Client for querying, publishing and deleting iModel.js Extensions

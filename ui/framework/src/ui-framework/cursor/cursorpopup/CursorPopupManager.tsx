@@ -7,12 +7,11 @@
  */
 
 import * as React from "react";
-
-import { UiEvent, Point, PointProps, Size, SizeProps, RectangleProps } from "@bentley/ui-core";
-import { RelativePosition } from "@bentley/ui-abstract";
-import { CursorPopup } from "./CursorPopup";
 import { Logger } from "@bentley/bentleyjs-core";
+import { RelativePosition } from "@bentley/ui-abstract";
+import { Point, PointProps, RectangleProps, Size, SizeProps, UiEvent } from "@bentley/ui-core";
 import { UiFramework } from "../../UiFramework";
+import { CursorPopup } from "./CursorPopup";
 
 /** Options for the [[CursorPopupManager]] open method
  * @public

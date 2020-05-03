@@ -6,8 +6,8 @@
  * @module Rendering
  */
 
-import { Range2d, Range3d, Point2d, Point3d } from "@bentley/geometry-core";
 import { assert } from "@bentley/bentleyjs-core";
+import { Point2d, Point3d, Range2d, Range3d } from "@bentley/geometry-core";
 
 /**
  * Provides facilities for quantizing floating point values within a specified range into 16-bit unsigned integers.

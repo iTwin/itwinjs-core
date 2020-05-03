@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
-
 import { assert } from "@bentley/bentleyjs-core";
-import { RpcInterfaceDefinition, ElectronRpcManager } from "@bentley/imodeljs-common";
-import { IModelJsElectronManager, WebpackDevServerElectronManager, StandardElectronManager } from "@bentley/electron-manager";
+import { IModelJsElectronManager, StandardElectronManager, WebpackDevServerElectronManager } from "@bentley/electron-manager";
+import { ElectronRpcManager, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
+
 /**
  * Initializes Electron backend
  */

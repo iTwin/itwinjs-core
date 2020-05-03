@@ -6,15 +6,7 @@
  * @module Rendering
  */
 
-import {
-  assert,
-  compareNumbers,
-  compareStrings,
-  Id64,
-  Id64String,
-  IndexedValue,
-  IndexMap,
-} from "@bentley/bentleyjs-core";
+import { assert, compareNumbers, compareStrings, Id64, Id64String, IndexedValue, IndexMap } from "@bentley/bentleyjs-core";
 import { GeometryClass } from "./GeometryParams";
 
 /** Describes a "feature" within a batched [[RenderGraphic]]. A batched [[RenderGraphic]] can

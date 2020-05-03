@@ -8,17 +8,17 @@
 
 // portions adapted from Cesium.js Copyright 2011 - 2017 Cesium Contributors
 
-import { TextureUnit } from "../RenderFlags";
-import { VariableType, FragmentShaderComponent, VariablePrecision } from "../ShaderBuilder";
-import { ShaderProgram } from "../ShaderProgram";
-import { assignFragColor, computeLinearDepth, addWindowToTexCoords } from "./Fragment";
-import { createViewportQuadBuilder } from "./ViewportQuad";
 import { AmbientOcclusionGeometry } from "../CachedGeometry";
+import { TextureUnit } from "../RenderFlags";
+import { FragmentShaderComponent, VariablePrecision, VariableType } from "../ShaderBuilder";
+import { ShaderProgram } from "../ShaderProgram";
 import { Texture2DHandle } from "../Texture";
+import { addFrustum } from "./Common";
 import { decodeDepthRgb } from "./Decode";
 import { addRenderOrderConstants, readDepthAndOrder } from "./FeatureSymbology";
+import { addWindowToTexCoords, assignFragColor, computeLinearDepth } from "./Fragment";
 import { addViewport } from "./Viewport";
-import { addFrustum } from "./Common";
+import { createViewportQuadBuilder } from "./ViewportQuad";
 
 // This outputs 1 for unlit surfaces, and for polylines and point strings.
 // Otherwise it computes ambient occlusion based on normal reconstructed from pick depth.

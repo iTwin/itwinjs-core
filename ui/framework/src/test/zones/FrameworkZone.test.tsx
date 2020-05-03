@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { shallow } from "enzyme";
-import * as moq from "typemoq";
 import * as React from "react";
+import * as moq from "typemoq";
 import { FrameworkZone } from "../../ui-framework";
 import { FrameworkZoneProps } from "../../ui-framework/zones/FrameworkZone";
 

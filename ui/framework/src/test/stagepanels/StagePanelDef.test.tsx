@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
-import TestUtils from "../TestUtils";
 import { FrontstageManager, StagePanelDef, StagePanelState, WidgetDef } from "../../ui-framework";
+import TestUtils from "../TestUtils";
 
 describe("StagePanelDef", () => {
 

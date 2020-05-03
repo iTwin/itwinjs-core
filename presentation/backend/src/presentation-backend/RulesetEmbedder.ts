@@ -7,18 +7,16 @@
  */
 
 import * as path from "path";
-import { Id64, Id64String, DbResult, ClientRequestContext } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, DbResult, Id64, Id64String } from "@bentley/bentleyjs-core";
 import {
-  DefinitionElementProps, CodeScopeSpec, CodeSpec, BisCodeSpec,
-  Code, SubjectProps, InformationPartitionElementProps, ModelProps,
-} from "@bentley/imodeljs-common";
-import {
-  IModelDb, ECSqlStatement, KnownLocations, DefinitionModel,
-  DefinitionPartition, Subject, Model, DefinitionElement,
+  DefinitionElement, DefinitionModel, DefinitionPartition, ECSqlStatement, IModelDb, KnownLocations, Model, Subject,
 } from "@bentley/imodeljs-backend";
+import {
+  BisCodeSpec, Code, CodeScopeSpec, CodeSpec, DefinitionElementProps, InformationPartitionElementProps, ModelProps, SubjectProps,
+} from "@bentley/imodeljs-common";
 import { Ruleset } from "@bentley/presentation-common";
-import * as RulesetElements from "./domain/RulesetElements";
 import { PresentationRules } from "./domain/PresentationRulesDomain";
+import * as RulesetElements from "./domain/RulesetElements";
 
 /**
  * Available strategies for handling duplicate rulesets.

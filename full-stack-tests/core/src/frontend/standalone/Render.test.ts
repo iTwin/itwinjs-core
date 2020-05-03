@@ -3,55 +3,20 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import { BeDuration, BeTimePoint } from "@bentley/bentleyjs-core";
+import { ClipVector, Point2d, Point3d } from "@bentley/geometry-core";
 import {
-  Color,
-  TestViewport,
-  comparePixelData,
-  createOnScreenTestViewport,
-  testOffScreenViewport,
-  testOnScreenViewport,
-  testViewports,
-} from "../TestViewport";
-import {
-  BeDuration,
-  BeTimePoint,
-} from "@bentley/bentleyjs-core";
-import {
-  ColorDef,
-  Hilite,
-  RenderMode,
-  RgbColor,
-  ViewFlags,
-  ThematicDisplayProps,
-  ThematicGradientColorScheme,
-  ThematicDisplay,
-  ThematicDisplayMode,
+  ColorDef, Hilite, RenderMode, RgbColor, ThematicDisplay, ThematicDisplayMode, ThematicDisplayProps, ThematicGradientColorScheme, ViewFlags,
 } from "@bentley/imodeljs-common";
 import {
-  GraphicType,
-  IModelApp,
-  IModelConnection,
-  IModelTileTree,
-  FeatureOverrideProvider,
-  FeatureSymbology,
-  OffScreenViewport,
-  Pixel,
-  RenderMemory,
-  RenderSystem,
-  SpatialViewState,
-  TileAdmin,
-  TileLoadStatus,
-  TileTree,
-  TileTreeSet,
-  Viewport,
-  ViewRect,
-  Decorator,
-  DecorateContext,
-  SnapshotConnection,
+  DecorateContext, Decorator, FeatureOverrideProvider, FeatureSymbology, GraphicType, IModelApp, IModelConnection, IModelTileTree, OffScreenViewport,
+  Pixel, RenderMemory, RenderSystem, SnapshotConnection, SpatialViewState, TileAdmin, TileLoadStatus, TileTree, TileTreeSet, Viewport, ViewRect,
   ViewState3d,
 } from "@bentley/imodeljs-frontend";
-import { Point2d, Point3d, ClipVector } from "@bentley/geometry-core";
 import { BuffersContainer, VAOContainer, VBOContainer } from "@bentley/imodeljs-frontend/lib/webgl";
+import {
+  Color, comparePixelData, createOnScreenTestViewport, testOffScreenViewport, testOnScreenViewport, TestViewport, testViewports,
+} from "../TestViewport";
 
 describe("Test VAO creation", () => {
   before(async () => {

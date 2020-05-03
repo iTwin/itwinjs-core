@@ -6,20 +6,20 @@
  * @module IModelComponents
  */
 
-import { Subject } from "rxjs/internal/Subject";
-import { from } from "rxjs/internal/observable/from";
 import { EMPTY } from "rxjs/internal/observable/empty";
+import { from } from "rxjs/internal/observable/from";
 import { map } from "rxjs/internal/operators/map";
 import { mergeMap } from "rxjs/internal/operators/mergeMap";
 import { takeUntil } from "rxjs/internal/operators/takeUntil";
-import {
-  TreeNodeItem, TreeSelectionModificationEventArgs, TreeSelectionReplacementEventArgs,
-  TreeCheckboxStateChangeEventArgs, TreeModelChanges, CheckBoxInfo, TreeModelNode, CheckboxStateChange,
-} from "@bentley/ui-components";
+import { Subject } from "rxjs/internal/Subject";
 import { IDisposable } from "@bentley/bentleyjs-core";
 import { NodeKey } from "@bentley/presentation-common";
+import { UnifiedSelectionTreeEventHandler, UnifiedSelectionTreeEventHandlerParams } from "@bentley/presentation-components";
+import {
+  CheckBoxInfo, CheckboxStateChange, TreeCheckboxStateChangeEventArgs, TreeModelChanges, TreeModelNode, TreeNodeItem,
+  TreeSelectionModificationEventArgs, TreeSelectionReplacementEventArgs,
+} from "@bentley/ui-components";
 import { CheckBoxState, isPromiseLike } from "@bentley/ui-core";
-import { UnifiedSelectionTreeEventHandlerParams, UnifiedSelectionTreeEventHandler } from "@bentley/presentation-components";
 
 /**
  * Data structure that describes info used to filter visibility tree.

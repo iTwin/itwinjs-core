@@ -6,23 +6,26 @@
  * @module WebGL
  */
 
-import { dispose, assert } from "@bentley/bentleyjs-core";
-import { ClipVector, Point3d, ClipUtilities, Triangulator, PolyfaceBuilder, IndexedPolyfaceVisitor, UnionOfConvexClipPlaneSets, Vector3d, StrokeOptions, Transform } from "@bentley/geometry-core";
-import { QPoint3dList, Frustum, QParams3d, ColorDef } from "@bentley/imodeljs-common";
-import { ShaderProgramExecutor } from "./ShaderProgram";
-import { Target } from "./Target";
-import { RenderClipVolume, ClippingType } from "../RenderClipVolume";
+import { assert, dispose } from "@bentley/bentleyjs-core";
+import {
+  ClipUtilities, ClipVector, IndexedPolyfaceVisitor, Point3d, PolyfaceBuilder, StrokeOptions, Transform, Triangulator, UnionOfConvexClipPlaneSets,
+  Vector3d,
+} from "@bentley/geometry-core";
+import { ColorDef, Frustum, QParams3d, QPoint3dList } from "@bentley/imodeljs-common";
+import { ViewRect } from "../../ViewRect";
+import { ClippingType, RenderClipVolume } from "../RenderClipVolume";
 import { RenderMemory } from "../RenderMemory";
 import { ClipMaskGeometry } from "./CachedGeometry";
-import { ViewRect } from "../../ViewRect";
-import { FrameBuffer } from "./FrameBuffer";
-import { TextureHandle, Texture2DData, Texture2DHandle } from "./Texture";
-import { GL } from "./GL";
-import { System } from "./System";
-import { RenderState } from "./RenderState";
-import { DrawParams } from "./DrawCommand";
 import { WebGLDisposable } from "./Disposable";
+import { DrawParams } from "./DrawCommand";
 import { FloatRgba } from "./FloatRGBA";
+import { FrameBuffer } from "./FrameBuffer";
+import { GL } from "./GL";
+import { RenderState } from "./RenderState";
+import { ShaderProgramExecutor } from "./ShaderProgram";
+import { System } from "./System";
+import { Target } from "./Target";
+import { Texture2DData, Texture2DHandle, TextureHandle } from "./Texture";
 
 /** @internal */
 interface ClipPlaneSets {

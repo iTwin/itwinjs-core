@@ -6,13 +6,11 @@
  * @module Icon
  */
 
-import * as React from "react";
-import classnames from "classnames";
-
-import { CommonProps } from "../utils/Props";
-
 import "./WebFontIcon.scss";
 import "@bentley/icons-generic-webfont/dist/bentley-icons-generic-webfont.css";
+import classnames from "classnames";
+import * as React from "react";
+import { CommonProps } from "../utils/Props";
 
 /** Properties for the [[WebFontIcon]] React component
  * @public

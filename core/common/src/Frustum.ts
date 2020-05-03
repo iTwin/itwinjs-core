@@ -6,7 +6,9 @@
  * @module Views
  */
 
-import { AxisOrder, Vector3d, Point3d, LowAndHighXYZ, LowAndHighXY, Range3d, Transform, Geometry, Map4d, ConvexClipPlaneSet, ClipPlane, XYAndZ, Matrix3d } from "@bentley/geometry-core";
+import {
+  AxisOrder, ClipPlane, ConvexClipPlaneSet, Geometry, LowAndHighXY, LowAndHighXYZ, Map4d, Matrix3d, Point3d, Range3d, Transform, Vector3d, XYAndZ,
+} from "@bentley/geometry-core";
 
 /** The 8 corners of the [Normalized Plane Coordinate]($docs/learning/glossary.md#npc) cube.
  * @public

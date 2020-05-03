@@ -6,10 +6,10 @@
  * @module Toggle
  */
 
-import * as React from "react";
-import classnames from "classnames";
-import { ToggleProps, Toggle } from "./Toggle";
 import "./LabeledToggle.scss";
+import classnames from "classnames";
+import * as React from "react";
+import { Toggle, ToggleProps } from "./Toggle";
 
 /** Properties for [[LabeledToggle]]
  * @public

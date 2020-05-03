@@ -14,13 +14,12 @@ type int32 = number;
 type float32 = number;
 type float64 = number;
 
+import { ASystem } from "../../system/runtime/ASystem";
+import { Strings } from "../../system/runtime/Strings";
+import { Coordinate } from "../geom/Coordinate";
 import { Ellipsoid } from "./Ellipsoid";
 import { OperationMethod } from "./OperationMethod";
 import { PrimeMeridian } from "./PrimeMeridian";
-
-import { Coordinate } from "../geom/Coordinate";
-import { ASystem } from "../../system/runtime/ASystem";
-import { Strings } from "../../system/runtime/Strings";
 
 /**
  * Class Datum defines the parameters of a Datum.

@@ -7,14 +7,14 @@
  */
 
 import * as React from "react";
-import { Orientation } from "@bentley/ui-core";
 import { PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
-import { PrimitivePropertyValueRenderer } from "./renderers/value/PrimitivePropertyValueRenderer";
+import { Orientation } from "@bentley/ui-core";
 import { ArrayPropertyValueRenderer } from "./renderers/value/ArrayPropertyValueRenderer";
-import { StructPropertyValueRenderer } from "./renderers/value/StructPropertyValueRenderer";
-import { NavigationPropertyValueRenderer } from "./renderers/value/NavigationPropertyValueRenderer";
 import { DoublePropertyValueRenderer } from "./renderers/value/DoublePropertyValueRenderer";
 import { MergedPropertyValueRenderer } from "./renderers/value/MergedPropertyValueRenderer";
+import { NavigationPropertyValueRenderer } from "./renderers/value/NavigationPropertyValueRenderer";
+import { PrimitivePropertyValueRenderer } from "./renderers/value/PrimitivePropertyValueRenderer";
+import { StructPropertyValueRenderer } from "./renderers/value/StructPropertyValueRenderer";
 
 /** Types of property containers
  * @public

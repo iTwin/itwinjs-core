@@ -14,24 +14,23 @@ type int32 = number;
 type float32 = number;
 type float64 = number;
 
-import { Block } from "./Block";
-import { FrameData } from "./FrameData";
-import { Level } from "./Level";
-import { ViewTree } from "./ViewTree";
-
 import { Bounds } from "../../spatial/geom/Bounds";
 import { Transform } from "../../spatial/geom/Transform";
+import { AList } from "../../system/collection/AList";
+import { StringMap } from "../../system/collection/StringMap";
+import { ALong } from "../../system/runtime/ALong";
+import { ASystem } from "../../system/runtime/ASystem";
+import { Message } from "../../system/runtime/Message";
+import { ContentLoader } from "../../system/storage/ContentLoader";
 import { BlockIndex } from "../model/BlockIndex";
 import { Grid } from "../model/Grid";
 import { PointCloudReader } from "../model/PointCloudReader";
 import { PointData } from "../model/PointData";
 import { TileIndex } from "../model/TileIndex";
-import { StringMap } from "../../system/collection/StringMap";
-import { AList } from "../../system/collection/AList";
-import { ALong } from "../../system/runtime/ALong";
-import { ASystem } from "../../system/runtime/ASystem";
-import { Message } from "../../system/runtime/Message";
-import { ContentLoader } from "../../system/storage/ContentLoader";
+import { Block } from "./Block";
+import { FrameData } from "./FrameData";
+import { Level } from "./Level";
+import { ViewTree } from "./ViewTree";
 
 /**
  * Class DataManager manages the (shared) data model part of the rendering in multiple layers (see the CLOUD-461 issue).

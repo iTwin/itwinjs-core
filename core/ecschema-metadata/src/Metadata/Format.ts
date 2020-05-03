@@ -3,19 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { FormatProps } from "../Deserialization/JsonProps";
+import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
+import { SchemaItemType } from "../ECObjects";
+import { ECObjectsError, ECObjectsStatus } from "../Exception";
+import {
+  DecimalPrecision, FormatTraits, formatTraitsToArray, FormatType, formatTypeToString, FractionalPrecision, parseFormatTrait, parseFormatType,
+  parsePrecision, parseScientificType, parseShowSignOption, ScientificType, scientificTypeToString, ShowSignOption, showSignOptionToString,
+} from "../utils/FormatEnums";
 import { InvertedUnit } from "./InvertedUnit";
 import { Schema } from "./Schema";
 import { SchemaItem } from "./SchemaItem";
 import { Unit } from "./Unit";
-import { FormatProps } from "../Deserialization/JsonProps";
-import { SchemaItemType } from "../ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import {
-  DecimalPrecision, FormatTraits, formatTraitsToArray, FormatType, formatTypeToString,
-  FractionalPrecision, parseFormatTrait, parseFormatType, parsePrecision, parseScientificType,
-  parseShowSignOption, ScientificType, scientificTypeToString, ShowSignOption, showSignOptionToString,
-} from "../utils/FormatEnums";
-import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
 
 /**
  * @beta

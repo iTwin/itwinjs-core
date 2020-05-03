@@ -6,9 +6,9 @@
  * @module RpcInterface
  */
 
-import * as multiparty from "multiparty";
 import * as FormData from "form-data";
-import { HttpServerRequest, RpcSerializedValue, RpcMultipart, IModelError, BentleyStatus } from "@bentley/imodeljs-common";
+import * as multiparty from "multiparty";
+import { BentleyStatus, HttpServerRequest, IModelError, RpcMultipart, RpcSerializedValue } from "@bentley/imodeljs-common";
 
 let initialized = false;
 

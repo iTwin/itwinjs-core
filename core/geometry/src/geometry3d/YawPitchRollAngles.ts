@@ -9,9 +9,10 @@
 
 import { AngleProps, Geometry } from "../Geometry";
 import { Angle } from "./Angle";
-import { Transform } from "./Transform";
 import { Matrix3d } from "./Matrix3d";
 import { Point3d } from "./Point3dVector3d";
+import { Transform } from "./Transform";
+
 /** The properties that define [[YawPitchRollAngles]]. */
 /**
  * angle properties of a `YawPitchRoll` orientation

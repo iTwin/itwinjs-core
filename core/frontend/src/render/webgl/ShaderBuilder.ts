@@ -8,14 +8,14 @@
 
 import { assert } from "@bentley/bentleyjs-core";
 import { ClippingType } from "../RenderClipVolume";
-import { ShaderProgram, CompileStatus } from "./ShaderProgram";
+import { AttributeDetails } from "./AttributeMap";
+import { addClipping } from "./glsl/Clipping";
+import { addInstancedModelMatrixRTC } from "./glsl/Instancing";
+import { volClassOpaqueColor } from "./glsl/PlanarClassification";
+import { addPosition, earlyVertexDiscard, lateVertexDiscard, vertexDiscard } from "./glsl/Vertex";
+import { CompileStatus, ShaderProgram } from "./ShaderProgram";
 import { System } from "./System";
 import { ClipDef } from "./TechniqueFlags";
-import { vertexDiscard, earlyVertexDiscard, lateVertexDiscard, addPosition } from "./glsl/Vertex";
-import { addInstancedModelMatrixRTC } from "./glsl/Instancing";
-import { addClipping } from "./glsl/Clipping";
-import { AttributeDetails } from "./AttributeMap";
-import { volClassOpaqueColor } from "./glsl/PlanarClassification";
 
 // tslint:disable:no-const-enum
 

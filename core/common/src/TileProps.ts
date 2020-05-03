@@ -6,7 +6,7 @@
  * @module Tile
  */
 
-import { TransformProps, Range3dProps } from "@bentley/geometry-core";
+import { Range3dProps, TransformProps } from "@bentley/geometry-core";
 
 /** Wire format describing an [IModelTile]($frontend)
  * @internal

@@ -2,15 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-import classnames from "classnames";
-import { Dialog, Select, Input, Button, ButtonType, Popup } from "@bentley/ui-core";
-import { SyncPropertiesChangeEventArgs, RelativePosition } from "@bentley/ui-abstract";
-import { ModelessDialogManager } from "@bentley/ui-framework";
-import { IotUiProvider } from "./IotUiProvider";
-import { AnimationTypeName } from "../IoTDefinitions";
-
 import "./IotSettingsDialog.scss";
+import classnames from "classnames";
+import * as React from "react";
+import { RelativePosition, SyncPropertiesChangeEventArgs } from "@bentley/ui-abstract";
+import { Button, ButtonType, Dialog, Input, Popup, Select } from "@bentley/ui-core";
+import { ModelessDialogManager } from "@bentley/ui-framework";
+import { AnimationTypeName } from "../IoTDefinitions";
+import { IotUiProvider } from "./IotUiProvider";
 
 /** Props for the [[IotSettingsDialog]] component */
 interface IotSettingsDialogProps {

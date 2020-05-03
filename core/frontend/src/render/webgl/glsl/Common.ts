@@ -6,13 +6,13 @@
  * @module WebGL
  */
 
-import { addModelViewMatrix } from "./Vertex";
-import { ShaderBuilder, ProgramBuilder, VariableType, ShaderType } from "../ShaderBuilder";
-import { UniformHandle } from "../Handle";
+import { RenderType } from "@bentley/webgl-compatibility";
 import { DrawParams } from "../DrawCommand";
+import { UniformHandle } from "../Handle";
+import { ProgramBuilder, ShaderBuilder, ShaderType, VariableType } from "../ShaderBuilder";
 import { ShaderFlags } from "../ShaderProgram";
 import { System } from "../System";
-import { RenderType } from "@bentley/webgl-compatibility";
+import { addModelViewMatrix } from "./Vertex";
 
 const chooseFloatWithBitFlag = `
 float chooseFloatWithBitFlag(float f1, float f2, float flags, float n) { return nthBitSet(flags, n) ? f2 : f1; }

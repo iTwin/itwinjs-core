@@ -2,19 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-import { mount } from "enzyme";
 import { expect } from "chai";
-
+import { mount } from "enzyme";
+import * as React from "react";
 import { ToolAssistance } from "@bentley/imodeljs-frontend";
 import { RelativePosition } from "@bentley/ui-abstract";
 import { Point } from "@bentley/ui-core";
-
-import { CursorPopup } from "../../../ui-framework/cursor/cursorpopup/CursorPopup";
-import { CursorPrompt } from "../../../ui-framework/cursor/cursorprompt/CursorPrompt";
 import { CursorInformation } from "../../../ui-framework/cursor/CursorInformation";
-import { CursorPopupRenderer, CursorPopupManager } from "../../../ui-framework/cursor/cursorpopup/CursorPopupManager";
-
+import { CursorPopup } from "../../../ui-framework/cursor/cursorpopup/CursorPopup";
+import { CursorPopupManager, CursorPopupRenderer } from "../../../ui-framework/cursor/cursorpopup/CursorPopupManager";
+import { CursorPrompt } from "../../../ui-framework/cursor/cursorprompt/CursorPrompt";
 import TestUtils from "../../TestUtils";
 
 describe("CursorPrompt", () => {

@@ -7,9 +7,9 @@
  */
 
 import { GroupItemDef } from "../toolbar/GroupItem";
-import { ToolItemDef } from "./ToolItemDef";
-import { CommandItemDef } from "./CommandItemDef";
 import { ActionButtonItemDef } from "./ActionButtonItemDef";
+import { CommandItemDef } from "./CommandItemDef";
+import { ToolItemDef } from "./ToolItemDef";
 
 /** Union of all Item definitions that can be specified in a GroupItem
  * @public

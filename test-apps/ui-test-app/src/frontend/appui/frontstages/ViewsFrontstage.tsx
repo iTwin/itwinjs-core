@@ -3,101 +3,47 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-
 import { BeDuration } from "@bentley/bentleyjs-core";
-
 import {
-  IModelConnection,
-  IModelApp,
-  ActivityMessageDetails,
-  ActivityMessageEndReason,
-  NotifyMessageDetails,
-  OutputMessagePriority,
-  OutputMessageType,
+  ActivityMessageDetails, ActivityMessageEndReason, IModelApp, IModelConnection, NotifyMessageDetails, OutputMessagePriority, OutputMessageType,
   ViewState,
 } from "@bentley/imodeljs-frontend";
-
-import {
-  BadgeType, RelativePosition, ToolbarItemUtilities,
-  CommonToolbarItem, StagePanelLocation, ConditionalBooleanValue,
-} from "@bentley/ui-abstract";
-import { ScrollView, Point } from "@bentley/ui-core";
-
 import { NodeKey } from "@bentley/presentation-common";
-
 import {
-  FrontstageProvider,
-  ZoneState,
-  ContentLayoutDef,
-  ContentLayoutProps,
-  ContentGroup,
-  ContentProps,
-  ModalDialogManager,
-  IModelConnectedViewSelector,
-  ModelSelectorWidgetControl,
-  Frontstage,
-  Zone,
-  Widget,
-  GroupItemDef,
-  CoreTools,
-  SyncUiEventId,
-  WidgetState,
-  ContentViewManager,
-  StagePanel,
-  FrontstageManager,
-  CommandItemDef,
-  ModelessDialogManager,
-  UiFramework,
-  WIDGET_OPACITY_DEFAULT,
-  ContentLayoutManager,
-  SavedViewLayout,
-  SavedViewLayoutProps,
-  CustomItemDef,
-  CursorInformation,
-  CursorUpdatedEventArgs,
-  CursorPopupManager,
-  CursorPopupContent,
-  VisibilityWidget,
-  VisibilityComponentHierarchy,
-  ZoneLocation,
-  StagePanelHeader,
-  StagePanelState,
-  BasicToolWidget,
-  BasicNavigationWidget,
-  ToolbarHelper,
-  ModelsTreeNodeType,
-  MessageManager,
-  ConfigurableUiManager,
+  BadgeType, CommonToolbarItem, ConditionalBooleanValue, RelativePosition, StagePanelLocation, ToolbarItemUtilities,
+} from "@bentley/ui-abstract";
+import { SelectionMode } from "@bentley/ui-components";
+import { Point, ScrollView } from "@bentley/ui-core";
+import {
+  BasicNavigationWidget, BasicToolWidget, CommandItemDef, ConfigurableUiManager, ContentGroup, ContentLayoutDef, ContentLayoutManager,
+  ContentLayoutProps, ContentProps, ContentViewManager, CoreTools, CursorInformation, CursorPopupContent, CursorPopupManager, CursorUpdatedEventArgs,
+  CustomItemDef, Frontstage, FrontstageManager, FrontstageProvider, GroupItemDef, IModelConnectedViewSelector, MessageManager, ModalDialogManager,
+  ModelessDialogManager, ModelSelectorWidgetControl, ModelsTreeNodeType, SavedViewLayout, SavedViewLayoutProps, StagePanel, StagePanelHeader,
+  StagePanelState, SyncUiEventId, ToolbarHelper, UiFramework, VisibilityComponentHierarchy, VisibilityWidget, Widget, WIDGET_OPACITY_DEFAULT,
+  WidgetState, Zone, ZoneLocation, ZoneState,
 } from "@bentley/ui-framework";
-
-import { AppUi } from "../AppUi";
-import { TestRadialMenu } from "../dialogs/TestRadialMenu";
-import { CalculatorDialog } from "../dialogs/CalculatorDialog";
-import { AppTools } from "../../tools/ToolSpecifications";
-import { ViewportDialog } from "../dialogs/ViewportDialog";
-import { SpinnerTestDialog } from "../dialogs/SpinnerTestDialog";
-
 import { SampleAppIModelApp, SampleAppUiActionId } from "../../../frontend/index";
-
+// SVG Support - SvgPath or SvgSprite
+// import { SvgPath } from "@bentley/ui-core";
+import { AccuDrawPopupTools } from "../../tools/AccuDrawPopupTools";
+import { AppTools } from "../../tools/ToolSpecifications";
+import { AppUi } from "../AppUi";
 // cSpell:Ignore contentviews statusbars
 import { IModelViewportControl } from "../contentviews/IModelViewport";
+import { CalculatorDialog } from "../dialogs/CalculatorDialog";
+import { SpinnerTestDialog } from "../dialogs/SpinnerTestDialog";
+import { TestRadialMenu } from "../dialogs/TestRadialMenu";
+import { ViewportDialog } from "../dialogs/ViewportDialog";
+import { ExampleForm } from "../forms/ExampleForm";
 import { AppStatusBarWidgetControl } from "../statusbars/AppStatusBar";
-import { VerticalPropertyGridWidgetControl } from "../widgets/PropertyGridDemoWidget";
 import { NavigationTreeWidgetControl } from "../widgets/NavigationTreeWidget";
-import { VisibilityTreeWidgetControl } from "../widgets/VisibilityTreeWidget";
-
+import { VerticalPropertyGridWidgetControl } from "../widgets/PropertyGridDemoWidget";
 import { UnifiedSelectionPropertyGridWidgetControl } from "../widgets/UnifiedSelectionPropertyGridWidget";
 import { UnifiedSelectionTableWidgetControl } from "../widgets/UnifiedSelectionTableWidget";
 import { ViewportWidget } from "../widgets/ViewportWidget";
-import { NestedAnimationStage } from "./NestedAnimationStage";
-import { ExampleForm } from "../forms/ExampleForm";
-
-// SVG Support - SvgPath or SvgSprite
-// import { SvgPath } from "@bentley/ui-core";
-
-import { AccuDrawPopupTools } from "../../tools/AccuDrawPopupTools";
-import { SelectionMode } from "@bentley/ui-components";
+import { VisibilityTreeWidgetControl } from "../widgets/VisibilityTreeWidget";
 import { VisibilityWidgetControl } from "../widgets/VisibilityWidget";
+import { NestedAnimationStage } from "./NestedAnimationStage";
 
 export class ViewsFrontstage extends FrontstageProvider {
   private _additionalTools = new AdditionalTools();

@@ -6,8 +6,8 @@
  * @module CloudStorage
  */
 
-import { IModelRpcProps } from "./IModel";
 import { CloudStorageCache, CloudStorageContainerDescriptor, CloudStorageContainerUrl, CloudStorageProvider } from "./CloudStorage";
+import { IModelRpcProps } from "./IModel";
 import { IModelTileRpcInterface } from "./rpc/IModelTileRpcInterface";
 
 /** @beta */

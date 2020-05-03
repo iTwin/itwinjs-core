@@ -8,11 +8,11 @@
 
 import { StagePanelLocation } from "@bentley/ui-abstract";
 import { UiEvent } from "@bentley/ui-core";
-import { StagePanelProps, StagePanelZonesProps, StagePanelZoneProps } from "./StagePanel";
-import { WidgetHost } from "../widgets/WidgetHost";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
-import { WidgetProps } from "../widgets/WidgetProps";
 import { WidgetDef } from "../widgets/WidgetDef";
+import { WidgetHost } from "../widgets/WidgetHost";
+import { WidgetProps } from "../widgets/WidgetProps";
+import { StagePanelProps, StagePanelZoneProps, StagePanelZonesProps } from "./StagePanel";
 
 /** Enum for StagePanel state.
  * @alpha

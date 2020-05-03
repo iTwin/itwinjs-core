@@ -2,16 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as sinon from "sinon";
 import { expect } from "chai";
-
+import * as sinon from "sinon";
 import {
-  isActionItem,
-  isStageLauncher,
-  BackstageItemsManager,
-  BackstageItemUtilities,
-  ConditionalBooleanValue,
-  ConditionalStringValue,
+  BackstageItemsManager, BackstageItemUtilities, ConditionalBooleanValue, ConditionalStringValue, isActionItem, isStageLauncher,
 } from "../../ui-abstract";
 
 // tslint:disable-next-line: completed-docs

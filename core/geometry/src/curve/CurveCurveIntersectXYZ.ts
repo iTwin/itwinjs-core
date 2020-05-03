@@ -7,13 +7,14 @@
  * @module Curve
  */
 
-import { NullGeometryHandler } from "../geometry3d/GeometryHandler";
-import { GeometryQuery } from "./GeometryQuery";
-import { CurvePrimitive } from "./CurvePrimitive";
-import { CurveLocationDetail, CurveIntervalRole } from "./CurveLocationDetail";
+import { BSplineCurve3d, BSplineCurve3dBase } from "../bspline/BSplineCurve";
+// import { BezierCurveBase } from "../bspline/BezierCurveBase";
+// import { BezierCurve3dH } from "../bspline/BezierCurve3dH";
+// import { UnivariateBezier } from "../numerics/BezierPolynomials";
+import { BSplineCurve3dH } from "../bspline/BSplineCurve3dH";
 import { Geometry } from "../Geometry";
-import { LineSegment3d } from "./LineSegment3d";
-import { LineString3d } from "./LineString3d";
+import { NullGeometryHandler } from "../geometry3d/GeometryHandler";
+import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
 // import { Arc3d } from "./Arc3d";
 import { Vector2d } from "../geometry3d/Point2dVector2d";
 // import { XYAndZ } from "../geometry3d/XYZProps";
@@ -24,14 +25,14 @@ import { SmallSystem, TrigPolynomial } from "../numerics/Polynomials";
 // import { Transform } from "../geometry3d/Transform";
 // import { Matrix3d } from "../geometry3d/Matrix3d";
 import { Arc3d } from "./Arc3d";
-import { BSplineCurve3d, BSplineCurve3dBase } from "../bspline/BSplineCurve";
-// import { BezierCurveBase } from "../bspline/BezierCurveBase";
-// import { BezierCurve3dH } from "../bspline/BezierCurve3dH";
-// import { UnivariateBezier } from "../numerics/BezierPolynomials";
-import { BSplineCurve3dH } from "../bspline/BSplineCurve3dH";
 // import { Range3d } from "../geometry3d/Range";
 import { CurveLocationDetailArrayPair } from "./CurveCurveIntersectXY";
-import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
+import { CurveIntervalRole, CurveLocationDetail } from "./CurveLocationDetail";
+import { CurvePrimitive } from "./CurvePrimitive";
+import { GeometryQuery } from "./GeometryQuery";
+import { LineSegment3d } from "./LineSegment3d";
+import { LineString3d } from "./LineString3d";
+
 // cspell:word XYRR
 /**
  * * Handler class for XYZ intersections.

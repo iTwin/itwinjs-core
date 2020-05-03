@@ -6,14 +6,15 @@
  * @module RpcInterface
  */
 
-import { RpcProtocol, SerializedRpcRequest, RpcRequestFulfillment } from "../core/RpcProtocol";
-import { MobileRpcConfiguration } from "./MobileRpcManager";
-import { MobileRpcRequest } from "./MobileRpcRequest";
 import { BentleyStatus } from "@bentley/bentleyjs-core";
 import { IModelError } from "../../IModelError";
-import { RpcSerializedValue } from "../core/RpcMarshaling";
 import { RpcEndpoint } from "../core/RpcConstants";
+import { RpcSerializedValue } from "../core/RpcMarshaling";
+import { RpcProtocol, RpcRequestFulfillment, SerializedRpcRequest } from "../core/RpcProtocol";
 import { RpcRequest } from "../core/RpcRequest";
+import { MobileRpcConfiguration } from "./MobileRpcManager";
+import { MobileRpcRequest } from "./MobileRpcRequest";
+
 /** @internal */
 declare var bentley: any;
 

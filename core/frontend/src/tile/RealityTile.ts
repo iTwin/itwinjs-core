@@ -6,41 +6,15 @@
  * @module Tiles
  */
 
-import {
-  BeTimePoint,
-} from "@bentley/bentleyjs-core";
-
-import {
-  BoundingSphere,
-  ColorDef,
-  ElementAlignedBox3d,
-  Frustum,
-  FrustumPlanes,
-} from "@bentley/imodeljs-common";
-
-import {
-  ClipPlaneContainment,
-  ClipMaskXYZRangePlanes,
-  ClipShape,
-  ClipVector,
-  Transform,
-} from "@bentley/geometry-core";
-
+import { BeTimePoint } from "@bentley/bentleyjs-core";
+import { ClipMaskXYZRangePlanes, ClipPlaneContainment, ClipShape, ClipVector, Transform } from "@bentley/geometry-core";
+import { BoundingSphere, ColorDef, ElementAlignedBox3d, Frustum, FrustumPlanes } from "@bentley/imodeljs-common";
 import { GraphicBuilder } from "../render/GraphicBuilder";
 import { RenderSystem } from "../render/RenderSystem";
 import { ViewingSpace } from "../ViewingSpace";
 import { Viewport } from "../Viewport";
 import {
-  RealityTileTree,
-  Tile,
-  TileContent,
-  TileDrawArgs,
-  TileGraphicType,
-  TileParams,
-  TileRequest,
-  TileTreeLoadStatus,
-  TileVisibility,
-  TraversalDetails,
+  RealityTileTree, Tile, TileContent, TileDrawArgs, TileGraphicType, TileParams, TileRequest, TileTreeLoadStatus, TileVisibility, TraversalDetails,
   TraversalSelectionContext,
 } from "./internal";
 

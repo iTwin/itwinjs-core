@@ -2,19 +2,18 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { shallow, mount } from "enzyme";
-import { renderHook, act } from "@testing-library/react-hooks";
 import { UiSettingsResult, UiSettingsStatus } from "@bentley/ui-core";
-import { PANEL_INITIALIZE, createNineZoneState } from "@bentley/ui-ninezone";
+import { createNineZoneState, PANEL_INITIALIZE } from "@bentley/ui-ninezone";
+import { act, renderHook } from "@testing-library/react-hooks";
 import {
-  addWidgets, FrontstageManager, FrontstageDef, FrontstageProvider, WidgetPanelsFrontstage, ZoneDef, useFrontstageDefNineZone,
-  initializeFrontstageState, StagePanelDef, WidgetDef, WidgetState, addPanelWidgets, StagePanelZonesDef, StagePanelZoneDef, getWidgetId,
-  UiSettingsProvider,
+  addPanelWidgets, addWidgets, FrontstageDef, FrontstageManager, FrontstageProvider, getWidgetId, initializeFrontstageState, StagePanelDef,
+  StagePanelZoneDef, StagePanelZonesDef, UiSettingsProvider, useFrontstageDefNineZone, WidgetDef, WidgetPanelsFrontstage, WidgetState, ZoneDef,
 } from "../../ui-framework";
-import { useActiveModalFrontstageInfo, ModalFrontstageComposer } from "../../ui-framework/widget-panels/ModalFrontstageComposer";
+import { ModalFrontstageComposer, useActiveModalFrontstageInfo } from "../../ui-framework/widget-panels/ModalFrontstageComposer";
 import TestUtils, { storageMock, UiSettingsStub } from "../TestUtils";
 
 describe("WidgetPanelsFrontstage", () => {

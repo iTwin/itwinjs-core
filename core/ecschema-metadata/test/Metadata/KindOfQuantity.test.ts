@@ -4,18 +4,17 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
-import { TestSchemaLocater } from "../TestUtils/FormatTestHelper";
-import { createEmptyXmlDocument } from "../TestUtils/SerializationHelper";
-
+import { SchemaContext } from "../../src/Context";
 import { ECObjectsError } from "../../src/Exception";
+import { Format } from "../../src/Metadata/Format";
 import { KindOfQuantity } from "../../src/Metadata/KindOfQuantity";
 import { OverrideFormat } from "../../src/Metadata/OverrideFormat";
 import { Schema } from "../../src/Metadata/Schema";
-import { Format } from "../../src/Metadata/Format";
-import { SchemaContext } from "../../src/Context";
-import { DecimalPrecision } from "../../src/utils/FormatEnums";
 import { Unit } from "../../src/Metadata/Unit";
+import { DecimalPrecision } from "../../src/utils/FormatEnums";
+import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
+import { TestSchemaLocater } from "../TestUtils/FormatTestHelper";
+import { createEmptyXmlDocument } from "../TestUtils/SerializationHelper";
 
 function createSchemaJson(koq: any) {
   return createSchemaJsonWithItems({

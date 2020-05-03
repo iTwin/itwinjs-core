@@ -2,23 +2,23 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Checker } from "../Checker";
 import { expect } from "chai";
-import { GrowableFloat64Array } from "../../geometry3d/GrowableFloat64Array";
-import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
-import { ClusterableArray } from "../../numerics/ClusterableArray";
-import { prettyPrint } from "../testFunctions";
-import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
-import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
-import { Point2d, Vector2d } from "../../geometry3d/Point2dVector2d";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { Point3dArray } from "../../geometry3d/PointHelpers";
-import { Point3dArrayCarrier } from "../../geometry3d/Point3dArrayCarrier";
-import { Transform } from "../../geometry3d/Transform";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
-import { Sample } from "../../serialization/GeometrySamples";
 import { Angle } from "../../geometry3d/Angle";
 import { GrowableBlockedArray } from "../../geometry3d/GrowableBlockedArray";
+import { GrowableFloat64Array } from "../../geometry3d/GrowableFloat64Array";
+import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
+import { Matrix3d } from "../../geometry3d/Matrix3d";
+import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
+import { Point2d, Vector2d } from "../../geometry3d/Point2dVector2d";
+import { Point3dArrayCarrier } from "../../geometry3d/Point3dArrayCarrier";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
+import { Point3dArray } from "../../geometry3d/PointHelpers";
+import { Transform } from "../../geometry3d/Transform";
+import { ClusterableArray } from "../../numerics/ClusterableArray";
+import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
+import { Sample } from "../../serialization/GeometrySamples";
+import { Checker } from "../Checker";
+import { prettyPrint } from "../testFunctions";
 
 /* tslint:disable: no-console */
 /** point whose coordinates are a function of i only. */

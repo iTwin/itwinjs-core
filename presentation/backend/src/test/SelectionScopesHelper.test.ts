@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import * as moq from "typemoq";
 import * as faker from "faker";
-import { createRandomECInstanceKey, createRandomId } from "@bentley/presentation-common/lib/test/_helpers/random";
-import { Id64, Id64String, DbResult } from "@bentley/bentleyjs-core";
-import { EntityMetaData, ElementProps, ModelProps, IModelError } from "@bentley/imodeljs-common";
-import { IModelDb, DrawingGraphic, Element, ECSqlStatement, ECSqlValue } from "@bentley/imodeljs-backend";
+import * as moq from "typemoq";
+import { DbResult, Id64, Id64String } from "@bentley/bentleyjs-core";
+import { DrawingGraphic, ECSqlStatement, ECSqlValue, Element, IModelDb } from "@bentley/imodeljs-backend";
+import { ElementProps, EntityMetaData, IModelError, ModelProps } from "@bentley/imodeljs-common";
 import { InstanceKey } from "@bentley/presentation-common";
+import { createRandomECInstanceKey, createRandomId } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { SelectionScopesHelper } from "../presentation-backend/SelectionScopesHelper";
 
 describe("SelectionScopesHelper", () => {

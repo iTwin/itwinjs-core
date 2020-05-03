@@ -16,18 +16,18 @@ type float64 = number;
 
 
 import { Bounds } from "../../spatial/geom/Bounds";
-import { AttributeValue } from "./AttributeValue";
-import { BlockIndex } from "./BlockIndex";
-import { CloudPoint } from "./CloudPoint";
-import { PointData } from "./PointData";
-import { ReadRequest } from "./ReadRequest";
-import { Grid } from "./Grid";
-import { PointAttribute } from "./PointAttribute";
-import { TileIndex } from "./TileIndex";
 import { AList } from "../../system/collection/AList";
 import { ALong } from "../../system/runtime/ALong";
 import { ContentLoader } from "../../system/storage/ContentLoader";
 import { FileStorage } from "../../system/storage/FileStorage";
+import { AttributeValue } from "./AttributeValue";
+import { BlockIndex } from "./BlockIndex";
+import { CloudPoint } from "./CloudPoint";
+import { Grid } from "./Grid";
+import { PointAttribute } from "./PointAttribute";
+import { PointData } from "./PointData";
+import { ReadRequest } from "./ReadRequest";
+import { TileIndex } from "./TileIndex";
 
 /**
  * Abstract class PointCloudReader allows reading of blocks, tiles and points from pointcloud files using the two-step content loader technique.

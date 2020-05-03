@@ -3,33 +3,31 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Checker } from "../Checker";
-import { LineString3d } from "../../curve/LineString3d";
+import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
+import { LineString3d } from "../../curve/LineString3d";
+import { Loop } from "../../curve/Loop";
+import { StrokeOptions } from "../../curve/StrokeOptions";
+import { Geometry } from "../../Geometry";
+import { Angle } from "../../geometry3d/Angle";
+import { AngleSweep } from "../../geometry3d/AngleSweep";
+import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
+import { PolygonOps } from "../../geometry3d/PolygonOps";
 import { Range3d } from "../../geometry3d/Range";
 import { Transform } from "../../geometry3d/Transform";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
-
+import { Sample } from "../../serialization/GeometrySamples";
+import { IModelJson } from "../../serialization/IModelJsonSchema";
+import { SweepContour } from "../../solid/SweepContour";
+import { HalfEdgeGraph, HalfEdgeMask } from "../../topology/Graph";
+import { HalfEdgeGraphSearch } from "../../topology/HalfEdgeGraphSearch";
 import { HalfEdgeGraphMerge, HalfEdgeGraphOps } from "../../topology/Merging";
 import { Triangulator } from "../../topology/Triangulation";
-
-import { Angle } from "../../geometry3d/Angle";
-import { Sample } from "../../serialization/GeometrySamples";
+import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { Loop } from "../../curve/Loop";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { Geometry } from "../../Geometry";
-import { AngleSweep } from "../../geometry3d/AngleSweep";
-import { GraphChecker } from "./Graph.test";
-import { HalfEdgeMask, HalfEdgeGraph } from "../../topology/Graph";
-import { HalfEdgeGraphSearch } from "../../topology/HalfEdgeGraphSearch";
-import { PolygonOps } from "../../geometry3d/PolygonOps";
-import { StrokeOptions } from "../../curve/StrokeOptions";
-import { SweepContour } from "../../solid/SweepContour";
 import { prettyPrint } from "../testFunctions";
-import { IModelJson } from "../../serialization/IModelJsonSchema";
+import { GraphChecker } from "./Graph.test";
 
 function rotateArray(data: Point3d[], index0: number) {
   const out = [];

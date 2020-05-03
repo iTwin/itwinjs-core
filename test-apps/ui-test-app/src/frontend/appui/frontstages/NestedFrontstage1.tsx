@@ -3,30 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-
 import {
-  GroupButton,
-  ToolButton,
-  ToolWidget,
-  ZoneState,
-  WidgetState,
-  NavigationWidget,
-  Frontstage,
-  Zone,
-  Widget,
-  FrontstageProvider,
-  FrontstageProps,
-  ZoneLocation,
-  ActionItemButton,
-  NestedFrontstage,
-  CoreTools,
+  ActionItemButton, CoreTools, Frontstage, FrontstageProps, FrontstageProvider, GroupButton, NavigationWidget, NestedFrontstage, ToolButton,
+  ToolWidget, Widget, WidgetState, Zone, ZoneLocation, ZoneState,
 } from "@bentley/ui-framework";
-
-import { SmallStatusBarWidgetControl } from "../statusbars/SmallStatusBar";
-import { VerticalPropertyGridWidgetControl, HorizontalPropertyGridWidgetControl } from "../widgets/PropertyGridDemoWidget";
-
-import { Toolbar, Direction } from "@bentley/ui-ninezone";
+import { Direction, Toolbar } from "@bentley/ui-ninezone";
 import { AppTools } from "../../tools/ToolSpecifications";
+import { SmallStatusBarWidgetControl } from "../statusbars/SmallStatusBar";
+import { HorizontalPropertyGridWidgetControl, VerticalPropertyGridWidgetControl } from "../widgets/PropertyGridDemoWidget";
 
 export class NestedFrontstage1 extends FrontstageProvider {
 

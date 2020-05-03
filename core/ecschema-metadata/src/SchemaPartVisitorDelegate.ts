@@ -3,26 +3,26 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { AnyECType, AnyClass } from "./Interfaces";
-import { SchemaItem } from "./Metadata/SchemaItem";
-import { Schema } from "./Metadata/Schema";
 import { SchemaItemType } from "./ECObjects";
-import { Constant } from "./Metadata/Constant";
-import { CustomAttributeClass } from "./Metadata/CustomAttributeClass";
+import { AnyClass, AnyECType } from "./Interfaces";
 import { ECClass, StructClass } from "./Metadata/Class";
+import { Constant } from "./Metadata/Constant";
+import { CustomAttributeContainerProps } from "./Metadata/CustomAttribute";
+import { CustomAttributeClass } from "./Metadata/CustomAttributeClass";
 import { EntityClass } from "./Metadata/EntityClass";
 import { Enumeration } from "./Metadata/Enumeration";
 import { Format } from "./Metadata/Format";
-import { Mixin } from "./Metadata/Mixin";
-import { Unit } from "./Metadata/Unit";
 import { InvertedUnit } from "./Metadata/InvertedUnit";
 import { KindOfQuantity } from "./Metadata/KindOfQuantity";
+import { Mixin } from "./Metadata/Mixin";
 import { Phenomenon } from "./Metadata/Phenomenon";
+import { AnyProperty, Property } from "./Metadata/Property";
 import { PropertyCategory } from "./Metadata/PropertyCategory";
 import { RelationshipClass, RelationshipConstraint } from "./Metadata/RelationshipClass";
+import { Schema } from "./Metadata/Schema";
+import { SchemaItem } from "./Metadata/SchemaItem";
+import { Unit } from "./Metadata/Unit";
 import { UnitSystem } from "./Metadata/UnitSystem";
-import { CustomAttributeContainerProps } from "./Metadata/CustomAttribute";
-import { Property, AnyProperty } from "./Metadata/Property";
 
 /**
  * Interface to allow schema traversal/deserialization workflows to visit

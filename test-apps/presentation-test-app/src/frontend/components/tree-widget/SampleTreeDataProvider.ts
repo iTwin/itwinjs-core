@@ -5,7 +5,7 @@
 import { useState } from "react";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { IPresentationTreeDataProvider, PresentationTreeDataProvider } from "@bentley/presentation-components";
-import { TreeNodeItem, PageOptions } from "@bentley/ui-components";
+import { PageOptions, TreeNodeItem } from "@bentley/ui-components";
 import { useEffectSkipFirst } from "@bentley/ui-core";
 
 export const PAGING_SIZE = 10;

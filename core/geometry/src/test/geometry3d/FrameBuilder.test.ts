@@ -2,26 +2,27 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { Checker } from "../Checker";
-import { FrameBuilder } from "../../geometry3d/FrameBuilder";
+import { expect } from "chai";
+import { BSplineCurve3d } from "../../bspline/BSplineCurve";
+import { Arc3d } from "../../curve/Arc3d";
+import { AnyCurve } from "../../curve/CurveChain";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { LineSegment3d } from "../../curve/LineSegment3d";
+import { LineString3d } from "../../curve/LineString3d";
+import { Loop } from "../../curve/Loop";
+import { RegionOps } from "../../curve/RegionOps";
 import { AxisScaleSelect, Geometry } from "../../Geometry";
-import { MatrixTests } from "./Point3dVector3d.test";
+import { FrameBuilder } from "../../geometry3d/FrameBuilder";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Range3d } from "../../geometry3d/Range";
 import { Transform } from "../../geometry3d/Transform";
-import { expect } from "chai";
-import { Loop } from "../../curve/Loop";
-import { Arc3d } from "../../curve/Arc3d";
-import { LineString3d } from "../../curve/LineString3d";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { AnyCurve } from "../../curve/CurveChain";
-import { RegionOps } from "../../curve/RegionOps";
-import { IModelJson } from "../../serialization/IModelJsonSchema";
-import { prettyPrint } from "../testFunctions";
 import { MomentData } from "../../geometry4d/MomentData";
+import { IModelJson } from "../../serialization/IModelJsonSchema";
+import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { BSplineCurve3d } from "../../bspline/BSplineCurve";
+import { prettyPrint } from "../testFunctions";
+import { MatrixTests } from "./Point3dVector3d.test";
+
 /* tslint:disable:no-console */
 describe("FrameBuilder", () => {
 

@@ -6,10 +6,10 @@
  * @module Widget
  */
 
+import "./Menu.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { CommonProps, useRefs } from "@bentley/ui-core";
-import "./Menu.scss";
 
 /** @internal */
 export interface WidgetMenuProps extends CommonProps {

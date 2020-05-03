@@ -2,9 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { Id64, Id64Array } from "@bentley/bentleyjs-core";
+import {
+  BeButtonEvent, CoreTools, EventHandled, HitDetail, IModelApp, LocateFilterStatus, LocateResponse, NotifyMessageDetails, OutputMessageAlert,
+  OutputMessagePriority, OutputMessageType,
+} from "@bentley/imodeljs-frontend";
 import { PrimitiveToolEx } from "./PrimitiveToolEx";
-import { Id64Array, Id64 } from "@bentley/bentleyjs-core";
-import { IModelApp, CoreTools, NotifyMessageDetails, OutputMessagePriority, BeButtonEvent, EventHandled, LocateResponse, HitDetail, LocateFilterStatus, OutputMessageType, OutputMessageAlert } from "@bentley/imodeljs-frontend";
 
 export class DeleteElementTool extends PrimitiveToolEx {
   public static toolId = "DeleteElement";

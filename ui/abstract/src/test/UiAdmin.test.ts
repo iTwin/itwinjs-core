@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { UiAdmin } from "../ui-abstract/UiAdmin";
 import { AbstractMenuItemProps } from "../ui-abstract/items/AbstractMenuItemProps";
 import { AbstractToolbarProps } from "../ui-abstract/items/AbstractToolbarProps";
 import { RelativePosition } from "../ui-abstract/items/RelativePosition";
 import { PropertyDescription } from "../ui-abstract/properties/Description";
+import { UiAdmin } from "../ui-abstract/UiAdmin";
 
 describe("UiAdmin", () => {
 

@@ -6,50 +6,38 @@
  * @module WebGL
  */
 
-import { FrameBuffer, DepthBuffer } from "./FrameBuffer";
-import { TextureHandle } from "./Texture";
-import { Target } from "./Target";
-import {
-  AmbientOcclusionGeometry,
-  BlurGeometry,
-  BoundaryType,
-  CachedGeometry,
-  CompositeGeometry,
-  CopyPickBufferGeometry,
-  ScreenPointsGeometry,
-  SingleTexturedViewportQuadGeometry,
-  ViewportQuadGeometry,
-  VolumeClassifierGeometry,
-} from "./CachedGeometry";
-import { Vector2d, Vector3d, Transform } from "@bentley/geometry-core";
-import { TechniqueId } from "./TechniqueId";
-import { System } from "./System";
-import { RenderType, DepthType } from "@bentley/webgl-compatibility";
+import { assert, dispose } from "@bentley/bentleyjs-core";
+import { Transform, Vector2d, Vector3d } from "@bentley/geometry-core";
+import { Feature, PackedFeatureTable, RenderMode, SpatialClassificationProps, ViewFlags } from "@bentley/imodeljs-common";
+import { DepthType, RenderType } from "@bentley/webgl-compatibility";
+import { IModelConnection } from "../../IModelConnection";
+import { SceneContext } from "../../ViewContext";
+import { ViewRect } from "../../ViewRect";
 import { Pixel } from "../Pixel";
 import { GraphicList } from "../RenderGraphic";
 import { RenderMemory } from "../RenderMemory";
-import { ViewRect } from "../../ViewRect";
-import { IModelConnection } from "../../IModelConnection";
-import { assert, dispose } from "@bentley/bentleyjs-core";
-import { GL } from "./GL";
-import {
-  DrawCommands,
-  extractFlashedVolumeClassifierCommands,
-  extractHilitedVolumeClassifierCommands,
-} from "./DrawCommand";
-import { RenderCommands } from "./RenderCommands";
-import { RenderState } from "./RenderState";
-import { CompositeFlags, RenderPass, RenderOrder, TextureUnit } from "./RenderFlags";
 import { BatchState, BranchState } from "./BranchState";
-import { Feature, ViewFlags, PackedFeatureTable, RenderMode, SpatialClassificationProps } from "@bentley/imodeljs-common";
-import { FloatRgba } from "./FloatRGBA";
+import {
+  AmbientOcclusionGeometry, BlurGeometry, BoundaryType, CachedGeometry, CompositeGeometry, CopyPickBufferGeometry, ScreenPointsGeometry,
+  SingleTexturedViewportQuadGeometry, ViewportQuadGeometry, VolumeClassifierGeometry,
+} from "./CachedGeometry";
 import { Debug } from "./Diagnostics";
+import { WebGLDisposable } from "./Disposable";
+import { DrawCommands, extractFlashedVolumeClassifierCommands, extractHilitedVolumeClassifierCommands } from "./DrawCommand";
+import { FloatRgba } from "./FloatRGBA";
+import { DepthBuffer, FrameBuffer } from "./FrameBuffer";
+import { GL } from "./GL";
+import { IModelFrameLifecycle } from "./IModelFrameLifecycle";
+import { Matrix4 } from "./Matrix";
+import { RenderCommands } from "./RenderCommands";
+import { CompositeFlags, RenderOrder, RenderPass, TextureUnit } from "./RenderFlags";
+import { RenderState } from "./RenderState";
 import { getDrawParams } from "./ScratchDrawParams";
 import { SolarShadowMap } from "./SolarShadowMap";
-import { SceneContext } from "../../ViewContext";
-import { WebGLDisposable } from "./Disposable";
-import { Matrix4 } from "./Matrix";
-import { IModelFrameLifecycle } from "./IModelFrameLifecycle";
+import { System } from "./System";
+import { Target } from "./Target";
+import { TechniqueId } from "./TechniqueId";
+import { TextureHandle } from "./Texture";
 
 function collectTextureStatistics(texture: TextureHandle | undefined, stats: RenderMemory.Statistics): void {
   if (undefined !== texture)

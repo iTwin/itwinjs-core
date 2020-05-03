@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
 import { shallow } from "enzyme";
-import { MessageSpan, MessageDiv } from "../../ui-framework/messages/MessageSpan";
+import * as React from "react";
 import { UnderlinedButton } from "@bentley/ui-core";
+import { MessageDiv, MessageSpan } from "../../ui-framework/messages/MessageSpan";
 
 describe("MessageSpan & MessageDiv", () => {
 

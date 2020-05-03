@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { UiItemsManager, UiItemsArbiter, BackstageItemsManager, BackstageItem, BackstageItemsChangedArgs } from "@bentley/ui-abstract";
+import { BackstageItem, BackstageItemsChangedArgs, BackstageItemsManager, UiItemsArbiter, UiItemsManager } from "@bentley/ui-abstract";
 import { useAvailableUiItemsProviders } from "../hooks/useAvailableUiItemsProviders";
 
 // cspell:ignore setxxx

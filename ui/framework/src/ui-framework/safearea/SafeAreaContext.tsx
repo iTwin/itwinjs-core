@@ -7,8 +7,8 @@
  */
 
 import * as React from "react";
-import { SafeAreaInsets } from "@bentley/ui-ninezone";
 import { Subtract } from "@bentley/presentation-common";
+import { SafeAreaInsets } from "@bentley/ui-ninezone";
 
 /**
  * Context used to manage safe area (feature used by devices with non-rectangular screens).

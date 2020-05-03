@@ -2,16 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Sample } from "../../serialization/GeometrySamples";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { Checker } from "../Checker";
 import { expect } from "chai";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
-import { Range2d } from "../../geometry3d/Range";
-import { XYPointBuckets, XYIndexGrid } from "../../polyface/multiclip/XYPointBuckets";
+import { GeometryQuery } from "../../curve/GeometryQuery";
 import { Angle } from "../../geometry3d/Angle";
+import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
+import { Range2d } from "../../geometry3d/Range";
+import { XYIndexGrid, XYPointBuckets } from "../../polyface/multiclip/XYPointBuckets";
+import { Sample } from "../../serialization/GeometrySamples";
+import { Checker } from "../Checker";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+
 /* tslint:disable:no-console */
 
 describe("XYPointBuckets", () => {

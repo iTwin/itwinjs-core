@@ -3,9 +3,9 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as sinon from "sinon";
-import { renderHook, act } from "@testing-library/react-hooks";
-import { useResizeObserver } from "../../../ui-core/utils/hooks/useResizeObserver";
+import { act, renderHook } from "@testing-library/react-hooks";
 import * as ResizeObserverModule from "../../../ui-core/utils/hooks/ResizeObserverPolyfill";
+import { useResizeObserver } from "../../../ui-core/utils/hooks/useResizeObserver";
 import { createDOMRect } from "../../Utils";
 
 describe("useResizeObserver", () => {

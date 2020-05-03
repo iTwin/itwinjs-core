@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { NativeAppStorage } from "../../NativeAppStorage";
-import { NativeAppBackend } from "../../NativeAppBackend";
-import { IModelJsFs } from "../../IModelJsFs";
 import { IModelHost } from "../../IModelHost";
+import { IModelJsFs } from "../../IModelJsFs";
+import { NativeAppBackend } from "../../NativeAppBackend";
+import { NativeAppStorage } from "../../NativeAppStorage";
 
 describe("NativeApp Storage", () => {
   before(async () => {

@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { assert } from "chai";
 import { IModelApp, IModelConnection, SnapshotConnection, StandardViewId, StandardViewTool, WindowAreaTool } from "@bentley/imodeljs-frontend";
 import { EditTextTool, LineTool, MarkupApp, SelectTool } from "@bentley/imodeljs-markup";
 import { Element, G, LinkedHTMLElement } from "@svgdotjs/svg.js";
-import { assert } from "chai";
 import { createOnScreenTestViewport, ScreenTestViewport } from "../TestViewport";
 
 describe("Markup tests", async () => {

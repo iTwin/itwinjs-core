@@ -2,23 +2,20 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Point3d } from "../../geometry3d/Point3dVector3d";
-
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { Arc3d } from "../../curve/Arc3d";
-import { Checker } from "../Checker";
 import { expect } from "chai";
-import { Sample } from "../../serialization/GeometrySamples";
-import { DeepCompare } from "../../serialization/DeepCompare";
-import { prettyPrint } from "../testFunctions";
-
-import { IModelJson } from "../../serialization/IModelJsonSchema";
 /* tslint:disable:no-console trailing-comma object-literal-key-quotes*/
-
 // Requires for grabbing json object from external file
 import * as fs from "fs";
+import { Arc3d } from "../../curve/Arc3d";
 import { CoordinateXYZ } from "../../curve/CoordinateXYZ";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { Point3d } from "../../geometry3d/Point3dVector3d";
+import { DeepCompare } from "../../serialization/DeepCompare";
+import { Sample } from "../../serialization/GeometrySamples";
+import { IModelJson } from "../../serialization/IModelJsonSchema";
+import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { prettyPrint } from "../testFunctions";
 
 // directory containing imjs files produced by native geomlibs tests:
 const iModelJsonNativeSamplesDirectory = "./src/test/iModelJsonSamples/fromNative/";

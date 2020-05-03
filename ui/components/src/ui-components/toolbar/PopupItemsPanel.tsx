@@ -6,19 +6,18 @@
  * @module Toolbar
  */
 
-import * as React from "react";
 import classnames from "classnames";
-
-import { GroupButton, ActionButton, ConditionalStringValue, ToolbarItemUtilities } from "@bentley/ui-abstract";
-import { GroupColumn } from "./groupPanel/Column";
+import * as React from "react";
+import { ActionButton, ConditionalStringValue, GroupButton, ToolbarItemUtilities } from "@bentley/ui-abstract";
 import { BadgeUtilities, IconHelper } from "@bentley/ui-core";
-import { GroupToolExpander } from "./groupPanel/tool/Expander";
-import { GroupTool } from "./groupPanel/tool/Tool";
+import { BackArrow } from "./groupPanel/BackArrow";
+import { GroupColumn } from "./groupPanel/Column";
+import { Columns } from "./groupPanel/Columns";
 import { Panel } from "./groupPanel/Panel";
 import { Title } from "./groupPanel/Title";
-import { Columns } from "./groupPanel/Columns";
+import { GroupToolExpander } from "./groupPanel/tool/Expander";
+import { GroupTool } from "./groupPanel/tool/Tool";
 import { useToolbarPopupContext } from "./PopupItem";
-import { BackArrow } from "./groupPanel/BackArrow";
 
 function getNumItemsInColumn(numTotalItems: number): number {
   if (numTotalItems <= 6)

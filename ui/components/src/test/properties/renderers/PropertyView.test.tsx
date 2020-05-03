@@ -4,12 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { mount } from "enzyme";
-import sinon from "sinon";
 import * as React from "react";
-import { Orientation, ElementSeparator } from "@bentley/ui-core";
-import TestUtils from "../../TestUtils";
+import sinon from "sinon";
 import { PropertyRecord } from "@bentley/ui-abstract";
+import { ElementSeparator, Orientation } from "@bentley/ui-core";
 import { PropertyView } from "../../../ui-components";
+import TestUtils from "../../TestUtils";
 
 describe("PropertyView", () => {
   let propertyRecord: PropertyRecord;

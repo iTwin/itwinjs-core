@@ -3,12 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import "@bentley/icons-generic-webfont/dist/bentley-icons-generic-webfont.css";
-
-import {
-  ConfigurableUiManager, FrontstageManager, WidgetState, ContentGroupProps,
-  ContentLayoutProps,
-} from "@bentley/ui-framework";
-
 /** Include application registered Controls in Webpack
  */
 import "./contentviews/CubeContent";
@@ -19,11 +13,11 @@ import "./widgets/VisibilityTreeWidget";
 import "./tooluiproviders/PlaceBlockToolSettingsUiProvider";
 import "./statusbars/AppStatusBar";
 import "./navigationaids/CubeExampleNavigationAid";
-
+import { ConfigurableUiManager, ContentGroupProps, ContentLayoutProps, FrontstageManager, WidgetState } from "@bentley/ui-framework";
+import { IModelViewportControl } from "./contentviews/IModelViewport";
 import { IModelIndexFrontstage } from "./frontstages/IModelIndexFrontstage";
 import { IModelOpenFrontstage } from "./frontstages/IModelOpenFrontstage";
 import { SignInFrontstage } from "./frontstages/SignInFrontstage";
-import { IModelViewportControl } from "./contentviews/IModelViewport";
 
 /** Example Ui Configuration for an iModelJS App
  */

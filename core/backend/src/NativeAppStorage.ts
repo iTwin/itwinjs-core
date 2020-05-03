@@ -2,13 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ECDb, ECDbOpenMode } from "./ECDb";
-import { DbResult } from "@bentley/bentleyjs-core";
-import { IModelHost } from "./IModelHost";
 import * as path from "path";
+import { DbResult } from "@bentley/bentleyjs-core";
+import { IModelError, StorageValue } from "@bentley/imodeljs-common";
+import { ECDb, ECDbOpenMode } from "./ECDb";
+import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 import { NativeAppBackend } from "./NativeAppBackend";
-import { IModelError, StorageValue } from "@bentley/imodeljs-common";
 
 /**
  * Native app storage allow key value pair to be persisted in a sqlite db in app cache.

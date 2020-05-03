@@ -3,20 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect, assert } from "chai";
+import { assert, expect } from "chai";
 import { IModelApp } from "../IModelApp";
 import {
-  System,
-  VariableType,
-  VariableScope,
-  VariablePrecision,
-  ShaderVariable,
-  ShaderVariables,
-  ShaderProgram,
-  ProgramBuilder,
-  VertexShaderComponent,
-  FragmentShaderComponent,
-  CompileStatus,
+  CompileStatus, FragmentShaderComponent, ProgramBuilder, ShaderProgram, ShaderVariable, ShaderVariables, System, VariablePrecision, VariableScope,
+  VariableType, VertexShaderComponent,
 } from "../webgl";
 
 describe("Variable declaration tests", () => {

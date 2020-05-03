@@ -5,17 +5,12 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-
 import { Logger } from "@bentley/bentleyjs-core";
-import { MockRender, SpatialViewState, ScreenViewport, IModelApp } from "@bentley/imodeljs-frontend";
+import { IModelApp, MockRender, ScreenViewport, SpatialViewState } from "@bentley/imodeljs-frontend";
 import { WidgetState } from "@bentley/ui-abstract";
-
-import {
-  FrontstageManager,
-  CoreTools,
-} from "../../ui-framework";
-import { TestFrontstage, TestFrontstage2 } from "./FrontstageTestUtils";
+import { CoreTools, FrontstageManager } from "../../ui-framework";
 import TestUtils, { storageMock } from "../TestUtils";
+import { TestFrontstage, TestFrontstage2 } from "./FrontstageTestUtils";
 
 const mySessionStorage = storageMock();
 

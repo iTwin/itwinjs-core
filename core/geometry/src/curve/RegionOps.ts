@@ -7,38 +7,39 @@
  * @module Curve
  */
 
-import { AnyRegion, AnyCurve } from "./CurveChain";
-import { MomentData } from "../geometry4d/MomentData";
-import { RegionMomentsXY } from "./RegionMomentsXY";
-import { HalfEdgeGraph, HalfEdge, HalfEdgeMask } from "../topology/Graph";
-import { Triangulator, MultiLineStringDataVariant, LineStringDataVariant } from "../topology/Triangulation";
-import { Point3d } from "../geometry3d/Point3dVector3d";
+import { Geometry } from "../Geometry";
+import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
-import { RegularizationContext } from "../topology/RegularizeFace";
-import { HalfEdgeGraphMerge } from "../topology/Merging";
-import { HalfEdgeGraphSearch } from "../topology/HalfEdgeGraphSearch";
+import { Point3dArrayCarrier } from "../geometry3d/Point3dArrayCarrier";
+import { Point3d } from "../geometry3d/Point3dVector3d";
+import { PolylineCompressionContext } from "../geometry3d/PolylineCompressionByEdgeOffset";
+import { Range3d } from "../geometry3d/Range";
+import { SortablePolygon } from "../geometry3d/SortablePolygon";
+import { Transform } from "../geometry3d/Transform";
+import { MomentData } from "../geometry4d/MomentData";
 import { Polyface } from "../polyface/Polyface";
 import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
-import { PolygonWireOffsetContext, JointOptions, CurveChainWireOffsetContext } from "./internalContexts/PolygonOffsetContext";
-import { SortablePolygon } from "../geometry3d/SortablePolygon";
-import { CurveCollection, BagOfCurves, CurveChain, ConsolidateAdjacentCurvePrimitivesOptions } from "./CurveCollection";
-import { CurveWireMomentsXYZ } from "./CurveWireMomentsXYZ";
-import { Geometry } from "../Geometry";
+import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "../topology/Graph";
+import { HalfEdgeGraphSearch } from "../topology/HalfEdgeGraphSearch";
+import { HalfEdgeGraphMerge } from "../topology/Merging";
+import { RegularizationContext } from "../topology/RegularizeFace";
+import { LineStringDataVariant, MultiLineStringDataVariant, Triangulator } from "../topology/Triangulation";
+import { ChainCollectorContext } from "./ChainCollectorContext";
+import { AnyCurve, AnyRegion } from "./CurveChain";
+import { BagOfCurves, ConsolidateAdjacentCurvePrimitivesOptions, CurveChain, CurveCollection } from "./CurveCollection";
+import { CurveCurve } from "./CurveCurve";
 import { CurvePrimitive } from "./CurvePrimitive";
+import { CurveWireMomentsXYZ } from "./CurveWireMomentsXYZ";
+import { CurveChainWireOffsetContext, JointOptions, PolygonWireOffsetContext } from "./internalContexts/PolygonOffsetContext";
+import { LineString3d } from "./LineString3d";
 import { Loop, SignedLoops } from "./Loop";
 import { Path } from "./Path";
-import { PointInOnOutContext } from "./Query/InOutTests";
-import { CurveSplitContext } from "./Query/CurveSplitContext";
-import { ChainCollectorContext } from "./ChainCollectorContext";
-import { LineString3d } from "./LineString3d";
-import { Transform } from "../geometry3d/Transform";
-import { Point3dArrayCarrier } from "../geometry3d/Point3dArrayCarrier";
-import { PolylineCompressionContext } from "../geometry3d/PolylineCompressionByEdgeOffset";
-import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { ConsolidateAdjacentCurvePrimitivesContext } from "./Query/ConsolidateAdjacentPrimitivesContext";
-import { CurveCurve } from "./CurveCurve";
+import { CurveSplitContext } from "./Query/CurveSplitContext";
+import { PointInOnOutContext } from "./Query/InOutTests";
 import { PlanarSubdivision } from "./Query/PlanarSubdivision";
-import { Range3d } from "../geometry3d/Range";
+import { RegionMomentsXY } from "./RegionMomentsXY";
+
 /**
  * * `properties` is a string with special characters indicating
  *   * "U" -- contains unmerged stick data

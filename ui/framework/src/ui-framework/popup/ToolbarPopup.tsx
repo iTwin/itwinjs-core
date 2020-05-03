@@ -7,15 +7,13 @@
  */
 
 import * as React from "react";
-
-import { OnCancelFunc, RelativePosition, OnItemExecutedFunc, CommonToolbarItem, ConditionalBooleanValue } from "@bentley/ui-abstract";
-import { DivWithOutsideClick, Orientation, Point, SizeProps, Size } from "@bentley/ui-core";
+import { CommonToolbarItem, ConditionalBooleanValue, OnCancelFunc, OnItemExecutedFunc, RelativePosition } from "@bentley/ui-abstract";
+import { DivWithOutsideClick, Orientation, Point, Size, SizeProps } from "@bentley/ui-core";
 import { Toolbar as NZ_Toolbar } from "@bentley/ui-ninezone";
-
-import { PositionPopup } from "./PositionPopup";
-import { PopupManager, PopupPropsBase } from "./PopupManager";
-import { CursorPopup } from "../cursor/cursorpopup/CursorPopup";
 import { ToolbarHelper } from "../../ui-framework";
+import { CursorPopup } from "../cursor/cursorpopup/CursorPopup";
+import { PopupManager, PopupPropsBase } from "./PopupManager";
+import { PositionPopup } from "./PositionPopup";
 
 /** @alpha */
 export interface ToolbarPopupProps extends PopupPropsBase {

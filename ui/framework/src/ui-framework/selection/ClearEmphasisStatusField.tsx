@@ -9,13 +9,11 @@
 // cSpell:ignore statusfields
 
 import * as React from "react";
-// tslint:disable-next-line: no-duplicate-imports
-import { useState, useEffect } from "react";
+import { useActiveViewport } from "../hooks/useActiveViewport";
 import { Indicator } from "../statusfields/Indicator";
-import { SelectionContextUtilities } from "./SelectionContextUtilities";
 import { StatusFieldProps } from "../statusfields/StatusFieldProps";
 import { UiFramework } from "../UiFramework";
-import { useActiveViewport } from "../hooks/useActiveViewport";
+import { SelectionContextUtilities } from "./SelectionContextUtilities";
 
 /** Clear Emphasis StatusField Props
  * @beta
@@ -28,11 +26,11 @@ interface ClearEmphasisStatusFieldProps extends StatusFieldProps {
  * @beta
  */
 export function ClearEmphasisStatusField(props: ClearEmphasisStatusFieldProps) {
-  const [toolTip] = useState(UiFramework.translate("tools.clearVisibility"));
+  const [toolTip] = React.useState(UiFramework.translate("tools.clearVisibility"));
   const activeViewport = useActiveViewport();
-  const [showIndicator, setShowIndicator] = useState(false);
+  const [showIndicator, setShowIndicator] = React.useState(false);
 
-  useEffect(() => {
+  React.useEffect(() => {
     // istanbul ignore next
     const onEmphasizeChange = () => {
       // istanbul ignore next

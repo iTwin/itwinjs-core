@@ -15,8 +15,8 @@ type float32 = number;
 type float64 = number;
 
 
-import { GridIndex } from "./GridIndex";
 import { ALong } from "../../system/runtime/ALong";
+import { GridIndex } from "./GridIndex";
 
 /**
  * Class TileIndex defines a tile index in a pointcloud file.

@@ -8,10 +8,10 @@
 
 import { AbandonedError, assert, base64StringToUint8Array, IModelStatus } from "@bentley/bentleyjs-core";
 import { ImageSource } from "@bentley/imodeljs-common";
-import { Tile, TileTree } from "./internal";
+import { IModelApp } from "../IModelApp";
 import { Viewport } from "../Viewport";
 import { ReadonlyViewportSet } from "../ViewportSet";
-import { IModelApp } from "../IModelApp";
+import { Tile, TileTree } from "./internal";
 
 /** Represents a pending or active request to load the contents of a [[Tile]]. The request coordinates with the [[Tile]] to execute the request for tile content and
  * convert the result into a renderable graphic. TileRequests are created internally as needed; it is never necessary or useful for external code to create them.

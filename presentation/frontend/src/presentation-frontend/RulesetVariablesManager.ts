@@ -7,7 +7,7 @@
  */
 
 import { Id64, Id64String } from "@bentley/bentleyjs-core";
-import { VariableValueTypes, VariableValue, RulesetVariable } from "@bentley/presentation-common";
+import { RulesetVariable, VariableValue, VariableValueTypes } from "@bentley/presentation-common";
 
 /**
  * Presentation ruleset variables' registry.

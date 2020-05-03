@@ -6,13 +6,13 @@
  * @module FavoriteProperties
  */
 
+import { using } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { CategoryDescription, Ruleset } from "@bentley/presentation-common";
+import { getScopeId, Presentation } from "@bentley/presentation-frontend";
 import { IElementPropertyDataProvider, PropertyData } from "@bentley/ui-components";
-import { Presentation, getScopeId } from "@bentley/presentation-frontend";
 import { translate } from "../common/Utils";
 import { PresentationPropertyDataProvider } from "../propertygrid/DataProvider";
-import { using } from "@bentley/bentleyjs-core";
 
 /** @internal */
 export const FAVORITES_CATEGORY_NAME = "Favorite";

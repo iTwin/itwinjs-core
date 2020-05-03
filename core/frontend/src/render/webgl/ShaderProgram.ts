@@ -7,17 +7,17 @@
  */
 
 import { assert } from "@bentley/bentleyjs-core";
-import { UniformHandle } from "./Handle";
-import { ShaderProgramParams, DrawParams } from "./DrawCommand";
-import { GL } from "./GL";
-import { Target } from "./Target";
-import { RenderPass } from "./RenderFlags";
-import { TechniqueFlags } from "./TechniqueFlags";
-import { System } from "./System";
-import { Branch, Batch } from "./Graphic";
+import { DebugShaderFile } from "../RenderSystem";
 import { AttributeDetails } from "./AttributeMap";
 import { WebGLDisposable } from "./Disposable";
-import { DebugShaderFile } from "../RenderSystem";
+import { DrawParams, ShaderProgramParams } from "./DrawCommand";
+import { GL } from "./GL";
+import { Batch, Branch } from "./Graphic";
+import { UniformHandle } from "./Handle";
+import { RenderPass } from "./RenderFlags";
+import { System } from "./System";
+import { Target } from "./Target";
+import { TechniqueFlags } from "./TechniqueFlags";
 
 // tslint:disable:no-const-enum
 

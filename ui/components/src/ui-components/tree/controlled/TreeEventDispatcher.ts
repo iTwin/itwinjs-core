@@ -11,27 +11,27 @@ import { concat } from "rxjs/internal/observable/concat";
 import { defer } from "rxjs/internal/observable/defer";
 import { EMPTY } from "rxjs/internal/observable/empty";
 import { from } from "rxjs/internal/observable/from";
-import { of } from "rxjs/internal/observable/of";
 import { merge } from "rxjs/internal/observable/merge";
+import { of } from "rxjs/internal/observable/of";
 import { concatAll } from "rxjs/internal/operators/concatAll";
 import { concatMap } from "rxjs/internal/operators/concatMap";
 import { distinctUntilChanged } from "rxjs/internal/operators/distinctUntilChanged";
 import { finalize } from "rxjs/internal/operators/finalize";
 import { map } from "rxjs/internal/operators/map";
 import { mergeAll } from "rxjs/internal/operators/mergeAll";
+import { publishReplay } from "rxjs/internal/operators/publishReplay";
 import { refCount } from "rxjs/internal/operators/refCount";
 import { subscribeOn } from "rxjs/internal/operators/subscribeOn";
 import { toArray } from "rxjs/internal/operators/toArray";
-import { publishReplay } from "rxjs/internal/operators/publishReplay";
 import { asap as asapScheduler } from "rxjs/internal/scheduler/asap";
 import { CheckBoxState } from "@bentley/ui-core";
-import { TreeActions } from "./TreeActions";
-import { TreeEvents } from "./TreeEvents";
-import { TreeModelNodePlaceholder, TreeModelNode, isTreeModelNode, VisibleTreeNodes } from "./TreeModel";
-import { ITreeNodeLoader } from "./TreeNodeLoader";
-import { TreeSelectionManager, IndividualSelection, RangeSelection, isRangeSelection } from "./internal/TreeSelectionManager";
 import { SelectionMode } from "../../common/selection/SelectionModes";
 import { TreeNodeItem } from "../TreeDataProvider";
+import { IndividualSelection, isRangeSelection, RangeSelection, TreeSelectionManager } from "./internal/TreeSelectionManager";
+import { TreeActions } from "./TreeActions";
+import { TreeEvents } from "./TreeEvents";
+import { isTreeModelNode, TreeModelNode, TreeModelNodePlaceholder, VisibleTreeNodes } from "./TreeModel";
+import { ITreeNodeLoader } from "./TreeNodeLoader";
 
 /**
  * Default event dispatcher that emits tree events according performed actions.

@@ -3,13 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-
-import { ConfigurableUiManager, ConfigurableCreateInfo, ToolUiProvider, ToolSettingsEntry, SyncToolSettingsPropertiesEventArgs, ToolUiManager, ToolSettingsGrid } from "@bentley/ui-framework";
-import { IModelApp } from "@bentley/imodeljs-frontend";
 import { ColorDef } from "@bentley/imodeljs-common";
-import { ColorSwatch, ColorPickerButton, WeightPickerButton } from "@bentley/ui-components";
-import { Tool1 } from "../../tools/Tool1";
+import { IModelApp } from "@bentley/imodeljs-frontend";
 import { DialogPropertySyncItem } from "@bentley/ui-abstract";
+import { ColorPickerButton, ColorSwatch, WeightPickerButton } from "@bentley/ui-components";
+import {
+  ConfigurableCreateInfo, ConfigurableUiManager, SyncToolSettingsPropertiesEventArgs, ToolSettingsEntry, ToolSettingsGrid, ToolUiManager,
+  ToolUiProvider,
+} from "@bentley/ui-framework";
+import { Tool1 } from "../../tools/Tool1";
 
 function Tool1Weight() {
   const [weight, setWeight] = React.useState((IModelApp.toolAdmin.activeTool) ? (IModelApp.toolAdmin.activeTool as Tool1).weight : 0);

@@ -4,20 +4,20 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { Checker, SaveAndRestoreCheckTransform } from "../Checker";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { Range3d } from "../../geometry3d/Range";
-import { Geometry } from "../../Geometry";
-import { AngleSweep } from "../../geometry3d/AngleSweep";
+import { BSplineCurve3d } from "../../bspline/BSplineCurve";
 import { AlternatingCCTreeNode } from "../../clipping/AlternatingConvexClipTree";
-import { CurvePrimitive } from "../../curve/CurvePrimitive";
+import { Arc3d } from "../../curve/Arc3d";
 import { CurveLocationDetailPair } from "../../curve/CurveLocationDetail";
+import { CurvePrimitive } from "../../curve/CurvePrimitive";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
-import { Arc3d } from "../../curve/Arc3d";
-import { BSplineCurve3d } from "../../bspline/BSplineCurve";
-import { Sample } from "../../serialization/GeometrySamples";
+import { Geometry } from "../../Geometry";
+import { AngleSweep } from "../../geometry3d/AngleSweep";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
+import { Range3d } from "../../geometry3d/Range";
 import { UsageSums } from "../../numerics/UsageSums";
+import { Sample } from "../../serialization/GeometrySamples";
+import { Checker, SaveAndRestoreCheckTransform } from "../Checker";
 
 /* tslint:disable: no-console */
 

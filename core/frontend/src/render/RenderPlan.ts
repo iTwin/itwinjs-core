@@ -7,26 +7,14 @@
  */
 
 import { Id64String } from "@bentley/bentleyjs-core";
-import { Vector3d, Point3d } from "@bentley/geometry-core";
+import { Point3d, Vector3d } from "@bentley/geometry-core";
 import {
-  AmbientOcclusion,
-  AnalysisStyle,
-  ColorDef,
-  Frustum,
-  GlobeMode,
-  Gradient,
-  ThematicDisplay,
-  HiddenLine,
-  Hilite,
-  LightSettings,
-  MonochromeMode,
-  Npc,
-  RenderTexture,
-  ViewFlags,
+  AmbientOcclusion, AnalysisStyle, ColorDef, Frustum, GlobeMode, Gradient, HiddenLine, Hilite, LightSettings, MonochromeMode, Npc, RenderTexture,
+  ThematicDisplay, ViewFlags,
 } from "@bentley/imodeljs-common";
 import { Viewport } from "../Viewport";
 import { ViewState3d } from "../ViewState";
-import { ViewClipSettings, createViewClipSettings } from "./ViewClipSettings";
+import { createViewClipSettings, ViewClipSettings } from "./ViewClipSettings";
 
 const scratchPoint3a = new Point3d();
 const scratchPoint3b = new Point3d();

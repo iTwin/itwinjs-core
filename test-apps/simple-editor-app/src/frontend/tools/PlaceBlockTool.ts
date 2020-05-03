@@ -4,15 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 // cSpell:ignore picklist
 
-import {
-  IModelApp, BeButtonEvent, EventHandled,
-  ToolAssistance, ToolAssistanceImage,
-  EditManipulator, Viewport, ToolAssistanceInstruction, CoreTools, ToolAssistanceInputMethod, ToolAssistanceSection, AccuDrawHintBuilder, DecorateContext, GraphicType, AccuDrawShortcuts,
-} from "@bentley/imodeljs-frontend";
-import { Point3d, Matrix3d, Vector3d, AxisOrder, YawPitchRollAngles, LinearSweep, IModelJson, Range3d } from "@bentley/geometry-core";
-import { ColorDef, LinePixels, GeometricElement3dProps, Code } from "@bentley/imodeljs-common";
-import { PrimitiveToolEx } from "./PrimitiveToolEx";
 import { assert } from "@bentley/bentleyjs-core";
+import { AxisOrder, IModelJson, LinearSweep, Matrix3d, Point3d, Range3d, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
+import { Code, ColorDef, GeometricElement3dProps, LinePixels } from "@bentley/imodeljs-common";
+import {
+  AccuDrawHintBuilder, AccuDrawShortcuts, BeButtonEvent, CoreTools, DecorateContext, EditManipulator, EventHandled, GraphicType, IModelApp,
+  ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection, Viewport,
+} from "@bentley/imodeljs-frontend";
+import { PrimitiveToolEx } from "./PrimitiveToolEx";
 
 function translate(prompt: string) {
   return IModelApp.i18n.translate("SampleApp:tools.PlaceBlockTool." + prompt);

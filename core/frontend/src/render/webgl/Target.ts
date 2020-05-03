@@ -6,96 +6,61 @@
  * @module WebGL
  */
 
+import { assert, dispose, disposeArray, Id64, Id64String, IDisposable } from "@bentley/bentleyjs-core";
+import { ClipPlaneContainment, ClipUtilities, Point2d, Point3d, Range3d, Transform, XAndY, XYZ } from "@bentley/geometry-core";
 import {
-  ClipPlaneContainment,
-  ClipUtilities,
-  Point2d,
-  Point3d,
-  Range3d,
-  Transform,
-  XAndY,
-  XYZ,
-} from "@bentley/geometry-core";
-import {
-  IDisposable,
-  Id64,
-  Id64String,
-  assert,
-  dispose,
-  disposeArray,
-} from "@bentley/bentleyjs-core";
-import { GraphicList } from "../RenderGraphic";
-import { Scene } from "../Scene";
-import { AnimationBranchStates } from "../GraphicBranch";
-import { CanvasDecoration } from "../CanvasDecoration";
-import { Decorations } from "../Decorations";
-import { Pixel } from "../Pixel";
-import { ClippingType } from "../RenderClipVolume";
-import {
-  PlanarClassifierMap,
-  RenderPlanarClassifier,
-} from "../RenderPlanarClassifier";
-import {
-  PrimitiveVisibility,
-  RenderTarget,
-  RenderTargetDebugControl,
-} from "../RenderTarget";
-import { RenderMemory } from "../RenderMemory";
-import {
-  RenderTextureDrape,
-  TextureDrapeMap,
-} from "../RenderSystem";
-import { RenderPlan } from "../RenderPlan";
-import {
-  AmbientOcclusion,
-  AnalysisStyle,
-  ColorDef,
-  Frustum,
-  ImageBuffer,
-  ImageBufferFormat,
-  Npc,
-  RenderMode,
-  RenderTexture,
-  SpatialClassificationProps,
+  AmbientOcclusion, AnalysisStyle, ColorDef, Frustum, ImageBuffer, ImageBufferFormat, Npc, RenderMode, RenderTexture, SpatialClassificationProps,
   ViewFlags,
 } from "@bentley/imodeljs-common";
-import { freeDrawParams } from "./ScratchDrawParams";
-import { Primitive } from "./Primitive";
-import { FeatureSymbology } from "../FeatureSymbology";
-import { Techniques } from "./Technique";
-import { TechniqueId } from "./TechniqueId";
-import { System } from "./System";
-import { BranchState } from "./BranchState";
-import { ShaderFlags, ShaderProgramExecutor } from "./ShaderProgram";
-import { Branch, WorldDecorations, Batch } from "./Graphic";
-import { EdgeOverrides } from "./EdgeOverrides";
-import { ViewRect } from "../../ViewRect";
-import { DrawParams, ShaderProgramParams } from "./DrawCommand";
-import { RenderCommands } from "./RenderCommands";
-import { ColorInfo } from "./ColorInfo";
-import { RenderPass } from "./RenderFlags";
-import { RenderState } from "./RenderState";
-import { GL } from "./GL";
-import { SceneCompositor } from "./SceneCompositor";
-import { FrameBuffer } from "./FrameBuffer";
-import { TextureHandle } from "./Texture";
-import { PlanarClassifier } from "./PlanarClassifier";
-import { TextureDrape } from "./TextureDrape";
-import { CachedGeometry, SingleTexturedViewportQuadGeometry } from "./CachedGeometry";
-import { ClipDef } from "./TechniqueFlags";
-import { ClipMaskVolume, ClipPlanesVolume } from "./ClipVolume";
-import { SolarShadowMap } from "./SolarShadowMap";
-import { imageBufferToCanvas, canvasToResizedCanvasWithBars, canvasToImageBuffer } from "../../ImageUtil";
+import { canvasToImageBuffer, canvasToResizedCanvasWithBars, imageBufferToCanvas } from "../../ImageUtil";
 import { HiliteSet } from "../../SelectionSet";
 import { SceneContext } from "../../ViewContext";
-import { WebGLDisposable } from "./Disposable";
-import { TargetUniforms } from "./TargetUniforms";
-import { PerformanceMetrics } from "./PerformanceMetrics";
-import { desync, SyncTarget } from "./Sync";
-import { IModelFrameLifecycle } from "./IModelFrameLifecycle";
 import { Viewport } from "../../Viewport";
+import { ViewRect } from "../../ViewRect";
+import { CanvasDecoration } from "../CanvasDecoration";
+import { Decorations } from "../Decorations";
+import { FeatureSymbology } from "../FeatureSymbology";
+import { AnimationBranchStates } from "../GraphicBranch";
+import { Pixel } from "../Pixel";
+import { ClippingType } from "../RenderClipVolume";
+import { GraphicList } from "../RenderGraphic";
+import { RenderMemory } from "../RenderMemory";
+import { RenderPlan } from "../RenderPlan";
+import { PlanarClassifierMap, RenderPlanarClassifier } from "../RenderPlanarClassifier";
+import { RenderTextureDrape, TextureDrapeMap } from "../RenderSystem";
+import { PrimitiveVisibility, RenderTarget, RenderTargetDebugControl } from "../RenderTarget";
+import { Scene } from "../Scene";
 import { ViewClipSettings } from "../ViewClipSettings";
+import { BranchState } from "./BranchState";
+import { CachedGeometry, SingleTexturedViewportQuadGeometry } from "./CachedGeometry";
+import { ClipMaskVolume, ClipPlanesVolume } from "./ClipVolume";
+import { ColorInfo } from "./ColorInfo";
+import { WebGLDisposable } from "./Disposable";
+import { DrawParams, ShaderProgramParams } from "./DrawCommand";
+import { EdgeOverrides } from "./EdgeOverrides";
 import { FloatRgba } from "./FloatRGBA";
+import { FrameBuffer } from "./FrameBuffer";
+import { GL } from "./GL";
+import { Batch, Branch, WorldDecorations } from "./Graphic";
+import { IModelFrameLifecycle } from "./IModelFrameLifecycle";
+import { PerformanceMetrics } from "./PerformanceMetrics";
+import { PlanarClassifier } from "./PlanarClassifier";
+import { Primitive } from "./Primitive";
+import { RenderCommands } from "./RenderCommands";
+import { RenderPass } from "./RenderFlags";
+import { RenderState } from "./RenderState";
+import { SceneCompositor } from "./SceneCompositor";
+import { freeDrawParams } from "./ScratchDrawParams";
+import { ShaderFlags, ShaderProgramExecutor } from "./ShaderProgram";
+import { SolarShadowMap } from "./SolarShadowMap";
+import { desync, SyncTarget } from "./Sync";
+import { System } from "./System";
+import { TargetUniforms } from "./TargetUniforms";
+import { Techniques } from "./Technique";
+import { ClipDef } from "./TechniqueFlags";
+import { TechniqueId } from "./TechniqueId";
+import { TextureHandle } from "./Texture";
+import { TextureDrape } from "./TextureDrape";
 
 /** Interface for 3d GPU clipping.
  * @internal

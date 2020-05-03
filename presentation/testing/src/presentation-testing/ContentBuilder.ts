@@ -2,15 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
 /** @packageDocumentation
  * @module Content
  */
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import {PropertyRecord } from "@bentley/ui-abstract";
-import { Presentation } from "@bentley/presentation-frontend";
-import { InstanceKey, KeySet, Ruleset, RegisteredRuleset, PageOptions, DefaultContentDisplayTypes, Content } from "@bentley/presentation-common";
-import { ContentBuilder as PresentationContentBuilder, ContentDataProvider } from "@bentley/presentation-components";
 import { using } from "@bentley/bentleyjs-core";
+import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { Content, DefaultContentDisplayTypes, InstanceKey, KeySet, PageOptions, RegisteredRuleset, Ruleset } from "@bentley/presentation-common";
+import { ContentBuilder as PresentationContentBuilder, ContentDataProvider } from "@bentley/presentation-components";
+import { Presentation } from "@bentley/presentation-frontend";
+import { PropertyRecord } from "@bentley/ui-abstract";
 
 /**
  * Interface for a data provider, which is used by ContentBuilder.

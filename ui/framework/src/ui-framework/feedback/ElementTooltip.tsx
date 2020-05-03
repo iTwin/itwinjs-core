@@ -6,15 +6,14 @@
  * @module Notification
  */
 
-import * as React from "react";
 import classnames from "classnames";
-
-import { UiEvent, CommonProps, PointProps, SizeProps, Rectangle, Point } from "@bentley/ui-core";
-import { Tooltip, offsetAndContainInContainer } from "@bentley/ui-ninezone";
+import * as React from "react";
 import { XAndY } from "@bentley/geometry-core";
 import { ToolTipOptions } from "@bentley/imodeljs-frontend";
-import { NotifyMessageType } from "../messages/ReactNotifyMessageDetails";
+import { CommonProps, Point, PointProps, Rectangle, SizeProps, UiEvent } from "@bentley/ui-core";
+import { offsetAndContainInContainer, Tooltip } from "@bentley/ui-ninezone";
 import { MessageDiv } from "../messages/MessageSpan";
+import { NotifyMessageType } from "../messages/ReactNotifyMessageDetails";
 
 /** [[ElementTooltip]] State.
  * @internal

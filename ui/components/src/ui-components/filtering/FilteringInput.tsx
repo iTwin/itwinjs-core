@@ -6,13 +6,13 @@
  * @module Filtering
  */
 
-import * as React from "react";
-import classnames from "classnames";
-import { Key } from "ts-key-enum";
-import { ResultSelector, ResultSelectorProps } from "./ResultSelector";
 import "./FilteringInput.scss";
+import classnames from "classnames";
+import * as React from "react";
+import { Key } from "ts-key-enum";
 import { CommonProps } from "@bentley/ui-core";
 import { UiComponents } from "../UiComponents";
+import { ResultSelector, ResultSelectorProps } from "./ResultSelector";
 
 /** [[FilteringInput]] React Component state
  * @internal

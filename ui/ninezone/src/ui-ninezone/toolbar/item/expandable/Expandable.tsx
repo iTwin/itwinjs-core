@@ -6,12 +6,12 @@
  * @module Toolbar
  */
 
+import "./Expandable.scss";
 import classnames from "classnames";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { CommonProps } from "@bentley/ui-core";
 import { ToolbarItem, ToolbarItemProps } from "../../Toolbar";
-import "./Expandable.scss";
 
 /** Properties of [[ExpandableItem]] component.
  * @beta

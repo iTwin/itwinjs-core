@@ -7,10 +7,10 @@
  */
 
 import { assert } from "@bentley/bentleyjs-core";
-import { VertexShaderBuilder, VariableType } from "../ShaderBuilder";
-import { addOvrFlagConstants } from "./FeatureSymbology";
-import { addExtractNthBit } from "./Common";
+import { VariableType, VertexShaderBuilder } from "../ShaderBuilder";
 import { System } from "../System";
+import { addExtractNthBit } from "./Common";
+import { addOvrFlagConstants } from "./FeatureSymbology";
 
 const extractInstanceBit = `
 float extractInstanceBit(float flag) { return extractNthBit(a_instanceOverrides.r, flag); }

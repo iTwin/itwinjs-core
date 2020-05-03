@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
 import "./BlockingPrompt.scss";
 import "./Common.scss";
+import * as React from "react";
 import { Spinner, SpinnerSize } from "@bentley/ui-core";
 
 interface BlockingPromptProps {

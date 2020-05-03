@@ -2,43 +2,37 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import "@bentley/presentation-common/lib/test/_helpers/Promises";
+import "./IModelHostSetup";
 import { expect } from "chai";
-import * as moq from "typemoq";
 import * as faker from "faker";
 import * as path from "path";
 import * as sinon from "sinon";
-const deepEqual = require("deep-equal"); // tslint:disable-line:no-var-requires
+import * as moq from "typemoq";
+import { ClientRequestContext, DbResult, using } from "@bentley/bentleyjs-core";
+import { BriefcaseDb, ECSqlStatement, ECSqlValue, EventSink, IModelDb, IModelHost } from "@bentley/imodeljs-backend";
 import {
-  createRandomNodePathElementJSON, createRandomECInstancesNodeKey, createRandomECInstancesNodeKeyJSON,
-  createRandomECClassInfoJSON, createRandomRelationshipPathJSON,
-  createRandomECInstanceKeyJSON, createRandomECInstanceKey,
-  createRandomDescriptor, createRandomCategory, createRandomId, createRandomDescriptorJSON,
-  createRandomRelatedClassInfoJSON, createRandomRuleset, createRandomLabelDefinitionJSON,
-  createRandomECInstancesNodeJSON,
-} from "@bentley/presentation-common/lib/test/_helpers/random";
-import "@bentley/presentation-common/lib/test/_helpers/Promises";
-import "./IModelHostSetup";
-import { using, ClientRequestContext, DbResult } from "@bentley/bentleyjs-core";
-import { IModelHost, IModelDb, ECSqlStatement, ECSqlValue, BriefcaseDb, EventSink } from "@bentley/imodeljs-backend";
-import {
-  PageOptions, SelectionInfo, KeySet, PresentationError,
-  HierarchyRequestOptions, Paged, ContentRequestOptions, ContentFlags,
-  PrimitiveTypeDescription, ArrayTypeDescription, StructTypeDescription,
-  KindOfQuantityInfo, DefaultContentDisplayTypes, LabelRequestOptions, InstanceKey,
-  VariableValueTypes, RequestPriority, LabelDefinition, PresentationUnitSystem, SelectionScope,
-  PartialHierarchyModification, PartialHierarchyModificationJSON, PresentationDataCompareOptions,
-  getLocalesDirectory, PropertyInfoJSON, NodeKey, StandardNodeTypes, NodeJSON, PropertyJSON,
-  ContentJSON, ItemJSON, PropertiesFieldJSON, NestedContentFieldJSON, FieldJSON,
-  DescriptorJSON, SelectClassInfoJSON,
+  ArrayTypeDescription, ContentFlags, ContentJSON, ContentRequestOptions, DefaultContentDisplayTypes, DescriptorJSON, FieldJSON, getLocalesDirectory,
+  HierarchyRequestOptions, InstanceKey, ItemJSON, KeySet, KindOfQuantityInfo, LabelDefinition, LabelRequestOptions, NestedContentFieldJSON, NodeJSON,
+  NodeKey, Paged, PageOptions, PartialHierarchyModification, PartialHierarchyModificationJSON, PresentationDataCompareOptions, PresentationError,
+  PresentationUnitSystem, PrimitiveTypeDescription, PropertiesFieldJSON, PropertyInfoJSON, PropertyJSON, RequestPriority, SelectClassInfoJSON,
+  SelectionInfo, SelectionScope, StandardNodeTypes, StructTypeDescription, VariableValueTypes,
 } from "@bentley/presentation-common";
+import {
+  createRandomCategory, createRandomDescriptor, createRandomDescriptorJSON, createRandomECClassInfoJSON, createRandomECInstanceKey,
+  createRandomECInstanceKeyJSON, createRandomECInstancesNodeJSON, createRandomECInstancesNodeKey, createRandomECInstancesNodeKeyJSON, createRandomId,
+  createRandomLabelDefinitionJSON, createRandomNodePathElementJSON, createRandomRelatedClassInfoJSON, createRandomRelationshipPathJSON,
+  createRandomRuleset,
+} from "@bentley/presentation-common/lib/test/_helpers/random";
+import { PRESENTATION_BACKEND_ASSETS_ROOT, PRESENTATION_COMMON_PUBLIC_ROOT } from "../presentation-backend/Constants";
 import { NativePlatformDefinition, NativePlatformRequestTypes } from "../presentation-backend/NativePlatform";
 import { PresentationManager, PresentationManagerMode, PresentationManagerProps } from "../presentation-backend/PresentationManager";
 import { RulesetManagerImpl } from "../presentation-backend/RulesetManager";
 import { RulesetVariablesManagerImpl } from "../presentation-backend/RulesetVariablesManager";
-import { PRESENTATION_BACKEND_ASSETS_ROOT, PRESENTATION_COMMON_PUBLIC_ROOT } from "../presentation-backend/Constants";
-import { UpdatesTracker } from "../presentation-backend/UpdatesTracker";
 import { SelectionScopesHelper } from "../presentation-backend/SelectionScopesHelper";
+import { UpdatesTracker } from "../presentation-backend/UpdatesTracker";
 
+const deepEqual = require("deep-equal"); // tslint:disable-line:no-var-requires
 describe("PresentationManager", () => {
 
   beforeEach(async () => {

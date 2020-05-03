@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { Dialog, Spinner, SpinnerSize, LoadingSpinner, FillCentered } from "@bentley/ui-core";
 import { IModelApp } from "@bentley/imodeljs-frontend";
+import { Dialog, FillCentered, LoadingSpinner, Spinner, SpinnerSize } from "@bentley/ui-core";
 
 export interface SpinnerTestDialogProps {
   opened: boolean;

@@ -3,14 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
+import { IModelApp } from "@bentley/imodeljs-frontend";
 import {
-  CoreTools, ContentGroup, ContentControl,
-  ConfigurableCreateInfo, FrontstageProvider, FrontstageProps,
-  Frontstage, IModelInfo,
+  ConfigurableCreateInfo, ContentControl, ContentGroup, CoreTools, Frontstage, FrontstageProps, FrontstageProvider, IModelInfo,
 } from "@bentley/ui-framework";
 import { SampleAppIModelApp } from "../../index";
 import { IModelOpen } from "../imodelopen/IModelOpen";
-import { IModelApp } from "@bentley/imodeljs-frontend";
 
 class IModelOpenControl extends ContentControl {
   constructor(info: ConfigurableCreateInfo, options: any) {

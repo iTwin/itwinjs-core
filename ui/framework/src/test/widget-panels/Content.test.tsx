@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as sinon from "sinon";
-import { NineZoneProvider, NineZoneDispatch, createNineZoneState, addPanelWidget, WidgetStateContext } from "@bentley/ui-ninezone";
+import { addPanelWidget, createNineZoneState, NineZoneDispatch, NineZoneProvider, WidgetStateContext } from "@bentley/ui-ninezone";
 import { render } from "@testing-library/react";
-import { WidgetContent, FrontstageManager, FrontstageDef } from "../../ui-framework";
+import { FrontstageDef, FrontstageManager, WidgetContent } from "../../ui-framework";
 import { WidgetDef } from "../../ui-framework/widgets/WidgetDef";
 
 describe("WidgetContent", () => {

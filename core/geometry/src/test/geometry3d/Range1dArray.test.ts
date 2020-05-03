@@ -2,12 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Geometry } from "../../Geometry";
-import { Range1d } from "../../geometry3d/Range";
-import { Range1dArray, compareRange1dLexicalLowHigh } from "../../numerics/Range1dArray";
-import { Checker } from "../Checker";
 import { expect } from "chai";
+import { Geometry } from "../../Geometry";
 import { GrowableFloat64Array } from "../../geometry3d/GrowableFloat64Array";
+import { Range1d } from "../../geometry3d/Range";
+import { compareRange1dLexicalLowHigh, Range1dArray } from "../../numerics/Range1dArray";
+import { Checker } from "../Checker";
+
 // import { prettyPrint } from "./testFunctions";
 /* tslint:disable:no-console */
 /**

@@ -2,19 +2,21 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-/** @module WebGL */
+/** @packageDocumentation
+ * @module WebGL
+ */
 
-import { addModelViewProjectionMatrix } from "./Vertex";
-import { ProgramBuilder, VertexShaderComponent, FragmentShaderComponent, VariableType } from "../ShaderBuilder";
-import { IsClassified, FeatureMode, IsShadowable } from "../TechniqueFlags";
 import { AttributeMap } from "../AttributeMap";
-import { TechniqueId } from "../TechniqueId";
-import { unquantize2d } from "./Decode";
 import { TextureUnit } from "../RenderFlags";
-import { Texture } from "../Texture";
+import { FragmentShaderComponent, ProgramBuilder, VariableType, VertexShaderComponent } from "../ShaderBuilder";
 import { System } from "../System";
+import { FeatureMode, IsClassified, IsShadowable } from "../TechniqueFlags";
+import { TechniqueId } from "../TechniqueId";
 import { TerrainTextureParams } from "../TerrainMesh";
+import { Texture } from "../Texture";
+import { unquantize2d } from "./Decode";
 import { addSolarShadowMap } from "./SolarShadowMapping";
+import { addModelViewProjectionMatrix } from "./Vertex";
 
 const computePosition = "gl_PointSize = 1.0; return MAT_MVP * rawPos;";
 const computeBaseColor = `

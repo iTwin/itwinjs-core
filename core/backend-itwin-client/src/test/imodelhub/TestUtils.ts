@@ -2,33 +2,29 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as fs from "fs";
-import * as path from "path";
 import * as chai from "chai";
+import * as fs from "fs";
 import { Base64 } from "js-base64";
-import { GuidString, Guid, Id64, Id64String, ClientRequestContext, Logger, WSStatus, Config } from "@bentley/bentleyjs-core";
+import * as path from "path";
+import { ClientRequestContext, Config, Guid, GuidString, Id64, Id64String, Logger, WSStatus } from "@bentley/bentleyjs-core";
+import { Asset, Project } from "@bentley/context-registry-client";
 import {
-  ECJsonTypeMap, AccessToken, UserInfo, ProgressInfo,
-  AuthorizedClientRequestContext, WsgError,
-} from "@bentley/itwin-client";
-import {
-  IModelHubClient, HubCode, CodeState, MultiCode, Briefcase, BriefcaseQuery, ChangeSet, Version,
-  Thumbnail, SmallThumbnail, LargeThumbnail, IModelQuery, LockType, LockLevel,
-  MultiLock, Lock, VersionQuery, IModelBaseHandler, ChangeSetQuery, IModelCloudEnvironment,
-  IModelBankClient, IModelBankFileSystemContextClient,
+  Briefcase, BriefcaseQuery, ChangeSet, ChangeSetQuery, CodeState, HubCode, IModelBankClient, IModelBankFileSystemContextClient, IModelBaseHandler,
+  IModelCloudEnvironment, IModelHubClient, IModelQuery, LargeThumbnail, Lock, LockLevel, LockType, MultiCode, MultiLock, SmallThumbnail, Thumbnail,
+  Version, VersionQuery,
 } from "@bentley/imodelhub-client";
+import { MobileRpcConfiguration } from "@bentley/imodeljs-common";
+import { AccessToken, AuthorizedClientRequestContext, ECJsonTypeMap, ProgressInfo, UserInfo, WsgError } from "@bentley/itwin-client";
 import { TestUserCredentials } from "@bentley/oidc-signin-tool";
 import { AzureFileHandler } from "../../imodelhub/AzureFileHandler";
-import { ResponseBuilder, RequestType, ScopeType, UrlDiscoveryMock } from "../ResponseBuilder";
-import { TestConfig } from "../TestConfig";
-import { TestIModelHubCloudEnv } from "./IModelHubCloudEnv";
-import { getIModelBankCloudEnv } from "./IModelBankCloudEnv";
-import { MobileRpcConfiguration } from "@bentley/imodeljs-common";
 import { IOSAzureFileHandler } from "../../imodelhub/IOSAzureFileHandler";
-import { UrlFileHandler } from "../../UrlFileHandler";
 import { LocalhostHandler } from "../../imodelhub/LocalhostFileHandler";
 import { StorageServiceFileHandler } from "../../StorageServiceFileHandler";
-import { Project, Asset } from "@bentley/context-registry-client";
+import { UrlFileHandler } from "../../UrlFileHandler";
+import { RequestType, ResponseBuilder, ScopeType, UrlDiscoveryMock } from "../ResponseBuilder";
+import { TestConfig } from "../TestConfig";
+import { getIModelBankCloudEnv } from "./IModelBankCloudEnv";
+import { TestIModelHubCloudEnv } from "./IModelHubCloudEnv";
 
 const loggingCategory = "backend-itwin-client.TestUtils";
 

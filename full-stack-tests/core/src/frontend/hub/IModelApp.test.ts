@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { ClientRequestContext, ClientRequestContextProps } from "@bentley/bentleyjs-core";
+import { AuthorizedFrontendRequestContext, IModelApp } from "@bentley/imodeljs-frontend";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { IModelApp, AuthorizedFrontendRequestContext } from "@bentley/imodeljs-frontend";
+import { TestFrontendAuthorizationClient, TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
 import { TestUtility } from "./TestUtility";
-import { TestUsers, TestFrontendAuthorizationClient } from "@bentley/oidc-signin-tool/lib/frontend";
 
 describe("IModelApp (#integration)", () => {
 

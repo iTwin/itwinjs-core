@@ -3,9 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { SchemaContext } from "../Context";
+import { SchemaReadHelper } from "../Deserialization/Helper";
+import { JsonParser } from "../Deserialization/JsonParser";
+import { SchemaProps } from "../Deserialization/JsonProps";
+import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
+import { ECClassModifier, PrimitiveType } from "../ECObjects";
+import { ECObjectsError, ECObjectsStatus } from "../Exception";
+import { AnyClass, AnySchemaItem } from "../Interfaces";
+import { ECName, ECVersion, SchemaItemKey, SchemaKey } from "../SchemaKey";
 import { ECClass, StructClass } from "./Class";
 import { Constant } from "./Constant";
-import { CustomAttributeContainerProps, CustomAttributeSet, serializeCustomAttributes, CustomAttribute } from "./CustomAttribute";
+import { CustomAttribute, CustomAttributeContainerProps, CustomAttributeSet, serializeCustomAttributes } from "./CustomAttribute";
 import { CustomAttributeClass } from "./CustomAttributeClass";
 import { EntityClass } from "./EntityClass";
 import { Enumeration } from "./Enumeration";
@@ -19,15 +28,6 @@ import { RelationshipClass } from "./RelationshipClass";
 import { SchemaItem } from "./SchemaItem";
 import { Unit } from "./Unit";
 import { UnitSystem } from "./UnitSystem";
-import { SchemaContext } from "./../Context";
-import { SchemaReadHelper } from "./../Deserialization/Helper";
-import { JsonParser } from "../Deserialization/JsonParser";
-import { SchemaProps } from "./../Deserialization/JsonProps";
-import { ECClassModifier, PrimitiveType } from "./../ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "./../Exception";
-import { AnyClass, AnySchemaItem } from "./../Interfaces";
-import { SchemaKey, ECVersion, SchemaItemKey, ECName } from "./../SchemaKey";
-import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
 
 const SCHEMAURL3_2_JSON = "https://dev.bentley.com/json_schemas/ec/32/ecschema";
 const SCHEMAURL3_2_XML = "http://www.bentley.com/schemas/Bentley.ECXML.3.2";

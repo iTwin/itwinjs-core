@@ -2,36 +2,31 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
 /** @packageDocumentation
  * @module WebGL
  */
-import { GL } from "./GL";
-import { dispose, assert } from "@bentley/bentleyjs-core";
+
+import { assert, dispose } from "@bentley/bentleyjs-core";
+import { ClipUtilities, ConvexClipPlaneSet, Geometry, GrowableXYZArray, Map4d, Matrix3d, Matrix4d, Point3d, Range3d, Transform, Vector3d } from "@bentley/geometry-core";
+import { Frustum, FrustumPlanes, RenderMode, RenderTexture, SolarShadowSettings, ViewFlags } from "@bentley/imodeljs-common";
 import { RenderType } from "@bentley/webgl-compatibility";
+import { Tile, TileDrawArgs, TileTreeReference, TileVisibility } from "../../tile/internal";
+import { SceneContext } from "../../ViewContext";
 import { RenderGraphic } from "../RenderGraphic";
 import { RenderMemory } from "../RenderMemory";
-import { ClipUtilities, ConvexClipPlaneSet, Geometry, GrowableXYZArray, Vector3d, Point3d, Map4d, Matrix3d, Matrix4d, Transform, Range3d } from "@bentley/geometry-core";
-import { Target } from "./Target";
-import { Texture, TextureHandle } from "./Texture";
-import { FrameBuffer } from "./FrameBuffer";
-import { SceneContext } from "../../ViewContext";
-import { Tile, TileDrawArgs, TileTreeReference, TileVisibility } from "../../tile/internal";
-import {
-  Frustum,
-  FrustumPlanes,
-  RenderTexture,
-  RenderMode,
-  SolarShadowSettings,
-  ViewFlags,
-} from "@bentley/imodeljs-common";
-import { System } from "./System";
-import { RenderState } from "./RenderState";
 import { BatchState, BranchStack } from "./BranchState";
+import { EVSMGeometry } from "./CachedGeometry";
+import { WebGLDisposable } from "./Disposable";
+import { FrameBuffer } from "./FrameBuffer";
+import { GL } from "./GL";
 import { RenderCommands } from "./RenderCommands";
 import { RenderPass, TextureUnit } from "./RenderFlags";
-import { EVSMGeometry } from "./CachedGeometry";
+import { RenderState } from "./RenderState";
 import { getDrawParams } from "./ScratchDrawParams";
-import { WebGLDisposable } from "./Disposable";
+import { System } from "./System";
+import { Target } from "./Target";
+import { Texture, TextureHandle } from "./Texture";
 
 function createDrawArgs(sceneContext: SceneContext, solarShadowMap: SolarShadowMap, tree: TileTreeReference, frustumPlanes: FrustumPlanes): TileDrawArgs | undefined {
   class SolarShadowMapDrawArgs extends TileDrawArgs {

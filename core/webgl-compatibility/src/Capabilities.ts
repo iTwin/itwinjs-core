@@ -6,11 +6,7 @@
  * @module Compatibility
  */
 
-import {
-  WebGLFeature,
-  WebGLRenderCompatibilityInfo,
-  WebGLRenderCompatibilityStatus,
-} from "./RenderCompatibility";
+import { WebGLFeature, WebGLRenderCompatibilityInfo, WebGLRenderCompatibilityStatus } from "./RenderCompatibility";
 
 /** @internal */
 export type WebGLExtensionName = "WEBGL_draw_buffers" | "OES_element_index_uint" | "OES_texture_float" | "OES_texture_float_linear" |

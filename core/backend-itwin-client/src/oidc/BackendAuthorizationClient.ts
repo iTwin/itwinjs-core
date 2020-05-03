@@ -6,9 +6,9 @@
  * @module Authentication
  */
 
+import { Client as OpenIdClient, ClientConfiguration, Issuer } from "openid-client";
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
 import { ImsAuthorizationClient } from "@bentley/itwin-client";
-import { Issuer, Client as OpenIdClient, ClientConfiguration } from "openid-client";
 
 /**
  * Client configuration to create OIDC/OAuth tokens for backend applications

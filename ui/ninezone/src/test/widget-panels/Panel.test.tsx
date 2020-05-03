@@ -2,12 +2,12 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+import produce from "immer";
 import * as React from "react";
 import * as sinon from "sinon";
-import produce from "immer";
 import { render } from "@testing-library/react";
 import {
-  addPanelWidget, createNineZoneState, WidgetPanel, PANEL_INITIALIZE, NineZoneDispatch, NineZoneProvider, DraggedPanelSideContext,
+  addPanelWidget, createNineZoneState, DraggedPanelSideContext, NineZoneDispatch, NineZoneProvider, PANEL_INITIALIZE, WidgetPanel,
 } from "../../ui-ninezone";
 import { createDOMRect } from "../Utils";
 

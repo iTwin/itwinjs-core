@@ -6,13 +6,13 @@
  * @module Topology
  */
 
-import { HalfEdgeGraph, HalfEdgeMask, HalfEdge } from "./Graph";
-import { HalfEdgePositionDetail } from "./HalfEdgePositionDetail";
 import { Point3d } from "../geometry3d/Point3dVector3d";
-import { SmallSystem } from "../numerics/Polynomials";
-import { PointSearchContext, RayClassification } from "./HalfEdgePointInGraphSearch";
 import { Ray3d } from "../geometry3d/Ray3d";
+import { SmallSystem } from "../numerics/Polynomials";
+import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "./Graph";
 import { MarkedEdgeSet } from "./HalfEdgeMarkSet";
+import { PointSearchContext, RayClassification } from "./HalfEdgePointInGraphSearch";
+import { HalfEdgePositionDetail } from "./HalfEdgePositionDetail";
 import { Triangulator } from "./Triangulation";
 
 /**

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as sinon from "sinon";
-import { wait, act } from "@testing-library/react";
+import { act, wait } from "@testing-library/react";
 
 let mochaTimeoutsEnabled = true;
 beforeEach(function () {

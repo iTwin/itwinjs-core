@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { MergeTarget } from "@src/zones/target/Merge";
+import { StagePanelType } from "@src/stage-panels/StagePanel";
 import { BackTarget } from "@src/zones/target/Back";
+import { MergeTarget } from "@src/zones/target/Merge";
 import { SplitterTarget } from "@src/zones/target/Splitter";
 import { StagePanelTarget } from "@src/zones/target/StagePanel";
-import { StagePanelType } from "@src/stage-panels/StagePanel";
 
 const col: React.CSSProperties = {
   gridRow: "1",

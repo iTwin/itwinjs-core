@@ -6,22 +6,13 @@
  * @module Tiles
  */
 
-import {
-  BackgroundMapSettings,
-  GlobeMode,
-} from "@bentley/imodeljs-common";
-import { IModelConnection } from "../IModelConnection";
+import { BackgroundMapSettings, GlobeMode } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
+import { IModelConnection } from "../IModelConnection";
 import { SceneContext } from "../ViewContext";
 import {
-  ImageryProvider,
-  MapTileTreeReference,
-  TileGraphicType,
-  TileTreeOwner,
-  RealityTileTree,
-  RealityTileDrawArgs,
+  getBackgroundMapTreeSupplier, ImageryProvider, MapTileTreeReference, RealityTileDrawArgs, RealityTileTree, TileGraphicType, TileTreeOwner,
   WebMapTileLoader,
-  getBackgroundMapTreeSupplier,
 } from "./internal";
 
 /** A reference to a TileTree used for drawing a background map. To change the type of tiles drawn simply modify the `settings` property.

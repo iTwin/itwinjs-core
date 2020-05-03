@@ -3,54 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { Id64Array, Id64String, IModelStatus } from "@bentley/bentleyjs-core";
 import {
-  Id64Array,
-  Id64String,
-  IModelStatus,
-} from "@bentley/bentleyjs-core";
-import {
-  BRepEntity,
-  GeometricElement3dProps,
-  GeometryParams,
-  GeometryStreamIterator,
-  GeometrySummaryRequestProps,
-  GeometrySummaryVerbosity,
-  IModelError,
-  ImagePrimitive,
-  TextStringPrimitive,
-} from "@bentley/imodeljs-common";
-import { IModelDb } from "./IModelDb";
-import {
-  Element,
-  GeometricElement,
-  GeometryPart,
-} from "./Element";
-import {
-  AnyGeometryQuery,
-  CurveCollection,
-  CurvePrimitive,
-  IModelJson,
-  Range3d,
-  SolidPrimitive,
-  Transform,
-  Box,
-  Sphere,
-  Cone,
-  LinearSweep,
-  RotationalSweep,
-  RuledSweep,
-  Arc3d,
-  LineSegment3d,
-  LineString3d,
-  BezierCurveBase,
-  BSplineCurve3d,
-  TransitionSpiral3d,
-  Loop,
-  Path,
-  CurveChainWithDistanceIndex,
-  TorusPipe,
-  UVSelect,
+  AnyGeometryQuery, Arc3d, BezierCurveBase, Box, BSplineCurve3d, Cone, CurveChainWithDistanceIndex, CurveCollection, CurvePrimitive, IModelJson,
+  LinearSweep, LineSegment3d, LineString3d, Loop, Path, Range3d, RotationalSweep, RuledSweep, SolidPrimitive, Sphere, TorusPipe, Transform,
+  TransitionSpiral3d, UVSelect,
 } from "@bentley/geometry-core";
+import {
+  BRepEntity, GeometricElement3dProps, GeometryParams, GeometryStreamIterator, GeometrySummaryRequestProps, GeometrySummaryVerbosity, ImagePrimitive,
+  IModelError, TextStringPrimitive,
+} from "@bentley/imodeljs-common";
+import { Element, GeometricElement, GeometryPart } from "./Element";
+import { IModelDb } from "./IModelDb";
 
 interface ElementGeom {
   iterator: GeometryStreamIterator;

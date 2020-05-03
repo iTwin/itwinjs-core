@@ -7,24 +7,22 @@
  */
 
 import * as React from "react";
-
-import {
-  CommonToolbarItem, ToolbarItemsManager, ToolbarUsage, ToolbarOrientation, ToolbarItemUtilities,
-  GroupButton, ActionButton, ConditionalBooleanValue,
-} from "@bentley/ui-abstract";
-import { Orientation } from "@bentley/ui-core";
-import { ToolbarWithOverflow, ToolbarItem } from "@bentley/ui-components";
 import { Logger } from "@bentley/bentleyjs-core";
-import { Direction, ToolbarPanelAlignment, Toolbar } from "@bentley/ui-ninezone";
+import {
+  ActionButton, CommonToolbarItem, ConditionalBooleanValue, GroupButton, ToolbarItemsManager, ToolbarItemUtilities, ToolbarOrientation, ToolbarUsage,
+} from "@bentley/ui-abstract";
+import { ToolbarItem, ToolbarWithOverflow } from "@bentley/ui-components";
+import { Orientation } from "@bentley/ui-core";
+import { Direction, Toolbar, ToolbarPanelAlignment } from "@bentley/ui-ninezone";
+import { FrontstageManager, ToolActivatedEventArgs } from "../frontstage/FrontstageManager";
+import { useFrameworkVersion } from "../hooks/useFrameworkVersion";
+import { SyncUiEventArgs, SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
+import { UiFramework, UiVisibilityEventArgs } from "../UiFramework";
+import { UiShowHideManager } from "../utils/UiShowHideManager";
+import { ToolbarDragInteractionContext } from "./DragInteraction";
 import { ToolbarHelper } from "./ToolbarHelper";
 import { useDefaultToolbarItems } from "./useDefaultToolbarItems";
 import { useUiItemsProviderToolbarItems } from "./useUiItemsProviderToolbarItems";
-import { FrontstageManager, ToolActivatedEventArgs } from "../frontstage/FrontstageManager";
-import { SyncUiEventDispatcher, SyncUiEventArgs } from "../syncui/SyncUiEventDispatcher";
-import { useFrameworkVersion } from "../hooks/useFrameworkVersion";
-import { ToolbarDragInteractionContext } from "./DragInteraction";
-import { UiFramework, UiVisibilityEventArgs } from "../UiFramework";
-import { UiShowHideManager } from "../utils/UiShowHideManager";
 
 /** Private function to set up sync event monitoring of toolbar items */
 function useToolbarItemSyncEffect(itemsManager: ToolbarItemsManager, syncIdsOfInterest: string[]) {

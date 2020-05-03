@@ -2,35 +2,36 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Point3d } from "../../geometry3d/Point3dVector3d";
-import { Geometry } from "../../Geometry";
-import { AngleSweep } from "../../geometry3d/AngleSweep";
-import { Angle } from "../../geometry3d/Angle";
-import { Checker } from "../Checker";
 import { expect } from "chai";
-import { KnotVector, BSplineWrapMode } from "../../bspline/KnotVector";
-import { BSplineCurve3d } from "../../bspline/BSplineCurve";
-import { BezierCurveBase } from "../../bspline/BezierCurveBase";
 import { BezierCurve3d } from "../../bspline/BezierCurve3d";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { LineString3d } from "../../curve/LineString3d";
-import { Transform } from "../../geometry3d/Transform";
-import { StrokeOptions } from "../../curve/StrokeOptions";
+import { BezierCurveBase } from "../../bspline/BezierCurveBase";
+import { BSplineCurve3d } from "../../bspline/BSplineCurve";
 import { BSplineCurve3dH } from "../../bspline/BSplineCurve3dH";
-import { Sample } from "../../serialization/GeometrySamples";
-import { CurvePrimitive } from "../../curve/CurvePrimitive";
-import { Path } from "../../curve/Path";
+import { BSplineWrapMode, KnotVector } from "../../bspline/KnotVector";
 // import { prettyPrint } from "./testFunctions";
 import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
-import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
+import { CurvePrimitive } from "../../curve/CurvePrimitive";
+import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
-import { Range3d } from "../../geometry3d/Range";
-import { Point4d } from "../../geometry4d/Point4d";
-import { IModelJson } from "../../serialization/IModelJsonSchema";
-import { prettyPrint } from "../testFunctions";
+import { LineString3d } from "../../curve/LineString3d";
+import { Path } from "../../curve/Path";
+import { StrokeOptions } from "../../curve/StrokeOptions";
+import { Geometry } from "../../Geometry";
+import { Angle } from "../../geometry3d/Angle";
+import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
+import { Matrix3d } from "../../geometry3d/Matrix3d";
+import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
+import { Point3d } from "../../geometry3d/Point3dVector3d";
+import { Range3d } from "../../geometry3d/Range";
+import { Transform } from "../../geometry3d/Transform";
+import { Point4d } from "../../geometry4d/Point4d";
+import { Sample } from "../../serialization/GeometrySamples";
+import { IModelJson } from "../../serialization/IModelJsonSchema";
+import { Checker } from "../Checker";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { prettyPrint } from "../testFunctions";
+
 /** return knots [0,0,0, step, 2*step, ... N,N,N]
  * where there are:
  *  * (order-1) leading and trailing clamp values.

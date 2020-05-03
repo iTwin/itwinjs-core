@@ -2,14 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, ChangeSetApplyOption, ChangeSetStatus, GuidString, Logger, OpenMode, PerfLogger, DbResult } from "@bentley/bentleyjs-core";
-import { IModelError } from "@bentley/imodeljs-common";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import * as os from "os";
 import * as path from "path";
-import { BriefcaseManager, ChangeSetToken, IModelDb, IModelJsFs, StandaloneDb, IModelHost } from "../../imodeljs-backend";
-import { Briefcase as HubBriefcase, BriefcaseQuery, ChangeSet, ChangeSetQuery, HubIModel, IModelHubClient, IModelQuery, Version, VersionQuery } from "@bentley/imodelhub-client";
+import { assert, ChangeSetApplyOption, ChangeSetStatus, DbResult, GuidString, Logger, OpenMode, PerfLogger } from "@bentley/bentleyjs-core";
 import { Project } from "@bentley/context-registry-client";
+import {
+  Briefcase as HubBriefcase, BriefcaseQuery, ChangeSet, ChangeSetQuery, HubIModel, IModelHubClient, IModelQuery, Version, VersionQuery,
+} from "@bentley/imodelhub-client";
+import { IModelError } from "@bentley/imodeljs-common";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { BriefcaseManager, ChangeSetToken, IModelDb, IModelHost, IModelJsFs, StandaloneDb } from "../../imodeljs-backend";
 
 /** Utility to work with iModelHub */
 export class HubUtility {

@@ -7,24 +7,16 @@
  */
 
 import * as React from "react";
-
 import { XAndY } from "@bentley/geometry-core";
-import {
-  AbstractMenuItemProps, IconSpecUtilities,
-  OnNumberCommitFunc, OnCancelFunc, OnValueCommitFunc,
-} from "@bentley/ui-abstract";
-import {
-  AngleDescription, LengthDescription,
-} from "@bentley/imodeljs-frontend";
-
+import { AngleDescription, LengthDescription } from "@bentley/imodeljs-frontend";
+import { AbstractMenuItemProps, IconSpecUtilities, OnCancelFunc, OnNumberCommitFunc, OnValueCommitFunc } from "@bentley/ui-abstract";
+import { PopupInfo, PopupManager } from "../popup/PopupManager";
 import { MenuItemHelpers } from "../shared/MenuItem";
-import { MenuButtonPopup } from "./MenuButtonPopup";
-import { CalculatorPopup } from "./CalculatorPopup";
-import { PopupManager, PopupInfo } from "../popup/PopupManager";
-
 import angleIcon from "./angle.svg?sprite";
+import { CalculatorPopup } from "./CalculatorPopup";
 import lengthIcon from "./distance.svg?sprite";
 import heightIcon from "./height-2.svg?sprite";
+import { MenuButtonPopup } from "./MenuButtonPopup";
 
 /** AccuDraw Popup Manager class
  * @alpha

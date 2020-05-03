@@ -3,14 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-
-import { UiItemsProvider, StageUsage, ToolbarUsage, ToolbarOrientation, ToolbarItemUtilities, CommonToolbarItem, DialogPropertyItem, UiDataProvider, PropertyChangeStatus, PropertyChangeResult } from "@bentley/ui-abstract";
+import {
+  CommonToolbarItem, DialogPropertyItem, PropertyChangeResult, PropertyChangeStatus, StageUsage, ToolbarItemUtilities, ToolbarOrientation,
+  ToolbarUsage, UiDataProvider, UiItemsProvider,
+} from "@bentley/ui-abstract";
 import { ModelessDialogManager } from "@bentley/ui-framework";
-
-import { IotSettingsDialog } from "./IotSettingsDialog";
-import iotButtonSvg from "./iot-button.svg?sprite";
 import { AnimationType, AnimationTypeName } from "../IoTDefinitions";
 import { IoTDemoExtension } from "../iotDemo";
+import iotButtonSvg from "./iot-button.svg?sprite";
+import { IotSettingsDialog } from "./IotSettingsDialog";
 
 export class IotUiProvider extends UiDataProvider implements UiItemsProvider {
   public monitorMode = false;

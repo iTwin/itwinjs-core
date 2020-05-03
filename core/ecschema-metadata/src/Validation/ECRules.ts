@@ -14,10 +14,9 @@ import { Mixin } from "../Metadata/Mixin";
 import { AnyProperty, PrimitiveProperty, Property } from "../Metadata/Property";
 import { RelationshipClass, RelationshipConstraint } from "../Metadata/RelationshipClass";
 import {
-  ClassDiagnostic, PropertyDiagnostic, SchemaItemDiagnostic, RelationshipConstraintDiagnostic,
-  createSchemaItemDiagnosticClass, createPropertyDiagnosticClass, createClassDiagnosticClass,
-  createRelationshipConstraintDiagnosticClass, createCustomAttributeContainerDiagnosticClass,
-  CustomAttributeContainerDiagnostic,
+  ClassDiagnostic, createClassDiagnosticClass, createCustomAttributeContainerDiagnosticClass, createPropertyDiagnosticClass,
+  createRelationshipConstraintDiagnosticClass, createSchemaItemDiagnosticClass, CustomAttributeContainerDiagnostic, PropertyDiagnostic,
+  RelationshipConstraintDiagnostic, SchemaItemDiagnostic,
 } from "./Diagnostic";
 import { IRuleSet } from "./Rules";
 

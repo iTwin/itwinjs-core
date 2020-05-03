@@ -4,39 +4,38 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { Checker } from "../Checker";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { ClipPlane } from "../../clipping/ClipPlane";
-import { Sample } from "../../serialization/GeometrySamples";
-
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-
-import { PolyfaceClip, ClippedPolyfaceBuilders } from "../../polyface/PolyfaceClip";
-import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { ConvexClipPlaneSet } from "../../clipping/ConvexClipPlaneSet";
-import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
-import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
-import { PolygonOps, IndexedXYZCollectionPolygonOps } from "../../geometry3d/PolygonOps";
-import { RFunctions } from "../polyface/PolyfaceQuery.test";
-import { LinearSweep } from "../../solid/LinearSweep";
-import { StrokeOptions } from "../../curve/StrokeOptions";
-import { Box } from "../../solid/Box";
-import { Range3d } from "../../geometry3d/Range";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { Transform } from "../../geometry3d/Transform";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
-import { Angle } from "../../geometry3d/Angle";
-import { IModelJson } from "../../serialization/IModelJsonSchema";
-import { Polyface, IndexedPolyface } from "../../polyface/Polyface";
-import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
 import * as fs from "fs";
-import { Geometry } from "../../Geometry";
-import { Arc3d } from "../../curve/Arc3d";
-import { LineString3d } from "../../curve/LineString3d";
-import { UnionOfConvexClipPlaneSets } from "../../clipping/UnionOfConvexClipPlaneSets";
+import { ClipPlane } from "../../clipping/ClipPlane";
 import { ClipUtilities } from "../../clipping/ClipUtils";
+import { ConvexClipPlaneSet } from "../../clipping/ConvexClipPlaneSet";
+import { UnionOfConvexClipPlaneSets } from "../../clipping/UnionOfConvexClipPlaneSets";
+import { Arc3d } from "../../curve/Arc3d";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { LineSegment3d } from "../../curve/LineSegment3d";
+import { LineString3d } from "../../curve/LineString3d";
+import { StrokeOptions } from "../../curve/StrokeOptions";
+import { Geometry } from "../../Geometry";
+import { Angle } from "../../geometry3d/Angle";
+import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
+import { Matrix3d } from "../../geometry3d/Matrix3d";
+import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
+import { IndexedXYZCollectionPolygonOps, PolygonOps } from "../../geometry3d/PolygonOps";
+import { Range3d } from "../../geometry3d/Range";
+import { Transform } from "../../geometry3d/Transform";
+import { IndexedPolyface, Polyface } from "../../polyface/Polyface";
+import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
+import { ClippedPolyfaceBuilders, PolyfaceClip } from "../../polyface/PolyfaceClip";
+import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
+import { Sample } from "../../serialization/GeometrySamples";
+import { IModelJson } from "../../serialization/IModelJsonSchema";
+import { Box } from "../../solid/Box";
+import { LinearSweep } from "../../solid/LinearSweep";
 import { SweepContour } from "../../solid/SweepContour";
+import { Checker } from "../Checker";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { RFunctions } from "../polyface/PolyfaceQuery.test";
+
 /* tslint:disable:no-console */
 describe("PolyfaceClip", () => {
   it("ClipPlane", () => {

@@ -6,7 +6,7 @@
 /** @packageDocumentation
  * @module Authentication
  */
-import { Logger, AuthStatus, BentleyError } from "@bentley/bentleyjs-core";
+import { AuthStatus, BentleyError, Logger } from "@bentley/bentleyjs-core";
 import { ITwinClientLoggerCategory } from "./ITwinClientLoggerCategory";
 
 const loggerCategory = ITwinClientLoggerCategory.Authorization;

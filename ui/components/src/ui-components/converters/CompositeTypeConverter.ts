@@ -7,7 +7,7 @@
  */
 
 import { Primitives } from "@bentley/ui-abstract";
-import { TypeConverter, StandardTypeConverterTypeNames } from "./TypeConverter";
+import { StandardTypeConverterTypeNames, TypeConverter } from "./TypeConverter";
 import { TypeConverterManager } from "./TypeConverterManager";
 
 /**

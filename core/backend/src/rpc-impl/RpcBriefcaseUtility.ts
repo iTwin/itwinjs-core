@@ -6,12 +6,12 @@
  * @module RpcInterface
  */
 
-import { Logger, BeDuration, OpenMode } from "@bentley/bentleyjs-core";
+import { BeDuration, Logger, OpenMode } from "@bentley/bentleyjs-core";
+import { BriefcaseProps, IModelConnectionProps, IModelRpcProps, IModelVersion, RpcPendingResponse, SyncMode } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { BriefcaseProps, IModelVersion, IModelRpcProps, SyncMode, IModelConnectionProps, RpcPendingResponse } from "@bentley/imodeljs-common";
+import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { BriefcaseManager } from "../BriefcaseManager";
 import { BriefcaseDb } from "../IModelDb";
-import { BackendLoggerCategory } from "../BackendLoggerCategory";
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
 

@@ -6,9 +6,9 @@
  * @module OrbitGT
  */
 
-import { Downloader } from './Downloader';
-import { ABuffer } from '../buffer/ABuffer';
-import { StringMap } from '../collection/StringMap';
+import { ABuffer } from "../buffer/ABuffer";
+import { StringMap } from "../collection/StringMap";
+import { Downloader } from "./Downloader";
 
 /**
  * Class DownloaderXhr implements a downloader using an XmlHttpRequest (XHR).

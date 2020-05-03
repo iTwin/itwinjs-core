@@ -6,16 +6,17 @@
 /** @packageDocumentation
  * @module CartesianGeometry
  */
-import { Point3d, Vector3d } from "./Point3dVector3d";
-import { Transform } from "./Transform";
-import { Matrix3d } from "./Matrix3d";
+import { CurveCurveApproachType, CurveLocationDetail, CurveLocationDetailPair } from "../curve/CurveLocationDetail";
 import { AxisOrder, BeJSONFunctions, Geometry } from "../Geometry";
-import { Plane3dByOriginAndUnitNormal } from "./Plane3dByOriginAndUnitNormal";
-import { XYAndZ } from "./XYZProps";
-import { CurveLocationDetail, CurveLocationDetailPair, CurveCurveApproachType } from "../curve/CurveLocationDetail";
 import { SmallSystem } from "../numerics/Polynomials";
+import { Matrix3d } from "./Matrix3d";
+import { Plane3dByOriginAndUnitNormal } from "./Plane3dByOriginAndUnitNormal";
 import { Vector2d } from "./Point2dVector2d";
+import { Point3d, Vector3d } from "./Point3dVector3d";
 import { Range1d, Range3d } from "./Range";
+import { Transform } from "./Transform";
+import { XYAndZ } from "./XYZProps";
+
 /** A Ray3d contains
  * * an origin point.
  * * a direction vector.  The vector is NOT required to be normalized.

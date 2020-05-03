@@ -2,12 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { assert, expect } from "chai";
 import { Id64, Logger, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
 import { Range3d, Transform, XYAndZ } from "@bentley/geometry-core";
 import { BisCodeSpec, CodeSpec, IModelVersion, NavigationValue, RelatedElement } from "@bentley/imodeljs-common";
-import { RemoteBriefcaseConnection, CategorySelectorState, DisplayStyle2dState, DisplayStyle3dState, DrawingViewState, IModelApp, IModelConnection, MockRender, ModelSelectorState, OrthographicViewState, ViewState } from "@bentley/imodeljs-frontend";
-import { TestUsers, TestFrontendAuthorizationClient } from "@bentley/oidc-signin-tool/lib/frontend";
-import { assert, expect } from "chai";
+import {
+  CategorySelectorState, DisplayStyle2dState, DisplayStyle3dState, DrawingViewState, IModelApp, IModelConnection, MockRender, ModelSelectorState,
+  OrthographicViewState, RemoteBriefcaseConnection, ViewState,
+} from "@bentley/imodeljs-frontend";
+import { TestFrontendAuthorizationClient, TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
 import { TestUtility } from "./TestUtility";
 

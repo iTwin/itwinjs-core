@@ -6,11 +6,11 @@
  * @module Loading
  */
 
+import "./LoadingPrompt.scss";
 import * as React from "react";
 import { LoadingBar } from "./LoadingBar";
 import { LoadingSpinner } from "./LoadingSpinner";
 import { LoadingStatus } from "./LoadingStatus";
-import "./LoadingPrompt.scss";
 
 /** Properties for [[LoadingPrompt]] component
  * @public

@@ -6,14 +6,7 @@
  * @module OrbitGT
  */
 
-import * as fs from 'fs';
-
-type int8 = number;
-type int16 = number;
-type int32 = number;
-type float32 = number;
-type float64 = number;
-
+import * as fs from "fs";
 import { ABuffer } from "../buffer/ABuffer";
 import { AList } from "../collection/AList";
 import { ALong } from "../runtime/ALong";
@@ -21,6 +14,12 @@ import { ASystem } from "../runtime/ASystem";
 import { FileContent } from "./FileContent";
 import { FileRange } from "./FileRange";
 import { FileStorage } from "./FileStorage";
+
+type int8 = number;
+type int16 = number;
+type int32 = number;
+type float32 = number;
+type float64 = number;
 
 /**
  * Class NodeFS provides access to files using the Node platform.

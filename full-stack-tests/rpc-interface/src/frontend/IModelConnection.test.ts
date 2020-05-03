@@ -2,15 +2,18 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+import * as chai from "chai";
 import { Id64, Id64Set, OpenMode } from "@bentley/bentleyjs-core";
 import { Matrix4d, Point3d, Transform, XYZProps, YawPitchRollAngles } from "@bentley/geometry-core";
+import {
+  EcefLocation, GeoCoordStatus, IModelCoordinatesResponseProps, IModelReadRpcInterface, IModelTileRpcInterface, MassPropertiesOperation,
+  MassPropertiesRequestProps, ModelQueryParams, SnapResponseProps,
+} from "@bentley/imodeljs-common";
+import { IModelApp, IModelConnection, RemoteBriefcaseConnection, SpatialModelState, ViewState } from "@bentley/imodeljs-frontend";
 import { AccessToken } from "@bentley/itwin-client";
-import { EcefLocation, GeoCoordStatus, IModelCoordinatesResponseProps, IModelReadRpcInterface, IModelTileRpcInterface, MassPropertiesOperation, MassPropertiesRequestProps, ModelQueryParams, SnapResponseProps } from "@bentley/imodeljs-common";
-import { RemoteBriefcaseConnection, IModelApp, IModelConnection, SpatialModelState, ViewState } from "@bentley/imodeljs-frontend";
-import { TestContext } from "./setup/TestContext";
 import { TestFrontendAuthorizationClient } from "@bentley/oidc-signin-tool/lib/frontend";
+import { TestContext } from "./setup/TestContext";
 
-import * as chai from "chai";
 const expect = chai.expect;
 
 // tslint:disable-next-line:no-var-requires

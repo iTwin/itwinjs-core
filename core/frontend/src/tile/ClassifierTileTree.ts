@@ -5,30 +5,18 @@
 /** @packageDocumentation
  * @module Tiles
  */
-import { compareStrings, compareStringsOrUndefined, Id64String, Id64 } from "@bentley/bentleyjs-core";
-import {
-  BatchType,
-  ClassifierTileTreeId,
-  compareIModelTileTreeIds,
-  iModelTileTreeIdToString,
-} from "@bentley/imodeljs-common";
-import { SpatialClassifiers } from "../SpatialClassifiers";
-import { IModelConnection } from "../IModelConnection";
-import { SceneContext } from "../ViewContext";
-import {
-  IModelTileTree,
-  iModelTileTreeParamsFromJSON,
-  TileTree,
-  TileTreeLoadStatus,
-  TileTreeOwner,
-  TileTreeReference,
-  TileTreeSet,
-  TileTreeSupplier,
-} from "./internal";
-import { ViewState } from "../ViewState";
+import { compareStrings, compareStringsOrUndefined, Id64, Id64String } from "@bentley/bentleyjs-core";
+import { BatchType, ClassifierTileTreeId, compareIModelTileTreeIds, iModelTileTreeIdToString } from "@bentley/imodeljs-common";
 import { DisplayStyleState } from "../DisplayStyleState";
-import { GeometricModelState } from "../ModelState";
 import { IModelApp } from "../IModelApp";
+import { IModelConnection } from "../IModelConnection";
+import { GeometricModelState } from "../ModelState";
+import { SpatialClassifiers } from "../SpatialClassifiers";
+import { SceneContext } from "../ViewContext";
+import { ViewState } from "../ViewState";
+import {
+  IModelTileTree, iModelTileTreeParamsFromJSON, TileTree, TileTreeLoadStatus, TileTreeOwner, TileTreeReference, TileTreeSet, TileTreeSupplier,
+} from "./internal";
 
 interface ClassifierTreeId extends ClassifierTileTreeId {
   modelId: Id64String;

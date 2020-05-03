@@ -4,8 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import sinon = require("sinon");
-
 import { SchemaContext } from "../../src/Context";
 import { DelayedPromiseWithProps } from "../../src/DelayedPromise";
 import { RelationshipEnd, StrengthDirection, StrengthType } from "../../src/ECObjects";
@@ -13,10 +11,14 @@ import { ECObjectsError } from "../../src/Exception";
 import { CustomAttributeClass } from "../../src/Metadata/CustomAttributeClass";
 import { EntityClass } from "../../src/Metadata/EntityClass";
 import { Mixin } from "../../src/Metadata/Mixin";
-import { RelationshipClass, RelationshipConstraint, RelationshipMultiplicity, MutableRelationshipConstraint } from "../../src/Metadata/RelationshipClass";
-import { Schema, MutableSchema } from "../../src/Metadata/Schema";
+import {
+  MutableRelationshipConstraint, RelationshipClass, RelationshipConstraint, RelationshipMultiplicity,
+} from "../../src/Metadata/RelationshipClass";
+import { MutableSchema, Schema } from "../../src/Metadata/Schema";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
 import { createEmptyXmlDocument, getElementChildrenByTagName } from "../TestUtils/SerializationHelper";
+
+import sinon = require("sinon");
 
 describe("RelationshipMultiplicity", () => {
   describe("fromString", () => {

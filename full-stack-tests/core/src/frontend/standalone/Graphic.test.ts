@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { expect } from "chai";
 import { Point3d, Range3d } from "@bentley/geometry-core";
 import { ColorByName, QParams3d, QPoint3dList } from "@bentley/imodeljs-common";
 import { IModelApp, IModelConnection, RenderGraphic, RenderMemory, SnapshotConnection } from "@bentley/imodeljs-frontend";
 import { MeshArgs } from "@bentley/imodeljs-frontend/lib/render-primitives";
-import { expect } from "chai";
 
 export class FakeGraphic extends RenderGraphic {
   public dispose(): void { }

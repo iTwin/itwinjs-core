@@ -2,20 +2,20 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
 import { expect } from "chai";
+import * as React from "react";
 import * as sinon from "sinon";
-import { render, waitForElement, cleanup } from "@testing-library/react";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks"; // tslint:disable-line: no-direct-imports
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { PropertyRecord } from "@bentley/ui-abstract";
-import { Presentation, PresentationManager, RulesetManager, SelectionChangeEvent, SelectionManager } from "@bentley/presentation-frontend";
-import { IPresentationTreeDataProvider } from "@bentley/presentation-components";
 import { BeEvent } from "@bentley/bentleyjs-core";
+import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { ECInstancesNodeKey, KeySet, StandardNodeTypes } from "@bentley/presentation-common";
+import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks"; // tslint:disable-line: no-direct-imports
+import { IPresentationTreeDataProvider } from "@bentley/presentation-components";
+import { Presentation, PresentationManager, RulesetManager, SelectionChangeEvent, SelectionManager } from "@bentley/presentation-frontend";
+import { PropertyRecord } from "@bentley/ui-abstract";
 import { TreeDataChangesListener, TreeNodeItem } from "@bentley/ui-components";
-import { ECInstancesNodeKey, StandardNodeTypes, KeySet } from "@bentley/presentation-common";
-import TestUtils from "../../TestUtils";
+import { cleanup, render, waitForElement } from "@testing-library/react";
 import { SpatialContainmentTree } from "../../../ui-framework/imodel-components/spatial-tree/SpatialContainmentTree";
+import TestUtils from "../../TestUtils";
 
 describe("SpatialContainmentTree", () => {
 

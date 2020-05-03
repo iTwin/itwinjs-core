@@ -5,10 +5,10 @@
 
 import { expect } from "chai";
 import { IModelApp } from "../IModelApp";
-import { ViewRect } from "../ViewRect";
+import { MockRender } from "../render/MockRender";
 import { RenderGraphic } from "../render/RenderGraphic";
 import { RenderTarget } from "../render/RenderTarget";
-import { MockRender } from "../render/MockRender";
+import { ViewRect } from "../ViewRect";
 
 class MyTarget extends MockRender.OffScreenTarget { }
 class MyList extends MockRender.List { }

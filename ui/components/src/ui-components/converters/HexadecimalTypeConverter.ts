@@ -6,10 +6,10 @@
  * @module TypeConverters
  */
 
-import { TypeConverter, StandardTypeConverterTypeNames } from "./TypeConverter";
-import { TypeConverterManager } from "./TypeConverterManager";
 import { Id64 } from "@bentley/bentleyjs-core";
 import { Primitives } from "@bentley/ui-abstract";
+import { StandardTypeConverterTypeNames, TypeConverter } from "./TypeConverter";
+import { TypeConverterManager } from "./TypeConverterManager";
 
 /** Hexadecimal Type Converter.
  * @public

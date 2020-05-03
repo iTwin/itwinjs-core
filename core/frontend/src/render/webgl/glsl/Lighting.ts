@@ -6,12 +6,7 @@
  * @module WebGL
  */
 
-import {
-  ProgramBuilder,
-  FragmentShaderComponent,
-  VariableType,
-  VariablePrecision,
-} from "../ShaderBuilder";
+import { FragmentShaderComponent, ProgramBuilder, VariablePrecision, VariableType } from "../ShaderBuilder";
 import { addFrustum } from "./Common";
 
 const enableCelShading = false;

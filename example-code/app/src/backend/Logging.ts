@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 // __PUBLISH_EXTRACT_START__ Logging-configureLoggingAndStreams.example-code
-import { Logger, LoggerLevelsConfig, EnvMacroSubst, BentleyError, IModelStatus } from "@bentley/bentleyjs-core";
+import { BentleyError, EnvMacroSubst, IModelStatus, Logger, LoggerLevelsConfig } from "@bentley/bentleyjs-core";
 import { BunyanLoggerConfig, SeqConfig, SeqLoggerConfig } from "@bentley/logger-config";
 
 export function initializeLogging(): void {

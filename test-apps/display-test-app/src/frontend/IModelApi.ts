@@ -5,7 +5,7 @@
 import { OpenMode } from "@bentley/bentleyjs-core";
 import { HubIModel, IModelQuery, Version, VersionQuery } from "@bentley/imodelhub-client";
 import { IModelVersion } from "@bentley/imodeljs-common";
-import { AuthorizedFrontendRequestContext, RemoteBriefcaseConnection, IModelApp } from "@bentley/imodeljs-frontend";
+import { AuthorizedFrontendRequestContext, IModelApp, RemoteBriefcaseConnection } from "@bentley/imodeljs-frontend";
 
 export class IModelApi {
 

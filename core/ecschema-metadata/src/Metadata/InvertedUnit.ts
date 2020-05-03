@@ -3,17 +3,17 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { DelayedPromiseWithProps } from "../DelayedPromise";
+import { InvertedUnitProps } from "../Deserialization/JsonProps";
+import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
+import { SchemaItemType } from "../ECObjects";
+import { ECObjectsError, ECObjectsStatus } from "../Exception";
+import { LazyLoadedUnit, LazyLoadedUnitSystem } from "../Interfaces";
+import { SchemaItemKey } from "../SchemaKey";
 import { Schema } from "./Schema";
 import { SchemaItem } from "./SchemaItem";
 import { Unit } from "./Unit";
 import { UnitSystem } from "./UnitSystem";
-import { DelayedPromiseWithProps } from "./../DelayedPromise";
-import { SchemaItemType } from "./../ECObjects";
-import { InvertedUnitProps } from "./../Deserialization/JsonProps";
-import { ECObjectsError, ECObjectsStatus } from "./../Exception";
-import { LazyLoadedUnit, LazyLoadedUnitSystem } from "./../Interfaces";
-import { SchemaItemKey } from "./../SchemaKey";
-import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
 
 /**
  * An InvertedUnit is a specific type of Unit that describes the inverse of a single Unit whose dimensional derivation is unit-less.

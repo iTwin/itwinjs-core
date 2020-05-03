@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import { LabeledInput, InputStatus } from "../../ui-core";
+import { InputStatus, LabeledInput } from "../../ui-core";
 
 describe("<LabeledInput />", () => {
   it("should render", () => {

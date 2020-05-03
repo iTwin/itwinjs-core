@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { Schema } from "./../../src/Metadata/Schema";
-import { SchemaKey, SchemaItemKey } from "./../../src/SchemaKey";
-import { EntityClass } from "./../../src/Metadata/EntityClass";
 import { SchemaContext } from "../../src/Context";
+import { EntityClass } from "../../src/Metadata/EntityClass";
+import { Schema } from "../../src/Metadata/Schema";
+import { SchemaItemKey, SchemaKey } from "../../src/SchemaKey";
 import { createEmptyXmlDocument } from "../TestUtils/SerializationHelper";
 
 describe("SchemaItem", () => {

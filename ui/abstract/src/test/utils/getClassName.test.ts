@@ -3,7 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-
 import { getClassName } from "../../ui-abstract";
 
 describe("getClassName", () => {

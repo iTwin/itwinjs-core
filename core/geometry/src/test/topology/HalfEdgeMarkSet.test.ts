@@ -6,9 +6,9 @@
 /* tslint:disable: no-console */
 
 import { expect } from "chai";
+import { HalfEdge, HalfEdgeGraph } from "../../topology/Graph";
+import { AbstractHalfEdgeGraphMarkSet, MarkedEdgeSet, MarkedFaceSet, MarkedHalfEdgeSt, MarkedVertexSet } from "../../topology/HalfEdgeMarkSet";
 import { Checker } from "../Checker";
-import { HalfEdgeGraph, HalfEdge } from "../../topology/Graph";
-import { MarkedHalfEdgeSt, MarkedEdgeSet, MarkedFaceSet, MarkedVertexSet, AbstractHalfEdgeGraphMarkSet } from "../../topology/HalfEdgeMarkSet";
 
 describe("HalfEdgeMarkSet", () => {
 

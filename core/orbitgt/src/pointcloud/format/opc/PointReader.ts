@@ -15,20 +15,20 @@ type float32 = number;
 type float64 = number;
 
 
-import { AttributeReader } from "./AttributeReader";
-import { AttributeMask } from "./AttributeMask";
-import { FileReader } from "./FileReader";
-import { GeometryReader } from "./GeometryReader";
-import { TileReadBuffer } from "./TileReadBuffer";
-import { CloudPoint } from "../../model/CloudPoint";
-import { PointDataRaw } from "../../model/PointDataRaw";
-import { ReadRequest } from "../../model/ReadRequest";
-import { TileIndex } from "../../model/TileIndex";
 import { ABuffer } from "../../../system/buffer/ABuffer";
 import { Uint8Buffer } from "../../../system/buffer/Uint8Buffer";
 import { AList } from "../../../system/collection/AList";
 import { ALong } from "../../../system/runtime/ALong";
 import { ContentLoader } from "../../../system/storage/ContentLoader";
+import { CloudPoint } from "../../model/CloudPoint";
+import { PointDataRaw } from "../../model/PointDataRaw";
+import { ReadRequest } from "../../model/ReadRequest";
+import { TileIndex } from "../../model/TileIndex";
+import { AttributeMask } from "./AttributeMask";
+import { AttributeReader } from "./AttributeReader";
+import { FileReader } from "./FileReader";
+import { GeometryReader } from "./GeometryReader";
+import { TileReadBuffer } from "./TileReadBuffer";
 
 /**
  * Class PointReader reads points from tiles.

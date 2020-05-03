@@ -3,13 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import {
-  DebugShaderFile,
-  IModelApp,
-  NotifyMessageDetails,
-  OutputMessagePriority,
-  Tool,
-} from "@bentley/imodeljs-frontend";
+import { DebugShaderFile, IModelApp, NotifyMessageDetails, OutputMessagePriority, Tool } from "@bentley/imodeljs-frontend";
 import SVTRpcInterface from "../common/SVTRpcInterface";
 
 const makeShadeBat = `

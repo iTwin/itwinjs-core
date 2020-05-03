@@ -7,8 +7,8 @@
  */
 
 import { AuthStatus, BeEvent, BentleyError, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
-import { AccessToken, ImsAuthorizationClient } from "@bentley/itwin-client";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
+import { AccessToken, ImsAuthorizationClient } from "@bentley/itwin-client";
 import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
 
 const loggerCategory: string = FrontendLoggerCategory.IOSAuthorizationClient;

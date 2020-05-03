@@ -14,9 +14,8 @@ type int32 = number;
 type float32 = number;
 type float64 = number;
 
-import { ParameterValue } from "./ParameterValue";
-
 import { AList } from "../../system/collection/AList";
+import { ParameterValue } from "./ParameterValue";
 
 /**
  * Class ParameterValueList defines a list of parameter values.

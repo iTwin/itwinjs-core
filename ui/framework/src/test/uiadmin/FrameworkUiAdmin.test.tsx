@@ -4,12 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
-
-import { AbstractMenuItemProps, AbstractToolbarProps, RelativePosition, PropertyDescription } from "@bentley/ui-abstract";
+import { AbstractMenuItemProps, AbstractToolbarProps, PropertyDescription, RelativePosition } from "@bentley/ui-abstract";
 import { Point } from "@bentley/ui-core";
-
-import { FrameworkUiAdmin } from "../../ui-framework/uiadmin/FrameworkUiAdmin";
 import { CursorInformation } from "../../ui-framework/cursor/CursorInformation";
+import { FrameworkUiAdmin } from "../../ui-framework/uiadmin/FrameworkUiAdmin";
 import TestUtils from "../TestUtils";
 
 // cSpell:ignore uiadmin

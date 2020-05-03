@@ -3,24 +3,25 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { Checker } from "../Checker";
 import { expect } from "chai";
-import { LineString3d } from "../../curve/LineString3d";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { CurveFactory } from "../../curve/CurveFactory";
-import { AngleSweep } from "../../geometry3d/AngleSweep";
-import { Angle } from "../../geometry3d/Angle";
-import { Segment1d } from "../../geometry3d/Segment1d";
-import { Arc3d } from "../../curve/Arc3d";
-import { LineSegment3d } from "../../curve/LineSegment3d";
 import * as fs from "fs";
-import { IModelJson } from "../../serialization/IModelJsonSchema";
-import { Sample } from "../../serialization/GeometrySamples";
-import { Point3dArrayCarrier } from "../../geometry3d/Point3dArrayCarrier";
-import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
+import { Arc3d } from "../../curve/Arc3d";
+import { CurveFactory } from "../../curve/CurveFactory";
 import { CurvePrimitive } from "../../curve/CurvePrimitive";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { LineSegment3d } from "../../curve/LineSegment3d";
+import { LineString3d } from "../../curve/LineString3d";
+import { Angle } from "../../geometry3d/Angle";
+import { AngleSweep } from "../../geometry3d/AngleSweep";
+import { Point3dArrayCarrier } from "../../geometry3d/Point3dArrayCarrier";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
+import { Segment1d } from "../../geometry3d/Segment1d";
+import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
+import { Sample } from "../../serialization/GeometrySamples";
+import { IModelJson } from "../../serialization/IModelJsonSchema";
+import { Checker } from "../Checker";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+
 /* tslint:disable:no-console */
 
 describe("CurveFactory", () => {

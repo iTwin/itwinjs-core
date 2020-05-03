@@ -6,9 +6,7 @@
 import { BeEvent } from "@bentley/bentleyjs-core";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import {
-  TreeNodeItem,
-  TreeDataChangesListener,
-  DelayLoadedTreeNodeItem, ITreeDataProvider, PageOptions, ImmediatelyLoadedTreeNodeItem,
+  DelayLoadedTreeNodeItem, ImmediatelyLoadedTreeNodeItem, ITreeDataProvider, PageOptions, TreeDataChangesListener, TreeNodeItem,
 } from "../../ui-components";
 
 // tslint:disable: completed-docs

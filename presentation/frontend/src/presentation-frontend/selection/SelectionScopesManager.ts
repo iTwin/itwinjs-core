@@ -8,7 +8,7 @@
 
 import { Id64Arg } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { KeySet, SelectionScope, RpcRequestsHandler, DEFAULT_KEYS_BATCH_SIZE } from "@bentley/presentation-common";
+import { DEFAULT_KEYS_BATCH_SIZE, KeySet, RpcRequestsHandler, SelectionScope } from "@bentley/presentation-common";
 
 /**
  * Properties for creating [[SelectionScopesManager]].

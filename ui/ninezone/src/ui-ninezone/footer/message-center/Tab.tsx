@@ -6,10 +6,10 @@
  * @module MessageCenter
  */
 
+import "./Tab.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { CommonProps } from "@bentley/ui-core";
-import "./Tab.scss";
 
 /** Properties of [[MessageCenterTab]] component.
  * @beta

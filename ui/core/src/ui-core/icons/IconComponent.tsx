@@ -6,11 +6,10 @@
  * @module Icon
  */
 
-import * as React from "react";
-import { SvgSprite } from "./SvgSprite";
-import { IconSpecUtilities, ConditionalStringValue } from "@bentley/ui-abstract";
-
 import "./IconComponent.scss";
+import * as React from "react";
+import { ConditionalStringValue, IconSpecUtilities } from "@bentley/ui-abstract";
+import { SvgSprite } from "./SvgSprite";
 
 /** Prototype for an IconSpec which can be a string, ReactNode or ConditionalStringValue.
  * @public

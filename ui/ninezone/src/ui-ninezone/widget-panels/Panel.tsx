@@ -6,16 +6,16 @@
  * @module WidgetPanels
  */
 
+import "./Panel.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { NineZoneDispatchContext } from "../base/NineZone";
-import { PANEL_INITIALIZE, isHorizontalPanelState, PanelState } from "../base/NineZoneState";
-import { WidgetPanelGrip } from "./Grip";
-import { PanelWidget } from "../widget/PanelWidget";
 import { DraggedPanelSideContext } from "../base/DragManager";
-import { PanelTarget } from "./PanelTarget";
+import { NineZoneDispatchContext } from "../base/NineZone";
+import { isHorizontalPanelState, PANEL_INITIALIZE, PanelState } from "../base/NineZoneState";
+import { PanelWidget } from "../widget/PanelWidget";
 import { WidgetTarget } from "../widget/WidgetTarget";
-import "./Panel.scss";
+import { WidgetPanelGrip } from "./Grip";
+import { PanelTarget } from "./PanelTarget";
 
 /** @internal */
 export type TopPanelSide = "top";

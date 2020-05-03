@@ -6,17 +6,16 @@
  * @module MarkupApp
  */
 
+import { Logger } from "@bentley/bentleyjs-core";
 import { Point3d, XAndY } from "@bentley/geometry-core";
 import { ImageSource, ImageSourceFormat } from "@bentley/imodeljs-common";
-import { imageElementFromImageSource, IModelApp, ScreenViewport, FrontendLoggerCategory } from "@bentley/imodeljs-frontend";
+import { FrontendLoggerCategory, imageElementFromImageSource, IModelApp, ScreenViewport } from "@bentley/imodeljs-frontend";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { adopt, create, G, Matrix, Point, Svg, SVG } from "@svgdotjs/svg.js";
-import { MarkupSelected, SelectTool } from "./SelectTool";
-import { UndoManager } from "./Undo";
-import { Logger } from "@bentley/bentleyjs-core";
-
-import * as textTool from "./TextEdit";
 import * as redlineTool from "./RedlineTool";
+import { MarkupSelected, SelectTool } from "./SelectTool";
+import * as textTool from "./TextEdit";
+import { UndoManager } from "./Undo";
 
 /** @beta */
 export interface WidthAndHeight {

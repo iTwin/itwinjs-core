@@ -2,43 +2,19 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-import { mount } from "enzyme";
 import { expect } from "chai";
-
-import { WidgetState } from "@bentley/ui-abstract";
-import TestUtils from "../TestUtils";
+import { mount } from "enzyme";
+import * as React from "react";
 import {
-  StatusBarWidgetControl,
-  ConfigurableCreateInfo,
-  MessageCenterField,
-  StatusBar,
-  AppNotificationManager,
-  WidgetDef,
-  ConfigurableUiControlType,
-  StatusBarWidgetControlArgs,
-  StatusBarSpaceBetween,
-  StatusBarLeftSection,
-  StatusBarCenterSection,
-  StatusBarRightSection,
-} from "../../ui-framework";
-
-import {
-  NotifyMessageDetails,
-  OutputMessagePriority,
-  OutputMessageType,
-  ActivityMessageDetails,
-  ActivityMessageEndReason,
+  ActivityMessageDetails, ActivityMessageEndReason, NotifyMessageDetails, OutputMessagePriority, OutputMessageType,
 } from "@bentley/imodeljs-frontend";
-
+import { WidgetState } from "@bentley/ui-abstract";
+import { Message, MessageButton, MessageHyperlink, MessageLayout, MessageProgress, Toast } from "@bentley/ui-ninezone";
 import {
-  MessageHyperlink,
-  MessageButton,
-  Message,
-  MessageLayout,
-  Toast,
-  MessageProgress,
-} from "@bentley/ui-ninezone";
+  AppNotificationManager, ConfigurableCreateInfo, ConfigurableUiControlType, MessageCenterField, StatusBar, StatusBarCenterSection,
+  StatusBarLeftSection, StatusBarRightSection, StatusBarSpaceBetween, StatusBarWidgetControl, StatusBarWidgetControlArgs, WidgetDef,
+} from "../../ui-framework";
+import TestUtils from "../TestUtils";
 
 describe("StatusBar", () => {
 

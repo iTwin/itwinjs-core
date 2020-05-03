@@ -2,36 +2,19 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-import * as moq from "typemoq";
-import * as sinon from "sinon";
 import { expect } from "chai";
 import { mount } from "enzyme";
-
-import { ScreenViewport, ViewState3d, MockRender } from "@bentley/imodeljs-frontend";
+import * as React from "react";
+import * as sinon from "sinon";
+import * as moq from "typemoq";
+import { MockRender, ScreenViewport, ViewState3d } from "@bentley/imodeljs-frontend";
 import { ViewportComponentEvents } from "@bentley/ui-components";
-
-import TestUtils, { storageMock } from "../TestUtils";
 import {
-  ViewportContentControl,
-  ConfigurableCreateInfo,
-  Frontstage,
-  FrontstageManager,
-  FrontstageProvider,
-  ContentGroup,
-  FrontstageProps,
-  ContentLayoutDef,
-  ConfigurableUiControlType,
-  ContentViewManager,
-  ContentLayoutManager,
-  CoreTools,
-  Zone,
-  Widget,
-  FrontstageComposer,
-  NavigationWidget,
-  SupportsViewSelectorChange,
-  ConfigurableUiManager,
+  ConfigurableCreateInfo, ConfigurableUiControlType, ConfigurableUiManager, ContentGroup, ContentLayoutDef, ContentLayoutManager, ContentViewManager,
+  CoreTools, Frontstage, FrontstageComposer, FrontstageManager, FrontstageProps, FrontstageProvider, NavigationWidget, SupportsViewSelectorChange,
+  ViewportContentControl, Widget, Zone,
 } from "../../ui-framework";
+import TestUtils, { storageMock } from "../TestUtils";
 
 const mySessionStorage = storageMock();
 

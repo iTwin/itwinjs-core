@@ -6,15 +6,15 @@
  * @module PropertyGrid
  */
 
+import "./WithUnifiedSelection.scss";
 import * as React from "react";
 import { KeySet } from "@bentley/presentation-common";
-import { Presentation, SelectionHandler, SelectionChangeEventArgs } from "@bentley/presentation-frontend";
+import { Presentation, SelectionChangeEventArgs, SelectionHandler } from "@bentley/presentation-frontend";
 import { PropertyGridProps } from "@bentley/ui-components";
-import { getDisplayName, translate } from "../common/Utils";
-import { IUnifiedSelectionComponent } from "../common/IUnifiedSelectionComponent";
-import { IPresentationPropertyDataProvider } from "./DataProvider";
-import "./WithUnifiedSelection.scss";
 import { FillCentered } from "@bentley/ui-core";
+import { IUnifiedSelectionComponent } from "../common/IUnifiedSelectionComponent";
+import { getDisplayName, translate } from "../common/Utils";
+import { IPresentationPropertyDataProvider } from "./DataProvider";
 
 const DEFAULT_REQUESTED_CONTENT_INSTANCES_LIMIT = 100;
 

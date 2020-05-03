@@ -6,26 +6,22 @@
  * @module Core
  */
 
-import * as path from "path";
 import * as hash from "object-hash";
+import * as path from "path";
 import { ClientRequestContext, Id64String, Logger } from "@bentley/bentleyjs-core";
-import { BriefcaseDb, IModelDb, EventSinkManager, EventSink, IModelHost } from "@bentley/imodeljs-backend";
+import { BriefcaseDb, EventSink, EventSinkManager, IModelDb, IModelHost } from "@bentley/imodeljs-backend";
 import {
-  PresentationError, PresentationStatus,
-  HierarchyRequestOptions, NodeKey, Node, NodePathElement,
-  ContentRequestOptions, SelectionInfo, Content, Descriptor,
-  DescriptorOverrides, Paged, KeySet, InstanceKey, LabelRequestOptions,
-  SelectionScopeRequestOptions, SelectionScope, DefaultContentDisplayTypes,
-  ContentFlags, Ruleset, RulesetVariable, RequestPriority, LabelDefinition,
-  PresentationUnitSystem, PartialHierarchyModification, PresentationDataCompareOptions,
-  getLocalesDirectory,
+  Content, ContentFlags, ContentRequestOptions, DefaultContentDisplayTypes, Descriptor, DescriptorOverrides, getLocalesDirectory,
+  HierarchyRequestOptions, InstanceKey, KeySet, LabelDefinition, LabelRequestOptions, Node, NodeKey, NodePathElement, Paged,
+  PartialHierarchyModification, PresentationDataCompareOptions, PresentationError, PresentationStatus, PresentationUnitSystem, RequestPriority,
+  Ruleset, RulesetVariable, SelectionInfo, SelectionScope, SelectionScopeRequestOptions,
 } from "@bentley/presentation-common";
-import { NativePlatformDefinition, createDefaultNativePlatform, NativePlatformRequestTypes } from "./NativePlatform";
-import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager";
-import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
 import { PRESENTATION_BACKEND_ASSETS_ROOT, PRESENTATION_COMMON_PUBLIC_ROOT } from "./Constants";
-import { UpdatesTracker } from "./UpdatesTracker";
+import { createDefaultNativePlatform, NativePlatformDefinition, NativePlatformRequestTypes } from "./NativePlatform";
+import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
+import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager";
 import { SelectionScopesHelper } from "./SelectionScopesHelper";
+import { UpdatesTracker } from "./UpdatesTracker";
 import { getElementKey } from "./Utils";
 
 /**

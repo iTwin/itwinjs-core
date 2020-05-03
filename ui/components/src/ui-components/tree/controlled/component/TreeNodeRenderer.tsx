@@ -8,14 +8,14 @@
 
 import * as React from "react";
 import { CommonProps, NodeCheckboxProps, NodeCheckboxRenderer, TreeNode } from "@bentley/ui-core";
-import { TreeActions } from "../TreeActions";
-import { TreeModelNode, CheckBoxInfo } from "../TreeModel";
-import { TreeNodeContent } from "./NodeContent";
+import { ImageRenderer } from "../../../common/ImageRenderer";
 import { PropertyValueRendererManager } from "../../../properties/ValueRendererManager";
 import { HighlightableTreeNodeProps } from "../../HighlightingEngine";
 import { ITreeImageLoader } from "../../ImageLoader";
-import { ImageRenderer } from "../../../common/ImageRenderer";
 import { TreeComponentTestId } from "../../TreeComponentTestId";
+import { TreeActions } from "../TreeActions";
+import { CheckBoxInfo, TreeModelNode } from "../TreeModel";
+import { TreeNodeContent } from "./NodeContent";
 import { TreeNodeEditorRenderer } from "./TreeNodeEditor";
 
 /**

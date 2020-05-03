@@ -4,19 +4,18 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import {
-  IModelApp, NotifyMessageDetails, OutputMessagePriority, MessageBoxValue, OutputMessageType, SnapMode, MessageBoxType, MessageBoxIconType, OutputMessageAlert,
+  IModelApp, MessageBoxIconType, MessageBoxType, MessageBoxValue, NotifyMessageDetails, OutputMessageAlert, OutputMessagePriority, OutputMessageType,
+  SnapMode,
 } from "@bentley/imodeljs-frontend";
+import { CommonStatusBarItem, StageUsage, UiItemsManager, UiItemsProvider } from "@bentley/ui-abstract";
 import { MessageSeverity } from "@bentley/ui-core";
-import { UiItemsManager, CommonStatusBarItem, StageUsage, UiItemsProvider } from "@bentley/ui-abstract";
-import {
-  CommandItemDef, ToolItemDef, ModalDialogManager, Backstage, SyncUiEventDispatcher,
-} from "@bentley/ui-framework";
+import { Backstage, CommandItemDef, ModalDialogManager, SyncUiEventDispatcher, ToolItemDef } from "@bentley/ui-framework";
 import { SampleAppIModelApp } from "../";
-import { DeleteElementTool } from "./DeleteElementTool";
-import { PlaceLineStringTool } from "./PlaceLineStringTool";
-import { PlaceBlockTool } from "./PlaceBlockTool";
-import { MoveElementTool } from "./MoveElementTool";
 import { TestMessageBox } from "../appui/dialogs/TestMessageBox";
+import { DeleteElementTool } from "./DeleteElementTool";
+import { MoveElementTool } from "./MoveElementTool";
+import { PlaceBlockTool } from "./PlaceBlockTool";
+import { PlaceLineStringTool } from "./PlaceLineStringTool";
 
 // Sample UI items provider that dynamically adds ui items
 class AppItemsProvider implements UiItemsProvider {

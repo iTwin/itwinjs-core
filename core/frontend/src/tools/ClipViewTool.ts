@@ -6,32 +6,27 @@
  * @module Tools
  */
 
+import { BeEvent, Id64, Id64Arg } from "@bentley/bentleyjs-core";
 import {
-  DialogItem, DialogPropertySyncItem,
-  DialogItemValue, PropertyDescription,
-} from "@bentley/ui-abstract";
-import { Range3d, ClipVector, ClipShape, ClipPrimitive, ClipPlane, ConvexClipPlaneSet, Plane3dByOriginAndUnitNormal, Vector3d, Point3d, Transform, Matrix3d, ClipMaskXYZRangePlanes, Range1d, PolygonOps, Geometry, Ray3d, ClipUtilities, Loop, Path, GeometryQuery, LineString3d, GrowableXYZArray, PolylineOps, AxisOrder } from "@bentley/geometry-core";
-import { Placement2d, Placement3d, Placement2dProps, ColorDef, LinePixels } from "@bentley/imodeljs-common";
-import { IModelApp } from "../IModelApp";
-import { BeButtonEvent, EventHandled, CoordinateLockOverrides, CoreTools } from "./Tool";
+  AxisOrder, ClipMaskXYZRangePlanes, ClipPlane, ClipPrimitive, ClipShape, ClipUtilities, ClipVector, ConvexClipPlaneSet, Geometry, GeometryQuery,
+  GrowableXYZArray, LineString3d, Loop, Matrix3d, Path, Plane3dByOriginAndUnitNormal, Point3d, PolygonOps, PolylineOps, Range1d, Range3d, Ray3d,
+  Transform, Vector3d,
+} from "@bentley/geometry-core";
+import { ColorDef, LinePixels, Placement2d, Placement2dProps, Placement3d } from "@bentley/imodeljs-common";
+import { DialogItem, DialogItemValue, DialogPropertySyncItem, PropertyDescription } from "@bentley/ui-abstract";
+import { AccuDraw, AccuDrawHintBuilder } from "../AccuDraw";
 import { LocateResponse } from "../ElementLocateManager";
-import { Id64Arg, Id64, BeEvent } from "@bentley/bentleyjs-core";
-import { Viewport, ScreenViewport } from "../Viewport";
-import { PrimitiveTool } from "./PrimitiveTool";
-import { DecorateContext } from "../ViewContext";
-import { EditManipulator } from "./EditManipulator";
-import { AccuDrawHintBuilder, AccuDraw } from "../AccuDraw";
-import { StandardViewId } from "../StandardView";
-import { GraphicType, GraphicBuilder } from "../render/GraphicBuilder";
 import { HitDetail } from "../HitDetail";
+import { IModelApp } from "../IModelApp";
+import { GraphicBuilder, GraphicType } from "../render/GraphicBuilder";
+import { StandardViewId } from "../StandardView";
+import { DecorateContext } from "../ViewContext";
+import { ScreenViewport, Viewport } from "../Viewport";
 import { AccuDrawShortcuts } from "./AccuDrawTool";
-import {
-  ToolAssistance,
-  ToolAssistanceInstruction,
-  ToolAssistanceImage,
-  ToolAssistanceInputMethod,
-  ToolAssistanceSection,
-} from "./ToolAssistance";
+import { EditManipulator } from "./EditManipulator";
+import { PrimitiveTool } from "./PrimitiveTool";
+import { BeButtonEvent, CoordinateLockOverrides, CoreTools, EventHandled } from "./Tool";
+import { ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection } from "./ToolAssistance";
 
 // cSpell:ignore geti
 

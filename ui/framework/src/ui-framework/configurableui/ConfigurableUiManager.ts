@@ -7,24 +7,23 @@
  */
 
 import { UiError } from "@bentley/ui-abstract";
-
-import { FrontstageDef } from "../frontstage/FrontstageDef";
-import { FrontstageManager } from "../frontstage/FrontstageManager";
-import { ConfigurableCreateInfo, ConfigurableUiElement, ConfigurableUiControlConstructor } from "./ConfigurableUiControl";
 import { ContentGroupManager, ContentGroupProps } from "../content/ContentGroup";
 import { ContentLayoutManager } from "../content/ContentLayoutManager";
-import { TaskManager, TaskPropsList } from "../workflow/Task";
-import { WorkflowManager, WorkflowPropsList, WorkflowProps } from "../workflow/Workflow";
-import { KeyboardShortcutManager, KeyboardShortcutProps } from "../keyboardshortcut/KeyboardShortcut";
+import { ContentLayoutProps } from "../content/ContentLayoutProps";
+import { FrontstageDef } from "../frontstage/FrontstageDef";
+import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { FrontstageProvider } from "../frontstage/FrontstageProvider";
-import { SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
+import { KeyboardShortcutManager, KeyboardShortcutProps } from "../keyboardshortcut/KeyboardShortcut";
 import { CubeNavigationAidControl } from "../navigationaids/CubeNavigationAidControl";
 import { DrawingNavigationAidControl } from "../navigationaids/DrawingNavigationAidControl";
 import { SheetNavigationAidControl } from "../navigationaids/SheetNavigationAid";
 import { StandardRotationNavigationAidControl } from "../navigationaids/StandardRotationNavigationAid";
-import { ToolUiManager } from "../zones/toolsettings/ToolUiManager";
+import { SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
 import { UiFramework } from "../UiFramework";
-import { ContentLayoutProps } from "../content/ContentLayoutProps";
+import { TaskManager, TaskPropsList } from "../workflow/Task";
+import { WorkflowManager, WorkflowProps, WorkflowPropsList } from "../workflow/Workflow";
+import { ToolUiManager } from "../zones/toolsettings/ToolUiManager";
+import { ConfigurableCreateInfo, ConfigurableUiControlConstructor, ConfigurableUiElement } from "./ConfigurableUiControl";
 
 /** Configurable Ui Manager maintains controls, Frontstages, Content Groups, Content Layouts, Tasks and Workflows.
  * @public

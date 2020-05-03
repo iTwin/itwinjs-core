@@ -7,22 +7,22 @@
  * @module Curve
  */
 
-/* tslint:disable: no-console */
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
+import { Arc3d } from "../../curve/Arc3d";
 import { CurveCollection } from "../../curve/CurveCollection";
+import { CurveCurve } from "../../curve/CurveCurve";
+import { CurveCurveApproachType, CurveLocationDetailPair } from "../../curve/CurveLocationDetail";
 import { CurvePrimitive } from "../../curve/CurvePrimitive";
 import { LineSegment3d } from "../../curve/LineSegment3d";
-import { Ray3d } from "../../geometry3d/Ray3d";
-import { CurveCurveApproachType, CurveLocationDetailPair } from "../../curve/CurveLocationDetail";
 import { LineString3d } from "../../curve/LineString3d";
-import { Path } from "../../curve/Path";
 import { Loop } from "../../curve/Loop";
-import { Arc3d } from "../../curve/Arc3d";
-import { CurveCurve } from "../../curve/CurveCurve";
-import { Angle } from "../../geometry3d/Angle";
-import { Geometry } from "../../Geometry";
-import { AngleSweep } from "../../geometry3d/AngleSweep";
+import { Path } from "../../curve/Path";
 import { RegionOps } from "../../curve/RegionOps";
+import { Geometry } from "../../Geometry";
+import { Angle } from "../../geometry3d/Angle";
+import { AngleSweep } from "../../geometry3d/AngleSweep";
+/* tslint:disable: no-console */
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
+import { Ray3d } from "../../geometry3d/Ray3d";
 
 /**
  * Classification of contortions at a joint.

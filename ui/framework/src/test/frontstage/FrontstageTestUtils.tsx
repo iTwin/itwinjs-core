@@ -5,22 +5,8 @@
 import * as React from "react";
 import { WidgetState } from "@bentley/ui-abstract";
 import {
-  Frontstage,
-  FrontstageProvider,
-  FrontstageProps,
-  ContentLayoutDef,
-  Zone,
-  Widget,
-  ContentGroup,
-  ZoneState,
-  ContentControl,
-  ConfigurableCreateInfo,
-  WidgetControl,
-  ZoneLocation,
-  CoreTools,
-  StatusBarWidgetControl,
-  MessageCenterField,
-  StatusBarWidgetControlArgs,
+  ConfigurableCreateInfo, ContentControl, ContentGroup, ContentLayoutDef, CoreTools, Frontstage, FrontstageProps, FrontstageProvider,
+  MessageCenterField, StatusBarWidgetControl, StatusBarWidgetControlArgs, Widget, WidgetControl, Zone, ZoneLocation, ZoneState,
 } from "../../ui-framework";
 
 // tslint:disable: completed-docs

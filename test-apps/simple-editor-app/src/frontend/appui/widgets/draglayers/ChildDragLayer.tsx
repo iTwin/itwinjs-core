@@ -3,10 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import "./DragLayer.scss";
 import * as React from "react";
 import { DragLayerProps } from "@bentley/ui-components";
-
-import "./DragLayer.scss";
 
 export class ChildDragLayer extends React.Component<DragLayerProps> {
   public render(): React.ReactNode {

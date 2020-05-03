@@ -6,11 +6,10 @@
  * @module Select
  */
 
-import * as React from "react";
 import classnames from "classnames";
-
-import { Select, SelectProps } from "./Select";
+import * as React from "react";
 import { LabeledComponentProps, MessagedComponentProps } from "../inputs/LabeledComponentProps";
+import { Select, SelectProps } from "./Select";
 
 /** Properties for [[LabeledSelect]] components
  * @public

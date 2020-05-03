@@ -5,16 +5,17 @@
 // tslint:disable: no-direct-imports
 import { expect } from "chai";
 import * as sinon from "sinon";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
+import { BeEvent, Id64String, using } from "@bentley/bentleyjs-core";
 import {
-  IModelConnection, Viewport, ViewManager, ScreenViewport, SubCategoriesCache,
-  PerModelCategoryVisibility, ViewState,
+  IModelConnection, PerModelCategoryVisibility, ScreenViewport, SubCategoriesCache, ViewManager, Viewport, ViewState,
 } from "@bentley/imodeljs-frontend";
+import { ECInstancesNodeKey, StandardNodeTypes } from "@bentley/presentation-common";
+import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { TreeNodeItem } from "@bentley/ui-components";
-import { ECInstancesNodeKey, StandardNodeTypes } from "@bentley/presentation-common";
-import { BeEvent, using, Id64String } from "@bentley/bentleyjs-core";
-import { Category, CategoryVisibilityHandler, CategoryVisibilityHandlerParams } from "../../../ui-framework/imodel-components/category-tree/CategoryVisibilityHandler";
+import {
+  Category, CategoryVisibilityHandler, CategoryVisibilityHandlerParams,
+} from "../../../ui-framework/imodel-components/category-tree/CategoryVisibilityHandler";
 
 const createKey = (id: Id64String): ECInstancesNodeKey => {
   return {

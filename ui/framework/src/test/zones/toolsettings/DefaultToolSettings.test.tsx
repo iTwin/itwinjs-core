@@ -4,8 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import {
-  PropertyDescription, DialogItemValue, PropertyEditorParamTypes,
-  DialogPropertySyncItem, DialogItem, ButtonGroupEditorParams,
+  ButtonGroupEditorParams, DialogItem, DialogItemValue, DialogPropertySyncItem, PropertyDescription, PropertyEditorParamTypes,
 } from "@bentley/ui-abstract";
 
 // tslint:disable: completed-docs

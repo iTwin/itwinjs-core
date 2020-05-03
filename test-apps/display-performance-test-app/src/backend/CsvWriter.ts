@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { IModelJsFs } from "@bentley/imodeljs-backend";
 import * as path from "path";
+import { IModelJsFs } from "@bentley/imodeljs-backend";
 
 export function createFilePath(filePath: string) {
   // ###TODO: Make this function platform independent

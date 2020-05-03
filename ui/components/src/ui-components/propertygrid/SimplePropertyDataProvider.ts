@@ -7,7 +7,7 @@
  */
 
 import { PropertyRecord } from "@bentley/ui-abstract";
-import { IPropertyDataProvider, PropertyData, PropertyCategory, PropertyDataChangeEvent } from "./PropertyDataProvider";
+import { IPropertyDataProvider, PropertyCategory, PropertyData, PropertyDataChangeEvent } from "./PropertyDataProvider";
 
 /**
  * Implementation of [IPropertyDataProvider] that uses an associative array.

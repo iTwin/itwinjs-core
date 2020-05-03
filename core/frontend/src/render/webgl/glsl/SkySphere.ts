@@ -6,19 +6,19 @@
  * @module WebGL
  */
 
-import { VariableType, FragmentShaderComponent, ShaderType } from "../ShaderBuilder";
+import { Angle, Point3d, Vector3d } from "@bentley/geometry-core";
+import { Npc } from "@bentley/imodeljs-common";
+import { AttributeMap } from "../AttributeMap";
+import { SkySphereViewportQuadGeometry } from "../CachedGeometry";
+import { fromSumOf, FrustumUniformType } from "../FrustumUniforms";
+import { TextureUnit } from "../RenderFlags";
+import { FragmentShaderComponent, ShaderType, VariableType } from "../ShaderBuilder";
 import { ShaderProgram } from "../ShaderProgram";
+import { System } from "../System";
+import { TechniqueId } from "../TechniqueId";
+import { Texture } from "../Texture";
 import { assignFragColor } from "./Fragment";
 import { createViewportQuadBuilder } from "./ViewportQuad";
-import { fromSumOf, FrustumUniformType } from "../FrustumUniforms";
-import { Npc } from "@bentley/imodeljs-common";
-import { Vector3d, Point3d, Angle } from "@bentley/geometry-core";
-import { SkySphereViewportQuadGeometry } from "../CachedGeometry";
-import { Texture } from "../Texture";
-import { TextureUnit } from "../RenderFlags";
-import { System } from "../System";
-import { AttributeMap } from "../AttributeMap";
-import { TechniqueId } from "../TechniqueId";
 
 const computeGradientValue = `
   // For the gradient sky it's good enough to calculate these in the vertex shader.

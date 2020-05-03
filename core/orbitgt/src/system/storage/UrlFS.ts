@@ -14,13 +14,13 @@ type float64 = number;
 
 import { ABuffer } from "../buffer/ABuffer";
 import { AList } from "../collection/AList";
+import { StringMap } from "../collection/StringMap";
 import { ALong } from "../runtime/ALong";
+import { ASystem } from "../runtime/ASystem";
+import { Downloader } from "../runtime/Downloader";
 import { FileContent } from "./FileContent";
 import { FileRange } from "./FileRange";
 import { FileStorage } from "./FileStorage";
-import { ASystem } from "../runtime/ASystem";
-import { Downloader } from "../runtime/Downloader";
-import { StringMap } from "../collection/StringMap";
 
 /**
  * Class UrlFS provides access to file content using URLs.

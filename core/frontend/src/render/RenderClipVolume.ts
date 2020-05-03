@@ -8,8 +8,8 @@
 
 import { IDisposable } from "@bentley/bentleyjs-core";
 import { ClipVector } from "@bentley/geometry-core";
-import { RenderMemory } from "./RenderMemory";
 import { ColorDef } from "@bentley/imodeljs-common";
+import { RenderMemory } from "./RenderMemory";
 
 /** Describes the type of a RenderClipVolume.
  * @beta

@@ -6,10 +6,10 @@
  * @module Widget
  */
 
-import { BadgeType } from "../items/BadgeType";
-import { WidgetState } from "./WidgetState";
-import { ProvidedItem } from "../items/ProvidedItem";
 import { ConditionalStringValue } from "../../ui-abstract";
+import { BadgeType } from "../items/BadgeType";
+import { ProvidedItem } from "../items/ProvidedItem";
+import { WidgetState } from "./WidgetState";
 
 /** Properties for a Widget.
  * @beta

@@ -7,14 +7,9 @@
  * @module Tools
  */
 
-import {
-  IModelApp,
-  Tool,
-  RenderScheduleState,
-} from "@bentley/imodeljs-frontend";
-
-import { RenderSchedule } from "@bentley/imodeljs-common";
 import { Vector3d } from "@bentley/geometry-core";
+import { RenderSchedule } from "@bentley/imodeljs-common";
+import { IModelApp, RenderScheduleState, Tool } from "@bentley/imodeljs-frontend";
 
 enum FadeMode { X, Y, Z, Transparent }
 

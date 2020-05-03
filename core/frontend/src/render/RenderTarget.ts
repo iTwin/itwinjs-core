@@ -6,38 +6,24 @@
  * @module Rendering
  */
 
-import {
-  Id64String,
-  IDisposable,
-} from "@bentley/bentleyjs-core";
-import {
-  Point2d,
-  Transform,
-  XAndY,
-} from "@bentley/geometry-core";
-import {
-  Frustum,
-  ImageBuffer,
-  SpatialClassificationProps,
-} from "@bentley/imodeljs-common";
-import { ViewRect } from "../ViewRect";
-import { Viewport } from "../Viewport";
-import { SceneContext } from "../ViewContext";
+import { Id64String, IDisposable } from "@bentley/bentleyjs-core";
+import { Point2d, Transform, XAndY } from "@bentley/geometry-core";
+import { Frustum, ImageBuffer, SpatialClassificationProps } from "@bentley/imodeljs-common";
 import { HiliteSet } from "../SelectionSet";
+import { SceneContext } from "../ViewContext";
+import { Viewport } from "../Viewport";
+import { ViewRect } from "../ViewRect";
 import { CanvasDecoration } from "./CanvasDecoration";
-import { RenderMemory } from "./RenderMemory";
-import {
-  RenderSystem,
-  RenderTextureDrape,
-} from "./RenderSystem";
-import { AnimationBranchStates } from "./GraphicBranch";
-import { RenderPlanarClassifier } from "./RenderPlanarClassifier";
-import { GraphicType } from "./GraphicBuilder";
-import { GraphicList } from "./RenderGraphic";
-import { RenderPlan } from "./RenderPlan";
 import { Decorations } from "./Decorations";
 import { FeatureSymbology } from "./FeatureSymbology";
+import { AnimationBranchStates } from "./GraphicBranch";
+import { GraphicType } from "./GraphicBuilder";
 import { Pixel } from "./Pixel";
+import { GraphicList } from "./RenderGraphic";
+import { RenderMemory } from "./RenderMemory";
+import { RenderPlan } from "./RenderPlan";
+import { RenderPlanarClassifier } from "./RenderPlanarClassifier";
+import { RenderSystem, RenderTextureDrape } from "./RenderSystem";
 import { Scene } from "./Scene";
 
 /** Used for debugging purposes, to toggle display of instanced or batched primitives.

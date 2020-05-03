@@ -6,8 +6,8 @@
  * @module Select
  */
 
-import * as React from "react";
 import classnames from "classnames";
+import * as React from "react";
 import { CommonProps } from "../utils/Props";
 
 /** Properties for [[Select]] component

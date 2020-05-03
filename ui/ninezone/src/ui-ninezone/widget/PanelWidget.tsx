@@ -6,16 +6,16 @@
  * @module Widget
  */
 
+import "./PanelWidget.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { CommonProps } from "@bentley/ui-core";
 import { WidgetsStateContext } from "../base/NineZone";
 import { WidgetState } from "../base/NineZoneState";
 import { isHorizontalPanelSide, PanelSideContext } from "../widget-panels/Panel";
-import { Widget, WidgetProvider } from "./Widget";
-import { WidgetTabBar } from "./TabBar";
 import { WidgetContentContainer } from "./ContentContainer";
-import "./PanelWidget.scss";
+import { WidgetTabBar } from "./TabBar";
+import { Widget, WidgetProvider } from "./Widget";
 
 /** @internal */
 export interface PanelWidgetProps {

@@ -6,19 +6,18 @@
  * @module Tree
  */
 
-import * as React from "react";
+import "./NodeContent.scss";
 import classnames from "classnames";
-
-import { PrimitiveValue, PropertyRecord, PropertyValueFormat, PropertyDescription } from "@bentley/ui-abstract";
-import { TreeNodePlaceholder, shallowDiffers, CommonProps } from "@bentley/ui-core";
-import { HighlightingEngine, HighlightableTreeNodeProps } from "../../HighlightingEngine";
-import { PropertyValueRendererManager, PropertyValueRendererContext, PropertyContainerType } from "../../../properties/ValueRendererManager";
-import { BeInspireTreeNode } from "./BeInspireTree";
+import * as React from "react";
+import { PrimitiveValue, PropertyDescription, PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
+import { CommonProps, shallowDiffers, TreeNodePlaceholder } from "@bentley/ui-core";
+import { ItemStyle, ItemStyleProvider } from "../../../properties/ItemStyle";
+import { PropertyContainerType, PropertyValueRendererContext, PropertyValueRendererManager } from "../../../properties/ValueRendererManager";
+import { UiComponents } from "../../../UiComponents";
+import { HighlightableTreeNodeProps, HighlightingEngine } from "../../HighlightingEngine";
 import { TreeNodeItem } from "../../TreeDataProvider";
 import { CellEditingEngine } from "../CellEditingEngine";
-import { UiComponents } from "../../../UiComponents";
-import { ItemStyleProvider, ItemStyle } from "../../../properties/ItemStyle";
-import "./NodeContent.scss";
+import { BeInspireTreeNode } from "./BeInspireTree";
 
 // tslint:disable:deprecation
 

@@ -6,25 +6,15 @@
  * @module Notification
  */
 
-import { RelativePosition } from "@bentley/ui-abstract";
-import {
-  ActivityMessageDetails,
-  ActivityMessageEndReason,
-  MessageBoxIconType,
-  MessageBoxType,
-  MessageBoxValue,
-  NotificationManager,
-  NotifyMessageDetails,
-  ToolTipOptions,
-  ToolAssistanceInstructions,
-  ToolAssistance,
-} from "@bentley/imodeljs-frontend";
-
 import { XAndY } from "@bentley/geometry-core";
-
-import { MessageManager } from "./MessageManager";
-import { UiFramework } from "../UiFramework";
+import {
+  ActivityMessageDetails, ActivityMessageEndReason, MessageBoxIconType, MessageBoxType, MessageBoxValue, NotificationManager, NotifyMessageDetails,
+  ToolAssistance, ToolAssistanceInstructions, ToolTipOptions,
+} from "@bentley/imodeljs-frontend";
+import { RelativePosition } from "@bentley/ui-abstract";
 import { ElementTooltip } from "../feedback/ElementTooltip";
+import { UiFramework } from "../UiFramework";
+import { MessageManager } from "./MessageManager";
 import { PointerMessage } from "./Pointer";
 
 /**

@@ -4,11 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
-
-import { Matrix3d, Point3d } from "@bentley/geometry-core";
-import { IModelApp, Viewport, StandardViewId, ViewManager, SelectedViewportChangedArgs } from "@bentley/imodeljs-frontend";
 import { BeUiEvent } from "@bentley/bentleyjs-core";
-
+import { Matrix3d, Point3d } from "@bentley/geometry-core";
+import { IModelApp, SelectedViewportChangedArgs, StandardViewId, ViewManager, Viewport } from "@bentley/imodeljs-frontend";
 import { ViewportComponentEvents } from "../../ui-components";
 import TestUtils from "../TestUtils";
 

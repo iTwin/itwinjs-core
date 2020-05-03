@@ -6,12 +6,10 @@
  * @module Toolbar
  */
 
+import "./Item.scss";
 import classnames from "classnames";
 import * as React from "react";
-
 import { CommonProps } from "@bentley/ui-core";
-
-import "./Item.scss";
 
 /** Properties of [[ToolbarButtonItem]] component.
  * @beta

@@ -5,12 +5,12 @@
 import { expect } from "chai";
 import * as React from "react";
 import * as moq from "typemoq";
-import { render, cleanup } from "@testing-library/react";
-import TestUtils from "../TestUtils";
+import { IModelApp, MockRender, ScreenViewport, Viewport } from "@bentley/imodeljs-frontend";
+import { cleanup, render } from "@testing-library/react";
 import { ClearEmphasisStatusField } from "../../ui-framework/selection/ClearEmphasisStatusField";
-import { StatusBarFieldId } from "../../ui-framework/statusbar/StatusBarWidgetControl";
-import { ScreenViewport, IModelApp, Viewport, MockRender } from "@bentley/imodeljs-frontend";
 import { SelectionContextUtilities } from "../../ui-framework/selection/SelectionContextUtilities";
+import { StatusBarFieldId } from "../../ui-framework/statusbar/StatusBarWidgetControl";
+import TestUtils from "../TestUtils";
 
 describe("ClearEmphasisStatusField", () => {
   const viewportMock = moq.Mock.ofType<ScreenViewport>();

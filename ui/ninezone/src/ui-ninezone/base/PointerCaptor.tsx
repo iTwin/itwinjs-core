@@ -6,10 +6,10 @@
  * @module Base
  */
 
+import "./PointerCaptor.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { CommonProps, useRefEffect } from "@bentley/ui-core";
-import "./PointerCaptor.scss";
 
 /** Properties of [[PointerCaptor]] component.
  * @internal

@@ -6,10 +6,10 @@
  * @module WorkflowTask
  */
 
-import { ItemDefBase } from "../shared/ItemDefBase";
-import { WorkflowManager } from "./Workflow";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
+import { ItemDefBase } from "../shared/ItemDefBase";
 import { ItemProps } from "../shared/ItemProps";
+import { WorkflowManager } from "./Workflow";
 
 /** Properties for a [[Task]]
  * @public

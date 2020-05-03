@@ -6,13 +6,13 @@
  * @module RpcInterface
  */
 
-import { RpcInterface, RpcInterfaceImplementation, RpcInterfaceDefinition } from "../../RpcInterface";
-import { RpcInterfaceEndpoints } from "../../RpcManager";
-import { RpcOperation, RpcOperationPolicy } from "./RpcOperation";
-import { RpcControlChannel } from "./RpcControl";
-import { IModelError } from "../../IModelError";
 import { BentleyStatus } from "@bentley/bentleyjs-core";
-import { RpcConfiguration, RpcPendingQueue, initializeRpcRequest } from "../../imodeljs-common";
+import { IModelError } from "../../IModelError";
+import { initializeRpcRequest, RpcConfiguration, RpcPendingQueue } from "../../imodeljs-common";
+import { RpcInterface, RpcInterfaceDefinition, RpcInterfaceImplementation } from "../../RpcInterface";
+import { RpcInterfaceEndpoints } from "../../RpcManager";
+import { RpcControlChannel } from "./RpcControl";
+import { RpcOperation, RpcOperationPolicy } from "./RpcOperation";
 
 // tslint:disable:ban-types
 

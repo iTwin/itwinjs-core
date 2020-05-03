@@ -7,13 +7,8 @@
  * @module Tools
  */
 
-import {
-  IModelApp,
-  Tool,
-} from "@bentley/imodeljs-frontend";
-import {
-  Id64Arg,
-} from "@bentley/bentleyjs-core";
+import { Id64Arg } from "@bentley/bentleyjs-core";
+import { IModelApp, Tool } from "@bentley/imodeljs-frontend";
 
 /** Replaces the contents of the selection set with the set of element Ids specified.
  * Element Ids are separated by whitespace.

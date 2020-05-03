@@ -6,21 +6,15 @@
  * @module Rendering
  */
 
-import {
-  disposeArray,
-  IDisposable,
-} from "@bentley/bentleyjs-core";
+import { disposeArray, IDisposable } from "@bentley/bentleyjs-core";
 import { Transform } from "@bentley/geometry-core";
-import {
-  ViewFlagOverrides,
-  ViewFlags,
-} from "@bentley/imodeljs-common";
+import { ViewFlagOverrides, ViewFlags } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../IModelConnection";
-import { RenderGraphic } from "./RenderGraphic";
 import { FeatureSymbology } from "./FeatureSymbology";
 import { RenderClipVolume } from "./RenderClipVolume";
-import { RenderPlanarClassifier } from "./RenderPlanarClassifier";
+import { RenderGraphic } from "./RenderGraphic";
 import { RenderMemory } from "./RenderMemory";
+import { RenderPlanarClassifier } from "./RenderPlanarClassifier";
 import { RenderTextureDrape } from "./RenderSystem";
 
 /**

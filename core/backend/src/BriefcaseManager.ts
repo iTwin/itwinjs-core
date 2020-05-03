@@ -6,25 +6,28 @@
  * @module iModels
  */
 
-import {
-  Briefcase as HubBriefcase, IModelHubClient, ChangeSet, ChangesType, Briefcase, HubCode, IModelHubError,
-  CheckpointQuery, Checkpoint, BriefcaseQuery, ChangeSetQuery, ConflictingCodesError, IModelClient, HubIModel, IModelBankClient,
-} from "@bentley/imodelhub-client";
-import { AuthorizedClientRequestContext, CancelRequest, ProgressCallback, ProgressInfo, UserCancelledError } from "@bentley/itwin-client";
+import * as glob from "glob";
+import * as path from "path";
 import { AzureFileHandler, IOSAzureFileHandler } from "@bentley/backend-itwin-client";
 import {
-  ChangeSetApplyOption, BeEvent, DbResult, OpenMode, assert, Logger, LogLevel, ChangeSetStatus,
-  BentleyStatus, IModelHubStatus, PerfLogger, GuidString, Id64, IModelStatus, AsyncMutex, BeDuration, ClientRequestContext,
+  assert, AsyncMutex, BeDuration, BeEvent, BentleyStatus, ChangeSetApplyOption, ChangeSetStatus, ClientRequestContext, DbResult, GuidString, Id64,
+  IModelHubStatus, IModelStatus, Logger, LogLevel, OpenMode, PerfLogger,
 } from "@bentley/bentleyjs-core";
-import { BriefcaseStatus, CreateIModelProps, IModelError, IModelVersion, MobileRpcConfiguration, BriefcaseProps, DownloadBriefcaseStatus, SyncMode, BriefcaseDownloader, BriefcaseKey, RequestBriefcaseProps, DownloadBriefcaseOptions } from "@bentley/imodeljs-common";
+import { ContextRegistryClient } from "@bentley/context-registry-client";
+import {
+  Briefcase as HubBriefcase, BriefcaseQuery, ChangeSet, ChangeSetQuery, ChangesType, Checkpoint, CheckpointQuery, ConflictingCodesError, HubCode,
+  HubIModel, IModelBankClient, IModelClient, IModelHubClient, IModelHubError,
+} from "@bentley/imodelhub-client";
+import {
+  BriefcaseDownloader, BriefcaseKey, BriefcaseProps, BriefcaseStatus, CreateIModelProps, DownloadBriefcaseOptions, DownloadBriefcaseStatus,
+  IModelError, IModelVersion, MobileRpcConfiguration, RequestBriefcaseProps, SyncMode,
+} from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
+import { AuthorizedClientRequestContext, CancelRequest, ProgressCallback, ProgressInfo, UserCancelledError } from "@bentley/itwin-client";
+import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { IModelDb, OpenParams } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
-import { BackendLoggerCategory } from "./BackendLoggerCategory";
-import { ContextRegistryClient } from "@bentley/context-registry-client";
-import * as path from "path";
-import * as glob from "glob";
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
@@ -2169,7 +2172,7 @@ export class BriefcaseManager {
     const briefcases = await BriefcaseManager.imodelClient.briefcases.get(requestContext, iModelId);
     requestContext.enter();
 
-    briefcases.forEach((briefcase: Briefcase) => {
+    briefcases.forEach((briefcase: HubBriefcase) => {
       promises.push(BriefcaseManager.imodelClient.briefcases.delete(requestContext, iModelId, briefcase.briefcaseId!).then(() => {
         requestContext.enter();
       }));

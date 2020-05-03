@@ -7,9 +7,9 @@
  */
 
 import * as _ from "lodash";
-import { Field, ClassId, NestedContentField, PropertiesField } from "@bentley/presentation-common";
 import { BeEvent, IDisposable, isIDisposable } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { ClassId, Field, NestedContentField, PropertiesField } from "@bentley/presentation-common";
 import { IFavoritePropertiesStorage } from "./FavoritePropertiesStorage";
 
 /**

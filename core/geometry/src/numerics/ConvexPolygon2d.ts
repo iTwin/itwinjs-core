@@ -7,9 +7,10 @@
  * @module Numerics
  */
 
+import { Geometry } from "../Geometry";
 import { Point2d, Vector2d } from "../geometry3d/Point2dVector2d";
 import { Range1d } from "../geometry3d/Range";
-import { Geometry } from "../Geometry";
+
 /**
  * Ray with xy origin and direction
  * @internal

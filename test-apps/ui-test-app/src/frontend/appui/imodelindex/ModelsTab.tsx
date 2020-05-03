@@ -2,18 +2,18 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-import { IModelConnection, SpatialModelState } from "@bentley/imodeljs-frontend";
-import { ModelQueryParams, ModelProps } from "@bentley/imodeljs-common";
-import { Id64String } from "@bentley/bentleyjs-core";
-import { CheckBoxState, LoadingSpinner, Checkbox } from "@bentley/ui-core";
-import { CheckListBox, CheckListBoxItem } from "./CheckListBox";
-import { Presentation } from "@bentley/presentation-frontend";
-import { RegisteredRuleset, NodeKey } from "@bentley/presentation-common";
-import { DEPRECATED_Tree, TreeNodeItem, DelayLoadedTreeNodeItem } from "@bentley/ui-components";
-import { PresentationTreeDataProvider } from "@bentley/presentation-components";
-import { UiFramework } from "@bentley/ui-framework";
 import "./ModelsTab.scss";
+import * as React from "react";
+import { Id64String } from "@bentley/bentleyjs-core";
+import { ModelProps, ModelQueryParams } from "@bentley/imodeljs-common";
+import { IModelConnection, SpatialModelState } from "@bentley/imodeljs-frontend";
+import { NodeKey, RegisteredRuleset } from "@bentley/presentation-common";
+import { PresentationTreeDataProvider } from "@bentley/presentation-components";
+import { Presentation } from "@bentley/presentation-frontend";
+import { DelayLoadedTreeNodeItem, DEPRECATED_Tree, TreeNodeItem } from "@bentley/ui-components";
+import { Checkbox, CheckBoxState, LoadingSpinner } from "@bentley/ui-core";
+import { UiFramework } from "@bentley/ui-framework";
+import { CheckListBox, CheckListBoxItem } from "./CheckListBox";
 
 interface ModelInfo {
   name: string;

@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { RpcProtocolEvent, RpcRequest, ElectronRpcConfiguration } from "@bentley/imodeljs-common";
-import { TestRpcInterface3 } from "../common/TestRpcInterface";
 import { assert } from "chai";
 import { executeBackendCallback } from "@bentley/certa/lib/utils/CallbackUtils";
+import { ElectronRpcConfiguration, RpcProtocolEvent, RpcRequest } from "@bentley/imodeljs-common";
 import { BackendTestCallbacks } from "../common/SideChannels";
+import { TestRpcInterface3 } from "../common/TestRpcInterface";
 
 // N.B.: These tests only run in electron!
 if (ElectronRpcConfiguration.isElectron) {

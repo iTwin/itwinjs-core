@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { UiSettings, LocalUiSettings } from "@bentley/ui-core";
+import { LocalUiSettings, UiSettings } from "@bentley/ui-core";
 
 /** @internal */
 export function useUiSettingsContext(): UiSettings {

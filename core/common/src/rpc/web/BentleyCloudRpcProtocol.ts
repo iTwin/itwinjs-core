@@ -6,17 +6,17 @@
  * @module RpcInterface
  */
 
-import { assert, BentleyStatus, Logger, OpenMode, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
 import { URL } from "url";
-import { IModelError } from "../../IModelError";
+import { assert, BentleyStatus, Logger, OpenMode, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
 import { CommonLoggerCategory } from "../../CommonLoggerCategory";
+import { IModelRpcProps } from "../../IModel";
+import { IModelError } from "../../IModelError";
+import { RpcConfiguration } from "../core/RpcConfiguration";
 import { RpcOperation } from "../core/RpcOperation";
 import { SerializedRpcOperation, SerializedRpcRequest } from "../core/RpcProtocol";
 import { RpcRequest } from "../core/RpcRequest";
 import { OpenAPIParameter } from "./OpenAPI";
 import { WebAppRpcProtocol } from "./WebAppRpcProtocol";
-import { IModelRpcProps } from "../../IModel";
-import { RpcConfiguration } from "../core/RpcConfiguration";
 
 enum AppMode {
   MilestoneReview = "1",

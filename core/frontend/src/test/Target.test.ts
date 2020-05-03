@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { FrustumUniforms, FrustumUniformType, ClipPlanesVolume, Clips } from "../webgl";
-import { ClipVector, ClipShape, Point3d } from "@bentley/geometry-core";
+import { ClipShape, ClipVector, Point3d } from "@bentley/geometry-core";
 import { IModelApp } from "../IModelApp";
+import { ClipPlanesVolume, Clips, FrustumUniforms, FrustumUniformType } from "../webgl";
 
 class TestUniforms extends FrustumUniforms {
   public constructor() {

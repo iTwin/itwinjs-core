@@ -6,45 +6,41 @@
 /* tslint:disable: no-console */
 
 import { expect } from "chai";
-import { Checker } from "../Checker";
-
-import { Sample } from "../../serialization/GeometrySamples";
-
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { LineString3d } from "../../curve/LineString3d";
-
-import { RegionOps } from "../../curve/RegionOps";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-
-import { Range3d, Range2d } from "../../geometry3d/Range";
-import { PolygonWireOffsetContext } from "../../curve/internalContexts/PolygonOffsetContext";
-import { PolylineOps } from "../../geometry3d/PolylineOps";
-import { HalfEdgeGraph } from "../../topology/Graph";
-import { GraphChecker } from "./Graph.test";
-import { Transform } from "../../geometry3d/Transform";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
-import { Angle } from "../../geometry3d/Angle";
-import { prettyPrint } from "../testFunctions";
-import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
-import { HalfEdgeGraphMerge } from "../../topology/Merging";
-import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
-import { Point2d } from "../../geometry3d/Point2dVector2d";
-import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
-import { Geometry } from "../../Geometry";
-import { Loop } from "../../curve/Loop";
 import { Arc3d } from "../../curve/Arc3d";
-import { Plane3dByOriginAndVectors } from "../../geometry3d/Plane3dByOriginAndVectors";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { AnyRegion, AnyCurve } from "../../curve/CurveChain";
-import { BagOfCurves, CurveCollection, CurveChain } from "../../curve/CurveCollection";
-import { Path } from "../../curve/Path";
-import { CurvePrimitive } from "../../curve/CurvePrimitive";
-import { CurveFactory } from "../../curve/CurveFactory";
-import { Point3dArray } from "../../geometry3d/PointHelpers";
 import { ChainCollectorContext } from "../../curve/ChainCollectorContext";
+import { AnyCurve, AnyRegion } from "../../curve/CurveChain";
+import { BagOfCurves, CurveChain, CurveCollection } from "../../curve/CurveCollection";
+import { CurveFactory } from "../../curve/CurveFactory";
 import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
+import { CurvePrimitive } from "../../curve/CurvePrimitive";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { PolygonWireOffsetContext } from "../../curve/internalContexts/PolygonOffsetContext";
+import { LineSegment3d } from "../../curve/LineSegment3d";
+import { LineString3d } from "../../curve/LineString3d";
+import { Loop } from "../../curve/Loop";
+import { Path } from "../../curve/Path";
+import { RegionOps } from "../../curve/RegionOps";
+import { Geometry } from "../../Geometry";
+import { Angle } from "../../geometry3d/Angle";
+import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
+import { Matrix3d } from "../../geometry3d/Matrix3d";
+import { Plane3dByOriginAndVectors } from "../../geometry3d/Plane3dByOriginAndVectors";
+import { Point2d } from "../../geometry3d/Point2dVector2d";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
+import { Point3dArray } from "../../geometry3d/PointHelpers";
+import { PolylineOps } from "../../geometry3d/PolylineOps";
+import { Range2d, Range3d } from "../../geometry3d/Range";
+import { Transform } from "../../geometry3d/Transform";
+import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
+import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
+import { Sample } from "../../serialization/GeometrySamples";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
+import { HalfEdgeGraph } from "../../topology/Graph";
+import { HalfEdgeGraphMerge } from "../../topology/Merging";
+import { Checker } from "../Checker";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { prettyPrint } from "../testFunctions";
+import { GraphChecker } from "./Graph.test";
 
 const diegoPathA = [
   {

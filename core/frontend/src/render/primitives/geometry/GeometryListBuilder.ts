@@ -6,17 +6,19 @@
  * @module Rendering
  */
 
-import { Transform, Arc3d, LineSegment3d, CurvePrimitive, Loop, Path, Point2d, Point3d, Polyface, IndexedPolyface, LineString3d, Range3d } from "@bentley/geometry-core";
-import { GraphicParams, PackedFeatureTable, RenderTexture, Gradient, FeatureTable } from "@bentley/imodeljs-common";
-import { GraphicBuilder, GraphicType } from "../../GraphicBuilder";
+import { Id64String } from "@bentley/bentleyjs-core";
+import {
+  Arc3d, CurvePrimitive, IndexedPolyface, LineSegment3d, LineString3d, Loop, Path, Point2d, Point3d, Polyface, Range3d, Transform,
+} from "@bentley/geometry-core";
+import { FeatureTable, Gradient, GraphicParams, PackedFeatureTable, RenderTexture } from "@bentley/imodeljs-common";
 import { Viewport } from "../../../Viewport";
-import { GeometryOptions } from "../Primitives";
+import { GraphicBuilder, GraphicType } from "../../GraphicBuilder";
 import { RenderGraphic } from "../../RenderGraphic";
 import { RenderSystem } from "../../RenderSystem";
 import { DisplayParams } from "../DisplayParams";
+import { GeometryOptions } from "../Primitives";
 import { GeometryAccumulator } from "./GeometryAccumulator";
 import { Geometry } from "./GeometryPrimitives";
-import { Id64String } from "@bentley/bentleyjs-core";
 
 function copy2dTo3d(pts2d: Point2d[], depth: number): Point3d[] {
   const pts3d: Point3d[] = [];

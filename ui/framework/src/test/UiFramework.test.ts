@@ -5,16 +5,14 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-
 import { Id64String, Logger } from "@bentley/bentleyjs-core";
+import { IModelApp, IModelConnection, MockRender, ViewState } from "@bentley/imodeljs-frontend";
 import { Presentation } from "@bentley/presentation-frontend";
-import { IModelApp, IModelConnection, ViewState, MockRender } from "@bentley/imodeljs-frontend";
 import { initialize as initializePresentationTesting, terminate as terminatePresentationTesting } from "@bentley/presentation-testing";
-
-import TestUtils, { mockUserInfo } from "./TestUtils";
-import { UiFramework, ColorTheme, CursorMenuData } from "../ui-framework";
+import { ColorTheme, CursorMenuData, UiFramework } from "../ui-framework";
 import { DefaultIModelServices } from "../ui-framework/clientservices/DefaultIModelServices";
 import { DefaultProjectServices } from "../ui-framework/clientservices/DefaultProjectServices";
+import TestUtils, { mockUserInfo } from "./TestUtils";
 
 describe("UiFramework", () => {
 

@@ -2,9 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { IModelApp, NotifyMessageDetails, OutputMessagePriority, FitViewTool, WindowAreaTool, ZoomViewTool, PanViewTool, RotateViewTool, SelectionTool } from "@bentley/imodeljs-frontend";
-import { BadgeType, AbstractMenuItemProps, AbstractToolbarProps, RelativePosition, PropertyDescription, Primitives } from "@bentley/ui-abstract";
-import { CommandItemDef, ActionButtonItemDef } from "@bentley/ui-framework";
+import {
+  FitViewTool, IModelApp, NotifyMessageDetails, OutputMessagePriority, PanViewTool, RotateViewTool, SelectionTool, WindowAreaTool, ZoomViewTool,
+} from "@bentley/imodeljs-frontend";
+import { AbstractMenuItemProps, AbstractToolbarProps, BadgeType, Primitives, PropertyDescription, RelativePosition } from "@bentley/ui-abstract";
+import { ActionButtonItemDef, CommandItemDef } from "@bentley/ui-framework";
 
 export class AccuDrawPopupTools {
 

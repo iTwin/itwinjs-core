@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { calculateSolarAngles, degToRad } from "./SolarCalculate";
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
-import { request, Response, RequestOptions } from "@bentley/itwin-client";
+import { request, RequestOptions, Response } from "@bentley/itwin-client";
+import { calculateSolarAngles, degToRad } from "./SolarCalculate";
 
 // tslint:disable:no-console
 

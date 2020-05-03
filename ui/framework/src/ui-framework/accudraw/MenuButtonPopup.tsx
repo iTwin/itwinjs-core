@@ -7,9 +7,7 @@
  */
 
 import * as React from "react";
-
-import { SizeProps, Size } from "@bentley/ui-core";
-
+import { Size, SizeProps } from "@bentley/ui-core";
 import { PopupManager, PopupPropsBase } from "../popup/PopupManager";
 import { MenuButton } from "./MenuButton";
 

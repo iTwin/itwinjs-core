@@ -6,12 +6,12 @@
  * @module Toolbar
  */
 
+import "./Toolbar.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps, NoChildrenProps, flattenChildren } from "@bentley/ui-core";
+import { CommonProps, flattenChildren, NoChildrenProps } from "@bentley/ui-core";
 import { Direction, DirectionHelpers, OrthogonalDirection, OrthogonalDirectionHelpers } from "../utilities/Direction";
 import { Items } from "./Items";
-import "./Toolbar.scss";
 
 /** Available alignment modes of [[Toolbar]] panels.
  * @beta

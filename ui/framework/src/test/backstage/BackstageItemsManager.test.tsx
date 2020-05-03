@@ -5,14 +5,8 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import {
-  isActionItem,
-  isStageLauncher,
-  BackstageItemsManager,
-} from "@bentley/ui-abstract";
-import {
-  useDefaultBackstageItems,
-} from "../../ui-framework";
+import { BackstageItemsManager, isActionItem, isStageLauncher } from "@bentley/ui-abstract";
+import { useDefaultBackstageItems } from "../../ui-framework";
 import { getActionItem, getStageLauncherItem } from "./BackstageComposerItem.test";
 
 describe("isActionItem", () => {

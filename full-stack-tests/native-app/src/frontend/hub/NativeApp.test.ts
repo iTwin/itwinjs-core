@@ -3,14 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { GuidString, Config } from "@bentley/bentleyjs-core";
-import { NativeApp, IModelApp, NativeAppLogger } from "@bentley/imodeljs-frontend";
-import { IModelVersion, BriefcaseDownloader, SyncMode, BriefcaseProps } from "@bentley/imodeljs-common";
+import { Config, GuidString } from "@bentley/bentleyjs-core";
+import { BriefcaseDownloader, BriefcaseProps, IModelVersion, SyncMode } from "@bentley/imodeljs-common";
+import { IModelApp, NativeApp, NativeAppLogger } from "@bentley/imodeljs-frontend";
 import { ProgressInfo } from "@bentley/itwin-client";
 import { TestFrontendAuthorizationClient, TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
-import { TestUtility } from "./TestUtility";
-import { TestChangeSetUtility } from "./TestChangeSetUtility";
 import { usingOfflineScope } from "./HttpRequestHook";
+import { TestChangeSetUtility } from "./TestChangeSetUtility";
+import { TestUtility } from "./TestUtility";
 
 describe("NativeApp (#integration)", () => {
   let testProjectName: string;

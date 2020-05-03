@@ -7,28 +7,27 @@
  */
 
 import * as React from "react";
-import classnames = require("classnames");
-
 import { Logger } from "@bentley/bentleyjs-core";
-import { BadgeType, StringGetter, OnItemExecutedFunc, ConditionalStringValue } from "@bentley/ui-abstract";
-import { withOnOutsideClick, CommonProps, SizeProps, IconSpec, Icon, BadgeUtilities } from "@bentley/ui-core";
+import { BadgeType, ConditionalStringValue, OnItemExecutedFunc, StringGetter } from "@bentley/ui-abstract";
+import { BadgeUtilities, CommonProps, Icon, IconSpec, SizeProps, withOnOutsideClick } from "@bentley/ui-core";
 import {
-  Item, ExpandableItem, GroupColumn, GroupTool, GroupToolExpander, Group as ToolGroupComponent,
-  NestedGroup as NestedToolGroupComponent, Direction, withDragInteraction, ToolbarDirectionContext,
+  Direction, ExpandableItem, Group as ToolGroupComponent, GroupColumn, GroupTool, GroupToolExpander, Item, NestedGroup as NestedToolGroupComponent,
+  ToolbarDirectionContext, withDragInteraction,
 } from "@bentley/ui-ninezone";
-
-import { ActionButtonItemDef } from "../shared/ActionButtonItemDef";
-import { ItemDefBase, BaseItemState } from "../shared/ItemDefBase";
-import { ItemList, ItemMap } from "../shared/ItemMap";
-import { SyncUiEventDispatcher, SyncUiEventArgs } from "../syncui/SyncUiEventDispatcher";
-import { PropsHelper } from "../utils/PropsHelper";
+import { ToolGroupPanelContext } from "../frontstage/FrontstageComposer";
+import { FrontstageManager, ToolActivatedEventArgs } from "../frontstage/FrontstageManager";
 import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
-import { UiFramework } from "../UiFramework";
+import { ActionButtonItemDef } from "../shared/ActionButtonItemDef";
 import { AnyItemDef } from "../shared/AnyItemDef";
 import { GroupItemProps } from "../shared/GroupItemProps";
-import { FrontstageManager, ToolActivatedEventArgs } from "../frontstage/FrontstageManager";
-import { ToolGroupPanelContext } from "../frontstage/FrontstageComposer";
+import { BaseItemState, ItemDefBase } from "../shared/ItemDefBase";
+import { ItemList, ItemMap } from "../shared/ItemMap";
+import { SyncUiEventArgs, SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
+import { UiFramework } from "../UiFramework";
+import { PropsHelper } from "../utils/PropsHelper";
 import { ToolbarDragInteractionContext } from "./DragInteraction";
+
+import classnames = require("classnames");
 
 // tslint:disable-next-line: variable-name
 const ToolGroup = withOnOutsideClick(ToolGroupComponent, undefined, false);

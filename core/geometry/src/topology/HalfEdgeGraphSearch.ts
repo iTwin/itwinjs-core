@@ -8,8 +8,9 @@
  */
 
 import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "./Graph";
-import { XYParitySearchContext } from "./XYParitySearchContext";
 import { SignedDataSummary } from "./SignedDataSummary";
+import { XYParitySearchContext } from "./XYParitySearchContext";
+
 /**
  * Interface for an object that executes boolean tests on edges.
  */

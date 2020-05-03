@@ -6,16 +6,16 @@
  * @module UiProvider
  */
 
-import * as React from "react";
-import classnames from "classnames";
-import {
-  DialogItemsManager, BaseDialogItem, DialogItem, DialogRow, SyncPropertiesChangeEventArgs, PropertyRecord, PropertyValueFormat, DialogPropertySyncItem, DialogItemValue,
-} from "@bentley/ui-abstract";
-import { PropertyUpdatedArgs, EditorContainer } from "@bentley/ui-components";
-import { ToolSettingsEntry } from "../widget-panels/ToolSettings";
-
 import "./DefaultDialogGridContainer.scss";
+import classnames from "classnames";
+import * as React from "react";
+import {
+  BaseDialogItem, DialogItem, DialogItemsManager, DialogItemValue, DialogPropertySyncItem, DialogRow, PropertyRecord, PropertyValueFormat,
+  SyncPropertiesChangeEventArgs,
+} from "@bentley/ui-abstract";
+import { EditorContainer, PropertyUpdatedArgs } from "@bentley/ui-components";
 import { assert } from "@bentley/ui-ninezone";
+import { ToolSettingsEntry } from "../widget-panels/ToolSettings";
 
 function EditorLabel({ itemsManager, item, isLeftmostRecord }: { itemsManager: DialogItemsManager, item: DialogItem, isLeftmostRecord?: boolean }) {
   const [isDisabled, setIsDisabled] = React.useState(!!item.isDisabled);

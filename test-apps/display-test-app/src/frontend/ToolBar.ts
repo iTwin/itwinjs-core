@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "@bentley/bentleyjs-core";
-import { Viewport, IModelApp } from "@bentley/imodeljs-frontend";
+import { IModelApp, Viewport } from "@bentley/imodeljs-frontend";
 
 export interface ToolButtonProps {
   iconUnicode: string;

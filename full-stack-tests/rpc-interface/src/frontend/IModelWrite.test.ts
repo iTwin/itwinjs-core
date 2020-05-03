@@ -2,14 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { OpenMode, Logger } from "@bentley/bentleyjs-core";
-import { Range3d } from "@bentley/geometry-core";
-import { AccessToken } from "@bentley/itwin-client";
-import { Briefcase as HubBriefcase, BriefcaseQuery } from "@bentley/imodelhub-client";
-import { RemoteBriefcaseConnection, IModelApp, IModelConnection, AuthorizedFrontendRequestContext } from "@bentley/imodeljs-frontend";
 import { assert, expect } from "chai";
-import { TestContext } from "./setup/TestContext";
+import { Logger, OpenMode } from "@bentley/bentleyjs-core";
+import { Range3d } from "@bentley/geometry-core";
+import { Briefcase as HubBriefcase, BriefcaseQuery } from "@bentley/imodelhub-client";
+import { AuthorizedFrontendRequestContext, IModelApp, IModelConnection, RemoteBriefcaseConnection } from "@bentley/imodeljs-frontend";
+import { AccessToken } from "@bentley/itwin-client";
 import { TestFrontendAuthorizationClient } from "@bentley/oidc-signin-tool/lib/frontend";
+import { TestContext } from "./setup/TestContext";
 
 describe("IModel Read/Write Connection", () => {
   let accessToken: AccessToken;

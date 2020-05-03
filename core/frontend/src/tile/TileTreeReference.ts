@@ -7,32 +7,14 @@
  */
 
 import { BeTimePoint } from "@bentley/bentleyjs-core";
-import {
-  Matrix4d,
-  Range1d,
-  Range3d,
-  Transform,
-} from "@bentley/geometry-core";
-import {
-  ElementAlignedBox3d,
-  FrustumPlanes,
-  ViewFlagOverrides,
-} from "@bentley/imodeljs-common";
+import { Matrix4d, Range1d, Range3d, Transform } from "@bentley/geometry-core";
+import { ElementAlignedBox3d, FrustumPlanes, ViewFlagOverrides } from "@bentley/imodeljs-common";
 import { HitDetail } from "../HitDetail";
+import { FeatureSymbology } from "../render/FeatureSymbology";
 import { RenderClipVolume } from "../render/RenderClipVolume";
 import { RenderMemory } from "../render/RenderMemory";
-import { FeatureSymbology } from "../render/FeatureSymbology";
-import {
-  TileDrawArgs,
-  TileTree,
-  TileTreeLoadStatus,
-  TileTreeOwner,
-  TileTreeSet,
-} from "./internal";
-import {
-  DecorateContext,
-  SceneContext,
-} from "../ViewContext";
+import { DecorateContext, SceneContext } from "../ViewContext";
+import { TileDrawArgs, TileTree, TileTreeLoadStatus, TileTreeOwner, TileTreeSet } from "./internal";
 
 /** Describes the type of graphics produced by a [[TileTreeReference]].
  * @beta

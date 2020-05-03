@@ -3,30 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import * as React from "react";
 import { expect } from "chai";
-
-import TestUtils from "../TestUtils";
-import {
-  ConfigurableUiManager,
-  FrontstageManager,
-  WidgetControl,
-  ConfigurableCreateInfo,
-  ContentGroupProps,
-  ContentGroupManager,
-  ContentLayoutProps,
-  ContentLayoutManager,
-  TaskPropsList,
-  TaskManager,
-  WorkflowManager,
-  WorkflowPropsList,
-  Frontstage,
-  FrontstageProvider,
-  FrontstageProps,
-  CoreTools,
-  WorkflowProps,
-} from "../../ui-framework";
+import * as React from "react";
 import { MockRender } from "@bentley/imodeljs-frontend";
+import {
+  ConfigurableCreateInfo, ConfigurableUiManager, ContentGroupManager, ContentGroupProps, ContentLayoutManager, ContentLayoutProps, CoreTools,
+  Frontstage, FrontstageManager, FrontstageProps, FrontstageProvider, TaskManager, TaskPropsList, WidgetControl, WorkflowManager, WorkflowProps,
+  WorkflowPropsList,
+} from "../../ui-framework";
+import TestUtils from "../TestUtils";
 
 describe("ConfigurableUiManager", () => {
 

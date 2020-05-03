@@ -6,19 +6,19 @@
  * @module WebGL
  */
 
-import { FragmentShaderComponent, VariableType, ShaderBuilder, VertexShaderComponent, ProgramBuilder } from "../ShaderBuilder";
-import { ShaderProgram } from "../ShaderProgram";
-import { assignFragColor } from "./Fragment";
-import { createViewportQuadBuilder } from "./ViewportQuad";
-import { FloatRgb, FloatRgba } from "../FloatRGBA";
 import { ColorDef, SpatialClassificationProps } from "@bentley/imodeljs-common";
-import { SingleTexturedViewportQuadGeometry, VolumeClassifierGeometry, BoundaryType, ScreenPointsGeometry } from "../CachedGeometry";
-import { Texture2DHandle } from "../Texture";
-import { TextureUnit } from "../RenderFlags";
 import { AttributeMap } from "../AttributeMap";
-import { TechniqueId } from "../TechniqueId";
-import { unquantizeVertexPosition } from "./Vertex";
+import { BoundaryType, ScreenPointsGeometry, SingleTexturedViewportQuadGeometry, VolumeClassifierGeometry } from "../CachedGeometry";
+import { FloatRgb, FloatRgba } from "../FloatRGBA";
+import { TextureUnit } from "../RenderFlags";
+import { FragmentShaderComponent, ProgramBuilder, ShaderBuilder, VariableType, VertexShaderComponent } from "../ShaderBuilder";
+import { ShaderProgram } from "../ShaderProgram";
 import { System } from "../System";
+import { TechniqueId } from "../TechniqueId";
+import { Texture2DHandle } from "../Texture";
+import { assignFragColor } from "./Fragment";
+import { unquantizeVertexPosition } from "./Vertex";
+import { createViewportQuadBuilder } from "./ViewportQuad";
 
 const computehiliteColor = "return vec4(u_hilite_color.rgb, 1.0);";
 

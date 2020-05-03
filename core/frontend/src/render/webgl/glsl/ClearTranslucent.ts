@@ -6,10 +6,10 @@
  * @module WebGL
  */
 
-import { ShaderProgram } from "../ShaderProgram";
 import { FragmentShaderComponent } from "../ShaderBuilder";
-import { createViewportQuadBuilder } from "./ViewportQuad";
+import { ShaderProgram } from "../ShaderProgram";
 import { System } from "../System";
+import { createViewportQuadBuilder } from "./ViewportQuad";
 
 const computeBaseColor = "return vec4(0.0);";
 const assignFragData = `

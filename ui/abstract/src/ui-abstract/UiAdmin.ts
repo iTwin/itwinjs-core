@@ -10,9 +10,9 @@ import { XAndY } from "@bentley/geometry-core";
 import { AbstractMenuItemProps } from "./items/AbstractMenuItemProps";
 import { AbstractToolbarProps } from "./items/AbstractToolbarProps";
 import { RelativePosition } from "./items/RelativePosition";
-import { OnCancelFunc, OnItemExecutedFunc, OnNumberCommitFunc, OnValueCommitFunc } from "./utils/callbacks";
-import { Primitives } from "./properties/PrimitiveTypes";
 import { PropertyDescription } from "./properties/Description";
+import { Primitives } from "./properties/PrimitiveTypes";
+import { OnCancelFunc, OnItemExecutedFunc, OnNumberCommitFunc, OnValueCommitFunc } from "./utils/callbacks";
 
 /** The UiAdmin controls various UI components and is callable from IModelApp.uiAdmin in the imodeljs-frontend package.
  * @beta

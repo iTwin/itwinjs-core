@@ -3,16 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-import { GuidString, Guid } from "@bentley/bentleyjs-core";
+import { Guid, GuidString } from "@bentley/bentleyjs-core";
 import {
-  AccessToken, AuthorizedClientRequestContext,
-  RequestGlobalOptions, RequestTimeoutOptions,
-} from "@bentley/itwin-client";
+  Briefcase, ChangeSet, IModelClient, IModelQuery, Thumbnail, ThumbnailQuery, ThumbnailSize, Version, VersionQuery,
+} from "@bentley/imodelhub-client";
+import { AccessToken, AuthorizedClientRequestContext, RequestGlobalOptions, RequestTimeoutOptions } from "@bentley/itwin-client";
 import { TestUsers } from "@bentley/oidc-signin-tool";
+import { RequestType, ResponseBuilder, ScopeType } from "../ResponseBuilder";
 import { TestConfig } from "../TestConfig";
-import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import * as utils from "./TestUtils";
-import { Version, VersionQuery, Briefcase, ChangeSet, Thumbnail, ThumbnailQuery, ThumbnailSize, IModelClient, IModelQuery } from "@bentley/imodelhub-client";
 
 function getSelectStatement(thumbnailSizes: ThumbnailSize[]) {
   let selectStatement: string = "*";

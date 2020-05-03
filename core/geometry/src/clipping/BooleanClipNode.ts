@@ -7,12 +7,12 @@
  * @module CartesianGeometry
  */
 
+import { Arc3d } from "../curve/Arc3d";
+import { AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive, CurvePrimitive } from "../curve/CurvePrimitive";
 import { Point3d } from "../geometry3d/Point3dVector3d";
 import { Range1d } from "../geometry3d/Range";
-import { Arc3d } from "../curve/Arc3d";
-import { Clipper } from "./ClipUtils";
-import { AnnounceNumberNumberCurvePrimitive, AnnounceNumberNumber, CurvePrimitive } from "../curve/CurvePrimitive";
 import { Range1dArray } from "../numerics/Range1dArray";
+import { Clipper } from "./ClipUtils";
 
 /** BooleanClipNode is an abstract base class for boolean actions by an array of clippers.
  * * Derived class must implement

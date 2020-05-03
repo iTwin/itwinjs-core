@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { expect } from "chai";
+import * as sinon from "sinon";
 import { IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
 import { ChildNodeSpecificationTypes, Ruleset, RuleTypes } from "@bentley/presentation-common";
 import { PresentationTreeDataProvider } from "@bentley/presentation-components";
 import { Presentation } from "@bentley/presentation-frontend";
-import { expect } from "chai";
-import * as sinon from "sinon";
 import { initialize, terminate } from "../../IntegrationTests";
 
 const RULESET: Ruleset = {

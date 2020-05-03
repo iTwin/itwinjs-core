@@ -5,8 +5,8 @@
 
 import * as path from "path";
 import * as fs from "fs";
-import { SchemaKey, SchemaMatchType, Schema, ECObjectsError, ECObjectsStatus, ECVersion } from "@bentley/ecschema-metadata";
-import { SchemaFileLocater, SchemaJsonFileLocater, FileSchemaKey } from "@bentley/ecschema-locaters";
+import { ECObjectsError, ECObjectsStatus, ECVersion, Schema, SchemaKey, SchemaMatchType } from "@bentley/ecschema-metadata";
+import { FileSchemaKey, SchemaFileLocater, SchemaJsonFileLocater } from "@bentley/ecschema-locaters";
 import { DOMParser } from "xmldom";
 import { ISchemaLocater, SchemaContext } from "@bentley/ecschema-metadata/lib/Context";
 import { ECSchemaXmlContext, IModelHost } from "@bentley/imodeljs-backend";

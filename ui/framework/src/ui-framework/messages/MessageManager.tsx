@@ -6,33 +6,23 @@
  * @module Notification
  */
 
-import * as React from "react";
 import classnames from "classnames";
 import * as _ from "lodash";
-
-import {
-  ActivityMessageDetails,
-  OutputMessagePriority,
-  MessageBoxType,
-  MessageBoxIconType,
-  MessageBoxValue,
-  OutputMessageType,
-  OutputMessageAlert,
-  ToolAssistanceInstructions,
-  ToolTipOptions,
-  IModelApp,
-} from "@bentley/imodeljs-frontend";
+import * as React from "react";
 import { XAndY } from "@bentley/geometry-core";
-import { UiEvent, MessageContainer, MessageSeverity } from "@bentley/ui-core";
-
-import { UiFramework } from "../UiFramework";
+import {
+  ActivityMessageDetails, IModelApp, MessageBoxIconType, MessageBoxType, MessageBoxValue, OutputMessageAlert, OutputMessagePriority,
+  OutputMessageType, ToolAssistanceInstructions, ToolTipOptions,
+} from "@bentley/imodeljs-frontend";
+import { MessageContainer, MessageSeverity, UiEvent } from "@bentley/ui-core";
+import { ConfigurableUiActionId } from "../configurableui/state";
 import { ModalDialogManager } from "../dialog/ModalDialogManager";
 import { StandardMessageBox } from "../dialog/StandardMessageBox";
-import { ConfigurableUiActionId } from "../configurableui/state";
+import { ElementTooltip } from "../feedback/ElementTooltip";
+import { UiFramework } from "../UiFramework";
 import { MessageSpan } from "./MessageSpan";
 import { PointerMessage } from "./Pointer";
 import { NotifyMessageDetailsType, NotifyMessageType } from "./ReactNotifyMessageDetails";
-import { ElementTooltip } from "../feedback/ElementTooltip";
 
 class MessageBoxCallbacks {
   constructor(
