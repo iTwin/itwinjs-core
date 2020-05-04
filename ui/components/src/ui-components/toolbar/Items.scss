@@ -77,7 +77,7 @@ $separator-color: $buic-text-color-muted;
   margin-left: $components-desktop-separator-gap-between-toolbar-items;
 }
 
-.components-toolbar-item-container.components-horizontal.components-toolbar-button-add-gap-before:before {
+div.components-toolbar-items-container.components-toolbar-show-group-separators > .components-toolbar-item-container.components-horizontal.components-toolbar-button-add-gap-before::before {
   width: $components-desktop-separator-thickness;
   background-color: $separator-color;
   left: $components-desktop-separator-center-offset;
@@ -87,7 +87,7 @@ $separator-color: $buic-text-color-muted;
   margin-top: $components-desktop-separator-gap-between-toolbar-items;
 }
 
-.components-toolbar-item-container.components-vertical.components-toolbar-button-add-gap-before:before {
+div.components-toolbar-items-container.components-toolbar-show-group-separators > .components-toolbar-item-container.components-vertical.components-toolbar-button-add-gap-before::before {
   height: $components-desktop-separator-thickness;
   background-color: $separator-color;
   top: $components-desktop-separator-center-offset;

@@ -31,10 +31,6 @@ export interface ToolbarItemsProps extends CommonProps {
  * @internal
  */
 export function ToolbarItems(props: ToolbarItemsProps) {
-  const className = classnames(
-    "components-toolbar-items-container",
-    OrthogonalDirectionHelpers.getCssClassName(props.direction),
-    props.className);
 
   const ref = React.useRef<HTMLDivElement>(null);
   const proximity = useProximityToMouse(ref);
@@ -42,12 +38,15 @@ export function ToolbarItems(props: ToolbarItemsProps) {
   let toolbarOpacity = TOOLBAR_OPACITY_DEFAULT;
   let boxShadowOpacity = TOOLBAR_BOX_SHADOW_OPACITY_DEFAULT;
   let filterBlur = TOOLBAR_BACKDROP_FILTER_BLUR_DEFAULT;
+  let showSeparators = true;
 
   if (useProximityOpacity && openPopupCount < 1 && !overflowDisplayActive) {
     const proximityScale = calculateProximityScale(proximity);
     toolbarOpacity = calculateToolbarOpacity(proximityScale);
     boxShadowOpacity = calculateBoxShadowOpacity(proximityScale);
     filterBlur = calculateBackdropFilterBlur(proximityScale);
+    if (proximityScale < .25)
+      showSeparators = false;
   }
 
   const divStyle: React.CSSProperties = {
@@ -56,6 +55,12 @@ export function ToolbarItems(props: ToolbarItemsProps) {
     backdropFilter: getToolbarBackdropFilter(filterBlur),
     ...props.style,
   };
+
+  const className = classnames(
+    "components-toolbar-items-container",
+    OrthogonalDirectionHelpers.getCssClassName(props.direction),
+    showSeparators && "components-toolbar-show-group-separators",
+    props.className);
 
   return (
     <div
