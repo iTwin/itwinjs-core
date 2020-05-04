@@ -61,7 +61,7 @@ class TreeOwner implements TileTreeOwner {
     if (TileTreeLoadStatus.Loading === this._loadStatus) {
       this._tileTree = tree;
       this._loadStatus = newStatus;
-      IModelApp.viewManager.onNewTilesReady();
+      IModelApp.tileAdmin.onTileTreeLoad.raiseEvent(this);
     }
   }
 }

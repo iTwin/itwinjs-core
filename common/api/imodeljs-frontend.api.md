@@ -8511,14 +8511,20 @@ export abstract class TileAdmin {
     abstract onCacheMiss(): void;
     // @internal (undocumented)
     abstract onShutDown(): void;
+    // @internal
+    readonly onTileChildrenLoad: BeEvent<(parentTile: Tile) => void>;
     // @internal (undocumented)
     abstract onTileCompleted(tile: Tile): void;
     // @internal (undocumented)
     abstract onTileFailed(tile: Tile): void;
+    // @internal
+    readonly onTileLoad: BeEvent<(tile: Tile) => void>;
     // @internal (undocumented)
     abstract onTilesElided(numElided: number): void;
     // @internal (undocumented)
     abstract onTileTimedOut(tile: Tile): void;
+    // @internal
+    readonly onTileTreeLoad: BeEvent<(tileTree: TileTree) => void>;
     // @internal
     abstract process(): void;
     // @internal
@@ -10093,8 +10099,6 @@ export class ViewManager {
     readonly onFinishRender: BeEvent<() => void>;
     // @internal (undocumented)
     onInitialized(): void;
-    // @internal (undocumented)
-    onNewTilesReady(): void;
     readonly onSelectedViewportChanged: BeUiEvent<SelectedViewportChangedArgs>;
     // @internal (undocumented)
     onSelectionSetChanged(_iModel: IModelConnection): void;

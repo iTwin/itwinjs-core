@@ -153,7 +153,7 @@ export abstract class Tile {
   /** @internal */
   public setIsReady(): void {
     this._state = TileState.Ready;
-    IModelApp.viewManager.onNewTilesReady();
+    IModelApp.tileAdmin.onTileLoad.raiseEvent(this);
   }
 
   /** @internal */
@@ -299,12 +299,12 @@ export abstract class Tile {
       if (undefined === children || 0 === children.length)
         this._isLeaf = true;
 
-      IModelApp.viewManager.onNewTilesReady();
+      IModelApp.tileAdmin.onTileChildrenLoad.raiseEvent(this);
     }, (_error: Error) => {
       this._isLeaf = true;
       this._childrenLoadStatus = TileTreeLoadStatus.NotFound;
 
-      IModelApp.viewManager.onNewTilesReady();
+      IModelApp.tileAdmin.onTileChildrenLoad.raiseEvent(this);
     });
 
     return this._childrenLoadStatus;

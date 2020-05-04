@@ -87,6 +87,8 @@ export class ViewManager {
   private _invalidateScenes = false;
   private _skipSceneCreation = false;
   private _doIdleWork = false;
+  private _removeTileAdminEventListeners?: () => void;
+
   /** @internal */
   public readonly toolTipProviders: ToolTipProvider[] = [];
 
@@ -108,6 +110,11 @@ export class ViewManager {
     this.addDecorator(IModelApp.toolAdmin);
     this.cursor = "default";
 
+    const removeTileLoad = IModelApp.tileAdmin.onTileLoad.addListener((_) => this.invalidateScenes());
+    const removeTreeLoad = IModelApp.tileAdmin.onTileTreeLoad.addListener((_) => this.invalidateScenes());
+    const removeChildLoad = IModelApp.tileAdmin.onTileTreeLoad.addListener((_) => this.invalidateScenes());
+    this._removeTileAdminEventListeners = () => { removeTileLoad(); removeTreeLoad(); removeChildLoad(); };
+
     const options = IModelApp.renderSystem.options;
     this._doIdleWork = true === options.doIdleWork;
     if (this._doIdleWork)
@@ -120,6 +127,11 @@ export class ViewManager {
     this.decorators.length = 0;
     this.toolTipProviders.length = 0;
     this._selectedView = undefined;
+
+    if (this._removeTileAdminEventListeners) {
+      this._removeTileAdminEventListeners();
+      this._removeTileAdminEventListeners = undefined;
+    }
   }
 
   /** Called after the selected view changes.
@@ -312,8 +324,6 @@ export class ViewManager {
   }
   /** @internal */
   public get sceneInvalidated(): boolean { return this._invalidateScenes; }
-  /** @internal */
-  public onNewTilesReady(): void { this.invalidateScenes(); }
 
   /** Invoked by ToolAdmin event loop.
    * @internal

@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { assert, BeDuration, BeTimePoint, Dictionary, Id64Array, PriorityQueue } from "@bentley/bentleyjs-core";
+import { assert, BeDuration, BeEvent, BeTimePoint, Dictionary, Id64Array, PriorityQueue } from "@bentley/bentleyjs-core";
 import {
   CurrentImdlVersion, getMaximumMajorTileFormatVersion, IModelTileRpcInterface, NativeAppRpcInterface, RpcOperation, RpcRegistry,
   RpcResponseCacheControl, ServerTimeoutError, TileTreeContentIds, TileTreeProps,
@@ -232,6 +232,21 @@ export abstract class TileAdmin {
   public abstract onCacheMiss(): void;
   /** @internal */
   public abstract onActiveRequestCanceled(tile: Tile): void;
+
+  /** Event raised when a request to load a tile's content completes.
+   * @internal
+   */
+  public readonly onTileLoad = new BeEvent<(tile: Tile) => void>();
+
+  /** Event raised when a request to load a tile tree completes.
+   * @internal
+   */
+  public readonly onTileTreeLoad = new BeEvent<(tileTree: TileTree) => void>();
+
+  /** Event raised when a request to load a tile's child tiles completes.
+   * @internal
+   */
+  public readonly onTileChildrenLoad = new BeEvent<(parentTile: Tile) => void>();
 }
 
 /** @alpha */

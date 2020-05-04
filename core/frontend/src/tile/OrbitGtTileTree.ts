@@ -320,7 +320,7 @@ export class OrbitGtTileTree extends TileTree {
 
     args.drawGraphics();
     if (frameData.hasMissingData()) {
-      this._dataManager.loadData(frameData).then(() => IModelApp.viewManager.onNewTilesReady()).catch((_err: any) => undefined);
+      this._dataManager.loadData(frameData).then(() => IModelApp.tileAdmin.onTileLoad.raiseEvent(this.rootTile)).catch((_err: any) => undefined);
     }
   }
 }
