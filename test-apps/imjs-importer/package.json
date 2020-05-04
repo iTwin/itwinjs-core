@@ -33,13 +33,11 @@
     "@bentley/imodeljs-i18n": "2.0.0-dev.92",
     "@bentley/logger-config": "2.0.0-dev.92",
     "chai": "^4.1.2",
-    "jquery": "^3.4.1",
     "yargs": "^15.0.0"
   },
   "devDependencies": {
     "@bentley/build-tools": "2.0.0-dev.92",
     "@types/chai": "^4.1.4",
-    "@types/jquery": "^3.3.33",
     "@types/mocha": "^5.2.5",
     "@types/node": "10.14.1",
     "@types/yargs": "^12.0.5",
