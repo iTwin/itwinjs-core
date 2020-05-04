@@ -1,6 +1,18 @@
 # Change Log - @bentley/ui-framework
 
-This log was last generated on Fri, 01 May 2020 15:29:28 GMT and should not be manually modified.
+This log was last generated on Wed, 22 Apr 2020 19:04:00 GMT and should not be manually modified.
+
+## 1.14.1
+Wed, 22 Apr 2020 19:04:00 GMT
+
+*Version update only*
+
+## 1.14.0
+Tue, 31 Mar 2020 15:44:19 GMT
+
+### Updates
+
+- Models Tree: Fix non-geometric models being used when changing subject's display
 
 ## 1.13.0
 Wed, 04 Mar 2020 16:16:31 GMT
@@ -148,7 +160,7 @@ Mon, 30 Sep 2019 22:28:48 GMT
 - Backport Sections and ViewAttributes Status Fields from Design Review for use with plugins.
 - Cursor Prompt no longer displays as small blank popup when Tool Assistance instruction is blank
 - Fixed Frontstage resizing problem exposed by Chrome update
-- Don't try to correct clip plane handle location when plane has been moved outside project extents. Updated image for two finger drag svg.
+- #168241 Don't try to correct clip plane handle location when plane has been moved outside project extents. Updated image for two finger drag svg.
 - Changed ToolWidget, NavigatonWidget, and Toolbar render method to only render items in state and to not generate them during render.
 - Add support for panelLabel property for a GoupButton. This is the title that is shown when the group is opened.
 - Added FrontstageProvider.initializeDef param for FrontstageDef
@@ -161,11 +173,11 @@ Mon, 30 Sep 2019 22:28:48 GMT
 - Support for Modifier key + wide SVG
 - Tool Assistance for Ctrl+Z and other chars
 - Fixed ToolAssistanceField pin problem
-- Tool assistance: Measure tools, view clip tools, and touch cursor inputs.
+- #168481 Tool assistance: Measure tools, view clip tools, and touch cursor inputs.
 - Added touch entries to ToolAssistanceImage
-- Update the tree (empty data) be more descriptive and generic.
+- Joe G required the tree (empty data) be more descriptive and generic.
 - In the Model/Category/Spatial trees, center the error message
-- Upgrade to TypeScript 3.6.2
+- upgrade to TypeScript 3.6.2
 - Ability to collapse stage panel using StagePanelDef.
 - Stage panel header.
 - Make components aware of safe area insets.
@@ -182,7 +194,7 @@ Tue, 10 Sep 2019 12:09:49 GMT
 - Addressed some warnings introduced with React 16.9
 - Listening for onSelectedViewportChanged to set active content view for viewports
 - Had to back up to react-split-pane 0.1.77
-- Allow an app to specify touch-specific instructions in tool assistance.
+- #165662. Allow an app to specify touch-specific instructions in tool assistance.
 - Visibility Component: Preserve active tree state by saving and restoring scroll position
 
 ## 1.3.0
@@ -199,7 +211,7 @@ Tue, 13 Aug 2019 20:25:53 GMT
 - Added CursorPopupRenderer to render multiple CursorPopups per RelativePosition.
 - Added CursorPrompt, improved Pointer messages
 - Added @bentley/icons-generic to dependencies which was wrongly set in devDependencies.
-- Fixed Group Button history is overlapping a Popup Button panel when hovering over the Group button
+- #159907. Fixed Group Button history is overlapping a Popup Button panel when hovering over the Group button
 - Allow enter key in arguments field of keyin browser to trigger command execution. Select text on focus in to allow easy argument replacement
 - Added icons to markup/redline
 - Fixed Zone mergeWithZone processing
@@ -226,7 +238,7 @@ Wed, 24 Jul 2019 11:47:26 GMT
 - Update so both Tool and Navigation wigets refresh when PluginUiProvider is loaded.
 - Support ToolbarItemInsertSpecs with conditional visibility. Update toolbar processing to better handle situations where number of visible items change.
 - Add support for GroupItemInsertSpec, badges, and svg symbolId in ToolbarItemInsertSpecs
-- Removed redundant call to OidcClient.initialize in UiFramework.
+- Bug 148507: Removed redundant call to OidcClient.initialize in UiFramework.
 - Add PluginUiManager class and PluginUiProvider interface that will be used by Plugins to specify UI components to add to an iModeljs application.
 - Added CursorInformation and CursorPopup
 - Upgraded to Redux 4.0.3 that fixed combineReducers
@@ -236,7 +248,7 @@ Wed, 24 Jul 2019 11:47:26 GMT
 - Rerender widget tabs when WidgetDef changes.
 - Close ListPicker on outside click.
 - Ability to close Panel of PopupButton.
-- Remove node selection logic from model Tree
+- remove node selection logic from model Tree
 - Convert Widget, Zone and StagePanel components to PureComponents.
 - Model Picker: Fix presentation ruleset
 - VisibilityTree: Update visual styles.
@@ -255,12 +267,13 @@ Mon, 01 Jul 2019 19:04:29 GMT
 - Removed missing group descriptions
 - Added support for 'HTMLElement | string' for message strings
 - Fixed Minimum/Maximum window toast message spam
+- Update tests.
 - Fixed ActionButtonItemDef random key unit test
 - Removed 4 dangerouslySetInnerHtml usages to help with Security audit; 3 remain on purpose.
 - Save & Restore View Layouts
-- Force toolsettings to refresh when a tool is started even if new toolId is same as active toolId.
+- Fix Bug 127182 - Force toolsettings to refresh when a tool is started even if new toolId is same as active toolId.
 - Added *.svg to .npmignore file
-- Fix issue where cached tool settings values in UI would get out of sync with actual values in tool.
+- #137311 - Fix issue where cached tool settings values in UI would get out of sync with actual values in tool.
 - Update to TypeScript 3.5
 - Fix model selector view sync problem
 - Added MessageManager.addToMessageCenter. ui-framework unit tests.
@@ -302,7 +315,7 @@ Mon, 03 Jun 2019 18:09:39 GMT
 - Visibility Tree: Fix statuses of subjects and elements
 - Visibility Tree: Refactor subjects' status checking and elements' category and model ids' retrieval for better performance
 - Visibility Tree: Enable all subcategories' display when making category visible
-- Add a notification event when a view is chosen in ViewSelector. #124295. ViewSelector incorrectly handles the case when a selected view has not initialized with a viewport.
+- #124300. Add a notification event when a view is chosen in ViewSelector. #124295. ViewSelector incorrectly handles the case when a selected view has not initialized with a viewport.
 - Added ViewSelectorChangedEvent
 
 ## 0.191.0
@@ -334,10 +347,10 @@ Mon, 13 May 2019 15:52:05 GMT
 - Add unmount component test.
 - Move AnalysisAnimation Tool to ui-test-app. To be replaced by new timeline animation component.
 - Fixed navigation aid bugs
-- Fixes to OidcBrowserClient.
+- Fixes to OidcBrowserClient. 
 - Added SignIn presentational component to ui-components. Removed --ignoreMissingTags extract-api option.
 - Require React & React-dom 16.8
-- Remove IModelApp subclasses
+- remove IModelApp subclasses
 - Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization. 
 - Added ViewportDialog in ui-test-app, ui-core/ContributeGuidelines.md. TSLint rules in ui-core for no-default-export & completed-docs. @beta release tags.
 - Minimized serialization/deserialization costs when round tripping SAML based AccessToken-s. 
@@ -432,7 +445,7 @@ Wed, 06 Mar 2019 15:41:22 GMT
 - Keyboard Shortcut keys in context menu. ui-core unit test branches.
 - Fix dependencies
 - Update to use newer generic-icons-webfont package.
-- Upgrade to TypeScript 3.2.2
+- upgrade to TypeScript 3.2.2
 - WIP: ViewportComponent unit tests. Removed imodeljs-clients-backend dependency from ui-framework
 
 ## 0.188.0
@@ -556,7 +569,8 @@ Mon, 03 Dec 2018 18:52:58 GMT
 
 ### Updates
 
-- More information logged from BriefcaseManager.\nFixed deletion/cleanup of invalid briefcases.\nAdded OIDC support for simpleviewtest application.
+- More information logged from BriefcaseManager.\nFixed deletion/cleanup of invalid briefcases.\nAdded OIDC support for simpleviewtest application. 
+- Unit tests
 - Removed ConfigurableUiManager.addFrontstageDef and other unused/old methods and components
 
 ## 0.170.0
@@ -564,7 +578,7 @@ Mon, 26 Nov 2018 19:38:42 GMT
 
 ### Updates
 
-- Fix to OIDC browser client.
+- Fix to OIDC browser client. 
 
 ## 0.169.0
 Tue, 20 Nov 2018 16:17:15 GMT
@@ -589,6 +603,7 @@ Fri, 16 Nov 2018 21:45:44 GMT
 - Fixed some content control sizing issues
 - Moved most isHidden logic for toolbar items into ui-ninezone
 - Hiding items by rendering them conditionally instead of using a CSS class.
+- Fixed tests
 - Tree cell editing unit tests
 - ui-framework unit tests & docs
 

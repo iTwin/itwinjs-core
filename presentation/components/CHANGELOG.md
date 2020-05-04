@@ -1,6 +1,16 @@
 # Change Log - @bentley/presentation-components
 
-This log was last generated on Fri, 01 May 2020 15:29:28 GMT and should not be manually modified.
+This log was last generated on Wed, 22 Apr 2020 19:04:00 GMT and should not be manually modified.
+
+## 1.14.1
+Wed, 22 Apr 2020 19:04:00 GMT
+
+*Version update only*
+
+## 1.14.0
+Tue, 31 Mar 2020 15:44:19 GMT
+
+*Version update only*
 
 ## 1.13.0
 Wed, 04 Mar 2020 16:16:31 GMT
@@ -47,6 +57,7 @@ Tue, 10 Dec 2019 18:08:56 GMT
 - Make `rulesetId` for PropertyGridDataProvider optional
 - Avoid duplicate `PropertyRecord` names when content has multiple `Field`s with the same name nested under different parent fields.
 - No longer accessing this.state or this.props in setState updater - flagged by lgtm report
+- Update sinon version.
 - Changed ControlledTree specific hooks and HOCs release tags to beta
 - Adjusted UnifiedSelectionTreeEventHandler according changes to ControlledTree events
 - Added useRulesetRegistration hook and refactores usePresentationNodeLoader hook
@@ -87,7 +98,7 @@ Mon, 30 Sep 2019 22:28:48 GMT
 - Add a helper method `IPresentationTreeDataProvider.loadHierarchy()`
 - Added autoExpand property to RelatedPropertiesSpecification and NestedContentField
 - Add module descriptions
-- Upgrade to TypeScript 3.6.2
+- upgrade to TypeScript 3.6.2
 
 ## 1.4.0
 Tue, 10 Sep 2019 12:09:49 GMT
@@ -115,7 +126,7 @@ Mon, 01 Jul 2019 19:04:29 GMT
 ### Updates
 
 - Reorganize docs script output
-- Include !lib/**/*.*css in .npmignore for presentation-components to includes css files in lib/module/prod
+- include !lib/**/*.*css in .npmignore for presentation-components to includes css files in lib/module/prod
 - `treeWithFilteringSupport` HOC now sends the filtered data provider as the second parameter to `onFilterApplied` prop callback
 - Moved the part that determines hilite set out of `presentation-components` to `presentation-frontend` and expose it as a public API.
 - Clear tool selection set when models or categories are selected. Replace tool selection set with new selection when elements are selected.
@@ -158,7 +169,7 @@ Mon, 13 May 2019 15:52:05 GMT
 - Supply default presentation ruleset for the viewports hilite list when using the `viewWithUnifiedSelection` HOC
 - Avoid making a descriptor request when requesting content for property grid and hilite list
 - Require React & React-dom 16.8
-- Remove IModelApp subclasses
+- remove IModelApp subclasses
 - Temporarily disable hiliting model and category elements until a more performant way to do that exists
 - Upgrade TypeDoc dependency to 0.14.2
 
@@ -188,7 +199,7 @@ Wed, 06 Mar 2019 15:41:22 GMT
 - Changed the way `0` selection level is handled in unified selection tables. Previously we used to reload table data when selection changed with level below boundary __or level `0`__. Now the __underlined__ part is removed and we only reload data if selection changes with level below boundary (set through props).
 - RPC Interface changes to optimize getting first page of nodes/content
 - Move property definitions to imodeljs-frontend so they could be used by tools to define properties for tool settings.
-- Upgrade to TypeScript 3.2.2
+- upgrade to TypeScript 3.2.2
 
 ## 0.188.0
 Wed, 16 Jan 2019 16:36:09 GMT

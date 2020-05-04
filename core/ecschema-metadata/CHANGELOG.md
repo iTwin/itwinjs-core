@@ -1,6 +1,16 @@
 # Change Log - @bentley/ecschema-metadata
 
-This log was last generated on Fri, 01 May 2020 15:29:28 GMT and should not be manually modified.
+This log was last generated on Wed, 22 Apr 2020 19:04:00 GMT and should not be manually modified.
+
+## 1.14.1
+Wed, 22 Apr 2020 19:04:00 GMT
+
+*Version update only*
+
+## 1.14.0
+Tue, 31 Mar 2020 15:44:19 GMT
+
+*Version update only*
 
 ## 1.13.0
 Wed, 04 Mar 2020 16:16:31 GMT
@@ -34,6 +44,7 @@ Tue, 10 Dec 2019 18:08:56 GMT
 
 ### Updates
 
+- Update sinon version.
 - Resolving an error in schema validation in ecschema-metadata
 
 ## 1.8.0
@@ -65,7 +76,7 @@ Mon, 30 Sep 2019 22:28:48 GMT
 ### Updates
 
 - Fixing bug where format overrides which specified a unit but no label set the label to 'undefined'  #177676
-- Upgrade to TypeScript 3.6.2
+- upgrade to TypeScript 3.6.2
 
 ## 1.4.0
 Tue, 10 Sep 2019 12:09:49 GMT
@@ -134,7 +145,7 @@ Wed, 06 Mar 2019 15:41:22 GMT
 - Removing BIS Rules from ecschema-metadata
 - SchemaContext is now required when constructing a Schema instance.
 - Added schema validation support via the configuration of rule sets that can be applied during schema traversal
-- Upgrade to TypeScript 3.2.2
+- upgrade to TypeScript 3.2.2
 
 ## 0.188.0
 Wed, 16 Jan 2019 16:36:09 GMT
@@ -268,7 +279,7 @@ Wed, 31 Oct 2018 20:55:37 GMT
 
 ### Updates
 
-- Rename CustomAttributeInstance to CustomAttribute
+- rename CustomAttributeInstance to CustomAttribute
 - Refactored parsing of JSON data to happen in a new dedicated class JsonParser instead of fromJson methods. The fromJson methods have been replaced with deserialize methods which work in conjunction with JsonParser to ensure type safety and objects are created with required properties.
 - Update barrel module to include missing types.
 
@@ -277,7 +288,7 @@ Wed, 24 Oct 2018 19:20:06 GMT
 
 ### Updates
 
-- Exports are imported from Index and tested against explicitly imported modules to ensure equality.
+- Test added, exports are imported from Index and tested against explicitly imported modules to ensure equality.
 - Updated how default values are set. They are now all set within the constructor.
 
 ## 0.161.0

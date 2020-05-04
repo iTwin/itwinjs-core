@@ -1,6 +1,18 @@
 # Change Log - @bentley/certa
 
-This log was last generated on Fri, 01 May 2020 15:29:28 GMT and should not be manually modified.
+This log was last generated on Wed, 22 Apr 2020 19:04:00 GMT and should not be manually modified.
+
+## 1.14.1
+Wed, 22 Apr 2020 19:04:00 GMT
+
+### Updates
+
+- Switch to using puppeteer chrome-80 instead of chrome-stable
+
+## 1.14.0
+Tue, 31 Mar 2020 15:44:19 GMT
+
+*Version update only*
 
 ## 1.13.0
 Wed, 04 Mar 2020 16:16:31 GMT
@@ -53,7 +65,7 @@ Mon, 30 Sep 2019 22:28:48 GMT
 
 ### Updates
 
-- Upgrade to TypeScript 3.6.2
+- upgrade to TypeScript 3.6.2
 
 ## 1.4.0
 Tue, 10 Sep 2019 12:09:49 GMT
@@ -83,14 +95,14 @@ Mon, 03 Jun 2019 18:09:39 GMT
 ### Updates
 
 - Update to puppeteer 1.13.0 (current chrome-stable)
-- Fixed frontend debugging issues.
+- Fixed frontend debugging issues.  
 
 ## 0.191.0
 Mon, 13 May 2019 15:52:05 GMT
 
 ### Updates
 
-- Adds copyright header to readme
+- "Adds copyright header to readme"
 - Update the version of nyc to 14.0.0
 
 ## 0.190.0

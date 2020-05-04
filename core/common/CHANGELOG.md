@@ -1,6 +1,16 @@
 # Change Log - @bentley/imodeljs-common
 
-This log was last generated on Fri, 01 May 2020 15:29:28 GMT and should not be manually modified.
+This log was last generated on Wed, 22 Apr 2020 19:04:00 GMT and should not be manually modified.
+
+## 1.14.1
+Wed, 22 Apr 2020 19:04:00 GMT
+
+*Version update only*
+
+## 1.14.0
+Tue, 31 Mar 2020 15:44:19 GMT
+
+*Version update only*
 
 ## 1.13.0
 Wed, 04 Mar 2020 16:16:31 GMT
@@ -18,7 +28,7 @@ Wed, 12 Feb 2020 17:45:50 GMT
 - iModel write API development
 - Fix issue with constructing the tile cache URL() on Safari.
 - Prevent reuse of cached tiles after project extents change.
-- VSTS#256133: Fixed issue with reopening connections if the backend crashes. Fixes to integration tests. 
+- VSTS#256133: Fixed issue with reopening connections if the backend crashes. Fixes to integration tests.
 - Define ViewDetails for manipulating optional detail settings of ViewDefinition and ViewState.
 - Add support for plan projection models with 3d display priority.
 - Add settings to control display of plan projection models.
@@ -180,7 +190,7 @@ Mon, 13 May 2019 15:52:05 GMT
 
 ### Updates
 
-- Support spatial classification of context reality models. 
+- Support spatial classification of context reality models.
 - Added OpenAPIInfo to the barrel file
 - Adds parameter for api-extractor to validate missing release tags
 - Adds ignoreMissingTags flag
@@ -193,14 +203,14 @@ Mon, 13 May 2019 15:52:05 GMT
 - LoggerCategory -> CommonLoggerCategory
 - Fix default line pattern for hidden edges.
 - Introduce LoggerCategory enum to advertise logger categories used by this package.
-- Logging fixes. 
+- Logging fixes.
 - Put sourcemap in npm package.
 - Add SVG to ImageSourceFormat
 - Add imodeljs-markup
 - New tile cache naming scheme.
 - queryPage use memoization/pending pattern
 - Remove StandaloneIModelRpcInterface
-- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization. 
+- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization.
 - Prefer the IModelToken values in the url (if different from values in JSON body -- should never happen except in a malicious request).
 - Exports interface MarshalingBinaryMarker to prevent errors in api-extractor V7
 - Add SnapshotIModelRpcInterface

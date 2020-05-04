@@ -1,6 +1,16 @@
 # Change Log - @bentley/imodeljs-markup
 
-This log was last generated on Fri, 01 May 2020 15:29:28 GMT and should not be manually modified.
+This log was last generated on Wed, 22 Apr 2020 19:04:00 GMT and should not be manually modified.
+
+## 1.14.1
+Wed, 22 Apr 2020 19:04:00 GMT
+
+*Version update only*
+
+## 1.14.0
+Tue, 31 Mar 2020 15:44:19 GMT
+
+*Version update only*
 
 ## 1.13.0
 Wed, 04 Mar 2020 16:16:31 GMT
@@ -48,17 +58,17 @@ Wed, 09 Oct 2019 20:28:42 GMT
 
 ### Updates
 
-- Tool assistance for markup tools
-- Fixes for getting image from readMarkup
+- #168481 Tool assistance for markup tools
+- #165461 #183765 #184303 Fixes for getting image from readMarkup
 
 ## 1.5.0
 Mon, 30 Sep 2019 22:28:48 GMT
 
 ### Updates
 
-- Added missing iconSpec to measure and clipping tools.
+- #168481 Added missing iconSpec to measure and clipping tools.
 - Correct ViewClipByPlaneTool icon.
-- Upgrade to TypeScript 3.6.2
+- upgrade to TypeScript 3.6.2
 
 ## 1.4.0
 Tue, 10 Sep 2019 12:09:49 GMT
@@ -87,9 +97,10 @@ Mon, 01 Jul 2019 19:04:29 GMT
 
 ### Updates
 
-- Fix for broken build from svg.js
+- (imodeljs-markup merge)
+- fix for broken build from svg.js
 - Clear flashed element (if it's selected) before deleting or adding to group.
-- Lock to version 3.0.13 of svg.js package
+- lock to version 3.0.13 of svg.js package
 - Support drag box selection for markup. Support multiselect of markup using touch input.
 - Use left/right direction for inside/overlap selection to match element select tool and to support touch move.
 - Update to TypeScript 3.5
@@ -100,8 +111,8 @@ Mon, 03 Jun 2019 18:09:39 GMT
 ### Updates
 
 - point/vector coverage.
-- Make MarkupApp.initialize public
-- Added tests
+- make MarkupApp.initialize public
+- added tests
 - Improve touch interaction with markup handles.
 
 ## 0.191.0
@@ -116,9 +127,9 @@ Mon, 13 May 2019 15:52:05 GMT
 - Add semver of imodeljs-markup to module/version map
 - Fix .npmignore
 - Preserve relative z order when grouping markup. Change default arrow direction.
-- Documentation cleanup
-- Allow editing of existing markups
-- Allow editing of boxed text
+- documentation cleanup
+- allow editing of existing markups
+- allow editing of boxed text
 - Added markup distance measure tool. Fixed groupAll.
 - Add beta release tags for markup package.
 - Don't use ctrl+f for bring to front shortcut
