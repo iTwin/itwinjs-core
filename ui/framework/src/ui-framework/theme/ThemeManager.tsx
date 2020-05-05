@@ -34,8 +34,9 @@ export const WIDGET_OPACITY_DEFAULT = 0.90;
 interface ThemeProps {
   /** theme ("light", "dark", etc.) */
   theme: string;
-  /** Widget Opacity */
+  /* Widget Opacity */
   widgetOpacity: number;
+  children?: React.ReactNode;
 }
 
 function mapStateToProps(state: any) {
