@@ -416,15 +416,19 @@ export function generateChangeSet(id?: string): ChangeSet {
 }
 
 export function mockGetChangeSet(imodelId: GuidString, getDownloadUrl: boolean, query?: string, ...changeSets: ChangeSet[]) {
+  mockGetChangeSetChunk(imodelId, getDownloadUrl, query, undefined, ...changeSets);
+}
+
+export function mockGetChangeSetChunk(imodelId: GuidString, getDownloadUrl: boolean, query?: string, headers?: any, ...changeSets: ChangeSet[]) {
   if (!TestConfig.enableMocks)
     return;
 
   let i = 1;
   changeSets.forEach((value) => {
     value.wsgId = value.id!;
+    value.fileSize = getMockFileSize();
     if (getDownloadUrl) {
       value.downloadUrl = "https://imodelhubqasa01.blob.core.windows.net/imodelhubfile";
-      value.fileSize = getMockFileSize();
     }
     if (!value.index) {
       value.index = `${i++}`;
@@ -435,7 +439,7 @@ export function mockGetChangeSet(imodelId: GuidString, getDownloadUrl: boolean, 
   const requestPath = createRequestUrl(ScopeType.iModel, imodelId.toString(), "ChangeSet",
     getDownloadUrl ? `?$select=*,FileAccessKey-forward-AccessKey.DownloadURL` + query : query);
   const requestResponse = ResponseBuilder.generateGetArrayResponse<ChangeSet>(changeSets);
-  ResponseBuilder.mockResponse(IModelHubUrlMock.getUrl(), RequestType.Get, requestPath, requestResponse);
+  ResponseBuilder.mockResponse(IModelHubUrlMock.getUrl(), RequestType.Get, requestPath, requestResponse, undefined, undefined, headers);
 }
 
 /** Codes */

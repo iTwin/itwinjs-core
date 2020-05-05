@@ -65,6 +65,16 @@ export interface CancelRequest {
 // @beta (undocumented)
 export type ChangeState = "new" | "modified" | "deleted";
 
+// @beta
+export class ChunkedQueryContext {
+    static create(queryOptions: RequestQueryOptions): ChunkedQueryContext | undefined;
+    handleIteration(queryOptions: RequestQueryOptions): void;
+    get instancesLeft(): number | undefined;
+    get isQueryFinished(): boolean;
+    get skipToken(): string;
+    set skipToken(value: string);
+    }
+
 // @internal (undocumented)
 export interface ClassKeyMapInfo {
     classKeyPropertyName?: string;
@@ -432,6 +442,7 @@ export abstract class WsgClient extends Client {
     static readonly configUseHostRelyingPartyUriAsFallback = "imjs_use_default_relying_party_uri_as_fallback";
     protected deleteInstance<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, relativeUrlPath: string, instance?: T, requestOptions?: WsgRequestOptions): Promise<void>;
     protected getInstances<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, queryOptions?: RequestQueryOptions): Promise<T[]>;
+    protected getInstancesChunk<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, url: string, chunkedQueryContext: ChunkedQueryContext | undefined, typedConstructor: new () => T, queryOptions?: RequestQueryOptions): Promise<T[]>;
     protected abstract getRelyingPartyUrl(): string;
     getUrl(requestContext: ClientRequestContext, excludeApiVersion?: boolean): Promise<string>;
     protected postInstance<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, instance: T, requestOptions?: WsgRequestOptions): Promise<T>;
