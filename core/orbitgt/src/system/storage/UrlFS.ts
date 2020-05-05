@@ -73,7 +73,7 @@ export class UrlFS extends FileStorage {
         let responseHeaders: StringMap<string> = new StringMap<string>();
         await this._downloader.downloadBytes("HEAD"/*method*/, url, requestHeaders, null/*postText*/, null/*postData*/, responseHeaders);
         let fileLength: number = parseInt(responseHeaders.get("content-length"));
-        return Promise.resolve(ALong.fromDouble(fileLength));
+        return ALong.fromDouble(fileLength);
     }
 
     /**
@@ -92,7 +92,7 @@ export class UrlFS extends FileStorage {
         ASystem.assertNot(content.size() != size, "Expected content buffer size " + size + ", not " + content);
         this.requestCount++;
         this.responseSize += size;
-        return Promise.resolve(content);
+        return content;
     }
 
     /**
@@ -115,7 +115,7 @@ export class UrlFS extends FileStorage {
             let contentResponse: ABuffer = contentResponses[i];
             contentParts.add(new FileContent(range.offset, contentResponse));
         }
-        return Promise.resolve(contentParts);
+        return contentParts;
     }
 
     /**

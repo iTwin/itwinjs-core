@@ -17,7 +17,7 @@ export async function testInterfaceResource() {
   data[1] = 2;
   data[2] = 3;
   data[3] = 4;
-  return Promise.resolve(data);
+  return data;
 }
 
 let op8Initializer = 0;
@@ -120,7 +120,7 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
   }
 
   public async op14(x: number, y: number): Promise<number> {
-    return Promise.resolve(x + y);
+    return x + y;
   }
 
   public async op15(): Promise<void> {

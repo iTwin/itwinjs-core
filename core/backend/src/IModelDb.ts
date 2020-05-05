@@ -2082,7 +2082,7 @@ export class BriefcaseDb extends IModelDb {
     if (!this.isPushEnabled)
       throw new IModelError(BentleyStatus.ERROR, "IModel needs to be downloaded with SyncMode.PullAndPush and opened ReadWrite", Logger.logError, loggerCategory, () => this.getRpcProps());
     if (!this.nativeDb.hasPendingTxns())
-      return Promise.resolve(); // nothing to push
+      return; // nothing to push
 
     await this.concurrencyControl.onPushChanges(requestContext);
 

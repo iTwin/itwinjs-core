@@ -353,7 +353,7 @@ export class ConcurrencyControl {
   public async request(requestContext: AuthorizedClientRequestContext, req?: ConcurrencyControl.Request): Promise<void> {
     requestContext.enter();
     if (!this._iModel.isOpen)
-      return Promise.reject(new Error("not open"));
+      throw new Error("not open");
 
     if (req === undefined)
       req = this.pendingRequest;
@@ -533,7 +533,7 @@ export class ConcurrencyControl {
     const hubCodes = ConcurrencyControl.Request.toHubCodes(this, codes);
 
     if (!this._iModel.isOpen)
-      return Promise.reject(new Error("not open"));
+      throw new Error("not open");
 
     Logger.logTrace(loggerCategory, `reserveCodes ${JSON.stringify(hubCodes)}`);
     const codeStates = await BriefcaseManager.imodelClient.codes.update(requestContext, this._iModel.briefcase.iModelId, hubCodes);
@@ -547,7 +547,7 @@ export class ConcurrencyControl {
   public async queryCodeStates(requestContext: AuthorizedClientRequestContext, specId: Id64String, scopeId: string, value?: string): Promise<HubCode[]> {
     requestContext.enter();
     if (!this._iModel.isOpen)
-      return Promise.reject(new Error("not open"));
+      throw new Error("not open");
 
     const query = new CodeQuery();
 
@@ -586,7 +586,7 @@ export class ConcurrencyControl {
   public async areCodesAvailable(requestContext: AuthorizedClientRequestContext, req?: ConcurrencyControl.Request): Promise<boolean> {
     requestContext.enter();
     if (!this._iModel.isOpen)
-      return Promise.reject(new Error("not open"));
+      throw new Error("not open");
 
     if (req === undefined)
       req = this.pendingRequest;
@@ -620,7 +620,7 @@ export class ConcurrencyControl {
   public async areLocksAvailable(requestContext: AuthorizedClientRequestContext, req?: ConcurrencyControl.Request): Promise<boolean> {
     requestContext.enter();
     if (!this._iModel.isOpen)
-      return Promise.reject(new Error("not open"));
+      throw new Error("not open");
 
     if (req === undefined)
       req = this.pendingRequest;
@@ -667,7 +667,7 @@ export class ConcurrencyControl {
   public async areAvailable(requestContext: AuthorizedClientRequestContext, req?: ConcurrencyControl.Request): Promise<boolean> {
     requestContext.enter();
     if (!this._iModel.isOpen)
-      return Promise.reject(new Error("not open"));
+      throw new Error("not open");
 
     if (req === undefined)
       req = this.pendingRequest;

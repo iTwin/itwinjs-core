@@ -44,7 +44,7 @@ export class NodeFS extends FileStorage {
      */
     public async getFileLength(fileName: string): Promise<ALong> {
         let fileStats: fs.Stats = fs.statSync(fileName);
-        return Promise.resolve(ALong.fromDouble(fileStats.size));
+        return ALong.fromDouble(fileStats.size);
     }
 
     /**
@@ -57,7 +57,7 @@ export class NodeFS extends FileStorage {
         let bytesRead: number = fs.readSync(fd, buffer, 0, size, offset.toDouble());
         fs.closeSync(fd);
         ASystem.assert0(bytesRead == size, "Expected " + size + " bytes read, not " + bytesRead + " from file '" + fileName + "' offset " + offset.toDouble());
-        return Promise.resolve(ABuffer.wrap(rawBuffer));
+        return ABuffer.wrap(rawBuffer);
     }
 
     /**
@@ -75,7 +75,7 @@ export class NodeFS extends FileStorage {
             buffers.add(new FileContent(range.offset, ABuffer.wrap(rawBuffer)));
         }
         fs.closeSync(fd);
-        return Promise.resolve(buffers);
+        return buffers;
     }
 
     /**

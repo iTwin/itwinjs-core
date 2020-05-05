@@ -563,7 +563,7 @@ describe("PresentationManager", () => {
         rulesetOrId: testData.rulesetId,
       };
       rpcRequestsHandlerMock.setup((x) => x.loadHierarchy({ ...prepareOptions(options), priority: RequestPriority.Preload }))
-        .returns(() => Promise.resolve())
+        .returns(async () => { })
         .verifiable();
       await manager.loadHierarchy(options);
       rpcRequestsHandlerMock.verifyAll();
@@ -576,7 +576,7 @@ describe("PresentationManager", () => {
         priority: 999,
       };
       rpcRequestsHandlerMock.setup((x) => x.loadHierarchy({ ...prepareOptions(options), priority: 999 }))
-        .returns(() => Promise.resolve())
+        .returns(async () => { })
         .verifiable();
       await manager.loadHierarchy(options);
       rpcRequestsHandlerMock.verifyAll();

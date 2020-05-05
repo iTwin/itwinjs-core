@@ -54,7 +54,7 @@ export class HubUtility {
     if (iModels.length === 0)
       return undefined;
     if (iModels.length > 1)
-      return Promise.reject(`Too many iModels with name ${iModelName} found`);
+      throw new Error(`Too many iModels with name ${iModelName} found`);
     return iModels[0];
   }
 
@@ -67,7 +67,7 @@ export class HubUtility {
   public static async queryProjectIdByName(requestContext: AuthorizedClientRequestContext, projectName: string): Promise<string> {
     const project: Project | undefined = await HubUtility.queryProjectByName(requestContext, projectName);
     if (!project)
-      return Promise.reject(`Project ${projectName} not found`);
+      throw new Error(`Project ${projectName} not found`);
     return project.wsgId;
   }
 
@@ -81,7 +81,7 @@ export class HubUtility {
   public static async queryIModelIdByName(requestContext: AuthorizedClientRequestContext, projectId: string, iModelName: string): Promise<GuidString> {
     const iModel: HubIModel | undefined = await HubUtility.queryIModelByName(requestContext, projectId, iModelName);
     if (!iModel || !iModel.id)
-      return Promise.reject(`IModel ${iModelName} not found`);
+      throw new Error(`IModel ${iModelName} not found`);
     return iModel.id!;
   }
 

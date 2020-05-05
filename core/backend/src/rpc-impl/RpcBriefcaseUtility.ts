@@ -55,7 +55,7 @@ export class RpcBriefcaseUtility {
   public static async close(requestContext: AuthorizedClientRequestContext, tokenProps: IModelRpcProps): Promise<boolean> {
     // Close is a no-op for ReadOnly connections
     if (OpenMode.Readonly === tokenProps.openMode)
-      return Promise.resolve(true);
+      return true;
 
     // For read-write connections, close the briefcase and delete local copies of it
     const briefcaseDb = BriefcaseDb.findByKey(tokenProps.key);

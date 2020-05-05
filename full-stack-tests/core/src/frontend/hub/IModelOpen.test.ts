@@ -45,17 +45,17 @@ describe("Opening IModelConnection (#integration)", () => {
 
   const doTest = async (openMode: OpenMode) => {
     const promiseArray = new Array<Promise<IModelConnection>>();
-    let promiseChainWithShortWaits: Promise<void> = Promise.resolve();
-    let promiseChainWithFullWaits: Promise<void> = Promise.resolve();
+    let promiseChainWithShortWaits: Promise<any> = Promise.resolve();
+    let promiseChainWithFullWaits: Promise<any> = Promise.resolve();
     let n = 0;
     while (++n < 10) {
       const openPromise = RemoteBriefcaseConnection.open(testProjectId, testIModelId, openMode, IModelVersion.asOfChangeSet(testChangeSetId));
       const waitPromise = BeDuration.wait(5000); // 5 seconds
-      const racePromise = Promise.race([openPromise, waitPromise]).then(() => Promise.resolve());
+      const racePromise = Promise.race([openPromise, waitPromise]);
 
       promiseArray.push(openPromise);
       promiseChainWithShortWaits = promiseChainWithShortWaits.then(async () => racePromise);
-      promiseChainWithFullWaits = promiseChainWithFullWaits.then(async () => openPromise).then(() => Promise.resolve());
+      promiseChainWithFullWaits = promiseChainWithFullWaits.then(async () => openPromise);
     }
 
     await promiseChainWithShortWaits;

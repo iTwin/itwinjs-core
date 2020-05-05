@@ -36,7 +36,7 @@ class ClassifierTreeSupplier implements TileTreeSupplier {
     loadStatus: TileTreeLoadStatus.NotFound,
     load: () => undefined,
     dispose: () => undefined,
-    loadTree: async () => Promise.resolve(undefined),
+    loadTree: async () => undefined,
   };
 
   public compareTileTreeIds(lhs: ClassifierTreeId, rhs: ClassifierTreeId): number {

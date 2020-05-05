@@ -51,7 +51,7 @@ export class ParserSpec {
    */
   public static async create(format: Format, unitsProvider: UnitsProvider, outUnit: UnitProps): Promise<ParserSpec> {
     const conversions = await Parser.createUnitConversionSpecsForUnit(unitsProvider, outUnit);
-    return Promise.resolve(new ParserSpec(outUnit, format, conversions));
+    return new ParserSpec(outUnit, format, conversions);
   }
 }
 
@@ -311,11 +311,11 @@ export class Parser {
     // common case where single value is supplied
     if (tokens.length === 1) {
       if (tokens[0].isNumber) {
-        return Promise.resolve(new Quantity(defaultUnit, tokens[0].value as number));
+        return new Quantity(defaultUnit, tokens[0].value as number);
       } else {
         try {
           const unit = await unitsProvider.findUnit(tokens[0].value as string, defaultUnit ? defaultUnit.unitFamily : undefined);
-          return Promise.resolve(new Quantity(unit));
+          return new Quantity(unit);
         } catch (err) { }
       }
     }
@@ -324,11 +324,11 @@ export class Parser {
     if (tokens.length === 2) {
       if (tokens[0].isNumber && tokens[1].isString) {
         const unit = await unitsProvider.findUnit(tokens[1].value as string, defaultUnit ? defaultUnit.unitFamily : undefined);
-        return Promise.resolve(new Quantity(unit, tokens[0].value as number));
+        return new Quantity(unit, tokens[0].value as number);
       } else {  // unit specification comes before value (like currency)
         if (tokens[1].isNumber && tokens[0].isString) {
           const unit = await unitsProvider.findUnit(tokens[0].value as string, defaultUnit ? defaultUnit.unitFamily : undefined);
-          return Promise.resolve(new Quantity(unit, tokens[1].value as number));
+          return new Quantity(unit, tokens[1].value as number);
         }
       }
     }
@@ -355,10 +355,10 @@ export class Parser {
           }
         }
       }
-      return Promise.resolve(new Quantity(masterUnit, mag));
+      return new Quantity(masterUnit, mag);
     }
 
-    return Promise.resolve(new Quantity(defaultUnit));
+    return new Quantity(defaultUnit);
   }
 
   /** Async method to generate a Quantity given a string that represents a quantity value and likely a unit label.
@@ -369,7 +369,7 @@ export class Parser {
   public static async parseIntoQuantity(inString: string, format: Format, unitsProvider: UnitsProvider): Promise<QuantityProps> {
     const tokens: ParseToken[] = Parser.parseQuantitySpecification(inString, format);
     if (tokens.length === 0)
-      return Promise.resolve(new Quantity());
+      return new Quantity();
 
     return Parser.createQuantityFromParseTokens(tokens, format, unitsProvider);
   }
@@ -516,7 +516,7 @@ export class Parser {
         parseLabels,
       });
     }
-    return Promise.resolve(unitConversionSpecs);
+    return unitConversionSpecs;
   }
 
   /** Async Method used to create an array of UnitConversionSpec entries that can be used in synchronous calls to parse units. */
@@ -527,7 +527,7 @@ export class Parser {
     if (!outUnit || !outUnit.name || 0 === outUnit.name.length) {
       // tslint:disable-next-line:no-console
       console.log(`[Parser.createUnitConversionSpecs] ERROR: Unable to locate out unit ${outUnitName}.`);
-      return Promise.resolve(unitConversionSpecs);
+      return unitConversionSpecs;
     }
 
     for (const potentialParseUnit of potentialParseUnits) {
@@ -563,6 +563,6 @@ export class Parser {
         parseLabels,
       });
     }
-    return Promise.resolve(unitConversionSpecs);
+    return unitConversionSpecs;
   }
 }

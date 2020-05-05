@@ -383,7 +383,7 @@ describe("TreeDataProvider", () => {
     it("calls presentation manager", async () => {
       presentationManagerMock
         .setup((x) => x.loadHierarchy({ imodel: imodelMock.object, rulesetOrId: rulesetId }))
-        .returns(() => Promise.resolve())
+        .returns(async () => { })
         .verifiable();
       await provider.loadHierarchy();
       presentationManagerMock.verifyAll();

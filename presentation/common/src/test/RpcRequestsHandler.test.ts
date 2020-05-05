@@ -87,7 +87,7 @@ describe("RpcRequestsHandler", () => {
     describe("when request returns an unexpected status", () => {
 
       it("throws an exception", async () => {
-        const func = async () => Promise.resolve(errorResponse(PresentationStatus.Error));
+        const func = async () => errorResponse(PresentationStatus.Error);
         await expect(handler.request(undefined, func, defaultRpcHandlerOptions)).to.eventually.be.rejectedWith(PresentationError);
       });
 
@@ -96,7 +96,7 @@ describe("RpcRequestsHandler", () => {
     describe("when request returns a status of BackendTimeout", () => {
 
       it("returns PresentationError", async () => {
-        const func = async () => Promise.resolve(errorResponse(PresentationStatus.BackendTimeout));
+        const func = async () => errorResponse(PresentationStatus.BackendTimeout);
         await expect(handler.request(undefined, func, defaultRpcHandlerOptions)).to.eventually.be.rejectedWith(PresentationError).and.has.property("errorNumber", 65543);
       });
 

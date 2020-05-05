@@ -93,7 +93,6 @@ export class DefaultLockUpdateOptionsProvider {
     const clonedOptions: LockUpdateOptions = { ...options };
     deepAssign(options, this._defaultOptions);
     deepAssign(options, clonedOptions); // ensure the supplied options override the defaults
-    return Promise.resolve();
   }
 }
 
@@ -480,7 +479,7 @@ export class LockHandler {
               conflictError = ConflictingLocksError.fromError(error);
             }
             if (!updateOptions.continueOnConflict) {
-              return Promise.reject(conflictError);
+              throw conflictError;
             }
           } else {
             aggregateError.errors.push(error);
@@ -490,11 +489,11 @@ export class LockHandler {
     }
 
     if (conflictError) {
-      return Promise.reject(conflictError);
+      throw conflictError;
     }
 
     if (aggregateError.errors.length > 0) {
-      return Promise.reject(aggregateError.errors.length > 1 ? aggregateError : aggregateError.errors[0]);
+      throw aggregateError.errors.length > 1 ? aggregateError : aggregateError.errors[0];
     }
 
     Logger.logTrace(loggerCategory, `Requested ${locks.length} locks for iModel`, () => ({ iModelId }));

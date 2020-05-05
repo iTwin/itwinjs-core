@@ -54,10 +54,10 @@ export abstract class IoTAnimation {
 
       try {
         const response: Response = await request(this._requestContext, this._extension.simulationUrl + "/iot/getreadings", requestOptions);
-        return Promise.resolve(response.body.sequence);
+        return response.body.sequence;
       } catch (error) {
         // this shouldn't happen
-        return Promise.resolve(`Can't get IoT Readings: ${error.toString}`);
+        return `Can't get IoT Readings: ${error.toString}`;
       }
     } else {
       await (this._extension.simulationPromise);
@@ -67,7 +67,7 @@ export abstract class IoTAnimation {
       const sequence: any = this._extension.localSimulator!.getReadings(query, this.startMsec, this.duration);
       this._extension.startTime = this._extension.localSimulator!.getStartTime();
       this._extension.endTime = this._extension.localSimulator!.getEndTime();
-      return Promise.resolve(sequence);
+      return sequence;
     }
   }
 
@@ -203,7 +203,7 @@ export abstract class IoTAnimation {
       if (this._floor)
         query.floor = this._floor;
       const thisReading: { readingTime: number, readings: any[] } = this._extension.localSimulator!.getLatestTimeAndReading(query);
-      return Promise.resolve(thisReading);
+      return thisReading;
     }
   }
 
@@ -385,7 +385,7 @@ class IotToolTipProvider implements ToolTipProvider {
         const newDiv: HTMLDivElement = document.createElement("div");
         newDiv.innerHTML = out;
         tooltip.prepend(newDiv);
-        return Promise.resolve(tooltip);
+        return tooltip;
       } else {
         return tooltipPromise;
       }

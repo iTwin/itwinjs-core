@@ -75,9 +75,9 @@ export class B3dmReader extends GltfReader {
 
     await this.loadTextures();
     if (this._isCanceled)
-      return Promise.resolve({ readStatus: TileReadStatus.Canceled, isLeaf: this._isLeaf });
+      return { readStatus: TileReadStatus.Canceled, isLeaf: this._isLeaf };
 
-    return Promise.resolve(this.readGltfAndCreateGraphics(this._isLeaf, featureTable, this._range, this._transformToRoot, this._pseudoRtcBias));
+    return this.readGltfAndCreateGraphics(this._isLeaf, featureTable, this._range, this._transformToRoot, this._pseudoRtcBias);
   }
 
   protected readFeatures(features: Mesh.Features, json: any): boolean {

@@ -391,8 +391,8 @@ export abstract class RenderSystem implements IDisposable {
       return undefined;
 
     const imageSource = new ImageSource(base64StringToUint8Array(textureProps.data as string), format);
-    const imagePromise = imageElementFromImageSource(imageSource);
-    return imagePromise.then((image: HTMLImageElement) => ({ image, format }));
+    const image = await imageElementFromImageSource(imageSource);
+    return { image, format };
   }
 
   /** Obtain a texture created from a gradient.
@@ -414,7 +414,8 @@ export abstract class RenderSystem implements IDisposable {
 
   /** Create a new texture from an [[ImageSource]]. */
   public async createTextureFromImageSource(source: ImageSource, imodel: IModelConnection | undefined, params: RenderTexture.Params): Promise<RenderTexture | undefined> {
-    return imageElementFromImageSource(source).then((image) => IModelApp.hasRenderSystem ? this.createTextureFromImage(image, ImageSourceFormat.Png === source.format, imodel, params) : undefined);
+    const image = await imageElementFromImageSource(source);
+    return IModelApp.hasRenderSystem ? this.createTextureFromImage(image, ImageSourceFormat.Png === source.format, imodel, params) : undefined;
   }
 
   /** Create a new texture from a cube of HTML images.

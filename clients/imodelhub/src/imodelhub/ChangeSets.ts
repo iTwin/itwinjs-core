@@ -459,10 +459,10 @@ export class ChangeSetHandler {
     requestContext.enter();
 
     if (typeof window !== "undefined")
-      return Promise.reject(IModelHubClientError.browser());
+      throw IModelHubClientError.browser();
 
     if (!this._fileHandler)
-      return Promise.reject(IModelHubClientError.fileHandler());
+      throw IModelHubClientError.fileHandler();
 
     const changeSetsToDownloadQuery: ChangeSetQuery = query.clone();
     changeSetsToDownloadQuery.select("FileSize");
@@ -539,20 +539,17 @@ export class ChangeSetHandler {
         if (this.wasChangeSetDownloaded(downloadPath, changeSet.fileSizeNumber, changeSet)) {
           if (progressCallback)
             callback({ percent: 100, total: changeSet.fileSizeNumber, loaded: changeSet.fileSizeNumber });
-          return Promise.resolve();
+          return;
         }
 
         await this.downloadChangeSetWithRetry(requestContext, iModelId, changeSet, downloadPath, progressCallback ? callback : undefined);
         requestContext.enter();
-        return Promise.resolve();
       }));
 
     await queue.waitAll();
     requestContext.enter();
 
     Logger.logTrace(loggerCategory, `Finished downloading changesets chunk`);
-
-    return Promise.resolve();
   }
 
   /** Download single [[ChangeSet]] with retry if SAS url expired or download failed.
@@ -568,7 +565,7 @@ export class ChangeSetHandler {
     try {
       await this.downloadChangeSet(requestContext, changeSet, downloadPath, changeSetProgress);
       requestContext.enter();
-      return Promise.resolve();
+      return;
     } catch (error) {
       requestContext.enter();
       if (!(error instanceof SasUrlExpired || error instanceof DownloadFailed))
@@ -587,7 +584,7 @@ export class ChangeSetHandler {
 
       await this.downloadChangeSet(requestContext, refreshedChangeSets[0], downloadPath, changeSetProgress);
       requestContext.enter();
-      return Promise.resolve();
+      return;
     }
   }
 
@@ -607,10 +604,9 @@ export class ChangeSetHandler {
       requestContext.enter();
       // Note: If the cache was shared across processes, it's possible that the download was completed by another process
       if (this.wasChangeSetDownloaded(downloadPath, changeSet.fileSizeNumber, changeSet))
-        return Promise.resolve();
+        return;
       throw error;
     }
-    return Promise.resolve();
   }
 
   /** Checks if ChangeSet file was already downloaded.
@@ -664,13 +660,13 @@ export class ChangeSetHandler {
     ArgumentCheck.defined("path", path);
 
     if (typeof window !== "undefined")
-      return Promise.reject(IModelHubClientError.browser());
+      throw IModelHubClientError.browser();
 
     if (!this._fileHandler)
-      return Promise.reject(IModelHubClientError.fileHandler());
+      throw IModelHubClientError.fileHandler();
 
     if (!this._fileHandler.exists(path) || this._fileHandler.isDirectory(path))
-      return Promise.reject(IModelHubClientError.fileNotFound());
+      throw IModelHubClientError.fileNotFound();
 
     const postChangeSet = await this._handler.postInstance<ChangeSet>(requestContext, ChangeSet, this.getRelativeUrl(iModelId), changeSet);
 

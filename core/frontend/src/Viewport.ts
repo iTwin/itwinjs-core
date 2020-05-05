@@ -1322,11 +1322,10 @@ export abstract class Viewport implements IDisposable {
       return;
 
     // Need to redraw once models are available. Don't want to trigger events again.
-    return this.iModel.models.load(models).then(() => {
-      this.invalidateScene();
-      if (this.view.isSpatialView())
-        this.view.markModelSelectorChanged();
-    });
+    await this.iModel.models.load(models);
+    this.invalidateScene();
+    if (this.view.isSpatialView())
+      this.view.markModelSelectorChanged();
   }
 
   /** Determines what type (if any) of debug graphics will be displayed to visualize [[Tile]] volumes.
@@ -2007,10 +2006,10 @@ export abstract class Viewport implements IDisposable {
     }
 
     const ignoreError: ViewChangeOptions = {
-      ... options,
+      ...options,
       onExtentsError: () => ViewStatus.Success,
     };
-    view.lookAtViewAlignedVolume(viewRange, this.viewRect.aspect, ignoreError );
+    view.lookAtViewAlignedVolume(viewRange, this.viewRect.aspect, ignoreError);
     this.synchWithView(options);
   }
 

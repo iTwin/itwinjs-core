@@ -57,7 +57,7 @@ export class HubUtility {
     if (iModels.length === 0)
       return undefined;
     if (iModels.length > 1)
-      return Promise.reject(`Too many iModels with name ${iModelName} found`);
+      throw new Error(`Too many iModels with name ${iModelName} found`);
     return iModels[0];
   }
 
@@ -77,7 +77,7 @@ export class HubUtility {
   public static async queryProjectIdByName(requestContext: AuthorizedClientRequestContext, projectName: string): Promise<string> {
     const project: Project | undefined = await HubUtility.queryProjectByName(requestContext, projectName);
     if (!project)
-      return Promise.reject(`Project ${projectName} not found`);
+      throw new Error(`Project ${projectName} not found`);
     return project.wsgId;
   }
 
@@ -91,7 +91,7 @@ export class HubUtility {
   public static async queryIModelIdByName(requestContext: AuthorizedClientRequestContext, projectId: string, iModelName: string): Promise<GuidString> {
     const iModel: HubIModel | undefined = await HubUtility.queryIModelByName(requestContext, projectId, iModelName);
     if (!iModel || !iModel.id)
-      return Promise.reject(`IModel ${iModelName} not found`);
+      throw new Error(`IModel ${iModelName} not found`);
     return iModel.id!;
   }
 
@@ -135,7 +135,7 @@ export class HubUtility {
 
     const iModel: HubIModel | undefined = await HubUtility.queryIModelById(requestContext, projectId, iModelId);
     if (!iModel)
-      return Promise.reject(`IModel with id ${iModelId} not found`);
+      throw new Error(`IModel with id ${iModelId} not found`);
 
     // Write the JSON representing the iModel
     const iModelJsonStr = JSON.stringify(iModel, undefined, 4);
@@ -171,7 +171,7 @@ export class HubUtility {
 
     const iModel: HubIModel | undefined = await HubUtility.queryIModelByName(requestContext, projectId, iModelName);
     if (!iModel)
-      return Promise.reject(`IModel ${iModelName} not found`);
+      throw new Error(`IModel ${iModelName} not found`);
     const iModelId = iModel.id!;
 
     await HubUtility.downloadIModelById(requestContext, projectId, iModelId, downloadDir);
@@ -345,7 +345,7 @@ export class HubUtility {
 
     const briefcase: HubBriefcase = await BriefcaseManager.imodelClient.briefcases.create(requestContext, iModelId);
     if (!briefcase) {
-      return Promise.reject(`Could not acquire a briefcase for the iModel ${iModelId}`);
+      throw new Error(`Could not acquire a briefcase for the iModel ${iModelId}`);
     }
     briefcase.iModelId = iModelId;
 

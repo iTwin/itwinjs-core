@@ -245,17 +245,15 @@ export abstract class WsgClient extends Client {
    */
   public async getUrl(requestContext: ClientRequestContext, excludeApiVersion?: boolean): Promise<string> {
     if (this._url) {
-      return Promise.resolve(this._url);
+      return this._url;
     }
 
-    return super.getUrl(requestContext)
-      .then(async (url: string): Promise<string> => {
-        this._url = url;
-        if (!excludeApiVersion) {
-          this._url += "/" + this.apiVersion;
-        }
-        return Promise.resolve(this._url); // TODO: On the server this really needs a lifetime!!
-      });
+    const url = await super.getUrl(requestContext);
+    this._url = url;
+    if (!excludeApiVersion) {
+      this._url += "/" + this.apiVersion;
+    }
+    return this._url; // TODO: On the server this really needs a lifetime!!
   }
 
   /** used by clients to delete strongly typed instances through the standard WSG REST API */
@@ -275,7 +273,7 @@ export abstract class WsgClient extends Client {
       options.body.requestOptions = requestOptions;
     }
     await this.setupOptionDefaults(options);
-    return request(requestContext, url, options).then(async () => Promise.resolve());
+    await request(requestContext, url, options);
   }
 
   /**
@@ -308,18 +306,18 @@ export abstract class WsgClient extends Client {
     const res: Response = await request(requestContext, url, options);
     requestContext.enter();
     if (!res.body || !res.body.changedInstance || !res.body.changedInstance.instanceAfterChange) {
-      return Promise.reject(new Error(`POST to URL ${url} executed successfully, but did not return the expected result.`));
+      throw new Error(`POST to URL ${url} executed successfully, but did not return the expected result.`);
     }
     const ecJsonInstance = res.body.changedInstance.instanceAfterChange;
     const typedInstance: T | undefined = ECJsonTypeMap.fromJson<T>(typedConstructor, "wsg", ecJsonInstance);
 
     // console.log(JSON.stringify(res.body.instances));
     if (!typedInstance) {
-      return Promise.reject(new Error(`POST to URL ${url} executed successfully, but could not convert response to a strongly typed instance.`));
+      throw new Error(`POST to URL ${url} executed successfully, but could not convert response to a strongly typed instance.`);
     }
 
     Logger.logTrace(loggerCategory, "Successful POST request", () => ({ url }));
-    return Promise.resolve(typedInstance);
+    return typedInstance;
   }
 
   /** Used by clients to post multiple strongly typed instances through standard WSG REST API
@@ -353,7 +351,7 @@ export abstract class WsgClient extends Client {
     const res: Response = await request(requestContext, url, options);
     requestContext.enter();
     if (!res.body || !res.body.changedInstances) {
-      return Promise.reject(new Error(`POST to URL ${url} executed successfully, but did not return the expected result.`));
+      throw new Error(`POST to URL ${url} executed successfully, but did not return the expected result.`);
     }
     const changedInstances: T[] = (res.body.changedInstances as any[]).map<T>((value: any) => {
       const untypedInstance = value.instanceAfterChange;
@@ -368,7 +366,7 @@ export abstract class WsgClient extends Client {
     });
 
     Logger.logTrace(loggerCategory, "Successful POST request", () => ({ url }));
-    return Promise.resolve(changedInstances);
+    return changedInstances;
   }
 
   // @todo Use lower level utilities instead of the node based Request API.
@@ -396,7 +394,7 @@ export abstract class WsgClient extends Client {
     } while (chunkedQueryContext && !chunkedQueryContext.isQueryFinished);
 
     Logger.logTrace(loggerCategory, "Successful GET request", () => ({ url }));
-    return Promise.resolve(typedInstances);
+    return typedInstances;
   }
 
   /**
@@ -434,7 +432,7 @@ export abstract class WsgClient extends Client {
     const res: Response = await request(requestContext, url, options);
     requestContext.enter();
     if (!res.body || !res.body.hasOwnProperty("instances")) {
-      return Promise.reject(new Error(`Query to URL ${url} executed successfully, but did NOT return any instances.`));
+      throw new Error(`Query to URL ${url} executed successfully, but did NOT return any instances.`);
     }
 
     for (const ecJsonInstance of res.body.instances) {
@@ -447,7 +445,7 @@ export abstract class WsgClient extends Client {
     if (chunkedQueryContext)
       chunkedQueryContext.skipToken = res.header.skiptoken;
 
-    return Promise.resolve(resultInstances);
+    return resultInstances;
   }
 
   private getQueryRequestBody(queryOptions: RequestQueryOptions) {
@@ -500,7 +498,7 @@ export abstract class WsgClient extends Client {
     const res: Response = await request(requestContext, url, options);
     requestContext.enter();
     if (!res.body || !res.body.hasOwnProperty("instances")) {
-      return Promise.reject(new Error(`Query to URL ${url} executed successfully, but did NOT return any instances.`));
+      throw new Error(`Query to URL ${url} executed successfully, but did NOT return any instances.`);
     }
     // console.log(JSON.stringify(res.body.instances));
     const typedInstances: T[] = new Array<T>();
@@ -512,6 +510,6 @@ export abstract class WsgClient extends Client {
     }
 
     Logger.logTrace(loggerCategory, "Successful POST request", () => ({ url }));
-    return Promise.resolve(typedInstances);
+    return typedInstances;
   }
 }

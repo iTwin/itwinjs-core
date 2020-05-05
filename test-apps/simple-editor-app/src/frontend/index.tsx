@@ -200,9 +200,8 @@ export class SampleAppIModelApp {
   public static async initialize() {
     await Presentation.initialize({
       activeLocale: IModelApp.i18n.languageList()[0],
-    }).then(() => {
-      Presentation.selection.scopes.activeScope = "top-assembly";
     });
+    Presentation.selection.scopes.activeScope = "top-assembly";
 
     await UiFramework.initialize(undefined);
 

@@ -264,8 +264,6 @@ export abstract class ViewState extends ElementState {
     const subcategories = this.iModel.subcategories.load(this.categorySelector.categories);
     if (undefined !== subcategories)
       await subcategories.promise;
-
-    return Promise.resolve();
   }
 
   /** @internal */

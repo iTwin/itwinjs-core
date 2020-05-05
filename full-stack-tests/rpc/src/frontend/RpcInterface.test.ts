@@ -130,9 +130,11 @@ describe("RpcInterface", () => {
     assert.strictEqual(associatedRequest, expectedRequest);
     assert.equal(associatedRequest.id, customId);
 
-    await response.then((value) => {
-      assert.equal(value, customId);
-    }, (reason) => assert(false, reason));
+    try {
+      assert.equal(await response, customId);
+    } catch (reason) {
+      assert(false, reason);
+    }
 
     RpcConfiguration.requestContext.getId = backupFn;
   });

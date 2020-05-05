@@ -425,18 +425,18 @@ export class QuantityFormatter implements UnitsProvider {
       }
       if (entry.displayLabel === unitLabel || entry.name === unitLabel) {
         const unitProps = new BasicUnit(entry.name, entry.displayLabel, entry.unitFamily, entry.altDisplayLabels);
-        return Promise.resolve(unitProps);
+        return unitProps;
       }
 
       if (entry.altDisplayLabels && entry.altDisplayLabels.length > 0) {
         if (entry.altDisplayLabels.findIndex((ref) => ref === unitLabel) !== -1) {
           const unitProps = new BasicUnit(entry.name, entry.displayLabel, entry.unitFamily, entry.altDisplayLabels);
-          return Promise.resolve(unitProps);
+          return unitProps;
         }
       }
     }
 
-    return Promise.resolve(new BadUnit());
+    return new BadUnit();
   }
 
   /** find all units given unitFamily */
@@ -447,7 +447,7 @@ export class QuantityFormatter implements UnitsProvider {
         continue;
       units.push(new BasicUnit(entry.name, entry.displayLabel, entry.unitFamily, entry.altDisplayLabels));
     }
-    return Promise.resolve(units);
+    return units;
   }
 
   protected findUnitDefinition(name: string): UnitDefinition | undefined {
@@ -463,9 +463,9 @@ export class QuantityFormatter implements UnitsProvider {
   public async findUnitByName(unitName: string): Promise<UnitProps> {
     const unitDataEntry = this.findUnitDefinition(unitName);
     if (unitDataEntry) {
-      return Promise.resolve(new BasicUnit(unitDataEntry.name, unitDataEntry.displayLabel, unitDataEntry.unitFamily, unitDataEntry.altDisplayLabels));
+      return new BasicUnit(unitDataEntry.name, unitDataEntry.displayLabel, unitDataEntry.unitFamily, unitDataEntry.altDisplayLabels);
     }
-    return Promise.resolve(new BadUnit());
+    return new BadUnit();
   }
 
   /** Return the information needed to convert a value between two different units.  The units should be from the same unitFamily. */
@@ -481,44 +481,44 @@ export class QuantityFormatter implements UnitsProvider {
       const conversion = new ConversionData();
       conversion.factor = deltaNumerator / deltaDenominator;
       conversion.offset = deltaOffset;
-      return Promise.resolve(conversion);
+      return conversion;
     }
 
-    return Promise.resolve(new ConversionData());
+    return new ConversionData();
   }
 
   /** method used to load format for KOQ into cache */
   protected async loadKoqFormatSpecs(koq: string): Promise<void> {
     if (koq.length === 0)
-      return Promise.reject(new Error("bad koq specification"));
+      throw new Error("bad koq specification");
 
     if (!this._formatSpecsByKoq.has(koq)) {
       // get koq and get formats from it
     }
 
-    return Promise.reject(new Error("not yet implemented"));
+    throw new Error("not yet implemented");
   }
 
   /** Async method to return the array of presentation formats for the specified KOQ */
   protected async getKoqFormatterSpecsAsync(koq: string, useImperial: boolean): Promise<FormatterSpec[] | undefined> {
     if (koq.length === 0 && useImperial)
-      return Promise.reject(new Error("bad koq specification"));
+      throw new Error("bad koq specification");
 
-    return Promise.resolve(this._formatSpecsByKoq.get(koq));
+    return this._formatSpecsByKoq.get(koq);
   }
 
   /** Async method to return the 'active' FormatSpec for the specified KOQ */
   protected async getKoqFormatterSpec(koq: string, useImperial: boolean): Promise<FormatterSpec | undefined> {
     if (koq.length === 0 && useImperial)
-      return Promise.reject(new Error("bad koq specification"));
+      throw new Error("bad koq specification");
 
     const formatterSpecArray = await Promise.resolve(this._formatSpecsByKoq.get(koq));
     if (formatterSpecArray && formatterSpecArray.length > 0) {
       const activeFormatIndex = 0; // TODO - get active format based on user selected format or default format
-      return Promise.resolve(formatterSpecArray[activeFormatIndex]);
+      return formatterSpecArray[activeFormatIndex];
     }
 
-    return Promise.reject(new Error("not yet implemented"));
+    throw new Error("not yet implemented");
   }
 
   /** Method used to get cached FormatterSpec or undefined if FormatterSpec is unavailable */
@@ -538,7 +538,7 @@ export class QuantityFormatter implements UnitsProvider {
         formatData = entry.format;
         const format = new Format("stdFormat");
         await format.fromJson(this, formatData);
-        return Promise.resolve(format);
+        return format;
       }
     }
     throw new BentleyError(BentleyStatus.ERROR, "IModelApp must define a formatsProvider class to provide formats for tools");
@@ -549,12 +549,12 @@ export class QuantityFormatter implements UnitsProvider {
 
     let format = activeMap.get(type);
     if (format)
-      return Promise.resolve(format);
+      return format;
 
     format = await this.loadStdFormat(type, imperial);
     if (format) {
       activeMap.set(type, format);
-      return Promise.resolve(format);
+      return format;
     }
 
     throw new BentleyError(BentleyStatus.ERROR, "IModelApp must define a formatsProvider class to provide formats for tools");
@@ -593,7 +593,6 @@ export class QuantityFormatter implements UnitsProvider {
       const parserSpec = await ParserSpec.create(format, this, outUnit);
       activeMap.set(quantityType, parserSpec);
     }
-    return Promise.resolve();
   }
 
   /** Asynchronous call to loadFormatSpecsForQuantityTypes. This method caches all the FormatSpec so they can be quickly accessed. */
@@ -609,7 +608,6 @@ export class QuantityFormatter implements UnitsProvider {
       const spec = await FormatterSpec.create(format.name, format, this, unit);
       activeMap.set(quantityType, spec);
     }
-    return Promise.resolve();
   }
 
   /** Synchronous call to get a FormatterSpec of a QuantityType. If the FormatterSpec is not yet cached an undefined object is returned. The
@@ -636,17 +634,15 @@ export class QuantityFormatter implements UnitsProvider {
     const useImperial = undefined !== imperial ? imperial : this._activeSystemIsImperial;
     const activeMap = useImperial ? this._imperialFormatSpecsByType : this._metricFormatSpecsByType;
     if (activeMap.size > 0)
-      return Promise.resolve(activeMap.get(type) as FormatterSpec);
+      return activeMap.get(type) as FormatterSpec;
 
-    return this.loadFormatSpecsForQuantityTypes(useImperial)
-      .then(async () => {
-        if (activeMap.size > 0) {
-          const spec = activeMap.get(type);
-          if (spec)
-            return Promise.resolve(spec as FormatterSpec);
-        }
-        return Promise.reject(new BentleyError(BentleyStatus.ERROR, "Unable to load FormatSpecs"));
-      });
+    await this.loadFormatSpecsForQuantityTypes(useImperial);
+    if (activeMap.size > 0) {
+      const spec = activeMap.get(type);
+      if (spec)
+        return spec as FormatterSpec;
+    }
+    throw new BentleyError(BentleyStatus.ERROR, "Unable to load FormatSpecs");
   }
 
   /** Synchronous call to get a ParserSpec for a QuantityType. If the ParserSpec is not yet cached an undefined object is returned. The
@@ -672,17 +668,15 @@ export class QuantityFormatter implements UnitsProvider {
     const useImperial = undefined !== imperial ? imperial : this._activeSystemIsImperial;
     const activeMap = useImperial ? this._imperialParserSpecsByType : this._metricUnitParserSpecsByType;
     if (activeMap.size > 0)
-      return Promise.resolve(activeMap.get(type) as ParserSpec);
+      return activeMap.get(type) as ParserSpec;
 
-    return this.loadParsingSpecsForQuantityTypes(useImperial)
-      .then(async () => {
-        if (activeMap.size > 0) {
-          const spec = activeMap.get(type);
-          if (spec)
-            return Promise.resolve(spec as ParserSpec);
-        }
-        return Promise.reject(new BentleyError(BentleyStatus.ERROR, "Unable to load ParserSpec"));
-      });
+    await this.loadParsingSpecsForQuantityTypes(useImperial);
+    if (activeMap.size > 0) {
+      const spec = activeMap.get(type);
+      if (spec)
+        return spec as ParserSpec;
+    }
+    throw new BentleyError(BentleyStatus.ERROR, "Unable to load ParserSpec");
   }
 
   /** Generates a formatted string for a quantity given its format spec.

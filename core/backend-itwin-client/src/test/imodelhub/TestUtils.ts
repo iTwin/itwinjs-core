@@ -277,7 +277,7 @@ export async function getAssetId(requestContext: AuthorizedClientRequestContext,
   const asset: Asset = await getCloudEnv().contextMgr.queryAssetByName(requestContext, assetName);
 
   if (!asset || !asset.wsgId)
-    return Promise.reject(`Asset with name ${assetName} doesn't exist.`);
+    throw new Error(`Asset with name ${assetName} doesn't exist.`);
 
   return asset.wsgId;
 }
@@ -293,7 +293,7 @@ export async function getProjectId(requestContext: AuthorizedClientRequestContex
   const project: Project = await getCloudEnv().contextMgr.queryProjectByName(requestContext, projectName);
 
   if (!project || !project.wsgId)
-    return Promise.reject(`Project with name ${TestConfig.projectName} doesn't exist.`);
+    throw new Error(`Project with name ${TestConfig.projectName} doesn't exist.`);
 
   return project.wsgId;
 }
@@ -321,7 +321,7 @@ export async function getIModelId(requestContext: AuthorizedClientRequestContext
   const imodels = await client.iModels.get(requestContext, projectId, new IModelQuery().byName(imodelName));
 
   if (!imodels[0] || !imodels[0].id)
-    return Promise.reject(`iModel with name ${imodelName} doesn't exist.`);
+    throw new Error(`iModel with name ${imodelName} doesn't exist.`);
 
   return imodels[0].id!;
 }
@@ -971,13 +971,12 @@ export function getCloudEnv(): IModelCloudEnvironment {
 before(async () => {
   if (cloudEnv === undefined) {
     Logger.logError(loggingCategory, "cloudEnv was not defined before tests began");
-    return Promise.reject();
+    throw new Error();
   }
 
   Logger.logInfo(loggingCategory, "Waiting for cloudEnv to startup...");
   await cloudEnv.startup();
   Logger.logInfo(loggingCategory, "cloudEnv started.");
-  return Promise.resolve();
 });
 
 after(async () => {

@@ -149,13 +149,14 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
     const urlOptions: string = this.getUrlOptions(false, settingNamespace, settingName, userSpecific, applicationSpecific, shared, projectId, iModelId);
     const url: string = baseUrl.concat(urlOptions);
 
-    return request(requestContext, url, options).then(async (_response: Response): Promise<SettingsResult> => {
-      return Promise.resolve(new SettingsResult(SettingsStatus.Success));
-    }, async (response: Response): Promise<SettingsResult> => {
+    try {
+      await request(requestContext, url, options);
+      return new SettingsResult(SettingsStatus.Success);
+    } catch (response) {
       if ((response.status < 200) || (response.status > 299))
-        return Promise.resolve(this.formErrorResponse(response));
-      return Promise.resolve(new SettingsResult(SettingsStatus.UnknownError, "Unexpected Status " + JSON.stringify(response)));
-    });
+        return this.formErrorResponse(response);
+      return new SettingsResult(SettingsStatus.UnknownError, "Unexpected Status " + JSON.stringify(response));
+    }
   }
 
   // Retrieves previously saved user settings
@@ -172,16 +173,17 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
     const urlOptions: string = this.getUrlOptions(true, settingNamespace, settingName, userSpecific, applicationSpecific, shared, projectId, iModelId);
     const url: string = baseUrl.concat(urlOptions);
 
-    return request(requestContext, url, options).then(async (response: Response): Promise<SettingsResult> => {
+    try {
+      const response = await request(requestContext, url, options);
       // should get back an array. It should have either one item or be empty.
       if (Array.isArray(response.body) && (response.body.length > 0))
-        return Promise.resolve(new SettingsResult(SettingsStatus.Success, undefined, response.body[0].properties));
-      return Promise.resolve(new SettingsResult(SettingsStatus.SettingNotFound));
-    }, async (response: Response): Promise<SettingsResult> => {
+        return new SettingsResult(SettingsStatus.Success, undefined, response.body[0].properties);
+      return new SettingsResult(SettingsStatus.SettingNotFound);
+    } catch (response) {
       if ((response.status < 200) || (response.status > 299))
-        return Promise.resolve(this.formErrorResponse(response));
-      return Promise.resolve(new SettingsResult(SettingsStatus.UnknownError, "Unexpected Status " + JSON.stringify(response)));
-    });
+        return this.formErrorResponse(response);
+      return new SettingsResult(SettingsStatus.UnknownError, "Unexpected Status " + JSON.stringify(response));
+    }
   }
 
   // Retrieves all saved settings with the same namespace.
@@ -220,14 +222,15 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
     const urlOptions: string = this.getUrlOptions(false, settingNamespace, settingName, userSpecific, applicationSpecific, shared, projectId, iModelId);
     const url: string = baseUrl.concat(urlOptions);
 
-    return request(requestContext, url, options).then(async (_response: Response): Promise<SettingsResult> => {
-      return Promise.resolve(new SettingsResult(SettingsStatus.Success));
-    }, async (response: Response): Promise<SettingsResult> => {
+    try {
+      await request(requestContext, url, options);
+      return new SettingsResult(SettingsStatus.Success);
+    } catch (response) {
       if ((response.status < 200) || (response.status > 299))
-        return Promise.resolve(this.formErrorResponse(response));
+        return this.formErrorResponse(response);
       else
-        return Promise.resolve(new SettingsResult(SettingsStatus.UnknownError, "Unexpected Status " + JSON.stringify(response)));
-    });
+        return new SettingsResult(SettingsStatus.UnknownError, "Unexpected Status " + JSON.stringify(response));
+    }
   }
 
   public async saveUserSetting(requestContext: AuthorizedClientRequestContext, settings: any, settingNamespace: string, settingName: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult> {

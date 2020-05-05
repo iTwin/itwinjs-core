@@ -133,7 +133,7 @@ class GCtoIMCResultCache {
       await Promise.all(promises);
     }
 
-    return Promise.resolve(response);
+    return response;
   }
 }
 
@@ -185,7 +185,7 @@ class IMCtoGCResultCache {
     // if none are missing from the cache, resolve the promise immediately
     if (!missing) {
       response.fromCache = request.iModelCoords.length;
-      return Promise.resolve(response);
+      return response;
     } else {
       // keep track of how many came from the cache (mostly for tests).
       response.fromCache = request.iModelCoords.length - originalPositions.length;
@@ -203,7 +203,7 @@ class IMCtoGCResultCache {
         const thisCacheKey: string = JSON.stringify(thisIModelCoord);
         this._cache[thisCacheKey] = thisPoint;
       }
-      return Promise.resolve(response);
+      return response;
     }
   }
 }

@@ -128,7 +128,7 @@ export class RpcInvocation {
     (impl as any)[CURRENT_INVOCATION] = this;
     const op = this.lookupOperationFunction(impl);
 
-    return Promise.resolve(op.call(impl, ...parameters));
+    return op.call(impl, ...parameters);
   }
 
   private applyPolicies(parameters: any) {
@@ -165,7 +165,7 @@ export class RpcInvocation {
   private async reject(error: any): Promise<any> {
     this._threw = true;
     this.protocol.events.raiseEvent(RpcProtocolEvent.BackendErrorOccurred, this);
-    return Promise.reject(error);
+    throw error;
   }
 
   private async fulfillResolved(value: any): Promise<RpcRequestFulfillment> {

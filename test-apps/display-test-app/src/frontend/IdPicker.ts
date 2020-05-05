@@ -76,7 +76,7 @@ export abstract class IdPicker extends ToolBarDropDown {
     const visible = this._showIn2d || this._vp.view.isSpatialView();
     this._parent.style.display = visible ? "block" : "none";
     if (!visible)
-      return Promise.resolve();
+      return;
 
     createComboBox({
       name: "Display: ",
@@ -178,14 +178,14 @@ export abstract class IdPicker extends ToolBarDropDown {
     const is2d = this._vp.view.is2d();
     const elementType = this._elementType;
     if (is2d && elementType === "Model")
-      return Promise.resolve([]);
+      return [];
 
     const selectedElems = this._vp.iModel.selectionSet.elements;
     if (0 === selectedElems.size || selectedElems.size > 20) {
       if (0 < selectedElems.size)
         alert("Too many elements selected");
 
-      return Promise.resolve([]);
+      return [];
     }
 
     const elemIds = "(" + Array.from(selectedElems).join(",") + ")";

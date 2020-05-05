@@ -235,7 +235,7 @@ async function main() {
 async function documentLoaded(): Promise<void> {
   const readyState = /^complete$/;
   if (readyState.test(document.readyState))
-    return Promise.resolve();
+    return;
 
   return new Promise<void>((resolve) => {
     const listener = () => {

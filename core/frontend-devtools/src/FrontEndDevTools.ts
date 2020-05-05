@@ -52,7 +52,7 @@ export class FrontendDevTools {
    */
   public static async initialize(): Promise<void> {
     if (this._initialized)
-      return Promise.resolve();
+      return;
 
     this._initialized = true;
 

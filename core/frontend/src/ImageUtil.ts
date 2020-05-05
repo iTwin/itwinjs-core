@@ -215,7 +215,8 @@ export async function imageElementFromUrl(url: string): Promise<HTMLImageElement
  * @public
  */
 export async function extractImageSourceDimensions(source: ImageSource): Promise<Point2d> {
-  return imageElementFromImageSource(source).then((image) => new Point2d(image.naturalWidth, image.naturalHeight));
+  const image = await imageElementFromImageSource(source);
+  return new Point2d(image.naturalWidth, image.naturalHeight);
 }
 
 /**

@@ -75,7 +75,7 @@ export class DefaultIModelServices implements IModelServices {
       }
     } catch (e) {
       alert(JSON.stringify(e));
-      return Promise.reject(e);
+      throw e;
     }
     return iModelInfos;
   }
@@ -88,7 +88,7 @@ export class DefaultIModelServices implements IModelServices {
       return iModelConnection;
     } catch (e) {
       alert(JSON.stringify(e));
-      return Promise.reject(e);
+      throw e;
     }
   }
 
@@ -115,7 +115,7 @@ export class DefaultIModelServices implements IModelServices {
       }
     } catch (e) {
       alert(JSON.stringify(e));
-      return Promise.reject(e);
+      throw e;
     }
     return versionInfos;
   }
@@ -131,7 +131,7 @@ export class DefaultIModelServices implements IModelServices {
       }
     } catch (e) {
       alert(JSON.stringify(e));
-      return Promise.reject(e);
+      throw e;
     }
     return changeSetInfos;
   }
@@ -147,7 +147,7 @@ export class DefaultIModelServices implements IModelServices {
       }
     } catch (e) {
       alert(JSON.stringify(e));
-      return Promise.reject(e);
+      throw e;
     }
     return userInfos;
   }
@@ -162,7 +162,7 @@ export class DefaultIModelServices implements IModelServices {
       }
     } catch (e) {
       alert(JSON.stringify(e));
-      return Promise.reject(e);
+      throw e;
     }
     return userInfos;
   }

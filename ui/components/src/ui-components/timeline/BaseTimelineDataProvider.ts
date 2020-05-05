@@ -37,7 +37,7 @@ export class BaseTimelineDataProvider implements TimelineDataProvider {
 
   // istanbul ignore next
   public async loadTimelineData(): Promise<boolean> {
-    return Promise.resolve(false);
+    return false;
   }
 
   /** Called to get the initial scrubber location */

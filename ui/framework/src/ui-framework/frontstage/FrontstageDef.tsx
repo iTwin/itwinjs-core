@@ -168,10 +168,8 @@ export class FrontstageDef {
       });
     }
 
-    return Promise.all(controlReadyPromises)
-      .then(() => {
-        // Frontstage ready
-      });
+    await Promise.all(controlReadyPromises);
+    // Frontstage ready
   }
 
   /** Handles when the Frontstage becomes active */

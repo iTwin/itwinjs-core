@@ -163,13 +163,11 @@ export class TestBrowserAuthorizationClient implements FrontendAuthorizationClie
     const token = await this.tokenSetToAccessToken(tokenSet);
     this._accessToken = token;
     this.onUserStateChanged.raiseEvent(this._accessToken);
-    return Promise.resolve();
   }
 
   public async signOut(): Promise<void> {
     this._accessToken = undefined;
     this.onUserStateChanged.raiseEvent(this._accessToken);
-    return Promise.resolve();
   }
 
   private async tokenSetToAccessToken(tokenSet: TokenSet): Promise<AccessToken> {

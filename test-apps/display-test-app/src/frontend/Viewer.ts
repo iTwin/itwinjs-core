@@ -267,7 +267,7 @@ export class Viewer extends Window {
 
     this.toolBar.addDropDown({
       iconUnicode: "\ue909", // "gyroscope"
-      createDropDown: async (container: HTMLElement) => Promise.resolve(new StandardRotations(container, this.viewport)),
+      createDropDown: async (container: HTMLElement) => new StandardRotations(container, this.viewport),
       tooltip: "Standard rotations",
       only3d: true,
     });

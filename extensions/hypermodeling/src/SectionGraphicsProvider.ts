@@ -35,11 +35,11 @@ class ProxyTreeSupplier implements TileTreeSupplier {
 
   private async getViewState(props: SectionLocationProps, iModel: IModelConnection): Promise<ViewState | undefined> {
     if (undefined === props.viewAttachment)
-      return Promise.resolve(undefined);
+      return undefined;
 
     const attachmentId = RelatedElement.idFromJson(props.viewAttachment);
     if (Id64.isInvalid(attachmentId))
-      return Promise.resolve(undefined);
+      return undefined;
 
     const attachments = await iModel.elements.getProps(attachmentId) as ViewAttachmentProps[];
     if (1 === attachments.length)
@@ -144,7 +144,7 @@ class ProxyTree extends TileTree {
   }
 
   protected _selectTiles(_args: TileDrawArgs): Tile[] {
-    return [ this.rootTile ];
+    return [this.rootTile];
   }
 
   public prune(): void {
@@ -163,7 +163,7 @@ class ProxyTile extends Tile {
   public get hasGraphics() { return true; }
 
   public async requestContent(_isCanceled: () => boolean): Promise<TileRequest.Response> { return undefined; }
-  public async readContent(_data: TileRequest.ResponseData, _system: RenderSystem, _isCanceled?: () => boolean): Promise<TileContent> { return { }; }
+  public async readContent(_data: TileRequest.ResponseData, _system: RenderSystem, _isCanceled?: () => boolean): Promise<TileContent> { return {}; }
   protected _loadChildren(_resolve: (children: Tile[]) => void, _reject: (error: Error) => void): void { }
 
   public drawGraphics(args: TileDrawArgs) {

@@ -302,13 +302,13 @@ export class BriefcaseHandler {
     ArgumentCheck.defined("path", path);
 
     if (typeof window !== "undefined")
-      return Promise.reject(IModelHubClientError.browser());
+      throw IModelHubClientError.browser();
 
     if (!this._fileHandler)
-      return Promise.reject(IModelHubClientError.fileHandler());
+      throw IModelHubClientError.fileHandler();
 
     if (!briefcase.downloadUrl)
-      return Promise.reject(IModelHubClientError.missingDownloadUrl("briefcase"));
+      throw IModelHubClientError.missingDownloadUrl("briefcase");
 
     await this._fileHandler.downloadFile(requestContext, briefcase.downloadUrl, path, parseInt(briefcase.fileSize!, 10), progressCallback, cancelRequest);
     requestContext.enter();
