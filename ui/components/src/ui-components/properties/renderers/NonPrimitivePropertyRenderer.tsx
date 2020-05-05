@@ -10,8 +10,6 @@ import "./NonPrimitivePropertyRenderer.scss";
 import _ from "lodash";
 import * as React from "react";
 import { ArrayValue, PropertyRecord, PropertyValueFormat, StructValue } from "@bentley/ui-abstract";
-import { Orientation } from "@bentley/ui-core";
-import { UiComponents } from "../../UiComponents";
 import { NonPrimitivePropertyLabelRenderer } from "./label/NonPrimitivePropertyLabelRenderer";
 import { PrimitiveRendererProps } from "./PrimitivePropertyRenderer";
 import { PropertyRenderer } from "./PropertyRenderer";
@@ -56,7 +54,12 @@ export class NonPrimitivePropertyRenderer extends React.Component<NonPrimitivePr
   }
 
   private getLabel(props: NonPrimitivePropertyRendererProps, state: NonPrimitivePropertyRendererState): React.ReactNode {
-    const offset = PropertyRenderer.getLabelOffset(this.props.indentation);
+    const { orientation, indentation, width, columnRatio, columnInfo } = props;
+    const offset = PropertyRenderer.getLabelOffset(indentation, orientation, width, columnRatio, columnInfo?.minLabelWidth);
+
+    let displayLabel = props.propertyRecord.property.displayLabel;
+    if (this.props.propertyRecord.value.valueFormat === PropertyValueFormat.Array)
+      displayLabel = `${displayLabel} (${(this.props.propertyRecord.value as ArrayValue).items.length})`;
 
     return (
       <NonPrimitivePropertyLabelRenderer
@@ -64,9 +67,9 @@ export class NonPrimitivePropertyRenderer extends React.Component<NonPrimitivePr
         onExpand={this._onExpanded}
         onCollapse={this._onCollapsed}
         offset={offset}
-        renderColon={this.props.orientation === Orientation.Horizontal}
+        renderColon={false}
       >
-        {props.propertyRecord.property.displayLabel}
+        {displayLabel}
       </NonPrimitivePropertyLabelRenderer>
     );
   }
@@ -81,20 +84,6 @@ export class NonPrimitivePropertyRenderer extends React.Component<NonPrimitivePr
   }
 
   private getArrayProperties(items: PropertyRecord[]) {
-    const additionalProperties: PropertyRecord[] = [
-      new PropertyRecord(
-        {
-          valueFormat: PropertyValueFormat.Primitive,
-          value: items.length,
-          displayValue: items.length.toString(),
-        },
-        {
-          displayLabel: UiComponents.translate("property.arrayLength"),
-          name: "array_length",
-          typename: "int",
-        }),
-    ];
-
     const modifiedProperties: PropertyRecord[] = items.map((item, index): PropertyRecord => {
       const newProperty = { ...item.property };
       newProperty.displayLabel = `[${index + 1}]`;
@@ -102,7 +91,7 @@ export class NonPrimitivePropertyRenderer extends React.Component<NonPrimitivePr
       return new PropertyRecord(item.value, newProperty);
     });
 
-    return additionalProperties.concat(modifiedProperties);
+    return modifiedProperties;
   }
 
   private _renderPropertyForItem = (item: PropertyRecord) => {
@@ -117,6 +106,14 @@ export class NonPrimitivePropertyRenderer extends React.Component<NonPrimitivePr
         orientation={this.props.orientation}
         columnRatio={this.props.columnRatio}
         actionButtonRenderers={this.props.actionButtonRenderers}
+        // tslint:disable-next-line: deprecation
+        onColumnRatioChanged={this.props.onColumnRatioChanged}
+        width={this.props.width}
+        isResizeHandleHovered={this.props.isResizeHandleHovered}
+        onResizeHandleHoverChanged={this.props.onResizeHandleHoverChanged}
+        isResizeHandleBeingDragged={this.props.isResizeHandleBeingDragged}
+        onResizeHandleDragChanged={this.props.onResizeHandleDragChanged}
+        columnInfo={this.props.columnInfo}
       />
     );
   }

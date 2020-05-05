@@ -62,6 +62,7 @@
 
   display: grid;
   grid-row-gap: 1px; // A gap of 10px is too wasteful
+  overflow: hidden;
 }
 
 .components-property-list--vertical {

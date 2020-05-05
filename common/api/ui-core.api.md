@@ -629,17 +629,16 @@ export const DivWithOutsideClick: {
 };
 
 // @public
-export class ElementSeparator extends React.PureComponent<ElementSeparatorProps> {
-    // (undocumented)
-    static defaultProps: Partial<ElementSeparatorProps>;
-    // (undocumented)
-    render(): JSX.Element;
-    }
+export const ElementSeparator: (props: ElementSeparatorProps) => JSX.Element;
 
 // @public
 export interface ElementSeparatorProps extends CommonProps {
+    isResizeHandleBeingDragged?: boolean;
+    isResizeHandleHovered?: boolean;
     movableArea?: number;
-    onRatioChanged: (ratio: number) => void;
+    onRatioChanged?: (ratio: number) => void | RatioChangeResult;
+    onResizeHandleDragChanged?: (isDragStarted: boolean) => void;
+    onResizeHandleHoverChanged?: (isHovered: boolean) => void;
     orientation: Orientation;
     ratio: number;
     separatorSize?: number;
@@ -1362,6 +1361,12 @@ export class Radio extends React.PureComponent<RadioProps> {
 
 // @public
 export interface RadioProps extends React.InputHTMLAttributes<HTMLInputElement>, CommonProps, LabeledComponentProps {
+}
+
+// @public
+export interface RatioChangeResult {
+    // (undocumented)
+    ratio: number;
 }
 
 // @internal (undocumented)

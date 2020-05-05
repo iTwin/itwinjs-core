@@ -50,6 +50,7 @@ import { PropertyDescription } from '@bentley/ui-abstract';
 import { PropertyRecord } from '@bentley/ui-abstract';
 import { PropertyValue } from '@bentley/ui-abstract';
 import * as PropTypes from 'prop-types';
+import { RatioChangeResult } from '@bentley/ui-core';
 import * as React from 'react';
 import ReactDataGrid = require('react-data-grid');
 import { RelativePosition } from '@bentley/ui-abstract';
@@ -2621,7 +2622,7 @@ export class PropertyRenderer extends React.Component<PropertyRendererProps, Pro
     // @internal (undocumented)
     componentDidUpdate(prevProps: PropertyRendererProps): void;
     // (undocumented)
-    static getLabelOffset(indentation?: number): number;
+    static getLabelOffset(indentation?: number, orientation?: Orientation, width?: number, columnRatio?: number, minColumnLabelWidth?: number): number;
     // @internal (undocumented)
     render(): JSX.Element;
     // @internal (undocumented)
@@ -2854,13 +2855,18 @@ export type SetCurrentlyEditedNode = (currentlyEditedNode?: BeInspireTreeNode<Tr
 export interface SharedRendererProps {
     // @beta
     actionButtonRenderers?: ActionButtonRenderer[];
+    columnInfo?: PropertyGridColumnInfo;
     columnRatio?: number;
     isHoverable?: boolean;
+    isResizeHandleBeingDragged?: boolean;
+    isResizeHandleHovered?: boolean;
     isSelectable?: boolean;
     isSelected?: boolean;
     onClick?: (property: PropertyRecord, key?: string) => void;
-    onColumnRatioChanged?: (ratio: number) => void;
+    onColumnRatioChanged?: (ratio: number) => void | RatioChangeResult;
     onContextMenu?: (property: PropertyRecord, e: React.MouseEvent) => void;
+    onResizeHandleDragChanged?: (isDragStarted: boolean) => void;
+    onResizeHandleHoverChanged?: (isHovered: boolean) => void;
     onRightClick?: (property: PropertyRecord, key?: string) => void;
     orientation: Orientation;
     propertyRecord: PropertyRecord;
