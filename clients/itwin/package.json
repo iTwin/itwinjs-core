@@ -43,7 +43,6 @@
     "@bentley/build-tools": "2.1.0-dev.1",
     "@bentley/config-loader": "2.1.0-dev.1",
     "@bentley/geometry-core": "2.1.0-dev.1",
-    "@bentley/oidc-signin-tool": "2.0.0-dev.71",
     "@types/chai": "^4.1.4",
     "@types/deep-assign": "^0.1.0",
     "@types/js-base64": "^2.3.1",

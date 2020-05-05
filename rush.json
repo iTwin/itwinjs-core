@@ -66,10 +66,7 @@
       "projectFolder": "clients/itwin",
       "reviewCategory": "common",
       "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep",
-      "cyclicDependencyProjects": [
-        "@bentley/oidc-signin-tool"
-      ]
+      "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
       "packageName": "@bentley/product-settings-client",

@@ -32,7 +32,6 @@
     "@bentley/bentleyjs-core": "2.1.0-dev.1",
     "@bentley/certa": "2.1.0-dev.1",
     "@bentley/config-loader": "2.1.0-dev.1",
-    "@bentley/geometry-core": "2.1.0-dev.1",
     "@bentley/frontend-authorization-client": "2.1.0-dev.1",
     "@bentley/itwin-client": "2.1.0-dev.1",
     "openid-client": "^3.7.2",
