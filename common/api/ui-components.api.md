@@ -1836,10 +1836,10 @@ export interface ImmediatelyLoadedTreeNodeItem extends TreeNodeItem {
 export class InlineEdit extends React.Component<InlineEditProps, InlineEditState> {
     constructor(props: InlineEditProps);
     // (undocumented)
-    render(): JSX.Element;
+    componentDidUpdate(prevProps: InlineEditProps, _prevState: InlineEditState): void;
     // (undocumented)
-    UNSAFE_componentWillReceiveProps(newProps: InlineEditProps): void;
-}
+    render(): JSX.Element;
+    }
 
 // @internal
 export enum InputContext {

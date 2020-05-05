@@ -1373,7 +1373,7 @@ export interface RatioChangeResult {
 export class ReactNumericInput extends React.Component<ReactNumericInputProps, ReactNumericInputState> {
     constructor(props: ReactNumericInputProps);
     componentDidMount(): void;
-    componentDidUpdate(_prevProps: ReactNumericInputProps, prevState: ReactNumericInputState): void;
+    componentDidUpdate(prevProps: ReactNumericInputProps, prevState: ReactNumericInputState): void;
     componentWillUnmount(): void;
     static defaultProps: {
         step: number;
@@ -1394,10 +1394,6 @@ export class ReactNumericInput extends React.Component<ReactNumericInputProps, R
     refsInput: HTMLInputElement | undefined;
     render(): JSX.Element;
     static SPEED: number;
-    // (undocumented)
-    UNSAFE_componentWillReceiveProps(props: ReactNumericInputProps): void;
-    // (undocumented)
-    UNSAFE_componentWillUpdate(): void;
     }
 
 // @beta

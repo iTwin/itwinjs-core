@@ -14,7 +14,7 @@ describe("<InlineEdit />", () => {
     afterEach(cleanup);
   });
 
-  it("trigger call to componentWillReceiveProps", async () => {
+  it("trigger call to componentDidUpdate", async () => {
     const onTotalDurationChange = sinon.spy();
     const initialDuration = "00:40";
     const revisedDuration = "00:60";
@@ -22,7 +22,7 @@ describe("<InlineEdit />", () => {
     const renderedComponent = render(<InlineEdit className="end-time" defaultValue={initialDuration} onChange={onTotalDurationChange} />);
     expect(renderedComponent).not.to.be.undefined;
 
-    // trigger call to componentWillReceiveProps
+    // trigger call to componentDidUpdate
     renderedComponent.rerender(<InlineEdit className="end-time" defaultValue={revisedDuration} onChange={onTotalDurationChange} />);
   });
 });

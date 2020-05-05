@@ -203,13 +203,16 @@ export function getOverflown(width: number, docked: ReadonlyArray<readonly [stri
   }
 
   let j = i;
-  for (; j > 0; j--) {
-    if (j === activeIndex)
-      continue;
-    if (settingsWidth <= width)
-      break;
-    const w = docked[j][1];
-    settingsWidth -= w;
+  // istanbul ignore else
+  if (j < docked.length) {
+    for (; j > 0; j--) {
+      if (j === activeIndex)
+        continue;
+      if (settingsWidth <= width)
+        break;
+      const w = docked[j][1];
+      settingsWidth -= w;
+    }
   }
 
   const overflown = new Array<string>();

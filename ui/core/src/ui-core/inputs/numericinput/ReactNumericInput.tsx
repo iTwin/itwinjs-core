@@ -351,7 +351,7 @@ export class ReactNumericInput extends React.Component<ReactNumericInputProps, R
 
   private _isStrict: boolean;
   private _ignoreValueChange: boolean = false;
-  private _isMounted: boolean = false;
+  private _isUnmounted: boolean = true;
   private _inputFocus: boolean = false;
 
   private _refsWrapper?: HTMLSpanElement;
@@ -373,11 +373,11 @@ export class ReactNumericInput extends React.Component<ReactNumericInputProps, R
       btnUpHover: false,
       btnUpActive: false,
       stringValue: "",
-      ...this._propsToState(this.props),
+      ...this._propsToState(this.props, true),
     };
   }
 
-  private _propsToState(props: ReactNumericInputProps) {
+  private _propsToState(props: ReactNumericInputProps, initialMount = false) {
     const out: ReactNumericInputState = {};
 
     if (props.hasOwnProperty("value")) {
@@ -388,7 +388,7 @@ export class ReactNumericInput extends React.Component<ReactNumericInputProps, R
       out.value = out.stringValue !== "" ?
         this._parse(props.value) :
         null;
-    } else if (!this._isMounted && props.hasOwnProperty("defaultValue")) {
+    } else if (initialMount && props.hasOwnProperty("defaultValue")) {
       out.stringValue = String(
         props.defaultValue || props.defaultValue === 0 ? props.defaultValue : "",
       ).trim();
@@ -402,46 +402,21 @@ export class ReactNumericInput extends React.Component<ReactNumericInputProps, R
   }
 
   /**
-   * Special care is taken for the "value" prop:
-   * - If not provided - set it to null
-   * - If the prop is a number - use it as is
-   * - Otherwise:
-   *     1. Convert it to string (falsy values become "")
-   *     2. Then trim it.
-   *     3. Then parse it to number (delegating to this.props.parse if any)
-   */
-  // TODO - Fix this
-  /** @internal */
-  public UNSAFE_componentWillReceiveProps(props: ReactNumericInputProps): void {  // tslint:disable-line: naming-convention
-    this._isStrict = !!props.strict;
-    const nextState = this._propsToState(props);
-    if (Object.keys(nextState).length) {
-      this._ignoreValueChange = true;
-
-      if (this._isMounted)
-        this.setState(nextState, () => {
-          this._ignoreValueChange = false;
-        });
-    }
-  }
-
-  /**
-   * Save the input selection right before rendering
-   */
-  // TODO - Fix this
-  /** @internal */
-  public UNSAFE_componentWillUpdate(): void {  // tslint:disable-line: naming-convention
-    this.saveSelection();
-  }
-
-  /**
    * After the component has been rendered into the DOM, do whatever is
    * needed to "reconnect" it to the outer world, i.e. restore selection,
    * call some of the callbacks, validate etc.
    */
-  public componentDidUpdate(_prevProps: ReactNumericInputProps, prevState: ReactNumericInputState): void {
+  public componentDidUpdate(prevProps: ReactNumericInputProps, prevState: ReactNumericInputState): void {
     if (!this.refsInput)
       return;
+
+    // if new props sent in then update state so new props are rendered
+    if (this.props !== prevProps) {
+      this._isStrict = !!this.props.strict;
+      const nextState = this._propsToState(this.props);
+      this.setState(nextState);
+      return;
+    }
 
     // Call the onChange if needed. This is placed here because there are
     // many reasons for changing the value and this is the common place
@@ -476,7 +451,7 @@ export class ReactNumericInput extends React.Component<ReactNumericInputProps, R
    * This is used to clear the timer if any
    */
   public componentWillUnmount(): void {
-    this._isMounted = false;
+    this._isUnmounted = true;
     this._stop();
   }
 
@@ -487,11 +462,11 @@ export class ReactNumericInput extends React.Component<ReactNumericInputProps, R
     if (!this.refsInput)
       return;
 
-    this._isMounted = true;
+    this._isUnmounted = false;
     (this.refsInput as any).getValueAsNumber = () => this.state.value || 0;
 
     (this.refsInput as any).setValue = (value: any) => {
-      if (this._isMounted)
+      if (!this._isUnmounted)
         this.setState({
           value: this._parse(value),
           stringValue: value,
@@ -510,20 +485,6 @@ export class ReactNumericInput extends React.Component<ReactNumericInputProps, R
     }
 
     this.checkValidity();
-  }
-
-  /**
-   * Saves the input selection in the state so that it can be restored after
-   * updates
-   */
-  private saveSelection(): void {
-    if (!this.refsInput)
-      return;
-
-    // this.setState({
-    //   selectionStart: this._refsInput.selectionStart,
-    //   selectionEnd: this._refsInput.selectionEnd,
-    // });
   }
 
   /**
@@ -698,7 +659,7 @@ export class ReactNumericInput extends React.Component<ReactNumericInputProps, R
     this._isStrict = _isStrict;
 
     if (_n !== this.state.value) {
-      if (this._isMounted)
+      if (!this._isUnmounted)
         this.setState({ value: _n, stringValue: _n + "" }, callback);
       return true;
     }
@@ -958,7 +919,7 @@ export class ReactNumericInput extends React.Component<ReactNumericInputProps, R
       "",
     );
 
-    const loose = !this._isStrict && (this._inputFocus || !this._isMounted);
+    const loose = !this._isStrict && (this._inputFocus || this._isUnmounted);
 
     // incomplete number
     if (loose && RE_INCOMPLETE_NUMBER.test(stringValue)) {
@@ -993,21 +954,21 @@ export class ReactNumericInput extends React.Component<ReactNumericInputProps, R
         onTouchStart: this.onTouchStart.bind(this, "up"),
         onTouchEnd: this._onTouchEnd,
         onMouseEnter: () => {
-          if (this._isMounted)
+          if (!this._isUnmounted)
             this.setState({
               btnUpHover: true,
             });
         },
         onMouseLeave: () => {
           this._stop();
-          if (this._isMounted)
+          if (!this._isUnmounted)
             this.setState({
               btnUpHover: false,
               btnUpActive: false,
             });
         },
         onMouseUp: () => {
-          if (this._isMounted)
+          if (!this._isUnmounted)
             this.setState({
               btnUpHover: true,
               btnUpActive: false,
@@ -1017,7 +978,7 @@ export class ReactNumericInput extends React.Component<ReactNumericInputProps, R
           args[0].preventDefault();
           args[0].persist();
           this._inputFocus = true;
-          if (this._isMounted)
+          if (!this._isUnmounted)
             this.setState({
               btnUpHover: true,
               btnUpActive: true,
@@ -1033,21 +994,21 @@ export class ReactNumericInput extends React.Component<ReactNumericInputProps, R
         onTouchStart: this.onTouchStart.bind(this, "down"),
         onTouchEnd: this._onTouchEnd,
         onMouseEnter: () => {
-          if (this._isMounted)
+          if (!this._isUnmounted)
             this.setState({
               btnDownHover: true,
             });
         },
         onMouseLeave: () => {
           this._stop();
-          if (this._isMounted)
+          if (!this._isUnmounted)
             this.setState({
               btnDownHover: false,
               btnDownActive: false,
             });
         },
         onMouseUp: () => {
-          if (this._isMounted)
+          if (!this._isUnmounted)
             this.setState({
               btnDownHover: true,
               btnDownActive: false,
@@ -1057,7 +1018,7 @@ export class ReactNumericInput extends React.Component<ReactNumericInputProps, R
           args[0].preventDefault();
           args[0].persist();
           this._inputFocus = true;
-          if (this._isMounted)
+          if (!this._isUnmounted)
             this.setState({
               btnDownHover: true,
               btnDownActive: true,
@@ -1075,7 +1036,7 @@ export class ReactNumericInput extends React.Component<ReactNumericInputProps, R
           if (val === null || isNaN(val)) {
             val = null;
           }
-          if (this._isMounted)
+          if (!this._isUnmounted)
             this.setState({
               value: this._isStrict ? this._toNumber(val) : val,
               stringValue: original,
@@ -1083,21 +1044,21 @@ export class ReactNumericInput extends React.Component<ReactNumericInputProps, R
         },
         onKeyDown: this._onKeyDown,
         onInput: (...args: any[]) => {
-          this.saveSelection();
           this._invokeEventCallback("onInput", ...args);
         },
         onSelect: (...args: any[]) => {
-          this.saveSelection();
           this._invokeEventCallback("onSelect", ...args);
         },
         onFocus: (...args: any[]) => {
           args[0].persist();
           this._inputFocus = true;
           const val = this._parse(args[0].target.value);
-          if (this._isMounted)
+          const stringVal = val || val === 0 ? val + "" : "";
+          // istanbul ignore else
+          if (!this._isUnmounted && val !== this.state.value && stringVal !== this.state.stringValue)
             this.setState({
               value: val,
-              stringValue: val || val === 0 ? val + "" : "",
+              stringValue: stringVal,
             }, () => {
               this._invokeEventCallback("onFocus", ...args);
             });
@@ -1108,7 +1069,8 @@ export class ReactNumericInput extends React.Component<ReactNumericInputProps, R
           args[0].persist();
           this._inputFocus = false;
           const val = this._parse(args[0].target.value);
-          if (this._isMounted)
+          // istanbul ignore else
+          if (!this._isUnmounted && val !== this.state.value)
             this.setState({
               value: val,
             }, () => {
