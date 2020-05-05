@@ -680,6 +680,8 @@ export enum IModelHubStatus {
     // (undocumented)
     FailedToGetAssetPermissions = 102445,
     // (undocumented)
+    FailedToGetProductSettings = 102448,
+    // (undocumented)
     FailedToGetProjectById = 102442,
     // (undocumented)
     FailedToGetProjectMembers = 102437,
