@@ -387,21 +387,6 @@ describe("PresentationManager", () => {
       manager = new PresentationManager({ addon: addonMock.object });
     });
 
-    it("adds ruleset variables from options", async () => {
-      const rulesetId = faker.random.word();
-      const variable = { id: faker.random.word(), type: VariableValueTypes.String, value: faker.random.word() };
-      const rulesetVariables = [variable];
-      addonMock
-        .setup((x) => x.handleRequest(ClientRequestContext.current, moq.It.isAny(), moq.It.isAny()))
-        .returns(async () => "{}")
-        .verifiable(moq.Times.once());
-      addonMock
-        .setup((x) => x.setRulesetVariableValue(rulesetId, variable.id, variable.type, variable.value))
-        .verifiable(moq.Times.once());
-      await manager.getNodesCount(ClientRequestContext.current, { imodel: imodelMock.object, rulesetOrId: rulesetId, rulesetVariables });
-      addonMock.verifyAll();
-    });
-
     it("registers ruleset if `rulesetOrId` is a ruleset", async () => {
       const ruleset = await createRandomRuleset();
       addonMock

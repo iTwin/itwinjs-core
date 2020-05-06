@@ -8,7 +8,7 @@ import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment
 import { expect } from "chai";
 import * as faker from "faker";
 import * as sinon from "sinon";
-import { Logger } from "@bentley/bentleyjs-core";
+import { BeEvent, Logger } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { Node, RegisteredRuleset } from "@bentley/presentation-common";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
@@ -16,7 +16,7 @@ import { PromiseContainer, ResolvablePromise } from "@bentley/presentation-commo
 import {
   createRandomECInstancesNode, createRandomECInstancesNodeKey, createRandomNodePathElement, createRandomRuleset,
 } from "@bentley/presentation-common/lib/test/_helpers/random";
-import { Presentation, PresentationManager, RulesetManager } from "@bentley/presentation-frontend";
+import { Presentation, PresentationManager, RulesetManager, RulesetVariablesManager } from "@bentley/presentation-frontend";
 import { PageOptions } from "@bentley/ui-components";
 import { PresentationTreeDataProvider } from "../../presentation-components/tree/DataProvider";
 import { pageOptionsUiToPresentation } from "../../presentation-components/tree/Utils";
@@ -26,7 +26,9 @@ describe("TreeDataProvider", () => {
 
   let rulesetId: string;
   let provider: PresentationTreeDataProvider;
+  let onVariableChanged: BeEvent<(variableId: string) => void>;
   const presentationManagerMock = moq.Mock.ofType<PresentationManager>();
+  const rulesetVariablesManagerMock = moq.Mock.ofType<RulesetVariablesManager>();
   const imodelMock = moq.Mock.ofType<IModelConnection>();
 
   before(() => {
@@ -39,7 +41,11 @@ describe("TreeDataProvider", () => {
   });
 
   beforeEach(() => {
+    onVariableChanged = new BeEvent();
     presentationManagerMock.reset();
+    rulesetVariablesManagerMock.reset();
+    presentationManagerMock.setup((x) => x.vars(moq.It.isAny())).returns(() => rulesetVariablesManagerMock.object);
+    rulesetVariablesManagerMock.setup((x) => x.onVariableChanged).returns(() => onVariableChanged);
     provider = new PresentationTreeDataProvider({ imodel: imodelMock.object, ruleset: rulesetId });
   });
 
@@ -180,6 +186,22 @@ describe("TreeDataProvider", () => {
         presentationManagerMock.verifyAll();
       });
 
+      it("clears memoized result when ruleset variables changes", async () => {
+        const parentKey = createRandomECInstancesNodeKey();
+        const parentNode = createRandomTreeNodeItem(parentKey);
+        presentationManagerMock
+          .setup((x) => x.getNodesAndCount({ imodel: imodelMock.object, rulesetOrId: rulesetId, paging: { start: 0, size: 10 } }, parentKey))
+          .returns(async () => ({ nodes: [createRandomECInstancesNode(), createRandomECInstancesNode()], count: 2 }))
+          .verifiable(moq.Times.exactly(2));
+
+        provider.pagingSize = 10;
+        await provider.getNodesCount(parentNode);
+        onVariableChanged.raiseEvent("testVar");
+        await provider.getNodesCount(parentNode);
+
+        presentationManagerMock.verifyAll();
+      });
+
       it("uses default page options", async () => {
         const parentKey = createRandomECInstancesNodeKey();
         const parentNode = createRandomTreeNodeItem(parentKey);
@@ -268,6 +290,20 @@ describe("TreeDataProvider", () => {
 
         presentationManagerMock.verifyAll();
       });
+
+      it("clears memoized result when ruleset variables changes", async () => {
+        presentationManagerMock
+          .setup((x) => x.getNodes({ imodel: imodelMock.object, rulesetOrId: rulesetId, paging: undefined }, undefined))
+          .returns(async () => [createRandomECInstancesNode()])
+          .verifiable(moq.Times.exactly(2));
+
+        await provider.getNodes(undefined);
+        onVariableChanged.raiseEvent("testVar");
+        await provider.getNodes(undefined);
+
+        presentationManagerMock.verifyAll();
+      });
+
     });
 
     describe("children", () => {

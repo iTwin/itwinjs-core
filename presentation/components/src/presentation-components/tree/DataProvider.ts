@@ -54,17 +54,24 @@ export class PresentationTreeDataProvider implements IPresentationTreeDataProvid
   private _imodel: IModelConnection;
   private _rulesetRegistration: RulesetRegistrationHelper;
   private _pagingSize?: number;
+  private _disposeVariablesChangeListener: () => void;
 
   /** Constructor. */
   public constructor(props: PresentationTreeDataProviderProps) {
     this._rulesetRegistration = new RulesetRegistrationHelper(props.ruleset);
     this._imodel = props.imodel;
     this._pagingSize = props.pagingSize;
+
+    this._disposeVariablesChangeListener = Presentation.presentation.vars(this._rulesetRegistration.rulesetId).onVariableChanged.addListener(() => {
+      this._getNodesAndCount.cache.values.length = 0;
+      this._getNodesAndCount.cache.keys.length = 0;
+    });
   }
 
   /** Destructor. Must be called to clean up.  */
   public dispose() {
     this._rulesetRegistration.dispose();
+    this._disposeVariablesChangeListener && this._disposeVariablesChangeListener();
   }
 
   /** Id of the ruleset used by this data provider */

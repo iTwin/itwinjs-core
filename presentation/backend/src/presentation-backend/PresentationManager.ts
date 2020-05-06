@@ -340,16 +340,10 @@ export class PresentationManager {
     return rulesetOrId;
   }
 
-  /** Registers given ruleset and sets ruleset variables */
-  private handleOptions<TOptions extends { rulesetOrId: Ruleset | string, rulesetVariables?: RulesetVariable[] }>(options: TOptions) {
-    const { rulesetVariables, rulesetOrId, ...strippedOptions } = options;
+  /** Registers given ruleset */
+  private handleOptions<TOptions extends { rulesetOrId: Ruleset | string }>(options: TOptions) {
+    const { rulesetOrId, ...strippedOptions } = options;
     const registeredRulesetId = this.ensureRulesetRegistered(rulesetOrId);
-    if (rulesetVariables) {
-      const variablesManager = this.vars(registeredRulesetId);
-      for (const variable of rulesetVariables) {
-        variablesManager.setValue(variable.id, variable.type, variable.value);
-      }
-    }
     return { rulesetId: registeredRulesetId, ...strippedOptions };
   }
 
