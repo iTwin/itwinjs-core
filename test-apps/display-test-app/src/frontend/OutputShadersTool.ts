@@ -8,11 +8,13 @@ import SVTRpcInterface from "../common/SVTRpcInterface";
 
 const makeShadeBat = `
 @echo off
+rem Compiles *VS.hlsl and *FS.hlsl to .h  Also Outputs _WarningsList.txt, _ErrorFileList.txt, and _StatsList.txt
 rem /Zi param is sometimes useful (see fxc /?)
-rem reference https://docs.microsoft.com/en-us/windows/win32/direct3dhlsl/dx-graphics-hlsl-sm4-asm
+rem asm reference https://docs.microsoft.com/en-us/windows/win32/direct3dhlsl/dx-graphics-hlsl-sm4-asm
 
 echo:List of files with errors:>_ErrorFileList.txt
 echo:>_WarningsList.txt
+echo:>_StatsList.txt
 set /a "_totVert=0"
 set /a "_errVert=0"
 set /a "_tempsVert=0"
@@ -32,8 +34,10 @@ for /F %%G in ('dir *FS.hlsl /ON/B') do call :MakeFS4 %%G %1 %2 %3 %4
 
 call :OutputResults
 echo:  See _ErrorFileList.txt for details, see _WarningsList.txt for any warnings or errors
-call :OutputResults >>_ErrorFileList.txt
-echo:  See _WarningsList.txt for any warnings or errors>>_ErrorFileList.txt
+call :OutputResults >> _ErrorFileList.txt
+echo:  See _WarningsList.txt for any warnings or errors>> _ErrorFileList.txt
+call :OutputResults >> _StatsList.txt
+echo:  See _WarningsList.txt for any warnings or errors>> _StatsList.txt
 
 :CleanupALL
 set _totVert=
@@ -71,7 +75,14 @@ set _instr=
 if not exist %1.h goto :Error4
 for /F "tokens=1,2" %%G in ('findstr dcl_temps %1.h') do (if "%%G" EQU "dcl_temps" set _temps=%%H)
 for /F "tokens=1,2,3" %%G in ('findstr instruction %1.h') do (set _instr=%%I)
-echo:    %_temps% regs  %_instr% instructions
+set _temps2=     %_temps%
+set _temps2=%_temps2:~-3%
+set _instr2=     %_instr%
+set _instr2=%_instr2:~-4%
+echo:  %_temps2% regs  %_instr2% instructions
+echo:  %_temps2% regs  %_instr2% instructions  %1>> _StatsList.txt
+set _temps2=
+set _instr2=
 goto :EOF
 
 

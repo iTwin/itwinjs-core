@@ -353,8 +353,12 @@ export class ShaderProgram implements WebGLDisposable {
 
     // parse and edit srcH to make it compilable
     const fnameH = sname + ".hlsl";
-    let numTargets = 1;
+    let numTargets = 0; // for gl_Color cases
     let haveGLpos = false;
+    let haveGLDepth = false;
+    let haveGLFragCoord = false;
+    let haveGLFragColorOnly = false; // for only 1 output
+    const haveGLFragColor = [false, false, false, false, false, false, false, false];
     const attrs: string[] = new Array<string>();
     const varyings: string[] = new Array<string>();
     const lines = srcH.split("\n");
@@ -390,7 +394,7 @@ export class ShaderProgram implements WebGLDisposable {
           } else if (line.indexOf("@@ VERTEX ATTRIBUTES @@") >= 0) {
             lines[ndx] = "// @@ VERTEX ATTRIBUTES @@";
           } else if (line.indexOf("@@ MAIN PROLOGUE @@") >= 0) {
-            lines[ndx] = "// @@ MAIN PROLOGUE @@";
+            lines[ndx] = "// @@ MAIN PROLOGUE @@\ngetInput(input);";
           } else if (line.indexOf("@@ VERTEX OUTPUT @@") >= 0) {
             // have to create a VS_OUTPUT struct and a generateOutput function from varyings
             lines[ndx] = "// @@ VERTEX OUTPUT @@\nstruct VS_INPUT\n  {";
@@ -446,14 +450,30 @@ export class ShaderProgram implements WebGLDisposable {
             lines.splice(ndx, 0, "  return output;\n}");
           }
         } else { // fragment shader
-          const tNdx = line.indexOf("static float4 gl_Color[");
-          if (tNdx >= 0)
+          let tNdx = 0;
+          if ((tNdx = line.indexOf("static float4 gl_Color[")) >= 0) {
             numTargets = +line.substr(tNdx + 23, 1);
-
-          if (line.indexOf("@@ PIXEL OUTPUT @@") >= 0) {
+          } else if (line.indexOf("gl_Depth") >= 0) {
+            haveGLDepth = true;
+          } else if (line.indexOf("gl_FragCoord") >= 0) {
+            haveGLFragCoord = true;
+          } else if ((tNdx = line.indexOf("out_FragColor")) >= 0) {
+            const c = line.substr(tNdx + 13, 1);
+            if (c === " " || c === "=")
+              haveGLFragColorOnly = true;
+            else {
+              tNdx = +c;
+              haveGLFragColor[tNdx] = true;
+            }
+          } else if (line.indexOf("@@ PIXEL OUTPUT @@") >= 0) {
             // have to create a VS_OUTPUT struct, a getInputs function (both from varyings),
-            // a PS_OUTPUT struct, and a generateOutput function (both based on numTargets)
+            // a PS_OUTPUT struct, and a generateOutput function (both based on numTargets or haveGLFragColor)
             lines[ndx] = "// @@ VERTEX OUTPUT @@\nstruct VS_OUTPUT\n  {";
+            if (haveGLFragCoord) {
+              ++ndx;
+              lines.splice(ndx, 0, "  float4 gl_FragCoord : SV_POSITION;");
+            }
+
             let vNdx = 0;
             for (const tstr of varyings) {
               ++ndx;
@@ -463,6 +483,11 @@ export class ShaderProgram implements WebGLDisposable {
 
             ++ndx;
             lines.splice(ndx, 0, "  };\nvoid getInputs(VS_OUTPUT input) {");
+            if (haveGLFragCoord) {
+              ++ndx;
+              lines.splice(ndx, 0, "  gl_FragCoord = input.gl_FragCoord;");
+            }
+
             for (const tstr of varyings) {
               let t = tstr.indexOf("_v");
               let vName = tstr.substring(t);
@@ -481,6 +506,23 @@ export class ShaderProgram implements WebGLDisposable {
               ++cNdx;
             }
 
+            if (haveGLFragColorOnly) {
+              ++ndx;
+              lines.splice(ndx, 0, "  float out_FragColor : SV_TARGET;");
+            } else {
+              for (cNdx = 0; cNdx < haveGLFragColor.length; ++cNdx) {
+                if (haveGLFragColor[cNdx]) {
+                  ++ndx;
+                  lines.splice(ndx, 0, "  float4 out_FragColor" + cNdx + " : SV_TARGET" + cNdx + ";");
+                }
+              }
+            }
+
+            if (haveGLDepth) {
+              ++ndx;
+              lines.splice(ndx, 0, "  float gl_Depth : SV_Depth;");
+            }
+
             ++ndx;
             lines.splice(ndx, 0, "  };\nPS_OUTPUT generateOutput () {\n  PS_OUTPUT output;");
             cNdx = 0;
@@ -488,6 +530,23 @@ export class ShaderProgram implements WebGLDisposable {
               ++ndx;
               lines.splice(ndx, 0, "  output.col" + cNdx + " = gl_Color[" + cNdx + "];");
               ++cNdx;
+            }
+
+            if (haveGLFragColorOnly) {
+              ++ndx;
+              lines.splice(ndx, 0, "  output.out_FragColor = out_FragColor;");
+            } else {
+              for (cNdx = 0; cNdx < haveGLFragColor.length; ++cNdx) {
+                if (haveGLFragColor[cNdx]) {
+                  ++ndx;
+                  lines.splice(ndx, 0, "  output.out_FragColor" + cNdx + " = out_FragColor" + cNdx + ";");
+                }
+              }
+            }
+
+            if (haveGLDepth) {
+              ++ndx;
+              lines.splice(ndx, 0, "  output.gl_Depth = gl_Depth;");
             }
 
             ++ndx;
