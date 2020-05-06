@@ -17,7 +17,7 @@ import {
 import { BentleyCloudRpcManager, DesktopAuthorizationClientConfiguration, ElectronRpcManager, RpcConfiguration } from "@bentley/imodeljs-common";
 import {
   AccuSnap, DesktopAuthorizationClient, ExternalServerExtensionLoader, FrontendLoggerCategory, IModelApp, IModelAppOptions, IModelConnection,
-  RenderSystem, SelectionTool, SnapMode, ViewClipByPlaneTool, ViewState,
+  loggerCategory, RenderSystem, SelectionTool, SnapMode, ToolAdmin, ViewClipByPlaneTool, ViewState,
 } from "@bentley/imodeljs-frontend";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { MarkupApp } from "@bentley/imodeljs-markup";
@@ -43,6 +43,7 @@ import { DeleteElementTool } from "./tools/DeleteElementTool";
 import { MoveElementTool } from "./tools/MoveElementTool";
 import { PlaceBlockTool } from "./tools/PlaceBlockTool";
 import { PlaceLineStringTool } from "./tools/PlaceLineStringTool";
+import { ErrorHandling } from "./api/ErrorHandling";
 
 // Initialize my application gateway configuration for the frontend
 RpcConfiguration.developmentMode = true;
@@ -310,7 +311,7 @@ export class SampleAppIModelApp {
   }
 
   public static async handleWorkOffline() {
-    await SampleAppIModelApp.showFrontstage("Test4");
+    return LocalFileOpenFrontstage.open();
   }
 
   public static async showIModelIndex(contextId: string, iModelId: string) {
@@ -586,8 +587,10 @@ async function main() {
   // initialize logging
   Logger.initializeToConsole();
   Logger.setLevelDefault(LogLevel.Warning);
-  Logger.setLevel("simple-editor-app", LogLevel.Info);
+  Logger.setLevel(loggerCategory, LogLevel.Info);
   Logger.setLevel(FrontendLoggerCategory.Authorization, LogLevel.Info);
+
+  ToolAdmin.exceptionHandler = async (err: any) => Promise.resolve(ErrorHandling.onUnexpectedError(err));
 
   // Logger.setLevel("ui-framework.Toolbar", LogLevel.Info);  // used to show minimal output calculating toolbar overflow
   // Logger.setLevel("ui-framework.Toolbar", LogLevel.Trace);  // used to show detailed output calculating toolbar overflow

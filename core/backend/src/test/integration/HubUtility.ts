@@ -397,13 +397,10 @@ export class HubUtility {
   /**
    * Purges all acquired briefcases for the specified iModel (and user), if the specified threshold of acquired briefcases is exceeded
    */
-  public static async purgeAcquiredBriefcases(requestContext: AuthorizedClientRequestContext, projectName: string, iModelName: string, acquireThreshold: number = 16): Promise<void> {
-    const projectId: string = await HubUtility.queryProjectIdByName(requestContext, projectName);
-    const iModelId: GuidString = await HubUtility.queryIModelIdByName(requestContext, projectId, iModelName);
-
+  public static async purgeAcquiredBriefcasesById(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, onReachThreshold: () => void, acquireThreshold: number = 16): Promise<void> {
     const briefcases: HubBriefcase[] = await BriefcaseManager.imodelClient.briefcases.get(requestContext, iModelId, new BriefcaseQuery().ownedByMe());
     if (briefcases.length > acquireThreshold) {
-      Logger.logInfo(HubUtility.logCategory, `Reached limit of maximum number of briefcases for ${projectName}:${iModelName}. Purging all briefcases.`);
+      onReachThreshold();
 
       const promises = new Array<Promise<void>>();
       briefcases.forEach((briefcase: HubBriefcase) => {
@@ -411,6 +408,18 @@ export class HubUtility {
       });
       await Promise.all(promises);
     }
+  }
+
+  /**
+   * Purges all acquired briefcases for the specified iModel (and user), if the specified threshold of acquired briefcases is exceeded
+   */
+  public static async purgeAcquiredBriefcases(requestContext: AuthorizedClientRequestContext, projectName: string, iModelName: string, acquireThreshold: number = 16): Promise<void> {
+    const projectId: string = await HubUtility.queryProjectIdByName(requestContext, projectName);
+    const iModelId: GuidString = await HubUtility.queryIModelIdByName(requestContext, projectId, iModelName);
+
+    return this.purgeAcquiredBriefcasesById(requestContext, iModelId, () => {
+      Logger.logInfo(HubUtility.logCategory, `Reached limit of maximum number of briefcases for ${projectName}:${iModelName}. Purging all briefcases.`);
+    }, acquireThreshold);
   }
 
   /** Reads change sets from disk and expects a standard structure of how the folder is organized */

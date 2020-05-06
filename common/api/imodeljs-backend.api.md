@@ -30,6 +30,7 @@ import { ChangedValueState } from '@bentley/imodeljs-common';
 import { ChangeOpCode } from '@bentley/imodeljs-common';
 import { ChangeSet } from '@bentley/imodelhub-client';
 import { ChangesType } from '@bentley/imodelhub-client';
+import { ChannelRootAspectProps } from '@bentley/imodeljs-common';
 import { ClientRequestContext } from '@bentley/bentleyjs-core';
 import { CloudStorageContainerDescriptor } from '@bentley/imodeljs-common';
 import { CloudStorageContainerUrl } from '@bentley/imodeljs-common';
@@ -736,6 +737,18 @@ export class ChangeSummaryManager {
 }
 
 // @public
+export class ChannelRootAspect extends ElementUniqueAspect {
+    // @internal
+    constructor(props: ChannelRootAspectProps, iModel: IModelDb);
+    // @internal (undocumented)
+    static get className(): string;
+    static insert(iModel: IModelDb, ownerId: Id64String, ownerDescription: string): void;
+    owner: string;
+    // @internal (undocumented)
+    toJSON(): ChannelRootAspectProps;
+}
+
+// @public
 export class ClassRegistry {
     static findRegisteredClass(classFullName: string): typeof Entity | undefined;
     static getClass(classFullName: string, iModel: IModelDb): typeof Entity;
@@ -831,6 +844,8 @@ export class ConcurrencyControl {
     buildRequestForModel(model: ModelProps, opcode: DbOpcode): void;
     // @internal
     buildRequestForRelationship(_instance: RelationshipProps, _opcode: DbOpcode): void;
+    // @alpha
+    get channel(): ConcurrencyControl.Channel;
     get codes(): ConcurrencyControl.Codes;
     // @internal (undocumented)
     endBulkMode(rqctx: AuthorizedClientRequestContext): Promise<void>;
@@ -909,6 +924,46 @@ export class ConcurrencyControl {
 
 // @beta (undocumented)
 export namespace ConcurrencyControl {
+    // @alpha
+    export class Channel {
+        constructor(_iModel: BriefcaseDb);
+        // (undocumented)
+        get channelRoot(): Id64String | undefined;
+        set channelRoot(id: Id64String | undefined);
+        // (undocumented)
+        checkCanWriteElementToCurrentChannel(props: ElementProps, req: Request, opcode: DbOpcode): void;
+        // (undocumented)
+        checkLockRequest(locks: Lock[]): void;
+        // (undocumented)
+        checkModelAccess(modelId: Id64String, req: Request, opcode: DbOpcode): void;
+        // (undocumented)
+        getChannelOfElement(props: ElementProps): ChannelInfo;
+        // (undocumented)
+        getChannelOfModel(modelId: Id64String): ChannelInfo;
+        getChannelRootInfo(props: ElementProps): any | undefined;
+        // (undocumented)
+        getChannelRootInfo0(props: ElementProps): any;
+        // (undocumented)
+        isChannelRoot(props: ElementProps): any | undefined;
+        // (undocumented)
+        get isRepositoryChannel(): boolean;
+        // (undocumented)
+        lockChannelRoot(req: AuthorizedClientRequestContext): Promise<void>;
+        // (undocumented)
+        static get repositoryChannelRoot(): Id64String;
+        }
+    // @alpha
+    export interface ChannelInfo {
+        channelRoot: Id64String;
+    }
+    // @alpha
+    export class ChannelRootInfo implements ChannelInfo {
+        constructor(cpid: Id64String, props: any); /** The channel of which the element is the root or a member */
+        // (undocumented)
+        readonly channelRoot: Id64String; /** The channel of which the element is the root or a member */
+        // (undocumented)
+        readonly ownerInfo: any;
+    }
     export class Codes {
         constructor(_iModel: BriefcaseDb);
         query(requestContext: AuthorizedClientRequestContext, specId: Id64String, scopeId: string, value?: string): Promise<HubCode[]>;
@@ -960,6 +1015,10 @@ export namespace ConcurrencyControl {
         // (undocumented)
         relationship: RelationshipProps;
     }
+    // @alpha
+    export class RepositoryChannelInfo extends ChannelRootInfo {
+        constructor();
+    }
     export class Request {
         // (undocumented)
         addCodes(codes: CodeProps[]): this;
@@ -993,6 +1052,8 @@ export namespace ConcurrencyControl {
         removeCodes(filter: (c: CodeProps) => boolean, context: any): void;
         // (undocumented)
         removeLocks(filter: (l: LockProps) => boolean, context: any): void;
+        // (undocumented)
+        replaceLocksWithChannelLock(channelRootId: Id64String): void;
         // (undocumented)
         static get schemaLock(): LockProps;
         // (undocumented)

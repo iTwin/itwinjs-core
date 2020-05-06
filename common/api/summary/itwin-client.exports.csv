@@ -7,6 +7,7 @@ public;AuthorizedClientRequestContext
 public;AuthorizedClientRequestContextProps 
 beta;CancelRequest
 beta;ChangeState = "new" | "modified" | "deleted"
+beta;ChunkedQueryContext
 internal;ClassKeyMapInfo
 beta;class Client
 internal;ConstructorType = new () => any

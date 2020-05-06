@@ -877,7 +877,7 @@ export class BriefcaseManager {
       }
 
       if (cachedBriefcase.isOpen) {
-        Logger.logError(loggerCategory, "Briefcase found is not of the required version, but is already open. Cannot update or recreate it!", ({ ...cachedBriefcase.getDebugInfo(), requiredChangeSetId: changeSetId }));
+        Logger.logError(loggerCategory, "Briefcase found is not of the required version, but is already open. Cannot update or recreate it!", () => ({ ...cachedBriefcase.getDebugInfo(), requiredChangeSetId: changeSetId }));
         return cachedBriefcase;
       }
 
@@ -931,7 +931,7 @@ export class BriefcaseManager {
         }
 
         if (cachedBriefcase.isOpen) {
-          Logger.logError(loggerCategory, "Briefcase found is not of the required version, but is already open. Cannot update or recreate it!", ({ ...cachedBriefcase.getDebugInfo(), requiredChangeSetId: changeSetId }));
+          Logger.logError(loggerCategory, "Briefcase found is not of the required version, but is already open. Cannot update or recreate it!", () => ({ ...cachedBriefcase.getDebugInfo(), requiredChangeSetId: changeSetId }));
           return cachedBriefcase;
         }
 

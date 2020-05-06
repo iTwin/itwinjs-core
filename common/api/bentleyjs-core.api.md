@@ -1153,6 +1153,7 @@ export class ReadonlySortedArray<T> implements Iterable<T> {
 export enum RepositoryStatus {
     CannotCreateChangeSet = 86023,
     ChangeSetRequired = 86025,
+    ChannelConstraintViolation = 86031,
     CodeNotReserved = 86027,
     CodeUnavailable = 86026,
     CodeUsed = 86028,

@@ -42,23 +42,23 @@ class NamedElementCache {
   }
 }
 
-export class PhysicalModelNameCache extends NamedElementCache {
+export class ModelNameCache extends NamedElementCache {
   public async findAll() {
     const wh = this.nameSelectWhereClause;
     this.cache = [];
-    for await (const result of UiFramework.getIModelConnection()!.query("select ecinstanceid as id, codevalue as name from bis.PhysicalPartition " + wh)) {
+    for await (const result of UiFramework.getIModelConnection()!.query("select ecinstanceid as id, codevalue as name from bis.InformationPartitionElement " + wh)) {
       this.cache.push({ id: result.id, name: result.name });
     }
     iModelInfoAvailableEvent.raiseEvent();
   }
 }
 
-export class SpatialCategoryNameCache extends NamedElementCache {
+export class CategoryNameCache extends NamedElementCache {
 
   public async findAll() {
     const wh = this.nameSelectWhereClause;
     this.cache = [];
-    for await (const result of UiFramework.getIModelConnection()!.query("select ecinstanceid as id, codevalue as name from bis.SpatialCategory " + wh)) {
+    for await (const result of UiFramework.getIModelConnection()!.query("select ecinstanceid as id, codevalue as name from bis.Category " + wh)) {
       this.cache.push({ id: result.id, name: result.name });
     }
     iModelInfoAvailableEvent.raiseEvent();
@@ -66,8 +66,8 @@ export class SpatialCategoryNameCache extends NamedElementCache {
 }
 
 export class ActiveSettingsManager {
-  public static categories: SpatialCategoryNameCache;
-  public static models: PhysicalModelNameCache;
+  public static categories: CategoryNameCache;
+  public static models: ModelNameCache;
 
   public static onViewOpened(view: ViewState) {
     this.computeActiveSettingsFromView(view);
@@ -95,7 +95,12 @@ export class ActiveSettingsManager {
 
     const categories = Array.from(view.categorySelector.categories);
 
-    this.categories = new SpatialCategoryNameCache(categories);
+    if (categories.length === 0) {
+      // new categories are turned on. What to do? Just leave the active settings as they are.
+      return;
+    }
+
+    this.categories = new CategoryNameCache(categories);
 
     if (!IModelApp.toolAdmin.activeSettings.category || !this.categories.getNameFromId(IModelApp.toolAdmin.activeSettings.category))
       IModelApp.toolAdmin.activeSettings.category = (categories.length !== 0) ? categories[0] : undefined;
@@ -113,7 +118,12 @@ export class ActiveSettingsManager {
       throw new IModelError(IModelStatus.BadArg, "only 2d and spatial views are supported", Logger.logError, "simple-editor-app", () => view);
     }
 
-    this.models = new PhysicalModelNameCache(models);
+    if (models.length === 0) {
+      // new models are turned on. What to do? Just leave the active settings as they are.
+      return;
+    }
+
+    this.models = new ModelNameCache(models);
 
     if (!IModelApp.toolAdmin.activeSettings.model || !this.models.getNameFromId(IModelApp.toolAdmin.activeSettings.model))
       IModelApp.toolAdmin.activeSettings.model = (models.length !== 0) ? models[0] : undefined;

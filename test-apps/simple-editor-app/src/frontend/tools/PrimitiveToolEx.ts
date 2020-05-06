@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { Id64String, Logger } from "@bentley/bentleyjs-core";
 import { IModelError, IModelStatus } from "@bentley/imodeljs-common";
-import { ElementEditor3d, IModelApp, NotifyMessageDetails, OutputMessagePriority, PrimitiveTool, Viewport } from "@bentley/imodeljs-frontend";
+import { ElementEditor3d, IModelApp, PrimitiveTool, Viewport } from "@bentley/imodeljs-frontend";
 
 const loggingCategory = "TestPrimitiveTools";
 
@@ -65,7 +65,7 @@ export abstract class PrimitiveToolEx extends PrimitiveTool {
     if (this.targetModelId === undefined)
       throw new IModelError(IModelStatus.BadModel, "", Logger.logError, loggingCategory, () => this.targetModelId);
 
-    IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Locking model ..."));
+    // IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Locking model ..."));
 
     return this.iModel.editing.concurrencyControl.lockModel(this.targetModelId);
   }

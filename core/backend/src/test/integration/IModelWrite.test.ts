@@ -16,16 +16,21 @@ import {
 import { IModelTestUtils, TestIModelInfo, Timer } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
 
-export async function createNewModelAndCategory(requestContext: AuthorizedBackendRequestContext, rwIModel: BriefcaseDb) {
+export async function createNewModelAndCategory(requestContext: AuthorizedBackendRequestContext, rwIModel: BriefcaseDb, parent?: Id64String) {
   // Create a new physical model.
   let modelId: Id64String;
-  [, modelId] = await IModelTestUtils.createAndInsertPhysicalPartitionAndModelAsync(requestContext, rwIModel, IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel"), true);
+  [, modelId] = await IModelTestUtils.createAndInsertPhysicalPartitionAndModelAsync(requestContext, rwIModel, IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel"), true, parent);
   requestContext.enter();
 
   // Find or create a SpatialCategory.
   const dictionary: DictionaryModel = rwIModel.models.getModel(IModel.dictionaryId) as DictionaryModel;
   const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
-  const spatialCategoryId: Id64String = SpatialCategory.insert(rwIModel, IModel.dictionaryId, newCategoryCode.value!, new SubCategoryAppearance({ color: 0xff0000 }));
+  const category = SpatialCategory.create(rwIModel, IModel.dictionaryId, newCategoryCode.value!);
+  await rwIModel.concurrencyControl.requestResourcesForInsert(requestContext, [category]);
+  requestContext.enter();
+  const spatialCategoryId = rwIModel.elements.insertElement(category);
+  category.setDefaultAppearance(new SubCategoryAppearance({ color: 0xff0000 }));
+  // const spatialCategoryId: Id64String = SpatialCategory.insert(rwIModel, IModel.dictionaryId, newCategoryCode.value!, new SubCategoryAppearance({ color: 0xff0000 }));
 
   // Reserve all of the codes that are required by the new model and category.
   try {
@@ -795,4 +800,5 @@ describe("IModelWriteTest (#integration)", () => {
     });
     iModel.close();
   });
+
 });

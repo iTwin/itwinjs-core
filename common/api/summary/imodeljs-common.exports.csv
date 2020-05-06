@@ -50,6 +50,8 @@ internal;ChangedModels
 public;ChangedValueState
 public;ChangeOpCode
 internal;CHANNEL = "@bentley/imodeljs-mobilegateway"
+alpha;ChannelConstraintError 
+public;ChannelRootAspectProps 
 internal;ClassifierTileTreeId
 beta;class CloudStorageCache
 beta;CloudStorageContainerDescriptor
