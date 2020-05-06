@@ -141,7 +141,7 @@ describe("useFrontstageDefNineZone", () => {
   it("should dispatch FRONTSTAGE_STATE_LOAD", async () => {
     const setting = {
       version: 0,
-      stateVersion: 0,
+      stateVersion: 1,
     };
     const uiSettings = new UiSettingsStub();
     sinon.stub(uiSettings, "getSetting").returns(Promise.resolve<UiSettingsResult>({
@@ -193,8 +193,8 @@ describe("addPanelWidgets", () => {
     let state = createNineZoneState();
     const frontstage = new FrontstageDef();
     const leftPanel = new StagePanelDef();
-    const panelZones = new StagePanelZonesDef({});
-    const panelZone = new StagePanelZoneDef({ widgets: [] });
+    const panelZones = new StagePanelZonesDef();
+    const panelZone = new StagePanelZoneDef();
     const widgetDef = new WidgetDef({
       id: "w1",
     });

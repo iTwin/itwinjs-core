@@ -43,7 +43,10 @@ import { PanelStateChangedEventArgs, StagePanelDef, StagePanelState as StagePane
  * @alpha
  */
 export interface StagePanelZoneProps {
-  /** Properties for the Widgets in this Zone. */
+  /** Properties for the Widgets in this Zone.
+   * @note Stable `WidgetProps["id"]` is generated if id is not provided to correctly save and restore App layout.
+   * [[Frontstage]] version must be increased when Widget location is changed or new widgets are added/removed.
+   */
   widgets: Array<React.ReactElement<WidgetProps>>;
   /** Any application data to attach to this Zone. */
   applicationData?: any;
@@ -81,7 +84,10 @@ export interface StagePanelProps {
   resizable: boolean;
   /** Default size of the panel. */
   size?: number;
-  /** Properties for the Widgets in this Panel. */
+  /** Properties for the Widgets in this Panel.
+   * @note Stable `WidgetProps["id"]` is generated if id is not provided to correctly save and restore App layout.
+   * [[Frontstage]] version must be increased when Widget location is changed or new widgets are added/removed.
+   */
   widgets?: Array<React.ReactElement<WidgetProps>>;
 
   /** Properties for the Panel Zones in this Panel. @alpha */

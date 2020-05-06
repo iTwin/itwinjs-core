@@ -222,6 +222,7 @@ export * from "./ui-framework/widgets/DefaultNavigationWidget";
 export * from "./ui-framework/widgets/NavigationWidget";
 export * from "./ui-framework/widgets/NavigationWidgetComposer";
 export * from "./ui-framework/widgets/ReviewToolWidget";
+export * from "./ui-framework/widgets/StableWidgetDef";
 export * from "./ui-framework/widgets/ToolbarWidgetBase";
 export * from "./ui-framework/widgets/ToolWidget";
 export * from "./ui-framework/widgets/ToolWidgetComposer";

@@ -51,7 +51,11 @@ export interface FrontstageProps extends CommonProps {
   applicationData?: any;
   /** Usage type for this Frontstage. */
   usage?: string;
-  /** Frontstage version. Used to force saved layout reinitialization after changes to frontstage. */
+  /** Frontstage version. Used to force saved layout reinitialization after changes to frontstage.
+   * @note This value should be increased when changes are made to Frontstage.
+   * Increasing the value will make sure to reinitialize App layout instead of restoring to old layout.
+   * Version increase is required when widgets are added/removed.
+   */
   version?: number;
 
   /** The Zone in the top-left corner. @deprecated Use 'contentManipulationTools' property. */

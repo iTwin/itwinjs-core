@@ -114,6 +114,7 @@ public;ContentViewManager
 public;CoreTools
 public;createAction
 public;createAction
+internal;createStableWidgetDef(widgetDef: WidgetDef, stableId: string): WidgetDef
 alpha;createVisibilityTreeNodeRenderer: (iconsEnabled: boolean, descriptionEnabled: boolean) => (props: TreeNodeRendererProps) => JSX.Element
 public;CubeNavigationAidControl 
 public;CursorDirection
@@ -214,6 +215,7 @@ internal;getFloatingZoneStyle: (props: ZoneManagerProps) =>
 beta;getIsHiddenIfSelectionNotActive(): ConditionalBooleanValue
 internal;getNestedStagePanelKey: (location: StagePanelLocation_2) => NestedStagePanelKey
 beta;getSelectionContextSyncEventIds(): string[]
+internal;getStableWidgetProps(widgetProps: WidgetProps, stableId: string): WidgetProps
 internal;getStagePanelType: (location: StagePanelLocation_2) => StagePanelType
 internal;getWidgetId(side: PanelSide, key: StagePanelZoneDefKeys): WidgetIdTypes
 public;GroupButton(props: GroupButtonProps): JSX.Element

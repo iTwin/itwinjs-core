@@ -40,7 +40,9 @@ export interface UiItemsProvider {
   provideStatusBarItems?: (stageId: string, stageUsage: StageUsage) => CommonStatusBarItem[];
   /** UiItemsManager calls following method to augment backstage items. */
   provideBackstageItems?: () => BackstageItem[];
-  /** UiItemsManager calls following method to augment Widget lists */
+  /** UiItemsManager calls following method to augment Widget lists.
+   * @note Returned widgets must provide unique `AbstractWidgetProps["id"]` to correctly save/restore App layout.
+   */
   provideWidgets?: (stageId: string, stageUsage: string, location: StagePanelLocation, section?: StagePanelSection) => ReadonlyArray<AbstractWidgetProps>;
 
   /** Called if the application changed the Toolbar button item */

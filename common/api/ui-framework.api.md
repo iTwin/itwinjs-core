@@ -1165,6 +1165,9 @@ export function createAction<T extends string>(type: T): Action<T>;
 // @public
 export function createAction<T extends string, P>(type: T, payload: P): ActionWithPayload<T, DeepReadonly<P>>;
 
+// @internal
+export function createStableWidgetDef(widgetDef: WidgetDef, stableId: string): WidgetDef;
+
 // @alpha
 export const createVisibilityTreeNodeRenderer: (iconsEnabled: boolean, descriptionEnabled: boolean) => (props: TreeNodeRendererProps) => JSX.Element;
 
@@ -2274,6 +2277,9 @@ export const getNestedStagePanelKey: (location: StagePanelLocation_2) => NestedS
 
 // @beta
 export function getSelectionContextSyncEventIds(): string[];
+
+// @internal (undocumented)
+export function getStableWidgetProps(widgetProps: WidgetProps, stableId: string): WidgetProps;
 
 // @internal (undocumented)
 export const getStagePanelType: (location: StagePanelLocation_2) => StagePanelType;
@@ -4267,7 +4273,8 @@ export enum StagePanelState {
 
 // @internal (undocumented)
 export class StagePanelZoneDef extends WidgetHost {
-    constructor(props: StagePanelZoneProps);
+    // (undocumented)
+    initializeFromProps(props: StagePanelZoneProps, panelLocation: StagePanelLocation_2, panelZone: StagePanelZoneDefKeys): void;
 }
 
 // @internal (undocumented)
@@ -4283,9 +4290,10 @@ export interface StagePanelZoneProps {
 export class StagePanelZonesDef {
     // (undocumented)
     [Symbol.iterator](): Iterator<[StagePanelZoneDefKeys, StagePanelZoneDef]>;
-    constructor(props: StagePanelZonesProps);
     // (undocumented)
     get end(): StagePanelZoneDef | undefined;
+    // (undocumented)
+    initializeFromProps(props: StagePanelZonesProps, panelLocation: StagePanelLocation_2): void;
     // (undocumented)
     get middle(): StagePanelZoneDef | undefined;
     // (undocumented)

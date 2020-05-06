@@ -2,10 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import * as React from "react";
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { FrontstageManager, StagePanelDef, StagePanelState, WidgetDef } from "../../ui-framework";
+import { FrontstageManager, StagePanelDef, StagePanelState, StagePanelZoneDef, StagePanelZonesDef, Widget, WidgetDef } from "../../ui-framework";
 import TestUtils from "../TestUtils";
+import { StagePanelLocation } from "@bentley/ui-abstract";
 
 describe("StagePanelDef", () => {
 
@@ -49,4 +51,38 @@ describe("StagePanelDef", () => {
     expect(panelDef.panelState).to.eq(StagePanelState.Open);
   });
 
+  it("should initialize panel zones", () => {
+    const panelDef = new StagePanelDef();
+    panelDef.initializeFromProps({ resizable: false, panelZones: {} });
+    expect(panelDef.panelZones).to.exist;
+  });
+});
+
+describe("StagePanelZonesDef", () => {
+  it("should initialize start", () => {
+    const sut = new StagePanelZonesDef();
+    sut.initializeFromProps({ start: { widgets: [] } }, StagePanelLocation.Left);
+    expect(sut.start).to.exist;
+  });
+
+  it("should initialize middle", () => {
+    const sut = new StagePanelZonesDef();
+    sut.initializeFromProps({ middle: { widgets: [] } }, StagePanelLocation.Left);
+    expect(sut.middle).to.exist;
+  });
+
+  it("should initialize end", () => {
+    const sut = new StagePanelZonesDef();
+    sut.initializeFromProps({ end: { widgets: [] } }, StagePanelLocation.Left);
+    expect(sut.end).to.exist;
+  });
+});
+
+describe("StagePanelZoneDef", () => {
+  it("should initialize stable widgets", () => {
+    const sut = new StagePanelZoneDef();
+    sut.initializeFromProps({ widgets: [<Widget />] }, StagePanelLocation.Left, "start");
+    expect(sut.widgetCount).to.eq(1);
+    expect(sut.widgetDefs[0].id).to.eq("uifw-spz-Left-start-0");
+  });
 });

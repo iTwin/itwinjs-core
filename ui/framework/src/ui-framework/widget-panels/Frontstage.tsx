@@ -208,7 +208,7 @@ function isFrontstageStateSettingResult(settingsResult: UiSettingsResult): setti
   return false;
 }
 
-const stateVersion = 0; // this needs to be bumped when NineZoneState is changed (to recreate layout).
+const stateVersion = 1; // this needs to be bumped when NineZoneState is changed (to recreate layout).
 
 /** @internal */
 export function initializeFrontstageState({ frontstage }: InitializeFrontstageStateArgs): FrontstageState {
