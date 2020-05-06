@@ -528,7 +528,7 @@ describe("ImodelChangesetPerformance Apply Local", () => {
         const csInfo = {
           GUID: result.csId,
           fileSize: csDetail[0].fileSize,
-          type: csDetail[0].changesType,
+          type: ChangesType[csDetail[0].changesType],
           desc: csDetail[0].description,
         };
         const stats = getStats(path.join(iModelDir, "changeSets", result.csId + ".cs"));
@@ -537,5 +537,4 @@ describe("ImodelChangesetPerformance Apply Local", () => {
       reporter.exportCSV(csvPath);
     }
   });
-
 });
