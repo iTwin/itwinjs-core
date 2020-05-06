@@ -1,6 +1,14 @@
 # Change Log - @bentley/perf-tools
 
-This log was last generated on Wed, 22 Apr 2020 19:04:00 GMT and should not be manually modified.
+This log was last generated on Wed, 06 May 2020 13:17:49 GMT and should not be manually modified.
+
+## 2.0.0
+Wed, 06 May 2020 13:17:49 GMT
+
+### Updates
+
+- Clear entries method for restart
+- Upgrade to Rush 5.23.2
 
 ## 1.14.1
 Wed, 22 Apr 2020 19:04:00 GMT
@@ -59,7 +67,7 @@ Mon, 30 Sep 2019 22:28:48 GMT
 
 ### Updates
 
-- upgrade to TypeScript 3.6.2
+- Upgrade to TypeScript 3.6.2
 
 ## 1.4.0
 Tue, 10 Sep 2019 12:09:49 GMT
@@ -94,7 +102,7 @@ Mon, 13 May 2019 15:52:05 GMT
 ### Updates
 
 - Fixes testSuite and testName output in CSV
-- "Adds readme to perf-tools"
-- Fixes exportCSV and renames variables"
+- Adds readme to perf-tools
+- Fixes exportCSV and renames variables
 - Stringifies JSON values for info
 

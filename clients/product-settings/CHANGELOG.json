@@ -1,0 +1,29 @@
+{
+  "name": "@bentley/product-settings-client",
+  "entries": [
+    {
+      "version": "2.0.0",
+      "tag": "@bentley/product-settings-client_v2.0.0",
+      "date": "Wed, 06 May 2020 13:17:49 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "expose SettingsAdmin as public due to being used in public API IModelApp"
+          },
+          {
+            "comment": "change SettingsAdmin to beta instead of public"
+          },
+          {
+            "comment": "react to renaming of imodeljs-clients"
+          },
+          {
+            "comment": "create new package from imodeljs-clients"
+          },
+          {
+            "comment": "Upgrade to Rush 5.23.2"
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -2,6 +2,39 @@
   "name": "@bentley/ecschema-metadata",
   "entries": [
     {
+      "version": "2.0.0",
+      "tag": "@bentley/ecschema-metadata_v2.0.0",
+      "date": "Wed, 06 May 2020 13:17:49 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "new EC Rule 501 - CustomAttribute schemas must be referenced by the container's schema."
+          },
+          {
+            "comment": "Removing deprecated API. Please see NextVersion.md under the heading 'ecschema-metadata Package' for details."
+          },
+          {
+            "comment": "Deprecating schema classes' method 'toJson' and replacing it with the JSON.stringify supported method 'toJSON'.  Also deprecating the 'deserialize' method and replacing it with 'fromJSON' for naming consistency. "
+          },
+          {
+            "comment": "Undefined display labels should equal empty display labels during schema comparison."
+          },
+          {
+            "comment": "order imports."
+          },
+          {
+            "comment": "Removed unused package dependencies"
+          },
+          {
+            "comment": "Upgrade to Rush 5.23.2"
+          },
+          {
+            "comment": "Added SchemaContext.getCachedSchema to retrieve a previously load Schema by SchemaKey"
+          }
+        ]
+      }
+    },
+    {
       "version": "1.14.1",
       "tag": "@bentley/ecschema-metadata_v1.14.1",
       "date": "Wed, 22 Apr 2020 19:04:00 GMT",

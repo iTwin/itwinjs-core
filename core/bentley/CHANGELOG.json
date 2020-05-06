@@ -2,6 +2,54 @@
   "name": "@bentley/bentleyjs-core",
   "entries": [
     {
+      "version": "2.0.0",
+      "tag": "@bentley/bentleyjs-core_v2.0.0",
+      "date": "Wed, 06 May 2020 13:17:49 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Monitor progress of downloading briefcases, ability to cancel download of briefcases. "
+          },
+          {
+            "comment": "Update Config.App documentation to reflect the removal of the config.json file"
+          },
+          {
+            "comment": "Added ContextDoesNotExist error"
+          },
+          {
+            "comment": "BUG273249"
+          },
+          {
+            "comment": "Updated docs. "
+          },
+          {
+            "comment": "Updated error text. "
+          },
+          {
+            "comment": "added raw log method that bypass catogory check"
+          },
+          {
+            "comment": "order imports."
+          },
+          {
+            "comment": "Add a type guard for `IDisposable`"
+          },
+          {
+            "comment": "Add Config class previously hosted in imodeljs-clients"
+          },
+          {
+            "comment": "Upgrade to Rush 5.23.2"
+          },
+          {
+            "comment": "Added ReadonlySortedArray."
+          },
+          {
+            "comment": "Remove support for the iModel.js module system by no longer delivering modules."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.14.1",
       "tag": "@bentley/bentleyjs-core_v1.14.1",
       "date": "Wed, 22 Apr 2020 19:04:00 GMT",

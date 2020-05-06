@@ -1,6 +1,28 @@
 # Change Log - @bentley/oidc-signin-tool
 
-This log was last generated on Wed, 22 Apr 2020 19:04:00 GMT and should not be manually modified.
+This log was last generated on Wed, 06 May 2020 13:17:49 GMT and should not be manually modified.
+
+## 2.0.0
+Wed, 06 May 2020 13:17:49 GMT
+
+### Updates
+
+- Fixed setup of UserInfo from browser clients, and more cleanups to AccessToken API. 
+- Add retry logic for navigation context destroyed error.
+- Option to refresh token before expiry
+- Fixes to integration tests. 
+- Update error handling for Ping login page.
+- Fix federated workflow with slow network speed
+- react to changes in imodeljs-clients
+- update TestOidcClient to implement FrontendAuthorizationClient; add universal TestFrontendAuthorizationClient
+- Temporarily commented out failing tests. 
+- This come from another branch.
+- react to new clients packages from imodeljs-clients
+- Update documentation for the TestUsers
+- Upgrade to Rush 5.23.2
+- Update to support new Bentley sign-in and consent pages 
+- Renamed TestOidcClient and related constructs for consistency
+- Add certa helper functions to support initializing a SideChannel to get an AccessToken.
 
 ## 1.14.1
 Wed, 22 Apr 2020 19:04:00 GMT

@@ -2,6 +2,30 @@
   "name": "@bentley/webpack-tools-core",
   "entries": [
     {
+      "version": "2.0.0",
+      "tag": "@bentley/webpack-tools-core_v2.0.0",
+      "date": "Wed, 06 May 2020 13:17:49 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix lint errors"
+          },
+          {
+            "comment": "Upgrade to Rush 5.23.2"
+          },
+          {
+            "comment": "Add new webpack plugin for iModel.js shared library"
+          },
+          {
+            "comment": "Update webpack version to 4.42.0"
+          },
+          {
+            "comment": "Update webpack version to 4.41.5"
+          }
+        ]
+      }
+    },
+    {
       "version": "1.14.1",
       "tag": "@bentley/webpack-tools-core_v1.14.1",
       "date": "Wed, 22 Apr 2020 19:04:00 GMT",

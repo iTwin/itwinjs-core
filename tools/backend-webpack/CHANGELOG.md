@@ -1,6 +1,15 @@
 # Change Log - @bentley/backend-webpack-tools
 
-This log was last generated on Wed, 22 Apr 2020 19:04:00 GMT and should not be manually modified.
+This log was last generated on Wed, 06 May 2020 13:17:49 GMT and should not be manually modified.
+
+## 2.0.0
+Wed, 06 May 2020 13:17:49 GMT
+
+### Updates
+
+- Upgrade to Rush 5.23.2
+- Update webpack version to 4.42.0
+- Update webpack version to 4.41.5
 
 ## 1.14.1
 Wed, 22 Apr 2020 19:04:00 GMT

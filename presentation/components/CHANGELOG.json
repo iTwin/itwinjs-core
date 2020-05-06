@@ -2,6 +2,54 @@
   "name": "@bentley/presentation-components",
   "entries": [
     {
+      "version": "2.0.0",
+      "tag": "@bentley/presentation-components_v2.0.0",
+      "date": "Wed, 06 May 2020 13:17:49 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Clean up deprecated APIs"
+          },
+          {
+            "comment": "Change argument lists to props object"
+          },
+          {
+            "comment": "Make all IPresentationDataProviders extend IDisposable"
+          },
+          {
+            "comment": "Memoize just the last request instead of everything in presentation data providers"
+          },
+          {
+            "comment": "Register localization namespace during Presentation frontend initialization"
+          },
+          {
+            "comment": "PresentationPropertyDataProvider provides data having sorted favorite properties using FavoritePropertiesManager"
+          },
+          {
+            "comment": "Separate tests from source"
+          },
+          {
+            "comment": "Refatored UnifiedSelectionTreeEventHandler to use inheritance instead of composition"
+          },
+          {
+            "comment": "Apply unified selection for modified tree nodes"
+          },
+          {
+            "comment": "Made React functional component specifications consistent across UI packages"
+          },
+          {
+            "comment": "Upgrade to Rush 5.23.2"
+          },
+          {
+            "comment": "Moved Property classes and interfaces to ui-abstract package."
+          },
+          {
+            "comment": "Remove support for the iModel.js module system by no longer delivering modules."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.14.1",
       "tag": "@bentley/presentation-components_v1.14.1",
       "date": "Wed, 22 Apr 2020 19:04:00 GMT",

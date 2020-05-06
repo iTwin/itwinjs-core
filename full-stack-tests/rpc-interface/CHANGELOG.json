@@ -2,6 +2,54 @@
   "name": "@bentley/rpcinterface-full-stack-tests",
   "entries": [
     {
+      "version": "2.0.0",
+      "tag": "@bentley/rpcinterface-full-stack-tests_v2.0.0",
+      "date": "Wed, 06 May 2020 13:17:49 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add a basic tests for the iModelWriteRpcInterface."
+          },
+          {
+            "comment": "Consolidated sign-in for integration tests"
+          },
+          {
+            "comment": "Fix issue with detecting whether or not to run a test suite."
+          },
+          {
+            "comment": "react to renaming of imodeljs-clients"
+          },
+          {
+            "comment": "update tests to utilize FrontendAuthorizationClient"
+          },
+          {
+            "comment": "Renamed the folder and name of tests that run both the frontend and backend to \"fullstack\" instead of \"integration\". "
+          },
+          {
+            "comment": "Renamed the folder and name of tests that run both the frontend and backend to \"fullstack\" instead of \"integration\". "
+          },
+          {
+            "comment": "Options to download/open briefcase. Differentiated RemoteBriefcaseConnection and LocalBriefcaseConnection. "
+          },
+          {
+            "comment": "React to changes in presentation APIs"
+          },
+          {
+            "comment": "react to new clients packages from imodeljs-clients"
+          },
+          {
+            "comment": "Upgrade to Rush 5.23.2"
+          },
+          {
+            "comment": "Renamed TestOidcClient and related constructs for consistency"
+          },
+          {
+            "comment": "Add tests for PresentationRpcInterface new operations getDisplayLabelDefinition and getDisplayLabelsDefinitions to the rpcinterface-integration-test"
+          }
+        ]
+      }
+    },
+    {
       "version": "1.14.1",
       "tag": "@bentley/rpcinterface-full-stack-tests_v1.14.1",
       "date": "Wed, 22 Apr 2020 19:04:00 GMT",

@@ -2,6 +2,288 @@
   "name": "@bentley/imodeljs-backend",
   "entries": [
     {
+      "version": "2.0.0",
+      "tag": "@bentley/imodeljs-backend_v2.0.0",
+      "date": "Wed, 06 May 2020 13:17:49 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fixed setup of UserInfo from browser clients, and more cleanups to AccessToken API. "
+          },
+          {
+            "comment": "Added RivisionUtility class for debug/testing"
+          },
+          {
+            "comment": "node addon 2.0.18"
+          },
+          {
+            "comment": "addon 2.0.25"
+          },
+          {
+            "comment": "Update to addon 2.0.5"
+          },
+          {
+            "comment": "imodeljs-addon 2.0.6"
+          },
+          {
+            "comment": "New IModelJS Node Addon 2.0.8"
+          },
+          {
+            "comment": "Update to imodeljs-native 2.0.24"
+          },
+          {
+            "comment": "Accusnap: improve performance and accuracy."
+          },
+          {
+            "comment": "BriefcaseIModelDb.pushChanges now requires a description"
+          },
+          {
+            "comment": "Performance tests for Applying Changesets"
+          },
+          {
+            "comment": "`IModelHost.startup` is now async."
+          },
+          {
+            "comment": "`IModelHost.shutdown` is now async."
+          },
+          {
+            "comment": "Refined checks for briefcase id, and fixed failing integration tests. "
+          },
+          {
+            "comment": "Product Backlog Item 276268: Deleting the briefcase cache if the cache version is incorrect should not attempt to delete the root directory."
+          },
+          {
+            "comment": "Setup initialization of briefcase cache for offline workflows. (VSTS#286489)"
+          },
+          {
+            "comment": "Monitor progress of downloading briefcases, ability to cancel download of briefcases. "
+          },
+          {
+            "comment": "Move briefcase-specific events into BriefcaseIModelDb subclass"
+          },
+          {
+            "comment": "Fixed param when calling logger so that it is a function as the logger expects"
+          },
+          {
+            "comment": "Setup a common cache locaton for iModel.js, with briefcases taking up a sub-folder. "
+          },
+          {
+            "comment": "Changed ChangeSets download API"
+          },
+          {
+            "comment": "Added unlink for file handler"
+          },
+          {
+            "comment": "Update UlasClient tests to send more detailed feature log data"
+          },
+          {
+            "comment": "react to renaming of imodeljs-clients-backend to backend-itwin-client"
+          },
+          {
+            "comment": "apply changeset performance tests with local datasets"
+          },
+          {
+            "comment": "BriefcaseManager.delete should work in offline scenarios. "
+          },
+          {
+            "comment": "Remove deprecated members of SectionLocation and downgrade to alpha pending refactor."
+          },
+          {
+            "comment": "Support for progress/cancel from ios"
+          },
+          {
+            "comment": "Remove deprecated ExportGraphics types etc for 2.0"
+          },
+          {
+            "comment": "Updated docs. "
+          },
+          {
+            "comment": "IModelDb.findByKey replaces IModelDb.find"
+          },
+          {
+            "comment": "Include model extents with ViewStateProps for drawing views."
+          },
+          {
+            "comment": "Remove deprecated APIs; see NextVersion.md for details."
+          },
+          {
+            "comment": "Entity.forEachProperty has moved from beta to public. Please note that the default value of includeCustom has changed to better match typical use."
+          },
+          {
+            "comment": "Removed/moved some properties from AuthorizationClient interf"
+          },
+          {
+            "comment": "Add IModelDb.Elements.getAspect method"
+          },
+          {
+            "comment": "txn.hasPendingTxns returns false if all local changes have been undone"
+          },
+          {
+            "comment": "Adding a new method setFirstSchemaLocater to ECSchemaXMLContext to allow control over the first locater used to locate schemas."
+          },
+          {
+            "comment": "IModelDb.containsClass now supports schema aliases"
+          },
+          {
+            "comment": "react to changes in imodeljs-clients"
+          },
+          {
+            "comment": "Promote properties from IModelToken onto IModelDb"
+          },
+          {
+            "comment": "IModelTransformer now processes RepositoryLinks"
+          },
+          {
+            "comment": "Update minimum Node version to 10.16.0"
+          },
+          {
+            "comment": "test"
+          },
+          {
+            "comment": " Logging fixes, separated open/download of briefcases a little more."
+          },
+          {
+            "comment": "Fix issue when initialize briefcase cache from disk and cache folder does not exist"
+          },
+          {
+            "comment": "openBriefcase RPC method now find the cached briefcase before opening it."
+          },
+          {
+            "comment": "Introduce the BriefcaseIModelDb class, make IModelDb abstract."
+          },
+          {
+            "comment": "Cleaned up unused async-s in BriefcaseManager"
+          },
+          {
+            "comment": "Avoided casting of BriefcaseProps to IModelRpcProps."
+          },
+          {
+            "comment": "Added NativeApp.deleteBriefcase, avoided authorization exceptions when offline. "
+          },
+          {
+            "comment": "Move briefcase property from IModelDb --> BriefcaseIModelDb"
+          },
+          {
+            "comment": "BriefcaseId is now an enum instead of a class"
+          },
+          {
+            "comment": "Rename BriefcaseId --> ReservedBriefcaseId, introduce BriefcaseId type"
+          },
+          {
+            "comment": "VSTS#297017: Update cached briefcase information if changes were applied. "
+          },
+          {
+            "comment": "Refactored NativeApp API and RPC interfaces. This continues to be WIP. "
+          },
+          {
+            "comment": "Removed the call to simultaneously download and open the briefcase at the backend. This should be done in two separate steps henceforth. The download must be done with BriefcaseManager, and the open is now a synchronous call in BriefcaseDb. "
+          },
+          {
+            "comment": "Added DownloadBriefcaseOptions and OpenBriefcaseOptions as parameters to the download/open calls for a briefcase. "
+          },
+          {
+            "comment": "Removed BriefcaseDb.create"
+          },
+          {
+            "comment": "Setup ability to use NativeApp.openBriefcase() in offline scenarios. "
+          },
+          {
+            "comment": "fixed flaky test"
+          },
+          {
+            "comment": "VSTS#217447, 162382: Cleanups to implementation of downloading/opening/discovering briefcases in native applications (WIP). "
+          },
+          {
+            "comment": "do not throw exception in NativeAppBackend.startup()"
+          },
+          {
+            "comment": "VSTS#296110: Setup a way to close briefcases when the native application is offline. "
+          },
+          {
+            "comment": "Move concurrencyControl from IModelDb to BriefcaseIModelDb"
+          },
+          {
+            "comment": "Renamed OIDC constructs for consistency; Removed SAML support."
+          },
+          {
+            "comment": "Add support for password-protecting snapshot iModels"
+          },
+          {
+            "comment": "Fixed typo for ElementAspect perf tests"
+          },
+          {
+            "comment": "VSTS#217447, VSTS#162382: Reinstated option to open briefcases with SyncMode = PullOnly. "
+          },
+          {
+            "comment": "Add purge dir method to iModelJsFs"
+          },
+          {
+            "comment": "react to creation of new clients packages from imodeljs-clients"
+          },
+          {
+            "comment": "; substitute current date for feature usage without any set start/end dates"
+          },
+          {
+            "comment": "Removed deprecated utilities. "
+          },
+          {
+            "comment": "enforce opening Snapshots readonly through StandaloneDb"
+          },
+          {
+            "comment": "Remove the deprecated Entity.clone method"
+          },
+          {
+            "comment": "Adjusted calls to some node addon changes (ECUtils removed)"
+          },
+          {
+            "comment": "Upgrade to Rush 5.23.2"
+          },
+          {
+            "comment": "support for editing"
+          },
+          {
+            "comment": "The API for snapshot iModels is now public."
+          },
+          {
+            "comment": "When creating a snapshot iModel, there is now an option to create class views for interoperability."
+          },
+          {
+            "comment": "Add IModelHost.snapshotFileNameResolver"
+          },
+          {
+            "comment": "Add FileNameResolver class"
+          },
+          {
+            "comment": "Move snapshot methods out of IModelDb and into new SnapshotIModelDb class."
+          },
+          {
+            "comment": "Add TemplateModelCloner to place instances of a template model"
+          },
+          {
+            "comment": "Renamed TestOidcClient and related constructs for consistency. "
+          },
+          {
+            "comment": "Add IModelDb.tryPrepareStatement"
+          },
+          {
+            "comment": "Fixed usage logging. "
+          },
+          {
+            "comment": "fix failing ulas tests due to invalid featureId"
+          },
+          {
+            "comment": "update ULAS test logging & feedback"
+          },
+          {
+            "comment": "Update UlasUtilities to support exception-throwing native functions"
+          },
+          {
+            "comment": "Use standalone briefcases for PullOnly cases. "
+          }
+        ]
+      }
+    },
+    {
       "version": "1.14.1",
       "tag": "@bentley/imodeljs-backend_v1.14.1",
       "date": "Wed, 22 Apr 2020 19:04:00 GMT",
