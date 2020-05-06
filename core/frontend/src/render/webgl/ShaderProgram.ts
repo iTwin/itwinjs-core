@@ -508,7 +508,7 @@ export class ShaderProgram implements WebGLDisposable {
 
             if (haveGLFragColorOnly) {
               ++ndx;
-              lines.splice(ndx, 0, "  float out_FragColor : SV_TARGET;");
+              lines.splice(ndx, 0, "  float4 out_FragColor : SV_TARGET;");
             } else {
               for (cNdx = 0; cNdx < haveGLFragColor.length; ++cNdx) {
                 if (haveGLFragColor[cNdx]) {

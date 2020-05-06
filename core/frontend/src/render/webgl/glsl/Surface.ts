@@ -55,7 +55,7 @@ const applyMaterialColor = `
 // Replace with diffuse alpha if alpha overridden.
 // Multiply texel alpha with diffuse alpha if specified.
 const applyTextureWeight = `
-  float textureWeight = mat_texture_weight * extractSurfaceBit(kSurfaceBit_HasTexture) * (1.0 - u_applyGlyphTex);
+  float textureWeight = isSurfaceBitSet(kSurfaceBit_HasTexture) && !u_applyGlyphTex ? mat_texture_weight : 0.0;
   vec4 rgba = mix(baseColor, g_surfaceTexel, textureWeight);
   rgba.rgb = chooseVec3WithBitFlag(rgba.rgb, v_color.rgb, surfaceFlags, kSurfaceBit_OverrideRgb);
   rgba.a = chooseFloatWithBitFlag(rgba.a, v_color.a, surfaceFlags, kSurfaceBit_OverrideAlpha);
@@ -236,14 +236,6 @@ export function createSurfaceHiliter(instanced: IsInstanced, classified: IsClass
   return builder;
 }
 
-// nvidia hardware incorrectly interpolates varying floats when we send the same exact value for every vertex...
-const extractSurfaceBit = `
-float extractSurfaceBit(float flag) { return extractNthBit(surfaceFlags, flag); }
-`;
-const extractSurfaceBit2 = `
-float extractSurfaceBit(uint flag) { return mix(0.0, 1.0, 0u != (surfaceFlags & flag)); }
-`;
-
 const isSurfaceBitSet = `
 bool isSurfaceBitSet(float flag) { return nthBitSet(surfaceFlags, flag); }
 `;
@@ -286,11 +278,9 @@ function addSurfaceFlagsLookup(builder: ShaderBuilder) {
 
   addExtractNthBit(builder);
   if (System.instance.capabilities.isWebGL2) {
-    builder.addFunction(extractSurfaceBit2);
     builder.addFunction(isSurfaceBitSet2);
     builder.addGlobal("surfaceFlags", VariableType.Uint);
   } else {
-    builder.addFunction(extractSurfaceBit);
     builder.addFunction(isSurfaceBitSet);
     builder.addGlobal("surfaceFlags", VariableType.Float);
   }
@@ -419,14 +409,14 @@ const computeBaseColor = `
   vec3 delta = (color + epsilon) - white;
 
   // set to black if almost white
-  glyphColor.rgb *= float(u_reverseWhiteOnWhite <= 0.5 || delta.x <= 0.0 || delta.y <= 0.0 || delta.z <= 0.0);
+  glyphColor.rgb *= float(!u_reverseWhiteOnWhite || delta.x <= 0.0 || delta.y <= 0.0 || delta.z <= 0.0);
   glyphColor = vec4(glyphColor.rgb * g_surfaceTexel.rgb, g_surfaceTexel.a);
 
   // Choose glyph color or unmodified texture sample
-  vec4 texColor = mix(g_surfaceTexel, glyphColor, u_applyGlyphTex);
+  vec4 texColor = u_applyGlyphTex ? glyphColor : g_surfaceTexel;
 
   // If untextured, or textureWeight < 1.0, choose surface color.
-  return mix(surfaceColor, texColor, extractSurfaceBit(kSurfaceBit_HasTexture) * floor(mat_texture_weight));
+  return isSurfaceBitSet(kSurfaceBit_HasTexture) && mat_texture_weight >= 1.0 ? texColor : surfaceColor;
 `;
 
 const surfaceFlagArray = new Int32Array(SurfaceBitIndex.Count);
@@ -551,10 +541,10 @@ export function createSurfaceBuilder(flags: TechniqueFlags): ProgramBuilder {
 
   addTexture(builder, flags.isAnimated, flags.isThematic);
 
-  builder.frag.addUniform("u_applyGlyphTex", VariableType.Float, (prog) => {
+  builder.frag.addUniform("u_applyGlyphTex", VariableType.Boolean, (prog) => {
     prog.addGraphicUniform("u_applyGlyphTex", (uniform, params) => {
       const surfGeom = params.geometry.asSurface!;
-      uniform.setUniform1f(surfGeom.useTexture(params.programParams) && surfGeom.isGlyph ? 1 : 0);
+      uniform.setUniform1i(surfGeom.useTexture(params.programParams) && surfGeom.isGlyph ? 1 : 0);
     });
   });
 
