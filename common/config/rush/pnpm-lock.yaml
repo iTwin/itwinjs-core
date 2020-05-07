@@ -2099,7 +2099,7 @@ packages:
     dev: false
     requiresBuild: true
     resolution:
-      integrity: sha1-Kgv6kgXOood3D/XzySMaYROU7Mo=
+      integrity: sha1-FqBYkjjDtt1+7SVAX3HD4JKWDIA=
   /@bentley/react-scripts/3.4.1_a4f1093162180b0de057e31a5d2c1cc3:
     dependencies:
       '@babel/core': 7.9.0
