@@ -86,7 +86,7 @@ export class MultiCode extends CodeBase {
  * @returns Encoded part of a code.
  */
 function encodeForCodeId(str: string): string {
-  return encodeURIComponent(str.replace(/-/g, "_0x2D_"))
+  return encodeURIComponent(str.replace(/-/g, "_2D_"))
     .replace(/~/g, "~7E")
     .replace(/\*/g, "~2A")
     .replace(/%/g, "~");
